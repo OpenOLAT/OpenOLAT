@@ -1,0 +1,47 @@
+.o_flag {
+	position: relative;
+	top: 1px;
+	display: inline-block;
+	line-height: 1;
+	width: 16px;
+	height: 16px;
+	background-repeat: no-repeat;
+	background-position: 0 100%;
+}
+
+.o_flag_en {background-image: url('#{$o-images-path}flags/gb.png');} 	
+.o_flag_de {background-image: url('#{$o-images-path}flags/de.png');} 	
+.o_flag_fr {background-image: url('#{$o-images-path}flags/fr.png');} 	
+.o_flag_it {background-image: url('#{$o-images-path}flags/it.png');} 	
+.o_flag_es {background-image: url('#{$o-images-path}flags/es.png');} 	
+.o_flag_da {background-image: url('#{$o-images-path}flags/dk.png');} 	
+.o_flag_cs {background-image: url('#{$o-images-path}flags/cz.png');} 	
+.o_flag_el {background-image: url('#{$o-images-path}flags/gr.png');} 	
+.o_flag_ee {background-image: url('#{$o-images-path}flags/ee.png');} 	
+.o_flag_ru {background-image: url('#{$o-images-path}flags/ru.png');} 	
+.o_flag_pl {background-image: url('#{$o-images-path}flags/pl.png');} 	
+.o_flag_zh_CN {background-image: url('#{$o-images-path}flags/cn.png');} 	
+.o_flag_zh_TW {background-image: url('#{$o-images-path}flags/tw.png');} 	
+.o_flag_lt {background-image: url('#{$o-images-path}flags/lt.png');} 	
+.o_flag_fa {background-image: url('#{$o-images-path}flags/ir.png');} 	
+.o_flag_pt_PT {background-image: url('#{$o-images-path}flags/pt.png');} 	
+.o_flag_pt_BR {background-image: url('#{$o-images-path}flags/br.png');} 	
+.o_flag_tr {background-image: url('#{$o-images-path}flags/tr.png');} 	
+.o_flag_hu {background-image: url('#{$o-images-path}flags/hu.png');} 	
+.o_flag_sq {background-image: url('#{$o-images-path}flags/al.png');} 	
+.o_flag_in {background-image: url('#{$o-images-path}flags/id.png');} 	
+.o_flag_ar {background-image: url('#{$o-images-path}flags/eg.png');} 	
+.o_flag_rm {background-image: url('#{$o-images-path}flags/rm.png');} 	
+.o_flag_af {background-image: url('#{$o-images-path}flags/za.png');} 	
+.o_flag_vi {background-image: url('#{$o-images-path}flags/vn.png');} 
+.o_flag_mn {background-image: url('#{$o-images-path}flags/mn.png');} 
+.o_flag_iw {background-image: url('#{$o-images-path}flags/il.png');} 
+.o_flag_ko {background-image: url('#{$o-images-path}flags/kr.png');} 
+.o_flag_nl_NL {background-image: url('#{$o-images-path}flags/nl.png');}
+.o_flag_jp {background-image: url('#{$o-images-path}flags/jp.png');}
+.o_flag_nb_NO {background-image: url('#{$o-images-path}flags/no.png');}
+.o_flag_et_EE {background-image: url('#{$o-images-path}flags/ee.png');}
+.o_flag_bg {background-image: url('#{$o-images-path}flags/bg.png');}
+.o_flag_hi_IN_ASIA {background-image: url('#{$o-images-path}flags/in.png');}
+.o_flag_ar_LB {background-image: url('#{$o-images-path}flags/lb.png');}     
+.o_flag_gl_ES {background-image: url('#{$o-images-path}flags/galicia.png');}     

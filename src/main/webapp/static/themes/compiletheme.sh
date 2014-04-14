@@ -21,7 +21,7 @@ STYLE=compressed
 searchThemes () {
 	if [ ! -z $1  ];
 	then
-	    if [ -f $1/layout.scss  ];
+	    if [ -f $1/theme.scss  ];
 	    then
 	    	doCompile $1
 	    elif [ -d $1  ];
@@ -36,9 +36,14 @@ searchThemes () {
 
 # Helper method to compile the theme
 doCompile () {
-	echo "Compiling SASS: $1 $STYLE"
+	TARGET=$1
+	if [ $1 = "."  ];
+	then
+		TARGET="light"
+	fi
+	echo "Compiling SASS: $TARGET $STYLE"
 	sass --version
-	sass --style $STYLE --update $1:$1 --load-path openolat openolat/all openolat/all/modules openolat/print openolat/mobile
+	sass --style $STYLE --update $TARGET:$TARGET --load-path light light/modules
 	echo "done"
 }
 

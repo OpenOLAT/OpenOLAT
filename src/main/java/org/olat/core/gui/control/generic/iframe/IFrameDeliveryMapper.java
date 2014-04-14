@@ -553,7 +553,7 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 		private void appendOpenolatCss() {
 			if(ooCssLoaded) return;
 			
-			append("<link href=\"").append(themeBaseUri).append("all/content.css\" rel=\"stylesheet\" type=\"text/css\" ");
+			append("<link href=\"").append(themeBaseUri).append("content.css\" rel=\"stylesheet\" type=\"text/css\" ");
 			if (docType != null && docType.indexOf("XHTML") > 0) append("/"); // close tag only when xhtml to validate
 			append(">\n");
 			ooCssLoaded = true;

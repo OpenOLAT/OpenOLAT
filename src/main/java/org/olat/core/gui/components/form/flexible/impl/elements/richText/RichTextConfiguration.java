@@ -465,13 +465,13 @@ public class RichTextConfiguration implements Disposable {
 	 */
 	public void setContentCSSFromTheme(Theme theme) {
 		// Always use default content css, then add the one from the theme
-		if (theme.getIdentifyer().equals("openolat")) {
-			setContentCSS(theme.getBaseURI() + "all/content.css");			
+		if (theme.getIdentifyer().equals(Theme.DEFAULTTHEME)) {
+			setContentCSS(theme.getBaseURI() + "content.css");			
 		} else {
 			StringOutput cssFiles = new StringOutput();
-			StaticMediaDispatcher.renderStaticURI(cssFiles, "themes/openolat/all/content.css");
+			StaticMediaDispatcher.renderStaticURI(cssFiles, "themes/" + Theme.DEFAULTTHEME + "/content.css");
 			cssFiles.append(",");
-			cssFiles.append(theme.getBaseURI()).append("all/content.css");
+			cssFiles.append(theme.getBaseURI()).append("content.css");
 			setContentCSS(cssFiles.toString());
 		}
 	}

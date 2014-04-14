@@ -1,0 +1,73 @@
+#o_footer {
+	@if $o-footer-position-absolute == true {
+		position: absolute; bottom: 0;
+	}
+	width: 100%;
+	min-height: $o-footer-height;
+	background-color: $o-footer-outer-bg;
+	color: $o-footer-default-color;
+	line-height: 16px;
+	
+	a { 
+		color: $o-footer-default-link-color;
+		&:hover { color: $o-footer-default-link-hover-color;}
+	}
+
+	#o_footer_container {
+		position: relative;
+		padding-top: 10px;
+		max-width: $o-page-width-max;
+		min-height: $o-footer-height;		
+		background: $o-footer-inner-bg;
+
+		#o_footer_user { 
+			#o_counter { white-space:nowrap; }
+		 	#o_username { white-space:nowrap; margin-right: 1em;}
+		}
+
+		#o_footer_version { 
+			text-align: right;
+			/* aligh left on mobile, stacked view */
+			@media (max-width: $screen-xs-max) { 
+				padding-top: 10px;
+				text-align: left;
+			}
+		}
+
+		#o_footer_powered { 
+			text-align: center; 
+			/* make powerd-by buttons a bit less colorful to not distract user from learning */
+			img {	
+				@include o-opacity(60);
+				&:hover { @include o-opacity(100); }	
+			}		
+			/* hide images on mobile */
+			@media (max-width: $screen-xs-max) { 
+				display: none;
+			}
+		}
+	}
+}
+
+/*  social links (FB, twitter, google) from SocialModule.java */
+#o_share { 
+	margin-top: 5px;
+	width:250px; 
+	a { 
+		margin: 0 3px 0 0; 
+		background-repeat: no-repeat; 
+		width: 16px; height: 16px; 
+		float: left; display: inline; 
+		@include o-opacity(60);
+	}
+	a:hover { 
+		@include o-opacity(100); 
+	}
+	#o_facebook {background-image: url('#{$o-images-path}social/facebook_16.png');}
+	#o_twitter {background-image: url('#{$o-images-path}social/twitter_16.png');}
+	#o_google {background-image: url('#{$o-images-path}social/google_16.png');}
+	#o_delicious {background-image: url('#{$o-images-path}social/delicious_16.png');}
+	#o_digg {background-image: url('#{$o-images-path}social/digg_16.png');}
+	#o_mail {background-image: url('#{$o-images-path}social/email_16.png');}
+	#o_link {background-image: url('#{$o-images-path}social/link_16.png');}
+}

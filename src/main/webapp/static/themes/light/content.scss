@@ -1,0 +1,25 @@
+@charset "UTF-8";
+
+/*
+ *  =================================================
+ *  
+ *   SaSS file for OpenOLAT content styles. This is 
+ *   included in iframes to nicely display content. 
+ *   
+ *   @author gnaegi, www.frentix.com
+ *   @date April 2014
+ *
+ *	 also read themes.README!
+ *  =================================================
+ */
+@import "license";
+
+@import "config";
+@import "../../bootstrap/3.1.1/stylesheets/bootstrap/variables";
+@import "../../bootstrap/3.1.1/stylesheets/bootstrap/mixins";
+@import "../../bootstrap/3.1.1/stylesheets/bootstrap/normalize";
+@import "../../bootstrap/3.1.1/stylesheets/bootstrap/scaffolding";
+@import "../../bootstrap/3.1.1/stylesheets/bootstrap/print";
+
+@import "modules/mixins"; 
+@import "modules/content";

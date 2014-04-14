@@ -1,0 +1,172 @@
+/*
+ * =================================================
+ *  
+ * Content styles for OpenOLAT
+ *   
+ * @author gnaegi,  www.frentix.com
+ * @date April 2014
+ *
+ * Please also read themes.README!
+ *
+ * This file is compiled to a separate CSS-file as 
+ * well as included as a module to the main style. The 
+ * separate CSS will be be included to the tinyMCE
+ * HTML editor and injected into iframes that display
+ * learning content. 
+ *  =================================================
+ */
+
+/* content boxes */
+.b_info { 
+	padding: 5px 5px 5px 30px; 
+	background: #E9EAEF url(../../openolat/images/information-white.png) no-repeat 5px 5px; 
+	border:1px solid #C5C4C4; 
+	@include o-border-radius(4px);
+}
+p.b_info, div.b_info {margin: 1em 0;} /* tiny needs something here */
+
+.b_note {
+	padding: 1em; 
+	background: #E2E2E2; 
+	border: 2px #B5B5B5 solid; 
+	@include o-border-radius(4px);
+}
+p.b_note, div.b_note {margin: 1em 0;} /* tiny needs something here */
+
+.b_important {
+	padding: 1em; 
+	background: #FFF1A4; 
+	border: 2px #F4D000 solid; 
+	@include o-border-radius(4px);
+}
+p.b_important, div.b_important {margin: 1em 0;} /* tiny needs something here */
+
+.b_warning {
+	padding: 1em; 
+	background: #FFD5AA; 
+	border: 2px #FF9E3E solid; 
+	@include o-border-radius(4px);
+}
+p.b_warning, div.b_warning {margin: 1em 0;} /* tiny needs something here */
+
+.b_error {
+	padding: 1em; 
+	background: #FF6A66; 
+	color: #fff; 
+	border: 2px #ff0600 solid; 
+	@include o-border-radius(4px);
+	.b_error_icon { 
+		padding: 9px 0 9px 41px; 
+		background: url(../../openolat/images/icon_error_32.png) no-repeat; 
+	}
+	table.b_grid td, table.b_grid th, table.b_border td, table.b_border th { border: 1px solid #fff;}
+}
+p.b_error, div.b_error {margin: 1em 0;} /* tiny needs something here */
+
+.b_border_box { 
+	border: 1px solid $gray-light; 
+	padding: 1em;
+	@include o-border-radius(2px); 
+}
+p.b_border_box, div.b_border_box {margin: 1em 0;} /* tiny needs something here */
+
+
+/* nice table formatting */
+table {
+	&.b_grid {
+		background: transparent;
+		border-collapse: separate;
+		td, th { 
+			padding: 2px 5px;
+			border: 1px solid #888;
+		}
+		thead th {
+			background: #ccc;
+		}	
+		tbody th {
+			background: #eee;
+		}
+	}
+	&.b_border {
+		background: transparent;
+		border-collapse: collapse;
+		td, th { 
+			padding: 2px 5px;
+			border: 1px solid #888;
+		}	
+	}
+	&.b_full { 
+		width: 99.5%; 
+	}
+	td {
+		vertical-align: top;	
+	}
+	&.b_middle {
+		background: transparent;
+		td {
+			vertical-align: middle;			
+		}	
+	}
+}
+
+/* font styles  */
+.b_selected, p.b_selected, div.b_selected { font-weight: bold; }	
+.b_dimmed, p.b_dimmed, div.b_dimmed { @include o-opacity(40); }
+.b_disabled, p.b_disabled, div.b_disabled { color: $gray-light; }
+.b_deleted, p.b_deleted, div.b_deleted { text-decoration: line-through; }	
+
+/* font sizes relative to parent object */
+.b_xsmall, sup, sub, p.b_xsmall, div.b_xsmall { font-size: 80% }
+.b_small, small, p.b_small, div.b_small { font-size: 90% }
+.b_large, p.b_large, div.b_large { font-size: 110% }
+.b_xlarge, big, p.b_xlarge, div.b_xlarge  { font-size: 120% }
+
+/* text alignment: normal flow in a LTR language is left, in a RTL language it is right */
+.b_align_normal { text-align: left; }
+.b_align_center { text-align: center; }
+.b_align_inverse { text-align: right; }
+
+/* colors (used in repo and else where) */
+.o_ochre { color: #c8a959; }
+.o_blue { color: #12223F; }
+
+/* special links */
+a.b_link_extern { background: transparent url('../../openolat/images/external_link_trimmed.png') no-repeat right top; padding-right:13px;}
+a.b_link_mailto { background: transparent url('../../openolat/images/mail_small.png') no-repeat left center; padding-left:18px;}
+a.b_link_forward { background: transparent url('../../openolat/images/arrow_right.png') no-repeat right center; padding-right:18px;}
+
+/* image styles */
+img.b_float_left {float: left; margin: 0 2em 2em 0;}
+img.b_float_right {float: right; margin: 0 0 2em 2em;}
+img.b_centered {display: block; margin: 0 auto 2em auto;}
+	
+/* ---------- smilies / emoticons in tinyMCE (excluded in editor styles) ------------------------ */
+/* i know, these are icons... but they must be in content.css, 'cause tinyMCE needs 'em... */
+img.o_emoticons_angel     {background : url(#{$o-images-path}emoticons/smiley-angel.png); width: 16px; height: 16px;}
+img.o_emoticons_angry     {background : url(#{$o-images-path}emoticons/smiley-mad.png); width: 16px; height: 16px;}
+img.o_emoticons_blushing  {background : url(#{$o-images-path}emoticons/smiley-red.png); width: 16px; height: 16px;}
+img.o_emoticons_confused  {background : url(#{$o-images-path}emoticons/smiley-confuse.png); width: 16px; height: 16px;}
+img.o_emoticons_cool      {background : url(#{$o-images-path}emoticons/smiley-cool.png); width: 16px; height: 16px;}
+img.o_emoticons_cry       {background : url(#{$o-images-path}emoticons/smiley-cry.png); width: 16px; height: 16px;}
+img.o_emoticons_devil     {background : url(#{$o-images-path}emoticons/smiley-evil.png); width: 16px; height: 16px;}
+img.o_emoticons_grin      {background : url(#{$o-images-path}emoticons/smiley-grin.png); width: 16px; height: 16px;}
+img.o_emoticons_kiss      {background : url(#{$o-images-path}emoticons/smiley-kiss.png); width: 16px; height: 16px;}
+img.o_emoticons_ohoh      {background : url(#{$o-images-path}emoticons/smiley-eek.png); width: 16px; height: 16px;}
+img.o_emoticons_sad       {background : url(#{$o-images-path}emoticons/smiley-sad.png); width: 16px; height: 16px;}
+img.o_emoticons_sick      {background : url(#{$o-images-path}emoticons/smiley-sad-blue.png); width: 16px; height: 16px;}
+img.o_emoticons_smile     {background : url(#{$o-images-path}emoticons/smiley.png); width: 16px; height: 16px;}
+img.o_emoticons_tongue    {background : url(#{$o-images-path}emoticons/smiley-razz.png); width: 16px; height: 16px;}
+img.o_emoticons_ugly      {background : url(#{$o-images-path}emoticons/smiley-money.png); width: 16px; height: 16px;}
+img.o_emoticons_weird     {background : url(#{$o-images-path}emoticons/smiley-nerd.png); width: 16px; height: 16px;}
+img.o_emoticons_wink      {background : url(#{$o-images-path}emoticons/smiley-wink.png); width: 16px; height: 16px;}
+img.o_emoticons_worried   {background : url(#{$o-images-path}emoticons/smiley-roll-blue.png); width: 16px; height: 16px;}
+img.o_emoticons_up   	  {background : url(#{$o-images-path}emoticons/thumb-up.png); width: 16px; height: 16px;}
+img.o_emoticons_down   	  {background : url(#{$o-images-path}emoticons/thumb.png); width: 16px; height: 16px;}
+
+/*
+FIXME:oo10
+replaced styles: search/replace in content files on disk:
+
+b_emoticons_ -> o_emoticons_
+
+*/

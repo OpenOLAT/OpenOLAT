@@ -34,6 +34,8 @@ import org.olat.core.util.WebappHelper;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 public class Theme {
+	public static final String DEFAULTTHEME = "light";
+	
 	private String identifyer;
 	private String baseURI;
 	private String relPathToThemesDir;

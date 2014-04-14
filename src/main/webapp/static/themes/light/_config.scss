@@ -1,0 +1,103 @@
+/*
+ * =================================================
+ *   
+ * OpenOLAT theme configuration file
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date April 2014
+ *
+ * To create your own theme, please read themes.README!
+ * =================================================
+ * 
+ * Configure OpenOLAT and boostrap variables in this file. 
+ * All variables with the o- prefix are OpenOLAT specific variables, 
+ * the other variabels are from bootstrap. 
+ * 
+ * When you modify any variable here, make sure you run 
+ * the scrip src/main/webapp/static/themes/compiletheme.sh
+ * 
+ * See src/main/webapp/static/bootstrap/3.1.1/stylesheets/bootstrap/_variables.scss
+ * or http://getbootstrap.com/customize/#less-variables
+ * or http://getbootstrap.com/css/#less-variables
+ */
+
+/* The max width the header/navbar/main/footer can possibly have. */
+$o-page-width-max : 1324px !default;
+
+/* Background color of the main content area. */
+$o-main-outer-bg : #fff !default;
+$o-main-inner-bg : #fff !default;
+
+$o-footer-height : 60px !default;
+$o-footer-outer-bg : #f5f5f5 !default;
+$o-footer-inner-bg : #f5f5f5 !default;
+$o-footer-default-color : #999 !default;
+$o-footer-default-link-color : #999 !default;
+$o-footer-default-link-hover-color : #000 !default;
+$o-footer-position-absolute : true !default; 
+
+$o-images-path : "../light/images/" !default;
+
+/* Override bootstrap font path */
+$icon-font-path : "../../bootstrap/3.1.1/fonts/bootstrap/" !default;
+
+
+/*
+FIXME:oo10 LEGACY VARIABLES
+
+$basecolor : #025D8C !default;
+$basecolor_light : #94bed3 !default;
+$basecolor_ultra_light : #f3feff !default;
+$selectcolor : #FF9F5B !default;				
+$selectcolor_light : #FF9F5B !default;			
+$selectcolor_ultra_light : #FFDBC1 !default;	 
+$dirtycolor : #FF9900 !default;
+$dirtycolor_bg : #FEFBF6 !default;
+$basegray: #555 !default;
+$basegray_light: #777 !default;
+$basegray_ultra_light: #eee !default;
+$glossColor1 : #5E5E5E !default;
+$glossColor2 : #444 !default;
+$glossColor3 : #222 !default;
+$glossColor4 : #3C3C3C !default;
+$okcolor : #009900 !default;
+$nokcolor : #990000 !default;
+$linkcolor : $basecolor !default;
+$linkcolor_hover: $basecolor !default;
+$menulinkcolor : $basegray !default;
+$menulinkcolor_hover : $basecolor !default;
+$menulinkcolor_selected : $basecolor !default;
+$tablecolor_header : $linkcolor !default;
+$tablecolor_links : $linkcolor !default;
+$tablecolor_links_hover : $linkcolor !default;
+$fullScreenModalMarginPercents: 2% !default;
+$navMainShowIcons : false !default;
+$top_nav_line_height : 30px !default;
+$top_nav_active_tabs_bg : #fff !default;
+$tool_bar_height : 24px !default;
+$tool_bar_bg : $top_nav_active_tabs_bg !default;
+$tool_bar_border : #DADADA !default;
+$tool_bar_color : #2D2E2D !default;
+$tool_bar_hover : #585A58 !default;
+$main_shadow_color : #D3D3D3 !default;
+$tree_level_margin : 1em !default;
+$tree_padding_steps_px : 0 !default;
+$tree_padding_opener_px : 13px !default; 
+$tree_padding_opener_left_px : 1px !default;
+$tree_padding_opener_top_px : 0px;
+$tree_show_icons : true !default; 
+$treeicon_width_px : 20px !default;
+$ico_plus : '../openolat/images/tree_parent_closed.png'  !default;
+$ico_minus : '../openolat/images/tree_parent_open.png'  !default;
+$di_border_radius:2px;
+$headerfont : Century Gothic, Apple Gothic, sans-serif !default;
+$topnavfont : $headerfont !default;
+$navmainfont : $headerfont !default;
+$treefont : $headerfont !default;
+$defaultfontsize : 80% !default;
+$page_width_max : 1324px !default;
+$page_width_min : 740px !default;
+$enablebiz : false !default;
+$showbetalogo: false !default;
+
+*/

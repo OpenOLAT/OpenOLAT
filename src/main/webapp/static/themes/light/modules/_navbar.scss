@@ -1,0 +1,75 @@
+#o_navbar {
+//	@extend .navbar-inverse;
+}
+#o_navbar_container {
+	position: relative;
+	max-width: $o-page-width-max;
+
+	#o_navbar_header {
+		a.navbar-brand {
+			font-size: 40px;
+			vertical-align: top;
+			font-weight: bold;
+			color: #31729B;
+			&:after {
+				content: "\221E";
+			}
+		
+		}
+	}
+	
+	#o_navbar_tabs {
+		li a {
+			padding-right: ($grid-gutter-width);
+		}
+		.o_navbar_tab_close {
+			position: absolute;
+			top: floor($grid-gutter-width / 2); 
+			right:0.5em;
+			padding: 0;
+			width: 1em; height: 1em;
+			span {
+				@extend .glyphicon;
+				@extend .glyphicon-minus-sign;
+				&:before { color: #A87E7E; }
+			}
+			&:hover { 
+				span:before { color: #CC0000; }
+			}
+		}
+	}
+	
+	#o_navbar_tools {
+		#o_navbar_search_opener a.dropdown-toggle span {
+			@extend .glyphicon;
+			@extend .glyphicon-search;
+		}
+		
+		#o_navbar_langchooser {
+			color: $navbar-default-color;
+			padding: floor($grid-gutter-width / 2);
+			form span + div {
+				display: inline;
+			}
+		}
+		#o_navbar_help a span {
+			@extend .glyphicon;
+			@extend .glyphicon-question-sign;
+			margin-right: 0.4em;
+		}
+		#o_navbar_my_menu {
+			.dropdown-toggle {
+				padding-left: floor($grid-gutter-width / 2) + 30px;
+			}
+			img {
+				position: absolute;
+				left: floor($grid-gutter-width / 4);
+				top: floor(30px - $line-height-computed);
+				height: 30px;
+				width: 30px;
+				@extend .img-circle;
+			}
+		}
+	}
+	
+}
