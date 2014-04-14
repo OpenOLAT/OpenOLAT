@@ -46,9 +46,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
@@ -65,6 +65,7 @@ import org.olat.search.SearchServiceUIFactory.DisplayOption;
 import org.olat.search.ui.SearchInputController;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.GenderPropertyHandler;
 
 /**
  * 
@@ -76,15 +77,15 @@ public class OlatTopNavController extends BasicController implements GenericEven
 	
 	private static final String ACTION_LOGOUT = "logout";
 	private SearchInputController searchC;
-	private Link helpLink, loginLink, impressumLink, myMenuLink;
+	private Link helpLink, loginLink, impressumLink;
 
 	private VelocityContainer menuVC;
 	private VelocityContainer topNavVC;
 	private InstantMessagingMainController imController;
-	private CloseableCalloutWindowController calloutCtr;
 	
 	private EventBus singleUserEventCenter;
 	private final DisplayPortraitManager portraitManager;
+	private final UserManager userManager;
 	private OLATResourceable ass;
 	
 	public OlatTopNavController(UserRequest ureq, WindowControl wControl) {
@@ -96,6 +97,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 		
 		topNavVC = createVelocityContainer("topnav");
 		portraitManager = DisplayPortraitManager.getInstance();
+		userManager = UserManager.getInstance();
 		
 		boolean isGuest = ureq.getUserSession().getRoles().isGuestOnly();
 		boolean isInvitee = ureq.getUserSession().getRoles().isInvitee();
@@ -140,38 +142,35 @@ public class OlatTopNavController extends BasicController implements GenericEven
 			singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
 			singleUserEventCenter.registerFor(this, getIdentity(), ass);
 			
-			UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
-	
-			myMenuLink = LinkFactory.createButton("topnav.my.menu", topNavVC, this);
-			myMenuLink.setCustomDisplayText(userManager.getUserDisplayName(getIdentity()));
-			myMenuLink.setCustomEnabledLinkCSS("o_topnav_impressum");
-			myMenuLink.setElementCssClass("o_sel_my_menu_open");
-			
-			File image = portraitManager.getSmallPortrait(getIdentity().getName());
-			if (image != null) {
-				// display only within 600x300 - everything else looks ugly
-				ImageComponent ic = new ImageComponent(ureq.getUserSession(), "image");
-				ic.setSpanAsDomReplaceable(true);
-				ic.setMedia(image);
-				topNavVC.contextPut("hasPortrait", Boolean.TRUE);
-				topNavVC.put("portrait", ic);
+			Component menu =  getMenuCmp(ureq);
+			topNavVC.put("myMenu", menu);
+			// the user profile
+			Component portrait = getPortraitCmp(ureq);
+			if (portrait != null) {
+				topNavVC.put("portrait", portrait);
 			} else {
-				topNavVC.contextPut("hasPortrait", Boolean.FALSE);
+				GenderPropertyHandler genderHander = (GenderPropertyHandler) userManager.getUserPropertiesConfig().getPropertyHandler(UserConstants.GENDER);
+				String gender = genderHander.getInternalValue(getIdentity().getUser());
+				topNavVC.contextPut("gender", (gender == null || gender.equals("-") ? "" : gender + "_"));				
 			}
+			
+			// the label to open the personal menu
+			String[] attr = new String[] {getIdentity().getUser().getProperty(UserConstants.FIRSTNAME, getLocale()), getIdentity().getUser().getProperty(UserConstants.LASTNAME, getLocale()), getIdentity().getName()};
+			String myMenuText = translate("topnav.my.menu.label", attr);
+			topNavVC.contextPut("myMenuLabel", myMenuText);
+			
+
 		}
 		
 		putInitialPanel(topNavVC);
 	}
 	
+
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == helpLink) {
 			doOpenHelp(ureq) ;
-		} else if(source == myMenuLink) {
-			myMenuLink.setDirty(false);
-			doOpenMyMenu(ureq);
 		} else if(source instanceof Link && source.getComponentName().startsWith("personal.tool.")) {
-			doCloseMyMenu();
 			doOpenPersonalTool(ureq, (Link)source);
 		} else if (source == loginLink) {
 			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
@@ -185,13 +184,6 @@ public class OlatTopNavController extends BasicController implements GenericEven
 		}
 	}
 	
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == calloutCtr) {
-			closePersonalMenu();
-		}
-	}
-	
 	private void doOpenPersonalTool(UserRequest ureq, Link link) {
 		GenericActionExtension gAe = (GenericActionExtension)link.getUserObject();
 		String navKey = gAe.getNavigationKey();
@@ -199,30 +191,25 @@ public class OlatTopNavController extends BasicController implements GenericEven
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
-	private void doCloseMyMenu() {
-		calloutCtr.deactivate();
-		removeAsListenerAndDispose(calloutCtr);
-		calloutCtr = null;
-	}
-
-	private void doOpenMyMenu(UserRequest ureq) {
-		removeAsListenerAndDispose(calloutCtr);
-		Component menu =  getMenuCmp(ureq);
-		calloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(), menu, myMenuLink, "", true, null);
-		listenTo(calloutCtr);
-		calloutCtr.activate();
-	}
-	
-	private void closePersonalMenu() {
-		removeAsListenerAndDispose(calloutCtr);
-		calloutCtr = null;
-	}
-	
 	private Component getMenuCmp(UserRequest ureq) {
 		VelocityContainer container = createVelocityContainer("menu");
+		container.setDomReplacementWrapperRequired(false); // we do it ourself in menu.html file
 		loadPersonalTools(ureq, container);
 		menuVC = container;
 		return menuVC;
+	}
+	
+	private Component getPortraitCmp(UserRequest ureq) {
+		File image = portraitManager.getSmallPortrait(getIdentity().getName());
+		if (image != null) {
+			// display only within 600x300 - everything else looks ugly
+			ImageComponent ic = new ImageComponent(ureq.getUserSession(), "image");
+			ic.setSpanAsDomReplaceable(true);
+			ic.setMedia(image);
+			topNavVC.put("portrait", ic);
+			return ic;
+		}
+		return null;
 	}
 	
 	private void loadPersonalTools(UserRequest ureq, VelocityContainer container) {

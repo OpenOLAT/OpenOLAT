@@ -1,59 +1,44 @@
-## ---- START #b_page_margins #b_page_wrapper
-<div id="b_page_margins"><div id="b_page_wrapper">
-## special classes for border styling, see YAML book chapter 4.5.7 for more information
-<div id="b_border-top">
-	<div id="b_edge-lt"></div>
-	<div id="b_edge-rt"></div>
+<a id='o_top' name="o_top"></a>
+<div id="o_beta_logo"></div>
+	
+## ---- START #o_header ---
+<div id="o_header"> 
+	<div id="o_logo"></div>
+	<div id="o_right_logo"></div>
+	
+	## something to be displayed in the header, a logo, some ads, whatever
+	#if($r.available("headerComponent"))
+		$r.render("headerComponent")
+	#end
 </div>
-## ---- START #b_page
-<div id="b_page">
-<a id='b_top' name="b_top"></a>
-<div id="b_beta_logo"></div>
+## ---- END #o_header ---	
 
-## ---- START #b_header ---
-<div id="b_header">
+## ---- START #o_navbar ---
+<div id="o_navbar" class="navbar navbar-default" role="navigation">
+	<div id="o_navbar_container" class="container-fluid">
 
-## ---- START Access keys to improve accessability
-## not visible for normal browser
-<span class="b_skip">$r.translate("accesskey.title")</span>
-<a accesskey="0" class="b_skip" href="#b_top">0: $r.translate("accesskey.top")</a>
-<a accesskey="n" class="b_skip" href="#b_nav">n: $r.translate("accesskey.nav")</a>
-<span class="b_skip">$r.translate("accesskey.sites")</span>
-<span class="b_skip">$r.translate("accesskey.tabs")</span>
-<a accesskey="o" class="b_skip" href="#b_topnav">o: $r.translate("accesskey.topnav")</a>
-<a accesskey="m" class="b_skip" href="#b_col1">m: $r.translate("accesskey.menu")</a>
-<a accesskey="c" class="b_skip" href="#b_col3">c: $r.translate("accesskey.content")</a>
-<a accesskey="t" class="b_skip" href="#b_col2">t: $r.translate("accesskey.tools")</a>
-<a accesskey="a" class="b_skip" href="#b_table">a: $r.translate("accesskey.table")</a>
-<a accesskey="d" class="b_skip" href="#b_modal">d: $r.translate("accesskey.modal")</a>
-<span class="b_skip">b: $r.translate("accesskey.back")</span>
-<span class="b_skip">$r.translate("accesskey.changes")</span>
-## don't use numbers as access keys - reserved for the addressing of opened tabs
-## ---- END Access keys
+	    <div id="o_navbar_header" class="navbar-header">
+	      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+	        <span class="sr-only">Toggle navigation</span>
+	        <span class="icon-bar"></span>
+	        <span class="icon-bar"></span>
+	        <span class="icon-bar"></span>
+	      </button>
+	      <a class="navbar-brand" href="#"></a>
+	    </div>
 
-<div id="b_logo"></div>
-<div id="b_right_logo"></div>
-<!-- end diff -->
-## something to be displayed in the header, a logo, some ads, whatever
-#if($r.available("headerComponent"))
-	$r.render("headerComponent")
-#end
-## top nav usually placed top left. Previously named upperRightCorner
-#if($r.available("topnavComponent"))
-	<div id="b_topnav">
-		<a name="b_topnav"></a>
-		$r.render("topnavComponent")
+
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			## sites and tabs
+			$r.render("navComponent")
+			## tools
+			#if($r.available("topnavComponent"))
+					$r.render("topnavComponent")
+			#end	
+		</div>
 	</div>
-#end
 </div>
-## ---- END #b_header ---	
-
-## ---- START #b_nav sites navigation
-<div id="b_nav">
-	<a name="b_nav"></a>
-	$r.render("navComponent")
-</div>
-## ---- END #b_nav ---
+## ---- END #o_navbar ---
 
 #if($hasStickyMessage)
 <div id="b_msg_sticky">
@@ -63,29 +48,25 @@
 </div>
 #end
 
-## ------ START #b_main -----
-	$r.render("main")
-## END MAIN
-
-<a id="b_toplink" href="#b_top" onclick="jQuery('#b_body').scrollTop(0);" title="$r.translateInAttribute("top.alt")">$r.translate("top")</a>	
+## ------ START #o_main -----
+<div id="o_main">
+	<div id="o_main_container" class="container-fluid">
+		$r.render("main")
+		<a id="o_toplink" href="#o_top" onclick="jQuery('#b_body').scrollTop(0);" title="$r.translateInAttribute("top.alt")">
+			<span class="glyphicon glyphicon-arrow-up"></span>
+			$r.translate("top")
+		</a>	
+	</div>
 </div>
-## ---- END #b_page
-</div>
-## ---- END #b_page_wrapper
-
+## END #o_main -----
 
 ## ----- START #b_footer ----------
-<div id="b_footer" class="b_clearfix">
-	<div class="b_floatbox">
+<div id="o_footer">
 	#if($r.available("footerComponent"))
 		$r.render("footerComponent")
 	#end
-	</div>
 </div>
 ## ---- END #b_footer ---
-
-</div>
-## ---- END  #b_page_margins
 
 ## ---- START #b_messages
 ## Messages are absolute positioned using EXT, thus it's ok to have them at the end of the page. 

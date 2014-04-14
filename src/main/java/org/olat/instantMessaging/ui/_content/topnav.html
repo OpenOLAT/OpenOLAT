@@ -1,13 +1,11 @@
 #if(!$inAssessment)
-<ul>
-	<li id="o_topnav_imclient_message">$r.render("newMsgPanel")</li>
+	$r.render("newMsgPanel")
 #if ($r.available("statusChangerPanel"))
-	<li id="o_topnav_imclient_status">$r.render("statusChangerPanel")</li>
+	<div id="o_im_status">$r.render("statusChangerPanel")</div>
 #end
 #if ($r.available("buddiesSummaryPanel"))
-	<li id="o_topnav_imclient_summary">$r.render("buddiesSummaryPanel")</li>
+	<div id="o_im_summary">$r.render("buddiesSummaryPanel")</div>
 #end
-</ul>
 $r.render("rosterPanel")
 $r.render("statusPanel")
 #end

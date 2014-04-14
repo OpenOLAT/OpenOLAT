@@ -1,24 +1,21 @@
-<div class="o_topnav_my_menu">
-	<span class="o_topnav_my_submenu">$r.translate("topnav.my.menu.tools")</span>
-	<ul>
+## DOM replacement implemented via ID on UL element - bypass standard OO wrapper DIV
+<ul id="$r.getCId()" class="dropdown-menu">
+	<li role="presentation" class="dropdown-header">$r.translate("topnav.my.menu.tools")</li>
 	#foreach($personalTool in $personalTools)
 	 	<li>$r.render($personalTool)</li>
 	#end
-	</ul>
-	<hr/>
-	<span class="o_topnav_my_submenu">$r.translate("topnav.my.menu.configurations")</span>
-	<ul>
+	<li role="presentation" class="divider"></li>
+	<li role="presentation" class="dropdown-header">$r.translate("topnav.my.menu.configurations")</li>
 	#foreach($config in $configs)
 	 	<li>$r.render($config)</li>
 	#end
-	</ul>
-	<hr/>
-	<ul>
-		<li id="o_topnav_logout">
-			## make logout link very basic without onClick handler in case javaScript is broken it is still possible to log out
-			## except for the onolatunload() method which must be executed to correctly finish SCORM modules (OLAT-6255)
-			## must be on one line to work with inline translation tool
-			<a id="b_logout" href="$r.commandURI("logout")" title="$r.translateInAttribute("topnav.logout.alt")" onclick="if (window.olatonunload) {olatonunload();}"><span class="b_logout_icon">$r.translate("topnav.logout")</span></a>
-		</li>
-	</ul>
-</div>
+	<li role="presentation" class="divider"></li>
+	<li>
+		## make logout link very basic without onClick handler in case javaScript is broken it is still possible to log out
+		## except for the onolatunload() method which must be executed to correctly finish SCORM modules (OLAT-6255)
+		## must be on one line to work with inline translation tool
+		<a href="$r.commandURI("logout")" title="$r.translateInAttribute("topnav.logout.alt")" onclick="if (window.olatonunload) {olatonunload();}">
+			<span class="glyphicon glyphicon-off"></span> $r.translate("topnav.logout")
+		</a>
+	</li>
+</ul>

@@ -1,16 +1,16 @@
-<ul>
+<ul id="o_navbar_tools" class="nav navbar-nav navbar-right">
 #if($r.available("topnav.impressum"))
-	<li>
+	<li id="o_navbar_impress">
 		$r.render("topnav.impressum")
 	</li>
 #end
-	<li id="o_topnav_langchooser">
+	<li id="o_navbar_langchooser">
 		$r.render("languageChooser")
 	</li>
 #if ($isContextHelpEnabled)
-	<li id="o_topnav_help">
+	<li id="o_navbar_help">
 		<a href="javascript:contextHelpWindow('$r.relLink("help/${r.getLanguageCode()}/org.olat.login/dmz.html")')" title="$r.translateInAttribute("topnav.help.alt")">
-			<span class="o_help_icon b_with_small_icon_right">$r.translate("topnav.help")</span>
+			<span></span>$r.translate("topnav.help")
 		</a>
 	</li>
 #end

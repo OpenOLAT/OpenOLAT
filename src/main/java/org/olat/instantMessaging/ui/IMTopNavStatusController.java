@@ -55,11 +55,11 @@ public class IMTopNavStatusController extends BasicController {
 		mainVC = createVelocityContainer("status_changer");
 		
 		available = LinkFactory.createLink("presence.available", mainVC, this);
-		available.setCustomEnabledLinkCSS("o_instantmessaging_available_icon");
+		available.setCustomEnabledLinkCSS("o_im_available_icon");
 		dnd = LinkFactory.createLink("presence.dnd", mainVC, this);
-		dnd.setCustomEnabledLinkCSS("o_instantmessaging_dnd_icon");
+		dnd.setCustomEnabledLinkCSS("o_im_dnd_icon");
 		unavailable = LinkFactory.createLink("presence.unavailable", mainVC, this);
-		unavailable.setCustomEnabledLinkCSS("o_instantmessaging_unavailable_icon");
+		unavailable.setCustomEnabledLinkCSS("o_im_unavailable_icon");
 
 		putInitialPanel(mainVC);
 	}

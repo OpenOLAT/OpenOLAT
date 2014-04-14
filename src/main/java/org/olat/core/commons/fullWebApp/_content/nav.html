@@ -1,42 +1,38 @@
-<div id="b_nav_main">
-<ul>
 ## ---- START sites tabs ---
+<ul id="o_navbar_sites" class="nav navbar-nav">
 #foreach ($site in $sites)
 	#set ($siteEl = $r.getComponent("$site"))
 	#set ($navel = $siteEl.userObject.getNavElement())
-	<li class='b_nav_site #if($tabhelper.isSiteActive($siteEl.userObject)) b_nav_active #end $!navel.getIconCSSClass()'>
-		<div> ## div used for site icon
-			$r.render("$site")
-		</div>
+	<li class='#if($tabhelper.isSiteActive($siteEl.userObject)) active #end $!navel.getIconCSSClass()'>
+		$r.render("$site")
 	</li>
 #end
+</ul>
 ## ---- END sites tabs ---
-	<li id="b_nav_spacer"></li> ##spacer between sites and tabs
+
 ## ---- START dynamic tabs ---
+<ul id="o_navbar_tabs"  class="nav navbar-nav">
 #foreach ($dtab in $dtabs)
 	#set ($navel = $dtab.getNavElement())
 	#set ($pos=${velocityCount} - 1)
 	#set ($postfix=$dtabsLinkNames.get(${pos}))
 	#if($tabhelper.isDTabActive($dtab))
-	<li class="b_nav_tab b_nav_active $!navel.getIconCSSClass()">
-		<div> ## div used for tab icon
-			$r.render("a$postfix")
-			#if($tabhelper.isCanCloseDTab($dtab))
-				$r.render("cp$postfix")	 ## close link has class b_nav_tab_close
-			#end
-		</div>
+	<li class="active $!navel.getIconCSSClass()">
+		$r.render("a$postfix")
+		#if($tabhelper.isCanCloseDTab($dtab))
+			$r.render("cp$postfix")	 ## close link has class b_nav_tab_close
+		#end
 	</li>
 	#else
-	<li class="b_nav_tab $!navel.getIconCSSClass()">
-		<div> ## div used for tab icon
-			$r.render("a$postfix")
-			$r.render("cp$postfix")  ## close link has class b_nav_tab_close
-		</div>
+	<li class="$!navel.getIconCSSClass()">
+		$r.render("a$postfix")
+		$r.render("cp$postfix")  ## close link has class b_nav_tab_close
 	</li>
 	#end
 #end
-## ---- END dynamic tabs ---
 </ul>
+## ---- END dynamic tabs ---
+
 #if($pageTitle)
 	<script type="text/javascript">
 	/* <![CDATA[ */ 
@@ -44,4 +40,3 @@
 	/* ]]> */
 	</script>
 #end
-</div>

@@ -133,6 +133,7 @@ public class InstantMessagingMainController extends BasicController implements G
 			onlineOfflineCount = LinkFactory.createCustomLink("onlineOfflineCount", "cmd.roster", "", Link.NONTRANSLATED, main, this);
 			onlineOfflineCount.setTooltip(translate("im.roster.intro"));
 			onlineOfflineCount.registerForMousePositionEvent(true);
+			onlineOfflineCount.setCustomEnabledLinkCSS("badge");
 			updateBuddyStats();
 			main.put("buddiesSummaryPanel", onlineOfflineCount);
 			
@@ -321,7 +322,7 @@ public class InstantMessagingMainController extends BasicController implements G
 			imStatus = Presence.available.name();
 		  imService.updateStatus(getIdentity(), imStatus);
 		}
-		String cssClass = "o_instantmessaging_" + imStatus + "_icon";
+		String cssClass = "o_im_" + imStatus + "_icon";
 		statusChangerLink.setCustomEnabledLinkCSS("b_small_icon " + cssClass);
 	}
 	
@@ -412,7 +413,7 @@ public class InstantMessagingMainController extends BasicController implements G
 	private Link createShowNewMessageLink(Buddy buddy) {
 		Link link = LinkFactory.createCustomLink(buddy.getIdentityKey().toString(), ACTION_MSG, "", Link.NONTRANSLATED, newMsgIcon, this);
 		link.registerForMousePositionEvent(true);
-		link.setCustomEnabledLinkCSS("b_small_icon o_instantmessaging_new_msg_icon");
+		link.setCustomEnabledLinkCSS("o_im_new_msg_icon");
 		String buddyName = StringHelper.escapeHtml(buddy.getName());
 		link.setTooltip(translate("im.new.message", new String[]{ buddyName }));
 		link.setUserObject(buddy);

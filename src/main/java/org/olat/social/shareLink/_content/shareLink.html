@@ -2,55 +2,55 @@
 <script type="text/javascript">
 /* <![CDATA[ */
     ## Called from Window.java to update the businesspath
-	function b_shareActiveSocialUrl() {
-		jQuery('#b_mail').attr('href','mailto:?subject=' + b_shareSocialTitle() + '&body=' + b_shareSocialUrl());
+	function o_shareActiveSocialUrl() {
+		jQuery('#o_mail').attr('href','mailto:?subject=' + o_shareSocialTitle() + '&body=' + o_shareSocialUrl());
 	}
 	## Helper methods for buttons below
-	function b_shareSocialUrl() {
+	function o_shareSocialUrl() {
 		if(o_info.businessPath && o_info.businessPath.length > 0) return o_info.businessPath;
 		return '$baseURL';
 	} 
-	function b_shareSocialTitle() { return document.title; }
+	function o_shareSocialTitle() { return document.title; }
 /* ]]> */
 </script>
 
 
-<div id="b_share">
+<div id="o_share">
 #foreach ($link in $shareLinks)
 	#if ($link == "twitter")
-		<a id="b_twitter" href="#" target="_blank" title="$r.translateInAttribute("share.twitter")" onclick="window.open('http://twitter.com/share?url='+b_shareSocialUrl()+'&text='+b_shareSocialTitle());return false;"></a>
+		<a id="o_twitter" href="#" target="_blank" title="$r.translateInAttribute("share.twitter")" onclick="window.open('http://twitter.com/share?url='+o_shareSocialUrl()+'&text='+o_shareSocialTitle());return false;"></a>
 	#elseif ($link == "facebook")
-		<a id="b_facebook" href="#" target="_blank" title="$r.translateInAttribute("share.facebook")" onclick="window.open('http://www.facebook.com/sharer.php?u='+b_shareSocialUrl()+'&t='+b_shareSocialTitle());return false;"></a>
+		<a id="o_facebook" href="#" target="_blank" title="$r.translateInAttribute("share.facebook")" onclick="window.open('http://www.facebook.com/sharer.php?u='+o_shareSocialUrl()+'&t='+o_shareSocialTitle());return false;"></a>
 	#elseif ($link == "google")
-		<a id="b_google" href="#" target="_blank" title="$r.translateInAttribute("share.google")" onclick="window.open('https://www.google.com/bookmarks/mark?op=add&bkmk='+b_shareSocialUrl()+'&title='+b_shareSocialTitle());return false;"></a>
+		<a id="o_google" href="#" target="_blank" title="$r.translateInAttribute("share.google")" onclick="window.open('https://www.google.com/bookmarks/mark?op=add&bkmk='+o_shareSocialUrl()+'&title='+o_shareSocialTitle());return false;"></a>
 	#elseif ($link == "delicious")
-		<a id="b_delicious" href="#" target="_blank" title="$r.translateInAttribute("share.delicious")" onclick="window.open('http://www.delicious.com/save?url='+b_shareSocialUrl()+'&title='+b_shareSocialTitle());return false;"></a>
+		<a id="o_delicious" href="#" target="_blank" title="$r.translateInAttribute("share.delicious")" onclick="window.open('http://www.delicious.com/save?url='+o_shareSocialUrl()+'&title='+o_shareSocialTitle());return false;"></a>
 	#elseif ($link == "digg")
-		<a id="b_digg" href="#" title="$r.translateInAttribute("share.digg")" onclick="window.open('http://digg.com/submit?url='+b_shareSocialUrl()+'&title='+b_shareSocialTitle());return false;"></a>
+		<a id="o_digg" href="#" title="$r.translateInAttribute("share.digg")" onclick="window.open('http://digg.com/submit?url='+o_shareSocialUrl()+'&title='+o_shareSocialTitle());return false;"></a>
 	#elseif ($link == "mail")	
-		<a id="b_mail" href="mailto:?body=$baseURL" title="$r.translateInAttribute("share.mail")"></a>
+		<a id="o_mail" href="mailto:?body=$baseURL" title="$r.translateInAttribute("share.mail")"></a>
 	#elseif ($link == "link")	
-		<a id="b_link" href="#" onclick="javascript:b_shareSocialLink();"></a>
+		<a id="o_link" href="#" onclick="javascript:o_shareSocialLink();"></a>
 		<script type="text/javascript">
 		/* <![CDATA[ */
-			function b_shareSocialLink() {
+			function o_shareSocialLink() {
 				var callout = '';
-				callout += '<div id="b_callout_sharesociallink" class="b_callout_area b_clearfix" style="z-index:101;"><div class="b_floatscrollbox"><a name="b_modal"></a><div class="b_callout"><div class="b_callout_top_left_arrow"></div><div class="b_callout_top_left_arrow-border"></div>';
-				callout += '<div id="callout_layer_sharesociallink" class="b_callout_content"><div id="callout_layer_content_sharesociallink">';
-				callout += '<p><span>$r.translate("share.link")</span>:<br/><input id="callout_share_link_in" type="text" name="cl_share_link" size="64" value="' + b_shareSocialUrl() + '" /></p>';
-				callout += '</div></div></div></div></div><div id="b_callout_overlay_sharesociallink" class="b_callout_overlay" style="z-index:100;"></div>';
+				callout += '<div id="o_callout_sharesociallink" class="o_callout_area b_clearfix" style="z-index:101;"><div class="b_floatscrollbox"><a name="b_modal"></a><div class="b_callout"><div class="o_callout_top_left_arrow"></div><div class="o_callout_top_left_arrow-border"></div>';
+				callout += '<div id="callout_layer_sharesociallink" class="o_callout_content"><div id="callout_layer_content_sharesociallink">';
+				callout += '<p><span>$r.translate("share.link")</span>:<br/><input id="callout_share_link_in" type="text" name="cl_share_link" size="64" value="' + o_shareSocialUrl() + '" /></p>';
+				callout += '</div></div></div></div></div><div id="o_callout_overlay_sharesociallink" class="o_callout_overlay" style="z-index:100;"></div>';
 			
 				jQuery('body').append(callout);
 				jQuery('#callout_layer_sharesociallink').each(function(index, el) {
-					jQuery(el).parents('div.b_callout_area').next('div.b_callout_overlay').each(function(index2, el2) {
+					jQuery(el).parents('div.o_callout_area').next('div.o_callout_overlay').each(function(index2, el2) {
 						jQuery(el2).click(function() {
-							jQuery('#b_callout_overlay_sharesociallink').remove();
-							jQuery('#b_callout_sharesociallink').remove();
+							jQuery('#o_callout_overlay_sharesociallink').remove();
+							jQuery('#o_callout_sharesociallink').remove();
 						});
 					});
 				});
 				
-				jQuery('#b_callout_sharesociallink').each(function(index, el) {
+				jQuery('#o_callout_sharesociallink').each(function(index, el) {
 					var targetEl = jQuery('#b_link');
 					var targetOffset = targetEl.offset();
 					if(targetOffset) {
