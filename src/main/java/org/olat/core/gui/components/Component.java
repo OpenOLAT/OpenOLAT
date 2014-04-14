@@ -92,4 +92,11 @@ public interface Component {
 	
 	public Event getAndClearLatestFiredEvent();
 
+	/**
+	 * @return true: component does not print DOM ID on element; false:
+	 *         component always outputs an element with the dispatch ID as DOM
+	 *         ID
+	 */
+	public boolean isDomReplacementWrapperRequired();
+
 }

@@ -137,8 +137,7 @@ public class CloseableCalloutWindowController extends BasicController {
 	public CloseableCalloutWindowController(UserRequest ureq,
 			WindowControl wControl, Component calloutWindowContent,
 			Link targetLink, String title, boolean closable, String cssClasses) {
-		this(ureq, wControl, calloutWindowContent, "o_lnk"
-				+ targetLink.getDispatchID(), title, closable, cssClasses);
+		this(ureq, wControl, calloutWindowContent, targetLink.getDispatchID(), title, closable, cssClasses);
 	}
 
 	/**

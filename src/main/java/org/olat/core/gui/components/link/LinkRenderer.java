@@ -252,6 +252,8 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				text = translator.translate(i18n);
 			}
 			sb.append("<span ");
+			if (elementId != null) sb.append(" id=\"").append(elementId).append("\" ");
+			
 			String description = link.getTextReasonForDisabling();
 			// fallback to title
 			if (description == null) description = link.getTitle();

@@ -64,6 +64,7 @@ public abstract class AbstractComponent implements Component {
 	// true when contents have changed since last rendering
 	private boolean dirty = false;
 	private boolean domReplaceable = true;
+	private boolean domReplacementWrapperRequired = true;
 
 	private final List<ComponentEventListener> listeners;
 	private Translator translator;
@@ -410,6 +411,18 @@ public abstract class AbstractComponent implements Component {
 		return this.spanReplaceable;
 	}
 	
+	/**
+	 * @return true: component does not print DOM ID on element; false:
+	 *         component always outputs an element with the dispatch ID as DOM
+	 *         ID
+	 */
+	public boolean isDomReplacementWrapperRequired() {
+		return this.domReplacementWrapperRequired;
+	}
+	public void setDomReplacementWrapperRequired(boolean domReplacementWrapperRequired) {
+		this.domReplacementWrapperRequired = domReplacementWrapperRequired;
+	}
+
 	/**
 	 * to be called only by the container when a child is added
 	 * @param parent

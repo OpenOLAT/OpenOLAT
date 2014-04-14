@@ -153,10 +153,12 @@ public class Link extends AbstractComponent {
 					+ " component: " + getComponentName() 
 					+ " dispatchId: " + getDispatchID());
 		}
-		setElementId("o_lnk"+getDispatchID());
 		// use span wrappers - if the custom layout needs div wrappers this flag has
 		// to be set manually
 		setSpanAsDomReplaceable(true);
+		// Directly use the dispatch ID for DOM replacement to minimize DOM tree
+		setElementId(getDispatchID());
+		setDomReplacementWrapperRequired(false);
 	}
 	
 	/**

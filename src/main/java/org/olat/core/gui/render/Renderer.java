@@ -201,7 +201,8 @@ public class Renderer {
 		// wrap with div's so javascript can replace this component by doing a document.getElementById(cid).innerHTML and so on.
 		boolean domReplaceable = source.isDomReplaceable();
 		boolean useSpan = source.getSpanAsDomReplaceable();
-		boolean forceDebugDivs = gset.isIdDivsForced();
+		boolean domReplacementWrapperRequired = source.isDomReplacementWrapperRequired();
+		boolean forceDebugDivs = gset.isIdDivsForced();		
 
 		if (source.isVisible()) {
 			int lev = renderResult.getNestedLevel();
@@ -210,7 +211,7 @@ public class Renderer {
 			
 			// for ajax mode: render surrounding divs or spans as a positional
 			// identifier for dom replacement
-			if (domReplaceable && (ajaxon || forceDebugDivs)) {
+			if (domReplaceable && domReplacementWrapperRequired && (ajaxon || forceDebugDivs)) {
 				if (useSpan) {
 					sb.append("<span id=\"o_c").append(source.getDispatchID()).append("\">");
 				} else {
@@ -272,7 +273,7 @@ public class Renderer {
 			
 			// close div for the javascript dom replacement
 			
-			if (ajaxon && domReplaceable) {
+			if (ajaxon && domReplaceable && domReplacementWrapperRequired) {
 				if(useSpan){
 					sb.append("</span>");
 				} else{
