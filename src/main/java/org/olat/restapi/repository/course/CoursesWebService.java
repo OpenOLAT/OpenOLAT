@@ -54,7 +54,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -199,13 +198,10 @@ public class CoursesWebService {
 	
 	@Path("{courseId}")
 	public CourseWebService getCourse(@PathParam("courseId") Long courseId) {
-		OLATResource ores = getCourseOLATResource(courseId);
-		if(ores == null) return null;
-		ICourse course = CourseFactory.loadCourse(courseId);
+		ICourse course = loadCourse(courseId);
 		if(course == null) return null;
-		CourseWebService courseWs = new CourseWebService(ores, course);
-		
-		return courseWs;
+		OLATResource ores = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		return new CourseWebService(ores, course);
 	}
 
 	/**
@@ -328,16 +324,6 @@ public class CoursesWebService {
 
 		CourseVO vo = null;
 		return Response.ok(vo).build();
-	}
-	
-	private OLATResource getCourseOLATResource(Long courseId) {
-		String typeName = OresHelper.calculateTypeName(CourseModule.class);
-		OLATResource ores = OLATResourceManager.getInstance().findResourceable(courseId, typeName);
-		if(ores == null && Settings.isJUnitTest()) {
-			//hack for the BGContextManagerImpl which load the course
-			ores = OLATResourceManager.getInstance().findResourceable(courseId, "junitcourse");
-		}
-		return ores;
 	}
 	
 	public static boolean isCourseAccessible(ICourse course, boolean authorRightsMandatory, HttpServletRequest request) {

@@ -56,15 +56,14 @@ import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.resource.OresHelper;
+import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
-import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
+import org.olat.repository.RepositoryManager;
+import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
@@ -92,11 +91,13 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	private RestConnection conn;
 	
 	@Autowired
-	DB dbInstance;
+	private DB dbInstance;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	
 	
 	/**
@@ -113,15 +114,11 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 		id1 = JunitTestHelper.createAndPersistIdentityAsUser("rest-c-g-1");
 		id2 = JunitTestHelper.createAndPersistIdentityAsUser("rest-c-g-2");
 		JunitTestHelper.createAndPersistIdentityAsUser("rest-c-g-3");
-		
-		OLATResourceManager rm = OLATResourceManager.getInstance();
-		// create course and persist as OLATResourceImpl
-		OLATResourceable resourceable = OresHelper.createOLATResourceableInstance("junitcourse",System.currentTimeMillis());
-		OLATResource r =  rm.createOLATResourceInstance(resourceable);
-		rm.saveOLATResource(r);
-		courseRepoEntry =  JunitTestHelper.createAndPersistRepositoryEntry(r, false);
-		dbInstance.saveObject(courseRepoEntry);
+		Identity auth = JunitTestHelper.createAndPersistIdentityAsUser("rest-course-grp-one");
+		ICourse course = CoursesWebService.createEmptyCourse(auth, "course for groups", "course with groups for REST API testing", null);
 		dbInstance.commitAndCloseSession();
+		courseRepoEntry = repositoryManager.lookupRepositoryEntry(course, true);
+
 		
     // create groups without waiting list
     g1 = businessGroupService.createBusinessGroup(null, "rest-g1", null, 0, 10, false, false, courseRepoEntry);
