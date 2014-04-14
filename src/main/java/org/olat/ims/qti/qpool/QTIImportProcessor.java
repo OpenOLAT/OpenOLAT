@@ -79,6 +79,8 @@ class QTIImportProcessor {
 	
 	private static final OLog log = Tracing.createLoggerFor(QTIImportProcessor.class);
 	
+	private static final String OPENOLAT_MOVIE_MARKER = "BPlayer.insertPlayer(";
+	
 	private final Identity owner;
 	private final Locale defaultLocale;
 	private final String importedFilename;
@@ -408,6 +410,8 @@ class QTIImportProcessor {
 	private static class HTMLHandler extends DefaultHandler {
 		private final List<String> materialPath;
 		
+		private StringBuffer scriptBuffer;
+		
 		public HTMLHandler(List<String> materialPath) {
 			this.materialPath = materialPath;
 		}
@@ -419,6 +423,42 @@ class QTIImportProcessor {
 				String imgSrc = attributes.getValue("src");
 				if(StringHelper.containsNonWhitespace(imgSrc)) {
 					materialPath.add(imgSrc);
+				}
+			} else if("script".equals(elem)) {
+				scriptBuffer = new StringBuffer();
+			}
+		}
+
+		@Override
+		public void characters(char[] ch, int start, int length)
+		throws SAXException {
+			if(scriptBuffer != null) {
+				scriptBuffer.append(ch, start, length);
+			}
+		}
+
+		@Override
+		public void endElement(String uri, String localName, String qName)
+		throws SAXException {
+			String elem = localName.toLowerCase();
+			if("script".equals(elem)) {
+				String content = scriptBuffer == null ? "" : scriptBuffer.toString();
+				processScriptContent(content);
+				scriptBuffer = null;
+			}
+		}
+		
+		private void processScriptContent(String content) {
+			int markerIndex = content.indexOf(OPENOLAT_MOVIE_MARKER);
+			if(markerIndex >= 0) {
+				int beginIndex = markerIndex + OPENOLAT_MOVIE_MARKER.length();
+				char quote = content.charAt(beginIndex);
+				int endIndex = content.indexOf(quote, beginIndex + 1);
+				if(endIndex > beginIndex) {
+					String media = content.substring(beginIndex + 1, endIndex);
+					if(StringHelper.containsNonWhitespace(media)) {
+						materialPath.add(media.trim());
+					}
 				}
 			}
 		}

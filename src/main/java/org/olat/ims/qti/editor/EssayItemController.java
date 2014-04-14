@@ -35,6 +35,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.util.Util;
 import org.olat.ims.qti.editor.beecom.objects.EssayQuestion;
 import org.olat.ims.qti.editor.beecom.objects.Item;
@@ -79,7 +80,11 @@ public class EssayItemController extends DefaultController implements Controller
 		essayQuestion = (EssayQuestion) item.getQuestion();
 		main.contextPut("question", essayQuestion);
 		main.contextPut("response", essayQuestion.getEssayResponse());
-		main.contextPut("mediaBaseURL", qtiPackage.getMediaBaseURL());
+		String mediaBaseUrl = qtiPackage.getMediaBaseURL();
+		if(mediaBaseUrl != null && !mediaBaseUrl.startsWith("http")) {
+			mediaBaseUrl = Settings.getServerContextPathURI() + mediaBaseUrl;
+		}
+		main.contextPut("mediaBaseURL", mediaBaseUrl);
 		main.contextPut("isRestrictedEdit", restrictedEdit ? Boolean.TRUE : Boolean.FALSE);
 		main.contextPut("isSurveyMode", qtiPackage.getQTIDocument().isSurvey() ? "true" : "false");
 		

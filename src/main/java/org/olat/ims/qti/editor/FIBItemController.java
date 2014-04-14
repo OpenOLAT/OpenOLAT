@@ -38,6 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dialog.DialogController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.util.Util;
 import org.olat.ims.qti.editor.beecom.objects.FIBQuestion;
 import org.olat.ims.qti.editor.beecom.objects.FIBResponse;
@@ -89,7 +90,12 @@ public class FIBItemController extends DefaultController implements ControllerEv
 		surveyMode = qtiPackage.getQTIDocument().isSurvey();
 		main.contextPut("isSurveyMode", surveyMode ? "true" : "false");
 		main.contextPut("isRestrictedEdit", restrictedEdit ? Boolean.TRUE : Boolean.FALSE);
-		main.contextPut("mediaBaseURL", qtiPackage.getMediaBaseURL());
+		
+		String mediaBaseUrl = qtiPackage.getMediaBaseURL();
+		if(mediaBaseUrl != null && !mediaBaseUrl.startsWith("http")) {
+			mediaBaseUrl = Settings.getServerContextPathURI() + mediaBaseUrl;
+		}
+		main.contextPut("mediaBaseURL", mediaBaseUrl);
 		setInitialComponent(main);
 	}
 

@@ -38,6 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dialog.DialogController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.util.Util;
 import org.olat.ims.qti.editor.beecom.objects.ChoiceQuestion;
 import org.olat.ims.qti.editor.beecom.objects.ChoiceResponse;
@@ -88,7 +89,12 @@ public class ChoiceItemController extends DefaultController implements Controlle
 		main.contextPut("question", item.getQuestion());
 		main.contextPut("isSurveyMode", qtiPackage.getQTIDocument().isSurvey() ? "true" : "false");
 		main.contextPut("isRestrictedEdit", restrictedEdit ? Boolean.TRUE : Boolean.FALSE);
-		main.contextPut("mediaBaseURL", qtiPackage.getMediaBaseURL());
+		
+		String mediaBaseUrl = qtiPackage.getMediaBaseURL();
+		if(mediaBaseUrl != null && !mediaBaseUrl.startsWith("http")) {
+			mediaBaseUrl = Settings.getServerContextPathURI() + mediaBaseUrl;
+		}
+		main.contextPut("mediaBaseURL", mediaBaseUrl);
 		if (item.getQuestion().getType() == Question.TYPE_MC) main.setPage(VC_ROOT + "/tab_mcItem.html");
 		else if (item.getQuestion().getType() == Question.TYPE_KPRIM) main.setPage(VC_ROOT + "/tab_kprimItem.html");
 		setInitialComponent(main);
