@@ -10,6 +10,7 @@
 <meta name="DC.type" content="Interactive Resource" scheme="DCTERMS.DCMIType" />
 <meta name="DC.identifier" content="http://www.openolat.org" scheme="DCTERMS.URI" />
 <meta name="DC.rights" content="http://www.openolat.org" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 <meta http-equiv="cache-control" content="no-cache" />
 <meta http-equiv="pragma" content="no-cache" />
@@ -73,12 +74,33 @@ function b_start(){
 <script type="text/javascript" src='$r.staticLink("js/js.plugins.min.js")'></script>
 <script type="text/javascript" src='$r.staticLink("movie/player.js")'></script>
 
+## Bootstrap js
+## FIXME:oo10 add to minify routine
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+<![endif]-->
+<script type="text/javascript" src='$r.staticLink("bootstrap/3.1.1/javascripts/bootstrap/affix.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/3.1.1/javascripts/bootstrap/alert.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/3.1.1/javascripts/bootstrap/button.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/3.1.1/javascripts/bootstrap/carousel.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/3.1.1/javascripts/bootstrap/collapse.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/3.1.1/javascripts/bootstrap/dropdown.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/3.1.1/javascripts/bootstrap/tab.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/3.1.1/javascripts/bootstrap/transition.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/3.1.1/javascripts/bootstrap/scrollspy.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/3.1.1/javascripts/bootstrap/modal.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/3.1.1/javascripts/bootstrap/tooltip.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/3.1.1/javascripts/bootstrap/popover.js")'></script>
+
 ## Always loaded
 ## <link type="text/css" href='$r.staticLink("js/jquery/tagit/jquery.tagit.css")' rel="stylesheet"/>
 ## <link type="text/css" href='$r.staticLink("js/jquery/uilayout/layout-default-latest.css")' rel="stylesheet"/>
 ## <link type="text/css" href='$r.staticLink("js/jquery/fullcalendar/fullcalendar.css")' rel="stylesheet"/>
 ## <link type="text/css" href='$r.staticLink("js/jquery/datatables/css/jquery.dataTables.css")' rel="stylesheet"/>
-<link type="text/css" href='$r.staticLink("js/js.plugins.min.css")' rel="stylesheet"/>
+## FIXME:oo10 add plugin min
+##<link type="text/css" href='$r.staticLink("js/js.plugins.min.css")' rel="stylesheet"/>
 <link type="text/css" href='$r.staticLink("js/jquery/ui/jquery-ui-1.10.4.custom.min.css")' rel="stylesheet"/>
 
 <script type="text/javascript">
@@ -98,7 +120,7 @@ $r.render("jsCssRawHtmlHeader", "pre-theme")
 ## 2) CSS theme inclusion and favicons
 <link rel="icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
 <link rel="shortcut icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
-<link id="b_theme_css" href="${theme.getBaseURI()}layout.css" rel="stylesheet" type="text/css" />
+<link id="b_theme_css" href="${theme.getBaseURI()}theme.css" rel="stylesheet" type="text/css" />
 ## 3) IE specific bugfixes for current theme
 <!--[if lte IE 7]>
 <link href="${theme.getBaseURI()}patches.css" rel="stylesheet" type="text/css" />
@@ -147,7 +169,7 @@ $r.render("olatContentPanel")
 /* <![CDATA[ */ 
 // init size and listen to text resize events
 jQuery(function() {
-	b_initEmPxFactor(); /*Ext.EventManager.onTextResize(b_initEmPxFactor) */
+	b_initEmPxFactor(); 
 });
 /* ]]> */
 </script>

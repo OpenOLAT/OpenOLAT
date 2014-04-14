@@ -95,7 +95,6 @@ This product uses software based on the Apache Software License like
 * PDFbox (Apache Software License, Version 2.0) [http://pdfbox.apache.org]
 * JavaAssist (Apache Software License or LGPL, MPL) [http://www.jboss.org/javassist]
 * Testng (Apache License, Version 2.0) [http://testng.org]
-* Mockito (MIT License) [http://mockito.org]
 * SeleniumHQ (Apache License, Version 2.0) [http://seleniumhq.org]
 * OpenSAML (Apache License, Version 2.0) [https://wiki.shibboleth.net/confluence/display/OpenSAML/Home]
 * Jaxen (Apache style) [http://jaxen.codehaus.org]
@@ -107,13 +106,19 @@ This product uses software based on the Apache Software License like
 * JCommander (Apache Software License, Version 2.0) [http://jcommander.org]
 * jsr107-cache (Apache Software License, Version 2.0) [http://sourceforge.net/projects/jsr107cache]
 * Apache Ant (Apache Software License, Version 2.0) [http://ant.apache.org]
-* SCORM player project: reload (MIT License) [http://www.reload.ac.uk]
-* Prototype javascript framework (MIT License) [http://www.prototypejs.org]
-* Script.aculo.us javascript framework (MIT License) [http://script.aculo.us]
 * JSMATH latex rendering (Apache Software License, Version 2.0) [http://www.math.union.edu/~dpvc/jsMath]
+* JBoss Infinispan (Apache Software License, Version 2.0) [http://www.jboss.org/infinispan/]
+
+-----------------------------------------------------------------------
+This produce uses softeare based on the MIT License
+* Bootstrap (MIT License) [http://http://getbootstrap.com]
+* Mockito (MIT License) [http://mockito.org]
+* Prototype javascript framework (MIT License) [http://www.prototypejs.org]
+* SCORM player project: reload (MIT License) [http://www.reload.ac.uk]
+* Script.aculo.us javascript framework (MIT License) [http://script.aculo.us]
 * jQuery JavaScript DOM library (MIT License) [http://jquery.com]
 * jQuery-UI JavaScript UI library (MIT License) [http://jqueryui.com]
-* JBoss Infinispan (Apache Software License, Version 2.0) [http://www.jboss.org/infinispan/]
+
 
 -----------------------------------------------------------------------
 This product uses software based on the BSD License
@@ -162,8 +167,6 @@ This product uses software based on the CDDL
 
 -----------------------------------------------------------------------
 This product uses software based on Creative Commons License
-* YAML layout framework (Creative Commons Attribution 2.0 Lizenz, http://creativecommons.org/licenses/by/2.0/de) [http://www.yaml.de]
-  Please read the licensing terms of YAML if you plan to use OLAT in a commercial setup
 * Fugue Icons (Creative Commons Attribution 3.0 License, http://creativecommons.org/licenses/by/3.0/) [http://p.yusukekamiyamane.com]
 * File Type Icons (Creative Commons Attribution-ShareAlike 3.0, Hong Kong) [http://filetypeicons.com]
 
