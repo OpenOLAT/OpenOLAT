@@ -110,10 +110,10 @@
     	var height = data.length * settings.barHeight;
     	$obj.height(height + margin.top + margin.bottom + 'px');
     	
-    	var sum = d3.sum(data, function(d) { return d[1]; });
+    	var sum =  settings.participants;
     	
     	var x = d3.scale.linear()
-    	  .domain([0, d3.max(data, function(d) { return d[1]; })])
+    	  .domain([0, sum])
     	   .range([0, width]);
     	var xAxis = d3.svg.axis()
     	   .scale(x)
@@ -121,7 +121,7 @@
     	   .ticks(10);
     	
     	var x2 = d3.scale.linear()
-    	  .domain([0, d3.max(data, function(d) { return d[1] / sum; })])
+    	  .domain([0, 1])
     	   .range([0, width]);
     	var x2Axis = d3.svg.axis()
     	   .scale(x2)
@@ -187,13 +187,13 @@
     	var placeholderwidth = $obj.width();
     	var data = settings.values.reverse();
     	
-    	var margin = {top: 40, right: 10, bottom: 40, left: 40};
+    	var margin = {top: 40, right: 15, bottom: 40, left: 40};
     	var height = data.length * settings.barHeight;
     	$obj.height(height + margin.top + margin.bottom + 'px');
     	var width = placeholderwidth - margin.left - margin.right;
     	
     	var sum =  settings.participants;
-    	var max = d3.max(data, function(d) { return d[1]; });
+    	var max = sum;
 
     	var x = d3.scale.linear()
     	  .domain([0, max])
@@ -204,7 +204,7 @@
     	   .ticks(max);
     	
     	var x2 = d3.scale.linear()
-    	  .domain([0, d3.max(data, function(d) { return (d[1]) / sum; })])
+    	  .domain([0, 1])
     	   .range([0, width]);
     	var x2Axis = d3.svg.axis()
     	   .scale(x2)
@@ -271,13 +271,13 @@
     	
     	var data = settings.values.reverse();
     	
-    	var margin = {top: 40, right: 10, bottom: 40, left: 40};
+    	var margin = {top: 40, right: 15, bottom: 40, left: 40};
     	var height = data.length * settings.barHeight;
     	$obj.height(height + margin.top + margin.bottom + 'px');
     	var width = placeholderwidth - margin.left - margin.right;
     	
     	var sum = settings.participants;
-    	var max = d3.max(data, function(d) { return d[1] + d[2] + d[3]; });
+    	var max = sum;
 
     	var x = d3.scale.linear()
     	  .domain([0, max])
@@ -288,7 +288,7 @@
     	   .ticks(max);
     	
     	var x2 = d3.scale.linear()
-    	  .domain([0, d3.max(data, function(d) { return (d[1] + d[2] + d[3]) / sum; })])
+    	  .domain([0, 1])
     	   .range([0, width]);
     	var x2Axis = d3.svg.axis()
     	   .scale(x2)
@@ -376,13 +376,13 @@
     	var data = settings.values.reverse();
     	var colors = settings.colors.reverse();
     	
-    	var margin = {top: 40, right: 10, bottom: 40, left: 40};
+    	var margin = {top: 40, right: 15, bottom: 40, left: 40};
     	var height = data.length * settings.barHeight;
     	$obj.height(height + margin.top + margin.bottom + 'px');
     	var width = placeholderwidth - margin.left - margin.right;
     	
-    	var sum = settings.participants;// d3.sum(data, function(d) { return d[1]; });
-    	var max = d3.max(data, function(d) { return d[1]; });
+    	var sum = settings.participants;
+    	var max = sum;
 
     	var x = d3.scale.linear()
     	  .domain([0, max])
@@ -393,7 +393,7 @@
     	   .ticks(max);
     	
     	var x2 = d3.scale.linear()
-    	  .domain([0, d3.max(data, function(d) { return d[1] / sum; })])
+    	  .domain([0, 1])
     	   .range([0, width]);
     	var x2Axis = d3.svg.axis()
     	   .scale(x2)
@@ -464,6 +464,7 @@
     	var placeholderheight = $obj.height();
     	var placeholderwidth = $obj.width();
     	var values = settings.values;
+    	var minTime = d3.min(values, function(d) { return d; });
     	var maxTime = d3.max(values, function(d) { return d; });
     	
     	var timeFormat = '%M:%S';
@@ -485,6 +486,7 @@
     	  .range([0, width]);
     	
     	var data = d3.layout.histogram()
+    	  //.range([0, maxTime])
     	  .bins(x.ticks(20))
     	  (values);
     	

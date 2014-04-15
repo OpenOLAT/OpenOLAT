@@ -1,10 +1,12 @@
+#if($printMode)
+<div class="o_qti_statistics o_qti_statistics_print">
+#else
 <div class="o_qti_statistics">
-#if(!$printMode)
 	<div class="o_buttons_box_right">
 		<script type="text/javascript">
 		function $r.getId("print")() {
 			try {
-				var ww = window.open('$r.commandURI("print")', '$winid', 'height=400, width=800, left=0, top=0, location=no, menubar=no, resizable=yes, scrollbars=yes, toolbar=no');
+				var ww = window.open('$r.commandURI("print")', '$winid', 'height=400, width=600, left=0, top=0, location=no, menubar=no, resizable=yes, scrollbars=yes, toolbar=no');
 				ww.focus();
 			} catch(e) {
 				if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','Error when trying to print qti statistics' , "");
@@ -101,7 +103,7 @@
 </div>
 #end
 
-#if($overviewList)
+#if(!$printMode && $overviewList)
 	#foreach($overview in $overviewList)
 		$r.render($overview)	
 	#end

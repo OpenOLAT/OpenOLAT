@@ -129,11 +129,10 @@ public class SeriesFactory {
 		List<StatisticChoiceOption> statisticResponses = qtiStatisticsManager
 				.getNumOfRightAnsweredMultipleChoice(item, resourceResult.getSearchParams());
 
-		BarSeries d1 = new BarSeries("bar_green", translate("answer.correct"));
-		BarSeries d2 = new BarSeries("bar_red", translate("answer.false"));
-		BarSeries d3 = new BarSeries("bar_grey", translate("answer.noanswer"));
+		BarSeries d1 = new BarSeries("bar_green", "green", translate("answer.correct"));
+		BarSeries d2 = new BarSeries("bar_red", "red", translate("answer.false"));
+		BarSeries d3 = new BarSeries("bar_grey", "grey", translate("answer.noanswer"));
 		
-
 		String mediaBaseURL = resourceResult.getMediaBaseURL();
 		boolean survey = QTIType.survey.equals(resourceResult.getType());
 		int numOfParticipants = resourceResult.getQTIStatisticAssessment().getNumOfParticipants();
@@ -143,13 +142,14 @@ public class SeriesFactory {
 		List<ResponseInfos> responseInfos = new ArrayList<>();
 		for(StatisticChoiceOption statisticResponse:statisticResponses) {
 			Response response = statisticResponse.getResponse();
+			String text = response.getContent().renderAsHtml(mediaBaseURL);
 
 			float points = response.getPoints();
 			double answersPerAnswerOption = statisticResponse.getCount();
 
 			double rightA;
 			double wrongA;
-			if (points >= 0f) {
+			if (points > 0.00001f) {
 				rightA = answersPerAnswerOption;
 				wrongA = numOfParticipants - notAnswered - answersPerAnswerOption;
 			} else {
@@ -163,7 +163,6 @@ public class SeriesFactory {
 			d2.add(wrongA, label);
 			d3.add(notAnswered, label);
 			
-			String text = response.getContent().renderAsHtml(mediaBaseURL);
 			Float pointsObj = survey ? null : points;
 			responseInfos.add(new ResponseInfos(label, text, pointsObj, (points > 0f), survey, false));
 		}
@@ -190,9 +189,9 @@ public class SeriesFactory {
 		int numOfParticipants = resourceResult.getQTIStatisticAssessment().getNumOfParticipants();
 		
 		int i = 0;
-		BarSeries d1 = new BarSeries("bar_green", translate("answer.correct"));
-		BarSeries d2 = new BarSeries("bar_red", translate("answer.false"));
-		BarSeries d3 = new BarSeries("bar_grey", translate("answer.noanswer"));
+		BarSeries d1 = new BarSeries("bar_green", "green", translate("answer.correct"));
+		BarSeries d2 = new BarSeries("bar_red", "red", translate("answer.false"));
+		BarSeries d3 = new BarSeries("bar_grey", "grey", translate("answer.noanswer"));
 
 		List<ResponseInfos> responseInfos = new ArrayList<>();
 		for (StatisticKPrimOption statisticResponse:statisticResponses) {
@@ -225,7 +224,6 @@ public class SeriesFactory {
 	public Series getFIB(Item item) {
 		List<StatisticFIBOption> processedAnswers = qtiStatisticsManager
 				.getStatisticAnswerOptionsFIB(item, resourceResult.getSearchParams());
-		Collections.reverse(processedAnswers);
 
 		boolean survey = QTIType.survey.equals(resourceResult.getType());
 		boolean singleCorrectScore = item.getQuestion().getSingleCorrectScore() > 0.0f;
@@ -233,7 +231,8 @@ public class SeriesFactory {
 
 		int i = 0;
 		String cssColor = survey ? "bar_default" : "bar_green";
-		BarSeries d1 = new BarSeries(cssColor, null);
+		String color = survey ? null : "green";
+		BarSeries d1 = new BarSeries(cssColor, color, null);
 		List<ResponseInfos> responseInfos = new ArrayList<>();
 		for (StatisticFIBOption entry : processedAnswers) {
 

@@ -1,8 +1,37 @@
 <div class="o_qti_statistics">
-	<h3 class="b_with_small_icon_left $series.itemCss">$title</h3>
-	<div class="o_qti_statistics_question">$question</div>
+	<h3 class="b_with_small_icon_left o_mi_qtiessay">$title</h3>
+	#if ($question && $question != "")
+		<div class="o_qti_statistics_question">$question</div>
+	#end
+	#if ($solution && $solution != "")
+		<div class="o_qti_statistics_solution">
+			<h4>$r.translate("solution")</h4>
+			$solution
+		</div>
+	#end
+	
+	<h4>$r.translate("fig.title")</h4>
+	<table class="o_qti_statistics_figures"><tbody>
+		#if($numOfParticipants)
+		<tr><td>$r.translate("fig.participants")</td>
+			<td>$numOfParticipants</td></tr>
+		#end
+		#if($maxScore)
+		<tr><td>$r.translate("chart.maxscore")</td>
+			<td>$maxScore</td></tr>
+		#end
+		#if($averageDuration)
+		<tr><td>$r.translate("fig.averagedur")</td>
+			<td>$averageDuration</td></tr>
+		#end
+		#if($numOfResults)
+		<tr><td>$r.translate("chart.answerscount")</td>
+			<td>$numOfResults</td></tr>
+		#end
+	</tbody></table>
 	
 	#foreach($studentAnswer in $studentAnswers)
+		<hr/>
 		<div>$studentAnswer</div>
 	#end
 </div>

@@ -120,7 +120,7 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 		if(hasEssay) {
 			mainVC.contextPut("hasEssay", Boolean.TRUE);
 		}
-		
+
 		cutValue = getCutValueSetting(testNode);
 		maxScore = getMaxScoreSetting(testNode, items);
 
@@ -245,6 +245,7 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 		VelocityContainer percentRightAnswersPerItemVC = createVelocityContainer("hbar_right_answer_per_item");
 		Stringuified data2 = BarSeries.getDatasAndColors(Collections.singletonList(d2), "bar_green");
 		percentRightAnswersPerItemVC.contextPut("datas", data2);
+		percentRightAnswersPerItemVC.contextPut("numOfParticipants", Long.toString(Math.round(numOfParticipants)));
 		mainVC.put("percentRightAnswersPerItemChart", percentRightAnswersPerItemVC);
 	}
 
@@ -299,6 +300,7 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 				Controller printCtr = new QTI12PrintController(lureq, lwControl, resourceResult);
 				Component view = printCtr.getInitialComponent();
 				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, null, null, view, null);
+				layoutCtr.addCssClassToMain("o_qti_print");
 				return layoutCtr;
 			}					
 		};
