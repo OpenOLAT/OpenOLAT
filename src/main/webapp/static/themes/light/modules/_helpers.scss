@@ -67,22 +67,12 @@ a.o_dev {
 
 }
 
-#o_dev_tool {}
-#o_dev_tool_mode { width: 1em; height: 1em; float: left; border:1px solid #000; margin-right: 5px;}
-#o_dev_tool_compdump {}
-#o_dev_tool_log textarea#o_debug_cons { width: 99%; height: 15em; font-family: monospace; font-size: 110%; margin: 5px 0 5px 0;}
-
-
-/*
-iframe.o_debug_json {
-	position: fixed;
-	width: 90%;
-	margin-left: 5%;
-	bottom: 4px;
-	height: 300px;
-	background: white;
-	border:2px solid #ccd8e7;
-	z-index:90000; //above all ^^
+#o_dev_tool {
+	#o_dev_tool_mode { 
+		width: 1em; 
+		height: 1em; 
+		float: left; 
+		border:1px solid #000; 
+		margin-right: 5px;
+	}
 }
-}
-*/
