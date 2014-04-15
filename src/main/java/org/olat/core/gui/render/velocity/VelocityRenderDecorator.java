@@ -291,7 +291,7 @@ public class VelocityRenderDecorator implements Closeable{
 	}
 
 	/**
-	 * used to position help icon inside div-class b_contexthelp_wrapper
+	 * used to position help icon inside div-class o_chelp_wrapper
 	 * @param packageName
 	 * @param pageName
 	 * @param hoverTextKey
@@ -300,7 +300,7 @@ public class VelocityRenderDecorator implements Closeable{
 	public StringOutput contextHelpWithWrapper(String packageName, String pageName, String hoverTextKey) {
 		StringOutput sb = new StringOutput(100);
 		if (ContextHelpModule.isContextHelpEnabled()) {
-			sb.append("<div class=\"b_contexthelp_wrapper\">");
+			sb.append("<div class=\"o_chelp_wrapper\">");
 			sb.append(contextHelp(packageName, pageName, hoverTextKey));
 			sb.append("</div>");
 		}
@@ -324,7 +324,7 @@ public class VelocityRenderDecorator implements Closeable{
 			sb.append("<a href=\"javascript:contextHelpWindow('");
 			Renderer.renderNormalURI(sb, "help/");
 			sb.append(langCode).append("/").append(packageName).append("/").append(pageName);
-			sb.append("')\" title=\"").append(hooverText).append("\" class=\"b_contexthelp\"></a>");
+			sb.append("')\" title=\"").append(hooverText).append("\" class=\"o_chelp\"><span></span></a>");
 		}
 		return sb;
 	}

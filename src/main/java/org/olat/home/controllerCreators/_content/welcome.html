@@ -35,7 +35,7 @@ function gotoSite(event) {
 	var i=0;
 	for(var offsetParent = Element.getOffsetParent(el); offsetParent.id != 'b_body'; offsetParent = Element.getOffsetParent(offsetParent)) {
 		var posn = Element.positionedOffset(offsetParent);
-		if(offsetParent.id != "b_col3" && offsetParent.id != "b_page") {//ie give it an offset which is the same as _content
+		if(offsetParent.id != "o_main_center" && offsetParent.id != "b_page") {//ie give it an offset which is the same as _content
 			offsetLeft += posn.left;
 			offsetTop += posn.top;
 		}

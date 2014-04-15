@@ -55,7 +55,7 @@ public class LinkLE extends AbstractLayoutElement {
 		setIframeRelativeChildren(iFrameRelativeChildren);
 
 		HashMap<String, Integer> mainRelativeChildren = new HashMap<String, Integer>();
-		mainRelativeChildren.put("#b_main a", 0);
+		mainRelativeChildren.put("#o_main a", 0);
 		setMainRelativeChildren(mainRelativeChildren);
 
 		ArrayList<AbstractLayoutAttribute> avAttribs = new ArrayList<AbstractLayoutAttribute>();

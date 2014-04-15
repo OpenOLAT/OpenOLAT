@@ -127,7 +127,7 @@ class FlexiDataTablesRenderer extends AbstractFlexiTableRenderer implements Comp
       .append("       jQuery(nRow).addClass('b_row_selected');\n")
       .append("     }\n")
       .append("			jQuery(nRow).draggable({ \n")
-      .append("				containment: '#b_main',\n")
+      .append("				containment: '#o_main',\n")
       .append("				zIndex: 10000,\n")
       .append("				cursorAt: {left: 0, top: 0},\n")
       .append("				accept: function(event,ui){ return true; },\n")

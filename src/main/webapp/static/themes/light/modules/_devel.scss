@@ -1,0 +1,66 @@
+#o_dev_tool {
+	#o_dev_tool_mode { 
+		width: 1em; 
+		height: 1em; 
+		float: left; 
+		border:1px solid #000; 
+		margin-right: 5px;
+	}
+}
+
+/* styles for GUI debu mode */
+a.o_dev { 
+	position: absolute; 
+	left: 5px; top: 5px; 
+	z-index:4000; 
+	width: 2em; height: 2em; 
+	
+	span {
+		@extend .glyphicon;
+		@extend .glyphicon-cog;
+		color: #f0ad4e;
+	}
+}
+/* GUI debug wrapper and info box */
+.o_dev_w {
+	margin: 1px;
+	/* handel to initiate the info hover */
+	.o_dev_h {
+		color: #000;
+		font-size: 8px;
+		line-height: 10px;
+		margin: 0;
+		span {
+			background: #f4c37d;
+			border: 1px solid #f0ad4e;
+			border-bottom: 0;
+		}
+	}
+	/* wrapper for the component */
+	.o_dev_c {
+		position: relative;
+		border : 1px dotted $gray-lighter;
+		/* info box */
+		.o_dev_i {
+			position:absolute; 
+			top:0px; left:24px; 
+			height:auto; width:auto; 
+			padding:5px; border: 1px solid black; 
+			display: none;
+			margin: 0px; 
+			z-index:999; 
+			font-size:11px; 
+			background-color: #BBF;
+		}
+	}
+
+	/* marker when hovering over a component */
+	&.o_dev_m {
+		> .o_dev_c {
+			border : 1px solid #f0ad4e;
+			margin : 0px;
+			background-color : #f8e9d4;
+		}
+	}
+
+}

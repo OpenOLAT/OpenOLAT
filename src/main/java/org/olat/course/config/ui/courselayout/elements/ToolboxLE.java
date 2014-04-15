@@ -55,8 +55,8 @@ public class ToolboxLE extends AbstractLayoutElement {
 		setIframeRelativeChildren(iFrameRelativeChildren);
 
 		HashMap<String, Integer> mainRelativeChildren = new HashMap<String, Integer>();
-//		mainRelativeChildren.put("#b_main .b_toolbox", 0);
-		mainRelativeChildren.put("#b_main .b_toolbox a", 0);
+//		mainRelativeChildren.put("#o_main .b_toolbox", 0);
+		mainRelativeChildren.put("#o_main .b_toolbox a", 0);
 		setMainRelativeChildren(mainRelativeChildren);
 
 		ArrayList<AbstractLayoutAttribute> avAttribs = new ArrayList<AbstractLayoutAttribute>();

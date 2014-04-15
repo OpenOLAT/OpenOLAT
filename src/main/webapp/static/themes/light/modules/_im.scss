@@ -1,26 +1,32 @@
+/* Instant Messaging components in navbar */
 #o_navbar_imclient {
 	#o_im_message, 	
 	#o_im_status,
 	#o_im_summary {
 		@extend .pull-left;
+		position: relative;
 		padding: floor($grid-gutter-width / 2) floor($grid-gutter-width / 8);
 	}
 	#o_im_summary {
 		padding-right: floor($grid-gutter-width / 2);
 	}
+	#o_im_status div.o_chelp_wrapper {
+		top: -0.5em;
+	}
 }
 
-
-/* im icons */
+/* Instant Messaging Icons */
 .o_im_available_icon, 
 .o_im_dnd_icon, 
 .o_im_unavailable_icon, 
 .o_im_new_msg_icon,
 .o_im_chat_icon, 
 .o_im_refresh_icon {
-	@extend .glyphicon;	
+	span{
+		@extend .glyphicon;	
+		@extend .o_undecorated;
+	}
 }
-
 .o_im_available_icon span {
 	@extend .glyphicon-star;
 	color: #006633;

@@ -35,17 +35,17 @@
 	
 	
 	/* login site background image */
-	#b_main.o_loginscreen { background-image: none; }
+	#o_main.o_loginscreen { background-image: none; }
 	/* home site background image */
-	#b_main.o_home { background-image: none; }
+	#o_main.o_home { background-image: none; }
 	/* editor background */
-	#b_main.o_editor { background-image: none; }
+	#o_main.o_editor { background-image: none; }
 	
 	/* remove box-shadow if any */
-	#b_main {@include o-box-shadow-none(); border:none;} 
+	#o_main {@include o-box-shadow-none(); border:none;} 
 	
 	/* no borders, no margin, no padding */
-	body,#b_page_margins,#b_page,#b_main,#b_page_wrapper  {margin:0;padding:0;border:0;}
+	body,#b_page_margins,#b_page,#o_main,#b_page_wrapper  {margin:0;padding:0;border:0;}
 	/* a default font for printout */
 	body * {font-family:"Times New Roman", Times, serif;}
 	/* font for code and pre */
@@ -55,15 +55,15 @@
 	/* hide footer, hide topnav, hide main navigation */
 	#b_footer,#b_topnav,#b_nav,#search{display:none}
 	/* hide col1 and col2, make main column without margins */
-	#b_col1, #b_col2 {display:none;}
-	#b_col3 { margin:0 !important; border:none !important;}
+	#o_main_left, #o_main_right {display:none;}
+	#o_main_center { margin:0 !important; border:none !important;}
 
 	.b_c25l,.b_c33l,.b_c38l,.b_c50l,.b_c62l,.b_c66l,.b_c75l,.b_c25r,.b_c33r,.b_c38r,.b_c50r,.b_c62r,.b_c66r,.b_c75r {width:100%;margin:0;float:none;overflow:visible;display:table}
 	.b_subc,.b_subcl,.b_subcr {margin:0;padding:0}
 	
 	h1,h2,h3,h4,h5,h6{page-break-after:avoid}
 	#b_page a[href^="http:"],#b_page a[href^="https:"]{padding-left:0;background-image:none}
-	#b_col1_content:before,#b_col2_content:before,#b_col3_content:before{content:"";color:#888;background:inherit;display:block;font-weight:700;font-size:1.5em}
+	#o_main_left_content:before,#o_main_right_content:before,#o_main_center_content:before{content:"";color:#888;background:inherit;display:block;font-weight:700;font-size:1.5em}
 	.b_floatbox,.b_subcolumns,.b_subcolums_oldgecko{overflow:visible;display:table;}
 	
 	/* hide jsMath print warning */

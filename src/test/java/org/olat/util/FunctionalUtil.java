@@ -108,7 +108,7 @@ public class FunctionalUtil {
 	public final static String OLAT_SITE_USER_MANAGEMENT_CSS = "o_site_useradmin";
 	public final static String OLAT_SITE_ADMINISTRATION_CSS = "o_site_admin";
 
-	public final static String CONTENT_CSS = "b_main";
+	public final static String CONTENT_CSS = "o_main";
 	public final static String CONTENT_TAB_CSS = "b_item_";
 	public final static String ACTIVE_CONTENT_TAB_CSS = "b_active";
 	public final static String CONTENT_SEGMENT_CONTAINER_CSS = "b_segments_container";

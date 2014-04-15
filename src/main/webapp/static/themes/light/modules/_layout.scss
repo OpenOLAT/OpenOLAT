@@ -11,16 +11,3 @@ body {
 	}
 	
 }
-
-#o_toplink {
-	position: absolute;
-	bottom: 10px; right: 10px;
-}
-
-#o_main_wrapper {
-	background: $o-main-outer-bg;
-	#o_main_container {
-		max-width: $o-page-width-max;
-		background: $o-main-inner-bg;
-	}
-}

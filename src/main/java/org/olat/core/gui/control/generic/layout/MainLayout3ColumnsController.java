@@ -43,7 +43,7 @@ public interface MainLayout3ColumnsController extends MainLayoutController {
 	public abstract void addDisposableChildController(Controller toBedisposedControllerOnDispose);
 
 	/**
-	 * Add a css class to the #b_main wrapper div, e.g. for special background
+	 * Add a css class to the #o_main wrapper div, e.g. for special background
 	 * formatting
 	 * 
 	 * @param cssClass
@@ -51,7 +51,7 @@ public interface MainLayout3ColumnsController extends MainLayoutController {
 	public abstract void addCssClassToMain(String cssClass);
 
 	/**
-	 * Remove a CSS class from the #b_main wrapper div
+	 * Remove a CSS class from the #o_main wrapper div
 	 * @param cssClass
 	 */
 	public abstract void removeCssClassFromMain(String cssClass);

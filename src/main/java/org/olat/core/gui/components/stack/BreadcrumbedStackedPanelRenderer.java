@@ -45,7 +45,7 @@ public class BreadcrumbedStackedPanelRenderer extends DefaultComponentRenderer {
 		List<Link> breadCrumbs = panel.getBreadCrumbs();
 		if(breadCrumbs.size() > 1) {
 			String mainCssClass = panel.getCssClass();
-			sb.append("<div id='b_main_toolbar' class='b_clearfix ").append(mainCssClass, mainCssClass != null).append("'>")
+			sb.append("<div id='o_main_toolbar' class='b_clearfix ").append(mainCssClass, mainCssClass != null).append("'>")
 			  .append("<div class='b_breadcumb_path'>")
 			  .append("<ul>");
 			

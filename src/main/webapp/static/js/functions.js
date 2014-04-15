@@ -823,9 +823,9 @@ OPOL.getMainColumnsMaxHeight =  function(){
 	mainInnerHeight = 0,
 	mainHeight = 0,
 	mainDomElement,
-	col1DomElement = jQuery('#b_col1_content'),
-	col2DomElement = jQuery('#b_col2_content'),
-	col3DomElement = jQuery('#b_col3_content');
+	col1DomElement = jQuery('#o_main_left_content'),
+	col2DomElement = jQuery('#o_main_right_content'),
+	col3DomElement = jQuery('#o_main_center_content');
 	
 	if (col1DomElement != 'undefined' && col1DomElement != null) {
 		col1Height = col1DomElement.outerHeight(true);
@@ -844,7 +844,7 @@ OPOL.getMainColumnsMaxHeight =  function(){
 	} 
 	
 	// fallback, try to get height of main container
-	mainDomElement = jQuery('#b_main');
+	mainDomElement = jQuery('#o_main');
 	if (mainDomElement != 'undefined' && mainDomElement != null) { 
 		mainHeight = mainDomElement.height();
 	}
@@ -864,8 +864,8 @@ OPOL.adjustHeight = function() {
 	try {
 		var col1HeightDiff = 0,
 		col2HeightDiff = 0,
-		col1DomElement = jQuery('#b_col1_content'),
-		col2DomElement = jQuery('#b_col2_content');
+		col1DomElement = jQuery('#o_main_left_content'),
+		col2DomElement = jQuery('#o_main_right_content');
 
 		// First calculate the outher fluff (padding, border, margin) and reset height
 		if (col1DomElement != 'undefined' && col1DomElement != null){

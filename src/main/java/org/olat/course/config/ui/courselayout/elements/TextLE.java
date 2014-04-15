@@ -57,9 +57,9 @@ public class TextLE extends AbstractLayoutElement {
 		setIframeRelativeChildren(iFrameRelativeChildren);
 
 		HashMap<String, Integer> mainRelativeChildren = new HashMap<String, Integer>();
-		mainRelativeChildren.put("#b_main", 0);
-		iFrameRelativeChildren.put("#b_main table", 0);
-		iFrameRelativeChildren.put("#b_main ol, #b_main ul, #b_main li", 0);
+		mainRelativeChildren.put("#o_main", 0);
+		iFrameRelativeChildren.put("#o_main table", 0);
+		iFrameRelativeChildren.put("#o_main ol, #o_main ul, #o_main li", 0);
 		setMainRelativeChildren(mainRelativeChildren);
 
 		ArrayList<AbstractLayoutAttribute> avAttribs = new ArrayList<AbstractLayoutAttribute>();

@@ -19,7 +19,7 @@
 		
 		#o_navbar_tabs {
 			li a {
-				padding-right: ($grid-gutter-width);
+				padding-right: $grid-gutter-width;
 			}
 			.o_navbar_tab_close {
 				position: absolute;

@@ -38,12 +38,12 @@ public class MainPanelRenderer extends PanelRenderer {
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
 
-		sb.append("<div id='b_main' class='b_hidecol1 b_hidecol2'>\n")
-		  .append("<div id='b_col3' class='split-pane'>\n")
-		  .append("<div id='b_col3_content' class='b_clearfix'>\n")
+		sb.append("<div id='o_main' class='b_hidecol1 b_hidecol2'>\n")
+		  .append("<div id='o_main_center' class='split-pane'>\n")
+		  .append("<div id='o_main_center_content' class='b_clearfix'>\n")
 		  .append("<a id='b_content' name='content'></a>\n")
-		  .append("<div id='b_col3_content_inner' class='b_floatscrollbox'>\n")
-		  .append("<a name='b_col3'></a>\n");
+		  .append("<div id='o_main_center_content_inner' class='b_floatscrollbox'>\n")
+		  .append("<a name='o_main_center'></a>\n");
 		
 		super.render(renderer, sb, source, ubu, translator, renderResult, args);
 		

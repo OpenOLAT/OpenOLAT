@@ -239,7 +239,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	}
 
 	/**
-	 * Add a css class to the #b_main wrapper div, e.g. for special background
+	 * Add a css class to the #o_main wrapper div, e.g. for special background
 	 * formatting
 	 * 
 	 * @param cssClass
@@ -247,7 +247,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	public void addCssClassToMain(String cssClass) {
 		if (mainCssClasses.contains(cssClass)) {
 			// do nothing and report as error to console, but no GUI error for user
-			getLogger().error("Tried to add CSS class::" + cssClass + " to #b_main but CSS class was already added");
+			getLogger().error("Tried to add CSS class::" + cssClass + " to #o_main but CSS class was already added");
 		} else {
 			mainCssClasses.add(cssClass);
 			// add new CSS classes for main container
@@ -257,7 +257,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	}
 
 	/**
-	 * Remove a CSS class from the #b_main wrapper div
+	 * Remove a CSS class from the #o_main wrapper div
 	 * 
 	 * @param cssClass
 	 */
@@ -269,7 +269,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 			layoutMainVC.contextPut("mainCssClasses", mainCss);
 		} else {
 			// do nothing and report as error to console, but no GUI error for user
-			getLogger().error("Tried to remove CSS class::" + cssClass + " from #b_main but CSS class was not there");
+			getLogger().error("Tried to remove CSS class::" + cssClass + " from #o_main but CSS class was not there");
 		}
 	}
 
@@ -465,7 +465,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	}
 
 	/**
-	 * Helper to generate the CSS classes that are set on the #b_main container to
+	 * Helper to generate the CSS classes that are set on the #o_main container to
 	 * correctly render the column width and margins according to the YAML spec
 	 * 
 	 * @param classes
