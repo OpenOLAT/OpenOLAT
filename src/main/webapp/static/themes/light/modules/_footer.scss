@@ -1,4 +1,4 @@
-#o_footer {
+#o_footer_wrapper {
 	@if $o-footer-position-absolute == true {
 		position: absolute; bottom: 0;
 	}

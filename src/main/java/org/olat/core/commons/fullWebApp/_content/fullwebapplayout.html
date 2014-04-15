@@ -2,7 +2,7 @@
 <div id="o_beta_logo"></div>
 	
 ## ---- START #o_header ---
-<div id="o_header"> 
+<div id="o_header_wrapper"> 
 	<div id="o_logo"></div>
 	<div id="o_right_logo"></div>
 	
@@ -14,7 +14,7 @@
 ## ---- END #o_header ---	
 
 ## ---- START #o_navbar ---
-<div id="o_navbar" class="navbar navbar-default" role="navigation">
+<div id="o_navbar_wrapper" class="navbar navbar-default" role="navigation">
 	<div id="o_navbar_container" class="container-fluid">
 
 	    <div id="o_navbar_header" class="navbar-header">
@@ -48,8 +48,8 @@
 </div>
 #end
 
-## ------ START #o_main -----
-<div id="o_main">
+## ------ START #o_page -----
+<div id="o_main_wrapper">
 	<div id="o_main_container" class="container-fluid">
 		$r.render("main")
 		<a id="o_toplink" href="#o_top" onclick="jQuery('#b_body').scrollTop(0);" title="$r.translateInAttribute("top.alt")">
@@ -61,7 +61,7 @@
 ## END #o_main -----
 
 ## ----- START #b_footer ----------
-<div id="o_footer">
+<div id="o_footer_wrapper">
 	#if($r.available("footerComponent"))
 		$r.render("footerComponent")
 	#end
