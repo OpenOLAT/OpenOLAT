@@ -116,12 +116,20 @@ public class DevelopmentController extends BasicController {
 		// a special case here: these link must work in regular mode (normal uri with full screen refresh (as 
 		// opposed to partial page refresh )in order to switch modes correctly.
 		// (grouping only needed for coloring)
-		modes.add(web10Link = LinkFactory.deAjaxify(LinkFactory.createButtonSmall("web10", myContent, this)));
-		modes.add(web20Link = LinkFactory.deAjaxify(LinkFactory.createButtonSmall("web20", myContent, this)));
-		modes.add(web20hlLink = LinkFactory.deAjaxify(LinkFactory.createButtonSmall("web20hl", myContent, this)));
-		modes.add(web21Link = LinkFactory.deAjaxify(LinkFactory.createButtonSmall("web21", myContent, this)));	
-		modes.add(debugLink = LinkFactory.deAjaxify(LinkFactory.createButtonSmall("debug", myContent, this)));		
-		modes.add(showJson = LinkFactory.deAjaxify(LinkFactory.createButtonSmall("showJson", myContent, this)));
+		modes.add(web10Link = LinkFactory.deAjaxify(LinkFactory.createLink("web10", myContent, this)));
+		modes.add(web20Link = LinkFactory.deAjaxify(LinkFactory.createLink("web20", myContent, this)));
+		modes.add(web20hlLink = LinkFactory.deAjaxify(LinkFactory.createLink("web20hl", myContent, this)));
+		modes.add(web21Link = LinkFactory.deAjaxify(LinkFactory.createLink("web21", myContent, this)));	
+		modes.add(debugLink = LinkFactory.deAjaxify(LinkFactory.createLink("debug", myContent, this)));		
+		modes.add(showJson = LinkFactory.deAjaxify(LinkFactory.createLink("showJson", myContent, this)));
+		if (winMgrImpl.isForScreenReader()) {
+			chosenMode = web21Link;
+		} else if (winMgrImpl.isAjaxEnabled()) {
+			chosenMode = web20Link;			
+		} else {			
+			chosenMode = web10Link;			
+		}
+		updateUI();
 		
 		// commands
 		showComponentTree = LinkFactory.deAjaxify(LinkFactory.createButton("showComponentTree", myContent, this));
@@ -142,7 +150,7 @@ public class DevelopmentController extends BasicController {
 		Component protectedMainPanel = DebugHelper.createDebugProtectedWrapper(mainpanel);
 		
 		devToolLink = LinkFactory.createCustomLink("devTool", "devTool", "", Link.NONTRANSLATED, myContent, this);
-		devToolLink.setCustomEnabledLinkCSS("b_dev o_noprint");
+		devToolLink.setCustomEnabledLinkCSS("o_dev hidden-print");
 		devToolLink.setTitle(translate("devTool"));
 		spacesaverController = new ExpColController(ureq, getWindowControl(), false, protectedMainPanel, devToolLink);
 		
@@ -290,12 +298,8 @@ public class DevelopmentController extends BasicController {
 	private void updateUI() {
 		// update mode.
 		for (Link li : modes) {
-			li.setCustomEnabledLinkCSS("b_button b_small");
-			li.setEnabled(true);
+			myContent.contextPut(li.getComponentName() + "Active", (li == chosenMode ? Boolean.TRUE : Boolean.FALSE));
 		}
-		//(chosenMode.setCustomEnabledLinkCSS("o_main_button_sel");
-		chosenMode.setEnabled(false);
-		chosenMode.setCustomDisabledLinkCSS("b_button b_small");
 		myContent.contextPut("compdump", "");
 		
 	}

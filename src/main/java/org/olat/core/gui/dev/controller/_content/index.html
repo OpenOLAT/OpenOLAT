@@ -1,32 +1,38 @@
-<div id="b_devcon_content">
-		<fieldset class="b_clearfix">
-			<div id="b_devcon_mode" style="background-color: #$sys.modthree();"></div> 
-			(full-page-reload) - Time: $sys.time()
-		</fieldset>
-		<fieldset class="b_clearfix">
-			<ul>
-				<li><strong>Modes</strong></li>
-				<li>$r.render("debug")</li>
-				<li>$r.render("web10")</li>
-				<li>$r.render("web20")</li>
-				<li>$r.render("web20hl")</li>
-				<li>$r.render("showJson")</li>
-				<li>$r.render("web21")</li>
+<div id="o_dev_tool" class="small">
+		<div class="clearfix small">
+			<div class="pull-right">
+				<div id="o_dev_tool_mode" style="background-color: #$sys.modthree();"></div>
+				(full-page-reload) - Time: $sys.time()</div>
+			</div>
+		</div>
+		<fieldset class="clearfix small">
+			<legend>Modes</legend>
+			<ul class="nav nav-pills">
+				<li #if ($debugActive) class="active" #end>$r.render("debug")</li>
+				<li #if ($web10Active) class="active" #end>$r.render("web10")</li>
+				<li #if ($web20Active) class="active" #end>$r.render("web20")</li>
+				<li #if ($web20hlActive) class="active" #end>$r.render("web20hl")</li>
+				<li #if ($showJsonActive) class="active" #end>$r.render("showJson")</li>
+				<li #if ($web21Active) class="active" #end>$r.render("web21")</li>
 			</ul>
-			<ul>
-				<li><strong>Tools</strong></li>
+		</fieldset>
+		<fieldset class="clearfix small">
+			<legend>Tools</legend>
+			<ul class="nav nav-pills">
 				<li>$r.render("showComponentTree")</li>
-				<li><a href="#" onclick="b_toggle_log()" class="b_button"><span>JavaScript console</span></a></li>
+				<li><a href="#" onclick="o_toggle_log()" class="b_button"><span>JavaScript console</span></a></li>
 				#if ($r.available("inlineTrans"))
 				<li>$r.render("inlineTrans")</li>
 				#end
 			</ul>
 		</fieldset>
-		<fieldset class="b_clearfix">
+		
+		<fieldset class="clearfix small">
+			<legend>Bandwidth</legend>
 			$r.render("bandwidth")
 		</fieldset>
 		
-		<fieldset id="b_js_log" class="b_clearfix" style="display:none">
+		<fieldset id="o_dev_tool_log" class="clearfix small" style="display:none">
 			<strong>Console:</strong> (newest msg on top)
 			<form action="#">
 			<textarea id="o_debug_cons"></textarea>
@@ -35,14 +41,14 @@
 		</fieldset>
 		
 		#if( $compdump != "")
-		<fieldset id="b_devcon_compdump">
+		<fieldset id="o_dev_tool_compdump" class="small">
 			$!compdump
 		</fieldset>
 		#end
 </div>
 <script type="text/javascript">
-		function b_toggle_log() {
-			Element.toggle("b_js_log");
+		function o_toggle_log() {
+			jQuery("#o_dev_tool_log").toggle();
 			o_log(null);
 		}
 </script>

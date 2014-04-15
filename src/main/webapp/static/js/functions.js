@@ -913,7 +913,7 @@ function o_debu_show(cn, tt) {
 	if (o_debu_oldcn){
 		o_debu_hide(o_debu_oldcn, o_debu_oldtt);
 	}
-	jQuery(cn).css('border','3px solid #00F').css('margin','0px').css('background-color','#FCFCB8');
+	jQuery(cn).addClass('o_dev_m');
 	jQuery(tt).show();
 
 	o_debu_oldtt = tt;
@@ -922,7 +922,7 @@ function o_debu_show(cn, tt) {
 
 function o_debu_hide(cn, tt) {
 	jQuery(tt).hide();
-	jQuery(cn).css('border','1px dotted black').css('margin','2px').css('background-color','');
+	jQuery(cn).removeClass('o_dev_m');
 }
 
 function o_dbg_mark(elid) {

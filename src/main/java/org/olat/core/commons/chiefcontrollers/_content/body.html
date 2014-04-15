@@ -130,9 +130,6 @@ $r.render("jsCssRawHtmlHeader", "post-theme")
 ## 5) Add user font size
 <style id="b_fontSize_css" type="text/css">#b_page_margins{font-size:${globalSettings.getFontSize()}%}</style>
 ## 6) Add special CSS for web2.a screen reader mode
-#if ($isScreenReader)
-<link id="b_theme_reader_css" href="${theme.getBaseURI()}screenreader.css" rel="stylesheet" type="text/css" />
-#end
 
 ## deprecated - include any raw header
 $r.renderHeaderIncludes()

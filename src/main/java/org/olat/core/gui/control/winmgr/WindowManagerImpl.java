@@ -108,15 +108,6 @@ public class WindowManagerImpl extends BasicManager implements WindowManager {
 				return WindowManagerImpl.this.isIdDivsForced();
 			}
 		};
-			
-		// add special classes for screenreader rendering
-		//FIXME:FG: add support for multiple renderers (screenreader / iphone)
-		// 1) move to a config file
-		// 2) don't hardcode the theme (allow also iphone theme)
-		// 3) check which special renderer are really needed
-		//screenReaderRenderers.put(MenuTree.class, new MenuTreeScreenreaderRenderer());
-		screenReaderRenderers.put(VelocityContainer.class, new VelocityContainerRenderer("screenreader"));	
-		//screenReaderRenderers.put(TabbedPane.class, new TabbedPaneScreenreaderRenderer());
 	}
 	
 	public void setForScreenReader(boolean forScreenReader) {
