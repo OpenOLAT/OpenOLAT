@@ -816,7 +816,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			menuTree.setSelectedNodeId(rootNodeIdent);
 			updateViewForSelectedNodeId(ureq, rootNodeIdent);
 			if(event == Event.CHANGED_EVENT){					
-				showInfo("pbl.success", null);
+				showInfo("pbl.success");
 				// do logging
 				ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_PUBLISHED, getClass());
 			}//else Event.DONE -> nothing changed / else Event.CANCELLED -> cancelled wizard	

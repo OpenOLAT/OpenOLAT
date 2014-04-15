@@ -282,7 +282,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			if (qtiPackage.getQTIDocument() == null) {
 				notEditable = true;				
 			} else if (qtiPackage.isResumed()) {
-				showInfo("info.resumed", null);
+				showInfo("info.resumed");
 			}
 			//
 			init(ureq); // initialize the gui
