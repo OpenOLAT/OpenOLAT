@@ -637,7 +637,9 @@ public class GroupController extends BasicController {
 		
 		// in the end
 		if (enableTablePreferences) {
-			tableCtr.addColumnDescriptor(true, new DefaultColumnDescriptor("table.subject.addeddate", 2, COMMAND_VCARD, ureq.getLocale()));
+			DefaultColumnDescriptor dcd =  new DefaultColumnDescriptor("table.subject.addeddate", 2, COMMAND_VCARD, ureq.getLocale());
+			dcd.setIsPopUpWindowAction(true, "height=700, width=900, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
+			tableCtr.addColumnDescriptor(true, dcd);
 			tableCtr.setSortColumn(++visibleColId,true);	
 		}
 		if (enableUserSelection) {
