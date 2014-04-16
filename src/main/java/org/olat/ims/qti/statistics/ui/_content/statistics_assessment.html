@@ -19,7 +19,7 @@
 		$r.render("download")
 	</div>
 	#if($hasEssay)
-		<div class="b_warning">$r.translate("essay.warning")</div>
+		<div class="b_warning">#if($type == "survey") $r.translate("essay.warning.survey") #else $r.translate("essay.warning.test") #end</div>
 	#end
 #end
 <h4>$r.translate("fig.title")</h4>

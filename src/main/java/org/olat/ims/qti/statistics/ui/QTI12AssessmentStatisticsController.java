@@ -111,7 +111,7 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 		for(Section section:qtiDocument.getAssessment().getSections()) {
 			for(Item item:section.getItems()) {
 				items.add(item);
-				if(item.getQuestion().getType() == Question.TYPE_FIB) {
+				if(item.getQuestion().getType() == Question.TYPE_ESSAY) {
 					hasEssay = true;
 				}
 			}

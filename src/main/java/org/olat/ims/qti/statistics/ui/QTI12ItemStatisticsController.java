@@ -37,6 +37,7 @@ import org.olat.ims.qti.editor.beecom.objects.FIBResponse;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.Question;
 import org.olat.ims.qti.editor.beecom.objects.Response;
+import org.olat.ims.qti.editor.beecom.objects.Section;
 import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
 import org.olat.ims.qti.statistics.QTIStatisticsManager;
@@ -63,7 +64,7 @@ public class QTI12ItemStatisticsController extends BasicController {
 	private final SeriesFactory seriesfactory;
 	
 	public QTI12ItemStatisticsController(UserRequest ureq, WindowControl wControl,
-			Item item, QTIStatisticResourceResult resourceResult, boolean printMode) {
+			Section section, Item item, QTIStatisticResourceResult resourceResult, boolean printMode) {
 		super(ureq, wControl);
 		this.item = item;
 		seriesfactory = new SeriesFactory(resourceResult, getTranslator());
@@ -85,6 +86,9 @@ public class QTI12ItemStatisticsController extends BasicController {
 		}
 		mainVC.put("d3loader", new StatisticsComponent("d3loader"));
 		mainVC.contextPut("title", item.getTitle());
+		if(section != null) {
+			mainVC.contextPut("sectionTitle", section.getTitle());
+		}
 		mainVC.contextPut("questionType", item.getQuestion().getType());
 		mainVC.contextPut("question", getQuestion());
 		mainVC.contextPut("numOfParticipants", resourceResult.getQTIStatisticAssessment().getNumOfParticipants());

@@ -6,6 +6,7 @@ jQuery(function () {
 		values: [$series.datas.data],
 		colors: #if($series.colorsCustom) [$series.datas.colors] #else null #end,
 		participants: $series.numOfParticipants,
+		barHeight: 20,
 		xTopLegend: '$r.translate("chart.percent.participants.num")',
 		xBottomLegend: '$r.translate("chart.percent.participants")',
 		yLeftLegend: '$r.translate("chart.item")',

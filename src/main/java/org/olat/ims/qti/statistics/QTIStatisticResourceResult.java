@@ -29,6 +29,7 @@ import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -158,8 +159,13 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 		} else if(selectedNode instanceof SectionNode) {
 			return createAssessmentController(ureq, wControl, printMode);	
 		} else if(selectedNode instanceof ItemNode) {
+			Section section = null;
+			INode sectionNode = selectedNode.getParent();
+			if(sectionNode instanceof SectionNode) {
+				section = (Section) ((SectionNode)sectionNode).getUserObject();
+			}
 			Item item = (Item)((ItemNode)selectedNode).getUserObject();
-			return createItemController(ureq, wControl, item, printMode);
+			return createItemController(ureq, wControl, section, item, printMode);
 		}
 		return null;
 	}
@@ -177,12 +183,8 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 		return TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, courseNode, iconCssClass);
 	}
 	
-	private Controller createItemController(UserRequest ureq, WindowControl wControl, Item item, boolean printMode) {
-		if(type == QTIType.survey) {
-			return new QTI12ItemStatisticsController(ureq, wControl, item, this, printMode);
-		} else {
-			return new QTI12ItemStatisticsController(ureq, wControl, item, this, printMode);
-		}
+	private Controller createItemController(UserRequest ureq, WindowControl wControl, Section section, Item item, boolean printMode) {
+		return new QTI12ItemStatisticsController(ureq, wControl, section, item, this, printMode);
 	}
 	
 	private void buildQTICourseNodeSubTree(QTIDocument qtiDocument, GenericTreeNode rootNode) {	

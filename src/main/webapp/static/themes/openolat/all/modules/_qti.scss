@@ -23,14 +23,10 @@ div.o_qti_statistics {
 			padding-left: 48px; 
 			margin-left: 0;
 			margin-bottom: 10px;	
-		
-			&.o_qti_statistics-survey-item 	{ padding-left: 27px; }
-			&.o_qti_statistics-ncorrect 	{ padding-left: 27px; background: url(../openolat/images/decorator/deco_error.png) no-repeat 10px 2px }
-			&.o_qti_statistics-correct 		{ padding-left: 27px; background: url(../openolat/images/decorator/deco_ok.png) no-repeat 10px 2px }
-			&.o_qti_statistics-kplus		{ padding-left: 27px; }
-			&.o_qti_statistics-kplus:before { content:'+'; }
-			&.o_qti_statistics-kminus 		{ padding-left: 27px; }
-			&.o_qti_statistics-kminus:before{ content:'-'; }
+			&.o_qti_statistics-ncorrect:before { font-size: 125%; content:'\2A2F\00A0\00A0'; }
+			&.o_qti_statistics-correct:before { font-size: 125%; content:'\2713\00A0\00A0'; }
+			&.o_qti_statistics-kplus:before { font-size: 125%; content:'\2713\00A0\2A2F\00A0\00A0'; }
+			&.o_qti_statistics-kminus:before { font-size: 125%; content:'\2A2F\00A0\2713\00A0\00A0'; }
 			img { vertical-align: top;}
 		}
 	}
@@ -46,13 +42,6 @@ div.o_qti_statistics {
 		td+td { width: 100px; }
 	}
 	
-	.o_qti_statistics_question {
-		background: #F5F5F5;
-		padding: 10px; 
-		margin: 1.5em 0; 
-		border:1px solid #ccc; 
-		@include o-border-radius(4px);
-	}
 	.o_qti_statistics_answer {
 		background: #F5F5F5;
 		padding: 1px 2px;
@@ -62,7 +51,7 @@ div.o_qti_statistics {
 	div.o_qti_statistics_legend {
 		padding: 10px;
 		margin: 0 auto;
-		width: 250px;
+		width: 270px;
 		height: 1.2em;
 		border: 1px solid #ccc;
 		@include o-border-radius(4px);
@@ -84,19 +73,21 @@ div.o_qti_statistics {
 	}
 }
 /* Instead of media print because Firefox doesn't take some rules in account */
-.o_qti_print {
-	h3.o_iqself_icon:before { content: url(../openolat/images/le_resources/selftest.png); }
-	h3.o_iqsurv_icon:before { content: url(../openolat/images/le_resources/survey.png); }
-	h3.o_iqtest_icon:before { content: url(../openolat/images/le_resources/test.png); }
-	
+.o_qti_print div.o_qti_statistics { width:680px; }
+
+@media print {
+	h3.o_iqself_icon:before { content: url(../openolat/images/le_resources/selftest.png); margin-right:6px; }
+	h3.o_iqsurv_icon:before { content: url(../openolat/images/le_resources/survey.png); margin-right:6px; }
+	h3.o_iqtest_icon:before { content: url(../openolat/images/le_resources/test.png); margin-right:6px; }
+
 	div.o_qti_statistics {
 		width:680px;
 
-		h3.o_mi_qtisc:before { content: url(../openolat/images/qti/scItem.png); }
-		h3.o_mi_qtimc:before { content: url(../openolat/images/qti/mcItem.png); }
-		h3.o_mi_qtikprim:before { content: url(../openolat/images/qti/kprimItem.png); }
-		h3.o_mi_qtifib:before { content: url(../openolat/images/qti/fibItem.png); }
-		h3.o_mi_qtiessay:before { content: url(../openolat/images/qti/essayItem.png); }
+		h3.o_mi_qtisc:before { content: url(../openolat/images/qti/scItem.png); margin-right:6px; }
+		h3.o_mi_qtimc:before { content: url(../openolat/images/qti/mcItem.png); margin-right:6px; }
+		h3.o_mi_qtikprim:before { content: url(../openolat/images/qti/kprimItem.png); margin-right:6px; }
+		h3.o_mi_qtifib:before { content: url(../openolat/images/qti/fibItem.png); margin-right:6px; }
+		h3.o_mi_qtiessay:before { content: url(../openolat/images/qti/essayItem.png); margin-right:6px; }
 	}
 }
 
