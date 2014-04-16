@@ -163,11 +163,13 @@ public class DropboxScoringViewController extends BasicController {
 		
 		myContent.put("dropbox", dropboxFolderRunController.getInitialComponent());
 
+		Identity assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
 		// returnbox display
 		OlatRootFolderImpl rootReturnbox = new OlatRootFolderImpl(getReturnboxFilePath(assesseeName), null);
-		rootReturnbox.setLocalSecurityCallback( getReturnboxVfsSecurityCallback(rootReturnbox.getRelPath()) );
+		VFSSecurityCallback secCallback = getReturnboxVfsSecurityCallback(rootReturnbox.getRelPath(), assessedIdentity);
+		rootReturnbox.setLocalSecurityCallback(secCallback);
 		OlatNamedContainerImpl namedReturnbox = new OlatNamedContainerImpl(assesseeFullName, rootReturnbox);
-		namedReturnbox.setLocalSecurityCallback(getReturnboxVfsSecurityCallback(rootReturnbox.getRelPath()));
+		namedReturnbox.setLocalSecurityCallback(secCallback);
 
 		returnboxFolderRunController = new FolderRunController(namedReturnbox, false, ureq, getWindowControl());
 		returnboxFolderRunController.disableSubscriptionController();
@@ -188,7 +190,7 @@ public class DropboxScoringViewController extends BasicController {
 			myContent.put("statusForm",statusForm.getInitialComponent());
 		}
 		
-		assignedTask = TaskController.getAssignedTask(userCourseEnv.getIdentityEnvironment().getIdentity(), userCourseEnv.getCourseEnvironment(), node);
+		assignedTask = TaskController.getAssignedTask(assessedIdentity, userCourseEnv.getCourseEnvironment(), node);
 		if (assignedTask != null) {
 			myContent.contextPut("assignedtask", assignedTask);
 			if (!(assignedTask.toLowerCase().endsWith(".html") || assignedTask.toLowerCase().endsWith(".htm") || assignedTask.toLowerCase().endsWith(".txt"))){
@@ -201,9 +203,9 @@ public class DropboxScoringViewController extends BasicController {
 		return new ReadOnlyAndDeleteCallback();
 	}
 
-	protected VFSSecurityCallback getReturnboxVfsSecurityCallback(String returnboxRelPath) {
+	protected VFSSecurityCallback getReturnboxVfsSecurityCallback(String returnboxRelPath, Identity assessedIdentity) {
 		SubscriptionContext subscriptionContext = ReturnboxFileUploadNotificationHandler
-				.getSubscriptionContext(userCourseEnv.getCourseEnvironment(), node, getIdentity());
+				.getSubscriptionContext(userCourseEnv.getCourseEnvironment(), node, assessedIdentity);
 		return new ReturnboxFullAccessCallback(returnboxRelPath, subscriptionContext);
 	}
 
