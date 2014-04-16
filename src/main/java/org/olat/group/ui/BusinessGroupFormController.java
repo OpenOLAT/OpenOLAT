@@ -215,7 +215,7 @@ public class BusinessGroupFormController extends FormBasicController {
 			Integer minimumMembers = businessGroup.getMinParticipants();
 			Integer maximumMembers = businessGroup.getMaxParticipants();
 			businessGroupMinimumMembers.setValue(minimumMembers == null || minimumMembers.intValue() <= 0 ? "" : minimumMembers.toString());
-			businessGroupMaximumMembers.setValue(maximumMembers == null || maximumMembers.intValue() <= 0 ? "" : maximumMembers.toString());
+			businessGroupMaximumMembers.setValue(maximumMembers == null || maximumMembers.intValue() < 0 ? "" : maximumMembers.toString());
 			if (businessGroup.getWaitingListEnabled() != null) {
 				enableWaitingList.select("create.form.enableWaitinglist", businessGroup.getWaitingListEnabled());
 			}
