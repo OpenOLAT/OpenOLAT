@@ -197,27 +197,27 @@ public class MetaInfoFormController extends FormBasicController {
 		MetaInfo meta = item == null ? null : metaInfoFactory.createMetaInfoFor((OlatRelPathImpl)item);
 
 		// title
-		String titleVal = StringHelper.escapeHtml(meta != null ? meta.getTitle() : null);
+		String titleVal = (meta != null ? meta.getTitle() : null);
 		title = uifactory.addTextElement("title", "mf.title", -1, titleVal, formLayout);
 
 		// comment/description
-		String commentVal =  StringHelper.xssScan(meta != null ? meta.getComment() : null);
+		String commentVal = (meta != null ? meta.getComment() : null);
 		comment = uifactory.addTextAreaElement("comment", "mf.comment", -1, 3, 1, true, commentVal, formLayout);
 
 		// creator
-		String creatorVal = StringHelper.escapeHtml(meta != null ? meta.getCreator() : null);
+		String creatorVal = (meta != null ? meta.getCreator() : null);
 		creator = uifactory.addTextElement("creator", "mf.creator", -1, creatorVal, formLayout);
 
 		// publisher
-		String publisherVal = StringHelper.escapeHtml(meta != null ? meta.getPublisher() : null);
+		String publisherVal = (meta != null ? meta.getPublisher() : null);
 		publisher = uifactory.addTextElement("publisher", "mf.publisher", -1, publisherVal, formLayout);
 
 		// source/origin
-		String sourceVal = StringHelper.escapeHtml(meta != null ? meta.getSource() : null);
+		String sourceVal = (meta != null ? meta.getSource() : null);
 		source = uifactory.addTextElement("source", "mf.source", -1, sourceVal, formLayout);
 
 		// city
-		String cityVal = StringHelper.escapeHtml(meta != null ? meta.getCity() : null);
+		String cityVal = (meta != null ? meta.getCity() : null);
 		city = uifactory.addTextElement("city", "mf.city", -1, cityVal, formLayout);
 
 		// publish date
@@ -235,15 +235,15 @@ public class MetaInfoFormController extends FormBasicController {
 		publicationYear.setDisplaySize(4);
 
 		// number of pages
-		String pageVal = StringHelper.escapeHtml(meta != null ? meta.getPages() : null);
+		String pageVal = (meta != null ? meta.getPages() : null);
 		pages = uifactory.addTextElement("pages", "mf.pages", -1, pageVal, formLayout);
 
 		// language
-		String langVal = StringHelper.escapeHtml(meta != null ? meta.getLanguage() : null);
+		String langVal = (meta != null ? meta.getLanguage() : null);
 		language = uifactory.addTextElement("language", "mf.language", -1, langVal, formLayout);
 
 		// url/link
-		String urlVal = StringHelper.escapeHtml(meta != null ? meta.getUrl() : null);
+		String urlVal = (meta != null ? meta.getUrl() : null);
 		url = uifactory.addTextElement("url", "mf.url", -1, urlVal, formLayout);
 
 		/* static fields */
