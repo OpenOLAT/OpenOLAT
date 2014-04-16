@@ -41,7 +41,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -60,19 +59,15 @@ import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.mail.MailPackage;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
-import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.cal.CourseCalendars;
@@ -104,7 +99,6 @@ import com.thoughtworks.xstream.XStream;
  * Initial Date:  27 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-@Path("repo/courses/{courseId}")
 public class CourseWebService {
 
 	private static final OLog log = Tracing.createLoggerFor(CourseWebService.class);
@@ -128,9 +122,9 @@ public class CourseWebService {
 
 	/**
 	 * The version of the Course Web Service
-   * @response.representation.200.mediaType text/plain
-   * @response.representation.200.doc The version of this specific Web Service
-   * @response.representation.200.example 1.0
+	 * @response.representation.200.mediaType text/plain
+	 * @response.representation.200.doc The version of this specific Web Service
+	 * @response.representation.200.example 1.0
 	 * @return
 	 */
 	@GET
@@ -141,13 +135,9 @@ public class CourseWebService {
 	}
 	
 	@Path("groups")
-	public CourseGroupWebService getCourseGroupWebService(@PathParam("courseId") Long courseId) {
-		OLATResource ores = getCourseOLATResource(courseId);
-		if(ores == null) {
-			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
-		}
-		RepositoryEntry re = getCourseEntry(ores);
-		return new CourseGroupWebService(re, ores);
+	public CourseGroupWebService getCourseGroupWebService() {
+		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(courseOres, false);
+		return new CourseGroupWebService(re, courseOres);
 	}
 	
 	@Path("calendar")
@@ -163,12 +153,11 @@ public class CourseWebService {
 	/**
 	 * Publish the course.
 	 * @response.representation.200.qname {http://www.example.com}courseVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The metadatas of the created course
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSEVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The metadatas of the created course
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSEVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course not found
-	 * @param courseId The course resourceable's id
+	 * @response.representation.404.doc The course not found
 	 * @param locale The course locale
 	 * @param request The HTTP request
 	 * @return It returns the metadatas of the published course.
@@ -176,7 +165,7 @@ public class CourseWebService {
 	@POST
 	@Path("publish")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response publishCourse(@PathParam("courseId") Long courseId, @QueryParam("locale") Locale locale,
+	public Response publishCourse(@QueryParam("locale") Locale locale,
 			@QueryParam("access") Integer access, @QueryParam("membersOnly") Boolean membersOnly,
 			@Context HttpServletRequest request) {
 		if(!isAuthor(request)) {
@@ -184,10 +173,7 @@ public class CourseWebService {
 		}
 
 		UserRequest ureq = getUserRequest(request);
-		ICourse course = loadCourse(courseId);
-		if(course == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if (!isAuthorEditor(course, request)) {
+		if (!isAuthorEditor(course, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -197,56 +183,42 @@ public class CourseWebService {
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
 	}
-	
-
 
 	/**
 	 * Get the metadatas of the course by id
 	 * @response.representation.200.qname {http://www.example.com}courseVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The metadatas of the created course
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSEVO}
-   * @response.representation.404.doc The course not found
-	 * @param courseId The course resourceable's id
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The metadatas of the created course
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSEVO}
+	 * @response.representation.404.doc The course not found
 	 * @return It returns the <code>CourseVO</code> object representing the course.
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response findById(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest) {
-		ICourse course = loadCourse(courseId);
-		if(course == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if (!isCourseAccessible(course, false, httpRequest)) {
+	public Response findById(@Context HttpServletRequest httpRequest) {
+		if (!isCourseAccessible(course, false, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
 	}
 	
-  /**
-   * Export the course
-   * @response.representation.200.mediaType application/zip
-   * @response.representation.200.doc The course as a ZIP file
-   * @response.representation.401.doc Not authorized to export the course
-   * @response.representation.404.doc The course not found
-   * @param courseId The course resourceable's id
+	/**
+	 * Export the course
+	 * @response.representation.200.mediaType application/zip
+	 * @response.representation.200.doc The course as a ZIP file
+	 * @response.representation.401.doc Not authorized to export the course
+	 * @response.representation.404.doc The course not found
 	 * @return It returns the <code>CourseVO</code> object representing the course.
 	 */
-
-	
 	@GET
 	@Path("file")
 	@Produces({ "application/zip", MediaType.APPLICATION_OCTET_STREAM })
-	public Response getRepoFileById(@PathParam("courseId") Long courseId, @Context HttpServletRequest request) {
+	public Response getRepoFileById(@Context HttpServletRequest request) {
 		if(!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		
-		ICourse course = loadCourse(courseId);
-		if(course == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}
-		
+
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = rm.lookupRepositoryEntry(course, true);
@@ -299,47 +271,37 @@ public class CourseWebService {
 
 	/**
 	 * Delete a course by id
-   * @response.representation.200.doc The metadatas of the created course
+	 * @response.representation.200.doc The metadatas of the created course
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course not found
-	 * @param courseId The course resourceable's id
+	 * @response.representation.404.doc The course not found
 	 * @param request The HTTP request
 	 * @return It returns the XML representation of the <code>Structure</code>
 	 *         object representing the course.
 	 */
 	@DELETE
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response deleteCourse(@PathParam("courseId") Long courseId, @Context HttpServletRequest request) {
+	public Response deleteCourse(@Context HttpServletRequest request) {
 		if(!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
-		ICourse course = loadCourse(courseId);
-		if(course == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if (!isAuthorEditor(course, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		UserRequest ureq = getUserRequest(request);
-		
-		//fxdiff
 		ErrorWindowControl error = new ErrorWindowControl();
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry re = rm.lookupRepositoryEntry(course, true);
 		rm.deleteRepositoryEntryWithAllData(ureq, error, re);
-		
 		return Response.ok().build();
 	}
 	
 	/**
 	 * Get the configuration of the course
 	 * @response.representation.200.qname {http://www.example.com}courseConfigVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The configuration of the course
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSECONFIGVO}
-   * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course not found
-	 * @param courseId The course resourceable's id
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The configuration of the course
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_COURSECONFIGVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The course not found
 	 * @param request The HTTP request
 	 * @return It returns the XML representation of the <code>Structure</code>
 	 *         object representing the course.
@@ -347,14 +309,9 @@ public class CourseWebService {
 	@GET
 	@Path("configuration")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getConfiguration(@PathParam("courseId") Long courseId, @Context HttpServletRequest request) {
+	public Response getConfiguration(@Context HttpServletRequest request) {
 		if(!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
-		ICourse course = loadCourse(courseId);
-		if(course == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if (!isAuthorEditor(course, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
@@ -425,11 +382,10 @@ public class CourseWebService {
 	
 	/**
 	 * Get the runstructure of the course by id
-   * @response.representation.200.mediaType application/xml
-   * @response.representation.200.doc The run structure of the course
+	 * @response.representation.200.mediaType application/xml
+	 * @response.representation.200.doc The run structure of the course
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course not found
-	 * @param courseId The course resourceable's id
+	 * @response.representation.404.doc The course not found
 	 * @param httpRequest The HTTP request
 	 * @param request The REST request
 	 * @return It returns the XML representation of the <code>Structure</code>
@@ -438,20 +394,13 @@ public class CourseWebService {
 	@GET
 	@Path("runstructure")
 	@Produces(MediaType.APPLICATION_XML)
-	public Response findRunStructureById(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest, @Context Request request) {
-		if(!isAuthor(httpRequest)) {
+	public Response findRunStructureById(@Context HttpServletRequest httpRequest, @Context Request request) {
+		if (!isAuthorEditor(course, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		ICourse course = loadCourse(courseId);
-		if(course == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if (!isAuthorEditor(course, httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
 		VFSItem runStructureItem = course.getCourseBaseContainer().resolve("runstructure.xml");
 		Date lastModified = new Date(runStructureItem.getLastModified());
-		
 		Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
 		if(response == null) {
 			return Response.ok(myXStream.toXML(course.getRunStructure())).build();
@@ -461,11 +410,10 @@ public class CourseWebService {
 	
 	/**
 	 * Get the editor tree model of the course by id
-   * @response.representation.200.mediaType application/xml
-   * @response.representation.200.doc The editor tree model of the course
+	 * @response.representation.200.mediaType application/xml
+	 * @response.representation.200.doc The editor tree model of the course
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course not found
-	 * @param courseId The course resourceable's id
+	 * @response.representation.404.doc The course not found
 	 * @param httpRequest The HTTP request
 	 * @param request The REST request
 	 * @return It returns the XML representation of the <code>Editor model</code>
@@ -474,15 +422,8 @@ public class CourseWebService {
 	@GET
 	@Path("editortreemodel")
 	@Produces(MediaType.APPLICATION_XML)
-	public Response findEditorTreeModelById(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest, @Context Request request) {
-		if(!isAuthor(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
-		ICourse course = loadCourse(courseId);
-		if(course == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if (!isAuthorEditor(course, httpRequest)) {
+	public Response findEditorTreeModelById(@Context HttpServletRequest httpRequest, @Context Request request) {
+		if (!isAuthorEditor(course, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		VFSItem editorModelItem = course.getCourseBaseContainer().resolve("editortreemodel.xml");
@@ -498,26 +439,18 @@ public class CourseWebService {
 	/**
 	 * Get all owners and authors of the course
 	 * @response.representation.200.qname {http://www.example.com}userVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The array of authors
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The array of authors
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course not found
-	 * @param courseId The course resourceable's id
+	 * @response.representation.404.doc The course not found
 	 * @param httpRequest The HTTP request
 	 * @return It returns an array of <code>UserVO</code>
 	 */
 	@GET
 	@Path("authors")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getAuthors(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest) {
-		if(!isAuthor(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
-		OLATResourceable course = getCourseOLATResource(courseId);
-		if(course == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if (!isAuthorEditor(course, httpRequest)) {
+	public Response getAuthors(@Context HttpServletRequest httpRequest) {
+		if (!isAuthorEditor(course, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -539,11 +472,10 @@ public class CourseWebService {
 	/**
 	 * Get this specific author and owner of the course
 	 * @response.representation.200.qname {http://www.example.com}userVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The author
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The author
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course not found or the user is not an onwer or author of the course
-	 * @param courseId The course resourceable's id
+	 * @response.representation.404.doc The course not found or the user is not an onwer or author of the course
 	 * @param identityKey The user identifier
 	 * @param httpRequest The HTTP request
 	 * @return It returns an <code>UserVO</code>
@@ -551,23 +483,15 @@ public class CourseWebService {
 	@GET
 	@Path("authors/{identityKey}")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getAuthor(@PathParam("courseId") Long courseId, @PathParam("identityKey") Long identityKey,
+	public Response getAuthor(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
-		if(!isAuthor(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
-		OLATResourceable course = getCourseOLATResource(courseId);
-		if(course == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if (!isAuthorEditor(course, httpRequest)) {
+		if (!isAuthorEditor(course, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry repositoryEntry = rm.lookupRepositoryEntry(course, true);
-
 		
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		SecurityGroup authorGroup = securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
@@ -583,26 +507,18 @@ public class CourseWebService {
 	
 	/**
 	 * Add an owner and author to the course
-   * @response.representation.200.doc The user is an author and owner of the course
+	 * @response.representation.200.doc The user is an author and owner of the course
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or the user not found
-	 * @param courseId The course resourceable's id
+	 * @response.representation.404.doc The course or the user not found
 	 * @param identityKey The user identifier
 	 * @param httpRequest The HTTP request
 	 * @return It returns 200  if the user is added as owner and author of the course
 	 */
 	@PUT
 	@Path("authors/{identityKey}")
-	public Response addAuthor(@PathParam("courseId") Long courseId, @PathParam("identityKey") Long identityKey,
+	public Response addAuthor(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
-		if(!isAuthor(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
-		OLATResourceable course = getCourseOLATResource(courseId);
-		if(course == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}  else if (!isAuthorEditor(course, httpRequest)) {
+		if (!isAuthorEditor(course, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
@@ -634,10 +550,9 @@ public class CourseWebService {
 	
 	/**
 	 * Remove an owner and author to the course
-   * @response.representation.200.doc The user was successfully removed as owner of the course
+	 * @response.representation.200.doc The user was successfully removed as owner of the course
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or the user not found
-	 * @param courseId The course resourceable's id
+	 * @response.representation.404.doc The course or the user not found
 	 * @param identityKey The user identifier
 	 * @param httpRequest The HTTP request
 	 * @return It returns 200  if the user is removed as owner of the course
@@ -645,16 +560,9 @@ public class CourseWebService {
 	@DELETE
 	@Path("authors/{identityKey}")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response removeAuthor(@PathParam("courseId") Long courseId, @PathParam("identityKey") Long identityKey,
+	public Response removeAuthor(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
-		if(!isAuthor(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
-		OLATResourceable course = getCourseOLATResource(courseId);
-		if(course == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if (!isAuthorEditor(course, httpRequest)) {
+		if (!isAuthorEditor(course, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -677,26 +585,18 @@ public class CourseWebService {
 	
 	/**
 	 * Add a coach to the course
-   * @response.representation.200.doc The user is a coach of the course
+	 * @response.representation.200.doc The user is a coach of the course
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or the user not found
-	 * @param courseId The course resourceable's id
+	 * @response.representation.404.doc The course or the user not found
 	 * @param identityKey The user identifier
 	 * @param httpRequest The HTTP request
 	 * @return It returns 200  if the user is added as coach of the course
 	 */
 	@PUT
 	@Path("tutors/{identityKey}")
-	public Response addCoach(@PathParam("courseId") Long courseId, @PathParam("identityKey") Long identityKey,
+	public Response addCoach(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
-		if(!isAuthor(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
-		OLATResourceable course = getCourseOLATResource(courseId);
-		if(course == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}  else if (!isAuthorEditor(course, httpRequest)) {
+		if (!isAuthorEditor(course, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
@@ -721,26 +621,18 @@ public class CourseWebService {
 	
 	/**
 	 * Add an participant to the course
-   * @response.representation.200.doc The user is a participant of the course
+	 * @response.representation.200.doc The user is a participant of the course
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or the user not found
-	 * @param courseId The course resourceable's id
+	 * @response.representation.404.doc The course or the user not found
 	 * @param identityKey The user identifier
 	 * @param httpRequest The HTTP request
 	 * @return It returns 200  if the user is added as owner and author of the course
 	 */
 	@PUT
 	@Path("participants/{identityKey}")
-	public Response addParticipant(@PathParam("courseId") Long courseId, @PathParam("identityKey") Long identityKey,
+	public Response addParticipant(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
-		if(!isAuthor(httpRequest)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
-		OLATResourceable course = getCourseOLATResource(courseId);
-		if(course == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
-		}  else if (!isAuthorEditor(course, httpRequest)) {
+		if (!isAuthorEditor(course, httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
@@ -763,21 +655,10 @@ public class CourseWebService {
 		return Response.ok().build();
 	}
 	
-	private OLATResource getCourseOLATResource(Long courseId) {
-		String typeName = OresHelper.calculateTypeName(CourseModule.class);
-		OLATResource ores = OLATResourceManager.getInstance().findResourceable(courseId, typeName);
-		if(ores == null && Settings.isJUnitTest()) {
-			//hack for the BGContextManagerImpl which load the course
-			ores = OLATResourceManager.getInstance().findResourceable(courseId, "junitcourse");
-		}
-		return ores;
-	}
-	
-	private RepositoryEntry getCourseEntry(OLATResource courseResource) {
-		return RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
-	}
-	
 	public static boolean isCourseAccessible(ICourse course, boolean authorRightsMandatory, HttpServletRequest request) {
+		if(isAdmin(request)) {
+			return true;
+		}
 		if(authorRightsMandatory && !isAuthor(request)) {
 			return false;
 		}
@@ -790,15 +671,5 @@ public class CourseWebService {
 			return true;
 		}
 		return false;
-	}
-	
-	public static ICourse loadCourse(Long courseId) {
-		try {
-			ICourse course = CourseFactory.loadCourse(courseId);
-			return course;
-		} catch(Exception ex) {
-			log.error("cannot load course with id: " + courseId, ex);
-			return null;
-		}
 	}
 }

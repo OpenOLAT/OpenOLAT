@@ -39,8 +39,6 @@ import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.components.velocity.VelocityContainerRenderer;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.ContentableChiefController;
 import org.olat.core.gui.control.WindowBackOffice;
