@@ -70,6 +70,7 @@ public class OlatGuestTopNavController extends BasicController {
 		if(impressum) {
 			impressumLink = LinkFactory.createLink("topnav.impressum", topNavVC, this);
 			impressumLink.setTooltip("topnav.impressum.alt");
+			impressumLink.setIconCSS("o_icon o_icon_impress o_icon-lg");
 			impressumLink.setAjaxEnabled(false);
 			impressumLink.setTarget("_blank");
 		}
@@ -77,12 +78,13 @@ public class OlatGuestTopNavController extends BasicController {
 		// the help link
 		if (CourseModule.isHelpCourseEnabled()) {
 			helpLink = LinkFactory.createLink("topnav.help", topNavVC, this);
-			helpLink.setCustomEnabledLinkCSS("b_with_small_icon_right o_help_icon");
+			helpLink.setIconCSS("o_icon o_icon_help o_icon-lg");
 			helpLink.setTooltip("topnav.help.alt");
 			helpLink.setTarget("_help");
 		}
 		
 		loginLink = LinkFactory.createLink("topnav.login", topNavVC, this);
+		loginLink.setIconCSS("o_icon o_icon_login o_icon-lg");
 		loginLink.setTooltip("topnav.login.alt");
 
 		//

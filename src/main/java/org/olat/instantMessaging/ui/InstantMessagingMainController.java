@@ -119,13 +119,13 @@ public class InstantMessagingMainController extends BasicController implements G
 
 		// status changer links
 		available = LinkFactory.createLink("presence.available", main, this);
-		available.setCustomEnabledLinkCSS("o_im_available_icon");
+		available.setIconCSS("o_icon o_icon_status_available o_icon-fw");
 		available.setUserObject(Presence.available.name());
 		dnd = LinkFactory.createLink("presence.dnd", main, this);
-		dnd.setCustomEnabledLinkCSS("o_im_dnd_icon");
+		dnd.setIconCSS("o_icon o_icon_status_dnd o_icon-fw");
 		dnd.setUserObject(Presence.dnd.name());
 		unavailable = LinkFactory.createLink("presence.unavailable", main, this);
-		unavailable.setCustomEnabledLinkCSS("o_im_unavailable_icon");
+		unavailable.setIconCSS("o_icon o_icon_status_unavailable o_icon-fw");
 		unavailable.setUserObject(Presence.unavailable.name());
 		updateStatusCss(null);
 
@@ -297,7 +297,7 @@ public class InstantMessagingMainController extends BasicController implements G
 			imStatus = Presence.available.name();
 		  imService.updateStatus(getIdentity(), imStatus);
 		}
-		String cssClass = "o_im_" + imStatus + "_icon";
+		String cssClass = "o_icon o_icon_status_" + imStatus;
 		main.contextPut("statusClass", cssClass);
 	}
 	
@@ -383,7 +383,7 @@ public class InstantMessagingMainController extends BasicController implements G
 	private Link createShowNewMessageLink(Buddy buddy) {
 		Link link = LinkFactory.createCustomLink(buddy.getIdentityKey().toString(), ACTION_MSG, "", Link.NONTRANSLATED, newMsgIcon, this);
 		link.registerForMousePositionEvent(true);
-		link.setCustomEnabledLinkCSS("o_im_new_msg_icon");
+		link.setIconCSS("o_icon o_icon-message o_icon-lg");
 		String buddyName = StringHelper.escapeHtml(buddy.getName());
 		link.setTooltip(translate("im.new.message", new String[]{ buddyName }));
 		link.setUserObject(buddy);

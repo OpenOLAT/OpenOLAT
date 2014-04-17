@@ -324,7 +324,7 @@ public class VelocityRenderDecorator implements Closeable{
 			sb.append("<a href=\"javascript:contextHelpWindow('");
 			Renderer.renderNormalURI(sb, "help/");
 			sb.append(langCode).append("/").append(packageName).append("/").append(pageName);
-			sb.append("')\" title=\"").append(hooverText).append("\" class=\"o_chelp\"><span></span></a>");
+			sb.append("')\" title=\"").append(hooverText).append("\" class=\"o_chelp\"><i class='o_icon o_icon_help'></i></a>");
 		}
 		return sb;
 	}

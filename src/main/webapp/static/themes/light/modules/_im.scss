@@ -14,37 +14,3 @@
 		top: -0.5em;
 	}
 }
-
-/* Instant Messaging Icons */
-.o_im_available_icon, 
-.o_im_dnd_icon, 
-.o_im_unavailable_icon, 
-.o_im_new_msg_icon,
-.o_im_chat_icon, 
-.o_im_refresh_icon {
-	span{
-		@extend .glyphicon;	
-		@extend .o_undecorated;
-	}
-}
-.o_im_available_icon span {
-	@extend .glyphicon-star;
-	color: #006633;
-}
-.o_im_dnd_icon span { 
-	@extend .glyphicon-star-empty;
-	color: #CCCC33;
-}
-.o_im_unavailable_icon span { 
-	@extend .glyphicon-remove;
-	color: #996633;
-}
-.o_im_new_msg_icon span { 
-	@extend .glyphicon-cloud-download;
-}
-.o_im_chat_icon span { 
-	@extend .glyphicon-bullhorn;
-}
-.o_im_refresh_icon span {
-	@extend .glyphicon-refresh;
-} 

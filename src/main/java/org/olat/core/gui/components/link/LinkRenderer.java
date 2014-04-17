@@ -202,6 +202,12 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				sb.append(">");
 			}
 			
+			// CSS icon
+			if (link.getIconCSS() != null) {
+				sb.append("<i class='").append(link.getIconCSS()).append("'");
+				sb.append("></i> "); // one space needed
+			}			
+			
 			sb.append("<span> "); // inner wrapper for layouting
 			if (customDisplayText != null) {
 				//link is nontranslated but has custom text
@@ -264,7 +270,15 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				description = mdq.replaceAll("\\\\\"");
 				sb.append(" title=\"").append(description).append("\" ");
 			}
-			sb.append(cssSb).append(">").append(text).append("</span>");
+			sb.append(cssSb).append(">");
+
+			// CSS icon
+			if (link.getIconCSS() != null) {
+				sb.append("<i class='").append(link.getIconCSS()).append("'");
+				sb.append("></i> "); // one space needed
+			}			
+
+			sb.append(text).append("</span>");
 		}
 		if(link.getStartsDownload() || link.getTarget() != null){
 			//if the link starts a download -> the o_afterserver is not called in

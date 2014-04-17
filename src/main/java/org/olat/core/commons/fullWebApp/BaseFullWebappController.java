@@ -810,14 +810,11 @@ public class BaseFullWebappController extends BasicController implements Generic
 			// pressing s repetitively (works only in IE/FF which is normally used by blind people)
 			link.setAccessKey("s");
 			// add close links
-			Link calink = LinkFactory.createCustomLink("ca" + dtabCreateCounter, "ca" + dtabCreateCounter, "", Link.NONTRANSLATED, navVc, this);
+			Link calink = LinkFactory.createCustomLink("c" + dtabCreateCounter, "c" + dtabCreateCounter, "", Link.NONTRANSLATED, navVc, this);
 			calink.setCustomEnabledLinkCSS("o_navbar_tab_close");
+			calink.setIconCSS("o_icon o_icon_close");
 			calink.setTitle(translate("close"));
 			calink.setUserObject(dt);
-			Link cplink = LinkFactory.createCustomLink("cp" + dtabCreateCounter, "cp" + dtabCreateCounter, "", Link.NONTRANSLATED, navVc, this);
-			cplink.setCustomEnabledLinkCSS("o_navbar_tab_close");
-			cplink.setTitle(translate("close"));
-			cplink.setUserObject(dt);
 
 			Controller dtabCtr = dt.getController();
 			dtabCtr.addControllerListener(this);

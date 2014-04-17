@@ -38,15 +38,15 @@ public class OnlineIconRenderer extends CustomCssCellRenderer {
 			return "";
 		} else if (!imModule.isOnlineStatusEnabled()) {
 			// don't show the users status when not configured, only an icon to start a chat/message
-			return "b_small_icon o_instantmessaging_chat_icon";
+			return "o_icon o_icon_status_chat";
 		}
 		// standard case: available or unavailable (offline or dnd)
 		else if(Presence.available.name().equals(val)) {
-			return "b_small_icon o_instantmessaging_available_icon";
+			return "o_icon o_icon_status_available";
 		} else if(Presence.dnd.name().equals(val)) {
-			return "b_small_icon o_instantmessaging_dnd_icon";
+			return "o_icon o_icon_status_dnd";
 		} else {
-			return "b_small_icon o_instantmessaging_unavailable_icon";
+			return "o_icon o_icon_status_unavailable";
 		}
 	}
 

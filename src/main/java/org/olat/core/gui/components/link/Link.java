@@ -82,6 +82,7 @@ public class Link extends AbstractComponent {
 	private String customDisplayText;
 	private String customEnabledLinkCSS;
 	private String customDisabledLinkCSS;
+	private String iconCSS;
 	private String target;
 	private String modURI;
 	private Object internalAttachedObj;
@@ -530,6 +531,20 @@ public class Link extends AbstractComponent {
 	}
 	boolean getStartsDownload(){
 		return isDownloadLink;
+	}
+
+	/**
+	 * @param iconCSS The CSS classes used as icons in the i element
+	 */
+	public void setIconCSS(String iconCSS) {
+		this.iconCSS = iconCSS;		
+	}
+	
+	/**
+	 * @return The icon CSS classes or NULL 
+	 */
+	public String getIconCSS() {
+		return iconCSS;
 	}
 
 	

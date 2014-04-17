@@ -1,15 +1,15 @@
-<ul>
+<ul id="o_navbar_tools" class="nav navbar-nav navbar-right">
 #if($r.available("topnav.impressum"))
-	<li>
+	<li id="o_navbar_impress">
 		$r.render("topnav.impressum")
 	</li>
 #end
 #if($r.available("topnav.help"))
-	<li id="o_topnav_help">
+	<li id="o_navbar_help">
 		$r.render("topnav.help")
 	</li>
 #end
-	<li id="o_topnav_login">
+	<li id="o_navbar_login">
 		$r.render("topnav.login")
 	</li>
 </ul>

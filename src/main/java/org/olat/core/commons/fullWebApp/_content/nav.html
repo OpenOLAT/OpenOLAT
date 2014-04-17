@@ -16,19 +16,13 @@
 	#set ($navel = $dtab.getNavElement())
 	#set ($pos=${velocityCount} - 1)
 	#set ($postfix=$dtabsLinkNames.get(${pos}))
-	#if($tabhelper.isDTabActive($dtab))
-	<li class="active $!navel.getIconCSSClass()">
+	
+	<li class="#if($tabhelper.isDTabActive($dtab)) active #end $!navel.getIconCSSClass()">
 		$r.render("a$postfix")
 		#if($tabhelper.isCanCloseDTab($dtab))
-			$r.render("cp$postfix")	 ## close link has class b_nav_tab_close
+			$r.render("c$postfix")	 ## close link has class b_nav_tab_close
 		#end
 	</li>
-	#else
-	<li class="$!navel.getIconCSSClass()">
-		$r.render("a$postfix")
-		$r.render("cp$postfix")  ## close link has class b_nav_tab_close
-	</li>
-	#end
 #end
 </ul>
 ## ---- END dynamic tabs ---

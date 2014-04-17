@@ -11,14 +11,12 @@
 /* styles for GUI debu mode */
 a.o_dev { 
 	position: absolute; 
-	left: 5px; top: 5px; 
+	left: 0; top: 0; 
 	z-index:4000; 
-	width: 2em; height: 2em; 
-	
-	span {
-		@extend .glyphicon;
-		@extend .glyphicon-cog;
-		color: #f0ad4e;
+	padding: 3px;
+	background: #f0ad4e;
+	i.o_icon_dev {
+		color: #d9534f;
 	}
 }
 /* GUI debug wrapper and info box */

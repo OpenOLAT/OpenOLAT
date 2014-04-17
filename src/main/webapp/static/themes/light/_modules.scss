@@ -8,10 +8,11 @@
  * =================================================
  */
 
-/* Bootstrap defaults. Override those variables in your _config.scss file */
-@import "../../bootstrap/3.1.1/stylesheets/bootstrap";
+/* Bootstrap classes. Override bootstrap variables in your _config.scss file */
+@import "modules/bootstrap";
 
 /* -------- OpenOLAT modules -------- */
+@import "modules/icons"; /* must be first include - provides classes used as extensions */
 @import "modules/mixins";
 @import "modules/helpers";
 @import "modules/content";
@@ -23,8 +24,10 @@
 
 @import "modules/im";
 @import "modules/flags";
-@import "modules/icons";
 @import "modules/devel";
+
+@import "modules/sidebar.css";
+
 
 //@import "modules/thirdparty";
 //@import "modules/print";

@@ -1,13 +1,8 @@
 /* HELP, context sensitive */
 a.o_chelp {
 	@extend .o_undecorated;
-	span { 
-		@extend .glyphicon;	
-		@extend .glyphicon-question-sign;	
-		cursor: help; 
-		font-size: 110%;
-	}
 }
+
 div.o_chelp_wrapper { 
 	position: relative; 
 	z-index: 2;

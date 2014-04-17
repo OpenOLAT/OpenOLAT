@@ -1,3 +1,30 @@
+/* Load font-awesome library as we use font styles for the default icons */
+$fa-font-path:        "../../../font-awesome/fonts" !default;
+
+/* we use fonts as icon base. In case you want to use bitmap icons instead, 
+ * create your own o_icon class and add icons that correspond with the 
+ * font-awesome icon names 
+ */
+$fa-css-prefix: "o_icon" !default;
+@import "../../../font-awesome/scss/font-awesome";
+
+/* OpenOLAT Icons */
+.o_icon_close { @extend .o_icon-times;}
+.o_icon_dev { @extend .o_icon-wrench;}
+.o_icon_help { @extend .o_icon-question-circle; @extend .o_icon-lg; cursor: help;}
+.o_icon_impress { @extend .o_icon-info-circle; }
+.o_icon_message { @extend .o_icon-envelope;}
+.o_icon_login {@extend .o_icon-sign-in;}
+.o_icon_logout {@extend .o_icon-sign-out;}
+.o_icon_refresh { @extend .o_icon-refresh; } 
+.o_icon_search {@extend .o_icon-search;}
+.o_icon_status_available { @extend .o_icon-circle; color: #006633; }
+.o_icon_status_chat { @extend .o_icon-comment; }
+.o_icon_status_dnd { @extend .o_icon-dot-circle-o; color: #CCCC33; }
+.o_icon_status_unavailable { @extend .o_icon-times-circle-o; color: #996633; }
+
+
+
 /* portrait / avatar icons */
 /* Dummy user portrait (avatar) display - portrait sizes must match with DisplayPortraitManager.WIDTH_PORTRAIT_SMALL  DisplayPortraitManager.WIDTH_PORTRAIT_BIG */
 .o_portrait_dummy,

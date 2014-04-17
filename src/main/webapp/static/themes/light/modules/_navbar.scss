@@ -27,22 +27,16 @@
 				right:0.5em;
 				padding: 0;
 				width: 1em; height: 1em;
-				span {
-					@extend .glyphicon;
-					@extend .glyphicon-minus-sign;
+				i {
 					&:before { color: #A87E7E; }
 				}
 				&:hover { 
-					span:before { color: #CC0000; }
+					i:before { color: #CC0000; }
 				}
 			}
 		}
 		
 		#o_navbar_tools {
-			#o_navbar_search_opener a.dropdown-toggle span {
-				@extend .glyphicon;
-				@extend .glyphicon-search;
-			}
 			
 			#o_navbar_langchooser {
 				color: $navbar-default-color;
@@ -51,9 +45,8 @@
 					display: inline;
 				}
 			}
-			#o_navbar_help a span {
-				@extend .glyphicon;
-				@extend .glyphicon-question-sign;
+			#o_navbar_help a i {
+				/* help icon */
 				margin-right: 0.4em;
 			}
 			#o_navbar_my_menu {
