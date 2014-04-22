@@ -469,6 +469,7 @@ function o_ainvoke(r) {
 							var c1 = ca[j];
 							var ciid = c1["cid"]; // component id
 							var civis = c1["cidvis"];// component visibility
+							var withWrapper = c1["cw"]; // component has a wrapper element, replace only inner content
 							var hfrag = c1["hfrag"]; // html fragment of component
 							var jsol = c1["jsol"]; // javascript on load
 							var hdr = c1["hdr"]; // header
@@ -485,7 +486,7 @@ function o_ainvoke(r) {
 								newcId = "o_fi"+ciid;
 								newc = jQuery('#' + newcId);
 								replaceElement = true;
-							} 
+							}
 							if (newc != null) {
 								if(civis) { // needed only for ie 6/7 bug where an empty div requires space on screen
 									newc.css('display','');//.style.display="";//reset?
@@ -493,7 +494,8 @@ function o_ainvoke(r) {
 									newc.css('display','none'); //newc.style.display="none";
 								}
 								
-								if(replaceElement) {
+								if(replaceElement || !withWrapper) {
+									// replace entire DOM element 
 									newc.replaceWith(hdrco);	
 								} else {
 									try{

@@ -982,6 +982,7 @@ public class Window extends AbstractComponent {
 							}						
 							
 							jo.put("cid", cid);
+							jo.put("cw", toRender.isDomReplacementWrapperRequired());
 							jo.put("cidvis", toRender.isVisible());
 							jo.put("hfrag", StringOutputPool.freePop(result));
 							jo.put("jsol", StringOutputPool.freePop(jsol));
