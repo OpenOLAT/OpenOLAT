@@ -39,7 +39,7 @@
 				// use OLAT translator for OALT image
 				var altText = translator.translate('olatsmileys.icon.' + n);
 				emoticonsHtml += "<td><a href='#'>";
-				emoticonsHtml += "<img class='b_emoticons_" + n + "' src='" + transparentImg +"' width='18' height='18' border='0' ";
+				emoticonsHtml += "<img class='o_emoticons_" + n + "' src='" + transparentImg +"' width='18' height='18' border='0' ";
 				emoticonsHtml += "alt='" + n + "' title='" + altText + "' /></a></td>";
 			}
 			emoticonsHtml += "</tr>";

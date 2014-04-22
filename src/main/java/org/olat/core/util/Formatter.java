@@ -587,29 +587,29 @@ public class Formatter {
 		
 		Matcher matcher;
 		matcher = confusedPattern.matcher(textFragment);
-		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_confused' />");
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='o_emoticons_confused' />");
 		matcher = coolPattern.matcher(textFragment);
-		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_cool' />");
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='o_emoticons_cool' />");
 		matcher = angryPattern.matcher(textFragment);
-		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_angry' />");
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='o_emoticons_angry' />");
 		matcher = grinPattern.matcher(textFragment);
-		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_grin' />");
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='o_emoticons_grin' />");
 		matcher = kissPattern.matcher(textFragment);
-		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_kiss' />");
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='o_emoticons_kiss' />");
 		matcher = ohohPattern.matcher(textFragment);
-		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_ohoh' />");
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='o_emoticons_ohoh' />");
 		matcher = angelPattern.matcher(textFragment); // must be before smile pattern
-		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_angel' />");
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='o_emoticons_angel' />");
 		matcher = smilePattern.matcher(textFragment); 
-		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_smile' />");
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='o_emoticons_smile' />");
 		matcher = sadPattern.matcher(textFragment);
-		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_sad' />");
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='o_emoticons_sad' />");
 		matcher = tonguePattern.matcher(textFragment); 
-		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_tongue' />");
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='o_emoticons_tongue' />");
 		matcher = upPattern.matcher(textFragment); 
-		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_up' />");
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='o_emoticons_up' />");
 		matcher = downPattern.matcher(textFragment); 
-		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='b_emoticons_down' />");
+		textFragment= matcher.replaceAll("<img src='" + emptyGifUrl + "' class='o_emoticons_down' />");
 				
 		return textFragment;
 	}
