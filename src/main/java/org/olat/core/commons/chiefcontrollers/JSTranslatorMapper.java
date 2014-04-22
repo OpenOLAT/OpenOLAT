@@ -44,7 +44,7 @@ import org.olat.core.util.i18n.I18nManager;
  * 
  * @author gnaegi
  */
-class JSTranslatorMapper implements Mapper {
+public class JSTranslatorMapper implements Mapper {
 
 	/**
 	 * @see org.olat.core.dispatcher.mapper.Mapper#handle(java.lang.String, javax.servlet.http.HttpServletRequest)

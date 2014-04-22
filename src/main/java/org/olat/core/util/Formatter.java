@@ -42,7 +42,6 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.helpers.Settings;
@@ -489,7 +488,7 @@ public class Formatter {
 	public static String formatLatexFormulas(String htmlFragment) {
 		if (htmlFragment == null) return "";
 		// optimize, reduce jsmath calls on client
-		if (BaseChiefController.isJsMathEnabled() && (htmlFragment.contains("class='math'") || htmlFragment.contains("class=\"math\""))) {
+		if ((htmlFragment.contains("class='math'") || htmlFragment.contains("class=\"math\""))) {
 			// add math wrapper
 			String domid = "mw_" + CodeHelper.getRAMUniqueID();
 			String elem = htmlFragment.contains("<div") ? "div" : "span";

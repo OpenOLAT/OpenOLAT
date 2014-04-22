@@ -51,8 +51,6 @@ public class MainPanelRenderer extends PanelRenderer {
 		  .append("</div>\n")
 		  .append("<div id='b_ie_clearing'>&nbsp;</div>\n")
 		  .append("</div>\n")
-		  .append("</div>	\n");
-				
+		  .append("</div>\n");
 	}
-
 }

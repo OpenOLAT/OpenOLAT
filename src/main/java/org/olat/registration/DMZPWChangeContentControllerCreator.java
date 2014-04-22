@@ -51,7 +51,7 @@ public class DMZPWChangeContentControllerCreator implements ControllerCreator {
 		AutoCreator contentControllerCreator = new AutoCreator();
 		contentControllerCreator.setClassName(PwChangeController.class.getName());
 		dmzSitesAndNav.setContentControllerCreator(contentControllerCreator);
-		return new BaseFullWebappController(lureq, lwControl, dmzSitesAndNav );
+		return new BaseFullWebappController(lureq, dmzSitesAndNav);
 	}
 
 }

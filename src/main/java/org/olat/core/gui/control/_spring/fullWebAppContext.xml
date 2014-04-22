@@ -28,9 +28,7 @@
 		*** header part, e.g. for a logo       ***
 		******************************************
 	-->
-	<bean id="fullWebApp.HeaderControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" >
-		<property name="className" value="org.olat.core.commons.fullWebApp.EmptyHeaderController"/>
-	</bean>
+	<bean id="fullWebApp.HeaderControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" />
 	 
 	<!--
 		******************************************
@@ -62,12 +60,12 @@
 		******************************************
 	-->
 	<!-- DMZ -->
-  <bean  id="fullWebApp.DMZFooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
+	<bean  id="fullWebApp.DMZFooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
 		<property name="className" value="org.olat.gui.control.OlatFooterController"/>
 	</bean>
 	
 	<!-- Guest -->
-  <bean  id="fullWebApp.GuestFooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
+	<bean  id="fullWebApp.GuestFooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
 		<property name="className" value="org.olat.gui.control.OlatFooterController"/>
 	</bean>
 	
@@ -85,19 +83,14 @@
 	<bean id="fullWebApp.MinimalTopNavControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
 		<property name="className" value="org.olat.gui.control.OlatMinimalTopNavController"/>
 	</bean>
-	<!--
-	<bean id="fullWebApp.MinimalTopNavControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
-		<property name="className" value="org.olat.core.commons.fullWebApp.DefaultMinimalTopNavController" />
-	</bean> -->
+
 	<!--
 		******************************************
 		*** Configure the controller in the    ***
 		*** header part, in context help       ***
 		******************************************
 	-->
-	<bean id="fullWebApp.ContextHelpHeaderControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator">
-		<property name="className" value="org.olat.core.commons.fullWebApp.EmptyHeaderController"/>
-	</bean> 		
+	<bean id="fullWebApp.ContextHelpHeaderControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator"/> 		
 	<!--
 		******************************************
 		*** Configure the controller in the    ***

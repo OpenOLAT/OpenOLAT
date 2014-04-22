@@ -94,6 +94,16 @@ public class MessageWindowController extends DefaultChiefController {
 		setWindow(w);
 	}
 
+	@Override
+	public void addBodyCssClass(String cssClass) {
+		//
+	}
+
+	@Override
+	public void removeBodyCssClass(String cssClass) {
+		//
+	}
+
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)

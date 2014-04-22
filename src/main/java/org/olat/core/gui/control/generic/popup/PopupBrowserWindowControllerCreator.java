@@ -26,7 +26,6 @@
 package org.olat.core.gui.control.generic.popup;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 
 /**
@@ -44,8 +43,7 @@ public interface PopupBrowserWindowControllerCreator {
 	 * @param lwControl
 	 * @return
 	 */
-	public PopupBrowserWindowController createNewPopupBrowserController(UserRequest lureq, WindowControl lwControl, ControllerCreator contentControllerCreator);
+	public PopupBrowserWindowController createNewPopupBrowserController(UserRequest lureq, ControllerCreator contentControllerCreator);
 	
-	//fxdiff
-	public PopupBrowserWindowController createNewUnauthenticatedPopupWindowController(UserRequest lureq, WindowControl lwControl, ControllerCreator contentControllerCreator);
+	public PopupBrowserWindowController createNewUnauthenticatedPopupWindowController(UserRequest lureq, ControllerCreator contentControllerCreator);
 }

@@ -51,7 +51,7 @@ public class DMZRegistrationContentControllerCreator implements ControllerCreato
 		AutoCreator contentControllerCreator = new AutoCreator();
 		contentControllerCreator.setClassName(RegistrationController.class.getName());
 		dmzSitesAndNav.setContentControllerCreator(contentControllerCreator);
-		return new BaseFullWebappController(lureq, lwControl, dmzSitesAndNav );
+		return new BaseFullWebappController(lureq, dmzSitesAndNav );
 	}
 
 }

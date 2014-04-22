@@ -82,6 +82,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
 
 		mainPanel = new MainPanel("myCoursesMainPanel");
+		mainPanel.setDomReplaceable(false);
 		mainVC = createVelocityContainer("overview");
 		mainPanel.setContent(mainVC);
 		

@@ -56,24 +56,19 @@ import org.olat.core.logging.AssertException;
  * @author Felix Jost, http://www.goodsolutions.ch
  */
 public class AutoCreator implements ControllerCreator {
-	private static final Class[] ARGCLASSES = new Class[] { UserRequest.class, WindowControl.class }; 
+	private static final Class<?>[] ARGCLASSES = new Class[] { UserRequest.class, WindowControl.class }; 
 	private String className;
-	
-	/**
-	 * 
-	 */
-	public AutoCreator() {
-		super();
-	}
 
 	/* (non-Javadoc)
 	 * @see org.olat.core.gui.control.creator.ControllerCreator#createController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
 	public Controller createController(UserRequest ureq, WindowControl wControl) {
+		if(className == null) return null;
+		
 		Exception re = null;
 		try {
-			Class cclazz = Thread.currentThread().getContextClassLoader().loadClass(className);
-			Constructor con = cclazz.getConstructor(ARGCLASSES);
+			Class<?> cclazz = Thread.currentThread().getContextClassLoader().loadClass(className);
+			Constructor<?> con = cclazz.getConstructor(ARGCLASSES);
 			Object o = con.newInstance(new Object[]{ ureq, wControl});
 			Controller c = (Controller)o;
 			return c;

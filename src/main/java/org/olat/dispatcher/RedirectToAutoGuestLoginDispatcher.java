@@ -92,9 +92,8 @@ public class RedirectToAutoGuestLoginDispatcher implements Dispatcher {
 			DispatcherModule.redirectToDefaultDispatcher(response); // error, redirect to login screen
 			return;
 		}
-			
-		// brasato:: ChiefController cc = Windows.getWindows(usess).getMainOlatChiefController();
-		ChiefController cc = (ChiefController) Windows.getWindows(usess).getAttribute("AUTHCHIEFCONTROLLER");
+		
+		ChiefController cc = Windows.getWindows(usess).getChiefController();
 		if (cc == null) throw new AssertException("logged in, but no window/Chiefcontroller 'olatmain' found!");
 		Window w = cc.getWindow();
 		w.dispatchRequest(ureq, true); // renderOnly

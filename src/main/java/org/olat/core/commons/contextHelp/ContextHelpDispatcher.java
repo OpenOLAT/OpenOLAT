@@ -25,7 +25,6 @@ import java.util.Locale;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.olat.core.commons.chiefcontrollers.BaseChiefControllerCreator;
 import org.olat.core.commons.fullWebApp.BaseFullWebappPopupBrowserWindow;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.dispatcher.Dispatcher;
@@ -100,25 +99,18 @@ public class ContextHelpDispatcher extends LogDelegator implements Dispatcher {
 			// 1) the chief controller
 			// 2) the layout controller
 			// 3) the context help main controller
-			ControllerCreator cHelpPopupWindowControllerCreator = new ControllerCreator() {
+
+			ControllerCreator cHelpMainControllerCreator = new ControllerCreator() {
 				public Controller createController(UserRequest lureq, WindowControl lwControl) {
-					ControllerCreator cHelpMainControllerCreator = new ControllerCreator() {
-						public Controller createController(UserRequest lureq, WindowControl lwControl) {
-							// create the context help controller and wrapp it using the layout controller
-							ContextHelpMainController helpCtr =  new ContextHelpMainController(lureq, lwControl);
-							LayoutMain3ColsController layoutCtr =  new LayoutMain3ColsController(lureq, lwControl, null, null, helpCtr.getInitialComponent(), null);
-							layoutCtr.addDisposableChildController(helpCtr);
-							return layoutCtr;
-						}
-					};
-					ContextHelpLayoutControllerCreator cHelpPopupLayoutCreator = new ContextHelpLayoutControllerCreator(cHelpMainControllerCreator);
-					return new BaseFullWebappPopupBrowserWindow(lureq, lwControl, cHelpPopupLayoutCreator.getFullWebappParts());
+					// create the context help controller and wrapp it using the layout controller
+					ContextHelpMainController helpCtr =  new ContextHelpMainController(lureq, lwControl);
+					LayoutMain3ColsController layoutCtr =  new LayoutMain3ColsController(lureq, lwControl, null, null, helpCtr.getInitialComponent(), null);
+					layoutCtr.addDisposableChildController(helpCtr);
+					return layoutCtr;
 				}
 			};
-
-			BaseChiefControllerCreator bbc = new BaseChiefControllerCreator();
-			bbc.setContentControllerCreator(cHelpPopupWindowControllerCreator);			
-			cc = bbc.createChiefController(ureq);		
+			ContextHelpLayoutControllerCreator cHelpPopupLayoutCreator = new ContextHelpLayoutControllerCreator(cHelpMainControllerCreator);
+			cc = new BaseFullWebappPopupBrowserWindow(ureq, cHelpPopupLayoutCreator.getFullWebappParts());
 			// add to user session for cleanup on user logout
 			Windows.getWindows(ureq.getUserSession()).setAttribute(CONTEXTHELPCHIEFCONTROLLER, cc);			
 			Window currentWindow = cc.getWindow();

@@ -49,7 +49,7 @@ public class DMZContentControllerCreator implements ControllerCreator {
 		AutoCreator contentControllerCreator = new AutoCreator();
 		contentControllerCreator.setClassName(LoginAuthprovidersController.class.getName());
 		dmzSitesAndNav.setContentControllerCreator(contentControllerCreator);
-		return new BaseFullWebappController(lureq, lwControl, dmzSitesAndNav );
+		return new BaseFullWebappController(lureq, dmzSitesAndNav );
 	}
 
 }

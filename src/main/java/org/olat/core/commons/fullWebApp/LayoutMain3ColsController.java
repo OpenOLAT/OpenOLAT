@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.Windows;
@@ -80,7 +79,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	private Panel panel1, panel2, panel3;
 	private Activateable2 activateableDelegate2;	//fxdiff BAKS-7 Resume function
 	private boolean fullScreen = false;
-	private BaseChiefController thebaseChief;
+	private ChiefController thebaseChief;
 
 	
 	
@@ -167,9 +166,9 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	}
 	
 	public void setAsFullscreen(UserRequest ureq) {
-		ChiefController cc = (ChiefController) Windows.getWindows(ureq).getAttribute("AUTHCHIEFCONTROLLER");
-		if (cc instanceof BaseChiefController) {
-			thebaseChief = (BaseChiefController) cc;
+		ChiefController cc = Windows.getWindows(ureq).getChiefController();
+		if (cc != null) {
+			thebaseChief = cc;
 			thebaseChief.addBodyCssClass("b_full_screen");
 		} else {
 			Windows.getWindows(ureq).setAttribute("FULL_SCREEN", Boolean.TRUE);
@@ -191,9 +190,9 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 			if(thebaseChief != null) {
 				thebaseChief.removeBodyCssClass("b_full_screen");
 			} else if (ureq != null){
-				ChiefController cc = (ChiefController) Windows.getWindows(ureq).getAttribute("AUTHCHIEFCONTROLLER");
-				if (cc instanceof BaseChiefController) {
-					thebaseChief = (BaseChiefController) cc;
+				ChiefController cc = Windows.getWindows(ureq).getChiefController();
+				if (cc != null) {
+					thebaseChief = cc;
 					thebaseChief.removeBodyCssClass("b_full_screen");
 				}
 			}

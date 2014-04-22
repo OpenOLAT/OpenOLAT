@@ -25,6 +25,7 @@
 */ 
 package org.olat.core.gui.control.generic.popup;
 
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 
 /**
@@ -35,6 +36,6 @@ import org.olat.core.gui.control.Controller;
  * Initial Date:  26.07.2007 <br>
  * @author patrickb
  */
-public interface PopupBrowserWindowController extends PopupBrowserWindow, Controller {
+public interface PopupBrowserWindowController extends PopupBrowserWindow, ChiefController, Controller {
 	//
 }

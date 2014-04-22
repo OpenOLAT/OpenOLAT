@@ -41,9 +41,9 @@ public class BaseFullWebappPopupBrowserWindow extends BaseFullWebappController i
 	 * @param ouisc_wControl
 	 * @param baseFullWebappControllerParts
 	 */
-	public BaseFullWebappPopupBrowserWindow(UserRequest ureq, WindowControl wControl,
+	public BaseFullWebappPopupBrowserWindow(UserRequest ureq,
 			BaseFullWebappControllerParts baseFullWebappControllerParts) {
-		super(ureq, wControl, baseFullWebappControllerParts);
+		super(ureq, baseFullWebappControllerParts);
 		// apply custom css if available
 		if (contentCtrl != null && contentCtrl instanceof MainLayoutController) {
 			MainLayoutController mainLayoutCtr = (MainLayoutController) contentCtrl;

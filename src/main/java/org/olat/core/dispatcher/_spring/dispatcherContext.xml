@@ -73,7 +73,7 @@
 		DEFAULT -->
 		<property name="chiefControllerCreator">
 			<bean
-				class="org.olat.core.commons.chiefcontrollers.BaseChiefControllerCreator">
+				class="org.olat.core.gui.control.ChiefControllerCreator">
 				<property name="contentControllerCreator">
 					<!-- creates a BasicFullWebappController with DMZ content -->
 					<bean
@@ -87,7 +87,7 @@
 				<!-- triggers registration workflow -->
 				<entry key="/registration/">
 					<bean
-						class="org.olat.core.commons.chiefcontrollers.BaseChiefControllerCreator">
+						class="org.olat.core.gui.control.ChiefControllerCreator">
 						<property name="contentControllerCreator">
 							<!-- creates a BasicFullWebappController with DMZ content -->
 							<bean
@@ -98,7 +98,7 @@
 				<!-- triggers password change workflow -->
 				<entry key="/pwchange/">
 					<bean
-						class="org.olat.core.commons.chiefcontrollers.BaseChiefControllerCreator">
+						class="org.olat.core.gui.control.ChiefControllerCreator">
 						<property name="contentControllerCreator">
 							<!-- creates a BasicFullWebappController with DMZ content -->
 							<bean
@@ -109,7 +109,7 @@
 				<!-- triggers shibboleth registration workflow -->
 				<entry key="/shibregister/">
 					<bean
-						class="org.olat.core.commons.chiefcontrollers.BaseChiefControllerCreator">
+						class="org.olat.core.gui.control.ChiefControllerCreator">
 						<property name="contentControllerCreator">
 							<!-- creates a BasicFullWebappController with DMZ content -->
 							<bean
@@ -120,7 +120,7 @@
 				<!-- triggers email change workflow -->
 				<entry key="/emchange/">
 					<bean
-						class="org.olat.core.commons.chiefcontrollers.BaseChiefControllerCreator">
+						class="org.olat.core.gui.control.ChiefControllerCreator">
 						<property name="contentControllerCreator">
 							<!-- creates a BasicFullWebappController with DMZ content -->
 							<bean

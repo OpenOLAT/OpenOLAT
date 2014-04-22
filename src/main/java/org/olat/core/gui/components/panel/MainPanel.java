@@ -32,7 +32,7 @@ import org.olat.core.gui.components.ComponentRenderer;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MainPanel extends Panel {
+public class MainPanel extends SimpleStackedPanel {
 	
 	private static final ComponentRenderer RENDERER = new MainPanelRenderer();
 	

@@ -249,7 +249,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 	
 	private void processBusinessPath(String businessPath, UserRequest ureq, UserSession usess) {
 		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(businessPath);
-		ChiefController cc = (ChiefController) Windows.getWindows(usess).getAttribute("AUTHCHIEFCONTROLLER");
+		ChiefController cc = Windows.getWindows(usess).getChiefController();
 		WindowControl wControl = cc.getWindowControl();
 
 		String wSettings = (String) usess.removeEntryFromNonClearedStore(WINDOW_SETTINGS);

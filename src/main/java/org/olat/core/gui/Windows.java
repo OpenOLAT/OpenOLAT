@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.olat.core.gui.components.Window;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.winmgr.WindowManagerImpl;
 import org.olat.core.gui.util.bandwidth.SlowBandWidthSimulator;
@@ -192,6 +193,16 @@ public class Windows implements Disposable, Serializable {
 		attributes.put(key, value);
 	}
 	
+	private ChiefController chiefController;
+	
+	public ChiefController getChiefController() {
+		return chiefController;
+	}
+
+	public void setChiefController(ChiefController chiefController) {
+		this.chiefController = chiefController;
+	}
+
 	public Object getAttribute(String key) {
 		return attributes.get(key);
 	}

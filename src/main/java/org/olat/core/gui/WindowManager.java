@@ -27,7 +27,6 @@
 package org.olat.core.gui;
 
 import org.olat.core.gui.control.ChiefController;
-import org.olat.core.gui.control.ContentableChiefController;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.creator.ControllerCreator;
@@ -74,12 +73,6 @@ public interface WindowManager extends Disposable {
 	 * @param fontSize relative to default font size
 	 */
 	public void setFontSize(int fontSize);
-	
-	/**
-	 * @param ureq
-	 * @return
-	 */
-	public ContentableChiefController createContentableChiefController(UserRequest ureq);
 
 	/**
 	 * @return
@@ -113,16 +106,5 @@ public interface WindowManager extends Disposable {
 	 */
 	public PopupBrowserWindow createNewPopupBrowserWindowFor(UserRequest ureq, ControllerCreator controllerCreator);
 	
-	//fxdiff
-	public PopupBrowserWindow createNewUnauthenticatedPopupWindowFor(UserRequest ureq, ControllerCreator controllerCreator);
-
-
-	/**
-	 * 
-	 * @return the chiefcontroller which set itself to be the one (and only one) to receive jump in URLs.
-	 */
-	//public ChiefController getMainChiefController();
-
-	//public GlobalSettings getGlobalSettings();
-	
+	public PopupBrowserWindow createNewUnauthenticatedPopupWindowFor(UserRequest ureq, ControllerCreator controllerCreator);	
 }

@@ -26,7 +26,6 @@ package org.olat.core.commons.fullWebApp.popup;
 
 import org.olat.core.commons.fullWebApp.BaseFullWebappPopupBrowserWindow;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindowController;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindowControllerCreator;
@@ -60,9 +59,9 @@ public class BaseFullWebappPopupLayoutCreator implements
 	 *      org.olat.core.gui.control.WindowControl,
 	 *      org.olat.core.gui.control.creator.ControllerCreator)
 	 */
+	@Override
 	public PopupBrowserWindowController createNewPopupBrowserController(
-			UserRequest lureq, WindowControl lwControl,
-			ControllerCreator contentControllerCreator) {
+			UserRequest lureq, ControllerCreator contentControllerCreator) {
 		/*
 		 * the lwControl comes from the new BaseChiefController which represents
 		 * the new window.
@@ -88,13 +87,11 @@ public class BaseFullWebappPopupLayoutCreator implements
 			oplm = (BaseFullWebappPopupLayout) contentControllerCreator;
 		}
 
-		PopupBrowserWindowController pbwc = new BaseFullWebappPopupBrowserWindow(
-				lureq, lwControl, oplm.getFullWebappParts());
-		return pbwc;
+		return new BaseFullWebappPopupBrowserWindow(lureq, oplm.getFullWebappParts());
 	}
 	
-	//fxdiff
-	public PopupBrowserWindowController createNewUnauthenticatedPopupWindowController(UserRequest lureq, WindowControl lwControl,
+	@Override
+	public PopupBrowserWindowController createNewUnauthenticatedPopupWindowController(UserRequest lureq,
 			ControllerCreator contentControllerCreator) {
 		BaseFullWebappPopupLayout oplm;
 		if (!(contentControllerCreator instanceof BaseFullWebappPopupLayout)) {
@@ -103,9 +100,6 @@ public class BaseFullWebappPopupLayoutCreator implements
 			oplm = (BaseFullWebappPopupLayout) contentControllerCreator;
 		}
 
-		PopupBrowserWindowController pbwc = new BaseFullWebappPopupBrowserWindow(lureq, lwControl, oplm.getFullWebappParts());
-		return pbwc;
+		return new BaseFullWebappPopupBrowserWindow(lureq, oplm.getFullWebappParts());
 	}
-
-
 }

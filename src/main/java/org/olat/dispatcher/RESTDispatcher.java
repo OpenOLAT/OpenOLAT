@@ -195,7 +195,7 @@ public class RESTDispatcher implements Dispatcher {
 						//error, redirect to login screen
 						DispatcherModule.redirectToDefaultDispatcher(response);
 					}
-				} else if (Windows.getWindows(usess).getAttribute("AUTHCHIEFCONTROLLER") == null) {
+				} else if (Windows.getWindows(usess).getChiefController() == null) {
 					// Session is already available, but no main window (Head-less REST
 					// session). Only create the base chief controller and the window
 					Window currentWindow = AuthHelper.createAuthHome(ureq).getWindow();
@@ -214,7 +214,7 @@ public class RESTDispatcher implements Dispatcher {
 			setBusinessPathInUserSession(usess, businessPath, ureq.getParameter(WINDOW_SETTINGS));
 			
 			//fxdiff
-			if (Windows.getWindows(usess).getAttribute("AUTHCHIEFCONTROLLER") == null) {
+			if (Windows.getWindows(usess).getChiefController() == null) {
 				// Session is already available, but no main window (Head-less REST
 				// session). Only create the base chief controller and the window
 				AuthHelper.createAuthHome(ureq);
@@ -306,7 +306,7 @@ public class RESTDispatcher implements Dispatcher {
 	}
 	
 	private String getRedirectToURL(UserSession usess) {
-		ChiefController cc = (ChiefController) Windows.getWindows(usess).getAttribute("AUTHCHIEFCONTROLLER");
+		ChiefController cc = Windows.getWindows(usess).getChiefController();
 		Window w = cc.getWindow();
 
 		URLBuilder ubu = new URLBuilder(WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED, w.getInstanceId(), String.valueOf(w.getTimestamp()), null);

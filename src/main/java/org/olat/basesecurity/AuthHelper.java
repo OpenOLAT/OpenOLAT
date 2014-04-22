@@ -39,7 +39,6 @@ import javax.servlet.http.HttpSession;
 
 import org.olat.commons.rss.RSSUtil;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.chiefcontrollers.BaseChiefControllerCreator;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts;
 import org.olat.core.commons.persistence.DBFactory;
@@ -50,9 +49,6 @@ import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.ChiefController;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -181,17 +177,10 @@ public class AuthHelper {
 	 */
 	private static ChiefController createGuestHome(UserRequest ureq) {
 		if (!ureq.getUserSession().isAuthenticated()) throw new AssertException("not authenticated!");
-
-		BaseChiefControllerCreator bbc = new BaseChiefControllerCreator();
-		bbc.setContentControllerCreator(/*this is later injected by spring*/new ControllerCreator() {
-			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				BaseFullWebappControllerParts guestSitesAndNav = new GuestBFWCParts();
-				return new BaseFullWebappController(lureq, lwControl, guestSitesAndNav );
-			}
-		});
-
-		ChiefController cc = bbc.createChiefController(ureq);
-		Windows.getWindows(ureq.getUserSession()).setAttribute("AUTHCHIEFCONTROLLER", cc);
+		
+		BaseFullWebappControllerParts guestSitesAndNav = new GuestBFWCParts();
+		ChiefController cc = new BaseFullWebappController(ureq, guestSitesAndNav );
+		Windows.getWindows(ureq.getUserSession()).setChiefController(cc);
 		log.debug("set session-attribute 'AUTHCHIEFCONTROLLER'");
 		return cc;
 	}
@@ -205,17 +194,10 @@ public class AuthHelper {
 	 */
 	public static ChiefController createAuthHome(UserRequest ureq) {
 		if (!ureq.getUserSession().isAuthenticated()) throw new AssertException("not authenticated!");
-
-		BaseChiefControllerCreator bbc = new BaseChiefControllerCreator();
-		bbc.setContentControllerCreator(/*this is later injected by spring*/new ControllerCreator() {
-			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				BaseFullWebappControllerParts authSitesAndNav = new AuthBFWCParts();
-				return new BaseFullWebappController(lureq, lwControl, authSitesAndNav );
-			}
-		});
-
-		ChiefController cc = bbc.createChiefController(ureq);
-		Windows.getWindows(ureq.getUserSession()).setAttribute("AUTHCHIEFCONTROLLER", cc);
+		
+		BaseFullWebappControllerParts authSitesAndNav = new AuthBFWCParts();
+		ChiefController cc = new BaseFullWebappController(ureq, authSitesAndNav);
+		Windows.getWindows(ureq.getUserSession()).setChiefController(cc);
 		log.debug("set session-attribute 'AUTHCHIEFCONTROLLER'");
 		return cc;
 	}

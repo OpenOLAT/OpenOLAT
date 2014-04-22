@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
@@ -40,7 +39,6 @@ import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.ChiefController;
-import org.olat.core.gui.control.ContentableChiefController;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
@@ -246,38 +244,26 @@ public class WindowManagerImpl extends BasicManager implements WindowManager {
 		return showDebugInfo;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.WindowManager#createContentableChiefController(org.olat.core.gui.UserRequest)
-	 */
-	public ContentableChiefController createContentableChiefController(UserRequest ureq) {
-		return new BaseChiefController(ureq);
-	}
-	
 	/**
 	 * 
 	 * @see org.olat.core.gui.WindowManager#createNewPopupBrowserWindowFor(org.olat.core.gui.UserRequest, org.olat.core.gui.control.creator.ControllerCreator, boolean)
 	 */
+	@Override
 	public PopupBrowserWindow createNewPopupBrowserWindowFor(UserRequest ureq, ControllerCreator contentControllerCreator) {
-		BaseChiefController cc = new BaseChiefController(ureq);
-		cc.addBodyCssClass("b_body_popup");
 		//supports the open(ureq) method
-		PopupBrowserWindowController sbasec = pbwcc.createNewPopupBrowserController(ureq, cc.getWindowControl(), contentControllerCreator);
-		//the content controller for the popupwindow is generated and set
-		//at the moment the open method is called!!
-		cc.setContentController(true, sbasec);
-		return sbasec;
+		PopupBrowserWindowController cc = pbwcc.createNewPopupBrowserController(ureq, contentControllerCreator);
+		cc.addBodyCssClass("b_body_popup");
+		return cc;
 	}
 	
-	//fxdiff
+	@Override
 	public PopupBrowserWindow createNewUnauthenticatedPopupWindowFor(UserRequest ureq, ControllerCreator contentControllerCreator) {
-		BaseChiefController cc = new BaseChiefController(ureq);
-		cc.addBodyCssClass("b_body_popup");
 		//supports the open(ureq) method
-		PopupBrowserWindowController sbasec = pbwcc.createNewUnauthenticatedPopupWindowController(ureq, cc.getWindowControl(), contentControllerCreator);
+		PopupBrowserWindowController cc = pbwcc.createNewUnauthenticatedPopupWindowController(ureq, contentControllerCreator);
 		//the content controller for the popupwindow is generated and set
 		//at the moment the open method is called!!
-		cc.setContentController(true, sbasec);
-		return sbasec;
+		cc.addBodyCssClass("b_body_popup");
+		return cc;
 	}
 	
 	

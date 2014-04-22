@@ -50,7 +50,7 @@ public class DMZShibRegistrationContentControllerCreator implements ControllerCr
 		AutoCreator contentControllerCreator = new AutoCreator();
 		contentControllerCreator.setClassName(ShibbolethRegistrationController.class.getName());
 		dmzSitesAndNav.setContentControllerCreator(contentControllerCreator);
-		return new BaseFullWebappController(lureq, lwControl, dmzSitesAndNav );
+		return new BaseFullWebappController(lureq, dmzSitesAndNav );
 	}
 
 }

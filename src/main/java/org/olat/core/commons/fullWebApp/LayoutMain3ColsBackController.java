@@ -19,7 +19,6 @@
  */
 package org.olat.core.commons.fullWebApp;
 
-import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -52,7 +51,7 @@ public class LayoutMain3ColsBackController extends MainLayoutBasicController imp
 	private Link backLink;
 	private boolean fullScreen = false;
 
-	private BaseChiefController thebaseChief;
+	private ChiefController thebaseChief;
 
 	/**
 	 * Constructor for creating a 3 col based menu on the main area
@@ -121,11 +120,10 @@ public class LayoutMain3ColsBackController extends MainLayoutBasicController imp
 		return fullScreen;
 	}
 
-	// fxdiff FXOLAT-116: SCORM improvements
 	public void setAsFullscreen(UserRequest ureq) {
-		ChiefController cc = (ChiefController) Windows.getWindows(ureq).getAttribute("AUTHCHIEFCONTROLLER");
-		if (cc instanceof BaseChiefController) {
-			thebaseChief = (BaseChiefController) cc;
+		ChiefController cc = Windows.getWindows(ureq).getChiefController();
+		if (cc != null) {
+			thebaseChief = cc;
 			thebaseChief.addBodyCssClass("b_full_screen");
 		}
 		fullScreen = true;

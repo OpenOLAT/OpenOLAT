@@ -46,7 +46,7 @@ public class DMZEMChangeContentControllerCreator implements ControllerCreator {
 		AutoCreator contentControllerCreator = new AutoCreator();
 		contentControllerCreator.setClassName(ChangeEMailController.class.getName());
 		dmzSitesAndNav.setContentControllerCreator(contentControllerCreator);
-		return new BaseFullWebappController(lureq, lwControl, dmzSitesAndNav );		
+		return new BaseFullWebappController(lureq, dmzSitesAndNav );		
 	}
 
 }

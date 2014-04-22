@@ -175,13 +175,13 @@ public class FlexiTableModelMapper implements Mapper {
 	
 	private String renderFormItem(FormItem item, HttpServletRequest request) {
 		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(request);
-		ChiefController cc = (ChiefController)Windows.getWindows(usess).getAttribute("AUTHCHIEFCONTROLLER");
+		ChiefController cc = Windows.getWindows(usess).getChiefController();
 		return cc.getWindow().renderComponent(item.getComponent());
 	}
 	
 	private URLBuilder getURLBuilder(HttpServletRequest request) {
 		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(request);
-		ChiefController cc = (ChiefController)Windows.getWindows(usess).getAttribute("AUTHCHIEFCONTROLLER");
+		ChiefController cc = Windows.getWindows(usess).getChiefController();
 		return cc.getWindow().getURLBuilder();
 	}
 }

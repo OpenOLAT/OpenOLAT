@@ -32,17 +32,22 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.commons.chiefcontrollers.ChiefControllerMessageEvent;
 import org.olat.core.commons.chiefcontrollers.LanguageChangedEvent;
 import org.olat.core.commons.fullWebApp.util.GlobalStickyMessage;
 import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.GUIMessage;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.WindowSettings;
+import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.htmlheader.jscss.CustomJSComponent;
@@ -53,12 +58,12 @@ import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.VetoableCloseController;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.WindowControlInfoImpl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
@@ -66,14 +71,14 @@ import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabImpl;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.guistack.GuiStack;
-import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.gui.control.navigation.BornSiteInstance;
 import org.olat.core.gui.control.navigation.NavElement;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.control.util.ZIndexWrapper;
+import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.themes.Theme;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryModule;
@@ -82,9 +87,12 @@ import org.olat.core.id.context.HistoryPointImpl;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.id.context.StateSite;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.JavaScriptTracingController;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
 
@@ -96,23 +104,33 @@ import org.olat.core.util.resource.OresHelper;
  * 
  * @author patrickb, Felix Jost, Florian Gnägi
  */
-public class BaseFullWebappController extends BasicController implements GenericEventListener {
+public class BaseFullWebappController extends BasicController implements ChiefController, GenericEventListener {
 	private static final String PRESENTED_AFTER_LOGIN_WORKFLOW = "presentedAfterLoginWorkflow";
+	
+	//Base chief
+	
+	private Panel contentPanel;
+	private Controller jsServerC;
+	private Controller debugC;
+	private Controller inlineTranslationC;
+	private Controller developmentC;
+	private Controller jsLoggerC;
+	private List<String> bodyCssClasses = new ArrayList<>(3);
+
+	private WindowBackOffice wbo;
 	
 	// STARTED
 	private GuiStack currentGuiStack;
-	private Panel main;
-	private Panel modalPanel;
+	private Panel main, modalPanel;
 	private GUIMessage guiMessage;
 	private OncePanel guimsgPanel;
-	private Panel guimsgHolder;
-	private Panel currentMsgHolder;
+	private Panel guimsgHolder, currentMsgHolder;
 	private VelocityContainer guimsgVc;
 
 	private VelocityContainer mainVc, navVc;
 
 	// NEW FROM FullChiefController
-	private Controller headerCtr, topnavCtr, footerCtr;
+	private Controller topnavCtr, footerCtr;
 	private SiteInstance curSite;
 	private DTab curDTab;
 	
@@ -120,7 +138,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 
 	// the dynamic tabs list
 	private List<DTab> dtabs;
-	private List<String> dtabsLinkNames;
+	private List<Integer> dtabsLinkNames;
 	private List<Controller> dtabsControllers;
 	private Map<DTab,HistoryPoint> dtabToBusinessPath = new HashMap<DTab,HistoryPoint>();
 	// used as link id which is load url safe (e.g. replayable
@@ -139,19 +157,28 @@ public class BaseFullWebappController extends BasicController implements Generic
 	private static Integer MAX_TAB;
 	private WindowSettings wSettings;
 	
-	public BaseFullWebappController(UserRequest ureq, WindowControl ouisc_wControl,
-			BaseFullWebappControllerParts baseFullWebappControllerParts) {
+	public BaseFullWebappController(UserRequest ureq, BaseFullWebappControllerParts baseFullWebappControllerParts) {
 		// only-use-in-super-call, since we define our own
 		super(ureq, null);
-		
+
 		this.baseFullWebappControllerParts = baseFullWebappControllerParts;
+		
+		Object fullScreen = Windows.getWindows(ureq).getAttribute("FULL_SCREEN");
+		if(Boolean.TRUE.equals(fullScreen)) {
+			addBodyCssClass("b_full_screen");
+			Windows.getWindows(ureq).setAttribute("FULL_SCREEN", null);
+		}
 
 		guiMessage = new GUIMessage();
 		guimsgPanel = new OncePanel("guimsgPanel");
+		
+		WindowManager winman = Windows.getWindows(ureq).getWindowManager();
+		String wSettings = (String)ureq.getUserSession().removeEntryFromNonClearedStore(Dispatcher.WINDOW_SETTINGS);
+		WindowSettings settings = WindowSettings.parse(wSettings);
+		wbo = winman.createWindowBackOffice("basechiefwindow", this, settings);
 
 		// define the new windowcontrol
-		final WindowControl origWCo = ouisc_wControl;
-		WindowControl myWControl = new WebappWindowControl(this, origWCo);
+		WindowControl myWControl = new BaseFullWebappWindowControl(this, wbo);
 		overrideWindowControl(myWControl);
 
 
@@ -163,7 +190,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 		
 		// detach DTabs implementation from the controller - DTabs may be fetched from the window and locked on (synchronized access).
 		// if this is controller the controller is locked instead of only the DTabs part.
-		myDTabsImpl = new WebappDTabs(this);
+		myDTabsImpl = new BaseFullWebappDTabs(this);
 		
 		Window myWindow = myWControl.getWindowBackOffice().getWindow();
 		myWindow.setDTabs(myDTabsImpl);
@@ -176,8 +203,13 @@ public class BaseFullWebappController extends BasicController implements Generic
 		 */
 		initialize(ureq);
 		
+		mainVc.setDomReplaceable(false);
+		
 		initialPanel = putInitialPanel(mainVc);
+		
+		initialPanel.setDomReplaceable(false);
 		// ------ all the frame preparation is finished ----
+		initializeBase(ureq, winman, initialPanel);
 		
 		if (CoreSpringFactory.containsBean("fullWebApp.AfterLoginInterceptionControllerCreator")){
         		// present an overlay with configured afterlogin-controllers or nothing if none configured.
@@ -206,6 +238,97 @@ public class BaseFullWebappController extends BasicController implements Generic
 		 */
 		GlobalStickyMessage.registerForGlobalStickyMessage(this, ureq.getIdentity());
 	}
+	
+	private void initializeBase(UserRequest ureq, WindowManager winman, ComponentCollection mainPanel) {
+		
+		// component-id of mainPanel for the window id
+		mainVc.contextPut("o_winid", mainPanel.getDispatchID());
+		
+		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
+		mainVc.contextPut("enforceTopFrame", securityModule.isForceTopFrame());
+
+		// add optional css classes
+		mainVc.contextPut("bodyCssClasses", bodyCssClasses);
+
+		Window w = wbo.getWindow();
+
+		mainVc.put("jsCssRawHtmlHeader", w.getJsCssRawHtmlHeader());
+
+		// control part for ajax-communication. returns an empty panel if ajax
+		// is not enabled, so that ajax can be turned on on the fly for
+		// development mode
+		jsServerC = wbo.createAJAXController(ureq);
+		mainVc.put("jsServer", jsServerC.getInitialComponent());
+
+		// init with no bookmark (=empty bc)
+		mainVc.contextPut("o_bc", "");
+		
+		// the current language; used e.g. by screenreaders
+		mainVc.contextPut("lang", ureq.getLocale().toString());
+
+		// the current GUI theme and the global settings that contains the
+		// font-size. both are pushed as objects so that window.dirty always reads
+		// out the correct value
+		mainVc.contextPut("theme", w.getGuiTheme());
+		mainVc.contextPut("globalSettings", winman.getGlobalSettings());
+		mainVc.contextPut("isScreenReader", winman.isForScreenReader());
+
+		// content panel
+		contentPanel = new Panel("olatContentPanel");
+		mainVc.put("olatContentPanel", contentPanel);
+		mainVc.contextPut("o_winid", w.getDispatchID());
+		mainVc.contextPut("buildversion", Settings.getVersion());
+		
+
+		if (wbo.isDebuging()) {
+			debugC = wbo.createDebugDispatcherController(ureq, getWindowControl());
+			mainVc.put("guidebug", debugC.getInitialComponent());
+		}		
+		
+		// Inline translation interceptor. when the translation tool is enabled it
+		// will start the translation tool in translation mode, if the overlay
+		// feature is enabled it will start in customizing mode
+		// fxdiff: allow user-managers to use the inline translation also. TODO:
+		// do this with a proper right-mgmt!
+		if (ureq.getUserSession().isAuthenticated()
+				&& (ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isUserManager())
+				&& (I18nModule.isTransToolEnabled() || I18nModule.isOverlayEnabled())) {
+			inlineTranslationC = wbo.createInlineTranslationDispatcherController(ureq, getWindowControl());
+			Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+			Boolean isInlineTranslationEnabled = (Boolean) guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_INLINE_TRANSLATION_ENABLED,
+					Boolean.FALSE);
+			I18nManager.getInstance().setMarkLocalizedStringsEnabled(ureq.getUserSession(), isInlineTranslationEnabled);
+			mainVc.put("inlineTranslation", inlineTranslationC.getInitialComponent());
+		}
+
+		// debug info if debugging
+		if (wbo.isDebuging()) {
+			developmentC = wbo.createDevelopmentController(ureq, getWindowControl());
+			mainVc.put("development", developmentC.getInitialComponent());
+		}
+
+		// attach AJAX javascript console
+		jsLoggerC = new JavaScriptTracingController(ureq, getWindowControl());
+		// the js logger provides only a header element, nevertheless we need to
+		// put it into the main velocity container.
+		mainVc.put("jsLoggerC", jsLoggerC.getInitialComponent());
+		// put the global js translator mapper path into the main window
+		mainVc.contextPut("jsTranslationMapperPath", BaseChiefController.jsTranslationMapperPath);
+
+		// master window
+		//w.addListener(this); // to be able to report "browser reload" to the user
+		w.setContentPane(mainPanel);
+	}
+
+	@Override
+	public Window getWindow() {
+		return wbo.getWindow();
+	}
+
+	@Override
+	public WindowControl getWindowControl() {
+		return super.getWindowControl();
+	}
 
 	private void initialize(UserRequest ureq) {
 		mainVc = createVelocityContainer("fullwebapplayout");
@@ -227,9 +350,9 @@ public class BaseFullWebappController extends BasicController implements Generic
 		mainVc.put("guimessage", guimsgHolder);
 		
 		
-		dtabs = new ArrayList<DTab>();
-		dtabsLinkNames = new ArrayList<String>();
-		dtabsControllers = new ArrayList<Controller>();
+		dtabs = new ArrayList<>();
+		dtabsLinkNames = new ArrayList<>();
+		dtabsControllers = new ArrayList<>();
 
 		// -- sites -- by definition the first site is activated at the beginning
 		sites = baseFullWebappControllerParts.getSiteInstances(ureq, getWindowControl());
@@ -266,7 +389,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 		navVc.contextPut("tabhelper", this);
 
 		// header, optional (e.g. for logo, advertising )
-		headerCtr = baseFullWebappControllerParts.createHeaderController(ureq, getWindowControl());
+		Controller headerCtr = baseFullWebappControllerParts.createHeaderController(ureq, getWindowControl());
 		if (headerCtr != null) {
 			listenTo(headerCtr); // cleanup on dispose
 			Component headerCmp = headerCtr.getInitialComponent();
@@ -286,7 +409,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 		mainVc.put("modalpanel", modalPanel);
 
 		// main, mandatory (e.g. a LayoutMain3ColsController)
-		main = new Panel("main");
+		main = new Panel("mainContent");
 		mainVc.put("main", main);
 
 		// footer, optional (e.g. for copyright, powered by)
@@ -332,19 +455,19 @@ public class BaseFullWebappController extends BasicController implements Generic
 		addCustomThemeJS();
 	}
 	
-	private GUIMessage getGUIMessage() {
+	protected GUIMessage getGUIMessage() {
 		return guiMessage;
 	}
 	
-	private OncePanel getGUIMsgPanel() {
+	protected OncePanel getGUIMsgPanel() {
 		return guimsgPanel;
 	}
 	
-	private GuiStack getCurrentGuiStack() {
+	protected GuiStack getCurrentGuiStack() {
 		return currentGuiStack;
 	}
 	
-	private VelocityContainer getGUIMsgVc() {
+	protected VelocityContainer getGUIMsgVc() {
 		return guimsgVc;
 	}
 	
@@ -637,6 +760,37 @@ public class BaseFullWebappController extends BasicController implements Generic
 	}
 	
 	/**
+	 * adds a css-Classname to the OLAT body-tag
+	 * 
+	 * @param cssClass
+	 *            the name of a css-Class
+	 */
+	public void addBodyCssClass(String cssClass) {
+		// sets class for full page refreshes
+		bodyCssClasses.add(cssClass);
+
+		// only relevant in AJAX mode
+		JSCommand jsc = new JSCommand("try { jQuery('#b_body').addClass('" + cssClass + "'); } catch(e){if(o_info.debug) console.log(e) }");
+		getWindowControl().getWindowBackOffice().sendCommandTo(jsc);
+
+	}
+
+	/**
+	 * removes the given css-Classname from the OLAT body-tag
+	 * 
+	 * @param cssClass
+	 *            the name of a css-Class
+	 */
+	public void removeBodyCssClass(String cssClass) {
+		// sets class for full page refreshes
+		bodyCssClasses.remove(cssClass);
+		
+		//only relevant in AJAX mode
+		JSCommand jsc = new JSCommand("try { jQuery('#b_body').removeClass('" + cssClass + "'); } catch(e){if(o_info.debug) console.log(e) }");
+		getWindowControl().getWindowBackOffice().sendCommandTo(jsc);
+	}
+	
+	/**
 	 * @param pos
 	 * @return the dtab at pos pos
 	 */
@@ -801,7 +955,7 @@ public class BaseFullWebappController extends BasicController implements Generic
 		synchronized (dtabs) {
 			// make dtabs and dtabsControllers access synchronized
 			dtabs.add(dt);
-			dtabsLinkNames.add(Integer.toString(dtabCreateCounter));
+			dtabsLinkNames.add(dtabCreateCounter);
 			Link link = LinkFactory.createCustomLink("a" + dtabCreateCounter, "a" + dtabCreateCounter, "", Link.NONTRANSLATED, navVc, this);
 			link.setCustomDisplayText(StringHelper.escapeHtml(dt.getNavElement().getTitle()));
 			link.setTitle(dt.getTitle());
@@ -1038,134 +1192,6 @@ public class BaseFullWebappController extends BasicController implements Generic
 
 		public SiteInstance getSite() {
 			return site;
-		}
-	}
-	
-	private static class WebappDTabs implements DTabs {
-		
-		private final BaseFullWebappController webappCtrl;
-		
-		public WebappDTabs(BaseFullWebappController webappCtrl) {
-			this.webappCtrl = webappCtrl;
-		}
-		
-		@Override
-		public void activate(UserRequest ureq, DTab dTab, List<ContextEntry> entries) {
-			webappCtrl.activate(ureq, dTab, null, entries);
-		}
-
-		@Override
-		public void activateStatic(UserRequest ureq, String className, List<ContextEntry> entries) {
-			webappCtrl.activateStatic(ureq, className, entries);
-		}
-
-		public boolean addDTab(UserRequest ureq, DTab dt) {
-			return webappCtrl.addDTab(ureq, dt);
-		}
-		
-		public DTab createDTab(OLATResourceable ores, String title) {
-			return webappCtrl.createDTab(ores, null, title);
-		}
-		
-		public DTab createDTab(OLATResourceable ores, OLATResourceable initialOres, String title) {
-			return webappCtrl.createDTab(ores, initialOres, title);
-		}
-
-		public DTab getDTab(OLATResourceable ores) {
-			return webappCtrl.getDTab(ores);
-		}
-
-		public void removeDTab(UserRequest ureq, DTab dt) {
-			webappCtrl.removeDTab(ureq, dt);
-		}
-	}
-	
-	private static class WebappWindowControl implements WindowControl {
-		private WindowControlInfo wci;
-		private final WindowControl origWCo;
-		private final BaseFullWebappController webappCtrl;
-
-		public WebappWindowControl(BaseFullWebappController webappCtrl, WindowControl origWCo) {
-			this.webappCtrl = webappCtrl;
-			this.origWCo = origWCo;
-			wci = new WindowControlInfoImpl(webappCtrl, origWCo.getWindowControlInfo());
-		}
-
-		/**
-		 * @see org.olat.core.gui.control.WindowControl#pushToMainArea(org.olat.core.gui.components.Component)
-		 */
-		@SuppressWarnings("synthetic-access")
-		public void pushToMainArea(Component newMainArea) {
-			webappCtrl.getCurrentGuiStack().pushContent(newMainArea);
-		}
-
-		/**
-		 * @see org.olat.core.gui.control.WindowControl#pushAsModalDialog(java.lang.String,
-		 *      org.olat.core.gui.components.Component)
-		 */
-
-		@SuppressWarnings("synthetic-access")
-		public void pushAsModalDialog(Component newModalDialog) {
-			webappCtrl.getCurrentGuiStack().pushModalDialog(newModalDialog);
-		}
-
-		@Override
-		public void pushAsCallout(Component comp, String targetId) {
-			webappCtrl.getCurrentGuiStack().pushCallout(comp, targetId);
-		}
-
-		/**
-		 * @see org.olat.core.gui.control.WindowControl#pop()
-		 */
-		@SuppressWarnings("synthetic-access")
-		public void pop() {
-			// reactivate latest dialog from stack, dumping current one
-			webappCtrl.getCurrentGuiStack().popContent();
-		}
-
-		/**
-		 * @see org.olat.core.gui.control.WindowControl#setInfo(java.lang.String)
-		 */
-		@SuppressWarnings("synthetic-access")
-		public void setInfo(String info) {
-			webappCtrl.getGUIMessage().setInfo(info);
-			webappCtrl.getGUIMsgPanel().setContent(webappCtrl.getGUIMsgVc());
-
-			// setInfo is called input guimsgPanel into the correct place
-		}
-
-		/**
-		 * @see org.olat.core.gui.control.WindowControl#setError(java.lang.String)
-		 */
-		@SuppressWarnings("synthetic-access")
-		public void setError(String error) {
-			webappCtrl.getGUIMessage().setError(error);
-			webappCtrl.getGUIMsgPanel().setContent(webappCtrl.getGUIMsgVc());
-		}
-
-		/**
-		 * @see org.olat.core.gui.control.WindowControl#setWarning(java.lang.String)
-		 */
-		@SuppressWarnings("synthetic-access")
-		public void setWarning(String warning) {
-			webappCtrl.getGUIMessage().setWarn(warning);
-			webappCtrl.getGUIMsgPanel().setContent(webappCtrl.getGUIMsgVc());
-		}
-
-		public WindowControlInfo getWindowControlInfo() {
-			return wci;
-		}
-
-		public void makeFlat() {
-			throw new AssertException("should never be called!");
-		}
-
-		public BusinessControl getBusinessControl() {
-			return origWCo.getBusinessControl();
-		}
-
-		public WindowBackOffice getWindowBackOffice() {
-			return origWCo.getWindowBackOffice();
 		}
 	}
 }

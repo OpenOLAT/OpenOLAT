@@ -42,5 +42,17 @@ public interface ChiefController extends Controller {
 	 * @return the windowcontrol
 	 */
 	public WindowControl getWindowControl();
+	
+	/**
+	 * Set a class to the &lt;body&gt;
+	 * @param cssClass
+	 */
+	public void addBodyCssClass(String cssClass);
+
+	/**
+	 * Remove the class
+	 * @param cssClass
+	 */
+	public void removeBodyCssClass(String cssClass);
 
 }

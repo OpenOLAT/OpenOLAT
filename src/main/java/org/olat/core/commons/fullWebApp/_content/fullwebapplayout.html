@@ -1,3 +1,169 @@
+<!DOCTYPE html>
+<html lang="$r.getLanguageCode()">
+<head>
+<meta name="description" content="$r.translate("meta.description")" />
+<meta name="keywords" content="$r.translate("meta.keywords")" /> 
+<meta name="DC.creator" content="OpenOLAT - http://www.openolat.org" />
+<meta name="DC.subject" content="OpenOLAT - infinite learning - Your Open Source Learning Management System" />
+<meta name="DC.contributor" content="see http://www.openolat.org" />
+<meta name="DC.date" content="2010-03-16" scheme="DCTERMS.W3CDTF" />
+<meta name="DC.type" content="Interactive Resource" scheme="DCTERMS.DCMIType" />
+<meta name="DC.identifier" content="http://www.openolat.org" scheme="DCTERMS.URI" />
+<meta name="DC.rights" content="http://www.openolat.org" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta http-equiv="cache-control" content="no-cache" />
+<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="expires" content="0" />
+## <!-- IE cache -->
+<meta http-equiv="pragma-directive" content="no-cache" />
+<meta http-equiv="cache-directive" content="no-cache" />
+<script type="text/javascript">
+/* <![CDATA[ */ 
+var o_info = new Object();
+o_info.initialPageLoadFinished = false;
+o_info.o_winid = '$o_winid';
+o_info.uriprefix="$r.relWinLink()";
+o_info.bc="$o_bc";
+o_info.businessPath="";
+o_info.dirty_form = "$r.escapeDoubleQuotes($r.translate("form.dirty"))";
+o_info.locale = "$r.getLanguageCode()";
+o_info.lastClickTime = new Date().getTime();
+##fxdiff
+o_info.drop = true;
+## olat layout specific
+o_info.o_baseURI = "$r.staticLink("")";
+o_info.b_textMarkingIframeIntervals = new Array();
+o_info.i18n_noresponse_title = "$r.escapeDoubleQuotes($r.translate("server.no.response.title"))";
+o_info.i18n_noresponse = "$r.escapeDoubleQuotes($r.translate("server.no.response"))";
+## Initialize zindex manager
+o_info.zseed = 0;
+#if($enforceTopFrame)
+if (top!=self){top.location=self.location+"?o_winrndo=1";}
+#end
+function b_start(){
+	o_init();
+	## js B
+	$r.renderBodyOnLoadJSFunctionCall()
+	## js E
+	## Set flag that bodyOnLoad has already been called and the page is fully loaded. 
+	## Needed to identify if call like Ext.onRead() makes any sense (often not the case in AJAX mode)
+	o_info.initialPageLoadFinished = true;
+}
+/* ]]> */
+</script>
+## Library to fix issues and detect browser features
+<script type="text/javascript" src='$r.staticLink("js/jsMath/easy/load.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/modernizr/modernizr.js")'></script>
+## jQuery libraries
+<!--[if lt IE 9]>
+<script type="text/javascript" src='$r.staticLink("js/jquery/jquery-1.9.1.min.js")'></script>
+<![endif]-->
+<!--[if gte IE 9]><!-->
+<script type="text/javascript" src='$r.staticLink("js/jquery/jquery-2.1.0.min.js")'></script>
+<!--<![endif]-->
+<script type="text/javascript" src='$r.staticLink("js/jquery/ui/jquery-ui-1.10.4.custom.min.js")'></script>
+
+## Are compressed as js/js.plugins.min.js
+<script type="text/javascript" src='$r.staticLink("js/jquery/periodic/jquery.periodic.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/jshashtable-2.1_src.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/jquery/openolat/jquery.oolog.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/jquery/openolat/jquery.translator.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/tinymce4/tinymce/jquery.tinymce.min.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/functions.js")'></script>
+## <script type="text/javascript" src='$r.staticLink("js/js.plugins.min.js")'></script>
+<script type="text/javascript" src='$r.staticLink("movie/player.js")'></script>
+
+## Bootstrap js
+## FIXME:oo10 add to minify routine
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+<![endif]-->
+<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/affix.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/alert.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/button.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/carousel.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/collapse.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/dropdown.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/tab.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/transition.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/scrollspy.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/modal.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/tooltip.js")'></script>
+<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/popover.js")'></script>
+
+## Always loaded
+## <link type="text/css" href='$r.staticLink("js/jquery/tagit/jquery.tagit.css")' rel="stylesheet"/>
+## <link type="text/css" href='$r.staticLink("js/jquery/uilayout/layout-default-latest.css")' rel="stylesheet"/>
+## <link type="text/css" href='$r.staticLink("js/jquery/fullcalendar/fullcalendar.css")' rel="stylesheet"/>
+## <link type="text/css" href='$r.staticLink("js/jquery/datatables/css/jquery.dataTables.css")' rel="stylesheet"/>
+## FIXME:oo10 add plugin min
+##<link type="text/css" href='$r.staticLink("js/js.plugins.min.css")' rel="stylesheet"/>
+<link type="text/css" href='$r.staticLink("js/jquery/ui/jquery-ui-1.10.4.custom.min.css")' rel="stylesheet"/>
+
+<script type="text/javascript">
+/* <![CDATA[ */ 
+  jQuery.noConflict();
+	## references to objects for later access or cleanup
+	o_info.objectMap = new Hashtable();
+	## Initialize js translator factory with the js translator mapper path
+	jQuery(document).ooTranslator().initialize("$jsTranslationMapperPath");
+	o_info.oo_translator = jQuery(document).ooTranslator();
+/* ]]> */
+</script>
+
+## LAYOUT
+## 1) Dynamic component CSS included by components
+$r.render("jsCssRawHtmlHeader", "pre-theme")
+## 2) CSS theme inclusion and favicons
+<link rel="icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
+<link rel="shortcut icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
+<link id="b_theme_css" href="${theme.getBaseURI()}theme.css" rel="stylesheet" type="text/css" />
+## 3) IE specific bugfixes for current theme
+<!--[if lte IE 7]>
+<link href="${theme.getBaseURI()}patches.css" rel="stylesheet" type="text/css" />
+<![endif]-->
+## 4) Dynamic overriding of CSS rules
+$r.render("jsCssRawHtmlHeader", "post-theme")
+## 5) Add user font size
+<style id="b_fontSize_css" type="text/css">#b_page_margins{font-size:${globalSettings.getFontSize()}%}</style>
+## 6) Add special CSS for web2.a screen reader mode
+
+## deprecated - include any raw header
+$r.renderHeaderIncludes()
+
+## Page title taken from org.olat.core package
+<title>$r.translate("page.appname") - $r.translate("page.title")</title></head>
+## TODO:fj pb: Review order
+<body onload="b_start();" id="b_body" class="#foreach($cssClass in $bodyCssClasses)$cssClass #end b_lang_$r.getLanguageCode()">
+## if in debug mode, it is a invisible component which is only visible by wrapping debug information around all other
+## components.
+<!-- START guiDebug -->
+$r.renderForce("guidebug")
+<!-- END guiDebug -->
+## The inline translation tool
+<!-- START inlineTranslation -->
+$r.renderForce("inlineTranslation")
+<!-- END inlineTranslation -->
+## - include javascript for window and ajax control
+<!-- START jsServer -->
+$r.render("jsServer")
+<!-- END jsServer -->
+## controller for development
+$r.renderForce("development")
+## the content comes here
+<!-- START olatContentPanel -->
+
+
+
+
+
+
+
+
+
 <a id='o_top' name="o_top"></a>
 <div id="o_beta_logo"></div>
 	
@@ -83,4 +249,23 @@
 ## IE can't render empty div's properly which results in an ugly white bar.
 	$r.render("modalpanel")
 ## ---- END #b_nav ---
+
+
+
+<!-- END olatContentPanel -->
+## the div for the busy-wait animated-gif
+<div id="b_ajax_busy" class=""></div>
+## hidden div for EM-PX factor readout 
+<div id="b_width_1em" style="width:1em; position: absolute; left: -1000px;"></div>
+<div>
+<script type="text/javascript">
+/* <![CDATA[ */ 
+// init size and listen to text resize events
+jQuery(function() {
+	b_initEmPxFactor(); 
+});
+/* ]]> */
+</script>
+</div>
+</body></html>
 

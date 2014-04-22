@@ -20,7 +20,6 @@
 package org.olat.admin.sysinfo;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -66,7 +65,7 @@ public class CoreFunctionsController extends FormBasicController {
 		MultipleSelectionElement jsMathEl
 			= uifactory.addCheckboxesHorizontal("jsmath", "core.jsMath", serverCont, new String[]{"xx"}, new String[]{""}, null);
 		jsMathEl.setEnabled(false);
-		jsMathEl.select("xx", BaseChiefController.isJsMathEnabled());
+		jsMathEl.select("xx", Boolean.TRUE);
 		
 		MultipleSelectionElement restEl
 		= uifactory.addCheckboxesHorizontal("restapi", "core.restapi", serverCont, new String[]{"xx"}, new String[]{""}, null);

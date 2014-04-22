@@ -29,6 +29,7 @@
 package org.olat.core.gui.control;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.creator.ControllerCreator;
 
 /**
  * Description:<br>
@@ -39,11 +40,19 @@ import org.olat.core.gui.UserRequest;
  *
  * @author Felix Jost
  */
-public interface ChiefControllerCreator {
+public class ChiefControllerCreator {
+	
+	private ControllerCreator contentControllerCreator;
+
+	public ChiefController createChiefController(UserRequest ureq) {
+		Controller c = contentControllerCreator.createController(ureq, null);
+		return (ChiefController)c;
+	}
 	/**
-	 * creates a new chiefcontroller
-	 * @param ureq
-	 * @return
+	 * [used by spring]
+	 * @param contentControllerCreator The contentControllerCreator to set.
 	 */
-	public ChiefController createChiefController(UserRequest ureq);
+	public void setContentControllerCreator(ControllerCreator contentControllerCreator) {
+		this.contentControllerCreator = contentControllerCreator;
+	}
 }

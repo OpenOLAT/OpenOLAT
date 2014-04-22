@@ -27,7 +27,6 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
@@ -381,10 +380,8 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 		// jsMath brute force approach to render latex formulas: add library if
 		// a jsmath class is found in the code and the library is not already in
 		// the header of the page
-		if (BaseChiefController.isJsMathEnabled()) {
-			if ((page.indexOf("class=\"math\"") != -1 || page.indexOf("class='math'") != -1) && (origHTMLHead == null || origHTMLHead.indexOf("jsMath/easy/load.js") == -1)) {
-				sb.appendJsMath();		
-			}			
+		if ((page.indexOf("class=\"math\"") != -1 || page.indexOf("class='math'") != -1) && (origHTMLHead == null || origHTMLHead.indexOf("jsMath/easy/load.js") == -1)) {
+			sb.appendJsMath();		
 		}
 
 		// add some custom header things like js code or css
