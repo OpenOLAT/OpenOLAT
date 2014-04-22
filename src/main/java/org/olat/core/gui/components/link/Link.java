@@ -57,13 +57,15 @@ public class Link extends AbstractComponent {
 	public static final int BUTTON_XSMALL = 1;
 	public static final int BUTTON_SMALL = 2;
 	public static final int BUTTON = 3;
-	public static final int LINK_BACK = 4;
-	public static final int LINK = 5;
+	public static final int BUTTON_LARGE = 4;
+	
+	public static final int LINK_BACK = 5;
+	public static final int LINK = 6;
 	/**
 	 * to be refactored later into own components
 	 */
-	public static final int TOOLENTRY_DEFAULT = 6;
-	public static final int TOOLENTRY_CLOSE = 7;
+	public static final int TOOLENTRY_DEFAULT = 7;
+	public static final int TOOLENTRY_CLOSE = 8;
 		
 	/**
 	 * can be added to one of the following:
@@ -75,6 +77,7 @@ public class Link extends AbstractComponent {
 	private String command;
 	private int presentation;
 	private int presentationBeforeCustomCSS;
+	private boolean primary;
 	private String i18n;
 	private String title;
 	private String elementId;
@@ -206,6 +209,14 @@ public class Link extends AbstractComponent {
 		return i18n;
 	}
 
+	public boolean isPrimary() {
+		return primary;
+	}
+	
+	public void setPrimary(boolean isPrimary) {
+		primary = isPrimary;
+	}
+	
 	public int getPresentation() {
 		return presentation;
 	}

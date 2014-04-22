@@ -68,9 +68,14 @@ class FormButtonRenderer implements ComponentRenderer {
 			sb.append(" disabled=\"disabled\" ");
 		}
 		sb.append(FormJSHelper.getRawJSFor(fs.getRootForm(), id, fs.getAction()));
-		sb.append(" class=\"b_button ");
+		sb.append(" class=\"btn");
+		if (fsC.getIsSubmitAndValidate()) {
+			sb.append(" btn-primary");			
+		} else {
+			sb.append(" btn-default");						
+		}
 		if(!source.isEnabled()){
-			sb.append(" b_disabled ");
+			sb.append(" o_disabled ");
 		}		
 		sb.append("\"><span>");
 		sb.append(fs.getTranslated());
