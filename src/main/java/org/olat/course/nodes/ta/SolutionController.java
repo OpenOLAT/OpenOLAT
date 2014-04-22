@@ -42,7 +42,6 @@ import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  *  
