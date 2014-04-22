@@ -126,6 +126,7 @@ public class ProfileAndHomePageEditController extends BasicController implements
 
 		this.myContent = new VelocityContainer("homepage", VELOCITY_ROOT + "/homepage.html", this.translator, this);
 		this.previewButton = LinkFactory.createButtonSmall("command.preview", this.myContent, this);
+		previewButton.setIconCSS("o_icon o_icon_preview");
 		this.homePageConfig = this.hpcm.loadConfigFor(this.identityToModify.getName());
 
 		this.profileFormController = new ProfileFormController(ureq, wControl, this.homePageConfig, this.identityToModify, isAdministrativeUser);

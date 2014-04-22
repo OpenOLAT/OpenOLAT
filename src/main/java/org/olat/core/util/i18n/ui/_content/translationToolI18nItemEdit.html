@@ -70,10 +70,10 @@
 //FIXME:FG:6.2: Implement Java way of setting flexi form link buttons dirty on change
 function b_SetTranslationSaveLinksDirty() {
 	var save=jQuery("#$f.getItemId("saveLink")"); 
-	if (!save.hasClass('b_button_dirty')) {
-		save.addClass('b_button_dirty'); 
+	if (!save.hasClass('o_button_dirty')) {
+		save.addClass('o_button_dirty'); 
 		#if ($hasNext) 
-			jQuery("#$f.getItemId("saveNextLink")").addClass('b_button_dirty');
+			jQuery("#$f.getItemId("saveNextLink")").addClass('o_button_dirty');
 		#end
 	}
 	

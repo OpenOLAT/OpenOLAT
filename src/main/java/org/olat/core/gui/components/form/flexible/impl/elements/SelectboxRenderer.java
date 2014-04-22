@@ -88,7 +88,7 @@ class SelectboxRenderer implements ComponentRenderer {
 			sb.append(FormJSHelper.getRawJSFor(ssec.getRootForm(), ssec.getSelectionElementFormDisId(), ssec.getAction()));
 		}
 		
-		sb.append(">");
+		sb.append(" class='form-control'>");
 		/*
 		 * the options <option ...>value</option>
 		 */

@@ -1,14 +1,46 @@
 .o_form{
 	legend {}
 	.o_chelp {}
-	.o_desc {}
+	.o_desc {
+		@extend .o_note;
+	}
 	.o_warning {}
 	.o_info {}
 
 	.o_icon_mandatory {
 		margin-left: 0.3em;
 	}
-	
+	.o_error {
+		margin-top: 1px;
+		margin-bottom: 0;
+		padding: 10px;
+	}	
 	.o_disabled {}
+	
+	hr.o_spacer {}
+	
+	.o_date  {
+		position: relative;
+		padding-right: $input-height-base;
+		.o_picker_wrapper {
+			position: absolute;
+			top: 0;
+			right: 0;
+			height: $input-height-base;
+			width: $input-height-base;
+			text-align: right;
+			vertical-align: middle;
+			line-height: $input-height-base;
+			font-size: floor($input-height-base / 3 * 2 );
+			color: $link-color;
+			&:hover {
+				color: $link-hover-color;
+			}
+		}
+		
+	}
+}
 
+.o_button_dirty {
+	@extend .btn-warning;
 }

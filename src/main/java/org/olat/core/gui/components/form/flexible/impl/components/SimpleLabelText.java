@@ -54,6 +54,8 @@ public class SimpleLabelText extends FormBaseComponentImpl {
 		super(name);
 		this.text = text;
 		this.componentIsMandatory = mandatory;
+		// to minimize DOM tree we provide our own DOM ID (o_c12245)
+		this.setDomReplacementWrapperRequired(false);
 	}
 
 	public boolean isComponentIsMandatory() {
@@ -77,20 +79,22 @@ public class SimpleLabelText extends FormBaseComponentImpl {
 		public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 				RenderResult renderResult, String[] args) {
 			SimpleLabelText stc = (SimpleLabelText) source;
+			sb.append("<label class='control-label' id='o_c").append(source.getDispatchID()).append("'");
+			// add the reference to form element for which this label stands. this is important for screen readers
+			if (args !=  null && args.length > 0) {
+				sb.append(" for=\"");
+				sb.append(args[0]);
+				sb.append("\"");
+			}
+			sb.append(">");
 			if (StringHelper.containsNonWhitespace(stc.text)) {
-				sb.append("<label");
-				// add the reference to form element for which this label stands. this is important for screen readers
-				if (args !=  null && args.length > 0) {
-					sb.append(" for=\"");
-					sb.append(args[0]);
-					sb.append("\"");
-				}
-				sb.append(">").append(stc.text).append("</label>");
+				sb.append(stc.text);
 			}
 			if (stc.componentIsMandatory) {
 				String hover = stc.getTranslator().translate("form.mandatory.hover");
-				sb.append("<span class='b_form_mandatory' title='").append(hover).append("'>&nbsp;</span>");
+				sb.append("<i class='o_icon o_icon_mandatory' title='").append(hover).append("'></i>");
 			}
+			sb.append("</label>");
 		}
 	}
 }

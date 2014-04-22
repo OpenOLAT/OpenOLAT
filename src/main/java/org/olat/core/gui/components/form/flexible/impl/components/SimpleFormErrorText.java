@@ -62,7 +62,7 @@ public class SimpleFormErrorText extends FormBaseComponentImpl {
 				RenderResult renderResult, String[] args) {
 			SimpleFormErrorText stc = (SimpleFormErrorText) source;
 			// error component only
-			sb.append("<div class=\"b_form_error_msg\">");
+			sb.append("<div class='o_error' id='o_c").append(source.getDispatchID()).append("'>");
 			sb.append(stc.text);
 			sb.append("</div>");
 		}
@@ -74,6 +74,7 @@ public class SimpleFormErrorText extends FormBaseComponentImpl {
 	public SimpleFormErrorText(String name, String text) {
 		super(name);
 		this.text = text;
+		this.setDomReplacementWrapperRequired(false);
 		setDirty(true);
 	}
 

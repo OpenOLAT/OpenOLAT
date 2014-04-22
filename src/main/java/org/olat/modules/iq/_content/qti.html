@@ -34,7 +34,7 @@ function confirmSuspend() {
 		<strong>$qtistatus.getTitle()</strong>
   	#if ($qtistatus.isOpen())
 		#if ($qtistatus.isSurvey())
-			<a class="b_button #if($allQuestionsAnswered) b_button_dirty #end" href="$r.commandURI("sas")" onclick="{if (o2cl()) return confirmSubmit(); else return false;}"><span>$r.translate("submitSurvey")</span></a>
+			<a class="b_button #if($allQuestionsAnswered) o_button_dirty #end" href="$r.commandURI("sas")" onclick="{if (o2cl()) return confirmSubmit(); else return false;}"><span>$r.translate("submitSurvey")</span></a>
 			#if ($enableCancel)
 				<a class="b_button" href="$r.commandURI("cancel")" onclick="{if (o2cl()) return confirmCancel(); else return false;}"><span>$r.translate("cancelSurvey")</span></a>
 			#end
@@ -42,7 +42,7 @@ function confirmSuspend() {
 				<a class="b_button" href="$r.commandURI("suspend")" onclick="{if (o2cl()) return confirmSuspend(); else return false;}"><span>$r.translate("suspendSurvey")</span></a>
 			#end
 		#else
-			<a class="b_button #if($allQuestionsAnswered) b_button_dirty #end" href="$r.commandURI("sas")" onclick="{if (o2cl()) return confirmSubmit(); else return false;}"><span>$r.translate("submitAssess")</span></a>
+			<a class="b_button #if($allQuestionsAnswered) o_button_dirty #end" href="$r.commandURI("sas")" onclick="{if (o2cl()) return confirmSubmit(); else return false;}"><span>$r.translate("submitAssess")</span></a>
 			#if ($enableCancel)
 				<a class="b_button" href="$r.commandURI("cancel")" onclick="{if (o2cl()) return confirmCancel(); else return false;}"><span>$r.translate("cancelAssess")</span></a>
 			#end

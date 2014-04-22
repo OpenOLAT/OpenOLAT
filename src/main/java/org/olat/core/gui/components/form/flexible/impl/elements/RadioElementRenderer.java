@@ -66,11 +66,12 @@ class RadioElementRenderer implements ComponentRenderer {
 		String value = ssec.getValue();
 		boolean selected = ssec.isSelected();
 		// read write view
+		sb.append("<div class='radio'>");
 		sb.append("<input ");
 		sb.append("id=\"");
 		sb.append(ssec.getFormDispatchId());
 		sb.append("\" ");
-		sb.append("type=\"radio\" class=\"b_radio\" " + subStrName + " value=\"");
+		sb.append("type=\"radio\" " + subStrName + " value=\"");
 		sb.append(key);
 		sb.append("\" ");
 		if (selected){
@@ -87,6 +88,7 @@ class RadioElementRenderer implements ComponentRenderer {
 		sb.append("<label for=\"").append(ssec.getFormDispatchId()).append("\">");
 		sb.append(value);
 		sb.append("</label>");
+		sb.append("</div>");
 		
 		if(source.isEnabled()){
 			//add set dirty form only if enabled

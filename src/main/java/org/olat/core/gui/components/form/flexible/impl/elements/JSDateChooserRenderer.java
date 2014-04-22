@@ -77,15 +77,17 @@ class JSDateChooserRenderer implements ComponentRenderer {
 		Translator dateTranslator = Util.createPackageTranslator(JSDateChooserRenderer.class, translator.getLocale());
 
 		//add pop js for date chooser, if componente is enabled
+		sb.append("<div class='o_date'>");
 		if (source.isEnabled()) {
 			String format = jsdcc.getDateChooserDateFormat();
 			TextElementComponent teC = jsdcc.getTextElementComponent();
 			TextElementImpl te = teC.getTextElementImpl();
 
 			//date chooser button
-			dc.append("<span class=\"b_form_datechooser\" id=\"").append(triggerId).append("\" title=\"").append(StringEscapeUtils.escapeHtml(sourceTranslator.translate("calendar.choose"))).append("\"")
+			dc.append("<div class='o_picker_wrapper'>");
+			dc.append("<i class='o_icon o_icon_calendar' id=\"").append(triggerId).append("\" title=\"").append(StringEscapeUtils.escapeHtml(sourceTranslator.translate("calendar.choose"))).append("\"")
 			  .append(" onclick=\"jQuery('#").append(receiverId).append("').datepicker('show');\"")
-			  .append(">&nbsp;</span>");
+			  .append("></i></div>");
 			// date chooser javascript
 			dc.append("<script type=\"text/javascript\">\n /* <![CDATA[ */ \n")
 				.append("jQuery(function(){ jQuery('#").append(receiverId).append("').datepicker({\n")
@@ -144,10 +146,11 @@ class JSDateChooserRenderer implements ComponentRenderer {
 			//readonly view
 			FormJSHelper.appendReadOnly(dc.toString(), sb);
 		}
+		sb.append("</div>");
 	}
 	
 	private StringOutput renderMS(StringOutput dc, String id, int time) {
-		dc.append("<input type=\"text\" id=\"").append(id).append("\"")
+		dc.append("<input class='form-control' type=\"text\" id=\"").append(id).append("\"")
 	    .append(" name=\"").append(id).append("\" size=\"2\"")
 		  .append(" maxlength=\"2\"").append("\" value=\"").append(time > 9 ? "" + time : "0" + time).append("\"")
 		  .append(" />");
@@ -198,7 +201,7 @@ class JSDateChooserRenderer implements ComponentRenderer {
 			
 		} else {
 			//read write view
-			sb.append("<input type=\"text\" id=\"");
+			sb.append("<input type=\"text\" class='form-control' id=\"");
 			sb.append(id);
 			sb.append("\" name=\"");
 			sb.append(id);

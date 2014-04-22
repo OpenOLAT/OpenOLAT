@@ -1,12 +1,24 @@
-<fieldset>
-	<legend>$r.translate("title.homepage")</legend>
-	$r.contextHelpWithWrapper("org.olat.user","home-vcard.html","help.hover.vcard")
-	<div class="b_float_right">$r.render("command.preview")</div>
+	<h2>	
+		$r.contextHelpWithWrapper("org.olat.user","home-vcard.html","help.hover.vcard")
+		$r.translate("title.homepage")
+	
+	</h2>
+	<p class="o_note">
+		$r.translate("form.description")
+	</p>
+	<p>
+		$r.render("command.preview")
+	</p>
+		
 	$r.render("homepageform")
-</fieldset>
+
+	<hr />
+	
 <fieldset>
-	<legend>$r.translate("ul.header")</legend>
-	$r.contextHelpWithWrapper("org.olat.user","home-picture.html","chelp.home-picture.hover")
+	<legend>
+		$r.contextHelpWithWrapper("org.olat.user","home-picture.html","chelp.home-picture.hover")
+		$r.translate("ul.header")
+	</legend>
 	$r.render("c")
 </fieldset>
 	

@@ -56,12 +56,13 @@ class StaticTextElementRenderer implements ComponentRenderer {
 		String id = steC.getFormDispatchId();
 		String value = steC.getValue();
 		
-		sb.append("<span id=\"").append(id).append("\" ")
-		  .append(FormJSHelper.getRawJSFor(steC.getRootForm(), id, steC.getAction()));
+		sb.append("<p id=\"").append(id).append("\" ");
+		sb.append(FormJSHelper.getRawJSFor(steC.getRootForm(), id, steC.getAction()));
+		sb.append(" class='form-control-static ");
 		if(StringHelper.containsNonWhitespace(steC.getElementCssClass())) {
-			sb.append("class=\"").append(steC.getElementCssClass()).append("\"");
+			sb.append(steC.getElementCssClass());
 		}
-		sb.append(">").append(value).append("</span>");
+		sb.append("'>").append(value).append("</p>");
 	}
 
 	/**

@@ -61,7 +61,6 @@ import org.olat.core.util.ValidationStatus;
 public class FormLayoutContainer extends FormItemImpl implements FormItemContainer, FormLayouter, Disposable {
 
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(FormLayoutContainer.class);
-	private static final String LAYOUT_DEFAULT = VELOCITY_ROOT + "/form_default.html";
 	private static final String LAYOUT_HORIZONTAL = VELOCITY_ROOT + "/form_horizontal.html";
 	private static final String LAYOUT_VERTICAL = VELOCITY_ROOT + "/form_vertical.html";
 	private static final String LAYOUT_SELBOX = VELOCITY_ROOT + "/form_selbox.html";
@@ -113,6 +112,10 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	private FormLayoutContainer(String id, String name, Translator formTranslator, String page) {
 		super(id, name, false);
 		formLayoutContainer = new VelocityContainer(id == null ? null : id + "_VC", name, page, formTranslator, null);
+		if (page.equals(LAYOUT_VERTICAL) || page.equals(LAYOUT_VERTICAL) || page.equals(LAYOUT_BUTTONGROUP)) {
+			// optimize for lower DOM element count - provides its own DOM ID in velocity template
+			formLayoutContainer.setDomReplacementWrapperRequired(false);
+		}
 		translator = formTranslator;
 		// add the form decorator for the $f.hasError("ddd") etc.
 		formLayoutContainer.contextPut("f", new FormDecoratorImpl(this));
@@ -508,8 +511,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 * @return
 	 */
 	public static FormLayoutContainer createDefaultFormLayout(String name, Translator formTranslator){
-		FormLayoutContainer tmp = new FormLayoutContainer(name, formTranslator, LAYOUT_DEFAULT);
-		return tmp;
+		return createVerticalFormLayout(name, formTranslator);
 	}
 	
 	/**

@@ -214,7 +214,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				sb.append("></i> "); // one space needed
 			}			
 			
-			sb.append("<span> "); // inner wrapper for layouting
+			sb.append("<span>"); // inner wrapper for layouting
 			if (customDisplayText != null) {
 				//link is nontranslated but has custom text
 				sb.append(customDisplayText);

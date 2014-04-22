@@ -72,11 +72,13 @@ class CheckboxRenderer implements ComponentRenderer {
 		
 		//read write view
 		String cssClass = cec.getCssClass(); //optional CSS class
+		sb.append("<div class='checkbox ");
+		if (cssClass !=  null) sb.append(cssClass);		
+		sb.append("'>");
 		sb.append("<input type=\"checkbox\" ");
 		sb.append("id=\"");
 		sb.append(cec.getFormDispatchId());
 		sb.append("\" ");
-		sb.append("class=\"b_checkbox\" ");
 		sb.append(subStrName);
 		sb.append(" value=\"");
 		sb.append(key);
@@ -89,13 +91,12 @@ class CheckboxRenderer implements ComponentRenderer {
 			sb.append(FormJSHelper.getRawJSFor(cec.getRootForm(),cec.getSelectionElementFormDisId(), cec.getAction()));
 		}
 		sb.append(" />");
-		if (cssClass !=  null) sb.append("<span class=\"").append(cssClass).append("\">");
 		if (StringHelper.containsNonWhitespace(value)) {
-			sb.append("<label class=\"b_checkbox_label\" for=\"").append(cec.getFormDispatchId()).append("\">");
+			sb.append("<label for=\"").append(cec.getFormDispatchId()).append("\">");
 			sb.append(value);
 			sb.append("</label>");			
 		}
-		if (cssClass !=  null) sb.append("</span>");
+		sb.append("</div>");
 		
 		if(source.isEnabled()){
 			//add set dirty form only if enabled

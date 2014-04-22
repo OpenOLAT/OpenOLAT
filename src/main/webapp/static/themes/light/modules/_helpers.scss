@@ -9,13 +9,8 @@ a.o_chelp {
 }
 
 div.o_chelp_wrapper { 
-	position: relative; 
-	z-index: 2;
-	a.o_chelp { 
-		position: absolute; 
-		top: 0.5em; 
-		right: 0.5em;
-	}
+	position: relative;
+	@extend .pull-right;
 }
 /*
 fieldset a.o_chelp, 

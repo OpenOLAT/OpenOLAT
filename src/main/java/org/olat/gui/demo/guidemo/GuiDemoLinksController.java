@@ -84,7 +84,7 @@ public class GuiDemoLinksController extends BasicController {
 		buttonSmall = LinkFactory.createButtonSmall("button.small", mainVC, this);
 		button = LinkFactory.createButton("button", mainVC, this);
 		buttonDirty = LinkFactory.createButton("button.dirty", mainVC, this);
-		buttonDirty.setCustomEnabledLinkCSS("b_button b_button_dirty");
+		buttonDirty.setCustomEnabledLinkCSS("b_button o_button_dirty");
 		buttonPreferred = LinkFactory.createButton("button.preferred", mainVC, this);
 		buttonPreferred.setCustomEnabledLinkCSS("b_button b_button_preferred");
 

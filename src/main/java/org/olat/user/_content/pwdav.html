@@ -1,7 +1,11 @@
-<fieldset>
-	<legend>$r.translate("pwdav.title")</legend>
-	$r.contextHelpWithWrapper("org.olat.core.commons.modules.bc","bc-webdav.html","help.hover.webdav")
-	<p>$r.translate("pwdav.description")</p>
+<fieldset class="o_form">
+	<legend>
+		$r.contextHelpWithWrapper("org.olat.core.commons.modules.bc","bc-webdav.html","help.hover.webdav")
+		$r.translate("pwdav.title")	
+	</legend>
+	<p class="o_desc">
+		$r.translate("pwdav.description")
+	</p>
 
 	#if($webdavhttps)
 		<p>

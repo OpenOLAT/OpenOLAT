@@ -17,51 +17,46 @@
  */
 
 /* content boxes */
-.b_info { 
-	padding: 5px 5px 5px 30px; 
-	background: #E9EAEF url(../../openolat/images/information-white.png) no-repeat 5px 5px; 
-	border:1px solid #C5C4C4; 
-	@include o-border-radius(4px);
+.o_info { 
+	margin: 20px 0;
+	padding: 20px;
+	background-color: #eee;
+	border-left: 3px solid #d4d4d4;
+	h2, h3, h4, h5 { color: #bbbbbb;}
 }
-p.b_info, div.b_info {margin: 1em 0;} /* tiny needs something here */
+p.o_info, div.o_info {margin: 20px 0;} /* tiny needs something here */
 
-.b_note {
-	padding: 1em; 
-	background: #E2E2E2; 
-	border: 2px #B5B5B5 solid; 
-	@include o-border-radius(4px);
+.o_note {
+	@extend .o_info;
+	background-color: #f4f8fa;
+	border-color: #5bc0de;
+	h2, h3, h4, h5 { color: #5bc0de;}
 }
-p.b_note, div.b_note {margin: 1em 0;} /* tiny needs something here */
+p.o_note, div.o_note {margin: 20px 0;} /* tiny needs something here */
 
-.b_important {
-	padding: 1em; 
-	background: #FFF1A4; 
-	border: 2px #F4D000 solid; 
-	@include o-border-radius(4px);
+.o_important {
+	@extend .o_info;
+	background-color: #FFF1A4;
+	border-color: #F4D000;
+	h2, h3, h4, h5 { color: #F4D000;}
 }
-p.b_important, div.b_important {margin: 1em 0;} /* tiny needs something here */
+p.o_important, div.o_important {margin: 20px 0;} /* tiny needs something here */
 
-.b_warning {
-	padding: 1em; 
-	background: #FFD5AA; 
-	border: 2px #FF9E3E solid; 
-	@include o-border-radius(4px);
+.o_warning {
+	@extend .o_info;
+	background-color: #FFD5AA;
+	border-color: #FF9E3E;
+	h2, h3, h4, h5 { color: #FF9E3E;}
 }
-p.b_warning, div.b_warning {margin: 1em 0;} /* tiny needs something here */
+o.b_warning, div.o_warning {margin: 20px 0;} /* tiny needs something here */
 
-.b_error {
-	padding: 1em; 
-	background: #FF6A66; 
-	color: #fff; 
-	border: 2px #ff0600 solid; 
-	@include o-border-radius(4px);
-	.b_error_icon { 
-		padding: 9px 0 9px 41px; 
-		background: url(../../openolat/images/icon_error_32.png) no-repeat; 
-	}
-	table.b_grid td, table.b_grid th, table.b_border td, table.b_border th { border: 1px solid #fff;}
+.o_error {
+	@extend .o_info;
+	background-color: #fdf7f7;
+	border-color: #d9534f;
+	h2, h3, h4, h5 { color: #d9534f;}
 }
-p.b_error, div.b_error {margin: 1em 0;} /* tiny needs something here */
+o.b_error, div.o_error {margin: 20px 0;} /* tiny needs something here */
 
 .b_border_box { 
 	border: 1px solid $gray-light; 
@@ -168,5 +163,5 @@ FIXME:oo10
 replaced styles: search/replace in content files on disk:
 
 b_emoticons_ -> o_emoticons_
-
+b_error -> o_error
 */

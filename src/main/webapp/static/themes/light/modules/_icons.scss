@@ -9,17 +9,19 @@ $fa-css-prefix: "o_icon" !default;
 @import "../../../font-awesome/scss/font-awesome";
 
 /* OpenOLAT Icons */
-.o_icon_close { @extend .o_icon-times;}
+.o_icon_calendar { @extend .o_icon-calendar;}
+.o_icon_check {@extend .o_icon-check; }
+.o_icon_close_tab {@extend .o_icon-times;}
+.o_icon_close {@extend .o_icon-minus-square;}
 .o_icon_dev { @extend .o_icon-wrench;}
-.o_icon_error {@extend .o_icon-times;}
+.o_icon_error {@extend .o_icon-exclamation;}
 .o_icon_help { @extend .o_icon-question-circle; @extend .o_icon-lg; cursor: help;}
 .o_icon_impress { @extend .o_icon-info-circle; }
 .o_icon_message { @extend .o_icon-envelope;}
 .o_icon_login {@extend .o_icon-sign-in;}
 .o_icon_logout {@extend .o_icon-sign-out;}
 .o_icon_mandatory {@extend .o_icon-asterisk; color: #f0ad4e;}
-.o_icon_check {@extend .o_icon-check; }
-.o_icon_close {@extend .o_icon-minus-square;}
+.o_icon_preview {@extend .o_icon-eye;}
 .o_icon_refresh { @extend .o_icon-refresh; } 
 .o_icon_search {@extend .o_icon-search;}
 .o_icon_status_available { @extend .o_icon-circle; color: #006633; }

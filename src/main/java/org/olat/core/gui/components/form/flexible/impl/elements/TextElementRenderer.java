@@ -82,7 +82,7 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			// use the longer from display size or real value length
 			int size = (te.displaySize > value.length() ? te.displaySize : value.length());
 			sb.append("<input type=\"").append(te.getHtmlInputType());
-			sb.append("\" disabled=\"disabled\" class=\"b_form_element_disabled\" size=\"");
+			sb.append("\" disabled=\"disabled\" class=\"form-control o_disabled\" size=\"");
 			sb.append(size);
 			sb.append("\" value=\"");		
 			sb.append(htmlVal);
@@ -95,7 +95,7 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			sb.append(id);
 			sb.append("\" name=\"");
 			sb.append(id);
-			sb.append("\" size=\"");
+			sb.append("\" class=\"form-control\" size=\"");
 			sb.append(te.displaySize);
 			if(te.maxlength > -1){
 				sb.append("\" maxlength=\"");

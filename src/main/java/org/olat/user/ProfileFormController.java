@@ -146,21 +146,12 @@ public class ProfileFormController extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormDescription("form.description");
-		
 		formContext.put("username", identity.getName());
-
-		// Add the noneditable username field.
-		MultipleSelectionElement usernameCheckbox = uifactory.addCheckboxesHorizontal("checkbox_username", null, formLayout, new String[] {"checkbox_username"}, new String[] {""}, null);
-		usernameCheckbox.select("checkbox_username", true);
-		usernameCheckbox.setEnabled(false);
-		StaticTextElement usernameText = uifactory.addStaticTextElement("username", this.identity.getName(), formLayout);
-		usernameText.setMandatory(true);
-		this.formItems.put("username", usernameText);
 		
 		String currentGroup = null;
 		List<UserPropertyHandler> homepagePropertyHanders = UserManager.getInstance().getUserPropertyHandlersFor(HomePageConfig.class.getCanonicalName(), isAdministrativeUser);
 		// show a form element for each property handler 
+		FormLayoutContainer groupContainer = null;
 		for (UserPropertyHandler userPropertyHandler : this.userPropertyHandlers) {
 			if (userPropertyHandler == null) {
 				continue;
@@ -169,36 +160,53 @@ public class ProfileFormController extends FormBasicController {
 			// add spacer if necessary (i.e. when group name changes)
 			String group = userPropertyHandler.getGroup();
 			if (!group.equals(currentGroup)) {
-				if (currentGroup != null) {
-					SpacerElement spacerElement = uifactory.addSpacerElement("spacer_" + group, formLayout, false);
-					formItems.put("spacer_" + group, spacerElement);
+
+				if (currentGroup == null) {
+					// Special case: add user name to account user group
+					group = "account";					
+					groupContainer = FormLayoutContainer.createDefaultFormLayout("group." + group, getTranslator());
+					groupContainer.setFormTitle(translate("form.group." + group));
+					this.formItems.put("group." + group, groupContainer);
+					formLayout.add(groupContainer);
+					MultipleSelectionElement usernameCheckbox = uifactory.addCheckboxesHorizontal("checkbox_username", null, groupContainer, new String[] {"checkbox_username"}, new String[] {""}, null);
+					usernameCheckbox.select("checkbox_username", true);
+					usernameCheckbox.setEnabled(false);
+					StaticTextElement usernameText = uifactory.addStaticTextElement("username", this.identity.getName(), groupContainer);
+					usernameText.setMandatory(true);
+					this.formItems.put("username", usernameText);
+					
+				} else {
+					groupContainer = FormLayoutContainer.createDefaultFormLayout("group." + group, getTranslator());
+					groupContainer.setFormTitle(translate("form.group." + group));
+					this.formItems.put("group." + group, groupContainer);
+					formLayout.add(groupContainer);
 				}
 				currentGroup = group;
 			}
 			
-			if (homepagePropertyHanders.contains(userPropertyHandler)) {
-				// add checkbox to container if configured for homepage usage identifier
-				String checkboxName = "checkbox_" + userPropertyHandler.getName();
-				MultipleSelectionElement publishCheckbox = uifactory.addCheckboxesHorizontal(checkboxName, null, formLayout, new String[] {userPropertyHandler.i18nFormElementLabelKey()}, new String[] {""}, null);
-				this.publishCheckboxes.put(checkboxName, publishCheckbox);
-				boolean isEnabled = this.conf.isEnabled(userPropertyHandler.getName());
-				if (isEnabled) {
-					publishCheckbox.select(userPropertyHandler.i18nFormElementLabelKey(), true);
-				} else {
-					publishCheckbox.select(userPropertyHandler.i18nFormElementLabelKey(), false);
-				}				
-				// Mandatory homepage properties can not be changed by user
-				UserManager um = UserManager.getInstance();
-				if (um.isMandatoryUserProperty(HomePageConfig.class.getCanonicalName(), userPropertyHandler)) {
-					publishCheckbox.select(userPropertyHandler.i18nFormElementLabelKey(), true);
-					publishCheckbox.setEnabled(false);
-				}
-			} else {
-				uifactory.addSpacerElement("spacer_" + userPropertyHandler.getName(), formLayout, true);
-			}
+//			if (homepagePropertyHanders.contains(userPropertyHandler)) {
+//				// add checkbox to container if configured for homepage usage identifier
+//				String checkboxName = "checkbox_" + userPropertyHandler.getName();
+//				MultipleSelectionElement publishCheckbox = uifactory.addCheckboxesHorizontal(checkboxName, null, groupContainer, new String[] {userPropertyHandler.i18nFormElementLabelKey()}, new String[] {""}, null);
+//				this.publishCheckboxes.put(checkboxName, publishCheckbox);
+//				boolean isEnabled = this.conf.isEnabled(userPropertyHandler.getName());
+//				if (isEnabled) {
+//					publishCheckbox.select(userPropertyHandler.i18nFormElementLabelKey(), true);
+//				} else {
+//					publishCheckbox.select(userPropertyHandler.i18nFormElementLabelKey(), false);
+//				}				
+//				// Mandatory homepage properties can not be changed by user
+//				UserManager um = UserManager.getInstance();
+//				if (um.isMandatoryUserProperty(HomePageConfig.class.getCanonicalName(), userPropertyHandler)) {
+//					publishCheckbox.select(userPropertyHandler.i18nFormElementLabelKey(), true);
+//					publishCheckbox.setEnabled(false);
+//				}
+//			} else {
+//				uifactory.addSpacerElement("spacer_" + userPropertyHandler.getName(), groupContainer, true);
+//			}
 			
 			// add input field to container
-			FormItem formItem = userPropertyHandler.addFormItem(getLocale(), identity.getUser(), this.usageIdentifier, this.isAdministrativeUser, formLayout);
+			FormItem formItem = userPropertyHandler.addFormItem(getLocale(), identity.getUser(), this.usageIdentifier, this.isAdministrativeUser, groupContainer);
 			String propertyName = userPropertyHandler.getName();
 			this.formItems.put(propertyName, formItem);
 			

@@ -54,11 +54,11 @@
 				o2c=1;
 				## add dirty class when dirty
 				jQuery('#b_htmleditor_button_save a').each(function(index,el) {
-					if(!jQuery(this).hasClass('b_button_dirty')) {
-						jQuery(this).addClass('b_button_dirty');
+					if(!jQuery(this).hasClass('o_button_dirty')) {
+						jQuery(this).addClass('o_button_dirty');
 						#if($f.isVisible("saveandclosebuttontext"))
 							jQuery('#b_htmleditor_button_saveclose a').each(function(index2, el2) {
-								jQuery(this).addClass('b_button_dirty');
+								jQuery(this).addClass('o_button_dirty');
 							});
 						#end
 					}
@@ -66,11 +66,11 @@
 			} else {
 				## when not dirty remove dirty class
 				jQuery('#b_htmleditor_button_save a').each(function(index,el) {
-					if (jQuery(this).hasClass('b_button_dirty')) {
-						jQuery(this).removeClass('b_button_dirty');
+					if (jQuery(this).hasClass('o_button_dirty')) {
+						jQuery(this).removeClass('o_button_dirty');
 						#if ($f.isVisible("saveandclosebuttontext"))
 							jQuery('#b_htmleditor_button_saveclose a').each(function(index2, el2) {
-								jQuery(this).removeClass('b_button_dirty');
+								jQuery(this).removeClass('o_button_dirty');
 							});
 						#end
 					}

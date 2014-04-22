@@ -1,38 +1,42 @@
-<div class="b_form b_form_vertical #if ($off_css_class) $off_css_class #end $f.getContainerCssClass() b_clearfix">
-#if ($off_title) <fieldset><legend>$off_title</legend> #end
-#if ($off_chelp_package) $r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end
-#if ($off_desc) <div class="b_form_desc">$off_desc</div> #end
-#if ($off_warn) <div class="b_warning">$off_warn</div> #end
-#if ($off_info) <div class="b_info">$off_info</div> #end
+## for odd reason bootstrap calls vertial horizontal
+<fieldset id="$r.getCId()" class="o_form form-horizontal #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()" role="form">
+#if ($off_title || $off_chelp_package) 
+	<legend>
+	#if ($off_chelp_package) 
+		$r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") 
+	#end
+	$!off_title
+</legend> 
+#end
+#if ($off_desc) <div class="o_desc">$off_desc</div> #end
+#if ($off_warn) <div class="o_warning">$off_warn</div> #end
+#if ($off_info) <div class="o_info">$off_info</div> #end
 
 #foreach ($item in $formitemnames)
-#if ($f.isVisible($item))
-	#if($f.hasError($item))
-	<div class="b_form_element_wrapper$f.getElementCssClass($item) b_form_vertical b_form_error b_clearfix">		
-	#else
-	<div class="b_form_element_wrapper$f.getElementCssClass($item) b_form_vertical$f.getElementCssClass($item) b_clearfix">
-	#end
+	#if ($f.isVisible($item))
+	<div class="form-group $f.getElementCssClass($item) #if($f.hasError($item)) has-feedback has-error #end">
 		#if ($f.hasLabel($item))
-		<div class="b_form_element_label b_form_vertical">
+		<div class="col-sm-3">
 			$r.render("${item}_LABEL", "$f.getItemId($item)", "$f.isMandatory($item)")
 		</div>
 		#end
-		#if ($f.isSpacerElement($item))
-			$r.render(${item}, "b_form_vertical")		
-		#else
-		<div class="b_form_element b_form_vertical">
+		<div class="col-sm-9 #if (!$f.hasLabel($item)) col-sm-offset-3 #end">
 			$r.render(${item})
-			#if($f.hasExample($item))
-				$r.render("${item}_EXAMPLE")
-			#end
 			#if($f.hasError($item))
-				$r.render("${item}_ERROR")
+				<span class="o_icon o_icon_error form-control-feedback"></span>
 			#end
 		</div>
+		#if($f.hasExample($item))
+			<div class="help-block col-sm-offset-3 col-sm-9">
+				$r.render("${item}_EXAMPLE")
+			</div>
+		#end
+		#if($f.hasError($item))
+			<div class="col-sm-offset-3 col-sm-9">
+				$r.render("${item}_ERROR")
+			</div>
 		#end
 	</div>
+	#end
 #end
-#end
-
-#if ($off_title) </fieldset> #end
-</div>
+</fieldset>

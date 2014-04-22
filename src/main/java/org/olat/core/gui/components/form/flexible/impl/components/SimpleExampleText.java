@@ -50,6 +50,8 @@ public class SimpleExampleText extends FormBaseComponentImpl {
 	public SimpleExampleText(String name, String text) {
 		super(name);
 		this.text = text;
+		// don't render unnecessary dom replacement elements - never dirty
+		this.setDomReplaceable(false);
 	}
 
 	private static final ComponentRenderer RENDERER = new ComponentRenderer() {
@@ -69,9 +71,7 @@ public class SimpleExampleText extends FormBaseComponentImpl {
 		public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 				RenderResult renderResult, String[] args) {
 			SimpleExampleText stc = (SimpleExampleText) source;
-			sb.append("<div class=\"b_form_example\">");
 			sb.append(stc.text);
-			sb.append("</div>");
 		}
 
 	};
