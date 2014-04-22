@@ -19,6 +19,7 @@
  */
 package org.olat.repository.ui.list;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
@@ -42,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.rating.RatingFormEvent;
 import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
@@ -49,12 +51,12 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryManager;
@@ -71,16 +73,16 @@ import org.olat.repository.ui.list.RepositoryEntryDataModel.Cols;
  */
 public class RepositoryEntryListController extends FormBasicController
 	implements Activateable2, RepositoryEntryDataSourceUIFactory, FlexiTableComponentDelegate {
+
+	private final List<Link> filters = new ArrayList<>();
+	private final List<Link> orderBy = new ArrayList<>();
 	
-	private FormLink listLink, tableLink, filterLink, sortLink;
+	private FormLink listLink, tableLink;
 	private FlexiTableElement tableEl;
 	private RepositoryEntryDataModel model;
 	private DefaultRepositoryEntryDataSource dataSource;
-	private OrderByController sortCtrl;
-	private FilterController filterCtrl;
 	private CloseableModalController cmc;
 	private UserCommentsController commentsCtrl;
-	private CloseableCalloutWindowController calloutCtrl;
 	private final BreadcrumbedStackedPanel stackPanel;
 	private RepositoryEntryDetailsController detailsCtrl;
 	
@@ -100,18 +102,71 @@ public class RepositoryEntryListController extends FormBasicController
 		
 		dataSource = new DefaultRepositoryEntryDataSource(searchParams, this);
 		initForm(ureq);
+		initFilters();
+		initSorters();
 	}
 	
 	public boolean isEmpty() {
 		return dataSource.getRowCount() == 0;
 	}
 
+	private void initFilters() {
+		VelocityContainer filterVc = createVelocityContainer("filters");
+		filterVc.setDomReplacementWrapperRequired(false);
+		flc.put("filters", filterVc);
+		//lifecycle
+		initFilter("current.courses", "filter.current.courses", Filter.currentCourses, filterVc);
+		initFilter("upcoming.courses", "filter.upcoming.courses", Filter.upcomingCourses, filterVc);
+		initFilter("old.courses", "filter.old.courses", Filter.oldCourses, filterVc);
+		//membership
+		initFilter("as.participant", "filter.booked.participant", Filter.asParticipant, filterVc);
+		initFilter("as.coach", "filter.booked.coach", Filter.asCoach, filterVc);
+		initFilter("as.author", "filter.booked.author", Filter.asAuthor, filterVc);
+		initFilter("not.booked", "filter.not.booked", Filter.notBooked, filterVc);
+		
+		//efficiency statment
+		initFilter("passed", "filter.passed", Filter.passed, filterVc);
+		initFilter("not.passed", "filter.not.passed", Filter.notPassed, filterVc);
+		initFilter("without", "filter.without.passed.infos", Filter.withoutPassedInfos, filterVc);
+	}
+	
+	private void initFilter(String name, String i18nKey, Filter filter, VelocityContainer filterVc) {
+		Link notPassedLink = LinkFactory.createCustomLink(name, name, i18nKey, Link.LINK, filterVc, this);
+		notPassedLink.setUserObject(filter);
+		filters.add(notPassedLink);
+	}
+	
+	private void initSorters() {
+		VelocityContainer orderByVc = createVelocityContainer("orderby");
+		orderByVc.setDomReplacementWrapperRequired(false);
+		flc.put("orderBys", orderByVc);
+		
+		initOrderBy("orderby.automatic", OrderBy.automatic, orderByVc);
+		initOrderBy("orderby.favorit", OrderBy.favorit, orderByVc);
+		initOrderBy("orderby.lastVisited", OrderBy.lastVisited, orderByVc);
+		initOrderBy("orderby.score", OrderBy.score, orderByVc);
+		initOrderBy("orderby.passed", OrderBy.passed, orderByVc);
+		
+		initOrderBy("orderby.title", OrderBy.title, orderByVc);
+		initOrderBy("orderby.lifecycle", OrderBy.lifecycle, orderByVc);
+		initOrderBy("orderby.author", OrderBy.author, orderByVc);
+		initOrderBy("orderby.creationDate", OrderBy.creationDate, orderByVc);
+		initOrderBy("orderby.lastModified", OrderBy.lastModified, orderByVc);
+		initOrderBy("orderby.rating", OrderBy.rating, orderByVc);
+	}
+	
+	private void initOrderBy(String name, OrderBy order, VelocityContainer filterVc) {
+		Link notPassedLink = LinkFactory.createCustomLink(name, name, name, Link.LINK, filterVc, this);
+		notPassedLink.setUserObject(order);
+		orderBy.add(notPassedLink);
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		listLink = uifactory.addFormLink("switchLayoutList", "list", "table.switch.list", null, formLayout, Link.BUTTON);
+		listLink.setIconCSS("o_icon o_icon_list o_icon-lg");
 		tableLink = uifactory.addFormLink("switchLayoutTable", "table", "table.switch.table", null, formLayout, Link.BUTTON);
-		sortLink = uifactory.addFormLink("sortTable", "sort", "table.sort", null, formLayout, Link.BUTTON);
-		filterLink = uifactory.addFormLink("filterTable", "filter", "table.filter", null, formLayout, Link.BUTTON);
+		tableLink.setIconCSS("o_icon o_icon_table o_icon-lg");
 		
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -165,10 +220,6 @@ public class RepositoryEntryListController extends FormBasicController
 		} else if(tableLink == source) {
 			tableEl.setRendererType(FlexiTableRendererType.classic);
 			tableEl.setCustomizeColumns(true);
-		} else if(filterLink == source) {
-			doChooseFilter(ureq);
-		} else if(sortLink == source) {
-			doChooseSorter(ureq);
 		} else if(source instanceof RatingWithAverageFormItem && event instanceof RatingFormEvent) {
 			RatingFormEvent ratingEvent = (RatingFormEvent)event;
 			RatingWithAverageFormItem ratingItem = (RatingWithAverageFormItem)source;
@@ -199,16 +250,53 @@ public class RepositoryEntryListController extends FormBasicController
 	}
 
 	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(source instanceof Link) {
+			Link link = (Link)source;
+			Object uo = link.getUserObject();
+			if(uo instanceof OrderBy) {
+				OrderBy sort = (OrderBy)uo;
+				for(Link order:orderBy) {
+					removeCheck(order);
+				}
+				toggleCheck(link);
+				doOrderBy(sort);
+				flc.setDirty(true);
+			} else if(uo instanceof Filter) {
+				toggleCheck(link);
+				List<Filter> selectedFilters = new ArrayList<>();
+				for(Link filter:filters) {
+					String iconCss = filter.getIconCSS();
+					if(StringHelper.containsNonWhitespace(iconCss)) {
+						selectedFilters.add((Filter)filter.getUserObject());
+					}
+				}
+				doFilter(selectedFilters);
+				flc.setDirty(true);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void toggleCheck(Link link) {
+		String iconCss = link.getIconCSS();
+		if(StringHelper.containsNonWhitespace(iconCss)) {
+			link.setIconCSS(null);
+		} else {
+			link.setIconCSS("o_icon o_icon_check o_icon-fw");
+		}
+	}
+	
+	private void removeCheck(Link link) {
+		String iconCss = link.getIconCSS();
+		if(StringHelper.containsNonWhitespace(iconCss)) {
+			link.setIconCSS(null);
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(filterCtrl == source && event == Event.CHANGED_EVENT) {
-			doFilter(filterCtrl.getSelectedFilters());
-			calloutCtrl.deactivate();
-			cleanUp();
-		} else if(sortCtrl == source && event == Event.CHANGED_EVENT) {
-			doOrderBy(sortCtrl.getOrderBy());
-			calloutCtrl.deactivate();
-			cleanUp();
-		} else if(cmc == source) {
+		 if(cmc == source) {
 			if(commentsCtrl != null) {
 				RepositoryEntryRow row = (RepositoryEntryRow)commentsCtrl.getUserObject();
 				long numOfComments = commentsCtrl.getCommentsCount();
@@ -220,7 +308,6 @@ public class RepositoryEntryListController extends FormBasicController
 			}
 			cleanUp();
 		}
-		
 		super.event(ureq, source, event);
 	}
 
@@ -231,37 +318,9 @@ public class RepositoryEntryListController extends FormBasicController
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(commentsCtrl);
-		calloutCtrl = null;
 		commentsCtrl = null;
 		cmc = null;
-	}
-	
-	protected void doChooseSorter(UserRequest ureq) {
-		if(sortCtrl == null) {
-			sortCtrl = new OrderByController(ureq, getWindowControl());
-			listenTo(sortCtrl);
-		}
-		
-		removeAsListenerAndDispose(calloutCtrl);
-		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), sortCtrl.getInitialComponent(),
-				sortLink, null, true, null);
-		listenTo(calloutCtrl);
-		calloutCtrl.activate();	
-	}
-	
-	protected void doChooseFilter(UserRequest ureq) {
-		if(filterCtrl == null) {
-			filterCtrl = new FilterController(ureq, getWindowControl());
-			listenTo(filterCtrl);
-		}
-		
-		removeAsListenerAndDispose(calloutCtrl);
-		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), filterCtrl.getInitialComponent(),
-				filterLink, null, true, null);
-		listenTo(calloutCtrl);
-		calloutCtrl.activate();	
 	}
 	
 	protected void doFilter(List<Filter> filters) {

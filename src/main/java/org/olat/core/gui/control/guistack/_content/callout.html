@@ -4,22 +4,20 @@
 	<iframe class="b_modal_iebug" src="$r.staticLink("empty.html")" style="position:absolute; left:0; top:0; width:100%; height:100%; border:none; z-index: $zindexshim; opacity:0; filter: alpha(opacity:0);" ></iframe>
 <![endif]-->
 ## 2)
-<div id="b_callout_$r.getCId()" class="b_callout_area b_clearfix" style="z-index:$zindexarea;" >
-	<div class="b_floatscrollbox"> 
-		<a name="b_modal"></a>
-		<div class="b_callout">
-			$r.render("guimsgplace")
-			$r.render("cont")
-		</div>
+<div id="b_callout_$r.getCId()" class="popover in bottom" style="z-index:$zindexarea;">
+	<div class="arrow"></div>
+	<div class="popover-content">
+		$r.render("guimsgplace")
+		$r.render("cont")
 	</div>
 </div>
 ## 3)
 <div id="b_callout_overlay_$r.getCId()" class="b_callout_overlay" style="z-index:$zindexoverlay;"></div>
 <script type="text/javascript">
-/* <![CDATA[ */	
+/* <![CDATA[ */
 jQuery(function() {
 	jQuery('#b_callout_$r.getCId()').each(function(index, el) {
-		var targetEl = jQuery('#$guimsgtarget');
+		var targetEl = jQuery('#o_c$guimsgtarget');
 		var targetOffset = targetEl.offset();
 		if(targetOffset) {
 			var callout = jQuery(el);
@@ -27,19 +25,20 @@ jQuery(function() {
 				callout.offset({
 					top: (targetOffset.top + targetEl.height() + 15) ,
 					left: (targetOffset.left)
-				}).css('zindex', o_info.zseed + 5);
-				jQuery('.b_callout', el).each(function(indexb, elb) {
-					jQuery(elb).prepend("<div class='b_callout_top_left_arrow'></div><div class='b_callout_top_left_arrow-border'></div>");
 				});
+				/*jQuery('.b_callout', el).each(function(indexb, elb) {
+					jQuery(elb).prepend("<div class='b_callout_top_left_arrow'></div><div class='b_callout_top_left_arrow-border'></div>");
+				});*/
 			} else {
 				callout.offset({
 					top: (targetOffset.top + targetEl.height() + 15) ,
 					left: (targetOffset.left + targetEl.width()) - callout.width() 
-				}).css('zindex', o_info.zseed + 5);
-				jQuery('.b_callout', el).each(function(indexb, elb) {
-					jQuery(elb).prepend("<div class='b_callout_top_right_arrow'></div><div class='b_callout_top_right_arrow-border'></div>");
 				});
+				/*jQuery('.b_callout', el).each(function(indexb, elb) {
+					jQuery(elb).prepend("<div class='b_callout_top_right_arrow'></div><div class='b_callout_top_right_arrow-border'></div>");
+				});*/
 			}
+			callout.css('display','block').css('zindex', o_info.zseed + 5);
 		}
 	});
 });

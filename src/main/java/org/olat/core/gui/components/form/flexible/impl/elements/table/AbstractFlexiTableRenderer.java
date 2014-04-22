@@ -54,7 +54,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		  .append(" b_table_edit", ftE.isEditMode())
 		  .append(" b_floatscrollbox\">");
 		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
-		sb.append("<table id=\"").append(id).append("\">");
+		sb.append("<table id=\"").append(id).append("\" class=\"table table-bordered table-hover\">");
 		
 		//render headers
 		renderHeaders(sb, ftC, translator);

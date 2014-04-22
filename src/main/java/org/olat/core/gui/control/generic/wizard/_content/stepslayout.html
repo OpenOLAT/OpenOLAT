@@ -1,19 +1,12 @@
-<div class="b_wizard #if($elementCssClass) $elementCssClass #end">
-	<div class="b_wizard_header_wrapper">
-		<div class="b_wizard_header">
-			<div class="b_wizard_header_title">
-				<strong>
-					$wizardTitle
-				</strong>
-				$r.render("closeIcon")
-			</div>
-		</div>
+<div class="modal show in"><div class="modal-dialog modal-lg #if($elementCssClass) $elementCssClass #end"><div class="modal-content">
+	<div class="modal-header">
+		$r.render("closeIcon")
+		<h4>$wizardTitle</h4>
 	</div>
-
-	<div class="b_wizard_steps_wrapper">
-		<div class="b_wizard_steps_content b_clearfix">
+	<div class="modal-body b_wizard_steps_wrapper">
+		<div class="row b_wizard_steps_content b_clearfix">
 			<!-- workflow / wizard steps -->
-			<div class="b_wizard_steps_list b_float_left">
+			<div class="col-md-4 b_wizard_steps_list b_float_left">
 				<ol>
 				#foreach($item in $stepLinks)
 					<li class="	#if($currentStepPos == $velocityCount) b_wizard_steps_current #end	#if(!${item.isEnabled()}) b_enabled #end ">
@@ -24,7 +17,7 @@
 			</div>
 			
 			<!-- wizard step content -->
-			<div class="b_wizard_steps_current">
+			<div class="col-md-8 b_wizard_steps_current">
 				<div class="b_wizard_steps_current_inner">
 					<div class="b_wizard_steps_current_content b_clearfix">
 						<div class="b_floatscrollbox">
@@ -35,22 +28,17 @@
 				</div>
 			</div>
 		</div>
-	</div>	
-
-	
+	</div>
 	<!-- bottom navigation -->
-	<div class="b_wizard_footer_wrapper">
-		<div class="b_wizard_footer">
-			<div class="b_button_group">
+	<div class="modal-footer">
+			<div class="btn-group">
 				$r.render("back")
 				$r.render("next")
 				$r.render("finish")
 				$r.render("cancel")
 			</div>
-		</div>
 	</div>
-</div>
-
+</div></div></div><div class="modal-backdrop in"></div>
 ## always show top of modal dialog when on long pages
 <script type="text/javascript">
 	jQuery('#b_body').scrollTop(0);

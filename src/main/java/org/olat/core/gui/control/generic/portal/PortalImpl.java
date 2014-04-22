@@ -120,29 +120,29 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 			break;
 		case 2:
 			// 50% each
-			columnCssClassWrapper.add(1, "b_c50l o_sel_portal_col_1"); 
+			columnCssClassWrapper.add(1, "col-md-6 o_sel_portal_col_1"); 
 			columnCssClassInner.add(1, "b_subcl"); 
-			columnCssClassWrapper.add(2, "b_c50r o_sel_portal_col_2"); 
+			columnCssClassWrapper.add(2, "col-md-6 o_sel_portal_col_2"); 
 			columnCssClassInner.add(2, "b_subcr"); 
 			break;
 		case 3:
 			// 33% each
-			columnCssClassWrapper.add(1, "b_c33l o_sel_portal_col_1"); 
+			columnCssClassWrapper.add(1, "col-md-4 o_sel_portal_col_1"); 
 			columnCssClassInner.add(1, "b_subcl"); 
-			columnCssClassWrapper.add(2, "b_c33l o_sel_portal_col_2"); 
+			columnCssClassWrapper.add(2, "col-md-4 o_sel_portal_col_2"); 
 			columnCssClassInner.add(2, "b_subcl"); 
-			columnCssClassWrapper.add(3, "b_c33r o_sel_portal_col_3"); 
+			columnCssClassWrapper.add(3, "col-md-4 o_sel_portal_col_3"); 
 			columnCssClassInner.add(3, "b_subcr"); 
 			break;
 		case 4:
 			// 25% each
-			columnCssClassWrapper.add(1, "b_c25l o_sel_portal_col_1"); 
+			columnCssClassWrapper.add(1, "col-md-3 o_sel_portal_col_1"); 
 			columnCssClassInner.add(1, "b_subcl"); 
-			columnCssClassWrapper.add(2, "b_c25l o_sel_portal_col_2"); 
+			columnCssClassWrapper.add(2, "col-md-3 o_sel_portal_col_2"); 
 			columnCssClassInner.add(2, "b_subcl"); 
-			columnCssClassWrapper.add(3, "b_c25l o_sel_portal_col_3"); 
+			columnCssClassWrapper.add(3, "col-md-3 o_sel_portal_col_3"); 
 			columnCssClassInner.add(3, "b_subcl"); 
-			columnCssClassWrapper.add(4, "b_c25r o_sel_portal_col_4"); 
+			columnCssClassWrapper.add(4, "col-md-3 o_sel_portal_col_4"); 
 			columnCssClassInner.add(4, "b_subcr"); 
 			break;
 		default:

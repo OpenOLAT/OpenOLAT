@@ -41,6 +41,8 @@ public interface FormLink extends FormItem{
 	 */
 	public void setCustomDisabledLinkCSS(String customDisabledLinkCSS);
 	
+	public void setIconCSS(String iconCSS);
+	
 	/**
 	 * @return The i18n key for the link text
 	 */

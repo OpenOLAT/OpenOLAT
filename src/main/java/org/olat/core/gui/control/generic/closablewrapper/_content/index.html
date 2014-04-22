@@ -1,37 +1,23 @@
-<div class="b_window $!windowCssClass" id="$r.getId("b_closablewapper_")">
-	<div class="b_window_header_wrapper">
-		<div class="b_window_header">
-			<div class="b_window_header_title">
-				#if ($title)
-					<strong>$!title</strong>
-				#end
-				$r.render("closeIcon")
-			</div>
-		</div>
+<div class="modal show in $!windowCssClass" id='$r.getId("b_closablewapper_")'><div class="modal-dialog modal-lg"><div class="modal-content">
+	<div class="modal-header">
+		#if ($r.available("closeIcon"))
+			$r.render("closeIcon")
+		#end
+		#if ($title)
+			<h4>$!title</h4>
+		#end
 	</div>
-
-	<div class="b_window_content_wrapper $!cssClass">	
-		<div class="b_window_content">
-			<div class="b_window_content_inner b_clearfix">
-				<div class="b_floatscrollbox #if ($off_chelp_package) b_box_with_chelp #end">
-					#if ($off_chelp_package) $r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end	
-					$r.render("guimessage")
-					$r.render("modalContent")
-				</div>
-			</div>
-			<div style="clear:both; height: 1px">&nbsp;</div>	   	
-		</div>
+	<div class="modal-body $!cssClass">	
+		#if ($off_chelp_package) $r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end	
+		$r.render("guimessage")
+		$r.render("modalContent")
 	</div>	
-	
-	<div class="b_window_footer_wrapper">
-		<div class="b_window_footer">
-			<div class="b_window_footer_inner"></div>		
-		</div>
-	</div>
-</div>
+</div></div></div>
+<div class="modal-backdrop in"></div>
 
 ## always show top of modal dialog when on long pages
 <script type="text/javascript">
+	/*
 	var zindex = o_info.zseed;
 	o_info.zseed = zindex + 5;
 
@@ -48,4 +34,6 @@
 		}
 	}
 	jQuery('#b_body').scrollTop(0);
+	*/
+	//jQuery('#$r.getId("b_closablewapper_")').modal({ show:true })
 </script>

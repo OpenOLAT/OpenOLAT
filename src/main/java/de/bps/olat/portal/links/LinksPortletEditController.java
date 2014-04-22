@@ -65,7 +65,6 @@ public class LinksPortletEditController extends FormBasicController {
 	private PortletLink portletLink;
 	private MultipleSelectionElement openPopup;
 	private SingleSelection language;
-	private SingleSelection institution;
 	private RichTextElement desc;
 	private TextElement title;
 	private TextElement linkURL;

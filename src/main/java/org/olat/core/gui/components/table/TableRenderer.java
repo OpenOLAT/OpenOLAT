@@ -87,7 +87,7 @@ public class TableRenderer implements ComponentRenderer {
 
 		String formName = renderMultiselectForm(target, source, ubu, iframePostEnabled);
 		// starting real table table
-		target.append("<div class=\"b_overflowscrollbox\" id=\"b_overflowscrollbox_").append(table.hashCode()).append("\"><table id=\"b_table").append(table.hashCode()).append(CLOSE_HTML_BRACE);
+		target.append("<div class=\"b_overflowscrollbox\" id=\"b_overflowscrollbox_").append(table.hashCode()).append("\"><table id=\"b_table").append(table.hashCode()).append("\" class=\"table table-bordered table-hover").append(CLOSE_HTML_BRACE);
 
 		int rows = table.getRowCount();
 		int cols = table.getColumnCount();

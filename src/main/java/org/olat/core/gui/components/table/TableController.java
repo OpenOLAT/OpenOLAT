@@ -194,10 +194,10 @@ public class TableController extends BasicController {
 		setFilters(filters, activeFilter);
 		
 		if (noFilterOption != null) {
-			this.contentVc.contextPut("noFilterOption", noFilterOption);
-			this.contentVc.contextPut(VC_VAR_USE_NO_FILTER_OPTION, Boolean.TRUE);
+			contentVc.contextPut("noFilterOption", noFilterOption);
+			contentVc.contextPut(VC_VAR_USE_NO_FILTER_OPTION, Boolean.TRUE);
 		} else {
-			this.contentVc.contextPut(VC_VAR_USE_NO_FILTER_OPTION, Boolean.FALSE);
+			contentVc.contextPut(VC_VAR_USE_NO_FILTER_OPTION, Boolean.FALSE);
 		}
 		
 		if (enableTableSearch) {

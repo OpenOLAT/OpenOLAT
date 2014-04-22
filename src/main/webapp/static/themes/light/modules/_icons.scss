@@ -18,12 +18,16 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_login {@extend .o_icon-sign-in;}
 .o_icon_logout {@extend .o_icon-sign-out;}
 .o_icon_mandatory {@extend .o_icon-asterisk; color: #f0ad4e;}
+.o_icon_check {@extend .o_icon-check; }
+.o_icon_close {@extend .o_icon-minus-square;}
 .o_icon_refresh { @extend .o_icon-refresh; } 
 .o_icon_search {@extend .o_icon-search;}
 .o_icon_status_available { @extend .o_icon-circle; color: #006633; }
 .o_icon_status_chat { @extend .o_icon-comment; }
 .o_icon_status_dnd { @extend .o_icon-dot-circle-o; color: #CCCC33; }
 .o_icon_status_unavailable { @extend .o_icon-times-circle-o; color: #996633; }
+.o_icon_table {@extend .o_icon-table; }
+.o_icon_list {@extend .o_icon-list; }
 
 
 

@@ -1,9 +1,13 @@
-<div class="b_clearfix o_buttons_bar">
-	<div class="o_buttons_box_right">
-		$r.render("filterTable")
-		$r.render("sortTable")
-		$r.render("switchLayoutList")
-		$r.render("switchLayoutTable")
+<div class="btn-group">
+	<div class="btn-group">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">$r.translate("table.filter")<span class="caret"></span></button>
+		$r.render("filters")
 	</div>
+	<div class="btn-group">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">$r.translate("table.sort")<span class="caret"></span></button>
+		$r.render("orderBys")
+	</div>
+	$r.render("switchLayoutList")
+	$r.render("switchLayoutTable")
 </div>
 $r.render("table")

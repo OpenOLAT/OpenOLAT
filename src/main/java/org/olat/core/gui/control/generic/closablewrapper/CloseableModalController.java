@@ -66,9 +66,9 @@ public class CloseableModalController extends DefaultController {
 	public static final Event CLOSE_MODAL_EVENT = new Event("CLOSE_MODAL_EVENT");
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(CloseableModalController.class);
 	
-	private VelocityContainer myContent;
-	private Link backIcon;
+	private Link closeIcon;
 	private boolean displayAsOverlay;
+	private VelocityContainer myContent;
 
 
 	/**
@@ -110,12 +110,10 @@ public class CloseableModalController extends DefaultController {
 			}
 		};
 		myContent.put("guimessage", guiMsgPlace);
-
-		backIcon = LinkFactory.createIconClose(closeButtonText, myContent, this);
-		if (!showCloseIcon) {
-			backIcon.setVisible(false);
+		if (showCloseIcon) {
+			closeIcon = LinkFactory.createIconClose(closeButtonText, myContent, this);
+			closeIcon.setDomReplacementWrapperRequired(false);
 		}
-		
 		if (title != null) {
 			myContent.contextPut("title", StringHelper.escapeHtml(title));
 		}
@@ -149,7 +147,7 @@ public class CloseableModalController extends DefaultController {
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == backIcon){
+		if (source == closeIcon){
 			getWindowControl().pop();
 			fireEvent(ureq, CLOSE_MODAL_EVENT);
 		}

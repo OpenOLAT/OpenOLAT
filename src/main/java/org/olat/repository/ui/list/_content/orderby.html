@@ -1,12 +1,14 @@
-#if($orderBy.contains($r.getComponent("orderby.automatic").userObject)) $r.translate("filter.selected") #end $r.render("orderby.automatic")<br/>
-#if($orderBy.contains($r.getComponent("orderby.favorit").userObject)) $r.translate("filter.selected") #end $r.render("orderby.favorit")<br/>
-#if($orderBy.contains($r.getComponent("orderby.lastVisited").userObject)) $r.translate("filter.selected") #end $r.render("orderby.lastVisited")<br/>
-#if($orderBy.contains($r.getComponent("orderby.passed").userObject)) $r.translate("filter.selected") #end $r.render("orderby.passed")<br/>
-#if($orderBy.contains($r.getComponent("orderby.score").userObject)) $r.translate("filter.selected") #end $r.render("orderby.score")<br/>
-<hr/>
-#if($orderBy.contains($r.getComponent("orderby.title").userObject)) $r.translate("filter.selected") #end $r.render("orderby.title")<br/>
-#if($orderBy.contains($r.getComponent("orderby.lifecycle").userObject)) $r.translate("filter.selected") #end $r.render("orderby.lifecycle")<br/>
-#if($orderBy.contains($r.getComponent("orderby.author").userObject)) $r.translate("filter.selected") #end $r.render("orderby.author")<br/>
-#if($orderBy.contains($r.getComponent("orderby.creationDate").userObject)) $r.translate("filter.selected") #end $r.render("orderby.creationDate")<br/>
-#if($orderBy.contains($r.getComponent("orderby.lastModified").userObject)) $r.translate("filter.selected") #end $r.render("orderby.lastModified")<br/>
-#if($orderBy.contains($r.getComponent("orderby.rating").userObject)) $r.translate("filter.selected") #end $r.render("orderby.rating")
+<ul id="$r.getCId()" class="dropdown-menu">
+	<li>$r.render("orderby.automatic")</li>
+	<li>$r.render("orderby.favorit")</li>
+	<li>$r.render("orderby.lastVisited")</li>
+	<li>$r.render("orderby.passed")</li>
+	<li>$r.render("orderby.score")</li>
+	<li role="presentation" class="divider"></li>
+	<li>$r.render("orderby.title")</li>
+	<li>$r.render("orderby.lifecycle")</li>
+	<li>$r.render("orderby.author")</li>
+	<li>$r.render("orderby.creationDate")</li>
+	<li>$r.render("orderby.lastModified")</li>
+	<li>$r.render("orderby.rating")</li>
+</ul>
