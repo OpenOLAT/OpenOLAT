@@ -66,7 +66,7 @@ public class CheckListConfigurationStepController extends StepFormBasicControlle
 
 	@Override
 	protected void doDispose() {
-		//
+		mainForm.removeSubFormListener(configController);
 	}
 
 	@Override

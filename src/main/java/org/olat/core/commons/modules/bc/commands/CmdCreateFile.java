@@ -36,6 +36,8 @@ import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.StackedPanel;
@@ -54,6 +56,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.util.ContainerAndFile;
 
 /**
@@ -135,16 +138,16 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 			if (event == Event.DONE_EVENT) {
 				// we're done, notify listerers
 				fireEvent(ureq, new FolderEvent(FolderEvent.NEW_FILE_EVENT, fileName));	
-				fireEvent(ureq, FolderCommand.FOLDERCOMMAND_FINISHED);
+				notifyFinished(ureq);
 			} else if(event == Event.CANCELLED_EVENT){
-				fireEvent(ureq, FolderCommand.FOLDERCOMMAND_FINISHED);
+				fireEvent(ureq, FOLDERCOMMAND_FINISHED);
 			}
 		} else if(source == createFileForm) {
 			if(event == Event.CANCELLED_EVENT){
-				fireEvent(ureq, FolderCommand.FOLDERCOMMAND_FINISHED);
+				fireEvent(ureq, FOLDERCOMMAND_FINISHED);
 			} else if (event == Event.FAILED_EVENT) {				
 				status = FolderCommandStatus.STATUS_FAILED;
-				fireEvent(ureq, FolderCommand.FOLDERCOMMAND_FINISHED);
+				notifyFinished(ureq);
 			}
 			else if (event == Event.DONE_EVENT) {
         // start HTML editor with the folders root folder as base and the file
@@ -179,6 +182,18 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 				mainPanel.setContent(editorCtr.getInitialComponent());
 			}
 		}
+	}
+	
+	private void notifyFinished(UserRequest ureq) {
+		VFSContainer container = VFSManager.findInheritingSecurityCallbackContainer(folderComponent.getRootContainer());
+		VFSSecurityCallback secCallback = container.getLocalSecurityCallback();
+		if(secCallback != null) {
+			SubscriptionContext subsContext = secCallback.getSubscriptionContext();
+			if (subsContext != null) {
+				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
+			}
+		}
+		fireEvent(ureq, FOLDERCOMMAND_FINISHED);
 	}
 
 	public String getFileName() {

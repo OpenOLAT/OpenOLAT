@@ -1453,7 +1453,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			public Authentication execute() {
 				Authentication auth = findAuthentication(ident, provider);
 				if(auth == null) {
-					if(algorithm != null) {
+					if(algorithm != null && credentials != null) {
 						String salt = algorithm.isSalted() ? Encoder.getSalt() : null;
 						String hash = Encoder.encrypt(credentials, salt, algorithm);
 						auth = new AuthenticationImpl(ident, provider, authUserName, hash, salt, algorithm.name());

@@ -30,6 +30,7 @@ import java.util.Locale;
 import junit.framework.Assert;
 
 import org.dom4j.Document;
+import org.dom4j.Element;
 import org.dom4j.Node;
 import org.jgroups.util.UUID;
 import org.junit.Before;
@@ -48,9 +49,9 @@ import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.QuestionType;
-import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
+import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
@@ -378,6 +379,29 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		Assert.assertEquals("basic", level.getLevel());
 		//qmd_toolvendor
 		Assert.assertEquals("QTITools", item.getEditor());	
+	}
+	
+	@Test
+	public void testImport_QTI12_film() throws IOException, URISyntaxException {
+		URL itemUrl = QTIImportProcessorTest.class.getResource("sc_with_film.xml");
+		Assert.assertNotNull(itemUrl);
+		File itemFile = new File(itemUrl.toURI());
+		
+		//get the document informations
+		QTIImportProcessor proc = new QTIImportProcessor(owner, Locale.ENGLISH, itemFile.getName(), itemFile, questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
+		List<QuestionItem> items = proc.process();
+		Assert.assertNotNull(items);
+		
+		DocInfos docInfos = proc.getDocInfos();
+		List<ItemInfos> itemInfos = proc.getItemList(docInfos);
+		Assert.assertNotNull(itemInfos);
+		Assert.assertEquals(1, itemInfos.size());
+		
+		Element el = itemInfos.get(0).getItemEl();
+		List<String> materials = proc.getMaterials(el);
+		Assert.assertNotNull(materials);
+		Assert.assertEquals(1, materials.size());
+		Assert.assertEquals("media/filmH264.mp4", materials.get(0));
 	}
 	
 	private boolean exists(QuestionItemFull itemFull, String path) {

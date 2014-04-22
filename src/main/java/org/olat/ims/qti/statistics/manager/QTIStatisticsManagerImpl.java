@@ -300,7 +300,8 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 		}
 
 		double averageScore = totalScore / totalResults;
-		double difficulty = averageScore / maxScore;
+		//difficulty (p-value)
+		double difficulty = numOfCorrectAnswers / totalResults;
 		double averageDuration = totalDuration / totalResults;
 		
 		StatisticsItem stats = new StatisticsItem();
@@ -415,6 +416,8 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 		List<StatisticFIBOption> options = new ArrayList<>();
 		Map<String,StatisticFIBOption> optionMap = new HashMap<>();
 		
+		boolean groupBy = true;
+		
 		List<Response> responses = item.getQuestion().getResponses();
 		for(Response response:responses) {
 			if(response instanceof FIBResponse) {
@@ -429,7 +432,9 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 					StatisticFIBOption option = new StatisticFIBOption();
 					option.setCorrectBlank(correctFIBs[0]);
 					option.setAlternatives(Arrays.asList(correctFIBs));
-					option.setCaseSensitive("Yes".equals(fibResponse.getCaseSensitive()));
+					boolean caseSensitive = "Yes".equals(fibResponse.getCaseSensitive());
+					groupBy &= !caseSensitive;
+					option.setCaseSensitive(caseSensitive);
 					option.setPoints(fibResponse.getPoints());
 					options.add(option);
 					optionMap.put(ident, option);
@@ -438,7 +443,7 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 		}
 		
 		
-		List<StatisticAnswerOption> answerOptions = getStatisticAnswerOptionsOfItem(item.getIdent(), searchParams);
+		List<StatisticAnswerOption> answerOptions = getStatisticAnswerOptionsOfItem(item.getIdent(), searchParams, groupBy);
 		
 		for(StatisticAnswerOption answerOption:answerOptions) {
 			long count = answerOption.getCount();
@@ -446,7 +451,6 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 			Map<String,String> parsedAnswerMap = QTIResultManager.parseResponseStrAnswers(concatenedAnswer);
 			for(Map.Entry<String, String> parsedAnswerEntry: parsedAnswerMap.entrySet()) {
 				String ident = parsedAnswerEntry.getKey();
-
 				StatisticFIBOption option = optionMap.get(ident);
 				if(option == null) {
 					continue;
@@ -479,11 +483,20 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 	
 	@Override
 	public List<StatisticAnswerOption> getStatisticAnswerOptionsOfItem(String itemIdent, QTIStatisticSearchParams searchParams) {
+		return getStatisticAnswerOptionsOfItem(itemIdent, searchParams, true);
+	}
+	
+	private List<StatisticAnswerOption> getStatisticAnswerOptionsOfItem(String itemIdent, QTIStatisticSearchParams searchParams, boolean groupBy) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select res.answer, count(res.key) from qtistatsresult res ")
 		  .append(" inner join res.resultSet rset");
 		decorateRSet(sb, searchParams);
-		sb.append(" and res.itemIdent=:itemIdent and res.duration > 0 group by res.answer");
+		sb.append(" and res.itemIdent=:itemIdent and res.duration > 0 ");
+		if(groupBy) {
+			sb.append("group by res.answer");
+		} else {
+			sb.append("group by res.key");
+		}
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
 			.setParameter("itemIdent", itemIdent);

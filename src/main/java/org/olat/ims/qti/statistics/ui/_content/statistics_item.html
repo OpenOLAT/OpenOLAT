@@ -1,6 +1,10 @@
 <div class="o_qti_statistics">
+	#if($sectionTitle)
+	<h5>$r.translate("section"): $sectionTitle</h5>
+	#end
 	<h3 class="b_with_small_icon_left $series.itemCss">$title</h3>
 	#if ($question && $question != "")
+		<h4>$r.translate("chart.item")</h4>
 		<div class="o_qti_statistics_question">$question</div>
 	#end
 	
@@ -60,9 +64,18 @@
 			#end
 		#end
 		<strong>$responseInfo.label.</strong> 
-		#if($responseInfo.points) $r.translate("answer.points", $responseInfo.formattedPoints) <br />#end
-		<span class="o_qti_statistics_answer">$responseInfo.text</span>
-		#if($responseInfo.wrongAnswersAvailable) <br/><i>$r.translate("wrong.answer")</i>  $responseInfo.formattedWrongAnswers #end
+		#if($responseInfo.points) $r.translate("answer.points", $responseInfo.formattedPoints) #end
+		#if($responseInfo.wrongAnswersAvailable)
+			<span class="o_qti_statistics_answer"><strong>$responseInfo.text</strong></span>
+			<p class="o_qti_statistics_wrong_answer">#if($responseInfo.survey)
+			<i>$r.translate("fib.answer")</i>
+			#else
+			<i>$r.translate("fib.wrong.answer")</i>
+			#end
+			$responseInfo.formattedWrongAnswers</p>
+		#else
+			<span class="o_qti_statistics_answer">$responseInfo.text</span>
+		#end
 		 </li>
 	#end 	
 	</ul>

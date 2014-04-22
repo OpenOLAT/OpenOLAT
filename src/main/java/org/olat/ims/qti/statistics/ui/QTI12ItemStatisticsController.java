@@ -33,8 +33,11 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.ims.qti.editor.beecom.objects.FIBResponse;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.Question;
+import org.olat.ims.qti.editor.beecom.objects.Response;
+import org.olat.ims.qti.editor.beecom.objects.Section;
 import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
 import org.olat.ims.qti.statistics.QTIStatisticsManager;
@@ -61,7 +64,7 @@ public class QTI12ItemStatisticsController extends BasicController {
 	private final SeriesFactory seriesfactory;
 	
 	public QTI12ItemStatisticsController(UserRequest ureq, WindowControl wControl,
-			Item item, QTIStatisticResourceResult resourceResult, boolean printMode) {
+			Section section, Item item, QTIStatisticResourceResult resourceResult, boolean printMode) {
 		super(ureq, wControl);
 		this.item = item;
 		seriesfactory = new SeriesFactory(resourceResult, getTranslator());
@@ -82,9 +85,13 @@ public class QTI12ItemStatisticsController extends BasicController {
 			initItem(itemStats);
 		}
 		mainVC.put("d3loader", new StatisticsComponent("d3loader"));
-		mainVC.contextPut("question", item.getQuestion().getQuestion().renderAsHtml(mediaBaseURL));
-		mainVC.contextPut("questionType", questionType);
 		mainVC.contextPut("title", item.getTitle());
+		if(section != null) {
+			mainVC.contextPut("sectionTitle", section.getTitle());
+		}
+		mainVC.contextPut("questionType", item.getQuestion().getType());
+		mainVC.contextPut("question", getQuestion());
+		mainVC.contextPut("numOfParticipants", resourceResult.getQTIStatisticAssessment().getNumOfParticipants());
 		mainVC.contextPut("printMode", new Boolean(printMode));
 		putInitialPanel(mainVC);
 	}
@@ -112,9 +119,6 @@ public class QTI12ItemStatisticsController extends BasicController {
 		StatisticsItem itemStats = qtiStatisticsManager
 				.getItemStatistics(item.getIdent(), maxScore, searchParams);
 
-		mainVC.contextPut("question", item.getQuestion().getQuestion().renderAsHtml(mediaBaseURL));
-		mainVC.contextPut("questionType", item.getQuestion().getType());
-		mainVC.contextPut("title", item.getTitle());
 		if(!survey) {
 			long rightAnswers = itemStats.getNumOfCorrectAnswers();
 			long wrongAnswers = itemStats.getNumOfIncorrectAnswers();
@@ -133,6 +137,31 @@ public class QTI12ItemStatisticsController extends BasicController {
 		return itemStats;
 	}
 	
+	private String getQuestion() {
+		String question;
+		if(item.getQuestion().getType() == Question.TYPE_FIB) {
+			StringBuilder questionSb = new StringBuilder();
+			List<Response> elements = item.getQuestion().getResponses();
+			if(elements != null) {
+				for(Response element:elements) {
+					if(element instanceof FIBResponse) {
+						FIBResponse response = (FIBResponse)element;
+						if(FIBResponse.TYPE_CONTENT.equals(response.getType())) {
+							String content = response.getContent().renderAsHtml(mediaBaseURL);
+							questionSb.append(content);
+						} else if(FIBResponse.TYPE_BLANK.equals(response.getType())) {
+							questionSb.append(" ___________________ ");
+						}
+					}
+				}
+			}
+			question = questionSb.toString();
+		} else {
+			question = item.getQuestion().getQuestion().renderAsHtml(mediaBaseURL);
+		}
+		return question;
+	}
+	
 	protected void initItem(StatisticsItem itemStats) {
 		Series series = seriesfactory.getSeries(item, itemStats);
 
@@ -143,9 +172,26 @@ public class QTI12ItemStatisticsController extends BasicController {
 	}
 	
 	protected void initEssay() {
-		mainVC.contextPut("question", item.getQuestion().getQuestion().renderAsHtml(mediaBaseURL));
-		mainVC.contextPut("title", item.getTitle());
+		boolean survey = QTIType.survey.equals(resourceResult.getType());
 		
+		double maxScore;
+		if(survey) {
+			maxScore = 1d;
+		} else if(item.getQuestion().isSingleCorrect()) {
+			maxScore = item.getQuestion().getSingleCorrectScore();
+		} else {
+			maxScore = item.getQuestion().getMaxValue();
+		}
+		StatisticsItem itemStats = qtiStatisticsManager
+				.getItemStatistics(item.getIdent(), maxScore, searchParams);
+
+		mainVC.contextPut("solution", item.getQuestion().getSolutionText());
+		mainVC.contextPut("numOfResults", itemStats.getNumOfResults());
+		if(!survey) {
+			mainVC.contextPut("maxScore", maxScore);
+		}
+		mainVC.contextPut("averageDuration", duration(itemStats.getAverageDuration()));
+
 		List<String> answers = qtiStatisticsManager.getAnswers(item.getIdent(), searchParams);
 
 		List<String> cleanedAnswers = new ArrayList<String>();

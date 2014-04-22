@@ -58,6 +58,7 @@ import org.olat.repository.handlers.SCORMCPHandler;
 import org.olat.repository.handlers.SharedFolderHandler;
 import org.olat.repository.handlers.WebDocumentHandler;
 import org.olat.repository.handlers.WikiHandler;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -323,8 +324,9 @@ public class RepositoryAddController extends BasicController {
 			//save current name and description from create from
 			String displayName = addedEntry.getDisplayname();
 			String description = addedEntry.getDescription();
+			RepositoryEntryLifecycle lifecycle = addedEntry.getLifecycle();
 			// Do set access for owner at the end, because unfinished course should be invisible
-			addedEntry = RepositoryManager.getInstance().setDescriptionAndName(addedEntry, displayName, description);
+			addedEntry = RepositoryManager.getInstance().setDescriptionAndName(addedEntry, displayName, description, lifecycle);
 			addedEntry = RepositoryManager.getInstance().setAccess(addedEntry, RepositoryEntry.ACC_OWNERS, false);
 			addController.repositoryEntryCreated(addedEntry);
 			

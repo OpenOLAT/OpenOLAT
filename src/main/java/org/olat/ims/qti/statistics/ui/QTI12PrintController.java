@@ -31,6 +31,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.nodes.INode;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.statistic.StatisticResourceNode;
 import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 
@@ -54,6 +56,11 @@ public class QTI12PrintController extends BasicController {
 	
 	private void initView(UserRequest ureq, QTIStatisticResourceResult resourceResult) {
 		StatisticResourceNode rootNode = (StatisticResourceNode)resourceResult.getSubTreeModel().getRootNode();
+		
+		ICourse course = CourseFactory.loadCourse(resourceResult.getCourseOres());
+		mainVC.contextPut("courseTitle", course.getCourseTitle());
+		String testTitle = resourceResult.getQTIRepositoryEntry().getDisplayname();
+		mainVC.contextPut("testTitle", testTitle);
 		
 		int count = 0;
 		List<String> pageNames = new ArrayList<>();

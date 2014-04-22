@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
@@ -56,6 +57,8 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.login.auth.OLATAuthManager;
+import org.olat.shibboleth.ShibbolethDispatcher;
+import org.olat.shibboleth.ShibbolethModule;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -70,6 +73,8 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class UserImportController extends BasicController {
+
+	public static final String SHIBBOLETH_MARKER = "SHIBBOLETH::";
 
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private static final String usageIdentifyer = UserImportController.class.getCanonicalName();
@@ -106,6 +111,7 @@ public class UserImportController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source==importStepsController){
 			if (event == Event.CANCELLED_EVENT) {
@@ -113,13 +119,25 @@ public class UserImportController extends BasicController {
 				removeAsListenerAndDispose(importStepsController);
 			} else if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				getWindowControl().pop();
+				StepsRunContext ctxt = importStepsController.getRunContext();
+				ImportReport report = (ImportReport)ctxt.get("report");
 				removeAsListenerAndDispose(importStepsController);
-				showInfo("import.success");
+				if(report.isHasErrors()) {
+					StringBuilder errorMsg = new StringBuilder();
+					errorMsg.append("<ul>");
+					for(String error:report.getErrors()) {
+						errorMsg.append("<li>").append(error).append("</li>");
+					}
+					errorMsg.append("</ul>");
+					showError("import.errors", errorMsg.toString());
+				} else {
+					showInfo("import.success");
+				}
 			}
 		}
 	}
 
-	private Identity doCreateAndPersistIdentity(TransientIdentity singleUser) {
+	private Identity doCreateAndPersistIdentity(TransientIdentity singleUser, ImportReport report) {
 		// Create new user and identity and put user to users group
 		String login = singleUser.getName(); //pos 0 is used for existing/non-existing user flag
 		String pwd = singleUser.getPassword();
@@ -148,24 +166,52 @@ public class UserImportController extends BasicController {
 		newUser.getPreferences().setLanguage(lang);
 		newUser.getPreferences().setInformSessionTimeout(true);
 		// Save everything in database
-		Identity ident = AuthHelper.createAndPersistIdentityAndUserWithUserGroup(login, pwd, newUser);
+		Identity ident;
+		if(pwd.startsWith(SHIBBOLETH_MARKER) && ShibbolethModule.isEnableShibbolethLogins()) {
+			String uniqueID = pwd.substring(SHIBBOLETH_MARKER.length());
+			ident = AuthHelper.createAndPersistIdentityAndUserWithUserGroup(login, ShibbolethDispatcher.PROVIDER_SHIB, uniqueID, newUser);
+			report.incrementCreatedUser();
+			report.incrementUpdatedShibboletAuthentication();
+		} else {
+			ident = AuthHelper.createAndPersistIdentityAndUserWithUserGroup(login, pwd, newUser);
+			report.incrementCreatedUser();
+		}
 		return ident;
 	}
 	
-	private Identity doUpdateIdentity(UpdateIdentity userToUpdate, Boolean updateUsers, Boolean updatePassword) {
+	private Identity doUpdateIdentity(UpdateIdentity userToUpdate, Boolean updateUsers, Boolean updatePassword, ImportReport report) {
 		Identity identity;
 		if(updateUsers != null && updateUsers.booleanValue()) {
 			identity = userToUpdate.getIdentity(true);
-			um.updateUserFromIdentity(identity);
+			if(um.updateUserFromIdentity(identity)) {
+				report.incrementUpdatedUser();
+			}
 		} else {
 			identity = userToUpdate.getIdentity();
 		}
 		
 		String password = userToUpdate.getPassword();
-		if(StringHelper.containsNonWhitespace(password) && updatePassword != null && updatePassword.booleanValue()) {
-			Authentication auth = securityManager.findAuthentication(identity, "OLAT");
-			if(auth != null) {
-				olatAuthManager.changePassword(getIdentity(), identity, password);
+		if(StringHelper.containsNonWhitespace(password)) {
+			if(password.startsWith(SHIBBOLETH_MARKER) && ShibbolethModule.isEnableShibbolethLogins()) {
+				String uniqueID = password.substring(SHIBBOLETH_MARKER.length());
+				Authentication auth = securityManager.findAuthentication(identity, ShibbolethDispatcher.PROVIDER_SHIB);
+				if(auth == null) {
+					securityManager.createAndPersistAuthentication(identity, ShibbolethDispatcher.PROVIDER_SHIB, uniqueID, null, null);
+					report.incrementUpdatedShibboletAuthentication();
+				} else if(!uniqueID.equals(auth.getAuthusername())) {
+					//remove the old authentication
+					securityManager.deleteAuthentication(auth);
+					DBFactory.getInstance().commit();
+					//create the new one with the new authusername
+					securityManager.createAndPersistAuthentication(identity, ShibbolethDispatcher.PROVIDER_SHIB, uniqueID, null, null);
+					report.incrementUpdatedShibboletAuthentication();
+				}
+			} else if(updatePassword != null && updatePassword.booleanValue()) {
+				Authentication auth = securityManager.findAuthentication(identity, "OLAT");
+				if(auth != null) {
+					olatAuthManager.changePassword(getIdentity(), identity, password);
+					report.incrementUpdatedPassword();
+				}
 			}
 		}
 		return userToUpdate.getIdentity();
@@ -190,14 +236,15 @@ public class UserImportController extends BasicController {
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			public Step execute(UserRequest ureq1, WindowControl wControl1, StepsRunContext runContext) {
 				// all information to do now is within the runContext saved
-				boolean hasChanges = false;
+				ImportReport report = new ImportReport();
+				runContext.put("report", report);
 				try {
 					if (runContext.containsKey("validImport") && ((Boolean) runContext.get("validImport")).booleanValue()) {
 						// create new users and persist
 						@SuppressWarnings("unchecked")
 						List<TransientIdentity> newIdents = (List<TransientIdentity>) runContext.get("newIdents");
 						for (TransientIdentity newIdent:newIdents) {
-							doCreateAndPersistIdentity(newIdent);
+							doCreateAndPersistIdentity(newIdent, report);
 						}
 
 						Boolean updateUsers = (Boolean)runContext.get("updateUsers");
@@ -205,7 +252,7 @@ public class UserImportController extends BasicController {
 						@SuppressWarnings("unchecked")
 						List<UpdateIdentity> updateIdents = (List<UpdateIdentity>) runContext.get("updateIdents");
 						for (UpdateIdentity updateIdent:updateIdents) {
-							doUpdateIdentity(updateIdent, updateUsers, updatePasswords);
+							doUpdateIdentity(updateIdent, updateUsers, updatePasswords, report);
 						}
 
 						@SuppressWarnings("unchecked")
@@ -213,22 +260,22 @@ public class UserImportController extends BasicController {
 						@SuppressWarnings("unchecked")
 						List<Long> partGroups = (List<Long>) runContext.get("partGroups");
 
-						if (ownGroups.size() > 0 || partGroups.size() > 0){
+						if ((ownGroups != null && ownGroups.size() > 0) || (partGroups != null && partGroups.size() > 0)) {
 							@SuppressWarnings("unchecked")
 							List<Identity> allIdents = (List<Identity>) runContext.get("idents");
 							Boolean sendMailObj = (Boolean)runContext.get("sendMail");
 							boolean sendmail = sendMailObj == null ? true : sendMailObj.booleanValue();
 							processGroupAdditionForAllIdents(allIdents, ownGroups, partGroups, sendmail);
 						}
-						hasChanges = true;
+						report.setHasChanges(true);
 					}
 				} catch (Exception any) {
-					// return new ErrorStep
+					logError("", any);
+					report.addError("Unexpected error, see log files or call your system administrator");
 				}
 				// signal correct completion and tell if changes were made or not.
-				return hasChanges ? StepsMainRunController.DONE_MODIFIED : StepsMainRunController.DONE_UNCHANGED;
+				return report.isHasChanges() ? StepsMainRunController.DONE_MODIFIED : StepsMainRunController.DONE_UNCHANGED;
 			}
-
 		};
 
 		importStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
@@ -280,5 +327,74 @@ public class UserImportController extends BasicController {
 		MailPackage mailing = new MailPackage(sendmail);
 		businessGroupService.updateMemberships(getIdentity(), changes, mailing);
 		DBFactory.getInstance().commit();
+	}
+	
+	public static class ImportReport {
+		
+		private boolean hasChanges = false;
+		private boolean hasErrors = false;
+		
+		private AtomicInteger updatedUser = new AtomicInteger(0);
+		private AtomicInteger createdUser = new AtomicInteger(0);
+		private AtomicInteger updatedPassword = new AtomicInteger(0);
+		private AtomicInteger updatedShibboletAuthentication = new AtomicInteger(0);
+		
+		private List<String> errors = new ArrayList<>();
+
+		public boolean isHasChanges() {
+			return hasChanges;
+		}
+
+		public void setHasChanges(boolean hasChanges) {
+			this.hasChanges = hasChanges;
+		}
+
+		public boolean isHasErrors() {
+			return hasErrors;
+		}
+
+		public void setHasErrors(boolean hasErrors) {
+			this.hasErrors = hasErrors;
+		}
+
+		public List<String> getErrors() {
+			return errors;
+		}
+
+		public void addError(String error) {
+			errors.add(error);
+		}
+
+		public int getNumOfUpdatedUser() {
+			return updatedUser.get();
+		}
+
+		public void incrementUpdatedUser() {
+			updatedUser.incrementAndGet();
+		}
+
+		public int getCreatedUser() {
+			return createdUser.get();
+		}
+
+		public void incrementCreatedUser() {
+			createdUser.incrementAndGet();
+		}
+
+		public int getUpdatedPassword() {
+			return updatedPassword.get();
+		}
+
+		public void incrementUpdatedPassword() {
+			updatedPassword.incrementAndGet();
+		}
+
+		public int getUpdatedShibboletAuthentication() {
+			return updatedShibboletAuthentication.get();
+		}
+
+		public void incrementUpdatedShibboletAuthentication() {
+			updatedShibboletAuthentication.incrementAndGet();
+		}
 	}
 }

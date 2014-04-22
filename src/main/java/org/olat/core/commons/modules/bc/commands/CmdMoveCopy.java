@@ -191,13 +191,25 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 					}
 				}
 				fireEvent(ureq, new FolderEvent(move ? FolderEvent.MOVE_EVENT : FolderEvent.COPY_EVENT, fileSelection.renderAsHtml()));
-				fireEvent(ureq, FOLDERCOMMAND_FINISHED);
+				notifyFinished(ureq);
 			} else {
 				// abort
 				status = FolderCommandStatus.STATUS_CANCELED;
 				fireEvent(ureq, FOLDERCOMMAND_FINISHED);
 			}
 		}
+	}
+	
+	private void notifyFinished(UserRequest ureq) {
+		VFSContainer container = VFSManager.findInheritingSecurityCallbackContainer(folderComponent.getRootContainer());
+		VFSSecurityCallback secCallback = container.getLocalSecurityCallback();
+		if(secCallback != null) {
+			SubscriptionContext subsContext = secCallback.getSubscriptionContext();
+			if (subsContext != null) {
+				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
+			}
+		}
+		fireEvent(ureq, FOLDERCOMMAND_FINISHED);
 	}
 
 	/**

@@ -79,12 +79,25 @@
     	svg.selectAll('.bar0')
     	    .data(data)
     	  .enter().append('rect')
-    	    .attr('class', 'bar bar0 bar_default')
+    	    .attr('class', 'bar bar_default')
     	    .attr('fill', 'bar_default')
     	    .attr('x', 0)
     	    .attr('y', function(d) { return y(d[0]) + 2; })
     	    .attr('width', function(d) { return x(d[1]); })
     	    .attr('height', y.rangeBand() - 4);
+    	
+       	var valDy = ((y.rangeBand() / 2) + 3) + "px";
+    	svg.selectAll('.bar0')
+    	     .data(data)
+    	   .enter().append('text')
+    	    .attr('x', function(d) { return x(d[1]); })
+    	    .attr('y', function(d) { return y(d[0]) + 2; })
+    	    .attr('dx', -3)
+    	    .attr('dy', valDy)
+    	    .attr('text-anchor', 'end')
+    	    .attr('fill', 'rgb(48,48,48)')
+    	    .attr('stroke', 'none')
+    	    .text(function(d) { return (d[1] <= 0) ? '' : d3.round(d[1], 2); });
     	
     	svg.append('g')
     	    .attr('class', 'y axis')
@@ -104,24 +117,19 @@
     	
     	var data = settings.values.reverse();
     	
-    	var margin = {top: 40, right: 60, bottom: 40, left: 60},
+    	var margin = {top: 15, right: 60, bottom: 40, left: 60},
     	   width = placeholderwidth - margin.left - margin.right;
     	
     	var height = data.length * settings.barHeight;
     	$obj.height(height + margin.top + margin.bottom + 'px');
     	
-    	var sum = d3.sum(data, function(d) { return d[1]; });
+    	var sum =  settings.participants;
     	
     	var x = d3.scale.linear()
-    	  .domain([0, d3.max(data, function(d) { return d[1]; })])
+    	  .domain([0, sum])
     	   .range([0, width]);
-    	var xAxis = d3.svg.axis()
-    	   .scale(x)
-    	   .orient('top')
-    	   .ticks(10);
-    	
     	var x2 = d3.scale.linear()
-    	  .domain([0, d3.max(data, function(d) { return d[1] / sum; })])
+    	  .domain([0, 1])
     	   .range([0, width]);
     	var x2Axis = d3.svg.axis()
     	   .scale(x2)
@@ -140,17 +148,7 @@
     	   .attr('height', height + margin.top + margin.bottom)
     	  .append('g')
     	   .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-    	
-    	svg.append('g')
-    	     .attr('class', 'x axis')
-    	     .attr('transform', 'translate(0,0)')
-    	     .call(xAxis)  .append('text')
-    	    .attr('y', 0 - (margin.top / 1.1))
-    	    .attr('x', (width / 2))
-    	    .attr('dy', '1em')
-    	    .style('text-anchor', 'middle')
-    	    .text(settings.xBottomLegend);
-    	
+
     	svg.append('g')
     	     .attr('class', 'x axis')
     	     .attr('transform', 'translate(0,' + height + ')')
@@ -164,12 +162,25 @@
     	svg.selectAll('.bar0')
     	    .data(data)
     	  .enter().append('rect')
-    	    .attr('class', 'bar bar0 bar_green')
+    	    .attr('class', 'bar bar_green')
     	    .attr('fill', 'bar_green')
     	    .attr('x', 0)
     	    .attr('y', function(d) { return y(d[0]) + 2; })
     	    .attr('width', function(d) { return x(d[1]); })
     	    .attr('height', y.rangeBand() - 4);
+    	
+    	var valDy = ((y.rangeBand() / 2) + 3) + "px";
+    	svg.selectAll('.bar0')
+    	     .data(data)
+    	   .enter().append('text')
+    	    .attr('x', function(d) { return x(d[1]); })
+    	    .attr('y', function(d) { return y(d[0]) + 2; })
+    	    .attr('dx', -3)
+    	    .attr('dy', valDy)
+    	    .attr('text-anchor', 'end')
+    	    .attr('fill', 'rgb(48,48,48)')
+    	    .attr('stroke', 'none')
+    	    .text(function(d) { return (d[1] <= 0) ? '' : d[1]; });
     	
     	svg.append('g')
     	    .attr('class', 'y axis')
@@ -187,24 +198,21 @@
     	var placeholderwidth = $obj.width();
     	var data = settings.values.reverse();
     	
-    	var margin = {top: 40, right: 10, bottom: 40, left: 40};
+    	var margin = {top: 40, right: 15, bottom: 40, left: 40};
     	var height = data.length * settings.barHeight;
     	$obj.height(height + margin.top + margin.bottom + 'px');
     	var width = placeholderwidth - margin.left - margin.right;
     	
     	var sum =  settings.participants;
-    	var max = d3.max(data, function(d) { return d[1]; });
+    	var max = sum;
+    	
+    	console.log(settings.colors);
 
     	var x = d3.scale.linear()
     	  .domain([0, max])
     	   .range([0, width]);
-    	var xAxis = d3.svg.axis()
-    	   .scale(x)
-    	   .orient('top')
-    	   .ticks(max);
-    	
     	var x2 = d3.scale.linear()
-    	  .domain([0, d3.max(data, function(d) { return (d[1]) / sum; })])
+    	  .domain([0, 1])
     	   .range([0, width]);
     	var x2Axis = d3.svg.axis()
     	   .scale(x2)
@@ -223,16 +231,6 @@
     	   .attr('height', height + margin.top + margin.bottom)
     	  .append('g')
     	   .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-    	
-    	svg.append('g')
-    	     .attr('class', 'x axis')
-    	     .attr('transform', 'translate(0,0)')
-    	     .call(xAxis)  .append('text')
-    	    .attr('y', 0 - (margin.top / 1.1))
-    	    .attr('x', (width / 2))
-    	    .attr('dy', '1em')
-    	    .style('text-anchor', 'middle')
-    	    .text(settings.xTopLegend);
     	
     	svg.append('g')
     	     .attr('class', 'x axis')
@@ -264,6 +262,19 @@
     	    .attr('y', function(d) { return y(d[0]) + 2; })
     	    .attr('width', function(d) { return x(d[1]); })
     	    .attr('height', y.rangeBand() - 4);
+    	
+    	var valDy = ((y.rangeBand() / 2) + 3) + "px";
+    	svg.selectAll('.bar0')
+    	     .data(data)
+    	   .enter().append('text')
+    	    .attr('x', function(d) { return x(d[1]); })
+    	    .attr('y', function(d) { return y(d[0]) + 2; })
+    	    .attr('dx', -3) // padding-left
+    	    .attr('dy', valDy) // vertical-align: middle
+    	    .attr('text-anchor', 'end') // text-align: right
+    	    .attr('fill', 'rgb(48,48,48)')
+    	    .attr('stroke', 'none')
+    	    .text(function(d) { return (d[1] <= 0) ? '' : d[1]; });
     };
     
     horizontalBarMultipleChoice = function($obj, settings) {
@@ -271,24 +282,19 @@
     	
     	var data = settings.values.reverse();
     	
-    	var margin = {top: 40, right: 10, bottom: 40, left: 40};
+    	var margin = {top: 40, right: 15, bottom: 40, left: 40};
     	var height = data.length * settings.barHeight;
     	$obj.height(height + margin.top + margin.bottom + 'px');
     	var width = placeholderwidth - margin.left - margin.right;
     	
     	var sum = settings.participants;
-    	var max = d3.max(data, function(d) { return d[1] + d[2] + d[3]; });
+    	var max = sum;
 
     	var x = d3.scale.linear()
     	  .domain([0, max])
     	   .range([0, width]);
-    	var xAxis = d3.svg.axis()
-    	   .scale(x)
-    	   .orient('top')
-    	   .ticks(max);
-    	
     	var x2 = d3.scale.linear()
-    	  .domain([0, d3.max(data, function(d) { return (d[1] + d[2] + d[3]) / sum; })])
+    	  .domain([0, 1])
     	   .range([0, width]);
     	var x2Axis = d3.svg.axis()
     	   .scale(x2)
@@ -307,17 +313,7 @@
     	   .attr('height', height + margin.top + margin.bottom)
     	  .append('g')
     	   .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-    	
-    	svg.append('g')
-    	     .attr('class', 'x axis')
-    	     .attr('transform', 'translate(0,0)')
-    	     .call(xAxis)  .append('text')
-    	    .attr('y', 0 - (margin.top / 1.1))
-    	    .attr('x', (width / 2))
-    	    .attr('dy', '1em')
-    	    .style('text-anchor', 'middle')
-    	    .text(settings.xTopLegend);
-    	
+
     	svg.append('g')
     	     .attr('class', 'x axis')
     	     .attr('transform', 'translate(0,' + height + ')')
@@ -349,6 +345,19 @@
     	    .attr('width', function(d) { return x(d[1]); })
     	    .attr('height', y.rangeBand() - 4);
     	
+    	var valDy = ((y.rangeBand() / 2) + 3) + "px";
+    	svg.selectAll('.bar0')
+    	     .data(data)
+    	   .enter().append('text')
+    	    .attr('x', function(d) { return x(d[1]); })
+    	    .attr('y', function(d) { return y(d[0]) + 2; })
+    	    .attr('dx', -3)
+    	    .attr('dy', valDy)
+    	    .attr('text-anchor', 'end')
+    	    .attr('fill', 'rgb(48,48,48)')
+    	    .attr('stroke', 'none')
+    	    .text(function(d) { return (d[1] <= 0) ? '' : d[1]; });
+    	
     	svg.selectAll('.bar1')
     	    .data(data)
     	  .enter().append('rect')
@@ -359,6 +368,18 @@
     	    .attr('width', function(d) { return x(d[2]); })
     	    .attr('height', y.rangeBand() - 4);
     	
+    	svg.selectAll('.bar1')
+	     	.data(data)
+		   .enter().append('text')
+		    .attr('x', function(d) { return x(d[1] + d[2]); })
+		    .attr('y', function(d) { return y(d[0]) + 2; })
+		    .attr('dx', -3)
+		    .attr('dy', valDy)
+		    .attr('text-anchor', 'end')
+		    .attr('fill', 'rgb(48,48,48)')
+		    .attr('stroke', 'none')
+		    .text(function(d) { return (d[2] <= 0) ? '' : d[2]; });
+    	
     	svg.selectAll('.bar2')
     	    .data(data)
     	  .enter().append('rect')
@@ -368,6 +389,18 @@
     	    .attr('y', function(d) { return y(d[0]) + 2; })
     	    .attr('width', function(d) { return x(d[3]); })
     	    .attr('height', y.rangeBand() - 4);
+    	
+    	svg.selectAll('.bar2')
+	     	.data(data)
+		   .enter().append('text')
+		    .attr('x', function(d) { return x(d[1] + d[2] + d[3]); })
+		    .attr('y', function(d) { return y(d[0]) + 2; })
+		    .attr('dx', -3) // padding-left
+		    .attr('dy', valDy) // vertical-align: middle
+		    .attr('text-anchor', 'end') // text-align: right
+		    .attr('fill', 'rgb(48,48,48)')
+		    .attr('stroke', 'none')
+		    .text(function(d) { return (d[3] <= 0) ? '' : d[3]; });
     };
     
     horizontalBarSingleChoice = function($obj, settings) {
@@ -376,24 +409,19 @@
     	var data = settings.values.reverse();
     	var colors = settings.colors.reverse();
     	
-    	var margin = {top: 40, right: 10, bottom: 40, left: 40};
+    	var margin = {top: 15, right: 15, bottom: 40, left: 40};
     	var height = data.length * settings.barHeight;
     	$obj.height(height + margin.top + margin.bottom + 'px');
     	var width = placeholderwidth - margin.left - margin.right;
     	
-    	var sum = settings.participants;// d3.sum(data, function(d) { return d[1]; });
-    	var max = d3.max(data, function(d) { return d[1]; });
+    	var sum = settings.participants;
+    	var max = sum;
 
     	var x = d3.scale.linear()
     	  .domain([0, max])
     	   .range([0, width]);
-    	var xAxis = d3.svg.axis()
-    	   .scale(x)
-    	   .orient('top')
-    	   .ticks(max);
-    	
     	var x2 = d3.scale.linear()
-    	  .domain([0, d3.max(data, function(d) { return d[1] / sum; })])
+    	  .domain([0, 1])
     	   .range([0, width]);
     	var x2Axis = d3.svg.axis()
     	   .scale(x2)
@@ -412,17 +440,6 @@
     	   .attr('height', height + margin.top + margin.bottom)
     	  .append('g')
     	   .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-    	
-    	svg.append('g')
-    	     .attr('class', 'x axis')
-    	     .attr('transform', 'translate(0,0)')
-    	    .call(xAxis)
-    	     .append('text')
-    	    .attr('y', 0 - (margin.top / 1.1))
-    	    .attr('x', (width / 2))
-    	    .attr('dy', '1em')
-    	    .style('text-anchor', 'middle')
-    	    .text(settings.xTopLegend);
     	
     	svg.append('g')
     	     .attr('class', 'x axis')
@@ -448,6 +465,19 @@
     	    .attr('width', function(d) { return x(d[1]); })
     	    .attr('height', y.rangeBand() - 4);
     	
+    	var valDy = ((y.rangeBand() / 2) + 3) + "px";
+    	svg.selectAll('.bar0')
+    	     .data(data)
+    	   .enter().append('text')
+    	    .attr('x', function(d) { return x(d[1]); })
+    	    .attr('y', function(d) { return y(d[0]) + 2; })
+    	    .attr('dx', -3) // padding-left
+    	    .attr('dy', valDy) // vertical-align: middle
+    	    .attr('text-anchor', 'end') // text-align: right
+    	    .attr('fill', 'rgb(48,48,48)')
+    	    .attr('stroke', 'none')
+    	    .text(function(d) { return (d[1] <= 0) ? '' : d[1]; });
+    	
     	svg.append('g')
     	    .attr('class', 'y axis')
     	   .call(yAxis)
@@ -464,6 +494,7 @@
     	var placeholderheight = $obj.height();
     	var placeholderwidth = $obj.width();
     	var values = settings.values;
+    	var minTime = d3.min(values, function(d) { return d; });
     	var maxTime = d3.max(values, function(d) { return d; });
     	
     	var timeFormat = '%M:%S';
@@ -485,6 +516,7 @@
     	  .range([0, width]);
     	
     	var data = d3.layout.histogram()
+    	  //.range([0, maxTime])
     	  .bins(x.ticks(20))
     	  (values);
     	

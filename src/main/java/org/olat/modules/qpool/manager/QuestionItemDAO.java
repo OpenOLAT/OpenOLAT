@@ -374,7 +374,7 @@ public class QuestionItemDAO {
 		if(StringHelper.containsNonWhitespace(params.getFormat())) {
 			sb.append(" and item.format=:format");
 		}
-		if(PersistenceHelper.appendGroupBy(sb, "item", orderBy)) {
+		if(!PersistenceHelper.appendGroupBy(sb, "item", orderBy)) {
 			sb.append(" order by item.key asc ");
 		}
 
@@ -458,7 +458,7 @@ public class QuestionItemDAO {
 		if(inKeys != null && !inKeys.isEmpty()) {
 			sb.append(" and item.key in (:itemKeys)");
 		}
-		if(PersistenceHelper.appendGroupBy(sb, "item", orderBy)) {
+		if(!PersistenceHelper.appendGroupBy(sb, "item", orderBy)) {
 			sb.append(" order by item.key asc ");
 		}
 

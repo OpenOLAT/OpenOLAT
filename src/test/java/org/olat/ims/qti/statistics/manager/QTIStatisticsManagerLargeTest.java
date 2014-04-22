@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -93,6 +94,7 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 	private static float durationQ3 = 0.0f;
 	private static float scoreQ1 = 0.0f;
 	private static float scoreQ2 = 0.0f;
+	private static int rightAnswersQ2 = 0;
 	private static int wrongAnswersQ2 = 0;
 	private static List<String> fibAnswers = new ArrayList<String>();
 
@@ -142,7 +144,9 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 			test.setDuration(tempTestDuration);
 			test.setIdentity(JunitTestHelper.createAndPersistIdentityAsUser("test" + i));
 			test.setAssessmentID(111L);
-			test.setLastModified(new Date(200, 8, 23, (int) (Math.random() * 1000 % 60), (int) (Math.random() * 1000 % 60), (int) (Math.random() * 1000 % 60)));
+			Calendar cal = Calendar.getInstance();
+			cal.set(2013, 8, 23, (int) (Math.random() * 1000 % 60), (int) (Math.random() * 1000 % 60), (int) (Math.random() * 1000 % 60));
+			test.setLastModified(cal.getTime());
 			dbInstance.saveObject(test);
 			// insert values into result
 			for (int j = 0; j < numberOfQuestions; j++) {
@@ -180,6 +184,7 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 					if (score < 3.0f) {
 						wrongAnswersQ2++;
 					} else {
+						rightAnswersQ2++;
 						maxScoreQ2++;
 					}
 				} else if (j == 2) {
@@ -292,7 +297,7 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 		QTIStatisticSearchParams searchParams = new QTIStatisticSearchParams(olatResource, olatResourceDetail);
 		StatisticsItem stats  = qtim.getItemStatistics(itemObject.getItemIdent(), maxValue, searchParams);
 
-		double difficulty = scoreQ2 / maxValue;
+		double difficulty = rightAnswersQ2 / numberOfParticipants;
 		Assert.assertEquals(difficulty, stats.getDifficulty(), 0.1);
 		Assert.assertEquals(scoreQ2, stats.getAverageScore(), 0.1);
 		Assert.assertEquals(wrongAnswersQ2, stats.getNumOfIncorrectAnswers());

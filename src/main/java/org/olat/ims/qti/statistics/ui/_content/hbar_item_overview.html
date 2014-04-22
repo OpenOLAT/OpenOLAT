@@ -10,7 +10,7 @@
 			values: [$series.datas.data],
 			colors: #if($series.colorsCustom) [$series.datas.colors] #else null #end,
 			participants: $series.numOfParticipants,
-			barHeight: 25,
+			barHeight: 20,
 			xTopLegend: '$r.translate("chart.percent.participants.num")',
 			xBottomLegend: '$r.translate("chart.percent.participants")',
 			yLeftLegend: '$r.translate("chart.item")',
@@ -29,9 +29,18 @@
 			<li class="o_qti_statistics-ncorrect">
 		#end
 		<strong>$responseInfo.label.</strong> 
-		#if($responseInfo.points) $r.translate("answer.points", $responseInfo.formattedPoints) <br />#end
-		<span class="o_qti_statistics_answer">$responseInfo.text</span>
-		#if($responseInfo.wrongAnswersAvailable) <br/><i>$r.translate("wrong.answer")</i>  $responseInfo.formattedWrongAnswers #end
+		#if($responseInfo.points) $r.translate("answer.points", $responseInfo.formattedPoints) #end
+		#if($responseInfo.wrongAnswersAvailable)
+			<span class="o_qti_statistics_answer"><strong>$responseInfo.text</strong></span>
+			<p>#if($responseInfo.survey)
+			<i>$r.translate("fib.answer")</i>
+			#else
+			<i>$r.translate("fib.wrong.answer")</i>
+			#end
+			$responseInfo.formattedWrongAnswers</p>
+		#else
+			<span class="o_qti_statistics_answer">$responseInfo.text</span>
+		#end
 		 </li>
 	#end 	
 </div>

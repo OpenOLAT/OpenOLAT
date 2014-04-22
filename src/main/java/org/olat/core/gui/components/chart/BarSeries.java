@@ -31,21 +31,27 @@ import java.util.Map;
  */
 public class BarSeries {
 
+	private final String color;
 	private final String legend;
 	private final String cssClass;
 	private List<BarPoint> points = new ArrayList<BarPoint>();
 	
 	public BarSeries() {
-		this(null, null);
+		this(null, null, null);
 	}
 	
-	public BarSeries(String cssClass, String legend) {
+	public BarSeries(String cssClass, String color, String legend) {
+		this.color = color;
 		this.legend = legend;
 		this.cssClass = cssClass;
 	}
 
 	public String getCssClass() {
 		return cssClass;
+	}
+	
+	public String getColor() {
+		return color;
 	}
 
 	public String getLegend() {

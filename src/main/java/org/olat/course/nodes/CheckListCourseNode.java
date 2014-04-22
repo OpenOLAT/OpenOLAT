@@ -591,7 +591,11 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		if(passed) {
 			Boolean scoreGrantedBool = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 			if(scoreGrantedBool != null && scoreGrantedBool.booleanValue()) {
-				score = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
+				score = checkboxManager.calculateScore(assessedIdentity, courseOres, getIdent());
+				Float maxScore = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
+				if(maxScore != null && maxScore.floatValue() < score) {
+					score = maxScore.floatValue();
+				}
 			}
 		}
 

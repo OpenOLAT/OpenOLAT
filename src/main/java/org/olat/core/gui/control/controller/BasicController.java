@@ -453,6 +453,22 @@ public abstract class BasicController extends DefaultController {
 		getWindowControl().setInfo(
 				getTranslator().translate(key, new String[] { arg }));
 	}
+	
+	/**
+	 * convenience method to inform the user. this will call
+	 * 
+	 * <pre>
+	 * getWindowControl().setInfo(getTranslator().translate(key, args));
+	 * </pre>
+	 * 
+	 * @param key
+	 *            the key to use (in the LocalStrings_curlanguage file of your
+	 *            controller)
+	 * @param args
+	 */
+	protected void showInfo(String key, String[] args) {
+		getWindowControl().setInfo(getTranslator().translate(key, args));
+	}
 
 	/**
 	 * convenience method to inform the user with a warning message. this will

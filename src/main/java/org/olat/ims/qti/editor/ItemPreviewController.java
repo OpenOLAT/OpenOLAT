@@ -37,6 +37,7 @@ import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
@@ -75,6 +76,9 @@ public class ItemPreviewController extends DefaultController implements Controll
 		this.item = item;
 		this.mediaBaseUrl = mediaBaseUrl;
 		renderInstructions = new RenderInstructions();
+		if(mediaBaseUrl != null && !mediaBaseUrl.startsWith("http")) {
+			mediaBaseUrl = Settings.getServerContextPathURI() + mediaBaseUrl;
+		}
 		renderInstructions.put(RenderInstructions.KEY_STATICS_PATH, mediaBaseUrl + "/");
 		renderInstructions.put(RenderInstructions.KEY_LOCALE, translator.getLocale());
 		renderInstructions.put(RenderInstructions.KEY_RENDER_TITLE, Boolean.TRUE);
