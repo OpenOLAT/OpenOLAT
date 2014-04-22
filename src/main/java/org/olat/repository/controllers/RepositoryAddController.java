@@ -326,7 +326,7 @@ public class RepositoryAddController extends BasicController {
 			String description = addedEntry.getDescription();
 			RepositoryEntryLifecycle lifecycle = addedEntry.getLifecycle();
 			// Do set access for owner at the end, because unfinished course should be invisible
-			addedEntry = RepositoryManager.getInstance().setDescriptionAndName(addedEntry, displayName, description, lifecycle);
+			addedEntry = RepositoryManager.getInstance().setDescriptionAndName(addedEntry, displayName, description, null, null, null, lifecycle);
 			addedEntry = RepositoryManager.getInstance().setAccess(addedEntry, RepositoryEntry.ACC_OWNERS, false);
 			addController.repositoryEntryCreated(addedEntry);
 			
