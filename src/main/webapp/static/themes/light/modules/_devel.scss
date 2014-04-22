@@ -13,11 +13,14 @@ a.o_dev {
 	position: absolute; 
 	left: 0; top: 0; 
 	z-index:4000; 
-	padding: 3px;
 	background: #f0ad4e;
-	i.o_icon_dev {
-		color: #d9534f;
-	}
+	border: 1px solid #d59645;
+	border-top: none;
+	border-left: none;
+	border-radius: 0 0 4px 0;
+	color: #fff;
+	&:hover {color: #d9534f;}
+	
 }
 /* GUI debug wrapper and info box */
 .o_dev_w {
