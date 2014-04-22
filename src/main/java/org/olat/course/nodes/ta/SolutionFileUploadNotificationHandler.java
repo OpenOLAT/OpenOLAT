@@ -32,7 +32,7 @@ import org.olat.core.util.notifications.NotificationsHandler;
 import org.olat.core.util.notifications.SubscriptionContext;
 import org.olat.course.CourseModule;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.environment.CourseEnvironment;
 
 /**
  * Description:<br>
@@ -51,8 +51,8 @@ public class SolutionFileUploadNotificationHandler extends AbstractTaskNotificat
 		//empty block
 	}
 
-	protected static SubscriptionContext getSubscriptionContext(UserCourseEnvironment userCourseEnv, CourseNode node) {
-	  return CourseModule.createSubscriptionContext(userCourseEnv.getCourseEnvironment(), node, "Solutionbox");
+	protected static SubscriptionContext getSubscriptionContext(CourseEnvironment courseEnv, CourseNode node) {
+	  return CourseModule.createSubscriptionContext(courseEnv, node, "Solutionbox");
 	}
 
 	protected String getCssClassIcon() {
