@@ -64,28 +64,27 @@ public class SolutionController extends BasicController {
 	 * @param wControl
 	 * @param config
 	 * @param node
-	 * @param userCourseEnv
+	 * @param courseEnv
 	 * @param previewMode
 	 */
-	public SolutionController(UserRequest ureq, WindowControl wControl, CourseNode node, UserCourseEnvironment userCourseEnv, boolean previewMode) {
+	public SolutionController(UserRequest ureq, WindowControl wControl, CourseNode node, CourseEnvironment courseEnv, boolean previewMode) {
 		super(ureq, wControl);
 		
 		myContent = createVelocityContainer("solutionRun");
 		
 		// returnbox display
-		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(
-			SolutionController.getSolutionPathRelToFolderRoot(userCourseEnv.getCourseEnvironment(), node), null);
+		String solutionPath = SolutionController.getSolutionPathRelToFolderRoot(courseEnv, node);
+		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(solutionPath, null);
 		OlatNamedContainerImpl namedContainer = new OlatNamedContainerImpl("solutions", rootFolder); 
 		namedContainer.setLocalSecurityCallback(new ReadOnlyCallback());
 		solutionFolderRunController = new FolderRunController(namedContainer, false, ureq, wControl);
 		solutionFolderRunController.addControllerListener(this);
 		myContent.put("solutionbox", solutionFolderRunController.getInitialComponent());
-		if ( !previewMode) {
+		if (!previewMode) {
 			// offer subscription, but not to guests
-			subsContext = SolutionFileUploadNotificationHandler.getSubscriptionContext(userCourseEnv, node);
+			subsContext = SolutionFileUploadNotificationHandler.getSubscriptionContext(courseEnv, node);
 			if (subsContext != null) {
-				contextualSubscriptionCtr = AbstractTaskNotificationHandler.createContextualSubscriptionController(ureq, wControl, getSolutionPathRelToFolderRoot(
-						userCourseEnv.getCourseEnvironment(), node), subsContext, SolutionController.class);
+				contextualSubscriptionCtr = AbstractTaskNotificationHandler.createContextualSubscriptionController(ureq, wControl, solutionPath, subsContext, SolutionController.class);
 				myContent.put("subscription", contextualSubscriptionCtr.getInitialComponent());
 				myContent.contextPut("hasNotification", Boolean.TRUE);
 			}
