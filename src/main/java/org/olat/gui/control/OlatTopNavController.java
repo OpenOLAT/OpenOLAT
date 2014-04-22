@@ -125,7 +125,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 			loginLink.setTooltip("topnav.login.alt");
 		}
 		
-		if(!impressum) {
+		if(impressum) {
 			impressumLink = LinkFactory.createLink("topnav.impressum", topNavVC, this);
 			impressumLink.setTooltip("topnav.impressum.alt");
 			impressumLink.setIconCSS("o_icon o_icon_impress o_icon-lg");
