@@ -226,7 +226,14 @@ public class OpenOLATServlet extends HttpServlet {
 	@Override
 	protected void doHead(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
-		webDAVDispatcher.execute(req, resp);
+		String subContext = DispatcherModule.getFirstPath(req);
+		if("/".equals(subContext)) {
+			webDAVDispatcher.execute(req, resp);
+		} else if("/webdav".equals(subContext) || "/webdav/".equals(subContext)) {
+			webDAVDispatcher.execute(req, resp);
+		} else {
+			executeUserRequest(req, resp);
+		}
 	}
 
 	/**

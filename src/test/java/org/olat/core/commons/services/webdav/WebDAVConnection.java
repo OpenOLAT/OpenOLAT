@@ -38,6 +38,7 @@ import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -90,6 +91,13 @@ public class WebDAVConnection implements Closeable {
 	public HttpResponse execute(HttpUriRequest request)
 	throws IOException, URISyntaxException {
 		HttpResponse response = httpclient.execute(request);
+		return response;
+	}
+	
+	public HttpResponse head(URI uri) throws IOException, URISyntaxException {
+		HttpHead propfind = new HttpHead(uri);
+		HttpResponse response = execute(propfind);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		return response;
 	}
 	
