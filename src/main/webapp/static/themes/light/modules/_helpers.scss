@@ -26,6 +26,13 @@ fieldset div.o_chelp_wrapper a.o_chelp {
 	}
 }
 
+.o_portrait {
+	img {
+		@extend .img-thumbnail;
+	}
+	margin-bottom: 2em;
+}
+
 .o_rotate_90 {
 	-webkit-transform: rotate(-90deg);
 	-moz-transform: rotate(-90deg);

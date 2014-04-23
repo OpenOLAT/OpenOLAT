@@ -89,16 +89,16 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				sb.append("</div>");
 			}
 			
-			sb.append("<div class='b_fileinput'>");	
+			sb.append("<div class='o_fileinput'>");	
 			// input.Browse is the real filebrowser, but set to be transparent. 
-			// the div.b_fileinput_fakechooser is layered below the input.Browse and represents the visual GUI. 
-			// Since input.Browse is layered above div.b_fileinput_fakechooser, all click events to go input.Browse
+			// the div.o_fakechooser is layered below the input.Browse and represents the visual GUI. 
+			// Since input.Browse is layered above div.o_fakechooser, all click events to go input.Browse
 			// See http://www.quirksmode.org/dom/inputfile.html
 			sb.append("<input type='file' name=\"");
 	 		sb.append(id); // name for form labeling
 	 		sb.append("\" id=\"");
 	 		sb.append(id); // id to make dirty button work
-	 		sb.append("\" class='b_fileinput_realchooser' ");
+	 		sb.append("\" class='form-control o_realchooser' ");
 	 		// Add on* event handlers
 	 		StringBuilder eventHandlers = FormJSHelper.getRawJSFor(fileElem.getRootForm(), id, fileElem.getAction());
 	 		int onChangePos = eventHandlers.indexOf("onchange=");
@@ -115,28 +115,20 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 	 		sb.append(" onfocus=\"this.form.fake_").append(id).append(".nextSibling.style.border = '1px dotted black';\"")
 	 		  .append(" onblur=\"this.form.fake_").append(id).append(".nextSibling.style.border = '0';\"");
 	 		// Add select text (hover)
-	 		sb.append(" title=\"").append(StringEscapeUtils.escapeHtml(trans.translate("file.element.select"))).append("\"/>")
-	 		  .append("<div class='b_fileinput_fakechooser'>");	
+	 		sb.append(" title=\"").append(StringEscapeUtils.escapeHtml(trans.translate("file.element.select"))).append("\"/>");
 			// Add the visible but fake input field and a styled faked file chooser button
-			sb.append("<input name='fake_").append(id).append("' value=\"").append(StringEscapeUtils.escapeHtml(fileName)).append("\"/>")
-			  .append("<a href='#' class='b_with_small_icon_left b_fileinput_icon'><span>").append(trans.translate("file.element.select")).append("</span></a>");	
+			sb.append("<div class='o_fakechooser'>");
+			sb.append("<input class='form-control' name='fake_").append(id).append("' value=\"").append(StringEscapeUtils.escapeHtml(fileName)).append("\"/>")
+			  .append("<div class='o_picker_wrapper'><i class='o_icon o_icon_upload'></i></div>");	
+			sb.append("</div></div>");	
 			// Add Max upload size
 			if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
 				String maxUpload = Formatter.roundToString((fileElem.getMaxUploadSizeKB()+0f) / 1024, 1);
-				sb.append("<span class='b_fileinput_maxsize'>(")
-				  .append(trans.translate("file.element.select.maxsize", new String[]{maxUpload}))
-				  .append(")</span>");	
+				sb.append("<div class='help-block o_maxsize'>(")
+				.append(trans.translate("file.element.select.maxsize", new String[]{maxUpload}))
+				.append(")</div>");	
 			}
-			sb.append("</div></div>");	
 			
-			// Add IE fix to deal with SSL and server timeouts
-			// See http://bugs.olat.org/jira/browse/OLAT-1299
-			sb.append("<!--[if lte IE 7]>")
-			  .append("<iframe height='1px' style='visibility:hidden' src='");
-			StaticMediaDispatcher.renderStaticURI(sb, "workaround.html");
-			sb.append("'></iframe>")
-			  .append("<![endif]-->");
-				
 			// Add set dirty form on change
 			sb.append(FormJSHelper.getJSStartWithVarDeclaration(fileComp.getFormDispatchId()))
 			  .append(FormJSHelper.getSetFlexiFormDirty(fileElem.getRootForm(), fileComp.getFormDispatchId()))
@@ -147,7 +139,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			sb.append("<span id=\"").append(id).append("\" ")
 			  .append(FormJSHelper.getRawJSFor(fileElem.getRootForm(), id, fileElem.getAction()))
 			  .append(" >")
-			  .append("<input disabled=\"disabled\" class=\"b_form_element_disabled\" size=\"")
+			  .append("<input type='text' disabled=\"disabled\" class=\"form-control o_disabled\" size=\"")
 			  .append("\" value=\"")
 			  .append(StringEscapeUtils.escapeHtml(fileName)).append("\" ")
 			  .append("\" />")

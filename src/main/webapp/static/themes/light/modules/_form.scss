@@ -1,17 +1,29 @@
 .o_form{
 	legend {}
 	.o_chelp {}
+	
 	.o_desc {
 		@extend .o_note;
 	}
-	.o_warning {}
-	.o_info {}
+	.o_warning {
+		@extend .o_warning;
+	}
+	.o_info {
+		@extend .o_info;	
+	}
 
 	.o_icon_mandatory {
 		position: absolute;
 		right: -0.25em;
 		line-height: 1.5em;
 	}
+	&.form-horizontal .o_icon_mandatory {
+		position: relative;
+		right: 0;
+		line-height: inherit;
+		margin-left: 0.25em;
+	}
+	
 	.o_error {
 		margin-top: 1px;
 		margin-bottom: 0;
@@ -21,25 +33,45 @@
 	
 	hr.o_spacer {}
 	
+	.o_picker_wrapper {
+		position: absolute;
+		top: 0;
+		right: 0;
+		height: $input-height-base;
+		width: $input-height-base;
+		text-align: right;
+		vertical-align: middle;
+		line-height: $input-height-base;
+		font-size: floor($input-height-base / 3 * 2 );
+		color: $link-color;
+		&:hover {
+			color: $link-hover-color;
+		}
+	}		
+
+	/* date chooser */
 	.o_date  {
 		position: relative;
 		padding-right: $input-height-base;
-		.o_picker_wrapper {
-			position: absolute;
-			top: 0;
-			right: 0;
-			height: $input-height-base;
-			width: $input-height-base;
-			text-align: right;
-			vertical-align: middle;
-			line-height: $input-height-base;
-			font-size: floor($input-height-base / 3 * 2 );
-			color: $link-color;
-			&:hover {
-				color: $link-hover-color;
-			}
+	}
+	
+	/* file chooser */
+	.o_fileinput {
+		cursor: pointer;
+		position: relative;
+		/* the fake chooser is what the user sees. this is on layer 1, only for display */
+		.o_fakechooser {
+			position: relative;
+			padding-right: $input-height-base;
+			z-index: 1; 		
 		}
-		
+		/* real file chooser is transparent but on layer 2, click events trigger realchooser, not fakechooser */
+		.o_realchooser { 
+			position: absolute; 
+			top: 0; left: 0;
+			z-index: 2; 
+			@include o-opacity(0); /* this is the magic: visually don't show the input element, but nevertheless catch click events */
+		}	
 	}
 }
 

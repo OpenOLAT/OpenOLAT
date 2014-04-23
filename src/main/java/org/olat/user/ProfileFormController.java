@@ -30,7 +30,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -159,27 +158,10 @@ public class ProfileFormController extends FormBasicController {
 			// add spacer if necessary (i.e. when group name changes)
 			String group = userPropertyHandler.getGroup();
 			if (!group.equals(currentGroup)) {
-
-				if (currentGroup == null) {
-					// Special case: add user name to account user group
-					group = "account";					
-					groupContainer = FormLayoutContainer.createDefaultFormLayout("group." + group, getTranslator());
-					groupContainer.setFormTitle(translate("form.group." + group));
-					this.formItems.put("group." + group, groupContainer);
-					formLayout.add(groupContainer);
-					MultipleSelectionElement usernameCheckbox = uifactory.addCheckboxesHorizontal("checkbox_username", null, groupContainer, new String[] {"checkbox_username"}, new String[] {""}, null);
-					usernameCheckbox.select("checkbox_username", true);
-					usernameCheckbox.setEnabled(false);
-					StaticTextElement usernameText = uifactory.addStaticTextElement("username", this.identity.getName(), groupContainer);
-					usernameText.setMandatory(true);
-					this.formItems.put("username", usernameText);
-					
-				} else {
-					groupContainer = FormLayoutContainer.createDefaultFormLayout("group." + group, getTranslator());
-					groupContainer.setFormTitle(translate("form.group." + group));
-					this.formItems.put("group." + group, groupContainer);
-					formLayout.add(groupContainer);
-				}
+				groupContainer = FormLayoutContainer.createDefaultFormLayout("group." + group, getTranslator());
+				groupContainer.setFormTitle(translate("form.group." + group));
+				this.formItems.put("group." + group, groupContainer);
+				formLayout.add(groupContainer);
 				currentGroup = group;
 			}
 			
@@ -240,13 +222,20 @@ public class ProfileFormController extends FormBasicController {
 		}
 		
 		// add the "about me" text field.
-		textAboutMe = uifactory.addRichTextElementForStringData("form.text", "form.text", this.conf.getTextAboutMe(), 10, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		groupContainer = FormLayoutContainer.createDefaultFormLayout("group.about", getTranslator());
+		groupContainer.setFormTitle(translate("form.group.about"));
+		this.formItems.put("group.about", groupContainer);
+		formLayout.add(groupContainer);
+
+		textAboutMe = uifactory.addRichTextElementForStringData("form.text", "form.text", this.conf.getTextAboutMe(), 10, -1, false, null, null, groupContainer, ureq.getUserSession(), getWindowControl());
 		textAboutMe.setMaxLength(10000);
 		formItems.put("form.text", this.textAboutMe);
 		
 		// Create submit and cancel buttons
-		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-		formLayout.add(buttonLayout);
+		FormLayoutContainer buttonLayoutWrappper = FormLayoutContainer.createDefaultFormLayout("buttonLayoutWrappper", getTranslator());
+		formLayout.add(buttonLayoutWrappper);
+		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayoutInner", getTranslator());
+		buttonLayoutWrappper.add(buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		formItems.put("buttonLayout", buttonLayout);

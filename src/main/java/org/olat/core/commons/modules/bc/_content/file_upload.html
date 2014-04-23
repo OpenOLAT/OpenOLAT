@@ -1,23 +1,39 @@
-<div class="b_form b_form_vertical #if ($off_css_class) $off_css_class #end b_clearfix">
-#if ($off_title) <fieldset><legend>$off_title</legend> #end
-#if ($off_chelp_package) $r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end
-#if ($off_desc) <div class="b_form_desc">$off_desc</div> #end
+## for odd reason bootstrap calls vertial horizontal
+<fieldset id="$r.getCId()" class="o_form form-horizontal #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()" role="form">
+#if ($off_title || $off_chelp_package) 
+	<legend>
+		#if ($off_chelp_package) 
+			$r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") 
+		#end
+		$!off_title
+	</legend> 
+#end 
 
-$r.render("file_upload")
-#if($resizeImg)
-<div id="resize_image_wrapper" style="display:none;">
-$r.render("resize_image_wrapper")
-</div>
+#if ($off_desc || $off_warn || $off_info)
+	<div class="row"><div class="col-sm-offset-3 col-sm-9">
+		#if ($off_desc) <div class="o_desc">$off_desc</div> #end
+		#if ($off_warn) <div class="o_warning">$off_warn</div> #end
+		#if ($off_info) <div class="o_info">$off_info</div> #end
+	</div></div>
 #end
 
-#if ($off_title) </fieldset> #end
+	$r.render("file_upload")
+
+#if($resizeImg)
+	<div id="resize_image_wrapper" style="display:none;">
+		$r.render("resize_image_wrapper")
+	</div>
+#end
+
 
 #if ($showMetadata)
 	$r.render("metadata")
 #end
-$r.render("buttons")
 
-</div>
+	$r.render("buttons")
+</fieldset>
+
+
 #if($resizeImg)
 <script type="text/javascript">
 /* <![CDATA[ */ 

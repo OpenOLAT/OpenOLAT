@@ -1,18 +1,12 @@
-<div class="b_subcolumns">
-	<div class="b_c25l">
-		<div class="b_subcl b_align_center">
-			$r.render("portrait")
-		  	#if ($hasPortrait)
-		  		<br />
-			  	$r.render("command.delete")
-		  	#end
-		</div>
-	</div>
-	
-	<div class="b_c75r">
-		<div class="b_subcr">
-			$r.render("uploadCtr")
-  	 	</div>
+<div class="form-group">
+	<div class="col-sm-3">
+		$r.render("portrait")
+	  	#if ($hasPortrait)
+		  	$r.render("command.delete")
+	  	#end
+	</div>	
+	<div class="col-sm-9">
+		$r.render("uploadCtr")
   	 </div>
 </div>
 

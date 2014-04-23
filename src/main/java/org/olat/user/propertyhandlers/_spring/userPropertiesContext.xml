@@ -60,6 +60,7 @@
 						<property name="description" value="Users Profile-Form (Home->Settings)" />
 						<property name="propertyHandlers">
 							<list>
+								<ref bean="userPropertyUserName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -90,6 +91,7 @@
 						</property>
 						<property name="mandatoryProperties">
 							<set>
+								<ref bean="userPropertyUserName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
@@ -97,6 +99,7 @@
 						</property>
 						<property name="userViewReadOnlyProperties">
 							<set>
+								<ref bean="userPropertyUserName" />
 								<ref bean="userPropertyUserName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />

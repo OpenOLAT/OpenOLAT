@@ -20,6 +20,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_help { @extend .o_icon-question-circle; @extend .o_icon-lg; cursor: help;}
 .o_icon_impress { @extend .o_icon-info-circle; }
 .o_icon_message { @extend .o_icon-envelope;}
+.o_icon_list {@extend .o_icon-list; }
 .o_icon_login {@extend .o_icon-sign-in;}
 .o_icon_logout {@extend .o_icon-sign-out;}
 .o_icon_mandatory {@extend .o_icon-asterisk; color: #f0ad4e;}
@@ -31,7 +32,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_status_dnd { @extend .o_icon-dot-circle-o; color: #CCCC33; }
 .o_icon_status_unavailable { @extend .o_icon-times-circle-o; color: #996633; }
 .o_icon_table {@extend .o_icon-table; }
-.o_icon_list {@extend .o_icon-list; }
+.o_icon_upload {@extend .o_icon-upload; }
 
 
 

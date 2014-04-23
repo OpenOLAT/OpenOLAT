@@ -1,5 +1,4 @@
-## for odd reason bootstrap calls vertial horizontal
-<fieldset id="$r.getCId()" class="o_form form-horizontal #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()" role="form">
+<fieldset id="$r.getCId()" class="o_form form #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()" role="form">
 #if ($off_title || $off_chelp_package) 
 	<legend>
 	#if ($off_chelp_package) 
@@ -7,7 +6,8 @@
 	#end
 	$!off_title
 </legend> 
-#end
+#end 
+
 #if ($off_desc) <div class="o_desc">$off_desc</div> #end
 #if ($off_warn) <div class="o_warning">$off_warn</div> #end
 #if ($off_info) <div class="o_info">$off_info</div> #end
@@ -16,23 +16,19 @@
 	#if ($f.isVisible($item))
 	<div class="form-group $f.getElementCssClass($item) #if($f.hasError($item)) has-feedback has-error #end">
 		#if ($f.hasLabel($item))
-			$r.render("${item}_LABEL", "$f.getItemId($item)", "col-sm-3")
+			$r.render("${item}_LABEL", "$f.getItemId($item)")
 		#end
-		<div class="col-sm-9 #if (!$f.hasLabel($item)) col-sm-offset-3 #end">
 			$r.render(${item})
 			#if($f.hasError($item))
 				<span class="o_icon o_icon_error form-control-feedback"></span>
 			#end
-		</div>
 		#if($f.hasExample($item))
-			<div class="help-block col-sm-offset-3 col-sm-9">
+			<div class="help-block">
 				$r.render("${item}_EXAMPLE")
 			</div>
 		#end
 		#if($f.hasError($item))
-			<div class="col-sm-offset-3 col-sm-9">
-				$r.render("${item}_ERROR")
-			</div>
+			$r.render("${item}_ERROR")
 		#end
 	</div>
 	#end
