@@ -47,7 +47,7 @@ public class BreadcrumbedStackedPanelRenderer extends DefaultComponentRenderer {
 			String mainCssClass = panel.getCssClass();
 			sb.append("<div id='o_main_toolbar' class='b_clearfix ").append(mainCssClass, mainCssClass != null).append("'>")
 			  .append("<div class='b_breadcumb_path'>")
-			  .append("<ul>");
+			  .append("<ol class='breadcrumb'>");
 			
 			Link backLink = panel.getBackLink();
 			if(backLink.isVisible()) {
@@ -62,7 +62,7 @@ public class BreadcrumbedStackedPanelRenderer extends DefaultComponentRenderer {
 				renderer.render(breadCrumbs.get(i), sb, args);
 				sb.append("</span></li>");
 			}
-			sb.append("</ul>");
+			sb.append("</ol>");
 			
 			Link closeLink = panel.getCloseLink();
 			if(closeLink.isVisible()) {

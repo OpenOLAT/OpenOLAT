@@ -1,19 +1,18 @@
 #if($breadCrumbs && $breadCrumbs.size() > 1)
 	<div id="o_main_toolbar" class="b_clearfix #if($mainCssClass) $mainCssClass #end">
-		<div class="b_breadcumb_path">
-			<ul>
-				#if ($breadCrumbs.size() > 1)
-				<li class="b_breadcumb_back">
-					$r.render('back')
+		<ol class='breadcrumb'>
+			#if ($breadCrumbs.size() > 1)
+			<li class="b_breadcumb_back">
+				$r.render('back')
+			</li>	
+			#end
+			#foreach ($crumb in $breadCrumbs)
+				<li class="#if ($velocityCount==1) b_first #end #if ($velocityCount==$breadCrumbs.size()) b_last #end">
+					<span>$r.render($crumb.getCommand())</span>
 				</li>	
-				#end
-				#foreach ($crumb in $breadCrumbs)
-					<li class="#if ($velocityCount==1) b_first #end #if ($velocityCount==$breadCrumbs.size()) b_last #end">
-						<span>$r.render($crumb.getCommand())</span>
-					</li>	
-				#end
-			</ul>
-		</div>
+			#end
+		</ol>
+
 		#if ($r.visible('close'))
 		<div class="b_breadcumb_close">
 			$r.render('close')

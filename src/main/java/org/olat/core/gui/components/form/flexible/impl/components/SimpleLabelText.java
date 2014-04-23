@@ -83,7 +83,7 @@ public class SimpleLabelText extends FormBaseComponentImpl {
 			String target = null;
 			if (args !=  null && args.length > 0) {
 				for (int i = 0; i < args.length; i++) {
-					String arg = (String) (args[i]);
+					String arg = args[i];
 					if (arg.startsWith("col-")) {
 						css += arg;
 					} else {
