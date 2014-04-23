@@ -50,12 +50,12 @@ import org.olat.core.logging.Tracing;
 public class TableRenderer implements ComponentRenderer {
 
 	private static final String CLOSE_HTML_BRACE = "\">";
-	private static final String OPEN_DIV_CLASS_B_TABLE_PAGE = "<div class=\"b_table_page\">";
 	private static final String CLOSE_DIV = "</div>";
 	private static final String SINGLEQUOTE_CLOSEBRACE_OPEN_TITLE = "');\" title=\"";
 	private static final String B_LAST_CHILD = " b_last_child";
 	private static final String B_FIRST_CHILD = " b_first_child";
-	private static final String A_HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT = "<a href=\"JavaScript:tableFormInjectCommandAndSubmit('";
+	private static final String A_CLASS = "<a class=\"";
+	private static final String HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT = "\" href=\"JavaScript:tableFormInjectCommandAndSubmit('";
 	private static final String CLOSE_HREF = "</a>";
 	private static final String CLOSE_AND_O2CLICK = "');\" onclick=\"return o2cl();\">";
 	private static final String SINGLE_COMMA_SINGLE = "', '";
@@ -87,7 +87,7 @@ public class TableRenderer implements ComponentRenderer {
 
 		String formName = renderMultiselectForm(target, source, ubu, iframePostEnabled);
 		// starting real table table
-		target.append("<div class=\"b_overflowscrollbox\" id=\"b_overflowscrollbox_").append(table.hashCode()).append("\"><table id=\"b_table").append(table.hashCode()).append("\" class=\"table table-bordered table-hover").append(CLOSE_HTML_BRACE);
+		target.append("<div class=\"b_overflowscrollbox table-responsive\" id=\"b_overflowscrollbox_").append(table.hashCode()).append("\"><table id=\"b_table").append(table.hashCode()).append("\" class=\"o_table table table-bordered table-hover").append(CLOSE_HTML_BRACE);
 
 		int rows = table.getRowCount();
 		int cols = table.getColumnCount();
@@ -149,7 +149,7 @@ public class TableRenderer implements ComponentRenderer {
 					null);
 		}
 
-		target.append("<div class=\"b_table_buttons\">");
+		target.append("<div class=\"o_table_buttons\">");
 		for (TableMultiSelect action: multiSelectActions) {
 
 			String multiSelectActionIdentifer = action.getAction();
@@ -161,7 +161,7 @@ public class TableRenderer implements ComponentRenderer {
 			}
 
 			target.append("<input type=\"submit\" name=\"").append(multiSelectActionIdentifer)
-			      .append("\" value=\"").append(value).append("\" class=\"b_button\" />");
+			      .append("\" value=\"").append(value).append("\" class=\"btn btn-default\" />");
 		}
 		target.append(CLOSE_DIV);
 		// add hidden action command placeholders to the form. these will be manipulated when
@@ -178,7 +178,7 @@ public class TableRenderer implements ComponentRenderer {
 			int pageid = currentPageId.intValue();
 			// paging bug OLAT-935 part missing second page, or missing last page due rounding issues.
 			int maxpageid = (int) Math.ceil(((double) rows / (double) resultsPerPage));
-			target.append("<div class='b_table_page'><ul class='pagination'>");
+			target.append("<div class='o_table_pagination'><ul class='pagination'>");
 
 			appendTablePageingBackLink(target, formName, pageid);
 			addPageNumberLinks(target, formName, pageid, maxpageid);
@@ -192,10 +192,10 @@ public class TableRenderer implements ComponentRenderer {
 
 	private void appendTablePageingShowallLink(final StringOutput target, final Translator translator, final Table table, final String formName) {
 		if (table.isShowAllLinkEnabled()) {
-			target.append("</div><div class=\"b_table_page_all\">");
-			target.append(A_HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);
-			target.append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_PAGEACTION + SINGLE_COMMA_SINGLE).append(Table.COMMAND_PAGEACTION_SHOWALL).append(CLOSE_AND_O2CLICK);
-			target.append("[").append(translator.translate("table.showall")).append("]</a>");
+			target.append("<li>");
+			target.append(A_CLASS).append(HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);
+			target.append(formName).append(SINGLE_COMMA_SINGLE).append(Table.COMMAND_PAGEACTION).append(SINGLE_COMMA_SINGLE).append(Table.COMMAND_PAGEACTION_SHOWALL).append(CLOSE_AND_O2CLICK);
+			target.append(translator.translate("table.showall")).append("</a></li>");
 		}
 	}
 
@@ -204,7 +204,7 @@ public class TableRenderer implements ComponentRenderer {
 		target.append("<li").append(" class='disabled'", !enabled).append("><a href='");
 		if(enabled) {
 			target.append("JavaScript:tableFormInjectCommandAndSubmit('")
-			      .append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_PAGEACTION + SINGLE_COMMA_SINGLE)
+			      .append(formName).append(SINGLE_COMMA_SINGLE).append(Table.COMMAND_PAGEACTION).append(SINGLE_COMMA_SINGLE)
 			      .append(Table.COMMAND_PAGEACTION_FORWARD).append(CLOSE_AND_O2CLICK);
 		} else {
 			target.append("#'>");
@@ -217,7 +217,7 @@ public class TableRenderer implements ComponentRenderer {
 		target.append("<li").append(" class='disabled'", disabled).append("><a href='");
 		if(disabled) {
 			target.append("JavaScript:tableFormInjectCommandAndSubmit('")
-			      .append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_PAGEACTION + SINGLE_COMMA_SINGLE)
+			      .append(formName).append(SINGLE_COMMA_SINGLE).append(Table.COMMAND_PAGEACTION).append(SINGLE_COMMA_SINGLE)
 			      .append(Table.COMMAND_PAGEACTION_BACKWARD).append(CLOSE_AND_O2CLICK);
 		} else {
 			target.append("#'>");
@@ -227,22 +227,25 @@ public class TableRenderer implements ComponentRenderer {
 
 	private void appendSelectDeselectAllButtons(final StringOutput target, final Translator translator, Table table, String formName, int rows, int resultsPerPage) {
 		if (table.isMultiSelect()) {
-			target.append("<div class=\"b_togglecheck\">");
-			target.append("<a href=\"#\" onclick=\"javascript:b_table_toggleCheck('" + formName + "', true)\">");
-			target.append("<input type=\"checkbox\" checked=\"checked\" disabled=\"disabled\" />");
+			target.append("<div class='o_table_checkall input-sm'>");
+			target.append("<label class='checkbox-inline'>");
+			target.append("<a href='#' onclick=\"javascript:b_table_toggleCheck('").append(formName).append("', true)\">");
+			target.append("<input type='checkbox' checked='checked' disabled='disabled' />");
 			target.append(translator.translate("checkall"));
-			target.append("</a> <a href=\"#\" onclick=\"javascript:b_table_toggleCheck('" + formName + "', false)\">");
-			target.append("<input type=\"checkbox\" disabled=\"disabled\" />");
+			target.append("</a></label>");
+			target.append("<label class='checkbox-inline'><a href=\"#\" onclick=\"javascript:b_table_toggleCheck('").append(formName).append("', false)\">");
+			target.append("<input type='checkbox' disabled='disabled' />");
 			target.append(translator.translate("uncheckall"));
-			target.append("</a></div>");
+			target.append("</a></label>");
+			target.append("</div>");
 		}
 
 		if (table.isShowAllSelected() && (rows > resultsPerPage)) {
-			target.append(OPEN_DIV_CLASS_B_TABLE_PAGE);
-			target.append(A_HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);
-			target.append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_PAGEACTION).append(SINGLE_COMMA_SINGLE + Table.COMMAND_SHOW_PAGES + CLOSE_AND_O2CLICK);
-			target.append("[").append(translator.translate("table.showpages")).append("]</a>");
-			target.append(CLOSE_DIV);
+			target.append("<div class='o_table_pagination'><ul class='pagination'><li>");
+			target.append(A_CLASS).append("btn btn-sm btn-default").append(HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);			
+			target.append(formName).append(SINGLE_COMMA_SINGLE).append(Table.COMMAND_PAGEACTION).append(SINGLE_COMMA_SINGLE).append(Table.COMMAND_SHOW_PAGES).append(CLOSE_AND_O2CLICK);
+			target.append(translator.translate("table.showpages")).append("</a>");
+			target.append("</li><ul></div>");
 		}
 	}
 
@@ -404,13 +407,13 @@ public class TableRenderer implements ComponentRenderer {
 
 				// add 'move column left' link (if we are not at the leftmost position)
 				if (i != 0 && table.isColumnMovingOffered()) {
-					target.append(A_HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);
+					target.append(A_CLASS).append(HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);
 					target.append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_MOVECOLUMN_LEFT + SINGLE_COMMA_SINGLE).append(i).append("');\" class=\"b_table_move_left\" title=\"");
 					target.append(StringEscapeUtils.escapeHtml(translator.translate("row.move.left"))).append("\">&laquo;</a> ");
 				}
 				// header either a link or not
 				if (table.isSortingEnabled() && cd.isSortingAllowed()) {
-					target.append(A_HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);
+					target.append(A_CLASS).append(HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);
 					target.append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_SORTBYCOLUMN + SINGLE_COMMA_SINGLE).append(i).append(SINGLEQUOTE_CLOSEBRACE_OPEN_TITLE);
 					target.append(StringEscapeUtils.escapeHtml(translator.translate("row.sort"))).append(CLOSE_HTML_BRACE);
 					target.append(header);
@@ -420,7 +423,7 @@ public class TableRenderer implements ComponentRenderer {
 				}
 				// mark currently sorted row special
 				if (table.isSortingEnabled() && cd == sortedCD) {
-					target.append(A_HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);
+					target.append(A_CLASS).append(HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);
 					target.append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_SORTBYCOLUMN + SINGLE_COMMA_SINGLE).append(i).append(SINGLEQUOTE_CLOSEBRACE_OPEN_TITLE);
 					target.append(StringEscapeUtils.escapeHtml(translator.translate("row.sort.invert"))).append("\">&nbsp;");
 					target.append((asc ? "&darr;" : "&uarr;"));
@@ -430,7 +433,7 @@ public class TableRenderer implements ComponentRenderer {
 				// add 'move column right' link (if we are not at the rightmost
 				// position)
 				if (i != cols - 1 && table.isColumnMovingOffered()) {
-					target.append(A_HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);
+					target.append(A_CLASS).append(HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);
 					target.append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_MOVECOLUMN_RIGHT + SINGLE_COMMA_SINGLE).append(i).append("');\" class=\"b_table_move_right\" title=\"");
 					target.append(StringEscapeUtils.escapeHtml(translator.translate("row.move.right"))).append("\">&raquo;</a>");
 				}
