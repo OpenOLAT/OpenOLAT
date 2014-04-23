@@ -207,6 +207,13 @@ $r.renderForce("development")
 </div>
 #end
 
+## ---- START #b_messages
+## Messages are absolute positioned using EXT, thus it's ok to have them at the end of the page. 
+## This prevents an ugly IE bug that appears when the messages are at the top of the page.
+## IE can't render empty div's properly which results in an ugly white bar.
+<div id="b_messages">$r.renderForce("guimessage")</div>
+## ---- END #b_messages ---
+
 ## ------ START #o_page -----
 <div id="o_main_wrapper">
 	<div id="o_main_container" class="container-fluid">
@@ -227,14 +234,7 @@ $r.renderForce("development")
 </div>
 ## ---- END #b_footer ---
 
-## ---- START #b_messages
-## Messages are absolute positioned using EXT, thus it's ok to have them at the end of the page. 
-## This prevents an ugly IE bug that appears when the messages are at the top of the page.
-## IE can't render empty div's properly which results in an ugly white bar.
-<div id="b_messages">
-	$r.renderForce("guimessage")
-</div>
-## ---- END #b_messages ---
+
 
 ## ---- START #b_modal
 ## Modal dialog is absolute positioned, thus it's ok to have it at the end of the page. 

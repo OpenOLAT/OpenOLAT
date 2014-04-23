@@ -1,10 +1,4 @@
 <div class="o_scorm">
-	<script type="text/javascript">
-		## close when not capable of scorm player, same restrictions as for the HTML editor
-		var scormPlayerEnabled = true;//older check if ie, mozilla, webkit return true
-		if (!scormPlayerEnabled) { showMessageBox("error", "", "$r.translate("browserreq")", function() {if (!o_info.linkbusy) { o_beforeserver(); $r.javaScriptBgCommand("abort");}});}
-	</script>
-	
 	## on Mozilla the return value from the scorm RTE engine gets written into this dvi element
 	<div id="apiReturnHandler" style="position:absolute; top: 0; left: -1000px; visibility:hidden;"></div>
 	## load SCORM API functions and XmlRequestObject stuff

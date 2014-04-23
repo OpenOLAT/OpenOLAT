@@ -246,18 +246,19 @@ public class Formatter {
 	 * @return escaped string
 	 */
 	public static StringBuilder escapeDoubleQuotes(String source) {
-		if (source == null) return null;
 		StringBuilder sb = new StringBuilder(300);
-		int len = source.length();
-		char[] cs = source.toCharArray();
-		for (int i = 0; i < len; i++) {
-			char c = cs[i];
-			switch (c) {
-				case '"':
-					sb.append("&quot;");
-					break;
-				default:
-					sb.append(c);
+		if (source != null) {
+			int len = source.length();
+			char[] cs = source.toCharArray();
+			for (int i = 0; i < len; i++) {
+				char c = cs[i];
+				switch (c) {
+					case '"':
+						sb.append("&quot;");
+						break;
+					default:
+						sb.append(c);
+				}
 			}
 		}
 		return sb;

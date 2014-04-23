@@ -232,7 +232,7 @@ public class RepositoryEntryListController extends FormBasicController
 			if("mark".equals(cmd)) {
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
 				boolean marked = doMark(row);
-				link.setCustomEnabledLinkCSS(marked ? "b_mark_set" : "b_mark_not_set");
+				link.setIconCSS(marked ? "o_icon o_icon_bookmark o_icon-lg" : "o_icon o_icon_bookmark_add o_icon-lg");
 				link.getComponent().setDirty(true);
 				row.setMarked(marked);
 			} else if ("select".equals(cmd) || "start".equals(cmd)){
@@ -380,8 +380,8 @@ public class RepositoryEntryListController extends FormBasicController
 
 	@Override
 	public void forgeMarkLink(RepositoryEntryRow row) {
-		FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "&nbsp;&nbsp;&nbsp;&nbsp;", null, null, Link.NONTRANSLATED);
-		markLink.setCustomEnabledLinkCSS(row.isMarked() ? "b_mark_set" : "b_mark_not_set");
+		FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "", null, null, Link.NONTRANSLATED);
+		markLink.setIconCSS(row.isMarked() ? "o_icon o_icon_bookmark o_icon-lg" : "o_icon o_icon_bookmark_add o_icon-lg");
 		markLink.setUserObject(row);
 		row.setMarkLink(markLink);
 	}

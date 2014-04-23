@@ -283,7 +283,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		int rows = dataModel.getRowCount();
 		
 		if(pageSize > 0 && rows > pageSize) {
-			sb.append("<div class='b_table_page'>");
+			sb.append("<ul class='pagination'>");
 
 			int page = ftE.getPage();
 			int maxPage = (int)Math.ceil(((double) rows / (double) pageSize));
@@ -292,28 +292,36 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			renderPageNumberLinks(sb, ftC, page, maxPage);
 			renderPageNextLink(sb, ftC, page, maxPage);
 
-			sb.append("</div>");
+			sb.append("</ul>");
 		}
 	}
 	
 	private void renderPageBackLink(StringOutput sb, FlexiTableComponent ftC, int page) {
-		if (page <= 0) return;
-
+		boolean disabled = (page <= 0);
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		Form theForm = ftE.getRootForm();
-		sb.append("<a class='b_table_backward' href=\"javascript:")
-		  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("page", Integer.toString(page - 1))))
-		  .append("\">").append("&nbsp;").append("</a>");
+		sb.append("<li").append(" class='disabled'", disabled).append("><a href='");
+		if(disabled) {
+			sb.append("#");
+		} else {
+			sb.append("javascript:")
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("page", Integer.toString(page - 1))));
+		}
+		sb.append("'>").append("&laquo;").append("</a></li>");
 	}
 	
 	private void renderPageNextLink(StringOutput sb, FlexiTableComponent ftC, int page, int maxPage) {
-		if (page == maxPage) return;
-
+		boolean disabled = (page >= maxPage);
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		Form theForm = ftE.getRootForm();
-		sb.append("<a class='b_table_forward' href=\"javascript:")
-		  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("page", Integer.toString(page + 1))))
-		  .append("\">").append("&nbsp;").append("</a>");
+		sb.append("<li ").append(" class='disabled'", disabled).append("><a href='");
+		if(disabled) {
+			sb.append("#");
+		} else {
+			sb.append("javascript:")
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("page", Integer.toString(page + 1)))); 
+		}
+		sb.append("'>").append("&raquo;").append("</li></a>");
 	}
 	
 	private void renderPageNumberLinks(StringOutput sb, FlexiTableComponent ftC, int page, int maxPage) {
@@ -358,10 +366,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	private void appendPagenNumberLink(StringOutput sb, FlexiTableComponent ftC, int page, int i) {
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		Form theForm = ftE.getRootForm();
-		String cssClass = (page == i) ? "b_table_page b_table_page_active" : "b_table_page";
-		sb.append("<a class='").append(cssClass).append("' href=\"javascript:")
+		sb.append("<li").append(" class='active'", (page == i)).append("><a href=\"javascript:")
 		  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("page", Integer.toString(i))))
-		  .append("\">").append(i+1).append("</a>");
+		  .append("\">").append(i+1).append("</a></li>");
 	}
 
 	private int adaptStepIfNeeded(final int page, final int maxStepSize, final int stepSize, final int i) {

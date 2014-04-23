@@ -1068,9 +1068,10 @@ function o_ffRegisterSubmit(formId, submElmId){
 function showInfoBox(title, content){
 	// Factory method to create message box
 	var uuid = Math.floor(Math.random() * 0x10000 /* 65536 */).toString(16);
-	var info = '<div id="' + uuid + '" class="b_msg-div msg" style="display:none;"><div class="b_msg_info_content b_msg_info_winicon o_sel_info_message"><h3>'
+	var info = '<div id="' + uuid
+	     + '" class="b_msg-div msg" style="display:none;"><div class="alert alert-info b_msg_info_content b_msg_info_winicon o_sel_info_message"><h3>'
 		 + title + '</h3>' + content + '<br/><br/></div></div>';
-    var msgCt = jQuery('#b_page').prepend(info);
+    var msgCt = jQuery('#b_messages').prepend(info);
     // Hide message automatically
     var time = (content.length > 150) ? 8000 : ((content.length > 70) ? 6000 : 4000);
     jQuery('#' + uuid).slideDown(300).delay(time).slideUp(300);
@@ -1098,11 +1099,11 @@ function showMessageBox(type, title, message, buttonCallback){
 	} else {
 		var prefix;
 		if("warn" == type) {
-			prefix = '<div><div class="b_msg_info_content b_msg_warn_winicon">';
+			prefix = '<div><div class="alert alert-warning">';
 		} else if("error" == type) {
-			prefix = '<div><div class="b_msg_info_content b_msg_error_winicon">';
+			prefix = '<div><div class="alert alert-danger">';
 		} else {
-			prefix = '<div><div>';
+			prefix = '<div><div class="alert alert-info">';
 		}
 		return jQuery(prefix + '<p>' + message + '</p></div></div>').dialog({
 			modal: true,

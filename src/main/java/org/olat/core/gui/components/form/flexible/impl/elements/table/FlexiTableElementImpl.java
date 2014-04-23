@@ -419,7 +419,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public void setPage(int page) {
 		if(currentPage == page) return;
-		
+		if(page < 0) {
+			page = 0;
+		}
 		currentPage = page;
 		if(dataSource != null) {
 			int firstResult = currentPage * getPageSize();

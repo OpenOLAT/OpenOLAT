@@ -9,6 +9,8 @@ $fa-css-prefix: "o_icon" !default;
 @import "../../../font-awesome/scss/font-awesome";
 
 /* OpenOLAT Icons */
+.o_icon_bookmark { @extend .o_icon-bookmark; color: #996633; }
+.o_icon_bookmark_add { @extend .o_icon-bookmark-o; color: #999999;}
 .o_icon_calendar { @extend .o_icon-calendar;}
 .o_icon_check {@extend .o_icon-check; }
 .o_icon_close_tab {@extend .o_icon-times;}

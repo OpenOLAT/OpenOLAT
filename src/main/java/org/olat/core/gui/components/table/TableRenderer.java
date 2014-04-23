@@ -178,14 +178,14 @@ public class TableRenderer implements ComponentRenderer {
 			int pageid = currentPageId.intValue();
 			// paging bug OLAT-935 part missing second page, or missing last page due rounding issues.
 			int maxpageid = (int) Math.ceil(((double) rows / (double) resultsPerPage));
-			target.append(OPEN_DIV_CLASS_B_TABLE_PAGE);
+			target.append("<div class='b_table_page'><ul class='pagination'>");
 
-			appendTablePageingBackLink(target, translator, formName, pageid);
+			appendTablePageingBackLink(target, formName, pageid);
 			addPageNumberLinks(target, formName, pageid, maxpageid);
-			appendTablePageingNextLink(target, translator, formName, rows, resultsPerPage, pageid);
+			appendTablePageingNextLink(target, formName, rows, resultsPerPage, pageid);
 			appendTablePageingShowallLink(target, translator, table, formName);
 
-			target.append(CLOSE_DIV);
+			target.append("</ul></div>");
 
 		}
 	}
@@ -199,20 +199,30 @@ public class TableRenderer implements ComponentRenderer {
 		}
 	}
 
-	private void appendTablePageingNextLink(final StringOutput target, final Translator translator, final String formName, final int rows, int resultsPerPage, int pageid) {
-		if ((pageid * resultsPerPage) < rows) {
-			target.append("<a class=\"b_table_forward\" href=\"JavaScript:tableFormInjectCommandAndSubmit('");
-			target.append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_PAGEACTION + SINGLE_COMMA_SINGLE).append(Table.COMMAND_PAGEACTION_FORWARD).append(CLOSE_AND_O2CLICK);
-			target.append(translator.translate("table.forward")).append(CLOSE_HREF);
-		}
+	private void appendTablePageingNextLink(StringOutput target, String formName, int rows, int resultsPerPage, int pageid) {
+		boolean enabled = ((pageid * resultsPerPage) < rows);
+		target.append("<li").append(" class='disabled'", !enabled).append("><a href='");
+		if(enabled) {
+			target.append("JavaScript:tableFormInjectCommandAndSubmit('")
+			      .append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_PAGEACTION + SINGLE_COMMA_SINGLE)
+			      .append(Table.COMMAND_PAGEACTION_FORWARD).append(CLOSE_AND_O2CLICK);
+		} else {
+			target.append("#'>");
+		}		
+		target.append("&raquo;").append("</a></li>");
 	}
 
-	private void appendTablePageingBackLink(final StringOutput target, final Translator translator, final String formName, int pageid) {
-		if (pageid > 1) {
-			target.append("<a class=\"b_table_backward\" href=\"JavaScript:tableFormInjectCommandAndSubmit('");
-			target.append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_PAGEACTION + SINGLE_COMMA_SINGLE).append(Table.COMMAND_PAGEACTION_BACKWARD).append(CLOSE_AND_O2CLICK);
-			target.append(translator.translate("table.backward")).append(CLOSE_HREF);
+	private void appendTablePageingBackLink(StringOutput target, String formName, int pageid) {
+		boolean disabled = pageid <= 1;
+		target.append("<li").append(" class='disabled'", disabled).append("><a href='");
+		if(disabled) {
+			target.append("JavaScript:tableFormInjectCommandAndSubmit('")
+			      .append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_PAGEACTION + SINGLE_COMMA_SINGLE)
+			      .append(Table.COMMAND_PAGEACTION_BACKWARD).append(CLOSE_AND_O2CLICK);
+		} else {
+			target.append("#'>");
 		}
+		target.append("&laquo;").append(CLOSE_HREF);
 	}
 
 	private void appendSelectDeselectAllButtons(final StringOutput target, final Translator translator, Table table, String formName, int rows, int resultsPerPage) {
@@ -491,13 +501,10 @@ public class TableRenderer implements ComponentRenderer {
 	}
 
 	private void appendPagenNumberLink(StringOutput target, String formName, int pageid, int i) {
-		target.append("<a ");
-		if (pageid == i) {
-			target.append(" class=\"b_table_page_active\"");
-		}
-		target.append(" href=\"JavaScript:tableFormInjectCommandAndSubmit('");
-		target.append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_PAGEACTION + SINGLE_COMMA_SINGLE).append(i).append("');\">");
-		target.append(i).append(CLOSE_HREF);
+		target.append("<li").append(" class='active'", pageid == i).append("><a ")
+		      .append(" href=\"JavaScript:tableFormInjectCommandAndSubmit('")
+		      .append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_PAGEACTION + SINGLE_COMMA_SINGLE).append(i).append("');\">")
+		      .append(i).append("</a></li>");
 	}
 
 	private int adaptStepsizeIfNeeded(final int pageid, final int maxStepSize, final int stepSize, final int i) {
