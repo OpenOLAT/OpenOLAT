@@ -101,6 +101,7 @@ class EntryForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		this.setFormStyle("o_catalog");
 		String name = catalogEntry == null ? "" : catalogEntry.getName();
 		nameEl = uifactory.addTextElement("name", "entry.category", 255, name, formLayout);
 		nameEl.setMandatory(true);
@@ -111,13 +112,7 @@ class EntryForm extends FormBasicController {
 		
 		VFSLeaf img = catalogEntry == null || catalogEntry.getKey() == null ? null : catalogManager.getImage(catalogEntry);
 		
-		deleteImage = uifactory.addFormLink("delete", "tools.delete.catalog.entry", null, formLayout, Link.BUTTON);
-		deleteImage.setVisible(img != null);
-
 		fileUpload = uifactory.addFileElement("entry.pic", "entry.pic", formLayout);
-		if(img != null) {
-			fileUpload.setLabel(null, null);
-		}
 		fileUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		fileUpload.addActionListener(FormEvent.ONCHANGE);
 		fileUpload.setPreview(ureq.getUserSession(), true);
@@ -126,6 +121,11 @@ class EntryForm extends FormBasicController {
 			fileUpload.setInitialFile(((LocalFileImpl)img).getBasefile());
 		}
 		fileUpload.limitToMimeType(mimeTypes, null, null);
+
+		deleteImage = uifactory.addFormLink("delete", "tools.delete.catalog.image", null, formLayout, Link.BUTTON_SMALL);
+		deleteImage.setElementCssClass("o_catalog_delete_img");
+		deleteImage.setIconCSS("o_icon o_icon_delete o_icon-lg");
+		deleteImage.setVisible(img != null);
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		buttonLayout.setElementCssClass("o_sel_catalog_entry_form_buttons");

@@ -15,6 +15,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_check {@extend .o_icon-check; }
 .o_icon_close_tab {@extend .o_icon-times;}
 .o_icon_close {@extend .o_icon-times;}
+.o_icon_delete { @extend .o_icon-minus-circle; color: #A87E7E;}
 .o_icon_dev { @extend .o_icon-wrench;}
 .o_icon_error {@extend .o_icon-exclamation;}
 .o_icon_help { @extend .o_icon-question-circle; @extend .o_icon-lg; cursor: help;}

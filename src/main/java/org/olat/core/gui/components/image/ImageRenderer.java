@@ -105,7 +105,7 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		} else {
 			mapperUrl += "/?" + System.nanoTime();
 		}
-		sb.append(" src='").append(mapperUrl).append("' />");
+		sb.append(" src='").append(mapperUrl).append("' class='img-responsive'/>");
 		
 		if(ic.isCropSelectionEnabled()) {
 			sb.append("<input id='").append(imgId).append("_x' name='").append(imgId).append("_x' type='hidden' value='' />")

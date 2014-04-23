@@ -48,7 +48,7 @@
 			color: $link-hover-color;
 		}
 	}		
-
+	
 	/* date chooser */
 	.o_date  {
 		position: relative;
@@ -56,6 +56,12 @@
 	}
 	
 	/* file chooser */
+	.o_filepreview {
+		img {
+			@extend .img-thumbnail;
+		}
+		margin-bottom: floor($line-height-computed / 2);
+	}
 	.o_fileinput {
 		cursor: pointer;
 		position: relative;
@@ -72,6 +78,13 @@
 			z-index: 2; 
 			@include o-opacity(0); /* this is the magic: visually don't show the input element, but nevertheless catch click events */
 		}	
+	}
+}
+
+.o_catalog {
+	.o_catalog_delete_img {
+		position: relative; 
+		top: -0.5em;
 	}
 }
 
