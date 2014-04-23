@@ -8,7 +8,9 @@
 	.o_info {}
 
 	.o_icon_mandatory {
-		margin-left: 0.3em;
+		position: absolute;
+		right: -0.25em;
+		line-height: 1.5em;
 	}
 	.o_error {
 		margin-top: 1px;

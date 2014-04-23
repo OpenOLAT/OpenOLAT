@@ -16,7 +16,7 @@
 	#if ($f.isVisible($item))
 	<div class="form-group $f.getElementCssClass($item) #if($f.hasError($item)) has-feedback has-error #end">
 		#if ($f.hasLabel($item))
-			$r.render("${item}_LABEL", "$f.getItemId($item)", "$f.isMandatory($item)")
+			$r.render("${item}_LABEL", "$f.getItemId($item)")
 		#end
 			$r.render(${item})
 			#if($f.hasError($item))

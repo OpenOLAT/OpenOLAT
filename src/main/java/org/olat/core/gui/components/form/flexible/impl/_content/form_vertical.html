@@ -16,9 +16,7 @@
 	#if ($f.isVisible($item))
 	<div class="form-group $f.getElementCssClass($item) #if($f.hasError($item)) has-feedback has-error #end">
 		#if ($f.hasLabel($item))
-		<div class="col-sm-3">
-			$r.render("${item}_LABEL", "$f.getItemId($item)", "$f.isMandatory($item)")
-		</div>
+			$r.render("${item}_LABEL", "$f.getItemId($item)", "col-sm-3")
 		#end
 		<div class="col-sm-9 #if (!$f.hasLabel($item)) col-sm-offset-3 #end">
 			$r.render(${item})

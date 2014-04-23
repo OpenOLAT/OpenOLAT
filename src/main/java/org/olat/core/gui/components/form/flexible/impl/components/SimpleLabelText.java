@@ -79,11 +79,24 @@ public class SimpleLabelText extends FormBaseComponentImpl {
 		public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 				RenderResult renderResult, String[] args) {
 			SimpleLabelText stc = (SimpleLabelText) source;
-			sb.append("<label class='control-label' id='o_c").append(source.getDispatchID()).append("'");
-			// add the reference to form element for which this label stands. this is important for screen readers
+			String css = "control-label ";
+			String target = null;
 			if (args !=  null && args.length > 0) {
+				for (int i = 0; i < args.length; i++) {
+					String arg = (String) (args[i]);
+					if (arg.startsWith("col-")) {
+						css += arg;
+					} else {
+						target = arg;
+					}
+				}
+			}
+	
+			sb.append("<label class='").append(css).append("' id='o_c").append(source.getDispatchID()).append("'");
+			// add the reference to form element for which this label stands. this is important for screen readers
+			if (target !=  null) {
 				sb.append(" for=\"");
-				sb.append(args[0]);
+				sb.append(target);
 				sb.append("\"");
 			}
 			sb.append(">");
