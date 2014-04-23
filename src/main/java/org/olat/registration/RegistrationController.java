@@ -389,7 +389,12 @@ public class RegistrationController extends BasicController implements Activatea
 		finishVC.contextPut("locale", getLocale());
 		finishVC.contextPut("username", registrationForm.getLogin());
 		finishVC.contextPut("text", getTranslator().translate("step5.reg.text", new String[] {registrationForm.getLogin() }));
-		finishVC.contextPut("loginhref", WebappHelper.getServletContextPath());
+		String loginhref = WebappHelper.getServletContextPath();
+		if(StringHelper.containsNonWhitespace(loginhref)) {
+			finishVC.contextPut("loginhref", loginhref);
+		} else {
+			finishVC.contextPut("loginhref", "/");
+		}
 		
 		regarea.setContent(finishVC);
 	}
