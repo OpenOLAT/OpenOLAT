@@ -162,7 +162,7 @@ public class LockInfo {
      * Return true if the lock has expired.
      */
     public boolean hasExpired() {
-        return (System.currentTimeMillis() > expiresAt);
+        return (System.currentTimeMillis() > getExpiresAt());
     }
 
     /**

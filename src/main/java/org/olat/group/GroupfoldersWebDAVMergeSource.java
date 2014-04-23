@@ -39,7 +39,6 @@ import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
@@ -91,60 +90,34 @@ class GroupfoldersWebDAVMergeSource extends MergeSource {
 
 	@Override
 	public List<VFSItem> getItems() {
-		if(!init) {
-			init();
-		}
+		checkInitialization();
 		return super.getItems();
 	}
 
 	@Override
 	public List<VFSItem> getItems(VFSItemFilter filter) {
-		if(!init  || (System.currentTimeMillis() - loadTime) > 60000) {
-			init();
-		}
+		checkInitialization();
 		return super.getItems(filter);
 	}
 
 	@Override
 	public VFSItem resolve(String path) {
-		if(init) {
-			return super.resolve(path);
-		}
-		
-		path = VFSManager.sanitizePath(path);
-		if (path.equals("/")) {
-			return this;
-		}
-		
-		String childName = VFSManager.extractChild(path);
-
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, true);
-		params.addTools(CollaborationTools.TOOL_FOLDER);
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		List<BusinessGroup> groups = bgs.findBusinessGroups(params, null, 0, -1);
-		Set<String> addedGroupNames = new HashSet<String>();
-		for(BusinessGroup group:groups) {
-			String name = nameIdentifier(group, addedGroupNames);
-			if(name == null) {
-				continue;
-			}
-			
-			name = RequestUtil.normalizeFilename(name);
-			if(childName.equals(name)) {
-				String nextPath = path.substring(childName.length() + 1);
-				VFSContainer grpContainer = getGroupContainer(name, group, false);
-				VFSItem item = grpContainer.resolve(nextPath);
-				return item;
-			}	
-		}
-
+		checkInitialization();
 		return super.resolve(path);
+	}
+	
+	private void checkInitialization() {
+		if(!init || (System.currentTimeMillis() - loadTime) > 60000) {
+			synchronized(this) {
+				if(!init || (System.currentTimeMillis() - loadTime) > 60000) {
+					init();
+				}
+			}
+		}
 	}
 	
 	@Override
 	protected void init() {
-		super.init();
-
 		// collect buddy groups
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 

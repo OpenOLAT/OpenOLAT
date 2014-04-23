@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.core.commons.services.webdav.servlets.RequestUtil;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
@@ -35,7 +34,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.repository.RepositoryEntry;
@@ -64,94 +62,34 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 
 	@Override
 	public List<VFSItem> getItems() {
-		if(!init) {
-			init();
-		}
+		checkInitialization();
 		return super.getItems();
 	}
 
 	@Override
 	public List<VFSItem> getItems(VFSItemFilter filter) {
-		if(!init  || (System.currentTimeMillis() - loadTime) > 60000) {
-			init();
-		}
+		checkInitialization();
 		return super.getItems(filter);
 	}
 
 	@Override
 	public VFSItem resolve(String path) {
-		if(init) {
-			return super.resolve(path);
-		}
-
-		path = VFSManager.sanitizePath(path);
-		if (path.equals("/")) {
-			return this;
-		}
-		
-		String childName = VFSManager.extractChild(path);
-		RepositoryManager repoManager = RepositoryManager.getInstance();
-		
-		//lookup in my shared folders
-		List<RepositoryEntry> ownerEntries = repoManager.queryByOwner(identity, SharedFolderFileResource.TYPE_NAME);
-		for (RepositoryEntry re : ownerEntries) {
-			String name = RequestUtil.normalizeFilename(re.getDisplayname());
-			if(childName.equals(name)) {
-				VFSContainer shared = getSharedContainer(re, false);
-				String nextPath = path.substring(childName.length() + 1);
-				return shared.resolve(nextPath);
-			}	
-		}
-		
-		if (publiclyReadableFolders != null && publiclyReadableFolders.size() > 0) {
-			String firstItem = publiclyReadableFolders.get(0);
-			// If the first value in the list is '*', list all resource folders.
-			if (firstItem != null && firstItem.equals("*")) {
-				// fake role that represents normally logged in user
-				Roles registeredUserRole = new Roles(false, false, false, false, false, false, false);
-				List<String> types = Collections.singletonList(SharedFolderFileResource.TYPE_NAME);
-				List<RepositoryEntry> allEntries = repoManager.queryByTypeLimitAccess(identity, types, registeredUserRole);
-				for (RepositoryEntry re : allEntries) {
-					String name = RequestUtil.normalizeFilename(re.getDisplayname());
-					if(childName.equals(name)) {
-						VFSContainer shared = getSharedContainer(re, true);
-						String nextPath = path.substring(childName.length() + 1);
-						return shared.resolve(nextPath);
-					}	
-				}
-			} else {
-				// only list the specified folders
-				List<Long> publiclyReadableFoldersKeys = getSharedKeys();	
-				List<RepositoryEntry> entries = repoManager.lookupRepositoryEntries(publiclyReadableFoldersKeys);
-				for (RepositoryEntry re:entries) {
-					String name = RequestUtil.normalizeFilename(re.getDisplayname());
-					if (childName.equals(name) && 
-							(re.getAccess() >= RepositoryEntry.ACC_USERS || (re.getAccess() == RepositoryEntry.ACC_OWNERS && re.isMembersOnly()))) {
-						
-						VFSContainer shared = getSharedContainer(re, true);
-						String nextPath = path.substring(childName.length() + 1);
-						return shared.resolve(nextPath);
-					}
-				}
-			}
-		}
-		
+		checkInitialization();
 		return super.resolve(path);
 	}
 	
-	private VFSContainer getSharedContainer(RepositoryEntry re, boolean readOnly) {
-		SharedFolderManager sfm = SharedFolderManager.getInstance();
-		VFSContainer shared = sfm.getNamedSharedFolder(re, true);
-		if(readOnly) {
-			shared.setLocalSecurityCallback(readOnlyCallback);
+	private void checkInitialization() {
+		if(!init || (System.currentTimeMillis() - loadTime) > 60000) {
+			synchronized(this) {
+				if(!init || (System.currentTimeMillis() - loadTime) > 60000) {
+					init();
+				}
+			}
 		}
-		return shared;
 	}
 	
 	@Override
 	protected void init() {
-		super.init();
-
 		SharedFolderManager sfm = SharedFolderManager.getInstance();
 		RepositoryManager repoManager = RepositoryManager.getInstance();
 		List<VFSContainer> containers = new ArrayList<>();

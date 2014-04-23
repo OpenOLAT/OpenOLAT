@@ -29,7 +29,6 @@ import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.repository.RepositoryEntry;
@@ -46,7 +45,6 @@ class CoursefolderWebDAVMergeSource extends MergeSource {
 	private boolean init = false;
 	private final Identity identity;
 	private long loadTime;
-	
 	
 	public CoursefolderWebDAVMergeSource(Identity identity) {
 		super(null, null);
@@ -85,49 +83,34 @@ class CoursefolderWebDAVMergeSource extends MergeSource {
 
 	@Override
 	public List<VFSItem> getItems() {
-		if(!init) {
-			init();
-		}
+		checkInitialization();
 		return super.getItems();
 	}
 
 	@Override
 	public List<VFSItem> getItems(VFSItemFilter filter) {
-		if(!init || (System.currentTimeMillis() - loadTime) > 60000) {
-			init();
-		}
+		checkInitialization();
 		return super.getItems(filter);
 	}
 
 	@Override
 	public VFSItem resolve(String path) {
-		if(init) {
-			return super.resolve(path);
-		}
-		
-		path = VFSManager.sanitizePath(path);
-		if (path.equals("/")) {
-			return this;
-		}
-		
-		String childName = VFSManager.extractChild(path);
-		RepositoryManager rm = RepositoryManager.getInstance();
-		List<RepositoryEntry> entries = rm.queryByEditor(identity, CourseModule.getCourseTypeName());
-		for(RepositoryEntry entry:entries) {
-			String courseTitle = RequestUtil.normalizeFilename(entry.getDisplayname());
-			if(childName.equals(courseTitle)) {
-				NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(childName, entry.getOlatResource());
-				String nextPath = path.substring(childName.length() + 1);
-				return cfContainer.resolve(nextPath);
+		checkInitialization();
+		return super.resolve(path);
+	}
+	
+	private void checkInitialization() {
+		if(!init || (System.currentTimeMillis() - loadTime) > 60000) {
+			synchronized(this) {
+				if(!init || (System.currentTimeMillis() - loadTime) > 60000) {
+					init();
+				}
 			}
 		}
-
-		return super.resolve(path);
 	}
 	
 	@Override
 	protected void init() {
-		super.init();
 		RepositoryManager rm = RepositoryManager.getInstance();
 		List<RepositoryEntry> courseEntries = rm.queryByEditor(identity, CourseModule.getCourseTypeName());
 		List<VFSContainer> containers = new ArrayList<>();
