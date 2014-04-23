@@ -1618,6 +1618,13 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 					}
 				}
 				Transport.send(msg);
+			} else if(Settings.isDebuging() && result.getReturnCode() == MailerResult.OK) {
+				try {
+					logInfo("E-mail send: " + msg.getSubject());
+					logInfo("Content    : " + msg.getContent());
+				} catch (IOException e) {
+					logError("", e);
+				}
 			} else {
 				result.setReturnCode(MailerResult.MAILHOST_UNDEFINED);
 			}
