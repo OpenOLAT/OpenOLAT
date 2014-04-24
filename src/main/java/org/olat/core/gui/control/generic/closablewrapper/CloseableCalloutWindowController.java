@@ -30,8 +30,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.winmgr.Command;
-import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.logging.OLATRuntimeException;
 
 /**
@@ -56,12 +54,10 @@ import org.olat.core.logging.OLATRuntimeException;
  * @author gnaegi
  */
 public class CloseableCalloutWindowController extends BasicController {
-	public static final Event CLOSE_WINDOW_EVENT = new Event(
-			"CLOSE_WINDOW_EVENT");
+	public static final Event CLOSE_WINDOW_EVENT = new Event("CLOSE_WINDOW_EVENT");
 
 	private VelocityContainer calloutVC;
 	private CloseableModalController cmc;
-	private boolean requiresJSCleanup = false;
 
 	/**
 	 * Constructor for a closable callout window controller. After calling the
@@ -106,7 +102,6 @@ public class CloseableCalloutWindowController extends BasicController {
 				String escapedTitle = StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(title));
 				calloutVC.contextPut("title", escapedTitle);
 			}
-			
 			putInitialPanel(calloutVC);
 		} else {
 			// Fallback to old-school modal dialog
@@ -235,9 +230,6 @@ public class CloseableCalloutWindowController extends BasicController {
 			cmc.dispose();
 			cmc = null;
 		}
-		if (requiresJSCleanup) {
-			cleanupJSCode();			
-		}
 	}
 
 	/**
@@ -274,7 +266,6 @@ public class CloseableCalloutWindowController extends BasicController {
 		} else {
 			// push to modal stack
 			getWindowControl().pushAsCallout(calloutVC, getDOMTarget());
-			requiresJSCleanup = true;
 		}
 	}
 
@@ -287,24 +278,8 @@ public class CloseableCalloutWindowController extends BasicController {
 			// Delegate if in non-ajax mode to modal window
 			cmc.deactivate();
 		} else {
-			cleanupJSCode();
 			// Remove component from stack
 			getWindowControl().pop();
 		}
-	}
-
-	/**
-	 * Cleanup the window and JS code on the browser side
-	 */
-	private void cleanupJSCode() {
-		// Cleanup any resources on the browser/DOM side
-		StringBuilder sb = new StringBuilder();
-		sb.append("jQuery(jQuery('#").append(getDOMTarget()).append("').each(function(index, el) {")
-		  .append("  try { jQuery(el).tooltip('destroy'); } catch(e) {}")
-		  .append("}));");
-		// JS command is sent via OLAT AJAX channel
-		Command command = new JSCommand(sb.toString());
-		getWindowControl().getWindowBackOffice().sendCommandTo(command);
-		requiresJSCleanup = false;
 	}
 }

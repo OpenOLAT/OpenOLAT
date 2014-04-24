@@ -1,4 +1,4 @@
-<div id="callout_layer_$r.getCId()" class="b_callout_content">
+<div id="callout_layer_$r.getCId()" class="o_callout_content">
 	<div id="callout_layer_content_$r.getCId()">
 		$r.render("calloutWindowContent")
 	</div>
@@ -8,7 +8,7 @@
 /* <![CDATA[ */	
 jQuery(function() {
 	jQuery('#callout_layer_$r.getCId()').each(function(index, el) {
-		jQuery(el).parents('div.b_callout_area').next('div.b_callout_overlay').each(function(index2, el2) {
+		jQuery(el).parents('div.popover').next('div.o_callout_overlay').each(function(index2, el2) {
 			jQuery(el2).click(function() {if (o2cl()) {
 				$r.javaScriptBgCommand('close');
 			}});

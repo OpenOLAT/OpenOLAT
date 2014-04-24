@@ -1,0 +1,3 @@
+div.o_callout_overlay { 
+	position: fixed; top: 0; left: 0; width:100%; height:100%; zoom:1;  background: #000; @include o-opacity(1);
+}

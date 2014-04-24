@@ -1,18 +1,23 @@
-<div class="b_form b_clearfix">
-#if ($off_title) <fieldset><legend>$off_title</legend> #end
+<fieldset class="o_form form-horizontal" role="form">
+#if ($off_title) <legend>$off_title</legend> #end
 #if ($off_chelp_package) $r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end
-#if ($off_desc) <div class="b_form_desc">$off_desc</div> #end
-#if ($off_warn) <div class="b_warning">$off_warn</div> #end
-#if ($off_info) <div class="b_info">$off_info</div> #end
-
-#if($r.available("add.accesscontrol")) 
-	<div class="b_clearfix">
-		<div class="b_float_right">
-			$r.render("add.accesscontrol")
-		</div>
+	<div class="row">
+		#if ($off_desc) <div class="o_desc">$off_desc</div> #end
+		#if ($off_warn) <div class="o_warning">$off_warn</div> #end
+		#if ($off_info) <div class="o_info">$off_info</div> #end
 	</div>
-#end
-	<div class="b_clearfix">
+
+	#if($methods) 
+		<div class="btn-group">
+			<button type="button" class="btn btn-default dropdown-toggle o_sel_accesscontrol_create" data-toggle="dropdown">$r.translate("add.accesscontrol")<span class="caret"></span></button>
+			<ul class="dropdown-menu" role="menu">
+				#foreach($method in $methods)
+					<li>$r.render($method.component.componentName)</li>
+				#end
+			</ul>
+		</div>
+	#end
+	<div class="clearfix">
 		$r.render("conf-controllers")
 	</div>
 	#if($r.available("buttonLayout"))
@@ -22,6 +27,4 @@
 			</div>
 		</div>
 	#end
-
-#if ($off_title) </fieldset> #end
-</div>
+</fieldset>

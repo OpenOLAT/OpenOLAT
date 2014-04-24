@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -155,10 +156,10 @@ public class MailListController extends BasicController implements Activateable2
 			tableCtr.addColumnDescriptor(new DefaultColumnDescriptor(Columns.sendDate.i18nKey(), Columns.sendDate.ordinal(), null, getLocale()));
 		} else {
 			//read / marked / context / from / subject / receivedDate
-			CustomCellRenderer readRenderer = new BooleanCSSCellRenderer(getTranslator(), "b_mail_read", "b_mail_unread", "mail.read", "mail.unread");
+			CustomCellRenderer readRenderer = new BooleanCSSCellRenderer(getTranslator(), "o_icon o_icon_read", "o_icon o_icon_to_read", "mail.read", "mail.unread");
 			tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Columns.read.i18nKey(), Columns.read.ordinal(), CMD_READ_TOGGLE, 
 				getLocale(), ColumnDescriptor.ALIGNMENT_CENTER, readRenderer));
-			CustomCellRenderer markRenderer = new BooleanCSSCellRenderer(getTranslator(), "b_mail_marked", "b_mail_unmarked", "mail.marked", "mail.unmarked");
+			CustomCellRenderer markRenderer = new BooleanCSSCellRenderer(getTranslator(), Mark.MARK_CSS_LARGE, Mark.MARK_ADD_CSS_LARGE, "mail.marked", "mail.unmarked");
 			tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Columns.marked.i18nKey(), Columns.marked.ordinal(), CMD_MARK_TOGGLE, 
 					getLocale(), ColumnDescriptor.ALIGNMENT_CENTER, markRenderer));
 			tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Columns.context.i18nKey(), Columns.context.ordinal(), null,

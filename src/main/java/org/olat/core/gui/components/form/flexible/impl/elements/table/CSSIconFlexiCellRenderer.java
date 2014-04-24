@@ -88,7 +88,7 @@ public class CSSIconFlexiCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 				URLBuilder ubu, Translator translator) {
-		target.append("<span class=\"b_small_icon ");
+		target.append("<span class=\"o_icon ");
 		target.append(getCssClass(cellValue));
 		String hoverText = getHoverText(cellValue, translator);
 		if (StringHelper.containsNonWhitespace(hoverText)) {

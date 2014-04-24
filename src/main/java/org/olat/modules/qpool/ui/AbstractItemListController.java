@@ -112,8 +112,8 @@ public abstract class AbstractItemListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.editable.i18nKey(), Cols.editable.ordinal(),
 				false, null, FlexiColumnModel.ALIGNMENT_LEFT,
 				new BooleanCellRenderer(
-						new CSSIconFlexiCellRenderer("o_readwrite"),
-						new CSSIconFlexiCellRenderer("o_readonly"))
+						new CSSIconFlexiCellRenderer("o_icon_readwrite"),
+						new CSSIconFlexiCellRenderer("o_icon_readonly"))
 		));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), true, "key"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.identifier.i18nKey(), Cols.identifier.ordinal(), true, "identifier"));

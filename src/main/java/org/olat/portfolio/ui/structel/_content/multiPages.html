@@ -1,19 +1,12 @@
-<div class="b_pagination" >
-	<ul>
-	<li class="b_toc #if ($toc_disabled) b_disabled #end">$r.render("toc")</li>
-	#if ($pageLinkList)
+<ul class="nav nav-tabs">
+	<li class="#if($toc_enabled) active #end">$r.render("toc")</li>
+	#if($pageLinkList)
 		#foreach($pageLink in $pageLinkList)
 			#set($viewLink = "pageLink$velocityCount")
-			#if ($velocityCount != $actualPage)<li>
-			#else <li class="b_disabled">
-			#end
-			$r.render($viewLink)</li>
+			<li class="#if ($velocityCount == $actualPage) active #end">$r.render($viewLink)</li>
 		#end
 	#end
-	<li class="b_changelog #if ($changelog_disabled) b_disabled #end">$r.render("changelog")</li>
-	</ul>
-</div>
-<div class="b_ep_actualpage">
-$r.render("pageCtrl")
-</div>
-<div style="clear: both;"></div>
+	<li class="#if($changelog_enabled) active #end">$r.render("changelog")</li>
+</ul>
+<div class="b_ep_actualpage">$r.render("pageCtrl")</div>
+<div class="clearfix"></div>

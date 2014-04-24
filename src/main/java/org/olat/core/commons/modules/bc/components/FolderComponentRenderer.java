@@ -213,16 +213,16 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 			if (canWrite || canDelete || canMail) {
 				
 				
-				target.append("<div class=\"b_togglecheck\">");
-				target.append("<a href=\"#\" onclick=\"javascript:b_briefcase_toggleCheck('").append(formName).append("', true)\">");
+				target.append("<div class=\"o_table_checkall input-sm\">");
+				target.append("<label class='checkbox-inline'><a href=\"#\" onclick=\"javascript:b_briefcase_toggleCheck('").append(formName).append("', true)\">");
 				target.append("<input type=\"checkbox\" checked=\"checked\" disabled=\"disabled\" />");
 				target.append(translator.translate("checkall"));
-				target.append("</a> <a href=\"#\" onclick=\"javascript:b_briefcase_toggleCheck('").append(formName).append("', false)\">"); 
+				target.append("</a></label> <label class='checkbox-inline'><a href=\"#\" onclick=\"javascript:b_briefcase_toggleCheck('").append(formName).append("', false)\">"); 
 				target.append("<input type=\"checkbox\" disabled=\"disabled\" />");
 				target.append(translator.translate("uncheckall"));
-				target.append("</a></div>");
+				target.append("</a></label></div>");
 				
-				target.append("<div class=\"b_briefcase_commandbuttons btn-group\">");
+				target.append("<div class='o_table_buttons'>");
 				
 				if(canMail) {
 					target.append("<input type=\"submit\" class='btn btn-default' name=\"");

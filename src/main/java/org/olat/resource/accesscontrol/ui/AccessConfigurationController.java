@@ -38,12 +38,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.OLATResource;
@@ -67,16 +64,14 @@ import org.olat.resource.accesscontrol.model.OfferImpl;
  */
 public class AccessConfigurationController extends FormBasicController {
 
-	private List<Link> addMethods = new ArrayList<Link>();
+	private List<FormLink> addMethods = new ArrayList<FormLink>();
 	private final String displayName;
 	private final OLATResource resource;
 	private final AccessControlModule acModule;
 	private final ACService acService;
-	
-	private FormLink createLink;
-	private FormLayoutContainer confControllerContainer;
-	private CloseableCalloutWindowController createCalloutCtrl;
+
 	private CloseableModalController cmc;
+	private FormLayoutContainer confControllerContainer;
 	private AbstractConfigurationMethodController newMethodCtrl;
 	
 	private final List<AccessInfo> confControllers = new ArrayList<AccessInfo>();
@@ -129,8 +124,21 @@ public class AccessConfigurationController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(editable) {
-			createLink = uifactory.addFormLink("add.accesscontrol", formLayout, Link.BUTTON);
-			createLink.setElementCssClass("o_sel_accesscontrol_create");
+			List<AccessMethod> methods = acService.getAvailableMethods(getIdentity(), ureq.getUserSession().getRoles());
+			for(AccessMethod method:methods) {
+				AccessMethodHandler handler = acModule.getAccessMethodHandler(method.getType());
+				if(handler.isPaymentMethod() && !allowPaymentMethod) {
+					continue;
+				}
+				
+				String title = handler.getMethodName(getLocale());
+				FormLink add = uifactory.addFormLink("create." + handler.getType(), title, null, formLayout, Link.LINK | Link.NONTRANSLATED);
+				add.setUserObject(method);
+				add.setCustomEnabledLinkCSS(("b_with_small_icon_left " + method.getMethodCssClass() + "_icon").intern());
+				addMethods.add(add);
+				formLayout.add(add.getName(), add);
+			}
+			((FormLayoutContainer)formLayout).contextPut("methods", addMethods);
 		}
 		
 		String confPage = velocity_root + "/configuration_list.html";
@@ -216,8 +224,6 @@ public class AccessConfigurationController extends FormBasicController {
 		if(addMethods.contains(source)) {
 			AccessMethod method = (AccessMethod)source.getUserObject();
 			addMethod(ureq, method);
-		} else if (source == createLink) {
-			popupCallout(ureq);
 		} else if (source.getName().startsWith("del_")) {
 			AccessInfo infos = (AccessInfo)source.getUserObject();
 			acService.deleteOffer(infos.getLink().getOffer());
@@ -249,34 +255,6 @@ public class AccessConfigurationController extends FormBasicController {
 			links.add(info.getLink());
 		}
 		acService.saveOfferAccess(links);
-	}
-	
-	protected void popupCallout(UserRequest ureq) {
-		addMethods.clear();
-		
-		VelocityContainer mapCreateVC = createVelocityContainer("createAccessCallout");
-		List<AccessMethod> methods = acService.getAvailableMethods(getIdentity(), ureq.getUserSession().getRoles());
-		for(AccessMethod method:methods) {
-			AccessMethodHandler handler = acModule.getAccessMethodHandler(method.getType());
-			if(handler.isPaymentMethod() && !allowPaymentMethod) {
-				continue;
-			}
-			
-			Link add = LinkFactory.createLink("create." + handler.getType(), mapCreateVC, this);
-			add.setCustomDisplayText(handler.getMethodName(getLocale()));
-			add.setUserObject(method);
-			add.setCustomEnabledLinkCSS(("b_with_small_icon_left " + method.getMethodCssClass() + "_icon").intern());
-			addMethods.add(add);
-			mapCreateVC.put(add.getComponentName(), add);
-		}
-		mapCreateVC.contextPut("methods", addMethods);
-		
-		String title = translate("add.accesscontrol");
-		removeAsListenerAndDispose(createCalloutCtrl);
-		createCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), mapCreateVC, createLink, title, true, null);
-		listenTo(createCalloutCtrl);
-		createCalloutCtrl.activate();
-		mainForm.setDirtyMarking(false);
 	}
 	
 	protected void loadConfigurations() {
@@ -315,8 +293,6 @@ public class AccessConfigurationController extends FormBasicController {
 	}
 	
 	protected void addMethod(UserRequest ureq, AccessMethod method) {
-		createCalloutCtrl.deactivate();
-		
 		Offer offer = acService.createOffer(resource, displayName);
 		OfferAccess link = acService.createOfferAccess(offer, method);
 		
