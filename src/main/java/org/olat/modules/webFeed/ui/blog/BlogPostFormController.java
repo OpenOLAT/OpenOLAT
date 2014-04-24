@@ -151,7 +151,6 @@ public class BlogPostFormController extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("feed.edit.item");
 		setFormContextHelp(this.getClass().getPackage().getName(), "post_form_help.html", "chelp.hover.form");
 		formLayout.setElementCssClass("o_sel_blog_form");
 

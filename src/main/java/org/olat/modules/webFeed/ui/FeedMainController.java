@@ -186,7 +186,7 @@ public class FeedMainController extends BasicController implements Activateable2
 					oldFeedUrl = feed.getExternalFeedUrl();
 				} 
 				feedFormCtr = new FeedFormController(ureq, getWindowControl(), feed, uiFactory);
-				activateModalDialog(feedFormCtr);
+				activateModalDialog(feedFormCtr, uiFactory.getTranslator().translate("feed.edit"));
 			} else {
 				String fullName = userManager.getUserDisplayName(lock.getOwner());
 				showInfo("feed.is.being.edited.by", fullName);
@@ -278,7 +278,7 @@ public class FeedMainController extends BasicController implements Activateable2
 		} else if (source == itemsCtr && event.equals(ItemsController.HANDLE_NEW_EXTERNAL_FEED_DIALOG_EVENT)) {
 			oldFeedUrl = feed.getExternalFeedUrl();			
 			feedFormCtr = new FeedFormController(ureq, getWindowControl(), feed, uiFactory);
-			activateModalDialog(feedFormCtr);
+			activateModalDialog(feedFormCtr, uiFactory.getTranslator().translate("feed.edit"));
 		} else if (source == itemsCtr && event.equals(ItemsController.FEED_INFO_IS_DIRTY_EVENT)) {
 			vcInfo.setDirty(true);
 		}
@@ -288,9 +288,9 @@ public class FeedMainController extends BasicController implements Activateable2
 	 * @param controller The <code>FormBasicController</code> to be displayed in
 	 *          the modal dialog.
 	 */
-	private void activateModalDialog(FormBasicController controller) {
+	private void activateModalDialog(FormBasicController controller, String title) {
 		listenTo(controller);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), controller.getInitialComponent());
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), controller.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

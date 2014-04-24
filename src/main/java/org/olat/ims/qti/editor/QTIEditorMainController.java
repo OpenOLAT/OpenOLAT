@@ -580,7 +580,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				exitVC = createVelocityContainer("exitDialog");
 				exitPanel = new Panel("exitPanel");
 				exitPanel.setContent(exitVC);
-				cmcExit = new CloseableModalController(getWindowControl(), translate("editor.preview.close"), exitPanel);
+				cmcExit = new CloseableModalController(getWindowControl(), translate("editor.preview.close"), exitPanel, true, translate("exit.header"));
 				cmcExit.activate();
 				listenTo(cmcExit);
 				return;

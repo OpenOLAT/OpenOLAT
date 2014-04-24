@@ -67,11 +67,17 @@ public class ProgressRenderer extends CustomCssCellRenderer {
 			int green = Math.round(100.0f * ((float)progress.getGreen() / (float)progress.getTotal()));
 			String[] values = new String[]{ Integer.toString(progress.getGreen()), Integer.toString(progress.getTotal()) };
 			String tooltip = translator.translate("tooltip.of", values);
-			sb.append("<div class='o_eff_statement_progress' ext:qtip='").append(tooltip).append("'>")
-			  .append("<div class='o_eff_statement_solved' style='width: ").append(green).append("%;'/>")
-			  .append("&#160;")
-			  .append("</div>")
-			  .append("</div>");
+			sb.append("<div class='progress' title='").append(tooltip).append("'>")
+			  .append("<div class='progress-bar' role='progressbar' aria-valuenow='").append(green)
+			  .append("' aria-valuemin='0' aria-valuemax='").append(progress.getTotal())
+			  .append("' style='width: ").append(green).append("%;'/>")
+			  .append("<span class='sr-only'>").append(green).append("%</span></div></div>");
+			
+			/*
+			<div class="progress-bar" role="progressbar" aria-valuenow="${used}" aria-valuemin="0" aria-valuemax="100" style="width:${used};">
+	    		<span class="sr-only">${used}%</span>
+	    	</div>
+	    	*/
 		}
 		return sb.toString();
 	}

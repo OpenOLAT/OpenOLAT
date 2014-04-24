@@ -32,12 +32,11 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.commands.FolderCommandFactory;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -51,7 +50,7 @@ import org.olat.core.util.vfs.VFSItem;
 /**
  * @author Felix Jost
  */
-public class FolderComponentRenderer implements ComponentRenderer {
+public class FolderComponentRenderer extends DefaultComponentRenderer {
 
 	private final ListRenderer listRenderer;
 	private final CrumbRenderer crumbRenderer;
@@ -123,7 +122,7 @@ public class FolderComponentRenderer implements ComponentRenderer {
 		}
 		target.append(">");
 
-		target.append("<div class=\"b_briefcase_createactions b_clearfix\"><ul>");
+		target.append("<div class=\"b_briefcase_createactions clearfix\"><ul class='nav navbar-nav'>");
 		if (canWrite) {
 			// add folder actions: upload file, create new folder, create new file
 
@@ -160,7 +159,7 @@ public class FolderComponentRenderer implements ComponentRenderer {
 				}
 				
 				// option upload	
-				target.append("<li><a class=\"b_briefcase_upload\" href=\"");
+				target.append("<li><a class='b_briefcase_upload' href=\"");
 				ubu.buildURI(target, new String[] { VelocityContainer.COMMAND_ID }, new String[] { "ul"  }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 				target.append("\"");
 				if (iframePostEnabled) { // add ajax iframe target
@@ -168,7 +167,7 @@ public class FolderComponentRenderer implements ComponentRenderer {
 					ubu.appendTarget(so);
 					target.append(so.toString());
 				}
-				target.append(">");
+				target.append("><i class='o_icon o_icon_upload'>&nbsp;</i>");
 				target.append(translator.translate("ul"));			
 				target.append("</a></li>");
 	
@@ -182,7 +181,7 @@ public class FolderComponentRenderer implements ComponentRenderer {
 						ubu.appendTarget(so);
 						target.append(so.toString());
 					}
-					target.append(">");
+					target.append("><i class='o_icon o_icon_new_folder'>&nbsp;</i>");
 					target.append(translator.translate("cf"));
 					target.append("</a></li>");
 				}
@@ -196,7 +195,7 @@ public class FolderComponentRenderer implements ComponentRenderer {
 					ubu.appendTarget(so);
 					target.append(so.toString());
 				}
-				target.append(">");
+				target.append("><i class='o_icon o_icon_new_document'>&nbsp;</i>");
 				target.append(translator.translate("cfile"));
 				target.append("</a></li>");
 			}
@@ -223,11 +222,10 @@ public class FolderComponentRenderer implements ComponentRenderer {
 				target.append(translator.translate("uncheckall"));
 				target.append("</a></div>");
 				
-				target.append("<div class=\"b_briefcase_commandbuttons b_button_group\">");
+				target.append("<div class=\"b_briefcase_commandbuttons btn-group\">");
 				
-				//fxdiff BAKS-2: send documents by mail
 				if(canMail) {
-					target.append("<input type=\"submit\" class=\"b_button\" name=\"");
+					target.append("<input type=\"submit\" class='btn btn-default' name=\"");
 					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_MAIL);
 					target.append("\" value=\"");
 					target.append(StringHelper.escapeHtml(translator.translate("send")));
@@ -236,7 +234,7 @@ public class FolderComponentRenderer implements ComponentRenderer {
 				
 				if (canDelete) {
 					// delete
-					target.append("<input type=\"submit\" class=\"b_button\" name=\"");
+					target.append("<input type=\"submit\" class='btn btn-default' name=\"");
 					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_DEL);
 					target.append("\" value=\"");
 					target.append(StringHelper.escapeHtml(translator.translate("del")));
@@ -245,12 +243,12 @@ public class FolderComponentRenderer implements ComponentRenderer {
 
 				if (canWrite) {
 					// move
-					target.append("<input type=\"submit\" class=\"b_button\" name=\"");
+					target.append("<input type=\"submit\" class='btn btn-default' name=\"");
 					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_MOVE);
 					target.append("\" value=\"");
 					target.append(StringHelper.escapeHtml(translator.translate("move")));
 					// copy
-					target.append("\"/><input type=\"submit\" class=\"b_button\" name=\"");
+					target.append("\"/><input type=\"submit\" class='btn btn-default' name=\"");
 					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_COPY);
 					target.append("\" value=\"");
 					target.append(StringHelper.escapeHtml(translator.translate("copy")));
@@ -259,12 +257,12 @@ public class FolderComponentRenderer implements ComponentRenderer {
 									
 				if (canWrite) {
 					// zip
-					target.append("<input type=\"submit\" class=\"b_button\" name=\"");
+					target.append("<input type=\"submit\" class='btn btn-default' name=\"");
 					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_ZIP);
 					target.append("\" value=\"");
 					target.append(StringHelper.escapeHtml(translator.translate("zip")));
 					//unzip
-					target.append("\"/><input type=\"submit\" class=\"b_button\" name=\"");
+					target.append("\"/><input type=\"submit\" class='btn btn-default' name=\"");
 					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_UNZIP);
 					target.append("\" value=\"");
 					target.append(StringHelper.escapeHtml(translator.translate("unzip")));
@@ -273,24 +271,7 @@ public class FolderComponentRenderer implements ComponentRenderer {
 				target.append("</div>");
 			}
 		}
-		
-		
+
 		target.append("</form>");
 	}
-
-	/**
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator)
-	 */
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderingState rstate) {
-		// no JS to add
-	}
-
-	/**
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component)
-	 */
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-		// no JS to render
-	}
-
-
 }

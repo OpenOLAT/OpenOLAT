@@ -49,3 +49,12 @@
 // Utility classes
 @import "../../../bootstrap/stylesheets/bootstrap/utilities";
 @import "../../../bootstrap/stylesheets/bootstrap/responsive-utilities";
+
+
+
+/* override */
+//like previous layout in openolat
+body .modal {
+	position: absolute;
+    overflow: visible;
+}

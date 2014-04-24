@@ -220,9 +220,9 @@ public class IQComponentRenderer implements ComponentRenderer {
 			}
 			
 			sb.append("<div class=\"b_subcolumns\">");
-			sb.append("<div class=\"b_c33l\">");
+			sb.append("<div class='col-md-4'>");
 			
-			sb.append("<input class=\"b_button\" type=\"submit\" name=\"olat_fosm\" value=\"");
+			sb.append("<input class=\"btn btn-primary\" type=\"submit\" name=\"olat_fosm\" value=\"");
 			if (ai.isSectionPage())
 				sb.append(StringEscapeUtils.escapeHtml(translator.translate("submitMultiAnswers")));
 			else
@@ -231,7 +231,7 @@ public class IQComponentRenderer implements ComponentRenderer {
 			if (!displayForm) sb.append(" style=\"display: none;\"");
 			sb.append(" />");
 			
-			sb.append("</div><div class=\"b_c66r\">");
+			sb.append("</div><div class='col-md-8'>");
 
 			if (memo && memoId != null) {
 				sb.append("<div class=\"o_qti_item_note_box_title\">");

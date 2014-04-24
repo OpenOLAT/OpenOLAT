@@ -99,9 +99,7 @@ public class DockController extends BasicController {
 				ControllerCreator undockControllerCreator = new ControllerCreator() {
 					public Controller createController(UserRequest lureq,WindowControl lwControl) {
 						delegWControl.setDelegate(lwControl);
-						LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, delegWControl, controller);
-						layoutCtr.addDisposableChildController(controller); // cleanup on layout controller dispose
-						return layoutCtr;
+						return new LayoutMain3ColsController(lureq, delegWControl, controller);
 					}
 				};
 				

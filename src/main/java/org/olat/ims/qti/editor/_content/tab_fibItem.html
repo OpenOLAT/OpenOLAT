@@ -12,7 +12,7 @@
 	
 		<form action="$r.formURIbg("sfib")" id="ofo_tab_fibitem" $r.bgTarget() method="post">
 		#if ($question.getResponses().size() > 0)
-		<table class="b_table b_grid_row  b_full">
+		<table class="table table-bordered">
 		<thead>
 			<tr>
 				<th width="5%">Pos</th>
@@ -179,7 +179,7 @@
 #end
 
 <br />
-<div class="b_button_group"><input type="submit" value="$r.translateInAttribute("submit")" class="b_button" name="olat_fosm"/></div>
+<div class="btn-group"><input type="submit" value="$r.translateInAttribute("submit")" class="btn btn-primary" name="olat_fosm"/></div>
 </form>
 
 </fieldset>

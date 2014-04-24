@@ -146,10 +146,8 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 		}
 		return newWControl;
 	}
-	
-	/**
-	 * 
-	 */
+
+	@Override
 	public WindowControl getWindowControlForDebug() {
 		return getWindowControl();
 	}
@@ -157,13 +155,14 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	/**
 	 * @see org.olat.core.gui.control.Controller#addControllerListener(org.olat.core.gui.control.ControllerEventListener)
 	 */
+	@Override
 	public void addControllerListener(ControllerEventListener el) {
 		if (listeners == null) {
 			listeners = new ArrayList<ControllerEventListener>();
 		}
-		if (listeners.contains(el)) throw new AssertException("controllerEventListener '" + el.toString()
-				+ "' was already added to controller '" + toString());
-		listeners.add(el);
+		if (!listeners.contains(el)) {
+			listeners.add(el);
+		}
 	}
 
 	// brasato:: prio c : clean up classes using this - does not make sense really

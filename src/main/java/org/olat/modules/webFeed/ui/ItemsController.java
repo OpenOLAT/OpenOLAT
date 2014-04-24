@@ -404,7 +404,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 			// Create item and media containers 
 			feedManager.createItemContainer(feed, currentItem);
 			itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem, feed);
-			activateModalDialog(itemFormCtr);
+			activateModalDialog(itemFormCtr, uiFactory.getTranslator().translate("feed.edit.item"));
 
 		} else if (editButtons != null && editButtons.contains(source)) {
 			currentItem = (Item) ((Link) source).getUserObject();
@@ -415,7 +415,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 					// reload to prevent stale object, then launch editor
 					currentItem = feedManager.getItem(feed, currentItem.getGuid());					
 					itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem, feed);
-					activateModalDialog(itemFormCtr);
+					activateModalDialog(itemFormCtr, uiFactory.getTranslator().translate("feed.edit.item"));
 				} else {
 					String fullName = userManager.getUserDisplayName(lock.getOwner());
 					showInfo("feed.item.is.being.edited.by", fullName);
@@ -457,7 +457,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 			// Create item and media containers 
 			feedManager.createItemContainer(feed, currentItem);
 			itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem, feed);
-			activateModalDialog(itemFormCtr);
+			activateModalDialog(itemFormCtr, uiFactory.getTranslator().translate("feed.edit.item"));
 			// do logging
 			ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_EDIT, getClass(), LoggingResourceable.wrap(feed));
 			
@@ -737,9 +737,9 @@ public class ItemsController extends BasicController implements Activateable2 {
 	 * @param controller The <code>FormBasicController</code> to be displayed in
 	 *          the modal dialog.
 	 */
-	private void activateModalDialog(FormBasicController controller) {
+	private void activateModalDialog(FormBasicController controller, String title) {
 		listenTo(controller);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), controller.getInitialComponent());
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), controller.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

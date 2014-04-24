@@ -18,11 +18,12 @@
 		}
 		
 		li div {
+			position: relative;
 			margin-bottom: -1px;
 			border-bottom: 1px solid $list-group-border;
 		}
 		
-		@for $i from 1 through 11 {
+		@for $i from 0 through 11 {
 			li div a.o_tree_oc_l#{$i}  { 
 				position:absolute;
 				top:$o-tree-padding-opener-top-px;

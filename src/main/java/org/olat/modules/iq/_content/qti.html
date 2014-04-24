@@ -34,20 +34,20 @@ function confirmSuspend() {
 		<strong>$qtistatus.getTitle()</strong>
   	#if ($qtistatus.isOpen())
 		#if ($qtistatus.isSurvey())
-			<a class="b_button #if($allQuestionsAnswered) o_button_dirty #end" href="$r.commandURI("sas")" onclick="{if (o2cl()) return confirmSubmit(); else return false;}"><span>$r.translate("submitSurvey")</span></a>
+			<a class="btn btn-default #if($allQuestionsAnswered) o_button_dirty #end" href="$r.commandURI("sas")" onclick="{if (o2cl()) return confirmSubmit(); else return false;}"><span>$r.translate("submitSurvey")</span></a>
 			#if ($enableCancel)
-				<a class="b_button" href="$r.commandURI("cancel")" onclick="{if (o2cl()) return confirmCancel(); else return false;}"><span>$r.translate("cancelSurvey")</span></a>
+				<a class="btn btn-default" href="$r.commandURI("cancel")" onclick="{if (o2cl()) return confirmCancel(); else return false;}"><span>$r.translate("cancelSurvey")</span></a>
 			#end
 			#if ($enableSuspend)
-				<a class="b_button" href="$r.commandURI("suspend")" onclick="{if (o2cl()) return confirmSuspend(); else return false;}"><span>$r.translate("suspendSurvey")</span></a>
+				<a class="btn btn-default" href="$r.commandURI("suspend")" onclick="{if (o2cl()) return confirmSuspend(); else return false;}"><span>$r.translate("suspendSurvey")</span></a>
 			#end
 		#else
-			<a class="b_button #if($allQuestionsAnswered) o_button_dirty #end" href="$r.commandURI("sas")" onclick="{if (o2cl()) return confirmSubmit(); else return false;}"><span>$r.translate("submitAssess")</span></a>
+			<a class="btn btn-default #if($allQuestionsAnswered) o_button_dirty #end" href="$r.commandURI("sas")" onclick="{if (o2cl()) return confirmSubmit(); else return false;}"><span>$r.translate("submitAssess")</span></a>
 			#if ($enableCancel)
-				<a class="b_button" href="$r.commandURI("cancel")" onclick="{if (o2cl()) return confirmCancel(); else return false;}"><span>$r.translate("cancelAssess")</span></a>
+				<a class="btn btn-default" href="$r.commandURI("cancel")" onclick="{if (o2cl()) return confirmCancel(); else return false;}"><span>$r.translate("cancelAssess")</span></a>
 			#end
 			#if ($enableSuspend)
-				<a class="b_button" href="$r.commandURI("suspend")" onclick="{if (o2cl()) return confirmSuspend(); else return false;}"><span>$r.translate("suspendAssess")</span></a>
+				<a class="btn btn-default" href="$r.commandURI("suspend")" onclick="{if (o2cl()) return confirmSuspend(); else return false;}"><span>$r.translate("suspendAssess")</span></a>
 			#end
 		#end
   	#elseif(!$qtistatus.isPreview())
@@ -94,9 +94,9 @@ function confirmSuspend() {
 	#end
 	</div>
 
-	<div id="o_qti_run_main" class="b_subcolumns">
+	<div id="o_qti_run_main" class="b_subcolumns clearfix">
 		#if ($displayMenu)
-		<div id="o_qti_run_menu" class="b_c33l">
+		<div id="o_qti_run_menu" class="col-md-4">
 			<div class="b_subcl">			
 				<div id="o_qti_run_menu_inner" class="b_floatbox">
 					$r.render("qticomp", "menu")
@@ -106,7 +106,7 @@ function confirmSuspend() {
 		#end
 	
 	
-		<div id="o_qti_run_content" class="#if($displayMenu) b_c66r #end">
+		<div id="o_qti_run_content" class="#if($displayMenu) col-md-8 #end">
 			<div class="b_subcr">
 			#if ($qtistatus.hasError())
 			<div class="b_warning">$qtistatus.error</div>

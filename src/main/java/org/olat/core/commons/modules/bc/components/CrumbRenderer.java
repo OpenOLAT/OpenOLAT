@@ -52,11 +52,9 @@ public class CrumbRenderer {
 		ubu.buildURI(pathLink, null, null, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 
 		// append toplevel node
-		sb.append("<div class=\"b_briefcase_breadcrumb\">/&nbsp;");
+		sb.append("<ol class='breadcrumb'>");
 		if (renderLinks) {
-			sb.append("<a href=\"");
-			sb.append(pathLink);
-			sb.append("\"");
+			sb.append("<li><a href='").append(pathLink).append("'");
 			if (iframePostEnabled) { // add ajax iframe target
 				StringOutput so = new StringOutput();
 				ubu.appendTarget(so);
@@ -66,30 +64,24 @@ public class CrumbRenderer {
 		}
 		sb.append(fc.getRootContainer().getName());
 		if (renderLinks)
-			sb.append("</a>");
+			sb.append("</a></li>");
 		
 		StringTokenizer st = new StringTokenizer(fc.getCurrentContainerPath(), "/", false);
 		while (st.hasMoreElements()) {
 			String token = st.nextToken();
 			pathLink.append(ubu.encodeUrl(token));
-			sb.append("&nbsp;/&nbsp;");
 			if (st.hasMoreElements() && renderLinks) {
-				sb.append("<a href=\"");
-				sb.append(pathLink.toString());
-				sb.append("\"");
+				sb.append("<li><a href='").append(pathLink).append("'");
 				if (iframePostEnabled) { // add ajax iframe target
 					StringOutput so = new StringOutput();
 					ubu.appendTarget(so);
 					sb.append(so.toString());
 				}
-				sb.append(">");
-				sb.append(token);
-				sb.append("</a>");
+				sb.append(">").append(token).append("</a></li>");
 			} else {
-				sb.append(token);
+				sb.append("<li><a href='#'>").append(token).append("</a></li>");
 			}
-			pathLink.append("/");
 		}
-		sb.append("</div>");
+		sb.append("</ol>");
 	}
 }

@@ -31,7 +31,7 @@
 		$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-answer-surv-4.html","help.hover.qti-answer-4")
 	
 		<form action="$r.formURIbg("sessay")" id="ofo_tab_essavitem" $r.bgTarget() method="post">
-		<table class="b_table b_grid_row  b_full">
+		<table class="table table-bordered">
 		<thead>
 			<tr>
 				<th>$r.translate("essay.dimension.header")</th>
@@ -63,6 +63,6 @@
 	<input type="text" name="single_score" value="$question.getMaxValue()" size="4" onchange="return setFormDirty('ofo_tab_scitem')" onclick="return setFormDirty('ofo_tab_scitem')"/>
 	<br />
 #end		
-<div class="b_button_group"><input type="submit" value="$r.translateInAttribute("submit")" class="b_button" name="olat_fosm" /></div>
+<div class="btn-group"><input type="submit" value="$r.translateInAttribute("submit")" class="btn btn-primary" name="olat_fosm" /></div>
 </form>
 </fieldset>

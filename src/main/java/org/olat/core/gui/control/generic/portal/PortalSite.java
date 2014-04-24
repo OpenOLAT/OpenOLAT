@@ -24,9 +24,8 @@ import java.util.Locale;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController;
-import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.navigation.AbstractSiteInstance;
 import org.olat.core.gui.control.navigation.DefaultNavElement;
 import org.olat.core.gui.control.navigation.NavElement;
@@ -69,12 +68,11 @@ public class PortalSite extends AbstractSiteInstance {
 	}
 
 	@Override
-	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
+	protected Controller createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ORES));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ORES, new StateSite(this), wControl, true);
 		PortalMainController c = new PortalMainController(ureq, bwControl);
-		MainLayout3ColumnsController mainCtrl = new LayoutMain3ColsController(ureq, wControl, c);
-		return mainCtrl;
+		return new LayoutMain3ColsController(ureq, wControl, c);
 	}
 	
 	/**

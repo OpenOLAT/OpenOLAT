@@ -188,9 +188,9 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 				ubu.appendTarget(target);
 			}
 			String openCloseCss = renderChildren ? "close" : "open";
-			target.append(" class='o_tree_oc_l").append(level).append("'><i class='o_icon o_icon_").append(openCloseCss).append("_tree'></i></a>");
+			target.append(" class='o_tree_oc_l").append(level).append("'><i class='o_icon o_icon_").append(openCloseCss).append("_tree'>&nbsp;</i></a>");
 		} else if (level != 0 && chdCnt == 0) {
-			target.append("<span class=\"o_tree_leaf o_tree_oc_l").append(level).append("\">&nbsp;&nbsp;</span>");
+			target.append("<span class=\"o_tree_leaf o_tree_oc_l").append(level).append("\">&nbsp;</span>");
 		}
 		
 		// Render menu item as link, also for active elements

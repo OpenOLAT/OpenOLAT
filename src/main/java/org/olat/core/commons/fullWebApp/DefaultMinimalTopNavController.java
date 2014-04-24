@@ -55,8 +55,8 @@ public class DefaultMinimalTopNavController extends BasicController {
 			WindowControl wControl) {
 		super(ureq, wControl);
 		topNavVC = createVelocityContainer("defaulttopnavminimal");
-		closeLink = LinkFactory.createLink("header.topnav.close", topNavVC,
-				this);
+		closeLink = LinkFactory.createLink("header.topnav.close", topNavVC, this);
+		closeLink.setIconCSS("o_icon o_icon_close");
 		putInitialPanel(topNavVC);
 	}
 

@@ -114,7 +114,7 @@ class FeedFormController extends FormBasicController {
 		
 		feed.setLastModified(new Date());
 		// The image is retrieved by the main controller
-		this.fireEvent(ureq, Event.CHANGED_EVENT);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
 	/**
@@ -248,9 +248,6 @@ class FeedFormController extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		this.setFormTitle("feed.edit");
-		// this.setFormContextHelp(packageName, pageName, hoverTextKey);
-
 		// title might be longer from external source
 		String saveTitle = PersistenceHelper.truncateStringDbSave(feed.getTitle(), 256, true);
 		title = uifactory.addTextElement("title", "feed.title.label", 256, saveTitle, this.flc);

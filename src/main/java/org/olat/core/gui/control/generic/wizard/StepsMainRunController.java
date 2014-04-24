@@ -249,17 +249,17 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		// they must be enabled by the first step according to its rules
 		// cancel button is not possible to disable
 		prevButton = new FormLinkImpl("back");
-		prevButton.setCustomEnabledLinkCSS("b_button b_wizard_button_prev");
-		prevButton.setCustomDisabledLinkCSS("b_button b_wizard_button_prev");
+		prevButton.setCustomEnabledLinkCSS("btn btn-default b_wizard_button_prev");
+		prevButton.setCustomDisabledLinkCSS("btn btn-default b_wizard_button_prev");
 		nextButton = new FormLinkImpl("next");
-		nextButton.setCustomEnabledLinkCSS("b_button b_wizard_button_next");
-		nextButton.setCustomDisabledLinkCSS("b_button b_wizard_button_next");
+		nextButton.setCustomEnabledLinkCSS("btn btn-default b_wizard_button_next");
+		nextButton.setCustomDisabledLinkCSS("btn btn-default b_wizard_button_next");
 		finishButton = new FormLinkImpl("finish");
-		finishButton.setCustomEnabledLinkCSS("b_button b_wizard_button_finish");
-		finishButton.setCustomDisabledLinkCSS("b_button b_wizard_button_finish");
+		finishButton.setCustomEnabledLinkCSS("btn btn-default b_wizard_button_finish");
+		finishButton.setCustomDisabledLinkCSS("btn btn-default b_wizard_button_finish");
 		cancelButton = new FormLinkImpl("cancel");
-		cancelButton.setCustomEnabledLinkCSS("b_button b_wizard_button_cancel");
-		cancelButton.setCustomDisabledLinkCSS("b_button b_wizard_button_cancel");
+		cancelButton.setCustomEnabledLinkCSS("btn btn-default b_wizard_button_cancel");
+		cancelButton.setCustomDisabledLinkCSS("btn btn-default b_wizard_button_cancel");
 		closeLink = new FormLinkImpl("closeIcon", "close", "", Link.NONTRANSLATED);
 		closeLink.setCustomEnabledLinkCSS("b_link_close");
 		formLayout.add(prevButton);

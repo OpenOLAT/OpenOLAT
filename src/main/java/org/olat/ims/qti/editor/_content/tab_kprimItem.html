@@ -39,7 +39,7 @@
 	
 		<form action="$r.formURIbg("skprim")" id="ofo_tab_kprimitem" $r.bgTarget() method="post">
 #if ($question.getResponses().size() > 0)
-		<table class="b_table b_grid_row  b_full" style="position:relative">
+		<table class="table table-bordered" style="position:relative">
 		<thead>
 			<tr>
 				<th width="5">Pos</th>
@@ -121,7 +121,7 @@
 
 #if($isSurveyMode.equals("false") && !$isRestrictedEdit)
 <br />
-<div class="b_button_group"><input type="submit" value="$r.translateInAttribute("submit")" class="b_button" name="olat_fosm" /></div>
+<div class="btn-group"><input type="submit" value="$r.translateInAttribute("submit")" class="btn btn-primary" name="olat_fosm" /></div>
 #end
 		</form>
 </fieldset>

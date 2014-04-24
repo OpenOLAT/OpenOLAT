@@ -41,7 +41,7 @@
 
 #if ($question.getResponses().size() > 0)
 		<form action="$r.formURIbg("ssc")" id="ofo_tab_scitem" $r.bgTarget() method="post">
-		<table class="b_table b_grid_row  b_full">
+		<table class="table table-bordered">
 		<thead>
 			<tr>
 				<th width="5">Pos</th>
@@ -108,7 +108,7 @@
 
 #if($isSurveyMode.equals("false"))
 		<br />
-		<div class="b_button_group"><input type="submit" value="$r.translateInAttribute("submit")" class="b_button" name="olat_fosm" /></div>
+		<div class="btn-group"><input type="submit" value="$r.translateInAttribute("submit")" class="btn btn-primary" name="olat_fosm" /></div>
 #end
 	</form>
 #end

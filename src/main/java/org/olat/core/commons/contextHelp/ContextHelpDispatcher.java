@@ -105,7 +105,6 @@ public class ContextHelpDispatcher extends LogDelegator implements Dispatcher {
 					// create the context help controller and wrapp it using the layout controller
 					ContextHelpMainController helpCtr =  new ContextHelpMainController(lureq, lwControl);
 					LayoutMain3ColsController layoutCtr =  new LayoutMain3ColsController(lureq, lwControl, helpCtr);
-					layoutCtr.addDisposableChildController(helpCtr);
 					return layoutCtr;
 				}
 			};

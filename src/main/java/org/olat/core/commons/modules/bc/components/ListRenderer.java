@@ -122,7 +122,7 @@ public class ListRenderer {
 
 		boolean canVersion = FolderConfig.versionsEnabled(fc.getCurrentContainer());
 		
-		sb.append("<table class=\"b_briefcase_filetable\">");
+		sb.append("<table class=\"table table-bordered b_briefcase_filetable\">");
 		// header
 		sb.append("<thead><tr><th class=\"b_briefcase_col_name b_first_child\">");
 
@@ -459,7 +459,7 @@ public class ListRenderer {
 					sb.append(so.toString());
 				}
 				sb.append(" title=\"").append(StringHelper.escapeHtml(translator.translate("editor")));
-				sb.append("\" class=\"b_small_icon b_briefcase_edit_file_icon\">&#160;</a>");
+				sb.append("\"><i class='o_icon o_icon_edit_file'></i></a>");
 			} else {
 				sb.append("<span class=\"b_small_icon b_briefcase_noicon\">&#160;</span>");	
 			}
@@ -495,19 +495,19 @@ public class ListRenderer {
 			boolean canMetaData = canMetaInfo(child);
 			if (canMetaData) {
 				// Metadata edit link... also handles rename for non-OlatRelPathImpls
-				sb.append("<a href=\"");
+				sb.append("<a href='");
 				ubu.buildURI(sb, new String[] { PARAM_EDTID }, new String[] { Integer.toString(pos) }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME
 						: AJAXFlags.MODE_NORMAL);
-				sb.append("\"");
+				sb.append("'");
 				if (iframePostEnabled) { // add ajax iframe target
 					StringOutput so = new StringOutput();
 					ubu.appendTarget(so);
 					sb.append(so.toString());
 				}
 				sb.append(" title=\"").append(StringHelper.escapeHtml(translator.translate("mf.edit")))
-						.append("\" class=\" b_small_icon b_briefcase_edit_meta_icon\">&#160;</a>");
+				  .append("\" ><i class='o_icon o_icon_edit_metadata'></i></a>");
 			} else {
-				sb.append("<span class=\"b_small_icon b_briefcase_noicon\">&#160;</span>");					
+				sb.append("<span class='b_small_icon b_briefcase_noicon'>&#160;</span>");					
 			}
 			
 			sb.append("</td></tr></table>");
