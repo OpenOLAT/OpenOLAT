@@ -189,7 +189,9 @@ public class RepositoryEntryListController extends FormBasicController
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(false);
+		tableEl.setElementCssClass("o_coursetable o_rendertype_custom");
 		VelocityContainer row = createVelocityContainer("row_1");
+		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
 	}
 
@@ -217,9 +219,11 @@ public class RepositoryEntryListController extends FormBasicController
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(listLink == source) {
 			tableEl.setRendererType(FlexiTableRendererType.custom);
+			tableEl.setElementCssClass("o_coursetable o_rendertype_custom");
 			tableEl.setCustomizeColumns(false);
 		} else if(tableLink == source) {
 			tableEl.setRendererType(FlexiTableRendererType.classic);
+			tableEl.setElementCssClass("o_coursetable o_rendertype_classic");
 			tableEl.setCustomizeColumns(true);
 		} else if(source instanceof RatingWithAverageFormItem && event instanceof RatingFormEvent) {
 			RatingFormEvent ratingEvent = (RatingFormEvent)event;
@@ -405,12 +409,15 @@ public class RepositoryEntryListController extends FormBasicController
 		}
 		FormLink startLink = uifactory.addFormLink("start_" + row.getKey(), "start", label, null, null, Link.LINK);
 		startLink.setUserObject(row);
+		startLink.setCustomEnabledLinkCSS("o_start");
+		startLink.setIconCSS("o_icon o_icon_start");
 		row.setStartLink(startLink);
-	}
+	}	
 	
 	@Override
 	public void forgeDetails(RepositoryEntryRow row) {
 		FormLink detailsLink = uifactory.addFormLink("details_" + row.getKey(), "details", "details", null, null, Link.LINK);
+		detailsLink.setCustomEnabledLinkCSS("o_details");
 		detailsLink.setUserObject(row);
 		row.setDetailsLink(detailsLink);
 	}

@@ -145,9 +145,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		mapperUrl = mapper.register(ureq.getUserSession(), new FlexiTableModelMapper(component));
 
 		String dispatchId = component.getDispatchID();
-		customButton = new FormLinkImpl(dispatchId + "_customButton", "rCustomButton", "search", Link.BUTTON);
+		customButton = new FormLinkImpl(dispatchId + "_customButton", "rCustomButton", "", Link.BUTTON + Link.NONTRANSLATED);
 		customButton.setTranslator(translator);
-		customButton.setCustomEnabledLinkCSS("b_with_small_icon_only b_table_prefs");
+		customButton.setIconCSS("o_icon o_icon_customize");
 		components.put("rCustomize", customButton);
 
 		this.pageSize = pageSize;
@@ -329,7 +329,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			components.put("rSearch", searchFieldEl);
 			searchButton = new FormLinkImpl(dispatchId + "_searchButton", "rSearchButton", "search", Link.BUTTON);
 			searchButton.setTranslator(translator);
-			searchButton.setCustomEnabledLinkCSS("b_with_small_icon_right b_with_small_icon_only o_fulltext_search_button");
+			searchButton.setIconCSS("o_icon o_icon_search");
 			components.put("rSearchB", searchButton);
 			rootFormAvailable(searchFieldEl);
 			rootFormAvailable(searchButton);
@@ -354,7 +354,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			String dispatchId = component.getDispatchID();
 			extendedSearchButton = new FormLinkImpl(dispatchId + "_extSearchButton", "rExtSearchButton", "extsearch", Link.BUTTON);
 			extendedSearchButton.setTranslator(translator);
-			//extendedSearchButton.setCustomEnabledLinkCSS("b_with_small_icon_right b_with_small_icon_only o_fulltext_search_button");
+			extendedSearchButton.setIconCSS("o_icon o_icon_search");
 			components.put("rExtSearchB", extendedSearchButton);
 			rootFormAvailable(extendedSearchButton);
 		}

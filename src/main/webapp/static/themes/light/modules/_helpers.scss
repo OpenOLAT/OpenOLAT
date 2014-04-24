@@ -42,7 +42,11 @@ fieldset div.o_chelp_wrapper a.o_chelp {
 	filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
 }
 
-
+.o_segments {
+}
+.o_segments_content {
+	margin-top: $line-height-computed;
+}
 
 /*
 #o_chelp {

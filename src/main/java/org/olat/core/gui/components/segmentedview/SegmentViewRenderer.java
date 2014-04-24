@@ -35,7 +35,7 @@ public class SegmentViewRenderer extends DefaultComponentRenderer {
 		SegmentViewComponent component = (SegmentViewComponent)source;
 		if(component.isEmpty()) return;
 
-		sb.append("<ul class='nav nav-tabs'>");
+		sb.append("<ul class='o_segments nav nav-tabs'>");
 		for(Component segment:component.getSegments()) {
 			sb.append("<li");
 			if(component.isSelected(segment)) {

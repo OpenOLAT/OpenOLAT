@@ -1,0 +1,150 @@
+/* custom layout */
+
+$o-coursesite-rowelem-width-md : 225px;
+$o-coursesite-rowelem-height-md : 150px;
+$o-coursesite-rowelem-width-sm : 150px;
+$o-coursesite-rowelem-height-sm : 100px;
+$o-coursesite-rowelem-width-xs : 75px;
+$o-coursesite-rowelem-height-xs : 50px;
+$o-coursesite-rowelem-border : #eee;
+
+.o_coursetable {	
+	.row {
+		position: relative;
+		border: 1px solid $o-coursesite-rowelem-border;
+		margin-bottom: floor($line-height-computed / 2);
+		.o_visual {
+			position: absolute;
+			top: 0; left: 0;
+			height: $o-coursesite-rowelem-height-md;	
+			width: $o-coursesite-rowelem-width-md;
+			@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+				height: $o-coursesite-rowelem-height-sm;	
+				width: $o-coursesite-rowelem-width-sm;		
+			}
+			@media (max-width: $screen-xs-max) { 
+				height: $o-coursesite-rowelem-height-xs;	
+				width: $o-coursesite-rowelem-width-xs;		
+			}	
+			
+			@include text-overflow();
+			
+			vertical-align: middle;
+			img {
+				width: 100%;
+				height: auto;
+			}
+			.o_visual_not_available {
+				width: 100%;
+				height: 100%;
+				background-image:url('#{$o-images-path}no_preview.png');
+				background-repeat:no-repeat;
+				background-position:50% 50%;		
+				background-size: contain;
+			}
+		}
+
+		.o_access {
+			position: absolute;
+			top: 0; right: 0;
+			height: $o-coursesite-rowelem-height-md;	
+			width: $o-coursesite-rowelem-width-md;
+			
+			.o_start, .o_details {
+				position: absolute;
+				display: block;
+				bottom: 0;
+				width: floor($o-coursesite-rowelem-width-md / 2);
+				height: $o-coursesite-rowelem-height-xs;
+				line-height: $o-coursesite-rowelem-height-xs;
+				text-align: center;
+				@extend .o_undecorated;
+			}
+			.o_start {
+				right: 0;
+				@extend .bg-primary;
+				@extend .o_icon;
+				@extend .o_icon_right_start;
+			}
+			.o_details {
+				right: floor($o-coursesite-rowelem-width-md / 2);
+				@extend .bg-success;
+			}
+			
+			@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+				height: $o-coursesite-rowelem-height-sm;	
+				width: $o-coursesite-rowelem-width-sm;		
+				.o_start, .o_details {
+					width: floor($o-coursesite-rowelem-width-sm / 2);
+				}
+				.o_details {
+					right: floor($o-coursesite-rowelem-width-sm / 2);
+				}
+			}
+			@media (max-width: $screen-xs-max) { 
+				height: $o-coursesite-rowelem-height-xs;	
+				width: $o-coursesite-rowelem-width-xs;		
+				.o_start {
+					display: none;
+				}
+				.o_details {
+					right: $o-coursesite-rowelem-width-xs;
+					right: 0;
+				}
+			}	
+			
+		}
+		.o_meta {
+			height: $o-coursesite-rowelem-height-md;	
+			margin: 0 $o-coursesite-rowelem-width-md 0 $o-coursesite-rowelem-width-md;
+			position: relative;
+			padding: 1em 0.5em 0.5em 1em;
+
+			.o_title {
+				margin: 0; /* box moves down otherwhise, replaced with padding */
+				@extend .text-primary;
+				line-height: 1em;
+				@include text-overflow();
+			}
+			.o_author{
+				margin-top: 0.5em;
+				line-height: 1em;
+				@include text-overflow();
+				@extend .text-success;
+			}
+			.o_lifecycle {
+				position: absolute; 
+				top: 5px; right: 40px;
+				font-size: 90%;
+				line-height: 1em;
+				@include text-overflow();
+				@extend .text-muted;
+			}
+			.o_desc {
+				margin-top: 0.5em;
+				@include text-overflow();
+			}
+			.o_bookmark {
+				position: absolute;
+				top: -1px;
+				right: 15px;
+			}
+			@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+				height: $o-coursesite-rowelem-height-sm;	
+				margin: 0 $o-coursesite-rowelem-width-sm;
+			}
+			@media (max-width: $screen-xs-max) { 
+				height: $o-coursesite-rowelem-height-xs;	
+				margin: 0 $o-coursesite-rowelem-width-xs;
+				padding: 0 0 0 1em;
+				.o_title {
+					line-height: $o-coursesite-rowelem-height-xs;
+				}
+				.o_author, .o_desc, .o_bookmark, .o_lifecycle {
+					display: none;
+				}	
+			}
+		}
+	}
+
+}

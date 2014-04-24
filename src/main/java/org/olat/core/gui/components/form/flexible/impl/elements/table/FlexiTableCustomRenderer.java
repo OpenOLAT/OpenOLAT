@@ -47,12 +47,17 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 
 		String id = ftC.getFormDispatchId();
-		sb.append("<div class=\"b_table_wrapper b_floatscrollbox\">");
+		sb.append("<div class=\"o_table_wrapper o_table_flexi")
+		  .append(" o_table_edit", ftE.isEditMode());
+		String css = ftE.getElementCssClass();
+		if (css != null) {
+			sb.append(" ").append(css);
+		}
+		sb.append("\">");
 		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
 
 		//render body
-
-		sb.append("<div class='b_table_row'>");
+		sb.append("<div class='o_table_body container-fluid'>");
 		renderBody(renderer, sb, ftC, ubu, translator, renderResult);
 		sb.append("</div>");
 
@@ -81,7 +86,7 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 	@Override
 	protected void renderRow(Renderer renderer, StringOutput sb, FlexiTableComponent ftC, String rowIdPrefix,
 			int row, int rows, URLBuilder ubu, Translator translator, RenderResult renderResult) {
-		sb.append("<div class='b_clearfix b_table_row'>");
+		sb.append("<div class='row'>");
 
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		VelocityContainer container = ftE.getRowRenderer();
