@@ -96,7 +96,7 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 
 		mainVC = createVelocityContainer("main_members");
 
-		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, null, mainVC, "members-" + repoEntry.getKey());
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, mainVC, "members-" + repoEntry.getKey());
 		listenTo(columnLayoutCtr);
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
 		

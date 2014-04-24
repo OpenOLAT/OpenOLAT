@@ -29,12 +29,11 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -44,7 +43,7 @@ import org.olat.core.util.tree.INodeFilter;
  * @author patrickb
  *
  */
-class SelectionTreeComponentRenderer implements ComponentRenderer {
+class SelectionTreeComponentRenderer extends DefaultComponentRenderer {
 
 	private static String imgDots = "<div class=\"b_selectiontree_line\"></div>";
 	private static String imgDots_spacer = "<div class=\"b_selectiontree_space\"></div>";
@@ -54,6 +53,7 @@ class SelectionTreeComponentRenderer implements ComponentRenderer {
 	/* (non-Javadoc)
 	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator, org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
+	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source,
 			URLBuilder ubu, Translator translator, RenderResult renderResult,
 			String[] args) {
@@ -152,30 +152,6 @@ class SelectionTreeComponentRenderer implements ComponentRenderer {
 	} // buildTargets
 
 	/**
-	 * @param rootNode
-	 * @param renderer
-	 * @param sb
-	 * @param args
-	 */
-//	private void renderNode(TreeNode node, Renderer renderer,
-//			StringOutput sb, String[] args) {
-//		
-//		sb.append("\n<div class=\"b_selectiontree_item\">");
-//		sb.append("<div class=\"b_selectiontree_icons\">");
-//		//render the checkbox component
-//		
-//		// StaticTextElement or CheckboxElementComponent
-//		renderer.render(sb, checkboxes.get(node.getIdent()), args);
-//		
-//		int childCount = node.getChildCount();
-//		for(int i = 0; i < childCount; i++){
-//			renderNode((TreeNode)node.getChildAt(i), renderer, sb, args);
-//		}
-//		sb.append("</div>&nbsp;</div>");
-//		
-//	}
-
-	/**
 	 * Renders the node icons if available
 	 * @param sb
 	 * @param node
@@ -188,41 +164,21 @@ class SelectionTreeComponentRenderer implements ComponentRenderer {
 			
 			String deco1 = node.getIconDecorator1CssClass();
 			if (deco1 != null)
-				sb.append("<span class=\"").append(deco1).append("\"></span>");
+				sb.append("<i class=\"").append(deco1).append("\"></i>");
 			
 			String deco2 = node.getIconDecorator2CssClass();
 			if (deco2 != null)
-				sb.append("<span class=\"").append(deco2).append("\"></span>");
+				sb.append("<i class=\"").append(deco2).append("\"></i>");
 			
 			String deco3 = node.getIconDecorator3CssClass();
 			if (deco3 != null)
-				sb.append("<span class=\"").append(deco3).append("\"></span>");
+				sb.append("<i class=\"").append(deco3).append("\"></i>");
 			
 			String deco4 = node.getIconDecorator4CssClass();
 			if (deco4 != null)
-				sb.append("<span class=\"").append(deco4).append("\"></span>");
+				sb.append("<i class=\"").append(deco4).append("\"></i>");
 
 			sb.append("</div>");			
 		}
 	}
-
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.RenderingState)
-	 */
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer,
-			StringOutput sb, Component source, RenderingState rstate) {
-		// TODO Auto-generated method stub
-
-	}
-
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator, org.olat.core.gui.render.RenderingState)
-	 */
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb,
-			Component source, URLBuilder ubu, Translator translator,
-			RenderingState rstate) {
-		// TODO Auto-generated method stub
-
-	}
-
 }

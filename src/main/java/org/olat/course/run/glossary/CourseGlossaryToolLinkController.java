@@ -167,8 +167,7 @@ public class CourseGlossaryToolLinkController extends BasicController {
 							return MessageUIFactory.createInfoMessage(lureq, lwControl, null, text);
 						} else {
 							// use a one-column main layout
-							LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, null, null, glossaryController
-									.getInitialComponent(), null);
+							LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, glossaryController);
 						// dispose glossary on layout dispose
 							layoutCtr.addDisposableChildController(glossaryController); 
 							return layoutCtr;
@@ -197,8 +196,7 @@ public class CourseGlossaryToolLinkController extends BasicController {
 			ControllerCreator ctrlCreator = new ControllerCreator() {
 				public Controller createController(UserRequest lureq, WindowControl lwControl) {
 					HomePageDisplayController homePageCtrl = new HomePageDisplayController(lureq, lwControl, identity, homePageConfig);
-					LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, null, null, homePageCtrl
-							.getInitialComponent(), null);
+					LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, homePageCtrl);
 					// dispose glossary on layout dispose
 					layoutCtr.addDisposableChildController(homePageCtrl); 
 					return layoutCtr;

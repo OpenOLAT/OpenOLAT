@@ -25,13 +25,16 @@ import org.olat.core.id.OLATResourceable;
 
 /**
  * Description:<br>
- * TODO: srosse Class Description for Mark
+ * Interface for bookmark
  * 
  * <P>
  * Initial Date:  9 mar. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
 public interface Mark {
+	
+	public static final String MARK_CSS_LARGE = "o_icon o_icon_bookmark o_icon-lg";
+	public static final String MARK_ADD_CSS_LARGE = "o_icon o_icon_bookmark_add o_icon-lg";
 	
 	public Long getKey();
 	

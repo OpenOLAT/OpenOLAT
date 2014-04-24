@@ -51,7 +51,7 @@ public class CustomDBMainController extends MainLayoutBasicController {
 		listenTo(dbController);
 		
 		LayoutMain3ColsController columnLayoutCtr
-			= new LayoutMain3ColsController(ureq, getWindowControl(), null, null, dbController.getInitialComponent(), "cdb-" + course.getResourceableId());
+			= new LayoutMain3ColsController(ureq, getWindowControl(), null, dbController.getInitialComponent(), "cdb-" + course.getResourceableId());
 		listenTo(columnLayoutCtr);
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
 	}

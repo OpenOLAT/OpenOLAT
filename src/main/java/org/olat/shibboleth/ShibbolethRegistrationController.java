@@ -199,7 +199,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 		mainContainer.put("dclComp", dclController.getInitialComponent());
 		
 		// load view in layout
-		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, mainContainer, null);
+		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, mainContainer, null);
 		setInitialComponent(layoutCtr.getInitialComponent());
 	}
 	

@@ -22,6 +22,7 @@ package org.olat.group.ui.main;
 import java.util.Locale;
 import java.util.UUID;
 
+import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.table.CustomCellRenderer;
@@ -60,9 +61,9 @@ public class BGMarkCellRenderer implements CustomCellRenderer {
 			Link link = LinkFactory.createLink("marked_" + UUID.randomUUID().toString(), container, listeningController);
 			link.setCustomDisplayText("&#160;&#160;&#160;");
 			if(item.isMarked()) {
-				link.setCustomEnabledLinkCSS("b_mark_set");
+				link.setIconCSS(Mark.MARK_CSS_LARGE);
 			} else {
-				link.setCustomEnabledLinkCSS("b_mark_not_set");
+				link.setIconCSS(Mark.MARK_ADD_CSS_LARGE);
 			}
 			link.setUserObject(item);
 			URLBuilder ubu = renderer.getUrlBuilder().createCopyFor(link);

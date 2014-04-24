@@ -168,7 +168,7 @@ public class SharedFolderHandler implements RepositoryHandler {
 			sfdCtr = new SharedFolderDisplayController(ureq, wControl, sfContainer, res);
 		}	
 		// use on column layout
-		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, sfdCtr.getInitialComponent(), null);
+		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, sfdCtr);
 		layoutCtr.addDisposableChildController(sfdCtr); // dispose content on layout dispose
 		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, layoutCtr);
 		return wrapper;
@@ -190,7 +190,7 @@ public class SharedFolderHandler implements RepositoryHandler {
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		Controller sharedFolderCtr = new SharedFolderEditorController(re, ureq, wControl);
 		// use on column layout
-		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, sharedFolderCtr.getInitialComponent(), null);
+		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, sharedFolderCtr);
 		layoutCtr.addDisposableChildController(sharedFolderCtr); // dispose content on layout dispose
 		return layoutCtr;
 	}

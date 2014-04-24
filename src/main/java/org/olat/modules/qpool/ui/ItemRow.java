@@ -22,6 +22,7 @@ package org.olat.modules.qpool.ui;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
@@ -190,7 +191,7 @@ public class ItemRow implements QuestionItemView {
 	
 	public void setMark(boolean mark) {
 		if(markLink != null) {
-			markLink.setCustomEnabledLinkCSS(mark ? "b_mark_set" : "b_mark_not_set");
+			markLink.setIconCSS(mark ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 		}
 	}
 

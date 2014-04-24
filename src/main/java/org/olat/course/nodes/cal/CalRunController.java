@@ -121,8 +121,7 @@ public class CalRunController extends BasicController {
 					public Controller createController(UserRequest lureq, WindowControl lwControl) {
 						// wrapp in column layout, popup window needs a layout controller
 						Controller ctr = contentControllerCreator.createController(lureq, lwControl);
-						LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, null, null, ctr.getInitialComponent(),
-								null);
+						LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, ctr);
 						layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), courseEnv));
 						layoutCtr.addDisposableChildController(ctr);
 						return layoutCtr;

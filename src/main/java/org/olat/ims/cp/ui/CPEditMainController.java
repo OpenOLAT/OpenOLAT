@@ -115,12 +115,12 @@ public class CPEditMainController extends MainLayoutBasicController {
 		// import.
 		treeCtr.setContentController(contentCtr);
 
-		columnLayoutCtr = new LayoutMain3ColsController(ureq, wControl, treeCtr.getInitialComponent(), null, contentCtr.getInitialComponent(),
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, wControl, treeCtr.getInitialComponent(), contentCtr.getInitialComponent(),
 				"cptestmain");
 		columnLayoutCtr.addCssClassToMain("b_menu_toolbar");
 		listenTo(columnLayoutCtr); // auto dispose
 
-		this.putInitialPanel(columnLayoutCtr.getInitialComponent());
+		putInitialPanel(columnLayoutCtr.getInitialComponent());
 
 		if (!cp.isOLATContentPackage()) {
 			showWarning("maincontroller.cp.created.with.third.party.editor");
@@ -137,8 +137,8 @@ public class CPEditMainController extends MainLayoutBasicController {
 	 */
 	private void initErrorView(UserRequest ureq, WindowControl wControl, String errorString) {
 		Panel p = new Panel("errorPanel");
-		columnLayoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, p, "cptestmain");
-		this.putInitialPanel(columnLayoutCtr.getInitialComponent());
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, wControl, null, p, "cptestmain");
+		putInitialPanel(columnLayoutCtr.getInitialComponent());
 	}
 
 	@Override

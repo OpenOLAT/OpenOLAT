@@ -177,7 +177,7 @@ public class QTI12StatisticsToolController extends BasicController implements St
 		courseTree.setTreeModel(treeModel);
 		courseTree.addListener(this);
 		
-		layoutCtr = new LayoutMain3ColsController(ureq, wControl, courseTree, null, new Panel("empty"), null);
+		layoutCtr = new LayoutMain3ColsController(ureq, wControl, courseTree, new Panel("empty"), null);
 		stackPanel.pushController("Stats", layoutCtr);
 	}
 }

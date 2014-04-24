@@ -52,7 +52,7 @@ public class GuiDemoPushPopController extends BasicController {
 		popButton = LinkFactory.createButton("guidemo.window.control.pop", vcMain, this);
 		
 		vcMain.contextPut("stack", getStackHTMLRepresentation());		
-		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, vcMain, null);
+		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, vcMain, null);
 		listenTo(layoutCtr);
 		
 		this.putInitialPanel(layoutCtr.getInitialComponent());
@@ -61,7 +61,7 @@ public class GuiDemoPushPopController extends BasicController {
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == pushButton){			
 			VelocityContainer container = this.createVelocityContainer("guidemo-pushpop");
-			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, container, null);
+			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, container, null);
 			listenTo(layoutCtr);
 			windowStack.push(layoutCtr.getInitialComponent());
 			

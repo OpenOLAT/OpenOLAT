@@ -195,7 +195,7 @@ public class IQManager implements UserDataDeletable {
 				Controller contentCtr = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), translate("status.currently.locked.title"), translate("status.currently.locked"));
 				listenTo(contentCtr); // auto dispose later
 				Component resComp = contentCtr.getInitialComponent();
-				LayoutMain3ColsController columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), empty, empty, resComp, /*do not save no prefs*/null);
+				LayoutMain3ColsController columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), empty, resComp, /*do not save no prefs*/null);
 				listenTo(columnLayoutCtr); // auto dispose later
 				putInitialPanel(columnLayoutCtr.getInitialComponent());
 			}

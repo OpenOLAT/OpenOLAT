@@ -109,7 +109,7 @@ public class PwChangeController extends BasicController {
 			// no temporarykey is given, we assume step 1
 			//fxdiff FXOLAT-113: business path in DMZ
 			createEmailForm(ureq, wControl, initialEmail);
-			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, myContent, null);
+			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, myContent, null);
 			putInitialPanel(layoutCtr.getInitialComponent());
 		} else {
 			// we check if given key is a valid temporary key
@@ -121,7 +121,7 @@ public class PwChangeController extends BasicController {
 				//fxdiff FXOLAT-113: business path in DMZ
 				createEmailForm(ureq, wControl, initialEmail);
 				// load view in layout
-				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, myContent, null);
+				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, myContent, null);
 				putInitialPanel(layoutCtr.getInitialComponent());
 			} else {
 				wic.setCurStep(3);
@@ -131,7 +131,7 @@ public class PwChangeController extends BasicController {
 				myContent.contextPut("text", translate("step3.pw.text"));
 				pwarea.setContent(pwf.getInitialComponent());				
 				// load view in layout
-				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, myContent, null);
+				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, myContent, null);
 				putInitialPanel(layoutCtr.getInitialComponent());
 			}
 		}

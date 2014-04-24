@@ -806,7 +806,7 @@ public class CourseFactory extends BasicManager {
 			Translator translator = Util.createPackageTranslator(CourseFactory.class, ureq.getLocale());
 			wControl.setError(translator.translate("error.helpcourse.not.configured"));
 			// create empty main controller
-			LayoutMain3ColsController emptyCtr = new LayoutMain3ColsController(ureq, wControl, null, null, null, null);
+			LayoutMain3ColsController emptyCtr = new LayoutMain3ColsController(ureq, wControl, null, null, null);
 			return emptyCtr;
 		} else {
 			// Increment launch counter

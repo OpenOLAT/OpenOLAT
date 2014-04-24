@@ -61,7 +61,7 @@ public class ForumUIFactory {
 			public Controller createController(UserRequest lureq, WindowControl lwControl) {
 				Controller forumWrapperController = getTitledForumController(lureq, lwControl, forum,  forumCallback, titleInfo);
 				// use on column layout
-				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, null, null, forumWrapperController.getInitialComponent(), null);
+				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, forumWrapperController);
 				layoutCtr.addDisposableChildController(forumWrapperController); // dispose content on layout dispose
 				return layoutCtr;
 			}					

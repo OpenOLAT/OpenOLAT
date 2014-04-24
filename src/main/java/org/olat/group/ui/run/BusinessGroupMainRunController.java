@@ -239,7 +239,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		if(businessGroup == null) {
 			VelocityContainer vc = createVelocityContainer("deleted");
 			vc.contextPut("name", bGroup.getName());
-			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, vc, "grouprun");
+			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, vc, "grouprun");
 			listenTo(columnLayoutCtr); // cleanup on dispose
 			putInitialPanel(columnLayoutCtr.getInitialComponent());
 			chatAvailable = false;
@@ -279,7 +279,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		bgTree.setTreeModel(trMdl);
 		bgTree.addListener(this);
 		//
-		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), bgTree, null, mainPanel, "grouprun");
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), bgTree, mainPanel, "grouprun");
 		listenTo(columnLayoutCtr); // cleanup on dispose
 		
 		//
@@ -292,7 +292,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		//must be created beforehand
 		Panel empty = new Panel("empty");//empty panel set as "menu" and "tool"
 		Controller disposedBusinessGroup = new DisposedBusinessGroup(ureq, getWindowControl());
-		LayoutMain3ColsController disposedController = new LayoutMain3ColsController(ureq, getWindowControl(), empty, empty, disposedBusinessGroup.getInitialComponent(), "disposed grouprun");
+		LayoutMain3ColsController disposedController = new LayoutMain3ColsController(ureq, getWindowControl(), empty, disposedBusinessGroup.getInitialComponent(), "disposed grouprun");
 		disposedController.addDisposableChildController(disposedBusinessGroup);
 		setDisposedMsgController(disposedController);
 
@@ -340,7 +340,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private Component getOnWaitingListMessage(UserRequest ureq, BusinessGroup group) {
 		VelocityContainer vc = createVelocityContainer("waiting");
 		vc.contextPut("name", group.getName());
-		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, vc, "grouprun");
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, vc, "grouprun");
 		listenTo(columnLayoutCtr); // cleanup on dispose
 		return columnLayoutCtr.getInitialComponent();
 	}

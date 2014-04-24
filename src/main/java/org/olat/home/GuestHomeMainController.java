@@ -98,7 +98,7 @@ public class GuestHomeMainController extends MainLayoutBasicController {
 		INode firstNode = tm.getRootNode().getChildAt(0);
 		olatMenuTree.setSelectedNodeId(firstNode.getIdent());
 
-		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), olatMenuTree, null, welcome, null);
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), olatMenuTree, welcome, null);
 		listenTo(columnLayoutCtr); // cleanup on dispose
 		// add background image to home site
 		columnLayoutCtr.addCssClassToMain("o_home");

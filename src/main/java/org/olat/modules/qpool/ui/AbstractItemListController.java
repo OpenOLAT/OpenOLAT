@@ -29,6 +29,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -218,9 +219,9 @@ public abstract class AbstractItemListController extends FormBasicController
 			} else if("mark".equals(link.getCmd())) {
 				ItemRow row = (ItemRow)link.getUserObject();
 				if(doMark(row)) {
-					link.setCustomEnabledLinkCSS("b_mark_set");
+					link.setIconCSS(Mark.MARK_CSS_LARGE);
 				} else {
-					link.setCustomEnabledLinkCSS("b_mark_not_set");
+					link.setIconCSS(Mark.MARK_ADD_CSS_LARGE);
 				}
 				link.getComponent().setDirty(true);
 			}
@@ -357,8 +358,8 @@ public abstract class AbstractItemListController extends FormBasicController
 	protected ItemRow forgeRow(QuestionItemView item) {
 		boolean marked = item.isMarked();
 		ItemRow row = new ItemRow(item);
-		FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "&nbsp;&nbsp;&nbsp;&nbsp;", null, null, Link.NONTRANSLATED);
-		markLink.setCustomEnabledLinkCSS(marked ? "b_mark_set" : "b_mark_not_set");
+		FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "&nbsp;", null, null, Link.NONTRANSLATED);
+		markLink.setIconCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 		markLink.setUserObject(row);
 		row.setMarkLink(markLink);
 		return row;

@@ -14,6 +14,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_calendar { @extend .o_icon-calendar;}
 .o_icon_check {@extend .o_icon-check; }
 .o_icon_close_tab {@extend .o_icon-times;}
+.o_icon_close_tree {@extend .o_icon-caret-down;}
 .o_icon_close {@extend .o_icon-times;}
 .o_icon_delete { @extend .o_icon-minus-circle; color: #A87E7E;}
 .o_icon_dev { @extend .o_icon-wrench;}
@@ -25,6 +26,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_login {@extend .o_icon-sign-in;}
 .o_icon_logout {@extend .o_icon-sign-out;}
 .o_icon_mandatory {@extend .o_icon-asterisk; color: #f0ad4e;}
+.o_icon_open_tree {@extend .o_icon-caret-right;}
 .o_icon_preview {@extend .o_icon-eye;}
 .o_icon_refresh { @extend .o_icon-refresh; } 
 .o_icon_search {@extend .o_icon-search;}

@@ -42,6 +42,7 @@ import org.olat.catalog.ui.CatalogEntryAddController;
 import org.olat.catalog.ui.RepoEntryCategoriesTableController;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
@@ -553,7 +554,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 						null, "o_sel_repo_download_backward", true);
 				//bookmark
 				boolean marked = markManager.isMarked(repositoryEntry, getIdentity(), null);
-				String css = marked ? "b_mark_set" : "b_mark_not_set";
+				String css = marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE;
 				detailsToolC.addLink(ACTION_BOOKMARK, translate("details.bookmark"), TOOL_BOOKMARK, css);
 			}
 			boolean canDownload = repositoryEntry.getCanDownload() && handler.supportsDownload(repositoryEntry);
@@ -1020,7 +1021,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 					String businessPath = "[RepositoryEntry:" + repositoryEntry.getKey() + "]";
 					markManager.setMark(repositoryEntry, getIdentity(), null, businessPath);
 				}
-				String css = marked ? "b_mark_not_set" : "b_mark_set";
+				String css = marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE;
 				detailsToolC.setCssClass(TOOL_BOOKMARK, css);
 			} else if (cmd.equals(ACTION_COPY)) { // copy
 				if (!isAuthor) throw new OLATSecurityException("Trying to copy, but user is not author: user = " + ureq.getIdentity());

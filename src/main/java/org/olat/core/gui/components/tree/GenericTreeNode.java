@@ -45,10 +45,7 @@ public class GenericTreeNode extends GenericNode implements TreeNode, Serializab
 	private TreeNode delegate; // if this node is clicked, delegate to that
 	private String cssClass;
 	private String iconCssClass;
-	private String iconDecorator1CssClass;
-	private String iconDecorator2CssClass;
-	private String iconDecorator3CssClass;
-	private String iconDecorator4CssClass;
+	private String iconDecoratorCssClass;
 	
 	/**
 	 * 
@@ -160,6 +157,7 @@ public class GenericTreeNode extends GenericNode implements TreeNode, Serializab
 	/**
 	 * @see org.olat.core.gui.components.tree.TreeNode#getCssClass()
 	 */
+	@Override
 	public String getCssClass() {
 		return cssClass;
 	}
@@ -174,60 +172,48 @@ public class GenericTreeNode extends GenericNode implements TreeNode, Serializab
 	/**
 	 * @see org.olat.core.gui.components.tree.TreeNode#getIconCssClass()
 	 */
+	@Override
 	public String getIconCssClass() {
 		return iconCssClass;
+	}
+	
+	public void setIconCssClass(String iconCssClass) {
+		this.iconCssClass = iconCssClass;
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.tree.TreeNode#getIconDecorator1CssClass()
 	 */
+	@Override
 	public String getIconDecorator1CssClass() {
-		return iconDecorator1CssClass;
+		return iconDecoratorCssClass;
+	}
+	
+	public void setIconDecorator1CssClass(String iconDecoratorCssClass) {
+		this.iconDecoratorCssClass = iconDecoratorCssClass;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.tree.TreeNode#getIconDecorator2CssClass()
-	 */
+	@Override
 	public String getIconDecorator2CssClass() {
-		return iconDecorator2CssClass;
+		return null;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.tree.TreeNode#getIconDecorator3CssClass()
-	 */
+	@Override
 	public String getIconDecorator3CssClass() {
-		return iconDecorator3CssClass;
+		return null;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.tree.TreeNode#getIconDecorator4CssClass()
-	 */
+	@Override
 	public String getIconDecorator4CssClass() {
-		return iconDecorator4CssClass;
+		return null;
 	}
 
-	public void setIconCssClass(String iconCssClass) {
-		this.iconCssClass = iconCssClass;
-	}
-
-	public void setIconDecorator1CssClass(String iconDecorator1CssClass) {
-		this.iconDecorator1CssClass = iconDecorator1CssClass;
-	}
-
-	public void setIconDecorator2CssClass(String iconDecorator2CssClass) {
-		this.iconDecorator2CssClass = iconDecorator2CssClass;
-	}
-
-	public void setIconDecorator3CssClass(String iconDecorator3CssClass) {
-		this.iconDecorator3CssClass = iconDecorator3CssClass;
+	@Override
+	public boolean isSelected() {
+		return selected;
 	}
 
 	public void setSelected(boolean selected) {
 		this.selected = selected;
 	}
-	
-	public boolean isSelected() {
-		return selected;
-	}
-	
 }

@@ -204,7 +204,7 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 					// in media or image mode, internal links make no sense here
 					myLinkChooserController = new LinkChooserController(lureq, lwControl, baseContainer, uploadRelPath, suffixes, fileName, null);						
 				}
-				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, null, null, myLinkChooserController.getInitialComponent(), null);
+				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, myLinkChooserController);
 				layoutCtr.addDisposableChildController(myLinkChooserController); // cleanup on layout controller dispose
 				return layoutCtr;
 			}

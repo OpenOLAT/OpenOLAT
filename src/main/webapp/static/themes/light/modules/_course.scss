@@ -1,0 +1,9 @@
+.o_sp_icon {@extend .o_icon; @extend .o_icon-file-text-o; }
+.o_st_icon {@extend .o_icon; @extend .o_icon-archive; }
+.o_tu_icon {@extend .o_icon; @extend .o_icon-file-o; }
+
+.o_midpub {@extend .o_icon; color: green; @extend .o_icon-check-circle; }
+.o_midwarn {@extend .o_icon; color: orange; @extend .o_icon-warning; }
+.o_midlock {@extend .o_icon; @extend .o_icon-lock;}
+.o_miderr {@extend .o_icon; color: red; @extend .o_icon-warning;}
+.o_middel {@extend .o_icon; @extend .o_icon-eraser;}

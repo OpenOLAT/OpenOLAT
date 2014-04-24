@@ -405,7 +405,7 @@ public class IQRunController extends BasicController implements GenericEventList
 				} else  if (displayController.isReady()) {
 					// in case displayController was unable to initialize, a message was set by displayController
 					// this is the case if no more attempts or security check was unsuccessfull
-					displayContainerController = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, displayController.getInitialComponent(), null);
+					displayContainerController = new LayoutMain3ColsController(ureq, getWindowControl(), displayController);
 					listenTo(displayContainerController); // autodispose
 
 					
@@ -415,7 +415,7 @@ public class IQRunController extends BasicController implements GenericEventList
 					RepositoryEntry courseRepositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 					Panel empty = new Panel("empty");//empty panel set as "menu" and "tool"
 					Controller courseCloser = CourseFactory.createDisposedCourseRestartController(ureq, getWindowControl(), courseRepositoryEntry);
-					Controller disposedRestartController = new LayoutMain3ColsController(ureq, getWindowControl(), empty, empty, courseCloser.getInitialComponent(), "disposed course whily in iqRun" + callingResId);
+					Controller disposedRestartController = new LayoutMain3ColsController(ureq, getWindowControl(), empty, courseCloser.getInitialComponent(), "disposed course whily in iqRun" + callingResId);
 					displayContainerController.setDisposedMessageController(disposedRestartController);
 					
 					final boolean fullWindow = modConfig.getBooleanSafe(IQEditController.CONFIG_FULLWINDOW, true);

@@ -201,7 +201,7 @@ public class WikiHandler implements RepositoryHandler {
 			controller = WikiManager.getInstance().createWikiMainControllerDisposeOnOres(ureq, wControl, res, callback, null);
 		}
 		// use on column layout
-		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, controller.getInitialComponent(), null);
+		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, controller);
 		layoutCtr.addDisposableChildController(controller); // dispose content on layout dispose
 		if(controller instanceof Activateable2) {
 			layoutCtr.addActivateableDelegate((Activateable2)controller);

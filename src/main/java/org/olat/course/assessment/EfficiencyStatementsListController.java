@@ -146,7 +146,7 @@ public class EfficiencyStatementsListController extends BasicController {
 					ControllerCreator ctrlCreator = new ControllerCreator() {
 						public Controller createController(UserRequest lureq, WindowControl lwControl) {
 							EfficiencyStatementController efficiencyCtrl = new EfficiencyStatementController(lwControl, lureq, efficiencyStatement.getCourseRepoKey());
-							return new LayoutMain3ColsController(lureq, getWindowControl(), null, null, efficiencyCtrl.getInitialComponent(), null);
+							return new LayoutMain3ColsController(lureq, getWindowControl(), efficiencyCtrl);
 						}					
 					};
 					//wrap the content controller into a full header layout

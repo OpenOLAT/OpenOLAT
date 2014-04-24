@@ -247,7 +247,7 @@ public class PortfolioHandler implements RepositoryHandler {
 		PortfolioStructureMap map = (PortfolioStructureMap)ePFMgr.loadPortfolioStructure(re.getOlatResource());
 		EPSecurityCallback secCallback = EPSecurityCallbackFactory.getSecurityCallback(ureq, map, ePFMgr);
 		Controller epCtr = EPUIFactory.createPortfolioStructureMapController(ureq, wControl, map, secCallback);
-		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, epCtr.getInitialComponent(), null);
+		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, epCtr);
 		if(epCtr instanceof Activateable2) {
 			layoutCtr.addActivateableDelegate((Activateable2)epCtr);
 		}

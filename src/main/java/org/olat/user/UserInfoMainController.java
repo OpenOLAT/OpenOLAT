@@ -132,7 +132,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 		menuTree.setSelectedNodeId(tm.getRootNode().getChildAt(0).getIdent());
 		menuTree.addListener(this);
 
-		LayoutMain3ColsController columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, null, main, "userinfomain");
+		LayoutMain3ColsController columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, main, "userinfomain");
 		listenTo(columnLayoutCtr);
 		//
 		putInitialPanel(columnLayoutCtr.getInitialComponent());

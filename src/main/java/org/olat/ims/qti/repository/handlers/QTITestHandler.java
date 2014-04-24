@@ -147,7 +147,7 @@ public class QTITestHandler extends QTIHandler {
 				.createIQDisplayController(res, resolver, AssessmentInstance.QMD_ENTRY_TYPE_SELF, secCallback, ureq, wControl);
 		}
 		
-		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, runController.getInitialComponent(), null);
+		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, runController);
 		layoutCtr.addDisposableChildController(runController); // dispose content on layout dispose
 		return layoutCtr;
 	}

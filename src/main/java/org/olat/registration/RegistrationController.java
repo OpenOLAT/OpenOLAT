@@ -186,7 +186,7 @@ public class RegistrationController extends BasicController implements Activatea
 				}
 			}
 			// load view in layout
-			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, myContent, null);
+			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, myContent, null);
 			listenTo(layoutCtr);
 			putInitialPanel(layoutCtr.getInitialComponent());
 		}		

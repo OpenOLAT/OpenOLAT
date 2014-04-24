@@ -311,7 +311,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			notEditableButton = LinkFactory.createButton("ok", notEditable, this);
 			Panel panel = new Panel("notEditable");
 			panel.setContent(notEditable);
-			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, panel, null);
+			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, panel, null);
 			putInitialPanel(columnLayoutCtr.getInitialComponent());
 			return;
 		}

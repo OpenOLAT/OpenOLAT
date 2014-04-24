@@ -293,6 +293,18 @@ function o2cl() {
 		return doreq;
 	}
 }
+//for tree and Firefox
+function o2cl_secure() {
+	try {
+		if(o2cl()) {
+			return true;
+		} else {
+			return false;
+		}
+	} catch(e){
+		return false
+	}
+}
 
 function o3cl(formId) {
 	if (o_info.linkbusy) {
@@ -1151,11 +1163,11 @@ function b_table_toggleCheck(ref, checked) {
  * For menu tree
  */
 function onTreeStartDrag(event, ui) {
-	jQuery(event.target).addClass('b_dd_proxy');
+	jQuery(event.target).addClass('o_dnd_proxy');
 }
 
 function onTreeStopDrag(event, ui) {
-	jQuery(event.target).removeClass('b_dd_proxy');
+	jQuery(event.target).removeClass('o_dnd_proxy');
 }
 
 function onTreeDrop(event, ui) {

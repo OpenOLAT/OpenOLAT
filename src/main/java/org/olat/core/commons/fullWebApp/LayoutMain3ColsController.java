@@ -110,6 +110,23 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	 * @param layoutConfigKey identificator for this layout to persist the users
 	 *          column width settings
 	 */
+	public LayoutMain3ColsController(UserRequest ureq, WindowControl wControl, Component col1, Component col3,
+			String layoutConfigKey) {
+		this(ureq,wControl, col1, null, col3, layoutConfigKey, null);
+	}
+	
+	/**
+	 * Constructor for creating a 3 col based menu on the main area. This
+	 * constructor uses the default column width configuration
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param col1 usually the left column
+	 * @param col2 usually the right column
+	 * @param col3 usually the content column
+	 * @param layoutConfigKey identificator for this layout to persist the users
+	 *          column width settings
+	 */
 	public LayoutMain3ColsController(UserRequest ureq, WindowControl wControl, Component col1, Component col2, Component col3,
 			String layoutConfigKey) {
 		this(ureq,wControl, col1, col2, col3, layoutConfigKey, null);
@@ -153,6 +170,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		}
 		layoutMainVC.put("col2", panel2);
 		setCol2(col2);
+
 
 		panel3 = new Panel("panel3");
 		layoutMainVC.put("col3", panel3);

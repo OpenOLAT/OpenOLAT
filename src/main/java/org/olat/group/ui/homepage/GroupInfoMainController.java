@@ -91,7 +91,7 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 		groupInfoDisplayController = new GroupInfoDisplayController(ureq, bwControl, businessGroup);
 		listenTo(groupInfoDisplayController);
 		
-		layoutController = new LayoutMain3ColsController(ureq, wControl, menuTree, null, groupInfoDisplayController.getInitialComponent(), "group_card");
+		layoutController = new LayoutMain3ColsController(ureq, wControl, menuTree, groupInfoDisplayController.getInitialComponent(), "group_card");
 		layoutController.addCssClassToMain("o_groups");
 		listenTo(layoutController);
 		

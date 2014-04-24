@@ -175,9 +175,8 @@ public class PodcastHandler implements RepositoryHandler {
 		boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ureq.getIdentity(), re);	
 		FeedSecurityCallback callback = new FeedResourceSecurityCallback(isAdmin, isOwner);
 		FeedMainController podcastCtr = PodcastUIFactory.getInstance(ureq.getLocale()).createMainController(re.getOlatResource(), ureq, wControl, callback);
-		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, podcastCtr.getInitialComponent(), null);
+		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, podcastCtr);
 		layoutCtr.addDisposableChildController(podcastCtr);
-		layoutCtr.addActivateableDelegate(podcastCtr);
 		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, layoutCtr);
 		return wrapper;
 	}

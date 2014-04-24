@@ -56,7 +56,6 @@ public class EPMapOnInvitationExtension {
 
 		@Override
 		public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-			//fxdiff FXOLAT-151: better check invitation
 			if(!ureq.getUserSession().getRoles().isInvitee()) {
 				return null;
 			}
@@ -65,7 +64,7 @@ public class EPMapOnInvitationExtension {
 			EPSecurityCallback secCallback = new EPSecurityCallbackImpl(false, true);
 			Controller epCtr = EPUIFactory.createMapViewController(ureq, wControl, map, secCallback);
 			
-			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, epCtr.getInitialComponent(), null);
+			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, epCtr);
 			layoutCtr.addDisposableChildController(epCtr);
 			return layoutCtr;
 		}
@@ -83,7 +82,6 @@ public class EPMapOnInvitationExtension {
 
 		@Override
 		public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-			//fxdiff FXOLAT-151: better check invitation
 			if(!ureq.getUserSession().getRoles().isInvitee()) {
 				return false;
 			}

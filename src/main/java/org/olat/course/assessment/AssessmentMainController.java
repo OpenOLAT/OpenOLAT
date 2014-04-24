@@ -314,7 +314,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 
 		// Start on index page
 		main.setContent(index);
-		LayoutMain3ColsController columLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, null, main, "course" + course.getResourceableId());
+		LayoutMain3ColsController columLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, main, "course" + course.getResourceableId());
 		listenTo(columLayoutCtr); // cleanup on dispose
 		putInitialPanel(columLayoutCtr.getInitialComponent());
 		

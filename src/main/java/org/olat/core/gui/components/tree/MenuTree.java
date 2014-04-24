@@ -108,7 +108,6 @@ public class MenuTree extends AbstractComponent {
 	private boolean expandSelectedNode = true;
 	private boolean rootVisible = true;
 	private boolean unselectNodes;
-	private String dndFeedbackUri;
 	private String dndAcceptJSMethod = "treeAcceptDrop_notWithChildren";
 
 	private boolean dirtyForUser = false;
@@ -343,10 +342,6 @@ public class MenuTree extends AbstractComponent {
 			openNodeIds = new HashSet<String>(nodeIds);
 		}
 		setDirty(true);
-	}
-	
-	String getDndFeedbackUri() {
-		return dndFeedbackUri;
 	}
 
 	/**

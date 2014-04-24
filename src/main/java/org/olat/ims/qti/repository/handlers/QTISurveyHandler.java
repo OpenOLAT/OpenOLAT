@@ -147,7 +147,7 @@ public class QTISurveyHandler extends QTIHandler {
 		}
 		
 		// use on column layout
-		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, runController.getInitialComponent(), null);
+		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, runController);
 		layoutCtr.addDisposableChildController(runController); // dispose content on layout dispose
 		return layoutCtr;
 	}

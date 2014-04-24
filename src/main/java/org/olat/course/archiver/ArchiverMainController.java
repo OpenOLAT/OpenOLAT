@@ -118,7 +118,7 @@ public class ArchiverMainController extends MainLayoutBasicController {
 		menuTree.setSelectedNodeId(tm.getRootNode().getIdent());
 		menuTree.addListener(this);
 				
-		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, null, main, "course" + ores.getResourceableId());
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, main, "course" + ores.getResourceableId());
 		listenTo(columnLayoutCtr); // cleanup on dispose
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
 	}

@@ -107,14 +107,7 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 	public void setAltText(String altText) {
 		throw new UnsupportedOperationException("alttext is given by associated coursenode's longtitle");
 	}
-
-	/**
-	 * @see org.olat.core.gui.components.tree.GenericTreeNode#setImageURI(java.lang.String)
-	 */
-	public void setImageURI(String imageURI) {
-		throw new UnsupportedOperationException("imageuri is calculated by associated coursenode's type");
-	}
-
+	
 	/**
 	 * @see org.olat.core.gui.components.tree.TreeNode#getCssClass()
 	 */
@@ -126,25 +119,14 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 	/**
 	 * @see org.olat.core.gui.components.tree.TreeNode#getIconCssClass()
 	 */
+	@Override
 	public String getIconCssClass() {
 		CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(cn.getType());
 		return cnConfig.getIconCSSClass();
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.tree.TreeNode#getIconDecorator1CssClass()
-	 */
-	public String getIconDecorator1CssClass() {
-		// no decoration top-left
-		return null;
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.tree.TreeNode#getIconDecorator2CssClass()
-	 */
+	@Override
 	public String getIconDecorator2CssClass() {
-		//top-right
-		
 		StatusDescription sd = cn.isConfigValid();
 		//this one is deleted
 		if (deleted) return "o_middel";
@@ -152,13 +134,10 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 		if (sd.isError()) return "o_miderr";
 		//ready for publish
 		if (!sd.isError() && dirty) return "o_midpub";
-		//instead of >>if(hasPublishableChanges()) return "o_midpub";<< because
 		return null;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.tree.TreeNode#getIconDecorator3CssClass()
-	 */
+	@Override
 	public String getIconDecorator3CssClass() {
 		//do not show errors if marked for deletion
 		if(deleted) return null;
@@ -169,9 +148,7 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.tree.TreeNode#getIconDecorator4CssClass()
-	 */
+	@Override
 	public String getIconDecorator4CssClass() {
 		//do not show errors if marked for deletion
 		if(deleted) return null;
@@ -313,5 +290,4 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 			}
 		}
 	}
-
 }

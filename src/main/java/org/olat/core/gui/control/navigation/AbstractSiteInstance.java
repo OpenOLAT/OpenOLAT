@@ -75,11 +75,11 @@ public abstract class AbstractSiteInstance implements SiteInstance {
 			if(ac instanceof MainLayoutController) {
 				c = (MainLayoutController)ac;
 			} else {
-				c = new LayoutMain3ColsController(ureq, wControl, null, null, ac.getInitialComponent(), null);
+				c = new LayoutMain3ColsController(ureq, wControl, ac);
 			}
 		} else {
 			Controller ctrl = new ForbiddenCourseSiteController(ureq, wControl);			
-			c = new LayoutMain3ColsController(ureq, wControl, null, null, ctrl.getInitialComponent(), null);
+			c = new LayoutMain3ColsController(ureq, wControl, ctrl);
 		}
 		return c;
 	}

@@ -166,7 +166,7 @@ public class GlossaryHandler implements RepositoryHandler {
 		}
 		GlossaryMainController gctr = new GlossaryMainController(wControl, ureq, glossaryFolder, re.getOlatResource(), secCallback, false);
 		// use on column layout
-		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, gctr.getInitialComponent(), null);
+		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, gctr);
 		layoutCtr.addDisposableChildController(gctr); // dispose content on layout dispose
 		
 		//fxdiff VCRP-1: access control of learn resources
@@ -200,7 +200,7 @@ public class GlossaryHandler implements RepositoryHandler {
 		}
 		GlossaryMainController gctr = new GlossaryMainController(wControl, ureq, glossaryFolder, re.getOlatResource(), secCallback, false);
 		// use on column layout
-		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, gctr.getInitialComponent(), null);
+		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, gctr);
 		layoutCtr.addDisposableChildController(gctr); // dispose content on layout dispose
 		return layoutCtr;
 	}

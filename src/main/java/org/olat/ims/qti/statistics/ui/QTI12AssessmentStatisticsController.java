@@ -299,7 +299,7 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 			public Controller createController(UserRequest lureq, WindowControl lwControl) {
 				Controller printCtr = new QTI12PrintController(lureq, lwControl, resourceResult);
 				Component view = printCtr.getInitialComponent();
-				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, null, null, view, null);
+				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, null, view, null);
 				layoutCtr.addCssClassToMain("o_qti_print");
 				return layoutCtr;
 			}					

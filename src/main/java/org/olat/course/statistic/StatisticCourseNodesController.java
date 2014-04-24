@@ -49,7 +49,6 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
-import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -63,7 +62,7 @@ public class StatisticCourseNodesController extends BasicController implements A
 	
 	private final StatisticResourceOption options;
 	
-	public StatisticCourseNodesController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseRe, UserCourseEnvironment userCourseEnv) {
+	public StatisticCourseNodesController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 
 		options = new StatisticResourceOption();
@@ -84,7 +83,7 @@ public class StatisticCourseNodesController extends BasicController implements A
 		courseTree.addListener(this);
 		
 		Panel empty = new Panel("splashScreen");
-		layoutCtr = new LayoutMain3ColsController(ureq, wControl, courseTree, null, empty, null);
+		layoutCtr = new LayoutMain3ColsController(ureq, wControl, courseTree, empty, null);
 		listenTo(layoutCtr);
 		putInitialPanel(layoutCtr.getInitialComponent());
 

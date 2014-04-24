@@ -93,7 +93,7 @@ public class RepositoyUIFactory {
 			Controller c = MessageUIFactory.createInfoMessage(ureq, wControl, null, text);
 			
 			// use on column layout
-			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, c.getInitialComponent(), null);
+			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, c);
 			layoutCtr.addDisposableChildController(c); // dispose content on layout dispose
 			return layoutCtr;
 		}
@@ -135,7 +135,7 @@ public class RepositoyUIFactory {
 				MessageController contentCtr = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), translate("security.disabled.title"), translate("security.disabled.info"));
 				listenTo(contentCtr); // auto dispose later
 				Component resComp = contentCtr.getInitialComponent();
-				LayoutMain3ColsController columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), empty, empty, resComp, /*do not save no prefs*/null);
+				LayoutMain3ColsController columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), empty, resComp, /*do not save no prefs*/null);
 				listenTo(columnLayoutCtr); // auto dispose later
 				putInitialPanel(columnLayoutCtr.getInitialComponent());
 			}

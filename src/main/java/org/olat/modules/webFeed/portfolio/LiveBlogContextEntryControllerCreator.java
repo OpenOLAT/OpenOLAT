@@ -23,7 +23,6 @@ package org.olat.modules.webFeed.portfolio;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
@@ -77,8 +76,7 @@ public class LiveBlogContextEntryControllerCreator  {
 			boolean isOwner = feed.getAuthor() != null && ureq.getIdentity() != null && feed.getAuthor().equals(ureq.getIdentity().getName());
 			FeedSecurityCallback secCallback = new FeedResourceSecurityCallback(isOwner, isOwner);
 			FeedMainController controller = new FeedMainController(ores, ureq, wControl, BlogUIFactory.getInstance(ureq.getLocale()), secCallback);
-			Component main = controller.getInitialComponent();
-			return new LayoutMain3ColsController(ureq, wControl, null, null, main, "LiveBlog" + ores.getResourceableId());
+			return new LayoutMain3ColsController(ureq, wControl, controller);
 		}
 
 		@Override

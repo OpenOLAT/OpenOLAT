@@ -66,6 +66,7 @@ public interface TreeNode extends INode {
 	public String getCssClass();
 
 	public String getIconCssClass();
+	
 	public String getIconDecorator1CssClass();
 	public String getIconDecorator2CssClass();
 	public String getIconDecorator3CssClass();

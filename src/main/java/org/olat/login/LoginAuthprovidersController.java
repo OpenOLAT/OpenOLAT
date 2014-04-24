@@ -127,7 +127,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		INode firstChild = tm.getRootNode().getChildAt(0);
 		olatMenuTree.setSelectedNodeId(firstChild.getIdent());
 
-		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), olatMenuTree, null, dmzPanel, "useradminmain");
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), olatMenuTree, dmzPanel, "useradminmain");
 		columnLayoutCtr.addCssClassToMain("o_loginscreen");
 		listenTo(columnLayoutCtr); // for later autodisposing
 		putInitialPanel(columnLayoutCtr.getInitialComponent());

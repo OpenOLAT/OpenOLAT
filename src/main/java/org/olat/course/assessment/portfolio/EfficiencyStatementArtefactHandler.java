@@ -84,7 +84,7 @@ public class EfficiencyStatementArtefactHandler extends EPAbstractHandler<Effici
 		String statementXml = ePFMgr.getArtefactFullTextContent(artefact);
 		EfficiencyStatement statement = (EfficiencyStatement)myXStream.fromXML(statementXml); 
 		EfficiencyStatementController efficiencyCtrl = new EfficiencyStatementController(wControl, ureq, statement);
-		return new LayoutMain3ColsController(ureq, wControl, null, null, efficiencyCtrl.getInitialComponent(), null);
+		return new LayoutMain3ColsController(ureq, wControl, efficiencyCtrl);
 	}
 
 	@Override

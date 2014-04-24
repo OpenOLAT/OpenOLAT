@@ -195,7 +195,7 @@ public class PortfolioConfigForm extends FormBasicController {
 			}
 			previewCtr = EPUIFactory.createPortfolioStructureMapPreviewController(ureq, getWindowControl(), map, secCallback);
 			listenTo(previewCtr);
-			LayoutMain3ColsController ctr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, previewCtr.getInitialComponent(), "portfolio" + map.getKey());
+			LayoutMain3ColsController ctr = new LayoutMain3ColsController(ureq, getWindowControl(), previewCtr);
 			columnLayoutCtr = ctr;
 			stackPanel.pushController(translate("preview.map"), columnLayoutCtr);
 			listenTo(columnLayoutCtr);

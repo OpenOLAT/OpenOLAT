@@ -31,6 +31,7 @@ import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSe
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
+import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -189,9 +190,8 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				marked = row.isMarked();
 			}
 			markLink = uifactory.addFormLink("mark", "mark", "&nbsp;&nbsp;&nbsp;&nbsp;", null, layoutCont, Link.NONTRANSLATED);
-			markLink.setCustomEnabledLinkCSS(marked ? "b_mark_set" : "b_mark_not_set");
+			markLink.setCustomEnabledLinkCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 			
-			//
 			Integer myRating = row.getMyRating();
 			Float averageRating = row.getAverageRating();
 			long numOfRatings = row.getNumOfRatings();
@@ -331,7 +331,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				doOpenCategory(ureq, categoryKey);
 			} else if("mark".equals(cmd)) {
 				boolean marked = doMark();
-				markLink.setCustomEnabledLinkCSS(marked ? "b_mark_set" : "b_mark_not_set");
+				markLink.setIconCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 			} else if("comments".equals(cmd)) {
 				doOpenComments(ureq);
 			} else if("start".equals(cmd)) {

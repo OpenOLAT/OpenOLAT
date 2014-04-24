@@ -141,7 +141,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		content = new Panel("content");
 		content.setContent(contentCtr.getInitialComponent());
 
-		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), olatMenuTree, null, content, "useradminmain");
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), olatMenuTree, content, "useradminmain");
 		columnLayoutCtr.addCssClassToMain("o_useradmin");
 		
 		listenTo(columnLayoutCtr); // auto dispose later

@@ -1,0 +1,90 @@
+.o_tree {
+	position: relative;
+	display: block;
+	background-color: $list-group-bg;
+	border: 1px solid $list-group-border;
+    @include border-top-radius($list-group-border-radius);
+    @include border-bottom-radius($list-group-border-radius);
+
+	ul {
+		background-color: white;
+		margin: 0;
+		padding: 0;
+		list-style-type: none;
+
+		li {
+			margin: 0;
+			padding: 0;
+		}
+		
+		li div {
+			margin-bottom: -1px;
+			border-bottom: 1px solid $list-group-border;
+		}
+		
+		@for $i from 1 through 11 {
+			li div a.o_tree_oc_l#{$i}  { 
+				position:absolute;
+				top:$o-tree-padding-opener-top-px;
+				left: $o-tree-padding-opener-left-px + ($i * $o-tree-padding-steps-px); 
+				z-index:9; 
+			}
+			
+			.o_tree_level_open.b_tree_oc_l#{$i}, .o_tree_level_close.b_tree_oc_l#{$i} {
+				z-index: 10;
+			}
+		}
+
+		@for $i from 0 through 11 {
+			li div a.o_tree_l#{$i}  {
+				display:block;
+				padding: 10px 2px 10px (14px + ($i * $o-tree-padding-steps-px)); 
+				z-index:9; 
+			}
+		}
+		
+		span.o_tree_leaf {
+			display: none;
+		}
+		
+		li .badge {
+			float: right;
+		}
+		
+		li div.o_dnd_sibling {
+			margin: 0;
+			padding: 0;
+			border-bottom: none;
+		}
+		
+		li a.active {
+			font-weight: bold;
+		}
+		
+		li a.active_parent {
+			color: black;
+			font-weight: bold;
+		}
+	}
+	
+	.o_dnd_item { cursor:move; z-index: 100; }
+	.o_dnd_proxy {@include o-opacity(40); background-color: yellow;}
+	.o_dnd_item.o_dnd_over { background-color: #ffff60; }
+	.o_dnd_sibling {
+		height:3px;
+		width:100%;
+	}
+	.o_dnd_sibling.o_dnd_over { background:transparent url(../openolat/images/arrow_dd.png) top left no-repeat; }
+	
+	.o_dnd_l1 { margin-left:0 !important; }
+	.o_dnd_l2 { margin-left:1em !important; }
+	.o_dnd_l3 { margin-left:2em !important; }
+	.o_dnd_l4 { margin-left:3em !important; }
+	.o_dnd_l5 { margin-left:4em !important; }
+	.o_dnd_l6 { margin-left:5em !important; }
+	.o_dnd_l7 { margin-left:6em !important; }
+	.o_dnd_l8 { margin-left:7em !important; }
+	.o_dnd_l9 { margin-left:8em !important; }
+	.o_dnd_l10 { margin-left:9em !important; }
+	.o_dnd_l11 { margin-left:10em !important; }
+}

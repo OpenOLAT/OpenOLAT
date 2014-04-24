@@ -226,7 +226,7 @@ public class NotesPortletRunController extends AbstractPortletRunController<Note
 						public Controller createController(UserRequest lureq, WindowControl lwControl) {
 							Controller nc = new NoteController(lureq, lwControl, note);
 							// use on column layout
-							LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, null, null, nc.getInitialComponent(), null);
+							LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, nc);
 							layoutCtr.addDisposableChildController(nc); // dispose content on layout dispose
 							return layoutCtr;
 						}					

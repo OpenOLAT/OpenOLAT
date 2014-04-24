@@ -182,8 +182,7 @@ public class SPRunController extends BasicController {
 					public Controller createController(UserRequest lureq, WindowControl lwControl) {
 						// Wrap in column layout, popup window needs a layout controller
 						Controller ctr = contentControllerCreator.createController(lureq, lwControl);
-						LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, null, null, ctr.getInitialComponent(),
-								null);
+						LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, ctr);
 						layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), userCourseEnv.getCourseEnvironment()));
 						//Controller titledCtrl = TitledWrapperHelper.getWrapper(lureq, lwControl, ctr, courseNode, "o_sp_icon");
 						layoutCtr.addDisposableChildController(ctr);

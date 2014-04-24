@@ -136,7 +136,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 			scormAdapter.init(cpRoot, scormResourceIdStr, courseIdNodeId, FolderConfig.getCanonicalRoot(), username, fullname, lesson_mode, credit_mode, hashCode());
 		} catch (IOException e) {
 			showError("error.manifest.corrupted");
-			LayoutMain3ColsController ctr = new LayoutMain3ColsController(ureq, getWindowControl(), null, null, new Panel("empty"), "scorm" + scormResourceId);
+			LayoutMain3ColsController ctr = new LayoutMain3ColsController(ureq, getWindowControl(), null, new Panel("empty"), "scorm" + scormResourceId);
 			columnLayoutCtr = ctr;
 			putInitialPanel(columnLayoutCtr.getInitialComponent());
 			return;
@@ -229,7 +229,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 				columnLayoutCtr = ctr;
 			}
 		} else {
-			LayoutMain3ColsController ctr = new LayoutMain3ColsController(ureq, getWindowControl(), (showMenu ? menuTree : null), null, myContent, "scorm" + scormResourceId);
+			LayoutMain3ColsController ctr = new LayoutMain3ColsController(ureq, getWindowControl(), (showMenu ? menuTree : null), myContent, "scorm" + scormResourceId);
 			columnLayoutCtr = ctr;			
 			putInitialPanel(columnLayoutCtr.getInitialComponent());
 		}

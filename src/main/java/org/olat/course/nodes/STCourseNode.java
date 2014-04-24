@@ -173,8 +173,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 						public Controller createController(UserRequest lureq, WindowControl lwControl) {
 							// wrapp in column layout, popup window needs a layout controller
 							Controller ctr = contentControllerCreator.createController(lureq, lwControl);
-							LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, null, null, ctr.getInitialComponent(),
-									null);
+							LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, ctr);
 							layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), userCourseEnv.getCourseEnvironment()));
 							
 							Controller wrappedCtrl = TitledWrapperHelper.getWrapper(lureq, lwControl, ctr, STCourseNode.this, ICON_CSS_CLASS);

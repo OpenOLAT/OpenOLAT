@@ -36,6 +36,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -768,7 +769,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			ControllerCreator ctrlCreator = new ControllerCreator() {
 				public Controller createController(UserRequest lureq, WindowControl lwControl) {
 					EfficiencyStatementController efficiencyStatementController = new EfficiencyStatementController(lwControl, lureq, courseRepositoryEntry.getKey());
-					LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, getWindowControl(), null, null, efficiencyStatementController.getInitialComponent(), null);
+					LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, getWindowControl(), efficiencyStatementController);
 					layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), uce.getCourseEnvironment()));
 					return layoutCtr;
 				}					
@@ -784,7 +785,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			ControllerCreator ctrlCreator = new ControllerCreator() {
 				public Controller createController(UserRequest lureq, WindowControl lwControl) {
 					Controller notesCtr = new NoteController(lureq, course, getExtendedCourseTitle(lureq.getLocale()), lwControl);
-					LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, null, null, notesCtr.getInitialComponent(), null);
+					LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, notesCtr);
 					layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), uce.getCourseEnvironment()));
 					layoutCtr.addDisposableChildController(notesCtr); // dispose glossary on layout dispose
 					return layoutCtr;
@@ -806,7 +807,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				String businessPath = "[RepositoryEntry:" + courseRepositoryEntry.getKey() + "]";
 				markManager.setMark(courseRepositoryEntry, getIdentity(), null, businessPath);
 			}
-			String css = marked ? "b_mark_not_set" : "b_mark_set";
+			String css = marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE;
 			toolC.setCssClass(TOOL_BOOKMARK, css);
 		} else if (cmd.equals(ACTION_CALENDAR)) { // popup calendar
 			ControllerCreator ctrlCreator = new ControllerCreator() {
@@ -815,7 +816,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					WindowControl llwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, lwControl);
 					CourseCalendarController calendarController = new CourseCalendarController(lureq, llwControl, course);					
 					// use a one-column main layout
-					LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, llwControl, null, null, calendarController.getInitialComponent(), null);
+					LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, llwControl, calendarController);
 					layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), uce.getCourseEnvironment()));
 					layoutCtr.addDisposableChildController(calendarController); // dispose calendar on layout dispose
 					return layoutCtr;					
@@ -865,14 +866,14 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl swControl = addToHistory(ureq, ores, null);
 		if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
-			StatisticCourseNodesController statsToolCtr = new StatisticCourseNodesController(ureq, swControl, courseRepositoryEntry, uce);
+			StatisticCourseNodesController statsToolCtr = new StatisticCourseNodesController(ureq, swControl, uce);
 			currentToolCtr = statsToolCtr;
 			listenTo(statsToolCtr);
 			all.pushController(translate("command.openstatistic"), statsToolCtr);
 			return statsToolCtr;
 		}
 		if (isCourseCoach) {
-			StatisticCourseNodesController statsToolCtr = new StatisticCourseNodesController(ureq, swControl, courseRepositoryEntry, uce);
+			StatisticCourseNodesController statsToolCtr = new StatisticCourseNodesController(ureq, swControl, uce);
 			currentToolCtr = statsToolCtr;
 			listenTo(statsToolCtr);
 			all.pushController(translate("command.openstatistic"), statsToolCtr);

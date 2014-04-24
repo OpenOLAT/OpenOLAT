@@ -40,7 +40,7 @@ public interface MainLayout3ColumnsController extends MainLayoutController {
 	 * 
 	 * @param toBedisposedControllerOnDispose
 	 */
-	public abstract void addDisposableChildController(Controller toBedisposedControllerOnDispose);
+	public void addDisposableChildController(Controller toBedisposedControllerOnDispose);
 
 	/**
 	 * Add a css class to the #o_main wrapper div, e.g. for special background
@@ -48,48 +48,48 @@ public interface MainLayout3ColumnsController extends MainLayoutController {
 	 * 
 	 * @param cssClass
 	 */
-	public abstract void addCssClassToMain(String cssClass);
+	public void addCssClassToMain(String cssClass);
 
 	/**
 	 * Remove a CSS class from the #o_main wrapper div
 	 * @param cssClass
 	 */
-	public abstract void removeCssClassFromMain(String cssClass);
+	public void removeCssClassFromMain(String cssClass);
 
 	/**
 	 * Temporarily hide the column 1 withour removing the component
 	 * @param hide The column to hide
 	 */
-	public abstract void hideCol1(boolean hide);
+	public void hideCol1(boolean hide);
 
 	/**
 	 * Temporarily hide the column 2 withour removing the component
 	 * @param hide The column to hide
 	 */
-	public abstract void hideCol2(boolean hide);
+	public void hideCol2(boolean hide);
 
 	/**
 	 * Temporarily hide the column 3 withour removing the component
 	 * @param hide The column to hide
 	 */
-	public abstract void hideCol3(boolean hide);
+	public void hideCol3(boolean hide);
 
 	/**
 	 * Set a new component to this column or null to not use this column
 	 * @param col1Component
 	 */
-	public abstract void setCol1(Component col1Component);
+	public void setCol1(Component col1Component);
 
 	/**
 	 * Set a new component to this column or null to not use this column
 	 * @param col2Component
 	 */
-	public abstract void setCol2(Component col2Component);
+	public void setCol2(Component col2Component);
 
 	/**
 	 * Set a new component to this column or null to not use this column
 	 * @param col3Component
 	 */
-	public abstract void setCol3(Component col3Component);
+	public void setCol3(Component col3Component);
 
 }

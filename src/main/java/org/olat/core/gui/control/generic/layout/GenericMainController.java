@@ -125,7 +125,7 @@ public abstract class GenericMainController extends MainLayoutBasicController im
 		Component resComp = contentCtr.getInitialComponent();
 		content.setContent(resComp);
 
-		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), olatMenuTree, null, content, className);
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), olatMenuTree, content, className);
 		listenTo(columnLayoutCtr); // auto dispose later
 		
 		//create the stack

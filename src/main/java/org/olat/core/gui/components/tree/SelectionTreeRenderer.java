@@ -29,12 +29,11 @@ package org.olat.core.gui.components.tree;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.Form;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -46,7 +45,7 @@ import org.olat.core.util.tree.TreeHelper;
  * 
  * @author Felix Jost
  */
-public class SelectionTreeRenderer implements ComponentRenderer {
+public class SelectionTreeRenderer extends DefaultComponentRenderer {
 
 	private static String imgDots = "<div class=\"b_selectiontree_line\"></div>";
 	private static String imgDots_spacer = "<div class=\"b_selectiontree_space\"></div>";
@@ -306,28 +305,10 @@ public class SelectionTreeRenderer implements ComponentRenderer {
 	}
 
 	/**
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator)
-	 */
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderingState rstate) {
-	//
-	}
-
-	/**
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component)
-	 */
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-	//
-	}
-
-	/**
 	 * @param parameterName
 	 * @return boolean
 	 */
 	public static boolean isMultiSelectParameter(String parameterName) {
 		return parameterName.startsWith(ATTR_SELECTION);
 	}
-	
 }

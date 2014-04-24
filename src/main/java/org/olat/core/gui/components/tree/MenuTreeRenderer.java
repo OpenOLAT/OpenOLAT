@@ -26,11 +26,11 @@
 
 package org.olat.core.gui.components.tree;
 
-import static org.olat.core.gui.components.velocity.VelocityContainer.COMMAND_ID;
-import static org.olat.core.gui.components.tree.MenuTree.NODE_IDENT;
 import static org.olat.core.gui.components.tree.MenuTree.COMMAND_TREENODE;
 import static org.olat.core.gui.components.tree.MenuTree.COMMAND_TREENODE_CLICKED;
 import static org.olat.core.gui.components.tree.MenuTree.COMMAND_TREENODE_DROP;
+import static org.olat.core.gui.components.tree.MenuTree.NODE_IDENT;
+import static org.olat.core.gui.components.velocity.VelocityContainer.COMMAND_ID;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,11 +39,10 @@ import java.util.List;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -56,8 +55,7 @@ import org.olat.core.util.tree.TreeHelper;
  * 
  * @author Felix Jost, Florian Gnaegi
  */
-//fxdiff VCRP-9: there is here lots of change for drag and drop / open close in menu tree
-public class MenuTreeRenderer implements ComponentRenderer {
+public class MenuTreeRenderer extends DefaultComponentRenderer {
 
 	/**
 	 * Constructor for TableRenderer. Singleton and must be reentrant There must
@@ -99,34 +97,34 @@ public class MenuTreeRenderer implements ComponentRenderer {
 			cur = cur.getParent();
 		}
 		
+		List<DndElement> elements = new ArrayList<>();
 		AJAXFlags flags = renderer.getGlobalSettings().getAjaxFlags();
-		target.append("\n<div id='dd1-ct' class='b_tree");
-		if(tree.isDragEnabled() || tree.isDropEnabled()) {
-			target.append(" b_dd_ct");
-		}
+		target.append("\n<div class='o_tree");
 		// marker classes to differentiate rendering when root node is visible 
 		if(!tree.isRootVisible()) {
-			target.append(" b_tree_root_hidden");
+			target.append(" o_tree_root_hidden");
 		}
 		else {
-			target.append(" b_tree_root_visible");
+			target.append(" o_tree_root_visible");
 		}
-		target.append("'><ul class=\"b_tree_l0\">");
+		target.append("'><ul class=\"o_tree_l0\">");
 		if(tree.isRootVisible()) {
-			renderLevel(target, 0, root, selPath, openNodeIds, ubu, flags, tree);
+			renderLevel(target, 0, root, selPath, openNodeIds, elements, ubu, flags, tree);
 		} else {
 			selPath.remove(0);
 			int chdCnt = root.getChildCount();
 			for (int i = 0; i < chdCnt; i++) {
 				TreeNode curChd = (TreeNode)root.getChildAt(i);
-				renderLevel(target, 0, curChd, selPath, openNodeIds, ubu, flags, tree);
+				renderLevel(target, 0, curChd, selPath, openNodeIds, elements, ubu, flags, tree);
 			}
 		}
-		target.append("</ul>").append("</div>");
+		target.append("</ul>");
+		appendDragAndDropScript(elements, tree, target)
+		      .append("</div>");
 	}
 
 	private void renderLevel(StringOutput target, int level, TreeNode curRoot, List<INode> selPath,
-			Collection<String> openNodeIds, URLBuilder ubu, AJAXFlags flags, MenuTree tree) {	
+			Collection<String> openNodeIds, List<DndElement> dndElements, URLBuilder ubu, AJAXFlags flags, MenuTree tree) {	
 
 		INode curSel = null;
 		if (level < selPath.size()) {
@@ -143,33 +141,33 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		// item icon css class and icon decorator (for each icon quadrant a div, eclipse style)
 		// open menu item
 		String cssClass = curRoot.getCssClass();
-		target.append("\n<li class=\"");
+		target.append("\n<li class='");
 		// add custom css class
-		target.append((cssClass == null ? "" : cssClass));
+		target.append(cssClass, cssClass != null);
 		if(selected) {
-			target.append(" b_tree_selected");
+			target.append(" active");
 		} else if (curSel == curRoot) {
 			// add css class to identify parents of active element
-			target.append(" b_tree_selected_parents");			
+			target.append(" active_parent");			
 		}
 		String ident = curRoot.getIdent();
-		target.append("\"><div id='dd").append(ident).append("' class=\"b_tree_item_wrapper b_tree_l").append(level);
+		target.append("'><div id='dd").append(ident).append("' class='o_tree_l").append(level);
 		if(tree.isDragEnabled() || tree.isDropEnabled()) {
-			target.append(" b_dd_item");
+			target.append(" o_dnd_item");
 		}
 		if(selected) {
-			target.append(" b_tree_selected");
+			target.append(" active");
 		}
-		target.append("\">");
+		target.append("'>");
 		
 		if(tree.isDragEnabled() || tree.isDropEnabled()) {
-			appendDragAndDropObj(curRoot, tree, target, ubu, flags);
+			appendDragAndDropElement(curRoot, tree, dndElements, ubu, flags);
 		}
 
 		// expand icon
 		// add ajax support and real open/close function
 		if (((tree.isRootVisible() && level != 0) || !tree.isRootVisible()) && chdCnt > 0) { // root has not open/close icon,  append open / close icon only if there is children
-			target.append("<a onclick=\"try {return o2cl()} catch(e){return false}\" href=\"");
+			target.append("<a onclick='o2cl_secure()' href=\"");
 			
 			// Build menu item URI
 			if (GUIInterna.isLoadPerformanceMode()) {
@@ -189,52 +187,44 @@ public class MenuTreeRenderer implements ComponentRenderer {
 			if(iframePostEnabled) {
 				ubu.appendTarget(target);
 			}
-			target.append(" class=\"");
-			if (renderChildren) {
-				target.append("b_tree_level_close");
-			} else {
-				target.append("b_tree_level_open");
-			}
-			target.append(" b_tree_oc_l").append(level).append("\"><span>&nbsp;&nbsp;</span></a>");
+			String openCloseCss = renderChildren ? "close" : "open";
+			target.append(" class='o_tree_oc_l").append(level).append("'><i class='o_icon o_icon_").append(openCloseCss).append("_tree'></i></a>");
 		} else if (level != 0 && chdCnt == 0) {
-			target.append("<span class=\"b_tree_level_leaf b_tree_oc_l").append(level).append("\">&nbsp;&nbsp;</span>");
+			target.append("<span class=\"o_tree_leaf o_tree_oc_l").append(level).append("\">&nbsp;&nbsp;</span>");
 		}
 		
 		// Render menu item as link, also for active elements
 		// mark active item as strong for accessablity reasons
 		
-		target.append(selected ? "<strong>" : "");
-		target.append("<a class=\"");
+		target.append("<strong>", selected);
+		target.append("<a class='o_tree_l").append(level);
+		
 		// add icon css class
 		String iconCssClass = curRoot.getIconCssClass();
 		if (iconCssClass != null) {
-			target.append(" b_tree_icon ").append(iconCssClass);			
+			target.append(" ").append(iconCssClass);			
 		}
 		if (selected) {
 			// add css class to identify active element
-			target.append(" b_tree_selected");			
+			target.append(" active");			
 		} else if (curSel == curRoot) {
 			// add css class to identify parents of active element
-			target.append(" b_tree_selected_parents");			
+			target.append(" active_parent");			
 		}
 		
 		//reapply the same rules to the second link
 		if(level != 0 && chdCnt > 0) {
 			if (renderChildren) {
-				target.append(" b_tree_level_label_close");
+				target.append(" o_tree_level_label_close");
 			} else  {
-				target.append(" b_tree_level_label_open");
+				target.append(" o_tree_level_label_open");
 			}
 		} else if (level != 0 && chdCnt == 0) {
-			target.append(" b_tree_level_label_leaf");
+			target.append(" o_tree_level_label_leaf");
 		}
 		
-		// add css class to identify level
-		target.append(" b_tree_l").append(level);		
-		
-		// fix needed for firefox bug when fast clicking: the onclick="try{return o2cl()}catch(e){return false}"  -> when the document is reloaded, all function js gets unloaded, but the old link can still be clicked.			
-		//target.append("\" onclick=\"try {if(o2cl()){$('html, body').animate({scrollTop: $('#b_top').offset().top}, 500); return true;} else {return false;}} catch(e){return false}\" href=\"");					
-		target.append("\" onclick=\"try {if(o2cl()){ return true;} else {return false;}} catch(e){return false}\" href=\"");					
+		// add css class to identify level, FireFox script
+		target.append("' onclick='o2cl_secure()' href=\"");					
 		
 		// Build menu item URI
 		if (GUIInterna.isLoadPerformanceMode()) {
@@ -247,30 +237,27 @@ public class MenuTreeRenderer implements ComponentRenderer {
 			} else {
 				ubu.buildURI(target, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { COMMAND_TREENODE_CLICKED, curRoot.getIdent() });
 			}
-		}		
+		}
+		target.append("\"");	
 		
 		// Add menu item title as alt hoover text
 		String alt = curRoot.getAltText();
 		if (alt != null) {
-			target.append("\" title=\"");
-			target.append(StringEscapeUtils.escapeHtml(alt).toString());
+			target.append(" title=\"")
+			      .append(StringEscapeUtils.escapeHtml(alt).toString())
+			      .append("\"");
 		}
-		
-		target.append("\"");
-		
+
 		if (iframePostEnabled) {
 			ubu.appendTarget(target);
 		}
 		target.append(">");
 
-		
-		appendDecorators(curRoot, target);
-		
 		// display title and close menu item
 		target.append("<span");
 		if(tree.isDragEnabled() || tree.isDropEnabled()) {
 			if(tree.isDragEnabled()) {
-				target.append(" class='b_dd_item'");
+				target.append(" class='o_dnd_item'");
 			}
 			target.append(" id='da").append(ident).append("'");
 		}
@@ -283,23 +270,23 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		} else {
 			StringHelper.escapeHtml(target, title);
 		}
-		target.append("</span></a>");
-		// mark active item as strong for accessablity reasons
-		target.append(selected ? "</strong>" : "");
-		target.append("</div>");
+		target.append("</span>");
+		appendDecorators(curRoot, target);
+		target.append("</a>").append("</strong>", selected)
+		      .append("</div>");
 		
 		//append div to drop as sibling
 		if(!renderChildren && (tree.isDragEnabled() || tree.isDropSiblingEnabled())) {
-			appendSiblingDropObj(curRoot, level, tree, target, ubu, flags, false);
+			appendSiblingDropObj(curRoot, level, tree, target, false);
 		}
 		
 		if (renderChildren) {
 			//open / close ul
-			renderChildren(target, level, curRoot, selPath, openNodeIds, ubu, flags, tree);
+			renderChildren(target, level, curRoot, selPath, openNodeIds, dndElements, ubu, flags, tree);
 			
 			//append div to drop as sibling after the children
 			if(tree.isDragEnabled() || tree.isDropSiblingEnabled()) {
-				appendSiblingDropObj(curRoot, level, tree, target, ubu, flags, true);
+				appendSiblingDropObj(curRoot, level, tree, target, true);
 			}
 		}
 		
@@ -307,89 +294,158 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		target.append("</li>");
 	}
 	
-	//fxdiff VCRP-9: drag and drop in menu tree
-	private void renderChildren(StringOutput target, int level, TreeNode curRoot, List<INode> selPath, Collection<String> openNodeIds, URLBuilder ubu, AJAXFlags flags, MenuTree tree) {
+	private void renderChildren(StringOutput target, int level, TreeNode curRoot, List<INode> selPath, Collection<String> openNodeIds,
+			List<DndElement> dndElements, URLBuilder ubu, AJAXFlags flags, MenuTree tree) {
 		int chdCnt = curRoot.getChildCount();
 		// render children as new level
 		target.append("\n<ul class=\"");
 		// add css class to identify level
-		target.append(" b_tree_l").append(level + 1);		
+		target.append(" o_tree_l").append(level + 1);		
 		target.append("\">");
 		// render all the nodes from this level
 		for (int i = 0; i < chdCnt; i++) {
 			TreeNode curChd = (TreeNode) curRoot.getChildAt(i);
-			renderLevel(target, level + 1, curChd, selPath, openNodeIds, ubu, flags, tree);
+			renderLevel(target, level + 1, curChd, selPath, openNodeIds, dndElements, ubu, flags, tree);
 		}
 		target.append("</ul>");
 	}
 	
-	//fxdiff VCRP-9: drag and drop in menu tree
-	private void appendSiblingDropObj(TreeNode node, int level, MenuTree tree, StringOutput target, URLBuilder ubu, AJAXFlags flags, boolean after) {
+	private void appendSiblingDropObj(TreeNode node, int level, MenuTree tree, StringOutput target, boolean after) {
 		boolean drop = tree.isDropEnabled() && ((DnDTreeModel)tree.getTreeModel()).isNodeDroppable(node);
 		if(drop) {
 			String id = (after ? "dt" : "ds") + node.getIdent();
-			target.append("<div id='").append(id).append("' class='b_dd_sibling b_dd_sibling_l").append(level).append("'>")
-				.append("<script type='text/javascript'>jQuery('#").append(id).append("')");
-			appendDroppable(node, tree, target, ubu, flags);
-			target.append("</script>&nbsp;&nbsp;</div>");
+			target.append("<div id='").append(id).append("' class='o_dnd_sibling o_dnd_l").append(level).append("'>&nbsp;</div>");
 		}
 	}
 	
-	//fxdiff VCRP-9: drag and drop in menu tree
-	private void appendDragAndDropObj(TreeNode node, MenuTree tree, StringOutput target, URLBuilder ubu, AJAXFlags flags) {
+	private void appendDragAndDropElement(TreeNode node, MenuTree tree, List<DndElement> target, URLBuilder ubu, AJAXFlags flags) {
 		String id = node.getIdent();
 		boolean drag = tree.isDragEnabled() && ((DnDTreeModel)tree.getTreeModel()).isNodeDraggable(node);
 		boolean drop = tree.isDropEnabled() && ((DnDTreeModel)tree.getTreeModel()).isNodeDroppable(node);
 		if(drag || drop) {
-			target.append("<script type='text/javascript'>");
+			DndElement el = new DndElement();
+			el.setId(id);
 			if(drag) {
-				target.append("jQuery('#dd").append(id).append("')");
-				appendDraggable(target);
-				target.append("jQuery('#da").append(id).append("')");
-				appendDraggable(target);
+				el.setDrag(drag);
 			}
 			if(drop) {
-				target.append("jQuery('#dd").append(id).append("')");
-				appendDroppable(node, tree, target, ubu, flags);
+				el.setDrop(true);
+				StringOutput endUrl = new StringOutput(64);
+				ubu.buildURI(endUrl, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { COMMAND_TREENODE_DROP, node.getIdent() }, flags.isIframePostEnabled() ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
+				el.setEndUrl(endUrl.toString());
 			}
-			target.append("</script>");
+			target.add(el);
 		}
 	}
-	
-	private void appendDroppable(TreeNode node, MenuTree tree, StringOutput sb, URLBuilder ubu, AJAXFlags flags) {
-		String feedBackUri = tree.getDndFeedbackUri();
-		StringOutput endUrl = new StringOutput(64);
-		String acceptMethod = tree.getDndAcceptJSMethod();
-		if(acceptMethod == null) {
-			acceptMethod = "treeAcceptDrop";
+
+	private StringOutput appendDragAndDropScript(List<DndElement> elements, MenuTree tree, StringOutput sb) {
+		if(elements == null || elements.isEmpty()) return sb;
+		sb.append("<script type='text/javascript'>\n")
+		  .append("/* <![CDATA[ */\n")
+		  .append("jQuery(function() {\n");
+		
+		StringBuilder dragIds = new StringBuilder("[");
+		StringBuilder dropIds = new StringBuilder("[");
+		for(DndElement element:elements) {
+			if(element.isDrag()) {
+				if(dragIds.length() > 1) {
+					dragIds.append(",");
+				}
+				dragIds.append("'").append(element.getId()).append("'");
+			}
+			if(element.isDrop()) {
+				if(dropIds.length() > 1) {
+					dropIds.append(",");
+				}
+				dropIds.append("['").append(element.getId()).append("','").append(element.getEndUrl()).append("']");
+			}
 		}
-		ubu.buildURI(endUrl, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { COMMAND_TREENODE_DROP, node.getIdent() }, flags.isIframePostEnabled() ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-		sb.append(".droppable({ fbUrl: '").append(feedBackUri).append("', endUrl: '").append(endUrl)
-		  .append("', hoverClass:'b_dd_over', accept: ")
-		  .append(acceptMethod).append(", drop:onTreeDrop});");
+		dragIds.append("]");
+		dropIds.append("]");
+		
+		if(dragIds.length() > 2) {
+			sb.append("  jQuery.each(").append(dragIds).append(", function(index, value) {\n")
+			  .append("    jQuery('#da' + value)");
+			appendDraggable(sb).append("\n")
+			  .append("    jQuery('#dd' + value)");
+			appendDraggable(sb).append("\n")
+			  .append("  });\n");
+		}
+		if(dropIds.length() > 2) {
+			String acceptMethod = tree.getDndAcceptJSMethod();
+			if(acceptMethod == null) {
+				acceptMethod = "treeAcceptDrop";
+			}
+			sb.append("  jQuery.each(").append(dropIds).append(", function(index, value) {\n")
+			  .append("    jQuery('#dd' + value[0]).droppable({ endUrl:value[1],hoverClass:'o_dnd_over',").append("accept:").append(acceptMethod).append(",drop:onTreeDrop});\n");
+		    if(tree.isDropSiblingEnabled()) {
+		    	sb.append("    jQuery('#dt' + value[0]).droppable({ endUrl:value[1],hoverClass:'o_dnd_over',").append("accept:").append(acceptMethod).append(",drop:onTreeDrop});\n")
+		    	  .append("    jQuery('#ds' + value[0]).droppable({ endUrl:value[1],hoverClass:'o_dnd_over',").append("accept:").append(acceptMethod).append(",drop:onTreeDrop});\n");
+		    }
+		    sb.append("  });\n");
+		}
+		
+		sb.append("});\n")
+		  .append("/* ]]> */")
+		  .append("</script>\n");
+		return sb;
 	}
 	
-	private void appendDraggable(StringOutput sb) {
+	private StringOutput appendDraggable(StringOutput sb) {
 		sb.append(".draggable({start:onTreeStartDrag, stop: onTreeStopDrag, delay:100, distance:5, revert:'invalid' });");
+		return sb;
 	}
 	
-	//fxdiff VCRP-9: drag and drop in menu tree
-	private void appendDecorators(TreeNode curRoot, StringOutput target) {
-		String deco1 = curRoot.getIconDecorator1CssClass();
-		if (deco1 != null)
-			target.append("<span class=\"b_tree_icon_decorator ").append(deco1).append("\"></span>");
+	private static class DndElement {
+		private String id;
+		private String endUrl;
+		private boolean drag,drop;
 		
-		String deco2 = curRoot.getIconDecorator2CssClass();
-		if (deco2 != null)
-			target.append("<span class=\"b_tree_icon_decorator ").append(deco2).append("\"></span>");
+		public String getId() {
+			return id;
+		}
 		
-		String deco3 = curRoot.getIconDecorator3CssClass();
-		if (deco3 != null)
-			target.append("<span class=\"b_tree_icon_decorator ").append(deco3).append("\"></span>");
+		public void setId(String id) {
+			this.id = id;
+		}
 		
-		String deco4 = curRoot.getIconDecorator4CssClass();
-		if (deco4 != null)
-			target.append("<span class=\"b_tree_icon_decorator ").append(deco4).append("\"></span>");
+		public String getEndUrl() {
+			return endUrl;
+		}
+		
+		public void setEndUrl(String endUrl) {
+			this.endUrl = endUrl;
+		}
+		
+		public boolean isDrag() {
+			return drag;
+		}
+		
+		public void setDrag(boolean drag) {
+			this.drag = drag;
+		}
+		
+		public boolean isDrop() {
+			return drop;
+		}
+		
+		public void setDrop(boolean drop) {
+			this.drop = drop;
+		}
+
+	}
+	
+	private void appendDecorators(TreeNode node, StringOutput sb) {
+		appendDecorator(node.getIconDecorator1CssClass(), sb);
+		appendDecorator(node.getIconDecorator2CssClass(), sb);
+		appendDecorator(node.getIconDecorator3CssClass(), sb);
+		appendDecorator(node.getIconDecorator4CssClass(), sb);
+	}
+
+	private void appendDecorator(String decorator, StringOutput sb) {
+		if (decorator != null && decorator.length() > 0) {
+			sb.append("<span class='badge'><i class='o_icon ").append(decorator).append("'></i></span>");
+		}
 	}
 	
 	private boolean isRenderChildren(INode curSel, TreeNode curRoot, boolean selected, MenuTree tree, Collection<String> openNodeIds) {
@@ -413,13 +469,5 @@ public class MenuTreeRenderer implements ComponentRenderer {
 		}
 		//open the path of the selected node
 		return (curSel == curRoot);
-	}
-
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderingState rstate) {
-		//
-	}
-
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-		//
 	}
 }

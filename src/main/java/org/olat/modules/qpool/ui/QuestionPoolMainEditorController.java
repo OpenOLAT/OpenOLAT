@@ -132,7 +132,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		menuTree.setOpenNodeIds(openNodeIds);
 		
 		content = new Panel("list");
-		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, null, content, "qpool");
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, content, "qpool");
 		
 		doSelectPresentation(ureq);
 		putInitialPanel(columnLayoutCtr.getInitialComponent());

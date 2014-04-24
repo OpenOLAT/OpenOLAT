@@ -177,7 +177,7 @@ public class BlogHandler implements RepositoryHandler {
 		boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ureq.getIdentity(), re);	
 		FeedSecurityCallback callback = new FeedResourceSecurityCallback(isAdmin, isOwner);
 		FeedMainController blogCtr = BlogUIFactory.getInstance(ureq.getLocale()).createMainController(re.getOlatResource(), ureq, wControl, callback);
-		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, null, null, blogCtr.getInitialComponent(), null);
+		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, blogCtr);
 		layoutCtr.addDisposableChildController(blogCtr);
 		layoutCtr.addActivateableDelegate(blogCtr);
 		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, layoutCtr);
