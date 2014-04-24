@@ -50,11 +50,15 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 
 		String id = ftC.getFormDispatchId();
 
-		sb.append("<div class=\"b_table_wrapper b_flexitable_wrapper")
-		  .append(" b_table_edit", ftE.isEditMode())
-		  .append(" b_floatscrollbox\">");
+		sb.append("<div class=\"o_table_wrapper o_table_flexi")
+		  .append(" o_table_edit", ftE.isEditMode());
+		String css = ftE.getElementCssClass();
+		if (css != null) {
+			sb.append(" ").append(css);
+		}
+		sb.append(" table-responsive\">");
 		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
-		sb.append("<table id=\"").append(id).append("\" class=\"table table-bordered table-hover\">");
+		sb.append("<table id=\"").append(id).append("\" class=\"table table-bordered table-hover table-responsive\">");
 		
 		//render headers
 		renderHeaders(sb, ftC, translator);
@@ -77,7 +81,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	protected void renderHeaderButtons(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		if(ftE.isFilterEnabled()) {
-			sb.append("<div class='b_table_filter'>");
+			sb.append("<div class='o_table_filter'>");
 			SingleSelection filterEl = ftE.getFilterSelection();
 			String text = filterEl.getLabelText();
 			if(text != null && text.length() < 128) {
@@ -87,8 +91,11 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append("</div>");
 		}
 		if(ftE.isSearchEnabled()) {
+			sb.append("<div class='o_table_search input-group'>");
 			renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, args);
+			sb.append("<span class='input-group-btn'>");
 			renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, args);
+			sb.append("</span></div>");
 		}
 		if(ftE.getExtendedSearchButton() != null) {
 			renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, args);
@@ -118,19 +125,21 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			String formName = ftE.getRootForm().getFormName();
 			String dispatchId = ftE.getFormDispatchId();
 
-			sb.append("<div class='b_table_footer'>");
+			sb.append("<div class='o_table_footer'><div class='o_table_checkall input-sm'>");
 
-			sb.append("<input type=\"checkbox\" checked=\"checked\" disabled=\"disabled\" />&nbsp;<a id=\"")
+			sb.append("<label class='checkbox-inline'><a id=\"")
 			  .append(dispatchId).append("\" href=\"javascript:b_table_toggleCheck('").append(formName).append("', true);")
 			  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, new NameValuePair("select", "checkall")))
-			  .append("\"><span>").append(translator.translate("form.checkall")).append("</span></a>");
+			  .append("\"><input type='checkbox' checked='checked' disabled='disabled' /><span>").append(translator.translate("form.checkall"))
+			  .append("</span></a></label>");
 
-			sb.append("&nbsp;<input type=\"checkbox\" disabled=\"disabled\" />&nbsp;<a id=\"")
+			sb.append("<label class='checkbox-inline'><a id=\"")
 			  .append(dispatchId).append("\" href=\"javascript:b_table_toggleCheck('").append(formName).append("', false);")
 			  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, new NameValuePair("select", "uncheckall")))
-			  .append("\"><span>").append(translator.translate("form.uncheckall")).append("</span></a>");
-			
-			sb.append("</div>");
+			  .append("\"><input type='checkbox' disabled='disabled' /><span>").append(translator.translate("form.uncheckall"))
+			  .append("</span></a></label>");
+
+			sb.append("</div></div>");
 		}
 		
 		if(ftE.getRendererType() != FlexiTableRendererType.dataTables && ftE.getPageSize() > 0) {

@@ -17,6 +17,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_close_tree {@extend .o_icon-caret-down;}
 .o_icon_close {@extend .o_icon-times;}
 .o_icon_content_popup {@extend .o_icon-external-link; }
+.o_icon_customize {@extend .o_icon-gear;}
 .o_icon_delete { @extend .o_icon-minus-circle; color: #A87E7E;}
 .o_icon_dev { @extend .o_icon-wrench;}
 .o_icon_edit_file { @extend .o_icon-edit;}
@@ -25,9 +26,12 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_help { @extend .o_icon-question-circle; @extend .o_icon-lg; cursor: help;}
 .o_icon_impress { @extend .o_icon-info-circle; }
 .o_icon_message { @extend .o_icon-envelope;}
+.o_icon_move_left { @extend .o_icon-angle-double-left;}
+.o_icon_move_right { @extend .o_icon-angle-double-right;}
 .o_icon_new_document { @extend .o_icon-fighter-jet; color:pink;}
 .o_icon_new_folder { @extend .o_icon-fighter-jet; color:violet;}
 .o_icon_list {@extend .o_icon-list; }
+.o_icon_lifecycle {@extend .o_icon-clock-o;}
 .o_icon_login {@extend .o_icon-sign-in;}
 .o_icon_logout {@extend .o_icon-sign-out;}
 .o_icon_mandatory {@extend .o_icon-asterisk; color: #f0ad4e;}
@@ -39,6 +43,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_readwrite { @extend .o_icon-edit; }
 .o_icon_refresh { @extend .o_icon-refresh; } 
 .o_icon_search {@extend .o_icon-search;}
+.o_icon_sort {@extend .o_icon-sort;}
+.o_icon_sort_asc {@extend .o_icon-sort-asc;}
+.o_icon_sort_desc {@extend .o_icon-sort-desc;}
 .o_icon_status_available { @extend .o_icon-circle; color: #006633; }
 .o_icon_status_chat { @extend .o_icon-comment; }
 .o_icon_status_dnd { @extend .o_icon-dot-circle-o; color: #CCCC33; }
@@ -46,6 +53,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_table {@extend .o_icon-table; }
 .o_icon_to_read { @extend .o_icon-fighter-jet; color:blue;}
 .o_icon_upload {@extend .o_icon-upload; }
+
+
+.o_icon_right_start:after { content: ' #{$fa-var-chevron-right}'; }
 
 
 

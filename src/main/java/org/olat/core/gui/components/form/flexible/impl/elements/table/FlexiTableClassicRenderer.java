@@ -70,17 +70,17 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 
 		Form theForm = ftE.getRootForm();
 		if(asc == null) {
-			sb.append("<a class='b_sorting' href=\"javascript:")
+			sb.append("<a class='o_sorting' href=\"javascript:")
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("sort", sortKey), new NameValuePair("asc", "asc")))
-			  .append("\">").append(" ").append("</a>");
+			  .append("\"><i class='o_icon o_icon_sort'></i></a>");
 		} else if(asc.booleanValue()) {
-			sb.append("<a class='b_sorting_asc' href=\"javascript:")
+			sb.append("<a class='o_sorting_asc' href=\"javascript:")
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("sort", sortKey), new NameValuePair("asc", "desc")))
-			  .append("\">").append(" ").append("</a>");
+			  .append("\"><i class='o_icon o_icon_sort_asc'></a>");
 		} else {
-			sb.append("<a class='b_sorting_desc' href=\"javascript:")
+			sb.append("<a class='o_sorting_desc' href=\"javascript:")
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("sort", sortKey), new NameValuePair("asc", "asc")))
-			  .append("\">").append(" ").append("</a>");
+			  .append("\"><i class='o_icon o_icon_sort_desc'></a>");
 		}
 	}
 }

@@ -86,8 +86,6 @@ public class TableRenderer implements ComponentRenderer {
 		boolean iframePostEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
 
 		String formName = renderMultiselectForm(target, source, ubu, iframePostEnabled);
-		// starting real table table
-		target.append("<div class=\"b_overflowscrollbox table-responsive\" id=\"b_overflowscrollbox_").append(table.hashCode()).append("\"><table id=\"b_table").append(table.hashCode()).append("\" class=\"o_table table table-bordered table-hover").append(CLOSE_HTML_BRACE);
 
 		int rows = table.getRowCount();
 		int cols = table.getColumnCount();
@@ -115,13 +113,20 @@ public class TableRenderer implements ComponentRenderer {
 			usePageing = false;
 		}
 
+		// starting real table table
+		target.append("<div class=\"o_table_wrapper table-responsive\" id=\"b_overflowscrollbox_").append(table.hashCode()).append("\">");
+
+		target.append("<table id=\"b_table").append(table.hashCode()).append("\" class=\"o_table table table-bordered table-hover").append(CLOSE_HTML_BRACE);
 		appendHeaderLinks(target, translator, table, formName, cols, asc);
 		appendDataRows(renderer, target, ubu, table, iframePostEnabled, cols, selRowUnSelectable, selRowId, startRowId, endRowId);
+		target.append("</table><div class='o_table_footer'>");
 		appendSelectDeselectAllButtons(target, translator, table, formName, rows, resultsPerPage);
 		appendTablePageing(target, translator, table, formName, rows, resultsPerPage, currentPageId, usePageing);
 		appendMultiselectFormActions(target, translator, table);
-		appendViewportResizeJsFix(target, source, rows, usePageing);
+		target.append("</div></div>");
 
+		appendViewportResizeJsFix(target, source, rows, usePageing);
+		
 		if (log.isDebug()) {
 			long duration = System.currentTimeMillis() - start;
 			log.debug("Perf-Test: render takes " + duration);
@@ -284,7 +289,7 @@ public class TableRenderer implements ComponentRenderer {
 		}
 
 		// end of table table
-		target.append("</tbody></table></div>");
+		target.append("</tbody>");
 	}
 
 	private void appendSingleDataRow(final Renderer renderer, final StringOutput target, final URLBuilder ubu, Table table, final boolean iframePostEnabled, final int cols, final int i,
@@ -409,7 +414,7 @@ public class TableRenderer implements ComponentRenderer {
 				if (i != 0 && table.isColumnMovingOffered()) {
 					target.append(A_CLASS).append(HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);
 					target.append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_MOVECOLUMN_LEFT + SINGLE_COMMA_SINGLE).append(i).append("');\" class=\"b_table_move_left\" title=\"");
-					target.append(StringEscapeUtils.escapeHtml(translator.translate("row.move.left"))).append("\">&laquo;</a> ");
+					target.append(StringEscapeUtils.escapeHtml(translator.translate("row.move.left"))).append("\"> <i class='o_icon o_icon_move_left'></i> </a> ");
 				}
 				// header either a link or not
 				if (table.isSortingEnabled() && cd.isSortingAllowed()) {
@@ -425,8 +430,8 @@ public class TableRenderer implements ComponentRenderer {
 				if (table.isSortingEnabled() && cd == sortedCD) {
 					target.append(A_CLASS).append(HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);
 					target.append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_SORTBYCOLUMN + SINGLE_COMMA_SINGLE).append(i).append(SINGLEQUOTE_CLOSEBRACE_OPEN_TITLE);
-					target.append(StringEscapeUtils.escapeHtml(translator.translate("row.sort.invert"))).append("\">&nbsp;");
-					target.append((asc ? "&darr;" : "&uarr;"));
+					target.append(StringEscapeUtils.escapeHtml(translator.translate("row.sort.invert"))).append("\">");
+					target.append((asc ? " <i class='o_icon o_icon_sort_asc'></i> " : " <i class='o_icon o_icon_sort_desc'></i> "));
 					target.append(CLOSE_HREF);
 				}
 
@@ -435,7 +440,7 @@ public class TableRenderer implements ComponentRenderer {
 				if (i != cols - 1 && table.isColumnMovingOffered()) {
 					target.append(A_CLASS).append(HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);
 					target.append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_MOVECOLUMN_RIGHT + SINGLE_COMMA_SINGLE).append(i).append("');\" class=\"b_table_move_right\" title=\"");
-					target.append(StringEscapeUtils.escapeHtml(translator.translate("row.move.right"))).append("\">&raquo;</a>");
+					target.append(StringEscapeUtils.escapeHtml(translator.translate("row.move.right"))).append("\"> <i class='o_icon o_icon_move_right'></i> </a>");
 				}
 				target.append("</th>");
 			}
