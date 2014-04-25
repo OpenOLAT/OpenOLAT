@@ -83,7 +83,12 @@ public class SegmentViewComponent extends AbstractComponent  {
 		setDirty(true);
 	}
 	
-	public void addSegment(Component link, boolean selected) {
+	public void addSegment(Link link, boolean selected) {
+		if(selected) {
+			link.setCustomEnabledLinkCSS("btn btn-primary");
+		} else {
+			link.setCustomEnabledLinkCSS("btn btn-default");
+		}
 		segments.add(link);
 		if(selected) {
 			selectedSegments.add(link);
@@ -121,8 +126,8 @@ public class SegmentViewComponent extends AbstractComponent  {
 	
 	public void select(Component component) {
 		if(segments.contains(component)) {
-			selectedSegments.clear();
-			selectedSegments.add(component);
+			deselectAllSegments();
+			select(component);
 			setDirty(true);
 		}
 	}
@@ -142,10 +147,10 @@ public class SegmentViewComponent extends AbstractComponent  {
 					}
 				} else {
 					if(!isAllowMultipleSelection()) {
-						selectedSegments.clear();
+						deselectAllSegments();
 					}
 					e = new SegmentViewEvent(SegmentViewEvent.SELECTION_EVENT, segment.getComponentName(), count);
-					selectedSegments.add(segment);
+					selectSegment(segment);
 				}
 				break;
 			}
@@ -156,6 +161,22 @@ public class SegmentViewComponent extends AbstractComponent  {
 			setDirty(true);
 			fireEvent(ureq, e);
 		}
+	}
+	
+	private void selectSegment(Component segment) {
+		if(segment instanceof Link) {
+			((Link)segment).setCustomEnabledLinkCSS("btn btn-primary");
+		}
+		selectedSegments.add(segment);
+	}
+	
+	private void deselectAllSegments() {
+		for(Component segment:selectedSegments) {
+			if(segment instanceof Link) {
+				((Link)segment).setCustomEnabledLinkCSS("btn btn-default");
+			}
+		}
+		selectedSegments.clear();
 	}
 
 	@Override

@@ -35,19 +35,19 @@ public class SegmentViewRenderer extends DefaultComponentRenderer {
 		SegmentViewComponent component = (SegmentViewComponent)source;
 		if(component.isEmpty()) return;
 
-		sb.append("<ul class='o_segments nav nav-tabs'>");
+		sb.append("<div class='o_segments btn-group btn-group-justified'>");
 		for(Component segment:component.getSegments()) {
-			sb.append("<li");
+			/*sb.append("<li");
 			if(component.isSelected(segment)) {
 				sb.append(" class='active'");
 			}
-			sb.append(">");
+			sb.append(">");*/
 			
 			ComponentRenderer subRenderer = segment.getHTMLRendererSingleton();
 			Translator subTranslator = segment.getTranslator();
 			subRenderer.render(renderer, sb, segment, ubu, subTranslator, renderResult, args);
-			sb.append("</li>");
+			//sb.append("</li>");
 		}
-		sb.append("</ul>");
+		sb.append("</div>");
 	}
 }
