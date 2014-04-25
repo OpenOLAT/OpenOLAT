@@ -46,27 +46,27 @@ public class BreadcrumbedStackedPanelRenderer extends DefaultComponentRenderer {
 		if(breadCrumbs.size() > 1) {
 			String mainCssClass = panel.getCssClass();
 			sb.append("<div id='o_main_toolbar' class='b_clearfix ").append(mainCssClass, mainCssClass != null).append("'>")
-			  .append("<div class='b_breadcumb_path'>")
+			  .append("<div class='o_breadcumb'>")
 			  .append("<ol class='breadcrumb'>");
 			
 			Link backLink = panel.getBackLink();
 			if(backLink.isVisible()) {
-				sb.append("<li class='b_breadcumb_back'>");
+				sb.append("<li class='o_breadcumb_back'>");
 				backLink.getHTMLRendererSingleton().render(renderer, sb, backLink, ubu, translator, renderResult, args);
 				sb.append("</li>");
 			}
 			
 			int numOfCrumbs = breadCrumbs.size();
 			for(int i=0; i<numOfCrumbs; i++) {
-				sb.append("<li class='").append("b_first", i==0).append("b_last", i==(numOfCrumbs-1)).append("'><span>");
+				sb.append("<li>");
 				renderer.render(breadCrumbs.get(i), sb, args);
-				sb.append("</span></li>");
+				sb.append("</li>");
 			}
-			sb.append("</ol>");
 			
+			sb.append("</ol>");
 			Link closeLink = panel.getCloseLink();
 			if(closeLink.isVisible()) {
-				sb.append("<div class='b_breadcumb_close'>");
+				sb.append("<div class='o_breadcumb_close'>");
 				closeLink.getHTMLRendererSingleton().render(renderer, sb, closeLink, ubu, translator, renderResult, args);
 				sb.append("</div>");
 			}
