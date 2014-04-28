@@ -125,6 +125,33 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	}
 	
 	@Test
+	public void testHead()
+	throws IOException, URISyntaxException {
+		//create a user
+		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("webdav-2-" + UUID.randomUUID().toString());
+
+		WebDAVConnection conn = new WebDAVConnection();
+		conn.setCredentials(user.getName(), "A6B7C8");
+		
+		//create a file
+		String publicPath = FolderConfig.getUserHomes() + "/" + user.getName() + "/public";
+		VFSContainer vfsPublic = new OlatRootFolderImpl(publicPath, null);
+		createFile(vfsPublic, "test_head.txt");
+		
+		//head file
+		URI publicUri = conn.getBaseURI().path("webdav").path("home").path("public").path("test_head.txt").build();
+		HttpResponse response = conn.head(publicUri);
+		Header lengthHeader = response.getFirstHeader("Content-Length");
+		Assert.assertNotNull(lengthHeader);
+		Assert.assertEquals("0", lengthHeader.getValue());
+		Header typeHeader = response.getFirstHeader("Content-Type");
+		Assert.assertNotNull(typeHeader);
+		Assert.assertEquals("text/plain", typeHeader.getValue());
+		EntityUtils.consume(response.getEntity());
+		IOUtils.closeQuietly(conn);
+	}
+	
+	@Test
 	public void testPropFind()
 	throws IOException, URISyntaxException {
 		//create a user

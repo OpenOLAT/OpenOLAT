@@ -103,7 +103,7 @@ public class TACourseNodeRunController extends BasicController {
 		}
 
 		if (hasSolution) {
-			solutionController = new SolutionController(ureq, wControl, ne.getCourseNode(), userCourseEnv, previewMode);
+			solutionController = new SolutionController(ureq, wControl, ne.getCourseNode(), userCourseEnv.getCourseEnvironment(), previewMode);
 			content.put("solutionController", solutionController.getInitialComponent());
 			content.contextPut("hasSolution", Boolean.TRUE);
 		}

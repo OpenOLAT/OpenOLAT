@@ -561,11 +561,16 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	 * @see org.olat.core.commons.modules.bc.meta.MetaInfo#getAuthorIdentity()
 	 */
 	public Identity getAuthorIdentity() {
-		if (this.authorIdentKey == null) {
+		if (authorIdentKey == null) {
 			return null;
 		} else {
-			return BaseSecurityManager.getInstance().loadIdentityByKey(this.authorIdentKey);
+			return BaseSecurityManager.getInstance().loadIdentityByKey(authorIdentKey);
 		}
+	}
+
+	@Override
+	public boolean hasAuthorIdentity() {
+		return (authorIdentKey != null);
 	}
 
 	/**
@@ -808,6 +813,9 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		return new LocalFileImpl(thumbnailInfo.getThumbnailFile());
 	}
 	
+	/**
+	 * Thumbnails are cleared and the XML file is written on the disk
+	 */
 	@Override
 	public void clearThumbnails() {
 		cannotGenerateThumbnail = false;

@@ -208,7 +208,6 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		}
 		
 		try {
-	        //FileUtils.copy(is, childLeaf.getOutputStream(false));
 	        copyVFS(childLeaf, is);
 		} catch (QuotaExceededException e) {
 			throw e;
@@ -228,10 +227,10 @@ public class VFSResourceRoot implements WebResourceRoot  {
 		
 		if(childLeaf instanceof MetaTagged && identity != null) {
 			MetaInfo infos = ((MetaTagged)childLeaf).getMetaInfo();
-			if(infos != null && infos.getAuthorIdentity() == null) {
+			if(infos != null && !infos.hasAuthorIdentity()) {
 				infos.setAuthor(identity);
 				infos.clearThumbnails();
-				infos.write();
+				//infos.write(); the clearThumbnails call write()
 			}
 		}
 		
