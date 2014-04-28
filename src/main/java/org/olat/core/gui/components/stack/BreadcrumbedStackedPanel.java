@@ -44,11 +44,13 @@ import org.olat.core.util.Util;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, ComponentEventListener {
+public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, StackedController, ComponentEventListener {
 	
 	private static final ComponentRenderer RENDERER = new BreadcrumbedStackedPanelRenderer();
 	
-	private final List<Link> stack = new ArrayList<Link>(3);
+	private final List<Link> stack = new ArrayList<>(3);
+	private final List<Tool> generalTools = new ArrayList<>(3);
+	
 	private final Link backLink;
 	private final Link closeLink;
 	
@@ -110,9 +112,18 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Com
 		cmps.add(backLink);
 		cmps.add(closeLink);
 		cmps.add(getContent());
-		for(Link breadCrump:stack) {
-			cmps.add(breadCrump);
+		for(Link crumb:stack) {
+			cmps.add(crumb);
 		}
+		for(Tool tool:generalTools) {
+			cmps.add(tool.getComponent());
+		}
+		
+		BreadCrumb currentCrumb = getCurrentCrumb();
+		for(Tool tool:currentCrumb.getTools()) {
+			cmps.add(tool.getComponent());
+		}
+
 		return cmps;
 	}
 
@@ -124,6 +135,29 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Com
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
+	}
+	
+	public void addTool(Component toolComponent, boolean general) {
+		Tool tool = new Tool(toolComponent);
+		if(general) {
+			generalTools.add(tool);
+		} else {
+			getCurrentCrumb().addTool(tool);
+		}
+	}
+	
+	public List<Tool> getTools() {
+		List<Tool> currentTools = new ArrayList<>();
+		currentTools.addAll(generalTools);
+		currentTools.addAll(getCurrentCrumb().getTools());
+		return currentTools;
+	}
+	
+	private BreadCrumb getCurrentCrumb() {
+		if(stack.isEmpty()) {
+			return null;
+		}
+		return (BreadCrumb)stack.get(stack.size() - 1).getUserObject();
 	}
 	
 	@Override
@@ -155,31 +189,25 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Com
 			}
 		}
 	}
-	
-	
 
 	@Override
 	public void popContent() {
-		popController();
+		if(stack.size() > 1) {
+			Link link = stack.remove(stack.size() - 1);
+			BreadCrumb crumb = (BreadCrumb)link.getUserObject();
+			crumb.dispose();
+		}
 	}
 
 	@Override
 	public void pushContent(Component newContent) {
 		setContent(newContent);
 	}
-
-	public void popController() {
-		if(stack.size() > 1) {
-			Link link = stack.remove(stack.size() - 1);
-			Controller ctrl = (Controller)link.getUserObject();
-			ctrl.dispose();
-		}
-	}
 	
 	public void popController(Controller controller) {
 		for(Link link:stack) {
-			Controller popCtrl = (Controller)link.getUserObject();
-			if(popCtrl == controller) {
+			BreadCrumb crumb = (BreadCrumb)link.getUserObject();
+			if(crumb.getController() == controller) {
 				popController(link);
 			}
 		}
@@ -189,44 +217,43 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Com
 		int index = stack.indexOf(source);
 		if(index < (stack.size() - 1)) {
 			
-			Controller popedCtrl = null;
+			BreadCrumb popedCrumb = null;
 			for(int i=stack.size(); i-->(index+1); ) {
 				Link link = stack.remove(i);
-				popedCtrl = (Controller)link.getUserObject();
-				popedCtrl.dispose();
+				popedCrumb = (BreadCrumb)link.getUserObject();
+				popedCrumb.dispose();
 			}
 
 			Link currentLink = stack.get(index);
-			Controller currentCtrl  = (Controller)currentLink.getUserObject();
-			setContent(currentCtrl);
+			BreadCrumb crumb  = (BreadCrumb)currentLink.getUserObject();
+			setContent(crumb.getController());
 			updateCloseLinkTitle();
-			return popedCtrl;
+			return popedCrumb.getController();
 		}
 		return null;
 	}
 
 	public void popUpToRootController(UserRequest ureq) {
 		if(stack.size() > 1) {
-			Controller popedCtrl = null;
 			for(int i=stack.size(); i-->1; ) {
 				Link link = stack.remove(i);
-				popedCtrl = (Controller)link.getUserObject();
-				popedCtrl.dispose();
+				BreadCrumb crumb = (BreadCrumb)link.getUserObject();
+				crumb.dispose();
 			}
 			
 			//set the root controller
 			Link rootLink = stack.get(0);
-			Controller rootController  = (Controller)rootLink.getUserObject();
-			setContent(rootController); 
+			BreadCrumb rootCrumb  = (BreadCrumb)rootLink.getUserObject();
+			setContent(rootCrumb.getController()); 
 			updateCloseLinkTitle();
-			fireEvent(ureq, new PopEvent(popedCtrl));
+			fireEvent(ureq, new PopEvent(rootCrumb.getController()));
 		}
 	}
 
 	public void pushController(String displayName, Controller controller) {
 		Link link = LinkFactory.createLink("crumb_" + stack.size(), null, this);
 		link.setCustomDisplayText(StringHelper.escapeHtml(displayName));
-		link.setUserObject(controller);
+		link.setUserObject(new BreadCrumb(controller));
 		stack.add(link);
 		setContent(controller);
 		updateCloseLinkTitle();
@@ -247,6 +274,43 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Com
 			Link link = stack.get(stack.size()-1);
 			closeLink.setCustomDisplayText(getTranslator().translate("doclose", new String[] { link.getCustomDisplayText() }));	
 			closeLink.setVisible(true);								
+		}
+	}
+	
+	public static class Tool {
+		private final Component component;
+		
+		public Tool(Component component) {
+			this.component = component;
+		}
+
+		public Component getComponent() {
+			return component;
+		}
+	}
+	
+	public static class BreadCrumb {
+		private final List<Tool> tools = new ArrayList<>(5);
+		private final Controller controller;
+		
+		public BreadCrumb(Controller controller) {
+			this.controller = controller;
+		}
+
+		public Controller getController() {
+			return controller;
+		}
+		
+		public List<Tool> getTools() {
+			return tools;
+		}
+		
+		public void addTool(Tool tool) {
+			tools.add(tool);
+		}
+
+		public void dispose() {
+			controller.dispose();
 		}
 	}
 }

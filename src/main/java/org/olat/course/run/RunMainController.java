@@ -40,12 +40,13 @@ import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.stack.PopEvent;
-import org.olat.core.gui.components.stack.StackedControllerImpl;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeEvent;
@@ -92,7 +93,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ArchiverMainController;
-import org.olat.course.archiver.IArchiverCallback;
+import org.olat.course.archiver.FullAccessArchiverCallback;
 import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.CoachingGroupAccessAssessmentCallback;
@@ -140,19 +141,11 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Felix Jost
  */
 public class RunMainController extends MainLayoutBasicController implements GenericEventListener, Activateable2 {
-	private static final String COMMAND_EDIT = "gotoeditor";
-	private static final String TOOLBOX_LINK_COURSECONFIG = "courseconfig";
 
 	private static final String JOINED = "joined";
 	private static final String LEFT   = "left";
 
 	private static final String CMD_START_GROUP_PREFIX = "cmd.group.start.ident.";
-
-	private static final String ACTION_CALENDAR = "cal";
-	private static final String ACTION_BOOKMARK = "bm";
-	private static final String ACTION_CHAT = "chat";
-	private static final String TOOL_BOOKMARK = "b";
-	private static final String TOOL_CHAT = "chat";
 	
 	public static final String REBUILD = "rebuild";
 	public static final String ORES_TYPE_COURSE_RUN = OresHelper.calculateTypeName(RunMainController.class, CourseModule.ORES_TYPE_COURSE);
@@ -160,17 +153,22 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 	private ICourse course;//o_clusterOK: this controller listen to course change events
 	private RepositoryEntry courseRepositoryEntry;
+	
+	
 	private MenuTree luTree;
+	//tools
+	private Link editLink, userMgmtLink, archiverLink, assessmentLink, qtistatisticLink, statisticLink, dbLink;
+	private Link efficiencyStatementsLink, bookmarkLink, calendarLink, detailsLink, noteLink, chatLink;
+	
 	private Panel contentP;
-	private StackedControllerImpl all;
 
 	private NavigationHandler navHandler;
 	private UserCourseEnvironmentImpl uce;
 	private LayoutMain3ColsController columnLayoutCtr;
 
 	private Controller currentToolCtr;
-	private ToolController toolC;
 	private Controller currentNodeController; // the currently open node config
+	private BreadcrumbedStackedPanel all;
 
 	private boolean isInEditor = false;
 
@@ -242,7 +240,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		logAudit("Entering course: [[["+courseTitle+"]]]", course.getResourceableId().toString());
 		
 		// set up the components
-		all = new StackedControllerImpl(getWindowControl(), getTranslator(), "o_course_breadcumbs");
+		all = new BreadcrumbedStackedPanel("courseStackPanel", getTranslator(), this);
+				
+		//StackedControllerImpl(getWindowControl(), getTranslator(), "o_course_breadcumbs");
 		luTree = new MenuTree(null, "luTreeRun", this);
 		luTree.setExpandSelectedNode(false);
 		contentP = new Panel("building_block_content");
@@ -282,12 +282,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		glossaryToolCtr = new CourseGlossaryToolLinkController(getWindowControl(), ureq, course, getTranslator(), hasGlossaryRights, 
 				uce.getCourseEnvironment(), glossaryMarkerCtr);
 		listenTo(glossaryToolCtr);
-		// init the menu and tool controller
-		toolC = initToolController(identity);
-		listenTo (toolC);
 		
-		Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
-
+				
 		if (glossaryMarkerCtr != null) {
 			listenTo(glossaryMarkerCtr);
 			// enable / disable glossary highlighting according to user prefs
@@ -304,30 +300,31 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			} else {
 				glossaryMarkerCtr.setTextMarkingEnabled(state.booleanValue());
 			}
-			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), luTree, toolComp, glossaryMarkerCtr.getInitialComponent(), "course" + course.getResourceableId());				
+			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), luTree, glossaryMarkerCtr.getInitialComponent(), "course" + course.getResourceableId());				
 		} else {
-			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), luTree, toolComp, contentP, "courseRun" + course.getResourceableId());							
+			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), luTree, contentP, "courseRun" + course.getResourceableId());							
 		}
 		listenTo(columnLayoutCtr);
 
 		// activate the custom course css if any
 		setCustomCSS(CourseFactory.getCustomCourseCss(ureq.getUserSession(), uce.getCourseEnvironment()));
-
 		all.pushController(courseTitle, columnLayoutCtr);
-		listenTo(all);
+		
+		// init the menu and tool controller
+		initToolController();
+
 		coursemain = createVelocityContainer("index");
+		coursemain.setDomReplaceable(false);
 		// see function gotonode in functions.js to see why we need the repositoryentry-key here:
 		// it is to correctly apply external links using course-internal links via javascript
 		coursemain.contextPut("courserepokey", courseRepositoryEntry.getKey());
-		coursemain.put("coursemain", all.getInitialComponent());
+		//coursemain.put("coursemain", all.getInitialComponent());
 
-		putInitialPanel(coursemain);
+		putInitialPanel(all);
 
 		// disposed message controller must be created beforehand
-		Panel empty = new Panel("empty");// empty panel set as "menu" and "tool"
 		Controller courseCloser = CourseFactory.createDisposedCourseRestartController(ureq, wControl, courseRepositoryEntry);
-		Controller disposedRestartController = new LayoutMain3ColsController(ureq, wControl, empty, empty,
-				courseCloser.getInitialComponent(), "disposed course" + course.getResourceableId());
+		Controller disposedRestartController = new LayoutMain3ColsController(ureq, wControl, courseCloser);
 		setDisposedMsgController(disposedRestartController);
 
 		// add as listener to course so we are being notified about course events:
@@ -466,75 +463,49 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 *      org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.control.Event)
 	 */
-	public void event(UserRequest ureq, Component source, Event event) {	
-		
-		if (source == luTree) {
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(editLink == source) {
+			all.popUpToRootController(ureq);
+			doEdit(ureq);
+		} else if(userMgmtLink == source) {
+			all.popUpToRootController(ureq);
+			launchMembersManagement(ureq);
+		} else if(archiverLink == source) {
+			all.popUpToRootController(ureq);
+			launchArchive(ureq);
+		} else if(assessmentLink == source) {
+			all.popUpToRootController(ureq);
+			launchAssessmentTool(ureq);
+		} else if(qtistatisticLink == source) {
+			all.popUpToRootController(ureq);
+			launchAssessmentStatistics(ureq);
+		} else if(statisticLink == source) {
+			all.popUpToRootController(ureq);
+			launchStatistics(ureq);
+		} else if(dbLink == source) {
+			all.popUpToRootController(ureq);
+			launchDbs(ureq);
+		} else if(efficiencyStatementsLink == source) {
+			launchEfficiencyStatements(ureq);
+		} else if(bookmarkLink == source) {
+			toogleBookmark();
+		} else if(calendarLink == source) {
+			launchCalendar(ureq);
+		} else if(detailsLink == source) {
+			launchDetails(ureq);
+		} else if(noteLink == source) {
+			launchPersonalNotes(ureq);
+		} else if(chatLink == source) {
+			launchChat(ureq);
+		} else if(source instanceof Link && ((Link)source).getCommand().startsWith(CMD_START_GROUP_PREFIX)) {
+			String groupIdent = ((Link)source).getCommand().substring(CMD_START_GROUP_PREFIX.length());
+			Long groupKey = new Long(Long.parseLong(groupIdent));
+			launchGroup(ureq, groupKey);
+		} else if (source == luTree) {
 			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
 				TreeEvent tev = (TreeEvent) event;
-				if(this.assessmentChangedEventReceived) {
-					uce.getScoreAccounting().evaluateAll();
-					assessmentChangedEventReceived = false;
-				}
-				
-				//getWindowControl().setInfo("time: "+System.currentTimeMillis());
-				// goto node:
-				// after a click in the tree, evaluate the model anew, and set the
-				// selection of the tree again
-				NodeClickedRef nclr = navHandler.evaluateJumpToTreeNode(ureq, getWindowControl(), treeModel, tev, this, null, currentNodeController);
-				if (!nclr.isVisible()) {
-					getWindowControl().setWarning(translate("msg.nodenotavailableanymore"));
-					// go to root since the current node is no more visible 
-					this.updateTreeAndContent(ureq, null, null);					
-					return;
-				}
-				// a click to a subtree's node
-				if (nclr.isHandledBySubTreeModelListener() || nclr.getSelectedNodeId() == null) {
-					if(nclr.getRunController() != null) {
-						//there is an update to the currentNodeController, apply it
-						if (currentNodeController != null && !currentNodeController.isDisposed()) {
-							currentNodeController.dispose();
-						}
-						currentNodeController = nclr.getRunController();
-						Component nodeComp = currentNodeController.getInitialComponent();
-						contentP.setContent(nodeComp);
-					}
-					return;
-				}
-
-				// set the new treemodel
-				treeModel = nclr.getTreeModel();
-				luTree.setTreeModel(treeModel);
-
-				// set the new tree selection
-				String nodeId = nclr.getSelectedNodeId();
-				luTree.setSelectedNodeId(nodeId);
-				luTree.setOpenNodeIds(nclr.getOpenNodeIds());
-				currentCourseNode = nclr.getCalledCourseNode();
-
-				// get new run controller. Dispose only if not already disposed in navHandler.evaluateJumpToTreeNode()
-				if (currentNodeController != null && !currentNodeController.isDisposed()) currentNodeController.dispose();
-				currentNodeController = nclr.getRunController();
-				Component nodeComp = currentNodeController.getInitialComponent();
-				contentP.setContent(nodeComp);
-				//fxdiff BAKS-7 Resume function
-				addToHistory(ureq, currentNodeController);
-				
-				// set glossary wrapper dirty after menu click to make it reload the glossary
-				// stuff properly when in AJAX mode
-				if (glossaryMarkerCtr != null && glossaryMarkerCtr.isTextMarkingEnabled()) {
-					glossaryMarkerCtr.getInitialComponent().setDirty(true);
-				}
-				
-				//re set current user count but not every click
-				if (currentUserCountLink != null) {
-					OLATResourceable courseRunOres = OresHelper.createOLATResourceableInstance(RunMainController.ORES_TYPE_COURSE_RUN, course.getResourceableId());
-					int cUsers = CoordinatorManager.getInstance().getCoordinator().getEventBus().getListeningIdentityCntFor(courseRunOres);
-					if (cUsers == 0) {
-						cUsers = 1;
-					}
-					currentUserCountLink.setCustomDisplayText(getTranslator().translate("participants.in.course", new String[]{ String.valueOf(cUsers) }));
-					currentUserCountLink.setEnabled(false);
-				}
+				doNodeClick(ureq, tev);
 			}
 		} else if (source == coursemain) {
 			if (event.getCommand().equals("activateCourseNode")) {
@@ -569,12 +540,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				updateTreeAndContent(ureq, null, null);
 				// and also tools (maybe new assessable nodes -> show efficiency
 				// statment)
-				removeAsListenerAndDispose(toolC);
-				toolC = initToolController(ureq.getIdentity());
-				listenTo(toolC);
-				
-				Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
-				columnLayoutCtr.setCol2(toolComp);
+				initToolController();
 			}
 		} else {
 			// release current node controllers resources and do cleanup if it was not the editor!
@@ -644,10 +610,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				processBusinessGroupModifiedEvent((BusinessGroupModifiedEvent)event);
 				updateTreeAndContent(ureq, currentCourseNode, null);
 			}
-		} else if (source == toolC) {
-			String cmd = event.getCommand();
-			doHandleToolEvents(ureq, cmd);
-
 		} else if (source == glossaryToolCtr) {
 			//fire info to IFrameDisplayController
 			Long courseID = course.getResourceableId();
@@ -655,180 +617,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			String oresName = ICourse.class.getSimpleName();
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(new MultiUserEvent(event.getCommand()), OresHelper.createOLATResourceableInstance(oresName, courseID));
 		}
-	}
-
-	private void doHandleToolEvents(UserRequest ureq, String cmd) {
-		if (cmd.indexOf(CMD_START_GROUP_PREFIX) == 0) {
-			// launch the group in a new top nav tab
-			String groupIdent = cmd.substring(CMD_START_GROUP_PREFIX.length());
-			Long groupKey = new Long(Long.parseLong(groupIdent));
-			BusinessGroup group = businessGroupService.loadBusinessGroup(groupKey);
-			// check if the group still exists and the user is really in this group
-			// (security, changed group)
-			if (group != null && businessGroupService.isIdentityInBusinessGroup(ureq.getIdentity(), group)) {
-				// create group without admin flag enabled even though the user might be
-				// coach. the flag is not needed here
-				// since the groups knows itself if the user is coach and the user sees
-				// only his own groups.
-				String bsuinessPath = "[BusinessGroup:" + group.getKey() + "]";
-				NewControllerFactory.getInstance().launch(bsuinessPath, ureq, getWindowControl());
-			} else {
-				// display error and do logging
-				getWindowControl().setError(translate("error.invalid.group"));
-				logAudit("User tried to launch a group but user is not owner or participant "
-						+ "of group or group doesn't exist. Hacker attack or group has been changed or deleted. group key :: " + groupKey, null);
-				// refresh toolbox that contained wrong group
-				reloadGroupMemberships(ureq.getIdentity());
-				removeAsListenerAndDispose(toolC);
-				toolC = initToolController(ureq.getIdentity());
-				listenTo(toolC);
-				Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
-				columnLayoutCtr.setCol2(toolComp);
-
-			}
-		} else if (cmd.equals(COMMAND_EDIT)) {
-			doEdit(ureq) ;
-		} else if (cmd.equals("unifiedusermngt")) {
-			launchMembersManagement(ureq);
-		} else if (cmd.equals("statistic")) {
-			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
-				currentToolCtr = new StatisticMainController(ureq, getWindowControl(), course);
-				listenTo(currentToolCtr);
-				all.pushController(translate("command.openstatistic"), currentToolCtr);
-			} else throw new OLATSecurityException("clicked statistic, but no according right");
-		} else if (cmd.equals(TOOL_CHAT)) {
-			boolean vip = isCourseCoach || isCourseAdmin;
-			OpenInstantMessageEvent event = new OpenInstantMessageEvent(ureq, course, courseTitle, vip);
-			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
-		} else if (cmd.equals("qtistatistic")) {
-			launchAssessmentStatistics(ureq);
-		} else if (cmd.equals("customDb")) {
-			if (hasCourseRight(CourseRights.RIGHT_DB) || isCourseAdmin) {
-				currentToolCtr = new CustomDBMainController(ureq, getWindowControl(), course);
-				listenTo(currentToolCtr);
-				all.pushController(translate("command.opendb"), currentToolCtr);
-			} else throw new OLATSecurityException("clicked dbs, but no according right");
-		}else if (cmd.equals("archiver")) {
-			if (hasCourseRight(CourseRights.RIGHT_ARCHIVING) || isCourseAdmin) {
-				currentToolCtr = new ArchiverMainController(ureq, getWindowControl(), course, new IArchiverCallback() {
-					public boolean mayArchiveQtiResults() {
-						return true;
-					}
-
-					public boolean mayArchiveLogfiles() {
-						return true;
-					}
-
-					public boolean mayArchiveCoursestructure() {
-						return true;
-					}
-
-					public boolean mayArchiveProperties() {
-						return true;
-					}
-
-					public boolean mayArchiveHandedInTasks() {
-						return true;
-					}
-
-					public boolean mayArchiveForums() {
-						return true;
-					}
-
-					public boolean mayArchiveDialogs() {
-						return true;
-					}
-
-					public boolean mayArchiveWikis() {
-						return true;
-					}
-
-					public boolean mayArchiveProjectBroker() {
-						return true;
-					}
-
-					@Override
-					public boolean mayArchiveScorm() {
-						return true;
-					}
-
-					@Override
-					public boolean mayArchiveChecklist() {
-						return true;
-					}
-				});
-				listenTo(currentToolCtr);
-				all.pushController(translate("command.openarchiver"), currentToolCtr);
-			} else throw new OLATSecurityException("clicked archiver, but no according right");
-
-		} else if (cmd.equals("assessment")) {
-			launchAssessmentTool(ureq);
-		} else if (cmd.equals("efficiencystatement")) {
-			// will not be disposed on course run dispose, popus up as new
-			// browserwindow
-			ControllerCreator ctrlCreator = new ControllerCreator() {
-				public Controller createController(UserRequest lureq, WindowControl lwControl) {
-					EfficiencyStatementController efficiencyStatementController = new EfficiencyStatementController(lwControl, lureq, courseRepositoryEntry.getKey());
-					LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, getWindowControl(), efficiencyStatementController);
-					layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), uce.getCourseEnvironment()));
-					return layoutCtr;
-				}					
-			};
-			//wrap the content controller into a full header layout
-			ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, ctrlCreator);
-			//open in new browser window
-			openInNewBrowserWindow(ureq, layoutCtrlr);
-			//
-		} else if (cmd.equals("personalnote")) {
-			// will not be disposed on course run dispose, popus up as new
-			// browserwindow
-			ControllerCreator ctrlCreator = new ControllerCreator() {
-				public Controller createController(UserRequest lureq, WindowControl lwControl) {
-					Controller notesCtr = new NoteController(lureq, course, getExtendedCourseTitle(lureq.getLocale()), lwControl);
-					LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, notesCtr);
-					layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), uce.getCourseEnvironment()));
-					layoutCtr.addDisposableChildController(notesCtr); // dispose glossary on layout dispose
-					return layoutCtr;
-				}					
-			};
-			//wrap the content controller into a full header layout
-			ControllerCreator popupLayoutCtr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, ctrlCreator);
-			//open in new browser window
-			openInNewBrowserWindow(ureq, popupLayoutCtr);
-			//
-		} else if (cmd.equals(TOOLBOX_LINK_COURSECONFIG)) {
-			String businessPath = "[RepositorySite:0][RepositoryEntry:" + courseRepositoryEntry.getKey() + "]";
-			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-		} else if (cmd.equals(ACTION_BOOKMARK)) { // add bookmark
-			boolean marked = markManager.isMarked(courseRepositoryEntry, getIdentity(), null);
-			if(marked) {
-				markManager.removeMark(courseRepositoryEntry, getIdentity(), null);
-			} else {
-				String businessPath = "[RepositoryEntry:" + courseRepositoryEntry.getKey() + "]";
-				markManager.setMark(courseRepositoryEntry, getIdentity(), null, businessPath);
-			}
-			String css = marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE;
-			toolC.setCssClass(TOOL_BOOKMARK, css);
-		} else if (cmd.equals(ACTION_CALENDAR)) { // popup calendar
-			ControllerCreator ctrlCreator = new ControllerCreator() {
-				public Controller createController(UserRequest lureq, WindowControl lwControl) {
-					ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(courseRepositoryEntry);
-					WindowControl llwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, lwControl);
-					CourseCalendarController calendarController = new CourseCalendarController(lureq, llwControl, course);					
-					// use a one-column main layout
-					LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, llwControl, calendarController);
-					layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), uce.getCourseEnvironment()));
-					layoutCtr.addDisposableChildController(calendarController); // dispose calendar on layout dispose
-					return layoutCtr;					
-				}					
-			};
-			//wrap the content controller into a full header layout
-			ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, ctrlCreator);
-			//open in new browser window
-			PopupBrowserWindow pbw = getWindowControl().getWindowBackOffice().getWindowManager().createNewPopupBrowserWindowFor(ureq, layoutCtrlr);
-			pbw.open(ureq);
-			//
-		} 
 	}
 	
 	private void doEdit(UserRequest ureq) {
@@ -840,9 +628,185 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				currentToolCtr = ec;
 				listenTo(currentToolCtr);
 				isInEditor = true;
-				all.pushController(translate("command.openeditor"), currentToolCtr);
 			}
 		} else throw new OLATSecurityException("wanted to activate editor, but no according right");
+	}
+	
+	private void doNodeClick(UserRequest ureq, TreeEvent tev) {
+		if(assessmentChangedEventReceived) {
+			uce.getScoreAccounting().evaluateAll();
+			assessmentChangedEventReceived = false;
+		}
+		
+		//getWindowControl().setInfo("time: "+System.currentTimeMillis());
+		// goto node:
+		// after a click in the tree, evaluate the model anew, and set the
+		// selection of the tree again
+		NodeClickedRef nclr = navHandler.evaluateJumpToTreeNode(ureq, getWindowControl(), treeModel, tev, this, null, currentNodeController);
+		if (!nclr.isVisible()) {
+			getWindowControl().setWarning(translate("msg.nodenotavailableanymore"));
+			// go to root since the current node is no more visible 
+			this.updateTreeAndContent(ureq, null, null);					
+			return;
+		}
+		// a click to a subtree's node
+		if (nclr.isHandledBySubTreeModelListener() || nclr.getSelectedNodeId() == null) {
+			if(nclr.getRunController() != null) {
+				//there is an update to the currentNodeController, apply it
+				if (currentNodeController != null && !currentNodeController.isDisposed()) {
+					currentNodeController.dispose();
+				}
+				currentNodeController = nclr.getRunController();
+				Component nodeComp = currentNodeController.getInitialComponent();
+				contentP.setContent(nodeComp);
+			}
+			return;
+		}
+
+		// set the new treemodel
+		treeModel = nclr.getTreeModel();
+		luTree.setTreeModel(treeModel);
+
+		// set the new tree selection
+		String nodeId = nclr.getSelectedNodeId();
+		luTree.setSelectedNodeId(nodeId);
+		luTree.setOpenNodeIds(nclr.getOpenNodeIds());
+		currentCourseNode = nclr.getCalledCourseNode();
+
+		// get new run controller. Dispose only if not already disposed in navHandler.evaluateJumpToTreeNode()
+		if (currentNodeController != null && !currentNodeController.isDisposed()) currentNodeController.dispose();
+		currentNodeController = nclr.getRunController();
+		Component nodeComp = currentNodeController.getInitialComponent();
+		contentP.setContent(nodeComp);
+		//fxdiff BAKS-7 Resume function
+		addToHistory(ureq, currentNodeController);
+		
+		// set glossary wrapper dirty after menu click to make it reload the glossary
+		// stuff properly when in AJAX mode
+		if (glossaryMarkerCtr != null && glossaryMarkerCtr.isTextMarkingEnabled()) {
+			glossaryMarkerCtr.getInitialComponent().setDirty(true);
+		}
+		
+		//re set current user count but not every click
+		if (currentUserCountLink != null) {
+			OLATResourceable courseRunOres = OresHelper.createOLATResourceableInstance(RunMainController.ORES_TYPE_COURSE_RUN, course.getResourceableId());
+			int cUsers = CoordinatorManager.getInstance().getCoordinator().getEventBus().getListeningIdentityCntFor(courseRunOres);
+			if (cUsers == 0) {
+				cUsers = 1;
+			}
+			currentUserCountLink.setCustomDisplayText(getTranslator().translate("participants.in.course", new String[]{ String.valueOf(cUsers) }));
+			currentUserCountLink.setEnabled(false);
+		}
+	}
+	
+	private void launchArchive(UserRequest ureq) {
+		if (hasCourseRight(CourseRights.RIGHT_ARCHIVING) || isCourseAdmin) {
+			currentToolCtr = new ArchiverMainController(ureq, getWindowControl(), course, new FullAccessArchiverCallback());
+			listenTo(currentToolCtr);
+			all.pushController(translate("command.openarchiver"), currentToolCtr);
+		} else throw new OLATSecurityException("clicked archiver, but no according right");
+	}
+	
+	private void launchCalendar(UserRequest ureq) {
+		ControllerCreator ctrlCreator = new ControllerCreator() {
+			public Controller createController(UserRequest lureq, WindowControl lwControl) {
+				ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(courseRepositoryEntry);
+				WindowControl llwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, lwControl);
+				CourseCalendarController calendarController = new CourseCalendarController(lureq, llwControl, course);					
+				// use a one-column main layout
+				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, llwControl, calendarController);
+				layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), uce.getCourseEnvironment()));
+				layoutCtr.addDisposableChildController(calendarController); // dispose calendar on layout dispose
+				return layoutCtr;					
+			}					
+		};
+		//wrap the content controller into a full header layout
+		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, ctrlCreator);
+		//open in new browser window
+		PopupBrowserWindow pbw = getWindowControl().getWindowBackOffice().getWindowManager().createNewPopupBrowserWindowFor(ureq, layoutCtrlr);
+		pbw.open(ureq);
+	}
+	
+	private void launchChat(UserRequest ureq) {
+		boolean vip = isCourseCoach || isCourseAdmin;
+		OpenInstantMessageEvent event = new OpenInstantMessageEvent(ureq, course, courseTitle, vip);
+		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
+	}
+	
+	private void launchDetails(UserRequest ureq) {
+		String businessPath = "[RepositorySite:0][RepositoryEntry:" + courseRepositoryEntry.getKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+	
+	private void launchDbs(UserRequest ureq) {
+		if (hasCourseRight(CourseRights.RIGHT_DB) || isCourseAdmin) {
+			currentToolCtr = new CustomDBMainController(ureq, getWindowControl(), course);
+			listenTo(currentToolCtr);
+			all.pushController(translate("command.opendb"), currentToolCtr);
+		} else throw new OLATSecurityException("clicked dbs, but no according right");
+	}
+	
+	private void launchEfficiencyStatements(UserRequest ureq) {
+		// will not be disposed on course run dispose, popus up as new browserwindow
+		ControllerCreator ctrlCreator = new ControllerCreator() {
+			public Controller createController(UserRequest lureq, WindowControl lwControl) {
+				EfficiencyStatementController efficiencyStatementController = new EfficiencyStatementController(lwControl, lureq, courseRepositoryEntry.getKey());
+				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, getWindowControl(), efficiencyStatementController);
+				layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), uce.getCourseEnvironment()));
+				return layoutCtr;
+			}					
+		};
+		//wrap the content controller into a full header layout
+		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, ctrlCreator);
+		//open in new browser window
+		openInNewBrowserWindow(ureq, layoutCtrlr);
+	}
+	
+	private void launchGroup(UserRequest ureq, Long groupKey) {
+		// launch the group in a new top nav tab
+		BusinessGroup group = businessGroupService.loadBusinessGroup(groupKey);
+		// check if the group still exists and the user is really in this group
+		// (security, changed group)
+		if (group != null && businessGroupService.isIdentityInBusinessGroup(getIdentity(), group)) {
+			// create group without admin flag enabled even though the user might be
+			// coach. the flag is not needed here
+			// since the groups knows itself if the user is coach and the user sees
+			// only his own groups.
+			String bsuinessPath = "[BusinessGroup:" + group.getKey() + "]";
+			NewControllerFactory.getInstance().launch(bsuinessPath, ureq, getWindowControl());
+		} else {
+			// display error and do logging
+			getWindowControl().setError(translate("error.invalid.group"));
+			logAudit("User tried to launch a group but user is not owner or participant "
+					+ "of group or group doesn't exist. Hacker attack or group has been changed or deleted. group key :: " + groupKey, null);
+			// refresh toolbox that contained wrong group
+			reloadGroupMemberships(getIdentity());
+		}
+	}
+	
+	private void launchPersonalNotes(UserRequest ureq) {
+		// will not be disposed on course run dispose, popus up as new browserwindow
+		ControllerCreator ctrlCreator = new ControllerCreator() {
+			public Controller createController(UserRequest lureq, WindowControl lwControl) {
+				Controller notesCtr = new NoteController(lureq, course, getExtendedCourseTitle(lureq.getLocale()), lwControl);
+				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, notesCtr);
+				layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), uce.getCourseEnvironment()));
+				layoutCtr.addDisposableChildController(notesCtr); // dispose glossary on layout dispose
+				return layoutCtr;
+			}					
+		};
+		//wrap the content controller into a full header layout
+		ControllerCreator popupLayoutCtr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, ctrlCreator);
+		//open in new browser window
+		openInNewBrowserWindow(ureq, popupLayoutCtr);
+	}
+	
+	private void launchStatistics(UserRequest ureq) {
+		if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
+			currentToolCtr = new StatisticMainController(ureq, getWindowControl(), course);
+			listenTo(currentToolCtr);
+			all.pushController(translate("command.openstatistic"), currentToolCtr);
+		} else throw new OLATSecurityException("clicked statistic, but no according right");
 	}
 	
 	private MembersManagementMainController launchMembersManagement(UserRequest ureq) {
@@ -909,6 +873,18 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		} else throw new OLATSecurityException("clicked assessment tool in course::" + course.getResourceableId()
 				+ ", but no right to launch it. Username::" + ureq.getIdentity().getName());
 	}
+	
+	private void toogleBookmark() {
+		boolean marked = markManager.isMarked(courseRepositoryEntry, getIdentity(), null);
+		if(marked) {
+			markManager.removeMark(courseRepositoryEntry, getIdentity(), null);
+		} else {
+			String businessPath = "[RepositoryEntry:" + courseRepositoryEntry.getKey() + "]";
+			markManager.setMark(courseRepositoryEntry, getIdentity(), null, businessPath);
+		}
+		String css = marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE;
+		bookmarkLink.setIconCSS(css);
+	}
 
 	/**
 	 * implementation of listener which listens to publish events
@@ -971,7 +947,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					// update tools, maybe efficiency statement link has changed
 					UserEfficiencyStatement es = efficiencyStatementManager
 							.getUserEfficiencyStatementLight(courseRepositoryEntry.getKey(), identity);
-					toolC.setEnabled("command.efficiencystatement", (es != null));
+					efficiencyStatementsLink.setEnabled(es != null);
 				}
 				// raise a flag to indicate refresh
 				needsRebuildAfterRunDone = true;
@@ -999,11 +975,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			// 2) reinitialize the users roles and rights
 			reloadUserRolesAndRights(identity);
 			// 3) rebuild toolboxes with link to groups and tools
-			removeAsListenerAndDispose(toolC);
-			toolC = initToolController(identity);
-			listenTo(toolC);
-			Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
-			columnLayoutCtr.setCol2(toolComp);
+			 initToolController();
 			needsRebuildAfterRunDone = true;
 		} else if (bgme.getCommand().equals(BusinessGroupModifiedEvent.GROUPRIGHTS_MODIFIED_EVENT)) {
 			// check if this affects a right group where the user does participate.
@@ -1016,11 +988,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				// 2) reinitialize the users roles and rights
 				reloadUserRolesAndRights(identity);
 				// 3) rebuild toolboxes with link to groups and tools
-				removeAsListenerAndDispose(toolC);
-				toolC = initToolController(identity);
-				listenTo(toolC);
-				Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
-				columnLayoutCtr.setCol2(toolComp);
+				initToolController();
 			}
 		}
 	}
@@ -1043,30 +1011,43 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 * @param ureq
 	 * @return ToolController
 	 */
-	private ToolController initToolController(Identity identity) {
-		
+	private void initToolController() {
 		ToolController myTool = ToolFactory.createToolController(getWindowControl());
 		CourseConfig cc = uce.getCourseEnvironment().getCourseConfig();
-
+		
+		initEditionTools();
+		initGroupTools(myTool);
+		initGeneralTools(cc);
+	}
+	
+	private void initEditionTools() {
 		// 1) administrative tools
 		if (isCourseAdmin || isCourseCoach || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)
 				|| hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || hasCourseRight(CourseRights.RIGHT_ARCHIVING)
 				|| hasCourseRight(CourseRights.RIGHT_STATISTICS) || hasCourseRight(CourseRights.RIGHT_DB)
 				|| hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
-			myTool.addHeader(translate("header.tools"));
+
+			Dropdown editTools = new Dropdown("editTools", getTranslator());
+			editTools.setButton(false);
+			editTools.setI18nKey("header.tools");
+			
 			if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
 				boolean managed = RepositoryEntryManagedFlag.isManaged(courseRepositoryEntry, RepositoryEntryManagedFlag.editcontent);
-				myTool.addLink(COMMAND_EDIT, translate("command.openeditor"), "edit.cmd", null, "o_sel_course_open_editor", false);
-				myTool.setEnabled("edit.cmd", !managed);
+				editLink = LinkFactory.createToolLink("edit.cmd", translate("command.openeditor"), this, "o_sel_course_open_editor");
+				editLink.setEnabled(!managed);
+				editTools.addComponent(editLink);
 			}
 			if (hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || isCourseAdmin) {
-				myTool.addLink("unifiedusermngt", translate("command.opensimplegroupmngt"), null, null, "o_sel_course_open_membersmgmt", false);
+				userMgmtLink = LinkFactory.createToolLink("unifiedusermngt", translate("command.opensimplegroupmngt"), this, "o_sel_course_open_membersmgmt");
+				editTools.addComponent(userMgmtLink);
 			}
 			if (hasCourseRight(CourseRights.RIGHT_ARCHIVING) || isCourseAdmin) {
-				myTool.addLink("archiver", translate("command.openarchiver"));
+				archiverLink = LinkFactory.createToolLink("archiver", translate("command.openarchiver"), this);
+				editTools.addComponent(archiverLink);
 			}
 			if (hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseCoach || isCourseAdmin) {
-				myTool.addLink("assessment", translate("command.openassessment"));
+				assessmentLink = LinkFactory.createToolLink("assessment",translate("command.openassessment"), this);
+				editTools.addComponent(assessmentLink);
 			}
 			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin || isCourseCoach) {
 				final AtomicInteger qtiNodes = new AtomicInteger();
@@ -1079,62 +1060,96 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					}
 				}, course.getRunStructure().getRootNode(), true).visitAll();
 				if(qtiNodes.intValue() > 0) {
-					myTool.addLink("qtistatistic", translate("command.openqtistatistic"));
+					qtistatisticLink = LinkFactory.createToolLink("qtistatistic", translate("command.openqtistatistic"), this);
+					editTools.addComponent(qtistatisticLink);
 				}
 			}
 			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
-				myTool.addLink("statistic", translate("command.openstatistic"));
+				statisticLink = LinkFactory.createToolLink("statistic",translate("command.openstatistic"), this);
+				editTools.addComponent(statisticLink);
 			}
 			if (CourseDBManager.getInstance().isEnabled() && (hasCourseRight(CourseRights.RIGHT_DB) || isCourseAdmin)) {
-				myTool.addLink("customDb", translate("command.opendb"));
+				dbLink = LinkFactory.createToolLink("customDb",translate("command.opendb"), this);
+				editTools.addComponent(dbLink);
 			}
+			
+			all.addTool(editTools, true);
 		}
-
+	}
+	
+	private void initGroupTools(ToolController myTool) {
+		Dropdown groupTools = new Dropdown("editTools", getTranslator());
+		groupTools.setButton(false);
+		groupTools.setI18nKey("header.tools.participatedGroups");
+		
+		
 		// 2) add coached groups
 		if (uce.getCoachedGroups().size() > 0) {
-			myTool.addHeader(translate("header.tools.ownerGroups"));
+			//myTool.addHeader(translate("header.tools.ownerGroups"));
 			for (BusinessGroup group:uce.getCoachedGroups()) {
-				myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), StringHelper.escapeHtml(group.getName()));
+				//myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), StringHelper.escapeHtml(group.getName()));
+				
+				Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), StringHelper.escapeHtml(group.getName()), this);
+				groupTools.addComponent(link);
 			}
 		}
 
 		// 3) add participating groups
 		if (uce.getParticipatingGroups().size() > 0) {
-			myTool.addHeader(translate("header.tools.participatedGroups"));
+			//myTool.addHeader(translate("header.tools.participatedGroups"));
 			for (BusinessGroup group: uce.getParticipatingGroups()) {
 				myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), group.getName());
+				
+				Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), StringHelper.escapeHtml(group.getName()), this);
+				groupTools.addComponent(link);
 			}
 		}
 
 		// 5) add waiting-list groups
 		if (uce.getWaitingLists().size() > 0) {
-			myTool.addHeader(translate("header.tools.waitingListGroups"));
+			//myTool.addHeader(translate("header.tools.waitingListGroups"));
 			for (BusinessGroup group:uce.getWaitingLists()) {
-				int pos = businessGroupService.getPositionInWaitingListFor(identity, group);
-				myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), group.getName() + "(" + pos + ")", group
-						.getKey().toString(), null);
-				myTool.setEnabled(group.getKey().toString(), false);
+				int pos = businessGroupService.getPositionInWaitingListFor(getIdentity(), group);
+				//myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), group.getName() + "(" + pos + ")", group.getKey().toString(), null);
+				//myTool.setEnabled(group.getKey().toString(), false);
+				
+				String name = StringHelper.escapeHtml(group.getName()) + " (" + pos + ")";
+				Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), name, this);
+				link.setEnabled(false);
+				groupTools.addComponent(link);
 			}
 		}
-
+		
+		all.addTool(groupTools, false);
+	}
+	
+	private void initGeneralTools(CourseConfig cc) {
 		// new toolbox 'general'
-		myTool.addHeader(translate("header.tools.general"));
+		//myTool.addHeader(translate("header.tools.general"));
 		if (cc.isCalendarEnabled() && !isGuest) {
-			myTool.addPopUpLink(ACTION_CALENDAR, translate("command.calendar"), null, null, "950", "750", false);
+			//myTool.addPopUpLink(ACTION_CALENDAR, translate("command.calendar"), null, null, "950", "750", false);
+			calendarLink = LinkFactory.createToolLink("calendar",translate("command.calendar"), this);
+			calendarLink.setIconCSS("o_icon o_icon_calendar");
+			all.addTool(calendarLink, false);
 		}
 		if (cc.hasGlossary()) {
-			myTool.addComponent(glossaryToolCtr.getInitialComponent());
+			all.addTool(glossaryToolCtr.getInitialComponent(), false);
 		}
 		if (showCourseConfigLink) {
-		  myTool.addLink(TOOLBOX_LINK_COURSECONFIG, translate("command.courseconfig"));
+			detailsLink = LinkFactory.createToolLink("courseconfig",translate("command.courseconfig"), this);
+			all.addTool(detailsLink, false);
 		}
 		if (!isGuest) {
-			myTool.addPopUpLink("personalnote", translate("command.personalnote"), null, null, "750", "550", false);
+			//myTool.addPopUpLink("personalnote", translate("command.personalnote"), null, null, "750", "550", false);
+			noteLink = LinkFactory.createToolLink("personalnote",translate("command.personalnote"), this);
+			all.addTool(noteLink, false);
 		}
 		if (offerBookmark && !isGuest) {
 			boolean marked = markManager.isMarked(courseRepositoryEntry, getIdentity(), null);
-			String css = marked ? "b_mark_set" : "b_mark_not_set";
-			myTool.addLink(ACTION_BOOKMARK, translate("command.bookmark"), TOOL_BOOKMARK, css);
+			String css = marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE;
+			bookmarkLink = LinkFactory.createToolLink("bookmark",translate("command.bookmark"), this);
+			bookmarkLink.setIconCSS(css);
+			all.addTool(bookmarkLink, false);
 		}
 		if (cc.isEfficencyStatementEnabled() && course.hasAssessableNodes() && !isGuest) {
 			// link to efficiency statements should
@@ -1145,12 +1160,16 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			// assessment data exists for user
 			// - appear as link when configured, assessable node exist and assessment
 			// data exists for user
-			myTool.addPopUpLink("efficiencystatement", translate("command.efficiencystatement"), "command.efficiencystatement", null,
-					"750", "800", false);
+			//myTool.addPopUpLink("efficiencystatement", translate("command.efficiencystatement"), "command.efficiencystatement", null,
+			//		"750", "800", false);
+			
+			efficiencyStatementsLink = LinkFactory.createToolLink("efficiencystatement",translate("command.efficiencystatement"), this);
+			all.addTool(efficiencyStatementsLink, false);
+			
 			UserEfficiencyStatement es = efficiencyStatementManager
-					.getUserEfficiencyStatementLight(courseRepositoryEntry.getKey(), identity);
+					.getUserEfficiencyStatementLight(courseRepositoryEntry.getKey(), getIdentity());
 			if (es == null) {
-				myTool.setEnabled("command.efficiencystatement", false);
+				efficiencyStatementsLink.setEnabled(false);
 			}
 		}
 		
@@ -1159,14 +1178,14 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		boolean chatIsEnabled = !isGuest && imModule.isEnabled() && imModule.isCourseEnabled()
 				&& CourseModule.isCourseChatEnabled() && cc.isChatEnabled();
 		if(chatIsEnabled) {
-			myTool.addLink(ACTION_CHAT, translate("command.coursechat"), TOOL_CHAT, null);
+			chatLink = LinkFactory.createToolLink("chat",translate("command.coursechat"), this);
+			all.addTool(chatLink, false);
 		}
 		
 		if (CourseModule.displayParticipantsCount() && !isGuest) {
-			addCurrentUserCount(myTool);
+			//TODO toolbox
+			//addCurrentUserCount(myTool);
 		}
-	
-		return myTool;
 	}
 
 	private void updateCurrentUserCount() {

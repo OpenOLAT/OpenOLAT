@@ -25,7 +25,8 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -52,7 +53,7 @@ import org.olat.resource.accesscontrol.AccessResult;
  */
 public class RepositoryMainAccessControllerWrapper extends MainLayoutBasicController implements Activateable2 {
 
-	private final Panel contentP;
+	private final StackedPanel contentP;
 	private VelocityContainer mainVC;
 	private Controller accessController;
 	private final MainLayoutController resController;
@@ -60,28 +61,29 @@ public class RepositoryMainAccessControllerWrapper extends MainLayoutBasicContro
 	public RepositoryMainAccessControllerWrapper(UserRequest ureq, WindowControl wControl, RepositoryEntry re, MainLayoutController resController) {
 		super(ureq, wControl);
 		
-		contentP = new Panel("wrapperPanel");
 		this.resController = resController;
 		
 		if(ureq.getUserSession().getRoles().isOLATAdmin()) {
-			contentP.setContent(resController.getInitialComponent());
+			contentP = (StackedPanel)resController.getInitialComponent();
 		} else {
 			// guest are allowed to see resource with BARG 
 			if(re.getAccess() == RepositoryEntry.ACC_USERS_GUESTS && ureq.getUserSession().getRoles().isGuestOnly()) {
-				contentP.setContent(resController.getInitialComponent());
+				contentP = (StackedPanel)resController.getInitialComponent();
 			} else {
 				ACService acService = CoreSpringFactory.getImpl(ACService.class);
 				AccessResult acResult = acService.isAccessible(re, getIdentity(), false);
 				if(acResult.isAccessible()) {
-					contentP.setContent(resController.getInitialComponent());
+					contentP = (StackedPanel)resController.getInitialComponent();
 				} else if (re != null && acResult.getAvailableMethods().size() > 0) {
 					accessController = ACUIFactory.createAccessController(ureq, getWindowControl(), acResult.getAvailableMethods());
 					listenTo(accessController);
 					mainVC = createVelocityContainer("access_wrapper");
 					mainVC.put("accessPanel", accessController.getInitialComponent());
+					contentP = new SimpleStackedPanel("");
 					contentP.setContent(mainVC);
 				} else {
 					mainVC = createVelocityContainer("access_refused");
+					contentP = new SimpleStackedPanel("");
 					contentP.setContent(mainVC);
 					wControl.setWarning(translate("course.closed"));
 				}
@@ -90,7 +92,7 @@ public class RepositoryMainAccessControllerWrapper extends MainLayoutBasicContro
 		putInitialPanel(contentP);
 	}
 	
-	protected void openContent(UserRequest ureq) {
+	private void openContent() {
 		contentP.setContent(resController.getInitialComponent());
 	}
 	
@@ -131,7 +133,7 @@ public class RepositoryMainAccessControllerWrapper extends MainLayoutBasicContro
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == accessController) {
 			if(event.equals(AccessEvent.ACCESS_OK_EVENT)) {
-				openContent(ureq);
+				openContent();
 				removeAsListenerAndDispose(accessController);
 				accessController = null;
 			} else if(event.equals(AccessEvent.ACCESS_FAILED_EVENT)) {

@@ -63,14 +63,14 @@ public class LayoutMain3ColsPreviewController extends MainLayoutBasicController 
 	 * @param layoutConfigKey identificator for this layout to persist the users column width settings
 	 */
 	public LayoutMain3ColsPreviewController(UserRequest ureq, WindowControl wControl, 
-			Component col1, Component col2, Component col3, String layoutConfigKey) {
+			Component col1, Component col3, String layoutConfigKey) {
 		super(ureq, wControl);
 		
 		// create a wrapper velocity container that contains the back link and normal main layout
 		previewVC = createVelocityContainer("main_preview");		
 		
 		// create layout and add it to main view
-		layoutCtr = new LayoutMain3ColsController(ureq, wControl, col1, col2, col3, layoutConfigKey);
+		layoutCtr = new LayoutMain3ColsController(ureq, wControl, col1, col3, layoutConfigKey);
 		layoutCtr.addCssClassToMain("b_preview");
 		listenTo(layoutCtr);		
 		previewVC.put("3collayout", layoutCtr.getInitialComponent());

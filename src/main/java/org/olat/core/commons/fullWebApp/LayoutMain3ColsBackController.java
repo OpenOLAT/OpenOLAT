@@ -68,7 +68,7 @@ public class LayoutMain3ColsBackController extends MainLayoutBasicController imp
 	 *            identificator for this layout to persist the users column
 	 *            width settings
 	 */
-	public LayoutMain3ColsBackController(UserRequest ureq, WindowControl wControl, Component col1, Component col2, Component col3,
+	public LayoutMain3ColsBackController(UserRequest ureq, WindowControl wControl, Component col1, Component col3,
 			String layoutConfigKey) {
 		super(ureq, wControl);
 
@@ -77,7 +77,7 @@ public class LayoutMain3ColsBackController extends MainLayoutBasicController imp
 		backVC = createVelocityContainer("main_back");
 
 		// create layout and add it to main view
-		layoutCtr = new LayoutMain3ColsController(ureq, wControl, col1, col2, col3, layoutConfigKey);
+		layoutCtr = new LayoutMain3ColsController(ureq, wControl, col1, col3, layoutConfigKey);
 		listenTo(layoutCtr);
 		backVC.put("3collayout", layoutCtr.getInitialComponent());
 

@@ -163,6 +163,19 @@ public class LinkFactory {
 		return new Link(name, cmd, i18nKey, presentation, vc, listener);
 	}
 	
+	public static Link createToolLink(String name, String i18nKey, ComponentEventListener listener){
+		Link link = new Link(name, name, i18nKey, Link.LINK | Link.NONTRANSLATED, null, listener);
+		link.setDomReplacementWrapperRequired(false);
+		return link;
+	}
+	
+	public static Link createToolLink(String name, String i18nKey, ComponentEventListener listener, String elementCssClass){
+		Link link = new Link(name, name, i18nKey, Link.LINK | Link.NONTRANSLATED, null, listener);
+		link.setDomReplacementWrapperRequired(false);
+		link.setElementCssClass(elementCssClass);
+		return link;
+	}
+	
 	/**
 	 * add a button to the <code>vc</code> Velocity Container and make the <code>listeningController</code> listen to this button.<p>
 	 * Follow these instructions to show the button and catch its events:

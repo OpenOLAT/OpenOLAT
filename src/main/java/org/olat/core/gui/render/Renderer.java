@@ -38,6 +38,7 @@ import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.render.intercept.InterceptHandlerInstance;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.WebappHelper;
 
@@ -213,10 +214,14 @@ public class Renderer {
 			// identifier for dom replacement
 			if (domReplaceable && domReplacementWrapperRequired && (ajaxon || forceDebugDivs)) {
 				if (useSpan) {
-					sb.append("<span id=\"o_c").append(source.getDispatchID()).append("\">");
+					sb.append("<span id='o_c").append(source.getDispatchID());
 				} else {
-					sb.append("<div id=\"o_c").append(source.getDispatchID()).append("\">");
+					sb.append("<div id='o_c").append(source.getDispatchID());
 				}
+				if(Settings.isDebuging()) {
+					sb.append("' title='").append(source.getComponentName());
+				}
+				sb.append("'>");
 			}			
 			
 			ComponentRenderer cr = findComponentRenderer(source);
@@ -255,6 +260,9 @@ public class Renderer {
 			
 			try {
 				int preRenderLength = sb.length();
+				if(cr == null) {
+					System.out.println(cr);
+				}
 				cr.render(this, sb, source, cubu, componentTranslator, renderResult, args);
 				if (preRenderLength == sb.length()) {
 					// Add bugfix for IE min-height on empty div problem: min-height does

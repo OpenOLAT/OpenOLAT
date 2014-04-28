@@ -37,12 +37,13 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.htmlheader.HtmlHeaderComponent;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.stack.StackedControllerImpl;
+import org.olat.core.gui.components.panel.MainPanel;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.SelectionTree;
@@ -59,8 +60,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.core.gui.control.generic.tool.ToolController;
-import org.olat.core.gui.control.generic.tool.ToolFactory;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
@@ -108,7 +107,7 @@ import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.testutils.codepoints.server.Codepoint;
+import org.olat.resource.OLATResource;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -185,7 +184,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private StepsMainRunController publishStepsController;
 	private StepsMainRunController checklistWizard;
 	private PreviewConfigController previewController;
-	private ToolController toolC;
 	private MoveCopySubtreeController moveCopyController;
 	private InsertNodeController insertNodeController;
 	private Controller folderController;
@@ -200,19 +198,21 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private EditorUserCourseEnvironmentImpl euce;
 	
 	private Link undelButton;
-	private Link keepClosedErrorButton;
-	private Link keepOpenErrorButton;
-	private Link keepClosedWarningButton;
-	private Link keepOpenWarningButton;
+	private Link keepClosedErrorButton, keepOpenErrorButton, keepClosedWarningButton, keepOpenWarningButton;
 	private Link alternativeLink;
+	
+	private Link folderLink, areaLink, previewLink, publishLink, closeLink;
+	private Link deleteNodeLink, moveNodeLink, copyNodeLink;
+	private Link multiSpsLink, multiCheckListLink;
+	
 	private CloseableModalController cmc;
 	
 	private MultiSPController multiSPChooserCtr;
-	private final StackedControllerImpl stackPanel;
+	private final BreadcrumbedStackedPanel stackPanel;
 
 	private final OLATResourceable ores;
 	
-	private OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final OLog log = Tracing.createLoggerFor(EditorMainController.class);
 	private final static String RELEASE_LOCK_AT_CATCH_EXCEPTION = "Must release course lock since an exception occured in " + EditorMainController.class;
 	
 	/**
@@ -223,11 +223,13 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	 * @param course The course
 	 */
 	public EditorMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores,
-			StackedControllerImpl externStack, CourseNode selectedNode) {
+			BreadcrumbedStackedPanel externStack, CourseNode selectedNode) {
 		super(ureq,wControl);
 		this.ores = ores;
 		stackPanel = externStack == null
-				? new StackedControllerImpl(getWindowControl(), getTranslator(), "o_course_breadcrumbs") : externStack;
+				? new BreadcrumbedStackedPanel("courseEditorStackPanel", getTranslator(), this)
+				: externStack;
+				
 
 		// OLAT-4955: setting the stickyActionType here passes it on to any controller defined in the scope of the editor,
 		//            basically forcing any logging action called within the course editor to be of type 'admin'
@@ -235,9 +237,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		addLoggingResourceable(LoggingResourceable.wrap(CourseFactory.loadCourse(ores)));
 		
 		if(CourseFactory.isCourseEditSessionOpen(ores.getResourceableId())) {
-			Panel empty = new Panel("empty");// empty panel set as "menu" and "tool"
-			Controller emptyCtrl = new LayoutMain3ColsController(ureq, wControl, empty, empty, empty, "opened-course");
-			putInitialPanel(emptyCtrl.getInitialComponent());
+			MainPanel empty = new MainPanel("empty");
+			putInitialPanel(empty);
 			return;
 		}
 		
@@ -250,20 +251,17 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_OPEN, getClass());
 
 		if (!lockEntry.isSuccess()) {
-			Panel empty = new Panel("empty");// empty panel set as "menu" and "tool"
-			Controller emptyCtrl = new LayoutMain3ColsController(ureq, wControl, empty, empty, empty, "opened-course");
-			putInitialPanel(emptyCtrl.getInitialComponent());
+			MainPanel empty = new MainPanel("empty");
+			putInitialPanel(empty);
 			return;
 		} else {
 			ICourse course = CourseFactory.openCourseEditSession(ores.getResourceableId());
 			main = createVelocityContainer("index");
 			
-			Panel empty = new Panel("empty");// empty panel set as "menu" and "tool"
 			OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", ores.getResourceableId());
 			RepositoryEntry repo = RepositoryManager.getInstance().lookupRepositoryEntry(courseOres, false);
 			Controller courseCloser = CourseFactory.createDisposedCourseRestartController(ureq, wControl, repo);
-			Controller disposedRestartController = new LayoutMain3ColsController(ureq, wControl, empty, empty,
-					courseCloser.getInitialComponent(), "disposed course" + course.getResourceableId());
+			Controller disposedRestartController = new LayoutMain3ColsController(ureq, wControl, courseCloser);
 			setDisposedMsgController(disposedRestartController);
 			
 			undelButton = LinkFactory.createButton("undeletenode.button", main, this);
@@ -323,47 +321,19 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			alternativeLink = LinkFactory.createButton("alternative", main, this);
 			main.put("alternative", alternativeLink);
 
-			toolC = ToolFactory.createToolController(getWindowControl());
-			listenTo(toolC);
-			toolC.addHeader(translate(NLS_HEADER_TOOLS));
-			toolC.addLink(CMD_COURSEFOLDER, translate(NLS_COMMAND_COURSEFOLDER), CMD_COURSEFOLDER, "o_toolbox_coursefolder");
-			toolC.addLink(CMD_COURSEAREAS, translate(NLS_COMMAND_COURSEAREAS), CMD_COURSEAREAS, "o_toolbox_courseareas");
-			toolC.addLink(CMD_COURSEPREVIEW, translate(NLS_COMMAND_COURSEPREVIEW), CMD_COURSEPREVIEW, "b_toolbox_preview" );
-			toolC.addLink(CMD_PUBLISH, translate(NLS_COMMAND_PUBLISH), CMD_PUBLISH,"b_toolbox_publish" );
-			if(externStack == null) {
-				toolC.addLink(CMD_CLOSEEDITOR, translate(NLS_COMMAND_CLOSEEDITOR), null, "b_toolbox_close");
-			}
-
-			toolC.addHeader(translate(NLS_HEADER_INSERTNODES));
-			CourseNodeFactory cnf = CourseNodeFactory.getInstance();
-			for (String courseNodeAlias : cnf.getRegisteredCourseNodeAliases()) {
-				CourseNodeConfiguration cnConfig = cnf.getCourseNodeConfiguration(courseNodeAlias);
-				try {
-					toolC.addLink(TB_ACTION + courseNodeAlias, cnConfig.getLinkText(ureq.getLocale()), courseNodeAlias, cnConfig.getIconCSSClass());
-				} catch (Exception e) {
-					log.error("Error while trying to add a course buildingblock of type \""+courseNodeAlias +"\" to the editor", e);
-				}
-			}
-			
-			toolC.addHeader(translate(NLS_ADMIN_HEADER));
-			toolC.addLink(CMD_MULTI_SP, translate(NLS_MULTI_SPS), CMD_MULTI_SP, "b_toolbox_copy");
-			toolC.addLink(CMD_MULTI_CHECKLIST, translate(NLS_MULTI_CHECKLIST), CMD_MULTI_CHECKLIST, "b_toolbox_copy");
-
-			toolC.addHeader(translate(NLS_COMMAND_DELETENODE_HEADER));
-			toolC.addLink(CMD_DELNODE, translate(NLS_COMMAND_DELETENODE), CMD_DELNODE, "b_toolbox_delete");
-			toolC.addLink(CMD_MOVENODE, translate(NLS_COMMAND_MOVENODE), CMD_MOVENODE, "b_toolbox_move");
-			toolC.addLink(CMD_COPYNODE, translate(NLS_COMMAND_COPYNODE), CMD_COPYNODE, "b_toolbox_copy");
-			
-			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, toolC.getInitialComponent(), main, "course" + course.getResourceableId());			
+			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, main, "course" + course.getResourceableId());			
 			columnLayoutCtr.addCssClassToMain("o_editor");
 			listenTo(columnLayoutCtr);
 			
 			if(externStack == null) {
-				putInitialPanel(stackPanel.getInitialComponent());
 				stackPanel.pushController(course.getCourseTitle(), columnLayoutCtr);
+				putInitialPanel(stackPanel);
 			} else {
 				putInitialPanel(columnLayoutCtr.getInitialComponent());
 			}
+	
+			stackPanel.pushController("Editor", this);
+			initToolbar(externStack == null);
 
 			// add as listener to course so we are being notified about course events:
 			// - deleted events
@@ -385,87 +355,154 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			throw e;
 		}
 	}
+	
+	private void initToolbar(boolean closeEditor) {
+		
+		Dropdown editTools = new Dropdown("editTools", getTranslator());
+		editTools.setButton(false);
+		editTools.setI18nKey(NLS_HEADER_TOOLS);
+		
+		folderLink = LinkFactory.createToolLink(CMD_COURSEFOLDER, translate(NLS_COMMAND_COURSEFOLDER), this);
+		editTools.addComponent(folderLink);
+		areaLink = LinkFactory.createToolLink(CMD_COURSEAREAS, translate(NLS_COMMAND_COURSEAREAS), this, "o_toolbox_courseareas");
+		editTools.addComponent(areaLink);
+		previewLink = LinkFactory.createToolLink(CMD_COURSEPREVIEW, translate(NLS_COMMAND_COURSEPREVIEW), this, "b_toolbox_preview");
+		editTools.addComponent(previewLink);
+		publishLink = LinkFactory.createToolLink(CMD_PUBLISH, translate(NLS_COMMAND_PUBLISH), this, "b_toolbox_publish");
+		editTools.addComponent(publishLink);
+		
+		if(closeEditor) {
+			closeLink = LinkFactory.createToolLink(CMD_CLOSEEDITOR, translate(NLS_COMMAND_CLOSEEDITOR), this, "b_toolbox_close");
+			editTools.addComponent(closeLink);
+		}
+		
+		stackPanel.addTool(editTools, false);
 
+		//toolC.addHeader(translate(NLS_HEADER_INSERTNODES));
+		
+		Dropdown elementsTools = new Dropdown("insertNodes", getTranslator());
+		elementsTools.setButton(false);
+		elementsTools.setI18nKey(NLS_HEADER_INSERTNODES);
+		stackPanel.addTool(elementsTools, false);
+		
+		CourseNodeFactory cnf = CourseNodeFactory.getInstance();
+		for (String courseNodeAlias : cnf.getRegisteredCourseNodeAliases()) {
+			CourseNodeConfiguration cnConfig = cnf.getCourseNodeConfiguration(courseNodeAlias);
+			try {
+				//toolC.addLink(TB_ACTION + courseNodeAlias, cnConfig.getLinkText(getLocale()), courseNodeAlias, cnConfig.getIconCSSClass());
+				Link l = LinkFactory.createToolLink(TB_ACTION + courseNodeAlias, cnConfig.getLinkText(getLocale()), this, cnConfig.getIconCSSClass());
+				elementsTools.addComponent(l);
+			} catch (Exception e) {
+				log.error("Error while trying to add a course buildingblock of type \""+courseNodeAlias +"\" to the editor", e);
+			}
+		}
+		
+		Dropdown multiTools = new Dropdown("insertNodes", getTranslator());
+		multiTools.setButton(false);
+		multiTools.setI18nKey(NLS_ADMIN_HEADER);
+		stackPanel.addTool(multiTools, false);
+		
+		multiSpsLink = LinkFactory.createToolLink(CMD_MULTI_SP, translate(NLS_MULTI_SPS), this, "b_toolbox_copy");
+		multiTools.addComponent(multiSpsLink);
+		multiCheckListLink = LinkFactory.createToolLink(CMD_MULTI_CHECKLIST, translate(NLS_MULTI_CHECKLIST), this, "b_toolbox_copy");
+		multiTools.addComponent(multiCheckListLink);
+		
+		Dropdown nodeTools = new Dropdown("insertNodes", getTranslator());
+		nodeTools.setButton(false);
+		nodeTools.setI18nKey(NLS_COMMAND_DELETENODE_HEADER);
+		stackPanel.addTool(nodeTools, false);
+		
+		deleteNodeLink = LinkFactory.createToolLink(CMD_DELNODE, translate(NLS_COMMAND_DELETENODE), this, "b_toolbox_delete");
+		nodeTools.addComponent(deleteNodeLink);
+		moveNodeLink = LinkFactory.createToolLink(CMD_MOVENODE, translate(NLS_COMMAND_MOVENODE), this, "b_toolbox_move");
+		nodeTools.addComponent(moveNodeLink);
+		copyNodeLink = LinkFactory.createToolLink(CMD_COPYNODE, translate(NLS_COMMAND_COPYNODE), this, "b_toolbox_copy");
+		nodeTools.addComponent(copyNodeLink);
+	}
+	
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-	  try {
-		ICourse course = CourseFactory.getCourseEditSession(ores.getResourceableId());
-		
-		if (source == menuTree) {
-			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
-				// goto node in edit mode
-				TreeEvent te = (TreeEvent) event;
-				String nodeId = te.getNodeId();
-				updateViewForSelectedNodeId(ureq, nodeId);				
-			//fxdiff VCRP-9: drag and drop in menu tree
-			} else if(event.getCommand().equals(MenuTree.COMMAND_TREENODE_DROP)) {
-				TreeDropEvent te = (TreeDropEvent) event;
-				dropNodeAsChild(ureq, course, te.getDroppedNodeId(), te.getTargetNodeId(), te.isAsChild(), te.isAtTheEnd());
-			}
-		} else if (source == main) {
-			if (event.getCommand().startsWith(NLS_START_HELP_WIZARD)) {
-				String findThis = event.getCommand().substring(NLS_START_HELP_WIZARD.length());
-				StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
-				for (int i = 0; i < courseStatus.length; i++) {
-					String key = courseStatus[i].getDescriptionForUnit() + "." + courseStatus[i].getShortDescriptionKey();
-					if (key.equals(findThis)) {
-						menuTree.setSelectedNodeId(courseStatus[i].getDescriptionForUnit());
-						euce.getCourseEditorEnv().setCurrentCourseNodeId(courseStatus[i].getDescriptionForUnit());
-						jumpToNodeEditor(courseStatus[i].getActivateableViewIdentifier(), ureq,
-								cetm.getCourseNode(courseStatus[i].getDescriptionForUnit()));
-						break;
-					}
-				}
-				euce.getCourseEditorEnv().validateCourse();
-				courseStatus = euce.getCourseEditorEnv().getCourseStatus();
-				updateCourseStatusMessages(ureq.getLocale(), courseStatus);
-			}
-		} else if (source == keepClosedErrorButton){
-			errorIsOpen = Boolean.FALSE;
-			main.contextPut("errorIsOpen", errorIsOpen);
-		} else if (source == keepOpenErrorButton){
-			errorIsOpen = Boolean.TRUE;
-			main.contextPut("errorIsOpen", errorIsOpen);
-		} else if (source == keepClosedWarningButton){
-			warningIsOpen = Boolean.FALSE;
-			main.contextPut("warningIsOpen", warningIsOpen);
-		} else if (source == keepOpenWarningButton){
-			warningIsOpen = Boolean.TRUE;
-			main.contextPut("warningIsOpen", warningIsOpen);
-		} else if (source == undelButton){
-			String ident = menuTree.getSelectedNode().getIdent();
-			CourseEditorTreeNode activeNode = (CourseEditorTreeNode) cetm.getNodeById(ident);
-			euce.getCourseEditorEnv().setCurrentCourseNodeId(activeNode.getIdent());
+		try {
+			ICourse course = CourseFactory.getCourseEditSession(ores.getResourceableId());
 			
-			CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
-			cetm.markUnDeleted(activeNode);
-			menuTree.setDirty(true);
-			// show edit panels again
-			initNodeEditor(ureq, activeNode.getCourseNode());
-			tabbedNodeConfig.setVisible(true);
-			toolC.setEnabled(CMD_DELNODE, true);
-			toolC.setEnabled(CMD_MOVENODE, true);
-			toolC.setEnabled(CMD_COPYNODE, true);
-			main.setPage(VELOCITY_ROOT + "/index.html");
-			/*
-			 * validate course and update course status
-			 */
-			euce.getCourseEditorEnv().validateCourse();
-			StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
-			updateCourseStatusMessages(ureq.getLocale(), courseStatus);
-			// do logging
-			ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_NODE_RESTORED, getClass(),
-					LoggingResourceable.wrap(activeNode.getCourseNode()));
-		} else if(source == alternativeLink) {
-			CourseNode chosenNode = (CourseNode)alternativeLink.getUserObject();
-			askForAlternative(ureq, chosenNode);
-		}
+			if (source == menuTree) {
+				if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
+					// goto node in edit mode
+					TreeEvent te = (TreeEvent) event;
+					String nodeId = te.getNodeId();
+					updateViewForSelectedNodeId(ureq, nodeId);				
+				//fxdiff VCRP-9: drag and drop in menu tree
+				} else if(event.getCommand().equals(MenuTree.COMMAND_TREENODE_DROP)) {
+					TreeDropEvent te = (TreeDropEvent) event;
+					dropNodeAsChild(ureq, course, te.getDroppedNodeId(), te.getTargetNodeId(), te.isAsChild(), te.isAtTheEnd());
+				}
+			} else if (source == main) {
+				if (event.getCommand().startsWith(NLS_START_HELP_WIZARD)) {
+					String findThis = event.getCommand().substring(NLS_START_HELP_WIZARD.length());
+					StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
+					for (int i = 0; i < courseStatus.length; i++) {
+						String key = courseStatus[i].getDescriptionForUnit() + "." + courseStatus[i].getShortDescriptionKey();
+						if (key.equals(findThis)) {
+							menuTree.setSelectedNodeId(courseStatus[i].getDescriptionForUnit());
+							euce.getCourseEditorEnv().setCurrentCourseNodeId(courseStatus[i].getDescriptionForUnit());
+							jumpToNodeEditor(courseStatus[i].getActivateableViewIdentifier(), ureq,
+									cetm.getCourseNode(courseStatus[i].getDescriptionForUnit()));
+							break;
+						}
+					}
+					euce.getCourseEditorEnv().validateCourse();
+					courseStatus = euce.getCourseEditorEnv().getCourseStatus();
+					updateCourseStatusMessages(ureq.getLocale(), courseStatus);
+				}
+			} else if (source == keepClosedErrorButton){
+				errorIsOpen = Boolean.FALSE;
+				main.contextPut("errorIsOpen", errorIsOpen);
+			} else if (source == keepOpenErrorButton){
+				errorIsOpen = Boolean.TRUE;
+				main.contextPut("errorIsOpen", errorIsOpen);
+			} else if (source == keepClosedWarningButton){
+				warningIsOpen = Boolean.FALSE;
+				main.contextPut("warningIsOpen", warningIsOpen);
+			} else if (source == keepOpenWarningButton){
+				warningIsOpen = Boolean.TRUE;
+				main.contextPut("warningIsOpen", warningIsOpen);
+			} else if (source == undelButton){
+				doUndelete(ureq, course);
+			} else if(source == alternativeLink) {
+				CourseNode chosenNode = (CourseNode)alternativeLink.getUserObject();
+				askForAlternative(ureq, chosenNode);
+			} else if(folderLink == source) {
+				launchCourseFolder(ureq, course);
+			} else if(areaLink == source) {
+				launchCourseAreas(ureq, course);
+			} else if(previewLink == source) {
+				launchPreview(ureq, course);
+			} else if(publishLink == source) {
+				launchPublishingWizard(ureq, course);
+			} else if(closeLink == source) {
+				doReleaseEditLock();
+				fireEvent(ureq, Event.DONE_EVENT);
+			} else if(deleteNodeLink == source) {
+				doDeleteNode(ureq);
+			} else if(moveNodeLink == source) {
+				doMove(ureq, course, false);
+			} else if(copyNodeLink == source) {
+				doMove(ureq, course, true);
+			} else if(multiSpsLink == source) {
+				launchSinglePagesWizard(ureq, course);
+			} else if(multiCheckListLink == source) {
+				launchChecklistsWizard(ureq);
+			} else if(source instanceof Link && event.getCommand().startsWith(TB_ACTION)) {
+				String cnAlias = event.getCommand().substring(TB_ACTION.length());
+				doCreate(ureq, course, cnAlias);
+			}
 		} catch (RuntimeException e) {
 			log.warn(RELEASE_LOCK_AT_CATCH_EXCEPTION+" [in event(UserRequest,Component,Event)]", e);			
-			this.dispose();
+			dispose();
 			throw e;
 		}
 	}
@@ -547,16 +584,21 @@ public class EditorMainController extends MainLayoutBasicController implements G
 
 		if (cetn.isDeleted()) {
 			tabbedNodeConfig.setVisible(false);
-			toolC.setEnabled(CMD_DELNODE, false);
-			toolC.setEnabled(CMD_MOVENODE, false);
-			toolC.setEnabled(CMD_COPYNODE, false);
-			if (((CourseEditorTreeNode) cetn.getParent()).isDeleted()) main.setPage(VELOCITY_ROOT + "/deletednode.html");
-			else main.setPage(VELOCITY_ROOT + "/undeletenode.html");
+			deleteNodeLink.setEnabled(false);
+			moveNodeLink.setEnabled(false);
+			copyNodeLink.setEnabled(false);
+
+			if (((CourseEditorTreeNode) cetn.getParent()).isDeleted()) {
+				main.setPage(VELOCITY_ROOT + "/deletednode.html");
+			} else {
+				main.setPage(VELOCITY_ROOT + "/undeletenode.html");
+			}
 		} else {
-			tabbedNodeConfig.setVisible(true);			
-			toolC.setEnabled(CMD_DELNODE, true);
-			toolC.setEnabled(CMD_MOVENODE, true);
-			toolC.setEnabled(CMD_COPYNODE, true);
+			tabbedNodeConfig.setVisible(true);
+			deleteNodeLink.setEnabled(true);
+			moveNodeLink.setEnabled(true);
+			copyNodeLink.setEnabled(true);
+
 			initNodeEditor(ureq, cetn.getCourseNode());
 			main.setPage(VELOCITY_ROOT + "/index.html");					
 		}
@@ -611,186 +653,12 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		try {
 		ICourse course = CourseFactory.getCourseEditSession(ores.getResourceableId());
 		
-		if (source == toolC) {
-			if (event.getCommand().startsWith(TB_ACTION)) {
-				String cnAlias = event.getCommand().substring(TB_ACTION.length());
-				if (cnAlias == null) throw new AssertException("Received event from ButtonController which is not registered with the toolbox.");
-				removeAsListenerAndDispose(insertNodeController);
-				removeAsListenerAndDispose(cmc);
-				
-				Codepoint.codepoint(EditorMainController.class, "startInsertNode");
-				insertNodeController = new InsertNodeController(ureq, getWindowControl(), course, cnAlias);				
-				listenTo(insertNodeController);
-				cmc = new CloseableModalController(getWindowControl(), translate("close"), insertNodeController.getInitialComponent(), true, translate(NLS_INSERTNODE_TITLE));
-				listenTo(cmc);
-				cmc.activate();
-			} else if (event.getCommand().equals(CMD_DELNODE)) {
-				TreeNode tn = menuTree.getSelectedNode();
-				if (tn == null) {
-					showError(NLS_DELETENODE_ERROR_SELECTFIRST);
-					return;
-				}
-				if (tn.getParent() == null) {
-					showError(NLS_DELETENODE_ERROR_ROOTNODE);
-					return;
-				}
-				// deletion is possible, start asking if really to delete.
-				tabbedNodeConfig.setVisible(false);
-				deleteDialogController = activateYesNoDialog(ureq, translate("deletenode.header", tn.getTitle()), translate("deletenode.confirm"), deleteDialogController);
-								
-			} else if (event.getCommand().equals(CMD_MOVENODE) || event.getCommand().equals(CMD_COPYNODE)) {
-				TreeNode tn = menuTree.getSelectedNode();
-				if (tn == null) {
-					showError(NLS_MOVECOPYNODE_ERROR_SELECTFIRST);
-					return;
-				}
-				if (tn.getParent() == null) {
-					showError(NLS_MOVECOPYNODE_ERROR_ROOTNODE);
-					return;
-				}
-				removeAsListenerAndDispose(moveCopyController);
-				removeAsListenerAndDispose(cmc);
-				
-				CourseEditorTreeNode cetn = cetm.getCourseEditorNodeById(tn.getIdent());
-				moveCopyController = new MoveCopySubtreeController(ureq, getWindowControl(), course, cetn, event.getCommand().equals(CMD_COPYNODE));				
-				listenTo(moveCopyController);
-				cmc = new CloseableModalController(getWindowControl(), translate("close"), moveCopyController.getInitialComponent(), true, translate(NLS_INSERTNODE_TITLE));
-				listenTo(cmc);
-				cmc.activate();
-			}
-			
-			else if (event.getCommand().equals(CMD_CLOSEEDITOR)) {
-				doReleaseEditLock();
-				fireEvent(ureq, Event.DONE_EVENT);
-			} else if (event.getCommand().equals(CMD_PUBLISH)) {
-				if(publishStepsController != null) return;//ignore enter
-				
-				/*
-				 * start follwoing steps -> cancel wizardf does not touch data
-				 * (M) Mandatory (O) Optional
-				 * - (M)Step 00  -> show selection tree to choose changed nodes to be published
-				 * ...........-> calculate errors & warnings
-				 * ...........(next|finish) available if no errors or nothing to publish
-				 * - (O)Step 00A -> review errors & warnings
-				 * ...........(previous|next|finish) available
-				 * - (O)Step 00B -> review publish changes that will happen
-				 * ...........(previous|next|finish) available
-				 * - (O)Step 01  -> change general access to course
-				 * ...........(previous|finish) available
-				 * - FinishCallback -> apply course nodes change set
-				 * .................-> apply general access changes.
-				 */
-				
-				Step start  = new PublishStep00(ureq, cetm, course);
-				
-				/*
-				 * callback executed in case wizard is finished.
-				 */
-				StepRunnerCallback finish = new StepRunnerCallback(){
-					
-					public Step execute(UserRequest ureq1, WindowControl wControl1, StepsRunContext runContext) {
-						//all information to do now is within the runContext saved
-						boolean hasChanges = false;
-						
-						PublishProcess publishManager = (PublishProcess)runContext.get("publishProcess");
-						PublishEvents publishEvents = publishManager.getPublishEvents();
-						if (runContext.containsKey("validPublish") && ((Boolean)runContext.get("validPublish")).booleanValue()) {
-							@SuppressWarnings("unchecked")
-							Set<String> selectedNodeIds = (Set<String>) runContext.get("publishSetCreatedFor");
-							hasChanges = (selectedNodeIds != null) && (selectedNodeIds.size() > 0);
-							if (hasChanges) {
-								publishManager.applyPublishSet(ureq1.getIdentity(), ureq1.getLocale());
-								publishManager.applyUpdateSet(ureq1.getIdentity(), ureq1.getLocale());
-							}
-						}
-						
-						if (runContext.containsKey("changedaccess")) {
-							// there were changes made to the general course access
-							String newAccessStr = (String) runContext.get("changedaccess");
-							int newAccess;
-							boolean membersOnly = RepositoryEntry.MEMBERS_ONLY.equals(newAccessStr);
-							if(membersOnly) {
-								newAccess = RepositoryEntry.ACC_OWNERS;
-							} else {
-								newAccess = Integer.valueOf(newAccessStr);
-							}
-							
-							// fires an EntryChangedEvent for repository entry notifying
-							// about modification.
-							publishManager.changeGeneralAccess(newAccess, membersOnly);
-							hasChanges = true;
-						}
-						
-						if (runContext.containsKey("catalogChoice")) {
-							String choice = (String) runContext.get("catalogChoice");
-							@SuppressWarnings("unchecked")
-							List<CategoryLabel> categories = (List<CategoryLabel>)runContext.get("categories");
-							publishManager.publishToCatalog(choice, categories);
-						}
-						
-						if(publishEvents.getPostPublishingEvents().size() > 0) {
-							for(MultiUserEvent event:publishEvents.getPostPublishingEvents()) {
-								CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, ores);
-							}
-						}
-
-						// signal correct completion and tell if changes were made or not.
-						return hasChanges ? StepsMainRunController.DONE_MODIFIED : StepsMainRunController.DONE_UNCHANGED;
-					}
-				};
-
-				publishStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("publish.wizard.title"), "o_sel_course_publish_wizard");
-				listenTo(publishStepsController);
-				getWindowControl().pushAsModalDialog(publishStepsController.getInitialComponent());
-					
-			} else if (event.getCommand().equals(CMD_COURSEPREVIEW)) {
-				previewController = new PreviewConfigController(ureq, getWindowControl(), course);
-				listenTo(previewController);
-				stackPanel.pushController(translate("command.coursepreview"), previewController);
-				
-			} else if (event.getCommand().equals(CMD_COURSEFOLDER)) {
-				// Folder for course with custom link model to jump to course nodes
-				VFSContainer namedCourseFolder = new NamedContainerImpl(translate(NLS_COURSEFOLDER_NAME), course.getCourseFolderContainer());
-				CustomLinkTreeModel customLinkTreeModel = new CourseInternalLinkTreeModel(course.getEditorTreeModel());
-				removeAsListenerAndDispose(folderController);
-				FolderRunController folderMainCtl = new FolderRunController(namedCourseFolder, true, true, true, ureq, getWindowControl(), null, customLinkTreeModel);
-				folderMainCtl.addLoggingResourceable(LoggingResourceable.wrap(course));
-				folderController = new LayoutMain3ColsController(ureq, getWindowControl(), folderMainCtl);
-				stackPanel.pushController(translate("command.coursefolder"), folderController);
-				
-			} else if (event.getCommand().equals(CMD_COURSEAREAS)) {
-				removeAsListenerAndDispose(areasController);
-				CourseAreasController areasMainCtl = new CourseAreasController(ureq, getWindowControl(), course.getCourseEnvironment().getCourseGroupManager().getCourseResource());
-				areasMainCtl.addLoggingResourceable(LoggingResourceable.wrap(course));
-				areasController = new LayoutMain3ColsController(ureq, getWindowControl(), areasMainCtl);
-				stackPanel.pushController(translate("command.courseareas"), areasController);
-				
-			} else if (event.getCommand().equals(CMD_MULTI_SP)) {
-				removeAsListenerAndDispose(multiSPChooserCtr);
-				VFSContainer rootContainer = course.getCourseEnvironment().getCourseFolderContainer();
-				CourseEditorTreeNode selectedNode = (CourseEditorTreeNode)menuTree.getSelectedNode();
-				multiSPChooserCtr = new MultiSPController(ureq, getWindowControl(), rootContainer, ores, selectedNode);
-				listenTo(multiSPChooserCtr);
-				
-				removeAsListenerAndDispose(cmc);
-				cmc = new CloseableModalController(getWindowControl(), translate("close"), multiSPChooserCtr.getInitialComponent());
-				listenTo(cmc);
-				cmc.activate();
-			} else if (event.getCommand().equals(CMD_MULTI_CHECKLIST)) {
-				removeAsListenerAndDispose(checklistWizard);
-
-				Step start = new CheckList_1_CheckboxStep(ureq, ores);
-				StepRunnerCallback finish = new CheckListStepRunnerCallback(ores);
-				checklistWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-						translate("checklist.wizard"), "o_sel_checklist_wizard");
-				listenTo(checklistWizard);
-				getWindowControl().pushAsModalDialog(checklistWizard.getInitialComponent());
-			}
-		} else if (source == nodeEditCntrllr) {
+		if (source == nodeEditCntrllr) {
 			// event from the tabbed pane (any tab)
 			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				// if the user changed the name of the node, we need to update the tree also.
@@ -937,6 +805,28 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		}
 	}
 	
+	private void doMove(UserRequest ureq, ICourse course, boolean copy) {
+		TreeNode tn = menuTree.getSelectedNode();
+		if (tn == null) {
+			showError(NLS_MOVECOPYNODE_ERROR_SELECTFIRST);
+			return;
+		}
+		if (tn.getParent() == null) {
+			showError(NLS_MOVECOPYNODE_ERROR_ROOTNODE);
+			return;
+		}
+		removeAsListenerAndDispose(moveCopyController);
+		removeAsListenerAndDispose(cmc);
+		
+		CourseEditorTreeNode cetn = cetm.getCourseEditorNodeById(tn.getIdent());
+		moveCopyController = new MoveCopySubtreeController(ureq, getWindowControl(), course, cetn, copy);				
+		listenTo(moveCopyController);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), moveCopyController.getInitialComponent(), true, translate(NLS_INSERTNODE_TITLE));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	
 	private void doDelete(ICourse course, String ident) {
 		CourseNode activeNode = cetm.getCourseNode(ident);
 
@@ -946,20 +836,59 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
 		tabbedNodeConfig.removeAll();
 		tabbedNodeConfig.setVisible(false);
-		toolC.setEnabled(CMD_DELNODE, false);
-		toolC.setEnabled(CMD_MOVENODE, false);
-		toolC.setEnabled(CMD_COPYNODE, false);
+		deleteNodeLink.setEnabled(false);
+		moveNodeLink.setEnabled(false);
+		copyNodeLink.setEnabled(false);
+
 		main.setPage(VELOCITY_ROOT + "/undeletenode.html"); // offer undelete
 		showInfo(NLS_DELETENODE_SUCCESS);
-		/*
-		 * validate course and update course status
-		 */
+		// validate course and update course status
 		euce.getCourseEditorEnv().validateCourse();
 		StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
 		updateCourseStatusMessages(getLocale(), courseStatus);
 
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_NODE_DELETED, getClass(),
 				LoggingResourceable.wrap(activeNode));
+	}
+	
+	private void doUndelete(UserRequest ureq, ICourse course) {
+		String ident = menuTree.getSelectedNode().getIdent();
+		CourseEditorTreeNode activeNode = (CourseEditorTreeNode) cetm.getNodeById(ident);
+		euce.getCourseEditorEnv().setCurrentCourseNodeId(activeNode.getIdent());
+		
+		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
+		cetm.markUnDeleted(activeNode);
+		menuTree.setDirty(true);
+		// show edit panels again
+		initNodeEditor(ureq, activeNode.getCourseNode());
+		tabbedNodeConfig.setVisible(true);
+		deleteNodeLink.setEnabled(true);
+		moveNodeLink.setEnabled(true);
+		copyNodeLink.setEnabled(true);
+
+		main.setPage(VELOCITY_ROOT + "/index.html");
+		// validate course and update course status
+		euce.getCourseEditorEnv().validateCourse();
+		StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
+		updateCourseStatusMessages(ureq.getLocale(), courseStatus);
+		// do logging
+		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_NODE_RESTORED, getClass(),
+				LoggingResourceable.wrap(activeNode.getCourseNode()));
+	}
+	
+	private void doDeleteNode(UserRequest ureq) {
+		TreeNode tn = menuTree.getSelectedNode();
+		if (tn == null) {
+			showError(NLS_DELETENODE_ERROR_SELECTFIRST);
+			return;
+		}
+		if (tn.getParent() == null) {
+			showError(NLS_DELETENODE_ERROR_ROOTNODE);
+			return;
+		}
+		// deletion is possible, start asking if really to delete.
+		tabbedNodeConfig.setVisible(false);
+		deleteDialogController = activateYesNoDialog(ureq, translate("deletenode.header", tn.getTitle()), translate("deletenode.confirm"), deleteDialogController);
 	}
 	
 	private void doInsert(UserRequest ureq, CourseNode newNode) {
@@ -976,6 +905,18 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		// Resize layout columns to make all nodes viewable in the menu column
 		JSCommand resizeCommand = new JSCommand("try { OPOL.adjustHeight(); } catch(e) {if(console) console.log(e); }");
 		getWindowControl().getWindowBackOffice().sendCommandTo(resizeCommand);
+	}
+	
+	private void doCreate(UserRequest ureq, ICourse course, String cnAlias) {
+		if (cnAlias == null) throw new AssertException("Received event from ButtonController which is not registered with the toolbox.");
+		removeAsListenerAndDispose(insertNodeController);
+		removeAsListenerAndDispose(cmc);
+		
+		insertNodeController = new InsertNodeController(ureq, getWindowControl(), course, cnAlias);				
+		listenTo(insertNodeController);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), insertNodeController.getInitialComponent(), true, translate(NLS_INSERTNODE_TITLE));
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	//fxdiff VCRP-9: drag and drop in menu tree
@@ -1136,6 +1077,138 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		}
 	}
 
+	private void launchPublishingWizard(UserRequest ureq, ICourse course) {
+		if(publishStepsController != null) return;//ignore enter
+		
+		/*
+		 * start follwoing steps -> cancel wizardf does not touch data
+		 * (M) Mandatory (O) Optional
+		 * - (M)Step 00  -> show selection tree to choose changed nodes to be published
+		 * ...........-> calculate errors & warnings
+		 * ...........(next|finish) available if no errors or nothing to publish
+		 * - (O)Step 00A -> review errors & warnings
+		 * ...........(previous|next|finish) available
+		 * - (O)Step 00B -> review publish changes that will happen
+		 * ...........(previous|next|finish) available
+		 * - (O)Step 01  -> change general access to course
+		 * ...........(previous|finish) available
+		 * - FinishCallback -> apply course nodes change set
+		 * .................-> apply general access changes.
+		 */
+		
+		Step start  = new PublishStep00(ureq, cetm, course);
+		
+		/*
+		 * callback executed in case wizard is finished.
+		 */
+		StepRunnerCallback finish = new StepRunnerCallback(){
+			
+			public Step execute(UserRequest ureq1, WindowControl wControl1, StepsRunContext runContext) {
+				//all information to do now is within the runContext saved
+				boolean hasChanges = false;
+				
+				PublishProcess publishManager = (PublishProcess)runContext.get("publishProcess");
+				PublishEvents publishEvents = publishManager.getPublishEvents();
+				if (runContext.containsKey("validPublish") && ((Boolean)runContext.get("validPublish")).booleanValue()) {
+					@SuppressWarnings("unchecked")
+					Set<String> selectedNodeIds = (Set<String>) runContext.get("publishSetCreatedFor");
+					hasChanges = (selectedNodeIds != null) && (selectedNodeIds.size() > 0);
+					if (hasChanges) {
+						publishManager.applyPublishSet(ureq1.getIdentity(), ureq1.getLocale());
+						publishManager.applyUpdateSet(ureq1.getIdentity(), ureq1.getLocale());
+					}
+				}
+				
+				if (runContext.containsKey("changedaccess")) {
+					// there were changes made to the general course access
+					String newAccessStr = (String) runContext.get("changedaccess");
+					int newAccess;
+					boolean membersOnly = RepositoryEntry.MEMBERS_ONLY.equals(newAccessStr);
+					if(membersOnly) {
+						newAccess = RepositoryEntry.ACC_OWNERS;
+					} else {
+						newAccess = Integer.valueOf(newAccessStr);
+					}
+					
+					// fires an EntryChangedEvent for repository entry notifying
+					// about modification.
+					publishManager.changeGeneralAccess(newAccess, membersOnly);
+					hasChanges = true;
+				}
+				
+				if (runContext.containsKey("catalogChoice")) {
+					String choice = (String) runContext.get("catalogChoice");
+					@SuppressWarnings("unchecked")
+					List<CategoryLabel> categories = (List<CategoryLabel>)runContext.get("categories");
+					publishManager.publishToCatalog(choice, categories);
+				}
+				
+				if(publishEvents.getPostPublishingEvents().size() > 0) {
+					for(MultiUserEvent event:publishEvents.getPostPublishingEvents()) {
+						CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, ores);
+					}
+				}
+
+				// signal correct completion and tell if changes were made or not.
+				return hasChanges ? StepsMainRunController.DONE_MODIFIED : StepsMainRunController.DONE_UNCHANGED;
+			}
+		};
+
+		publishStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("publish.wizard.title"), "o_sel_course_publish_wizard");
+		listenTo(publishStepsController);
+		getWindowControl().pushAsModalDialog(publishStepsController.getInitialComponent());
+	}
+	
+	private void launchPreview(UserRequest ureq, ICourse course) {
+		previewController = new PreviewConfigController(ureq, getWindowControl(), course);
+		listenTo(previewController);
+		stackPanel.pushController(translate("command.coursepreview"), previewController);
+	}
+	
+	private void launchCourseAreas(UserRequest ureq, ICourse course) {
+		removeAsListenerAndDispose(areasController);
+		OLATResource courseRes = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		CourseAreasController areasMainCtl = new CourseAreasController(ureq, getWindowControl(), courseRes);
+		areasMainCtl.addLoggingResourceable(LoggingResourceable.wrap(course));
+		areasController = new LayoutMain3ColsController(ureq, getWindowControl(), areasMainCtl);
+		stackPanel.pushController(translate("command.courseareas"), areasController);
+	}
+	
+	private void launchSinglePagesWizard(UserRequest ureq, ICourse course) {
+		removeAsListenerAndDispose(multiSPChooserCtr);
+		VFSContainer rootContainer = course.getCourseEnvironment().getCourseFolderContainer();
+		CourseEditorTreeNode selectedNode = (CourseEditorTreeNode)menuTree.getSelectedNode();
+		multiSPChooserCtr = new MultiSPController(ureq, getWindowControl(), rootContainer, ores, selectedNode);
+		listenTo(multiSPChooserCtr);
+		
+		removeAsListenerAndDispose(cmc);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), multiSPChooserCtr.getInitialComponent());
+		listenTo(cmc);
+		cmc.activate();
+	} 
+	
+	private void launchChecklistsWizard(UserRequest ureq) {
+		removeAsListenerAndDispose(checklistWizard);
+
+		Step start = new CheckList_1_CheckboxStep(ureq, ores);
+		StepRunnerCallback finish = new CheckListStepRunnerCallback(ores);
+		checklistWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("checklist.wizard"), "o_sel_checklist_wizard");
+		listenTo(checklistWizard);
+		getWindowControl().pushAsModalDialog(checklistWizard.getInitialComponent());
+	}
+	
+	private void launchCourseFolder(UserRequest ureq, ICourse course) {
+		// Folder for course with custom link model to jump to course nodes
+		VFSContainer namedCourseFolder = new NamedContainerImpl(translate(NLS_COURSEFOLDER_NAME), course.getCourseFolderContainer());
+		CustomLinkTreeModel customLinkTreeModel = new CourseInternalLinkTreeModel(course.getEditorTreeModel());
+		removeAsListenerAndDispose(folderController);
+		FolderRunController folderMainCtl = new FolderRunController(namedCourseFolder, true, true, true, ureq, getWindowControl(), null, customLinkTreeModel);
+		folderMainCtl.addLoggingResourceable(LoggingResourceable.wrap(course));
+		folderController = new LayoutMain3ColsController(ureq, getWindowControl(), folderMainCtl);
+		stackPanel.pushController(translate("command.coursefolder"), folderController);
+	}
+
 	/**
 	 * @return true if lock on this course has been acquired, flase otherwhise
 	 */
@@ -1157,7 +1230,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		moveCopyController = null;
 		insertNodeController = null;
 		previewController = null;
-		toolC = null;
+		//toolC = null;
 		columnLayoutCtr = null;
 		insertNodeController = null;
 		moveCopyController = null;

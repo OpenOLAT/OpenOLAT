@@ -52,6 +52,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_status_unavailable { @extend .o_icon-times-circle-o; color: #996633; }
 .o_icon_table {@extend .o_icon-table; }
 .o_icon_to_read { @extend .o_icon-fighter-jet; color:blue;}
+.o_icon_tool { @extend .o_icon-gear; }
 .o_icon_upload {@extend .o_icon-upload; }
 
 

@@ -23,7 +23,9 @@ import java.util.List;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel.Tool;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -43,34 +45,54 @@ public class BreadcrumbedStackedPanelRenderer extends DefaultComponentRenderer {
 			RenderResult renderResult, String[] args) {
 		BreadcrumbedStackedPanel panel = (BreadcrumbedStackedPanel) source;
 		List<Link> breadCrumbs = panel.getBreadCrumbs();
-		if(breadCrumbs.size() > 1) {
+		List<Tool> tools = panel.getTools();
+		if(breadCrumbs.size() > 1 || tools.size() > 0) {
 			String mainCssClass = panel.getCssClass();
-			sb.append("<div id='o_main_toolbar' class='b_clearfix ").append(mainCssClass, mainCssClass != null).append("'>")
-			  .append("<div class='o_breadcumb'>")
-			  .append("<ol class='breadcrumb'>");
-			
+			sb.append("<div id='o_main_toolbar' class='navbar navbar-default clearfix ").append(mainCssClass, mainCssClass != null).append("'>")
+			  .append("<div class='o_breadcrumb container-fluid'>")
+			  .append("<ul class='nav navbar-nav'>");
+
 			Link backLink = panel.getBackLink();
-			if(backLink.isVisible()) {
-				sb.append("<li class='o_breadcumb_back'>");
+			int numOfCrumbs = breadCrumbs.size();
+			if(backLink.isVisible() && numOfCrumbs > 1) {
+				sb.append("<li><a href='#' class='dropdown-toggle' data-toggle='dropdown'>&#x25C4; <b class='caret'></b></a>")
+				  .append("<ul class='dropdown-menu' role='menu'>")
+				  .append("<li class='o_breadcrumb_back'>");
 				backLink.getHTMLRendererSingleton().render(renderer, sb, backLink, ubu, translator, renderResult, args);
 				sb.append("</li>");
+				
+				for(int i=0; i<numOfCrumbs; i++) {
+					sb.append("<li>");
+					renderer.render(breadCrumbs.get(i), sb, args);
+					sb.append("</li>");
+				}
+				sb.append("</ul></li>");
 			}
 			
-			int numOfCrumbs = breadCrumbs.size();
-			for(int i=0; i<numOfCrumbs; i++) {
-				sb.append("<li>");
-				renderer.render(breadCrumbs.get(i), sb, args);
+			int numOfTools = tools.size();
+			for(int i=0; i<numOfTools; i++) {
+				Component cmp = tools.get(i).getComponent();
+				String cssClass;
+				if(cmp instanceof Dropdown) {
+					cssClass = "dropdown";
+				} else if(cmp instanceof Link && !cmp.isEnabled()) {
+					cssClass = "navbar-text";
+				} else {
+					cssClass = "";
+				}
+				sb.append("<li class='o_tool ").append(cssClass).append("'>");
+				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
 				sb.append("</li>");
 			}
 			
-			sb.append("</ol>");
 			Link closeLink = panel.getCloseLink();
 			if(closeLink.isVisible()) {
-				sb.append("<div class='o_breadcumb_close'>");
+				sb.append("</ul><ul class='nav navbar-nav navbar-right'>")
+				  .append("<li class='o_breadcrumb_close'>");
 				closeLink.getHTMLRendererSingleton().render(renderer, sb, closeLink, ubu, translator, renderResult, args);
-				sb.append("</div>");
+				sb.append("</li>");
 			}
-			sb.append("</div></div>");
+			sb.append("</ul></div></div>");
 		}
 		
 		Component toRender = panel.getContent();

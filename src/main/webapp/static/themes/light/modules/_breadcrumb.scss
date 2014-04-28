@@ -1,9 +1,7 @@
-.o_breadcumb {
+.o_breadcrumb {
 	position:relative;
 
-	.o_breadcumb_close {
-		position: absolute;
-		top: 8px;
-		right: 16px;
+	.o_breadcrumb_close {
+		float:right;
 	}
 }

@@ -52,9 +52,6 @@ public class GuiStackNiceImpl implements GuiStack {
 
 	private WindowBackOffice wbo;
 
-	/**
-	 * 
-	 */
 	private GuiStackNiceImpl() {
 		panel = new SimpleStackedPanel("guistackpanel");
 		// Use a layered panel instead of a standard panel to support multiple modal layers

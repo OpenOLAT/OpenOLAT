@@ -187,7 +187,7 @@ public class PortfolioResultDetailsController extends FormBasicController {
 		Controller viewCtr = EPUIFactory.createPortfolioStructureMapController(ureq, getWindowControl(), map, secCallback);
 		listenTo(viewCtr);
 		if(stackPanel == null) {
-			LayoutMain3ColsBackController ctr = new LayoutMain3ColsBackController(ureq, getWindowControl(), null, null, viewCtr.getInitialComponent(), "portfolio" + map.getKey());
+			LayoutMain3ColsBackController ctr = new LayoutMain3ColsBackController(ureq, getWindowControl(), null, viewCtr.getInitialComponent(), "portfolio" + map.getKey());
 			ctr.activate();
 		} else {
 			LayoutMain3ColsController ctr = new LayoutMain3ColsController(ureq, getWindowControl(), viewCtr);

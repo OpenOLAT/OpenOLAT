@@ -397,7 +397,7 @@ public class FileChooseCreateEditController extends BasicController{
 		if (source == previewLink){
 			removeAsListenerAndDispose(previewLayoutCtr);
 			SinglePageController previewController = new SinglePageController(ureq, getWindowControl(), rootContainer, chosenFile, null, allowRelativeLinks);
-			previewLayoutCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null, null, previewController.getInitialComponent(), null);
+			previewLayoutCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null, previewController.getInitialComponent(), null);
 			previewLayoutCtr.addDisposableChildController(previewController);
 			previewLayoutCtr.activate();
 			listenTo(previewLayoutCtr);

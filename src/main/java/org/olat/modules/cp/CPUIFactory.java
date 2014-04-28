@@ -185,7 +185,7 @@ public class CPUIFactory {
 	public LayoutMain3ColsPreviewController createMainLayoutPreviewController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer,
 			boolean showMenu, DeliveryOptions deliveryOptions) {
 		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, true, true, true, deliveryOptions, null, null);		
-		LayoutMain3ColsPreviewController layoutCtr = new LayoutMain3ColsPreviewController(ureq, wControl, cpCtr.getMenuComponent(), null, cpCtr.getInitialComponent(), rootContainer.getName());
+		LayoutMain3ColsPreviewController layoutCtr = new LayoutMain3ColsPreviewController(ureq, wControl, cpCtr.getMenuComponent(), cpCtr.getInitialComponent(), rootContainer.getName());
 		layoutCtr.addDisposableChildController(cpCtr); // cascade disposing requests
 		return layoutCtr;
 	}

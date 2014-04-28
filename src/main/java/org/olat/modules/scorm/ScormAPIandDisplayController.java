@@ -218,12 +218,12 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 
 		if (activate) {
 			if (previewMode) {
-				LayoutMain3ColsPreviewController ctr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), (showMenu ? menuTree : null), null, myContent, "scorm" + scormResourceId);
+				LayoutMain3ColsPreviewController ctr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), (showMenu ? menuTree : null), myContent, "scorm" + scormResourceId);
 				if(fullWindow)
 					ctr.setAsFullscreen(ureq);
 				columnLayoutCtr = ctr;
 			} else {
-				LayoutMain3ColsBackController ctr = new LayoutMain3ColsBackController(ureq, getWindowControl(), (showMenu ? menuTree : null), null, myContent, "scorm" + scormResourceId);
+				LayoutMain3ColsBackController ctr = new LayoutMain3ColsBackController(ureq, getWindowControl(), (showMenu ? menuTree : null), myContent, "scorm" + scormResourceId);
 				if(fullWindow)
 					ctr.setAsFullscreen(ureq);
 				columnLayoutCtr = ctr;
