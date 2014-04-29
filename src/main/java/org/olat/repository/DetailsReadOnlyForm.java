@@ -49,7 +49,6 @@ public class DetailsReadOnlyForm extends FormBasicController {
 	private String typeName;
 	
 	final public static int MAX_DISPLAYNAME = 100;
-	private SelectionElement canLaunch;
 	private SelectionElement canDownload;
 	
 	/**
@@ -93,14 +92,6 @@ public class DetailsReadOnlyForm extends FormBasicController {
 		
 		RepositoryHandler handler = null;
 		if (typeName != null) handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(typeName);
-	
-		canLaunch = uifactory.addCheckboxesVertical("cif_canLaunch", "cif.canLaunch", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
-		canLaunch.select("xx", entry.getCanLaunch());
-		canLaunch.setVisible(handler != null && handler.supportsLaunch(this.entry));
-		canLaunch.setEnabled(false); // It is readonly
-		if (handler == null || !handler.supportsLaunch(this.entry)) {
-			canLaunch.setExampleKey("cif.canLaunch.na", null);
-		}
 		
 		canDownload = uifactory.addCheckboxesVertical("cif_canDownload", "cif.canDownload", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		canDownload.select("xx", entry.getCanDownload());

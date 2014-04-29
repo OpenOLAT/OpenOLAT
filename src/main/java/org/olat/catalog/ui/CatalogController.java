@@ -60,7 +60,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.tool.ToolController;
 import org.olat.core.gui.control.generic.tool.ToolFactory;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -84,8 +83,6 @@ import org.olat.repository.SearchRepositoryEntryParameters;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.RepositoryEditDescriptionController;
 import org.olat.repository.controllers.RepositorySearchController;
-import org.olat.repository.handlers.RepositoryHandler;
-import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
@@ -320,27 +317,8 @@ public class CatalogController extends BasicController implements Activateable2 
 						+ ", title " + cur.getName());
 				// launch entry if launchable, otherwise offer it as download / launch
 				// it as non-html in browser
-				if (repoEntry.getCanLaunch()) {
-					String businessPath = "[RepositoryEntry:" + repoEntry.getKey() + "]";
-					NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-				} else if (repoEntry.getCanDownload()) {
-					OLATResource ores = repoEntry.getOlatResource();
-					if (ores == null) {
-						throw new AssertException("repoEntry had no olatresource, repoKey = " + repoEntry.getKey());
-					}
-					// else not launchable in olat, but downloadable -> send the document
-					// directly to browser but "downloadable" (pdf, word, excel)
-					RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repoEntry);
-					MediaResource mr = handler.getAsMediaResource(ores, false);
-					repositoryService.incrementDownloadCounter(repoEntry);
-					ureq.getDispatchResult().setResultingMediaResource(mr);
-					return;
-				} else { // neither launchable nor downloadable -> show details					
-					//REVIEW:pb:replace EntryChangedEvent with a more specific event
-					fireEvent(ureq, new EntryChangedEvent(repoEntry, EntryChangedEvent.MODIFIED));
-					return;
-				}
-
+				String businessPath = "[RepositoryEntry:" + repoEntry.getKey() + "]";
+				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 			} else if (command.startsWith(CATCMD_MOVE)) {
 				String s = command.substring(CATCMD_MOVE.length());
 				if (s.startsWith(CATENTRY_LEAF)) {

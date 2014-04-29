@@ -29,8 +29,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.StackedController;
-import org.olat.core.gui.components.stack.StackedControllerAware;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -59,7 +59,7 @@ import org.olat.modules.qpool.ui.events.QPoolEvent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionsController extends BasicController implements Activateable2, StackedControllerAware {
+public class QuestionsController extends BasicController implements Activateable2, BreadcrumbPanelAware {
 	
 	private static final String SPLIT_VIEW_NORTH_HEIGHT = "northHeight";
 	private static final String SPLIT_VIEW_WEST_WIDTH = "westWidth";
@@ -69,7 +69,7 @@ public class QuestionsController extends BasicController implements Activateable
 	private final QuestionItemPreviewController previewCtrl;
 	private final QuestionItemSummaryController detailsCtrl;
 
-	private StackedController stackPanel;
+	private BreadcrumbPanel stackPanel;
 	private final VelocityContainer mainVC;
 	private DialogBoxController confirmDeleteBox;
 	
@@ -158,8 +158,8 @@ public class QuestionsController extends BasicController implements Activateable
 	}
 
 	@Override
-	public void setStackedController(StackedController stackPanel) {
-		listCtrl.setStackedController(stackPanel);
+	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
+		listCtrl.setBreadcrumbPanel(stackPanel);
 		this.stackPanel = stackPanel;
 	}
 

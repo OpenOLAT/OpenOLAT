@@ -19,7 +19,6 @@
  */
 package org.olat.home;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -27,12 +26,9 @@ import org.olat.core.extensions.ExtManager;
 import org.olat.core.extensions.action.GenericActionExtension;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.stack.StackedController;
-import org.olat.core.gui.components.stack.StackedControllerAware;
-import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -42,7 +38,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -52,115 +47,26 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class HomeMainController extends MainLayoutBasicController implements StackedController, Activateable2 {
+public class HomeMainController extends MainLayoutBasicController implements Activateable2 {
 
-	private Link backLink;
-	private Panel content;
+	private BreadcrumbPanel stackPanel;
 	private LayoutMain3ColsController contentCtr;
-	private VelocityContainer stackVC;
-	private final List<Link> stack = new ArrayList<Link>(3);
-	
+
 	public HomeMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		init();
-	}
-	
-	private void init() {
-		content = new Panel("content");
-		
-		//create the stack
-		String stackPage = Util.getPackageVelocityRoot(StackedController.class) + "/stack.html";
-		stackVC = new VelocityContainer(null, "vc_stack", stackPage, getTranslator(), this);
-		//back link
-		backLink = LinkFactory.createCustomLink("back", "back", null, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, stackVC, this);
-		backLink.setCustomEnabledLinkCSS("b_breadcumb_back");
-		backLink.setCustomDisplayText("\u25C4"); // unicode back arrow (black left pointer symbol)
-		backLink.setTitle(translate("back"));
-		backLink.setAccessKey("b"); // allow navigation using keyboard
-		stackVC.put("back", backLink);
-		//add the root
-		Link link = LinkFactory.createLink("gcrumb_root", stackVC, this);
-		link.setCustomDisplayText("");
-		link.setUserObject(this);
-		stack.add(link);
-		stackVC.contextPut("breadCrumbs", stack);
-		
-		putInitialPanel(stackVC);
+
+		stackPanel = new BreadcrumbedStackedPanel("homeStackPanel", getTranslator(), this);
+		putInitialPanel(stackPanel);
 	}
 	
 	@Override
 	protected void doDispose() {
 		//
 	}
-
-	@Override
-	public void popUpToRootController(UserRequest ureq) {
-		if(stack.size() > 1) {
-			Controller popedCtrl = null;
-			for(int i=stack.size(); i-->1; ) {
-				Link link = stack.remove(i);
-				popedCtrl = (Controller)link.getUserObject();
-				popedCtrl.dispose();
-			}
-			
-			//set the root controller
-			Link rootLink = stack.get(0);
-			Controller rootController  = (Controller)rootLink.getUserObject();
-			if(rootController == this) {
-				content.setContent(contentCtr.getInitialComponent());
-			} else {
-				content.setContent(rootController.getInitialComponent());
-			}
-		}
-	}
-
-	@Override
-	public void pushController(String displayName, Controller controller) {
-		Link link = LinkFactory.createLink("gcrumb_" + stack.size(), stackVC, this);
-		link.setCustomDisplayText(displayName);
-		link.setUserObject(controller);
-		stack.add(link);
-		content.setContent(controller.getInitialComponent());
-	}
-
-	@Override
-	public void popController(Controller controller) {
-		popController(controller.getInitialComponent());
-	}
-	
-	private void popController(Component source) {
-		int index = stack.indexOf(source);
-		if(index < (stack.size() - 1)) {
-			Controller popedCtrl = null;
-			for(int i=stack.size(); i-->(index+1); ) {
-				Link link = stack.remove(i);
-				popedCtrl = (Controller)link.getUserObject();
-				popedCtrl.dispose();
-			}
-
-			Link currentLink = stack.get(index);
-			Controller currentCtrl  = (Controller)currentLink.getUserObject();
-			if(currentCtrl == this) {
-				content.setContent(contentCtr.getInitialComponent());
-			} else {
-				content.setContent(currentCtrl.getInitialComponent());
-			}
-			stackVC.setDirty(true);
-		}
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source.equals(backLink)) {
-			if (stack.size() > 1) {
-				// back means to one level down, change source to the stack item one below current
-				source = stack.get(stack.size()-2);
-				// now continue as if user manually pressed a stack item in the list
-			}
-		}
-		if(stack.contains(source)) {
-			popController(source);
-		}
+		//
 	}
 
 	@Override
@@ -180,7 +86,7 @@ public class HomeMainController extends MainLayoutBasicController implements Sta
 		GenericActionExtension gAE = ExtManager.getInstance()
 				.getActionExtensioByNavigationKey(HomeMainController.class.getName(), navKey);
 		if (gAE != null) {
-			popUpToRootController(ureq);
+			stackPanel.popUpToRootController(ureq);
 
 			Controller innerContentCtr = createController(gAE, ureq);
 			contentCtr = new LayoutMain3ColsController(ureq, getWindowControl(), innerContentCtr);
@@ -191,7 +97,7 @@ public class HomeMainController extends MainLayoutBasicController implements Sta
 			if (innerContentCtr instanceof Activateable2) {
 				((Activateable2) innerContentCtr).activate(ureq, entries, entry.getTransientState());
 			}
-			stackVC.put("content", contentCtr.getInitialComponent());
+			stackPanel.pushController("content", contentCtr);
 		}
 	}
 	
@@ -204,8 +110,8 @@ public class HomeMainController extends MainLayoutBasicController implements Sta
 		bwControl = addToHistory(ureq, ores, null);
 
 		Controller ctrl = ae.createController(ureq, bwControl, null);
-		if(ctrl instanceof StackedControllerAware) {
-			((StackedControllerAware)ctrl).setStackedController(this);
+		if(ctrl instanceof BreadcrumbPanelAware) {
+			((BreadcrumbPanelAware)ctrl).setBreadcrumbPanel(stackPanel);
 		}
 		return ctrl;
 	}

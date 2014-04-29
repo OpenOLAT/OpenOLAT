@@ -197,8 +197,6 @@ public class ImportGlossaryReferencesController extends BasicController {
 			importedRepositoryEntry.setSoftkey(importExport.getSoftkey());
 		}
 		RepositoryHandler rh = RepositoryHandlerFactory.getInstance().getRepositoryHandler(importedRepositoryEntry);
-		importedRepositoryEntry.setCanLaunch(rh.supportsLaunch(importedRepositoryEntry));
-		
 		repositoryService.update(importedRepositoryEntry);
 
 		if (!keepSoftkey) {

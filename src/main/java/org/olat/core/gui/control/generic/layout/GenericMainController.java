@@ -33,9 +33,9 @@ import org.olat.core.extensions.action.GenericActionExtension;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
-import org.olat.core.gui.components.stack.StackedController;
-import org.olat.core.gui.components.stack.StackedControllerAware;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
@@ -70,13 +70,13 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author patrickb, www.uzh.ch, slightly changed to allow specialised forms of
  *         GenericActionExtension
  */
-public abstract class GenericMainController extends MainLayoutBasicController implements StackedController {
+public abstract class GenericMainController extends MainLayoutBasicController {
 
 	private static final String GMCMT = "GMCMenuTree";
 
 	private MenuTree olatMenuTree;
 	private Panel content;
-	private BreadcrumbedStackedPanel stackVC;
+	private BreadcrumbPanel stackVC;
 	private LayoutMain3ColsController columnLayoutCtr;
 	private Controller contentCtr;
 	private final List<GenericTreeNode> nodesToAppend;
@@ -294,23 +294,6 @@ public abstract class GenericMainController extends MainLayoutBasicController im
 
 		return gtm;
 	}
-	
-	
-
-	@Override
-	public void popController(Controller controller) {
-		stackVC.popController(controller);
-	}
-
-	@Override
-	public void popUpToRootController(UserRequest ureq) {
-		stackVC.popUpToRootController(ureq);
-	}
-
-	@Override
-	public void pushController(String displayName, Controller controller) {
-		stackVC.pushController(displayName, controller);
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
@@ -393,8 +376,8 @@ public abstract class GenericMainController extends MainLayoutBasicController im
 		}
 
 		Controller ctrl = ae.createController(ureq, bwControl, null);
-		if(ctrl instanceof StackedControllerAware) {
-			((StackedControllerAware)ctrl).setStackedController(this);
+		if(ctrl instanceof BreadcrumbPanelAware) {
+			((BreadcrumbPanelAware)ctrl).setBreadcrumbPanel(stackVC);
 		}
 		return ctrl;
 	}

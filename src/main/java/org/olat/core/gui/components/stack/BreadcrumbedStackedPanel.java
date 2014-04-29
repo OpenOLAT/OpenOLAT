@@ -44,15 +44,14 @@ import org.olat.core.util.Util;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, StackedController, ComponentEventListener {
+public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, BreadcrumbPanel, ComponentEventListener {
 	
 	private static final ComponentRenderer RENDERER = new BreadcrumbedStackedPanelRenderer();
 	
-	private final List<Link> stack = new ArrayList<>(3);
-	private final List<Tool> generalTools = new ArrayList<>(3);
+	protected final List<Link> stack = new ArrayList<>(3);
 	
-	private final Link backLink;
-	private final Link closeLink;
+	protected final Link backLink;
+	protected final Link closeLink;
 	
 	private String cssClass;
 	
@@ -115,15 +114,6 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Sta
 		for(Link crumb:stack) {
 			cmps.add(crumb);
 		}
-		for(Tool tool:generalTools) {
-			cmps.add(tool.getComponent());
-		}
-		
-		BreadCrumb currentCrumb = getCurrentCrumb();
-		for(Tool tool:currentCrumb.getTools()) {
-			cmps.add(tool.getComponent());
-		}
-
 		return cmps;
 	}
 
@@ -135,29 +125,6 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Sta
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
-	}
-	
-	public void addTool(Component toolComponent, boolean general) {
-		Tool tool = new Tool(toolComponent);
-		if(general) {
-			generalTools.add(tool);
-		} else {
-			getCurrentCrumb().addTool(tool);
-		}
-	}
-	
-	public List<Tool> getTools() {
-		List<Tool> currentTools = new ArrayList<>();
-		currentTools.addAll(generalTools);
-		currentTools.addAll(getCurrentCrumb().getTools());
-		return currentTools;
-	}
-	
-	private BreadCrumb getCurrentCrumb() {
-		if(stack.isEmpty()) {
-			return null;
-		}
-		return (BreadCrumb)stack.get(stack.size() - 1).getUserObject();
 	}
 	
 	@Override
@@ -250,13 +217,19 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Sta
 		}
 	}
 
+	@Override
 	public void pushController(String displayName, Controller controller) {
-		Link link = LinkFactory.createLink("crumb_" + stack.size(), null, this);
+		Link link = LinkFactory.createLink("crumb_" + stack.size(), (Translator)null, this);
 		link.setCustomDisplayText(StringHelper.escapeHtml(displayName));
-		link.setUserObject(new BreadCrumb(controller));
+		link.setDomReplacementWrapperRequired(false);
+		link.setUserObject(createCrumb(controller));
 		stack.add(link);
 		setContent(controller);
 		updateCloseLinkTitle();
+	}
+	
+	protected BreadCrumb createCrumb(Controller controller) {
+		return new BreadCrumb(controller);
 	}
 	
 	private void setContent(Controller ctrl) {
@@ -277,20 +250,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Sta
 		}
 	}
 	
-	public static class Tool {
-		private final Component component;
-		
-		public Tool(Component component) {
-			this.component = component;
-		}
-
-		public Component getComponent() {
-			return component;
-		}
-	}
-	
 	public static class BreadCrumb {
-		private final List<Tool> tools = new ArrayList<>(5);
 		private final Controller controller;
 		
 		public BreadCrumb(Controller controller) {
@@ -299,14 +259,6 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Sta
 
 		public Controller getController() {
 			return controller;
-		}
-		
-		public List<Tool> getTools() {
-			return tools;
-		}
-		
-		public void addTool(Tool tool) {
-			tools.add(tool);
 		}
 
 		public void dispose() {

@@ -47,7 +47,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.rating.RatingFormEvent;
 import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
-import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -84,7 +84,7 @@ public class RepositoryEntryListController extends FormBasicController
 	private DefaultRepositoryEntryDataSource dataSource;
 	private CloseableModalController cmc;
 	private UserCommentsController commentsCtrl;
-	private final BreadcrumbedStackedPanel stackPanel;
+	private final BreadcrumbPanel stackPanel;
 	private RepositoryEntryDetailsController detailsCtrl;
 	
 	private final String mapperThumbnailUrl;
@@ -92,7 +92,7 @@ public class RepositoryEntryListController extends FormBasicController
 	private final UserRatingsDAO userRatingsDao;
 	
 	public RepositoryEntryListController(UserRequest ureq, WindowControl wControl,
-			SearchMyRepositoryEntryViewParams searchParams, BreadcrumbedStackedPanel stackPanel) {
+			SearchMyRepositoryEntryViewParams searchParams, BreadcrumbPanel stackPanel) {
 		super(ureq, wControl, "repoentry_table");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);

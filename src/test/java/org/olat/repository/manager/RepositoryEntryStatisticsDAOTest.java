@@ -302,16 +302,14 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 						RepositoryEntry re = repositoryManager.lookupRepositoryEntry(keyRepo);
 						repositoryService.incrementLaunchCounter(re);
 						if (i % 30 == 0 ) {
-							re = repositoryManager.setProperties(re, true, false, true, false);	
+							re = repositoryManager.setProperties(re, true, false, false);	
 							assertEquals("Wrong canCopy value", true, re.getCanCopy());
 							assertEquals("Wrong getCanReference value",false, re.getCanReference());
-							assertEquals("Wrong getCanLaunch value", true, re.getCanLaunch());
 							assertEquals("Wrong getCanDownload value", false, re.getCanDownload());
 						} else 	if (i % 15 == 0 ) {
-							re = repositoryManager.setProperties(re, false, true, false, true);	
+							re = repositoryManager.setProperties(re, false, true, true);	
 							assertEquals("Wrong canCopy value", false, re.getCanCopy());
 							assertEquals("Wrong getCanReference value", true, re.getCanReference());
-							assertEquals("Wrong getCanLaunch value", false, re.getCanLaunch() );
 							assertEquals("Wrong getCanDownload value", true, re.getCanDownload());
 						}
 						dbInstance.commitAndCloseSession();

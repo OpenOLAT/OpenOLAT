@@ -50,7 +50,6 @@ public class DisplayInfoForm extends FormBasicController {
 
 	private SelectionElement canCopy;
 	private SelectionElement canReference;
-	private SelectionElement canLaunch;
 	private SelectionElement canDownload;
 	private SelectionElement access;
 	
@@ -80,10 +79,6 @@ public class DisplayInfoForm extends FormBasicController {
 		canReference = uifactory.addCheckboxesVertical("cif_canReference", "cif.canReference", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		canReference.select("xx", entry.getCanReference());
 		
-		canLaunch = uifactory.addCheckboxesVertical("cif_canLaunch", "cif.canLaunch", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
-		canLaunch.select("xx", entry.getCanLaunch());
-		canLaunch.setVisible(handler != null && handler.supportsLaunch(this.entry));
-
 		canDownload = uifactory.addCheckboxesVertical("cif_canDownload", "cif.canDownload", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		canDownload.select("xx", entry.getCanDownload());
 		canDownload.setVisible(handler != null && handler.supportsDownload(this.entry));

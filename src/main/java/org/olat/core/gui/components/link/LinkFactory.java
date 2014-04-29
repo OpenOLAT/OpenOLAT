@@ -28,6 +28,7 @@ package org.olat.core.gui.components.link;
 
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.translator.Translator;
 
 /**
  * Description:<br>
@@ -119,6 +120,12 @@ public class LinkFactory {
 	 */
 	public static Link createLink(String name, VelocityContainer vc, ComponentEventListener listener){
 		return new Link(name, name, name, Link.LINK, vc, listener);
+	}
+	
+	public static Link createLink(String name, Translator translator, ComponentEventListener listener){
+		Link link = new Link(name, name, name, Link.LINK, null, listener);
+		link.setTranslator(translator);
+		return link;
 	}
 	
 	/**

@@ -42,10 +42,12 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -82,6 +84,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Autowired
 	private RepositoryEntryMyCourseViewQueries myCourseViewQueries;
 	@Autowired
+	private RepositoryEntryAuthorViewQueries authorViewQueries;
+	@Autowired
 	private OLATResourceManager resourceManager;
 
 	@Autowired
@@ -114,7 +118,6 @@ public class RepositoryServiceImpl implements RepositoryService {
 		re.setAccess(0);
 		re.setCanDownload(false);
 		re.setCanCopy(false);
-		re.setCanLaunch(false);
 		re.setCanReference(false);
 		re.setDisplayname(displayname);
 		re.setResourcename(resourceName == null ? "" : resourceName);
@@ -267,11 +270,23 @@ public class RepositoryServiceImpl implements RepositoryService {
 
 	@Override
 	public int countMyView(SearchMyRepositoryEntryViewParams params) {
-		return myCourseViewQueries.countMyView(params);
+		return myCourseViewQueries.countViews(params);
 	}
 
 	@Override
-	public List<RepositoryEntryMyView> searchMyView(SearchMyRepositoryEntryViewParams params, int firstResult, int maxResults) {
-		return myCourseViewQueries.searchMyView(params, firstResult, maxResults);
+	public List<RepositoryEntryMyView> searchMyView(SearchMyRepositoryEntryViewParams params,
+			int firstResult, int maxResults) {
+		return myCourseViewQueries.searchViews(params, firstResult, maxResults);
+	}
+
+	@Override
+	public int countAuthorView(SearchAuthorRepositoryEntryViewParams params) {
+		return authorViewQueries.countViews(params);
+	}
+
+	@Override
+	public List<RepositoryEntryAuthorView> searchAuthorView(SearchAuthorRepositoryEntryViewParams params,
+			int firstResult, int maxResults) {
+		return authorViewQueries.searchViews(params, firstResult, maxResults);
 	}
 }

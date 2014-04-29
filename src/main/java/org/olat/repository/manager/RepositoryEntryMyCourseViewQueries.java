@@ -58,7 +58,7 @@ public class RepositoryEntryMyCourseViewQueries {
 	@Autowired
 	private DB dbInstance;
 	
-	public int countMyView(SearchMyRepositoryEntryViewParams params) {
+	public int countViews(SearchMyRepositoryEntryViewParams params) {
 		if(params.getIdentity() == null) {
 			log.error("No identity defined for query");
 			return 0;
@@ -69,7 +69,7 @@ public class RepositoryEntryMyCourseViewQueries {
 		return count == null ? 0 : count.intValue();
 	}
 
-	public List<RepositoryEntryMyView> searchMyView(SearchMyRepositoryEntryViewParams params, int firstResult, int maxResults) {
+	public List<RepositoryEntryMyView> searchViews(SearchMyRepositoryEntryViewParams params, int firstResult, int maxResults) {
 		if(params.getIdentity() == null) {
 			log.error("No identity defined for query");
 			return Collections.emptyList();

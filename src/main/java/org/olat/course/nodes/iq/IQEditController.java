@@ -45,7 +45,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.stack.StackedController;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -216,7 +216,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	private Controller previewLayoutCtr;
 	private CloseableModalController cmc;
 	private Link editTestButton;
-	private final StackedController stackPanel;
+	private final BreadcrumbPanel stackPanel;
 	
 	private final IQManager iqManager;
 
@@ -230,7 +230,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	 * @param groupMgr
 	 * @param euce
 	 */
-	IQEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, IQTESTCourseNode courseNode, UserCourseEnvironment euce) {
+	IQEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, IQTESTCourseNode courseNode, UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.moduleConfiguration = courseNode.getModuleConfiguration();
@@ -267,7 +267,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	 * @param groupMgr
 	 * @param euce
 	 */
-	 IQEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, IQSELFCourseNode courseNode , UserCourseEnvironment euce) {
+	 IQEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, IQSELFCourseNode courseNode , UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.moduleConfiguration = courseNode.getModuleConfiguration();
@@ -299,7 +299,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	 * @param groupMgr
 	 * @param euce
 	 */
-	 IQEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, IQSURVCourseNode courseNode, UserCourseEnvironment euce) {
+	 IQEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, IQSURVCourseNode courseNode, UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.moduleConfiguration = courseNode.getModuleConfiguration();

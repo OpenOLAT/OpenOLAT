@@ -513,7 +513,6 @@ public class CoursesWebService {
 			OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(newResourceable);
 			RepositoryEntry preparedEntry = repositoryService.create(ureq.getIdentity(), resName, name, description, ores);
 			preparedEntry.setCanDownload(src.getCanDownload());
-			preparedEntry.setCanLaunch(src.getCanLaunch());
 			if(StringHelper.containsNonWhitespace(softKey)) {
 				preparedEntry.setSoftkey(softKey);
 			}
@@ -604,7 +603,6 @@ public class CoursesWebService {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(oresable);
 		RepositoryEntry addedEntry = repositoryService.create(initialAuthor, "-", shortTitle, null, ores);
-		addedEntry.setCanLaunch(true);
 		if(StringHelper.containsNonWhitespace(softKey) && softKey.length() <= 30) {
 			addedEntry.setSoftkey(softKey);
 		}

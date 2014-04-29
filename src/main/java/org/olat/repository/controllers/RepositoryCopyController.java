@@ -180,7 +180,6 @@ public class RepositoryCopyController extends BasicController {
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(newResourceable);
 		RepositoryEntry preparedEntry = repositoryService.create(ureq.getIdentity(), resName, newDispalyname, src.getDescription(), ores);
 		preparedEntry.setCanDownload(src.getCanDownload());
-		preparedEntry.setCanLaunch(src.getCanLaunch());
 		repositoryService.update(preparedEntry);
 		// copy image if available
 		RepositoryManager.getInstance().copyImage(src, preparedEntry);

@@ -30,7 +30,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.StackedController;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -68,7 +68,7 @@ public class TUEditController extends ActivateableTabbableDefaultController impl
 
 	private ModuleConfiguration config;	
 	private VelocityContainer myContent;
-	private final StackedController stackPanel;
+	private final BreadcrumbPanel stackPanel;
 
 	private TUConfigForm tuConfigForm;	
 	private TUCourseNode courseNode;
@@ -87,7 +87,7 @@ public class TUEditController extends ActivateableTabbableDefaultController impl
 	 * @param tuCourseNode The current single page course node
 	 * @param course
 	 */
-	public TUEditController(ModuleConfiguration config, UserRequest ureq, WindowControl wControl, StackedController stackPanel,
+	public TUEditController(ModuleConfiguration config, UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			TUCourseNode tuCourseNode, ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		

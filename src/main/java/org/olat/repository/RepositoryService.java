@@ -92,4 +92,9 @@ public interface RepositoryService {
 	public List<RepositoryEntryMyView> searchMyView(SearchMyRepositoryEntryViewParams params, int firstResult, int maxResults);
 	
 
+	public int countAuthorView(SearchAuthorRepositoryEntryViewParams params);
+	
+	public List<RepositoryEntryAuthorView> searchAuthorView(SearchAuthorRepositoryEntryViewParams params, int firstResult, int maxResults);
+	
+
 }

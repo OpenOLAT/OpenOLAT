@@ -90,7 +90,6 @@ public class ContactsTest extends OlatJerseyTestCase {
 		
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = rs.create("administrator", "-", "rest-re", null, course);
-		re.setCanLaunch(true);
 		rs.update(re);
 		DBFactory.getInstance().commit();
 			

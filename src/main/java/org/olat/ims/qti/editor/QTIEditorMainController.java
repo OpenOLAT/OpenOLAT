@@ -47,7 +47,7 @@ import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.SelectionTree;
 import org.olat.core.gui.components.tree.TreeEvent;
@@ -212,7 +212,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private VelocityContainer main, exitVC, chngMsgFormVC, restrictedEditWarningVC;
 	private MenuTree menuTree;
 	private Panel mainPanel;
-	private BreadcrumbedStackedPanel stackedPanel;
+	private TooledStackedPanel stackedPanel;
 	private LayoutMain3ColsController columnLayoutCtr;
 	
 	private Link previewLink, exportPoolLink, exportDocLink, closeLink;
@@ -318,7 +318,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			return;
 		}
 
-		stackedPanel = new BreadcrumbedStackedPanel("qtiEditorStackedPanel", getTranslator(), this);
+		stackedPanel = new TooledStackedPanel("qtiEditorStackedPanel", getTranslator(), this);
 		
 		// initialize the history
 		if (qtiPackage.isResumed() && qtiPackage.hasSerializedChangelog()) {
@@ -1052,8 +1052,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	
 	private void populateToolC() {
 		//tools
-		Dropdown editTools = new Dropdown("editTools", getTranslator());
-		editTools.setI18nKey("tools.tools.header");
+		Dropdown editTools = new Dropdown("editTools", "tools.tools.header", false, getTranslator());
 		stackedPanel.addTool(editTools, false);
 		
 		previewLink = LinkFactory.createToolLink(CMD_TOOLS_PREVIEW, translate("tools.tools.preview"), this, "b_toolbox_preview");
@@ -1066,8 +1065,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		editTools.addComponent(closeLink);
 
 		//add
-		Dropdown addItemTools = new Dropdown("editTools", getTranslator());
-		addItemTools.setI18nKey("tools.add.header");
+		Dropdown addItemTools = new Dropdown("editTools", "tools.add.header", false, getTranslator());
 		stackedPanel.addTool(addItemTools, false);
 
 		addPoolLink = LinkFactory.createToolLink(CMD_TOOLS_ADD_QPOOL, translate("tools.import.qpool"), this, "o_mi_qpool_import");

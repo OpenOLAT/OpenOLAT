@@ -25,7 +25,7 @@
 package org.olat.course.nodes.iq;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.stack.StackedController;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
@@ -75,7 +75,7 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 	 * @param euce
 	 * @return
 	 */
-	public TabbableController createIQTestEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, IQTESTCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce){
+	public TabbableController createIQTestEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, IQTESTCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce){
 		return new IQEditController(ureq, wControl, stackPanel, course, courseNode, euce);
 	}
 	
@@ -90,7 +90,7 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 	 * @param euce
 	 * @return
 	 */
-	public TabbableController createIQSelftestEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, IQSELFCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce){
+	public TabbableController createIQSelftestEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, IQSELFCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce){
 		return new IQEditController(ureq, wControl, stackPanel, course, courseNode, euce);
 	}
 	
@@ -105,7 +105,7 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 	 * @param euce
 	 * @return
 	 */
-	public TabbableController createIQSurveyEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, IQSURVCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce){
+	public TabbableController createIQSurveyEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, IQSURVCourseNode courseNode, CourseGroupManager groupMgr, UserCourseEnvironment euce){
 		return new IQEditController(ureq, wControl, stackPanel, course, courseNode, euce);
 	}
 	

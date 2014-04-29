@@ -24,7 +24,7 @@ import java.util.List;
 
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.stack.StackedController;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
@@ -82,7 +82,7 @@ public class DENCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq,
-			WindowControl wControl, StackedController stackPanel, ICourse course, UserCourseEnvironment userCourseEnv) {
+			WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment userCourseEnv) {
 		DENEditController childTabCntrllr = new DENEditController(getModuleConfiguration(), ureq, wControl, this, course, userCourseEnv);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
 		// needed for DENEditController.isConfigValid()

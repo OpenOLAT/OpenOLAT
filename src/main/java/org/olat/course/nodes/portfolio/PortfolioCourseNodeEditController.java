@@ -22,7 +22,7 @@ package org.olat.course.nodes.portfolio;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.stack.StackedController;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -72,7 +72,7 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 	private ConditionEditController accessibilityCondContr;
 	private PortfolioCourseNode courseNode;
 	
-	public PortfolioCourseNodeEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, PortfolioCourseNode node,
+	public PortfolioCourseNodeEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, PortfolioCourseNode node,
 			ModuleConfiguration config, UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		this.config = config;

@@ -44,8 +44,8 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private Long key;
 	private String name;
 	private String authors;
-	private String description;
 	private String thumbnailRelPath;
+	private String shortenedDescription;
 	
 	private String score;
 	private Boolean passed;
@@ -102,25 +102,31 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		this.name = name;
 	}
 	
-	public String getDescription() {
-		return description;
-	}
-	
-	public void setDescription(String description) {
-		this.description = description;
-	}
-	
+
 	public String getShortenedDescription() {
-		if(description != null) {
-			String shortDesc = FilterFactory.getHtmlTagsFilter().filter(description);
+		if(shortenedDescription != null) {
+			String shortDesc = FilterFactory.getHtmlTagsFilter().filter(shortenedDescription);
 			if(shortDesc.length() > 255) {
 				shortDesc = shortDesc.substring(0, 255);
 			}
 			return shortDesc;
 		}
-		return "";
+		return shortenedDescription;
 	}
-	
+
+	public void setShortenedDescription(String description) {
+		if(description != null) {
+			String shortDesc = FilterFactory.getHtmlTagsFilter().filter(description);
+			if(shortDesc.length() > 255) {
+				shortenedDescription = shortDesc.substring(0, 255);
+			} else {
+				shortenedDescription = shortDesc;
+			}
+		} else {
+			shortenedDescription = "";
+		}
+	}
+
 	/**
 	 * Is member if the row as some type of access control
 	 * @return

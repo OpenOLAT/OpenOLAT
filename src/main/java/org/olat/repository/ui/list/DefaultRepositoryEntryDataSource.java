@@ -146,7 +146,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			RepositoryEntryRow row = new RepositoryEntryRow();
 			row.setKey(entry.getKey());
 			row.setDisplayName(entry.getDisplayname());
-			row.setDescription(entry.getDescription());
+			row.setShortenedDescription(entry.getDescription());
 			row.setOLATResourceable(OresHelper.clone(entry.getOlatResource()));
 			row.setAuthors(entry.getAuthors());
 			

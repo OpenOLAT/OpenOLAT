@@ -1802,7 +1802,6 @@ public class EPStructureManager extends BasicManager {
 	private RepositoryEntry createRepositoryEntry(Identity identity, OLATResource oresable, String title) {
 		// create a repository entry
 		RepositoryEntry addedEntry = repositoryService.create(identity, "-", title, null, oresable);
-		addedEntry.setCanLaunch(true);
 		// Do set access for owner at the end, because unfinished course should be invisible
 		addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
 

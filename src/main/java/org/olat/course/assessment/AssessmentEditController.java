@@ -34,7 +34,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.StackedController;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -83,7 +83,7 @@ public class AssessmentEditController extends BasicController {
 	private Link hideLogButton;
 	private Link showLogButton;
 	private LockResult lockEntry;
-	private final StackedController stackPanel;
+	private final BreadcrumbPanel stackPanel;
 	private DialogBoxController alreadyLockedDialogController;
 	
 	private final boolean showCourseNodeDetails;
@@ -98,7 +98,7 @@ public class AssessmentEditController extends BasicController {
 	 * @param assessedIdentityWrapper The wrapped assessed identity
 	 * @param showCourseNodeDetails show the details controller if one available
 	 */
-	public AssessmentEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel,
+	public AssessmentEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, AssessableCourseNode courseNode, AssessedIdentityWrapper assessedIdentityWrapper,
 			boolean showCourseNodeDetails, boolean saveAndCloseButton) {
 		super(ureq, wControl);

@@ -560,7 +560,6 @@ public class RepositoryManager extends BasicManager {
 	 * @return True if current identity is allowed to launch the given repo entry.
 	 */
 	public boolean isAllowedToLaunch(Identity identity, Roles roles, RepositoryEntry re) {
-		if (!re.getCanLaunch()) return false; // deny if not launcheable
 		// allow if identity is owner
 		if (repositoryEntryRelationDao.hasRole(identity, re, GroupRoles.owner.name())) {
 			return true;
@@ -736,11 +735,10 @@ public class RepositoryManager extends BasicManager {
 		return updatedRe;
 	}
 
-	public RepositoryEntry setProperties(final RepositoryEntry re, boolean canCopy, boolean canReference, boolean canLaunch, boolean canDownload ) {
+	public RepositoryEntry setProperties(final RepositoryEntry re, boolean canCopy, boolean canReference, boolean canDownload) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
 		reloadedRe.setCanCopy(canCopy);
 		reloadedRe.setCanReference(canReference);
-		reloadedRe.setCanLaunch(canLaunch);
 		reloadedRe.setCanDownload(canDownload);
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();

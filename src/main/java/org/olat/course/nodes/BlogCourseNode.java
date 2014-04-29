@@ -23,7 +23,7 @@ import java.io.File;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.stack.StackedController;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
@@ -78,7 +78,7 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 	 *      org.olat.course.run.userview.UserCourseEnvironment)
 	 */
 	@Override
-	public TabbableController createEditController(UserRequest ureq, WindowControl wControl,  StackedController stackPanel, ICourse course, UserCourseEnvironment euce) {
+	public TabbableController createEditController(UserRequest ureq, WindowControl wControl,  BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		TabbableController blogChildController = new BlogNodeEditController(this, course, euce, ureq, wControl);
 		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, blogChildController);

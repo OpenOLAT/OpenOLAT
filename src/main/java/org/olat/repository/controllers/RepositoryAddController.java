@@ -75,29 +75,29 @@ public class RepositoryAddController extends BasicController {
 	
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(RepositoryManager.class);
 
-	static final String ACTION_ADD_PREFIX = "a.";
-	static final String ACTION_ADD_COURSE = ACTION_ADD_PREFIX + "co";
-	static final String ACTION_ADD_CP = ACTION_ADD_PREFIX + "cp";
-	static final String ACTION_ADD_SCORM = ACTION_ADD_PREFIX + "scorm";
-	static final String ACTION_ADD_TEST = ACTION_ADD_PREFIX + "te";
-	static final String ACTION_ADD_SURVEY = ACTION_ADD_PREFIX + "sv";
-	static final String ACTION_ADD_WIKI = ACTION_ADD_PREFIX + "wiki";
-	static final String ACTION_ADD_PODCAST = ACTION_ADD_PREFIX + "podcast";
-	static final String ACTION_ADD_BLOG = ACTION_ADD_PREFIX + "blog";
-	static final String ACTION_ADD_GLOSSARY = ACTION_ADD_PREFIX + "glossary";
-	static final String ACTION_ADD_DOC = ACTION_ADD_PREFIX + "dc";
-	static final String ACTION_NEW_COURSE = ACTION_ADD_PREFIX + "nco";
-	static final String ACTION_NEW_CP = ACTION_ADD_PREFIX + "ncp";
-	static final String ACTION_NEW_TEST = ACTION_ADD_PREFIX + "nte";
-	static final String ACTION_NEW_SURVEY = ACTION_ADD_PREFIX + "nsu";
-	static final String ACTION_NEW_SHAREDFOLDER = ACTION_ADD_PREFIX + "nsf";
-	static final String ACTION_NEW_WIKI = ACTION_ADD_PREFIX + "nwiki";
-	static final String ACTION_NEW_PODCAST = ACTION_ADD_PREFIX + "npodcast";
-	static final String ACTION_NEW_BLOG = ACTION_ADD_PREFIX + "nblog";
-	static final String ACTION_NEW_GLOSSARY = ACTION_ADD_PREFIX + "nglossary";
-	static final String ACTION_NEW_PORTFOLIO = ACTION_ADD_PREFIX + "nportfolio";
-	static final String ACTION_CANCEL = "cancel";
-	static final String ACTION_FORWARD = "forward";
+	public static final String ACTION_ADD_PREFIX = "a.";
+	public static final String ACTION_ADD_COURSE = ACTION_ADD_PREFIX + "co";
+	public static final String ACTION_ADD_CP = ACTION_ADD_PREFIX + "cp";
+	public static final String ACTION_ADD_SCORM = ACTION_ADD_PREFIX + "scorm";
+	public static final String ACTION_ADD_TEST = ACTION_ADD_PREFIX + "te";
+	public static final String ACTION_ADD_SURVEY = ACTION_ADD_PREFIX + "sv";
+	public static final String ACTION_ADD_WIKI = ACTION_ADD_PREFIX + "wiki";
+	public static final String ACTION_ADD_PODCAST = ACTION_ADD_PREFIX + "podcast";
+	public static final String ACTION_ADD_BLOG = ACTION_ADD_PREFIX + "blog";
+	public static final String ACTION_ADD_GLOSSARY = ACTION_ADD_PREFIX + "glossary";
+	public static final String ACTION_ADD_DOC = ACTION_ADD_PREFIX + "dc";
+	public static final String ACTION_NEW_COURSE = ACTION_ADD_PREFIX + "nco";
+	public static final String ACTION_NEW_CP = ACTION_ADD_PREFIX + "ncp";
+	public static final String ACTION_NEW_TEST = ACTION_ADD_PREFIX + "nte";
+	public static final String ACTION_NEW_SURVEY = ACTION_ADD_PREFIX + "nsu";
+	public static final String ACTION_NEW_SHAREDFOLDER = ACTION_ADD_PREFIX + "nsf";
+	public static final String ACTION_NEW_WIKI = ACTION_ADD_PREFIX + "nwiki";
+	public static final String ACTION_NEW_PODCAST = ACTION_ADD_PREFIX + "npodcast";
+	public static final String ACTION_NEW_BLOG = ACTION_ADD_PREFIX + "nblog";
+	public static final String ACTION_NEW_GLOSSARY = ACTION_ADD_PREFIX + "nglossary";
+	public static final String ACTION_NEW_PORTFOLIO = ACTION_ADD_PREFIX + "nportfolio";
+	public static final String ACTION_CANCEL = "cancel";
+	public static final String ACTION_FORWARD = "forward";
 
 	private VelocityContainer repositoryadd;
 
@@ -389,7 +389,6 @@ public class RepositoryAddController extends BasicController {
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(addCallback.getResourceable());
 		
 		addedEntry = repositoryService.create(ureq.getIdentity(), resName, dispName, resDescription, ores);
-		addedEntry.setCanLaunch(typeToAdd.supportsLaunch(addedEntry));
 		
 		// Set the resource on the repository entry and save the entry.
 		repositoryService.update(addedEntry);

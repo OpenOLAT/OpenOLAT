@@ -33,7 +33,7 @@ import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.stack.StackedController;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
@@ -102,7 +102,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 *      ATTENTION:
 	 *      all course nodes must call updateModuleConfigDefaults(false) here
 	 */
-	public abstract TabbableController createEditController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course,
+	public abstract TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course,
 			UserCourseEnvironment euce);
 
 	/**

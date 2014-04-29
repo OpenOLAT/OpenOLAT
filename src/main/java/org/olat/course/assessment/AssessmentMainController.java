@@ -47,8 +47,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.stack.StackedController;
-import org.olat.core.gui.components.stack.StackedControllerAware;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -201,7 +201,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	
 	private EfficiencyStatementAssessmentController esac;
 	private BulkAssessmentOverviewController bulkAssOverviewCtrl;
-	private final StackedController stackPanel;
+	private final BreadcrumbPanel stackPanel;
 
 	private RepositoryEntry re;
 	private OLATResourceable ores;
@@ -217,7 +217,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	 * @param course
 	 * @param assessmentCallback
 	 */
-	public AssessmentMainController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, OLATResourceable ores,
+	public AssessmentMainController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, OLATResourceable ores,
 			IAssessmentCallback assessmentCallback) {
 		super(ureq, wControl);	
 		
@@ -841,8 +841,8 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 				String toolCmpName = "ctrl_" + (count++);
 				userChoose.put(toolCmpName, tool.getInitialComponent());
 				toolCmpNames.add(toolCmpName);
-				if(tool instanceof StackedControllerAware) {
-					((StackedControllerAware)tool).setStackedController(stackPanel);
+				if(tool instanceof BreadcrumbPanelAware) {
+					((BreadcrumbPanelAware)tool).setBreadcrumbPanel(stackPanel);
 				}
 			}
 		}

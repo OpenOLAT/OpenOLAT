@@ -30,7 +30,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.StackedController;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -76,7 +76,7 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 	private Controller previewLayoutCtr;
 	private Link previewButton;
 	private Controller previewLtiCtr;
-	private final StackedController stackPanel;
+	private final BreadcrumbPanel stackPanel;
 
 	/**
 	 * Constructor for tunneling editor controller 
@@ -87,7 +87,7 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 	 * @param course
 	 */
 	public LTIEditController(ModuleConfiguration config, UserRequest ureq, WindowControl wControl, 
-			StackedController stackPanel, BasicLTICourseNode ltCourseNode, ICourse course, UserCourseEnvironment euce) {
+			BreadcrumbPanel stackPanel, BasicLTICourseNode ltCourseNode, ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		
 		this.config = config;

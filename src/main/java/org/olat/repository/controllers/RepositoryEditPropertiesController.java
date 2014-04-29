@@ -336,7 +336,7 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 		} else if(source == yesNoCommitConfigsCtr ) {			
 			if(repositoryEntryChanged) {
 				if (DialogBoxUIFactory.isYesEvent(event)) {
-					RepositoryManager.getInstance().setProperties(repositoryEntry, propPupForm.canCopy(), propPupForm.canReference(), propPupForm.canLaunch(), propPupForm.canDownload() );		
+					RepositoryManager.getInstance().setProperties(repositoryEntry, propPupForm.canCopy(), propPupForm.canReference(), propPupForm.canDownload() );		
 					//fxdiff VCRP-1,2: access control of resources
 					RepositoryManager.getInstance().setAccess(repositoryEntry, propPupForm.getAccess(), propPupForm.isMembersOnly());
 					repositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(repositoryEntry.getKey());
@@ -474,7 +474,7 @@ public class RepositoryEditPropertiesController extends BasicController implemen
 				}	
 				//if not a course, update the repositoryEntry NOW!
 				if(!repositoryEntry.getOlatResource().getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
-					RepositoryManager.getInstance().setProperties(repositoryEntry, propPupForm.canCopy(), propPupForm.canReference(), propPupForm.canLaunch(), propPupForm.canDownload() );		
+					RepositoryManager.getInstance().setProperties(repositoryEntry, propPupForm.canCopy(), propPupForm.canReference(), propPupForm.canDownload() );		
 					//fxdiff VCRP-1,2: access control of resources
 					RepositoryManager.getInstance().setAccess(repositoryEntry, propPupForm.getAccess(), propPupForm.isMembersOnly());		
 					// inform anybody interrested about this change

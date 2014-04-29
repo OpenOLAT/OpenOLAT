@@ -40,6 +40,7 @@ public class FlexiTableColumnModelImpl implements FlexiTableColumnModel {
 	/**
 	 * @return
 	 */
+	@Override
 	public int getColumnCount() {
 		return columnModelList.size();
 	}
@@ -47,18 +48,13 @@ public class FlexiTableColumnModelImpl implements FlexiTableColumnModel {
 	/**
 	 * @return
 	 */
+	@Override
 	public FlexiColumnModel getColumnModel(int column) {
 		return columnModelList.get(column);
 	}
 
-	/**
-	 */
-	public void setFlexiColumnModel(FlexiColumnModel columnModel,int column) {
-		columnModelList.set(column, columnModel);
-	}
-
+	@Override
 	public void addFlexiColumnModel(FlexiColumnModel columnModel) {
 		columnModelList.add(columnModel);
 	}
-
 }

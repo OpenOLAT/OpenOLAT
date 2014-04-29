@@ -45,8 +45,8 @@ import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeEvent;
@@ -66,7 +66,6 @@ import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.control.generic.textmarker.GlossaryMarkupItemController;
 import org.olat.core.gui.control.generic.title.TitledWrapperController;
 import org.olat.core.gui.control.generic.tool.ToolController;
-import org.olat.core.gui.control.generic.tool.ToolFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -168,7 +167,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 	private Controller currentToolCtr;
 	private Controller currentNodeController; // the currently open node config
-	private BreadcrumbedStackedPanel all;
+	private TooledStackedPanel all;
 
 	private boolean isInEditor = false;
 
@@ -240,7 +239,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		logAudit("Entering course: [[["+courseTitle+"]]]", course.getResourceableId().toString());
 		
 		// set up the components
-		all = new BreadcrumbedStackedPanel("courseStackPanel", getTranslator(), this);
+		all = new TooledStackedPanel("courseStackPanel", getTranslator(), this);
 				
 		//StackedControllerImpl(getWindowControl(), getTranslator(), "o_course_breadcumbs");
 		luTree = new MenuTree(null, "luTreeRun", this);
@@ -1012,11 +1011,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 * @return ToolController
 	 */
 	private void initToolController() {
-		ToolController myTool = ToolFactory.createToolController(getWindowControl());
 		CourseConfig cc = uce.getCourseEnvironment().getCourseConfig();
 		
 		initEditionTools();
-		initGroupTools(myTool);
+		initGroupTools();
 		initGeneralTools(cc);
 	}
 	
@@ -1027,10 +1025,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				|| hasCourseRight(CourseRights.RIGHT_STATISTICS) || hasCourseRight(CourseRights.RIGHT_DB)
 				|| hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
 
-			Dropdown editTools = new Dropdown("editTools", getTranslator());
-			editTools.setButton(false);
-			editTools.setI18nKey("header.tools");
-			
+			Dropdown editTools = new Dropdown("editTools", "header.tools", false, getTranslator());
 			if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
 				boolean managed = RepositoryEntryManagedFlag.isManaged(courseRepositoryEntry, RepositoryEntryManagedFlag.editcontent);
 				editLink = LinkFactory.createToolLink("edit.cmd", translate("command.openeditor"), this, "o_sel_course_open_editor");
@@ -1077,12 +1072,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 	}
 	
-	private void initGroupTools(ToolController myTool) {
-		Dropdown groupTools = new Dropdown("editTools", getTranslator());
-		groupTools.setButton(false);
-		groupTools.setI18nKey("header.tools.participatedGroups");
-		
-		
+	private void initGroupTools() {
+		Dropdown groupTools = new Dropdown("editTools", "header.tools.participatedGroups", false, getTranslator());
+
 		// 2) add coached groups
 		if (uce.getCoachedGroups().size() > 0) {
 			//myTool.addHeader(translate("header.tools.ownerGroups"));
@@ -1098,8 +1090,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		if (uce.getParticipatingGroups().size() > 0) {
 			//myTool.addHeader(translate("header.tools.participatedGroups"));
 			for (BusinessGroup group: uce.getParticipatingGroups()) {
-				myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), group.getName());
-				
 				Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), StringHelper.escapeHtml(group.getName()), this);
 				groupTools.addComponent(link);
 			}
@@ -1281,7 +1271,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		
 		ContextEntry firstEntry = entries.get(0);
 		String type = firstEntry.getOLATResourceable().getResourceableTypeName();
-		if("CourseNode".equals(type)) {
+		if("CourseNode".equalsIgnoreCase(type)) {
 			CourseNode cn = course.getRunStructure().getNode(firstEntry.getOLATResourceable().getResourceableId().toString());
 			
 			// FIXME:fj:b is this needed in some cases?: currentCourseNode = cn;
@@ -1298,7 +1288,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				entries = entries.subList(1, entries.size());
 			}
 			updateTreeAndContent(ureq, cn, null, entries, firstEntry.getTransientState());
-		} else if ("assessmentTool".equals(type)) {
+		} else if ("assessmentTool".equalsIgnoreCase(type)) {
 			//check the security before, the link is perhaps in the wrong hands
 			if(hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseAdmin || isCourseCoach) {
 				try {
@@ -1315,7 +1305,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					//the wrong link to the wrong person
 				}
 			}
-		}  else if ("assessmentStatistics".equals(type)) {
+		}  else if ("assessmentStatistics".equalsIgnoreCase(type)) {
 			//check the security before, the link is perhaps in the wrong hands
 			if(hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseAdmin || isCourseCoach) {
 				try {
@@ -1332,14 +1322,14 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					//the wrong link to the wrong person
 				}
 			}
-		} else if("MembersMgmt".equals(type)) {
+		} else if("MembersMgmt".equalsIgnoreCase(type)) {
 			try {
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				launchMembersManagement(ureq).activate(ureq, subEntries, firstEntry.getTransientState());
 			} catch (OLATSecurityException e) {
 				//the wrong link to the wrong person
 			}
-		} else if(RepositoryDetailsController.ACTIVATE_EDITOR.equals(type)) {
+		} else if("Editor".equalsIgnoreCase(type) || RepositoryDetailsController.ACTIVATE_EDITOR.equalsIgnoreCase(type)) {
 			// Nothing to do if already in editor. Can happen when editor is
 			// triggered externally, e.g. from the details page while user has
 			// the editor already open

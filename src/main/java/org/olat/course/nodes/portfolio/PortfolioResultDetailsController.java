@@ -36,7 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.stack.StackedController;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -74,9 +74,9 @@ public class PortfolioResultDetailsController extends FormBasicController {
 	
 	private DeadlineController deadlineCtr;
 	private CloseableCalloutWindowController deadlineCalloutCtr;
-	private final StackedController stackPanel;
+	private final BreadcrumbPanel stackPanel;
 	
-	public PortfolioResultDetailsController(UserRequest ureq, WindowControl wControl, StackedController stackPanel, PortfolioCourseNode courseNode,
+	public PortfolioResultDetailsController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, PortfolioCourseNode courseNode,
 			UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 

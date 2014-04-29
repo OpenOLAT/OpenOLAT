@@ -26,8 +26,8 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
-import org.olat.core.gui.components.stack.StackedController;
-import org.olat.core.gui.components.stack.StackedControllerAware;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -39,7 +39,7 @@ import org.olat.core.gui.control.controller.BasicController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserSessionAdminController extends BasicController implements StackedControllerAware {
+public class UserSessionAdminController extends BasicController implements BreadcrumbPanelAware {
 
 	private final Link sessionsLink, configLink, infosLink;
 	private final SegmentViewComponent segmentView;
@@ -49,7 +49,7 @@ public class UserSessionAdminController extends BasicController implements Stack
 	private UserSessionController sessionListCtrl;
 	private UserSessionConfigAdminController configCtrl;
 	private UserSessionInformationsController infoCtrl;
-	private StackedController stackedController;
+	private BreadcrumbPanel stackedController;
 	
 	public UserSessionAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -72,10 +72,10 @@ public class UserSessionAdminController extends BasicController implements Stack
 	}
 
 	@Override
-	public void setStackedController(StackedController stackPanel) {
+	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
 		this.stackedController = stackPanel;
 		if(sessionListCtrl != null) {
-			sessionListCtrl.setStackedController(stackedController);
+			sessionListCtrl.setBreadcrumbPanel(stackedController);
 		}
 	}
 
@@ -105,7 +105,7 @@ public class UserSessionAdminController extends BasicController implements Stack
 	private void doOpenSessionList(UserRequest ureq) {
 		if(sessionListCtrl == null) {
 			sessionListCtrl = new UserSessionController(ureq, getWindowControl());
-			sessionListCtrl.setStackedController(stackedController);
+			sessionListCtrl.setBreadcrumbPanel(stackedController);
 			listenTo(sessionListCtrl);
 		}
 		mainVC.put("segmentCmp", sessionListCtrl.getInitialComponent());

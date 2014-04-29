@@ -82,7 +82,6 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 		//default value
 		Assert.assertFalse(re.getCanCopy());
 		Assert.assertFalse(re.getCanDownload());
-		Assert.assertFalse(re.getCanLaunch());
 		Assert.assertFalse(re.getCanReference());
 		Assert.assertEquals(0, re.getAccess());
 	}

@@ -177,7 +177,6 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	private boolean isAuthor;
 	private boolean isOlatAdmin;
 	private boolean isGuestOnly = false;
-	private boolean jumpfromcourse = false;
 	private boolean corrupted;
 	public static final String ACTIVATE_EDITOR = "activateEditor";
 	
@@ -469,12 +468,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		}
 
 		// Number of launches
-		String numLaunches;
-		if (repositoryEntry.getCanLaunch()) {
-			numLaunches = String.valueOf(repositoryEntry.getStatistics().getLaunchCounter());
-		} else {
-			numLaunches = translate("cif.canLaunch.na");
-		}
+		String numLaunches = String.valueOf(repositoryEntry.getStatistics().getLaunchCounter());
 		infopanelVC.contextPut("numLaunches", numLaunches);
 
 		// Number of downloads
@@ -655,7 +649,6 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	 */
 	public ToolController setEntry(RepositoryEntry entry, UserRequest ureq, boolean jumpfromcourse) {
 		this.corrupted = false;//reset the flag
-		this.jumpfromcourse = jumpfromcourse;
 		if (repositoryEntry != null) {
 			// The controller has already a repository-entry => do de-register it
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, repositoryEntry);
@@ -725,12 +718,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	}
 
 	private void doCloseDetailView(UserRequest ureq) {
-		// REVIEW:pb:note:handles jumps from Catalog and Course
-		if (jumpfromcourse && repositoryEntry.getCanLaunch()) {
-			doLaunch(ureq, repositoryEntry);
-		} else {
-			fireEvent(ureq, Event.DONE_EVENT);
-		}
+		doLaunch(ureq, repositoryEntry);
 	}
 
 	void deleteRepositoryEntry(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {

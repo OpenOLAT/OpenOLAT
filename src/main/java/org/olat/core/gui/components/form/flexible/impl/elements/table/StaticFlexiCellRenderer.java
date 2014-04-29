@@ -38,17 +38,17 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 
 	private String label;
 	private String action;
-	private String cssClass;
+	private String iconCSS;
 	private FlexiCellRenderer labelDelegate;
 	
 	public StaticFlexiCellRenderer(String label, String action) {
 		this(label, action, null);
 	}
 	
-	public StaticFlexiCellRenderer(String label, String action, String cssClass) {
+	public StaticFlexiCellRenderer(String label, String action, String iconCSS) {
 		this.label = label;
 		this.action = action;
-		this.cssClass = cssClass;
+		this.iconCSS = iconCSS;
 	}
 	
 	public StaticFlexiCellRenderer(String action, FlexiCellRenderer labelDelegate) {
@@ -73,11 +73,10 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 			Form rootForm = ftE.getRootForm();
 			NameValuePair pair = new NameValuePair(action, Integer.toString(row));
 			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, pair);
-			target.append("<a href=\"javascript:").append(jsCode).append("\"");
-			if(StringHelper.containsNonWhitespace(cssClass)) {
-				target.append(" class=\"").append(cssClass).append("\"");
+			target.append("<a href=\"javascript:").append(jsCode).append("\">");
+			if(StringHelper.containsNonWhitespace(iconCSS)) {
+				target.append("<i class=\"o_icon ").append(iconCSS).append("\">&nbsp;</i>");
 			}
-			target.append(">");
 			if(labelDelegate == null) {
 				target.append(getLabel());
 			} else {

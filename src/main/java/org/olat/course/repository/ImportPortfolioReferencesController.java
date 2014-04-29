@@ -203,10 +203,6 @@ public class ImportPortfolioReferencesController extends BasicController {
 		}
 
 		RepositoryHandler rh = RepositoryHandlerFactory.getInstance().getRepositoryHandler(importedRepositoryEntry);
-		importedRepositoryEntry.setCanLaunch(rh.supportsLaunch(importedRepositoryEntry));
-		
-		//map.setGroup();
-		
 
 		if (!keepSoftkey) {
 			setReference(importedRepositoryEntry, map, node);

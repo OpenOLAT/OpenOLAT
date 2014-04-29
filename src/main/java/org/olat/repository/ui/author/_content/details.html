@@ -1,0 +1,78 @@
+<div class="f_metadata_details b_clearfix">
+	<div class="b_c38r">
+		<p>$r.render("mark")</p>
+		#if($r.available("thumbnail"))
+			<div class="f_metadata_media">
+			$r.render("thumbnail")
+			</div>
+		#end
+		#if($v.lifecycle || $v.lifecycle.softKey || $row.lifecycle.start || $row.lifecycle.end)
+			<h5>$r.translate("cif.dates")</h5>
+			<div class="f_metadata_lifecycle">
+				#if($!v.lifecycle.private && $v.lifecycle.softKey) $v.lifecycle.softKey #end
+				#if($v.lifecycle.validFrom) $r.formatDateAndTime($v.lifecycle.validFrom) #end
+				#if($v.lifecycle.validTo) - $r.formatDateAndTime($v.lifecycle.validTo) #end
+			</div>
+		#end
+		#if($v.expenditureOfWork)
+			<div class="f_metadata_expenditure">
+				$r.translate("details.expenditureOfWork", $r.escapeHtml($v.expenditureOfWork))
+			</div>
+		#end
+		#if($v.mainLanguage)
+			<h5>$r.translate("cif.mainLanguage")</h5>
+			<p>$r.escapeHtml($v.mainLanguage)</p>
+		#end
+		#if($ac)
+			#foreach($ac_type in $ac)
+				#if($ac_type.price && $ac_type.price.length() > 0)
+					<span class='b_float_right b_with_small_icon_left $ac_type.type'>$ac_type.price</span>
+				#else
+					<span class='b_float_right b_small_icon $ac_type.type'></span>
+				#end
+			#end
+		#end
+		<div class="f_metadata_go">
+			$r.render("start")
+		</div>
+		
+		#if($categories && $categories.size() > 0)
+			<h5>$r.translate("cif.categories")</h5>
+			<ul>
+			#foreach($category in $categories)
+				<li>$r.render($category)</li>
+			#end
+			</ul>
+		#end
+		
+		#if($groups && $groups.size() > 0)
+			<h5>$r.translate("cif.groups")</h5>
+			<ul>
+			#foreach($group in $groups)
+				<li>$r.render($group)</li>
+			#end
+			</ul>
+		#end
+	</div>
+	<div class="b_c60r">
+		<h4 class="b_with_small_icon_left $cssClass">$r.escapeHtml($v.displayname)</h4>
+		#if($v.authors)
+			<h5>$r.translate("cif.authors")</h5>
+			<p>$r.escapeHtml($v.authors)</p>
+		#end
+		<div class="b_clearfix">$description</div>
+		#if($objectives)
+			<h5>$r.translate("cif.objectives")</h5>
+			<div class="b_clearfix">$objectives</div>
+		#end
+		#if($requirements)
+			<h5>$r.translate("cif.requirements")</h5>
+			<div class="b_clearfix">$requirements</div>
+		#end
+		#if($credits)
+			<h5>$r.translate("cif.credits")</h5>
+			<div class="b_clearfix">$credits</div>
+		#end
+	</div>
+</div>
+

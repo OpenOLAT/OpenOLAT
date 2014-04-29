@@ -136,8 +136,6 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		course = rm.findOrPersistResourceable(resourceable);
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = rs.create("administrator", "-", "rest-re", null, course);
-		re.setCanLaunch(true);
-		repositoryService.update(re);
 		DBFactory.getInstance().commit();
 		
 		//create learn group

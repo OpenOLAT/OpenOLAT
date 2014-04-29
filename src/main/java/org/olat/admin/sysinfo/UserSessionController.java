@@ -32,8 +32,8 @@ import org.olat.admin.sysinfo.model.UserSessionView;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.stack.StackedController;
-import org.olat.core.gui.components.stack.StackedControllerAware;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
@@ -58,13 +58,13 @@ import org.olat.user.UserManager;
  *  @author Mike Stock
  */
 
-public class UserSessionController extends BasicController implements StackedControllerAware {
+public class UserSessionController extends BasicController implements BreadcrumbPanelAware {
 	
 	private VelocityContainer myContent;
 	private TableController tableCtr;
 	private UserSessionTableModel usessTableModel;
 
-	private StackedController stackController;
+	private BreadcrumbPanel stackController;
 	private final UserSessionManager sessionManager;
 	private final InstantMessagingService imService;
 	
@@ -104,7 +104,7 @@ public class UserSessionController extends BasicController implements StackedCon
 	}
 
 	@Override
-	public void setStackedController(StackedController stackPanel) {
+	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
 		this.stackController = stackPanel;
 	}
 

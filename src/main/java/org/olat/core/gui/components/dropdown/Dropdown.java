@@ -42,12 +42,14 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 	private static final ComponentRenderer RENDERER = new DropdownRenderer();
 	
 	private String i18nKey;
-	private boolean button;
+	private boolean button = false;
 	private String iconCSS;
 	private List<Component> components = new ArrayList<>();
 	
-	public Dropdown(String name, Translator translator) {
+	public Dropdown(String name, String i18nKey, boolean domReplacementWrapperRequired, Translator translator) {
 		super(name, translator);
+		this.i18nKey = i18nKey;
+		setDomReplacementWrapperRequired(domReplacementWrapperRequired);
 	}
 
 	public String getI18nKey() {

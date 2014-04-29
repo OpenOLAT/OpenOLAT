@@ -342,7 +342,7 @@ public class RepositoryEntriesResource {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(newResource);
 		RepositoryEntry addedEntry = repositoryService.create(identity, resourcename, displayname, null, ores);
-		addedEntry.setCanLaunch(true);
+		addedEntry.setSoftkey(softkey);
 		//TODO repository
 
 		// Do set access for owner at the end, because unfinished course should be invisible

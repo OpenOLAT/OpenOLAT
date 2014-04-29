@@ -29,7 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<RepositoryEntryRow> {
+class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<RepositoryEntryRow> {
 	
 	public RepositoryEntryDataModel(FlexiTableDataSourceDelegate<RepositoryEntryRow> source, FlexiTableColumnModel columnModel) {
 		super(source, columnModel);

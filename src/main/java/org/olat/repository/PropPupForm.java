@@ -61,7 +61,6 @@ public class PropPupForm extends FormBasicController {
 	private TextElement type;
 	private SelectionElement canCopy;
 	private SelectionElement canReference;
-	private SelectionElement canLaunch;
 	private SelectionElement canDownload;
 	private SingleSelection access;
 	
@@ -141,13 +140,6 @@ public class PropPupForm extends FormBasicController {
 	}
 
 	/**
-	 * Return true when 'canLaunch' is selected. 
-	 */
-	public boolean canLaunch() {
-		return canLaunch.isSelected(0);
-	}
-
-	/**
 	 * Return true when 'canDownload' is selected.
 	 */
 	public boolean canDownload() {
@@ -199,15 +191,9 @@ public class PropPupForm extends FormBasicController {
 		canReference = uifactory.addCheckboxesVertical("cif_canReference", "cif.canReference", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		canReference.select("xx", entry.getCanReference());
 		canReference.setEnabled(!managedSettings);
-		
-		canLaunch = uifactory.addCheckboxesVertical("cif_canLaunch", "cif.canLaunch", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
-		canLaunch.select("xx", entry.getCanLaunch());
-		canLaunch.setEnabled(!managedSettings);
-		canLaunch.setVisible(handler != null && handler.supportsLaunch(this.entry));
-		
+
 		canDownload = uifactory.addCheckboxesVertical("cif_canDownload", "cif.canDownload", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
 		canDownload.select("xx", entry.getCanDownload());
-		canLaunch.setEnabled(!managedSettings);
 		canDownload.setVisible(handler != null && handler.supportsDownload(this.entry));
 			
 		access = uifactory.addRadiosVertical("cif_access", "cif.access", formLayout, keys, values);

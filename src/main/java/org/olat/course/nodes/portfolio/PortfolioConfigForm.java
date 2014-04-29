@@ -31,7 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.stack.StackedController;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -84,9 +84,9 @@ public class PortfolioConfigForm extends FormBasicController {
 	private Controller columnLayoutCtr;
 	private boolean isDirty;
 	private final PortfolioCourseNode courseNode;
-	private final StackedController stackPanel;
+	private final BreadcrumbPanel stackPanel;
 	
-	public PortfolioConfigForm(UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, PortfolioCourseNode courseNode) {
+	public PortfolioConfigForm(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, PortfolioCourseNode courseNode) {
 		super(ureq, wControl);
 		this.courseNode = courseNode;
 		this.config = courseNode.getModuleConfiguration();

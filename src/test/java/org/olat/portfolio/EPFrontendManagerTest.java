@@ -465,7 +465,6 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		
 		//create a repository entry
 		RepositoryEntry addedEntry = repositoryService.create(ident1, "-", "test repo", "desc repo", resource);
-		addedEntry.setCanLaunch(true);
 		addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
 	
 		repositoryService.update(addedEntry);

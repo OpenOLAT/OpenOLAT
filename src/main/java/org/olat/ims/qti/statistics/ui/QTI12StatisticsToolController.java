@@ -30,8 +30,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.stack.StackedController;
-import org.olat.core.gui.components.stack.StackedControllerAware;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeEvent;
@@ -61,12 +61,12 @@ import org.olat.resource.OLATResource;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI12StatisticsToolController extends BasicController implements StackedControllerAware, Activateable2 {
+public class QTI12StatisticsToolController extends BasicController implements BreadcrumbPanelAware, Activateable2 {
 
 	private MenuTree courseTree;
 	private final Link statsButton;
 	private Controller currentCtrl;
-	private StackedController stackPanel;
+	private BreadcrumbPanel stackPanel;
 	private LayoutMain3ColsController layoutCtr;
 
 	private final ArchiveOptions options;
@@ -101,7 +101,7 @@ public class QTI12StatisticsToolController extends BasicController implements St
 	}
 	
 	@Override
-	public void setStackedController(StackedController stackPanel) {
+	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
 		this.stackPanel = stackPanel;
 	}
 

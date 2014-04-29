@@ -43,7 +43,7 @@ import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.MainPanel;
-import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.SelectionTree;
@@ -208,7 +208,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private CloseableModalController cmc;
 	
 	private MultiSPController multiSPChooserCtr;
-	private final BreadcrumbedStackedPanel stackPanel;
+	private final TooledStackedPanel stackPanel;
 
 	private final OLATResourceable ores;
 	
@@ -223,11 +223,11 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	 * @param course The course
 	 */
 	public EditorMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores,
-			BreadcrumbedStackedPanel externStack, CourseNode selectedNode) {
+			TooledStackedPanel externStack, CourseNode selectedNode) {
 		super(ureq,wControl);
 		this.ores = ores;
 		stackPanel = externStack == null
-				? new BreadcrumbedStackedPanel("courseEditorStackPanel", getTranslator(), this)
+				? new TooledStackedPanel("courseEditorStackPanel", getTranslator(), this)
 				: externStack;
 				
 
@@ -358,9 +358,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	
 	private void initToolbar(boolean closeEditor) {
 		
-		Dropdown editTools = new Dropdown("editTools", getTranslator());
-		editTools.setButton(false);
-		editTools.setI18nKey(NLS_HEADER_TOOLS);
+		Dropdown editTools = new Dropdown("editTools", NLS_HEADER_TOOLS, false, getTranslator());
+		stackPanel.addTool(editTools, false);
 		
 		folderLink = LinkFactory.createToolLink(CMD_COURSEFOLDER, translate(NLS_COMMAND_COURSEFOLDER), this);
 		editTools.addComponent(folderLink);
@@ -375,14 +374,10 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			closeLink = LinkFactory.createToolLink(CMD_CLOSEEDITOR, translate(NLS_COMMAND_CLOSEEDITOR), this, "b_toolbox_close");
 			editTools.addComponent(closeLink);
 		}
-		
-		stackPanel.addTool(editTools, false);
 
 		//toolC.addHeader(translate(NLS_HEADER_INSERTNODES));
 		
-		Dropdown elementsTools = new Dropdown("insertNodes", getTranslator());
-		elementsTools.setButton(false);
-		elementsTools.setI18nKey(NLS_HEADER_INSERTNODES);
+		Dropdown elementsTools = new Dropdown("insertNodes", NLS_HEADER_INSERTNODES, false, getTranslator());
 		stackPanel.addTool(elementsTools, false);
 		
 		CourseNodeFactory cnf = CourseNodeFactory.getInstance();
@@ -397,9 +392,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			}
 		}
 		
-		Dropdown multiTools = new Dropdown("insertNodes", getTranslator());
-		multiTools.setButton(false);
-		multiTools.setI18nKey(NLS_ADMIN_HEADER);
+		Dropdown multiTools = new Dropdown("insertNodes", NLS_ADMIN_HEADER, false, getTranslator());
 		stackPanel.addTool(multiTools, false);
 		
 		multiSpsLink = LinkFactory.createToolLink(CMD_MULTI_SP, translate(NLS_MULTI_SPS), this, "b_toolbox_copy");
@@ -407,9 +400,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		multiCheckListLink = LinkFactory.createToolLink(CMD_MULTI_CHECKLIST, translate(NLS_MULTI_CHECKLIST), this, "b_toolbox_copy");
 		multiTools.addComponent(multiCheckListLink);
 		
-		Dropdown nodeTools = new Dropdown("insertNodes", getTranslator());
-		nodeTools.setButton(false);
-		nodeTools.setI18nKey(NLS_COMMAND_DELETENODE_HEADER);
+		Dropdown nodeTools = new Dropdown("insertNodes", NLS_COMMAND_DELETENODE_HEADER, false, getTranslator());
 		stackPanel.addTool(nodeTools, false);
 		
 		deleteNodeLink = LinkFactory.createToolLink(CMD_DELNODE, translate(NLS_COMMAND_DELETENODE), this, "b_toolbox_delete");

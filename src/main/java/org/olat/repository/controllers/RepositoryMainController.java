@@ -627,14 +627,12 @@ public class RepositoryMainController extends MainLayoutBasicController implemen
 				// entry has been selected to be launched in the
 				// searchController
 
-				if (selectedEntry.getCanLaunch()) {
-					if(!detailsController.doLaunch(urequest, selectedEntry)) {
-						//cannot launch -> open details
-						ToolController toolC = detailsController.setEntry(selectedEntry, urequest, false);
-						Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
-						columnsLayoutCtr.setCol2(toolComp);
-						mainPanel.setContent(detailsController.getInitialComponent());
-					}
+				if(!detailsController.doLaunch(urequest, selectedEntry)) {
+					//cannot launch -> open details
+					ToolController toolC = detailsController.setEntry(selectedEntry, urequest, false);
+					Component toolComp = (toolC == null ? null : toolC.getInitialComponent());
+					columnsLayoutCtr.setCol2(toolComp);
+					mainPanel.setContent(detailsController.getInitialComponent());
 				} else if (selectedEntry.getCanDownload()) {
 					detailsController.doDownload(urequest, selectedEntry, false);
 				} else { // offer details view

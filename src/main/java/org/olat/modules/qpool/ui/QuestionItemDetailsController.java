@@ -31,8 +31,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.StackedController;
-import org.olat.core.gui.components.stack.StackedControllerAware;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -61,7 +61,7 @@ import org.olat.modules.qpool.ui.metadata.MetadatasController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionItemDetailsController extends BasicController implements StackedControllerAware {
+public class QuestionItemDetailsController extends BasicController implements BreadcrumbPanelAware {
 	
 	private Link editItem, nextItem, previousItem;
 	private Link deleteItem, shareItem, exportItem, copyItem;
@@ -74,7 +74,7 @@ public class QuestionItemDetailsController extends BasicController implements St
 	private SelectBusinessGroupController selectGroupCtrl;
 	private final MetadatasController metadatasCtrl;
 	private final UserCommentsAndRatingsController commentsAndRatingCtr;
-	private StackedController stackPanel;
+	private BreadcrumbPanel stackPanel;
 
 	private final boolean canEditContent;
 	
@@ -147,7 +147,7 @@ public class QuestionItemDetailsController extends BasicController implements St
 	}
 
 	@Override
-	public void setStackedController(StackedController stackPanel) {
+	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
 		this.stackPanel = stackPanel;
 	}
 

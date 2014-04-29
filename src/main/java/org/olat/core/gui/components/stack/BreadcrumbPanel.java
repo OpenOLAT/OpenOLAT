@@ -19,13 +19,23 @@
  */
 package org.olat.core.gui.components.stack;
 
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.control.Controller;
+
 /**
- * 
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface StackedControllerAware {
+public interface BreadcrumbPanel extends StackedPanel {
 	
-	public void setStackedController(StackedController stackPanel);
+	/**
+	 * Dissmiss all controllers but the root
+	 */
+	public void popUpToRootController(UserRequest ureq);
+	
+	public void pushController(String displayName, Controller controller);
+	
+	public void popController(Controller controller);
 
 }

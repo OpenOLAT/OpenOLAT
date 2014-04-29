@@ -178,8 +178,6 @@ public class ImportSharedfolderReferencesController extends BasicController {
 		}
 		
 		RepositoryHandler rh = RepositoryHandlerFactory.getInstance().getRepositoryHandler(importedRepositoryEntry);
-		importedRepositoryEntry.setCanLaunch(rh.supportsLaunch(importedRepositoryEntry));
-
 		repositoryService.update(importedRepositoryEntry);
 		
 		if (!keepSoftkey) {

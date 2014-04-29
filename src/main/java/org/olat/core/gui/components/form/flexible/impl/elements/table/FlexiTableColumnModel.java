@@ -45,10 +45,5 @@ public interface FlexiTableColumnModel {
 	/**
 	 * 
 	 */
-	public void setFlexiColumnModel(FlexiColumnModel columnModel,int column);
-
-	/**
-	 * 
-	 */
 	public void addFlexiColumnModel(FlexiColumnModel columnModel);
 }

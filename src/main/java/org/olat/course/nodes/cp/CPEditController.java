@@ -37,7 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.stack.StackedController;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -118,7 +118,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 
 	private Controller previewCtr;
 	private CloseableModalController cmc;
-	private final StackedController stackPanel;
+	private final BreadcrumbPanel stackPanel;
 
 	/**
 	 * @param cpNode
@@ -126,7 +126,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 	 * @param wControl
 	 * @param course
 	 */
-	public CPEditController(CPCourseNode cpNode, UserRequest ureq, WindowControl wControl, StackedController stackPanel, ICourse course, UserCourseEnvironment euce) {
+	public CPEditController(CPCourseNode cpNode, UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		this.cpNode = cpNode;
 		this.config = cpNode.getModuleConfiguration();
