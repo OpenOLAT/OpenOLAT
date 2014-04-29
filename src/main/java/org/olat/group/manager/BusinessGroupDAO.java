@@ -104,7 +104,7 @@ public class BusinessGroupDAO {
 		SecurityGroup waitingGroup = securityManager.createAndPersistSecurityGroup();
 		
 		businessgroup = new BusinessGroupImpl(name, description, ownerGroup, participantGroup, waitingGroup);
-		if(minParticipants != null && minParticipants.intValue() > 0) {
+		if(minParticipants != null && minParticipants.intValue() >= 0) {
 			businessgroup.setMinParticipants(minParticipants);
 		}
 		if(maxParticipants != null && maxParticipants.intValue() >= 0) {
