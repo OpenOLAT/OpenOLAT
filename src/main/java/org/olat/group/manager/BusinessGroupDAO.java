@@ -104,10 +104,10 @@ public class BusinessGroupDAO {
 		SecurityGroup waitingGroup = securityManager.createAndPersistSecurityGroup();
 		
 		businessgroup = new BusinessGroupImpl(name, description, ownerGroup, participantGroup, waitingGroup);
-		if(minParticipants != null && minParticipants.intValue() >= 0) {
+		if(minParticipants != null && minParticipants.intValue() > 0) {
 			businessgroup.setMinParticipants(minParticipants);
 		}
-		if(maxParticipants != null && maxParticipants.intValue() > 0) {
+		if(maxParticipants != null && maxParticipants.intValue() >= 0) {
 			businessgroup.setMaxParticipants(maxParticipants);
 		}
 		
@@ -143,7 +143,7 @@ public class BusinessGroupDAO {
 		OLATResource businessgroupOlatResource =  olatResourceManager.createOLATResourceInstance(businessgroup);
 		olatResourceManager.saveOLATResource(businessgroupOlatResource);
 		businessgroup.setResource(businessgroupOlatResource);
-		em.merge(businessgroup);
+		businessgroup = em.merge(businessgroup);
 
 		// securityManager.createAndPersistPolicy(ownerGroup, Constants.PERMISSION_ACCESS, businessgroup);
 		securityManager.createAndPersistPolicyWithResource(ownerGroup, Constants.PERMISSION_ACCESS, businessgroupOlatResource);
