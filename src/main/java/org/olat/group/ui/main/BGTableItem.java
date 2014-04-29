@@ -121,8 +121,11 @@ public class BGTableItem {
 	
 	public boolean isFull() {
 		Integer maxParticipants = businessGroup.getMaxParticipants();
-		if(maxParticipants == null || maxParticipants.intValue() <= 0) {
+		if(maxParticipants == null || maxParticipants.intValue() < 0) {
 			return false;
+		}
+		if(maxParticipants.intValue() == 0) {
+			return true;
 		}
 		if(maxParticipants.intValue() <= (getNumOfPendings() + getNumOfParticipants())) {
 			return true;
