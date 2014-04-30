@@ -189,7 +189,7 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	 * @see org.olat.core.gui.control.WindowBackOffice#sendCommandTo(org.olat.core.gui.control.winmgr.Command)
 	 */
 	public void sendCommandTo(Command wco) {
-		ajaxC.sendCommandTo(new WindowCommand(this,wco));
+		if (ajaxC != null) ajaxC.sendCommandTo(new WindowCommand(this,wco));
 	}
 	
 	public void pushCommands(HttpServletRequest request, HttpServletResponse response) {

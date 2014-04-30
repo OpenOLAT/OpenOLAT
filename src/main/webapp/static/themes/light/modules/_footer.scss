@@ -3,6 +3,7 @@
 		position: absolute; bottom: 0;
 	}
 	width: 100%;
+	z-index: 2;
 	min-height: $o-footer-height;
 	background-color: $o-footer-outer-bg;
 	color: $o-footer-default-color;
@@ -16,7 +17,6 @@
 	#o_footer_container {
 		position: relative;
 		padding-top: 10px;
-		max-width: $o-page-width-max;
 		min-height: $o-footer-height;		
 		background: $o-footer-inner-bg;
 

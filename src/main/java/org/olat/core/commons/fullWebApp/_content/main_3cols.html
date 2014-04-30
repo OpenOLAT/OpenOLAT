@@ -22,10 +22,8 @@
 		<div id="o_offcanvas_toggle" class="pull-left visible-xs">
            	<button type="button" class="btn btn-primary btn-xs" data-toggle="offcanvas">Toggle nav</button>
         </div>
-		<div id="o_main_center_content" class="clearfix">
-			
-          
-         	<div id="o_main_center_content_inner" class="b_floatscrollbox">
+		<div id="o_main_center_content" class="clearfix">			          
+	       	<div id="o_main_center_content_inner" class="b_floatscrollbox">
 				<a name="o_main_center"></a>
 				$r.render("col3")		
 			</div>
@@ -39,8 +37,6 @@
 <script type="text/javascript">
 /* <![CDATA[ */
 jQuery().ready(function() {
-	OPOL.adjustHeight();
-	
 	// Main vertical splitter, anchored to the browser window
 #if($existsCol1 && $r.visible("col1"))
 	jQuery("#o_main_left").resizable({

@@ -72,6 +72,7 @@ function b_start(){
 <script type="text/javascript" src='$r.staticLink("js/jquery/openolat/jquery.translator.js")'></script>
 <script type="text/javascript" src='$r.staticLink("js/tinymce4/tinymce/jquery.tinymce.min.js")'></script>
 <script type="text/javascript" src='$r.staticLink("js/functions.js")'></script>
+<script type="text/javascript" src='$r.staticLink("js/navbar.js")'></script>
 ## <script type="text/javascript" src='$r.staticLink("js/js.plugins.min.js")'></script>
 <script type="text/javascript" src='$r.staticLink("movie/player.js")'></script>
 
@@ -160,44 +161,58 @@ $r.renderForce("development")
 <a href="#o_main_container" class="sr-only">$r.translate("access.skip.to.content")</a>
 <a id='o_top' name="o_top"></a>
 <div id="o_beta_logo"></div>
+
+## ---- START #o_messages
+## Messages are absolute positioned using EXT, thus it's ok to have them at the end of the page. 
+## This prevents an ugly IE bug that appears when the messages are at the top of the page.
+## IE can't render empty div's properly which results in an ugly white bar.
+<div id="o_messages" class="hidden-print">$r.renderForce("guimessage")</div>
+## ---- END #o_messages ---
 	
 ## ---- START #o_header ---
 <div id="o_header_wrapper"> 
-	<div id="o_logo"></div>
-	<div id="o_right_logo"></div>
-	
-	## something to be displayed in the header, a logo, some ads, whatever
-	#if($r.available("headerComponent"))
-		$r.render("headerComponent")
-	#end
+	<div id="o_header_container" class="o_container_offcanvas container-fluid"> 
+		<div id="o_logo"></div>
+		<div id="o_right_logo"></div>
+		
+		## something to be displayed in the header, a logo, some ads, whatever
+		#if($r.available("headerComponent"))
+			$r.render("headerComponent")
+		#end
+	</div>
 </div>
 ## ---- END #o_header ---	
 
 ## ---- START #o_navbar ---
-<div id="o_navbar_wrapper" class="navbar navbar-default" role="navigation">
-	<div id="o_navbar_container" class="container-fluid">
-
-	    <div id="o_navbar_header" class="navbar-header">
-	      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-	        <span class="sr-only">Toggle navigation</span>
-	        <span class="icon-bar"></span>
-	        <span class="icon-bar"></span>
-	        <span class="icon-bar"></span>
-	      </button>
-	      <a class="navbar-brand" href="#"></a>
-	    </div>
-
-
-		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+<div id="o_offcanvas_right" class="o_navbar o_navbar-offcanvas o_navbar-inverse " role="navigation">
+	<a href="#" class="o_offcanvas_close" title="$r.translate("close")"><i class='o_icon o_icon_close o_icon-lg'></i></a>
+	<div id="o_offcanvas_container" class="o_navbar-collapse">
+	</div>
+</div>
+<div id="o_navbar_wrapper" class="o_navbar o_navbar-default" role="navigation">
+	<div id="o_navbar_container" class="o_container_offcanvas container-fluid">
+		<button id="o_navbar-toggle" type="button" class="o_navbar-toggle" style="display: none;">
+		  <span class="sr-only">Toggle navigation</span>
+		  <span class="icon-bar"></span>
+		  <span class="icon-bar"></span>
+		  <span class="icon-bar"></span>
+		</button>
+		<a class="o_navbar-brand" href="#"></a>
+		
+		<div class="o_collapse o_navbar-collapse">
 			## sites and tabs
-			$r.render("navComponent")
+			$r.render("sitesComponent")
+			$r.render("tabsComponent")
 			## tools
 			#if($r.available("topnavComponent"))
+			<div class="o_navbar_tools">
 					$r.render("topnavComponent")
+			</div>
 			#end	
 		</div>
 	</div>
 </div>
+
 ## ---- END #o_navbar ---
 
 #if($hasStickyMessage)
@@ -208,16 +223,9 @@ $r.renderForce("development")
 </div>
 #end
 
-## ---- START #b_messages
-## Messages are absolute positioned using EXT, thus it's ok to have them at the end of the page. 
-## This prevents an ugly IE bug that appears when the messages are at the top of the page.
-## IE can't render empty div's properly which results in an ugly white bar.
-<div id="b_messages">$r.renderForce("guimessage")</div>
-## ---- END #b_messages ---
-
 ## ------ START #o_page -----
 <div id="o_main_wrapper">
-	<div id="o_main_container" class="container-fluid">
+	<div id="o_main_container" class="o_container_offcanvas container-fluid">
 		$r.render("main")
 		<a id="o_toplink" href="#o_top" onclick="jQuery('#b_body').scrollTop(0);" title="$r.translateInAttribute("top.alt")">
 			<span class="glyphicon glyphicon-arrow-up"></span>
@@ -228,11 +236,13 @@ $r.renderForce("development")
 ## END #o_main -----
 
 ## ----- START #b_footer ----------
+#if($r.available("footerComponent"))
 <div id="o_footer_wrapper">
-	#if($r.available("footerComponent"))
+	<div id="o_footer_container" class="o_container_offcanvas container-fluid">
 		$r.render("footerComponent")
-	#end
+	</div>
 </div>
+#end
 ## ---- END #b_footer ---
 
 

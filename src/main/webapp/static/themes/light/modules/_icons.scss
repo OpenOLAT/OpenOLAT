@@ -57,7 +57,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_tool { @extend .o_icon-gear; }
 .o_icon_upload {@extend .o_icon-upload; }
 
-
+/* right aligned icons */
 .o_icon_right_start:after { content: ' #{$fa-var-chevron-right}'; }
 
 

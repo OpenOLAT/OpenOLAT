@@ -1,3 +1,46 @@
 div.o_callout_overlay { 
 	position: fixed; top: 0; left: 0; width:100%; height:100%; zoom:1;  background: #000; @include o-opacity(1);
 }
+
+
+// Fixed alerts
+// Position to the top or bottom.
+// ------------------------------------------------
+$alert-fixed-width:        $screen-md-min !default;
+$zindex-alert-fixed:       1035 !default;
+
+.alert-fixed-top,
+.alert-fixed-bottom {
+  position: fixed;
+  width: 100%;
+  z-index: $zindex-alert-fixed;
+  border-radius: 0;
+  margin: 0;
+  left: 0;
+
+  @media (min-width: $alert-fixed-width) {
+    width: $alert-fixed-width;
+    left: 50%;
+    margin-left: (-1 * ($alert-fixed-width / 2));
+  }
+}
+
+.alert-fixed-top {
+  top: 0;
+  border-width: 0 0 1px 0;
+
+  @media (min-width: $alert-fixed-width) {
+    @include border-bottom-radius($alert-border-radius);
+    border-width: 0 1px 1px 1px;
+  }
+}
+
+.alert-fixed-bottom {
+  bottom: 0;
+  border-width: 1px 0 0 0;
+
+  @media (min-width: $alert-fixed-width) {
+    @include border-top-radius($alert-border-radius);
+    border-width: 1px 1px 0 1px;
+  }
+}

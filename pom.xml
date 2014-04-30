@@ -144,6 +144,7 @@
 											<removeIncluded>false</removeIncluded>
 											<includes>
 												<include>${basedir}/target/jquery/functions.min.js</include>
+												<include>${basedir}/target/jquery/navbar.min.js</include>
 												<include>${basedir}/target/jquery/jshashtable-2.1_src.min.js</include>
 												<include>${basedir}/target/jquery/jquery/openolat/jquery.oolog.min.js</include>
 												<include>${basedir}/target/jquery/jquery/openolat/jquery.translator.min.js</include>

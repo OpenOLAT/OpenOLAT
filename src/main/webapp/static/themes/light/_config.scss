@@ -24,7 +24,8 @@
 /* The max width the header/navbar/main/footer can possibly have. */
 $o-page-width-max : 1324px !default;
 
-$navbar-margin-bottom : 0 !default;
+$navbar-margin-bottom : 0 !default; /* no space between nav and content */
+$navbar-collapse-max-height: 100% !default;
 
 /* Background color of the main content area. */
 $o-main-outer-bg : #fff !default;

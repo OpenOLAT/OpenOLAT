@@ -1,0 +1,22 @@
+## ---- START dynamic tabs ---
+<ul id="$r.getCId()"  class="o_navbar_tabs nav o_navbar-nav">
+#foreach ($dtab in $dtabs)
+	#set ($navel = $dtab.getNavElement())
+	#set ($pos=${velocityCount} - 1)
+	#set ($postfix=$dtabsLinkNames.get(${pos}))
+	
+	<li class="#if($tabhelper.isDTabActive($dtab)) active #end $!navel.getIconCSSClass()">
+		$r.render("a$postfix")
+		#if($tabhelper.isCanCloseDTab($dtab))
+			$r.render("c$postfix")	 ## close link has class b_nav_tab_close
+		#end
+	</li>
+#end
+</ul>
+## ---- END dynamic tabs ---
+
+<script type="text/javascript">
+/* <![CDATA[ */ 
+    jQuery(document).trigger("oo.nav.tabs.modified");
+/* ]]> */
+</script>

@@ -17,24 +17,26 @@
 @import "modules/helpers";
 @import "modules/content";
 
+/* general layout */
 @import "modules/layout";
 @import "modules/navbar";
 @import "modules/main";
-@import "modules/dialog";
 @import "modules/footer";
+@import "modules/offcanvas";
+
+/* components */
+@import "modules/dialog";
 @import "modules/tree";
 @import "modules/breadcrumb";
-
 @import "modules/form";
 @import "modules/table";
-@import "modules/coursesite";
 @import "modules/im";
 @import "modules/flags";
-@import "modules/devel";
 
-@import "modules/sidebar.css";
-
+/* sites specific styles */
+@import "modules/coursesite";
 @import "modules/course";
+@import "modules/devel";
 
 
 //@import "modules/thirdparty";

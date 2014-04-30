@@ -89,6 +89,7 @@ import org.olat.core.id.context.StateSite;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.JavaScriptTracingController;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.i18n.I18nManager;
@@ -127,7 +128,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private Panel guimsgHolder, currentMsgHolder;
 	private VelocityContainer guimsgVc;
 
-	private VelocityContainer mainVc, navVc;
+	private VelocityContainer mainVc, navSitesVc, navTabsVc;
 
 	// NEW FROM FullChiefController
 	private Controller topnavCtr, footerCtr;
@@ -334,8 +335,13 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		mainVc = createVelocityContainer("fullwebapplayout");
 		// use separate container for navigation to prevent full page refresh in ajax mode on site change
 		// nav is not a controller part because it is a fundamental part of the BaseFullWebAppConroller.
-		navVc = createVelocityContainer("nav");
-		mainVc.put("navComponent", navVc);
+		navSitesVc = createVelocityContainer("nav_sites");
+		navSitesVc.setDomReplacementWrapperRequired(false);
+		mainVc.put("sitesComponent", navSitesVc);
+		
+		navTabsVc = createVelocityContainer("nav_tabs");
+		navTabsVc.setDomReplacementWrapperRequired(false);
+		mainVc.put("tabsComponent", navTabsVc);
 
 		// GUI messages
 		guimsgVc = createVelocityContainer("guimsg");
@@ -371,7 +377,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 				if(navEl != null) {
 					String linkName = "t" + CodeHelper.getRAMUniqueID();
 					siteLinks.add(linkName);
-					Link link = LinkFactory.createCustomLink(linkName, "t", "", Link.NONTRANSLATED, navVc, this);
+					Link link = LinkFactory.createCustomLink(linkName, "t", "", Link.NONTRANSLATED, navSitesVc, this);
 					link.setCustomDisplayText(navEl.getTitle());
 					link.setTitle(navEl.getDescription());
 					link.setUserObject(si);
@@ -383,10 +389,11 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			}
 		}
 		
-		navVc.contextPut("sites", siteLinks);
-		navVc.contextPut("dtabs", dtabs);
-		navVc.contextPut("dtabsLinkNames", dtabsLinkNames);
-		navVc.contextPut("tabhelper", this);
+		navSitesVc.contextPut("sites", siteLinks);
+		navSitesVc.contextPut("tabhelper", this);
+		navTabsVc.contextPut("dtabs", dtabs);
+		navTabsVc.contextPut("dtabsLinkNames", dtabsLinkNames);
+		navTabsVc.contextPut("tabhelper", this);
 
 		// header, optional (e.g. for logo, advertising )
 		Controller headerCtr = baseFullWebappControllerParts.createHeaderController(ureq, getWindowControl());
@@ -475,7 +482,9 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		if((this.wSettings == null && wSettings != null)
 				|| (this.wSettings != null && !this.wSettings.equals(wSettings))) {
 			this.wSettings = wSettings;
-			navVc.setVisible(wSettings == null || !wSettings.isHideNavigation());
+			boolean navVisible = wSettings == null || !wSettings.isHideNavigation();
+			navSitesVc.setVisible(navVisible);
+			navTabsVc.setVisible(navVisible);
 			if (topnavCtr != null) {
 				topnavCtr.getInitialComponent().setVisible(wSettings == null || !wSettings.isHideHeader());
 			}
@@ -705,9 +714,11 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		setGuiStack(gs);
 		NavElement navEl = s.getNavElement();
 		if(navEl != null) {
-			navVc.contextPut("pageTitle", navEl.getTitle());
+			setWindowTitle(navEl.getTitle());
 		}
-		navVc.setDirty(true);
+		// update marking of active site/tab
+		navSitesVc.setDirty(true);
+		navTabsVc.setDirty(true);
 		// add css for this site
 		BornSiteInstance bs = siteToBornSite.get(s);
 		if (bs != null) {
@@ -722,11 +733,24 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		setCurrent(null, dtabi);
 		setGuiStack(dtabi.getGuiStackHandle());
 		// set description as page title, getTitel() might contain trucated values
-		//TODO:gs:a html escaping or removing should be done everywhere where text input fields are written to velocity. Best would be to not allow it in the input fields or escape it there
-		navVc.contextPut("pageTitle", dtabi.getNavElement().getDescription());
-		navVc.setDirty(true);
+		setWindowTitle(dtabi.getNavElement().getDescription());
+		// update marking of active site/tab
+		navSitesVc.setDirty(true);
+		navTabsVc.setDirty(true);
 		// add css for this tab
 		addCurrentCustomCSSToView(dtabi.getCustomCSS());
+	}
+
+	private void setWindowTitle(String newTitle) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("document.title = \"");
+		sb.append(Formatter.escapeDoubleQuotes(translate("page.appname") + " - " + newTitle));
+		sb.append("\";");
+		JSCommand jsc = new JSCommand(sb.toString());
+		WindowControl wControl = getWindowControl();
+		if (wControl != null && wControl.getWindowBackOffice() != null) {
+			wControl.getWindowBackOffice().sendCommandTo(jsc);			
+		}
 	}
 
 	/**
@@ -828,11 +852,11 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 				}
 			}
 
-			navVc.setDirty(true);
+			navTabsVc.setDirty(true);
 			// remove created links for dtab out of container
-			navVc.remove(navVc.getComponent("a" + delt.hashCode()));
-			navVc.remove(navVc.getComponent("ca" + delt.hashCode()));
-			navVc.remove(navVc.getComponent("cp" + delt.hashCode()));
+			navTabsVc.remove(navTabsVc.getComponent("a" + delt.hashCode()));
+			navTabsVc.remove(navTabsVc.getComponent("ca" + delt.hashCode()));
+			navTabsVc.remove(navTabsVc.getComponent("cp" + delt.hashCode()));
 			if (delt == curDTab) { // if we close the current tab -> return to the previous
 				popTheTabState(ureq);
 			} // else just remove the dtabs
@@ -956,7 +980,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			// make dtabs and dtabsControllers access synchronized
 			dtabs.add(dt);
 			dtabsLinkNames.add(dtabCreateCounter);
-			Link link = LinkFactory.createCustomLink("a" + dtabCreateCounter, "a" + dtabCreateCounter, "", Link.NONTRANSLATED, navVc, this);
+			Link link = LinkFactory.createCustomLink("a" + dtabCreateCounter, "a" + dtabCreateCounter, "", Link.NONTRANSLATED, navTabsVc, this);
 			link.setCustomDisplayText(StringHelper.escapeHtml(dt.getNavElement().getTitle()));
 			link.setTitle(dt.getTitle());
 			link.setUserObject(dt);
@@ -964,7 +988,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			// pressing s repetitively (works only in IE/FF which is normally used by blind people)
 			link.setAccessKey("s");
 			// add close links
-			Link calink = LinkFactory.createCustomLink("c" + dtabCreateCounter, "c" + dtabCreateCounter, "", Link.NONTRANSLATED, navVc, this);
+			Link calink = LinkFactory.createCustomLink("c" + dtabCreateCounter, "c" + dtabCreateCounter, "", Link.NONTRANSLATED, navTabsVc, this);
 			calink.setCustomEnabledLinkCSS("o_navbar_tab_close");
 			calink.setIconCSS("o_icon o_icon_close_tab");
 			calink.setTitle(translate("close"));

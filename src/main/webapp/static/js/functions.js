@@ -416,6 +416,7 @@ if(!Array.prototype.indexOf) {
 // b_AddOnDomReplacementFinishedCallback is used to add callback methods that are executed after
 // the DOM replacement has occured. Note that when not in AJAX mode, those methods will not be 
 // executed. Use this callback to execute some JS code to cleanup eventhandlers or alike
+//DEPRECATED: listen to event "oo.dom.replacement.after"
 var b_onDomReplacementFinished_callbacks=new Array();//array holding js callback methods that should be executed after the next ajax call
 function b_AddOnDomReplacementFinishedCallback(funct) {
 	var debug = jQuery(document).ooLog().isDebugEnabled();
@@ -433,6 +434,7 @@ var b_changedDomEl=new Array();
 
 //same as above, but with a filter to prevent adding a funct. more than once
 //funct then has to be an array("identifier", funct) 
+// DEPRECATED: listen to event "oo.dom.replacement.after"
 function b_AddOnDomReplacementFinishedUniqueCallback(funct) {
 	if (funct.constructor == Array){
 		if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"add: its an ARRAY! ", "functions.js ADD"); 
@@ -448,6 +450,7 @@ function b_AddOnDomReplacementFinishedUniqueCallback(funct) {
 // main interpreter for ajax mode
 var o_debug_trid = 0;
 function o_ainvoke(r) {
+
 	// commands
 	if(r == undefined) {
 		return;
@@ -456,6 +459,9 @@ function o_ainvoke(r) {
 	o_info.inainvoke = true;
 	var cmdcnt = r["cmdcnt"];
 	if (cmdcnt > 0) {
+		// let everybody know dom replacement has finished
+		jQuery(document).trigger("oo.dom.replacement.before");
+
 		//fxdiff FXOLAT-310 
 		b_changedDomEl = new Array();
 		
@@ -604,6 +610,8 @@ function o_ainvoke(r) {
 				if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Error in o_ainvoke(), could not find window??", "functions.js");
 			}		
 		}
+
+		// BEGIN DEPRECATED DOM REPLACEMENT CALLBACK: new style below
 		// execute onDomReplacementFinished callback functions
 		var stacklength = b_onDomReplacementFinished_callbacks.length;
 		if (b_onDomReplacementFinished_callbacks.toSource && jQuery(document).ooLog().isDebugEnabled()) { 
@@ -640,10 +648,11 @@ function o_ainvoke(r) {
 			if(jQuery(document).ooLog().isDebugEnabled())
 				jQuery(document).ooLog('debug',"Stacksize after timeout: " + b_onDomReplacementFinished_callbacks.length, "functions.js");
 		}
-		// all rendering finished, adjust height on menu and content
-		OPOL.adjustHeight();
+		// END DEPRECATED DOM REPLACEMENT CALLBACK: new style on next line
+		
+		// let everybody know dom replacement has finished
+		jQuery(document).trigger("oo.dom.replacement.after");
 	}
-	
 	o_info.inainvoke = false;
 	
 /* minimalistic debugger / profiler	
@@ -653,7 +662,6 @@ function o_ainvoke(r) {
 	BDebugger.logManagedOLATObjects();
 */
 }
-
 /**
  * Method to remove the ajax-busy stuff and let the user click links again. This
  * should only be called from the ajax iframe onload method to make sure the UI
@@ -903,6 +911,9 @@ OPOL.adjustHeight = function() {
 		if(console)	console.log(e);			
 	}
 };
+// execute after each DOM replacement cycle and on initial document load
+jQuery(document).on("oo.dom.replacement.after", OPOL.adjustHeight);
+jQuery().ready(OPOL.adjustHeight);
 
   
 function b_resizeIframeToMainMaxHeight(iframeId) {
@@ -1081,9 +1092,9 @@ function showInfoBox(title, content){
 	// Factory method to create message box
 	var uuid = Math.floor(Math.random() * 0x10000 /* 65536 */).toString(16);
 	var info = '<div id="' + uuid
-	     + '" class="b_msg-div msg" style="display:none;"><div class="alert alert-info b_msg_info_content b_msg_info_winicon o_sel_info_message"><h3>'
+	     + '" class="b_msg-div msg" style="display:none;"><div class="alert alert-info alert-fixed-top b_msg_info_content b_msg_info_winicon o_sel_info_message"><h3>'
 		 + title + '</h3>' + content + '<br/><br/></div></div>';
-    var msgCt = jQuery('#b_messages').prepend(info);
+    var msgCt = jQuery('#o_messages').prepend(info);
     // Hide message automatically
     var time = (content.length > 150) ? 8000 : ((content.length > 70) ? 6000 : 4000);
     jQuery('#' + uuid).slideDown(300).delay(time).slideUp(300);

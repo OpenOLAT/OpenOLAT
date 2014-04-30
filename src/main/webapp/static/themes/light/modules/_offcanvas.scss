@@ -1,0 +1,115 @@
+$o-offcanvas-width : 250px !default;
+$o-offcanvas-padding-horizontal: $navbar-padding-horizontal !default;
+$o-offcanvas-padding-vertical: $navbar-padding-vertical !default;
+$o-offcanvas-bg : $navbar-inverse-bg !default;
+$o-offcanvas-border :  $navbar-inverse-border !default;
+$o-offcanvas-color: $navbar-inverse-color;
+
+body {
+	overflow-x: hidden;
+}
+
+/* containers that are either overlayed or moved away */
+.o_container_offcanvas {
+	position: relative;
+	max-width: $o-page-width-max;
+	-webkit-transition: all .25s ease-in-out;
+	-moz-transition: all .25s ease-in-out;
+	-o-transition: all .25s ease-in-out;
+	-m-transition: all .25s ease-in-out;
+	transition: all .25s ease-in-out;
+}
+
+#o_offcanvas_right {
+	position: absolute;
+	top: 0;
+	right: -$o-offcanvas-width;
+	width: $o-offcanvas-width;
+
+	padding	: $o-offcanvas-padding-horizontal $o-offcanvas-padding-vertical;
+	background-color: $o-offcanvas-bg;
+	color: $o-offcanvas-color;
+  	border: 1px solid $o-offcanvas-border;
+  	
+	// Prevent floats from breaking the navbar
+ 	@include clearfix();
+	
+	min-height: 100%;
+	z-index: 10;
+	-webkit-transition: all .25s ease-out;
+	-moz-transition: all .25s ease-out;
+	-o-transition: all .25s ease-out;
+	-m-transition: all .25s ease-out;
+	transition: all .25s ease-out;
+	
+}
+
+/* make page a bid smaller when max width is almost reached. */
+@media screen and (min-width: $o-page-width-max) and (max-width: $o-page-width-max + $o-offcanvas-width)  {
+	body.o_offcanvas_right_visible {
+		.o_container_offcanvas {
+			left: floor(-$o-offcanvas-width / 2);
+			max-width: ($o-page-width-max - $o-offcanvas-width);
+		} 
+	}
+}
+/* move page a bit  to side to make room for offcanvas when left and right has enough room */
+@media screen and (min-width: $o-page-width-max + $o-offcanvas-width) and (max-width: $o-page-width-max + $o-offcanvas-width * 2){
+	body.o_offcanvas_right_visible {
+		.o_container_offcanvas {
+			left: floor(-$o-offcanvas-width / 2);
+		} 
+	}
+}
+
+/* trigger transition of offcanvas menu */
+body.o_offcanvas_right_visible {
+	#o_offcanvas_right {
+		right: 0;
+		@include box-shadow(0px 0px 4px 3px rgba(0,0,0,.25));
+	}
+}
+
+
+
+
+
+
+/*
+ * Off Canvas
+ * --------------------------------------------------
+ */
+@media screen and (max-width: 767px) {
+	.row-offcanvas {
+ 		position: relative;
+		-webkit-transition: all .25s ease-out;
+		-moz-transition: all .25s ease-out;
+		transition: all .25s ease-out;
+	}
+
+	.row-offcanvas-right {
+  		right: 0;
+    	.sidebar-offcanvas {
+   			right: -50%; /* 6 columns */
+  		}
+  		&.active	{
+    		right: 50%; /* 6 columns */
+	  	}
+	}
+
+	.row-offcanvas-left {
+		left: 0;
+		.sidebar-offcanvas {
+			left: -50%; /* 6 columns */
+		}
+		&.active {
+    		left: 50%; /* 6 columns */
+  		}
+	}
+
+	.sidebar-offcanvas {
+    	position: absolute;
+    	top: 0;
+    	width: 50%; /* 6 columns */
+  	}
+}
