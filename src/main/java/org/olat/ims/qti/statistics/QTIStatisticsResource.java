@@ -21,13 +21,17 @@ package org.olat.ims.qti.statistics;
 
 import java.io.InputStream;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
@@ -35,11 +39,18 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.CourseNode;
 import org.olat.ims.qti.QTIResult;
 import org.olat.ims.qti.QTIResultManager;
+import org.olat.ims.qti.editor.beecom.parser.ItemParser;
 import org.olat.ims.qti.export.QTIArchiveWizardController;
+import org.olat.ims.qti.export.QTIExportEssayItemFormatConfig;
+import org.olat.ims.qti.export.QTIExportFIBItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportFormatter;
 import org.olat.ims.qti.export.QTIExportFormatterCSVType1;
 import org.olat.ims.qti.export.QTIExportFormatterCSVType2;
+import org.olat.ims.qti.export.QTIExportItemFormatConfig;
+import org.olat.ims.qti.export.QTIExportKPRIMItemFormatConfig;
+import org.olat.ims.qti.export.QTIExportMCQItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportManager;
+import org.olat.ims.qti.export.QTIExportSCQItemFormatConfig;
 import org.olat.ims.qti.export.helper.QTIItemObject;
 import org.olat.ims.qti.export.helper.QTIObjectTreeBuilder;
 
@@ -122,7 +133,7 @@ public class QTIStatisticsResource implements MediaResource {
 
 			Long qtiRepoEntryKey = resourceResult.getQTIRepositoryEntry().getKey();
 			List<QTIItemObject> itemList = new QTIObjectTreeBuilder().getQTIItemObjectList(resourceResult.getResolver());
-			formatter.setMapWithExportItemConfigs(QTIArchiveWizardController.getQTIItemConfigs(itemList));
+			formatter.setMapWithExportItemConfigs(getQTIItemConfigs(itemList));
 			
 			QTIResultManager qrm = QTIResultManager.getInstance();
 			
@@ -142,5 +153,63 @@ public class QTIStatisticsResource implements MediaResource {
 	@Override
 	public void release() {
 		//
+	}
+	
+	/**
+	 * Copy of QTIArchiveWizardController.getQTIItemConfigs but with all options set
+	 * to true except for the time column.
+	 * 
+	 * @param itemList
+	 * @return
+	 */
+	private final static Map<Class<?>, QTIExportItemFormatConfig> getQTIItemConfigs(List<QTIItemObject> itemList){
+		Map<Class<?>, QTIExportItemFormatConfig> itConfigs = new HashMap<>();
+  	
+		for (Iterator<QTIItemObject> iter = itemList.iterator(); iter.hasNext();) {
+			QTIItemObject item = iter.next();
+			if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_SCQ)){
+				if (itConfigs.get(QTIExportSCQItemFormatConfig.class) == null){
+					QTIExportSCQItemFormatConfig confSCQ = new QTIExportSCQItemFormatConfig(true, true, true, false);
+					itConfigs.put(QTIExportSCQItemFormatConfig.class, confSCQ);
+				}
+			} else if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_MCQ)){
+				if (itConfigs.get(QTIExportMCQItemFormatConfig.class) == null){
+					QTIExportMCQItemFormatConfig confMCQ = new QTIExportMCQItemFormatConfig(true, true, true, false);
+					itConfigs.put(QTIExportMCQItemFormatConfig.class, confMCQ );
+				}
+			} else if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_KPRIM)){
+				if (itConfigs.get(QTIExportKPRIMItemFormatConfig.class) == null){
+					QTIExportKPRIMItemFormatConfig confKPRIM = new QTIExportKPRIMItemFormatConfig(true, true, true, false);
+					itConfigs.put(QTIExportKPRIMItemFormatConfig.class, confKPRIM);
+				}
+			} else if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_ESSAY)){
+				if (itConfigs.get(QTIExportEssayItemFormatConfig.class) == null){
+					QTIExportEssayItemFormatConfig confEssay = new QTIExportEssayItemFormatConfig(true, false);
+					itConfigs.put(QTIExportEssayItemFormatConfig.class, confEssay);
+				}
+			} else if (item.getItemIdent().startsWith(ItemParser.ITEM_PREFIX_FIB)){
+				if (itConfigs.get(QTIExportFIBItemFormatConfig.class) == null){
+					QTIExportFIBItemFormatConfig confFIB = new QTIExportFIBItemFormatConfig(true, true, false);
+					itConfigs.put(QTIExportFIBItemFormatConfig.class, confFIB);
+				}
+			}
+			//if cannot find the type via the ItemParser, look for the QTIItemObject type
+			else if (item.getItemType().equals(QTIItemObject.TYPE.A)){
+				QTIExportEssayItemFormatConfig confEssay = new QTIExportEssayItemFormatConfig(true, false);
+				itConfigs.put(QTIExportEssayItemFormatConfig.class, confEssay);
+			} else if (item.getItemType().equals(QTIItemObject.TYPE.R)){
+				QTIExportSCQItemFormatConfig confSCQ = new QTIExportSCQItemFormatConfig(true, true, true, false);
+				itConfigs.put(QTIExportSCQItemFormatConfig.class, confSCQ);
+			} else if (item.getItemType().equals(QTIItemObject.TYPE.C)){
+				QTIExportMCQItemFormatConfig confMCQ = new QTIExportMCQItemFormatConfig(true, true, true, false);
+				itConfigs.put(QTIExportMCQItemFormatConfig.class, confMCQ );
+			} else if (item.getItemType().equals(QTIItemObject.TYPE.B)){
+				QTIExportFIBItemFormatConfig confFIB = new QTIExportFIBItemFormatConfig(true, true, false);
+				itConfigs.put(QTIExportFIBItemFormatConfig.class, confFIB);
+			} else {
+				throw new OLATRuntimeException(null,"Can not resolve QTIItem type", null);
+			}
+		}
+		return itConfigs;
 	}
 }
