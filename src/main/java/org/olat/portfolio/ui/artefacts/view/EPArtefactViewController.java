@@ -204,9 +204,10 @@ public class EPArtefactViewController extends FormBasicController {
 		List<PortfolioStructure> linkedMaps = ePFMgr.getReferencedMapsForArtefact(artefact);
 		if (linkedMaps != null && linkedMaps.size() != 0) {
 			List<FormLink> selectMapNames = new ArrayList<FormLink>(linkedMaps.size());
+			int count = 0;
 			for (PortfolioStructure ePMap : linkedMaps) {
 				String title = StringHelper.escapeHtml(ePMap.getTitle());
-				FormLink selectMap = uifactory.addFormLink("map", "map", title, null, formLayout, Link.NONTRANSLATED);
+				FormLink selectMap = uifactory.addFormLink("map-" + count++, "map", title, null, formLayout, Link.NONTRANSLATED);
 				selectMap.setUserObject(ePMap.getOlatResource());
 				selectMap.setEnabled(!viewOnlyMode && !artefactChooseMode);
 				selectMapNames.add(selectMap);
