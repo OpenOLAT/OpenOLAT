@@ -59,6 +59,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSConstants;
@@ -99,6 +100,7 @@ import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
+import org.olat.user.UserManager;
 
 import de.bps.onyx.plugin.OnyxModule;
 import de.bps.onyx.plugin.course.nodes.iq.IQEditForm;
@@ -721,8 +723,14 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	private void doIQReference(UserRequest urequest, RepositoryEntry re) {
 		// repository search controller done				
 		if (re != null) {
-			if (CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(re.getOlatResource(), null)) {						
-				showError("error.entry.locked");
+			if (CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(re.getOlatResource(), null)) {
+				LockResult lockResult = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(re.getOlatResource(), urequest.getIdentity(), null);
+				String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(lockResult.getOwner());
+				showError("error.entry.locked", fullName);
+				if(lockResult.isSuccess()) {
+					//improbable concurrency security
+					CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockResult);
+				}
 			} else {
 				if(editTestButton != null) {
 					myContent.remove(editTestButton);
