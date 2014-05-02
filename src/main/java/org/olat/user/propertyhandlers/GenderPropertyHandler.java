@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.User;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.user.AbstractUserPropertyHandler;
@@ -120,8 +121,12 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 		org.olat.core.gui.components.form.flexible.elements.SingleSelection	genderElem = null;
 		//genderElem = FormUIFactory.getInstance().addDropdownSingleselect(getName(), i18nFormElementLabelKey(), formItemContainer, keys, getTranslatedValues(locale), null);
 		genderElem = FormUIFactory.getInstance().addRadiosVertical(getName(), i18nFormElementLabelKey(), formItemContainer, keys, getTranslatedValues(locale));
-		
-		genderElem.select(user == null ? "-" : this.getInternalValue(user), true);
+		String key = user == null ? "-" : getInternalValue(user);
+		for(int i=keys.length; i-->0; ) {
+			if(keys[i].equals(key)) {
+				genderElem.select(keys[i], true);
+			}
+		}
 		
 		UserManager um = UserManager.getInstance();
 		if ( um.isUserViewReadOnly(usageIdentifyer, this) && ! isAdministrativeUser) {
@@ -139,7 +144,7 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 	@Override
 	public String getInternalValue(User user) {
 		String value = super.getInternalValue(user);
-		return (value == null ? "-" : value); // default		
+		return (StringHelper.containsNonWhitespace(value) ? value : "-"); // default		
 	}
 	
 	/**
