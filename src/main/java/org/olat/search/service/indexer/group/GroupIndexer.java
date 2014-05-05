@@ -104,6 +104,9 @@ public class GroupIndexer extends AbstractHierarchicalIndexer {
 		Long key = contextEntry.getOLATResourceable().getResourceableId();
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BusinessGroup group = bgs.loadBusinessGroup(key);
+		if(group == null) {
+			return false;
+		}
 		boolean inGroup = bgs.isIdentityInBusinessGroup(identity, group);
 		if (inGroup) {
 			return super.checkAccess(contextEntry, businessControl, identity, roles)
