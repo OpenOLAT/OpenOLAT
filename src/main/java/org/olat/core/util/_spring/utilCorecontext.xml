@@ -182,53 +182,48 @@
 		</property>
 	</bean>
 
+	<!-- * * * * * * *  -->
+	<!--  DEPRECATED!! use src/main/resources/infinispan-config.xml instead !! -->
+	<!--  Configure caches directly in infinispan files, not here. timeToLive not supported anymore -->
+	<!-- * * * * * * *  -->
+
 	<!-- Cache beans -->
 	<bean id="org.olat.login.LoginModule_blockafterfailedattempts" class="org.olat.core.util.cache.CacheConfig" >
-		<property name="timeToLive" value="300" />
 		<property name="timeToIdle" value="0" />
 		<property name="maxElementsInMemory" value="1000" />
 	</bean>
 	<bean id="org.olat.ims.qti.process.QTIHelper_QTI_xml_Documents" class="org.olat.core.util.cache.CacheConfig">
-		<property name="timeToLive" value="3600" />
 		<property name="timeToIdle" value="1800" />
 		<!-- qti files may be large -->
 		<property name="maxElementsInMemory" value="20" />
 	</bean>					
 	<bean id="org.olat.modules.wiki.WikiManager_wiki" class="org.olat.core.util.cache.CacheConfig">
-		<property name="timeToLive" value="14400" />
 		<property name="timeToIdle" value="1800" />
 		<property name="maxElementsInMemory" value="50" />								
 	</bean>
 	<bean id="org.olat.commons.calendar.ICalFileCalendarManager_calendar" class="org.olat.core.util.cache.CacheConfig">
-		<property name="timeToLive" value="3600" />
 		<property name="timeToIdle" value="3600" />
 		<property name="maxElementsInMemory" value="50" />								
 	</bean>
 	<bean id="org.olat.course.CourseFactory_courses" class="org.olat.core.util.cache.CacheConfig">
-		<property name="timeToLive" value="0" />
 		<property name="timeToIdle" value="3600" />
 		<property name="maxElementsInMemory" value="${course.cache.elements}" />								
 	</bean>
 	<bean id="org.olat.collaboration.CollaborationToolsFactory_tools" class="org.olat.core.util.cache.CacheConfig">
-			<property name="timeToLive" value="3600" />
 			<property name="timeToIdle" value="1800" />
 			<property name="maxElementsInMemory" value="5000" />								
 	</bean>
 	<bean id="org.olat.core.modules.glossary.GlossaryItemManager_glossary" class="org.olat.core.util.cache.CacheConfig">
-			<property name="timeToLive" value="7200" />
 			<property name="timeToIdle" value="1800" />
 			<property name="maxElementsInMemory" value="50" />								
 	</bean>
 	<bean id="org.olat.course.nodes.projectbroker.service.ProjectBrokerManagerImpl_pb" class="org.olat.core.util.cache.CacheConfig">
-		<property name="timeToLive" value="3600" />
 		<property name="timeToIdle" value="3600" />
 		<property name="maxElementsInMemory" value="50" />								
 	</bean>
 	<bean id="org.olat.course.assessment.NewCachePersistingAssessmentManager" class="org.olat.core.util.cache.CacheConfig">
-		<property name="timeToLive" value="0" />
 		<property name="timeToIdle" value="60" />
 		<property name="maxElementsInMemory" value="20000" />							
 	</bean>
-	
 	
 </beans>

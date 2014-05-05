@@ -27,14 +27,18 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.core.commons.services.notifications.ui.NotificationNewsController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
-import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
+import org.olat.core.util.cache.CacheWrapper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 
 /**
@@ -50,7 +54,12 @@ import org.olat.core.util.i18n.I18nManager;
 public class NotificationHelper {
 	
 	private static final OLog log = Tracing.createLoggerFor(NotificationHelper.class);
-
+	private static CacheWrapper<Long,String> userPropertiesCache;
+	
+	static {
+		userPropertiesCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(NotificationHelper.class.getSimpleName(), "userPropertiesCache");			
+	}
+	
 	public static Map<Subscriber, SubscriptionInfo> getSubscriptionMap(Identity identity, Locale locale, boolean showWithNewsOnly, Date compareDate) {
 		return getSubscriptionMap(identity, locale, showWithNewsOnly, compareDate, Collections.<String>emptyList());
 	}
@@ -99,15 +108,38 @@ public class NotificationHelper {
 	public static String getFormatedName(Identity ident) {
 		Translator trans;
 		User user = null;
+		String formattedName = null;
+		
 		if (ident == null) {
-			trans = Util.createPackageTranslator(NotificationHelper.class, I18nManager.getInstance().getLocaleOrDefault(null));
+			trans = Util.createPackageTranslator(NotificationNewsController.class, I18nManager.getInstance().getLocaleOrDefault(null));
+			return trans.translate("user.unknown");
 		} else {
-		 trans = Util.createPackageTranslator(NotificationHelper.class, I18nManager.getInstance().getLocaleOrDefault(
-				ident.getUser().getPreferences().getLanguage()));
-		 user = ident.getUser();
+			// Optimize: use from cache to not re-calculate user properties over and over again
+			formattedName = userPropertiesCache.get(ident.getKey());
+			if (formattedName != null) {
+				return formattedName;
+			}
 		}
-		if (user == null) return trans.translate("user.unknown");
-		return user.getProperty(UserConstants.FIRSTNAME, null) + " " + user.getProperty(UserConstants.LASTNAME, null);
+		trans = Util.createPackageTranslator(NotificationNewsController.class, I18nManager.getInstance().getLocaleOrDefault(
+				ident.getUser().getPreferences().getLanguage()));
+		user = ident.getUser();
+		
+		if (user == null) {
+			formattedName =  trans.translate("user.unknown");
+		} else {
+			// grap user properties from context
+			List<UserPropertyHandler> propertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(NotificationHelper.class.getName(), false);
+			String[] properties = new String[propertyHandlers.size()];
+			for (int i = 0; i < propertyHandlers.size(); i++) {
+				UserPropertyHandler propHandler = propertyHandlers.get(i);
+				properties[i] = propHandler.getUserProperty(user, trans.getLocale());
+			}
+			formattedName = trans.translate("user.formatted", properties);
+		}
+		// put formatted name in cache, times out after 5 mins
+		userPropertiesCache.put(ident.getKey(), formattedName);
+		
+		return formattedName;
 	}
 
 	/**
