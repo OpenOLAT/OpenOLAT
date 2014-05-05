@@ -149,7 +149,11 @@ public class SeriesFactory {
 
 			double rightA;
 			double wrongA;
-			if (points > 0.00001f) {
+			
+			if (survey) {
+				rightA = answersPerAnswerOption;
+				wrongA = 0d;
+			} else if (points > 0.00001f) {
 				rightA = answersPerAnswerOption;
 				wrongA = numOfParticipants - notAnswered - answersPerAnswerOption;
 			} else {

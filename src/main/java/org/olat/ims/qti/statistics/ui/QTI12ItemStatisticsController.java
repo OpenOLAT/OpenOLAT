@@ -186,7 +186,7 @@ public class QTI12ItemStatisticsController extends BasicController {
 				.getItemStatistics(item.getIdent(), maxScore, searchParams);
 
 		mainVC.contextPut("solution", item.getQuestion().getSolutionText());
-		mainVC.contextPut("numOfResults", itemStats.getNumOfResults());
+		int numOfResults = itemStats.getNumOfResults();
 		if(!survey) {
 			mainVC.contextPut("maxScore", maxScore);
 		}
@@ -194,10 +194,17 @@ public class QTI12ItemStatisticsController extends BasicController {
 
 		List<String> answers = qtiStatisticsManager.getAnswers(item.getIdent(), searchParams);
 
-		List<String> cleanedAnswers = new ArrayList<String>();
+		List<String> cleanedAnswers = new ArrayList<>();
 		for (String string : answers) {
-			cleanedAnswers.add(stripAnswerText(string));
+			String strippedAnswer = stripAnswerText(string);
+			if(strippedAnswer == null || strippedAnswer.length() == 0) {
+				numOfResults--;
+			} else {
+				cleanedAnswers.add(strippedAnswer);
+			}
 		}
+		
+		mainVC.contextPut("numOfResults", Math.max(0, numOfResults));
 		mainVC.contextPut("studentAnswers", cleanedAnswers);
 	}
 	
