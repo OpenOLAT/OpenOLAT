@@ -488,6 +488,11 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 	}
 	
 	private List<StatisticAnswerOption> getStatisticAnswerOptionsOfItem(String itemIdent, QTIStatisticSearchParams searchParams, boolean groupBy) {
+		//the group by of mysql is case insensitive
+		if(!groupBy && !dbInstance.getDbVendor().equals("mysql")) {
+			groupBy = true;
+		}
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("select res.answer, count(res.key) from qtistatsresult res ")
 		  .append(" inner join res.resultSet rset");
