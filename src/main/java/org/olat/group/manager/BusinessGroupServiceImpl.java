@@ -99,6 +99,7 @@ import org.olat.group.right.BGRightManager;
 import org.olat.group.right.BGRightsRole;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
+import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -136,6 +137,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	private BusinessGroupDAO businessGroupDAO;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private PropertyManager propertyManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -727,16 +730,19 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			//removeFromRepositoryEntrySecurityGroup(group);
 			// 2) Delete the group areas
 			areaManager.deleteBGtoAreaRelations(group);
-			// 3) Delete the group object itself on the database
+			// 3) Delete the relations
 			businessGroupRelationDAO.deleteRelations(group);
-			businessGroupDAO.delete(group);
-			// 4) Delete the associated security groups
-			//TODO group
-	
-			// delete the publisher attached to this group (e.g. the forum and folder
+			// 4) delete properties
+			propertyManager.deleteProperties(null, group, null, null, null);
+			propertyManager.deleteProperties(null, null, group, null, null);
+			// 5) delete the publisher attached to this group (e.g. the forum and folder
 			// publisher)
 			notificationsManager.deletePublishersOf(group);
-
+			// 6) the group
+			businessGroupDAO.delete(group);
+			// 7) delete the associated security groups
+			//TODO group
+			
 			dbInstance.commit();
 	
 			log.audit("Deleted Business Group", group.toString());

@@ -150,7 +150,7 @@ public class VFSManager extends BasicManager {
 				if (t.isDirectory()) {
 					VFSContainer subContainer;
 					if (fsPath.startsWith(bcroot)) {
-						fsPath = fsPath.replace(bcroot,"");
+						fsPath = fsPath.substring(bcroot.length(), fsPath.length());
 						subContainer = new OlatRootFolderImpl(fsPath, rootContainer);
 					} else {
 						subContainer = new LocalFolderImpl (t, rootContainer);

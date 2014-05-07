@@ -100,7 +100,7 @@ public class BusinessGroupDAO {
 		if(minParticipants != null && minParticipants.intValue() >= 0) {
 			businessgroup.setMinParticipants(minParticipants);
 		}
-		if(maxParticipants != null && maxParticipants.intValue() > 0) {
+		if(maxParticipants != null && maxParticipants.intValue() >= 0) {
 			businessgroup.setMaxParticipants(maxParticipants);
 		}
 		
@@ -134,7 +134,7 @@ public class BusinessGroupDAO {
 		OLATResource businessgroupOlatResource =  olatResourceManager.createOLATResourceInstance(businessgroup);
 		olatResourceManager.saveOLATResource(businessgroupOlatResource);
 		businessgroup.setResource(businessgroupOlatResource);
-		em.merge(businessgroup);
+		businessgroup = em.merge(businessgroup);
 
 		// per default all collaboration-tools are disabled
 		return businessgroup;

@@ -139,6 +139,11 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 		QTIStatisticResourceResult result = new QTIStatisticResourceResult(courseOres, this, searchParams);
 		return result;
 	}
+	
+	@Override
+	public boolean isStatisticNodeResultAvailable(UserCourseEnvironment userCourseEnv) {
+		return true;
+	}
 
 	/**
 	 * @see org.olat.course.nodes.CourseNode#isConfigValid()

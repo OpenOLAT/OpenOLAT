@@ -30,117 +30,53 @@ import org.olat.collaboration.CollaborationTools;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.webdav.manager.WebDAVMergeSource;
 import org.olat.core.commons.services.webdav.servlets.RequestUtil;
 import org.olat.core.id.Identity;
-import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
-import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.group.model.SearchBusinessGroupParams;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-class GroupfoldersWebDAVMergeSource extends MergeSource {
+class GroupfoldersWebDAVMergeSource extends WebDAVMergeSource {
 	
-	private boolean init = false;
-	private final Identity identity;
 	private final CollaborationManager collaborationManager;
-	private long loadTime;
-	
+
 	public GroupfoldersWebDAVMergeSource(Identity identity, CollaborationManager collaborationManager) {
-		super(null, null);
-		this.identity = identity;
+		super(identity);
 		this.collaborationManager = collaborationManager;
 	}
 	
 	@Override
-	public VFSStatus canWrite() {
-		return VFSConstants.NO;
-	}
-
-	@Override
-	public VFSStatus canDelete() {
-		return VFSConstants.NO;
-	}
-	
-	@Override
-	public VFSStatus canRename() {
-		return VFSConstants.NO;
-	}
-
-	@Override
-	public VFSStatus canCopy() {
-		return VFSConstants.NO;
-	}
-
-	@Override
-	public VFSStatus delete() {
-		return VFSConstants.NO;
-	}
-
-	@Override
-	public List<VFSItem> getItems() {
-		checkInitialization();
-		return super.getItems();
-	}
-
-	@Override
-	public List<VFSItem> getItems(VFSItemFilter filter) {
-		checkInitialization();
-		return super.getItems(filter);
-	}
-
-	@Override
-	public VFSItem resolve(String path) {
-		checkInitialization();
-		return super.resolve(path);
-	}
-	
-	private void checkInitialization() {
-		if(!init || (System.currentTimeMillis() - loadTime) > 60000) {
-			synchronized(this) {
-				if(!init || (System.currentTimeMillis() - loadTime) > 60000) {
-					init();
-				}
-			}
-		}
-	}
-	
-	@Override
-	protected void init() {
-		// collect buddy groups
+	protected List<VFSContainer> loadMergedContainers() {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		Set<Long> addedGroupKeys = new HashSet<Long>();
 		Set<String> addedGroupNames = new HashSet<String>();
 		List<VFSContainer> containers = new ArrayList<>();
 		
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams(identity, true, false);
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams(getIdentity(), true, false);
 		params.addTools(CollaborationTools.TOOL_FOLDER);
 		List<BusinessGroup> tutorGroups = bgs.findBusinessGroups(params, null, 0, -1);
 		for (BusinessGroup group : tutorGroups) {
 			addContainer(group, addedGroupKeys, addedGroupNames, containers, true);
 		}
 
-		SearchBusinessGroupParams paramsParticipants = new SearchBusinessGroupParams(identity, false, true);
+		SearchBusinessGroupParams paramsParticipants = new SearchBusinessGroupParams(getIdentity(), false, true);
 		paramsParticipants.addTools(CollaborationTools.TOOL_FOLDER);
 		List<BusinessGroup> participantsGroups = bgs.findBusinessGroups(paramsParticipants, null, 0, -1);
 		for (BusinessGroup group : participantsGroups) {
 			addContainer(group, addedGroupKeys, addedGroupNames, containers, false);
 		}
-		setMergedContainers(containers);
-		loadTime = System.currentTimeMillis();
-		init = true;
+		return containers;
 	}
 	
 	private void addContainer(BusinessGroup group, Set<Long> addedGroupKeys, Set<String> addedGroupNames,

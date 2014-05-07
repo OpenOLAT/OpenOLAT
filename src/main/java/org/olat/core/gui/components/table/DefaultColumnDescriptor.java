@@ -179,12 +179,14 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 		if(a instanceof Date && b instanceof Date) {
 			return compareDateAndTimestamps((Date)a, (Date)b);
 		}
-		if (a instanceof Comparable && b instanceof Comparable) {
+		if (a instanceof Boolean && b instanceof Boolean) {
+			// faster than string compare, boolean are comparable
+			return compareBooleans((Boolean)a, (Boolean)b);
+		}
+		if (a instanceof Comparable && a.getClass().equals(b.getClass())) {
+			//compare the same things
 			return ((Comparable)a).compareTo(b);
 		}
-		/*if (a instanceof Boolean && b instanceof Boolean) { // faster than string compare, boolean are comparable
-			return compareBooleans((Boolean)a, (Boolean)b);
-		}*/
 		return a.toString().compareTo(b.toString());
 	}
 	

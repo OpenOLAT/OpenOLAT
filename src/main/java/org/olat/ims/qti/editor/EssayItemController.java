@@ -131,6 +131,7 @@ public class EssayItemController extends DefaultController implements Controller
 					}
 					essayQuestion.setMinValue(0.0f);
 					essayQuestion.setMaxValue(sc);
+					essayQuestion.setSingleCorrectScore(sc);
 				} catch(Exception e) {
 					if(!qtiPackage.getQTIDocument().isSurvey()) {
 						getWindowControl().setWarning(trnsltr.translate("editor.info.mc.zero.points"));

@@ -27,14 +27,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.commons.services.webdav.manager.WebDAVMergeSource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -45,56 +43,24 @@ import org.olat.repository.RepositoryManager;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class SharedFolderWebDAVMergeSource extends MergeSource {
+public class SharedFolderWebDAVMergeSource extends WebDAVMergeSource {
 	
-	private OLog log = Tracing.createLoggerFor(SharedFolderWebDAVMergeSource.class);
+	private static final OLog log = Tracing.createLoggerFor(SharedFolderWebDAVMergeSource.class);
 
-	private boolean init = false;
-	private long loadTime;
-	private final Identity identity;
 	private final List<String> publiclyReadableFolders;
 	
 	public SharedFolderWebDAVMergeSource(Identity identity, List<String> publiclyReadableFolders) {
-		super(null, "root");
-		this.identity = identity;
+		super(identity);
 		this.publiclyReadableFolders = publiclyReadableFolders;
 	}
 
 	@Override
-	public List<VFSItem> getItems() {
-		checkInitialization();
-		return super.getItems();
-	}
-
-	@Override
-	public List<VFSItem> getItems(VFSItemFilter filter) {
-		checkInitialization();
-		return super.getItems(filter);
-	}
-
-	@Override
-	public VFSItem resolve(String path) {
-		checkInitialization();
-		return super.resolve(path);
-	}
-	
-	private void checkInitialization() {
-		if(!init || (System.currentTimeMillis() - loadTime) > 60000) {
-			synchronized(this) {
-				if(!init || (System.currentTimeMillis() - loadTime) > 60000) {
-					init();
-				}
-			}
-		}
-	}
-	
-	@Override
-	protected void init() {
+	protected List<VFSContainer> loadMergedContainers() {
 		SharedFolderManager sfm = SharedFolderManager.getInstance();
 		RepositoryManager repoManager = RepositoryManager.getInstance();
 		List<VFSContainer> containers = new ArrayList<>();
 		Set<Long> addedEntries = new HashSet<>();
-		List<RepositoryEntry> ownerEntries = repoManager.queryByOwner(identity, SharedFolderFileResource.TYPE_NAME);
+		List<RepositoryEntry> ownerEntries = repoManager.queryByOwner(getIdentity(), SharedFolderFileResource.TYPE_NAME);
 		for (RepositoryEntry entry : ownerEntries) {
 			VFSContainer container = sfm.getNamedSharedFolder(entry, true);
 			addContainerToList(container, containers);
@@ -111,7 +77,7 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 				// fake role that represents normally logged in user
 				Roles registeredUserRole = new Roles(false, false, false, false, false, false, false);
 				List<String> types = Collections.singletonList(SharedFolderFileResource.TYPE_NAME);
-				List<RepositoryEntry> allEntries = repoManager.queryByTypeLimitAccess(identity, types, registeredUserRole);
+				List<RepositoryEntry> allEntries = repoManager.queryByTypeLimitAccess(getIdentity(), types, registeredUserRole);
 				for (RepositoryEntry entry : allEntries) {
 					addReadonlyFolder(entry, sfm, addedEntries, containers);
 				}
@@ -130,9 +96,7 @@ public class SharedFolderWebDAVMergeSource extends MergeSource {
 			}
 		}
 
-		setMergedContainers(containers);
-		loadTime = System.currentTimeMillis();
-		init = true;
+		return containers;
 	}
 
 	private void addReadonlyFolder(RepositoryEntry entry, SharedFolderManager sfm,

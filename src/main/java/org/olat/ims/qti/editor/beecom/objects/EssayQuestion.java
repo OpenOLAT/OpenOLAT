@@ -87,8 +87,24 @@ public class EssayQuestion extends Question implements QTIObject {
 		responses.add(response);
 		instance.setResponses(responses);
 
-		// No resprocessing since used only in survey mode
-
+		Element resprocessingXML = item.element("resprocessing");
+		if (resprocessingXML != null) {
+			// set min/max score
+			Element decvar = (Element)resprocessingXML.selectSingleNode(".//decvar");
+			if(decvar != null) {
+				String min = decvar.attributeValue("minvalue");
+				if (min != null) {
+					instance.setMinValue(min);
+				}
+				String max = decvar.attributeValue("maxvalue");
+				if (max != null) {
+					if(instance.isSingleCorrect()) {
+						instance.setSingleCorrectScore(max);
+					}
+					instance.setMaxValue(max);
+				}
+			}
+		}
 		return instance;
 	}
 	
@@ -128,9 +144,10 @@ public class EssayQuestion extends Question implements QTIObject {
 		decvar.addAttribute("defaultval", "0");
 		decvar.addAttribute("minvalue", "" + getMinValue());
 		float maxScore = QTIEditHelper.calculateMaxScore(this);
-		maxScore = maxScore > getMaxValue() ? getMaxValue() : maxScore;
-		decvar.addAttribute("maxvalue", "" + maxScore);
-		decvar.addAttribute("cutvalue", "" + maxScore);
+		float maxValue = getMaxValue();
+		float max = maxScore > maxValue ? maxValue : maxScore;
+		decvar.addAttribute("maxvalue", "" + max);
+		decvar.addAttribute("cutvalue", "" + max);
 		
 		resprocessingXML.addElement("itemproc_extension");
 		

@@ -126,7 +126,7 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 				return wrapped.getBusinessGroupKey().toString();
 			case freePlaces: {
 				Integer maxParticipants = wrapped.getMaxParticipants();
-				if(maxParticipants != null && maxParticipants.intValue() > 0) {
+				if(maxParticipants != null && maxParticipants.intValue() >= 0) {
 					long free = maxParticipants - (wrapped.getNumOfParticipants() + wrapped.getNumOfPendings());
 					return new GroupNumber(free);
 				}

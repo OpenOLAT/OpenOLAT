@@ -38,6 +38,12 @@ package org.olat.core.util.cache;
  * Initial Date:  19.10.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */
+
+/* * * * * * * * 
+	DEPRECATED!! use src/main/resources/infinispan-config.xml instead !!
+	Configure caches directly in infinispan files, not here. timeToLive not supported anymore
+ * * * * * * * */
+@Deprecated
 public class CacheConfig {
 	
 	private int maxElementsInMemory = 10000;
@@ -46,7 +52,6 @@ public class CacheConfig {
 	private boolean diskPersistent = false;
 	private String diskStorePath;
 	private boolean eternal = false;
-	private int timeToLive = 120;
 	private int timeToIdle = 120;
 	private int diskExpiryThreadIntervalSeconds = 120;
 
@@ -110,19 +115,6 @@ public class CacheConfig {
 	 */
 	public void setEternal(boolean eternal) {
 		this.eternal = eternal;
-	}
-	
-	public int getTimeToLive() {
-		return timeToLive;
-	}
-
-	/**
-	 * Set t he time in seconds to live for an element before it expires,
-	 * i.e. the maximum time between creation time and when an element expires.
-	 * It is only used if the element is not eternal. Default is 120 seconds.
-	 */
-	public void setTimeToLive(int timeToLive) {
-		this.timeToLive = timeToLive;
 	}
 	
 	public int getTimeToIdle() {

@@ -96,7 +96,7 @@ public abstract class AbstractTaskNotificationHandler extends LogDelegator {
 							MetaInfo metaInfo = fi.getMetaInfo();
 							String filePath = fi.getRelPath();
 							if(isLogDebugEnabled()) logDebug("filePath=", filePath);
-							String fullUserName = getUserNameFromFilePath(filePath);
+							String fullUserName = getUserNameFromFilePath(metaInfo, filePath);
 							
 							Date modDate = fi.getLastModified();
 							String desc = translator.translate(getNotificationEntryKey(), new String[] { filePath, fullUserName });
@@ -126,26 +126,25 @@ public abstract class AbstractTaskNotificationHandler extends LogDelegator {
 	 * @param filePath E.g. '/username/abgabe.txt'
 	 * @return 'firstname lastname'
 	 */
-	protected String getUserNameFromFilePath(String filePath) {
+	protected String getUserNameFromFilePath(MetaInfo info, String filePath) {
 		// remove first '/'
 		try {
+			if(info != null) {
+				Identity identity = info.getAuthorIdentity();
+				return NotificationHelper.getFormatedName(identity);
+			}
+
 			String path = filePath.substring(1);
 			if (path.indexOf("/") != -1) {
 				String userName = path.substring(0,path.indexOf("/"));
 				Identity identity = BaseSecurityManager.getInstance().findIdentityByName(userName);
-				String fullName = NotificationHelper.getFormatedName(identity);
-				return fullName;
-			} else {
-				return "";
+				return NotificationHelper.getFormatedName(identity);
 			}
+			return "";
 		} catch (Exception e) {
 			logWarn("Can not extract user from path=" + filePath, null);
 			return "";
 		}
-	}
-
-	public AbstractTaskNotificationHandler() {
-		super();
 	}
 
 	private boolean checkPublisher(Publisher p) {
