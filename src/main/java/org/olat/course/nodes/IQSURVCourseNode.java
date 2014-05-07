@@ -70,6 +70,7 @@ import org.olat.ims.qti.export.QTIExportManager;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
+import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.ui.QTI12StatisticsToolController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -133,7 +134,10 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	}
 
 	@Override
-	public StatisticResourceResult createStatisticNodeResult(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, StatisticResourceOption options) {
+	public StatisticResourceResult createStatisticNodeResult(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment userCourseEnv, StatisticResourceOption options, QTIType... types) {
+		if(!isQTITypeAllowed(types)) return null;
+		
 		Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", courseId);
 		
@@ -155,8 +159,20 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	}
 	
 	@Override
-	public boolean isStatisticNodeResultAvailable(UserCourseEnvironment userCourseEnv) {
-		return true;
+	public boolean isStatisticNodeResultAvailable(UserCourseEnvironment userCourseEnv, QTIType... types) {
+		return isQTITypeAllowed(types);
+	}
+	
+	private boolean isQTITypeAllowed(QTIType... types) {
+		if(types == null) return true;
+		if(types.length == 0 || (types.length == 1 && types[0] == null)) return true;
+		
+		for(QTIType type:types) {
+			if(QTIType.survey.equals(type)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

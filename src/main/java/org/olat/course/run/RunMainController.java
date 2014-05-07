@@ -119,6 +119,7 @@ import org.olat.course.statistic.StatisticMainController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
+import org.olat.ims.qti.statistics.QTIType;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
@@ -694,8 +695,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			boolean vip = isCourseCoach || isCourseAdmin;
 			OpenInstantMessageEvent event = new OpenInstantMessageEvent(ureq, course, courseTitle, vip);
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
-		} else if (cmd.equals("qtistatistic")) {
-			launchAssessmentStatistics(ureq, null);
+		} else if (cmd.equals("teststatistic")) {
+			launchAssessmentStatistics(ureq, "command.openteststatistic", "TestStatistics", QTIType.test, QTIType.onyx);
+		} else if (cmd.equals("surveystatistic")) {
+			launchAssessmentStatistics(ureq, "command.opensurveystatistic", "SurveyStatistics", QTIType.survey);
 		} else if (cmd.equals("customDb")) {
 			if (hasCourseRight(CourseRights.RIGHT_DB) || isCourseAdmin) {
 				currentToolCtr = new CustomDBMainController(ureq, getWindowControl(), course);
@@ -855,22 +858,15 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		} else throw new OLATSecurityException("clicked groupmanagement, but no according right");
 	}
 
-	private Activateable2 launchAssessmentStatistics(UserRequest ureq, List<ContextEntry> entries) {
-		OLATResourceable ores = OresHelper.createOLATResourceableType("assessmentStatistics");
+	private Activateable2 launchAssessmentStatistics(UserRequest ureq, String i18nCrumbKey, String typeName, QTIType... types) {
+		OLATResourceable ores = OresHelper.createOLATResourceableType(typeName);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl swControl = addToHistory(ureq, ores, null);
-		if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
-			StatisticCourseNodesController statsToolCtr = new StatisticCourseNodesController(ureq, swControl, courseRepositoryEntry, uce);
+		if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin || isCourseCoach) {
+			StatisticCourseNodesController statsToolCtr = new StatisticCourseNodesController(ureq, swControl, courseRepositoryEntry, uce, types);
 			currentToolCtr = statsToolCtr;
 			listenTo(statsToolCtr);
-			all.pushController(translate("command.openstatistic"), statsToolCtr);
-			return statsToolCtr;
-		}
-		if (isCourseCoach) {
-			StatisticCourseNodesController statsToolCtr = new StatisticCourseNodesController(ureq, swControl, courseRepositoryEntry, uce);
-			currentToolCtr = statsToolCtr;
-			listenTo(statsToolCtr);
-			all.pushController(translate("command.openstatistic"), statsToolCtr);
+			all.pushController(translate(i18nCrumbKey), statsToolCtr);
 			return statsToolCtr;
 		}
 		return null;
@@ -1063,17 +1059,23 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				myTool.addLink("assessment", translate("command.openassessment"));
 			}
 			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin || isCourseCoach) {
-				final AtomicInteger qtiNodes = new AtomicInteger();
+				final AtomicInteger testNodes = new AtomicInteger();
+				final AtomicInteger surveyNodes = new AtomicInteger();
 				new TreeVisitor(new Visitor() {
 					@Override
 					public void visit(INode node) {
-						if(((CourseNode)node).isStatisticNodeResultAvailable(uce)) {
-							qtiNodes.incrementAndGet();
+						if(((CourseNode)node).isStatisticNodeResultAvailable(uce, QTIType.test, QTIType.onyx)) {
+							testNodes.incrementAndGet();
+						} else if(((CourseNode)node).isStatisticNodeResultAvailable(uce, QTIType.survey)) {
+							surveyNodes.incrementAndGet();
 						}
 					}
 				}, course.getRunStructure().getRootNode(), true).visitAll();
-				if(qtiNodes.intValue() > 0) {
-					myTool.addLink("qtistatistic", translate("command.openqtistatistic"));
+				if(testNodes.intValue() > 0) {
+					myTool.addLink("teststatistic", translate("command.openteststatistic"));
+				}
+				if(surveyNodes.intValue() > 0) {
+					myTool.addLink("surveystatistic", translate("command.opensurveystatistic"));
 				}
 			}
 			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
@@ -1290,11 +1292,16 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					//the wrong link to the wrong person
 				}
 			}
-		}  else if ("assessmentStatistics".equals(type)) {
+		}  else if ("TestStatistics".equalsIgnoreCase(type) || "SurveyStatistics".equalsIgnoreCase(type)) {
 			//check the security before, the link is perhaps in the wrong hands
 			if(hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseAdmin || isCourseCoach) {
 				try {
-					Activateable2 assessmentCtrl = launchAssessmentStatistics(ureq, null);
+					Activateable2 assessmentCtrl;
+					if("TestStatistics".equalsIgnoreCase(type)) {
+						assessmentCtrl = launchAssessmentStatistics(ureq, "command.openteststatistic", "TestStatistics", QTIType.test, QTIType.onyx);
+					} else {
+						assessmentCtrl = launchAssessmentStatistics(ureq, "command.opensurveystatistic", "SurveyStatistics", QTIType.survey);
+					}
 					
 					List<ContextEntry> subEntries;
 					if(entries.size() > 1 && entries.get(1).getOLATResourceable().getResourceableTypeName().equals(type)) {

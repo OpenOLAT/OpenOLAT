@@ -49,6 +49,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
+import org.olat.ims.qti.statistics.QTIType;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -61,11 +62,14 @@ public class StatisticCourseNodesController extends BasicController implements A
 	private final LayoutMain3ColsController layoutCtr;
 	private Controller currentCtrl;
 	
+	private final QTIType[] types;
 	private final StatisticResourceOption options;
 	
-	public StatisticCourseNodesController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseRe, UserCourseEnvironment userCourseEnv) {
+	public StatisticCourseNodesController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry courseRe, UserCourseEnvironment userCourseEnv, QTIType ... types) {
 		super(ureq, wControl);
 
+		this.types = types;
 		options = new StatisticResourceOption();
 		
 		boolean admin = userCourseEnv.isAdmin();
@@ -109,7 +113,7 @@ public class StatisticCourseNodesController extends BasicController implements A
 			@Override
 			public void visit(INode node) {
 				CourseNode courseNode = (CourseNode)node;
-				StatisticResourceResult result = courseNode.createStatisticNodeResult(ureq, getWindowControl(), userCourseEnv, options);
+				StatisticResourceResult result = courseNode.createStatisticNodeResult(ureq, getWindowControl(), userCourseEnv, options, types);
 				if(result != null) {
 					StatisticResourceNode courseNodeTreeNode = new StatisticResourceNode(courseNode, result);
 					rootTreeNode.addChild(courseNodeTreeNode);

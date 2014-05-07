@@ -52,6 +52,7 @@ import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
+import org.olat.ims.qti.statistics.QTIType;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 
@@ -261,9 +262,9 @@ public interface CourseNode extends INode, ShortName {
 	 * @return
 	 */
 	public StatisticResourceResult createStatisticNodeResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, StatisticResourceOption options);
+			UserCourseEnvironment userCourseEnv, StatisticResourceOption options, QTIType... type);
 	
-	public boolean isStatisticNodeResultAvailable(UserCourseEnvironment userCourseEnv);
+	public boolean isStatisticNodeResultAvailable(UserCourseEnvironment userCourseEnv, QTIType... type);
 	
 	/**
 	 * this method must generate a nodeevaluation and take care of (if any) child
