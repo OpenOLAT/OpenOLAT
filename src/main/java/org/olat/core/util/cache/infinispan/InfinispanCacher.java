@@ -26,7 +26,6 @@
 package org.olat.core.util.cache.infinispan;
 
 import java.io.Serializable;
-import java.util.Map;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
@@ -35,7 +34,6 @@ import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.transaction.TransactionMode;
 import org.infinispan.util.concurrent.IsolationLevel;
-import org.olat.core.util.cache.CacheConfig;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.Cacher;
 
@@ -50,7 +48,6 @@ import org.olat.core.util.coordinate.Cacher;
 public class InfinispanCacher implements Cacher {
 	
 	private EmbeddedCacheManager cacheManager;
-	private Map<String, CacheConfig> configs;
 	
 	public InfinispanCacher(EmbeddedCacheManager cacheManager) {
 		this.cacheManager = cacheManager;
@@ -65,24 +62,19 @@ public class InfinispanCacher implements Cacher {
 	public <U, V extends Serializable> CacheWrapper<U, V> getCache(String type, String name) {
 		String cacheName = type + "@" + name;
 		if(!cacheManager.cacheExists(cacheName)) {
-			createInfinispanConfiguration(type, cacheName);
+			createInfinispanConfiguration(cacheName);
 		}
 		
 		Cache<U, V> cache = cacheManager.getCache(cacheName);
 		return new InfinispanCacheWrapper<U,V>(cache);
 	}
 	
-	private void createInfinispanConfiguration(String type, String cacheName) {	
+	private void createInfinispanConfiguration(String cacheName) {	
 		Configuration conf = cacheManager.getCacheConfiguration(cacheName);
 		if(conf == null) {
 			int maxEntries = 10000;
 			long maxIdle = 900000l;
-
-			CacheConfig oConfig = configs.get(type);
-			if(oConfig != null) {
-				maxEntries = oConfig.getMaxElementsInMemory();
-				maxIdle = oConfig.getTimeToIdle() * 1000;//convert seconds of ehcache to milliseconds of infinispan
-			}
+			
 			ConfigurationBuilder builder = new ConfigurationBuilder();
 			builder.eviction().strategy(EvictionStrategy.LRU);
 			builder.eviction().maxEntries(maxEntries);
@@ -97,13 +89,5 @@ public class InfinispanCacher implements Cacher {
 			Configuration configurationOverride = builder.build();
 			cacheManager.defineConfiguration(cacheName, configurationOverride);
 		}
-	}
-	
-	/**
-	 * [used by spring]
-	 * @param rootConfig
-	 */
-	public void setCacheConfig(Map<String,CacheConfig> configs) {
-		this.configs = configs;
 	}	
 }

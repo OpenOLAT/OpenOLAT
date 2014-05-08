@@ -46,6 +46,13 @@
 		<transaction transactionMode="NON_TRANSACTIONAL" />
 	</namedCache>
 	
+	<namedCache name="QTIHelper@QTI_xml_Documents">
+		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+		<eviction maxEntries="200" strategy="LIRS"/>
+		<expiration maxIdle="180000" wakeUpInterval="15000"/>
+		<transaction transactionMode="NON_TRANSACTIONAL" />
+	</namedCache>
+	
 	<namedCache name="WebDAVManager@webdav">
 		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
 		<eviction maxEntries="2013" strategy="LRU"/>
@@ -78,6 +85,55 @@
 		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
 		<eviction maxEntries="2000" strategy="LRU"/>
 		<expiration maxIdle="120000" wakeUpInterval="15000"/>
+		<transaction transactionMode="NON_TRANSACTIONAL" />
+	</namedCache>
+	
+	<namedCache name="GlossaryItemManager@glossary">
+		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+		<eviction maxEntries="50" strategy="LRU"/>
+		<expiration maxIdle="1800000" wakeUpInterval="15000"/>
+		<transaction transactionMode="NON_TRANSACTIONAL" />
+	</namedCache>
+	
+	<namedCache name="WikiManager@wiki">
+		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+		<eviction maxEntries="50" strategy="LRU"/>
+		<expiration maxIdle="3600000" wakeUpInterval="15000"/>
+		<transaction transactionMode="NON_TRANSACTIONAL" />
+	</namedCache>
+	
+	<namedCache name="CollaborationToolsFactory@tools">
+		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+		<eviction maxEntries="5000" strategy="LRU"/>
+		<expiration maxIdle="1800000" wakeUpInterval="15000"/>
+		<transaction transactionMode="NON_TRANSACTIONAL" />
+	</namedCache>
+	
+	<namedCache name="CourseFactory@courses">
+		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+		<eviction maxEntries="500" strategy="LRU"/>
+		<expiration maxIdle="3600000" wakeUpInterval="15000"/>
+		<transaction transactionMode="NON_TRANSACTIONAL" />
+	</namedCache>
+	
+	<namedCache name="ProjectBrokerManager@pb">
+		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+		<eviction maxEntries="50" strategy="LRU"/>
+		<expiration maxIdle="3600000" wakeUpInterval="15000"/>
+		<transaction transactionMode="NON_TRANSACTIONAL" />
+	</namedCache>
+	
+	<namedCache name="FeedManager@feed">
+		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+		<eviction maxEntries="1000" strategy="LRU"/>
+		<expiration maxIdle="900000" wakeUpInterval="15000"/>
+		<transaction transactionMode="NON_TRANSACTIONAL" />
+	</namedCache>
+	
+	<namedCache name="Path@feed">
+		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+		<eviction maxEntries="1000" strategy="LRU"/>
+		<expiration maxIdle="900000" wakeUpInterval="15000"/>
 		<transaction transactionMode="NON_TRANSACTIONAL" />
 	</namedCache>
 
