@@ -26,52 +26,67 @@
 package org.olat.fileresource.types;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 
-import org.olat.core.commons.controllers.linkchooser.SuffixFilter;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiPage;
 
 /**
  * Description:<br>
- * TODO: guido Class Description for WikiResource
  * <P>
  * Initial Date: May 4, 2006 <br>
  * 
  * @author guido
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class WikiResource extends FileResource {
+	private static final OLog log = Tracing.createLoggerFor(WikiResource.class);
 
 	public static final String TYPE_NAME = "FileResource.WIKI";
+	public static final String INDEX_FILENAME = WikiManager.generatePageId(WikiPage.WIKI_INDEX_PAGE) + "." + WikiManager.WIKI_FILE_SUFFIX;
+	public static final String INDEX_PROPNAME = WikiManager.generatePageId(WikiPage.WIKI_INDEX_PAGE) + "." + WikiManager.WIKI_PROPERTIES_SUFFIX;
 
-	/**
-	 * Standard constructor.
-	 */
 	public WikiResource() {
 		super.setTypeName(TYPE_NAME);
 	}
 
-	public static boolean validate(File directory) {
-		if (directory != null) {
-			String dirName = directory.getName().toLowerCase();
-			if (dirName.endsWith(".zip")) return false; // direct the import to the
-																									// unzip step first
-			// check for at least the index page file and the corresponding property
-			// file
-			String[] suffixes = { WikiManager.WIKI_FILE_SUFFIX, WikiManager.WIKI_PROPERTIES_SUFFIX };
-			File[] files = directory.listFiles(new SuffixFilter(suffixes));
-			if (files == null) {
-				return false;
-			}
-			boolean indexAvailable = false;
-			boolean indexPropAvailable = false;
-			for (int i = 0; i < files.length; i++) {
-				File file = files[i];
-				if (file.getName().equals(WikiManager.generatePageId(WikiPage.WIKI_INDEX_PAGE) + "." + WikiManager.WIKI_FILE_SUFFIX)) indexAvailable = true;
-				if (file.getName().equals(WikiManager.generatePageId(WikiPage.WIKI_INDEX_PAGE) + "." + WikiManager.WIKI_PROPERTIES_SUFFIX)) indexPropAvailable = true;
-			}
-			if (indexAvailable && indexPropAvailable) return true;
+	public static ResourceEvaluation validate(File file, String filename) {
+		ResourceEvaluation eval = new ResourceEvaluation();
+		try {
+			IndexFileFilter visitor = new IndexFileFilter();
+			visit(file, filename, visitor);
+			eval.setValid(visitor.isValid());
+		} catch (IOException e) {
+			log.error("", e);
 		}
-		return false;
+		return eval;
 	}
+	
+	private static class IndexFileFilter extends SimpleFileVisitor<Path> {
+		private boolean indexFile;
+		private boolean indexProperties;
 
+		@Override
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+		throws IOException {
+
+			String filename = file.getFileName().toString();
+			if(INDEX_FILENAME.equals(filename)) {
+				indexFile = true;
+			} else if(INDEX_PROPNAME.equals(filename)) {
+				indexProperties = true;
+			}
+			return (indexProperties && indexFile) ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
+		}
+		
+		public boolean isValid() {
+			return indexFile && indexProperties;
+		}
+	}
 }

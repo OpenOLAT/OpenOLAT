@@ -954,7 +954,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		} else if (event instanceof BusinessGroupModifiedEvent) {
 			processBusinessGroupModifiedEvent((BusinessGroupModifiedEvent)event);
 		} else if (event instanceof CourseConfigEvent) {				
-			doDisposeAfterEvent();
+			processCourseConfigEvent((CourseConfigEvent)event);
 		} else if (event instanceof EntryChangedEvent && ((EntryChangedEvent)event).getChange()!=EntryChangedEvent.MODIFIED_AT_PUBLISH) {
 			//courseRepositoryEntry changed (e.g. fired at course access rule change)
 			EntryChangedEvent repoEvent = (EntryChangedEvent) event;			
@@ -962,6 +962,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				doDisposeAfterEvent();
 			}
 		}
+	}
+	
+	private void processCourseConfigEvent(CourseConfigEvent event) {
+		String cmd = event.getCommand();
+		System.out.println(cmd);
+		
+		doDisposeAfterEvent();
 	}
 	
 	private void processBusinessGroupModifiedEvent(BusinessGroupModifiedEvent bgme) {
@@ -1115,10 +1122,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	private void initGeneralTools(CourseConfig cc) {
 		// new toolbox 'general'
-		//myTool.addHeader(translate("header.tools.general"));
 		if (cc.isCalendarEnabled() && !isGuest) {
-			//myTool.addPopUpLink(ACTION_CALENDAR, translate("command.calendar"), null, null, "950", "750", false);
 			calendarLink = LinkFactory.createToolLink("calendar",translate("command.calendar"), this);
+			noteLink.setPopup(true);//"950", "750"
 			calendarLink.setIconCSS("o_icon o_icon_calendar");
 			all.addTool(calendarLink, false);
 		}
@@ -1130,8 +1136,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			all.addTool(detailsLink, false);
 		}
 		if (!isGuest) {
-			//myTool.addPopUpLink("personalnote", translate("command.personalnote"), null, null, "750", "550", false);
 			noteLink = LinkFactory.createToolLink("personalnote",translate("command.personalnote"), this);
+			noteLink.setPopup(true);//"750", "550"
 			all.addTool(noteLink, false);
 		}
 		if (offerBookmark && !isGuest) {
@@ -1150,10 +1156,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			// assessment data exists for user
 			// - appear as link when configured, assessable node exist and assessment
 			// data exists for user
-			//myTool.addPopUpLink("efficiencystatement", translate("command.efficiencystatement"), "command.efficiencystatement", null,
-			//		"750", "800", false);
-			
 			efficiencyStatementsLink = LinkFactory.createToolLink("efficiencystatement",translate("command.efficiencystatement"), this);
+			efficiencyStatementsLink.setPopup(true);//"750", "800"
 			all.addTool(efficiencyStatementsLink, false);
 			
 			UserEfficiencyStatement es = efficiencyStatementManager
@@ -1344,16 +1348,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 	}
 
-	// fxdiff: allow disabling after instantiation
 	public void disableToolController(boolean disable) {
 		columnLayoutCtr.hideCol2(disable);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#setDisposedMsgController(org.olat.core.gui.control.Controller)
-	 */
 	@Override
-	// fxdiff: exchange dispose controller
 	public void setDisposedMsgController(Controller disposeMsgController) {
 		super.setDisposedMsgController(disposeMsgController);
 	}

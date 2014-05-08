@@ -49,7 +49,6 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -66,8 +65,6 @@ import org.olat.course.Structure;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.repository.ImportGlossaryReferencesController;
-import org.olat.course.repository.ImportPortfolioReferencesController;
-import org.olat.course.repository.ImportReferencesController;
 import org.olat.course.repository.ImportSharedfolderReferencesController;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.glossary.GlossaryManager;
@@ -84,7 +81,6 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.restapi.security.RestSecurityHelper;
-import org.olat.restapi.support.ErrorWindowControl;
 import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
@@ -376,7 +372,7 @@ public class CoursesWebService {
 		//import all references
 		List<CourseEditorTreeNode> nodeList = new ArrayList<CourseEditorTreeNode>();
 		collectNodesAsList((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode(), nodeList);
-		processNodeList(ureq, course, nodeList);
+		processNodeList(course, nodeList);
 		
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
 		if (courseConfig.hasCustomSharedFolder()) {
@@ -422,14 +418,14 @@ public class CoursesWebService {
 		// if shared folder controller exists we did already import this one.
 		RepositoryEntryImportExport sfImportExport
 			= SharedFolderManager.getInstance().getRepositoryImportExport(course.getCourseExportDataDir().getBasefile());
-		ImportSharedfolderReferencesController.doImport(sfImportExport, course, false, ureq.getIdentity());
+		ImportSharedfolderReferencesController.doImport(sfImportExport, course, ureq.getIdentity());
 	}
 
 	private static void processGlossary(UserRequest ureq, ICourse course) {
 		// if glossary controller exists we did already import this one.
 		RepositoryEntryImportExport sfImportExport
 			= GlossaryManager.getInstance().getRepositoryImportExport(course.getCourseExportDataDir().getBasefile());
-		ImportGlossaryReferencesController.doImport(sfImportExport, course, false, ureq.getIdentity());
+		ImportGlossaryReferencesController.doImport(sfImportExport, course, ureq.getIdentity());
 	}
 	
 	/**
@@ -454,16 +450,9 @@ public class CoursesWebService {
 		}
 	}
 	
-	private static void processNodeList(UserRequest ureq, ICourse course, List<CourseEditorTreeNode> nodeList) {
+	private static void processNodeList(ICourse course, List<CourseEditorTreeNode> nodeList) {
 		for (CourseEditorTreeNode nextNode : nodeList) {
-			Controller ctrl = nextNode.getCourseNode().importNode(course.getCourseExportDataDir().getBasefile(), course, false, ureq, new ErrorWindowControl());
-			if (ctrl != null) {
-				if (ctrl instanceof ImportReferencesController) {
-					((ImportReferencesController) ctrl).importWithoutAsking (ureq);
-				} else if (ctrl instanceof ImportPortfolioReferencesController) {
-					((ImportPortfolioReferencesController) ctrl).importWithoutAsking (ureq);
-				}
-			}
+			nextNode.getCourseNode().importNode(course.getCourseExportDataDir().getBasefile(), course);
 		}
 	}
 	
@@ -504,14 +493,14 @@ public class CoursesWebService {
 				resName = "";
 			}
 			
-			RepositoryHandler typeToCopy = RepositoryHandlerFactory.getInstance().getRepositoryHandler(src);			
-			OLATResourceable newResourceable = typeToCopy.createCopy(src.getOlatResource(), ureq);
-			if (newResourceable == null) {
-				return null;
-			}
-	
-			OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(newResourceable);
-			RepositoryEntry preparedEntry = repositoryService.create(ureq.getIdentity(), resName, name, description, ores);
+			OLATResource sourceResource = src.getOlatResource();
+			OLATResource copyResource = OLATResourceManager.getInstance().createOLATResourceInstance(sourceResource.getResourceableTypeName());
+			RepositoryEntry preparedEntry = repositoryService.create(ureq.getIdentity(), resName, name, description,
+					copyResource, RepositoryEntry.ACC_OWNERS);
+		
+			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(src);
+			preparedEntry = handler.copy(src, preparedEntry);
+			
 			preparedEntry.setCanDownload(src.getCanDownload());
 			if(StringHelper.containsNonWhitespace(softKey)) {
 				preparedEntry.setSoftkey(softKey);
@@ -525,8 +514,6 @@ public class CoursesWebService {
 			if(StringHelper.containsNonWhitespace(managedFlags)) {
 				preparedEntry.setManagedFlagsString(managedFlags);
 			}
-
-			
 			if(membersOnly) {
 				preparedEntry.setMembersOnly(true);
 				preparedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
@@ -602,7 +589,7 @@ public class CoursesWebService {
 		// create a repository entry
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(oresable);
-		RepositoryEntry addedEntry = repositoryService.create(initialAuthor, "-", shortTitle, null, ores);
+		RepositoryEntry addedEntry = repositoryService.create(initialAuthor, "-", shortTitle, null, ores, 0);
 		if(StringHelper.containsNonWhitespace(softKey) && softKey.length() <= 30) {
 			addedEntry.setSoftkey(softKey);
 		}

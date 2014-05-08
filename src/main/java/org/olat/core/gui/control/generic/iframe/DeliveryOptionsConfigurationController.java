@@ -383,6 +383,8 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 			
 			persistValues(config); 
 		}
+		
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	

@@ -60,6 +60,8 @@ import org.olat.repository.RepositoryTableModel;
 import org.olat.repository.controllers.RepositorySearchController.Can;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.author.CreateRepositoryEntryController;
+import org.olat.repository.ui.author.ImportRepositoryEntryController;
 
 /**
  * 
@@ -80,8 +82,6 @@ public class ReferencableEntriesSearchController extends BasicController {
 	private static final String CMD_ADMIN_SEARCH_ENTRIES = "cmd.adminSearchEntries";
 	private static final String CMD_ALL_ENTRIES = "cmd.allEntries";
 	private static final String CMD_MY_ENTRIES = "cmd.myEntries";
-  private static final String ACTION_CREATE = "create";
-	private static final String ACTION_IMPORT = "import";
 
 	private VelocityContainer mainVC;
 	private RepositorySearchController searchCtr;
@@ -92,7 +92,8 @@ public class ReferencableEntriesSearchController extends BasicController {
 	private SegmentViewComponent segmentView;
 	private Link myEntriesLink, allEntriesLink, searchEntriesLink, adminEntriesLink;
 	private Link createRessourceButton, importRessourceButton;
-	private RepositoryAddController addController;
+	private CreateRepositoryEntryController createController;
+	private ImportRepositoryEntryController importController;
 	private CloseableModalController cmc;
 	
 	private RepositoryEntry selectedRepositoryEntry;
@@ -246,78 +247,6 @@ public class ReferencableEntriesSearchController extends BasicController {
 	}
 
 	/**
-	 * get action like 'new test'
-	 * @param type 
-	 * @return
-	 */
-	private String getAction(String type) {
-		String action = new String();
-		List<String> limitTypeList = Arrays.asList(limitTypes);
-		if(limitTypeList.contains(TestFileResource.TYPE_NAME)) {
-			// it's a test
-			if (type.equals(ACTION_CREATE)) {
-				action = RepositoryAddController.ACTION_NEW_TEST;
-			} else if (type.equals(ACTION_IMPORT)) {
-				action = RepositoryAddController.ACTION_ADD_TEST;
-			}
-		} else if (limitTypeList.contains(TestFileResource.TYPE_NAME)) {
-			// it's a self test
-			if (type.equals(ACTION_CREATE)) {
-				action = RepositoryAddController.ACTION_NEW_TEST;
-			} else if (type.equals(ACTION_IMPORT)) {
-				action = RepositoryAddController.ACTION_ADD_TEST;
-			}
-		} else if (limitTypeList.contains(WikiResource.TYPE_NAME)) {
-			// it's a wiki
-			if (type.equals(ACTION_CREATE)) {
-				action = RepositoryAddController.ACTION_NEW_WIKI;
-			} else if (type.equals(ACTION_IMPORT)) {
-				action = RepositoryAddController.ACTION_ADD_WIKI;
-			}
-		} else if (limitTypeList.contains(ImsCPFileResource.TYPE_NAME)) {
-			// it's a CP
-			if (type.equals(ACTION_CREATE)) {
-				action = RepositoryAddController.ACTION_NEW_CP;
-			} else if (type.equals(ACTION_IMPORT)) {
-				action = RepositoryAddController.ACTION_ADD_CP;
-			}
-		}	else if (limitTypeList.contains(BlogFileResource.TYPE_NAME)) {
-			// it's a Blog
-			if (type.equals(ACTION_CREATE)) {
-				action = RepositoryAddController.ACTION_NEW_BLOG;
-			} else if (type.equals(ACTION_IMPORT)) {
-				action = RepositoryAddController.ACTION_ADD_BLOG;
-			}
-		} else if (limitTypeList.contains(PodcastFileResource.TYPE_NAME)) {
-			// it's a Podcast
-			if (type.equals(ACTION_CREATE)) {
-				action = RepositoryAddController.ACTION_NEW_PODCAST;
-			} else if (type.equals(ACTION_IMPORT)) {
-				action = RepositoryAddController.ACTION_ADD_PODCAST;
-			}
-		} else if (limitTypeList.contains(SurveyFileResource.TYPE_NAME)) {
-			// it's a survey
-			if (type.equals(ACTION_CREATE)) {
-				action = RepositoryAddController.ACTION_NEW_SURVEY;
-			} else if (type.equals(ACTION_IMPORT)) {
-				action = RepositoryAddController.ACTION_ADD_SURVEY;
-			}
-		}	else if (limitTypeList.contains(EPTemplateMapResource.TYPE_NAME)) {
-			// it's a portfolio tempate
-			if (type.equals(ACTION_CREATE)) {
-				action = RepositoryAddController.ACTION_NEW_PORTFOLIO;
-			}
-		}	
-		if (type.equals(ACTION_IMPORT)) {
-			if (limitTypeList.contains(ScormCPFileResource.TYPE_NAME)) {
-				// it's a scorm CP
-				action = RepositoryAddController.ACTION_ADD_SCORM;
-			}
-		}
-		return action;
-	}
-
-	/**
 	 * @return Returns the selectedEntry.
 	 */
 	public RepositoryEntry getSelectedEntry() {
@@ -366,25 +295,26 @@ public class ReferencableEntriesSearchController extends BasicController {
 				}
 			}
 		} else if(source == createRessourceButton) {
-			removeAsListenerAndDispose(addController);
-			addController = new RepositoryAddController(ureq, getWindowControl(), getAction(ACTION_CREATE));
-			listenTo(addController);
+			removeAsListenerAndDispose(createController);
+			RepositoryHandler handler = null;
+			createController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
+			listenTo(createController);
 			
 			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), addController.getInitialComponent(),
-					true, addController.getTitle());
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), createController.getInitialComponent(),
+					true, "");
 			listenTo(cmc);
 			
 			cmc.activate();
 		} else if (source == importRessourceButton) {
 			
-			removeAsListenerAndDispose(addController);
-			addController = new RepositoryAddController(ureq, getWindowControl(), getAction(ACTION_IMPORT));
-			listenTo(addController);
+			removeAsListenerAndDispose(importController);
+			importController = new ImportRepositoryEntryController(ureq, getWindowControl());
+			listenTo(importController);
 			
 			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), addController.getInitialComponent(),
-					true, addController.getTitle());
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), importController.getInitialComponent(),
+					true, "");
 			listenTo(cmc);
 			
 			cmc.activate();
@@ -435,22 +365,34 @@ public class ReferencableEntriesSearchController extends BasicController {
 				fireEvent(ureq, EVENT_REPOSITORY_ENTRIES_SELECTED);
 			}
 			//initLinks();
-		}  else if (source == addController) { 
-				if (event.equals(Event.DONE_EVENT)) {
-					cmc.deactivate();
-					
-					selectedRepositoryEntry = addController.getAddedEntry();
-					fireEvent(ureq, EVENT_REPOSITORY_ENTRY_SELECTED);
-					// info message
-					String message = translate("message.entry.selected", new String[] {addController.getAddedEntry().getDisplayname(),addController.getAddedEntry().getResourcename()});
-					getWindowControl().setInfo(message);
-				} else if (event.equals(Event.CANCELLED_EVENT)) {
-					cmc.deactivate();
-					
-				} else if (event.equals(Event.FAILED_EVENT)) {
-					showError("add.failed");
-				}
-			
+		} else if (source == createController) { 
+			if (event.equals(Event.DONE_EVENT)) {
+				cmc.deactivate();
+				
+				selectedRepositoryEntry = createController.getAddedEntry();
+				fireEvent(ureq, EVENT_REPOSITORY_ENTRY_SELECTED);
+				// info message
+				String message = translate("message.entry.selected", new String[] { selectedRepositoryEntry.getDisplayname(), selectedRepositoryEntry.getResourcename()});
+				getWindowControl().setInfo(message);
+			} else if (event.equals(Event.CANCELLED_EVENT)) {
+				cmc.deactivate();
+			} else if (event.equals(Event.FAILED_EVENT)) {
+				showError("add.failed");
+			}
+		} else if (source == importController) { 
+			if (event.equals(Event.DONE_EVENT)) {
+				cmc.deactivate();
+				
+				selectedRepositoryEntry = importController.getImportedEntry();
+				fireEvent(ureq, EVENT_REPOSITORY_ENTRY_SELECTED);
+				// info message
+				String message = translate("message.entry.selected", new String[] { selectedRepositoryEntry.getDisplayname(), selectedRepositoryEntry.getResourcename()});
+				getWindowControl().setInfo(message);
+			} else if (event.equals(Event.CANCELLED_EVENT)) {
+				cmc.deactivate();
+			} else if (event.equals(Event.FAILED_EVENT)) {
+				showError("add.failed");
+			}
 		}
 	}
 	

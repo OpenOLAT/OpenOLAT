@@ -28,10 +28,15 @@ package org.olat.repository;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.apache.commons.io.IOUtils;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -48,6 +53,8 @@ import com.thoughtworks.xstream.XStream;
  * 
  */
 public class RepositoryEntryImportExport {
+	
+	private static final OLog log = Tracing.createLoggerFor(RepositoryEntryImportExport.class);
 
 	private static final String CONTENT_FILE = "repo.zip";
 	private static final String PROPERTIES_FILE = "repo.xml";
@@ -161,6 +168,16 @@ public class RepositoryEntryImportExport {
 		}
 	}
 	
+	public static RepositoryEntryImport getConfiguration(Path repoXmlPath) {
+		try (InputStream in=Files.newInputStream(repoXmlPath)) {
+			XStream xstream = getXStream();
+			return (RepositoryEntryImport)xstream.fromXML(in);
+		} catch(IOException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
 	public static XStream getXStream() {
 		XStream xStream = XStreamHelper.createXStreamInstance();
 		xStream.alias(PROP_ROOT, RepositoryEntryImport.class);
@@ -221,65 +238,67 @@ public class RepositoryEntryImportExport {
 		}
 		return repositoryProperties.getInitialAuthor();
 	}
+	
+	public class RepositoryEntryImport {
+		private String softkey;
+		private String resourcename;
+		private String displayname;
+		private String description;
+		private String initialAuthor;
+		
+		public RepositoryEntryImport() {
+			//
+		}
+		
+		public RepositoryEntryImport(RepositoryEntry re) {
+			this.softkey = re.getSoftkey();
+			this.resourcename = re.getResourcename();
+			this.displayname = re.getDisplayname();
+			this.description = re.getDescription();
+			this.initialAuthor = re.getInitialAuthor();
+		}
+		
+		public String getSoftkey() {
+			return softkey;
+		}
+		
+		public void setSoftkey(String softkey) {
+			this.softkey = softkey;
+		}
+		
+		public String getResourcename() {
+			return resourcename;
+		}
+		
+		public void setResourcename(String resourcename) {
+			this.resourcename = resourcename;
+		}
+		
+		public String getDisplayname() {
+			return displayname;
+		}
+		
+		public void setDisplayname(String displayname) {
+			this.displayname = displayname;
+		}
+		
+		public String getDescription() {
+			return description;
+		}
+		
+		public void setDescription(String description) {
+			this.description = description;
+		}
+		
+		public String getInitialAuthor() {
+			return initialAuthor;
+		}
+		
+		public void setInitialAuthor(String initialAuthor) {
+			this.initialAuthor = initialAuthor;
+		}
+	}
 }
 
-class RepositoryEntryImport {
-	private String softkey;
-	private String resourcename;
-	private String displayname;
-	private String description;
-	private String initialAuthor;
-	
-	public RepositoryEntryImport() {
-		//
-	}
-	
-	public RepositoryEntryImport(RepositoryEntry re) {
-		this.softkey = re.getSoftkey();
-		this.resourcename = re.getResourcename();
-		this.displayname = re.getDisplayname();
-		this.description = re.getDescription();
-		this.initialAuthor = re.getInitialAuthor();
-	}
-	
-	public String getSoftkey() {
-		return softkey;
-	}
-	
-	public void setSoftkey(String softkey) {
-		this.softkey = softkey;
-	}
-	
-	public String getResourcename() {
-		return resourcename;
-	}
-	
-	public void setResourcename(String resourcename) {
-		this.resourcename = resourcename;
-	}
-	
-	public String getDisplayname() {
-		return displayname;
-	}
-	
-	public void setDisplayname(String displayname) {
-		this.displayname = displayname;
-	}
-	
-	public String getDescription() {
-		return description;
-	}
-	
-	public void setDescription(String description) {
-		this.description = description;
-	}
-	
-	public String getInitialAuthor() {
-		return initialAuthor;
-	}
-	
-	public void setInitialAuthor(String initialAuthor) {
-		this.initialAuthor = initialAuthor;
-	}
-}
+
 

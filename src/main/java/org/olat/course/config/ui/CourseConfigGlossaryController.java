@@ -25,26 +25,42 @@
 
 package org.olat.course.config.ui;
 
+import java.util.List;
+
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
+import org.olat.core.logging.activity.StringResourceableType;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.fileresource.types.GlossaryResource;
+import org.olat.modules.glossary.GlossaryManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.resource.references.ReferenceImpl;
+import org.olat.resource.references.ReferenceManager;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * 
@@ -55,88 +71,117 @@ import org.olat.repository.controllers.ReferencableEntriesSearchController;
  * 
  * @author Florian Gnägi, frentix GmbH, http://www.frentix.com
  */
-public class CourseConfigGlossaryController extends BasicController implements ControllerEventListener {
+public class CourseConfigGlossaryController extends FormBasicController implements ControllerEventListener {
 
-	private OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final OLog log = Tracing.createLoggerFor(CourseConfigGlossaryController.class);
 	public static final String VALUE_EMPTY_GLOSSARY_FILEREF = "gf.notconfigured";
 	private static final String COMMAND_REMOVE = "command.glossary.remove";
 	private static final String COMMAND_ADD = "command.glossary.add";
 
-	private VelocityContainer myContent;
-	private ReferencableEntriesSearchController repoSearchCtr;
-	private Link addCommand, removeCommand;
+	private FormLink addCommand, removeCommand;
+	private StaticTextElement reNameEl;
 
 	private CloseableModalController cmc;
-	private CourseConfig courseConfig;
-	private Long courseResourceableId;
-	private ILoggingAction loggingAction;
+	private ReferencableEntriesSearchController repoSearchCtr;
 	
-
+	private CourseConfig courseConfig;
+	private final OLATResourceable courseOres;
+	private final RepositoryManager repositoryService;
+	private final ReferenceManager refM;
+	
 	/**
-	 * Constructor
 	 * 
 	 * @param ureq
 	 * @param wControl
-	 * @param course
+	 * @param courseOres
+	 * @param courseConfig
+	 * @param editable
 	 */
-	public CourseConfigGlossaryController(UserRequest ureq, WindowControl wControl, CourseConfig courseConfig,
-			Long courseResourceableId, boolean editable) {
+	public CourseConfigGlossaryController(UserRequest ureq, WindowControl wControl,
+			OLATResourceable courseOres, CourseConfig courseConfig, boolean editable) {
 		super(ureq, wControl);
 		this.courseConfig = courseConfig;
-		this.courseResourceableId = courseResourceableId;
-		
-		myContent = createVelocityContainer("CourseGlossary");
+		this.courseOres = courseOres;
+		refM = ReferenceManager.getInstance();
+		repositoryService = CoreSpringFactory.getImpl(RepositoryManager.class);
+		initForm(ureq);
 		
 		if (courseConfig.hasGlossary()) {
-			RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(courseConfig.getGlossarySoftKey(), false);
+			RepositoryEntry repoEntry = repositoryService.lookupRepositoryEntryBySoftkey(courseConfig.getGlossarySoftKey(), false);
 			if (repoEntry == null) {
 				// Something is wrong here, maybe the glossary has been deleted. Try to
 				// remove glossary from configuration
 				doRemoveGlossary(ureq);
-				log.warn("Course with ID::" + courseResourceableId + " had a config for a glossary softkey::"
+				log.warn("Course with ID::" + courseOres + " had a config for a glossary softkey::"
 						+ courseConfig.getGlossarySoftKey() + " but no such glossary was found");				
-			} else {
-				if(editable) {
-					removeCommand = LinkFactory.createButton(COMMAND_REMOVE, myContent, this);
-				}
-				myContent.contextPut("repoEntry", repoEntry);
+			} else if(editable) {
+				removeCommand.setEnabled(true);
 			}
 		} else if(editable) {
-			addCommand = LinkFactory.createButton(COMMAND_ADD, myContent, this);
-		}		
-		putInitialPanel(myContent);
+			addCommand.setVisible(true);
+		}
+		
+	}
+	
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("tab.glossary.title");
+		setFormContextHelp("org.olat.course.config.ui","course-glossary.html","help.hover.course-gloss");
+		
+		String text = translate("glossary.no.glossary");
+		reNameEl = uifactory.addStaticTextElement("repoName", "glossary.isconfigured", text, formLayout);
+		
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		formLayout.add(buttonsCont);
+
+		removeCommand = uifactory.addFormLink(COMMAND_REMOVE, buttonsCont, Link.BUTTON);
+		addCommand = uifactory.addFormLink(COMMAND_ADD, buttonsCont, Link.BUTTON);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
-	public void event(UserRequest ureq, Component source, Event event) {
+	@Override
+	protected void doDispose() {
+		//
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == addCommand) {
 			repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, GlossaryResource.TYPE_NAME, translate("select"));			
 			listenTo(repoSearchCtr);
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), repoSearchCtr.getInitialComponent());
+			listenTo(cmc);
 			cmc.activate();
 		} else if (source == removeCommand) {
 			doRemoveGlossary(ureq);
-			fireEvent(ureq, Event.CHANGED_EVENT);// FIXME:pb:send event to agency
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == repoSearchCtr) {
 			cmc.deactivate();
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 				RepositoryEntry repoEntry = repoSearchCtr.getSelectedEntry();
 				doSelectGlossary(repoEntry, ureq);
-				fireEvent(ureq, Event.CHANGED_EVENT);// FIXME:pb:send event to agency
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(repoSearchCtr);
+		removeAsListenerAndDispose(cmc);
+		repoSearchCtr = null;
+		cmc = null;
 	}
 
 	/**
@@ -146,19 +191,9 @@ public class CourseConfigGlossaryController extends BasicController implements C
 	 * @param ureq
 	 */
 	private void doSelectGlossary(RepositoryEntry repoEntry, UserRequest ureq) {
-		
-		String softkey = repoEntry.getSoftkey();
-		courseConfig.setGlossarySoftKey(softkey);		
-		loggingAction = LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_GLOSSARY_ENABLED;
-		
-		// update view
-		myContent.contextPut("repoEntry", repoEntry);
-		myContent.remove(addCommand);
-		removeCommand = LinkFactory.createButton(COMMAND_REMOVE, myContent, this);
-		if (log.isDebug()) {
-		  log.debug("Set new glossary softkey::" + courseConfig.getGlossarySoftKey() + " for course with ID::" + courseResourceableId);
-		}	
-		this.fireEvent(ureq, Event.CHANGED_EVENT);
+		reNameEl.setValue(StringHelper.escapeHtml(repoEntry.getDisplayname()));
+		removeCommand.setEnabled(true);
+		saveConfig(ureq, repoEntry.getSoftkey());
 	}
 
 	/**
@@ -166,30 +201,51 @@ public class CourseConfigGlossaryController extends BasicController implements C
 	 * 
 	 * @param ureq
 	 */
-	private void doRemoveGlossary(UserRequest ureq) {
-		
-		courseConfig.setGlossarySoftKey(null);				
-		loggingAction = LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_GLOSSARY_DISABLED;
-		
-		// update view
-		myContent.contextRemove("repoEntry");
-		myContent.remove(removeCommand);
-		addCommand = LinkFactory.createButton(COMMAND_ADD, myContent, this);
-		
-		if (log.isDebug()) {
-			log.debug("Removed glossary softkey for course with ID::" + courseResourceableId);
-		}		
-		this.fireEvent(ureq, Event.CHANGED_EVENT);
+	private void doRemoveGlossary(UserRequest ureq) {			
+		reNameEl.setValue(translate("glossary.no.glossary"));
+		removeCommand.setEnabled(false);
+		saveConfig(ureq, null);
 	}
+	
+	private void saveConfig(UserRequest ureq, String softKey) {
+		final String deleteGlossarySoftKey = courseConfig.getGlossarySoftKey();
+		
+		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
+		courseConfig = course.getCourseEnvironment().getCourseConfig();
+		courseConfig.setGlossarySoftKey(softKey);
+		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
+		CourseFactory.closeCourseEditSession(course.getResourceableId(),true);
+		
+		ILoggingAction loggingAction = (softKey == null) ?
+				LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_GLOSSARY_DISABLED :
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_GLOSSARY_ENABLED;
+		
+		
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	protected void doDispose() {
-    //auto dispose by basic controller
-	}
-
-	public ILoggingAction getLoggingAction() {
-		return loggingAction;
+		LoggingResourceable lri = null;
+		if(softKey != null) {
+			lri = LoggingResourceable.wrapNonOlatResource(StringResourceableType.glossarySoftKey, softKey, softKey);
+		} else if (deleteGlossarySoftKey != null) {
+			lri = LoggingResourceable.wrapNonOlatResource(StringResourceableType.glossarySoftKey, deleteGlossarySoftKey, deleteGlossarySoftKey);
+		}
+		if (lri != null) {
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass(), lri);
+		}
+		if(softKey == null) {
+			// remove references
+			List<ReferenceImpl> repoRefs = refM.getReferences(course);
+			for (ReferenceImpl ref:repoRefs) {
+				if (ref.getUserdata().equals(GlossaryManager.GLOSSARY_REPO_REF_IDENTIFYER)) {
+					refM.delete(ref);
+					continue;
+				}
+			}
+		} else {
+			// update references
+			RepositoryEntry repoEntry = repositoryService.lookupRepositoryEntryBySoftkey(softKey, false);
+			refM.addReference(course, repoEntry.getOlatResource(), GlossaryManager.GLOSSARY_REPO_REF_IDENTIFYER); 
+		}
+		
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 }

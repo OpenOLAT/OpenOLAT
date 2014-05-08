@@ -26,17 +26,26 @@
 package org.olat.ims.qti.fileresource;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Iterator;
 import java.util.List;
 
+import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.fileresource.types.FileResource;
+import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.QTIHelper;
 
@@ -48,15 +57,14 @@ import de.bps.onyx.plugin.OnyxModule;
  * @author Mike Stock
  */
 public class TestFileResource extends FileResource {
+	private static final OLog log = Tracing.createLoggerFor(TestFileResource.class);
+	private static final String QTI_FILE = "qti.xml";
 
 	/**
 	 * IMS QTI Test file resource identifier.
 	 */
 	public static final String TYPE_NAME = "FileResource.TEST";
 
-	/**
-	 * Standard constructor.
-	 */
 	public TestFileResource() {
 		super.setTypeName(TYPE_NAME);
 	}
@@ -76,33 +84,97 @@ public class TestFileResource extends FileResource {
 		VFSItem vfsQTI = vfsUnzippedRoot.resolve("qti.xml");
 		// getDocument(..) ensures that InputStream is closed in every case.
 		Document doc = QTIHelper.getDocument((LocalFileImpl) vfsQTI);
-		// if doc is null an error loading the document occured
-		if (doc == null) return false;
-		// check if this is marked as test
-		List metas = doc.selectNodes("questestinterop/assessment/qtimetadata/qtimetadatafield");
-		for (Iterator iter = metas.iterator(); iter.hasNext();) {
-			Element el_metafield = (Element) iter.next();
-			Element el_label = (Element) el_metafield.selectSingleNode("fieldlabel");
-			String label = el_label.getText();
-			if (label.equals(AssessmentInstance.QMD_LABEL_TYPE)) { // type meta
-				Element el_entry = (Element) el_metafield.selectSingleNode("fieldentry");
-				String entry = el_entry.getText();
-				if (!(entry.equals(AssessmentInstance.QMD_ENTRY_TYPE_SELF) || entry.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS))) return false;
+		return validateQti(doc, new ResourceEvaluation(false)).isValid();
+	}
+	
+	public static ResourceEvaluation evaluate(File file, String filename) {
+		ResourceEvaluation eval = new ResourceEvaluation();
+		try {
+			QTIFileFilter visitor = new QTIFileFilter();
+			Path fPath = visit(file, filename, visitor);
+			if(visitor.isValid()) {
+				Path qtiPath = fPath.resolve(QTI_FILE);
+				Document doc = QTIHelper.getDocument(qtiPath);
+				validateQti(doc, eval);
+			} else {
+				eval.setValid(false);
 			}
+		} catch (IOException e) {
+			log.error("", e);
+			eval.setValid(false);
 		}
+		return eval;
+	}
 
-		// check if at least one section with one item
-		List sectionItems = doc.selectNodes("questestinterop/assessment/section/item");
-		if (sectionItems.size() == 0) return false;
-		
-		
-		for (Iterator iter = sectionItems.iterator(); iter.hasNext();) {
-			Element it = (Element) iter.next();
-			List sv = it.selectNodes("resprocessing/outcomes/decvar[@varname='SCORE']");
-			// the QTIv1.2 system relies on the SCORE variable of items
-			if (sv.size()!=1) return false;
+	private static ResourceEvaluation validateQti(Document doc, ResourceEvaluation eval) {
+		if (doc == null) {
+			eval.setValid(false);
+		} else {
+			boolean validType = false;
+			boolean validScore = true;
+			
+			List assessment = doc.selectNodes("questestinterop/assessment");
+			if(assessment.size() == 1) {
+				Object assessmentObj = assessment.get(0);
+				if(assessmentObj instanceof Element) {
+					Element assessmentEl = (Element)assessmentObj;
+					Attribute title = assessmentEl.attribute("title");
+					if(title != null) {
+						eval.setDisplayname(title.getValue());
+					}
+
+					// check if this is marked as test
+					List metas = assessmentEl.selectNodes("qtimetadata/qtimetadatafield");
+					for (Iterator iter = metas.iterator(); iter.hasNext();) {
+						Element el_metafield = (Element) iter.next();
+						Element el_label = (Element) el_metafield.selectSingleNode("fieldlabel");
+						String label = el_label.getText();
+						if (label.equals(AssessmentInstance.QMD_LABEL_TYPE)) { // type meta
+							Element el_entry = (Element) el_metafield.selectSingleNode("fieldentry");
+							String entry = el_entry.getText();
+							if(entry.equals(AssessmentInstance.QMD_ENTRY_TYPE_SELF)
+									|| entry.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {
+								validType = true;
+							}
+						}
+					}
+			
+					// check if at least one section with one item
+					List<Element> sectionItems = assessmentEl.selectNodes("section/item");
+					if (sectionItems.size() > 0) {
+						for (Element it : sectionItems) {
+							List<?> sv = it.selectNodes("resprocessing/outcomes/decvar[@varname='SCORE']");
+							// the QTIv1.2 system relies on the SCORE variable of items
+							if (sv.size() != 1) {
+								validScore &= false;
+							}
+						}
+					}
+				}
+			}
+			
+			eval.setValid(validType && validScore);
+		}
+				
+		return eval;
+	}
+	
+	private static class QTIFileFilter extends SimpleFileVisitor<Path> {
+		private boolean qtiFile;
+
+		@Override
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+		throws IOException {
+
+			String filename = file.getFileName().toString();
+			if(QTI_FILE.equals(filename)) {
+				qtiFile = true;
+			}
+			return qtiFile ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
 		}
 		
-		return true;
+		public boolean isValid() {
+			return qtiFile;
+		}
 	}
 }

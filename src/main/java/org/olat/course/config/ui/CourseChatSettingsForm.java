@@ -32,45 +32,43 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.activity.LearningResourceLoggingAction;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.config.CourseConfig;
 
 
 /**
  * Description: <br>
- * TODO: patrick Class Description for CourseChatSettingsForm
+ * 
  * Initial Date: Jun 16, 2005 <br>
  * @author patrick
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class CourseChatSettingsForm extends FormBasicController {
 
 	private SelectionElement isOn;
 	private final boolean chatEnabled;
 	private final boolean editable;
+	private final OLATResourceable courseOres;
 
-	/**
-	 * @param name
-	 * @param chatEnabled
-	 */
-	public CourseChatSettingsForm(UserRequest ureq, WindowControl wControl, boolean chatEnabled, boolean editable) {
+	public CourseChatSettingsForm(UserRequest ureq, WindowControl wControl,
+			OLATResourceable courseOres, CourseConfig courseConfig, boolean editable) {
 		super(ureq, wControl);
 		this.editable = editable;
-		this.chatEnabled = chatEnabled;
-		initForm (ureq);
+		this.courseOres = OresHelper.clone(courseOres);
+		chatEnabled = courseConfig.isChatEnabled();
+		initForm(ureq);
 	}
-
-	/**
-	 * @return if chat is enabled
-	 */
-	public boolean chatIsEnabled() {
-		return isOn.isSelected(0);
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		fireEvent (ureq, Event.DONE_EVENT);
-	}
-
+	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("tab.chat.title");
+		setFormContextHelp("org.olat.course.config.ui","course-chat.html","help.hover.course-chat");
+
 		isOn = uifactory.addCheckboxesVertical("isOn", "chkbx.chat.onoff", formLayout, new String[] {"xx"}, new String[] {""}, null, 1);
 		isOn.select("xx", chatEnabled);
 		isOn.setEnabled(editable);
@@ -79,9 +77,26 @@ public class CourseChatSettingsForm extends FormBasicController {
 			uifactory.addFormSubmitButton("save", "save", formLayout);
 		}
 	}
-
+	
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
+		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
+		courseConfig.setChatIsEnabled(isOn.isSelected(0));
+		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
+		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
+		
+		if (courseConfig.isChatEnabled()) {
+	  		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_IM_ENABLED, getClass());
+	  	} else {
+	  		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_IM_DISABLED, getClass());
+	  	}
+
+		fireEvent (ureq, Event.DONE_EVENT);
 	}
 }

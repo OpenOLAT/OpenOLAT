@@ -49,10 +49,11 @@ public class SoundFileResource extends FileResource {
 	 * @return True if is of type.
 	 */
 	public static boolean validate(File f) {
-		String filename_ = f.getName().toLowerCase();
-		return filename_.endsWith(".mp3") ||
-		filename_.endsWith(".wav") ||
-		filename_.endsWith(".ra") ||
-		filename_.endsWith(".midi");
+		return validate(f.getName());
+	}
+	
+	public static boolean validate(String filename) {
+		String f = filename.toLowerCase();
+		return f.endsWith(".mp3") || f.endsWith(".wav") || f.endsWith(".ra") || f.endsWith(".midi");
 	}
 }

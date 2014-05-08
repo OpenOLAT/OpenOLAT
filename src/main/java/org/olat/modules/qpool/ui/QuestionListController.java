@@ -72,9 +72,11 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
-import org.olat.repository.controllers.RepositoryAddController;
 import org.olat.repository.controllers.RepositoryDetailsController;
 import org.olat.repository.controllers.RepositorySearchController.Can;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.author.CreateRepositoryEntryController;
 import org.olat.search.service.indexer.LifeFullIndexer;
 
 /**
@@ -108,7 +110,7 @@ public class QuestionListController extends AbstractItemListController implement
 	private ImportController importItemCtrl;
 	private CollectionTargetController listTargetCtrl;
 	private ShareTargetController shareTargetCtrl;
-	private RepositoryAddController addController;
+	private CreateRepositoryEntryController addController;
 	private QuestionItemDetailsController currentDetailsCtrl;
 	private LayoutMain3ColsController currentMainDetailsCtrl;
 	private MetadataBulkChangeController bulkChangeCtrl;
@@ -634,7 +636,8 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(addController);
 		
-		addController = new RepositoryAddController(ureq, getWindowControl(), "a.nte");
+		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(TestFileResource.TYPE_NAME);
+		addController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
 		addController.setUserObject(new QItemList(items));
 		listenTo(addController);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), addController.getInitialComponent());

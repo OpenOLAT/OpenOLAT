@@ -182,10 +182,10 @@ public class ImportPortfolioReferencesController extends BasicController {
 		EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		
-		PortfolioStructure map = ePFMgr.importPortfolioMapTemplate(structure);
+		PortfolioStructure map = ePFMgr.importPortfolioMapTemplate(structure, null);
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(map.getOlatResource());
 		RepositoryEntry importedRepositoryEntry = repositoryService.create(owner, importExport.getResourceName(),
-				importExport.getDisplayName(), importExport.getDescription(), ores);
+				importExport.getDisplayName(), importExport.getDescription(), ores, 0);
 		if (keepSoftkey) {
 			String theSoftKey = importExport.getSoftkey();
 			if (rm.lookupRepositoryEntryBySoftkey(theSoftKey, false) != null) {

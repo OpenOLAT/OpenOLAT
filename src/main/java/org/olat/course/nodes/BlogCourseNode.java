@@ -160,9 +160,7 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 		return oneClickStatusCache;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
-	 */
+	@Override
 	public StatusDescription isConfigValid() {
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
 
@@ -181,12 +179,8 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 		return status;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#importNode(java.io.File,
-	 *      org.olat.course.ICourse, boolean, org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
-	public Controller importNode(File importDirectory, ICourse course, boolean unattendedImport, UserRequest ureq, WindowControl wControl) {
-		return super.importNode(importDirectory, course, unattendedImport, ureq, wControl, ImportReferencesController.IMPORT_BLOG);
+	@Override
+	public void importNode(File importDirectory, ICourse course) {
+		super.importNode(importDirectory, ImportReferencesController.IMPORT_BLOG);
 	}
 }

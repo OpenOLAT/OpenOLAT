@@ -464,10 +464,7 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		OLATResource resource = epStructureManager.createPortfolioMapTemplateResource();
 		
 		//create a repository entry
-		RepositoryEntry addedEntry = repositoryService.create(ident1, "-", "test repo", "desc repo", resource);
-		addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
-	
-		repositoryService.update(addedEntry);
+		RepositoryEntry addedEntry = repositoryService.create(ident1, "-", "test repo", "desc repo", resource, RepositoryEntry.ACC_OWNERS);
 		dbInstance.commitAndCloseSession();
 		
 		//create the template owned by ident1

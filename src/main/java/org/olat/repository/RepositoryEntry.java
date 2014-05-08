@@ -155,6 +155,8 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	private boolean canCopy;
 	@Column(name="canreference", nullable=false, insertable=true, updatable=true)
 	private boolean canReference;
+	@Column(name="canlaunch", nullable=false, insertable=true, updatable=true)
+	private boolean canLaunch;
 	@Column(name="candownload", nullable=false, insertable=true, updatable=true)
 	private boolean canDownload;
 	@Column(name="membersonly", nullable=false, insertable=true, updatable=true)
@@ -357,6 +359,13 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	}
 
 	/**
+	 * @return Wether this repo entry can be launched.
+	 */
+	public boolean getCanLaunch() {
+		return canLaunch;
+	}
+
+	/**
 	 * @return Access restrictions.
 	 */
 	public int getAccess() {
@@ -390,6 +399,13 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	 */
 	public void setCanDownload(boolean b) {
 		canDownload = b;
+	}
+
+	/**
+	 * @param b
+	 */
+	public void setCanLaunch(boolean b) {
+		canLaunch = b;
 	}
 
 	/**

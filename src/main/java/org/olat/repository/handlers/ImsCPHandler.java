@@ -26,16 +26,24 @@
 package org.olat.repository.handlers;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.admin.quota.QuotaConstants;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.ControllerEventListener;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationController;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
@@ -43,6 +51,8 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.Quota;
@@ -50,17 +60,21 @@ import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ImsCPFileResource;
+import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.ims.cp.CPManager;
+import org.olat.ims.cp.ui.CPContentController;
 import org.olat.ims.cp.ui.CPEditMainController;
 import org.olat.ims.cp.ui.CPPackageConfig;
-import org.olat.ims.cp.ui.CreateNewCPController;
+import org.olat.modules.cp.CPOfflineReadableManager;
 import org.olat.modules.cp.CPUIFactory;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.controllers.IAddController;
-import org.olat.repository.controllers.RepositoryAddCallback;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.repository.ui.author.AuthoringEditEntryController;
 import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 
 
@@ -79,58 +93,141 @@ public class ImsCPHandler extends FileHandler {
 	public static final String PROCESS_CREATENEW = "new";
 	public static final String PROCESS_IMPORT = "add";
 	
-	private static final boolean LAUNCHEABLE = true;
-	private static final boolean DOWNLOADEABLE = true;
-	private static final boolean EDITABLE = true;
-	private static final boolean WIZARD_SUPPORT = false;
-	private static final List<String> supportedTypes;
+	private static final List<String> supportedTypes = Collections.singletonList(ImsCPFileResource.TYPE_NAME);
 	
-	/**
-	 * 
-	 */
-	public ImsCPHandler() {
-		//
+	@Override
+	public boolean isCreate() {
+		return true;
+	}
+	
+	@Override
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Locale locale) {
+		OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance("FileResource.IMSCP");
+		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
+				.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		DBFactory.getInstance().commit();
+
+		Translator translator = Util.createPackageTranslator(CPContentController.class, locale);
+		String initialPageTitle = translator.translate("cptreecontroller.newpage.title");
+		CPManager.getInstance().createNewCP(resource, initialPageTitle);
+		return re;
+	}
+	
+	@Override
+	public String getCreateLabelI18nKey() {
+		return "tools.add.cp";
+	}
+	
+	@Override
+	public boolean isPostCreateWizardAvailable() {
+		return false;
+	}
+	
+	@Override
+	public ResourceEvaluation acceptImport(File file, String filename) {
+		return ImsCPFileResource.evaluate(file, filename);
+	}
+	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, Locale locale,
+			File file, String filename) {
+
+		ImsCPFileResource cpResource = new ImsCPFileResource();
+		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(cpResource);
+		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
+				.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		
+		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();
+		File zipRoot = new File(fResourceFileroot, FileResourceManager.ZIPDIR);
+		FileResource.copyResource(file, filename, zipRoot);
+		CPOfflineReadableManager.getInstance().makeCPOfflineReadable(cpResource, displayname);
+
+		DBFactory.getInstance().commit();
+		return re;
+	}
+	
+	@Override
+	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl,
+			AuthoringEditEntryController pane, RepositoryEntry entry) {
+		
+		final OLATResource resource = entry.getOlatResource();
+		final CPManager cpManager = CPManager.getInstance();
+		QuotaManager qm = QuotaManager.getInstance();
+		if (qm.hasQuotaEditRights(ureq.getIdentity())) {
+			OlatRootFolderImpl cpRoot = FileResourceManager.getInstance().unzipContainerResource(resource);
+			Controller quotaCtrl = qm.getQuotaEditorInstance(ureq, wControl, cpRoot.getRelPath(), false);
+			pane.appendEditor(pane.getTranslator().translate("tab.quota.edit"), quotaCtrl);
+		}
+		
+		CPPackageConfig cpConfig = cpManager.getCPPackageConfig(resource);
+		DeliveryOptions config = cpConfig == null ? null : cpConfig.getDeliveryOptions();
+		final DeliveryOptionsConfigurationController deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, wControl, config);
+		pane.appendEditor(pane.getTranslator().translate("tab.layout"), deliveryOptionsCtrl);
+		deliveryOptionsCtrl.addControllerListener(new ControllerEventListener() {
+
+			@Override
+			public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
+				if(source == deliveryOptionsCtrl
+						&& (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT)) {
+					DeliveryOptions newConfig = deliveryOptionsCtrl.getDeliveryOptions();
+					CPPackageConfig cpConfig = cpManager.getCPPackageConfig(resource);
+					if(cpConfig == null) {
+						cpConfig = new CPPackageConfig();
+					}
+					cpConfig.setDeliveryOptions(newConfig);
+					cpManager.setCPPackageConfig(resource, cpConfig);
+				}
+			}
+		});
+	}
+	
+	@Override
+	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target) {
+		final CPManager cpManager = CPManager.getInstance();
+		OLATResource sourceResource = source.getOlatResource();
+		OLATResource targetResource = target.getOlatResource();
+		
+		File sourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(sourceResource).getBasefile();
+		File zipRoot = new File(sourceFileroot, FileResourceManager.ZIPDIR);
+		
+		File targetFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(targetResource).getBasefile();
+		FileUtils.copyFileToDir(zipRoot, targetFileroot, "add file resource");
+		
+		//copy packaging info
+		CPPackageConfig cpConfig = cpManager.getCPPackageConfig(sourceResource);
+		if(cpConfig != null) {
+			cpManager.setCPPackageConfig(targetResource, cpConfig);
+		}
+
+		CPOfflineReadableManager.getInstance().makeCPOfflineReadable(targetResource, target.getDisplayname() + ".zip");
+		return target;
 	}
 
-	static { // initialize supported types
-		supportedTypes = new ArrayList<String>(1);
-		supportedTypes.add(ImsCPFileResource.TYPE_NAME);
-	}
-	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getSupportedTypes()
-	 */
+	@Override
 	public List<String> getSupportedTypes() {
 		return supportedTypes;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsLaunch()
-	 */
-	public boolean supportsLaunch(RepositoryEntry repoEntry) { return LAUNCHEABLE; }
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
-	 */
-	public boolean supportsDownload(RepositoryEntry repoEntry) { return DOWNLOADEABLE; }
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsEdit()
-	 */
-	public boolean supportsEdit(RepositoryEntry repoEntry) { return EDITABLE; }
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsWizard(org.olat.repository.RepositoryEntry)
-	 */
-	public boolean supportsWizard(RepositoryEntry repoEntry) { return WIZARD_SUPPORT; }
-	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getCreateWizardController(org.olat.core.id.OLATResourceable, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
-	public Controller createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+	@Override
+	public boolean supportsLaunch(RepositoryEntry repoEntry) {
+		return true;
+	}
+
+	@Override
+	public boolean supportsDownload(RepositoryEntry repoEntry) {
+		return true;
+	}
+
+	@Override
+	public boolean supportsEdit(RepositoryEntry repoEntry) {
+		return true;
+	}
+
+	@Override
+	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		throw new AssertException("Trying to get wizard where no creation wizard is provided for this type.");
 	}
-	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getLaunchController(org.olat.core.id.OLATResourceable java.lang.String, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
+
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		OLATResource res = re.getOlatResource();
@@ -166,12 +263,6 @@ public class ImsCPHandler extends FileHandler {
 		return wrapper;
 	}
 
-
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getEditorController(org.olat.core.id.OLATResourceable
-	 *      org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		// only unzips, if not already unzipped
@@ -187,21 +278,6 @@ public class ImsCPHandler extends FileHandler {
 
 		return new CPEditMainController(ureq, wControl, cpRoot, re.getOlatResource());
 	}
-
-	/**
-	 * 
-	 * @see org.olat.repository.handlers.FileHandler#getAddController(org.olat.repository.controllers.RepositoryAddCallback,
-	 *      java.lang.Object, org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
-	public IAddController createAddController(RepositoryAddCallback callback, Object userObject, UserRequest ureq, WindowControl wControl) {
-		if (userObject == null || userObject.equals(PROCESS_CREATENEW)) {
-			return new CreateNewCPController(callback, ureq, wControl);
-		} else {
-			return super.createAddController(callback, userObject, ureq, wControl);
-		}
-	}
-
 	
 	protected String getDeletedFilePrefix() {
 		return "del_imscp_"; 

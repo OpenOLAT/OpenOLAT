@@ -505,9 +505,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	}
 
 	@Override
-	public Controller importNode(File importDirectory, ICourse course, boolean unattendedImport,
-			UserRequest ureq, WindowControl wControl) {
-		
+	public void importNode(File importDirectory, ICourse course) {
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		ModuleConfiguration config = getModuleConfiguration();
 		CheckboxList list = (CheckboxList)config.get(CONFIG_KEY_CHECKBOX);
@@ -524,7 +522,6 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 				}
 			}
 		}
-		return null;
 	}
 
 	@Override

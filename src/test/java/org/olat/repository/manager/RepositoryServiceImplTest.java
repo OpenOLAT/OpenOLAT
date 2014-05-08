@@ -48,7 +48,7 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 		String displayName = "ServiceTest";
 		String resourceName = "ServiceTest";
 		String description = "Test the brand new service";
-		RepositoryEntry re = repositoryService.create(initialAuthor, resourceName, displayName, description, null);
+		RepositoryEntry re = repositoryService.create(initialAuthor, resourceName, displayName, description, null, 0);
 		dbInstance.commit();
 		
 		Assert.assertNotNull(re);
@@ -64,7 +64,7 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 		String displayName = "Service test 2";
 		String resourceName = "ServiceTest";
 		String description = "Test the brand new service";
-		RepositoryEntry re = repositoryService.create(initialAuthor, resourceName, displayName, description, null);
+		RepositoryEntry re = repositoryService.create(initialAuthor, resourceName, displayName, description, null, 0);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(re);
 		

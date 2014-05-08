@@ -25,8 +25,10 @@
 
 package org.olat.ims.qti.repository.handlers;
 
-import java.util.ArrayList;
+import java.io.File;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -34,9 +36,11 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.ims.qti.editor.AddNewQTIDocumentController;
+import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.ims.qti.editor.QTIEditorMainController;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
@@ -46,10 +50,6 @@ import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQPreviewSecurityCallback;
 import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.controllers.AddFileResourceController;
-import org.olat.repository.controllers.IAddController;
-import org.olat.repository.controllers.RepositoryAddCallback;
-import org.olat.repository.controllers.RepositoryAddController;
 import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.references.ReferenceImpl;
@@ -68,62 +68,66 @@ import de.bps.onyx.plugin.run.OnyxRunController;
  * 
  */
 public class QTITestHandler extends QTIHandler {
-	private static final boolean LAUNCHEABLE = true;
-	private static final boolean DOWNLOADEABLE = true;
-	private static final boolean EDITABLE = true;
-	private static final boolean WIZARD_SUPPORT = false;
 
-	static List<String> supportedTypes;
+	private static List<String> supportedTypes = Collections.singletonList(TestFileResource.TYPE_NAME);
 
 	/**
 	 * Default construcotr.
 	 */
 	public QTITestHandler() { super(); } 
+	
+	@Override
+	public boolean isCreate() {
+		return true;
+	}
+	
+	@Override
+	public String getCreateLabelI18nKey() {
+		return "new.test";
+	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getSupportedTypes()
-	 */
+	@Override
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Locale locale) {
+		TestFileResource ores = new TestFileResource();
+		return super.createResource(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS, ores, initialAuthor, displayname, description, locale);
+	}
+
+	@Override
+	public ResourceEvaluation acceptImport(File file, String filename) {
+		return TestFileResource.evaluate(file, filename);
+	}
+
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, Locale locale,
+			File file, String filename) {
+		return super.importResource(initialAuthor, displayname, description, new TestFileResource(), file, filename);
+	}
+
+	@Override
 	public List<String> getSupportedTypes() {
 		return supportedTypes;
 	}
 
-	static { // initialize supported types
-		supportedTypes = new ArrayList<String>(1);
-		supportedTypes.add(TestFileResource.TYPE_NAME);
-	}
-	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsLaunch()
-	 */
+	@Override
 	public boolean supportsLaunch(RepositoryEntry repoEntry) {
-		return LAUNCHEABLE;
+		return true;
 	}
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
-	 */
+
+	@Override
 	public boolean supportsDownload(RepositoryEntry repoEntry) {
-		return DOWNLOADEABLE;
+		return true;
 	}
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsEdit()
-	 */
+
+	@Override
 	public boolean supportsEdit(RepositoryEntry repoEntry) { 
 		if (OnyxModule.isOnyxTest(repoEntry.getOlatResource())) {
 			return false;
 		}
-		return EDITABLE;
+		return true;
 	}
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsWizard(org.olat.repository.RepositoryEntry)
-	 */
-	public boolean supportsWizard(RepositoryEntry repoEntry) {
-		return WIZARD_SUPPORT;
-	}
-	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getCreateWizardController(org.olat.core.id.OLATResourceable, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
-	public Controller createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+
+	@Override
+	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		throw new AssertException("Trying to get wizard where no creation wizard is provided for this type.");
 	}
 	
@@ -152,9 +156,6 @@ public class QTITestHandler extends QTIHandler {
 		return layoutCtr;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getEditorController(org.olat.core.id.OLATResourceable org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		OLATResource res = re.getOlatResource();
@@ -178,21 +179,12 @@ public class QTITestHandler extends QTIHandler {
 		}
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getAddController(org.olat.repository.controllers.RepositoryAddCallback, java.lang.Object, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
-	public IAddController createAddController(RepositoryAddCallback callback, Object userObject, UserRequest ureq, WindowControl wControl) {
-		if (userObject == null || userObject.equals(RepositoryAddController.PROCESS_ADD)) {
-			return new AddFileResourceController(callback, supportedTypes, new String[] {"zip"}, ureq, wControl);
-		} else {
-			return new AddNewQTIDocumentController(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS, callback, ureq, wControl);
-		}
-	}
-
+	@Override
 	protected String getDeletedFilePrefix() {
 		return "del_qtitest_"; 
 	}
-	
+
+	@Override
 	public WizardCloseResourceController createCloseResourceController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		throw new AssertException("not implemented");
 	}

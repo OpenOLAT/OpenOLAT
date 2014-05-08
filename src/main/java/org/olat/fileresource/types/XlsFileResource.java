@@ -49,6 +49,11 @@ public class XlsFileResource extends FileResource {
 	 * @return True if is of type.
 	 */
 	public static boolean validate(File f) {
-		return f.getName().toLowerCase().endsWith(".xls"); 
+		return validate(f.getName()); 
+	}
+	
+	public static boolean validate(String filename) {
+		String f = filename.toLowerCase();
+		return f.endsWith(".xls") || f.endsWith(".xlsx"); 
 	}
 }

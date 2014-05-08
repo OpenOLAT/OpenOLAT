@@ -38,8 +38,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.logging.activity.ILoggingAction;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.fileresource.types.SharedFolderFileResource;
@@ -48,6 +50,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.resource.references.ReferenceImpl;
 import org.olat.resource.references.ReferenceManager;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * Description: <br>
@@ -76,18 +79,22 @@ public class CourseSharedFolderController extends BasicController  {
 	private Link selectSFResButton;
 	private CloseableModalController cmc;
 	private CourseConfig courseConfig;
-	private ILoggingAction loggingAction;
-	private RepositoryEntry sharedFolderRepositoryEntry;
-
+	private OLATResourceable courseOres;
+	
 	/**
+	 * 
 	 * @param ureq
 	 * @param wControl
-	 * @param theCourse
+	 * @param courseOres
+	 * @param courseConfig
+	 * @param editable
 	 */
-	public CourseSharedFolderController(UserRequest ureq, WindowControl wControl, CourseConfig courseConfig, boolean editable) {
+	public CourseSharedFolderController(UserRequest ureq, WindowControl wControl,
+			OLATResourceable courseOres, CourseConfig courseConfig, boolean editable) {
 		super(ureq, wControl);
 
 		this.courseConfig = courseConfig;
+		this.courseOres = courseOres;
 		
 		myContent = createVelocityContainer("CourseSharedFolder");
 		if(editable) {
@@ -118,29 +125,23 @@ public class CourseSharedFolderController extends BasicController  {
 			}
 		}
 		myContent.contextPut("resourceTitle", name);
-
 		putInitialPanel(myContent);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == selectSFResButton || source == changeSFResButton) { // select or change shared folder
 			// let user choose a shared folder
 			searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, 
 					SharedFolderFileResource.TYPE_NAME, translate("command.choose"));
-			searchController.addControllerListener(this);
+			listenTo(searchController);
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent());
+			listenTo(cmc);
 			cmc.activate();		
 		} else if (source == unselectSFResButton) { // unselect shared folder			
 			if (courseConfig.hasCustomSharedFolder()) {
 				// delete reference from course to sharedfolder
 				// get unselected shared folder's softkey used for logging
-				String softkeyUsf = courseConfig.getSharedFolderSoftkey();
-				RepositoryEntry usfRe = rm.lookupRepositoryEntryBySoftkey(softkeyUsf, true);
-				if (usfRe != null) sharedFolderRepositoryEntry = usfRe;
 				// set default value to delete configured value in course config
 				courseConfig.setSharedFolderSoftkey(CourseConfig.VALUE_EMPTY_SHAREDFOLDER_SOFTKEY);
 				//deleteRefTo(course);
@@ -149,39 +150,55 @@ public class CourseSharedFolderController extends BasicController  {
 				myContent.contextPut("resourceTitle", emptyKey);
 				hasSF = false;
 				myContent.contextPut("hasSharedFolder", new Boolean(hasSF));
-				loggingAction = LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_SHARED_FOLDER_REMOVED;
-				this.fireEvent(ureq, Event.CHANGED_EVENT);
-				//AuditManager am = course.getCourseEnvironment().getAuditManager();				
-				//am.log(LogLevel.ADMIN_ONLY_FINE, ureq.getIdentity(),LOG_SHARED_FOLDER_REMOVED, null, usfRe.getDisplayname());
+				saveSharedfolderConfiguration(null);
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == searchController) {
+		if (searchController == source) {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 				// repository search controller done
-				sharedFolderRepositoryEntry = searchController.getSelectedEntry();				
-				String softkey = sharedFolderRepositoryEntry.getSoftkey();
-				courseConfig.setSharedFolderSoftkey(softkey);
-				//updateRefTo(sharedFolderRe, course);
-				//course.getCourseEnvironment().setCourseConfig(cc);
+				RepositoryEntry sharedFolder = searchController.getSelectedEntry();				
 				hasSF = true;
 				myContent.contextPut("hasSharedFolder", new Boolean(hasSF));
-
-				myContent.contextPut("resourceTitle", sharedFolderRepositoryEntry.getDisplayname());
-				
-				loggingAction = LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_SHARED_FOLDER_ADDED;
-				this.fireEvent(ureq, Event.CHANGED_EVENT);
-				/*AuditManager am = course.getCourseEnvironment().getAuditManager();
-				am.log(LogLevel.ADMIN_ONLY_FINE, ureq.getIdentity(),LOG_SHARED_FOLDER_ADDED, null, sharedFolderRe.getDisplayname());
-				*/
+				myContent.contextPut("resourceTitle", sharedFolder.getDisplayname());
+				saveSharedfolderConfiguration(sharedFolder);
 			}
 			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(searchController);
+		removeAsListenerAndDispose(cmc);
+		searchController = null;
+		cmc = null;
+	}
+	
+	private void saveSharedfolderConfiguration(RepositoryEntry sharedFolder) {
+		String softKey = sharedFolder == null ?
+				CourseConfig.VALUE_EMPTY_SHAREDFOLDER_SOFTKEY : sharedFolder.getSoftkey();
+		
+		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
+		courseConfig = course.getCourseEnvironment().getCourseConfig();
+		courseConfig.setSharedFolderSoftkey(softKey);
+		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
+		CourseFactory.closeCourseEditSession(course.getResourceableId(),true);
+		
+		if(sharedFolder != null) {
+			CourseSharedFolderController.updateRefTo(sharedFolder, course);
+			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_SHARED_FOLDER_REMOVED,
+					getClass(), LoggingResourceable.wrapBCFile(sharedFolder.getDisplayname()));
+		} else {
+			CourseSharedFolderController.deleteRefTo(course);
+			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_SHARED_FOLDER_ADDED,
+					getClass(), LoggingResourceable.wrapBCFile(""));
 		}
 	}
 
@@ -217,21 +234,6 @@ public class CourseSharedFolderController extends BasicController  {
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
 	protected void doDispose() {
-		if (searchController != null) {
-			searchController.dispose();
-			searchController = null;
-		}
-	}
-
-	/**
-	 * 
-	 * @return Returns a log message if the course shared folder was added or removed, null otherwise.
-	 */
-	public ILoggingAction getLoggingAction() {
-		return loggingAction;
-	}
-
-	public RepositoryEntry getSharedFolderRepositoryEntry() {
-		return sharedFolderRepositoryEntry;
+		//
 	}
 }

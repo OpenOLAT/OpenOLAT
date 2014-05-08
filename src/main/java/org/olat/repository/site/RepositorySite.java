@@ -43,21 +43,18 @@ import org.olat.core.id.context.StateSite;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.repository.controllers.RepositoryMainController;
 import org.olat.repository.ui.author.OverviewAuthoringController;
 import org.olat.util.logging.activity.LoggingResourceable;
+
 /**
  * Description:<br>
- * TODO: Felix Jost Class Description for HomeSite
+ * Site for authors of learning resources
  * 
  * <P>
  * Initial Date:  19.07.2005 <br>
- *
  * @author Felix Jost
  */
 public class RepositorySite extends AbstractSiteInstance {
-	private static final OLATResourceable ORES_REPO = OresHelper.lookupType(RepositoryMainController.class);
-
 	private NavElement origNavElem;
 	private NavElement curNavElem;
 
@@ -81,7 +78,6 @@ public class RepositorySite extends AbstractSiteInstance {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(RepositorySite.class, 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
-		//return ControllerFactory.createLaunchController(ORES_REPO, ureq, bwControl, true);
 		return new OverviewAuthoringController(ureq, bwControl);
 	}
 

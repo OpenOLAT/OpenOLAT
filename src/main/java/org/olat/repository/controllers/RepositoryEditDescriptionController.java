@@ -495,6 +495,11 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			repositoryEntry.setExpenditureOfWork(exp);
 		}
 		
+		repositoryEntry = RepositoryManager.getInstance().setDescriptionAndName(repositoryEntry,
+				repositoryEntry.getDisplayname(), repositoryEntry.getAuthors(), repositoryEntry.getDescription(),
+				repositoryEntry.getObjectives(), repositoryEntry.getRequirements(), repositoryEntry.getCredits(),
+				repositoryEntry.getMainLanguage(), repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle());
+		
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 

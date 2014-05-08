@@ -647,8 +647,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 			
 			// now make a repository entry for this course
 			RepositoryEntry re = repositoryService.create(owner, "Lernen mit OLAT " + i,
-					"JunitTest_RepositoryEntry_" + i, "yo man description bla bla + i", r);
-			re.setAccess(RepositoryEntry.ACC_OWNERS_AUTHORS);			
+					"JunitTest_RepositoryEntry_" + i, "yo man description bla bla + i", r, RepositoryEntry.ACC_OWNERS_AUTHORS);			
 			if ((i % 2 > 0)) {
 				re.setCanReference(true);
 			}
@@ -1114,8 +1113,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 		
 		// now make a repository entry for this course
 		final RepositoryEntry re = repositoryService.create(owner, "Lernen mit OLAT " + i,
-				"JunitTest_RepositoryEntry_" + i, "yo man description bla bla + i", r);	
-		re.setAccess(RepositoryEntry.ACC_OWNERS_AUTHORS);
+				"JunitTest_RepositoryEntry_" + i, "yo man description bla bla + i", r,
+				RepositoryEntry.ACC_OWNERS_AUTHORS);
 		return re;
 	}
 }

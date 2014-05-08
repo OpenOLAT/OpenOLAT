@@ -451,25 +451,15 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 		reie.exportDoExport();
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#importNode(java.io.File,
-	 *      org.olat.course.ICourse, org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
-	public Controller importNode(File importDirectory, ICourse course, boolean unattendedImport, UserRequest ureq, WindowControl wControl) {
+	@Override
+	public void importNode(File importDirectory, ICourse course) {
 		File importSubdir = new File(importDirectory, getIdent());
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importSubdir);
-		if (!rie.anyExportedPropertiesAvailable()) return null;
+		if (!rie.anyExportedPropertiesAvailable()) return;
 
 		// do import referenced repository entries
-		if (unattendedImport) {
-			Identity admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
-			ImportReferencesController.doImport(rie, this, ImportReferencesController.IMPORT_TEST,
-					true, admin);
-			return null;
-		} else {
-			return new ImportReferencesController(ureq, wControl, this, ImportReferencesController.IMPORT_TEST, rie);
-		}
+		Identity admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
+		ImportReferencesController.doImport(rie, this, ImportReferencesController.IMPORT_TEST, true, admin);
 	}
 
 	/**

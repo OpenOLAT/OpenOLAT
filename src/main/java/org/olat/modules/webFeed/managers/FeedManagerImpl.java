@@ -22,8 +22,11 @@ package org.olat.modules.webFeed.managers;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -43,6 +46,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Encoder;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
@@ -380,6 +384,16 @@ public class FeedManagerImpl extends FeedManager {
 			log.error("Feed xml-file could not be found on file system. Feed container: " + feedContainer);
 		}
 		return myFeed;
+	}
+	
+	public Feed readFeedFile(Path feedPath) {
+		Feed feed = null;
+		try (InputStream in = Files.newInputStream(feedPath)) {
+			feed = (Feed)XStreamHelper.readObject(xstream, in);
+		} catch(IOException e) {
+			log.error("", e);
+		}
+		return feed;
 	}
 
 	/**
@@ -1135,6 +1149,25 @@ public class FeedManagerImpl extends FeedManager {
 		}
 		//
 		return copyResource;
+	}
+
+	@Override
+	public boolean copy(OLATResource sourceResource, OLATResource targetResource) {
+		File sourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(sourceResource).getBasefile();
+		File sourceBlogRoot = new File(sourceFileroot, FeedManager.getInstance().getFeedKind(sourceResource));
+		
+		File targetFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(targetResource).getBasefile();
+		FileUtils.copyFileToDir(sourceBlogRoot, targetFileroot, "add file resource");
+		
+		VFSContainer copyContainer = FeedManager.getInstance().getFeedContainer(targetResource);
+		VFSLeaf leaf = (VFSLeaf) copyContainer.resolve(FeedManager.FEED_FILE_NAME);
+		if (leaf != null) {
+			Feed copyFeed = (Feed) XStreamHelper.readObject(xstream, leaf.getInputStream());
+			copyFeed.setId(targetResource.getResourceableId());
+			XStreamHelper.writeObject(xstream, leaf, copyFeed);
+		}
+		
+		return true;
 	}
 
 	/**

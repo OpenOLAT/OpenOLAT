@@ -26,24 +26,39 @@
 package org.olat.repository.handlers;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.ControllerEventListener;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
+import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationController;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.fileresource.types.FileResource;
+import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.modules.scorm.ScormMainManager;
+import org.olat.modules.scorm.ScormPackageConfig;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.repository.ui.author.AuthoringEditEntryController;
 import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -55,59 +70,126 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  */
 public class SCORMCPHandler extends FileHandler {
-	
-	private static final boolean LAUNCHEABLE = true;
-	private static final boolean DOWNLOADEABLE = true;
-	private static final boolean EDITABLE = false;
-	private static final boolean WIZARD_SUPPORT = false;
-	private static final List<String> supportedTypes;
-	
-	/**
-	 * 
-	 */
+
+	private static final List<String> supportedTypes = Collections.singletonList(ScormCPFileResource.TYPE_NAME);
+
 	public SCORMCPHandler() {
 		//
 	}
-
-	static { // initialize supported types
-		supportedTypes = new ArrayList<String>(1);
-		supportedTypes.add(ScormCPFileResource.TYPE_NAME);
+	
+	@Override
+	public boolean isCreate() {
+		return false;
 	}
 	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getSupportedTypes()
-	 */
+	@Override
+	public String getCreateLabelI18nKey() {
+		return null;
+	}
+	
+	@Override
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Locale locale) {
+		return null;
+	}
+	
+	@Override
+	public boolean isPostCreateWizardAvailable() {
+		return false;
+	}
+	
+	@Override
+	public ResourceEvaluation acceptImport(File file, String filename) {
+		return ScormCPFileResource.evaluate(file, filename);
+	}
+	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, Locale locale,
+			File file, String filename) {
+		
+		ScormCPFileResource scormResource = new ScormCPFileResource();
+		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(scormResource);
+		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
+				.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		
+		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();
+		File zipRoot = new File(fResourceFileroot, FileResourceManager.ZIPDIR);
+		FileResource.copyResource(file, filename, zipRoot);
+	
+		DBFactory.getInstance().commit();
+		return re;
+	}
+	
+	@Override
+	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl,
+			AuthoringEditEntryController pane, RepositoryEntry entry) {
+		
+		ScormPackageConfig scormConfig = ScormMainManager.getInstance().getScormPackageConfig(entry.getOlatResource());
+		DeliveryOptions config = scormConfig == null ? null : scormConfig.getDeliveryOptions();
+		final OLATResource resource = entry.getOlatResource();
+		final DeliveryOptionsConfigurationController deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, wControl, config);
+		pane.appendEditor(pane.getTranslator().translate("tab.layout"), deliveryOptionsCtrl);
+		
+		deliveryOptionsCtrl.addControllerListener(new ControllerEventListener() {
+			@Override
+			public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
+				if(source == deliveryOptionsCtrl && (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT)) {
+					DeliveryOptions newConfig = deliveryOptionsCtrl.getDeliveryOptions();
+					ScormPackageConfig scormConfig = ScormMainManager.getInstance().getScormPackageConfig(resource);
+					if(scormConfig == null) {
+						scormConfig = new ScormPackageConfig();
+					}
+					scormConfig.setDeliveryOptions(newConfig);
+					ScormMainManager.getInstance().setScormPackageConfig(resource, scormConfig);
+				}
+			}
+		});
+	}
+	
+	@Override
+	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target) {
+		final ScormMainManager scormManager = ScormMainManager.getInstance();
+		OLATResource sourceResource = source.getOlatResource();
+		OLATResource targetResource = target.getOlatResource();
+		
+		File sourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(sourceResource).getBasefile();
+		File zipRoot = new File(sourceFileroot, FileResourceManager.ZIPDIR);
+		
+		File targetFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(targetResource).getBasefile();
+		FileUtils.copyFileToDir(zipRoot, targetFileroot, "add file resource");
+		
+		//copy packaging info
+		ScormPackageConfig scormConfig = scormManager.getScormPackageConfig(sourceResource);
+		if(scormConfig != null) {
+			scormManager.setScormPackageConfig(targetResource, scormConfig);
+		}
+		return target;
+	}
+
+	@Override
 	public List<String> getSupportedTypes() {
 		return supportedTypes;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsLaunch()
-	 */
-	public boolean supportsLaunch(RepositoryEntry repoEntry) { return LAUNCHEABLE; }
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
-	 */
-	public boolean supportsDownload(RepositoryEntry repoEntry) { return DOWNLOADEABLE; }
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsEdit()
-	 */
-	public boolean supportsEdit(RepositoryEntry repoEntry) { return EDITABLE; }
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsWizard(org.olat.repository.RepositoryEntry)
-	 */
-	public boolean supportsWizard(RepositoryEntry repoEntry) { return WIZARD_SUPPORT; }
-	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getCreateWizardController(org.olat.core.id.OLATResourceable, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
-	public Controller createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+	@Override
+	public boolean supportsLaunch(RepositoryEntry repoEntry) {
+		return true;
+	}
+
+	@Override
+	public boolean supportsDownload(RepositoryEntry repoEntry) {
+		return true;
+	}
+
+	@Override
+	public boolean supportsEdit(RepositoryEntry repoEntry) {
+		return false;
+	}
+
+	@Override
+	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		throw new AssertException("Trying to get wizard where no creation wizard is provided for this type.");
 	}
-	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getLaunchController(org.olat.core.id.OLATResourceable java.lang.String, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
+
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		if (re != null) {
@@ -121,43 +203,33 @@ public class SCORMCPHandler extends FileHandler {
 		return wrapper; 
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getEditorController(org.olat.core.id.OLATResourceable org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		throw new AssertException("Trying to get editor for an SCORM CP type where no editor is provided for this type.");
 	}
 
+	@Override
 	protected String getDeletedFilePrefix() {
 		return "del_scorm_"; 
 	}
 
-	/**
-	 * 
-	 * @see org.olat.repository.handlers.RepositoryHandler#acquireLock(org.olat.core.id.OLATResourceable, org.olat.core.id.Identity)
-	 */
+	@Override
 	public LockResult acquireLock(OLATResourceable ores, Identity identity) {
     //nothing to do
 		return null;
 	}
-	
-	/**
-	 * 
-	 * @see org.olat.repository.handlers.RepositoryHandler#isLocked(org.olat.core.id.OLATResourceable)
-	 */
+
+	@Override
 	public boolean isLocked(OLATResourceable ores) {
 		return false;
 	}
-	
-	/**
-	 * 
-	 * @see org.olat.repository.handlers.RepositoryHandler#releaseLock(org.olat.core.util.coordinate.LockResult)
-	 */
+
+	@Override
 	public void releaseLock(LockResult lockResult) {
 		//nothing to do since nothing locked
 	}
-	
+
+	@Override
 	public WizardCloseResourceController createCloseResourceController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		throw new AssertException("not implemented");
 	}

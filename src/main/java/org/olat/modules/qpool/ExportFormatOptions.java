@@ -31,7 +31,7 @@ public interface ExportFormatOptions {
 	
 	public Outcome getOutcome();
 	
-	public String getActionCommand();
+	public String getTypeFormat();
 	
 	public enum Outcome {
 		download,

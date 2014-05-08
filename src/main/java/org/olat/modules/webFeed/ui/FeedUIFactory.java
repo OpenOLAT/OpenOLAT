@@ -35,8 +35,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
-import org.olat.repository.controllers.IAddController;
-import org.olat.repository.controllers.RepositoryAddCallback;
 
 /**
  * Abstract Factory Pattern for the user interface of different feed types.
@@ -79,9 +77,7 @@ public abstract class FeedUIFactory {
 	public FeedMainController createMainController(final OLATResourceable ores, final UserRequest ureq, final WindowControl wControl, final FeedSecurityCallback callback, FeedItemDisplayConfig displayConfig) {
 		return new FeedMainController(ores, ureq, wControl, null, null, this, callback, displayConfig);
 	}
-	
-	public abstract IAddController createAddController(RepositoryAddCallback addCallback, UserRequest ureq, WindowControl wControl);
-	
+
 	public abstract FormBasicController createItemFormController(UserRequest ureq, WindowControl wControl, Item item, Feed feed);
 
 	public abstract TabbableController createNodeEditController(AbstractFeedCourseNode courseNode, ICourse course, UserCourseEnvironment uce, UserRequest ureq,

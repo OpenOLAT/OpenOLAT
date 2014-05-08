@@ -21,7 +21,6 @@ package org.olat.repository.ui.author;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 
 /**
  * 
@@ -31,13 +30,24 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  */
 class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<AuthoringEntryRow> {
 	
-	public AuthoringEntryDataModel(FlexiTableDataSourceDelegate<AuthoringEntryRow> source, FlexiTableColumnModel columnModel) {
+	public AuthoringEntryDataModel(AuthoringEntryDataSource source, FlexiTableColumnModel columnModel) {
 		super(source, columnModel);
 	}
 
 	@Override
 	public DefaultFlexiTableDataSourceModel<AuthoringEntryRow> createCopyWithEmptyList() {
 		return new AuthoringEntryDataModel(getSourceDelegate(), getTableColumnModel());
+	}
+
+	@Override
+	public AuthoringEntryDataSource getSourceDelegate() {
+		return (AuthoringEntryDataSource)super.getSourceDelegate();
+	}
+
+	@Override
+	public void clear() {
+		super.clear();
+		getSourceDelegate().resetCount();
 	}
 
 	@Override

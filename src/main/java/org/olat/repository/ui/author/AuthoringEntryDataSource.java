@@ -75,6 +75,10 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		searchClient = CoreSpringFactory.getImpl(SearchClientLocal.class);
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 	}
+	
+	public void resetCount() {
+		count = null;
+	}
 
 	@Override
 	public int getRowCount() {

@@ -25,21 +25,24 @@
 
 package org.olat.repository.handlers;
 
+import java.io.File;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.controllers.IAddController;
-import org.olat.repository.controllers.RepositoryAddCallback;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.repository.ui.author.AuthoringEditEntryController;
 
 
 /**
@@ -58,6 +61,59 @@ public interface RepositoryHandler {
 	public List<String> getSupportedTypes();
 	
 	/**
+	 * This resource support creation within OpenOLAT.
+	 * @return
+	 */
+	public boolean isCreate();
+	
+	public String getCreateLabelI18nKey();
+	
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Locale locale);
+	
+	/**
+	 * Typically for course wizard
+	 * @return
+	 */
+	public boolean isPostCreateWizardAvailable();
+	
+	/**
+	 * 
+	 * @param file
+	 * @param filename
+	 * @return
+	 */
+	public ResourceEvaluation acceptImport(File file, String filename);
+	
+	/**
+	 * 
+	 * @param initialAuthor
+	 * @param displayname
+	 * @param description
+	 * @param locale
+	 * @param file
+	 * @param filename
+	 * @return
+	 */
+	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, Locale locale, File file, String filename);	
+	
+	/**
+	 * 
+	 * @param pane
+	 * @param entry
+	 */
+	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl, AuthoringEditEntryController pane, RepositoryEntry entry);
+	
+	/**
+	 * 
+	 * @param source
+	 * @param target
+	 * @return
+	 */
+	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target);
+	
+	
+	
+	/**
 	 * @return true if this handler supports donwloading Resourceables of its type.
 	 */
 	public boolean supportsDownload(RepositoryEntry repoEntry);
@@ -71,13 +127,6 @@ public interface RepositoryHandler {
 	 * @return true if this handler supports an editor for Resourceables of its type.
 	 */
 	public boolean supportsEdit(RepositoryEntry repoEntry);
-	
-	/**
-	 * @param repoEntry
-	 * @return true when this RepositoryHandler supports and can create a wizard for creating some initial content. 
-     This only has an effect when supportsEditor returns true.
-	 */
-	public boolean supportsWizard(RepositoryEntry repoEntry);
 	
 	/**
 	 * Return the container where image and files can be saved for the description field.
@@ -115,7 +164,7 @@ public interface RepositoryHandler {
 	 * @param wControl
 	 * @return Controller that guides trough the creation workflow via wizard.
 	 */
-	public Controller createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl);
+	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl);
 
 	/**
 	 * 
@@ -161,29 +210,7 @@ public interface RepositoryHandler {
 	 * @param ureq
 	 * @return Copy of given resourceable.
 	 */
-	public OLATResourceable createCopy(OLATResourceable res, UserRequest ureq);
-	
-	/**
-	 * Called the repository wants to add a new resourceable of this handler's type.
-	 * Do any task necessary, set all fields of the provided RepositoryAddCallback and
-	 * call callback.finished() upon success, or callback.canceled() / callback.failed().
-	 * The latter two will not create any repository entries. If you cancel or fail,
-	 * do any cleanup work yourself. RepositoryHandler.delete() will not be called since
-	 * (as outlined above) the repository does not create any entry at all.
-	 * If callback.finished(), the user then enters repository details data. If the user
-	 * finishes, AddController.finishTransaction() will be called. Do any final work now,
-	 * since after this, the repository entry will be persisted. If the user aborts,
-	 * AddController.abortTransaction() will be called. Do any cleanup work - no repository
-	 * entry will be created in this state.
-	 * The OLATResourceable set in the callback does not necessarily have to be persited.
-	 * 
-	 * @param callback
-	 * @param userObject
-	 * @param ureq
-	 * @param wControl
-	 * @return Controller implementing Add workflow.
-	 */
-	public IAddController createAddController(RepositoryAddCallback callback, Object userObject, UserRequest ureq, WindowControl wControl);
+	//public OLATResourceable createCopy(OLATResourceable res, UserRequest ureq);
 	
 	/**
 	 * If a handler likes to provied any details on a resourceable in the repository's details

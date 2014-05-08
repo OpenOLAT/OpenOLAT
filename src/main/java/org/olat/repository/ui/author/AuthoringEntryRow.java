@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryLight;
 import org.olat.repository.RepositoryEntryRef;
@@ -106,7 +107,44 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 				lifecycleSoftKey = lifecycle.getSoftKey();
 			}
 		}
+	}
+	
+	public AuthoringEntryRow(RepositoryEntry entry, String fullnameAuthor) {
+		key = entry.getKey();
+		name = entry.getDisplayname();
+		author = fullnameAuthor;
+		authors = entry.getAuthors();
+		if(entry.getDescription() != null) {
+			String shortDesc = FilterFactory.getHtmlTagsFilter().filter(entry.getDescription());
+			if(shortDesc.length() > 255) {
+				shortenedDescription = shortDesc.substring(0, 255);
+			} else {
+				shortenedDescription = shortDesc;
+			}
+		} else {
+			shortenedDescription = "";
+		}
+
+		creationDate = entry.getCreationDate();
 		
+		externalId = entry.getExternalId();
+		externalRef = entry.getExternalRef();
+		
+		membersOnly = entry.isMembersOnly();
+		access = entry.getAccess();
+		statusCode = entry.getStatusCode();
+		
+		olatResource = OresHelper.clone(entry.getOlatResource());
+		
+		RepositoryEntryLifecycle lifecycle = entry.getLifecycle();
+		if(lifecycle != null) {
+			lifecycleStart = lifecycle.getValidFrom();
+			lifecycleEnd = lifecycle.getValidTo();
+			if(!lifecycle.isPrivateCycle()) {
+				lifecycleLabel = lifecycle.getLabel();
+				lifecycleSoftKey = lifecycle.getSoftKey();
+			}
+		}
 	}
 	
 	public String getCssClass() {

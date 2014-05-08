@@ -19,18 +19,22 @@
  */
 package org.olat.repository.handlers;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -43,22 +47,25 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.EPSecurityCallbackFactory;
 import org.olat.portfolio.EPTemplateMapResource;
 import org.olat.portfolio.EPUIFactory;
 import org.olat.portfolio.manager.EPFrontendManager;
+import org.olat.portfolio.manager.EPStructureManager;
 import org.olat.portfolio.manager.EPXStreamHandler;
 import org.olat.portfolio.model.structel.EPAbstractMap;
 import org.olat.portfolio.model.structel.EPStructuredMapTemplate;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
-import org.olat.portfolio.ui.CreateStructureMapTemplateController;
+import org.olat.portfolio.ui.structel.EPCreateMapController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.controllers.IAddController;
-import org.olat.repository.controllers.RepositoryAddCallback;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.repository.ui.author.AuthoringEditEntryController;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.resource.references.ReferenceManager;
 
@@ -80,51 +87,89 @@ public class PortfolioHandler implements RepositoryHandler {
 	public static final String PROCESS_CREATENEW = "create_new";
 	public static final String PROCESS_UPLOAD = "upload";
 	
-
-	private static final boolean DOWNLOADABLE = false;
-	private static final boolean EDITABLE = true;
-	private static final boolean LAUNCHABLE = true;
-	private static final boolean WIZARD_SUPPORT = false;
-	private static final List<String> supportedTypes;
-
-	static { // initialize supported types
-		supportedTypes = new ArrayList<String>(1);
-		supportedTypes.add(EPTemplateMapResource.TYPE_NAME);
+	private static final List<String> supportedTypes = Collections.singletonList(EPTemplateMapResource.TYPE_NAME);
+	
+	@Override
+	public boolean isCreate() {
+		return true;
 	}
 	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
-	 */
+	@Override
+	public String getCreateLabelI18nKey() {
+		return "new.portfolio";
+	}
+	
+	@Override
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Locale locale) {
+		EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
+		EPStructureManager eSTMgr = CoreSpringFactory.getImpl(EPStructureManager.class);
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		
+		OLATResource resource = eSTMgr.createPortfolioMapTemplateResource();
+		RepositoryEntry re = repositoryService.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+
+		PortfolioStructureMap mapTemp = eSTMgr.createAndPersistPortfolioMapTemplateFromEntry(initialAuthor, re);
+		// add a page, as each map should have at least one per default!
+		
+		Translator pt = Util.createPackageTranslator(EPCreateMapController.class, locale);
+		String pageTitle = pt.translate("new.page.title");
+		String pageDescription = pt.translate("new.page.desc");
+		ePFMgr.createAndPersistPortfolioPage(mapTemp, pageTitle, pageDescription);
+		
+		DBFactory.getInstance().commit();
+		return re;
+	}
+	
+	@Override
+	public boolean isPostCreateWizardAvailable() {
+		return false;
+	}
+
+	@Override
+	public ResourceEvaluation acceptImport(File file, String filename) {
+		return new ResourceEvaluation(false);
+	}
+	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, Locale locale,
+			File file, String filename) {
+		return null;
+	}
+	
+	@Override
+	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl,
+			AuthoringEditEntryController pane, RepositoryEntry entry) {
+		//
+	}
+	
+	@Override
+	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target) {
+		OLATResource sourceResource = source.getOlatResource();
+		OLATResource targetResource = source.getOlatResource();
+		
+		EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
+		PortfolioStructure structure = ePFMgr.loadPortfolioStructure(sourceResource);
+		PortfolioStructure newStructure = EPXStreamHandler.copy(structure);
+		ePFMgr.importPortfolioMapTemplate(newStructure, targetResource);
+		return target;
+	}
+
+	@Override
 	public boolean supportsDownload(RepositoryEntry repoEntry) {
-		return DOWNLOADABLE;
+		return false;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsEdit()
-	 */
+	@Override
 	public boolean supportsEdit(RepositoryEntry repoEntry) {
-		return EDITABLE;
+		return true;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsLaunch()
-	 */
+	@Override
 	public boolean supportsLaunch(RepositoryEntry repoEntry) {
-		return LAUNCHABLE;
-	}
-	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsWizard(org.olat.repository.RepositoryEntry)
-	 */
-	public boolean supportsWizard(RepositoryEntry repoEntry) {
-		return WIZARD_SUPPORT;
+		return true;
 	}
 
-
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#archive(java.lang.String,
-	 *      org.olat.repository.RepositoryEntry)
-	 */
+	@Override
 	public String archive(Identity archiveOnBehalfOf, String archivFilePath, RepositoryEntry repoEntry) {
 		// Apperantly, this method is used for backing up any user related content
 		// (comments etc.) on deletion. Up to now, this doesn't exist in blogs.
@@ -136,12 +181,8 @@ public class PortfolioHandler implements RepositoryHandler {
 		return FileResourceManager.getInstance()
 				.getFileResourceMedia(repoEntry.getOlatResource());
 	}
-	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#readyToDelete(org.olat.core.id.OLATResourceable,
-	 *      org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
+
+	@Override
 	public boolean readyToDelete(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		PortfolioStructure map = ePFMgr.loadPortfolioStructure(res);
@@ -163,39 +204,11 @@ public class PortfolioHandler implements RepositoryHandler {
 		return true;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#cleanupOnDelete(org.olat.core.id.OLATResourceable,
-	 *      org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
+	@Override
 	public boolean cleanupOnDelete(OLATResourceable res) {
 		EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		ePFMgr.deletePortfolioMapTemplate(res);
 		return true;
-	}
-
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#createCopy(org.olat.core.id.OLATResourceable,
-	 *      org.olat.core.gui.UserRequest)
-	 */
-	public OLATResourceable createCopy(OLATResourceable res, UserRequest ureq) {
-		EPFrontendManager ePFMgr = (EPFrontendManager)CoreSpringFactory.getBean("epFrontendManager");
-		PortfolioStructure structure = ePFMgr.loadPortfolioStructure(res);
-		PortfolioStructure newStructure = EPXStreamHandler.copy(structure);
-		PortfolioStructureMap map = ePFMgr.importPortfolioMapTemplate(newStructure);
-		return map.getOlatResource();
-	}
-
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getAddController(org.olat.repository.controllers.RepositoryAddCallback,
-	 *      java.lang.Object, org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
-	public IAddController createAddController(RepositoryAddCallback callback, Object userObject, UserRequest ureq, WindowControl wControl) {
-		if(PROCESS_CREATENEW.equals(userObject)) {
-			return new CreateStructureMapTemplateController(callback, ureq, wControl);
-		}
-		return new CreateStructureMapTemplateController(null, ureq, wControl);
 	}
 
 	/**
@@ -217,29 +230,16 @@ public class PortfolioHandler implements RepositoryHandler {
 		return mr;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getDetailsComponent(org.olat.core.id.OLATResourceable,
-	 *      org.olat.core.gui.UserRequest)
-	 */
+	@Override
 	public Controller createDetailsForm(UserRequest ureq, WindowControl wControl, OLATResourceable res) {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getEditorController(org.olat.core.id.OLATResourceable,
-	 *      org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl control) {
 		return createLaunchController(re, ureq, control);
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getLaunchController(org.olat.core.id.OLATResourceable,
-	 *      java.lang.String, org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq,
 			WindowControl wControl) {
@@ -257,49 +257,34 @@ public class PortfolioHandler implements RepositoryHandler {
 		return wrapper;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getSupportedTypes()
-	 */
+	@Override
 	public List<String> getSupportedTypes() {
 		return supportedTypes;
 	}
-	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#acquireLock(org.olat.core.id.OLATResourceable,
-	 *      org.olat.core.id.Identity)
-	 */
+
+	@Override
 	public LockResult acquireLock(OLATResourceable ores, Identity identity) {
 		return CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(ores, identity, "subkey");
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#releaseLock(org.olat.core.util.coordinate.LockResult)
-	 */
+	@Override
 	public void releaseLock(LockResult lockResult) {
 		if(lockResult!=null) {
-		  CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockResult);
+			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockResult);
 		}
 	}
-	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#isLocked(org.olat.core.id.OLATResourceable)
-	 */
+
+	@Override
 	public boolean isLocked(OLATResourceable ores) {
 		return CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(ores, "subkey");
 	}
-	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getCreateWizardController(org.olat.core.id.OLATResourceable, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
-	public Controller createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+
+	@Override
+	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		throw new AssertException("Trying to get wizard where no creation wizard is provided for this type.");
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getCloseResourceController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.repository.RepositoryEntry)
-	 */
+	@Override
 	public WizardCloseResourceController createCloseResourceController(UserRequest ureq, WindowControl control, RepositoryEntry repositoryEntry) {
 		// No specific close wizard is implemented.
 		throw new AssertException("not implemented");

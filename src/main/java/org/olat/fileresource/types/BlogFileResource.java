@@ -56,6 +56,10 @@ public class BlogFileResource extends FeedFileResource {
 	 * @return True if it is falid
 	 */
 	public static boolean validate(File directory) {
-		return FeedFileResource.validate(directory, TYPE_NAME);
+		return validate(directory, TYPE_NAME);
+	}
+	
+	public static ResourceEvaluation evaluate(File file, String filename) {
+		return evaluate(file, filename, TYPE_NAME);
 	}
 }

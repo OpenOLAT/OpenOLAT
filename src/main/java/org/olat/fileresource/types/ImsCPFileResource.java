@@ -26,6 +26,11 @@
 package org.olat.fileresource.types;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -34,6 +39,8 @@ import java.util.Map;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.XPath;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.ims.resources.IMSLoader;
 
 /**
@@ -42,25 +49,61 @@ import org.olat.ims.resources.IMSLoader;
  * @author Mike Stock
  */
 public class ImsCPFileResource extends FileResource {
+	
+	private static final OLog log = Tracing.createLoggerFor(ImsCPFileResource.class);
+	private static final String IMS_MANIFEST = "imsmanifest.xml";
 
 	/**
 	 * IMS CP file resource identifier.
 	 */
 	public static final String TYPE_NAME = "FileResource.IMSCP";
 
-	/**
-	 * Standard constructor.
-	 */
-	public ImsCPFileResource() { super.setTypeName(TYPE_NAME); }
+	public ImsCPFileResource() {
+		super.setTypeName(TYPE_NAME);
+	}
 	
 	/**
 	 * Check for title and at least one resource.
 	 * @param unzippedDir
 	 * @return True if is of type.
 	 */
-	public static boolean validate(File unzippedDir) throws AddingResourceException {
-		File fManifest = new File(unzippedDir, "imsmanifest.xml");
+	public static boolean validate(File unzippedDir)
+	throws AddingResourceException {
+		File fManifest = new File(unzippedDir, IMS_MANIFEST);
 		Document doc = IMSLoader.loadIMSDocument(fManifest);
+		//do not throw exception already here, as it might be only a generic zip file
+		if (doc == null) {
+			return false;
+		} else {
+			return validateImsManifest(doc);
+		}
+	}
+	
+	public static ResourceEvaluation evaluate(File file, String filename) {
+		ResourceEvaluation eval = new ResourceEvaluation();
+		try {
+			ImsManifestFileFilter visitor = new ImsManifestFileFilter();
+			Path fPath = visit(file, filename, visitor);
+			if(visitor.isValid()) {
+				Path manifestPath = fPath.resolve(IMS_MANIFEST);
+				Document doc = IMSLoader.loadIMSDocument(manifestPath);
+				if(validateImsManifest(doc)) {
+					eval.setValid(true);
+				} else {
+					eval.setValid(false);
+				}
+			} else {
+				eval.setValid(false);
+			}
+		} catch (IOException | AddingResourceException e) {
+			log.error("", e);
+			eval.setValid(false);
+		}
+		return eval;
+	}
+	
+	private static boolean validateImsManifest(Document doc)
+	throws AddingResourceException {
 		//do not throw exception already here, as it might be only a generic zip file
 		if (doc == null) return false;
 
@@ -76,7 +119,9 @@ public class ImsCPFileResource extends FileResource {
 		XPath meta = rootElement.createXPath("//ns:organization");
 		meta.setNamespaceURIs(nsuris);
 		Element orgaEl = (Element) meta.selectSingleNode(rootElement); // TODO: accept several organizations?
-		if (orgaEl == null) throw new AddingResourceException("resource.no.organisation");
+		if (orgaEl == null) {
+			throw new AddingResourceException("resource.no.organisation");
+		}
 
 		// Check for at least one <item> element referencing a <resource>, which will serve as an entry point.
 		// This is mandatory, as we need an entry point as the user has the option of setting
@@ -85,7 +130,9 @@ public class ImsCPFileResource extends FileResource {
 		XPath resourcesXPath = rootElement.createXPath("//ns:resources");
 		resourcesXPath.setNamespaceURIs(nsuris);
 		Element elResources = (Element)resourcesXPath.selectSingleNode(rootElement);
-		if (elResources == null) throw new AddingResourceException("resource.no.resource"); // no <resources> element.
+		if (elResources == null) {
+			throw new AddingResourceException("resource.no.resource"); // no <resources> element.
+		}
 		XPath itemsXPath = rootElement.createXPath("//ns:item");
 		itemsXPath.setNamespaceURIs(nsuris);
 		List items = itemsXPath.selectNodes(rootElement);
@@ -105,5 +152,24 @@ public class ImsCPFileResource extends FileResource {
 		}
 		return false;
 		//throw new AddingResourceException("resource.general.error");
+	}
+	
+	private static class ImsManifestFileFilter extends SimpleFileVisitor<Path> {
+		private boolean manifestFile;
+
+		@Override
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+		throws IOException {
+
+			String filename = file.getFileName().toString();
+			if(IMS_MANIFEST.equals(filename)) {
+				manifestFile = true;
+			}
+			return manifestFile ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
+		}
+		
+		public boolean isValid() {
+			return manifestFile;
+		}
 	}
 }

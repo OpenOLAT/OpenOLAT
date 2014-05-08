@@ -54,7 +54,6 @@ import org.olat.home.InviteeHomeMainController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoyUIFactory;
-import org.olat.repository.controllers.RepositoryMainController;
 
 
 /**
@@ -156,11 +155,6 @@ public class ControllerFactory {
 			RepositoryEntry re = rm.lookupRepositoryEntry(fakedCourseResource, false);
 			MainLayoutController ctrl = RepositoyUIFactory.createLaunchController(re, ureq, wControl);	
 			if (ctrl != null) return ctrl;
-		}
-
-		// --- repository ---
-		else if (OresHelper.isOfType(olatResourceable, RepositoryMainController.class)) {
-			return new RepositoryMainController(ureq, wControl);
 		}
 		// --- home ---
 		else if (OresHelper.isOfType(olatResourceable, HomeMainController.class)) {

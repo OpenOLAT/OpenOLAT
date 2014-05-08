@@ -1675,6 +1675,14 @@ public class EPStructureManager extends BasicManager {
 		return el;
 	}
 	
+	private EPStructureElement fillStructureElement(EPStructureElement el, String title, String description, OLATResource resource) {
+		el.setTitle(title);
+		el.setDescription(description);
+		el.setOlatResource(resource);
+		dbInstance.saveObject(resource);
+		return el;
+	}
+	
 /**
  * Create a map template, create an OLAT resource and a repository entry with a security group
  * of type owner to the repository and add the identity has an owner.
@@ -1703,10 +1711,10 @@ public class EPStructureManager extends BasicManager {
 	 * @param identity
 	 * @return
 	 */
-	public PortfolioStructureMap importPortfolioMapTemplate(PortfolioStructure root) {
+	public PortfolioStructureMap importPortfolioMapTemplate(PortfolioStructure root, OLATResource resource) {
 		EPStructuredMapTemplate el = new EPStructuredMapTemplate();
 		
-		fillStructureElement(el, root.getTitle(), root.getDescription());
+		fillStructureElement(el, root.getTitle(), root.getDescription(), resource);
 		EPStructuredMapTemplate rootTemp = (EPStructuredMapTemplate) root;
 		rootTemp.setStructureElSource(null);
 		
@@ -1801,13 +1809,8 @@ public class EPStructureManager extends BasicManager {
 	
 	private RepositoryEntry createRepositoryEntry(Identity identity, OLATResource oresable, String title) {
 		// create a repository entry
-		RepositoryEntry addedEntry = repositoryService.create(identity, "-", title, null, oresable);
-		// Do set access for owner at the end, because unfinished course should be invisible
-		addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry addedEntry = repositoryService.create(identity, "-", title, null, oresable, RepositoryEntry.ACC_OWNERS);
 
-		// Set the resource on the repository entry and save the entry.
-		// bind resource and repository entry
-		repositoryService.update(addedEntry);
 		return addedEntry;
 	}
 	

@@ -94,17 +94,17 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Override
 	public RepositoryEntry create(String initialAuthor, String resourceName,
 			String displayname, String description, OLATResource resource) {
-		return create(initialAuthor, null, resourceName, displayname, description, resource);
+		return create(initialAuthor, null, resourceName, displayname, description, resource, 0);
 	}
 
 	@Override
 	public RepositoryEntry create(Identity initialAuthor, String resourceName,
-			String displayname, String description, OLATResource resource) {
-		return create(null, initialAuthor, resourceName, displayname, description, resource);
+			String displayname, String description, OLATResource resource, int access) {
+		return create(null, initialAuthor, resourceName, displayname, description, resource, access);
 	}
 	
 	private RepositoryEntry create(String initialAuthorName, Identity initialAuthor, String resourceName,
-			String displayname, String description, OLATResource resource) { 
+			String displayname, String description, OLATResource resource, int access) { 
 		Date now = new Date();
 		
 		RepositoryEntry re = new RepositoryEntry();
@@ -115,10 +115,11 @@ public class RepositoryServiceImpl implements RepositoryService {
 		}
 		re.setCreationDate(now);
 		re.setLastModified(now);
-		re.setAccess(0);
+		re.setAccess(access);
 		re.setCanDownload(false);
 		re.setCanCopy(false);
 		re.setCanReference(false);
+		re.setCanLaunch(true);
 		re.setDisplayname(displayname);
 		re.setResourcename(resourceName == null ? "" : resourceName);
 		re.setDescription(description == null ? "" : description);

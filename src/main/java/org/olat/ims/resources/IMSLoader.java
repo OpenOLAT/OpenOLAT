@@ -32,6 +32,8 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.dom4j.Document;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -95,6 +97,17 @@ public class IMSLoader {
 			}	catch (Exception e) {
 				// we did our best to close the inputStream
 			}
+		}
+		return doc;
+	}
+	
+	public static Document loadIMSDocument(Path documentPath) {
+		Document doc = null;
+		try (InputStream in = Files.newInputStream(documentPath)) {
+			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
+			doc = xmlParser.parse(in, false);
+		} catch (Exception e) {
+			return null;
 		}
 		return doc;
 	}

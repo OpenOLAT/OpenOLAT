@@ -55,6 +55,12 @@ import org.olat.repository.ui.LifecycleAdminController;
  */
 public class RepositoyUIFactory {
 	
+	public static String getIconCssClass(String type) {
+		String iconCSSClass = "o_" + type.replace(".", "-");
+		iconCSSClass = iconCSSClass.concat("_icon");
+		return iconCSSClass;
+	}
+	
 	public static String getIconCssClass(RepositoryEntryShort re) {
 		String iconCSSClass = "o_" + re.getResourceType().replace(".", "-");
 		if (re != null && RepositoryManager.getInstance().createRepositoryEntryStatus(re.getStatusCode()).isClosed()) {

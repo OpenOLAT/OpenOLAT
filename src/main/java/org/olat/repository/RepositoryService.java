@@ -41,7 +41,7 @@ public interface RepositoryService {
 	
 	
 	public RepositoryEntry create(Identity initialAuthor, String resourceName,
-			String displayname, String description, OLATResource resource);
+			String displayname, String description, OLATResource resource, int access);
 	
 	public RepositoryEntry create(String initialAuthor, String resourceName,
 			String displayname, String description, OLATResource resource);

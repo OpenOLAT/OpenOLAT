@@ -314,7 +314,7 @@ public class ImportReferencesController extends BasicController {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(fileResource);
 		RepositoryEntry importedRepositoryEntry = repositoryService.create(owner, importExport.getResourceName(),
-				importExport.getDisplayName(), importExport.getDescription(), ores);
+				importExport.getDisplayName(), importExport.getDescription(), ores, 0);
 		if (keepSoftkey) {
 			String theSoftKey = importExport.getSoftkey();
 			if (rm.lookupRepositoryEntryBySoftkey(theSoftKey, false) != null) {

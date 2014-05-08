@@ -278,16 +278,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		fam.applyFormatter(ff, element.getForumKey(), null);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#importNode(java.io.File,
-	 *      org.olat.course.ICourse, org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
-	public Controller importNode(File importDirectory, ICourse course, boolean unattendedImport, UserRequest ureq, WindowControl wControl) {
-		// nothing to do in default implementation
-		return null;
-	}
-
+	@Override
 	protected void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
 		// evaluate the preconditions
 		boolean reader = (getPreConditionReader().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionReader()));

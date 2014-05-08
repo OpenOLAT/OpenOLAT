@@ -25,9 +25,17 @@
 
 package org.olat.modules.wiki;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -41,9 +49,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.controller.OLATResourceableListeningWrapperController;
@@ -77,7 +86,9 @@ import org.olat.resource.OLATResourceManager;
  * 
  * @author guido
  */
-public class WikiManager extends BasicManager {
+public class WikiManager {
+	
+	private static final OLog log = Tracing.createLoggerFor(WikiManager.class);
 
 	public static final String VIEW_COUNT = "view.count";
 	public static final String MODIFY_AUTHOR = "modify.author";
@@ -149,8 +160,8 @@ public class WikiManager extends BasicManager {
 	 */
 	
 	
-	public FileResource createWiki() {
-		FileResource resource = new WikiResource();
+	public WikiResource createWiki() {
+		WikiResource resource = new WikiResource();
 		createFolders(resource);
 		OLATResourceManager rm = getResourceManager();
 		OLATResource ores = rm.createOLATResourceInstance(resource);
@@ -162,6 +173,69 @@ public class WikiManager extends BasicManager {
 			coordinator = coord;
 	}
 	
+	public boolean importWiki(File file, String filename, File targetDirectory) {
+		try {
+			Path path = FileResource.getResource(file, filename);
+			if(path == null) {
+				return false;
+			}
+			
+			Path destDir = targetDirectory.toPath();
+			Files.walkFileTree(path, new CopyVisitor(destDir));
+			return true;
+		} catch (IOException e) {
+			log.error("", e);
+			return false;
+		}
+	}
+	
+	
+	/**
+	 * Dispatch the content in the wiki and media folders
+	 * Initial date: 02.05.2014<br>
+	 * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+	 *
+	 */
+	public static class CopyVisitor extends SimpleFileVisitor<Path> {
+		
+		private final Path destDir;
+		private final Path wikiDir;
+		private final Path mediaDir;
+		
+		public CopyVisitor(Path destDir) throws IOException {
+			this.destDir = destDir;
+			wikiDir = destDir.resolve(WIKI_RESOURCE_FOLDER_NAME);
+			Files.createDirectories(wikiDir);
+			mediaDir = destDir.resolve(WikiContainer.MEDIA_FOLDER_NAME);
+			Files.createDirectories(mediaDir);
+		}
+		
+		@Override
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+	    throws IOException {
+	        String filename = file.getFileName().toString();
+	        if (filename.endsWith(WikiManager.WIKI_FILE_SUFFIX) || filename.endsWith(WikiManager.WIKI_PROPERTIES_SUFFIX)) {
+	        	final Path destFile = Paths.get(wikiDir.toString(), file.toString());
+				Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
+			} else if (!filename.contains(WikiManager.WIKI_FILE_SUFFIX + "-")
+					&& !filename.contains(WikiManager.WIKI_PROPERTIES_SUFFIX + "-")) {
+				final Path destFile = Paths.get(mediaDir.toString(), file.toString());
+				Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
+			}
+	        return FileVisitResult.CONTINUE;
+		}
+	 
+		@Override
+		public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+		throws IOException {
+	        final Path dirToCreate = Paths.get(destDir.toString(), dir.toString());
+	        if(Files.notExists(dirToCreate)){
+	        	Files.createDirectory(dirToCreate);
+	        }
+	        return FileVisitResult.CONTINUE;
+		}
+	}
+	
 	
 /**
  * API change stop
@@ -169,7 +243,7 @@ public class WikiManager extends BasicManager {
 	
 	void createFolders(OLATResourceable ores) {
 		long start = 0;
-		if (isLogDebugEnabled()) {
+		if (log.isDebug()) {
 			start = System.currentTimeMillis();
 		}
 		VFSContainer rootContainer = getWikiRootContainer(ores);
@@ -219,9 +293,9 @@ public class WikiManager extends BasicManager {
 				saveWikiPageProperties(ores, page);
 			}
 		}
-		if (isLogDebugEnabled()) {
+		if (log.isDebug()) {
 			long end = System.currentTimeMillis();
-			logDebug("creating folders and move files and updating properties to default values took: (milliseconds)"+(end-start), null);
+			log.debug("creating folders and move files and updating properties to default values took: (milliseconds)"+(end-start), null);
 		}
 	}
 
@@ -243,7 +317,7 @@ public class WikiManager extends BasicManager {
 		}
 		Wiki wiki = wikiCache.get(wikiKey);
 		if (wiki != null) {
-			logDebug("loading wiki from cache. Ores: " + ores.getResourceableId());
+			log.debug("loading wiki from cache. Ores: " + ores.getResourceableId());
 			return wiki;
 		}
 		// No wiki in cache => load it form file-system
@@ -252,8 +326,8 @@ public class WikiManager extends BasicManager {
 
 				long start = 0;
 				// wiki not in cache load form filesystem
-				if (isLogDebugEnabled()) {
-					logDebug("wiki not in cache. Loading wiki from filesystem. Ores: " + ores.getResourceableId());
+				if (log.isDebug()) {
+					log.debug("wiki not in cache. Loading wiki from filesystem. Ores: " + ores.getResourceableId());
 					start = System.currentTimeMillis();
 				}
 
@@ -320,9 +394,9 @@ public class WikiManager extends BasicManager {
 				wiki.addPage(a2zPage);
 
 				// wikiCache.put(OresHelper.createStringRepresenting(ores), wiki);
-				if (isLogDebugEnabled()) {
+				if (log.isDebug()) {
 					long stop = System.currentTimeMillis();
-					logDebug("loading of wiki from filessystem took (ms) " + (stop - start));
+					log.debug("loading of wiki from filessystem took (ms) " + (stop - start));
 				}
 				wikiCache.put(wikiKey, wiki);
 			}
@@ -439,7 +513,7 @@ public class WikiManager extends BasicManager {
 				}
 			}
 		}
-		logAudit("Deleted wiki page with name: " + page.getPageName() + " from resourcable id: "+ ores.getResourceableId());
+		log.audit("Deleted wiki page with name: " + page.getPageName() + " from resourcable id: "+ ores.getResourceableId());
 		if (wikiCache!=null) {
 			wikiCache.update(OresHelper.createStringRepresenting(ores), getOrLoadWiki(ores));
 		}
@@ -527,10 +601,10 @@ public class WikiManager extends BasicManager {
 	 * @param ores
 	 * @return
 	 */
-	public VFSContainer getWikiRootContainer(OLATResourceable ores) {
+	public OlatRootFolderImpl getWikiRootContainer(OLATResourceable ores) {
 		// Check if Resource is a BusinessGroup, because BusinessGroup-wiki's are stored at a different place
-		if(isLogDebugEnabled()){
-			logDebug("calculating wiki root container with ores id: "+ores.getResourceableId()+" and resourcable type name: "+ores.getResourceableTypeName(), null);
+		if(log.isDebug()){
+			log.debug("calculating wiki root container with ores id: "+ores.getResourceableId()+" and resourcable type name: "+ores.getResourceableTypeName(), null);
 		}
 		if (isGroupContextWiki(ores)) {
 			// Group Wiki

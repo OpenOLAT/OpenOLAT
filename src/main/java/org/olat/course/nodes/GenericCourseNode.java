@@ -394,7 +394,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * @see org.olat.course.nodes.CourseNode#exportNode(java.io.File,
 	 *      org.olat.course.ICourse)
 	 */
-	//implemented by specialized node
+	@Override
 	public void exportNode(File exportDirectory, ICourse course) {
 	// nothing to do in default implementation
 	}
@@ -405,9 +405,9 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 *      org.olat.course.ICourse, org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
-	public Controller importNode(File importDirectory, ICourse course, boolean unattendedImport, UserRequest ureq, WindowControl wControl) {
+	@Override
+	public void importNode(File importDirectory, ICourse course) {
 		// nothing to do in default implementation
-		return null;
 	}
 
 	@Override

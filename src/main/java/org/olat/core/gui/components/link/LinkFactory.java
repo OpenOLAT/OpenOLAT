@@ -170,14 +170,14 @@ public class LinkFactory {
 		return new Link(name, cmd, i18nKey, presentation, vc, listener);
 	}
 	
-	public static Link createToolLink(String name, String i18nKey, ComponentEventListener listener){
-		Link link = new Link(name, name, i18nKey, Link.LINK | Link.NONTRANSLATED, null, listener);
+	public static Link createToolLink(String name, String label, ComponentEventListener listener){
+		Link link = new Link(name, name, label, Link.LINK | Link.NONTRANSLATED, null, listener);
 		link.setDomReplacementWrapperRequired(false);
 		return link;
 	}
 	
-	public static Link createToolLink(String name, String i18nKey, ComponentEventListener listener, String elementCssClass){
-		Link link = new Link(name, name, i18nKey, Link.LINK | Link.NONTRANSLATED, null, listener);
+	public static Link createToolLink(String name, String label, ComponentEventListener listener, String elementCssClass){
+		Link link = new Link(name, name, label, Link.LINK | Link.NONTRANSLATED, null, listener);
 		link.setDomReplacementWrapperRequired(false);
 		link.setElementCssClass(elementCssClass);
 		return link;

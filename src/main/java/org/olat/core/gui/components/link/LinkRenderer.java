@@ -52,6 +52,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 	private static Pattern singleQuote = Pattern.compile("\'");
 	private static Pattern doubleQutoe = Pattern.compile("\"");
 
+	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		Link link = (Link) source;
@@ -165,6 +166,11 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				sb.append("href=\"javascript:");
 				sb.append(FormJSHelper.getJSFnCallFor(theForm, elementId, 1));
 				sb.append("\" ");
+			} else if(link.isPopup()) {
+				StringOutput href = new StringOutput();
+				ubu.buildURI(href, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command },
+						link.getModURI(), AJAXFlags.MODE_NORMAL);
+				sb.append("href=\"javascript:void(o_openPopUp('").append(href).append("', 'Open', 500, 400))").append("\" ");
 			} else {
 				sb.append("href=\"");
 				ubu.buildURI(sb, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command },
@@ -235,7 +241,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			}
 			sb.append("</span></a>");
 			//on click() is part of prototype.js
-			if(link.registerForMousePositionEvent) {
+			if(link.isRegisterForMousePositionEvent()) {
 				extJsSb.append("jQuery('#"+elementId+"').click(function(event) {")
 				       .append(" jQuery('#" + elementId + "').each(function(index, el) {;")
 				       .append("  var href = jQuery(el).attr('href');")
@@ -248,8 +254,8 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			 * this binds the event to the function call as argument, usefull if event is needed
 			 * Event.observe("id", "click", functionName.bindAsEventListener(this));
 			 */
-			if(link.javascriptHandlerFunction != null) {
-				extJsSb.append("  jQuery('#"+elementId+"').on('"+link.mouseEvent+"', "+link.javascriptHandlerFunction+");");
+			if(link.getJavascriptHandlerFunction() != null) {
+				extJsSb.append("  jQuery('#"+elementId+"').on('"+link.getMouseEvent()+"', "+link.getJavascriptHandlerFunction()+");");
 				hasExtJsSb = true;
 			}	
 		} else {

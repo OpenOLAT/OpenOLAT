@@ -1171,8 +1171,8 @@ public class EPFrontendManager extends BasicManager {
 	 * @param identity
 	 * @return The persisted structure
 	 */
-	public PortfolioStructureMap importPortfolioMapTemplate(PortfolioStructure root) {
-		return structureManager.importPortfolioMapTemplate(root);
+	public PortfolioStructureMap importPortfolioMapTemplate(PortfolioStructure root, OLATResource resource) {
+		return structureManager.importPortfolioMapTemplate(root, resource);
 	}
 	
 	

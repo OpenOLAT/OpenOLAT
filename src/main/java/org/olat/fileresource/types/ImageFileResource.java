@@ -49,16 +49,15 @@ public class ImageFileResource extends FileResource {
 	 * @return True if is of type.
 	 */
 	public static boolean validate(File f) {
-		String filename_ = f.getName().toLowerCase();
-		return filename_.endsWith(".jpg") ||
-		filename_.endsWith(".jpeg") ||
-		filename_.endsWith(".gif") ||
-		filename_.endsWith(".tiff") ||
-		filename_.endsWith(".img") ||
-		filename_.endsWith(".bmp") ||
-		filename_.endsWith(".pbm") ||
-		filename_.endsWith(".ico") ||
-		filename_.endsWith(".pict") ||
-		filename_.endsWith(".png");
+		return validate(f.getName());
+	}
+	
+	public static boolean validate(String filename) {
+		String f = filename.toLowerCase();
+		return f.endsWith(".jpg") || f.endsWith(".jpeg") ||
+				f.endsWith(".gif") || f.endsWith(".tiff") ||
+				f.endsWith(".img") || f.endsWith(".bmp") ||
+				f.endsWith(".pbm") || f.endsWith(".ico") ||
+				f.endsWith(".pict") || f.endsWith(".png");
 	}
 }

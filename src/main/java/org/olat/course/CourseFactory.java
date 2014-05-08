@@ -486,11 +486,8 @@ public class CourseFactory extends BasicManager {
 	 * @param ureq
 	 * @return copy of the course.
 	 */
-	public static OLATResourceable copyCourse(OLATResourceable sourceRes) {
-		
-		PersistingCourseImpl sourceCourse = (PersistingCourseImpl) loadCourse(sourceRes);
-
-		OLATResourceable targetRes = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
+	public static OLATResourceable copyCourse(OLATResourceable sourceRes, OLATResource targetRes) {
+		PersistingCourseImpl sourceCourse = (PersistingCourseImpl)loadCourse(sourceRes);
 		PersistingCourseImpl targetCourse = new PersistingCourseImpl(targetRes.getResourceableId());
 		File fTargetCourseBasePath = targetCourse.getCourseBaseContainer().getBasefile();
 		
@@ -695,7 +692,7 @@ public class CourseFactory extends BasicManager {
 	private static void deployReferencedRepositoryEntries(File importDirectory, ICourse course, CourseEditorTreeNode currentNode) {
 		for (int i = 0; i < currentNode.getChildCount(); i++) {
 			CourseEditorTreeNode childNode = (CourseEditorTreeNode)currentNode.getChildAt(i);
-			childNode.getCourseNode().importNode(importDirectory, course, true, null, null);
+			childNode.getCourseNode().importNode(importDirectory, course);
 			deployReferencedRepositoryEntries(importDirectory, course, childNode);
 		}
 	}
@@ -722,7 +719,7 @@ public class CourseFactory extends BasicManager {
 		RepositoryEntryImportExport importExport = SharedFolderManager.getInstance()
 			.getRepositoryImportExport(importDirectory);
 		Identity owner = BaseSecurityManager.getInstance().findIdentityByName("administrator");
-		ImportSharedfolderReferencesController.doImport(importExport, course, false, owner);
+		ImportSharedfolderReferencesController.doImport(importExport, course, owner);
 	}
 
 	/**
@@ -735,7 +732,7 @@ public class CourseFactory extends BasicManager {
 		if (!cc.hasGlossary()) return;
 		RepositoryEntryImportExport importExport = glossaryManager.getRepositoryImportExport(importDirectory);
 		Identity owner = securityManager.findIdentityByName("administrator");
-		ImportGlossaryReferencesController.doImport(importExport, course, false, owner);
+		ImportGlossaryReferencesController.doImport(importExport, course, owner);
 	}
 	
 	/**

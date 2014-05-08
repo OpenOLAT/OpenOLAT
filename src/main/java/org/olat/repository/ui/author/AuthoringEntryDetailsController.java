@@ -28,11 +28,11 @@ import org.olat.catalog.CatalogManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
-import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -41,8 +41,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.rating.RatingFormEvent;
-import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -81,15 +81,17 @@ import org.olat.resource.accesscontrol.ui.PriceFormat;
 public class AuthoringEntryDetailsController extends FormBasicController {
 	
 	private FormLink markLink, startLink;
-	private RatingWithAverageFormItem ratingEl;
+	private Link editLink;
 	
 	private CloseableModalController cmc;
 	private UserCommentsController commentsCtrl;
+	private AuthoringEditEntryController editCtrl;
+	
+	private final TooledStackedPanel stackPanel;
 	
 	private final RepositoryEntry entry;
 	private final AuthoringEntryRow row;
 
-	private final UserRatingsDAO userRatingsDao;
 	private final ACService acService;
 	private final MarkManager markManager;
 	private final CatalogManager catalogManager;
@@ -98,7 +100,8 @@ public class AuthoringEntryDetailsController extends FormBasicController {
 	
 	private String baseUrl;
 	
-	public AuthoringEntryDetailsController(UserRequest ureq, WindowControl wControl, AuthoringEntryRow row) {
+	public AuthoringEntryDetailsController(UserRequest ureq, WindowControl wControl,
+			TooledStackedPanel stackPanel, AuthoringEntryRow row) {
 		super(ureq, wControl, "details");
 		
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
@@ -106,14 +109,22 @@ public class AuthoringEntryDetailsController extends FormBasicController {
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 		catalogManager = CoreSpringFactory.getImpl(CatalogManager.class);
-		userRatingsDao = CoreSpringFactory.getImpl(UserRatingsDAO.class);
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
+		this.stackPanel = stackPanel;
 		this.row = row;
 		entry = repositoryService.loadByKey(row.getKey());
 		
 		initForm(ureq);
+		
+		if(stackPanel != null) {
+			String displayName = row.getDisplayname();
+			stackPanel.pushController(displayName, this);
+			
+			editLink = LinkFactory.createToolLink("edit", "Edit", this);
+			stackPanel.addTool(editLink, false);
+		}
 	}
 	
 	private void setText(String text, String key, FormLayoutContainer layoutCont) {
@@ -253,7 +264,15 @@ public class AuthoringEntryDetailsController extends FormBasicController {
 		}
 		super.event(ureq, source, event);
 	}
-	
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(editLink == source) {
+			doEdit(ureq);
+		}
+		super.event(ureq, source, event);
+	}
+
 	private void cleanUp() {
 		removeAsListenerAndDispose(commentsCtrl);
 		removeAsListenerAndDispose(cmc);
@@ -280,11 +299,15 @@ public class AuthoringEntryDetailsController extends FormBasicController {
 				Long groupKey = (Long)link.getUserObject();
 				doOpenGroup(ureq, groupKey);
 			}
-		} else if(ratingEl == source && event instanceof RatingFormEvent) {
-			RatingFormEvent ratingEvent = (RatingFormEvent)event;
-			doRating(ratingEvent.getRating());
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	public void doEdit(UserRequest ureq) {
+		removeAsListenerAndDispose(editCtrl);
+
+		editCtrl = new AuthoringEditEntryController(ureq, getWindowControl(), stackPanel, row);
+		listenTo(editCtrl);
 	}
 	
 	private void doStart(UserRequest ureq) {
@@ -312,10 +335,6 @@ public class AuthoringEntryDetailsController extends FormBasicController {
 			markManager.setMark(item, getIdentity(), null, businessPath);
 			return true;
 		}
-	}
-	
-	private void doRating(float rating) {
-		userRatingsDao.updateRating(getIdentity(), entry, null, Math.round(rating));
 	}
 	
 	private void doOpenComments(UserRequest ureq) {

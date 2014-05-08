@@ -25,40 +25,45 @@
 
 package org.olat.repository.handlers;
 
-import java.util.ArrayList;
+import java.io.File;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.SharedFolderFileResource;
-import org.olat.modules.sharedfolder.CreateNewSharedFolderController;
 import org.olat.modules.sharedfolder.SharedFolderDisplayController;
 import org.olat.modules.sharedfolder.SharedFolderEditorController;
 import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.controllers.IAddController;
-import org.olat.repository.controllers.RepositoryAddCallback;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.repository.ui.author.AuthoringEditEntryController;
 import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.resource.references.ReferenceManager;
 
@@ -73,66 +78,90 @@ import org.olat.resource.references.ReferenceManager;
  */
 public class SharedFolderHandler implements RepositoryHandler {
 
-	private static final boolean LAUNCHEABLE = true;
-	private static final boolean DOWNLOADEABLE = false;
-	private static final boolean EDITABLE = true;
-	private static final boolean WIZARD_SUPPORT = false;
-	private static final List<String> supportedTypes;
+	private static final List<String> supportedTypes = Collections.singletonList(SharedFolderFileResource.TYPE_NAME);
 	
 	/**
 	 * Comment for <code>PROCESS_CREATENEW</code>
 	 */
 	public static final String PROCESS_CREATENEW = "cn";
-
-	/**
-	 * Default constructor.
-	 */
-	public SharedFolderHandler() {
-		super();
+	
+	@Override
+	public boolean isCreate() {
+		return true;
+	}
+	
+	@Override
+	public String getCreateLabelI18nKey() {
+		return "new.sharedfolder";
 	}
 
-	static { // initialize supported types
-		supportedTypes = new ArrayList<String>(1);
-		supportedTypes.add(SharedFolderFileResource.TYPE_NAME);
+	@Override
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Locale locale) {
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		SharedFolderFileResource folderResource = SharedFolderManager.getInstance().createSharedFolder();
+		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(folderResource);
+		RepositoryEntry re = repositoryService.create(initialAuthor, SharedFolderFileResource.RESOURCE_NAME,
+				displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		DBFactory.getInstance().commit();
+		return re;
+	}
+	
+	@Override
+	public boolean isPostCreateWizardAvailable() {
+		return false;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getSupportedTypes()
-	 */
+	@Override
+	public ResourceEvaluation acceptImport(File file, String filename) {
+		return new ResourceEvaluation(false);
+	}
+	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, Locale locale,
+			File file, String filename) {
+		return null;
+	}
+	
+	@Override
+	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl,
+			AuthoringEditEntryController pane, RepositoryEntry entry) {
+		//
+	}
+	
+	@Override
+	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target) {
+		OLATResource sourceResource = source.getOlatResource();
+		OLATResource targetResource = target.getOlatResource();
+		File sourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(sourceResource).getBasefile();
+		File targetFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(targetResource).getBasefile();
+		FileUtils.copyDirContentsToDir(sourceFileroot, targetFileroot, false, "copy");
+		return target;
+	}
+
+	@Override
 	public List<String> getSupportedTypes() {
 		return supportedTypes;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsLaunch()
-	 */
+	@Override
 	public boolean supportsLaunch(RepositoryEntry repoEntry) {
-		return LAUNCHEABLE;
+		return true;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
-	 */
+	@Override
 	public boolean supportsDownload(RepositoryEntry repoEntry) {
-		return DOWNLOADEABLE;
+		return false;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsEdit()
-	 */
+	@Override
 	public boolean supportsEdit(RepositoryEntry repoEntry) {
-		return EDITABLE;
+		return true;
 	}
-	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsWizard(org.olat.repository.RepositoryEntry)
-	 */
-	public boolean supportsWizard(RepositoryEntry repoEntry) { return WIZARD_SUPPORT; }
-	
+
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getCreateWizardController(org.olat.core.id.OLATResourceable, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
-	public Controller createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		throw new AssertException("Trying to get wizard where no creation wizard is provided for this type.");
 	}
 	
@@ -182,10 +211,6 @@ public class SharedFolderHandler implements RepositoryHandler {
 		return SharedFolderManager.getInstance().getAsMediaResource(res);
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getEditorController(org.olat.core.id.OLATResourceable
-	 *      org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		Controller sharedFolderCtr = new SharedFolderEditorController(re, ureq, wControl);
@@ -195,23 +220,12 @@ public class SharedFolderHandler implements RepositoryHandler {
 		return layoutCtr;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getAddController(org.olat.repository.controllers.RepositoryAddCallback,
-	 *      java.lang.Object, org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
-	public IAddController createAddController(RepositoryAddCallback callback, Object userObject, UserRequest ureq, WindowControl wControl) {
-		return new CreateNewSharedFolderController(callback, ureq, wControl);
-	}
-
+	@Override
 	public Controller createDetailsForm(UserRequest ureq, WindowControl wControl, OLATResourceable res) {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#cleanupOnDelete(org.olat.core.id.OLATResourceable
-	 *      org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
+	@Override
 	public boolean cleanupOnDelete(OLATResourceable res) {
 		// do not need to notify all current users of this resource, since the only
 		// way to access this resource
@@ -222,10 +236,7 @@ public class SharedFolderHandler implements RepositoryHandler {
 		return true;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#readyToDelete(org.olat.core.id.OLATResourceable
-	 *      org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
+	@Override
 	public boolean readyToDelete(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		ReferenceManager refM = ReferenceManager.getInstance();
 		String referencesSummary = refM.getReferencesToSummary(res, ureq.getLocale());
@@ -237,43 +248,28 @@ public class SharedFolderHandler implements RepositoryHandler {
 		return true;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#createCopy(org.olat.core.id.OLATResourceable
-	 *      org.olat.core.gui.UserRequest)
-	 */
-	public OLATResourceable createCopy(OLATResourceable res, UserRequest ureq) {
-		return FileResourceManager.getInstance().createCopy(res);
-	}
-
+	@Override
 	public String archive(Identity archiveOnBehalfOf, String archivFilePath, RepositoryEntry repoEntry) {
 		return SharedFolderManager.getInstance().archive(archivFilePath, repoEntry);
 	}
-	
-	/**
-	 * 
-	 * @see org.olat.repository.handlers.RepositoryHandler#acquireLock(org.olat.core.id.OLATResourceable, org.olat.core.id.Identity)
-	 */
+
+	@Override
 	public LockResult acquireLock(OLATResourceable ores, Identity identity) {
     //nothing to do
 		return null;
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.repository.handlers.RepositoryHandler#releaseLock(org.olat.core.util.coordinate.LockResult)
-	 */
+	@Override
 	public void releaseLock(LockResult lockResult) {
 		//nothing to do since nothing locked
 	}
-	
-	/**
-	 * 
-	 * @see org.olat.repository.handlers.RepositoryHandler#isLocked(org.olat.core.id.OLATResourceable)
-	 */
+
+	@Override
 	public boolean isLocked(OLATResourceable ores) {
 		return false;
 	}
-	
+
+	@Override
 	public WizardCloseResourceController createCloseResourceController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		throw new AssertException("not implemented");
 	}

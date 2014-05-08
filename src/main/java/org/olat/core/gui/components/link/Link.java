@@ -92,9 +92,9 @@ public class Link extends AbstractComponent {
 	private Object userObject;
 	private String accessKey;
 	private boolean ajaxEnabled = true;
-	boolean registerForMousePositionEvent = false;
-	MouseEvent mouseEvent;
-	String javascriptHandlerFunction;
+	private boolean registerForMousePositionEvent = false;
+	private MouseEvent mouseEvent;
+	private String javascriptHandlerFunction;
 	//x y coordinates of the mouse position when clicked the link, works only if enabled by registerForMousePositionEvent(true)
 	private int offsetX = 0;
 	private int offsetY = 0;
@@ -102,6 +102,7 @@ public class Link extends AbstractComponent {
 	private boolean hasTooltip;
 	private boolean suppressDirtyFormWarning = false;
 	private boolean isDownloadLink = false;
+	private boolean popup = false;
 
 	/**
 	 * 
@@ -217,6 +218,14 @@ public class Link extends AbstractComponent {
 		primary = isPrimary;
 	}
 	
+	public boolean isPopup() {
+		return popup;
+	}
+
+	public void setPopup(boolean popup) {
+		this.popup = popup;
+	}
+
 	public int getPresentation() {
 		return presentation;
 	}
@@ -237,6 +246,18 @@ public class Link extends AbstractComponent {
 		return internalAttachedObj;
 	}
 	
+	MouseEvent getMouseEvent() {
+		return mouseEvent;
+	}
+
+	String getJavascriptHandlerFunction() {
+		return javascriptHandlerFunction;
+	}
+
+	boolean isRegisterForMousePositionEvent() {
+		return registerForMousePositionEvent;
+	}
+
 	/**
 	 * Set an link title which gets displayed when hovering over the link.
 	 * <br>

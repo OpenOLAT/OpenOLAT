@@ -196,10 +196,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		return container;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#exportNode(java.io.File,
-	 *      org.olat.course.ICourse)
-	 */
+	@Override
 	public void exportNode(File exportDirectory, ICourse course) {
 		// this is the node folder, a folder with the node's ID, so we can just copy
 		// the contents over to the export folder
@@ -209,12 +206,8 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		FileUtils.copyDirContentsToDir(fFolderNodeData, fNodeExportDir, false, "export course node");
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#importNode(java.io.File,
-	 *      org.olat.course.ICourse, org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
-	public Controller importNode(File importDirectory, ICourse course, boolean unattendedImport, UserRequest ureq, WindowControl wControl) {
+	@Override
+	public void importNode(File importDirectory, ICourse course) {
 		// the export has copies the files under the node's ID
 		File fFolderNodeData = new File(importDirectory, this.getIdent());
 		// the whole folder can be moved back to the root direcotry of foldernodes
@@ -222,7 +215,6 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		File fFolderNodeDir = new File(FolderConfig.getCanonicalRoot() + getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), this));
 		fFolderNodeDir.mkdirs();
 		FileUtils.copyDirContentsToDir(fFolderNodeData, fFolderNodeDir, true, "import course node");
-		return null;
 	}
 
 	/**

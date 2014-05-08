@@ -34,16 +34,16 @@ public class DefaultExportFormat implements ExportFormatOptions {
 	
 	private final String format;
 	private final Outcome outcome;
-	private final String actionCommand;
+	private final String typeFormat;
 	
 	public DefaultExportFormat(String format) {
 		this(format, Outcome.download, null);
 	}
 	
-	public DefaultExportFormat(String format, Outcome outcome, String actionCommand) {
+	public DefaultExportFormat(String format, Outcome outcome, String typeFormat) {
 		this.format = format;
 		this.outcome = outcome;
-		this.actionCommand = actionCommand;
+		this.typeFormat = typeFormat;
 	}
 
 	@Override
@@ -57,15 +57,15 @@ public class DefaultExportFormat implements ExportFormatOptions {
 	}
 
 	@Override
-	public String getActionCommand() {
-		return actionCommand;
+	public String getTypeFormat() {
+		return typeFormat;
 	}
 
 	@Override
 	public int hashCode() {
 		return (format == null ? 37469 : format.hashCode())
 				+ (outcome == null ? 29 : outcome.hashCode())
-				+ (actionCommand == null ? 4678 : actionCommand.hashCode());
+				+ (typeFormat == null ? 4678 : typeFormat.hashCode());
 	}
 
 	@Override
@@ -77,8 +77,8 @@ public class DefaultExportFormat implements ExportFormatOptions {
 			DefaultExportFormat export = (DefaultExportFormat)obj;
 			return (format != null && format.equals(export.format))
 					&& (outcome != null && outcome.equals(export.outcome))
-					&& ((actionCommand == null && export.actionCommand == null)
-							|| (actionCommand != null && actionCommand.equals(export.actionCommand)));	
+					&& ((typeFormat == null && export.typeFormat == null)
+							|| (typeFormat != null && typeFormat.equals(export.typeFormat)));	
 		}
 		return false;
 	}

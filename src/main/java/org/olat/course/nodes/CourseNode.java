@@ -354,7 +354,7 @@ public interface CourseNode extends INode, ShortName {
 	 * @return Controller for user driven import, or null after all import tasks
 	 *         have finished.
 	 */
-	public Controller importNode(File importDirectory, ICourse course, boolean unattendedImport, UserRequest ureq, WindowControl wControl);
+	public void importNode(File importDirectory, ICourse course);
 	
 	/**
 	 * Remap the node to the context of the course after import.

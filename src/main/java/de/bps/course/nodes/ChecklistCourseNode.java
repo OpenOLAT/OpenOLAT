@@ -294,14 +294,14 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public Controller importNode(File importDirectory, ICourse course, boolean unattendedImport, UserRequest ureq, WindowControl wControl) {
+	public void importNode(File importDirectory, ICourse course) {
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		if(getChecklistKey(cpm) != null) deleteChecklistKeyConf(cpm);
 		
 		File importFile = new File(importDirectory, getExportFilename());
 		String importContent = FileUtils.load(importFile, WebappHelper.getDefaultCharset());
 		if(importContent == null || importContent.isEmpty()) {
-			return null;
+			return;
 		}
 		
 		XStream xstream = XStreamHelper.createXStreamInstance();
@@ -310,8 +310,6 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 			checklist = ChecklistManager.getInstance().copyChecklist(checklist);
 			setChecklistKey(cpm, checklist.getKey());
 		}
-		
-		return null;
 	}
 	
 	@Override

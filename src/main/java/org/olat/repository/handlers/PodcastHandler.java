@@ -19,14 +19,20 @@
  */
 package org.olat.repository.handlers;
 
-import java.util.ArrayList;
+import java.io.File;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -36,9 +42,12 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
+import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.PodcastFileResource;
+import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.webFeed.FeedResourceSecurityCallback;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.managers.FeedManager;
@@ -46,10 +55,11 @@ import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.modules.webFeed.ui.podcast.PodcastUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.controllers.AddFileResourceController;
-import org.olat.repository.controllers.IAddController;
-import org.olat.repository.controllers.RepositoryAddCallback;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.repository.ui.author.AuthoringEditEntryController;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.resource.references.ReferenceManager;
 
@@ -66,40 +76,85 @@ public class PodcastHandler implements RepositoryHandler {
 	public static final String PROCESS_CREATENEW = "create_new";
 	public static final String PROCESS_UPLOAD = "upload";
 
-	private static final boolean DOWNLOADABLE = true;
-	private static final boolean EDITABLE = true;
-	private static final boolean LAUNCHABLE = true;
-	private static final boolean WIZARD_SUPPORT = false;
-	private static final List<String> supportedTypes;
-
-	static { // initialize supported types
-		supportedTypes = new ArrayList<String>(1);
-		supportedTypes.add(PodcastFileResource.TYPE_NAME);
+	private static final List<String> supportedTypes = Collections.singletonList(PodcastFileResource.TYPE_NAME);
+	
+	@Override
+	public boolean isCreate() {
+		return true;
+	}
+	
+	@Override
+	public String getCreateLabelI18nKey() {
+		return "new.podcast";
+	}
+	
+	@Override
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Locale locale) {
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		OLATResourceable ores = FeedManager.getInstance().createPodcastResource();
+		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(ores);
+		RepositoryEntry re = repositoryService.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		DBFactory.getInstance().commit();
+		return re;
+	}
+	
+	@Override
+	public boolean isPostCreateWizardAvailable() {
+		return false;
+	}
+	
+	@Override
+	public ResourceEvaluation acceptImport(File file, String filename) {
+		return PodcastFileResource.evaluate(file, filename);
+	}
+	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, Locale locale,
+			File file, String filename) {
+		
+		OLATResource resource = OLATResourceManager.getInstance().createAndPersistOLATResourceInstance(new PodcastFileResource());
+		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();
+		File blogRoot = new File(fResourceFileroot, FeedManager.getInstance().getFeedKind(resource));
+		FileResource.copyResource(file, filename, blogRoot);
+		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
+				.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		DBFactory.getInstance().commit();
+		return re;
+	}
+	
+	@Override
+	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl,
+			AuthoringEditEntryController pane, RepositoryEntry entry) {
+		
+		QuotaManager qm = QuotaManager.getInstance();
+		if (qm.hasQuotaEditRights(ureq.getIdentity())) {
+			OlatRootFolderImpl feedRoot = FileResourceManager.getInstance().getFileResourceRootImpl(entry.getOlatResource());
+			Controller quotaCtrl = qm.getQuotaEditorInstance(ureq, wControl, feedRoot.getRelPath(), false);
+			pane.appendEditor(pane.getTranslator().translate("tab.quota.edit"), quotaCtrl);
+		}
+	}
+	
+	@Override
+	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target) {
+		OLATResource sourceResource = source.getOlatResource();
+		OLATResource targetResource = target.getOlatResource();
+		FeedManager.getInstance().copy(sourceResource, targetResource);
+		return target;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#acquireLock(org.olat.core.id.OLATResourceable,
-	 *      org.olat.core.id.Identity)
-	 */
+	@Override
 	public LockResult acquireLock(OLATResourceable ores, Identity identity) {
 		return FeedManager.getInstance().acquireLock(ores, identity);
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#archive(java.lang.String,
-	 *      org.olat.repository.RepositoryEntry)
-	 */
+	@Override
 	public String archive(Identity archiveOnBehalfOf, String archivFilePath, RepositoryEntry repoEntry) {
 		// Apperantly, this method is used for backing up any user related content
 		// (comments etc.) on deletion. Up to now, this doesn't exist in podcasts.
 		return null;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#cleanupOnDelete(org.olat.core.id.OLATResourceable,
-	 *      org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
+	@Override
 	public boolean cleanupOnDelete(OLATResourceable res) {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new OLATResourceableJustBeforeDeletedEvent(res), res);
 		// For now, notifications are not implemented since a podcast feed is meant
@@ -108,30 +163,6 @@ public class PodcastHandler implements RepositoryHandler {
 		FeedManager.getInstance().delete(res);
 		return true;
 	}
-
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#createCopy(org.olat.core.id.OLATResourceable,
-	 *      org.olat.core.gui.UserRequest)
-	 */
-	public OLATResourceable createCopy(OLATResourceable res, UserRequest ureq) {
-		FeedManager manager = FeedManager.getInstance();
-		return manager.copy(res);
-	}
-
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getAddController(org.olat.repository.controllers.RepositoryAddCallback,
-	 *      java.lang.Object, org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
-	public IAddController createAddController(RepositoryAddCallback callback, Object userObject, UserRequest ureq, WindowControl wControl) {
-		IAddController addCtr = null;
-		if (userObject == null || userObject.equals(PROCESS_UPLOAD)) {
-			addCtr = new AddFileResourceController(callback, supportedTypes, new String[] { "zip" }, ureq, wControl);
-		} else {
-			addCtr = PodcastUIFactory.getInstance(ureq.getLocale()).createAddController(callback, ureq, wControl);
-		}
-		return addCtr;
-	}
 	
 	@Override
 	public VFSContainer getMediaContainer(RepositoryEntry repoEntry) {
@@ -139,24 +170,17 @@ public class PodcastHandler implements RepositoryHandler {
 				.getFileResourceMedia(repoEntry.getOlatResource());
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getAsMediaResource(org.olat.core.id.OLATResourceable)
-	 */
 	@Override
 	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
 		FeedManager manager = FeedManager.getInstance();
 		return manager.getFeedArchiveMediaResource(res);
 	}
 
+	@Override
 	public Controller createDetailsForm(UserRequest ureq, WindowControl wControl, OLATResourceable res) {
 		return FileResourceManager.getInstance().getDetailsForm(ureq, wControl, res);
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getEditorController(org.olat.core.id.OLATResourceable,
-	 *      org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl control) {
 		// Return the launch controller. Owners and admins will be able to edit the
@@ -164,11 +188,6 @@ public class PodcastHandler implements RepositoryHandler {
 		return createLaunchController(re, ureq, control);
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getLaunchController(org.olat.core.id.OLATResourceable,
-	 *      java.lang.String, org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
@@ -180,18 +199,12 @@ public class PodcastHandler implements RepositoryHandler {
 		return wrapper;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getSupportedTypes()
-	 */
+	@Override
 	public List<String> getSupportedTypes() {
 		return supportedTypes;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#readyToDelete(org.olat.core.id.OLATResourceable,
-	 *      org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
+	@Override
 	public boolean readyToDelete(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		ReferenceManager refM = ReferenceManager.getInstance();
 		String referencesSummary = refM.getReferencesToSummary(res, ureq.getLocale());
@@ -203,62 +216,40 @@ public class PodcastHandler implements RepositoryHandler {
 		return true;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#releaseLock(org.olat.core.util.coordinate.LockResult)
-	 */
+	@Override
 	public void releaseLock(LockResult lockResult) {
 		FeedManager.getInstance().releaseLock(lockResult);
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
-	 */
+	@Override
 	public boolean supportsDownload(RepositoryEntry repoEntry) {
-		return DOWNLOADABLE;
+		return true;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsEdit()
-	 */
+	@Override
 	public boolean supportsEdit(RepositoryEntry repoEntry) {
-		return EDITABLE;
+		return true;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsLaunch()
-	 */
+	@Override
 	public boolean supportsLaunch(RepositoryEntry repoEntry) {
-		return LAUNCHABLE;
+		return true;
 	}
-	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsWizard(org.olat.repository.RepositoryEntry)
-	 */
-	public boolean supportsWizard(RepositoryEntry repoEntry) { return WIZARD_SUPPORT; }
-	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getCreateWizardController(org.olat.core.id.OLATResourceable, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
-	public Controller createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+
+	@Override
+	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		throw new AssertException("Trying to get wizard where no creation wizard is provided for this type.");
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getCloseResourceController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.repository.RepositoryEntry)
-	 */
+	@Override
 	public WizardCloseResourceController createCloseResourceController(UserRequest ureq, WindowControl control, RepositoryEntry repositoryEntry) {
 		// This was copied from WikiHandler. No specific close wizard is
 		// implemented.
 		throw new AssertException("not implemented");
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#isLocked(org.olat.core.id.OLATResourceable)
-	 */
+	@Override
 	public boolean isLocked(OLATResourceable ores) {
 		return FeedManager.getInstance().isLocked(ores);
 	}
-
 }

@@ -20,8 +20,15 @@
 package org.olat.fileresource.types;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -39,6 +46,8 @@ import org.olat.modules.webFeed.models.Item;
  * @author gwassmann
  */
 public abstract class FeedFileResource extends FileResource {
+	
+	private static final OLog log = Tracing.createLoggerFor(FeedFileResource.class);
 
 	public FeedFileResource(String type) {
 		super.setTypeName(type);
@@ -70,6 +79,46 @@ public abstract class FeedFileResource extends FileResource {
 			}
 		}
 	}
+	
+	public static ResourceEvaluation evaluate(File file, String filename, String type) {
+		ResourceEvaluation eval = new ResourceEvaluation();
+		try {
+			IndexFileFilter visitor = new IndexFileFilter();
+			Path fPath = visit(file, filename, visitor);
+			
+			if(visitor.isValid()) {
+				Path feedXml = fPath.resolve(FeedManager.FEED_FILE_NAME);
+				Feed feed = FeedManager.getInstance().readFeedFile(feedXml);
+				if(feed != null && type.equals(feed.getResourceableTypeName())) {
+					eval.setValid(true);
+					eval.setDisplayname(feed.getTitle());
+					eval.setDescription(feed.getDescription());
+				}
+			}
+		} catch (IOException e) {
+			log.error("", e);
+		}
+		return eval;
+	}
+	
+	private static class IndexFileFilter extends SimpleFileVisitor<Path> {
+		private boolean feedFile;
+
+		@Override
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+		throws IOException {
+
+			String filename = file.getFileName().toString();
+			if(FeedManager.FEED_FILE_NAME.equals(filename)) {
+				feedFile = true;
+			}
+			return feedFile ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
+		}
+		
+		public boolean isValid() {
+			return feedFile;
+		}
+	}
 
 	/**
 	 * Validates the uploaded resource directory
@@ -77,7 +126,7 @@ public abstract class FeedFileResource extends FileResource {
 	 * @param directory
 	 * @return True if it is falid
 	 */
-	static boolean validate(File directory, String type) {
+	public static boolean validate(File directory, String type) {
 		boolean valid = false;
 		if (directory != null) {
 			// Verify the directory structure:

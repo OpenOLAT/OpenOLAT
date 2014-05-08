@@ -136,7 +136,7 @@ public class FileResourceManager extends BasicManager {
 				else if (AnimationFileResource.validate(fResource)) tempFr = new AnimationFileResource();
 				else if (SharedFolderFileResource.validate(fResource)) tempFr = new SharedFolderFileResource();
 				// add a wiki copy
-				else if (WikiResource.validate(fResource)) tempFr = new WikiResource();
+				else if (WikiResource.validate(fResource, null).isValid()) tempFr = new WikiResource();
 				// add a podcast copy
 				else if (PodcastFileResource.validate(fResource)) tempFr = new PodcastFileResource(fResourceFileroot, fResource);
 				// add a blog copy
@@ -153,7 +153,7 @@ public class FileResourceManager extends BasicManager {
 						throw new AddingResourceException("resource.error.zip");
 					}
 					if (TestFileResource.validate(fUnzippedDir)) tempFr = new TestFileResource();
-					else if (WikiResource.validate(fUnzippedDir)) tempFr = new WikiResource();
+					else if (WikiResource.validate(fUnzippedDir, null).isValid()) tempFr = new WikiResource();
 					else if (PodcastFileResource.validate(fUnzippedDir)) tempFr = new PodcastFileResource(fResourceFileroot, fUnzippedDir);
 					else if (BlogFileResource.validate(fUnzippedDir)) tempFr = new BlogFileResource(fResourceFileroot, fUnzippedDir);
 					else if (SurveyFileResource.validate(fUnzippedDir)) tempFr = new SurveyFileResource();
@@ -434,6 +434,16 @@ public class FileResourceManager extends BasicManager {
 		if (fResource == null) return null;
 		try {
 			return addFileResource(fResource, fResource.getName());
+		} catch (AddingResourceException e) {
+			throw new OLATRuntimeException(FileResourceManager.class, "Error while trying to copy resource with name: " + fResource.getName(), e);
+		}
+	}
+	
+	public OLATResourceable createCopy(OLATResourceable res, String resourceFolderName, FileResource target) {
+		File fResource = getFileResource(res, resourceFolderName);
+		if (fResource == null) return null;
+		try {
+			return addFileResource(fResource, fResource.getName(), target);
 		} catch (AddingResourceException e) {
 			throw new OLATRuntimeException(FileResourceManager.class, "Error while trying to copy resource with name: " + fResource.getName(), e);
 		}

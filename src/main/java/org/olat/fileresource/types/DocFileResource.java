@@ -49,6 +49,11 @@ public class DocFileResource extends FileResource {
 	 * @return True if is of type.
 	 */
 	public static boolean validate(File f) {
-		return f.getName().toLowerCase().endsWith(".doc"); 
+		return validate(f.getName()); 
+	}
+	
+	public static boolean validate(String filename) {
+		String f = filename.toLowerCase();
+		return f.endsWith(".doc") || f.endsWith(".docx"); 
 	}
 }

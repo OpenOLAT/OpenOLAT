@@ -37,8 +37,6 @@ import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
 import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.modules.webFeed.ui.FeedUIFactory;
-import org.olat.repository.controllers.IAddController;
-import org.olat.repository.controllers.RepositoryAddCallback;
 
 /**
  * UI factory for blogs.
@@ -64,75 +62,43 @@ public class BlogUIFactory extends FeedUIFactory {
 		return new BlogUIFactory(locale);
 	}
 
-	/**
-	 * @see org.olat.modules.webFeed.ui.FeedUIFactory#getTranslator()
-	 */
+	@Override
 	public Translator getTranslator() {
 		return translator;
 	}
 
-	/**
-	 * @see org.olat.modules.webFeed.ui.FeedUIFactory#setTranslator(java.util.Locale)
-	 */
+	@Override
 	public void setTranslator(Locale locale) {
 		final Translator fallbackTans = Util.createPackageTranslator(FeedMainController.class, locale);
 		translator = Util.createPackageTranslator(BlogUIFactory.class, locale, fallbackTans);
 	}
 
-	/**
-	 * @see org.olat.modules.webFeed.ui.FeedUIFactory#createAddController(org.olat.repository.controllers.RepositoryAddCallback,
-	 *      org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
-	public IAddController createAddController(RepositoryAddCallback addCallback, UserRequest ureq, WindowControl wControl) {
-		return new CreateBlogController(addCallback, ureq, wControl);
-	}
-
-	/**
-	 * @see org.olat.modules.webFeed.FeedUIFactory#getInfoVelocityContainer()
-	 */
+	@Override
 	public VelocityContainer createInfoVelocityContainer(BasicController controller) {
 		return new VelocityContainer(VC_INFO_NAME, this.getClass(), VC_INFO_NAME, translator, controller);
 	}
 
-	/**
-	 * @see org.olat.modules.webFeed.FeedUIFactory#getInfoVelocityContainer()
-	 */
+	@Override
 	public VelocityContainer createItemsVelocityContainer(BasicController controller) {
 		return new VelocityContainer(VC_ITEMS_NAME, this.getClass(), "posts", translator, controller);
 	}
 
-	/**
-	 * @see org.olat.modules.webFeed.ui.FeedUIFactory#createItemsVelocityContainer(org.olat.core.gui.control.controller.BasicController)
-	 */
+	@Override
 	public VelocityContainer createItemVelocityContainer(BasicController controller) {
 		return new VelocityContainer(VC_ITEM_NAME, this.getClass(), "post", translator, controller);
 	}
 
-	/**
-	 * @see org.olat.modules.webFeed.ui.FeedUIFactory#createRightColumnVelocityContainer(org.olat.core.gui.control.controller.BasicController)
-	 */
+	@Override
 	public VelocityContainer createRightColumnVelocityContainer(BasicController controller) {
 		return new VelocityContainer(VC_RIGHT_NAME, this.getClass(), VC_RIGHT_NAME, translator, controller);
 	}
 
-	/**
-	 * @see org.olat.modules.webFeed.ui.FeedUIFactory#createItemFormController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.modules.webFeed.models.Item,
-	 *      org.olat.modules.webFeed.models.Feed)
-	 */
+	@Override
 	public FormBasicController createItemFormController(UserRequest ureq, WindowControl wControl, Item item, Feed feed) {
 		return new BlogPostFormController(ureq, wControl, item, feed, getTranslator());
 	}
 
-	/**
-	 * @see org.olat.modules.webFeed.ui.FeedUIFactory#createNodeEditController(org.olat.course.nodes.AbstractFeedCourseNode,
-	 *      org.olat.course.ICourse,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
+	@Override
 	public TabbableController createNodeEditController(AbstractFeedCourseNode courseNode, ICourse course, UserCourseEnvironment uce,
 			UserRequest ureq, WindowControl control) {
 		return new BlogNodeEditController(courseNode, course, uce, ureq, control);

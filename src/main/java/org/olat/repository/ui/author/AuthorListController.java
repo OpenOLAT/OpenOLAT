@@ -19,6 +19,7 @@
  */
 package org.olat.repository.ui.author;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
@@ -26,7 +27,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -43,7 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -68,18 +68,21 @@ public class AuthorListController extends FormBasicController implements Activat
 	private FlexiTableElement tableEl;
 	private AuthoringEntryDataModel model;
 	private AuthoringEntryDataSource dataSource;
+	private final SearchAuthorRepositoryEntryViewParams searchParams;
 	private final MarkManager markManager;
-	private final BreadcrumbPanel stackPanel;
+	private final TooledStackedPanel stackPanel;
 
+	private AuthorSearchController searchCtrl;
 	private AuthoringEntryDetailsController detailsCtrl;
 	
-	public AuthorListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+	public AuthorListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			SearchAuthorRepositoryEntryViewParams searchParams) {
 		super(ureq, wControl, "repoentry_table");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 
 		this.stackPanel = stackPanel;
+		this.searchParams = searchParams;
 		dataSource = new AuthoringEntryDataSource(searchParams, this);
 		initForm(ureq);
 	}
@@ -90,6 +93,11 @@ public class AuthorListController extends FormBasicController implements Activat
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		//search form
+		searchCtrl = new AuthorSearchController(ureq, getWindowControl(), true, mainForm);
+		listenTo(searchCtrl);
+		formLayout.add("search", searchCtrl.getInitialFormItem());
+		
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), false, null));
@@ -166,13 +174,29 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 
 	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(searchCtrl == source) {
+			if(event instanceof SearchEvent) {
+				SearchEvent se = (SearchEvent)event;
+				doSearch(se);
+			}
+		}
 		super.event(ureq, source, event);
 	}
 
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc) {
 		//do not update the 
+	}
+	
+	protected void doSearch(SearchEvent se) {
+		if(se.getType() != null) {
+			searchParams.setResourceTypes(Collections.singletonList(se.getType()));
+		} else {
+			searchParams.setResourceTypes(null);
+		}
+
+		tableEl.reset();
 	}
 	
 	protected void doOpen(UserRequest ureq, AuthoringEntryRow row) {
@@ -186,13 +210,12 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	protected void doOpenDetails(UserRequest ureq, AuthoringEntryRow row) {
+		stackPanel.popUpToRootController(ureq);
+
 		removeAsListenerAndDispose(detailsCtrl);
 		
-		detailsCtrl = new AuthoringEntryDetailsController(ureq, getWindowControl(), row);
+		detailsCtrl = new AuthoringEntryDetailsController(ureq, getWindowControl(), stackPanel, row);
 		listenTo(detailsCtrl);
-		
-		String displayName = row.getDisplayname();
-		stackPanel.pushController(displayName, detailsCtrl);
 	}
 
 	@Override

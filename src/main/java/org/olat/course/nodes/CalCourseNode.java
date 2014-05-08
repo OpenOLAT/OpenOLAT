@@ -19,7 +19,6 @@
  */
 package org.olat.course.nodes;
 
-import java.io.File;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -162,20 +161,9 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
-	 */
+	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#importNode(java.io.File,
-	 *      org.olat.course.ICourse, org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
-	public Controller importNode(File importDirectory, ICourse course, boolean unattendedImport, UserRequest ureq, WindowControl wControl) {
-		return null;
 	}
 
 	/**

@@ -418,18 +418,12 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 	}
 
 	@Override
-	public Controller importNode(File importDirectory, ICourse course, boolean unattendedImport, UserRequest ureq, WindowControl wControl) {
+	public void importNode(File importDirectory, ICourse course) {
 		File importSubdir = new File(importDirectory, getIdent());
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importSubdir);
-		if (!rie.anyExportedPropertiesAvailable()) return null;
-
-		// do import referenced repository entries
-		if (unattendedImport) {
+		if (rie.anyExportedPropertiesAvailable()) {
 			Identity admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
 			ImportPortfolioReferencesController.doImport(rie, this, true, admin);
-			return null;
-		} else {
-			return new ImportPortfolioReferencesController(ureq, wControl, this, rie);
 		}
 	}
 }

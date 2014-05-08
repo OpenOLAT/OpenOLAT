@@ -163,8 +163,6 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	private RepositoryMembersController membersEditController;
 	private OrdersAdminController ordersController;
 	private ToolController detailsToolC;
-	private RepositoryCopyController copyController;
-	private RepositoryEditPropertiesController repositoryEditPropertiesController;
 	private RepositoryEditDescriptionController repositoryEditDescriptionController;
 	private RepoEntryCategoriesTableController repoEntryCategoriesTableController;
 	private CloseableModalController closeableModalController;
@@ -647,7 +645,7 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	 * @param ureq
 	 * @return A tool controller representing available tools for the given entry.
 	 */
-	public ToolController setEntry(RepositoryEntry entry, UserRequest ureq, boolean jumpfromcourse) {
+	public ToolController setEntry(RepositoryEntry entry, UserRequest ureq) {
 		this.corrupted = false;//reset the flag
 		if (repositoryEntry != null) {
 			// The controller has already a repository-entry => do de-register it
@@ -701,20 +699,6 @@ public class RepositoryDetailsController extends BasicController implements Gene
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
-		ContextEntry entry = entries.get(0);
-		String type = entry.getOLATResourceable().getResourceableTypeName();
-		if("settings".equals(type)) {
-			if(isAuthor && isOwner) {
-				removeAsListenerAndDispose(repositoryEditPropertiesController);
-				repositoryEditPropertiesController = new RepositoryEditPropertiesController(ureq, getWindowControl(), repositoryEntry, false);
-				listenTo(repositoryEditPropertiesController);
-				String title = translate("properties.for", new String[]{ repositoryEntry.getDisplayname() });
-				doEditSettings(ureq, repositoryEditPropertiesController, title);
-				
-				List<ContextEntry> subEntries = entries.subList(1, entries.size());
-				repositoryEditPropertiesController.activate(ureq, subEntries, entry.getTransientState());
-			}
-		}
 	}
 
 	private void doCloseDetailView(UserRequest ureq) {
@@ -864,35 +848,6 @@ public class RepositoryDetailsController extends BasicController implements Gene
 		}
 	}
 	
-	/**
-	 * If lock successfully aquired start copy, else show warning.
-	 * @param ureq
-	 */
-	private void doCopy(UserRequest ureq) {
-		OLATResource ores = OLATResourceManager.getInstance().findResourceable(repositoryEntry.getOlatResource());
-		boolean isAlreadyLocked = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry).isLocked(ores);
-		lockResult = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry).acquireLock(ores, ureq.getIdentity());
-		if(lockResult==null || (lockResult!=null && lockResult.isSuccess()) && !isAlreadyLocked) {
-			removeAsListenerAndDispose(copyController);
-		  copyController = new RepositoryCopyController(ureq, getWindowControl(), repositoryEntry);
-		  listenTo(copyController);
-		  
-		  String title = translate("details.copy");
-		  removeAsListenerAndDispose(copyCloseableModalController);
-		  copyCloseableModalController = new CloseableModalController(getWindowControl(), translate("close"), copyController.getInitialComponent(),
-		  		true, title);
-		  listenTo(copyCloseableModalController);
-		  
-		  copyCloseableModalController.activate();				  
-		} else if (lockResult!=null && lockResult.isSuccess() && isAlreadyLocked) {
-			showWarning("warning.course.alreadylocked.bySameUser");
-			lockResult = null;
-		}	else {	
-			String fullName = userManager.getUserDisplayName(lockResult.getOwner());
-		  showWarning("warning.course.alreadylocked", fullName);
-	  }
-	}
-	
 
 	/**
 	 * Also used by RepositoryMainController
@@ -991,13 +946,6 @@ public class RepositoryDetailsController extends BasicController implements Gene
 					doAddCatalog(ureq);
 				}
 				return;
-			} else if (cmd.equals(ACTION_EDITPROP)) { // change properties
-				removeAsListenerAndDispose(repositoryEditPropertiesController);
-				repositoryEditPropertiesController = new RepositoryEditPropertiesController(ureq, getWindowControl(), repositoryEntry, false);
-				listenTo(repositoryEditPropertiesController);
-				String title = translate("properties.for", new String[]{ repositoryEntry.getDisplayname() });
-				doEditSettings(ureq, repositoryEditPropertiesController, title);
-				return;
 			} else if (cmd.equals(ACTION_CLOSE)) {
 				doCloseDetailView(ureq);
 				return;
@@ -1011,10 +959,6 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				}
 				String css = marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE;
 				detailsToolC.setCssClass(TOOL_BOOKMARK, css);
-			} else if (cmd.equals(ACTION_COPY)) { // copy
-				if (!isAuthor) throw new OLATSecurityException("Trying to copy, but user is not author: user = " + ureq.getIdentity());
-				doCopy(ureq);
-				return;
 			} else if (cmd.equals(ACTION_MEMBERS)) { // membership
 				if (!isOwner) throw new OLATSecurityException("Trying to access groupmanagement, but not allowed: user = " + ureq.getIdentity());
 				removeAsListenerAndDispose(cmc);
@@ -1052,22 +996,6 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				updateView(ureq);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
-		} else if (source == copyController) {				
-			RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry).releaseLock(lockResult);		
-			lockResult = null;
-			copyCloseableModalController.deactivate();
-			if (event == Event.DONE_EVENT) {
-				fireEvent(ureq, Event.DONE_EVENT); // go back to overview on success
-				fireEvent(ureq, new EntryChangedEvent(copyController.getNewEntry(), EntryChangedEvent.ADDED)); // go
-				// back to overview on success
-			} else if (event == Event.FAILED_EVENT) { // copy failed, go back to
-				// overview
-				fireEvent(ureq, Event.DONE_EVENT); // go back to overview on failure
-			} else if (event instanceof EntryChangedEvent) {
-				fireEvent(ureq, event);
-			}
-			removeAsListenerAndDispose(copyController);
-			copyController = null;
 		} else if (source == repositoryEditDescriptionController) {
 			if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				// RepositoryEntry changed
@@ -1083,56 +1011,11 @@ public class RepositoryDetailsController extends BasicController implements Gene
 				repositoryEntry = repositoryEditDescriptionController.getRepositoryEntry();
 			}
 			settingsCloseableModalController.deactivate();
-		} else if (source == repositoryEditPropertiesController) {
-			if (event == Event.CHANGED_EVENT || event.getCommand().equals("courseChanged")) {
-				// RepositoryEntry changed
-				repositoryEntry = repositoryEditPropertiesController.getRepositoryEntry();
-				repositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(repositoryEntry.getKey());
-				updateView(ureq);
-				RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
-				boolean canDownload = repositoryEntry.getCanDownload() && handler.supportsDownload(repositoryEntry);
-				detailsToolC.setEnabled(TOOL_DOWNLOAD, canDownload);
-				if (checkIsRepositoryEntryTypeLaunchable()) {
-					detailsToolC.setEnabled(TOOL_LAUNCH, checkIsRepositoryEntryLaunchable(ureq));
-				}				
-				if(event.getCommand().equals("courseChanged")) {
-					removeAsListenerAndDispose(repositoryEditPropertiesController);
-				}
-			} else if (event == Event.CANCELLED_EVENT) {
-				settingsCloseableModalController.deactivate();
-				removeAsListenerAndDispose(repositoryEditPropertiesController);
-			} else if(event == Event.DONE_EVENT) {
-				removeAsListenerAndDispose(repositoryEditPropertiesController);
-				repositoryEditPropertiesController = null;
-			}
 		} else if (source == deleteDialogController){
 			if (DialogBoxUIFactory.isYesEvent(event)){
 				deleteRepositoryEntry(ureq, getWindowControl(), this.repositoryEntry);
 			}	
-		} else if (source == settingsCloseableModalController) {
-			if (event == CloseableModalController.CLOSE_MODAL_EVENT) {				
-				updateView(ureq);				
-				//check if commit or not the course conf changes				
-				if(repositoryEditPropertiesController!=null) {
-					boolean configsChanged = repositoryEditPropertiesController.checkIfCourseConfigChanged(ureq);
-					if(!configsChanged) {
-						removeAsListenerAndDispose(repositoryEditPropertiesController);
-				    repositoryEditPropertiesController = null;
-					}
-				}
-			}
-		} else if (source == copyCloseableModalController) {
-			if (event == CloseableModalController.CLOSE_MODAL_EVENT) {				
-				updateView(ureq);						
-				if(copyController!=null) {
-					//copyController's modal dialog was closed, that is cancel copy
-					RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry).releaseLock(lockResult);		
-					lockResult = null;
-					removeAsListenerAndDispose(copyController);
-					copyController = null;
-				}
-			}
-		}	else if (source == catalogAdddController) {
+		} else if (source == catalogAdddController) {
 			// finish modal dialog and reload categories list controller
 			closeableModalController.deactivate();
 			updateCategoriesTableC(ureq);

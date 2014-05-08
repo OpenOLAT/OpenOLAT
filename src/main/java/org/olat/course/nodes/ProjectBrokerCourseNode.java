@@ -685,34 +685,24 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 		return samples.get(0).getStringValue();
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsListViewHeaderKey()
-	 */
+	@Override
 	public String getDetailsListViewHeaderKey() {
 		return "table.header.details.ta";
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasDetails()
-	 */
+	@Override
 	public boolean hasDetails() {
 		Boolean hasDropbox = (Boolean) getModuleConfiguration().get(CONF_DROPBOX_ENABLED);
 		if (hasDropbox == null) hasDropbox = Boolean.FALSE;
 		return  hasDropbox.booleanValue();
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#importNode(java.io.File,
-	 *      org.olat.course.ICourse, org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
-	public Controller importNode(File importDirectory, ICourse course, boolean unattendedImport, UserRequest ureq, WindowControl wControl) {
+	public void importNode(File importDirectory, ICourse course) {
 		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 		ProjectBroker projectBroker = projectBrokerManager.createAndSaveProjectBroker();
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		projectBrokerManager.saveProjectBrokerId(projectBroker.getKey(), cpm, this);
-		return null;
 	}
 	
 	@Override

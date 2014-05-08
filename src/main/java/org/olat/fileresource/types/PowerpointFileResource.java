@@ -49,7 +49,11 @@ public class PowerpointFileResource extends FileResource {
 	 * @return True if is of type.
 	 */
 	public static boolean validate(File f) {
-		String filename_ = f.getName().toLowerCase();
-		return filename_.endsWith(".ppt") || filename_.endsWith(".pps");
+		return validate(f.getName());
+	}
+	
+	public static boolean validate(String filename) {
+		String f = filename.toLowerCase();
+		return f.endsWith(".ppt") || f.endsWith(".pps") || f.endsWith(".pptx") || f.endsWith(".ppsx");
 	}
 }

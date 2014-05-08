@@ -1,0 +1,18 @@
+<fieldset>
+	<legend>$r.translate("rentry.prop")</legend>
+	$r.contextHelpWithWrapper("org.olat.repository","rep-meta-olatauthorEd.html", "help.hover.rep.detail")
+	$r.render("proppupform")
+	
+	#if($r.available("accesscontrol") && $isGuestAccess)
+	<div class="b_warning">
+		<b>$r.translate("warn.header")</b>: 
+		$r.translate("cif.access.users_guests.warning")
+	</div>
+	#end
+	
+</fieldset>
+
+#if($r.available("accesscontrol"))
+	$r.render("accesscontrol")
+#end
+

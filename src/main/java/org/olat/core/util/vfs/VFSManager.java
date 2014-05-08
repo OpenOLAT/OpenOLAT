@@ -435,6 +435,16 @@ public class VFSManager extends BasicManager {
 		return newName;
 	}
 
+	public static VFSContainer getOrCreateContainer(VFSContainer parent, String name) {
+		VFSItem item = parent.resolve(name);
+		if(item instanceof VFSContainer) {
+			return (VFSContainer)item;
+		} else if(item != null) {
+			return null;//problem
+		} else {
+			return parent.createChildContainer(name);
+		}
+	}
 
 
 	/**

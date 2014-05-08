@@ -25,17 +25,30 @@
 
 package org.olat.repository.handlers;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.AnimationFileResource;
 import org.olat.fileresource.types.DocFileResource;
 import org.olat.fileresource.types.FileResource;
@@ -43,13 +56,15 @@ import org.olat.fileresource.types.ImageFileResource;
 import org.olat.fileresource.types.MovieFileResource;
 import org.olat.fileresource.types.PdfFileResource;
 import org.olat.fileresource.types.PowerpointFileResource;
+import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.SoundFileResource;
 import org.olat.fileresource.types.XlsFileResource;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.controllers.AddFileResourceController;
-import org.olat.repository.controllers.IAddController;
-import org.olat.repository.controllers.RepositoryAddCallback;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.repository.ui.author.AuthoringEditEntryController;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 
 
 /**
@@ -62,19 +77,10 @@ import org.olat.repository.controllers.WizardCloseResourceController;
  */
 public class WebDocumentHandler extends FileHandler {
 	
-	private static final boolean LAUNCHEABLE = false;
-	private static final boolean DOWNLOADEABLE = true;
-	private static final boolean EDITABLE = false;
-	private static final boolean WIZARD_SUPPORT = false;
+	private static final OLog log = Tracing.createLoggerFor(WebDocumentHandler.class);
 	private static final List<String> supportedTypes;
-	
-	/**
-	 * Default constructor.
-	 */
-	public WebDocumentHandler() { super(); }
-
 	static { // initialize supported types
-		supportedTypes = new ArrayList<String>(5);
+		supportedTypes = new ArrayList<String>(10);
 		supportedTypes.add(FileResource.GENERIC_TYPE_NAME);
 		supportedTypes.add(DocFileResource.TYPE_NAME);
 		supportedTypes.add(XlsFileResource.TYPE_NAME);
@@ -86,89 +92,169 @@ public class WebDocumentHandler extends FileHandler {
 		supportedTypes.add(ImageFileResource.TYPE_NAME);
 	}
 	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getSupportedTypes()
-	 */
+	@Override
+	public boolean isCreate() {
+		return false;
+	}
+
+	@Override
+	public String getCreateLabelI18nKey() {
+		return null;
+	}
+	
+	@Override
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Locale locale) {
+		return null;
+	}
+	
+	@Override
+	public boolean isPostCreateWizardAvailable() {
+		return false;
+	}
+	
+	@Override
+	public ResourceEvaluation acceptImport(File file, String filename) {
+		if(!StringHelper.containsNonWhitespace(filename)) {
+			filename = file.getName();
+		}
+		
+		ResourceEvaluation eval = new ResourceEvaluation(false);
+		String extension = FileUtils.getFileSuffix(filename);
+		if(StringHelper.containsNonWhitespace(extension)) {
+			if (DocFileResource.validate(filename)) {
+				eval.setValid(true);
+			} else if (XlsFileResource.validate(filename)) {
+				eval.setValid(true);
+			} else if (PowerpointFileResource.validate(filename)) {
+				eval.setValid(true);
+			} else if (PdfFileResource.validate(filename)) {
+				eval.setValid(true);
+			} else if (ImageFileResource.validate(filename)) {
+				eval.setValid(true);
+			} else if (MovieFileResource.validate(filename)) {
+				eval.setValid(true);
+			} else if (SoundFileResource.validate(filename)) {
+				eval.setValid(true);
+			} else if (AnimationFileResource.validate(filename)) {
+				eval.setValid(true);
+			}
+		}
+		return eval;
+	}
+	
+	@Override
+	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, Locale locale,
+			File file, String filename) {
+		
+		FileResource ores;
+		if (DocFileResource.validate(filename)) {
+			ores = new DocFileResource();
+		} else if (XlsFileResource.validate(filename)) {
+			ores = new XlsFileResource();
+		} else if (PowerpointFileResource.validate(filename)) {
+			ores = new PowerpointFileResource();
+		} else if (PdfFileResource.validate(filename)) {
+			ores = new PdfFileResource();
+		} else if (ImageFileResource.validate(filename)) {
+			ores = new ImageFileResource();
+		} else if (MovieFileResource.validate(filename)) {
+			ores = new MovieFileResource();
+		} else if (SoundFileResource.validate(filename)) {
+			ores = new SoundFileResource();
+		} else if (AnimationFileResource.validate(filename)) {
+			ores = new AnimationFileResource();
+		} else {
+			return null;
+		}
+
+		OLATResource resource = OLATResourceManager.getInstance().createAndPersistOLATResourceInstance(ores);
+		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();
+		File target = new File(fResourceFileroot, filename);
+		
+		try {
+			Files.move(file.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e) {
+			log.error("", e);
+		}
+
+		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
+				.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		DBFactory.getInstance().commit();
+		return re;
+	}
+	
+	@Override
+	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl,
+			AuthoringEditEntryController pane, RepositoryEntry entry) {
+		//
+	}
+	
+	@Override
+	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target) {
+		OLATResource sourceResource = source.getOlatResource();
+		OLATResource targetResource = target.getOlatResource();
+		File sourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(sourceResource).getBasefile();
+		File targetFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(targetResource).getBasefile();
+		FileUtils.copyDirContentsToDir(sourceFileroot, targetFileroot, false, "copy");
+		return target;
+	}
+
+	@Override
 	public List<String> getSupportedTypes() {
 		return supportedTypes;
 	}
-	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsLaunch()
-	 */
-	public boolean supportsLaunch(RepositoryEntry repoEntry) { return LAUNCHEABLE; }
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
-	 */
-	public boolean supportsDownload(RepositoryEntry repoEntry) { return DOWNLOADEABLE; }
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsEdit()
-	 */
-	public boolean supportsEdit(RepositoryEntry repoEntry) { return EDITABLE; }
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsWizard(org.olat.repository.RepositoryEntry)
-	 */
-	public boolean supportsWizard(RepositoryEntry repoEntry) { return WIZARD_SUPPORT; }
-	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getCreateWizardController(org.olat.core.id.OLATResourceable, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
-	public Controller createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+
+	@Override
+	public boolean supportsLaunch(RepositoryEntry repoEntry) {
+		return false;
+	}
+
+	@Override
+	public boolean supportsDownload(RepositoryEntry repoEntry) {
+		return true;
+	}
+
+	@Override
+	public boolean supportsEdit(RepositoryEntry repoEntry) {
+		return false;
+	}
+
+	@Override
+	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		throw new AssertException("Trying to get wizard where no creation wizard is provided for this type.");
 	}
-	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getLaunchController(org.olat.core.id.OLATResourceable java.lang.String, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
+
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re,  UserRequest ureq, WindowControl wControl) {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getEditorController(org.olat.core.id.OLATResourceable org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		throw new AssertException("a web document is not editable!!! res-id:"+re.getResourceableId());
-	}
-
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getAddController(org.olat.repository.controllers.RepositoryAddCallback, java.lang.Object, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
-	public IAddController createAddController(RepositoryAddCallback callback, Object userObject, UserRequest ureq, WindowControl wControl) {
-		return new AddFileResourceController(callback, supportedTypes, ureq, wControl);
 	}
 
 	protected String getDeletedFilePrefix() {
 		return "del_webdoc_"; 
 	}
 
-	/**
-	 * 
-	 * @see org.olat.repository.handlers.RepositoryHandler#acquireLock(org.olat.core.id.OLATResourceable, org.olat.core.id.Identity)
-	 */
+	@Override
 	public LockResult acquireLock(OLATResourceable ores, Identity identity) {
     //nothing to do
 		return null;
 	}
-	
-	/**
-	 * 
-	 * @see org.olat.repository.handlers.RepositoryHandler#releaseLock(org.olat.core.util.coordinate.LockResult)
-	 */
+
+	@Override
 	public void releaseLock(LockResult lockResult) {
 		//nothing to do since nothing locked
 	}
-	
-	/**
-	 * 
-	 * @see org.olat.repository.handlers.RepositoryHandler#isLocked(org.olat.core.id.OLATResourceable)
-	 */
+
+	@Override
 	public boolean isLocked(OLATResourceable ores) {
 		return false;
 	}
-	
+
+	@Override
 	public WizardCloseResourceController createCloseResourceController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		throw new AssertException("not implemented");
 	}

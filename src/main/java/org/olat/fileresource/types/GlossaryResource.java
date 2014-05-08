@@ -27,6 +27,14 @@ package org.olat.fileresource.types;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 /**
  * Description:<br>
@@ -37,6 +45,8 @@ import java.io.FilenameFilter;
  * @author Florian Gnägi, frentix GmbH, http://www.frentix.com
  */
 public class GlossaryResource extends FileResource {
+	
+	private static final OLog log = Tracing.createLoggerFor(GlossaryResource.class);
 
 	// type identifyer
 	public static final String TYPE_NAME = "FileResource.GLOSSARY";
@@ -44,6 +54,7 @@ public class GlossaryResource extends FileResource {
 	public static final String GLOSSARY_DEFAULT_FILEREF = "glossary.xml";
 	private static final String GLOSSARY_OLD_FILEREF = "glossary.textmarker.xml";
 	// file name filter that looks for glossary xml files
+	
 	public static final FilenameFilter GLOSSARY_FILENAME_FILTER = new FilenameFilter() {
 		public boolean accept(File arg0, String arg1) {
 			if (arg1.equals(GLOSSARY_DEFAULT_FILEREF)||arg1.equals(GLOSSARY_OLD_FILEREF)) return true;
@@ -76,5 +87,37 @@ public class GlossaryResource extends FileResource {
 		return false;
 	}
 	
+	public static ResourceEvaluation evaluate(File file, String filename) {
+		ResourceEvaluation eval = new ResourceEvaluation();
+		try {
+			GlossaryFileFilter visitor = new GlossaryFileFilter();
+			visit(file, filename, visitor);
+			if(visitor.isValid()) {
+				eval.setValid(true);
+			}
+			eval.setValid(visitor.isValid());
+		} catch (IOException e) {
+			log.error("", e);
+		}
+		return eval;
+	}
 	
+	private static class GlossaryFileFilter extends SimpleFileVisitor<Path> {
+		private boolean glossaryFile;
+
+		@Override
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+		throws IOException {
+
+			String filename = file.getFileName().toString();
+			if(GLOSSARY_DEFAULT_FILEREF.equals(filename) || GLOSSARY_OLD_FILEREF.equals(filename)) {
+				glossaryFile = true;
+			}
+			return glossaryFile ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
+		}
+		
+		public boolean isValid() {
+			return glossaryFile;
+		}
+	}
 }

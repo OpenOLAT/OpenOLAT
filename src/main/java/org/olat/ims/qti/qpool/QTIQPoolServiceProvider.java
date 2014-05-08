@@ -58,6 +58,7 @@ import org.olat.ims.qti.editor.QTIEditorPackageImpl;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.Section;
 import org.olat.ims.qti.editor.beecom.parser.ParserManager;
+import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.qpool.QTI12ItemFactory.Type;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.modules.qpool.ExportFormatOptions;
@@ -109,7 +110,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		formats.add(DefaultExportFormat.ZIP_EXPORT_FORMAT);
 		formats.add(DefaultExportFormat.DOCX_EXPORT_FORMAT);
 		formats.add(new DefaultExportFormat(QTIConstants.QTI_12_FORMAT, Outcome.download, null));
-		formats.add(new DefaultExportFormat(QTIConstants.QTI_12_FORMAT, Outcome.repository, "a.nte"));
+		formats.add(new DefaultExportFormat(QTIConstants.QTI_12_FORMAT, Outcome.repository, TestFileResource.TYPE_NAME));
 	}
 	
 	

@@ -58,4 +58,8 @@ public class PodcastFileResource extends FeedFileResource {
 	public static boolean validate(File directory) {
 		return FeedFileResource.validate(directory, TYPE_NAME);
 	}
+	
+	public static ResourceEvaluation evaluate(File file, String filename) {
+		return evaluate(file, filename, TYPE_NAME);
+	}
 }

@@ -277,10 +277,7 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 		}
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#exportNode(java.io.File,
-	 *      org.olat.course.ICourse)
-	 */
+	@Override
 	public void exportNode(File exportDirectory, ICourse course) {
 		RepositoryEntry re = CPEditController.getCPReference(getModuleConfiguration(), false);
 		if (re == null) return;
@@ -290,29 +287,17 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 		reie.exportDoExport();
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#importNode(java.io.File,
-	 *      org.olat.course.ICourse, org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
-	public Controller importNode(File importDirectory, ICourse course, boolean unattendedImport, UserRequest ureq, WindowControl wControl) {
+	@Override
+	public void importNode(File importDirectory, ICourse course) {
 		File importSubdir = new File(importDirectory, getIdent());
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importSubdir);
-		if (!rie.anyExportedPropertiesAvailable()) return null;
-
-		// do import referenced repository entries
-		if (unattendedImport) {
+		if (rie.anyExportedPropertiesAvailable())  {
 			Identity admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
 			ImportReferencesController.doImport(rie, this, ImportReferencesController.IMPORT_CP, true, admin);
-			return null;
-		} else {
-			return new ImportReferencesController(ureq, wControl, this, ImportReferencesController.IMPORT_CP, rie);
 		}
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createInstanceForCopy()
-	 */
+	@Override
 	public CourseNode createInstanceForCopy() {
 		CourseNode copyInstance = super.createInstanceForCopy();
 		CPEditController.removeCPReference(copyInstance.getModuleConfiguration());

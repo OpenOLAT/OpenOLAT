@@ -25,7 +25,6 @@ import java.util.Locale;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -250,24 +249,14 @@ public abstract class AbstractFeedCourseNode extends GenericCourseNode {
 		reie.exportDoExport();
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#importNode(java.io.File,
-	 *      org.olat.course.ICourse, org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
-	public Controller importNode(File importDirectory, ICourse course, boolean unattendedImport, UserRequest ureq, WindowControl wControl,
-			int importType) {
+
+	public void importNode(File importDirectory, int importType) {
 		File importSubdir = new File(importDirectory, getIdent());
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importSubdir);
-		if (!rie.anyExportedPropertiesAvailable()) return null;
-
-		// do import referenced repository entries
-		if (unattendedImport) {
+		if (rie.anyExportedPropertiesAvailable()) {
+			// do import referenced repository entries
 			Identity admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
 			ImportReferencesController.doImport(rie, this, importType, true, admin);
-			return null;
-		} else {
-			return new ImportReferencesController(ureq, wControl, this, importType, rie);
 		}
 	}
 

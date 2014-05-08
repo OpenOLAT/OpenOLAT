@@ -195,10 +195,8 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 		//wiki is a repo entry
 		return true;
 	}
-	
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#exportNode(File, ICourse)
-	 */
+
+	@Override
 	public void exportNode(File exportDirectory, ICourse course) {
 		RepositoryEntry re = WikiEditController.getWikiReference(getModuleConfiguration(), false);
 		if (re == null) return;
@@ -207,25 +205,16 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 		RepositoryEntryImportExport reie = new RepositoryEntryImportExport(re, fExportDirectory);
 		reie.exportDoExport();
 	}
-	
-	
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#importNode(File, ICourse, boolean, UserRequest, WindowControl)
-	 */
-	public Controller importNode(File importDirectory, ICourse course, boolean unattendedImport, UserRequest ureq, WindowControl wControl) {
+	@Override
+	public void importNode(File importDirectory, ICourse course) {
 		File importSubdir = new File(importDirectory, getIdent());
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importSubdir);
-		if (!rie.anyExportedPropertiesAvailable()) return null;
+		if (!rie.anyExportedPropertiesAvailable()) return;
 
 		// do import referenced repository entries
-		if (unattendedImport) {
-			Identity admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
-			ImportReferencesController.doImport(rie, this, ImportReferencesController.IMPORT_WIKI ,true, admin);
-			return null;
-		} else {
-			return new ImportReferencesController(ureq, wControl, this, ImportReferencesController.IMPORT_WIKI,rie);
-		}
+		Identity admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
+		ImportReferencesController.doImport(rie, this, ImportReferencesController.IMPORT_WIKI ,true, admin);
 	}
 
 	@Override
