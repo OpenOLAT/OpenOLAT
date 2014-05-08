@@ -32,16 +32,13 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.SearchMyRepositoryEntryViewParams.Filter;
 import org.olat.repository.SearchMyRepositoryEntryViewParams.OrderBy;
-import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
@@ -143,49 +140,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 
 		List<RepositoryEntryRow> items = new ArrayList<RepositoryEntryRow>();
 		for(RepositoryEntryMyView entry:repoEntries) {
-			RepositoryEntryRow row = new RepositoryEntryRow();
-			row.setKey(entry.getKey());
-			row.setDisplayName(entry.getDisplayname());
-			row.setShortenedDescription(entry.getDescription());
-			row.setOLATResourceable(OresHelper.clone(entry.getOlatResource()));
-			row.setAuthors(entry.getAuthors());
-			
-			//bookmark
-			row.setMarked(entry.isMarked());
-			
-			//efficiency statement
-			row.setPassed(entry.getPassed());
-			row.setScore(AssessmentHelper.getRoundedScore(entry.getScore()));
-			
-			//user course infos
-			row.setInitialLaunch(entry.getInitialLaunch());
-			row.setRecentLaunch(entry.getRecentLaunch());
-			if(entry.getVisit() != null) {
-				row.setVisit(entry.getVisit().intValue());
-			} else {
-				row.setVisit(0);
-			}
-			if(entry.getTimeSpend() != null) {
-				row.setTimeSpend(entry.getTimeSpend().longValue());
-			} else {
-				row.setTimeSpend(0l);
-			}
-			
-			//rating
-			row.setMyRating(entry.getMyRating());
-			row.setAverageRating(entry.getAverageRating());
-			row.setNumOfRatings(entry.getNumOfRatings());
-			row.setNumOfComments(entry.getNumOfComments());
-			
-			RepositoryEntryLifecycle lifecycle = entry.getLifecycle();
-			if(lifecycle != null) {
-				row.setLifecycleStart(lifecycle.getValidFrom());
-				row.setLifecycleEnd(lifecycle.getValidTo());
-				if(!lifecycle.isPrivateCycle()) {
-					row.setLifecycle(lifecycle.getLabel());
-					row.setLifecycleSoftKey(lifecycle.getSoftKey());
-				}
-			}
+			RepositoryEntryRow row = new RepositoryEntryRow(entry);
 
 			VFSLeaf image = repositoryManager.getImage(entry);
 			if(image != null) {

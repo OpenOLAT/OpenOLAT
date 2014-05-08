@@ -40,6 +40,8 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -73,6 +75,8 @@ import org.olat.modules.ModuleConfiguration;
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
 public abstract class GenericCourseNode extends GenericNode implements CourseNode {
+	private static final OLog log = Tracing.createLoggerFor(GenericCourseNode.class);
+	
 	private static final long serialVersionUID = -1093400247219150363L;
 	private String type, shortTitle, longTitle, learningObjectives, displayOption;
 	private ModuleConfiguration moduleConfiguration;
@@ -407,7 +411,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
 	@Override
-	public void importNode(File importDirectory, ICourse course) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
 		// nothing to do in default implementation
 	}
 

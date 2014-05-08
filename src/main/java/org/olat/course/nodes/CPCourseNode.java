@@ -27,8 +27,8 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -48,15 +48,17 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.cp.CPEditController;
 import org.olat.course.nodes.cp.CPRunController;
-import org.olat.course.repository.ImportReferencesController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.fileresource.types.ImsCPFileResource;
 import org.olat.ims.cp.CPManager;
 import org.olat.ims.cp.ui.CPPackageConfig;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 
 /**
  * Description:<br>
@@ -288,13 +290,14 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
+		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(ImsCPFileResource.TYPE_NAME);
+		
 		File importSubdir = new File(importDirectory, getIdent());
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importSubdir);
-		if (rie.anyExportedPropertiesAvailable())  {
-			Identity admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
-			ImportReferencesController.doImport(rie, this, ImportReferencesController.IMPORT_CP, true, admin);
-		}
+		RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
+				locale, rie.importGetExportedFile(), null);
+		CPEditController.setCPReference(re, getModuleConfiguration());
 	}
 
 	@Override

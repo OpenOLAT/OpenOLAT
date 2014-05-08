@@ -73,8 +73,7 @@ import org.olat.resource.references.ReferenceManager;
  */
 // Loads of parameters are unused
 public class BlogHandler implements RepositoryHandler {
-	public static final String PROCESS_CREATENEW = "create_new";
-	public static final String PROCESS_UPLOAD = "upload";
+
 	private static final List<String> supportedTypes = Collections.singletonList(BlogFileResource.TYPE_NAME);
 
 	@Override

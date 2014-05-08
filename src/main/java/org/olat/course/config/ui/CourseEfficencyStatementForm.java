@@ -83,7 +83,6 @@ public class CourseEfficencyStatementForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("tab.efficency.title");
 		setFormContextHelp("org.olat.course.config.ui","course-efficiency.html","help.hover.course-eff");
 		
 		isOn = uifactory.addCheckboxesVertical("isOn", "chkbx.efficency.onoff", formLayout, new String[] {"xx"}, new String[] {""}, null, 1);

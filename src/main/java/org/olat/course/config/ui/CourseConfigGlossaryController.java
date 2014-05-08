@@ -38,7 +38,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
@@ -71,7 +70,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author Florian Gnägi, frentix GmbH, http://www.frentix.com
  */
-public class CourseConfigGlossaryController extends FormBasicController implements ControllerEventListener {
+public class CourseConfigGlossaryController extends FormBasicController {
 
 	private static final OLog log = Tracing.createLoggerFor(CourseConfigGlossaryController.class);
 	public static final String VALUE_EMPTY_GLOSSARY_FILEREF = "gf.notconfigured";
@@ -125,7 +124,6 @@ public class CourseConfigGlossaryController extends FormBasicController implemen
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("tab.glossary.title");
 		setFormContextHelp("org.olat.course.config.ui","course-glossary.html","help.hover.course-gloss");
 		
 		String text = translate("glossary.no.glossary");

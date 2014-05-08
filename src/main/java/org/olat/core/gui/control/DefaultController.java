@@ -103,6 +103,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	 */
 	protected DefaultController(WindowControl wControl) {
 		controllerCnt.incrementAndGet();
+		CoreSpringFactory.autowireObject(this);
 		
 		// set the ThreadLocalUserActivityLogger
 		this.userActivityLogger = UserActivityLoggerImpl.setupLoggerForController(wControl);

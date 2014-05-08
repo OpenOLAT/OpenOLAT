@@ -767,7 +767,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
 	@Override
-	public void importNode(File importDirectory, ICourse course) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
 		//import tasks
 		File fNodeImportDir = new File(importDirectory, getIdent());
 		File fTaskfolderDir = new File(FolderConfig.getCanonicalRoot() + getTaskFolderPathRelToFolderRoot(course, this));

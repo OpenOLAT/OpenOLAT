@@ -33,6 +33,7 @@ import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
@@ -294,7 +295,7 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void importNode(File importDirectory, ICourse course) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		if(getChecklistKey(cpm) != null) deleteChecklistKeyConf(cpm);
 		

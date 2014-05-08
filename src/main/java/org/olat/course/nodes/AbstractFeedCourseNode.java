@@ -23,7 +23,6 @@ import java.io.File;
 import java.util.Date;
 import java.util.Locale;
 
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
@@ -39,7 +38,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
-import org.olat.course.repository.ImportReferencesController;
+import org.olat.course.nodes.feed.FeedNodeEditController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -48,6 +47,7 @@ import org.olat.modules.webFeed.managers.FeedManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.handlers.RepositoryHandler;
 
 /**
  * The podcast course node.
@@ -213,10 +213,6 @@ public abstract class AbstractFeedCourseNode extends GenericCourseNode {
 		this.preConditionReader = preConditionReader;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#calcAccessAndVisibility(org.olat.course.condition.interpreter.ConditionInterpreter,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
 	@Override
 	protected void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
 		// evaluate the preconditions
@@ -233,10 +229,7 @@ public abstract class AbstractFeedCourseNode extends GenericCourseNode {
 		nodeEval.setVisible(visible);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#exportNode(java.io.File,
-	 *      org.olat.course.ICourse)
-	 */
+	@Override
 	public void exportNode(File exportDirectory, ICourse course) {
 		RepositoryEntry re = getReferencedRepositoryEntry();
 		if (re == null) return;
@@ -249,15 +242,12 @@ public abstract class AbstractFeedCourseNode extends GenericCourseNode {
 		reie.exportDoExport();
 	}
 
-
-	public void importNode(File importDirectory, int importType) {
+	public void importNode(RepositoryHandler handler, File importDirectory, Identity owner, Locale locale) {
 		File importSubdir = new File(importDirectory, getIdent());
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importSubdir);
-		if (rie.anyExportedPropertiesAvailable()) {
-			// do import referenced repository entries
-			Identity admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
-			ImportReferencesController.doImport(rie, this, importType, true, admin);
-		}
+		RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
+				locale, rie.importGetExportedFile(), null);
+		FeedNodeEditController.setReference(re, getModuleConfiguration());
 	}
 
 	/**

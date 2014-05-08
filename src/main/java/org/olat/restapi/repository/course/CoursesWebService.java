@@ -27,6 +27,7 @@ import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -61,16 +62,10 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
-import org.olat.course.Structure;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.repository.ImportGlossaryReferencesController;
-import org.olat.course.repository.ImportSharedfolderReferencesController;
 import org.olat.course.tree.CourseEditorTreeNode;
-import org.olat.modules.glossary.GlossaryManager;
-import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.SearchRepositoryEntryParameters;
@@ -348,42 +343,17 @@ public class CoursesWebService {
 			String displayName, String softKey, int access, boolean membersOnly) {
 		
 		log.info("REST Import course " + displayName + " START");
-		
-		OLATResource newCourseResource = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
-		ICourse course = CourseFactory.importCourseFromZip(newCourseResource, fCourseImportZIP);
-		if (course == null) {
-			return null;
-		}
-		
-		if(!StringHelper.containsNonWhitespace(displayName)) {
-			RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(course.getCourseExportDataDir().getBasefile());
-			displayName = importExport.getDisplayName();
-		}
 		if(!StringHelper.containsNonWhitespace(displayName)) {
 			displayName = "import-" + UUID.randomUUID().toString();
 		}
 		
-		// create empty run structure
-		course = CourseFactory.openCourseEditSession(course.getResourceableId());
-		Structure runStructure = course.getRunStructure();
-		runStructure.getRootNode().removeAllChildren();
-		CourseFactory.saveCourse(course.getResourceableId());
-		
-		//import all references
-		List<CourseEditorTreeNode> nodeList = new ArrayList<CourseEditorTreeNode>();
-		collectNodesAsList((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode(), nodeList);
-		processNodeList(course, nodeList);
-		
-		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
-		if (courseConfig.hasCustomSharedFolder()) {
-			processSharedFolder(ureq, course);
-		} 
-		else if (courseConfig.hasGlossary()) {
-			processGlossary(ureq, course);
-		}
+		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(CourseModule.getCourseTypeName());
+		RepositoryEntry re = handler.importResource(identity, displayName, null, Locale.ENGLISH, fCourseImportZIP, null);
 
+		if(StringHelper.containsNonWhitespace(softKey)) {
+			re.setSoftkey(softKey);
+		}
 		//make the repository
-		RepositoryEntry re = createCourseRepositoryEntry(identity, displayName, softKey, null, null, null, newCourseResource);
 		if(membersOnly) {
 			re.setMembersOnly(true);
 			re.setAccess(RepositoryEntry.ACC_OWNERS);
@@ -391,69 +361,14 @@ public class CoursesWebService {
 			re.setAccess(access);
 		}
 		CoreSpringFactory.getImpl(RepositoryService.class).update(re);
-		
-		//update tree
-		course.getRunStructure().getRootNode().setShortTitle(Formatter.truncateOnly(course.getCourseTitle(), 25)); //do not use truncate!
-		course.getRunStructure().getRootNode().setLongTitle(displayName);
-		CourseEditorTreeNode editorRootNode = ((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode());
-		editorRootNode.getCourseNode().setShortTitle(Formatter.truncateOnly(course.getCourseTitle(), 25)); //do not use truncate!
-		editorRootNode.getCourseNode().setLongTitle(course.getCourseTitle());
-		// mark entire structure as dirty/new so the user can re-publish
-		markDirtyNewRecursively(editorRootNode);
-		// root has already been created during export. Unmark it.
-		editorRootNode.setNewnode(false);
-		
-		CourseFactory.closeCourseEditSession(course.getResourceableId(), false);
 		log.info("REST Import course " + displayName + " END");
 		
 		//publish
 		log.info("REST Publish course " + displayName + " START");
+		ICourse course = CourseFactory.loadCourse(re.getOlatResource());
 		CourseFactory.publishCourse(course, RepositoryEntry.ACC_USERS, false,  identity, ureq.getLocale());
 		log.info("REST Publish course " + displayName + " END");
-
 		return course;
-	}
-	
-	private static void processSharedFolder(UserRequest ureq, ICourse course) {
-		// if shared folder controller exists we did already import this one.
-		RepositoryEntryImportExport sfImportExport
-			= SharedFolderManager.getInstance().getRepositoryImportExport(course.getCourseExportDataDir().getBasefile());
-		ImportSharedfolderReferencesController.doImport(sfImportExport, course, ureq.getIdentity());
-	}
-
-	private static void processGlossary(UserRequest ureq, ICourse course) {
-		// if glossary controller exists we did already import this one.
-		RepositoryEntryImportExport sfImportExport
-			= GlossaryManager.getInstance().getRepositoryImportExport(course.getCourseExportDataDir().getBasefile());
-		ImportGlossaryReferencesController.doImport(sfImportExport, course, ureq.getIdentity());
-	}
-	
-	/**
-	 * Mark whole tree (incl. root node) "dirty" and "new" recursively.
-	 * 
-	 * @param editorRootNode
-	 */
-	private static void markDirtyNewRecursively(CourseEditorTreeNode editorRootNode) {
-		editorRootNode.setDirty(true);
-		editorRootNode.setNewnode(true);
-		if (editorRootNode.getChildCount() > 0) {
-			for (int i = 0; i < editorRootNode.getChildCount(); i++) {
-				markDirtyNewRecursively((CourseEditorTreeNode)editorRootNode.getChildAt(i));
-			}
-		}
-	}
-	
-	private static void collectNodesAsList(CourseEditorTreeNode rootNode, List<CourseEditorTreeNode> nl) {
-		nl.add(rootNode);
-		for (int i = 0; i < rootNode.getChildCount(); i++) {
-			collectNodesAsList((CourseEditorTreeNode)rootNode.getChildAt(i), nl);
-		}
-	}
-	
-	private static void processNodeList(ICourse course, List<CourseEditorTreeNode> nodeList) {
-		for (CourseEditorTreeNode nextNode : nodeList) {
-			nextNode.getCourseNode().importNode(course.getCourseExportDataDir().getBasefile(), course);
-		}
 	}
 	
 	private static ICourse copyCourse(Long copyFrom, UserRequest ureq, String shortTitle, String longTitle, String displayName,

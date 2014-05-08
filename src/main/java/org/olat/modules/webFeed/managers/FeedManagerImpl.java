@@ -1131,26 +1131,6 @@ public class FeedManagerImpl extends FeedManager {
 		return new ValidatedURL(url, ValidatedURL.State.MALFORMED);
 	}
 
-	/**
-	 * @see org.olat.modules.webFeed.managers.FeedManager#copy(org.olat.core.id.OLATResourceable)
-	 */
-	@Override
-	public OLATResourceable copy(OLATResourceable feed) {
-		FileResourceManager manager = FileResourceManager.getInstance();
-		OLATResourceable copyResource = manager.createCopy(feed, getFeedKind(feed)); 
-		// Adjust resource ID in copy to new resource ID, bypass any caches, read
-		// and write directly
-		VFSContainer copyContainer = getFeedContainer(copyResource);
-		VFSLeaf leaf = (VFSLeaf) copyContainer.resolve(FEED_FILE_NAME);
-		if (leaf != null) {
-			Feed copyFeed = (Feed) XStreamHelper.readObject(xstream, leaf.getInputStream());
-			copyFeed.setId(copyResource.getResourceableId());
-			XStreamHelper.writeObject(xstream, leaf, copyFeed);
-		}
-		//
-		return copyResource;
-	}
-
 	@Override
 	public boolean copy(OLATResource sourceResource, OLATResource targetResource) {
 		File sourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(sourceResource).getBasefile();

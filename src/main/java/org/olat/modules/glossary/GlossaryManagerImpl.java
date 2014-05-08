@@ -28,7 +28,6 @@ import java.util.List;
 import org.apache.lucene.document.Document;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.modules.glossary.GlossaryItemManager;
-import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.media.CleanupAfterDeliveryFileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
@@ -86,6 +85,7 @@ public class GlossaryManagerImpl extends GlossaryManager {
 	 * @param res
 	 * @return
 	 */
+	@Override
 	public OlatRootFolderImpl getGlossaryRootFolder(OLATResourceable res) {
 		OlatRootFolderImpl resRoot = FileResourceManager.getInstance().getFileResourceRootImpl(res);
 		if (resRoot == null) return null;
@@ -116,6 +116,7 @@ public class GlossaryManagerImpl extends GlossaryManager {
 	 * @param searchResourceContext
 	 * @return Document the index document
 	 */
+	@Override
 	public Document getIndexerDocument(RepositoryEntry repositoryEntry, SearchResourceContext searchResourceContext) {
 		GlossaryItemManager gIMgr = GlossaryItemManager.getInstance();
 		VFSContainer glossaryFolder = getGlossaryRootFolder(repositoryEntry.getOlatResource());
@@ -153,6 +154,7 @@ public class GlossaryManagerImpl extends GlossaryManager {
 	 * @param exportedDataDir
 	 * @return
 	 */
+	@Override
 	public boolean exportGlossary(String glossarySoftkey, File exportedDataDir) {
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(glossarySoftkey, false);
 		if (re == null) return false;
@@ -171,6 +173,7 @@ public class GlossaryManagerImpl extends GlossaryManager {
 	 * @param res
 	 * @return
 	 */
+	@Override
 	public MediaResource getAsMediaResource(OLATResourceable res) {
 		RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(res, false);
 		String exportFileName = repoEntry.getDisplayname();
@@ -197,6 +200,7 @@ public class GlossaryManagerImpl extends GlossaryManager {
 	 * 
 	 * @return
 	 */
+	@Override
 	public GlossaryResource createGlossary() {
 		GlossaryResource resource = new GlossaryResource();
 		VFSContainer rootContainer = FileResourceManager.getInstance().getFileResourceRootImpl(resource);
@@ -208,23 +212,23 @@ public class GlossaryManagerImpl extends GlossaryManager {
 		return resource;
 	}
 	
-	
 	/**
 	 * The import export data container used for course import
 	 * 
 	 * @param importDataDir
 	 * @return
 	 */
+	@Override
 	public RepositoryEntryImportExport getRepositoryImportExport(File importDataDir) {
 		File fImportBaseDirectory = new File(importDataDir, EXPORT_FOLDER_NAME);
 		return new RepositoryEntryImportExport(fImportBaseDirectory);
 	}
-
 	
 	//TODO:RH:gloss change courseconfig, to keep more than 1 single glossary as a list
 	/**
 	 * @param res glossary to be deleted
 	 */
+	@Override
 	public void deleteGlossary(OLATResourceable res) {
 		// first remove all references
 		List<ReferenceImpl> repoRefs = referenceManager.getReferencesTo(res);
@@ -249,20 +253,8 @@ public class GlossaryManagerImpl extends GlossaryManager {
 		// now remove the resource itself
 		FileResourceManager.getInstance().deleteFileResource(res);
 	}
-	
-	/**
-	 * Creates a copy of a glossary
-	 * 
-	 * @param res
-	 * @param ureq
-	 * @return the copy
-	 */
-	public OLATResourceable createCopy(OLATResourceable res, UserRequest ureq) {
-		FileResourceManager frm = FileResourceManager.getInstance();
-		OLATResourceable copy = frm.createCopy(res, INTERNAL_FOLDER_NAME);
-		return copy;
-	}
-	
+
+	@Override
 	public String archive(String archivFilePath, RepositoryEntry repoEntry) {
 		String exportFileName = "del_glossar_" + repoEntry.getOlatResource().getResourceableId() + ".zip";
 		String fullFilePath = archivFilePath + File.separator + exportFileName;
@@ -271,5 +263,4 @@ public class GlossaryManagerImpl extends GlossaryManager {
 		ZipUtil.zip(glossaryRoot.getItems(), new LocalFileImpl(fExportZIP), true);
 		return fullFilePath;
 	}
-	
 }

@@ -34,6 +34,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.SearchMyRepositoryEntryViewParams.Filter;
 import org.olat.repository.SearchMyRepositoryEntryViewParams.OrderBy;
@@ -57,6 +58,19 @@ public class RepositoryEntryMyCourseViewQueries {
 	
 	@Autowired
 	private DB dbInstance;
+
+	public RepositoryEntryMyView loadView(RepositoryEntryRef ref) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from repositoryentrymy as v ")
+		  .append(" inner join v.olatResource as res")
+		  .append(" left join v.lifecycle as lifecycle")
+		  .append(" where v.key=:repoEntryKey)");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntryMyView.class)
+				.setParameter("repoEntryKey", ref.getKey())
+				.getSingleResult();
+	}
 	
 	public int countViews(SearchMyRepositoryEntryViewParams params) {
 		if(params.getIdentity() == null) {
@@ -106,7 +120,7 @@ public class RepositoryEntryMyCourseViewQueries {
 		sb.append(" where v.identityKey=:identityKey and ");
 		appendMyViewAccessSubSelect(sb, roles, params.getFilters(), params.isMembershipMandatory());
 		if(params.getRepoEntryKeys() != null && params.getRepoEntryKeys().size() > 0) {
-			sb.append(" and v.key=:repoEntryKeys ");
+			sb.append(" and v.key in (:repoEntryKeys) ");
 		}
 		
 		if(params.getFilters() != null) {

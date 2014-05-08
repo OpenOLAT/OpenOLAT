@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
@@ -58,10 +57,10 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.wiki.WikiEditController;
 import org.olat.course.nodes.wiki.WikiRunController;
-import org.olat.course.repository.ImportReferencesController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.fileresource.types.WikiResource;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.wiki.Wiki;
 import org.olat.modules.wiki.WikiManager;
@@ -69,6 +68,8 @@ import org.olat.modules.wiki.WikiToZipUtils;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 
 /**
  * Description: <br>
@@ -207,14 +208,14 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
+		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(WikiResource.TYPE_NAME);
+		
 		File importSubdir = new File(importDirectory, getIdent());
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importSubdir);
-		if (!rie.anyExportedPropertiesAvailable()) return;
-
-		// do import referenced repository entries
-		Identity admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
-		ImportReferencesController.doImport(rie, this, ImportReferencesController.IMPORT_WIKI ,true, admin);
+		RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
+				locale, rie.importGetExportedFile(), null);
+		WikiEditController.setWikiRepoReference(re, getModuleConfiguration());
 	}
 
 	@Override

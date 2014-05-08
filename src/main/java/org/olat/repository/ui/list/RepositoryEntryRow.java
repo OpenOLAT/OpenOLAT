@@ -28,7 +28,10 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentHelper;
+import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.PriceMethod;
 
 /**
@@ -80,6 +83,52 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	
 	public RepositoryEntryRow() {
 		//
+	}
+	
+	public RepositoryEntryRow(RepositoryEntryMyView entry) {
+		setKey(entry.getKey());
+		setDisplayName(entry.getDisplayname());
+		setShortenedDescription(entry.getDescription());
+		setOLATResourceable(OresHelper.clone(entry.getOlatResource()));
+		setAuthors(entry.getAuthors());
+		
+		//bookmark
+		setMarked(entry.isMarked());
+		
+		//efficiency statement
+		setPassed(entry.getPassed());
+		setScore(AssessmentHelper.getRoundedScore(entry.getScore()));
+		
+		//user course infos
+		setInitialLaunch(entry.getInitialLaunch());
+		setRecentLaunch(entry.getRecentLaunch());
+		if(entry.getVisit() != null) {
+			setVisit(entry.getVisit().intValue());
+		} else {
+			setVisit(0);
+		}
+		if(entry.getTimeSpend() != null) {
+			setTimeSpend(entry.getTimeSpend().longValue());
+		} else {
+			setTimeSpend(0l);
+		}
+		
+		//rating
+		setMyRating(entry.getMyRating());
+		setAverageRating(entry.getAverageRating());
+		setNumOfRatings(entry.getNumOfRatings());
+		setNumOfComments(entry.getNumOfComments());
+		
+		//lifecycle
+		RepositoryEntryLifecycle lifecycle = entry.getLifecycle();
+		if(lifecycle != null) {
+			setLifecycleStart(lifecycle.getValidFrom());
+			setLifecycleEnd(lifecycle.getValidTo());
+			if(!lifecycle.isPrivateCycle()) {
+				setLifecycle(lifecycle.getLabel());
+				setLifecycleSoftKey(lifecycle.getSoftKey());
+			}
+		}
 	}
 	
 	public String getCssClass() {

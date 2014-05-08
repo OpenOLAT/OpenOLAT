@@ -281,6 +281,11 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
+	public RepositoryEntryMyView loadMyView(RepositoryEntryRef ref) {
+		return myCourseViewQueries.loadView(ref);
+	}
+
+	@Override
 	public int countAuthorView(SearchAuthorRepositoryEntryViewParams params) {
 		return authorViewQueries.countViews(params);
 	}

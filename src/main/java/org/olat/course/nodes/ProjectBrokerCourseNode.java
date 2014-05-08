@@ -698,7 +698,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
 		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 		ProjectBroker projectBroker = projectBrokerManager.createAndSaveProjectBroker();
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();

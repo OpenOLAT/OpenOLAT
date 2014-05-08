@@ -692,7 +692,7 @@ public class CourseFactory extends BasicManager {
 	private static void deployReferencedRepositoryEntries(File importDirectory, ICourse course, CourseEditorTreeNode currentNode) {
 		for (int i = 0; i < currentNode.getChildCount(); i++) {
 			CourseEditorTreeNode childNode = (CourseEditorTreeNode)currentNode.getChildAt(i);
-			childNode.getCourseNode().importNode(importDirectory, course);
+			childNode.getCourseNode().importNode(importDirectory, course, null, null);
 			deployReferencedRepositoryEntries(importDirectory, course, childNode);
 		}
 	}

@@ -69,7 +69,6 @@ public class CourseCalendarConfigForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("tab.calendar.title");
 		setFormContextHelp("org.olat.course.config.ui","course-calendar.html","help.hover.coursecal");
 		
 		isOn = uifactory.addCheckboxesVertical("isOn", "chkbx.calendar.onoff", formLayout, new String[] {"xx"}, new String[] {""}, null, 1);

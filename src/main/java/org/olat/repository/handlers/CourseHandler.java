@@ -211,7 +211,7 @@ public class CourseHandler implements RepositoryHandler {
 		CourseFactory.saveCourse(course.getResourceableId());
 		
 		//import references
-		importReferences((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode(), course);
+		importReferences((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode(), course, initialAuthor);
 		importSharedFolder(course, initialAuthor);
 		importGlossary(course, initialAuthor);
 
@@ -304,13 +304,13 @@ public class CourseHandler implements RepositoryHandler {
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 	}
 	
-	private void importReferences(CourseEditorTreeNode node, ICourse course) {
-		node.getCourseNode().importNode(course.getCourseExportDataDir().getBasefile(), course);
+	private void importReferences(CourseEditorTreeNode node, ICourse course, Identity owner) {
+		node.getCourseNode().importNode(course.getCourseExportDataDir().getBasefile(), course, owner, null);
 
 		for (int i = 0; i<node.getChildCount(); i++) {
 			INode child = node.getChildAt(i);
 			if(child instanceof CourseEditorTreeNode) {
-				importReferences((CourseEditorTreeNode)child, course);
+				importReferences((CourseEditorTreeNode)child, course, owner);
 			}
 		}
 	}

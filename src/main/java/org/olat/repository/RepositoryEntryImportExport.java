@@ -299,6 +299,3 @@ public class RepositoryEntryImportExport {
 		}
 	}
 }
-
-
-

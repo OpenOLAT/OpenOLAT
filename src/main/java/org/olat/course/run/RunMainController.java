@@ -33,8 +33,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
+import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
@@ -88,11 +90,14 @@ import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
+import org.olat.core.util.vfs.NamedContainerImpl;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ArchiverMainController;
 import org.olat.course.archiver.FullAccessArchiverCallback;
+import org.olat.course.area.CourseAreasController;
 import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.CoachingGroupAccessAssessmentCallback;
@@ -118,6 +123,7 @@ import org.olat.course.run.navigation.NodeClickedRef;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.statistic.StatisticCourseNodesController;
 import org.olat.course.statistic.StatisticMainController;
+import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
@@ -129,11 +135,17 @@ import org.olat.modules.cp.TreeNodeEvent;
 import org.olat.note.NoteController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.RepositoryDetailsController;
+import org.olat.repository.ui.list.RepositoryEntryDetailsController;
+import org.olat.repository.ui.list.RepositoryEntryRow;
+import org.olat.resource.OLATResource;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description: <br>
@@ -157,8 +169,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	private MenuTree luTree;
 	//tools
-	private Link surveyStatisticLink, testStatisticLink;
-	private Link editLink, userMgmtLink, archiverLink, assessmentLink, statisticLink, dbLink;
+	private Link editLink, areaLink, folderLink;
+	private Link surveyStatisticLink, testStatisticLink, courseStatisticLink;
+	private Link userMgmtLink, archiverLink, assessmentLink, dbLink;
 	private Link efficiencyStatementsLink, bookmarkLink, calendarLink, detailsLink, noteLink, chatLink;
 	
 	private Panel contentP;
@@ -196,9 +209,14 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private Link currentUserCountLink;
 	private int currentUserCount;
 	
-	private final MarkManager markManager;
-	private final BusinessGroupService businessGroupService;
-	private final EfficiencyStatementManager efficiencyStatementManager;
+	@Autowired
+	private MarkManager markManager;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
+	private EfficiencyStatementManager efficiencyStatementManager;
 	
 	/**
 	 * Constructor for the run main controller
@@ -219,10 +237,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		super(ureq, wControl);
 		
 		roles = ureq.getUserSession().getRoles();
-		
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		markManager = CoreSpringFactory.getImpl(MarkManager.class);
-		efficiencyStatementManager = CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
 
 		this.course = course;
 		addLoggingResourceable(LoggingResourceable.wrap(course));
@@ -484,12 +498,18 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		} else if (surveyStatisticLink == source) {
 			all.popUpToRootController(ureq);
 			launchAssessmentStatistics(ureq, "command.opensurveystatistic", "SurveyStatistics", QTIType.survey);
-		} else if(statisticLink == source) {
+		} else if(courseStatisticLink == source) {
 			all.popUpToRootController(ureq);
 			launchStatistics(ureq);
 		} else if(dbLink == source) {
 			all.popUpToRootController(ureq);
 			launchDbs(ureq);
+		} else if(folderLink == source) {
+			all.popUpToRootController(ureq);
+			launchCourseFolder(ureq);
+		} else if(areaLink == source) {
+			all.popUpToRootController(ureq);
+			launchCourseAreas(ureq);
 		} else if(efficiencyStatementsLink == source) {
 			launchEfficiencyStatements(ureq);
 		} else if(bookmarkLink == source) {
@@ -738,8 +758,29 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	private void launchDetails(UserRequest ureq) {
-		String businessPath = "[RepositorySite:0][RepositoryEntry:" + courseRepositoryEntry.getKey() + "]";
-		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		RepositoryEntryMyView view = repositoryService.loadMyView(courseRepositoryEntry);
+		RepositoryEntryRow row = new RepositoryEntryRow(view);
+		currentToolCtr = new RepositoryEntryDetailsController(ureq, getWindowControl(), row);
+		all.pushController(translate("command.courseconfig"), currentToolCtr);
+	}
+	
+	private void launchCourseFolder(UserRequest ureq) {
+		// Folder for course with custom link model to jump to course nodes
+		VFSContainer namedCourseFolder = new NamedContainerImpl(translate("command.coursefolder"), course.getCourseFolderContainer());
+		CustomLinkTreeModel customLinkTreeModel = new CourseInternalLinkTreeModel(course.getEditorTreeModel());
+		
+		FolderRunController folderMainCtl = new FolderRunController(namedCourseFolder, true, true, true, ureq, getWindowControl(), null, customLinkTreeModel);
+		folderMainCtl.addLoggingResourceable(LoggingResourceable.wrap(course));
+		currentToolCtr = new LayoutMain3ColsController(ureq, getWindowControl(), folderMainCtl);
+		all.pushController(translate("command.coursefolder"), currentToolCtr);
+	}
+	
+	private void launchCourseAreas(UserRequest ureq) {
+		OLATResource courseRes = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		CourseAreasController areasMainCtl = new CourseAreasController(ureq, getWindowControl(), courseRes);
+		areasMainCtl.addLoggingResourceable(LoggingResourceable.wrap(course));
+		currentToolCtr = new LayoutMain3ColsController(ureq, getWindowControl(), areasMainCtl);
+		all.pushController(translate("command.courseareas"), currentToolCtr);
 	}
 	
 	private void launchDbs(UserRequest ureq) {
@@ -1036,6 +1077,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				editLink = LinkFactory.createToolLink("edit.cmd", translate("command.openeditor"), this, "o_sel_course_open_editor");
 				editLink.setEnabled(!managed);
 				editTools.addComponent(editLink);
+				folderLink = LinkFactory.createToolLink("cfd", translate("command.coursefolder"), this);
+				folderLink.setEnabled(!managed);
+				editTools.addComponent(folderLink);
+				areaLink = LinkFactory.createToolLink("careas", translate("command.courseareas"), this, "o_toolbox_courseareas");
+				areaLink.setEnabled(!managed);
+				editTools.addComponent(areaLink);
 			}
 			if (hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || isCourseAdmin) {
 				userMgmtLink = LinkFactory.createToolLink("unifiedusermngt", translate("command.opensimplegroupmngt"), this, "o_sel_course_open_membersmgmt");
@@ -1063,18 +1110,18 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					}
 				}, course.getRunStructure().getRootNode(), true).visitAll();
 				if(testNodes.intValue() > 0) {
-					testStatisticLink = LinkFactory.createToolLink("qtistatistic", translate("command.openqtistatistic"), this);
+					testStatisticLink = LinkFactory.createToolLink("qtistatistic", translate("command.openteststatistic"), this);
 					editTools.addComponent(testStatisticLink);
 				}
 				
 				if(surveyNodes.intValue() > 0) {
-					surveyStatisticLink = LinkFactory.createToolLink("qtistatistic", translate("command.openqtistatistic"), this);
+					surveyStatisticLink = LinkFactory.createToolLink("qtistatistic", translate("command.opensurveystatistic"), this);
 					editTools.addComponent(surveyStatisticLink);
 				}
 			}
 			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
-				statisticLink = LinkFactory.createToolLink("statistic",translate("command.openstatistic"), this);
-				editTools.addComponent(statisticLink);
+				courseStatisticLink = LinkFactory.createToolLink("statistic",translate("command.openstatistic"), this);
+				editTools.addComponent(courseStatisticLink);
 			}
 			if (CourseDBManager.getInstance().isEnabled() && (hasCourseRight(CourseRights.RIGHT_DB) || isCourseAdmin)) {
 				dbLink = LinkFactory.createToolLink("customDb",translate("command.opendb"), this);
@@ -1090,10 +1137,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 		// 2) add coached groups
 		if (uce.getCoachedGroups().size() > 0) {
-			//myTool.addHeader(translate("header.tools.ownerGroups"));
 			for (BusinessGroup group:uce.getCoachedGroups()) {
-				//myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), StringHelper.escapeHtml(group.getName()));
-				
 				Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), StringHelper.escapeHtml(group.getName()), this);
 				groupTools.addComponent(link);
 			}
@@ -1101,7 +1145,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 		// 3) add participating groups
 		if (uce.getParticipatingGroups().size() > 0) {
-			//myTool.addHeader(translate("header.tools.participatedGroups"));
 			for (BusinessGroup group: uce.getParticipatingGroups()) {
 				Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), StringHelper.escapeHtml(group.getName()), this);
 				groupTools.addComponent(link);
@@ -1110,12 +1153,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 		// 5) add waiting-list groups
 		if (uce.getWaitingLists().size() > 0) {
-			//myTool.addHeader(translate("header.tools.waitingListGroups"));
 			for (BusinessGroup group:uce.getWaitingLists()) {
 				int pos = businessGroupService.getPositionInWaitingListFor(getIdentity(), group);
-				//myTool.addLink(CMD_START_GROUP_PREFIX + group.getKey().toString(), group.getName() + "(" + pos + ")", group.getKey().toString(), null);
-				//myTool.setEnabled(group.getKey().toString(), false);
-				
 				String name = StringHelper.escapeHtml(group.getName()) + " (" + pos + ")";
 				Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), name, this);
 				link.setEnabled(false);
@@ -1123,14 +1162,16 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			}
 		}
 		
-		all.addTool(groupTools, false);
+		if(groupTools.size() > 0) {
+			all.addTool(groupTools, false);
+		}
 	}
 	
 	private void initGeneralTools(CourseConfig cc) {
 		// new toolbox 'general'
 		if (cc.isCalendarEnabled() && !isGuest) {
 			calendarLink = LinkFactory.createToolLink("calendar",translate("command.calendar"), this);
-			noteLink.setPopup(true);//"950", "750"
+			calendarLink.setPopup(true);//"950", "750"
 			calendarLink.setIconCSS("o_icon o_icon_calendar");
 			all.addTool(calendarLink, false);
 		}

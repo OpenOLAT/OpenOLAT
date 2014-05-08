@@ -22,8 +22,8 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -50,16 +50,18 @@ import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeEditController;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeRunController;
 import org.olat.course.nodes.portfolio.PortfolioResultDetailsController;
-import org.olat.course.repository.ImportPortfolioReferencesController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.portfolio.EPTemplateMapResource;
 import org.olat.portfolio.manager.EPStructureManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 
 
 /**
@@ -418,12 +420,15 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
 		File importSubdir = new File(importDirectory, getIdent());
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importSubdir);
 		if (rie.anyExportedPropertiesAvailable()) {
-			Identity admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
-			ImportPortfolioReferencesController.doImport(rie, this, true, admin);
+			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(EPTemplateMapResource.TYPE_NAME);
+			RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
+					locale, rie.importGetExportedFile(), null);
+			//TODO missing map
+			PortfolioCourseNodeEditController.setReference(re, null, getModuleConfiguration());
 		}
 	}
 }

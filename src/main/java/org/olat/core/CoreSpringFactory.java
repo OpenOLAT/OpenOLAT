@@ -99,8 +99,13 @@ public class CoreSpringFactory implements ServletContextAware, BeanFactoryAware 
 	}
 	
 	public static String resolveProperty(String name) {
-    String rv = beanFactory.resolveEmbeddedValue("${" + name + "}");
-    return rv;
+		String rv = beanFactory.resolveEmbeddedValue("${" + name + "}");
+		return rv;
+	}
+	
+	public static void autowireObject(Object bean) {
+		ApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(CoreSpringFactory.servletContext);
+		context.getAutowireCapableBeanFactory().autowireBean(bean);
 	}
 
 	/**

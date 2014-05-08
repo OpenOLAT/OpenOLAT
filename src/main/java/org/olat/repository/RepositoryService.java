@@ -90,7 +90,8 @@ public interface RepositoryService {
 	 * @return
 	 */
 	public List<RepositoryEntryMyView> searchMyView(SearchMyRepositoryEntryViewParams params, int firstResult, int maxResults);
-	
+
+	public RepositoryEntryMyView loadMyView(RepositoryEntryRef ref);
 
 	public int countAuthorView(SearchAuthorRepositoryEntryViewParams params);
 	

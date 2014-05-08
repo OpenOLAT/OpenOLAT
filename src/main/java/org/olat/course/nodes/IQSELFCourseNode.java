@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -51,7 +50,6 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.IQRunController;
 import org.olat.course.nodes.iq.IQUIFactory;
-import org.olat.course.repository.ImportReferencesController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
@@ -61,12 +59,15 @@ import org.olat.ims.qti.QTIResultSet;
 import org.olat.ims.qti.export.QTIExportFormatter;
 import org.olat.ims.qti.export.QTIExportFormatterCSVType2;
 import org.olat.ims.qti.export.QTIExportManager;
+import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 
 import de.bps.onyx.plugin.OnyxModule;
 
@@ -225,10 +226,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		}
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#exportNode(java.io.File,
-	 *      org.olat.course.ICourse)
-	 */
+	@Override
 	public void exportNode(File exportDirectory, ICourse course) {
 		String repositorySoftKey = (String) getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 		if (repositorySoftKey == null) return; // nothing to export
@@ -247,14 +245,14 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
+		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(TestFileResource.TYPE_NAME);
+		
 		File importSubdir = new File(importDirectory, getIdent());
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importSubdir);
-		if (!rie.anyExportedPropertiesAvailable()) return;
-
-		// do import referenced repository entries
-		Identity admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
-		ImportReferencesController.doImport(rie, this, ImportReferencesController.IMPORT_TEST, true, admin);
+		RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
+				locale, rie.importGetExportedFile(), null);
+		IQEditController.setIQReference(re, getModuleConfiguration());
 	}
 
 	@Override

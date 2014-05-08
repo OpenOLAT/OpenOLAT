@@ -100,13 +100,10 @@ public abstract class FeedManager extends BasicManager {
 	public abstract void delete(OLATResourceable feed);
 
 	/**
-	 * Copies a given feed resourcable
+	 * Copies a given feed resourceable
 	 * 
 	 * @param feed
 	 */
-	//DELETE
-	public abstract OLATResourceable copy(OLATResourceable feed);
-	
 	public abstract boolean copy(OLATResource source, OLATResource target);
 
 	/**

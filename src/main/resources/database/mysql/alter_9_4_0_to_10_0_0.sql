@@ -333,6 +333,41 @@ create view o_repositoryentry_my_v as (
    left join o_as_user_course_infos as courseinfos on (courseinfos.fk_identity=ident.id and re.fk_olatresource=courseinfos.fk_resource_id)
 );
 
+drop view o_repositoryentry_author_v;
+create view o_repositoryentry_author_v as (
+   select
+      re.repositoryentry_id as re_id,
+      re.creationdate as re_creationdate,
+      re.lastmodified as re_lastmodified,
+      re.displayname as re_displayname,
+      re.description as re_description,
+      re.external_id as re_external_id,
+      re.external_ref as re_external_ref,
+      re.initialauthor as re_author,
+      re.authors as re_authors,
+      re.accesscode as re_accesscode,
+      re.membersonly as re_membersonly,
+      re.statuscode as re_statuscode,
+      re.fk_lifecycle as fk_lifecycle,
+      re.fk_olatresource as fk_olatresource,
+      stats.r_lastusage as re_lastusage,
+      mark.mark_id as mark_id,
+      ident.id as member_id,
+      (select count(offer.offer_id) from o_ac_offer as offer 
+         where offer.fk_resource_id = re.fk_olatresource
+         and offer.is_valid=true
+         and (offer.validfrom is null or offer.validfrom <= current_timestamp)
+         and (offer.validto is null or offer.validto >= current_timestamp)
+      ) as num_of_valid_offers,
+      (select count(offer.offer_id) from o_ac_offer as offer 
+         where offer.fk_resource_id = re.fk_olatresource
+         and offer.is_valid=true
+      ) as num_of_offers
+   from o_repositoryentry as re
+   cross join o_bs_identity as ident
+   inner join o_repositoryentry_stats as stats on (re.fk_stats=stats.id)
+   left join o_mark as mark on (mark.creator_id=ident.id and re.repositoryentry_id=mark.resid and mark.resname='RepositoryEntry')
+);
 
 -- drop views
 drop view o_gp_visible_participant_v;

@@ -21,12 +21,14 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -40,10 +42,10 @@ import org.olat.course.nodes.feed.FeedNodeEditController;
 import org.olat.course.nodes.feed.FeedNodeSecurityCallback;
 import org.olat.course.nodes.feed.FeedPeekviewController;
 import org.olat.course.nodes.feed.blog.BlogNodeEditController;
-import org.olat.course.repository.ImportReferencesController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.fileresource.types.BlogFileResource;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.managers.FeedManager;
 import org.olat.modules.webFeed.ui.FeedMainController;
@@ -51,6 +53,8 @@ import org.olat.modules.webFeed.ui.FeedUIFactory;
 import org.olat.modules.webFeed.ui.blog.BlogUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -180,7 +184,8 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course) {
-		super.importNode(importDirectory, ImportReferencesController.IMPORT_BLOG);
+	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
+		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(BlogFileResource.TYPE_NAME);
+		super.importNode(handler, importDirectory, owner, locale);
 	}
 }

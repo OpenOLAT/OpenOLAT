@@ -99,7 +99,7 @@ public class FileResourceManager extends BasicManager {
 	 * @param knownResource maybe null, FileResource type will be calculated
 	 * @return True upon success, false otherwise.
 	 */
-	public FileResource addFileResource(File fResource, String newName, FileResource knownResource) throws AddingResourceException {
+	private FileResource addFileResource(File fResource, String newName, FileResource knownResource) throws AddingResourceException {
 
 		// ZIPDIR is a reserved name... check
 		if (fResource.getName().equals(ZIPDIR)) throw new AssertException("Trying to add FileResource with reserved name '" + ZIPDIR + "'.");
@@ -412,41 +412,4 @@ public class FileResourceManager extends BasicManager {
 		fr.overrideResourceableId(res.getResourceableId());
 		return fr;
 	}
-
-	/**
-	 * Creates a copy of the given resourceable.
-	 * 
-	 * @param res
-	 * @return Copy of the given resource.
-	 */
-	public OLATResourceable createCopy(OLATResourceable res) {
-		return createCopy(res, null);
-	}
-
-	/**
-	 * Creates a copy of the given resourceable.
-	 * 
-	 * @param res
-	 * @return Copy of the given resource.
-	 */
-	public OLATResourceable createCopy(OLATResourceable res, String resourceFolderName) {
-		File fResource = getFileResource(res, resourceFolderName);
-		if (fResource == null) return null;
-		try {
-			return addFileResource(fResource, fResource.getName());
-		} catch (AddingResourceException e) {
-			throw new OLATRuntimeException(FileResourceManager.class, "Error while trying to copy resource with name: " + fResource.getName(), e);
-		}
-	}
-	
-	public OLATResourceable createCopy(OLATResourceable res, String resourceFolderName, FileResource target) {
-		File fResource = getFileResource(res, resourceFolderName);
-		if (fResource == null) return null;
-		try {
-			return addFileResource(fResource, fResource.getName(), target);
-		} catch (AddingResourceException e) {
-			throw new OLATRuntimeException(FileResourceManager.class, "Error while trying to copy resource with name: " + fResource.getName(), e);
-		}
-	}
-
 }

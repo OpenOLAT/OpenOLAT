@@ -23,7 +23,6 @@ import java.io.File;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
-import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.manager.BasicManager;
@@ -65,8 +64,6 @@ public abstract class GlossaryManager extends BasicManager {
 	public abstract RepositoryEntryImportExport getRepositoryImportExport(File importDataDir);
 	
 	public abstract void deleteGlossary(OLATResourceable res);
-	
-	public abstract OLATResourceable createCopy(OLATResourceable res, UserRequest ureq);
 	
 	public abstract String archive(String archivFilePath, RepositoryEntry repoEntry);
 	

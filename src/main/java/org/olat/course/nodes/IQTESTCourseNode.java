@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -57,7 +56,6 @@ import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.IQRunController;
 import org.olat.course.nodes.iq.IQUIFactory;
 import org.olat.course.properties.CoursePropertyManager;
-import org.olat.course.repository.ImportReferencesController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -70,6 +68,7 @@ import org.olat.ims.qti.QTIResultSet;
 import org.olat.ims.qti.export.QTIExportFormatter;
 import org.olat.ims.qti.export.QTIExportFormatterCSVType1;
 import org.olat.ims.qti.export.QTIExportManager;
+import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
@@ -79,6 +78,8 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 
 import de.bps.onyx.plugin.OnyxExportManager;
 import de.bps.onyx.plugin.OnyxModule;
@@ -468,14 +469,14 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
+		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(SurveyFileResource.TYPE_NAME);
+		
 		File importSubdir = new File(importDirectory, getIdent());
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importSubdir);
-		if (!rie.anyExportedPropertiesAvailable()) return;
-
-		// do import referenced repository entries
-		Identity admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
-		ImportReferencesController.doImport(rie, this, ImportReferencesController.IMPORT_TEST, true, admin);
+		RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
+				locale, rie.importGetExportedFile(), null);
+		IQEditController.setIQReference(re, getModuleConfiguration());
 	}
 
 	/**

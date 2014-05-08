@@ -34,7 +34,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -58,11 +57,11 @@ import org.olat.course.nodes.cp.CPEditController;
 import org.olat.course.nodes.scorm.ScormEditController;
 import org.olat.course.nodes.scorm.ScormRunController;
 import org.olat.course.properties.CoursePropertyManager;
-import org.olat.course.repository.ImportReferencesController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.scorm.ScormMainManager;
 import org.olat.modules.scorm.ScormPackageConfig;
@@ -70,6 +69,8 @@ import org.olat.modules.scorm.archiver.ScormExportManager;
 import org.olat.modules.scorm.assessment.ScormResultDetailsController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 
 /**
  * Description:<br>
@@ -324,14 +325,14 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Ass
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
+		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(ScormCPFileResource.TYPE_NAME);
+		
 		File importSubdir = new File(importDirectory, getIdent());
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importSubdir);
-		if (!rie.anyExportedPropertiesAvailable()) return;
-
-		// do import referenced repository entries
-		Identity admin = BaseSecurityManager.getInstance().findIdentityByName("administrator");
-		ImportReferencesController.doImport(rie, this, ImportReferencesController.IMPORT_SCORM, true, admin);
+		RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
+				locale, rie.importGetExportedFile(), null);
+		ScormEditController.setScormCPReference(re, getModuleConfiguration());
 	}
 
 	@Override

@@ -32,9 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -88,11 +86,9 @@ import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
-import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.area.CourseAreasController;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.ui.courselayout.CourseLayoutHelper;
 import org.olat.course.editor.PublishStepCatalog.CategoryLabel;
@@ -104,10 +100,8 @@ import org.olat.course.nodes.cl.ui.wizard.CheckList_1_CheckboxStep;
 import org.olat.course.run.preview.PreviewConfigController;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
-import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.resource.OLATResource;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -133,8 +127,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private static final String CMD_DELNODE = "deln";
 	private static final String CMD_CLOSEEDITOR = "cmd.close";
 	private static final String CMD_PUBLISH = "pbl";
-	private static final String CMD_COURSEFOLDER = "cfd";
-	private static final String CMD_COURSEAREAS = "careas";
 	private static final String CMD_COURSEPREVIEW = "cprev";
 	private static final String CMD_KEEPCLOSED_ERROR = "keep.closed.error";
 	private static final String CMD_KEEPOPEN_ERROR = "keep.open.error";
@@ -148,8 +140,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private static final String NLS_PUBLISHED_NEVER_YET = "published.never.yet";
 	private static final String NLS_PUBLISHED_LATEST = "published.latest";
 	private static final String NLS_HEADER_TOOLS = "header.tools";
-	private static final String NLS_COMMAND_COURSEFOLDER = "command.coursefolder";
-	private static final String NLS_COMMAND_COURSEAREAS = "command.courseareas";
 	private static final String NLS_COMMAND_COURSEPREVIEW = "command.coursepreview";
 	private static final String NLS_COMMAND_PUBLISH = "command.publish";
 	private static final String NLS_COMMAND_CLOSEEDITOR = "command.closeeditor";
@@ -165,7 +155,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private static final String NLS_DELETENODE_ERROR_ROOTNODE = "deletenode.error.rootnode";
 	private static final String NLS_MOVECOPYNODE_ERROR_SELECTFIRST = "movecopynode.error.selectfirst";
 	private static final String NLS_MOVECOPYNODE_ERROR_ROOTNODE = "movecopynode.error.rootnode";
-	private static final String NLS_COURSEFOLDER_NAME = "coursefolder.name";
 	private static final String NLS_ADMIN_HEADER = "command.admin.header";
 	private static final String NLS_MULTI_SPS = "command.multi.sps";
 	private static final String NLS_MULTI_CHECKLIST = "command.multi.checklist";
@@ -186,8 +175,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private PreviewConfigController previewController;
 	private MoveCopySubtreeController moveCopyController;
 	private InsertNodeController insertNodeController;
-	private Controller folderController;
-	private Controller areasController;
 	private DialogBoxController deleteDialogController;		
 	private LayoutMain3ColsController columnLayoutCtr;
 	private AlternativeCourseNodeController alternateCtr;
@@ -201,7 +188,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private Link keepClosedErrorButton, keepOpenErrorButton, keepClosedWarningButton, keepOpenWarningButton;
 	private Link alternativeLink;
 	
-	private Link folderLink, areaLink, previewLink, publishLink, closeLink;
+	private Link previewLink, publishLink, closeLink;
 	private Link deleteNodeLink, moveNodeLink, copyNodeLink;
 	private Link multiSpsLink, multiCheckListLink;
 	
@@ -361,10 +348,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		Dropdown editTools = new Dropdown("editTools", NLS_HEADER_TOOLS, false, getTranslator());
 		stackPanel.addTool(editTools, false);
 		
-		folderLink = LinkFactory.createToolLink(CMD_COURSEFOLDER, translate(NLS_COMMAND_COURSEFOLDER), this);
-		editTools.addComponent(folderLink);
-		areaLink = LinkFactory.createToolLink(CMD_COURSEAREAS, translate(NLS_COMMAND_COURSEAREAS), this, "o_toolbox_courseareas");
-		editTools.addComponent(areaLink);
 		previewLink = LinkFactory.createToolLink(CMD_COURSEPREVIEW, translate(NLS_COMMAND_COURSEPREVIEW), this, "b_toolbox_preview");
 		editTools.addComponent(previewLink);
 		publishLink = LinkFactory.createToolLink(CMD_PUBLISH, translate(NLS_COMMAND_PUBLISH), this, "b_toolbox_publish");
@@ -466,10 +449,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			} else if(source == alternativeLink) {
 				CourseNode chosenNode = (CourseNode)alternativeLink.getUserObject();
 				askForAlternative(ureq, chosenNode);
-			} else if(folderLink == source) {
-				launchCourseFolder(ureq, course);
-			} else if(areaLink == source) {
-				launchCourseAreas(ureq, course);
 			} else if(previewLink == source) {
 				launchPreview(ureq, course);
 			} else if(publishLink == source) {
@@ -703,13 +682,11 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			removeAsListenerAndDispose(multiSPChooserCtr);
 			removeAsListenerAndDispose(moveCopyController);
 			removeAsListenerAndDispose(insertNodeController);
-			removeAsListenerAndDispose(folderController);
 			removeAsListenerAndDispose(alternateCtr);
 			removeAsListenerAndDispose(cmc);
 			moveCopyController = null;
 			insertNodeController = null;
 			multiSPChooserCtr = null;
-			folderController = null;
 			alternateCtr = null;
 			cmc = null;
 		} else if (source == moveCopyController) {	
@@ -1156,15 +1133,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		stackPanel.pushController(translate("command.coursepreview"), previewController);
 	}
 	
-	private void launchCourseAreas(UserRequest ureq, ICourse course) {
-		removeAsListenerAndDispose(areasController);
-		OLATResource courseRes = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-		CourseAreasController areasMainCtl = new CourseAreasController(ureq, getWindowControl(), courseRes);
-		areasMainCtl.addLoggingResourceable(LoggingResourceable.wrap(course));
-		areasController = new LayoutMain3ColsController(ureq, getWindowControl(), areasMainCtl);
-		stackPanel.pushController(translate("command.courseareas"), areasController);
-	}
-	
 	private void launchSinglePagesWizard(UserRequest ureq, ICourse course) {
 		removeAsListenerAndDispose(multiSPChooserCtr);
 		VFSContainer rootContainer = course.getCourseEnvironment().getCourseFolderContainer();
@@ -1187,17 +1155,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				translate("checklist.wizard"), "o_sel_checklist_wizard");
 		listenTo(checklistWizard);
 		getWindowControl().pushAsModalDialog(checklistWizard.getInitialComponent());
-	}
-	
-	private void launchCourseFolder(UserRequest ureq, ICourse course) {
-		// Folder for course with custom link model to jump to course nodes
-		VFSContainer namedCourseFolder = new NamedContainerImpl(translate(NLS_COURSEFOLDER_NAME), course.getCourseFolderContainer());
-		CustomLinkTreeModel customLinkTreeModel = new CourseInternalLinkTreeModel(course.getEditorTreeModel());
-		removeAsListenerAndDispose(folderController);
-		FolderRunController folderMainCtl = new FolderRunController(namedCourseFolder, true, true, true, ureq, getWindowControl(), null, customLinkTreeModel);
-		folderMainCtl.addLoggingResourceable(LoggingResourceable.wrap(course));
-		folderController = new LayoutMain3ColsController(ureq, getWindowControl(), folderMainCtl);
-		stackPanel.pushController(translate("command.coursefolder"), folderController);
 	}
 
 	/**

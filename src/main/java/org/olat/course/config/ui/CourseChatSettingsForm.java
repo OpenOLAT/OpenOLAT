@@ -66,7 +66,6 @@ public class CourseChatSettingsForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("tab.chat.title");
 		setFormContextHelp("org.olat.course.config.ui","course-chat.html","help.hover.course-chat");
 
 		isOn = uifactory.addCheckboxesVertical("isOn", "chkbx.chat.onoff", formLayout, new String[] {"xx"}, new String[] {""}, null, 1);

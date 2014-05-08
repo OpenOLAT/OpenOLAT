@@ -41,6 +41,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -207,7 +208,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void importNode(File importDirectory, ICourse course) {
+	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
 		// the export has copies the files under the node's ID
 		File fFolderNodeData = new File(importDirectory, this.getIdent());
 		// the whole folder can be moved back to the root direcotry of foldernodes
