@@ -164,10 +164,14 @@ public class RepositoryEntryListController extends FormBasicController
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		listLink = uifactory.addFormLink("switchLayoutList", "list", "table.switch.list", null, formLayout, Link.BUTTON);
+		listLink = uifactory.addFormLink("switchLayoutList", "list", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
 		listLink.setIconCSS("o_icon o_icon_list o_icon-lg");
-		tableLink = uifactory.addFormLink("switchLayoutTable", "table", "table.switch.table", null, formLayout, Link.BUTTON);
+		listLink.setLinkTitle(translate("table.switch.list"));
+		listLink.setActive(true);
+		tableLink = uifactory.addFormLink("switchLayoutTable", "table", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
 		tableLink.setIconCSS("o_icon o_icon_table o_icon-lg");
+		tableLink.setLinkTitle(translate("table.switch.table"));
+		tableLink.setActive(false);			
 		
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -221,10 +225,14 @@ public class RepositoryEntryListController extends FormBasicController
 			tableEl.setRendererType(FlexiTableRendererType.custom);
 			tableEl.setElementCssClass("o_coursetable o_rendertype_custom");
 			tableEl.setCustomizeColumns(false);
+			listLink.setActive(true);
+			tableLink.setActive(false);			
 		} else if(tableLink == source) {
 			tableEl.setRendererType(FlexiTableRendererType.classic);
 			tableEl.setElementCssClass("o_coursetable o_rendertype_classic");
 			tableEl.setCustomizeColumns(true);
+			listLink.setActive(false);
+			tableLink.setActive(true);
 		} else if(source instanceof RatingWithAverageFormItem && event instanceof RatingFormEvent) {
 			RatingFormEvent ratingEvent = (RatingFormEvent)event;
 			RatingWithAverageFormItem ratingItem = (RatingWithAverageFormItem)source;
@@ -447,8 +455,9 @@ public class RepositoryEntryListController extends FormBasicController
 		String title = "(" + numOfComments + ")";
 		FormLink commentsLink = uifactory.addFormLink("comments_" + row.getKey(), "comments", title, null, null, Link.NONTRANSLATED);
 		commentsLink.setUserObject(row);
-		String css = numOfComments > 0 ? "b_comments" : "b_comments b_no_comment";
-		commentsLink.setCustomEnabledLinkCSS(css);
+		String css = numOfComments > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
+		commentsLink.setCustomEnabledLinkCSS("o_comments");
+		commentsLink.setIconCSS(css);
 		row.setCommentsLink(commentsLink);
 	}
 }

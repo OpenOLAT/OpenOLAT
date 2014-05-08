@@ -237,4 +237,21 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 			return true;
 		}
 	}
+
+	@Override
+	public void setLinkTitle(String i18nKey) {
+		if (component != null) {
+			if (StringHelper.containsNonWhitespace(i18nKey)) {
+				// translate other links
+				component.setTitle(i18nKey);
+			}
+		}		
+	}
+
+	@Override
+	public void setActive(boolean isActive) {
+		if (component != null) {
+			component.setActive(isActive);
+		}		
+	}
 }

@@ -1,13 +1,15 @@
-<div class="btn-group pull-right">
+<div class="pull-right o_table_tools">
 	<div class="btn-group">
-		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">$r.translate("table.filter") <span class="caret"></span></button>
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" title="$r.translate("table.filter")"><i class="o_icon o_icon_filter o_icon-lg"></i> <span class="caret"></span></button>
 		$r.render("filters")
 	</div>
 	<div class="btn-group">
-		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">$r.translate("table.sort") <span class="caret"></span></button>
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" title="$r.translate("table.sort")"><i class="o_icon o_icon_sort_menu o_icon-lg"></i> <span class="caret"></span></button>
 		$r.render("orderBys")
 	</div>
-	$r.render("switchLayoutList")
-	$r.render("switchLayoutTable")
+	<div class="btn-group">
+		$r.render("switchLayoutList")
+		$r.render("switchLayoutTable")
+	</div> 
 </div>
 $r.render("table")

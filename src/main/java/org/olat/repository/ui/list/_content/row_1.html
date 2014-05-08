@@ -26,7 +26,7 @@
 		<div class="o_bookmark">$r.render($row.markLinkName)</div>
 	</div>
 	<div class="o_access">
-		<div class="hide"> ##FIXME:OO10 hidden for now until more CSS is fixed
+		<div class=""> ##FIXME:OO10 hidden for now until more CSS is fixed
 			#if($r.get("ac_$item.key"))
 				#foreach($ac_type in $r.get("ac_$item.key"))
 					#if($ac_type.price && $ac_type.price.length() > 0)
@@ -39,14 +39,17 @@
 			#end
 
 			#if($row.passed)
-				$r.translate("passed.true")
+				<div class="o_state">$r.translate("passed.true")</div>
 			#elseif($item.failed)
-				$r.translate("passed.false")
+				<div class="o_state">$r.translate("passed.false")</div>
 			#end
-			#if($row.score) <span>/ $row.score</span> #end
+
+			#if($row.score) 
+			<div class="o_score">$row.score</div> 
+			#end
 
 			#if($row.recentLaunch)
-				$r.formatDateAndTime($row.recentLaunch)<br/>
+				<div class="o_recent">$r.formatDateAndTime($row.recentLaunch)</div>
 			#end
 			
 			#if($row.accessTypes)

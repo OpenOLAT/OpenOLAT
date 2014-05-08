@@ -59,25 +59,25 @@ public class RatingRenderer extends DefaultComponentRenderer {
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		RatingComponent rating = (RatingComponent) source;
-		sb.append("<div class='b_rating ");
+		sb.append("<div class='o_rating ");
 		// Add custom css class
 		if (rating.getCssClass() != null) sb.append(rating.getCssClass());
 		sb.append("'>");
 		// Add Title
 		String title = rating.getTitle(); 
 		if (title != null) {
-			sb.append("<div class='b_rating_title'>");
+			sb.append("<div class='o_rating_title'>");
 			if (rating.isTranslateTitle()) {
 				title = translator.translate(title);
 			}
 			sb.append(title);				
-			sb.append("</div>"); //b_rating_title
+			sb.append("</div>"); //o_rating_title
 		}
 		// Add ratings and labels		
 		List<String> labels = rating.getRatingLabel();
-		sb.append("<div class='b_rating_items");
+		sb.append("<div class='o_rating_items");
 		if (rating.isAllowUserInput()) {
-			sb.append(" b_enabled");			
+			sb.append(" o_enabled");			
 		}
 		sb.append("'>");
 
@@ -85,11 +85,11 @@ public class RatingRenderer extends DefaultComponentRenderer {
 		boolean ajaxModeEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
 		for (int i = 0; i < labels.size(); i++) {
 			// Add css class
-			sb.append("<a class='");
+			sb.append("<a class='o_icon o_icon-lg ");
 			if (rating.getCurrentRating() >= i+1) {
-				sb.append("b_rating_item_on");				
+				sb.append("o_icon_rating_on");				
 			} else {
-				sb.append("b_rating_item_off");				
+				sb.append("o_icon_rating_off");				
 			}								
 			sb.append("'");
 			// Add action
@@ -133,21 +133,23 @@ public class RatingRenderer extends DefaultComponentRenderer {
 		}
 		// Add text output
 		if (rating.isShowRatingAsText()) {
+			sb.append("<span class='o_legend'>");
 			sb.append(Formatter.roundToString(rating.getCurrentRating(), 1));
 			sb.append(" / ");
 			sb.append(labels.size());			
+			sb.append("</span>");
 		}
-		sb.append("</div>"); //b_rating_items
+		sb.append("</div>"); //o_rating_items
 		// Add explanation
 		String expl = rating.getExplanation(); 
 		if (expl != null) {
-			sb.append("<div class='b_rating_explanation'>");
+			sb.append("<div class='o_rating_explanation'>");
 			if (rating.isTranslateExplanation()) {
 				expl = translator.translate(expl);
 			}
 			sb.append(expl);				
-			sb.append("</div>"); //b_rating_explanation
+			sb.append("</div>"); //o_rating_explanation
 		}
-		sb.append("</div>");//b_rating
+		sb.append("</div>");//o_rating
 	}
 }
