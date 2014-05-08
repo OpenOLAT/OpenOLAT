@@ -359,7 +359,9 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 
 	@Override
 	public void configurationChanged() {
-		scormDispC.configurationChanged();
+		if(scormDispC != null) {
+			scormDispC.configurationChanged();
+		}
 	}
 
 	/**

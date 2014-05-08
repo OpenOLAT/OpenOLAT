@@ -64,6 +64,7 @@ import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.group.model.BGAreaReference;
 import org.olat.group.model.BusinessGroupReference;
+import org.olat.ims.qti.statistics.QTIType;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -151,12 +152,12 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	
 	@Override
 	public StatisticResourceResult createStatisticNodeResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, StatisticResourceOption options) {
+			UserCourseEnvironment userCourseEnv, StatisticResourceOption options, QTIType... types) {
 		return null;
 	}
 
 	@Override
-	public boolean isStatisticNodeResultAvailable(UserCourseEnvironment userCourseEnv) {
+	public boolean isStatisticNodeResultAvailable(UserCourseEnvironment userCourseEnv, QTIType... types) {
 		return false;
 	}
 

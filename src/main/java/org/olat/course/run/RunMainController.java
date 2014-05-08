@@ -121,6 +121,7 @@ import org.olat.course.statistic.StatisticMainController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
+import org.olat.ims.qti.statistics.QTIType;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
@@ -156,7 +157,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	private MenuTree luTree;
 	//tools
-	private Link editLink, userMgmtLink, archiverLink, assessmentLink, qtistatisticLink, statisticLink, dbLink;
+	private Link surveyStatisticLink, testStatisticLink;
+	private Link editLink, userMgmtLink, archiverLink, assessmentLink, statisticLink, dbLink;
 	private Link efficiencyStatementsLink, bookmarkLink, calendarLink, detailsLink, noteLink, chatLink;
 	
 	private Panel contentP;
@@ -476,9 +478,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		} else if(assessmentLink == source) {
 			all.popUpToRootController(ureq);
 			launchAssessmentTool(ureq);
-		} else if(qtistatisticLink == source) {
+		} else if(testStatisticLink == source) {
 			all.popUpToRootController(ureq);
-			launchAssessmentStatistics(ureq);
+			launchAssessmentStatistics(ureq, "command.openteststatistic", "TestStatistics", QTIType.test, QTIType.onyx);
+		} else if (surveyStatisticLink == source) {
+			all.popUpToRootController(ureq);
+			launchAssessmentStatistics(ureq, "command.opensurveystatistic", "SurveyStatistics", QTIType.survey);
 		} else if(statisticLink == source) {
 			all.popUpToRootController(ureq);
 			launchStatistics(ureq);
@@ -824,22 +829,15 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		} else throw new OLATSecurityException("clicked groupmanagement, but no according right");
 	}
 
-	private Activateable2 launchAssessmentStatistics(UserRequest ureq) {
-		OLATResourceable ores = OresHelper.createOLATResourceableType("assessmentStatistics");
+	private Activateable2 launchAssessmentStatistics(UserRequest ureq, String i18nCrumbKey, String typeName, QTIType... types) {
+		OLATResourceable ores = OresHelper.createOLATResourceableType(typeName);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl swControl = addToHistory(ureq, ores, null);
-		if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
-			StatisticCourseNodesController statsToolCtr = new StatisticCourseNodesController(ureq, swControl, uce);
+		if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin || isCourseCoach) {
+			StatisticCourseNodesController statsToolCtr = new StatisticCourseNodesController(ureq, swControl, uce, types);
 			currentToolCtr = statsToolCtr;
 			listenTo(statsToolCtr);
-			all.pushController(translate("command.openstatistic"), statsToolCtr);
-			return statsToolCtr;
-		}
-		if (isCourseCoach) {
-			StatisticCourseNodesController statsToolCtr = new StatisticCourseNodesController(ureq, swControl, uce);
-			currentToolCtr = statsToolCtr;
-			listenTo(statsToolCtr);
-			all.pushController(translate("command.openstatistic"), statsToolCtr);
+			all.pushController(translate(i18nCrumbKey), statsToolCtr);
 			return statsToolCtr;
 		}
 		return null;
@@ -1052,18 +1050,26 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				editTools.addComponent(assessmentLink);
 			}
 			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin || isCourseCoach) {
-				final AtomicInteger qtiNodes = new AtomicInteger();
+				final AtomicInteger testNodes = new AtomicInteger();
+				final AtomicInteger surveyNodes = new AtomicInteger();
 				new TreeVisitor(new Visitor() {
 					@Override
 					public void visit(INode node) {
-						if(((CourseNode)node).isStatisticNodeResultAvailable(uce)) {
-							qtiNodes.incrementAndGet();
+						if(((CourseNode)node).isStatisticNodeResultAvailable(uce, QTIType.test, QTIType.onyx)) {
+							testNodes.incrementAndGet();
+						} else if(((CourseNode)node).isStatisticNodeResultAvailable(uce, QTIType.survey)) {
+							surveyNodes.incrementAndGet();
 						}
 					}
 				}, course.getRunStructure().getRootNode(), true).visitAll();
-				if(qtiNodes.intValue() > 0) {
-					qtistatisticLink = LinkFactory.createToolLink("qtistatistic", translate("command.openqtistatistic"), this);
-					editTools.addComponent(qtistatisticLink);
+				if(testNodes.intValue() > 0) {
+					testStatisticLink = LinkFactory.createToolLink("qtistatistic", translate("command.openqtistatistic"), this);
+					editTools.addComponent(testStatisticLink);
+				}
+				
+				if(surveyNodes.intValue() > 0) {
+					surveyStatisticLink = LinkFactory.createToolLink("qtistatistic", translate("command.openqtistatistic"), this);
+					editTools.addComponent(surveyStatisticLink);
 				}
 			}
 			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
@@ -1309,11 +1315,16 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					//the wrong link to the wrong person
 				}
 			}
-		}  else if ("assessmentStatistics".equalsIgnoreCase(type)) {
+		}  else if ("TestStatistics".equalsIgnoreCase(type) || "SurveyStatistics".equalsIgnoreCase(type)) {
 			//check the security before, the link is perhaps in the wrong hands
 			if(hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseAdmin || isCourseCoach) {
 				try {
-					Activateable2 assessmentCtrl = launchAssessmentStatistics(ureq);
+					Activateable2 assessmentCtrl;
+					if("TestStatistics".equalsIgnoreCase(type)) {
+						assessmentCtrl = launchAssessmentStatistics(ureq, "command.openteststatistic", "TestStatistics", QTIType.test, QTIType.onyx);
+					} else {
+						assessmentCtrl = launchAssessmentStatistics(ureq, "command.opensurveystatistic", "SurveyStatistics", QTIType.survey);
+					}
 					
 					List<ContextEntry> subEntries;
 					if(entries.size() > 1 && entries.get(1).getOLATResourceable().getResourceableTypeName().equals(type)) {
