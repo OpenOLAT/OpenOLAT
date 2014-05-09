@@ -118,10 +118,12 @@ public class UserCommentDisplayController extends BasicController {
 		// Delete link
 		if(securityCallback.canDeleteComment(userComment)) {
 			deleteLink = LinkFactory.createCustomLink("deleteLink", "delete", "delete", Link.BUTTON_XSMALL, userCommentDisplayVC, this);
+			deleteLink.setElementCssClass("o_delete");
 		}
 		// Reply link
 		if(securityCallback.canReplyToComment(userComment)) {
 			replyLink = LinkFactory.createCustomLink("replyLink", "reply", "comments.coment.reply", Link.BUTTON_XSMALL, userCommentDisplayVC, this);
+			replyLink.setElementCssClass("o_reply");
 		}
 		//
 		// Add all replies

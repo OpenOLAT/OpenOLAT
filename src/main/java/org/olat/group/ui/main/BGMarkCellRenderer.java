@@ -61,9 +61,9 @@ public class BGMarkCellRenderer implements CustomCellRenderer {
 			Link link = LinkFactory.createLink("marked_" + UUID.randomUUID().toString(), container, listeningController);
 			link.setCustomDisplayText("&#160;&#160;&#160;");
 			if(item.isMarked()) {
-				link.setIconCSS(Mark.MARK_CSS_LARGE);
+				link.setIconLeftCSS(Mark.MARK_CSS_LARGE);
 			} else {
-				link.setIconCSS(Mark.MARK_ADD_CSS_LARGE);
+				link.setIconLeftCSS(Mark.MARK_ADD_CSS_LARGE);
 			}
 			link.setUserObject(item);
 			URLBuilder ubu = renderer.getUrlBuilder().createCopyFor(link);

@@ -1,4 +1,3 @@
-
 .o_rating {
 	.o_rating_title {
 		font-weight: bold;
@@ -32,48 +31,3 @@
 		}
 	}
 }
-
-/*
-div.b_ratings_and_comments { 
-	margin: 4em 0 1.5em 0; padding-bottom: 0.5em; border-bottom: 1px solid #eee; font-size: 0.9em; position: relative; 
-	div.o_rating_wrapper { position: absolute; right: 0; bottom: 0; width: 150px; height: 4em; }
-	div.b_rating { background: none; border: none;  padding: 0; margin: 0; position: absolute; left: 0; bottom: 2px; width: 100%}
-	div.o_rating_personal { background: #fff; z-index: 5; }
-}
-
-a.b_comments, div.b_ratings_and_comments a.b_comments, div.b_eportfolio_map a.b_comments {
-	background: url(../openolat/images/comment.png) 3px 50% no-repeat;
-	padding: 3px 0 1px 23px;
-	vertical-align: middle; min-height: 18px;
-}
-a.b_comments.b_no_comment {
-	background: url(../openolat/images/comment_none.png) 3px 50% no-repeat;
-}
-
-div.b_comments { 
-	font-size: 0.9em;
-	
-	div.b_comment_wrapper { 
-		border:1px solid #eee; padding: 10px 10px 5px 10px; margin-bottom: 2em; background: #fbfbfb;
-		@include o-border-radius(4px);
-		div.b_avatar img { border: 1px solid #aaa; }
-		h5 { font-size: 1em; background: url(../openolat/images/user.png) 0 50% no-repeat; padding: 1px 0 1px 20px; vertical-align: middle; min-height: 16px;}
-		span.b_date { color: #aaaaaa; font-weight: normal; display: block; margin-top: 5px;}
-		
-		// wrapper in wrapper in wrapper in ....
-		div.b_comment_wrapper { margin-left: 7px; background: #fff; div.b_comment_wrapper { background: #fbfbfb; div.b_comment_wrapper { background: #fff;} } }
-	}
-	blockquote.b_comment { padding: 3px 0 0 0px; margin: 0;}
-	div.b_form { 
-		padding: 10px; border:1px solid #eee; margin: 2em 0 2em 0; 
-		@include o-gradient-white();
-		@include o-border-radius(4px); 
-		h5 { font-size: 1em; margin-bottom: 0.5em;}
-		div.b_button_group { text-align: center; }
-	}		
-}
-
-.b_comment_icon {background-image: url(../openolat/images/comment.png);}
-#b_comment_form_link {font-size: 0.9em; position: relative; top: -15px; left: 23px;}
-	
-*/

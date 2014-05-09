@@ -1,0 +1,19 @@
+.o_comments { 
+	margin-top: $line-height-computed;
+	.o_comment_wrapper {
+		.o_avatar { 
+			@extend .pull-left;
+			margin: 0 1em 0 0;
+		}
+		.o_reply, .o_delete {
+			@extend .pull-right;		
+		}
+		h5 {
+			@extend .small;
+		}
+		.o_comment { 
+			@extend .small;
+		}
+	
+	}
+} 

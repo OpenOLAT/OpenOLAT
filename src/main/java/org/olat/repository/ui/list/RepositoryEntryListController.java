@@ -165,11 +165,11 @@ public class RepositoryEntryListController extends FormBasicController
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		listLink = uifactory.addFormLink("switchLayoutList", "list", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
-		listLink.setIconCSS("o_icon o_icon_list o_icon-lg");
+		listLink.setIconLeftCSS("o_icon o_icon_list o_icon-lg");
 		listLink.setLinkTitle(translate("table.switch.list"));
 		listLink.setActive(true);
 		tableLink = uifactory.addFormLink("switchLayoutTable", "table", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
-		tableLink.setIconCSS("o_icon o_icon_table o_icon-lg");
+		tableLink.setIconLeftCSS("o_icon o_icon_table o_icon-lg");
 		tableLink.setLinkTitle(translate("table.switch.table"));
 		tableLink.setActive(false);			
 		
@@ -245,7 +245,7 @@ public class RepositoryEntryListController extends FormBasicController
 			if("mark".equals(cmd)) {
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
 				boolean marked = doMark(row);
-				link.setIconCSS(marked ? "o_icon o_icon_bookmark o_icon-lg" : "o_icon o_icon_bookmark_add o_icon-lg");
+				link.setIconLeftCSS(marked ? "o_icon o_icon_bookmark o_icon-lg" : "o_icon o_icon_bookmark_add o_icon-lg");
 				link.getComponent().setDirty(true);
 				row.setMarked(marked);
 			} else if ("select".equals(cmd) || "start".equals(cmd)){
@@ -279,7 +279,7 @@ public class RepositoryEntryListController extends FormBasicController
 				toggleCheck(link);
 				List<Filter> selectedFilters = new ArrayList<>();
 				for(Link filter:filters) {
-					String iconCss = filter.getIconCSS();
+					String iconCss = filter.getIconLeftCSS();
 					if(StringHelper.containsNonWhitespace(iconCss)) {
 						selectedFilters.add((Filter)filter.getUserObject());
 					}
@@ -292,18 +292,18 @@ public class RepositoryEntryListController extends FormBasicController
 	}
 	
 	private void toggleCheck(Link link) {
-		String iconCss = link.getIconCSS();
+		String iconCss = link.getIconLeftCSS();
 		if(StringHelper.containsNonWhitespace(iconCss)) {
-			link.setIconCSS(null);
+			link.setIconLeftCSS(null);
 		} else {
-			link.setIconCSS("o_icon o_icon_check o_icon-fw");
+			link.setIconLeftCSS("o_icon o_icon_check o_icon-fw");
 		}
 	}
 	
 	private void removeCheck(Link link) {
-		String iconCss = link.getIconCSS();
+		String iconCss = link.getIconLeftCSS();
 		if(StringHelper.containsNonWhitespace(iconCss)) {
-			link.setIconCSS(null);
+			link.setIconLeftCSS(null);
 		}
 	}
 
@@ -313,8 +313,10 @@ public class RepositoryEntryListController extends FormBasicController
 			if(commentsCtrl != null) {
 				RepositoryEntryRow row = (RepositoryEntryRow)commentsCtrl.getUserObject();
 				long numOfComments = commentsCtrl.getCommentsCount();
-				String css = numOfComments > 0 ? "b_comments" : "b_comments b_no_comment";
-				row.getCommentsLink().setCustomEnabledLinkCSS(css);
+				
+				String css = numOfComments > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
+				row.getCommentsLink().setCustomEnabledLinkCSS("o_comments");
+				row.getCommentsLink().setIconLeftCSS(css);
 				String title = "(" + numOfComments + ")";
 				row.getCommentsLink().setI18nKey(title);
 				row.getCommentsLink().getComponent().setDirty(true);
@@ -394,7 +396,7 @@ public class RepositoryEntryListController extends FormBasicController
 	@Override
 	public void forgeMarkLink(RepositoryEntryRow row) {
 		FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "", null, null, Link.NONTRANSLATED);
-		markLink.setIconCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+		markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 		markLink.setUserObject(row);
 		row.setMarkLink(markLink);
 	}
@@ -418,7 +420,7 @@ public class RepositoryEntryListController extends FormBasicController
 		FormLink startLink = uifactory.addFormLink("start_" + row.getKey(), "start", label, null, null, Link.LINK);
 		startLink.setUserObject(row);
 		startLink.setCustomEnabledLinkCSS("o_start");
-		startLink.setIconCSS("o_icon o_icon_start");
+		startLink.setIconRightCSS("o_icon o_icon_start");
 		row.setStartLink(startLink);
 	}	
 	
@@ -457,7 +459,7 @@ public class RepositoryEntryListController extends FormBasicController
 		commentsLink.setUserObject(row);
 		String css = numOfComments > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
 		commentsLink.setCustomEnabledLinkCSS("o_comments");
-		commentsLink.setIconCSS(css);
+		commentsLink.setIconLeftCSS(css);
 		row.setCommentsLink(commentsLink);
 	}
 }

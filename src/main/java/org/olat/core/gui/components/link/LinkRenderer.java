@@ -218,8 +218,8 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			}
 			
 			// CSS icon
-			if (link.getIconCSS() != null) {
-				sb.append("<i class='").append(link.getIconCSS()).append("'");
+			if (link.getIconLeftCSS() != null) {
+				sb.append("<i class='").append(link.getIconLeftCSS()).append("'");
 				sb.append("></i> "); // one space needed
 			}			
 			
@@ -242,7 +242,16 @@ public class LinkRenderer extends DefaultComponentRenderer {
 					sb.append(translator.translate(i18n));
 				}
 			}
-			sb.append("</span></a>");
+			sb.append("</span>");
+			
+			// CSS icon
+			if (link.getIconRightCSS() != null) {
+				sb.append(" <i class='").append(link.getIconRightCSS()).append("'"); // one space needed
+				sb.append("></i> "); 
+			}			
+
+			sb.append("</a>");
+			
 			//on click() is part of prototype.js
 			if(link.isRegisterForMousePositionEvent()) {
 				extJsSb.append("jQuery('#"+elementId+"').click(function(event) {")
@@ -288,12 +297,20 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			sb.append(cssSb).append(">");
 
 			// CSS icon
-			if (link.getIconCSS() != null) {
-				sb.append("<i class='").append(link.getIconCSS()).append("'");
+			if (link.getIconLeftCSS() != null) {
+				sb.append("<i class='").append(link.getIconLeftCSS()).append("'");
 				sb.append("></i> "); // one space needed
 			}			
 
-			sb.append(text).append("</span>");
+			sb.append(text);
+			
+			// CSS icon
+			if (link.getIconRightCSS() != null) {
+				sb.append(" <i class='").append(link.getIconRightCSS()).append("'"); // one space needed
+				sb.append("></i> "); 
+			}			
+
+			sb.append("</span>");
 		}
 		if(link.getStartsDownload() || link.getTarget() != null){
 			//if the link starts a download -> the o_afterserver is not called in

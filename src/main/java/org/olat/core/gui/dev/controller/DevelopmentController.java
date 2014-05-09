@@ -150,7 +150,7 @@ public class DevelopmentController extends BasicController {
 		Component protectedMainPanel = DebugHelper.createDebugProtectedWrapper(mainpanel);
 		
 		devToolLink = LinkFactory.createCustomLink("devTool", "devTool", "", Link.NONTRANSLATED, myContent, this);
-		devToolLink.setIconCSS("o_icon o_icon_dev o_icon-fw");
+		devToolLink.setIconLeftCSS("o_icon o_icon_dev o_icon-fw");
 		devToolLink.setCustomEnabledLinkCSS("o_dev hidden-print");
 		devToolLink.setTitle(translate("devTool"));
 		spacesaverController = new ExpColController(ureq, getWindowControl(), false, protectedMainPanel, devToolLink);

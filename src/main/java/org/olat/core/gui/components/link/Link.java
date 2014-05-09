@@ -85,7 +85,8 @@ public class Link extends AbstractComponent {
 	private String customDisplayText;
 	private String customEnabledLinkCSS;
 	private String customDisabledLinkCSS;
-	private String iconCSS;
+	private String iconLeftCSS;
+	private String iconRightCSS;
 	private String target;
 	private String modURI;
 	private Object internalAttachedObj;
@@ -567,19 +568,33 @@ public class Link extends AbstractComponent {
 	}
 
 	/**
-	 * @param iconCSS The CSS classes used as icons in the i element
+	 * @param iconCSS The CSS classes used as icons in the i element on the left hand side of the link text
 	 */
-	public void setIconCSS(String iconCSS) {
-		this.iconCSS = iconCSS;		
+	public void setIconLeftCSS(String iconCSS) {
+		this.iconLeftCSS = iconCSS;		
 	}
 	
 	/**
 	 * @return The icon CSS classes or NULL 
 	 */
-	public String getIconCSS() {
-		return iconCSS;
+	public String getIconLeftCSS() {
+		return iconLeftCSS;
+	}
+
+	/**
+	 * @param iconCSS The CSS classes used as icons in the i element on the right hand side of the link text
+	 */
+	public void setIconRightCSS(String iconCSS) {
+		this.iconRightCSS = iconCSS;		
 	}
 	
+	/**
+	 * @return The icon CSS classes or NULL 
+	 */
+	public String getIconRightCSS() {
+		return iconRightCSS;
+	}
+
 	/**
 	 * Compare also with isEnabled();
 	 * @return true if the link is active (only a rendering issue); false if link not active

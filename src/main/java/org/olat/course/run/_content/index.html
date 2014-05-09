@@ -9,7 +9,7 @@ function o_activateCourseNode(nodeid) {
 		window.focus();
 		${r.javaScriptBgCommand("activateCourseNode")} + nodeid;
 		## Go to top of page (OLAT-5675)
-		jQuery('#b_body').scrollTop(0);
+		o_scrollToElement('#o_top');
 	}
 }
 /* ]]> */ 

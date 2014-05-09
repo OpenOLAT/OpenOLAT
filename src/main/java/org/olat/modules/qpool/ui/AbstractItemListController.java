@@ -219,9 +219,9 @@ public abstract class AbstractItemListController extends FormBasicController
 			} else if("mark".equals(link.getCmd())) {
 				ItemRow row = (ItemRow)link.getUserObject();
 				if(doMark(row)) {
-					link.setIconCSS(Mark.MARK_CSS_LARGE);
+					link.setIconLeftCSS(Mark.MARK_CSS_LARGE);
 				} else {
-					link.setIconCSS(Mark.MARK_ADD_CSS_LARGE);
+					link.setIconLeftCSS(Mark.MARK_ADD_CSS_LARGE);
 				}
 				link.getComponent().setDirty(true);
 			}
@@ -359,7 +359,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		boolean marked = item.isMarked();
 		ItemRow row = new ItemRow(item);
 		FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "&nbsp;", null, null, Link.NONTRANSLATED);
-		markLink.setIconCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+		markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 		markLink.setUserObject(row);
 		row.setMarkLink(markLink);
 		return row;

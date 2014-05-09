@@ -61,7 +61,8 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	private String cmd = null;
 	private boolean hasCustomEnabledCss = false;
 	private boolean hasCustomDisabledCss = false;
-	private String iconCSS;
+	private String iconLeftCSS;
+	private String iconRightCSS;
 	private String customEnabledLinkCSS;
 	private String customDisabledLinkCSS;
 
@@ -139,7 +140,8 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		//if enabled or not must be set now in case it was set during construction time
 		component.setEnabled(isEnabled());
 		component.setTranslator(getTranslator());
-		component.setIconCSS(iconCSS);
+		component.setIconLeftCSS(iconLeftCSS);
+		component.setIconRightCSS(iconRightCSS);
 	}
 	
 	@Override
@@ -179,10 +181,18 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	}
 
 	@Override
-	public void setIconCSS(String iconCSS) {
-		this.iconCSS = iconCSS;
+	public void setIconLeftCSS(String iconCSS) {
+		this.iconLeftCSS = iconCSS;
 		if(iconCSS != null && component != null){
-			component.setIconCSS(iconCSS);
+			component.setIconLeftCSS(iconCSS);
+		}
+	}
+
+	@Override
+	public void setIconRightCSS(String iconCSS) {
+		this.iconRightCSS = iconCSS;
+		if(iconCSS != null && component != null){
+			component.setIconRightCSS(iconCSS);
 		}
 	}
 

@@ -78,7 +78,7 @@ public class UserCommentFormController extends FormBasicController {
 	UserCommentFormController(UserRequest ureq, WindowControl wControl,
 			UserComment parentComment, UserComment toBeUpdatedComment,
 			OLATResourceable ores, String resSubPath) {
-		super(ureq, wControl, "userCommentForm");
+		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
 		this.ores = ores;
 		this.resSubPath = resSubPath;
 		commentAndRatingService = CoreSpringFactory.getImpl(CommentAndRatingService.class);
@@ -96,22 +96,25 @@ public class UserCommentFormController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener,
 			UserRequest ureq) {
+		// Add parent and parent first / last name
+		if (parentComment != null) {
+			User parent = parentComment.getCreator().getUser();
+			String[] args = new String[] {parent.getProperty(UserConstants.FIRSTNAME, getLocale()), parent.getProperty(UserConstants.LASTNAME, getLocale())};
+			setFormTitle("comments.form.reply.title", args);
+		} else {
+			setFormTitle("comments.form.new.title");
+		}
+
 		commentElem = uifactory.addRichTextElementForStringDataMinimalistic(
 				"commentElem", null, "", -1, -1, formLayout, getWindowControl());
 		commentElem.setMaxLength(4000);
 		FormLayoutContainer buttonContainer = FormLayoutContainer
 				.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add(buttonContainer);
+
 		uifactory.addFormSubmitButton("submit", buttonContainer);
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq,
 				getWindowControl());
-		// Add parent and parent first / last name
-		if (parentComment != null) {
-			this.flc.contextPut("parentComment", parentComment);
-			User parent = parentComment.getCreator().getUser();
-			this.flc.contextPut("parentfirstName", parent.getProperty(UserConstants.FIRSTNAME, getLocale()));
-			this.flc.contextPut("parentLastName", parent.getProperty(UserConstants.LASTNAME, getLocale()));
-		}
 	}
 
 	@Override

@@ -110,7 +110,6 @@ public class UserCommentsAndRatingsController extends BasicController implements
 			userCommentsAndRatingsVC.contextPut("enableComments", Boolean.valueOf(enableComments));
 			// Link with comments count to expand view
 			commentsCountLink = LinkFactory.createLink("comments.count", this.userCommentsAndRatingsVC, this);
-			commentsCountLink.setCustomEnabledLinkCSS("b_comments");
 			commentsCountLink.setTooltip("comments.count.tooltip");
 			// Init view with values from DB
 			updateCommentCountView();
@@ -125,7 +124,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 				userCommentsAndRatingsVC.put("ratingUserC", ratingUserC);
 				ratingUserC.setShowRatingAsText(true);
 				ratingUserC.setTitle("rating.personal.title");
-				ratingUserC.setCssClass("b_rating_personal");
+				ratingUserC.setCssClass("o_rating_personal");
 			}
 			
 			if (securityCallback.canViewRatingAverage()) {				
@@ -135,7 +134,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 				ratingAverageC.setShowRatingAsText(true);
 				ratingAverageC.setTitle("rating.average.title");
 				ratingAverageC.setTranslateExplanation(false);
-				ratingAverageC.setCssClass("b_rating_average");
+				ratingAverageC.setCssClass("o_rating_average");
 			}
 			// Init view with values from DB
 			updateRatingView();
@@ -183,7 +182,10 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	void updateCommentCountView() {
 		if (commentsCountLink != null) {
 			commentsCount = commentAndRatingService.countComments(ores, oresSubPath);
-			commentsCountLink.setCustomDisplayText(translate("comments.count", commentsCount.toString()));			
+			commentsCountLink.setCustomDisplayText(translate("comments.count", commentsCount.toString()));		
+			String css = commentsCount > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
+			commentsCountLink.setCustomEnabledLinkCSS("o_comments");
+			commentsCountLink.setIconLeftCSS(css);
 		}
 	}
 	

@@ -76,8 +76,6 @@ $o-coursesite-rowelem-border : #eee;
 			.o_start {
 				right: 0;
 				@extend .bg-primary;
-				@extend .o_icon;
-				@extend .o_icon_right_start;
 			}
 			.o_details {
 				right: floor($o-coursesite-rowelem-width-md / 2);

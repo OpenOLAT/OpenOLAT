@@ -124,7 +124,7 @@ class EntryForm extends FormBasicController {
 
 		deleteImage = uifactory.addFormLink("delete", "tools.delete.catalog.image", null, formLayout, Link.BUTTON_SMALL);
 		deleteImage.setElementCssClass("o_catalog_delete_img");
-		deleteImage.setIconCSS("o_icon o_icon_delete o_icon-lg");
+		deleteImage.setIconLeftCSS("o_icon o_icon_delete o_icon-lg");
 		deleteImage.setVisible(img != null);
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());

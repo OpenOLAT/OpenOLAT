@@ -503,7 +503,7 @@ public class AuthoringEntryDetailsController extends FormBasicController {
 				doOpenCategory(ureq, categoryKey);
 			} else if("mark".equals(cmd)) {
 				boolean marked = doMark();
-				markLink.setIconCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+				markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 			} else if("comments".equals(cmd)) {
 				doOpenComments(ureq);
 			} else if("start".equals(cmd)) {

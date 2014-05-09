@@ -915,7 +915,13 @@ OPOL.adjustHeight = function() {
 jQuery(document).on("oo.dom.replacement.after", OPOL.adjustHeight);
 jQuery().ready(OPOL.adjustHeight);
 
-  
+function o_scrollToElement(elem) {
+	jQuery('html, body').animate({
+		scrollTop: jQuery(elem).offset().top
+	}, 1000);
+}
+
+
 function b_resizeIframeToMainMaxHeight(iframeId) {
 	// adjust the given iframe to use as much height as possible
 	// (fg)

@@ -141,16 +141,14 @@
 	$r.render("singleThreadTable")
 	<script type="text/javascript">
 	/* <![CDATA[ */
-		jQuery('#b_body').scrollTop(0);
+			o_scrollToElement('#o_top');
 	/* ]]> */
 	</script> 
 #end
 #if($goToMessage)
 	<script type="text/javascript">
 	/* <![CDATA[ */
-		jQuery('html, body').animate({scrollTop: jQuery("#o_forum_message_$goToMessageId").offset().top}, 300, function() {
-			//TODO jquery jQuery("#o_forum_message_$goToMessageId").effect("pulsate");
-		});
+	    o_scrollToElement('#o_forum_message_$goToMessageId");
 	/* ]]> */
 	</script> 
 #end

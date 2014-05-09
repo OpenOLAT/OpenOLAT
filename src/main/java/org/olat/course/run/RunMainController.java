@@ -920,7 +920,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			markManager.setMark(courseRepositoryEntry, getIdentity(), null, businessPath);
 		}
 		String css = marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE;
-		bookmarkLink.setIconCSS(css);
+		bookmarkLink.setIconLeftCSS(css);
 	}
 
 	/**
@@ -1171,7 +1171,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		if (cc.isCalendarEnabled() && !isGuest) {
 			calendarLink = LinkFactory.createToolLink("calendar",translate("command.calendar"), this);
 			calendarLink.setPopup(true);//"950", "750"
-			calendarLink.setIconCSS("o_icon o_icon_calendar");
+			calendarLink.setIconLeftCSS("o_icon o_icon_calendar");
 			all.addTool(calendarLink, false);
 		}
 		if (cc.hasGlossary()) {
@@ -1190,7 +1190,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			boolean marked = markManager.isMarked(courseRepositoryEntry, getIdentity(), null);
 			String css = marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE;
 			bookmarkLink = LinkFactory.createToolLink("bookmark",translate("command.bookmark"), this);
-			bookmarkLink.setIconCSS(css);
+			bookmarkLink.setIconLeftCSS(css);
 			all.addTool(bookmarkLink, false);
 		}
 		if (cc.isEfficencyStatementEnabled() && course.hasAssessableNodes() && !isGuest) {

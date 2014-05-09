@@ -119,13 +119,13 @@ public class InstantMessagingMainController extends BasicController implements G
 
 		// status changer links
 		available = LinkFactory.createLink("presence.available", main, this);
-		available.setIconCSS("o_icon o_icon_status_available o_icon-fw");
+		available.setIconLeftCSS("o_icon o_icon_status_available o_icon-fw");
 		available.setUserObject(Presence.available.name());
 		dnd = LinkFactory.createLink("presence.dnd", main, this);
-		dnd.setIconCSS("o_icon o_icon_status_dnd o_icon-fw");
+		dnd.setIconLeftCSS("o_icon o_icon_status_dnd o_icon-fw");
 		dnd.setUserObject(Presence.dnd.name());
 		unavailable = LinkFactory.createLink("presence.unavailable", main, this);
-		unavailable.setIconCSS("o_icon o_icon_status_unavailable o_icon-fw");
+		unavailable.setIconLeftCSS("o_icon o_icon_status_unavailable o_icon-fw");
 		unavailable.setUserObject(Presence.unavailable.name());
 		updateStatusCss(null);
 
@@ -383,7 +383,7 @@ public class InstantMessagingMainController extends BasicController implements G
 	private Link createShowNewMessageLink(Buddy buddy) {
 		Link link = LinkFactory.createCustomLink(buddy.getIdentityKey().toString(), ACTION_MSG, "", Link.NONTRANSLATED, newMsgIcon, this);
 		link.registerForMousePositionEvent(true);
-		link.setIconCSS("o_icon o_icon-message o_icon-lg");
+		link.setIconLeftCSS("o_icon o_icon-message o_icon-lg");
 		String buddyName = StringHelper.escapeHtml(buddy.getName());
 		link.setTooltip(translate("im.new.message", new String[]{ buddyName }));
 		link.setUserObject(buddy);

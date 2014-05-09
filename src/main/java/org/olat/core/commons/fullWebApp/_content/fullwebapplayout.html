@@ -159,7 +159,6 @@ $r.renderForce("development")
 <!-- START olatContentPanel -->
 
 <a href="#o_main_container" class="sr-only">$r.translate("access.skip.to.content")</a>
-<a id='o_top' name="o_top"></a>
 <div id="o_beta_logo"></div>
 
 ## ---- START #o_messages
@@ -189,6 +188,7 @@ $r.renderForce("development")
 	<div id="o_offcanvas_container" class="o_navbar-collapse">
 	</div>
 </div>
+<a id='o_top' name="o_top"></a>
 <div id="o_navbar_wrapper" class="o_navbar o_navbar-default" role="navigation">
 	<div id="o_navbar_container" class="o_container_offcanvas container-fluid">
 		<button id="o_navbar-toggle" type="button" class="o_navbar-toggle" style="display: none;">
@@ -227,7 +227,7 @@ $r.renderForce("development")
 <div id="o_main_wrapper">
 	<div id="o_main_container" class="o_container_offcanvas container-fluid">
 		$r.render("main")
-		<a id="o_toplink" href="#o_top" onclick="jQuery('#b_body').scrollTop(0);" title="$r.translateInAttribute("top.alt")">
+		<a id="o_toplink" href="#o_top" onclick="o_scrollToElement('#o_top');" title="$r.translateInAttribute("top.alt")">
 			<span class="glyphicon glyphicon-arrow-up"></span>
 			$r.translate("top")
 		</a>	

@@ -990,7 +990,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			// add close links
 			Link calink = LinkFactory.createCustomLink("c" + dtabCreateCounter, "c" + dtabCreateCounter, "", Link.NONTRANSLATED, navTabsVc, this);
 			calink.setCustomEnabledLinkCSS("o_navbar_tab_close");
-			calink.setIconCSS("o_icon o_icon_close_tab");
+			calink.setIconLeftCSS("o_icon o_icon_close_tab");
 			calink.setTitle(translate("close"));
 			calink.setUserObject(dt);
 
