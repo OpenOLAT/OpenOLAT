@@ -89,6 +89,10 @@ public class CopyRepositoryEntryController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 	}
 	
+	public RepositoryEntry getCopiedEntry() {
+		return copyEntry;
+	}
+	
 	@Override
 	protected void doDispose() {
 		//

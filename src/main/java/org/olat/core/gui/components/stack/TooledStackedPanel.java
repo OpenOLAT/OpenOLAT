@@ -91,8 +91,24 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	protected BreadCrumb createCrumb(Controller controller) {
 		return new TooledBreadCrumb(controller);
 	}
+	
+	/**
+	 * If the component is null, it will simply not be added,
+	 * @param toolComponent
+	 */
+	public void addTool(Component toolComponent) {
+		if(toolComponent != null) {
+			addTool(toolComponent, false);
+		}
+	}
 
+	/**
+	 * If the component is null, it will simply not be added,
+	 * @param toolComponent
+	 */
 	public void addTool(Component toolComponent, boolean general) {
+		if(toolComponent == null) return;
+		
 		Tool tool = new Tool(toolComponent);
 		if(general) {
 			generalTools.add(tool);

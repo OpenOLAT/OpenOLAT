@@ -20,27 +20,21 @@
 package org.olat.repository.ui.author;
 
 import java.util.List;
-import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.MainPanel;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -48,10 +42,8 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.SearchAuthorRepositoryEntryViewParams;
-import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -70,16 +62,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	private final SegmentViewComponent segmentView;
 	private final Link favoriteLink, myEntriesLink, searchLink;
 	private AuthorListController markedCtrl, myEntriesCtrl, searchEntriesCtrl;
-	private TooledStackedPanel markedStackedPanel, myEntriesStackedPanel, searchEntriesStackedPanel;
-	
-	private CloseableModalController cmc;
-	private StepsMainRunController wizardCtrl;
-	private ImportRepositoryEntryController importCtrl;
-	private CreateRepositoryEntryController createCtrl;
-	
-	private Dropdown createDropdown;
-	private Link importLink;
-	
+
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -95,19 +78,6 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		mainPanel.setDomReplaceable(false);
 		mainVC = createVelocityContainer("overview");
 		mainPanel.setContent(mainVC);
-		
-		importLink = LinkFactory.createLink("cmd.import.ressource", getTranslator(), this);
-		importLink.setDomReplacementWrapperRequired(false);
-		
-		Set<String> types = repositoryHandlerFactory.getSupportedTypes();
-
-		createDropdown = new Dropdown("cmd.create.ressource", "cmd.create.ressource", false, getTranslator());
-		for(String type:types) {
-			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
-			if(handler != null && handler.isCreate()) {
-				addCreateLink(handler, createDropdown);
-			}
-		}
 
 		boolean markEmpty = doOpenMark(ureq).isEmpty();
 		if(markEmpty) {
@@ -124,13 +94,6 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		putInitialPanel(mainPanel);
 	}
 	
-	private void addCreateLink(RepositoryHandler handler, Dropdown dropdown) {
-		String name = handler.getSupportedTypes().get(0);
-		Link createLink = LinkFactory.createLink(name, getTranslator(), this);
-		createLink.setUserObject(handler);
-		dropdown.addComponent(createLink);
-	}
-	
 	@Override
 	protected void doDispose() {
 		//
@@ -138,7 +101,21 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry entry = entries.get(0);
+		String segment = entry.getOLATResourceable().getResourceableTypeName();
+		List<ContextEntry> subEntries = entries.subList(1, entries.size());
+		if("Favorits".equals(segment)) {
+			doOpenMark(ureq).activate(ureq, subEntries, entry.getTransientState());
+			segmentView.select(favoriteLink);
+		} else if("My".equals(segment)) {
+			doOpenMyEntries(ureq).activate(ureq, subEntries, entry.getTransientState());
+			segmentView.select(myEntriesLink);
+		} else if("Search".equals(segment)) {
+			doSearchEntries(ureq).activate(ureq, subEntries, entry.getTransientState());
+			segmentView.select(searchLink);
+		}
 	}
 
 	@Override
@@ -156,108 +133,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 					doSearchEntries(ureq);
 				}
 			}
-		} else if(importLink == source) {
-			doStartImport(ureq);
-		} else if(source instanceof Link && ((Link)source).getUserObject() instanceof RepositoryHandler) {
-			RepositoryHandler resources = (RepositoryHandler)((Link)source).getUserObject();
-			doCreate(ureq, resources);
 		}
-	}
-
-	
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(cmc == source) {
-			cleanUp();
-		} else if(createCtrl == source) {
-			cmc.deactivate();
-			if(Event.DONE_EVENT.equals(event)) {
-				doOpenDetailsInMyEntries(ureq, createCtrl.getAddedEntry(), true);
-				cleanUp();
-			} else if(CreateRepositoryEntryController.CREATION_WIZARD.equals(event)) {
-				doStartPostCreateWizard(ureq, createCtrl.getAddedEntry(), createCtrl.getHandler());
-			} else {
-				cleanUp();
-			}
-		}  else if(importCtrl == source) {
-			cmc.deactivate();
-			if(Event.DONE_EVENT.equals(event)) {
-				doOpenDetailsInMyEntries(ureq, importCtrl.getImportedEntry(), true);
-				cleanUp();
-			} else {
-				cleanUp();
-			}
-		} else if(wizardCtrl == source) {
-			if (event.equals(Event.CHANGED_EVENT) || event.equals(Event.CANCELLED_EVENT)) {
-				getWindowControl().pop();
-				RepositoryEntry newEntry = (RepositoryEntry)wizardCtrl.getRunContext().get("authoringNewEntry");
-				cleanUp();
-				doOpenDetailsInMyEntries(ureq, newEntry, true);
-			}
-		}
-	}
-	
-	private void cleanUp() {
-		removeAsListenerAndDispose(createCtrl);
-		removeAsListenerAndDispose(importCtrl);
-		removeAsListenerAndDispose(wizardCtrl);
-		removeAsListenerAndDispose(cmc);
-		createCtrl = null;
-		importCtrl = null;
-		wizardCtrl = null;
-		cmc = null;
-	}
-
-	private void doStartImport(UserRequest ureq) {
-		if(importCtrl != null) return;
-
-		removeAsListenerAndDispose(importCtrl);
-		importCtrl = new ImportRepositoryEntryController(ureq, getWindowControl());
-		listenTo(importCtrl);
-		removeAsListenerAndDispose(cmc);
-		
-		String title = translate("cmd.import.ressource");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), importCtrl.getInitialComponent(),
-				true, title);
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	private void doCreate(UserRequest ureq, RepositoryHandler handler) {
-		if(createCtrl != null) return;
-
-		removeAsListenerAndDispose(createCtrl);
-		createCtrl = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
-		listenTo(createCtrl);
-		removeAsListenerAndDispose(cmc);
-		
-		String title = translate(handler.getCreateLabelI18nKey());
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), createCtrl.getInitialComponent(),
-				true, title);
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	private void doOpenDetailsInMyEntries(UserRequest ureq, RepositoryEntry newEntry, boolean edit) {
-		myEntriesCtrl = doOpenMyEntries(ureq);
-		
-		String fullname = userManager.getUserDisplayName(newEntry.getInitialAuthor());
-		AuthoringEntryRow row = new AuthoringEntryRow(newEntry, fullname);
-		if(edit) {
-			myEntriesCtrl.doOpenDetails(ureq, row);
-		} else {
-			myEntriesCtrl.doOpenDetails(ureq, row);
-		}
-	}
-	
-	private void doStartPostCreateWizard(UserRequest ureq, RepositoryEntry newEntry, RepositoryHandler handler) {
-		if(wizardCtrl != null) return;
-		
-		cleanUp();
-		wizardCtrl = handler.createWizardController(newEntry, ureq, getWindowControl());
-		wizardCtrl.getRunContext().put("authoringNewEntry", newEntry);
-		listenTo(wizardCtrl);
-		getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());
 	}
 
 	private AuthorListController doOpenMark(UserRequest ureq) {
@@ -269,14 +145,12 @@ public class OverviewAuthoringController extends BasicController implements Acti
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Favorits", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			markedStackedPanel = createStandardTooledPanel("markStackPanel");
-			markedCtrl = new AuthorListController(ureq, bwControl, markedStackedPanel, searchParams);
-			markedStackedPanel.pushController(translate("search.mark"), markedCtrl);
+			markedCtrl = new AuthorListController(ureq, bwControl, "search.mark", searchParams);
 			listenTo(markedCtrl);
 		}
 		
 		addToHistory(ureq, markedCtrl);
-		mainVC.put("segmentCmp", markedStackedPanel);
+		mainVC.put("segmentCmp", markedCtrl.getStackPanel());
 		return markedCtrl;
 	}
 	
@@ -288,14 +162,12 @@ public class OverviewAuthoringController extends BasicController implements Acti
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("My", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			myEntriesStackedPanel = createStandardTooledPanel("myEntriesStackPanel");
-			myEntriesCtrl = new AuthorListController(ureq, bwControl, myEntriesStackedPanel, searchParams);
-			myEntriesStackedPanel.pushController(translate("search.my"), myEntriesCtrl);
+			myEntriesCtrl = new AuthorListController(ureq, bwControl, "search.my", searchParams);
 			listenTo(myEntriesCtrl);
 		}
 
 		addToHistory(ureq, myEntriesCtrl);
-		mainVC.put("segmentCmp", myEntriesStackedPanel);
+		mainVC.put("segmentCmp", myEntriesCtrl.getStackPanel());
 		return myEntriesCtrl;
 	}
 	
@@ -307,22 +179,12 @@ public class OverviewAuthoringController extends BasicController implements Acti
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			searchEntriesStackedPanel = createStandardTooledPanel("searchEntriesStackPanel");
-			searchEntriesCtrl = new AuthorListController(ureq, bwControl, searchEntriesStackedPanel, searchParams);
-			searchEntriesStackedPanel.pushController(translate("search.generic"), searchEntriesCtrl);
+			searchEntriesCtrl = new AuthorListController(ureq, bwControl, "search.generic", searchParams);
 			listenTo(searchEntriesCtrl);
 		}
 		
 		addToHistory(ureq, searchEntriesCtrl);
-		mainVC.put("segmentCmp", searchEntriesStackedPanel);
+		mainVC.put("segmentCmp", searchEntriesCtrl.getStackPanel());
 		return searchEntriesCtrl;
-	}
-	
-	
-	private TooledStackedPanel createStandardTooledPanel(String name) {
-		TooledStackedPanel stackedPanel = new TooledStackedPanel(name, getTranslator(), this);
-		stackedPanel.addTool(importLink, true);
-		stackedPanel.addTool(createDropdown, true);
-		return stackedPanel;
 	}
 }

@@ -126,8 +126,10 @@ public class SegmentViewComponent extends AbstractComponent  {
 	
 	public void select(Component component) {
 		if(segments.contains(component)) {
-			deselectAllSegments();
-			select(component);
+			if(!isAllowMultipleSelection()) {
+				deselectAllSegments();
+			}
+			selectSegment(component);
 			setDirty(true);
 		}
 	}

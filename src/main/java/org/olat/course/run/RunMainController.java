@@ -140,6 +140,7 @@ import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.ui.author.AuthoringEditEntrySettingsController;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.repository.ui.list.RepositoryEntryRow;
 import org.olat.resource.OLATResource;
@@ -168,10 +169,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	private MenuTree luTree;
 	//tools
-	private Link editLink, areaLink, folderLink;
-	private Link surveyStatisticLink, testStatisticLink, courseStatisticLink;
-	private Link userMgmtLink, archiverLink, assessmentLink, dbLink;
-	private Link efficiencyStatementsLink, bookmarkLink, calendarLink, detailsLink, noteLink, chatLink;
+	private Link editLink, editSettingsLink, areaLink, folderLink,
+			surveyStatisticLink, testStatisticLink, courseStatisticLink,
+			userMgmtLink, archiverLink, assessmentLink, dbLink,
+			efficiencyStatementsLink, bookmarkLink, calendarLink, detailsLink, noteLink, chatLink;
 	
 	private Panel contentP;
 
@@ -482,6 +483,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		if(editLink == source) {
 			all.popUpToRootController(ureq);
 			doEdit(ureq);
+		} else if(editSettingsLink == source) {
+			all.popUpToRootController(ureq);
+			doEditSettings(ureq);
 		} else if(userMgmtLink == source) {
 			all.popUpToRootController(ureq);
 			launchMembersManagement(ureq);
@@ -655,6 +659,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		} else throw new OLATSecurityException("wanted to activate editor, but no according right");
 	}
 	
+	private void doEditSettings(UserRequest ureq) {
+		if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
+			currentToolCtr = new AuthoringEditEntrySettingsController(ureq, getWindowControl(), all, courseRepositoryEntry);
+			listenTo(currentToolCtr);
+		} else throw new OLATSecurityException("wanted to activate editor, but no according right");
+	}
+	
 	private void doNodeClick(UserRequest ureq, TreeEvent tev) {
 		if(assessmentChangedEventReceived) {
 			uce.getScoreAccounting().evaluateAll();
@@ -757,7 +768,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	private void launchDetails(UserRequest ureq) {
-		RepositoryEntryMyView view = repositoryService.loadMyView(courseRepositoryEntry);
+		RepositoryEntryMyView view = repositoryService.loadMyView(getIdentity(), courseRepositoryEntry);
 		RepositoryEntryRow row = new RepositoryEntryRow(view);
 		currentToolCtr = new RepositoryEntryDetailsController(ureq, getWindowControl(), row);
 		all.pushController(translate("command.courseconfig"), currentToolCtr);
@@ -1076,6 +1087,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				editLink = LinkFactory.createToolLink("edit.cmd", translate("command.openeditor"), this, "o_sel_course_open_editor");
 				editLink.setEnabled(!managed);
 				editTools.addComponent(editLink);
+				editSettingsLink = LinkFactory.createToolLink("settings.cmd", translate("command.settings"), this, "o_sel_course_settings");
+				editSettingsLink.setEnabled(!managed);
+				editTools.addComponent(editSettingsLink);
 				folderLink = LinkFactory.createToolLink("cfd", translate("command.coursefolder"), this);
 				folderLink.setEnabled(!managed);
 				editTools.addComponent(folderLink);

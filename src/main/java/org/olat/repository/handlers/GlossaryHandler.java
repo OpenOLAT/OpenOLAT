@@ -66,7 +66,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.WizardCloseResourceController;
-import org.olat.repository.ui.author.AuthoringEditEntryController;
+import org.olat.repository.ui.author.AuthoringEditEntrySettingsController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
@@ -133,7 +133,7 @@ public class GlossaryHandler implements RepositoryHandler {
 	
 	@Override
 	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl,
-			AuthoringEditEntryController pane, RepositoryEntry entry) {
+			AuthoringEditEntrySettingsController pane, RepositoryEntry entry) {
 		OLATResource resource = entry.getOlatResource();
 		
 		GlossaryRegisterSettingsController glossRegisterSetCtr = new GlossaryRegisterSettingsController(ureq, wControl, resource);

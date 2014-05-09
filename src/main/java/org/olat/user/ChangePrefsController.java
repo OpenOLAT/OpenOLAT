@@ -54,6 +54,7 @@ import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.prefs.PreferencesFactory;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.properties.PropertyManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -66,7 +67,6 @@ import org.olat.properties.PropertyManager;
  */
 
 public class ChangePrefsController extends BasicController {
-
 	
 	private VelocityContainer myContent;
 	private Controller generalPrefsCtr;
@@ -162,11 +162,13 @@ class SpecialPrefsForm extends FormBasicController {
 	private String[] yesNoKeys;
 	private String[] yesNoValues;
 
-	private final UserSessionManager sessionManager;
+	@Autowired
+	private HistoryModule historyModule;
+	@Autowired
+	private UserSessionManager sessionManager;
 	
 	public SpecialPrefsForm(final UserRequest ureq, final WindowControl wControl, final Identity changeableIdentity) {
 		super(ureq, wControl);
-		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
 		tobeChangedIdentity = changeableIdentity;
 		
 		// OLAT-6429 load GUI prefs from user session for myself, load it from factory for other users (as user manager)
@@ -241,14 +243,12 @@ class SpecialPrefsForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
 		setFormTitle("title.prefs.special");
 		setFormContextHelp(this.getClass().getPackage().getName(), "home-prefs-special.html", "help.hover.home.prefs.special");
 		
 		prefsElement = uifactory.addCheckboxesVertical("prefs", "title.prefs.accessibility", formLayout, keys, values, null, 1);
 		prefsElement.setElementCssClass("o_sel_home_settings_accessibility");
-		//fxdiff BAKS-7 Resume function
-		HistoryModule historyModule = (HistoryModule)CoreSpringFactory.getBean("historyModule");
+
 		if(historyModule.isResumeEnabled()) {
 			resumeElement = uifactory.addRadiosVertical("resume", "resume.label", formLayout, resumeKeys, resumeValues);
 			resumeElement.setElementCssClass("o_sel_home_settings_resume");
@@ -279,7 +279,6 @@ class SpecialPrefsForm extends FormBasicController {
 			if(StringHelper.containsNonWhitespace(resumePrefs)) {
 				resumeElement.select(resumePrefs, true);
 			} else {
-				HistoryModule historyModule = (HistoryModule)CoreSpringFactory.getBean("historyModule");
 				String defaultSetting = historyModule.getResumeDefaultSetting();
 				try {
 					resumeElement.select(defaultSetting, true);
@@ -295,7 +294,6 @@ class SpecialPrefsForm extends FormBasicController {
 				selected = (be.booleanValue() ?  "yes" : "no");
 			}
 			else {
-				HistoryModule historyModule = (HistoryModule)CoreSpringFactory.getBean("historyModule");
 				selected = (historyModule.isBackDefaultSetting() ?  "yes" : "no");
 			}
 

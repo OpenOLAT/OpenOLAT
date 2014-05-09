@@ -22,18 +22,16 @@ package org.olat.repository.ui.author;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.RepositoryEditDescriptionController;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -45,32 +43,28 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AuthoringEditEntryController extends BasicController {
-	
-	private Link copyLink;
-	
+public class AuthoringEditEntrySettingsController extends BasicController {
+
 	private final TabbedPane tabbedPane;
-	private CloseableModalController cmc;
-	private CopyRepositoryEntryController copyCtrl;
 	private final AuthoringEditAccessController accessCtrl;
 	private final RepositoryEditDescriptionController descriptionCtrl;
 	
 	private RepositoryEntry entry;
 	private RepositoryService repositoryService;
 	
-	public AuthoringEditEntryController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			AuthoringEntryRow row) {
+	public AuthoringEditEntrySettingsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntryRef entryRef) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		entry = repositoryService.loadByKey(row.getKey());
+		entry = repositoryService.loadByKey(entryRef.getKey());
 
 		descriptionCtrl = new RepositoryEditDescriptionController(ureq, getWindowControl(), entry, false);
 		listenTo(descriptionCtrl);
 		accessCtrl = new AuthoringEditAccessController(ureq, wControl, entry);
 		listenTo(accessCtrl);
 
-		tabbedPane = new TabbedPane("editPane", getLocale());
+		tabbedPane = new TabbedPane("editSettingsTabbedPane", getLocale());
 		tabbedPane.addTab(translate("tab.public"), descriptionCtrl.getInitialComponent());
 		tabbedPane.addTab(translate("tab.accesscontrol"), accessCtrl.getInitialComponent());
 		
@@ -78,14 +72,7 @@ public class AuthoringEditEntryController extends BasicController {
 		handler.addExtendedEditionControllers(ureq, getWindowControl(), this, entry);
 		
 		putInitialPanel(tabbedPane);
-		stackPanel.pushController("Editor", this);
-		initToolbar(stackPanel);
-	}
-	
-	private void initToolbar(TooledStackedPanel stackPanel) {
-		copyLink = LinkFactory.createToolLink("copy", translate("details.copy"), this);
-		stackPanel.addTool(copyLink, false);
-		
+		stackPanel.pushController(translate("settings.editor"), this);
 	}
 	
 	@Override
@@ -105,36 +92,6 @@ public class AuthoringEditEntryController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(copyLink == source) {
-			doCopy(ureq);
-		}
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(copyCtrl == source) {
-			cmc.deactivate();
-			doCleanUp();
-		} else if(cmc == source) {
-			doCleanUp();
-		}
-		super.event(ureq, source, event);
-	}
-	
-	private void doCleanUp() {
-		removeAsListenerAndDispose(copyCtrl);
-		removeAsListenerAndDispose(cmc);
-		copyCtrl = null;
-		cmc = null;
-	}
-
-	private void doCopy(UserRequest ureq) {
-		copyCtrl = new CopyRepositoryEntryController(ureq, getWindowControl(), entry);
-		listenTo(copyCtrl);
-		
-		String title = translate("details.copy");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), copyCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
+		//
 	}
 }

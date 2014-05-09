@@ -91,11 +91,14 @@ public interface RepositoryService {
 	 */
 	public List<RepositoryEntryMyView> searchMyView(SearchMyRepositoryEntryViewParams params, int firstResult, int maxResults);
 
-	public RepositoryEntryMyView loadMyView(RepositoryEntryRef ref);
+	public RepositoryEntryMyView loadMyView(IdentityRef identity, RepositoryEntryRef ref);
 
+	
 	public int countAuthorView(SearchAuthorRepositoryEntryViewParams params);
 	
 	public List<RepositoryEntryAuthorView> searchAuthorView(SearchAuthorRepositoryEntryViewParams params, int firstResult, int maxResults);
+
+	public RepositoryEntryAuthorView loadAuthorView(IdentityRef identity, RepositoryEntryRef ref);
 	
 
 }

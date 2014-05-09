@@ -17,41 +17,43 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.util;
+package org.olat.repository.model;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
- * Initial date: 08.05.2014<br>
+ * Initial date: 09.05.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PathUtils {
+public class TransientRepositoryEntryRef implements RepositoryEntryRef {
+
+	private final Long key;
 	
-	public static Path visit(File file, String filename, FileVisitor<Path> visitor) 
-	throws IOException {
-		if(!StringHelper.containsNonWhitespace(filename)) {
-			filename = file.getName();
-		}
-		
-		Path fPath = null;
-		if(file.isDirectory()) {
-			fPath = file.toPath();
-		} else if(filename != null && filename.toLowerCase().endsWith(".zip")) {
-			fPath = FileSystems.newFileSystem(file.toPath(), null).getPath("/");
-		} else {
-			fPath = file.toPath();
-		}
-		if(fPath != null) {
-		    Files.walkFileTree(fPath, visitor);
-		}
-		return fPath;
+	public TransientRepositoryEntryRef(Long key) {
+		this.key = key;
+	}
+	
+	@Override
+	public Long getKey() {
+		return key;
 	}
 
+	@Override
+	public int hashCode() {
+		return key == null ? 345873 : key.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof TransientRepositoryEntryRef) {
+			TransientRepositoryEntryRef ref = (TransientRepositoryEntryRef)obj;
+			return key != null && key.equals(ref.getKey());
+		}
+		return false;
+	}
 }

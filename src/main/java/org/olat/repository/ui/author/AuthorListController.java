@@ -21,11 +21,14 @@ package org.olat.repository.ui.author;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -42,19 +45,31 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryAuthorView;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.SearchAuthorRepositoryEntryViewParams;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.model.TransientRepositoryEntryRef;
 import org.olat.repository.ui.author.AuthoringEntryDataModel.Cols;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -66,26 +81,67 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AuthorListController extends FormBasicController implements Activateable2, AuthoringEntryDataSourceUIFactory {
 
 	private FlexiTableElement tableEl;
+	private final TooledStackedPanel stackPanel;
+	
+	
 	private AuthoringEntryDataModel model;
 	private AuthoringEntryDataSource dataSource;
 	private final SearchAuthorRepositoryEntryViewParams searchParams;
-	private final TooledStackedPanel stackPanel;
 
+	
+	private CloseableModalController cmc;
+	private StepsMainRunController wizardCtrl;
 	private AuthorSearchController searchCtrl;
 	private AuthoringEntryDetailsController detailsCtrl;
+	private ImportRepositoryEntryController importCtrl;
+	private CreateRepositoryEntryController createCtrl;
+
+	private Link importLink;
+	private Dropdown createDropdown;
 	
 	@Autowired
 	private MarkManager markManager;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
-	public AuthorListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+	public AuthorListController(UserRequest ureq, WindowControl wControl, String i18nName,
 			SearchAuthorRepositoryEntryViewParams searchParams) {
 		super(ureq, wControl, "repoentry_table");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 
-		this.stackPanel = stackPanel;
 		this.searchParams = searchParams;
+		
+		importLink = LinkFactory.createLink("cmd.import.ressource", getTranslator(), this);
+		importLink.setDomReplacementWrapperRequired(false);
+		
+		Set<String> types = repositoryHandlerFactory.getSupportedTypes();
+
+		createDropdown = new Dropdown("cmd.create.ressource", "cmd.create.ressource", false, getTranslator());
+		for(String type:types) {
+			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
+			if(handler != null && handler.isCreate()) {
+				addCreateLink(handler, createDropdown);
+			}
+		}
+		
 		dataSource = new AuthoringEntryDataSource(searchParams, this);
+
 		initForm(ureq);
+
+		stackPanel = new TooledStackedPanel(i18nName, getTranslator(), this);
+		stackPanel.pushController(translate(i18nName), this);
+		stackPanel.addTool(importLink, false);
+		stackPanel.addTool(createDropdown, false);
+		stackPanel.getCloseLink().setVisible(false);
+	}
+	
+	private void addCreateLink(RepositoryHandler handler, Dropdown dropdown) {
+		String name = handler.getSupportedTypes().get(0);
+		Link createLink = LinkFactory.createLink(name, getTranslator(), this);
+		createLink.setUserObject(handler);
+		dropdown.addComponent(createLink);
 	}
 	
 	public boolean isEmpty() {
@@ -129,6 +185,10 @@ public class AuthorListController extends FormBasicController implements Activat
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_coursetable o_rendertype_custom");
 	}
+	
+	public TooledStackedPanel getStackPanel() {
+		return stackPanel;
+	}
 
 	@Override
 	protected void doDispose() {
@@ -137,9 +197,84 @@ public class AuthorListController extends FormBasicController implements Activat
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry entry = entries.get(0);
+		String segment = entry.getOLATResourceable().getResourceableTypeName();
+		List<ContextEntry> subEntries = entries.subList(1, entries.size());
+		if("RepositoryEntry".equals(segment)) {
+			Long repoEntryKey = entry.getOLATResourceable().getResourceableId();
+			RepositoryEntryRef repoEntry = new TransientRepositoryEntryRef(repoEntryKey);
+			doOpenDetails(ureq, repoEntry).activate(ureq, subEntries, entry.getTransientState());
+		}
 	}
-
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(importLink == source) {
+			doImport(ureq);
+		} else if(source instanceof Link && ((Link)source).getUserObject() instanceof RepositoryHandler) {
+			RepositoryHandler resources = (RepositoryHandler)((Link)source).getUserObject();
+			doCreate(ureq, resources);
+		}
+		super.event(ureq, source, event);
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(cmc == source) {
+			cleanUp();
+		} else if(createCtrl == source) {
+			cmc.deactivate();
+			if(Event.DONE_EVENT.equals(event)) {
+				doOpenDetails(ureq, createCtrl.getAddedEntry());
+				cleanUp();
+			} else if(CreateRepositoryEntryController.CREATION_WIZARD.equals(event)) {
+				doPostCreateWizard(ureq, createCtrl.getAddedEntry(), createCtrl.getHandler());
+			} else {
+				cleanUp();
+			}
+		}  else if(importCtrl == source) {
+			cmc.deactivate();
+			if(Event.DONE_EVENT.equals(event)) {
+				doOpenDetails(ureq, importCtrl.getImportedEntry());
+				cleanUp();
+			} else {
+				cleanUp();
+			}
+		} else if(wizardCtrl == source) {
+			if (event.equals(Event.CHANGED_EVENT) || event.equals(Event.CANCELLED_EVENT)) {
+				getWindowControl().pop();
+				RepositoryEntry newEntry = (RepositoryEntry)wizardCtrl.getRunContext().get("authoringNewEntry");
+				cleanUp();
+				doOpenDetails(ureq, newEntry);
+			}
+		} else if(searchCtrl == source) {
+			if(event instanceof SearchEvent) {
+				SearchEvent se = (SearchEvent)event;
+				doSearch(se);
+			}
+		} else if(detailsCtrl == source) {
+			if(event instanceof OpenEvent) {
+				OpenEvent oe = (OpenEvent)event;
+				RepositoryEntryRef repoEntryKey = oe.getRepositoryEntry();
+				doOpenDetails(ureq, repoEntryKey);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(createCtrl);
+		removeAsListenerAndDispose(importCtrl);
+		removeAsListenerAndDispose(wizardCtrl);
+		removeAsListenerAndDispose(cmc);
+		createCtrl = null;
+		importCtrl = null;
+		wizardCtrl = null;
+		cmc = null;
+	}
+	
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
@@ -165,9 +300,9 @@ public class AuthorListController extends FormBasicController implements Activat
 				if("details".equals(cmd)) {
 					doOpenDetails(ureq, row);
 				} else if("edit".equals(cmd)) {
-					doEdit(ureq, row);
+					launchResourceEditor(ureq, row);
 				} else if("select".equals(cmd)) {
-					doOpen(ureq, row);
+					launch(ureq, row);
 				}
 			}
 		}
@@ -175,22 +310,70 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(searchCtrl == source) {
-			if(event instanceof SearchEvent) {
-				SearchEvent se = (SearchEvent)event;
-				doSearch(se);
-			}
-		}
-		super.event(ureq, source, event);
-	}
-
-	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc) {
 		//do not update the 
 	}
 	
-	protected void doSearch(SearchEvent se) {
+	private AuthoringEntryDetailsController doOpenDetails(UserRequest ureq, RepositoryEntryRef entry) {
+		RepositoryEntryAuthorView view = repositoryService.loadAuthorView(getIdentity(), entry);
+		String fullnameAuthor = "";
+		AuthoringEntryRow row = new AuthoringEntryRow(view, fullnameAuthor);
+		return doOpenDetails(ureq, row);
+	}
+	
+	private AuthoringEntryDetailsController doOpenDetails(UserRequest ureq, AuthoringEntryRow row) {
+		stackPanel.popUpToRootController(ureq);
+
+		removeAsListenerAndDispose(detailsCtrl);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", row.getKey());
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		detailsCtrl = new AuthoringEntryDetailsController(ureq, getWindowControl(), stackPanel, row);
+		listenTo(detailsCtrl);
+		return detailsCtrl;
+	}
+	
+	private void doImport(UserRequest ureq) {
+		if(importCtrl != null) return;
+
+		removeAsListenerAndDispose(importCtrl);
+		importCtrl = new ImportRepositoryEntryController(ureq, getWindowControl());
+		listenTo(importCtrl);
+		removeAsListenerAndDispose(cmc);
+		
+		String title = translate("cmd.import.ressource");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), importCtrl.getInitialComponent(),
+				true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doCreate(UserRequest ureq, RepositoryHandler handler) {
+		if(createCtrl != null) return;
+
+		removeAsListenerAndDispose(createCtrl);
+		createCtrl = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
+		listenTo(createCtrl);
+		removeAsListenerAndDispose(cmc);
+		
+		String title = translate(handler.getCreateLabelI18nKey());
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), createCtrl.getInitialComponent(),
+				true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doPostCreateWizard(UserRequest ureq, RepositoryEntry newEntry, RepositoryHandler handler) {
+		if(wizardCtrl != null) return;
+		
+		cleanUp();
+		wizardCtrl = handler.createWizardController(newEntry, ureq, getWindowControl());
+		wizardCtrl.getRunContext().put("authoringNewEntry", newEntry);
+		listenTo(wizardCtrl);
+		getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());
+	}
+	
+	private void doSearch(SearchEvent se) {
 		if(se.getType() != null) {
 			searchParams.setResourceTypes(Collections.singletonList(se.getType()));
 		} else {
@@ -203,23 +386,14 @@ public class AuthorListController extends FormBasicController implements Activat
 		tableEl.reset();
 	}
 	
-	protected void doOpen(UserRequest ureq, AuthoringEntryRow row) {
+	private void launch(UserRequest ureq, AuthoringEntryRow row) {
 		String businessPath = "[RepositoryEntry:" + row.getKey() + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
-	protected void doEdit(UserRequest ureq, AuthoringEntryRow row) {
+	private void launchResourceEditor(UserRequest ureq, AuthoringEntryRow row) {
 		String businessPath = "[RepositoryEntry:" + row.getKey() + "][Editor:0]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-	}
-	
-	protected void doOpenDetails(UserRequest ureq, AuthoringEntryRow row) {
-		stackPanel.popUpToRootController(ureq);
-
-		removeAsListenerAndDispose(detailsCtrl);
-		
-		detailsCtrl = new AuthoringEntryDetailsController(ureq, getWindowControl(), stackPanel, row);
-		listenTo(detailsCtrl);
 	}
 
 	@Override

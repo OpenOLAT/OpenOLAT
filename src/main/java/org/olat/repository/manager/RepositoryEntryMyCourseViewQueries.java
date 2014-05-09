@@ -26,6 +26,7 @@ import java.util.List;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.catalog.CatalogEntryImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -59,16 +60,17 @@ public class RepositoryEntryMyCourseViewQueries {
 	@Autowired
 	private DB dbInstance;
 
-	public RepositoryEntryMyView loadView(RepositoryEntryRef ref) {
+	public RepositoryEntryMyView loadView(IdentityRef identity, RepositoryEntryRef ref) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select v from repositoryentrymy as v ")
 		  .append(" inner join v.olatResource as res")
 		  .append(" left join v.lifecycle as lifecycle")
-		  .append(" where v.key=:repoEntryKey)");
+		  .append(" where v.key=:repoEntryKey and v.identityKey=:identityKey");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntryMyView.class)
 				.setParameter("repoEntryKey", ref.getKey())
+				.setParameter("identityKey", identity.getKey())
 				.getSingleResult();
 	}
 	

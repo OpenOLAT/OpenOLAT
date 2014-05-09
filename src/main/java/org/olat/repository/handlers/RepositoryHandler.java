@@ -42,7 +42,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.WizardCloseResourceController;
-import org.olat.repository.ui.author.AuthoringEditEntryController;
+import org.olat.repository.ui.author.AuthoringEditEntrySettingsController;
 
 
 /**
@@ -101,7 +101,7 @@ public interface RepositoryHandler {
 	 * @param pane
 	 * @param entry
 	 */
-	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl, AuthoringEditEntryController pane, RepositoryEntry entry);
+	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl, AuthoringEditEntrySettingsController pane, RepositoryEntry entry);
 	
 	/**
 	 * 

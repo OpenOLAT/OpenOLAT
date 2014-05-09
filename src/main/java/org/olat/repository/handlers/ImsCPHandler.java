@@ -72,7 +72,7 @@ import org.olat.modules.cp.CPUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.WizardCloseResourceController;
-import org.olat.repository.ui.author.AuthoringEditEntryController;
+import org.olat.repository.ui.author.AuthoringEditEntrySettingsController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
@@ -148,7 +148,7 @@ public class ImsCPHandler extends FileHandler {
 	
 	@Override
 	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl,
-			AuthoringEditEntryController pane, RepositoryEntry entry) {
+			AuthoringEditEntrySettingsController pane, RepositoryEntry entry) {
 		
 		final OLATResource resource = entry.getOlatResource();
 		final CPManager cpManager = CPManager.getInstance();

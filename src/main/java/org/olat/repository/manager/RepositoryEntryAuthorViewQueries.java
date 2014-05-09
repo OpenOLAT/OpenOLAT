@@ -25,12 +25,14 @@ import java.util.List;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntryAuthorView;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.SearchAuthorRepositoryEntryViewParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -62,6 +64,20 @@ public class RepositoryEntryAuthorViewQueries {
 		TypedQuery<Number> query = createViewQuery(params, Number.class);
 		Number count = query.getSingleResult();
 		return count == null ? 0 : count.intValue();
+	}
+	
+	public RepositoryEntryAuthorView loadView(IdentityRef identity, RepositoryEntryRef ref) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from repositoryentryauthor as v ")
+		  .append(" inner join v.olatResource as res")
+		  .append(" left join v.lifecycle as lifecycle")
+		  .append(" where v.key=:repoEntryKey and v.identityKey=:identityKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntryAuthorView.class)
+				.setParameter("repoEntryKey", ref.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.getSingleResult();
 	}
 
 	public List<RepositoryEntryAuthorView> searchViews(SearchAuthorRepositoryEntryViewParams params, int firstResult, int maxResults) {

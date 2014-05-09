@@ -47,6 +47,7 @@ import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -64,6 +65,9 @@ public class ImportRepositoryEntryController extends FormBasicController {
 	private FileElement uploadFileEl;
 	private TextElement displaynameEl;
 	private RichTextElement descriptionEl;
+	
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public ImportRepositoryEntryController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -177,8 +181,8 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		File uploadedFile = uploadFileEl.getUploadFile();
 		String uploadedFilename = uploadFileEl.getUploadFileName();
 		
-		for(String type:RepositoryHandlerFactory.getInstance().getSupportedTypes()) {
-			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(type);
+		for(String type:repositoryHandlerFactory.getSupportedTypes()) {
+			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
 			ResourceEvaluation eval = handler.acceptImport(uploadedFile, uploadedFilename);
 			if(eval != null && eval.isValid()) {
 				updateResourceInfos(eval, handler);

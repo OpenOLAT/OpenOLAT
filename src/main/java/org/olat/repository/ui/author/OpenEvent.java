@@ -20,63 +20,25 @@
 package org.olat.repository.ui.author;
 
 import org.olat.core.gui.control.Event;
-import org.olat.core.id.context.StateEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
- * Initial date: 02.05.2014<br>
+ * Initial date: 09.05.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SearchEvent extends Event implements StateEntry {
+public class OpenEvent extends Event {
 
-	private static final long serialVersionUID = -1222660688926846838L;
+	private static final long serialVersionUID = -5237213867858041929L;
+	private RepositoryEntryRef repoEntry;
 	
-	private String id;
-	private String displayname;
-	private String author;
-	private String type;
-	
-	public SearchEvent() {
-		super("re-search");
+	public OpenEvent(RepositoryEntryRef repoEntry) {
+		super("reopen");
+		this.repoEntry = repoEntry;
 	}
 
-	
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getDisplayname() {
-		return displayname;
-	}
-
-	public void setDisplayname(String displayname) {
-		this.displayname = displayname;
-	}
-
-	public String getAuthor() {
-		return author;
-	}
-
-	public void setAuthor(String author) {
-		this.author = author;
-	}
-
-	public String getType() {
-		return type;
-	}
-
-	public void setType(String type) {
-		this.type = type;
-	}
-
-	@Override
-	public SearchEvent clone() {
-		SearchEvent clone = new SearchEvent();
-		return clone;
+	public RepositoryEntryRef getRepositoryEntry() {
+		return repoEntry;
 	}
 }

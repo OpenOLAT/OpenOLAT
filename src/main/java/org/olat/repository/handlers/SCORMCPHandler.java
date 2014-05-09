@@ -56,7 +56,7 @@ import org.olat.modules.scorm.ScormPackageConfig;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.WizardCloseResourceController;
-import org.olat.repository.ui.author.AuthoringEditEntryController;
+import org.olat.repository.ui.author.AuthoringEditEntrySettingsController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
@@ -121,7 +121,7 @@ public class SCORMCPHandler extends FileHandler {
 	
 	@Override
 	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl,
-			AuthoringEditEntryController pane, RepositoryEntry entry) {
+			AuthoringEditEntrySettingsController pane, RepositoryEntry entry) {
 		
 		ScormPackageConfig scormConfig = ScormMainManager.getInstance().getScormPackageConfig(entry.getOlatResource());
 		DeliveryOptions config = scormConfig == null ? null : scormConfig.getDeliveryOptions();

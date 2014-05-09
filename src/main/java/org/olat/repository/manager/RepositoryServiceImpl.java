@@ -281,8 +281,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
-	public RepositoryEntryMyView loadMyView(RepositoryEntryRef ref) {
-		return myCourseViewQueries.loadView(ref);
+	public RepositoryEntryMyView loadMyView(IdentityRef identity, RepositoryEntryRef ref) {
+		return myCourseViewQueries.loadView(identity, ref);
 	}
 
 	@Override
@@ -294,5 +294,10 @@ public class RepositoryServiceImpl implements RepositoryService {
 	public List<RepositoryEntryAuthorView> searchAuthorView(SearchAuthorRepositoryEntryViewParams params,
 			int firstResult, int maxResults) {
 		return authorViewQueries.searchViews(params, firstResult, maxResults);
+	}
+
+	@Override
+	public RepositoryEntryAuthorView loadAuthorView(IdentityRef identity, RepositoryEntryRef ref) {
+		return authorViewQueries.loadView(identity, ref);
 	}
 }
