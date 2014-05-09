@@ -37,16 +37,17 @@ public abstract class DefaultContextEntryControllerCreator implements ContextEnt
 	public abstract ContextEntryControllerCreator clone();
 
 	@Override
-	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
+	public Controller createController(List<ContextEntry> ces, UserRequest ureq, WindowControl wControl) {
 		return null;
 	}
 
+	@SuppressWarnings("unused")
 	public String getTabName(ContextEntry ce, UserRequest ureq) {
 		return null;
 	}
 
 	@Override
-	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
+	public String getSiteClassName(List<ContextEntry> ces, UserRequest ureq) {
 		return null;
 	}
 

@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes.wiki;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -59,7 +60,6 @@ import org.olat.modules.wiki.WikiSecurityCallbackImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
-import org.olat.repository.controllers.RepositoryDetailsController;
 
 /**
  * Description: <BR/>Edit controller for single page course nodes <P/> Initial
@@ -202,7 +202,8 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 				// do nothing
 				return;
 			}
-			RepositoryDetailsController.doEdit(ureq, repositoryEntry);
+			String bPath = "[RepositoryEntry:" + repositoryEntry.getKey() + "][Editor:0]";
+			NewControllerFactory.getInstance().launch(bPath, ureq, getWindowControl());
 		}
 	}
 

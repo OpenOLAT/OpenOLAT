@@ -19,6 +19,8 @@
  */
 package org.olat.user;
 
+import java.util.List;
+
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -58,16 +60,15 @@ public class IdentityContextEntryControllerCreator extends DefaultContextEntryCo
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
 	@Override
-	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		Identity identity = getIdentity(ce);
+	public Controller createController(List<ContextEntry> ces, UserRequest ureq, WindowControl wControl) {
+		Identity identity = getIdentity(ces.get(0));
 		if (identity == null) return null;
-		UserInfoMainController uimc = new UserInfoMainController(ureq, wControl, identity);
-		return uimc;
+		return new UserInfoMainController(ureq, wControl, identity);
 	}
 
 	@Override
-	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
-		Long resId = ce.getOLATResourceable().getResourceableId();
+	public String getSiteClassName(List<ContextEntry> ces, UserRequest ureq) {
+		Long resId = ces.get(0).getOLATResourceable().getResourceableId();
 		if(resId != null && resId.equals(ureq.getIdentity().getKey())) {
 			return HomeSite.class.getName();
 		}

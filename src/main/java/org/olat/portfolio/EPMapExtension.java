@@ -64,7 +64,7 @@ public class EPMapExtension {
 		}
 
 		@Override
-		public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
+		public String getSiteClassName(List<ContextEntry> ces, UserRequest ureq) {
 			return HomeSite.class.getName();
 		}
 

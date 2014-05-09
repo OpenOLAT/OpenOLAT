@@ -19,8 +19,9 @@
  */
 package org.olat.home.controllerCreators;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
@@ -37,10 +38,6 @@ import org.olat.home.HomeSite;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class GuestHomeCEControllerCreator extends DefaultContextEntryControllerCreator {
-
-	public GuestHomeCEControllerCreator() {
-		//
-	}
 	
 	@Override
 	public ContextEntryControllerCreator clone() {
@@ -48,18 +45,8 @@ public class GuestHomeCEControllerCreator extends DefaultContextEntryControllerC
 	}
 
 	@Override
-	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		return null;
-	}
-
-	@Override
-	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
+	public String getSiteClassName(List<ContextEntry> ces, UserRequest ureq) {
 		return HomeSite.class.getName();
-	}
-
-	@Override
-	public String getTabName(ContextEntry ce, UserRequest ureq) {
-		return null;
 	}
 
 	@Override

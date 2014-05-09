@@ -29,12 +29,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.ControllerFactory;
+import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.ColumnDescriptor;
@@ -51,14 +50,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.gui.control.generic.dtabs.DTab;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.course.assessment.portfolio.EfficiencyStatementArtefact;
@@ -163,21 +160,8 @@ public class EfficiencyStatementsListController extends BasicController {
 					} else if (!rm.isAllowedToLaunch(ureq, re)) {
 						showWarning("efficiencyStatements.course.noaccess");
 					} else {
-						OLATResourceable ores = re.getOlatResource();
-						//was brasato:: DTabs dts = getWindowControl().getDTabs();
-						DTabs dts = Windows.getWindows(ureq).getWindow(ureq).getDTabs();
-						DTab dt = dts.getDTab(ores);
-						if (dt == null) {
-							// does not yet exist -> create and add
-							//fxdiff BAKS-7 Resume function
-							dt = dts.createDTab(ores, re, efficiencyStatement.getShortTitle());
-							if (dt == null) return;
-							Controller launchController = ControllerFactory.createLaunchController(ores, ureq, dt.getWindowControl(), true);
-							dt.setController(launchController);
-							dts.addDTab(ureq, dt);
-						}
-						dts.activate(ureq, dt, null);  // null: do not activate to a certain view
-
+						WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(getWindowControl(), re);
+						NewControllerFactory.getInstance().launch(ureq, bwControl);
 					}
 				} else if (actionid.equals(CMD_DELETE)) {					
 					// show confirmation dialog

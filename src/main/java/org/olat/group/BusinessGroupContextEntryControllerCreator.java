@@ -20,6 +20,7 @@
 package org.olat.group;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.basesecurity.Constants;
 import org.olat.core.CoreSpringFactory;
@@ -60,9 +61,10 @@ public class BusinessGroupContextEntryControllerCreator extends DefaultContextEn
 	 *      org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
-	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
+	@Override
+	public Controller createController(List<ContextEntry> ces, UserRequest ureq, WindowControl wControl) {
 		Controller ctrl = null;
-		BusinessGroup bgroup = getBusinessGroup(ce);
+		BusinessGroup bgroup = getBusinessGroup(ces.get(0));
 		if(bgroup != null && isAuthorized(ureq, bgroup)) {
 			ctrl = BGControllerFactory.getInstance().createRunControllerFor(ureq, wControl, bgroup);
 		}

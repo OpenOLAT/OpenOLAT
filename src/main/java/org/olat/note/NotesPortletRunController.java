@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.olat.ControllerFactory;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
@@ -319,10 +318,8 @@ public class NotesPortletRunController extends AbstractPortletRunController<Note
 			super(objects, 2);
 			this.locale = locale;
 		}
-		
-		/**
-		 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
-		 */
+
+		@Override
 		public final Object getValueAt(int row, int col) {				
 			Note note = getObject(row).getValue();
 			switch (col) {
@@ -330,7 +327,7 @@ public class NotesPortletRunController extends AbstractPortletRunController<Note
 					return note.getNoteTitle();
 				case 1:								
 					String resType = note.getResourceTypeName();
-					return (resType == null ? "n/a" : ControllerFactory.translateResourceableTypeName(resType, locale));
+					return (resType == null ? "n/a" : NewControllerFactory.translateResourceableTypeName(resType, locale));
 				default:
 					return "error";
 			}

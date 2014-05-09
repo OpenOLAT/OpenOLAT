@@ -19,7 +19,7 @@
  */
 package org.olat.repository.ui.author;
 
-import org.olat.ControllerFactory;
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -95,7 +95,7 @@ public class CreateRepositoryEntryController extends FormBasicController {
 			typeDisplayText.append("<span class=\"b_with_small_icon_left ");
 			typeDisplayText.append(RepositoyUIFactory.getIconCssClass(type));
 			typeDisplayText.append("\">");
-			String tName = ControllerFactory.translateResourceableTypeName(type, getLocale());
+			String tName = NewControllerFactory.translateResourceableTypeName(type, getLocale());
 			typeDisplayText.append(tName);
 			typeDisplayText.append("</span>");
 		} else {

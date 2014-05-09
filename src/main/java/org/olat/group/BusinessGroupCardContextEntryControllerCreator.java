@@ -19,6 +19,8 @@
  */
 package org.olat.group;
 
+import java.util.List;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -48,8 +50,8 @@ public class BusinessGroupCardContextEntryControllerCreator extends DefaultConte
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
 	@Override
-	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		BusinessGroup bgroup = getBusinessGroup(ce);
+	public Controller createController(List<ContextEntry> ces, UserRequest ureq, WindowControl wControl) {
+		BusinessGroup bgroup = getBusinessGroup(ces.get(0));
 		if(bgroup != null) {
 			return new GroupInfoMainController(ureq, wControl, bgroup);
 		}

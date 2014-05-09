@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.olat.ControllerFactory;
+import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -53,8 +53,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomCellRenderer;
@@ -1664,18 +1664,19 @@ public class ForumController extends BasicController implements GenericEventList
    * Initial Date:  11.07.2007 <br>
    * @author Lavinia Dumitrescu
    */
-  private class StickyRenderColumnDescriptor extends CustomRenderColumnDescriptor {
+  private static class StickyRenderColumnDescriptor extends CustomRenderColumnDescriptor {
   	
   	public StickyRenderColumnDescriptor(String headerKey, int dataColumn, String action, Locale locale, int alignment,
   			CustomCellRenderer customCellRenderer) {
   		super(headerKey, dataColumn, action, locale, alignment,customCellRenderer);  		
   	}
   	
-  	/**
+  		/**
 		 * Delegates comparison to the <code>ForumHelper.compare</code>. In case the <code>ForumHelper.compare</code>
 		 * returns <code>ForumHelper.NOT_MY_JOB</code>, the comparison is executed by the superclass.
 		 * @see org.olat.core.gui.components.table.ColumnDescriptor#compareTo(int, int)
-		 */		
+		 */	
+  		@Override	
 		public int compareTo(int rowa, int rowb) {
 			ForumHelper.MessageWrapper a = (ForumHelper.MessageWrapper)getTable().getTableDataModel().getValueAt(rowa,getDataColumn());
 			ForumHelper.MessageWrapper b = (ForumHelper.MessageWrapper)getTable().getTableDataModel().getValueAt(rowb,getDataColumn());
@@ -1689,16 +1690,18 @@ public class ForumController extends BasicController implements GenericEventList
 		}				
   }
 	
-	class MessageIconRenderer extends CustomCssCellRenderer {
-		
+  public class MessageIconRenderer extends CustomCssCellRenderer {
+		@Override
 		protected String getHoverText(Object val) {
-			return ControllerFactory.translateResourceableTypeName((String)val, getLocale());
+			return NewControllerFactory.translateResourceableTypeName((String)val, getLocale());
 		}
-		
+
+		@Override
 		protected String getCellValue(Object val) {
 			return "";
 		}
 
+		@Override
 		protected String getCssClass(Object val) {
 			//val.toString()
 			// use small icon and create icon class for resource: o_FileResource-SHAREDFOLDER_icon

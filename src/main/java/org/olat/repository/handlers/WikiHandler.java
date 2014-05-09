@@ -219,7 +219,7 @@ public class WikiHandler implements RepositoryHandler {
 
 	@Override
 	public boolean supportsEdit(RepositoryEntry repoEntry) {
-		return false;
+		return true;
 	}
 	
 	@Override
@@ -281,8 +281,7 @@ public class WikiHandler implements RepositoryHandler {
 
 	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
-		//edit is always part of a wiki
-		return null;
+		return createLaunchController(re, ureq, wControl);
 	}
 
 	@Override

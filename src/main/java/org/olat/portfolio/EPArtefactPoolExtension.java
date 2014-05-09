@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -51,7 +50,7 @@ public class EPArtefactPoolExtension {
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(AbstractArtefact.class.getSimpleName(), new ArtefactContextEntryControllerCreator());	
 	}
 	
-	private static class ArtefactContextEntryControllerCreator extends DefaultContextEntryControllerCreator{
+	private static class ArtefactContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
 
 		@Override
 		public ContextEntryControllerCreator clone() {
@@ -59,13 +58,8 @@ public class EPArtefactPoolExtension {
 		}
 
 		@Override
-		public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
+		public String getSiteClassName(List<ContextEntry> ces, UserRequest ureq) {
 			return HomeSite.class.getName();
-		}
-
-		@Override
-		public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-			return true;
 		}
 
 		@Override

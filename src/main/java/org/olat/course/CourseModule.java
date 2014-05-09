@@ -31,7 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.configuration.AbstractOLATModule;
@@ -47,7 +46,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.course.site.CourseSiteContextEntryControllerCreator;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryEntry;
@@ -145,9 +143,6 @@ public class CourseModule extends AbstractOLATModule {
 	public void init() {
 		// skip all the expensive course demo setup and deployment when we are in junit mode.
 		if (Settings.isJUnitTest()) return;
-		
-		NewControllerFactory.getInstance().addContextEntryControllerCreator(RepositoryEntry.class.getSimpleName(),
-				new CourseSiteContextEntryControllerCreator());
 		
 		logInfo("Initializing the OpenOLAT course system");		
 		

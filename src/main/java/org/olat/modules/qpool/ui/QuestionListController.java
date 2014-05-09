@@ -22,6 +22,7 @@ package org.olat.modules.qpool.ui;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
@@ -45,6 +46,8 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
@@ -72,7 +75,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
-import org.olat.repository.controllers.RepositoryDetailsController;
 import org.olat.repository.controllers.RepositorySearchController.Can;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -648,8 +650,9 @@ public class QuestionListController extends AbstractItemListController implement
 	private void doExportToRepositoryEntry(UserRequest ureq, Long repoEntryKey) {
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(repoEntryKey, false);
 		if(re != null) {
-			//open editor
-			RepositoryDetailsController.doEdit(ureq, re);
+			WindowControl wControl = BusinessControlFactory.getInstance()
+					.createBusinessWindowControl(getWindowControl(), re, OresHelper.createOLATResourceableType("Editor"));
+			NewControllerFactory.getInstance().launch(ureq, wControl);
 		}
 	}
 	

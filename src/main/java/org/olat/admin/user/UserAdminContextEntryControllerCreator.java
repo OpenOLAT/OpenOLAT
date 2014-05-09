@@ -19,10 +19,10 @@
  */
 package org.olat.admin.user;
 
+import java.util.List;
+
 import org.olat.admin.site.UserAdminSite;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
@@ -43,35 +43,9 @@ public class UserAdminContextEntryControllerCreator extends DefaultContextEntryC
 		return this;
 	}
 
-	/**
-	 * @see org.olat.core.id.context.ContextEntryControllerCreator#createController(org.olat.core.id.context.ContextEntry,
-	 *      org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
-	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		return null;
-	}
-
-	/**
-	 * @see org.olat.core.id.context.ContextEntryControllerCreator#getSiteClassName(org.olat.core.id.context.ContextEntry)
-	 */
-	@Override
-	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
+	public String getSiteClassName(List<ContextEntry> ces, UserRequest ureq) {
 		// opened as site not tab
 		return UserAdminSite.class.getName();
-	}
-
-	/**
-	 * @see org.olat.core.id.context.ContextEntryControllerCreator#getTabName(org.olat.core.id.context.ContextEntry)
-	 */
-	@Override
-	public String getTabName(ContextEntry ce, UserRequest ureq) {
-		return null;
-	}
-
-	@Override
-	public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		return true;
 	}
 }

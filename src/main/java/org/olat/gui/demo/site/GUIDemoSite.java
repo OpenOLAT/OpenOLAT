@@ -25,7 +25,6 @@
 
 package org.olat.gui.demo.site;
 
-import org.olat.ControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
@@ -34,58 +33,43 @@ import org.olat.core.gui.control.navigation.DefaultNavElement;
 import org.olat.core.gui.control.navigation.NavElement;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.gui.demo.GUIDemoMainController;
 /**
  * 
  * Description:<br>
- * TODO: Lavinia Dumitrescu Class Description for GUIDemoSite
+ * Create the main demo controller
  * 
  * <P>
  * Initial Date:  11.09.2007 <br>
  * @author Lavinia Dumitrescu
  */
 public class GUIDemoSite extends AbstractSiteInstance {
-	private static final OLATResourceable ORES_TESTING = OresHelper.lookupType(GUIDemoMainController.class);
-	
 	private NavElement origNavElem;
 	private NavElement curNavElem;
-	/**
-	 * 
-	 */
+
 	public GUIDemoSite(SiteDefinition siteDef) {
 		super(siteDef);
 		origNavElem = new DefaultNavElement("gui_demo", "gui demo", "o_site_guidemo");
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
 
-	/**
-	 * @see org.olat.navigation.SiteInstance#getNavElement()
-	 */
+	@Override
 	public NavElement getNavElement() {
 		return curNavElem;
 	}
 
 	@Override
 	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		MainLayoutController c = ControllerFactory.createLaunchController(ORES_TESTING, ureq, wControl, true);
-		return c;
+		return new GUIDemoMainController(ureq, wControl);
 	}
 
-	/**
-	 * @see org.olat.navigation.SiteInstance#isKeepState()
-	 */
+	@Override
 	public boolean isKeepState() {
 		return true;
 	}
 	
-	/**
-	 * @see org.olat.navigation.SiteInstance#reset()
-	 */
+	@Override
 	public void reset() {
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
-
 }
-

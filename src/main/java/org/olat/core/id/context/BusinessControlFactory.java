@@ -222,6 +222,20 @@ public class BusinessControlFactory {
 		return wc;
 	}
 	
+	public WindowControl createBusinessWindowControl(WindowControl origWControl, OLATResourceable... ores) {
+		List<ContextEntry> ces;
+		if(ores != null && ores.length > 0) {
+			ces = new ArrayList<ContextEntry>(ores.length);
+			for(OLATResourceable o:ores) {
+				ces.add(createContextEntry(o));
+			}
+		} else {
+			ces = Collections.emptyList();
+		}
+		BusinessControl bc = createFromContextEntries(ces);
+		return createBusinessWindowControl(bc, origWControl);
+	}
+	
 	public BusinessControl getEmptyBusinessControl() {
 		// immutable, so therefore we can reuse it
 		return EMPTY;

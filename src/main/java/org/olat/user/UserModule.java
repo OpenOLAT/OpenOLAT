@@ -192,21 +192,19 @@ public class UserModule extends AbstractOLATModule {
 		
 		
 		// Append AfterLoginControllers if any configured
-			if (afterLoginConfig != null) {
-				afterLoginInterceptionManager.addAfterLoginControllerConfig(afterLoginConfig);
-			}
+		if (afterLoginConfig != null) {
+			afterLoginInterceptionManager.addAfterLoginControllerConfig(afterLoginConfig);
+		}
 	}
 
 	@Override
 	protected void initDefaultProperties() {
-		// TODO Auto-generated method stub
-		
+		//
 	}
 
 	@Override
 	protected void initFromChangedProperties() {
-		// TODO Auto-generated method stub
-		
+		//
 	}
 
 	private void checkMandatoryUserProperty(String userPropertyIdentifyer) {

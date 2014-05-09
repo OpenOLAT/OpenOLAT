@@ -20,8 +20,9 @@
 
 package org.olat.repository;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
@@ -48,14 +49,9 @@ public class CatalogContextEntryControllerCreator extends DefaultContextEntryCon
 	public ContextEntryControllerCreator clone() {
 		return this;
 	}
-	
-	@Override
-	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		return null;
-	}
 
 	@Override
-	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
+	public String getSiteClassName(List<ContextEntry> ces, UserRequest ureq) {
 		if(repositoryModule.isCatalogSiteEnabled()) {
 			return CatalogSite.class.getName();
 		} else {
@@ -64,13 +60,7 @@ public class CatalogContextEntryControllerCreator extends DefaultContextEntryCon
 	}
 
 	@Override
-	public String getTabName(ContextEntry ce, UserRequest ureq) {
-		return null;
-	}
-
-	@Override
 	public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
 		return repositoryModule.isCatalogEnabled();
 	}
-
 }

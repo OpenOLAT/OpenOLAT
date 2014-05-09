@@ -44,7 +44,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.controllers.RepositoryDetailsController;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 
@@ -134,6 +133,7 @@ public class CourseNodeFactory {
 			// do nothing
 			return;
 		}
+		
 		RepositoryHandler typeToEdit = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
 		if (!typeToEdit.supportsEdit(repositoryEntry)){
 			throw new AssertException("Trying to edit repository entry which has no assoiciated editor: "+ typeToEdit);
@@ -159,7 +159,7 @@ public class CourseNodeFactory {
 			dt.setController(editorController);
 			dts.addDTab(ureq, dt);
 		}
-		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(RepositoryDetailsController.ACTIVATE_EDITOR);
+		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType("activateEditor");
 		dts.activate(ureq, dt, entries);
 	}
 	

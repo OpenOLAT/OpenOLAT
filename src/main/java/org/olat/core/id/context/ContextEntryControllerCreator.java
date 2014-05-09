@@ -69,7 +69,7 @@ public interface ContextEntryControllerCreator {
 	 * @param wControl
 	 * @return the controller or NULL if the context is an existing site
 	 */
-	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl);
+	public Controller createController(List<ContextEntry> ces, UserRequest ureq, WindowControl wControl);
 
 	/**
 	 * The class name of the site that must be activated or NULL if opened as dTab
@@ -78,7 +78,7 @@ public interface ContextEntryControllerCreator {
 	 * @return Return the class name that is used to activate an existing site or
 	 *         NULL if the target is a new dtab
 	 */
-	public String getSiteClassName(ContextEntry ce, UserRequest ureq);
+	public String getSiteClassName(List<ContextEntry> entries, UserRequest ureq);
 	
 	/**
 	 * 

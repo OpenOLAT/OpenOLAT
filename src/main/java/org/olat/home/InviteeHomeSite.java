@@ -21,7 +21,6 @@ package org.olat.home;
 
 import java.util.Locale;
 
-import org.olat.ControllerFactory;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
@@ -32,22 +31,19 @@ import org.olat.core.gui.control.navigation.NavElement;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.util.Util;
-import org.olat.core.util.resource.OresHelper;
 
 /**
  * 
  * Description:<br>
- * TODO: srosse Class Description for InviteeHomeSite
+ * Create the home site for invitee
  * 
  * <P>
  * Initial Date:  7 déc. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class InviteeHomeSite extends AbstractSiteInstance {
-	private static final OLATResourceable ORES_INVITEE = OresHelper.lookupType(InviteeHomeMainController.class);
-
 	private NavElement origNavElem;
 	private NavElement curNavElem;
 
@@ -67,8 +63,10 @@ public class InviteeHomeSite extends AbstractSiteInstance {
 
 	@Override
 	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		MainLayoutController c = ControllerFactory.createLaunchController(ORES_INVITEE, ureq, wControl, true);
-		return c;
+		if (!ureq.getUserSession().getRoles().isInvitee()) {
+			throw new OLATSecurityException("Tried to launch a InviteeMainController, but is not an invitee " + ureq.getUserSession().getRoles());
+		}
+		return new InviteeHomeMainController(ureq, wControl);
 	}
 
 	/**

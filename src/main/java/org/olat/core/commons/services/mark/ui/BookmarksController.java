@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.olat.ControllerFactory;
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.mark.Mark;
@@ -205,7 +204,7 @@ public class BookmarksController extends BasicController {
 					return getBookmarkTitle(bm);
 				case 1:
 					String resType = bm.getDisplayrestype();
-					return (resType == null ? "n/a" : ControllerFactory.translateResourceableTypeName(resType, locale));
+					return (resType == null ? "n/a" : NewControllerFactory.translateResourceableTypeName(resType, locale));
 				case 2:
 					String desc = bm.getDescription();
 					return (desc == null ? "n/a" : desc);

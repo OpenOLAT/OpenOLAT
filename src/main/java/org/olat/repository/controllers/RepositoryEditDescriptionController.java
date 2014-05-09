@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.olat.ControllerFactory;
+import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -163,7 +163,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			typeDisplayText.append("<span class=\"b_with_small_icon_left ");
 			typeDisplayText.append(RepositoyUIFactory.getIconCssClass(repositoryEntry));
 			typeDisplayText.append("\">");
-			String tName = ControllerFactory.translateResourceableTypeName(typeName, getLocale());
+			String tName = NewControllerFactory.translateResourceableTypeName(typeName, getLocale());
 			typeDisplayText.append(tName);
 			typeDisplayText.append("</span>");
 		} else {

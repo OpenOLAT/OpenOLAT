@@ -24,22 +24,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.ControllerFactory;
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.dtabs.DTab;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
@@ -181,19 +176,8 @@ public class InstitutionPortletRunController extends BasicController {
 					if (!rm.isAllowedToLaunch(ureq, re)) {
 						getWindowControl().setWarning(translate("warn.cantlaunch"));
 					} else {
-						OLATResourceable ores = re.getOlatResource();
-						DTabs dts = Windows.getWindows(ureq).getWindow(ureq).getDTabs();
-						DTab dt = dts.getDTab(ores);
-						if (dt == null) {
-							// does not yet exist -> create and add
-							dt = dts.createDTab(ores, re, re.getDisplayname());
-							if (dt == null) return;
-							Controller launchController = ControllerFactory.createLaunchController(ores, ureq, dt.getWindowControl(), true);
-							dt.setController(launchController);
-							dts.addDTab(ureq, dt);
-						}
-						dts.activate(ureq, dt, null); // null: do not activate a certain
-																					// view
+						WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(getWindowControl(), re);
+						NewControllerFactory.getInstance().launch(ureq, bwControl);
 					}
 				} else {
 					getWindowControl().setWarning(translate("warn.cantlaunch"));

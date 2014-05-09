@@ -19,6 +19,8 @@
  */
 package org.olat.portfolio;
 
+import java.util.List;
+
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -55,12 +57,12 @@ public class EPMapOnInvitationExtension {
 		}
 
 		@Override
-		public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
+		public Controller createController(List<ContextEntry> ces, UserRequest ureq, WindowControl wControl) {
 			if(!ureq.getUserSession().getRoles().isInvitee()) {
 				return null;
 			}
 			
-			PortfolioStructureMap map = getMapFromContext(ce);
+			PortfolioStructureMap map = getMapFromContext(ces.get(0));
 			EPSecurityCallback secCallback = new EPSecurityCallbackImpl(false, true);
 			Controller epCtr = EPUIFactory.createMapViewController(ureq, wControl, map, secCallback);
 			
@@ -73,11 +75,6 @@ public class EPMapOnInvitationExtension {
 		public String getTabName(ContextEntry ce, UserRequest ureq) {
 			PortfolioStructureMap map = getMapFromContext(ce);
 			return map.getTitle();
-		}
-
-		@Override
-		public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
-			return null;
 		}
 
 		@Override

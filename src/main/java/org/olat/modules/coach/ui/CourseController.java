@@ -19,7 +19,6 @@
  */
 package org.olat.modules.coach.ui;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
@@ -46,7 +45,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -55,10 +53,9 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
-import org.olat.repository.RepositoryEntry;
-
 import org.olat.modules.coach.ui.EfficiencyStatementEntryTableDataModel.Columns;
 import org.olat.modules.coach.ui.ToolbarController.Position;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -332,13 +329,8 @@ public class CourseController extends BasicController implements Activateable2 {
 	}
 	
 	private void openCourse(UserRequest ureq) {
-		List<ContextEntry> ces = new ArrayList<ContextEntry>(1);
-		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", courseStat.getRepoKey());
-		ces.add(BusinessControlFactory.getInstance().createContextEntry(ores));
-
-		BusinessControl bc = BusinessControlFactory.getInstance().createFromContextEntries(ces);
-	  WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(getWindowControl(), ores);
 		NewControllerFactory.getInstance().launch(ureq, bwControl);
 	}
 }

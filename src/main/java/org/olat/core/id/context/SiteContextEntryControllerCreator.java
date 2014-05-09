@@ -20,9 +20,9 @@
 
 package org.olat.core.id.context;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.SiteInstance;
 
 /**
@@ -46,22 +46,8 @@ public class SiteContextEntryControllerCreator extends DefaultContextEntryContro
 		return this;
 	}
 
-	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		return null;
-	}
-
 	@Override
-	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
+	public String getSiteClassName(List<ContextEntry> ces, UserRequest ureq) {
 		return site.getName();
-	}
-
-	@Override
-	public String getTabName(ContextEntry ce, UserRequest ureq) {
-		return null;
-	}
-
-	@Override
-	public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		return true;
 	}
 }

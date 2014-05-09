@@ -21,7 +21,7 @@ package org.olat.repository;
 
 import java.util.Locale;
 
-import org.olat.ControllerFactory;
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.components.table.CustomCssCellRenderer;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nModule;
@@ -101,12 +101,12 @@ public class RepositoryEntryIconRenderer extends CustomCssCellRenderer {
 		if(val instanceof RepositoryEntry) {
 			RepositoryEntry re = (RepositoryEntry) val;
 			String typeName = re.getOlatResource().getResourceableTypeName();
-			return ControllerFactory.translateResourceableTypeName(typeName, locale);
+			return NewControllerFactory.translateResourceableTypeName(typeName, locale);
 		}
 		if(val instanceof RepositoryEntryShort) {
 			RepositoryEntryShort re = (RepositoryEntryShort) val;
 			String typeName = re.getResourceType();
-			return ControllerFactory.translateResourceableTypeName(typeName, locale);
+			return NewControllerFactory.translateResourceableTypeName(typeName, locale);
 		}
 		return "n/a";
 	}

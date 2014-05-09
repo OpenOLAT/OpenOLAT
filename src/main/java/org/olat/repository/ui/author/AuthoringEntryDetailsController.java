@@ -26,7 +26,6 @@ import org.olat.NewControllerFactory;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
-import org.olat.catalog.ui.CatalogEntryAddController;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
@@ -116,11 +115,11 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 	private CloseableModalController cmc;
 	private WizardCloseResourceController wc;
 	private OrdersAdminController ordersCtlr;
-	private Controller catalogAdddController;
 	private UserCommentsController commentsCtrl;
 	private DialogBoxController deleteDialogCtrl;
-	private AuthoringEditEntrySettingsController editCtrl;
+	private CatalogSettingsController catalogCtlr;
 	private CopyRepositoryEntryController copyCtrl;
+	private AuthoringEditEntrySettingsController editCtrl;
 	private RepositoryMembersController membersEditController;
 	
 	private final TooledStackedPanel stackPanel;
@@ -225,7 +224,7 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 				editSettingsLink.setEnabled(!corrupted);
 
 				if(repositoryModule.isCatalogEnabled()) {
-					catalogLink = LinkFactory.createToolLink("cat", translate("details.catadd"), this, "o_sel_repo_add_to_catalog");
+					catalogLink = LinkFactory.createToolLink("cat", translate("details.categoriesheader"), this, "o_sel_repo_add_to_catalog");
 					catalogLink.setEnabled(!corrupted && (entry.getAccess() >= RepositoryEntry.ACC_USERS || entry.isMembersOnly()));
 				}
 
@@ -454,9 +453,6 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 			if (DialogBoxUIFactory.isYesEvent(event)){
 				deleteRepositoryEntry(ureq, getWindowControl());
 			}	
-		} else if (source == catalogAdddController) {
-			// finish modal dialog and reload categories list controller
-			cmc.deactivate();
 		} else if(copyCtrl == source) {
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
@@ -501,17 +497,17 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 	}
 
 	private void cleanUp() {
-		removeAsListenerAndDispose(catalogAdddController);
 		removeAsListenerAndDispose(membersEditController);
 		removeAsListenerAndDispose(deleteDialogCtrl);
 		removeAsListenerAndDispose(commentsCtrl);
+		removeAsListenerAndDispose(catalogCtlr);
 		removeAsListenerAndDispose(ordersCtlr);
 		removeAsListenerAndDispose(editCtrl);
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(wc);
-		catalogAdddController = null;
 		deleteDialogCtrl = null;
 		commentsCtrl = null;
+		catalogCtlr = null;
 		ordersCtlr = null;
 		editCtrl = null;
 		cmc = null;
@@ -696,14 +692,8 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 	 * @param ureq
 	 */
 	private void doAddCatalog(UserRequest ureq) {
-		if(catalogAdddController != null) return;
-
-		catalogAdddController = new CatalogEntryAddController(ureq, getWindowControl(), entry, true, false);
-		listenTo(catalogAdddController);
-		cmc = new CloseableModalController(getWindowControl(), "close",
-				catalogAdddController.getInitialComponent(), true, translate("details.catadd"));
-		listenTo(cmc);
-		cmc.activate();
+		catalogCtlr = new CatalogSettingsController(ureq, getWindowControl(), stackPanel, entry);
+		listenTo(catalogCtlr);
 	}
 	
 	private void deleteRepositoryEntry(UserRequest ureq, WindowControl wControl) {

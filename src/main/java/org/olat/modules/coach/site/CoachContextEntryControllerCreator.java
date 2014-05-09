@@ -19,8 +19,9 @@
  */
 package org.olat.modules.coach.site;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
@@ -37,12 +38,7 @@ public class CoachContextEntryControllerCreator extends DefaultContextEntryContr
 	}
 
 	@Override
-	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
+	public String getSiteClassName(List<ContextEntry> ces, UserRequest ureq) {
 		return CoachSite.class.getName();
-	}
-
-	@Override
-	public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		return super.validateContextEntryAndShowError(ce, ureq, wControl);
 	}
 }

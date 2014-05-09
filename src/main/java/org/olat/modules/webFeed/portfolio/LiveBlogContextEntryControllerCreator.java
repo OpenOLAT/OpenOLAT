@@ -20,6 +20,8 @@
 
 package org.olat.modules.webFeed.portfolio;
 
+import java.util.List;
+
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
@@ -70,8 +72,8 @@ public class LiveBlogContextEntryControllerCreator  {
 		}
 
 		@Override
-		public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-			OLATResourceable ores = ce.getOLATResourceable();
+		public Controller createController(List<ContextEntry> ces, UserRequest ureq, WindowControl wControl) {
+			OLATResourceable ores = ces.get(0).getOLATResourceable();
 			Feed feed = feedManager.getFeed(ores);
 			boolean isOwner = feed.getAuthor() != null && ureq.getIdentity() != null && feed.getAuthor().equals(ureq.getIdentity().getName());
 			FeedSecurityCallback secCallback = new FeedResourceSecurityCallback(isOwner, isOwner);
@@ -84,11 +86,6 @@ public class LiveBlogContextEntryControllerCreator  {
 			OLATResourceable ores = ce.getOLATResourceable();
 			Feed feed = feedManager.getFeed(ores);
 			return feed.getTitle();
-		}
-
-		@Override
-		public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
-			return null;
 		}
 
 		@Override

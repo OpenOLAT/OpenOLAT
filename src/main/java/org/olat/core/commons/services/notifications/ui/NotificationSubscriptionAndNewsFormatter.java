@@ -26,7 +26,7 @@ package org.olat.core.commons.services.notifications.ui;
 
 import java.util.Map;
 
-import org.olat.ControllerFactory;
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.Subscriber;
@@ -57,15 +57,13 @@ public class NotificationSubscriptionAndNewsFormatter {
 	public String getType(Subscriber sub) {
 		Publisher pub = sub.getPublisher();
 		String innerType = pub.getType();
-		String typeName = ControllerFactory.translateResourceableTypeName(innerType, translator.getLocale());
-		return typeName;
+		return NewControllerFactory.translateResourceableTypeName(innerType, translator.getLocale());
 	}
 
 	public String getContainerType(Subscriber sub) {
 		Publisher pub = sub.getPublisher();
 		String containerType = pub.getResName();
-		String containerTypeTrans = ControllerFactory.translateResourceableTypeName(containerType, translator.getLocale());
-		return containerTypeTrans;
+		return NewControllerFactory.translateResourceableTypeName(containerType, translator.getLocale());
 	}
 
 	public boolean hasNews(Subscriber sub) {

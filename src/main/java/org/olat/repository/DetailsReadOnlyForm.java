@@ -25,7 +25,7 @@
 
 package org.olat.repository;
 
-import org.olat.ControllerFactory;
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
@@ -81,7 +81,7 @@ public class DetailsReadOnlyForm extends FormBasicController {
 			typeDisplayText.append("<span class=\"b_with_small_icon_left ");
 			typeDisplayText.append(RepositoyUIFactory.getIconCssClass(entry));
 			typeDisplayText.append("\">");
-			String tName = ControllerFactory.translateResourceableTypeName(typeName, getLocale());
+			String tName = NewControllerFactory.translateResourceableTypeName(typeName, getLocale());
 			typeDisplayText.append(tName);
 			typeDisplayText.append("</span>"); 
 		} else {

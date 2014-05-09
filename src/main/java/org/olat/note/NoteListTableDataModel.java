@@ -28,7 +28,7 @@ package org.olat.note;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.ControllerFactory;
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 
 /**
@@ -39,7 +39,7 @@ import org.olat.core.gui.components.table.DefaultTableDataModel;
 
 class NoteListTableDataModel extends DefaultTableDataModel<Note> {
 
-	private Locale locale;
+	private final Locale locale;
 	
 	/**
 	 * @param objects
@@ -50,9 +50,7 @@ class NoteListTableDataModel extends DefaultTableDataModel<Note> {
 		this.locale = locale;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
-	 */
+	@Override
 	public final Object getValueAt(int row, int col) {
 		Note n = getObject(row);
 		switch (col) {
@@ -60,15 +58,13 @@ class NoteListTableDataModel extends DefaultTableDataModel<Note> {
 			  return n.getNoteTitle();
 			case 1 :
 				String resType = n.getResourceTypeName();
-				return (resType == null ? "n/a" : ControllerFactory.translateResourceableTypeName(resType, locale));
+				return (resType == null ? "n/a" : NewControllerFactory.translateResourceableTypeName(resType, locale));
 			default :
 				return "error";
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
-	 */
+	@Override
 	public int getColumnCount() {
 		return 2;
 	}

@@ -43,7 +43,7 @@ import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
 import org.hibernate.FlushMode;
-import org.olat.ControllerFactory;
+import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
@@ -1041,7 +1041,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	private String getFormatedTitle(SubscriptionInfo subsInfo, Subscriber subscriber, Locale locale, String mimeType){
 		Publisher pub = subscriber.getPublisher();
 		String innerType = pub.getType();
-		String typeName = ControllerFactory.translateResourceableTypeName(innerType, locale);
+		String typeName = NewControllerFactory.translateResourceableTypeName(innerType, locale);
 		StringBuilder titleSb = new StringBuilder();
 		titleSb.append(typeName);
 		

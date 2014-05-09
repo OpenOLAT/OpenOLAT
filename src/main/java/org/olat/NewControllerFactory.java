@@ -31,8 +31,10 @@ package org.olat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
+import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Window;
@@ -40,6 +42,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -49,6 +52,7 @@ import org.olat.core.id.context.TabContext;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -82,6 +86,11 @@ public class NewControllerFactory extends LogDelegator {
 	 */
 	private NewControllerFactory() {
 	//
+	}
+	
+	public static String translateResourceableTypeName(String resourceableTypeName, Locale locale) {
+		Translator trans = Util.createPackageTranslator(BaseChiefController.class, locale);
+		return trans.translate(resourceableTypeName);
 	}
 
 	/**
@@ -204,40 +213,24 @@ public class NewControllerFactory extends LogDelegator {
 			//simply return and don't throw a red screen
 			return false;
 		}
+		
+		List<ContextEntry> entries = new ArrayList<ContextEntry>(5);
+		while(bc.hasContextEntry()) {
+			entries.add(bc.popLauncherContextEntry());
+		}
+		List<ContextEntry> ces = new ArrayList<ContextEntry>(entries.size() + 1);
+		ces.add(mainCe);
+		if(entries.size() > 0) {
+			ces.addAll(entries);
+		}
 
-		//fxdiff BAKS-7 Resume function
-		String siteClassName = typeHandler.getSiteClassName(mainCe, ureq);
-			
+		TabContext context = typeHandler.getTabContext(ureq, ores, mainCe, entries);
+		String siteClassName = typeHandler.getSiteClassName(ces, ureq);	
 		// open in existing site
 		if (siteClassName != null) {
-			// use special activation key to trigger the activate method
-			//fxdiff BAKS-7 Resume function
-			List<ContextEntry> entries = new ArrayList<ContextEntry>();
-			if (bc.hasContextEntry()) {
-				ContextEntry subContext = bc.popLauncherContextEntry();
-				if (subContext != null) {
-					entries.add(subContext);
-					while(bc.hasContextEntry()) {
-						entries.add(bc.popLauncherContextEntry());
-					}
-				}
-			} else if (!ceConsumed) {
-				//the olatresourceable is not in a dynamic tab but in a fix one
-				if(ores != null) {
-					entries.add(BusinessControlFactory.getInstance().createContextEntry(ores));
-				}
-			}
-
-			TabContext context = typeHandler.getTabContext(ureq, ores, mainCe, entries);
 			dts.activateStatic(ureq, siteClassName, context.getContext());
 			return true;
 		} else {
-			List<ContextEntry> entries = new ArrayList<ContextEntry>();
-			while(bc.hasContextEntry()) {
-				entries.add(bc.popLauncherContextEntry());
-			}
-			TabContext context = typeHandler.getTabContext(ureq, ores, mainCe, entries);
-			
 			// or create new tab
 			//String tabName = typeHandler.getTabName(mainCe, ureq);
 			// create and add Tab
@@ -248,7 +241,8 @@ public class NewControllerFactory extends LogDelegator {
 			} else {
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, dt.getWindowControl());
 				usess.addToHistory(ureq, bc);
-				Controller launchC = typeHandler.createController(mainCe, ureq, bwControl);
+
+				Controller launchC = typeHandler.createController(ces, ureq, bwControl);
 				if (launchC == null) {
 					throw new AssertException("ControllerFactory could not create a controller to be launched. Please validate businesspath " 
 							+ bc.getAsString() + " for type " + typeHandler.getClass().getName() + " in advance with validateContextEntryAndShowError().");

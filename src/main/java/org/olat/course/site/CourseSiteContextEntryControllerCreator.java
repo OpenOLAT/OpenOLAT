@@ -28,6 +28,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
@@ -36,6 +37,8 @@ import org.olat.course.site.model.LanguageConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoyUIFactory;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 
 /**
  * <h3>Description:</h3>
@@ -63,10 +66,26 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
 	@Override
-	public Controller createController(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		RepositoryEntry re = getRepositoryEntry(ce);
-		Controller ctrl = RepositoyUIFactory.createLaunchController(re, ureq, wControl);
-		return ctrl;
+	public Controller createController(List<ContextEntry> ces, UserRequest ureq, WindowControl wControl) {
+		Controller ctrl = null;;
+		RepositoryEntry re = getRepositoryEntry(ces.get(0));
+		if(ces.size() > 1) {
+			ContextEntry subcontext = ces.get(1);
+			if("Editor".equals(subcontext.getOLATResourceable().getResourceableTypeName())) {
+				RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
+				if(handler != null && handler.supportsEdit(re) && isAllowedToEdit(ureq, re)) {
+					ctrl = handler.createEditorController(re, ureq, wControl);
+				}
+			}
+		}
+		
+		return ctrl == null ? RepositoyUIFactory.createLaunchController(re, ureq, wControl) : ctrl;
+	}
+	
+	private boolean isAllowedToEdit(UserRequest ureq, RepositoryEntry re) {
+		Roles roles = ureq.getUserSession().getRoles();
+		return roles.isOLATAdmin()
+				|| RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ureq.getIdentity(), re);
 	}
 
 	/**
@@ -86,8 +105,8 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 	 * @see org.olat.core.id.context.ContextEntryControllerCreator#getSiteClassName(org.olat.core.id.context.ContextEntry)
 	 */
 	@Override
-	public String getSiteClassName(ContextEntry ce, UserRequest ureq) {
-		RepositoryEntry re = getRepositoryEntry(ce);
+	public String getSiteClassName(List<ContextEntry> ces, UserRequest ureq) {
+		RepositoryEntry re = getRepositoryEntry(ces.get(0));
 		CourseSiteDef siteDef = getCourseSite(ureq, re);
 		if(siteDef != null) {
 			return siteDef.getClass().getName().replace("Def", "");

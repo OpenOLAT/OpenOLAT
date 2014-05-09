@@ -27,7 +27,6 @@ package org.olat.admin.site;
 
 import java.util.Locale;
 
-import org.olat.ControllerFactory;
 import org.olat.admin.SystemAdminMainController;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
@@ -48,7 +47,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.util.logging.activity.LoggingResourceable;
 /**
  * Description:<br>
- * TODO: Felix Jost Class Description for HomeSite
+ * Create the administration site
  * 
  * <P>
  * Initial Date:  19.07.2005 <br>
@@ -56,8 +55,6 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Felix Jost
  */
 public class AdminSite extends AbstractSiteInstance {
-	private static final OLATResourceable ORES_OLATADMINS = OresHelper.lookupType(SystemAdminMainController.class);
-
 	private NavElement origNavElem;
 	private NavElement curNavElem;
 
@@ -68,9 +65,7 @@ public class AdminSite extends AbstractSiteInstance {
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
 
-	/**
-	 * @see org.olat.navigation.SiteInstance#getNavElement()
-	 */
+	@Override
 	public NavElement getNavElement() {
 		return curNavElem;
 	}
@@ -80,20 +75,16 @@ public class AdminSite extends AbstractSiteInstance {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(AdminSite.class, 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
-		MainLayoutController c = ControllerFactory.createLaunchController(ORES_OLATADMINS, ureq, bwControl, true);
-		return c;
+		return new SystemAdminMainController(ureq, bwControl);
 	}
 
-	/**
-	 * @see org.olat.navigation.SiteInstance#isKeepState()
-	 */
+	@Override
 	public boolean isKeepState() {
 		return true;
 	}
-	
+
+	@Override
 	public void reset() {
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
-
 }
-

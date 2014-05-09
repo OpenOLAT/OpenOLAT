@@ -479,8 +479,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 			listenTo(searchController);
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate("command.chooseRepFile"));
 			cmc.activate();
-		}
-		else if (source == changeTestButton) {//change associated test
+		} else if (source == changeTestButton) {//change associated test
 			if(type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SELF)) {//selftest
 				String[] types = new String[]{TestFileResource.TYPE_NAME};
 				searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, types, translate("command.chooseTest"));

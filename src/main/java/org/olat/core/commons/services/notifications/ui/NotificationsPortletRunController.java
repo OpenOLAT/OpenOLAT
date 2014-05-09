@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.olat.ControllerFactory;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.notifications.NotificationHelper;
 import org.olat.core.commons.services.notifications.NotificationUIFactory;
@@ -296,8 +295,8 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 				  } else if(sortingCriteria.getSortingTerm()==SortingCriteria.DATE_SORTING) {
 				  	comparisonResult = subscriber1.getLastModified().compareTo(subscriber1.getLastModified());
 				  } else if(sortingCriteria.getSortingTerm()==SortingCriteria.TYPE_SORTING) {
-				  	String type1 = ControllerFactory.translateResourceableTypeName(subscriber1.getPublisher().getType(), getTranslator().getLocale());
-				  	String type2 = ControllerFactory.translateResourceableTypeName(subscriber2.getPublisher().getType(), getTranslator().getLocale());
+				  	String type1 = NewControllerFactory.translateResourceableTypeName(subscriber1.getPublisher().getType(), getTranslator().getLocale());
+				  	String type2 = NewControllerFactory.translateResourceableTypeName(subscriber2.getPublisher().getType(), getTranslator().getLocale());
 				  	comparisonResult = type1.compareTo(type2);
 				  }
 				  if(!sortingCriteria.isAscending()) {
@@ -345,8 +344,7 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 						return "";
 					case 1:					
 						String innerType = pub.getType();
-						String typeName = ControllerFactory.translateResourceableTypeName(innerType, locale);
-						return typeName;
+						return NewControllerFactory.translateResourceableTypeName(innerType, locale);
 					default:
 						return "ERROR";
 				}
@@ -399,8 +397,7 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 					}
 					case 2:
 						String innerType = pub.getType();
-						String typeName = ControllerFactory.translateResourceableTypeName(innerType, locale);
-						return typeName;
+						return NewControllerFactory.translateResourceableTypeName(innerType, locale);
 					default:
 						return "error";
 				}

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.navigation.Dated;
 import org.olat.core.commons.controllers.navigation.NavigationEvent;
@@ -36,7 +37,6 @@ import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityC
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.date.DateComponentFactory;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -51,12 +51,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.generic.dtabs.DTab;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -71,9 +68,6 @@ import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
 import org.olat.modules.webFeed.models.ItemPublishDateComparator;
 import org.olat.portfolio.EPUIFactory;
-import org.olat.user.HomePageConfigManager;
-import org.olat.user.HomePageConfigManagerImpl;
-import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -505,20 +499,8 @@ public class ItemsController extends BasicController implements Activateable2 {
 			Object userObject = userLink.getUserObject();
 			if (userObject instanceof Identity) {
 				Identity chosenIdentity = (Identity) userObject;
-				HomePageConfigManager hpcm = HomePageConfigManagerImpl.getInstance();
-				OLATResourceable ores = hpcm.loadConfigFor(chosenIdentity.getName());
-				DTabs dts = Windows.getWindows(ureq).getWindow(ureq).getDTabs();
-				// was brasato:: DTabs dts = getWindowControl().getDTabs();
-				DTab dt = dts.getDTab(ores);
-				if (dt == null) {
-					// does not yet exist -> create and add
-					dt = dts.createDTab(ores, chosenIdentity.getName());
-					if (dt == null) return;
-					UserInfoMainController uimc = new UserInfoMainController(ureq, dt.getWindowControl(), chosenIdentity);
-					dt.setController(uimc);
-					dts.addDTab(ureq, dt);
-				}
-				dts.activate(ureq, dt, null);
+				String bPath = "[HomePage:" + chosenIdentity.getKey() + "]";
+				NewControllerFactory.getInstance().launch(bPath, ureq, getWindowControl());
 			}
 		}
 		

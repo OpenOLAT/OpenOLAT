@@ -19,7 +19,7 @@
  */
 package org.olat.core.commons.services.notifications.ui;
 
-import org.olat.ControllerFactory;
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
@@ -82,12 +82,10 @@ class NotificationSubscriptionTableDataModel extends DefaultTableDataModel<Subsc
 		switch (col) {
 			case 0:
 				String innerType = pub.getType();
-				String typeName = ControllerFactory.translateResourceableTypeName(innerType, getLocale());
-				return typeName;
+				return NewControllerFactory.translateResourceableTypeName(innerType, getLocale());
 			case 1:
 				String containerType = pub.getResName();
-				String containerTypeTrans = ControllerFactory.translateResourceableTypeName(containerType, getLocale());
-				return containerTypeTrans;
+				return NewControllerFactory.translateResourceableTypeName(containerType, getLocale());
 			case 2:
 				NotificationsHandler handler = NotificationsManager.getInstance().getNotificationsHandler(pub);
 				if(handler == null){
