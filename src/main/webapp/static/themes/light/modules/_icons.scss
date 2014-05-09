@@ -27,6 +27,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_edit_file { @extend .o_icon-edit;}
 .o_icon_edit_metadata { @extend .o_icon-edit; color: #996633;}
 .o_icon_error {@extend .o_icon-exclamation;}
+.o_icon_failed {@extend .o_icon-times-circle;}
 .o_icon_filter {@extend .o_icon-filter;}
 .o_icon_help { @extend .o_icon-question-circle; @extend .o_icon-lg; cursor: help;}
 .o_icon_impress { @extend .o_icon-info-circle; }
@@ -41,6 +42,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_logout {@extend .o_icon-sign-out;}
 .o_icon_mandatory {@extend .o_icon-asterisk; color: #f0ad4e;}
 .o_icon_open_tree {@extend .o_icon-caret-right;}
+.o_icon_passed {@extend .o_icon-check-circle;}
 .o_icon_preview {@extend .o_icon-eye;}
 .o_icon_print {@extend .o_icon-print;}
 .o_icon_rating_on { @extend .o_icon-star;}
@@ -68,6 +70,13 @@ $fa-css-prefix: "o_icon" !default;
 a.o_icon {
 	@extend .o_undecorated;
 }
+
+/* Access control icons */
+.o_ac_token_icon { @extend .o_icon-key;}
+.o_ac_free_icon { @extend .o_icon-gift;}
+.o_ac_group_icon { @extend .o_icon-group;}
+.o_ac_membersonly_icon { @extend .o_icon-lock;}
+.o_ac_paypal_icon { @extend .o_icon-credit-card;}
 
 
 /* portrait / avatar icons */

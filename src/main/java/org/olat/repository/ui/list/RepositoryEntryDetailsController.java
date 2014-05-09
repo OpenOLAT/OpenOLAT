@@ -203,8 +203,9 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			long numOfComments = row.getNumOfComments();
 			String title = "(" + numOfComments + ")";
 			commentsLink = uifactory.addFormLink("comments", "comments", title, null, layoutCont, Link.NONTRANSLATED);
-			String css = numOfComments > 0 ? "b_comments" : "b_comments b_no_comment";
-			commentsLink.setCustomEnabledLinkCSS(css);
+			commentsLink.setCustomEnabledLinkCSS("o_comments");
+			String css = numOfComments > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
+			commentsLink.setIconLeftCSS(css);
 			
 			//load memberships
 			boolean isMember = repositoryService.isMember(getIdentity(), entry);
@@ -213,7 +214,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			List<PriceMethod> types = new ArrayList<PriceMethod>();
 			if (entry.isMembersOnly()) {
 				// members only always show lock icon
-				types.add(new PriceMethod("", "b_access_membersonly_icon"));
+				types.add(new PriceMethod("", "o_ac_membersonly_icon"));
 				if(isMember) {
 					startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.LINK);
 				}

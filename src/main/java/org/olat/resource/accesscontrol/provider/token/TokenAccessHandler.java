@@ -37,8 +37,8 @@ import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.AccessMethodSecurityCallback;
 import org.olat.resource.accesscontrol.model.DefaultACSecurityCallback;
 import org.olat.resource.accesscontrol.model.Offer;
-import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.olat.resource.accesscontrol.model.OfferAccess;
+import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.olat.resource.accesscontrol.model.Order;
 import org.olat.resource.accesscontrol.model.OrderPart;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
@@ -58,7 +58,7 @@ import org.olat.resource.accesscontrol.ui.FormController;
 public class TokenAccessHandler implements AccessMethodHandler {
 	
 	public static final String METHOD_TYPE = "token.method";
-	public static final String METHOD_CSS_CLASS = "b_access_method_token";
+	public static final String METHOD_CSS_CLASS = "o_ac_token";
 	
 	@Override
 	public boolean isPaymentMethod() {

@@ -252,6 +252,19 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		this.lifecycleEnd = lifecycleEnd;
 	}
 	
+	public boolean isActive() {
+		boolean isCurrent = true; 
+		if (lifecycleEnd != null || lifecycleStart != null) {
+			Date now = new Date();
+			if (lifecycleStart != null && lifecycleStart.after(now)) {
+				isCurrent = false;
+			} else if (lifecycleEnd != null && lifecycleEnd.before(now)) {
+				isCurrent = false;
+			}
+		}
+		return isCurrent;
+	}
+	
 	public List<PriceMethod> getAccessTypes() {
 		return accessTypes;
 	}

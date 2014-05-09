@@ -13,15 +13,15 @@
 		#foreach($confController in $confControllers)
 			#set($css = $confController.getLink().getMethod().getMethodCssClass())
 			<tr class="$css">
-				<td><span class="b_with_small_icon_left ${css}_icon">$confController.name</span></td>
-				<td><span class="b_access_infos">$r.escapeHtml($confController.infos)</span></td>
+				<td><i class="o_icon ${css}_icon o_icon-lg"></i> $confController.name</td>
+				<td><span class="o_ac_infos">$r.escapeHtml($confController.infos)</span></td>
 				<td><div class="b_form_element">$r.render("from_$confController.link.key")</div></td>
 				<td><div class="b_form_element">$r.render("to_$confController.link.key")</div></td>
 				<td>#if($r.available("del_$confController.link.key")) $r.render("del_$confController.link.key") #end</td>
 			</tr>
 			#set($desc = $confController.getLink().getOffer().getDescription())
 			#if ($desc)
-				<tr class="$css b_access_desc">
+				<tr class="$css o_ac_desc">
 					<td colspan="5">$r.escapeHtml($desc)</td>
 				</tr>
 			#end

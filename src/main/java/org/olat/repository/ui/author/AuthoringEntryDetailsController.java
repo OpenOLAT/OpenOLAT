@@ -368,7 +368,7 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 			List<PriceMethod> types = new ArrayList<PriceMethod>();
 			if (entry.isMembersOnly()) {
 				// members only always show lock icon
-				types.add(new PriceMethod("", "b_access_membersonly_icon"));
+				types.add(new PriceMethod("", "o_ac_membersonly_icon"));
 				if(isMember) {
 					startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.LINK);
 				}

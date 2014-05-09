@@ -56,7 +56,7 @@ import org.olat.resource.accesscontrol.ui.FormController;
 public class FreeAccessHandler implements AccessMethodHandler {
 	
 	public static final String METHOD_TYPE = "free.method";
-	public static final String METHOD_CSS_CLASS = "b_access_method_free";
+	public static final String METHOD_CSS_CLASS = "o_ac_free";
 
 	@Override
 	public boolean isPaymentMethod() {

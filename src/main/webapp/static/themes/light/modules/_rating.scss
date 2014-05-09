@@ -4,6 +4,7 @@
 		font-size: 75%;	
 	}
 	.o_rating_items {
+		white-space: nowrap;	
 		.o_icon {
 			color:$brand-warning;
 			&:hover {

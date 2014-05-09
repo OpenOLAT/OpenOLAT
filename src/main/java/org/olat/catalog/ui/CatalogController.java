@@ -872,7 +872,7 @@ public class CatalogController extends BasicController implements Activateable2 
 				List<PriceMethod> types = new ArrayList<PriceMethod>();
 				if (entry.getRepositoryEntry().isMembersOnly()) {
 					// members only always show lock icon
-					types.add(new PriceMethod("", "b_access_membersonly_icon"));
+					types.add(new PriceMethod("", "o_ac_membersonly_icon"));
 				} else {
 					// collect access control method icons
 					OLATResource resource = entry.getRepositoryEntry().getOlatResource();

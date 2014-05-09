@@ -76,7 +76,7 @@
 						<tr class="b_table_odd">
 					#end	
 						<td>
-							<div class="b_clearfix">
+							<div class="clearfix">
 								#if ($canRemoveAllLinks || $hasOwnedLinks)
 									#if($canRemoveAllLinks || $ownedLinks.contains($child))
 									  <a href="$r.commandURIbg("edit.leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_float_right">$r.translate("edit")</a>
@@ -88,9 +88,9 @@
 								#if($r.get("ac_$ri"))
 									#foreach($ac_type in $r.get("ac_$ri"))
 										#if($ac_type.price && $ac_type.price.length() > 0)
-											<span class='b_float_right b_with_small_icon_left $ac_type.type'>$ac_type.price</span>
+											<span class='o_nowrap'><i class='o_icon $ac_type.type o_icon-lg'></i> $ac_type.price</span>
 										#else
-											<span class='b_float_right b_small_icon $ac_type.type'></span>
+											<i class='o_icon $ac_type.type o_icon-lg'></i>
 										#end
 									#end
 								#end

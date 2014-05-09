@@ -49,13 +49,13 @@ public class RepositoryEntryACColumnDescriptor implements CustomCellRenderer {
 			for(Object accessType:accessTypes) {
 				if(accessType instanceof String) {
 					String type = (String)accessType;
-					sb.append("<span class='b_small_icon ").append(type).append("_icon b_access_method'>").append("</span>");
+					sb.append("<i class='o_icon ").append(type).append("_icon o_icon-lg'></i>");
 				}
 			}
 		} else if(val instanceof Boolean) {
 			boolean acessControlled = ((Boolean)val).booleanValue();
 			if(acessControlled) {
-				sb.append("<span class='b_small_icon b_group_accesscontrolled b_access_method'>").append("</span>");
+				sb.append("<i class='o_icon o_ac_group_icon o_icon-lg'></i>");
 			}
 		} else if (val instanceof OLATResourceAccess) {
 			OLATResourceAccess access = (OLATResourceAccess)val;
@@ -63,10 +63,10 @@ public class RepositoryEntryACColumnDescriptor implements CustomCellRenderer {
 				Price price = bundle.getPrice();
 				String type = bundle.getMethod().getMethodCssClass();
 				if(price == null || price.isEmpty()) {
-					sb.append("<span class='b_small_icon ").append(type).append("_icon b_access_method'>").append("</span>");
+					sb.append("<i class='o_icon ").append(type).append("_icon o_icon-lg'></i>");				
 				} else {
 					String p = PriceFormat.fullFormat(price);
-					sb.append("<span class='b_with_small_icon_left ").append(type).append("_icon b_access_method'>").append(p).append("</span>");
+					sb.append("<span class='o_nowrap'><i class='o_icon ").append(type).append("_icon o_icon-lg'></i> ").append(p).append("</span>");				
 				}
 			}
 		}

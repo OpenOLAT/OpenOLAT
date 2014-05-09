@@ -7,12 +7,15 @@
 		#end	
 	</div>
 	<div class="o_meta">
+		<div class="o_go_xs visible-xs">
+			<i class=" o_icon o_icon_start o_icon-lg"></i>
+		</div>
 		<h3 class="o_title">$r.render($row.getSelectLinkName())</h3>
 		#if($row.authors)
 			<div class="o_author"><span class="text-muted">$r.translate("course.made.by")</span> $row.authors</div>
 		#end
 		#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleStart || $row.lifecycleEnd)
-			<div class="o_lifecycle">
+			<div class="o_lifecycle #if ($row.isActive()) o_active #end">
 				<i class="o_icon o_icon_lifecycle"></i>
 				#if($row.lifecycle) $row.lifecycle #end
 				#if($row.lifecycleSoftKey) $row.lifecycleSoftKey #end
@@ -25,44 +28,81 @@
 		</div>
 		<div class="o_bookmark">$r.render($row.markLinkName)</div>
 	</div>
-	<div class="o_access">
-		<div class=""> ##FIXME:OO10 hidden for now until more CSS is fixed
-			#if($r.get("ac_$item.key"))
-				#foreach($ac_type in $r.get("ac_$item.key"))
-					#if($ac_type.price && $ac_type.price.length() > 0)
-						<span class='b_float_right b_with_small_icon_left $ac_type.type'>$ac_type.price</span>
-					#else
-						<span class='b_float_right b_small_icon $ac_type.type'></span>
-					#end
+	<div class="o_access container">
+		#if($r.get("ac_$row.key"))
+			#foreach($ac_type in $r.get("ac_$row.key"))
+				#if($ac_type.price && $ac_type.price.length() > 0)
+					<span class="o_nowrap"><i class='o_icon $ac_type.type o_icon-lg'></i> $ac_type.price</span>
+				#else
+					<i class='o_icon $ac_type.type o_icon-lg'></i>
 				#end
-				$r.render($row.getSelectLinkName())
 			#end
+			$r.render($row.getSelectLinkName())
+		#end
 
-			#if($row.passed)
-				<div class="o_state">$r.translate("passed.true")</div>
-			#elseif($item.failed)
-				<div class="o_state">$r.translate("passed.false")</div>
-			#end
+		#if($row.isMember() || $row.getVisit() > 0)
+			<div class="o_state row">
+				<div class="o_label">
+					$r.translate("details.label.status"):
+				</div>
 
+				#if($row.passed)
+				<div class="o_passed">
+					<i class="o_icon o_icon_passed"></i>
+					$r.translate("passed.true")
+				</div>
+				#elseif($row.failed)
+				<div class="o_failed">
+					<i class="o_icon o_icon_failed"></i>
+					$r.translate("passed.false")
+				</div>
+				#else
+				<div class="o_unknown">$r.translate("passed.unknown")</div>			
+				#end
+			</div>
+		
 			#if($row.score) 
-			<div class="o_score">$row.score</div> 
+			<div class="o_score row">
+				<div class="o_label">
+					$r.translate("details.label.score"):
+				</div>
+				<div class="o_points">
+					$row.score
+				</div>							
+			</div> 
 			#end
 
 			#if($row.recentLaunch)
-				<div class="o_recent">$r.formatDateAndTime($row.recentLaunch)</div>
+			<div class="o_recent row">
+				<div class="o_label">
+					$r.translate("details.label.recent"):
+				</div>
+				<div class="o_date">
+					$r.formatDateAndTime($row.recentLaunch)
+				</div>							
+			</div> 
 			#end
 			
-			#if($row.accessTypes)
+		#end
+		
+		#if($row.accessTypes && !$row.isMember())
+		<div class="o_bookings row">
+			<div class="o_label">
 				$r.translate("details.orders"):
+			</div>
+			<div class="o_methods">
 				#foreach($type in $row.accessTypes)
-					<span class="$type.type b_access_method">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+					<i class="o_icon $type.type o_icon-lg"></i>
 				#end
-			#end
-			
+			</div>							
+		</div> 
+		#end
+		
+		<div class="o_social row">
 			$r.render($row.ratingFormItemName)
 			$r.render($row.commentsLinkName)
-
 		</div>
+		
 		$r.render($row.getDetailsLinkName())
 		$r.render($row.getStartLinkName())
 	</div>	

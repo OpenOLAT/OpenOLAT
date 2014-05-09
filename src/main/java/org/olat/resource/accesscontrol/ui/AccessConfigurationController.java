@@ -134,7 +134,7 @@ public class AccessConfigurationController extends FormBasicController {
 				String title = handler.getMethodName(getLocale());
 				FormLink add = uifactory.addFormLink("create." + handler.getType(), title, null, formLayout, Link.LINK | Link.NONTRANSLATED);
 				add.setUserObject(method);
-				add.setCustomEnabledLinkCSS(("b_with_small_icon_left " + method.getMethodCssClass() + "_icon").intern());
+				add.setIconLeftCSS((method.getMethodCssClass() + "_icon").intern());
 				addMethods.add(add);
 				formLayout.add(add.getName(), add);
 			}
