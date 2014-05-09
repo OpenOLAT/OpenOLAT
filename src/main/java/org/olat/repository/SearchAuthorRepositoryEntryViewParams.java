@@ -32,10 +32,14 @@ import org.olat.core.id.Roles;
  *
  */
 public class SearchAuthorRepositoryEntryViewParams {
-	private Identity identity;
-	private Roles roles;
+	private final Identity identity;
+	private final Roles roles;
 	
 	private Boolean marked;
+	
+	private String idAndRefs;
+	private String author;
+	private String displayname;
 	
 	private OrderBy orderBy;
 	private List<Filter> filters;
@@ -45,6 +49,30 @@ public class SearchAuthorRepositoryEntryViewParams {
 	public SearchAuthorRepositoryEntryViewParams(Identity identity, Roles roles) {
 		this.identity = identity;
 		this.roles = roles;
+	}
+
+	public String getIdAndRefs() {
+		return idAndRefs;
+	}
+
+	public void setIdAndRefs(String idAndRefs) {
+		this.idAndRefs = idAndRefs;
+	}
+
+	public String getAuthor() {
+		return author;
+	}
+
+	public void setAuthor(String author) {
+		this.author = author;
+	}
+
+	public String getDisplayname() {
+		return displayname;
+	}
+
+	public void setDisplayname(String displayname) {
+		this.displayname = displayname;
 	}
 
 	public List<Long> getRepoEntryKeys() {

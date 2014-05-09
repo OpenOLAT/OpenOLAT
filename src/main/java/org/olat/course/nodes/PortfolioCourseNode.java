@@ -94,7 +94,7 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			MSCourseNode.initDefaultConfig(config);
-	    config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
+			config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
 		} 
 		if (config.getConfigurationVersion() < 2) {
 			if(config.get(PortfolioCourseNodeConfiguration.REPO_SOFT_KEY) == null) {
@@ -105,7 +105,7 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 					config.set(PortfolioCourseNodeConfiguration.REPO_SOFT_KEY, re.getSoftkey());
 				}
 			}
-	    config.setConfigurationVersion(2);
+			config.setConfigurationVersion(2);
 		}
 	}
 	
@@ -421,8 +421,7 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 
 	@Override
 	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
-		File importSubdir = new File(importDirectory, getIdent());
-		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importSubdir);
+		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
 		if (rie.anyExportedPropertiesAvailable()) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(EPTemplateMapResource.TYPE_NAME);
 			RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),

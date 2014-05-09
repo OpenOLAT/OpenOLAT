@@ -44,11 +44,8 @@ public class SharedFolderFileResource extends FileResource {
 	 */
 	public static final String RESOURCE_NAME = "-";
 
-	/**
-	 * Standard constructor.
-	 */
 	public SharedFolderFileResource() {
-		super.setTypeName(TYPE_NAME);
+		super(TYPE_NAME);
 	}
 
 	/**

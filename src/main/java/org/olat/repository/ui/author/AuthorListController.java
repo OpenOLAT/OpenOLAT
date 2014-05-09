@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
@@ -56,6 +55,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.ui.author.AuthoringEntryDataModel.Cols;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -69,17 +69,18 @@ public class AuthorListController extends FormBasicController implements Activat
 	private AuthoringEntryDataModel model;
 	private AuthoringEntryDataSource dataSource;
 	private final SearchAuthorRepositoryEntryViewParams searchParams;
-	private final MarkManager markManager;
 	private final TooledStackedPanel stackPanel;
 
 	private AuthorSearchController searchCtrl;
 	private AuthoringEntryDetailsController detailsCtrl;
 	
+	@Autowired
+	private MarkManager markManager;
+	
 	public AuthorListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			SearchAuthorRepositoryEntryViewParams searchParams) {
 		super(ureq, wControl, "repoentry_table");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
-		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 
 		this.stackPanel = stackPanel;
 		this.searchParams = searchParams;
@@ -196,6 +197,9 @@ public class AuthorListController extends FormBasicController implements Activat
 			searchParams.setResourceTypes(null);
 		}
 
+		searchParams.setIdAndRefs(se.getId());
+		searchParams.setAuthor(se.getAuthor());
+		searchParams.setDisplayname(se.getDisplayname());
 		tableEl.reset();
 	}
 	

@@ -73,6 +73,8 @@ public class RepositoryEntryAuthorViewImpl implements RepositoryEntryAuthorView 
 	@Column(name="re_authors", nullable=false, insertable=false, updatable=false)
 	private String authors;
 	
+	@Column(name="re_softkey", nullable=false, insertable=false, updatable=false)
+	private String softkey;
 	@Column(name="re_external_id", nullable=false, insertable=false, updatable=false)
 	private String externalId;
 	@Column(name="re_external_ref", nullable=false, insertable=false, updatable=false)
@@ -147,7 +149,11 @@ public class RepositoryEntryAuthorViewImpl implements RepositoryEntryAuthorView 
 	public String getDescription() {
 		return description;
 	}
-	
+
+	public String getSoftkey() {
+		return softkey;
+	}
+
 	@Override
 	public String getExternalId() {
 		return externalId;

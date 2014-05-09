@@ -29,6 +29,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.SearchAuthorRepositoryEntryViewParams;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,6 +107,23 @@ public class RepositoryEntryAuthorViewQueries {
 		if(params.getMarked() != null) {
 			sb.append(" and v.markKey ").append(params.getMarked().booleanValue() ? " is not null " : " is null ");
 		}
+		Long id = null;
+		String refs = null;
+		if(StringHelper.containsNonWhitespace(params.getIdAndRefs())) {
+			refs = params.getIdAndRefs();
+			if(StringHelper.isLong(refs)) {
+				try {
+					id = Long.parseLong(refs);
+				} catch (NumberFormatException e) {
+					//
+				}
+			}
+			sb.append(" and (v.externalId=:ref or v.externalRef=:ref or v.softkey=:ref");
+			if(id != null) {
+				sb.append(" or v.key=:vKey)");
+			}
+			sb.append(")");	
+		}
 		
 		TypedQuery<T> dbQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), type);
@@ -117,6 +135,12 @@ public class RepositoryEntryAuthorViewQueries {
 		}
 		if(params.isLifecycleFilterDefined()) {
 			dbQuery.setParameter("now", new Date());
+		}
+		if(id != null) {
+			dbQuery.setParameter("vKey", id);
+		}
+		if(refs != null) {
+			dbQuery.setParameter("ref", refs);
 		}
 		dbQuery.setParameter("identityKey", identity.getKey());
 		return dbQuery;

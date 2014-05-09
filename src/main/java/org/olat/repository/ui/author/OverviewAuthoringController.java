@@ -55,6 +55,7 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -79,8 +80,11 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	private Dropdown createDropdown;
 	private Link importLink;
 	
-	private final UserManager userManager;
-
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
+	
 	public OverviewAuthoringController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
@@ -95,11 +99,11 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		importLink = LinkFactory.createLink("cmd.import.ressource", getTranslator(), this);
 		importLink.setDomReplacementWrapperRequired(false);
 		
-		Set<String> types = RepositoryHandlerFactory.getSupportedTypes();
+		Set<String> types = repositoryHandlerFactory.getSupportedTypes();
 
 		createDropdown = new Dropdown("cmd.create.ressource", "cmd.create.ressource", false, getTranslator());
 		for(String type:types) {
-			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(type);
+			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
 			if(handler != null && handler.isCreate()) {
 				addCreateLink(handler, createDropdown);
 			}

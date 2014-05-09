@@ -338,7 +338,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 					StringBuilder sb = new StringBuilder(translate("error.launch"));
 					sb.append(": No launcher for repository entry: ");
 					sb.append(repositoryEntry.getKey());
-					throw new OLATRuntimeException(RepositoryDetailsController.class, sb.toString(), null);
+					throw new OLATRuntimeException(ReferencableEntriesSearchController.class, sb.toString(), null);
 				}
 				// do skip the increment launch counter, this is only a preview!
 				removeAsListenerAndDispose(previewCtr);

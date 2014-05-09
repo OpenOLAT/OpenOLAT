@@ -39,10 +39,9 @@ public class XlsFileResource extends FileResource {
 	 */
 	public static final String TYPE_NAME = "FileResource.XLS";
 
-	/**
-	 * Standard constructor.
-	 */
-	public XlsFileResource() { super.setTypeName(TYPE_NAME); }
+	public XlsFileResource() {
+		super(TYPE_NAME);
+	}
 	
 	/**
 	 * @param f

@@ -39,10 +39,9 @@ public class SoundFileResource extends FileResource {
 	 */
 	public static final String TYPE_NAME = "FileResource.SOUND";
 
-	/**
-	 * Standard constructor.
-	 */
-	public SoundFileResource() { super.setTypeName(TYPE_NAME); }
+	public SoundFileResource() {
+		super(TYPE_NAME);
+	}
 	
 	/**
 	 * @param f

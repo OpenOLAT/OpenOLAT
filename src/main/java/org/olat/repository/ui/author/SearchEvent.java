@@ -32,11 +32,9 @@ public class SearchEvent  extends Event implements StateEntry {
 
 	private static final long serialVersionUID = -1222660688926846838L;
 	
-	private Long id;
+	private String id;
 	private String displayname;
 	private String author;
-	private String externalId;
-	private String externalRef;
 	private String type;
 	
 	public SearchEvent() {
@@ -44,11 +42,11 @@ public class SearchEvent  extends Event implements StateEntry {
 	}
 
 	
-	public Long getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
@@ -68,22 +66,6 @@ public class SearchEvent  extends Event implements StateEntry {
 		this.author = author;
 	}
 
-	public String getExternalId() {
-		return externalId;
-	}
-
-	public void setExternalId(String externalId) {
-		this.externalId = externalId;
-	}
-
-	public String getExternalRef() {
-		return externalRef;
-	}
-
-	public void setExternalRef(String externalRef) {
-		this.externalRef = externalRef;
-	}
-
 	public String getType() {
 		return type;
 	}
@@ -91,7 +73,6 @@ public class SearchEvent  extends Event implements StateEntry {
 	public void setType(String type) {
 		this.type = type;
 	}
-
 
 	@Override
 	public SearchEvent clone() {

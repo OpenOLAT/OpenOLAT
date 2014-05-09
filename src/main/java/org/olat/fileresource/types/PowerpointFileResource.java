@@ -39,10 +39,9 @@ public class PowerpointFileResource extends FileResource {
 	 */
 	public static final String TYPE_NAME = "FileResource.PPT";
 
-	/**
-	 * Standard constructor.
-	 */
-	public PowerpointFileResource() { super.setTypeName(TYPE_NAME); }
+	public PowerpointFileResource() {
+		super(TYPE_NAME);
+	}
 	
 	/**
 	 * @param f

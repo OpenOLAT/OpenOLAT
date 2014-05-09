@@ -177,7 +177,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		File uploadedFile = uploadFileEl.getUploadFile();
 		String uploadedFilename = uploadFileEl.getUploadFileName();
 		
-		for(String type:RepositoryHandlerFactory.getSupportedTypes()) {
+		for(String type:RepositoryHandlerFactory.getInstance().getSupportedTypes()) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(type);
 			ResourceEvaluation eval = handler.acceptImport(uploadedFile, uploadedFilename);
 			if(eval != null && eval.isValid()) {

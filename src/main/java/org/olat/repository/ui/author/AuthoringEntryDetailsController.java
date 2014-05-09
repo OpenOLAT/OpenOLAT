@@ -23,9 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
-import org.olat.core.CoreSpringFactory;
+import org.olat.catalog.ui.CatalogEntryAddController;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
@@ -47,30 +48,51 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
+import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.CorruptedCourseException;
+import org.olat.course.CourseModule;
+import org.olat.course.run.RunMainController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.RepositoyUIFactory;
+import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.RepositoryMembersController;
+import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.PriceMethod;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OfferAccess;
 import org.olat.resource.accesscontrol.model.Price;
+import org.olat.resource.accesscontrol.ui.OrdersAdminController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -81,50 +103,173 @@ import org.olat.resource.accesscontrol.ui.PriceFormat;
 public class AuthoringEntryDetailsController extends FormBasicController {
 	
 	private FormLink markLink, startLink;
+	
 	private Link editLink;
+	private Link downloadLink, downloadCompatLink, bookmarkLink, catalogLink;
+	private Link launchLink, editSettingsLink, membersLink, copyLink, deleteLink, closeLink, orderLink;
 	
 	private CloseableModalController cmc;
+	private WizardCloseResourceController wc;
+	private OrdersAdminController ordersCtlr;
+	private Controller catalogAdddController;
 	private UserCommentsController commentsCtrl;
+	private DialogBoxController deleteDialogCtrl;
 	private AuthoringEditEntryController editCtrl;
+	private RepositoryMembersController membersEditController;
 	
 	private final TooledStackedPanel stackPanel;
 	
+	private boolean corrupted;
 	private final RepositoryEntry entry;
 	private final AuthoringEntryRow row;
 
-	private final ACService acService;
-	private final MarkManager markManager;
-	private final CatalogManager catalogManager;
-	private final RepositoryService repositoryService;
-	private final BusinessGroupService businessGroupService;
+	@Autowired
+	private ACService acService;
+	@Autowired
+	private MarkManager markManager;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private CatalogManager catalogManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryModule repositoryModule;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	private String baseUrl;
+	private final boolean isOwner;
+	private final boolean isAuthor;
+	private final boolean isOlatAdmin;
+	private final boolean isGuestOnly;
+	private LockResult lockResult;
 	
 	public AuthoringEntryDetailsController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel stackPanel, AuthoringEntryRow row) {
 		super(ureq, wControl, "details");
-		
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 
-		acService = CoreSpringFactory.getImpl(ACService.class);
-		markManager = CoreSpringFactory.getImpl(MarkManager.class);
-		catalogManager = CoreSpringFactory.getImpl(CatalogManager.class);
-		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		
 		this.stackPanel = stackPanel;
 		this.row = row;
 		entry = repositoryService.loadByKey(row.getKey());
 		
+		Identity identity = getIdentity();
+		Roles roles = ureq.getUserSession().getRoles();
+		isOlatAdmin = roles.isOLATAdmin();
+		boolean isInstitutionalResourceManager = !roles.isGuestOnly()
+					&& RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, entry);
+		isOwner = isOlatAdmin || repositoryService.hasRole(ureq.getIdentity(), entry, GroupRoles.owner.name())
+					| isInstitutionalResourceManager;
+		isAuthor = isOlatAdmin || roles.isAuthor() | isInstitutionalResourceManager;
+		isGuestOnly = roles.isGuestOnly();
+
 		initForm(ureq);
 		
 		if(stackPanel != null) {
 			String displayName = row.getDisplayname();
 			stackPanel.pushController(displayName, this);
-			
-			editLink = LinkFactory.createToolLink("edit", "Edit", this);
-			stackPanel.addTool(editLink, false);
+			initToolbar(ureq);
 		}
+	}
+	
+	
+	private void initToolbar(UserRequest ureq) {
+		// init handler details
+		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(entry);
+	
+		launchLink = LinkFactory.createToolLink("launch", translate("details.launch"), this, "o_sel_repo_launch");
+		launchLink.setEnabled(checkIsRepositoryEntryLaunchable(ureq) && !corrupted);
+		stackPanel.addTool(launchLink, false);
+
+		if (!isGuestOnly) {
+			boolean canDownload = entry.getCanDownload() && handler.supportsDownload(entry);
+			// disable download for courses if not author or owner
+			if (entry.getOlatResource().getResourceableTypeName().equals(CourseModule.getCourseTypeName()) && !(isOwner || isAuthor)) {
+				canDownload = false;
+			}
+			// always enable download for owners
+			if (isOwner && handler.supportsDownload(entry)) {
+				canDownload = true;
+			}
+
+			downloadLink = LinkFactory.createToolLink("download", translate("details.download"), this, "o_sel_repo_download");
+			downloadLink.setEnabled(canDownload && !corrupted);
+			downloadCompatLink = LinkFactory.createToolLink("downloadcompat", translate("details.download.compatible"), this, "o_sel_repo_download_backward");
+			downloadCompatLink.setEnabled(canDownload && !corrupted
+					&& "CourseModule".equals(entry.getOlatResource().getResourceableTypeName()));
+			
+			boolean marked = markManager.isMarked(entry, getIdentity(), null);
+			String css = marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE;
+			bookmarkLink = LinkFactory.createToolLink("downloadcompat", translate("details.bookmark"), this, css);
+			bookmarkLink.setEnabled(!corrupted);
+
+			stackPanel.addTool(downloadLink, false);
+			stackPanel.addTool(downloadCompatLink, false);
+			stackPanel.addTool(bookmarkLink, false);
+		}
+
+		if (isAuthor || isOwner) {
+			if (isOwner) {
+				editLink = LinkFactory.createToolLink("edit", translate("details.openeditor"), this, "o_sel_repo_edit_descritpion");
+				boolean editManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.editcontent);
+				editLink.setEnabled(handler.supportsEdit(entry) && !corrupted && !editManaged);
+				stackPanel.addTool(editLink, false);
+				
+				editSettingsLink = LinkFactory.createToolLink("editdesc", translate("details.chprop"), this, "o_sel_repor_edit_properties");
+				editSettingsLink.setEnabled(!corrupted);
+				stackPanel.addTool(editLink, false);
+		
+				if(repositoryModule.isCatalogEnabled()) {
+					catalogLink = LinkFactory.createToolLink("cat", translate("details.catadd"), this, "o_sel_repo_add_to_catalog");
+					catalogLink.setEnabled(!corrupted && (entry.getAccess() >= RepositoryEntry.ACC_USERS || entry.isMembersOnly()));
+					stackPanel.addTool(catalogLink, false);
+				}
+
+				boolean closeManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.close);
+				if ((OresHelper.isOfType(entry.getOlatResource(), CourseModule.class))
+						&& !closeManaged
+						&& (!RepositoryManager.getInstance().createRepositoryEntryStatus(entry.getStatusCode()).isClosed())) {
+					
+					closeLink = LinkFactory.createToolLink("close", translate("details.close.ressoure"), this, "o_sel_repo_close_resource");
+					closeLink.setEnabled(!corrupted);
+					stackPanel.addTool(closeLink, false);
+				}
+			}
+		
+			if(isAuthor) {	
+				copyLink = LinkFactory.createToolLink("close", translate("details.copy"), this, "o_sel_repo_copy");
+				boolean copyManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.copy);
+				copyLink.setEnabled((isOwner || entry.getCanCopy()) && !corrupted && !copyManaged);
+				stackPanel.addTool(copyLink, false);
+			}
+			
+			if (isOwner) {
+				deleteLink = LinkFactory.createToolLink("delete", translate("details.delete"), this, "o_sel_repo_delete");
+				boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete);
+				deleteLink.setEnabled(!corrupted && !deleteManaged);
+				
+				membersLink = LinkFactory.createToolLink("close", translate("details.copy"), this, "o_sel_repo_members");
+				membersLink.setEnabled(!corrupted);
+				
+				orderLink = LinkFactory.createToolLink("order", translate("details.orders"), this, "o_sel_repo_booking");
+				boolean booking = acService.isResourceAccessControled(entry.getOlatResource(), null);
+				orderLink.setEnabled(!corrupted && booking);
+			}
+		}
+	}
+	
+	private boolean checkIsRepositoryEntryLaunchable(UserRequest ureq) {
+		RepositoryHandler type = repositoryHandlerFactory.getRepositoryHandler(entry);
+		if (repositoryManager.isAllowedToLaunch(ureq, entry) ||
+				(type.supportsLaunch(entry) && ureq.getUserSession().getRoles().isOLATAdmin())) {
+			return true;
+		}
+		return false;
 	}
 	
 	private void setText(String text, String key, FormLayoutContainer layoutCont) {
@@ -261,23 +406,91 @@ public class AuthoringEntryDetailsController extends FormBasicController {
 			
 		} else if(cmc == source) {
 			cleanUp();
+		} else if (source == wc) {
+			if (event == Event.CANCELLED_EVENT) {
+				cmc.deactivate();
+			} else if (event == Event.DONE_EVENT) {
+				cmc.deactivate();
+				updateView(ureq);
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+		} else if (source == editCtrl) {
+			if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				// RepositoryEntry changed
+
+				updateView(ureq);
+			} else if (event == Event.CANCELLED_EVENT) {
+				
+			}
+			cleanUp();
+		} else if (source == deleteDialogCtrl){
+			if (DialogBoxUIFactory.isYesEvent(event)){
+				deleteRepositoryEntry(ureq, getWindowControl());
+			}	
+		} else if (source == catalogAdddController) {
+			// finish modal dialog and reload categories list controller
+			cmc.deactivate();
+			updateCategoriesTableC(ureq);
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void updateView(UserRequest ureq) {
+		
+	}
+	
+	private void updateCategoriesTableC(UserRequest ureq) {
+		
 	}
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if(editLink == source) {
+		if (downloadLink == source) { 
+			doDownload(ureq, false);
+		} else if (downloadCompatLink == source) {
+			doDownload(ureq, true);
+		} else if (launchLink == source) {
+			launch(ureq);
+		} else if (editLink == source) {
 			doEdit(ureq);
+		} else if (editSettingsLink == source) {
+			doEditSettings(ureq);
+		} else if (catalogLink == source) {
+			if(repositoryModule.isCatalogEnabled()) {
+				doAddCatalog(ureq);
+			}
+		} else if (bookmarkLink == source) {
+			String css = doMark() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE;
+			bookmarkLink.setElementCssClass(css);
+		} else if (membersLink == source) { // membership
+			doOpenMembers(ureq);
+		} else if (orderLink == source) {
+			doOrders(ureq);
+		} else if (closeLink == source) {
+			doCloseResource(ureq);
+		} else if (deleteLink == source) { // delete
+			if (!isOwner) throw new OLATSecurityException("Trying to delete, but not allowed: user = " + ureq.getIdentity());
+			doDelete(ureq);
 		}
 		super.event(ureq, source, event);
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(catalogAdddController);
+		removeAsListenerAndDispose(membersEditController);
+		removeAsListenerAndDispose(deleteDialogCtrl);
 		removeAsListenerAndDispose(commentsCtrl);
+		removeAsListenerAndDispose(ordersCtlr);
+		removeAsListenerAndDispose(editCtrl);
 		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(wc);
+		catalogAdddController = null;
+		deleteDialogCtrl = null;
 		commentsCtrl = null;
+		ordersCtlr = null;
+		editCtrl = null;
 		cmc = null;
+		wc = null;
 	}
 
 	@Override
@@ -294,7 +507,7 @@ public class AuthoringEntryDetailsController extends FormBasicController {
 			} else if("comments".equals(cmd)) {
 				doOpenComments(ureq);
 			} else if("start".equals(cmd)) {
-				doStart(ureq);
+				launch(ureq);
 			} else if("group".equals(cmd)) {
 				Long groupKey = (Long)link.getUserObject();
 				doOpenGroup(ureq, groupKey);
@@ -302,17 +515,91 @@ public class AuthoringEntryDetailsController extends FormBasicController {
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
+
+	private void doCloseResource(UserRequest ureq) {
+		RepositoryHandler repoHandler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
+
+		removeAsListenerAndDispose(wc);
+		wc = repoHandler.createCloseResourceController(ureq, getWindowControl(), entry);
+		listenTo(wc);
+		
+		wc.startWorkflow();
+		
+		removeAsListenerAndDispose(cmc);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), wc.getInitialComponent());
+		listenTo(cmc);
+		
+		cmc.activate();
+	}
 	
-	public void doEdit(UserRequest ureq) {
+	private void doDelete(UserRequest ureq) {
+		//show how many users are currently using this resource
+
+		String dialogTitle = translate("del.header", entry.getDisplayname());
+		OLATResourceable courseRunOres = OresHelper.createOLATResourceableInstance(RunMainController.ORES_TYPE_COURSE_RUN, entry.getOlatResource().getResourceableId());
+		int cnt = CoordinatorManager.getInstance().getCoordinator().getEventBus().getListeningIdentityCntFor(courseRunOres);
+		
+		String dialogText = translate(corrupted ? "del.confirm.corrupted" : "del.confirm", String.valueOf(cnt));
+		deleteDialogCtrl = activateYesNoDialog(ureq, dialogTitle, dialogText, deleteDialogCtrl);
+	}
+	
+	private void doDownload(UserRequest ureq, boolean backwardsCompatible) {
+		RepositoryHandler typeToDownload = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
+		if (typeToDownload == null) {
+			StringBuilder sb = new StringBuilder(translate("error.download"));
+			sb.append(": No download handler for repository entry: ")
+			  .append(entry.getKey());
+			showError(sb.toString());
+			return;
+		}
+		OLATResource ores = entry.getOlatResource();
+		if (ores == null) {
+			showError("error.download");
+			return;
+		}
+		
+		boolean isAlreadyLocked = typeToDownload.isLocked(ores);
+		try {			
+		  lockResult = typeToDownload.acquireLock(ores, ureq.getIdentity());
+		  if(lockResult == null || (lockResult !=null && lockResult.isSuccess() && !isAlreadyLocked)) {
+		    MediaResource mr = typeToDownload.getAsMediaResource(ores, backwardsCompatible);
+		    if(mr!=null) {
+		      repositoryService.incrementDownloadCounter(entry);
+		      ureq.getDispatchResult().setResultingMediaResource(mr);
+		    } else {
+			    showError("error.export");
+			    fireEvent(ureq, Event.FAILED_EVENT);			
+		    }
+		  } else if(lockResult !=null && lockResult.isSuccess() && isAlreadyLocked) {
+		  	String fullName = userManager.getUserDisplayName(lockResult.getOwner());
+		  	showInfo("warning.course.alreadylocked.bySameUser", fullName);
+		  	lockResult = null; //invalid lock, it was already locked
+		  } else {
+		  	String fullName = userManager.getUserDisplayName(lockResult.getOwner());
+		  	showInfo("warning.course.alreadylocked", fullName);
+		  }
+		} finally {	
+			if((lockResult!=null && lockResult.isSuccess() && !isAlreadyLocked)) {
+			  typeToDownload.releaseLock(lockResult);		
+			  lockResult = null;
+			}
+		}
+	}
+	
+	private void doEdit(UserRequest ureq) {
+		String businessPath = "[RepositoryEntry:" + entry.getKey() + "][Editor:0]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+	
+	/**
+	 * Open the editor for all repository entry metadata, access control...
+	 * @param ureq
+	 */
+	private void doEditSettings(UserRequest ureq) {
 		removeAsListenerAndDispose(editCtrl);
 
 		editCtrl = new AuthoringEditEntryController(ureq, getWindowControl(), stackPanel, row);
 		listenTo(editCtrl);
-	}
-	
-	private void doStart(UserRequest ureq) {
-		String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
-		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
 	private void doOpenCategory(UserRequest ureq, Long categoryKey) {
@@ -347,5 +634,63 @@ public class AuthoringEntryDetailsController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), "close", commentsCtrl.getInitialComponent(), true, translate("comments"));
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doOpenMembers(UserRequest ureq) {
+		if (!isOwner) throw new OLATSecurityException("Trying to access groupmanagement, but not allowed: user = " + getIdentity());
+		if(membersEditController != null) return;
+		
+		membersEditController = new RepositoryMembersController(ureq, getWindowControl(), entry);
+		listenTo(membersEditController);
+		CloseableModalController cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				membersEditController.getInitialComponent(), true, translate("details.members"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doOrders(UserRequest ureq) {
+		if(ordersCtlr != null) return;
+
+		ordersCtlr = new OrdersAdminController(ureq, getWindowControl(), entry.getOlatResource());
+		listenTo(ordersCtlr);
+
+		removeAsListenerAndDispose(cmc);
+		CloseableModalController cmc = new CloseableModalController(getWindowControl(), translate("close"), ordersCtlr.getInitialComponent());
+		listenTo(cmc);
+		
+		cmc.activate();
+	}
+	
+	private void launch(UserRequest ureq) {
+		try {
+			String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		} catch (CorruptedCourseException e)  {
+			logError("", e);
+		}
+	}
+	
+	/**
+	 * Internal helper to initiate the add to catalog workflow
+	 * @param ureq
+	 */
+	private void doAddCatalog(UserRequest ureq) {
+		if(catalogAdddController != null) return;
+
+		catalogAdddController = new CatalogEntryAddController(ureq, getWindowControl(), entry, true, false);
+		listenTo(catalogAdddController);
+		cmc = new CloseableModalController(getWindowControl(), "close",
+				catalogAdddController.getInitialComponent(), true, translate("details.catadd"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void deleteRepositoryEntry(UserRequest ureq, WindowControl wControl) {
+		if (RepositoryManager.getInstance().deleteRepositoryEntryWithAllData( ureq, wControl, entry) ) {
+			fireEvent(ureq, new EntryChangedEvent(entry, EntryChangedEvent.DELETED));
+			showInfo("info.entry.deleted");
+		} else {
+			showInfo("info.could.not.delete.entry");
+		}
 	}
 }

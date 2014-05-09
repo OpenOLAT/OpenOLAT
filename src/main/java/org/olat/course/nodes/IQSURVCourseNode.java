@@ -271,10 +271,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 		}
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#exportNode(java.io.File,
-	 *      org.olat.course.ICourse)
-	 */
+	@Override
 	public void exportNode(File exportDirectory, ICourse course) {
 		String repositorySoftKey = (String) getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 		if (repositorySoftKey == null) return; // nothing to export
@@ -293,13 +290,13 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 
 	@Override
 	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
-		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(SurveyFileResource.TYPE_NAME);
-		
-		File importSubdir = new File(importDirectory, getIdent());
-		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importSubdir);
-		RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
+		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
+		if(rie.anyExportedPropertiesAvailable()) {
+			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(SurveyFileResource.TYPE_NAME);
+			RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
 				locale, rie.importGetExportedFile(), null);
-		IQEditController.setIQReference(re, getModuleConfiguration());
+			IQEditController.setIQReference(re, getModuleConfiguration());
+		}
 	}
 
 	@Override

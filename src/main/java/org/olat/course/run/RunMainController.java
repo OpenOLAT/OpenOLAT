@@ -140,7 +140,6 @@ import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
-import org.olat.repository.controllers.RepositoryDetailsController;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.repository.ui.list.RepositoryEntryRow;
 import org.olat.resource.OLATResource;
@@ -1385,7 +1384,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			} catch (OLATSecurityException e) {
 				//the wrong link to the wrong person
 			}
-		} else if("Editor".equalsIgnoreCase(type) || RepositoryDetailsController.ACTIVATE_EDITOR.equalsIgnoreCase(type)) {
+		} else if("Editor".equalsIgnoreCase(type) || "activateEditor".equalsIgnoreCase(type)) {
 			// Nothing to do if already in editor. Can happen when editor is
 			// triggered externally, e.g. from the details page while user has
 			// the editor already open

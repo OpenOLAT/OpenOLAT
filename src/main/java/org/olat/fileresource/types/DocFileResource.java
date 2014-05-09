@@ -39,10 +39,9 @@ public class DocFileResource extends FileResource {
 	 */
 	public static final String TYPE_NAME = "FileResource.DOC";
 
-	/**
-	 * Standard constructor.
-	 */
-	public DocFileResource() { super.setTypeName(TYPE_NAME); }
+	public DocFileResource() {
+		super(TYPE_NAME);
+	}
 	
 	/**
 	 * @param f

@@ -291,13 +291,13 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
-		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(ImsCPFileResource.TYPE_NAME);
-		
-		File importSubdir = new File(importDirectory, getIdent());
-		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importSubdir);
-		RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
-				locale, rie.importGetExportedFile(), null);
-		CPEditController.setCPReference(re, getModuleConfiguration());
+		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
+		if(rie.anyExportedPropertiesAvailable()) {
+			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(ImsCPFileResource.TYPE_NAME);
+			RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
+					locale, rie.importGetExportedFile(), null);
+			CPEditController.setCPReference(re, getModuleConfiguration());
+		}
 	}
 
 	@Override

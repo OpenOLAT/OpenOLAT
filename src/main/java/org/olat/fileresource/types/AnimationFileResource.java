@@ -39,10 +39,9 @@ public class AnimationFileResource extends FileResource {
 	 */
 	public static final String TYPE_NAME = "FileResource.ANIM";
 
-	/**
-	 * Default constructor.
-	 */
-	public AnimationFileResource() { super.setTypeName(TYPE_NAME); }
+	public AnimationFileResource() {
+		super(TYPE_NAME);
+	}
 	
 	/**
 	 * @param f

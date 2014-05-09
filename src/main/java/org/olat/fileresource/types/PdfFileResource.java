@@ -39,10 +39,9 @@ public class PdfFileResource extends FileResource {
 	 */
 	public static final String TYPE_NAME = "FileResource.PDF";
 
-	/**
-	 * Standard constructor.
-	 */
-	public PdfFileResource() { super.setTypeName(TYPE_NAME); }
+	public PdfFileResource() {
+		super(TYPE_NAME);
+	}
 	
 	/**
 	 * @param f

@@ -29,9 +29,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.stereotype.Service;
 
 /**
  * Initial Date:  Apr 6, 2004
@@ -41,21 +43,12 @@ import org.olat.repository.RepositoryEntry;
  * Comment:  
  * 
  */
+@Service
 public class RepositoryHandlerFactory {
 
-	private static RepositoryHandlerFactory INSTANCE;
 	private static Map<String, RepositoryHandler> handlerMap;
-	
-	/**
-	 * 
-	 */
-	private RepositoryHandlerFactory() {
-		// singleton
-	}
-
 	static {
-		INSTANCE = new RepositoryHandlerFactory();
-		handlerMap = new HashMap<String, RepositoryHandler>(10);
+		handlerMap = new HashMap<String, RepositoryHandler>(21);
 
 		registerHandler(new WebDocumentHandler());
 		registerHandler(new ImsCPHandler());
@@ -75,10 +68,9 @@ public class RepositoryHandlerFactory {
 		}
 	}
 	
-	/**
-	 * @return Singleton.
-	 */
-	public static RepositoryHandlerFactory getInstance() {	return INSTANCE; }
+	public static RepositoryHandlerFactory getInstance() {
+		return CoreSpringFactory.getImpl(RepositoryHandlerFactory.class);
+	}
 	
 	/**
 	 * Get the repository handler for this repository entry.
@@ -104,7 +96,7 @@ public class RepositoryHandlerFactory {
 	 * Get a set of types this factory supports.
 	 * @return Set of supported types.
 	 */
-	public static Set<String> getSupportedTypes() {
+	public Set<String> getSupportedTypes() {
 		return handlerMap.keySet();
 	}
 }

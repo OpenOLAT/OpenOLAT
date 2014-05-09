@@ -86,8 +86,12 @@ public class RepositoryEntryImportExport {
 	 * 
 	 * @param baseDirecotry
 	 */
-	public RepositoryEntryImportExport(File baseDirecotry) {
-		this.baseDirectory = baseDirecotry;
+	public RepositoryEntryImportExport(File baseDirectory) {
+		this.baseDirectory = baseDirectory;
+	}
+	
+	public RepositoryEntryImportExport(File baseDirectory, String subDir) {
+		this.baseDirectory = new File(baseDirectory, subDir);
 	}
 	
 	public boolean anyExportedPropertiesAvailable() {
@@ -160,8 +164,12 @@ public class RepositoryEntryImportExport {
 	private void loadConfiguration() {
 		try {
 			File inputFile = new File(baseDirectory, PROPERTIES_FILE);
-			XStream xstream = getXStream();
-			repositoryProperties = (RepositoryEntryImport)xstream.fromXML(inputFile);
+			if(inputFile.exists()) {
+				XStream xstream = getXStream();
+				repositoryProperties = (RepositoryEntryImport)xstream.fromXML(inputFile);
+			} else {
+				repositoryProperties = new RepositoryEntryImport();
+			}
 			propertiesLoaded = true;
 		} catch (Exception ce) {
 			throw new OLATRuntimeException("Error importing repository entry properties.", ce);

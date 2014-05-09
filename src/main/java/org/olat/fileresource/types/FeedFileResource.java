@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.PathUtils;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -50,11 +51,11 @@ public abstract class FeedFileResource extends FileResource {
 	private static final OLog log = Tracing.createLoggerFor(FeedFileResource.class);
 
 	public FeedFileResource(String type) {
-		super.setTypeName(type);
+		super(type);
 	}
 
 	public FeedFileResource(File root, File resourceFolder, String type) {
-		super.setTypeName(type);
+		super(type);
 		// After unziping the uploaded folder, I would like to copy it to the
 		// appropriate location right away (and not on the next read). So, I put the
 		// code here. Note that this constructor is also called on copying a
@@ -84,7 +85,7 @@ public abstract class FeedFileResource extends FileResource {
 		ResourceEvaluation eval = new ResourceEvaluation();
 		try {
 			IndexFileFilter visitor = new IndexFileFilter();
-			Path fPath = visit(file, filename, visitor);
+			Path fPath = PathUtils.visit(file, filename, visitor);
 			
 			if(visitor.isValid()) {
 				Path feedXml = fPath.resolve(FeedManager.FEED_FILE_NAME);

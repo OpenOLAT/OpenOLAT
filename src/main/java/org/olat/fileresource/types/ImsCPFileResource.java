@@ -41,6 +41,7 @@ import org.dom4j.Element;
 import org.dom4j.XPath;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.PathUtils;
 import org.olat.ims.resources.IMSLoader;
 
 /**
@@ -59,7 +60,7 @@ public class ImsCPFileResource extends FileResource {
 	public static final String TYPE_NAME = "FileResource.IMSCP";
 
 	public ImsCPFileResource() {
-		super.setTypeName(TYPE_NAME);
+		super(TYPE_NAME);
 	}
 	
 	/**
@@ -83,7 +84,7 @@ public class ImsCPFileResource extends FileResource {
 		ResourceEvaluation eval = new ResourceEvaluation();
 		try {
 			ImsManifestFileFilter visitor = new ImsManifestFileFilter();
-			Path fPath = visit(file, filename, visitor);
+			Path fPath = PathUtils.visit(file, filename, visitor);
 			if(visitor.isValid()) {
 				Path manifestPath = fPath.resolve(IMS_MANIFEST);
 				Document doc = IMSLoader.loadIMSDocument(manifestPath);

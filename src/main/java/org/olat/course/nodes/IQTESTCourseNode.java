@@ -68,7 +68,7 @@ import org.olat.ims.qti.QTIResultSet;
 import org.olat.ims.qti.export.QTIExportFormatter;
 import org.olat.ims.qti.export.QTIExportFormatterCSVType1;
 import org.olat.ims.qti.export.QTIExportManager;
-import org.olat.ims.qti.fileresource.SurveyFileResource;
+import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
@@ -470,13 +470,13 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 
 	@Override
 	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
-		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(SurveyFileResource.TYPE_NAME);
-		
-		File importSubdir = new File(importDirectory, getIdent());
-		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importSubdir);
-		RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
+		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
+		if(rie.anyExportedPropertiesAvailable()) {
+			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(TestFileResource.TYPE_NAME);
+			RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
 				locale, rie.importGetExportedFile(), null);
-		IQEditController.setIQReference(re, getModuleConfiguration());
+			IQEditController.setIQReference(re, getModuleConfiguration());
+		}
 	}
 
 	/**

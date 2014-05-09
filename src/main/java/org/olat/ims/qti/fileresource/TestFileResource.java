@@ -40,6 +40,7 @@ import org.dom4j.Element;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.PathUtils;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -66,7 +67,7 @@ public class TestFileResource extends FileResource {
 	public static final String TYPE_NAME = "FileResource.TEST";
 
 	public TestFileResource() {
-		super.setTypeName(TYPE_NAME);
+		super(TYPE_NAME);
 	}
 	
 	/**
@@ -91,7 +92,7 @@ public class TestFileResource extends FileResource {
 		ResourceEvaluation eval = new ResourceEvaluation();
 		try {
 			QTIFileFilter visitor = new QTIFileFilter();
-			Path fPath = visit(file, filename, visitor);
+			Path fPath = PathUtils.visit(file, filename, visitor);
 			if(visitor.isValid()) {
 				Path qtiPath = fPath.resolve(QTI_FILE);
 				Document doc = QTIHelper.getDocument(qtiPath);

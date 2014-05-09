@@ -246,13 +246,13 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 
 	@Override
 	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
-		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(TestFileResource.TYPE_NAME);
-		
-		File importSubdir = new File(importDirectory, getIdent());
-		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importSubdir);
-		RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
+		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
+		if(rie.anyExportedPropertiesAvailable()) {
+			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(TestFileResource.TYPE_NAME);
+			RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
 				locale, rie.importGetExportedFile(), null);
-		IQEditController.setIQReference(re, getModuleConfiguration());
+			IQEditController.setIQReference(re, getModuleConfiguration());
+		}
 	}
 
 	@Override

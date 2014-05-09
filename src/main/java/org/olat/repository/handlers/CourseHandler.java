@@ -26,6 +26,11 @@
 package org.olat.repository.handlers;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -53,6 +58,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.PathUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -85,7 +91,6 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
-import org.olat.fileresource.types.CourseResource;
 import org.olat.fileresource.types.GlossaryResource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.SharedFolderFileResource;
@@ -94,6 +99,7 @@ import org.olat.modules.glossary.GlossaryManager;
 import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -121,17 +127,9 @@ import de.tuchemnitz.wizard.workflows.coursecreation.steps.CcStep00;
  * 
  */
 public class CourseHandler implements RepositoryHandler {
-	
-	private static final OLog log = Tracing.createLoggerFor(CourseHandler.class);
 
-	/**
-	 * Command to add (i.e. import) a course.
-	 */
-	public static final String PROCESS_IMPORT = "add";
-	/**
-	 * Command to create a new course.
-	 */
-	public static final String PROCESS_CREATENEW = "new";
+	public static final String EDITOR_XML = "editortreemodel.xml";
+	private static final OLog log = Tracing.createLoggerFor(CourseHandler.class);
 
 	private static final List<String> supportedTypes = Collections.singletonList(CourseModule.getCourseTypeName());
 	
@@ -182,7 +180,28 @@ public class CourseHandler implements RepositoryHandler {
 
 	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
-		return CourseResource.evaluate(file, filename);
+		ResourceEvaluation eval = new ResourceEvaluation();
+		try {
+			IndexFileFilter visitor = new IndexFileFilter();
+			Path fPath = PathUtils.visit(file, filename, visitor);
+			
+			if(visitor.isValid()) {
+				Path repoXml = fPath.resolve("export/repo.xml");
+				if(repoXml != null) {
+					eval.setValid(true);
+					
+					RepositoryEntryImport re = RepositoryEntryImportExport.getConfiguration(repoXml);
+					if(re != null) {
+						eval.setDisplayname(re.getDisplayname());
+						eval.setDescription(re.getDescription());
+					}
+				}
+			}
+			eval.setValid(visitor.isValid());
+		} catch (IOException e) {
+			log.error("", e);
+		}
+		return eval;
 	}
 	
 	@Override
@@ -212,8 +231,12 @@ public class CourseHandler implements RepositoryHandler {
 		
 		//import references
 		importReferences((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode(), course, initialAuthor);
-		importSharedFolder(course, initialAuthor);
-		importGlossary(course, initialAuthor);
+		if(course.getCourseConfig().hasCustomSharedFolder()) {
+			importSharedFolder(course, initialAuthor);
+		}
+		if(course.getCourseConfig().hasGlossary()) {
+			importGlossary(course, initialAuthor);
+		}
 
 		// create group management / import groups
 		cgm = course.getCourseEnvironment().getCourseGroupManager();
@@ -561,5 +584,24 @@ public class CourseHandler implements RepositoryHandler {
 	@Override
 	public WizardCloseResourceController createCloseResourceController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		return new WizardCloseCourseController(ureq, wControl, repositoryEntry);
+	}
+	
+	private static class IndexFileFilter extends SimpleFileVisitor<Path> {
+		private boolean editorFile;
+
+		@Override
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+		throws IOException {
+
+			String filename = file.getFileName().toString();
+			if(EDITOR_XML.equals(filename)) {
+				editorFile = true;
+			}
+			return editorFile ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
+		}
+		
+		public boolean isValid() {
+			return editorFile;
+		}
 	}
 }

@@ -39,10 +39,9 @@ public class MovieFileResource extends FileResource {
 	 */
 	public static final String TYPE_NAME = "FileResource.MOVIE";
 
-	/**
-	 * Standard constructor.
-	 */
-	public MovieFileResource() { super.setTypeName(TYPE_NAME); }
+	public MovieFileResource() {
+		super(TYPE_NAME);
+	}
 	
 	/**
 	 * @param f

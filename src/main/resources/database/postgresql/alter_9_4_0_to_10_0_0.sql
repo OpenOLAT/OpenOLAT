@@ -347,6 +347,7 @@ create view o_repositoryentry_author_v as (
       re.lastmodified as re_lastmodified,
       re.displayname as re_displayname,
       re.description as re_description,
+      re.softkey as re_softkey,
       re.external_id as re_external_id,
       re.external_ref as re_external_ref,
       re.initialauthor as re_author,

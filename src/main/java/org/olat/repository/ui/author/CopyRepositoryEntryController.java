@@ -19,7 +19,6 @@
  */
 package org.olat.repository.ui.author;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -42,6 +41,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -57,17 +57,16 @@ public class CopyRepositoryEntryController extends FormBasicController {
 	private RepositoryEntry copyEntry;
 	private final RepositoryEntry sourceEntry;
 
-	private final RepositoryService repositoryService;
-	private final OLATResourceManager resourceManager;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private OLATResourceManager resourceManager;
 	
 	public CopyRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryEntry sourceEntry) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.sourceEntry = sourceEntry;
-		
-		resourceManager = OLATResourceManager.getInstance();
-		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		
+
 		initForm(ureq);
 	}
 

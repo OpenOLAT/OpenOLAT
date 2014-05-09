@@ -35,6 +35,8 @@ public interface RepositoryEntryAuthorView extends OLATResourceable, RepositoryE
 	
 	public Date getCreationDate();
 	
+	public String getSoftkey();
+	
 	public String getExternalId();
 	
 	public String getExternalRef();

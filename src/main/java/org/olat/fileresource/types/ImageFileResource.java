@@ -39,10 +39,9 @@ public class ImageFileResource extends FileResource {
 	 */
 	public static final String TYPE_NAME = "FileResource.IMAGE";
 
-	/**
-	 * Standard constructor.
-	 */
-	public ImageFileResource() { super.setTypeName(TYPE_NAME); }
+	public ImageFileResource() {
+		super(TYPE_NAME);
+	}
 	
 	/**
 	 * @param f

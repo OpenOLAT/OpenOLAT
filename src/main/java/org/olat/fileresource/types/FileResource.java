@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -57,7 +56,7 @@ public class FileResource implements OLATResourceable {
 	 * Generic file resource type identifier.
 	 */
 	public static final String GENERIC_TYPE_NAME = "FileResource.FILE";
-	private String typeName;
+	private final String typeName;
 	private Long typeId;
 	
 	public FileResource() {
@@ -68,14 +67,6 @@ public class FileResource implements OLATResourceable {
 	public FileResource(String typeName) {
 		this.typeName = typeName;
 		typeId = new Long(CodeHelper.getForeverUniqueID());
-	}
-
-	 /**
-	 * User by subtypes to set appropriate ResourceableTypeName
-	 * @param newTypeName
-	 */
-	protected void setTypeName(String newTypeName) {
-		typeName = newTypeName;
 	}
 
 	/**
@@ -100,25 +91,7 @@ public class FileResource implements OLATResourceable {
 		return typeId;
 	}
 	
-	protected static Path visit(File file, String filename, FileVisitor<Path> visitor) 
-	throws IOException {
-		if(!StringHelper.containsNonWhitespace(filename)) {
-			filename = file.getName();
-		}
-		
-		Path fPath = null;
-		if(file.isDirectory()) {
-			fPath = file.toPath();
-		} else if(filename != null && filename.toLowerCase().endsWith(".zip")) {
-			fPath = FileSystems.newFileSystem(file.toPath(), null).getPath("/");
-		} else {
-			fPath = file.toPath();
-		}
-		if(fPath != null) {
-		    Files.walkFileTree(fPath, visitor);
-		}
-		return fPath;
-	}
+
 	
 	/**
 	 * This method open a new FileSystem for zip

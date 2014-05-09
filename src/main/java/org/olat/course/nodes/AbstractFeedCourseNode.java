@@ -20,17 +20,11 @@
 package org.olat.course.nodes;
 
 import java.io.File;
-import java.util.Date;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -243,18 +237,20 @@ public abstract class AbstractFeedCourseNode extends GenericCourseNode {
 	}
 
 	public void importNode(RepositoryHandler handler, File importDirectory, Identity owner, Locale locale) {
-		File importSubdir = new File(importDirectory, getIdent());
-		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importSubdir);
-		RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
+		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
+		if (rie.anyExportedPropertiesAvailable()) {
+			RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
 				locale, rie.importGetExportedFile(), null);
-		FeedNodeEditController.setReference(re, getModuleConfiguration());
+			FeedNodeEditController.setReference(re, getModuleConfiguration());
+		}
 	}
 
 	/**
 	 * @see org.olat.course.nodes.GenericCourseNode#archiveNodeData(java.util.Locale,
 	 *      org.olat.course.ICourse, java.io.File, java.lang.String)
-	 */
-	public void archiveNodeData(Locale locale, ICourse course, File exportDirectory, String charset, String type) {
+	 *//*
+	@Override
+	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String charset) {
 		VFSContainer exportContainer = new LocalFolderImpl(exportDirectory);
 		VFSContainer exportDir = (VFSContainer) exportContainer.resolve(type);
 		if (exportDir == null) {
@@ -273,5 +269,5 @@ public abstract class AbstractFeedCourseNode extends GenericCourseNode {
 			}
 			// FIXME:FG:6.3 Archive user comments as soon as implemented.			
 		}
-	}
+	}*/
 }

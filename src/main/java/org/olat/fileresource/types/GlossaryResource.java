@@ -35,6 +35,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.PathUtils;
 
 /**
  * Description:<br>
@@ -62,11 +63,8 @@ public class GlossaryResource extends FileResource {
 		}
 	};
 
-	/**
-	 * Constructor
-	 */
 	public GlossaryResource() {
-		super.setTypeName(TYPE_NAME);
+		super(TYPE_NAME);
 	}
 
 	/**
@@ -91,7 +89,7 @@ public class GlossaryResource extends FileResource {
 		ResourceEvaluation eval = new ResourceEvaluation();
 		try {
 			GlossaryFileFilter visitor = new GlossaryFileFilter();
-			visit(file, filename, visitor);
+			PathUtils.visit(file, filename, visitor);
 			if(visitor.isValid()) {
 				eval.setValid(true);
 			}

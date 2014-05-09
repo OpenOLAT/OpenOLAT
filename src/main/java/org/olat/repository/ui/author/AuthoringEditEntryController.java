@@ -56,7 +56,7 @@ public class AuthoringEditEntryController extends BasicController {
 	private final RepositoryEditDescriptionController descriptionCtrl;
 	
 	private RepositoryEntry entry;
-	private final RepositoryService repositoryService;
+	private RepositoryService repositoryService;
 	
 	public AuthoringEditEntryController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			AuthoringEntryRow row) {

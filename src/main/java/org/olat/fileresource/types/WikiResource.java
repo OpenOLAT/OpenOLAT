@@ -34,6 +34,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.PathUtils;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiPage;
 
@@ -53,14 +54,14 @@ public class WikiResource extends FileResource {
 	public static final String INDEX_PROPNAME = WikiManager.generatePageId(WikiPage.WIKI_INDEX_PAGE) + "." + WikiManager.WIKI_PROPERTIES_SUFFIX;
 
 	public WikiResource() {
-		super.setTypeName(TYPE_NAME);
+		super(TYPE_NAME);
 	}
 
 	public static ResourceEvaluation validate(File file, String filename) {
 		ResourceEvaluation eval = new ResourceEvaluation();
 		try {
 			IndexFileFilter visitor = new IndexFileFilter();
-			visit(file, filename, visitor);
+			PathUtils.visit(file, filename, visitor);
 			eval.setValid(visitor.isValid());
 		} catch (IOException e) {
 			log.error("", e);

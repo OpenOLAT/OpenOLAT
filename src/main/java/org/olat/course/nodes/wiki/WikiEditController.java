@@ -25,11 +25,8 @@
 
 package org.olat.course.nodes.wiki;
 
-import java.util.List;
-
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -41,13 +38,8 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.dtabs.DTab;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -68,8 +60,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.controllers.RepositoryDetailsController;
-import org.olat.repository.handlers.RepositoryHandler;
-import org.olat.repository.handlers.RepositoryHandlerFactory;
 
 /**
  * Description: <BR/>Edit controller for single page course nodes <P/> Initial
@@ -212,32 +202,8 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 				// do nothing
 				return;
 			}
-			RepositoryHandler typeToEdit = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
-			// Open editor in new tab
-			OLATResourceable ores = repositoryEntry.getOlatResource();
-			DTabs dts = Windows.getWindows(ureq).getWindow(ureq).getDTabs();
-			DTab dt = dts.getDTab(ores);
-			if (dt == null) {
-				// does not yet exist -> create and add
-				//fxdiff BAKS-7 Resume function
-				dt = dts.createDTab(ores, repositoryEntry, repositoryEntry.getDisplayname());
-				if (dt == null){
-					//null means DTabs are full -> warning is shown
-					return;
-				}
-				//user activity logger is set by course factory
-				Controller editorController = typeToEdit.createLaunchController(repositoryEntry, ureq, dt.getWindowControl());
-				if(editorController == null){
-					//editor could not be created -> warning is shown
-					return;
-				}
-				dt.setController(editorController);
-				dts.addDTab(ureq, dt);
-			}
-			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(RepositoryDetailsController.ACTIVATE_EDITOR);
-			dts.activate(ureq, dt, entries);
+			RepositoryDetailsController.doEdit(ureq, repositoryEntry);
 		}
-
 	}
 
 	/**

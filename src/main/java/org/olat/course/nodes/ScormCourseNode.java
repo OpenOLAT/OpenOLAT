@@ -326,13 +326,13 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Ass
 
 	@Override
 	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale) {
-		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(ScormCPFileResource.TYPE_NAME);
-		
-		File importSubdir = new File(importDirectory, getIdent());
-		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importSubdir);
-		RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
+		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
+		if(rie.anyExportedPropertiesAvailable()) {
+			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(ScormCPFileResource.TYPE_NAME);
+			RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
 				locale, rie.importGetExportedFile(), null);
-		ScormEditController.setScormCPReference(re, getModuleConfiguration());
+			ScormEditController.setScormCPReference(re, getModuleConfiguration());
+		}
 	}
 
 	@Override
@@ -353,18 +353,14 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Ass
 		return true;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createInstanceForCopy()
-	 */
+	@Override
 	public CourseNode createInstanceForCopy() {
 		CourseNode copyInstance = super.createInstanceForCopy();
 		CPEditController.removeCPReference(copyInstance.getModuleConfiguration());
 		return copyInstance;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserScoreEvaluation(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
+	@Override
 	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnvironment) {
 		// read score from properties save score, passed and attempts information
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
