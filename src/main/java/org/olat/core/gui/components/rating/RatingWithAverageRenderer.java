@@ -43,14 +43,14 @@ public class RatingWithAverageRenderer extends DefaultComponentRenderer {
 		RatingWithAverageFormItem item = ratingCmp.getFormItem();
 		
 		String viewIdent = item.getFormDispatchId();
-		sb.append("<div id=").append(viewIdent).append(" class='b_ratings_and_comments'>")
-		  .append("<div id='b_rating_wrapper_").append(viewIdent).append("' class='b_rating_wrapper'>")
-		  .append("<div id='b_rating_").append(viewIdent).append("' style='display:none;'>");
+		sb.append("<div id=").append(viewIdent).append(" class='o_ratings_and_comments'>")
+		  .append("<div id='o_rating_wrapper_").append(viewIdent).append("' class='o_rating_wrapper'>")
+		  .append("<div id='o_rating_").append(viewIdent).append("' style='display:none;'>");
 		
 		Component userCmp = item.getUserComponent();
 		userCmp.getHTMLRendererSingleton().render(renderer, sb, userCmp, ubu, translator, renderResult, args);
 		sb.append("</div>")
-		  .append("<div id='b_rating_avg_").append(viewIdent).append("'>");
+		  .append("<div id='o_rating_avg_").append(viewIdent).append("'>");
 		Component averageCmp = item.getAverageComponent();
 		averageCmp.getHTMLRendererSingleton().render(renderer, sb, averageCmp, ubu, translator, renderResult, args);
 		sb.append("</div>")
@@ -59,10 +59,10 @@ public class RatingWithAverageRenderer extends DefaultComponentRenderer {
 		  .append("<script type='text/javascript'>\n")
 		  .append("/* <![CDATA[ */ \n")
 		  .append("jQuery(function(){\n")
-		  .append("  jQuery('#b_rating_wrapper_").append(viewIdent).append("')\n")
+		  .append("  jQuery('#o_rating_wrapper_").append(viewIdent).append("')\n")
 		  .append("    .hover(\n")
-		  .append("      function(){ jQuery('#b_rating_").append(viewIdent).append("').show(); jQuery('#b_rating_avg_").append(viewIdent).append("').hide(); }, \n")
-		  .append("      function(){ jQuery('#b_rating_").append(viewIdent).append("').hide(); jQuery('#b_rating_avg_").append(viewIdent).append("').show(); }\n")  
+		  .append("      function(){ jQuery('#o_rating_").append(viewIdent).append("').show(); jQuery('#o_rating_avg_").append(viewIdent).append("').hide(); }, \n")
+		  .append("      function(){ jQuery('#o_rating_").append(viewIdent).append("').hide(); jQuery('#o_rating_avg_").append(viewIdent).append("').show(); }\n")  
 		  .append("	   );\n")
 		  .append("});\n")
 		  .append("/* ]]> */\n")

@@ -97,7 +97,7 @@ public class RatingWithAverageFormItem extends FormItemImpl implements FormItemC
 			userComponent.getComponent().addListener(component);
 
 			userComponent.getFormItemComponent().setTranslateExplanation(true);
-			userComponent.getFormItemComponent().setTranslateRatingLabels(false);
+			userComponent.getFormItemComponent().setTranslateRatingLabels(true);
 			
 			averageComponent = new RatingFormItem("ravg_" + getName(), averageRating, maxRating, false);
 			averageComponent.setRootForm(getRootForm());
@@ -107,7 +107,7 @@ public class RatingWithAverageFormItem extends FormItemImpl implements FormItemC
 			String explanation = translator.translate("rating.average.explanation", args);
 			averageComponent.getFormItemComponent().setExplanation(explanation);
 			averageComponent.getFormItemComponent().setTranslateExplanation(false);
-			averageComponent.getFormItemComponent().setTranslateRatingLabels(false);
+			averageComponent.getFormItemComponent().setTranslateRatingLabels(true);
 		}
 	}
 

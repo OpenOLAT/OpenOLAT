@@ -81,6 +81,9 @@ public class LinkRenderer extends DefaultComponentRenderer {
 		if (!link.isEnabled()) {
 			cssSb.append(" b_disabled ");
 		}
+		if (link.isActive()) {
+			cssSb.append(" active ");
+		}
 		if (presentation == Link.BUTTON_XSMALL) {
 			cssSb.append("btn btn-xs ");
 			cssSb.append(link.isPrimary() ? "btn-primary" : "btn-default");

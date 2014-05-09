@@ -91,6 +91,7 @@ public class Link extends AbstractComponent {
 	private Object internalAttachedObj;
 	private Object userObject;
 	private String accessKey;
+	private boolean active = false;
 	private boolean ajaxEnabled = true;
 	private boolean registerForMousePositionEvent = false;
 	private MouseEvent mouseEvent;
@@ -577,6 +578,24 @@ public class Link extends AbstractComponent {
 	 */
 	public String getIconCSS() {
 		return iconCSS;
+	}
+	
+	/**
+	 * Compare also with isEnabled();
+	 * @return true if the link is active (only a rendering issue); false if link not active
+	 */
+	public boolean isActive() {
+		return active;
+	}
+	
+	/**
+	 * Compare also with setEnabled)=
+	 * @param isActive true: the link is currently active (only a rendering issue); false: the link is not active right now
+	 */
+	public void setActive(boolean isActive) {
+		if (active == isActive) return;
+		active = isActive;
+		setDirty(true);
 	}
 
 	

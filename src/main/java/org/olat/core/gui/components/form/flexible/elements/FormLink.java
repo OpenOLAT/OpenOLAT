@@ -54,4 +54,15 @@ public interface FormLink extends FormItem{
 	 */
 	public void setI18nKey(String i18n);
 
+	/**
+	 * Set the i18n key for the link title or the translated title, depending on display mode
+	 * @param i18nKey
+	 */
+	public void setLinkTitle(String i18nKey);
+
+	/**
+	 * @param true: set link to active state (only render issue); false set to not active (default)
+	 */
+	public void setActive(boolean isActive);
+
 }
