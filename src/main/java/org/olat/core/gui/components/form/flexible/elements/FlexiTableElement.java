@@ -25,6 +25,7 @@
 */ 
 package org.olat.core.gui.components.form.flexible.elements;
 
+import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -55,6 +56,12 @@ public interface FlexiTableElement extends FormItem {
 	 * @param rendererType
 	 */
 	public void setRendererType(FlexiTableRendererType rendererType);
+	
+	/**
+	 * Set the renderer available
+	 * @param rendererType
+	 */
+	public void setAvailableRendererTypes(FlexiTableRendererType... rendererType);
 	
 	/**
 	 * Set the row renderer used by the custom renderer type.
@@ -169,11 +176,18 @@ public interface FlexiTableElement extends FormItem {
 	public String getSelectedFilterValue();
 	
 	/**
-	 * Set the values for the filter and will enable it.
+	 * Set the values for the filter and it will enable it.
 	 * @param keys
 	 * @param values
 	 */
-	public void setFilterKeysAndValues(String labelI18nKey, String[] keys, String[] values);
+	public void setFilters(String label, List<FlexiTableFilter> filters);
+	
+	/**
+	 * 
+	 * @param label
+	 * @param sorts
+	 */
+	public void setSorts(String label, List<FlexiTableSort> sorts);
 	
 	/**
 	 * Enable export
@@ -221,5 +235,4 @@ public interface FlexiTableElement extends FormItem {
 	public void setPage(int page);
 	
 	public void reloadData();
-	
 }

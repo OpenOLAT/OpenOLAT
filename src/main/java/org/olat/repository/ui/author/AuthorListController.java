@@ -19,6 +19,7 @@
  */
 package org.olat.repository.ui.author;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +33,7 @@ import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -182,8 +184,19 @@ public class AuthorListController extends FormBasicController implements Activat
 		model = new AuthoringEntryDataModel(dataSource, columnsModel);
 		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "table", model, 20, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
+		tableEl.setExportEnabled(true);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setElementCssClass("o_coursetable o_rendertype_custom");
+		tableEl.setElementCssClass("o_coursetable");
+		tableEl.setFilters(null, getFilters());
+	}
+	
+	private List<FlexiTableFilter> getFilters() {
+		Set<String> supportedTypes = repositoryHandlerFactory.getSupportedTypes();
+		List<FlexiTableFilter> resources = new ArrayList<>(supportedTypes.size() + 1);
+		for(String type:supportedTypes) {
+			resources.add(new FlexiTableFilter(translate(type), type));
+		}
+		return resources;
 	}
 	
 	public TooledStackedPanel getStackPanel() {

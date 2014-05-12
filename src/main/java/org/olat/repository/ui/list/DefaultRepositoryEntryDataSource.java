@@ -107,6 +107,15 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 	@Override
 	public final ResultInfos<RepositoryEntryRow> getRows(String query, List<String> condQueries,
 			int firstResult, int maxResults, SortKey... orderBy) {
+		
+		if(condQueries != null && condQueries.size() > 0) {
+			String filter = condQueries.get(0);
+			if(StringHelper.containsNonWhitespace(filter)) {
+				searchParams.setFilters(Collections.singletonList(Filter.valueOf(filter)));
+			} else {
+				searchParams.setFilters(null);
+			}
+		}
 
 		if(StringHelper.containsNonWhitespace(query)) {
 			try {
@@ -121,7 +130,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		List<RepositoryEntryRow> rows = processViewModel(views);
 		ResultInfos<RepositoryEntryRow> results = new DefaultResultInfos<RepositoryEntryRow>(firstResult + rows.size(), -1, rows);
 		if(firstResult == 0 && views.size() < maxResults) {
-			count = new Integer(views.size() );
+			count = new Integer(views.size());
 		}
 		return results;
 	}

@@ -97,6 +97,15 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 	public final ResultInfos<AuthoringEntryRow> getRows(String query, List<String> condQueries,
 			int firstResult, int maxResults, SortKey... orderBy) {
 
+		if(condQueries != null && condQueries.size() > 0) {
+			String filter = condQueries.get(0);
+			if(StringHelper.containsNonWhitespace(filter)) {
+				searchParams.addResourceTypes(filter);
+			} else {
+				searchParams.setResourceTypes(null);
+			}
+		}
+		
 		if(StringHelper.containsNonWhitespace(query)) {
 			try {
 				List<Long> fullTextResults = searchClient.doSearch(query, null, searchParams.getIdentity(), searchParams.getRoles(), 0, 100);

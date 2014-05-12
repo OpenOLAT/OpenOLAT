@@ -21,6 +21,7 @@ package org.olat.core.gui.components.dropdown;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -52,7 +53,12 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(dropdown.getIconCSS())) {
 			sb.append("<i class='").append(dropdown.getIconCSS()).append("'>&nbsp;</i>");
 		}
-		sb.append(dropdown.getTranslator().translate(dropdown.getI18nKey())).append(" <b class='caret'></b>");
+		String i18nKey = dropdown.getI18nKey();
+		if(StringHelper.containsNonWhitespace(i18nKey)) {
+			sb.append(dropdown.getTranslator().translate(dropdown.getI18nKey()));
+		}
+		sb.append(" <b class='caret'></b>");
+		
 		if(dropdown.isButton()) {
 			sb.append("</button>");
 		} else {
@@ -60,9 +66,13 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("<ul class='dropdown-menu' role='menu'>");
 		for(Component component:components) {
-			sb.append("<li>");
-			renderer.render(component, sb, args);
-			sb.append("</li>");
+			if(component instanceof Spacer) {
+				sb.append("<li class='divider'></li>");
+			} else {
+				sb.append("<li>");
+				renderer.render(component, sb, args);
+				sb.append("</li>");
+			}
 		}
 		sb.append("</ul>");
 	}

@@ -43,6 +43,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -237,28 +238,21 @@ public class CheckListAssessmentController extends FormBasicController implement
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.totalPoints.i18nKey(), Cols.totalPoints.ordinal(), true, "points"));
 		}
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.edit.checkbox", translate("table.header.edit.checkbox"), "edit"));
-		
-		String[] keys = null;
-		String[] values = null;
-		if(userCourseEnv instanceof UserCourseEnvironmentImpl) {
-			UserCourseEnvironmentImpl env = (UserCourseEnvironmentImpl)userCourseEnv;
-			List<BusinessGroup> coachedGroups = env.getCoachedGroups();
-			keys = new String[coachedGroups.size() + 1];
-			values = new String[coachedGroups.size() + 1];
-			
-			keys[0] = "all";
-			values[0] = translate("filter.all");
-			for(int k=0; k<coachedGroups.size(); k++) {
-				BusinessGroup group = coachedGroups.get(k);
-				keys[k+1] = group.getKey().toString();
-				values[k+1] = group.getName();
-			}
-		}
-		
+
 		List<CheckListAssessmentRow> datas = loadDatas();
 		model = new CheckListAssessmentDataModel(checkboxList, datas, columnsModel);
 		table = uifactory.addTableElement(ureq, getWindowControl(), "checkbox-list", model, getTranslator(), formLayout);
-		table.setFilterKeysAndValues("participants", keys, values);
+		if(userCourseEnv instanceof UserCourseEnvironmentImpl) {
+			UserCourseEnvironmentImpl env = (UserCourseEnvironmentImpl)userCourseEnv;
+			List<BusinessGroup> coachedGroups = env.getCoachedGroups();
+			List<FlexiTableFilter> filters = new ArrayList<>(coachedGroups.size() + 1);
+			filters.add(new FlexiTableFilter(translate("filter.all"), "all"));
+			for(int k=0; k<coachedGroups.size(); k++) {
+				BusinessGroup group = coachedGroups.get(k);
+				filters.add(new FlexiTableFilter(group.getName(), group.getKey().toString()));
+			}
+			table.setFilters("participants", filters);
+		}
 		table.setExportEnabled(true);
 		
 		pdfExport = uifactory.addFormLink("pdf.export", formLayout, Link.BUTTON);

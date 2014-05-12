@@ -23,6 +23,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_delete { @extend .o_icon-minus-circle; color: #A87E7E;}
 .o_icon_details { @extend .o_icon-eye; }
 .o_icon_dev { @extend .o_icon-wrench;}
+.o_icon_download { @extend .o_icon-download;}
 .o_icon_edit { @extend .o_icon-edit;}
 .o_icon_edit_file { @extend .o_icon-edit;}
 .o_icon_edit_metadata { @extend .o_icon-edit; color: #996633;}

@@ -35,6 +35,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -44,7 +46,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.rating.RatingFormEvent;
 import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -77,8 +78,7 @@ public class RepositoryEntryListController extends FormBasicController
 
 	private final List<Link> filters = new ArrayList<>();
 	private final List<Link> orderBy = new ArrayList<>();
-	
-	private FormLink listLink, tableLink;
+
 	private FlexiTableElement tableEl;
 	private RepositoryEntryDataModel model;
 	private DefaultRepositoryEntryDataSource dataSource;
@@ -112,68 +112,41 @@ public class RepositoryEntryListController extends FormBasicController
 	}
 
 	private void initFilters() {
-		VelocityContainer filterVc = createVelocityContainer("filters");
-		filterVc.setDomReplacementWrapperRequired(false);
-		flc.put("filters", filterVc);
-		//lifecycle
-		initFilter("current.courses", "filter.current.courses", Filter.currentCourses, filterVc);
-		initFilter("upcoming.courses", "filter.upcoming.courses", Filter.upcomingCourses, filterVc);
-		initFilter("old.courses", "filter.old.courses", Filter.oldCourses, filterVc);
-		//membership
-		initFilter("as.participant", "filter.booked.participant", Filter.asParticipant, filterVc);
-		initFilter("as.coach", "filter.booked.coach", Filter.asCoach, filterVc);
-		initFilter("as.author", "filter.booked.author", Filter.asAuthor, filterVc);
-		initFilter("not.booked", "filter.not.booked", Filter.notBooked, filterVc);
-		
-		//efficiency statment
-		initFilter("passed", "filter.passed", Filter.passed, filterVc);
-		initFilter("not.passed", "filter.not.passed", Filter.notPassed, filterVc);
-		initFilter("without", "filter.without.passed.infos", Filter.withoutPassedInfos, filterVc);
-	}
-	
-	private void initFilter(String name, String i18nKey, Filter filter, VelocityContainer filterVc) {
-		Link notPassedLink = LinkFactory.createCustomLink(name, name, i18nKey, Link.LINK, filterVc, this);
-		notPassedLink.setUserObject(filter);
-		filters.add(notPassedLink);
+		List<FlexiTableFilter> filters = new ArrayList<>(14);
+		filters.add(new FlexiTableFilter(translate("filter.current.courses"), Filter.currentCourses.name()));
+		filters.add(new FlexiTableFilter(translate("filter.upcoming.courses"), Filter.upcomingCourses.name()));
+		filters.add(new FlexiTableFilter(translate("filter.old.courses"), Filter.oldCourses.name()));
+		filters.add(FlexiTableFilter.SPACER);
+		filters.add(new FlexiTableFilter(translate("filter.booked.participant"), Filter.asParticipant.name()));
+		filters.add(new FlexiTableFilter(translate("filter.booked.coach"), Filter.asCoach.name()));
+		filters.add(new FlexiTableFilter(translate("filter.booked.author"), Filter.asAuthor.name()));
+		filters.add(new FlexiTableFilter(translate("filter.not.booked"), Filter.notBooked.name()));
+		filters.add(FlexiTableFilter.SPACER);
+		filters.add(new FlexiTableFilter(translate("filter.passed"), Filter.passed.name()));
+		filters.add(new FlexiTableFilter(translate("filter.not.passed"), Filter.notPassed.name()));
+		filters.add(new FlexiTableFilter(translate("filter.without.passed.infos"), Filter.withoutPassedInfos.name()));
+		tableEl.setFilters(null, filters);
 	}
 	
 	private void initSorters() {
-		VelocityContainer orderByVc = createVelocityContainer("orderby");
-		orderByVc.setDomReplacementWrapperRequired(false);
-		flc.put("orderBys", orderByVc);
-		
-		initOrderBy("orderby.automatic", OrderBy.automatic, orderByVc);
-		initOrderBy("orderby.favorit", OrderBy.favorit, orderByVc);
-		initOrderBy("orderby.lastVisited", OrderBy.lastVisited, orderByVc);
-		initOrderBy("orderby.score", OrderBy.score, orderByVc);
-		initOrderBy("orderby.passed", OrderBy.passed, orderByVc);
-		
-		initOrderBy("orderby.title", OrderBy.title, orderByVc);
-		initOrderBy("orderby.lifecycle", OrderBy.lifecycle, orderByVc);
-		initOrderBy("orderby.author", OrderBy.author, orderByVc);
-		initOrderBy("orderby.creationDate", OrderBy.creationDate, orderByVc);
-		initOrderBy("orderby.lastModified", OrderBy.lastModified, orderByVc);
-		initOrderBy("orderby.rating", OrderBy.rating, orderByVc);
-	}
-	
-	private void initOrderBy(String name, OrderBy order, VelocityContainer filterVc) {
-		Link notPassedLink = LinkFactory.createCustomLink(name, name, name, Link.LINK, filterVc, this);
-		notPassedLink.setUserObject(order);
-		orderBy.add(notPassedLink);
+		List<FlexiTableSort> sorters = new ArrayList<>();
+		sorters.add(new FlexiTableSort(translate("orderby.automatic"), OrderBy.automatic.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.favorit"), OrderBy.favorit.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.lastVisited"), OrderBy.lastVisited.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.score"), OrderBy.score.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.passed"), OrderBy.passed.name()));
+		sorters.add(FlexiTableSort.SPACER);
+		sorters.add(new FlexiTableSort(translate("orderby.title"), OrderBy.title.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.lifecycle"), OrderBy.lifecycle.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.author"), OrderBy.author.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.creationDate"), OrderBy.creationDate.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.lastModified"), OrderBy.lastModified.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.rating"), OrderBy.rating.name()));
+		tableEl.setSorts("", sorters);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		listLink = uifactory.addFormLink("switchLayoutList", "list", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
-		listLink.setIconLeftCSS("o_icon o_icon_list o_icon-lg");
-		listLink.setLinkTitle(translate("table.switch.list"));
-		listLink.setActive(true);
-		tableLink = uifactory.addFormLink("switchLayoutTable", "table", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
-		tableLink.setIconLeftCSS("o_icon o_icon_table o_icon-lg");
-		tableLink.setLinkTitle(translate("table.switch.table"));
-		tableLink.setActive(false);			
-		
-		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), false, null));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mark.i18nKey(), Cols.mark.ordinal()));
@@ -191,6 +164,7 @@ public class RepositoryEntryListController extends FormBasicController
 		model = new RepositoryEntryDataModel(dataSource, columnsModel);
 		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "table", model, 20, getTranslator(), formLayout);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
+		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setElementCssClass("o_coursetable o_rendertype_custom");
@@ -220,20 +194,8 @@ public class RepositoryEntryListController extends FormBasicController
 	}
 
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(listLink == source) {
-			tableEl.setRendererType(FlexiTableRendererType.custom);
-			tableEl.setElementCssClass("o_coursetable o_rendertype_custom");
-			tableEl.setCustomizeColumns(false);
-			listLink.setActive(true);
-			tableLink.setActive(false);			
-		} else if(tableLink == source) {
-			tableEl.setRendererType(FlexiTableRendererType.classic);
-			tableEl.setElementCssClass("o_coursetable o_rendertype_classic");
-			tableEl.setCustomizeColumns(true);
-			listLink.setActive(false);
-			tableLink.setActive(true);
-		} else if(source instanceof RatingWithAverageFormItem && event instanceof RatingFormEvent) {
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {	
+		if(source instanceof RatingWithAverageFormItem && event instanceof RatingFormEvent) {
 			RatingFormEvent ratingEvent = (RatingFormEvent)event;
 			RatingWithAverageFormItem ratingItem = (RatingWithAverageFormItem)source;
 			RepositoryEntryRow row = (RepositoryEntryRow)ratingItem.getUserObject();

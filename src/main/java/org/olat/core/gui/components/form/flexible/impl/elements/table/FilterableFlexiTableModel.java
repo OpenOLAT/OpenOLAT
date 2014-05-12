@@ -28,6 +28,10 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
  */
 public interface FilterableFlexiTableModel {
 	
+	/**
+	 * @param key
+	 * @return True if a reload is needed
+	 */
 	public void filter(String key);
 
 }

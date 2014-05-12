@@ -676,7 +676,7 @@ public class CatalogController extends BasicController implements Activateable2 
 		} else if (source == addEntryForm) {
 			cmc.deactivate();
 			
-			currentCatalogEntry = addEntryForm.getEditedCatalogEntry();
+			//currentCatalogEntry = addEntryForm.getEditedCatalogEntry();
 			updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
 			updateToolAccessRights(ureq, currentCatalogEntry, currentCatalogEntryLevel);
 			cleanUp();
@@ -925,6 +925,7 @@ public class CatalogController extends BasicController implements Activateable2 
 
 		} else myContent.contextPut("hasOwnedLinks", Boolean.FALSE);
 		updateHistory(ureq);
+		myContent.setDirty(true);
 	}
 
 	public void updateHistory(UserRequest ureq) {

@@ -28,12 +28,11 @@ package org.olat.core.gui.components.choice;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -43,15 +42,7 @@ import org.olat.core.gui.translator.Translator;
  * 
  * @author Felix Jost
  */
-public class ChoiceRenderer implements ComponentRenderer {
-
-	/**
-	 * This is a singleton. There must be an empty contructor for the
-	 * Class.forName() call.
-	 */
-	public ChoiceRenderer() {
-		super();
-	}
+public class ChoiceRenderer extends DefaultComponentRenderer {
 
 	/**
 	 * @see org.olat.core.gui.render.ui.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
@@ -59,6 +50,7 @@ public class ChoiceRenderer implements ComponentRenderer {
 	 *      org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator,
 	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
+	@Override
 	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 
@@ -102,53 +94,28 @@ public class ChoiceRenderer implements ComponentRenderer {
 			target.append("</tr>");
 		}
 		// Toggle all on/off
-		target.append("<tr><td colspan=\"").append(cols).append("\" class=\"b_togglecheck\">");
-		target.append("<div class=\"b_togglecheck\">");
-		target.append("<a href=\"#\" onclick=\"javascript:b_choice_toggleCheck('" + id + "', true)\">");
-		target.append("<input type=\"checkbox\" checked=\"checked\" disabled=\"disabled\" />");
-		target.append(translator.translate("checkall"));
-		target.append("</a> <a href=\"#\" onclick=\"javascript:b_choice_toggleCheck('" + id + "', false)\">"); 
-		target.append("<input type=\"checkbox\" disabled=\"disabled\" />");
-		target.append(translator.translate("uncheckall"));
-		target.append("</a></div>");
-		target.append("</td></tr>");
+		target.append("<tr><td colspan=\"").append(cols).append("\" class=\"b_togglecheck\">")
+		      .append("<div class=\"b_togglecheck\">")
+		      .append("<a href=\"#\" onclick=\"javascript:b_choice_toggleCheck('" + id + "', true)\">")
+		      .append("<input type=\"checkbox\" checked=\"checked\" disabled=\"disabled\" />")
+		      .append(translator.translate("checkall"))
+		      .append("</a> <a href=\"#\" onclick=\"javascript:b_choice_toggleCheck('" + id + "', false)\">")
+		      .append("<input type=\"checkbox\" disabled=\"disabled\" />")
+		      .append(translator.translate("uncheckall"))
+		      .append("</a></div>")
+		      .append("</td></tr>");
 
 		// Submit button
 		target.append("<tr><td colspan=\"").append(cols).append("\"><div class=\"b_button_group\">");
 		target.append("<input type=\"submit\" name=\"olat_fosm\" value=\"" + StringEscapeUtils.escapeHtml(translator.translate(choice.getSubmitKey()))
-				+ "\" class=\"b_button\" />");
+				+ "\" class=\"btn btn-default\" />");
 
 		// Cancel button
 		String cancelKey = choice.getCancelKey();
 		if (cancelKey != null) {
 			target.append("<input type=\"submit\" name=\"" + Choice.CANCEL_IDENTIFICATION + "\" value=\""
-					+ StringEscapeUtils.escapeHtml(translator.translate(cancelKey)) + "\" class=\"b_button\" />");
+					+ StringEscapeUtils.escapeHtml(translator.translate(cancelKey)) + "\" class=\"btn btn-default\" />");
 		}
 		target.append("</div></td></tr></table></form>");
-		
-		
-
 	}
-
-	/**
-	 * @param renderer
-	 * @param sb
-	 * @param source
-	 */
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-	//
-	}
-
-	/**
-	 * @param renderer
-	 * @param target
-	 * @param source
-	 * @param url
-	 * @param translator
-	 */
-	public void renderHeaderIncludes(Renderer renderer, StringOutput target, Component source, URLBuilder url, Translator translator,
-			RenderingState rstate) {
-	//
-	}
-
 }

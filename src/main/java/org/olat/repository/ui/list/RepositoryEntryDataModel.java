@@ -21,7 +21,6 @@ package org.olat.repository.ui.list;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 
 /**
  * 
@@ -31,13 +30,18 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  */
 class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<RepositoryEntryRow> {
 	
-	public RepositoryEntryDataModel(FlexiTableDataSourceDelegate<RepositoryEntryRow> source, FlexiTableColumnModel columnModel) {
+	public RepositoryEntryDataModel(DefaultRepositoryEntryDataSource source, FlexiTableColumnModel columnModel) {
 		super(source, columnModel);
 	}
 
 	@Override
 	public DefaultFlexiTableDataSourceModel<RepositoryEntryRow> createCopyWithEmptyList() {
 		return new RepositoryEntryDataModel(getSourceDelegate(), getTableColumnModel());
+	}
+
+	@Override
+	public DefaultRepositoryEntryDataSource getSourceDelegate() {
+		return (DefaultRepositoryEntryDataSource)super.getSourceDelegate();
 	}
 
 	@Override

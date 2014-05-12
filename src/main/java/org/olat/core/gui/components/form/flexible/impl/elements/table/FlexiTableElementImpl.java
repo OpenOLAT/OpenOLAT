@@ -45,14 +45,14 @@ import org.olat.core.gui.components.choice.Choice;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
-import org.olat.core.gui.components.form.flexible.impl.elements.SingleSelectionImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextElementImpl;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -78,6 +78,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	//settings
 	private boolean multiSelect;
 	private FlexiTableRendererType rendererType = FlexiTableRendererType.classic;
+	private FlexiTableRendererType[] availableRendererType = new FlexiTableRendererType[] {
+		FlexiTableRendererType.classic
+	};
+	
 	private boolean customizeColumns = true;
 	
 	private int rowCount = -1;
@@ -95,7 +99,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	private FormLink customButton, exportButton;
 	private FormLink searchButton, extendedSearchButton;
-	private SingleSelection filterEl;
+	private FormLink classicTypeButton, customTypeButton, dataTablesTypeButton;
 	private TextElement searchFieldEl;
 	private ExtendedFlexiTableSearchController extendedSearchCtrl;
 	
@@ -110,6 +114,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private String wrapperSelector;
 
 	private SortKey[] orderBy;
+	private List<FlexiTableSort> sorts;
+	private List<FlexiTableFilter> filters;
 	private Object selectedObj;
 	private boolean allSelectedIndex;
 	private Set<Integer> multiSelectedIndex;
@@ -184,6 +190,51 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 	}
 	
+	public FlexiTableRendererType[] getAvailableRendererTypes() {
+		return availableRendererType;
+	}
+
+	@Override
+	public void setAvailableRendererTypes(FlexiTableRendererType... rendererType) {
+		this.availableRendererType = rendererType;
+		if(rendererType != null && rendererType.length > 1) {
+			String dispatchId = component.getDispatchID();
+			//custom
+			customTypeButton = new FormLinkImpl(dispatchId + "_customRTypeButton", "rCustomRTypeButton", "", Link.BUTTON + Link.NONTRANSLATED);
+			customTypeButton.setTranslator(translator);
+			customTypeButton.setIconLeftCSS("o_icon o_icon_list o_icon-lg");
+			components.put("rTypeCustom", customTypeButton);
+			//classic tables
+			classicTypeButton = new FormLinkImpl(dispatchId + "_classicRTypeButton", "rClassicRTypeButton", "", Link.BUTTON + Link.NONTRANSLATED);
+			classicTypeButton.setTranslator(translator);
+			classicTypeButton.setIconLeftCSS("o_icon o_icon_table o_icon-lg");
+			components.put("rTypeClassic", classicTypeButton);
+			//jquery tables
+			dataTablesTypeButton = new FormLinkImpl(dispatchId + "_dataTablesRTypeButton", "rDataTablesRTypeButton", "", Link.BUTTON + Link.NONTRANSLATED);
+			dataTablesTypeButton.setTranslator(translator);
+			dataTablesTypeButton.setIconLeftCSS("o_icon o_icon_table o_icon-lg");
+			components.put("rTypeDataTables", dataTablesTypeButton);
+			
+			if(getRootForm() != null) {
+				rootFormAvailable(customTypeButton);
+				rootFormAvailable(classicTypeButton);
+				rootFormAvailable(dataTablesTypeButton);
+			}
+		}
+	}
+
+	public FormLink getClassicTypeButton() {
+		return classicTypeButton;
+	}
+
+	public FormLink getCustomTypeButton() {
+		return customTypeButton;
+	}
+
+	public FormLink getDataTablesTypeButton() {
+		return dataTablesTypeButton;
+	}
+
 	@Override
 	public boolean isMultiSelect() {
 		return multiSelect;
@@ -209,8 +260,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public void setWrapperSelector(String wrapperSelector) {
 		this.wrapperSelector = wrapperSelector;
 	}
-	
-	
 
 	@Override
 	public FlexiTableComponent getComponent() {
@@ -233,46 +282,55 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	public boolean isFilterEnabled() {
-		return filterEl != null;
-	}
-	
-	public String getSelectedFilterKey() {
-		if(filterEl != null && filterEl.isOneSelected()) {
-			return filterEl.getSelectedKey();
-		}
-		return null;
-	}
-	
-	public String getSelectedFilterValue() {
-		if(filterEl != null && filterEl.isOneSelected()) {
-			return filterEl.getSelectedValue();
-		}
-		return null;
+		return filters != null && filters.size() > 0;
 	}
 
 	@Override
-	public void setFilterKeysAndValues(String labelI18nKey, String[] keys, String[] values) {
-		if(keys == null || keys.length == 0) {
-			components.remove("rFilter");
-			filterEl = null;
-		} else {
-			String dispatchId = component.getDispatchID();
-			String name = dispatchId + "_filter";
-			filterEl = new SingleSelectionImpl(name, name, SingleSelectionImpl.createSelectboxLayouter(name, name));
-			filterEl.setTranslator(getTranslator());
-			if(StringHelper.containsNonWhitespace(labelI18nKey)) {
-				filterEl.setLabel(labelI18nKey, null);
-				filterEl.showLabel(true);
+	public String getSelectedFilterKey() {
+		String key = null;
+		if(filters != null) {
+			for(FlexiTableFilter filter:filters) {
+				if(filter.isSelected()) {
+					key = filter.getFilter();
+				}
 			}
-			filterEl.addActionListener(FormEvent.ONCHANGE);
-			filterEl.setKeysAndValues(keys, values, null);
-			components.put("rFilter", filterEl);
-			rootFormAvailable(filterEl);
 		}
+		return key;
+	}
+
+	@Override
+	public String getSelectedFilterValue() {
+		String value = null;
+		if(filters != null) {
+			for(FlexiTableFilter filter:filters) {
+				if(filter.isSelected()) {
+					value = filter.getLabel();
+				}
+			}
+		}
+		return value;
 	}
 	
-	public SingleSelection getFilterSelection() {
-		return filterEl;
+	public List<FlexiTableFilter> getFilters() {
+		return filters;
+	}
+
+	@Override
+	public void setFilters(String name, List<FlexiTableFilter> filters) {
+		this.filters = new ArrayList<>(filters);
+	}
+	
+	public boolean isSortEnabled() {
+		return sorts != null && sorts.size() > 0;
+	}
+	
+	public List<FlexiTableSort> getSorts() {
+		return sorts;
+	}
+
+	@Override
+	public void setSorts(String label, List<FlexiTableSort> sorts) {
+		this.sorts = sorts;
 	}
 
 	@Override
@@ -287,9 +345,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			exportButton = null;
 			
 			String dispatchId = component.getDispatchID();
-			exportButton = new FormLinkImpl(dispatchId + "_exportButton", "rExportButton", "export", Link.BUTTON);
+			exportButton = new FormLinkImpl(dispatchId + "_exportButton", "rExportButton", "", Link.BUTTON | Link.NONTRANSLATED);
 			exportButton.setTranslator(translator);
-			exportButton.setCustomEnabledLinkCSS("b_with_small_icon_only b_table_download");
+			exportButton.setIconLeftCSS("o_icon o_icon_download");
 			components.put("rExport", exportButton);
 			rootFormAvailable(exportButton);
 		} else {
@@ -483,6 +541,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		String select = form.getRequestParameter("select");
 		String page = form.getRequestParameter("page");
 		String sort = form.getRequestParameter("sort");
+		String filter = form.getRequestParameter("filter");
 		if("undefined".equals(dispatchuri)) {
 			evalSearchRequest(ureq);
 		} else if(StringHelper.containsNonWhitespace(page)) {
@@ -505,10 +564,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		} else if(extendedSearchButton != null
 				&& extendedSearchButton.getFormDispatchId().equals(dispatchuri)) {
 			openExtendedSearch(ureq);
-		} else if(filterEl != null
-				&& filterEl.getFormDispatchId().equals(dispatchuri)) {
-			filterEl.evalFormRequest(ureq);
-			filter();
+		} else if(dispatchuri != null && StringHelper.containsNonWhitespace(filter)) {
+			filter(filter);
 		} else if(exportButton != null
 				&& exportButton.getFormDispatchId().equals(dispatchuri)) {
 			export(ureq);
@@ -520,6 +577,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				&& customButton.getFormDispatchId().equals(dispatchuri)) {
 			//snap the request
 			customizeCallout(ureq);
+		} else if(customTypeButton != null
+				&& customTypeButton.getFormDispatchId().equals(dispatchuri)) {
+			setRendererType(FlexiTableRendererType.custom);
+		} else if(classicTypeButton != null
+				&& classicTypeButton.getFormDispatchId().equals(dispatchuri)) {
+			setRendererType(FlexiTableRendererType.classic);
+		} else if(dataTablesTypeButton != null
+				&& dataTablesTypeButton.getFormDispatchId().equals(dispatchuri)) {
+			setRendererType(FlexiTableRendererType.dataTables);
 		} else {
 			FlexiTableColumnModel colModel = dataModel.getTableColumnModel();
 			for(int i=colModel.getColumnCount(); i-->0; ) {
@@ -567,16 +633,25 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 	}
 	
-	protected void filter() {
-		if(filterEl.isOneSelected()) {
-			String filter = filterEl.getSelectedKey();
-			if(dataModel instanceof FilterableFlexiTableModel) {
-				((FilterableFlexiTableModel)dataModel).filter(filter);
-			} else if(dataSource != null) {
-				List<String> conditionalQueries = Collections.singletonList(filter);
-				dataSource.load(null, conditionalQueries, 0, getPageSize(), orderBy);
+	protected void filter(String filterKey) {
+		if(filterKey == null) {
+			for(FlexiTableFilter filter:filters) {
+				filter.setSelected(false);
+			}
+		} else {
+			for(FlexiTableFilter filter:filters) {
+				filter.setSelected(filter.getFilter().equals(filterKey));
 			}
 		}
+		
+		if(dataModel instanceof FilterableFlexiTableModel) {
+			((FilterableFlexiTableModel)dataModel).filter(filterKey);
+		} else if(dataSource != null) {
+			List<String> conditionalQueries = Collections.singletonList(filterKey);
+			dataSource.clear();
+			dataSource.load(null, conditionalQueries, 0, getPageSize(), orderBy);
+		}
+		component.setDirty(true);
 	}
 	
 	protected void export(UserRequest ureq) {
@@ -832,8 +907,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			dataSource.load(getSearchText(), getConditionalQueries(), 0, getPageSize());//reload needed rows
 		} else {
 			if(dataModel instanceof FilterableFlexiTableModel) {
-				if(filterEl != null && filterEl.isOneSelected()) {
-					String filter = filterEl.getSelectedKey();
+				if(isFilterEnabled()) {
+					String filter = getSelectedFilterKey();
 					((FilterableFlexiTableModel)dataModel).filter(filter);
 				}
 			}
@@ -858,12 +933,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	protected void rootFormAvailable() {
-		rootFormAvailable(filterEl);
 		rootFormAvailable(searchButton);
 		rootFormAvailable(customButton);
 		rootFormAvailable(exportButton);
 		rootFormAvailable(searchFieldEl);
 		rootFormAvailable(extendedSearchButton);
+		rootFormAvailable(customTypeButton);
+		rootFormAvailable(classicTypeButton);
+		rootFormAvailable(dataTablesTypeButton);
 	}
 	
 	private final void rootFormAvailable(FormItem item) {

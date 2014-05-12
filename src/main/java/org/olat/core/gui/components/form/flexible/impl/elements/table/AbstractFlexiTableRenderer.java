@@ -19,10 +19,13 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import java.util.List;
+
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
@@ -48,16 +51,21 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		FlexiTableComponent ftC = (FlexiTableComponent) source;
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 
-		String id = ftC.getFormDispatchId();
-
+		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
+		
 		sb.append("<div class=\"o_table_wrapper o_table_flexi")
 		  .append(" o_table_edit", ftE.isEditMode());
 		String css = ftE.getElementCssClass();
 		if (css != null) {
 			sb.append(" ").append(css);
 		}
+		switch(ftE.getRendererType()) {
+			case custom: sb.append("o_rendertype_custom"); break;
+			case classic: sb.append("o_rendertype_classic"); break;
+			case dataTables: sb.append("o_rendertype_dataTables"); break;
+		}
 		sb.append(" table-responsive\">");
-		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
+		String id = ftC.getFormDispatchId();
 		sb.append("<table id=\"").append(id).append("\" class=\"table table-bordered table-hover table-responsive\">");
 		
 		//render headers
@@ -80,16 +88,23 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	
 	protected void renderHeaderButtons(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
-		if(ftE.isFilterEnabled()) {
-			sb.append("<div class='o_table_filter'>");
-			SingleSelection filterEl = ftE.getFilterSelection();
-			String text = filterEl.getLabelText();
-			if(text != null && text.length() < 128) {
-				sb.append("<label>").append(text).append("</label>");
-			}
-			renderFormItem(renderer, sb, filterEl, ubu, translator, renderResult, args);
-			sb.append("</div>");
-		}
+		
+		sb.append("<div class='row clearfix'><div class='col-lg-6'>");
+		
+		renderHeaderSearch(renderer, sb, ftE, ubu, translator, renderResult, args);
+		
+		sb.append("</div><div class='col-lg-2'></div><div class='col-lg-4'>");
+		
+		renderHeaderTools(renderer, sb, ftE, ubu, translator, renderResult,  args);
+		
+		sb.append("</div></div>");
+	}
+	
+	protected void renderHeaderSearch(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
+			RenderResult renderResult, String[] args) {
+		
+		
+		
 		if(ftE.isSearchEnabled()) {
 			sb.append("<div class='o_table_search input-group'>");
 			renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, args);
@@ -100,12 +115,121 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		if(ftE.getExtendedSearchButton() != null) {
 			renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, args);
 		}
+	}
+	
+	/**
+	 * The method rendered the tools:  filter, sort, customize, export, switch type of renderer.
+	 * @param renderer
+	 * @param sb
+	 * @param ftE
+	 * @param ubu
+	 * @param translator
+	 * @param renderResult
+	 * @param args
+	 */
+	protected void renderHeaderTools(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
+			RenderResult renderResult, String[] args) {
+		
+		sb.append("<div class='pull-right o_table_tools'>");
+		
+		//filter
+		if(ftE.isFilterEnabled()) {
+			List<FlexiTableFilter> filters = ftE.getFilters();
+			if(filters != null && filters.size() > 0) {
+				renderFilterDropdown(sb, ftE, filters);
+			}
+		}
+		
+		//sort
+		if(ftE.isSortEnabled()) {
+			List<FlexiTableSort> sorts = ftE.getSorts();
+			if(sorts != null && sorts.size() > 0) {
+				renderSortDropdown(sb, ftE, sorts);
+			}
+		}
 		
 		if(ftE.getExportButton() != null && ftE.isExportEnabled()) {
+			sb.append("<div class='btn-group'>");
 			renderFormItem(renderer, sb, ftE.getExportButton(), ubu, translator, renderResult, args);
+			sb.append("</div> ");
 		}
 		if(ftE.getCustomButton() != null && ftE.isCustomizeColumns()) {
+			sb.append("<div class='btn-group'>");
 			renderFormItem(renderer, sb, ftE.getCustomButton(), ubu, translator, renderResult, args);
+			sb.append("</div> ");
+		}
+		
+		//switch type of tables
+		FlexiTableRendererType[] types = ftE.getAvailableRendererTypes();
+		if(types.length > 1) {
+			sb.append("<div class='btn-group'>");
+			for(FlexiTableRendererType type:types) {
+				renderHeaderSwitchType(type, renderer, sb, ftE, ubu, translator, renderResult, args);
+			}
+			sb.append("</div> ");
+		}
+		sb.append("</div>");
+	}
+	
+	protected void renderFilterDropdown(StringOutput sb, FlexiTableElementImpl ftE, List<FlexiTableFilter> filters) {
+		Form theForm = ftE.getRootForm();
+		String dispatchId = ftE.getFormDispatchId();
+		
+		sb.append("<div class='btn-group'>")
+		  .append("<button class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
+		  .append("<i class='o_icon o_icon_filter o_icon-lg'>&nbsp;</i> <b class='caret'></b></button>")
+		  .append("<ul class='dropdown-menu' role='menu'>");
+		
+		for(FlexiTableFilter filter:filters) {
+			if(FlexiTableFilter.SPACER.equals(filter)) {
+				sb.append("<li class='divider'></li>");
+			} else {
+				sb.append("<li><a href=\"javascript:")
+				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, new NameValuePair("filter", filter.getFilter())))
+				  .append("\">").append(filter.getLabel()).append("</a></li>");
+			}
+		}
+		sb.append("</ul></div> ");
+	}
+	
+	protected void renderSortDropdown(StringOutput sb, FlexiTableElementImpl ftE, List<FlexiTableSort> sorts) {
+		Form theForm = ftE.getRootForm();
+		String dispatchId = ftE.getFormDispatchId();
+		
+		sb.append("<div class='btn-group'>")
+		  .append("<button class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
+		  .append("<i class='o_icon o_icon_sort_menu o_icon-lg'>&nbsp;</i> <b class='caret'></b></button>")
+		  .append("<ul class='dropdown-menu' role='menu'>");
+		
+		for(FlexiTableSort sort:sorts) {
+			if(FlexiTableSort.SPACER.equals(sort)) {
+				sb.append("<li class='divider'></li>");
+			} else {
+				sb.append("<li><a href=\"javascript:")
+				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, new NameValuePair("sort", sort.getSortKey().getKey())))
+				  .append("\">").append(sort.getLabel()).append("</a></li>");
+			}
+		}
+		sb.append("</ul></div> ");
+	}
+	
+	protected void renderHeaderSwitchType(FlexiTableRendererType type, Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
+			RenderResult renderResult, String[] args) {
+		if(type != null) {
+			switch(type) {
+				case custom: {
+					renderFormItem(renderer, sb, ftE.getCustomTypeButton(), ubu, translator, renderResult, args);
+					break;
+				}
+				case classic: {
+					renderFormItem(renderer, sb, ftE.getClassicTypeButton(), ubu, translator, renderResult, args);
+					break;
+				}
+				case dataTables: {
+					renderFormItem(renderer, sb, ftE.getDataTablesTypeButton(), ubu, translator, renderResult, args);
+					break;
+				}
+			}
 		}
 	}
 	

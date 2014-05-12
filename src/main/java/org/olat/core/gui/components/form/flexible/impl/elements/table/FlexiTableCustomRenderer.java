@@ -45,6 +45,8 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 		
 		FlexiTableComponent ftC = (FlexiTableComponent)source;
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		
+		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
 
 		String id = ftC.getFormDispatchId();
 		sb.append("<div class=\"o_table_wrapper o_table_flexi")
@@ -54,8 +56,7 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 			sb.append(" ").append(css);
 		}
 		sb.append("\">");
-		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
-
+		
 		//render body
 		sb.append("<div class='o_table_body container-fluid'>");
 		renderBody(renderer, sb, ftC, ubu, translator, renderResult);

@@ -29,6 +29,7 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.translator.Translator;
 
 /**
@@ -76,8 +77,12 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 		this.iconCSS = iconCSS;
 	}
 
-	public void addComponent(Component component) {
+	public void addComponent(Link component) {
 		components.add(component);
+	}
+	
+	public void addComponent(Spacer spacer) {
+		components.add(spacer);
 	}
 	
 	public int size() {
@@ -112,5 +117,23 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
+	}
+	
+	public static class Spacer extends AbstractComponent {
+		
+		public Spacer(String name) {
+			super(name);
+		}
+
+		@Override
+		protected void doDispatchRequest(UserRequest ureq) {
+			//
+		}
+
+		@Override
+		public ComponentRenderer getHTMLRendererSingleton() {
+			return null;
+		}
+		
 	}
 }
