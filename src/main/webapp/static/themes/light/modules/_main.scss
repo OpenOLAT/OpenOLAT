@@ -48,7 +48,9 @@
 	
 	#o_toplink {
 		position: absolute;
-		bottom: 10px; right: 10px;
+		bottom: 0; right: 10px;
+		text-align: center;
+		@extend .o_undecorated;
 	}
 
 	@media (max-width: $screen-xs-max) { 

@@ -64,7 +64,7 @@ $o-coursesite-catalog-border : $brand-primary;
 				width: $o-coursesite-rowelem-width-md;
 				overflow: hidden;
 				border-left: 1px solid $o-coursesite-rowelem-border;
-				padding-top: floor($line-height-computed / 2);
+				padding-top: 0.25em;
 				
 				
 				.o_state, .o_score {
@@ -122,6 +122,7 @@ $o-coursesite-catalog-border : $brand-primary;
 						@include text-overflow();
 					}
 					.o_methods {
+						color: $brand-info;
 					}				
 				}
 				
@@ -168,10 +169,10 @@ $o-coursesite-catalog-border : $brand-primary;
 				height: $o-coursesite-rowelem-height-md;	
 				margin: 0 $o-coursesite-rowelem-width-md 0 $o-coursesite-rowelem-width-md;
 				position: relative;
-				padding: 1em 0.5em 0.5em 1em;
+				padding: 1em 0.5em 0.25em 1em;
 
 				overflow: hidden;
-				text-overflow: ellipsis;
+				/* overflow via JS OPOL.Ellipsis */
 	
 				.o_title {
 					margin: 0; /* box moves down otherwhise, replaced with padding */
@@ -186,6 +187,7 @@ $o-coursesite-catalog-border : $brand-primary;
 				.o_author{
 					margin-top: 0.5em;
 					line-height: 1em;
+					font-size: 90%;
 					@include text-overflow();
 					@extend .text-success;
 				}
@@ -201,10 +203,7 @@ $o-coursesite-catalog-border : $brand-primary;
 					}
 				}
 				.o_desc {
-					margin-top: 0.5em;
-					overflow: hidden;
-					text-overflow: ellipsis;
-					
+					margin-top: 0.5em;					
 				}
 				.o_bookmark {
 					position: absolute;
@@ -214,9 +213,6 @@ $o-coursesite-catalog-border : $brand-primary;
 				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
 					height: $o-coursesite-rowelem-height-sm;	
 					margin: 0 $o-coursesite-rowelem-width-sm;
-					.o_desc {
-						display: none;
-					}	
 				}
 				@media (max-width: $screen-xs-max) { 
 					height: $o-coursesite-rowelem-height-xs;	
@@ -225,7 +221,7 @@ $o-coursesite-catalog-border : $brand-primary;
 					.o_title {
 						line-height: $o-coursesite-rowelem-height-xs;
 					}
-					.o_author, .o_bookmark, .o_lifecycle {
+					.o_author, .o_bookmark, .o_lifecycle, .o_desc {
 						display: none;
 					}	
 				}
@@ -271,7 +267,9 @@ $o-coursesite-catalog-border : $brand-primary;
 			position: relative;
 			min-height: $o-coursesite-rowelem-width-md;	
 			height: $o-coursesite-rowelem-width-md;	
+
 			overflow: hidden;
+			/* overflow via JS OPOL.Ellipsis */
 		
 			margin: 0 0 0 $o-coursesite-rowelem-width-md;
 			padding: 1em 0.5em 0.5em 2em;
@@ -279,7 +277,6 @@ $o-coursesite-catalog-border : $brand-primary;
 			.o_title {
 				margin: 0; /* box moves down otherwhise, replaced with padding */
 				@extend .text-primary;
-				@include text-overflow();
 				a {
 					@extend .o_undecorated;
 					display: block;
@@ -327,11 +324,11 @@ $o-coursesite-catalog-border : $brand-primary;
 		.o_sublevel {
 			position: relative;
 			@extend .pull-left; 
-			margin: 0 0 $o-coursesite-catalog-space $o-coursesite-catalog-space;
+			margin: 0 $o-coursesite-catalog-space $o-coursesite-catalog-space 0;
 			width: $o-coursesite-rowelem-width-md;	
 
-			&:first-child {
-				margin-left: 0;			
+			&:last-child {
+				margin-right: 0;			
 			}
 						
 			.o_visual {
@@ -344,16 +341,21 @@ $o-coursesite-catalog-border : $brand-primary;
 				left: 0;
 				bottom: 0;
 				width: 100%;
+
 				border: 1px solid $o-coursesite-catalog-border;
 				border-top: 0;
-				background-color: rgba(255,255,255,0.7);
+				background-color: rgba(255,255,255,0.8);
 				
 				.o_title {
 					margin: 0; /* box moves down otherwhise, replaced with padding */
 					@extend .text-primary;
 					text-align: center;
 					line-height: 2em;
+					height: 2em;
 					width: 100%;
+
+					overflow: hidden;
+					/* overflow via JS OPOL.Ellipsis */
 					a {
 						@extend .o_undecorated;
 						display: block;
@@ -363,7 +365,7 @@ $o-coursesite-catalog-border : $brand-primary;
 
 			@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
 				width: $o-coursesite-rowelem-width-sm;	
-				margin: 0 0 $o-coursesite-catalog-space-sm $o-coursesite-catalog-space-sm;
+				margin: 0 $o-coursesite-catalog-space-sm $o-coursesite-catalog-space-sm 0;
 	
 				.o_visual {
 					height: $o-coursesite-rowelem-width-sm;	
@@ -374,7 +376,7 @@ $o-coursesite-catalog-border : $brand-primary;
 			}
 			@media (max-width: $screen-xs-max) { 
 				width: $o-coursesite-rowelem-width-sm;	
-				margin: 0 0 $o-coursesite-catalog-space-xs $o-coursesite-catalog-space-xs;
+				margin: 0 $o-coursesite-catalog-space-xs $o-coursesite-catalog-space-xs 0;
 				
 				.o_visual {
 					height: $o-coursesite-rowelem-width-sm;	

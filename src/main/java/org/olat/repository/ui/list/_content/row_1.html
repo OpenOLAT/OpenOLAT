@@ -6,7 +6,7 @@
 			<div class="o_visual_not_available"></div>
 		#end	
 	</div>
-	<div class="o_meta">
+	<div class="o_meta o_withEllipsis">
 		<div class="o_go_xs visible-xs">
 			<i class=" o_icon o_icon_start o_icon-lg"></i>
 		</div>
@@ -84,4 +84,14 @@
 		$r.render($row.getDetailsLinkName())
 		$r.render($row.getStartLinkName())
 	</div>	
+
+<script type="text/javascript">
+/* <![CDATA[ */ 
+## Initialize the ellipsis code to hide overlflowed text
+	jQuery(document).ready(function() {
+		OPOL.Ellipsis.initEllipsisElement("#${r.getCId()} .o_withEllipsis");
+	});
+/* ]]> */
+</script>
+
 </div>
