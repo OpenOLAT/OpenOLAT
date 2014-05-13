@@ -302,7 +302,7 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 
 		double averageScore = totalScore / totalResults;
 		//difficulty (p-value)
-		double difficulty = numOfCorrectAnswers / totalResults;
+		double difficulty = numOfCorrectAnswers / (double)totalResults;
 		double averageDuration = totalDuration / totalResults;
 		
 		StatisticsItem stats = new StatisticsItem();
