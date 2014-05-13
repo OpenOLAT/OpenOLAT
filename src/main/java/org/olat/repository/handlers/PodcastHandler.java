@@ -109,8 +109,8 @@ public class PodcastHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, Locale locale,
-			File file, String filename) {
+	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, boolean withReferences,
+			Locale locale, File file, String filename) {
 		
 		OLATResource resource = OLATResourceManager.getInstance().createAndPersistOLATResourceInstance(new PodcastFileResource());
 		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();

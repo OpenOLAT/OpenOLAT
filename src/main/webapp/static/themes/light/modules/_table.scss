@@ -4,7 +4,9 @@
 		.o_table_body{
 			margin-top: $line-height-computed;
 		}
-	
+		.table {
+			margin-top: $line-height-computed;
+		}
 	}	
 	&.o_table_edit {}
 

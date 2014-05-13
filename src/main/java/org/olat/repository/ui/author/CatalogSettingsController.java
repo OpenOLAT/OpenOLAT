@@ -19,11 +19,25 @@
  */
 package org.olat.repository.ui.author;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.catalog.CatalogEntry;
+import org.olat.catalog.CatalogManager;
 import org.olat.catalog.ui.CatalogEntryAddController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -34,6 +48,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -44,15 +59,20 @@ import org.olat.repository.RepositoryService;
 public class CatalogSettingsController extends FormBasicController {
 	
 	private Link addToCatalogLink;
+	private FlexiTableElement tableEl;
+	private CategoriesListModel model;
 
 	private CloseableModalController cmc;
 	private Controller catalogAdddController;
 	
 	private RepositoryEntry entry;
 	
+	@Autowired
+	private CatalogManager catalogManager;
+	
 	public CatalogSettingsController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel stackPanel, RepositoryEntry entry) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		
@@ -68,12 +88,33 @@ public class CatalogSettingsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		//
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("catalog.path", 0));
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("remove", translate("remove"), "remove"));
+		
+		List<CatalogEntry> catalogEntries = catalogManager.getCatalogCategoriesFor(entry);
+		model = new CategoriesListModel(catalogEntries, columnsModel);
+		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "table", model, 200, getTranslator(), formLayout);
+		tableEl.setCustomizeColumns(false);
 	}
 	
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(tableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				CatalogEntry row = model.getObject(se.getIndex());
+				if("remove".equals(cmd)) {
+					doRemove(row);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -90,7 +131,7 @@ public class CatalogSettingsController extends FormBasicController {
 			cleanUp();
 		} else if(catalogAdddController == source) {
 			cmc.deactivate();
-			
+			updateTable();
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -124,6 +165,52 @@ public class CatalogSettingsController extends FormBasicController {
 		cmc.activate();
 	}
 	
-	
+	private void doRemove(CatalogEntry catEntry) {
+		List<CatalogEntry> children = catalogManager.getChildrenOf(catEntry);
+		// find all child element of this level that reference our repo entry
+		for (CatalogEntry child : children) {
+			RepositoryEntry childRepoEntry = child.getRepositoryEntry();
+			if (childRepoEntry != null && childRepoEntry.equalsByPersistableKey(entry)) {
+				// remove from catalog
+				catalogManager.deleteCatalogEntry(child);
+			}
+		}
 
+		//update table
+		updateTable();
+	}
+	
+	private void updateTable() {
+		List<CatalogEntry> catalogEntries = catalogManager.getCatalogCategoriesFor(entry);
+		model.setObjects(catalogEntries);
+		tableEl.reset();
+	}
+
+	private class CategoriesListModel extends DefaultFlexiTableDataModel<CatalogEntry> {
+
+		public CategoriesListModel(List<CatalogEntry> catalogEntries, FlexiTableColumnModel columnModel) {
+			super(catalogEntries, columnModel);
+		}
+
+		@Override
+		public DefaultFlexiTableDataModel<CatalogEntry> createCopyWithEmptyList() {
+			return new CategoriesListModel(new ArrayList<CatalogEntry>(), getTableColumnModel());
+		}
+
+		@Override
+		public Object getValueAt(int row, int col) {
+			CatalogEntry entry = getObject(row);
+			if(col == 0) {
+				// calculate cat entry path: travel up to the root node
+				String path = "";
+				CatalogEntry tempEntry = entry;
+				while (tempEntry != null) {
+					path = "/" + tempEntry.getName() + path;
+					tempEntry = tempEntry.getParent();
+				}
+				return path;
+			}
+			return "ERROR";
+		}
+	}
 }

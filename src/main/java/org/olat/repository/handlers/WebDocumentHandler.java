@@ -143,8 +143,8 @@ public class WebDocumentHandler extends FileHandler {
 	}
 	
 	@Override
-	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, Locale locale,
-			File file, String filename) {
+	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, boolean withReferences,
+			Locale locale, File file, String filename) {
 		
 		FileResource ores;
 		if (DocFileResource.validate(filename)) {

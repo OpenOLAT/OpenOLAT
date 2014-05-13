@@ -93,6 +93,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private boolean exportEnabled;
 	private boolean searchEnabled;
 	private boolean selectAllEnabled;
+	private boolean extendedSearchExpanded = false;
+	private boolean extendedSearchCallout;
 	private int columnLabelForDragAndDrop;
 	
 	private VelocityContainer rowRenderer;
@@ -404,8 +406,22 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	@Override
-	public void setExtendedSearchCallout(ExtendedFlexiTableSearchController callout) {
-		extendedSearchCtrl = callout;
+	public boolean isExtendedSearchExpanded() {
+		return extendedSearchExpanded;
+	}
+	
+	public boolean isExtendedSearchCallout() {
+		return extendedSearchCallout;
+	}
+	
+	public Component getExtendedSearchComponent() {
+		return (extendedSearchCtrl == null) ? null : extendedSearchCtrl.getInitialComponent();
+	}
+	
+	@Override
+	public void setExtendedSearch(ExtendedFlexiTableSearchController controller, boolean callout) {
+		extendedSearchCtrl = controller;
+		extendedSearchCallout = callout;
 		if(extendedSearchCtrl != null) {
 			extendedSearchCtrl.addControllerListener(this);
 			
@@ -415,6 +431,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			extendedSearchButton.setIconLeftCSS("o_icon o_icon_search");
 			components.put("rExtSearchB", extendedSearchButton);
 			rootFormAvailable(extendedSearchButton);
+			
+			if(!callout) {
+				components.put("rExtSearchCmp", controller.getInitialFormItem());
+			}
 		}
 	}
 	
@@ -563,7 +583,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			evalSearchRequest(ureq);
 		} else if(extendedSearchButton != null
 				&& extendedSearchButton.getFormDispatchId().equals(dispatchuri)) {
-			openExtendedSearch(ureq);
+			expandExtendedSearch(ureq);
 		} else if(dispatchuri != null && StringHelper.containsNonWhitespace(filter)) {
 			filter(filter);
 		} else if(exportButton != null
@@ -606,7 +626,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			//System.out.println("dispatchEvent (Controller): " + source);
 		} else if(source == extendedSearchCtrl) {
 			if(event == Event.CANCELLED_EVENT) {
-				callout.deactivate();
+				if(callout != null) {
+					callout.deactivate();
+				} else {
+					collapseExtendedSearch();
+				}
 			} else if(event == Event.DONE_EVENT) {
 				evalExtendedSearch(ureq);
 			}
@@ -627,9 +651,25 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		orderBy = new SortKey[]{ key };
 		if(dataModel instanceof SortableFlexiTableDataModel) {
 			((SortableFlexiTableDataModel<?>)dataModel).sort(key);
-			component.setDirty(true);
 		} else if(dataSource != null) {
+			dataSource.clear();
 			dataSource.load(null, conditionalQueries, 0, getPageSize(), orderBy);
+		}
+
+		if(sorts != null) {
+			for(FlexiTableSort sort:sorts) {
+				boolean selected = sort.getSortKey().getKey().equals(sortKey);
+				sort.setSelected(selected);
+				if(selected) {
+					sort.getSortKey().setAsc(asc);
+				} else {
+					sort.getSortKey().setAsc(false);
+				}
+			}
+		}
+		
+		if(rendererType != FlexiTableRendererType.dataTables) {
+			component.setDirty(true);
 		}
 	}
 	
@@ -665,18 +705,25 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	
-	protected void openExtendedSearch(UserRequest ureq) {
-		callout = new CloseableCalloutWindowController(ureq, wControl, extendedSearchCtrl.getInitialComponent(),
-				extendedSearchButton, "Search", true, "o_sel_flexi_search_callout");
-		callout.activate();
-		callout.addControllerListener(this);
+	@Override
+	public void expandExtendedSearch(UserRequest ureq) {
+		if(extendedSearchCallout) {
+			callout = new CloseableCalloutWindowController(ureq, wControl, extendedSearchCtrl.getInitialComponent(),
+				extendedSearchButton, getTranslator().translate("search"), true, "o_sel_flexi_search_callout");
+			callout.activate();
+			callout.addControllerListener(this);
+		} else {
+			component.setDirty(true);
+		}
+		extendedSearchExpanded = true;
 	}
 	
 	@Override
-	public void closeExtendedSearch() {
+	public void collapseExtendedSearch() {
 		if(callout != null) {
 			callout.deactivate();
 		}
+		extendedSearchExpanded = false;
 	}
 
 	protected void customizeCallout(UserRequest ureq) {

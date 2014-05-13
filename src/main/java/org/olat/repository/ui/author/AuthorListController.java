@@ -110,7 +110,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	
 	public AuthorListController(UserRequest ureq, WindowControl wControl, String i18nName,
 			SearchAuthorRepositoryEntryViewParams searchParams) {
-		super(ureq, wControl, "repoentry_table");
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 
 		this.searchParams = searchParams;
@@ -124,7 +124,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		for(String type:types) {
 			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
 			if(handler != null && handler.isCreate()) {
-				addCreateLink(handler, createDropdown);
+				addCreateLink(type, createDropdown);
 			}
 		}
 		
@@ -133,16 +133,15 @@ public class AuthorListController extends FormBasicController implements Activat
 		initForm(ureq);
 
 		stackPanel = new TooledStackedPanel(i18nName, getTranslator(), this);
+		stackPanel.setShowCloseLink(false);
 		stackPanel.pushController(translate(i18nName), this);
-		stackPanel.addTool(importLink, false);
-		stackPanel.addTool(createDropdown, false);
-		stackPanel.getCloseLink().setVisible(false);
+		stackPanel.addTool(importLink);
+		stackPanel.addTool(createDropdown);
 	}
 	
-	private void addCreateLink(RepositoryHandler handler, Dropdown dropdown) {
-		String name = handler.getSupportedTypes().get(0);
-		Link createLink = LinkFactory.createLink(name, getTranslator(), this);
-		createLink.setUserObject(handler);
+	private void addCreateLink(String type, Dropdown dropdown) {
+		Link createLink = LinkFactory.createLink(type, getTranslator(), this);
+		createLink.setUserObject(type);
 		dropdown.addComponent(createLink);
 	}
 	
@@ -155,7 +154,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		//search form
 		searchCtrl = new AuthorSearchController(ureq, getWindowControl(), true, mainForm);
 		listenTo(searchCtrl);
-		formLayout.add("search", searchCtrl.getInitialFormItem());
+		//formLayout.add("search", searchCtrl.getInitialFormItem());
 		
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -185,6 +184,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "table", model, 20, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
 		tableEl.setExportEnabled(true);
+		tableEl.setExtendedSearch(searchCtrl, false);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_coursetable");
 		tableEl.setFilters(null, getFilters());
@@ -226,9 +226,12 @@ public class AuthorListController extends FormBasicController implements Activat
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(importLink == source) {
 			doImport(ureq);
-		} else if(source instanceof Link && ((Link)source).getUserObject() instanceof RepositoryHandler) {
-			RepositoryHandler resources = (RepositoryHandler)((Link)source).getUserObject();
-			doCreate(ureq, resources);
+		} else if(source instanceof Link && ((Link)source).getUserObject() instanceof String) {
+			String type = (String)((Link)source).getUserObject();
+			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
+			if(handler != null) {
+				doCreate(ureq, type, handler);
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -361,11 +364,11 @@ public class AuthorListController extends FormBasicController implements Activat
 		cmc.activate();
 	}
 	
-	private void doCreate(UserRequest ureq, RepositoryHandler handler) {
+	private void doCreate(UserRequest ureq, String type, RepositoryHandler handler) {
 		if(createCtrl != null) return;
 
 		removeAsListenerAndDispose(createCtrl);
-		createCtrl = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
+		createCtrl = new CreateRepositoryEntryController(ureq, getWindowControl(), type, handler);
 		listenTo(createCtrl);
 		removeAsListenerAndDispose(cmc);
 		

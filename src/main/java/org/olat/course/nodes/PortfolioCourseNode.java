@@ -425,7 +425,7 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 		if (rie.anyExportedPropertiesAvailable()) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(EPTemplateMapResource.TYPE_NAME);
 			RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
-					locale, rie.importGetExportedFile(), null);
+					false, locale, rie.importGetExportedFile(), null);
 			//TODO missing map
 			PortfolioCourseNodeEditController.setReference(re, null, getModuleConfiguration());
 		}

@@ -330,7 +330,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Ass
 		if(rie.anyExportedPropertiesAvailable()) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(ScormCPFileResource.TYPE_NAME);
 			RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
-				locale, rie.importGetExportedFile(), null);
+				false, locale, rie.importGetExportedFile(), null);
 			ScormEditController.setScormCPReference(re, getModuleConfiguration());
 		}
 	}

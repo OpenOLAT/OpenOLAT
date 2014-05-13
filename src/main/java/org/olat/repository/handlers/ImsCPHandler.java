@@ -129,8 +129,8 @@ public class ImsCPHandler extends FileHandler {
 	}
 	
 	@Override
-	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, Locale locale,
-			File file, String filename) {
+	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, boolean withReferences,
+			Locale locale, File file, String filename) {
 
 		ImsCPFileResource cpResource = new ImsCPFileResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(cpResource);

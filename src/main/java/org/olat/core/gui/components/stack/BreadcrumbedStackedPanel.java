@@ -21,7 +21,6 @@ package org.olat.core.gui.components.stack;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -54,6 +53,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 	protected final Link closeLink;
 	
 	private String cssClass;
+	private boolean showCloseLink;
 	
 	public BreadcrumbedStackedPanel(String name, Translator translator, ComponentEventListener listener) {
 		this(name, translator, listener, null);
@@ -96,13 +96,16 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		return closeLink;
 	}
 	
-	public List<Link> getBreadCrumbs() {
-		return stack;
+	public boolean isShowCloseLink() {
+		return showCloseLink;
 	}
 
-	@Override
-	public Component getComponent(String name) {
-		return super.getComponent(name);
+	public void setShowCloseLink(boolean showCloseLink) {
+		this.showCloseLink = showCloseLink;
+	}
+	
+	public List<Link> getBreadCrumbs() {
+		return stack;
 	}
 
 	@Override
@@ -115,11 +118,6 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 			cmps.add(crumb);
 		}
 		return cmps;
-	}
-
-	@Override
-	public Map<String, Component> getComponentMap() {
-		return super.getComponentMap();
 	}
 
 	@Override

@@ -134,6 +134,5 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 		public ComponentRenderer getHTMLRendererSingleton() {
 			return null;
 		}
-		
 	}
 }

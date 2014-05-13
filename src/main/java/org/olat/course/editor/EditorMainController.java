@@ -346,7 +346,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private void initToolbar(boolean closeEditor) {
 		
 		Dropdown editTools = new Dropdown("editTools", NLS_HEADER_TOOLS, false, getTranslator());
-		stackPanel.addTool(editTools, false);
+		stackPanel.addTool(editTools);
 		
 		previewLink = LinkFactory.createToolLink(CMD_COURSEPREVIEW, translate(NLS_COMMAND_COURSEPREVIEW), this, "b_toolbox_preview");
 		editTools.addComponent(previewLink);
@@ -361,7 +361,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		//toolC.addHeader(translate(NLS_HEADER_INSERTNODES));
 		
 		Dropdown elementsTools = new Dropdown("insertNodes", NLS_HEADER_INSERTNODES, false, getTranslator());
-		stackPanel.addTool(elementsTools, false);
+		stackPanel.addTool(elementsTools);
 		
 		CourseNodeFactory cnf = CourseNodeFactory.getInstance();
 		for (String courseNodeAlias : cnf.getRegisteredCourseNodeAliases()) {
@@ -376,7 +376,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		}
 		
 		Dropdown multiTools = new Dropdown("insertNodes", NLS_ADMIN_HEADER, false, getTranslator());
-		stackPanel.addTool(multiTools, false);
+		stackPanel.addTool(multiTools);
 		
 		multiSpsLink = LinkFactory.createToolLink(CMD_MULTI_SP, translate(NLS_MULTI_SPS), this, "b_toolbox_copy");
 		multiTools.addComponent(multiSpsLink);
@@ -384,7 +384,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		multiTools.addComponent(multiCheckListLink);
 		
 		Dropdown nodeTools = new Dropdown("insertNodes", NLS_COMMAND_DELETENODE_HEADER, false, getTranslator());
-		stackPanel.addTool(nodeTools, false);
+		stackPanel.addTool(nodeTools);
 		
 		deleteNodeLink = LinkFactory.createToolLink(CMD_DELNODE, translate(NLS_COMMAND_DELETENODE), this, "b_toolbox_delete");
 		nodeTools.addComponent(deleteNodeLink);

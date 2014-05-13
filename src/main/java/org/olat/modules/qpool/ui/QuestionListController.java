@@ -638,8 +638,9 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(addController);
 		
-		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(TestFileResource.TYPE_NAME);
-		addController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
+		String type = TestFileResource.TYPE_NAME;
+		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(type);
+		addController = new CreateRepositoryEntryController(ureq, getWindowControl(), type, handler);
 		addController.setUserObject(new QItemList(items));
 		listenTo(addController);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), addController.getInitialComponent());

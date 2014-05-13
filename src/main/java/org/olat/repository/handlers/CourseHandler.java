@@ -27,7 +27,9 @@ package org.olat.repository.handlers;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -195,6 +197,8 @@ public class CourseHandler implements RepositoryHandler {
 						eval.setDisplayname(re.getDisplayname());
 						eval.setDescription(re.getDescription());
 					}
+					
+					eval.setReferences(hasReferences(fPath));
 				}
 			}
 			eval.setValid(visitor.isValid());
@@ -204,9 +208,33 @@ public class CourseHandler implements RepositoryHandler {
 		return eval;
 	}
 	
+	/**
+	 * Find references in the export folder with the repo.xml.
+	 * @param fPath
+	 * @return
+	 */
+	private boolean hasReferences(Path fPath) {
+		boolean hasReferences = false;
+		Path export = fPath.resolve("export");
+		if(Files.isDirectory(export)) {
+			try(DirectoryStream<Path> directory = Files.newDirectoryStream(export)) {
+			    for (Path p : directory) {
+			    	Path repoXml = p.resolve("repo.xml");
+			    	if(Files.exists(repoXml)) {
+			    		hasReferences = true;
+			    		break;
+			    	}
+			    }
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		}
+		return hasReferences;
+	}
+	
 	@Override
-	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, Locale locale,
-			File file, String filename) {
+	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description,
+			boolean withReferences, Locale locale, File file, String filename) {
 
 		OLATResource newCourseResource = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
 		ICourse course = CourseFactory.importCourseFromZip(newCourseResource, file);
@@ -230,12 +258,15 @@ public class CourseHandler implements RepositoryHandler {
 		CourseFactory.saveCourse(course.getResourceableId());
 		
 		//import references
-		importReferences((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode(), course, initialAuthor);
-		if(course.getCourseConfig().hasCustomSharedFolder()) {
-			importSharedFolder(course, initialAuthor);
-		}
-		if(course.getCourseConfig().hasGlossary()) {
-			importGlossary(course, initialAuthor);
+		if(withReferences) {
+			CourseEditorTreeNode rootNode = (CourseEditorTreeNode)course.getEditorTreeModel().getRootNode();
+			importReferences(rootNode, course, initialAuthor, locale);
+			if(course.getCourseConfig().hasCustomSharedFolder()) {
+				importSharedFolder(course, initialAuthor);
+			}
+			if(course.getCourseConfig().hasGlossary()) {
+				importGlossary(course, initialAuthor);
+			}
 		}
 
 		// create group management / import groups
@@ -327,13 +358,13 @@ public class CourseHandler implements RepositoryHandler {
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 	}
 	
-	private void importReferences(CourseEditorTreeNode node, ICourse course, Identity owner) {
-		node.getCourseNode().importNode(course.getCourseExportDataDir().getBasefile(), course, owner, null);
+	private void importReferences(CourseEditorTreeNode node, ICourse course, Identity owner, Locale locale) {
+		node.getCourseNode().importNode(course.getCourseExportDataDir().getBasefile(), course, owner, locale);
 
 		for (int i = 0; i<node.getChildCount(); i++) {
 			INode child = node.getChildAt(i);
 			if(child instanceof CourseEditorTreeNode) {
-				importReferences((CourseEditorTreeNode)child, course, owner);
+				importReferences((CourseEditorTreeNode)child, course, owner, locale);
 			}
 		}
 	}

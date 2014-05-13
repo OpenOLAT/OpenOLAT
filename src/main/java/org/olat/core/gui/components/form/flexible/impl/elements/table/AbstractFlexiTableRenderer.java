@@ -88,31 +88,35 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	
 	protected void renderHeaderButtons(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
-		
-		sb.append("<div class='row clearfix'><div class='col-lg-6'>");
-		
-		renderHeaderSearch(renderer, sb, ftE, ubu, translator, renderResult, args);
-		
-		sb.append("</div><div class='col-lg-2'></div><div class='col-lg-4'>");
-		
+
+		Component searchCmp = ftE.getExtendedSearchComponent();
+		if(searchCmp != null && !ftE.isExtendedSearchCallout() && ftE.isExtendedSearchExpanded()) {
+			renderer.render(searchCmp, sb, args);
+			sb.append("<div class='row clearfix'><div class='col-lg-6'></div>");
+		} else {
+			sb.append("<div class='row clearfix'><div class='col-lg-6'>");
+			renderHeaderSearch(renderer, sb, ftE, ubu, translator, renderResult, args);
+			sb.append("</div>");
+		}
+
+		sb.append("<div class='col-lg-2'></div><div class='col-lg-4'>");
 		renderHeaderTools(renderer, sb, ftE, ubu, translator, renderResult,  args);
-		
 		sb.append("</div></div>");
 	}
 	
 	protected void renderHeaderSearch(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
-		
-		
-		
+
 		if(ftE.isSearchEnabled()) {
 			sb.append("<div class='o_table_search input-group'>");
 			renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, args);
-			sb.append("<span class='input-group-btn'>");
+			sb.append("<div class='input-group-btn'>");
 			renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, args);
-			sb.append("</span></div>");
-		}
-		if(ftE.getExtendedSearchButton() != null) {
+			if(ftE.getExtendedSearchButton() != null) {
+				renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, args);
+			}
+			sb.append("</div></div>");
+		} else if(ftE.getExtendedSearchButton() != null) {
 			renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, args);
 		}
 	}
@@ -186,7 +190,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			} else {
 				sb.append("<li><a href=\"javascript:")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, new NameValuePair("filter", filter.getFilter())))
-				  .append("\">").append(filter.getLabel()).append("</a></li>");
+				  .append("\">").append("<i class='o_icon o_icon_check o_icon-fw'>&nbsp;</i> ", filter.isSelected())
+				  .append(filter.getLabel()).append("</a></li>");
 			}
 		}
 		sb.append("</ul></div> ");
@@ -206,8 +211,18 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				sb.append("<li class='divider'></li>");
 			} else {
 				sb.append("<li><a href=\"javascript:")
-				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, new NameValuePair("sort", sort.getSortKey().getKey())))
-				  .append("\">").append(sort.getLabel()).append("</a></li>");
+				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1,
+						  new NameValuePair("sort", sort.getSortKey().getKey()),
+						  new NameValuePair("asc",  sort.getSortKey().isAsc() ? "desc" : "asc")))
+				  .append("\">");
+				if(sort.isSelected()) {
+					if(sort.getSortKey().isAsc()) {
+						sb.append("<i class='o_icon o_icon_sort_desc o_icon-fw'>&nbsp;</i> ");
+					} else {
+						sb.append("<i class='o_icon o_icon_sort_asc o_icon-fw'>&nbsp;</i> ");
+					}
+				}
+				sb.append(sort.getLabel()).append("</a></li>");
 			}
 		}
 		sb.append("</ul></div> ");

@@ -94,4 +94,10 @@ public class AuthoringEditEntrySettingsController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		fireEvent(ureq, event);
+		super.event(ureq, source, event);
+	}
 }

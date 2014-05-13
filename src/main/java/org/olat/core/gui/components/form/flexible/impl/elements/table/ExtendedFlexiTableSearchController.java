@@ -21,6 +21,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 import java.util.List;
 
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.control.Controller;
 
 /**
@@ -32,5 +33,7 @@ import org.olat.core.gui.control.Controller;
 public interface ExtendedFlexiTableSearchController extends Controller {
 	
 	public List<String> getConditionalQueries();
+	
+	public FormItem getInitialFormItem();
 
 }

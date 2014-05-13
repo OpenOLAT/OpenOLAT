@@ -296,8 +296,9 @@ public class ReferencableEntriesSearchController extends BasicController {
 			}
 		} else if(source == createRessourceButton) {
 			removeAsListenerAndDispose(createController);
+			String type = null;
 			RepositoryHandler handler = null;
-			createController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
+			createController = new CreateRepositoryEntryController(ureq, getWindowControl(), type, handler);
 			listenTo(createController);
 			
 			removeAsListenerAndDispose(cmc);

@@ -19,6 +19,7 @@
  */
 package org.olat.course.editor;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -39,8 +40,6 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 

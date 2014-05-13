@@ -64,6 +64,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	private static final String LAYOUT_DEFAULT = VELOCITY_ROOT + "/form_default.html";
 	private static final String LAYOUT_HORIZONTAL = VELOCITY_ROOT + "/form_horizontal.html";
 	private static final String LAYOUT_VERTICAL = VELOCITY_ROOT + "/form_vertical.html";
+	private static final String LAYOUT_BAREBONE = VELOCITY_ROOT + "/form_barebone.html";
 	private static final String LAYOUT_SELBOX = VELOCITY_ROOT + "/form_selbox.html";
 	private static final String LAYOUT_BUTTONGROUP = VELOCITY_ROOT + "/form_buttongroup.html";
 
@@ -539,6 +540,18 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 */
 	public static FormLayoutContainer createVerticalFormLayout(String name, Translator formTranslator){
 		FormLayoutContainer tmp = new FormLayoutContainer(name, formTranslator, LAYOUT_VERTICAL);
+		return tmp;
+	}
+	
+	/**
+	 * Create a layout container which only loop and render a list of components. There isn't
+	 * any warning, error, label rendering.
+	 * @param name
+	 * @param formTranslator
+	 * @return
+	 */
+	public static FormLayoutContainer createBareBoneFormLayout(String name, Translator formTranslator){
+		FormLayoutContainer tmp = new FormLayoutContainer(name, formTranslator, LAYOUT_BAREBONE);
 		return tmp;
 	}
 

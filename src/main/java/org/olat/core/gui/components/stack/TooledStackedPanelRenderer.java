@@ -19,12 +19,14 @@
  */
 package org.olat.core.gui.components.stack;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Tool;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -49,13 +51,13 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 		if(breadCrumbs.size() > 1 || tools.size() > 0) {
 			String mainCssClass = panel.getCssClass();
 			sb.append("<div id='o_main_toolbar' class='navbar navbar-default clearfix ").append(mainCssClass, mainCssClass != null).append("'>")
-			  .append("<div class='o_breadcrumb container-fluid'>")
-			  .append("<ul class='nav navbar-nav'>");
+			  .append("<div class='o_breadcrumb container-fluid'>");
 
 			Link backLink = panel.getBackLink();
 			int numOfCrumbs = breadCrumbs.size();
 			if(backLink.isVisible() && numOfCrumbs > 1) {
-				sb.append("<li><a href='#' class='dropdown-toggle' data-toggle='dropdown'>&#x25C4; <b class='caret'></b></a>")
+				sb.append("<ul class='nav navbar-nav navbar-left'>")
+				  .append("<li><a href='#' class='dropdown-toggle' data-toggle='dropdown'>&#x25C4; <b class='caret'></b></a>")
 				  .append("<ul class='dropdown-menu' role='menu'>")
 				  /*.append("<li class='o_breadcrumb_back'>");
 				backLink.getHTMLRendererSingleton().render(renderer, sb, backLink, ubu, translator, renderResult, args);
@@ -66,38 +68,76 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 					renderer.render(breadCrumbs.get(i), sb, args);
 					sb.append("</li>");
 				}
-				sb.append("</ul></li>");
+				sb.append("</ul></li></ul>");
 			}
 			
-			int numOfTools = tools.size();
-			for(int i=0; i<numOfTools; i++) {
-				Component cmp = tools.get(i).getComponent();
-				String cssClass;
-				if(cmp instanceof Dropdown) {
-					cssClass = "dropdown";
-				} else if(cmp instanceof Link && !cmp.isEnabled()) {
-					cssClass = "navbar-text";
-				} else {
-					cssClass = "";
-				}
-				sb.append("<li class='o_tool ").append(cssClass).append("'>");
-				renderer.render(cmp, sb, args);
-				sb.append("</li>");
+			List<Tool> notAlignedTools = getTools(tools, null);
+			if(notAlignedTools.size() > 0) {
+				sb.append("<ul class='nav navbar-nav'>");
+				renderTools(notAlignedTools, renderer, sb, args);
+				sb.append("</ul>");
 			}
 			
-			Link closeLink = panel.getCloseLink();
-			if(closeLink.isVisible()) {
-				sb.append("</ul><ul class='nav navbar-nav navbar-right'>")
-				  .append("<li class='o_breadcrumb_close'>");
-				closeLink.getHTMLRendererSingleton().render(renderer, sb, closeLink, ubu, translator, renderResult, args);
-				sb.append("</li>");
+			List<Tool> leftTools = getTools(tools, Align.left);
+			if(leftTools.size() > 0) {
+				sb.append("<ul class='nav navbar-nav navbar-left'>");
+				renderTools(leftTools, renderer, sb, args);
+				sb.append("</ul>");
 			}
-			sb.append("</ul></div></div>");
+			
+			List<Tool> rightTools = getTools(tools, Align.right);
+			if(rightTools.size() > 0) {
+				sb.append("<ul class='nav navbar-nav navbar-right'>");
+				renderTools(rightTools, renderer, sb, args);
+				sb.append("</ul>");
+			}
+
+			sb.append("</div></div>");
 		}
 		
 		Component toRender = panel.getContent();
 		if(toRender != null) {
 			renderer.render(sb, toRender, args);
 		}
+	}
+	
+	private List<Tool> getTools(List<Tool> tools, Align alignement) {
+		List<Tool> alignedTools = new ArrayList<>(tools.size());
+		if(alignement == null) {
+			for(Tool tool:tools) {
+				if(tool.getAlign() == null) {
+					alignedTools.add(tool);
+				}
+			}
+		} else {
+			for(Tool tool:tools) {
+				if(alignement.equals(tool.getAlign())) {
+					alignedTools.add(tool);
+				}
+			}
+		}
+		return alignedTools;
+	}
+	
+	private void renderTools(List<Tool> tools, Renderer renderer, StringOutput sb, String[] args) {
+		
+		int numOfTools = tools.size();
+		for(int i=0; i<numOfTools; i++) {
+			Tool tool = tools.get(i);
+			Component cmp = tool.getComponent();
+			String cssClass;
+			if(cmp instanceof Dropdown) {
+				cssClass = "dropdown";
+			} else if(cmp instanceof Link && !cmp.isEnabled()) {
+				cssClass = "navbar-text";
+			} else {
+				cssClass = "";
+			}
+			sb.append("<li class='o_tool ").append(cssClass).append("'>");
+			renderer.render(cmp, sb, args);
+			sb.append("</li>");
+		}
+		
+		
 	}
 }

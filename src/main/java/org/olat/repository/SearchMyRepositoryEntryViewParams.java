@@ -40,6 +40,7 @@ public class SearchMyRepositoryEntryViewParams {
 	private boolean membershipMandatory = false;
 	
 	private OrderBy orderBy;
+	private boolean asc;
 	private List<Filter> filters;
 	private CatalogEntry parentEntry;
 	private List<String> resourceTypes;
@@ -81,6 +82,14 @@ public class SearchMyRepositoryEntryViewParams {
 
 	public void setOrderBy(OrderBy orderBy) {
 		this.orderBy = orderBy;
+	}
+
+	public boolean isOrderByAsc() {
+		return asc;
+	}
+
+	public void setOrderByAsc(boolean asc) {
+		this.asc = asc;
 	}
 
 	public List<Filter> getFilters() {

@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
@@ -34,6 +33,7 @@ import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -44,6 +44,7 @@ import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -125,7 +126,7 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 	private final TooledStackedPanel stackPanel;
 	
 	private boolean corrupted;
-	private final RepositoryEntry entry;
+	private RepositoryEntry entry;
 	private final AuthoringEntryRow row;
 
 	@Autowired
@@ -209,7 +210,7 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 			
 			boolean marked = markManager.isMarked(entry, getIdentity(), null);
 			String css = marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE;
-			bookmarkLink = LinkFactory.createToolLink("downloadcompat", translate("details.bookmark"), this);
+			bookmarkLink = LinkFactory.createToolLink("downloadcompat", "" /* translate("details.bookmark") */, this);
 			bookmarkLink.setEnabled(!corrupted);
 			bookmarkLink.setIconLeftCSS(css);
 		}
@@ -267,20 +268,24 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 		} else if(downloadLink.isEnabled()) {
 			stackPanel.addTool(downloadLink);
 		}
-		
-		
-		stackPanel.addTool(bookmarkLink);
-		
+
 		stackPanel.addTool(editLink);
 		stackPanel.addTool(editSettingsLink);
-		stackPanel.addTool(catalogLink);
-		stackPanel.addTool(copyLink);
-		stackPanel.addTool(closeLink);
-			
-		stackPanel.addTool(deleteLink);
-			
-		stackPanel.addTool(membersLink);
-		stackPanel.addTool(orderLink);
+		
+		Dropdown editActions = new Dropdown("edit-actions", "toolbox.actions", false, getTranslator());
+		editActions.addComponent(copyLink);
+		editActions.addComponent(new Spacer("one"));
+		editActions.addComponent(closeLink);
+		editActions.addComponent(deleteLink);
+		stackPanel.addTool(editActions);
+
+		Dropdown tools = new Dropdown("tools", "toolbox.tools", false, getTranslator());
+		tools.addComponent(catalogLink);
+		tools.addComponent(membersLink);
+		tools.addComponent(orderLink);
+		stackPanel.addTool(tools);
+		
+		stackPanel.addTool(bookmarkLink, Align.right);
 		
 	}
 	
@@ -305,7 +310,6 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		int cmpcount = 0;
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("v", entry);
@@ -318,101 +322,93 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 				baseUrl = registerMapper(ureq, new VFSContainerMapper(mediaContainer.getParentContainer()));
 			}
 			
-			setText(entry.getDescription(), "description", layoutCont);
-			setText(entry.getRequirements(), "requirements", layoutCont);
-			setText(entry.getObjectives(), "objectives", layoutCont);
-			setText(entry.getCredits(), "credits", layoutCont);
-
-			//thumbnail and movie
-			VFSLeaf movie = repositoryService.getIntroductionMovie(entry);
-			VFSLeaf image = repositoryService.getIntroductionImage(entry);
-			if(image != null || movie != null) {
-				ImageComponent ic = new ImageComponent(ureq.getUserSession(), "thumbnail");
-				if(movie != null) {
-					ic.setMedia(movie);
-					ic.setMaxWithAndHeightToFitWithin(500, 300);
-				} else {
-					ic.setMedia(image);
-					ic.setMaxWithAndHeightToFitWithin(500, 300);
-				}
-				layoutCont.put("thumbnail", ic);
-			}
-			
-			//categories
-			List<CatalogEntry> categories = catalogManager.getCatalogEntriesReferencing(entry);
-			List<String> categoriesLink = new ArrayList<>(categories.size());
-			for(CatalogEntry category:categories) {
-				String id = "cat_" + ++cmpcount;
-				String title = category.getParent().getName();
-				FormLink catLink = uifactory.addFormLink(id, "category", title, null, layoutCont, Link.LINK | Link.NONTRANSLATED);
-				catLink.setUserObject(category.getKey());
-				categoriesLink.add(id);
-			}
-			layoutCont.contextPut("categories", categoriesLink);
-			
-			boolean marked;
-			if(row == null) {
-				marked = markManager.isMarked(entry, getIdentity(), null);
-			} else {
-				marked = row.isMarked();
-			}
-			markLink = uifactory.addFormLink("mark", "mark", "&nbsp;&nbsp;&nbsp;&nbsp;", null, layoutCont, Link.NONTRANSLATED);
-			markLink.setCustomEnabledLinkCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
-			
-
-			
-			//load memberships
-			boolean isMember = repositoryService.isMember(getIdentity(), entry);
-			
-			//access control
-			List<PriceMethod> types = new ArrayList<PriceMethod>();
-			if (entry.isMembersOnly()) {
-				// members only always show lock icon
-				types.add(new PriceMethod("", "o_ac_membersonly_icon"));
-				if(isMember) {
-					startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.LINK);
-				}
-			} else {
-				AccessResult acResult = acService.isAccessible(entry, getIdentity(), false);
-				if(acResult.isAccessible()) {
-					startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.LINK);
-				} else if (acResult.getAvailableMethods().size() > 0) {
-					for(OfferAccess access:acResult.getAvailableMethods()) {
-						AccessMethod method = access.getMethod();
-						String type = (method.getMethodCssClass() + "_icon").intern();
-						Price p = access.getOffer().getPrice();
-						String price = p == null || p.isEmpty() ? "" : PriceFormat.fullFormat(p);
-						types.add(new PriceMethod(price, type));
-					}
-					startLink = uifactory.addFormLink("start", "start", "book", null, layoutCont, Link.LINK);
-				} else {
-					startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.LINK);
-					startLink.setEnabled(false);
-				}
-			}
-			
-			if(!types.isEmpty()) {
-				layoutCont.contextPut("ac", types);
-			}
-			
-			if(isMember) {
-				//show the list of groups
-				SearchBusinessGroupParams params = new SearchBusinessGroupParams(getIdentity(), true, true);
-				List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, entry, 0, -1);
-				List<String> groupLinkNames = new ArrayList<>(groups.size());
-				for(BusinessGroup group:groups) {
-					String groupLinkName = "grp_" + ++cmpcount;
-					FormLink link = uifactory.addFormLink(groupLinkName, "group", group.getName(), null, layoutCont, Link.LINK | Link.NONTRANSLATED);
-					link.setUserObject(group.getKey());
-					groupLinkNames.add(groupLinkName);
-				}
-				layoutCont.contextPut("groups", groupLinkNames);
-			}
+			updateView(ureq, layoutCont);
 		}
 	}
 	
-	private void updateView(UserRequest ureq) {
+	private void updateView(UserRequest ureq, FormLayoutContainer layoutCont) {
+		int cmpcount = 0;
 		
+		setText(entry.getDescription(), "description", layoutCont);
+		setText(entry.getRequirements(), "requirements", layoutCont);
+		setText(entry.getObjectives(), "objectives", layoutCont);
+		setText(entry.getCredits(), "credits", layoutCont);
+
+		//thumbnail and movie
+		VFSLeaf movie = repositoryService.getIntroductionMovie(entry);
+		VFSLeaf image = repositoryService.getIntroductionImage(entry);
+		if(image != null || movie != null) {
+			ImageComponent ic = new ImageComponent(ureq.getUserSession(), "thumbnail");
+			if(movie != null) {
+				ic.setMedia(movie);
+				ic.setMaxWithAndHeightToFitWithin(500, 300);
+			} else {
+				ic.setMedia(image);
+				ic.setMaxWithAndHeightToFitWithin(500, 300);
+			}
+			layoutCont.put("thumbnail", ic);
+		}
+		
+		boolean marked;
+		if(row == null) {
+			marked = markManager.isMarked(entry, getIdentity(), null);
+		} else {
+			marked = row.isMarked();
+		}
+		markLink = uifactory.addFormLink("mark", "mark", " ", null, layoutCont, Link.NONTRANSLATED);
+		markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+		
+		//load memberships
+		boolean isMember = repositoryService.isMember(getIdentity(), entry);
+		
+		//access control
+		List<PriceMethod> types = new ArrayList<PriceMethod>();
+		if (entry.isMembersOnly()) {
+			// members only always show lock icon
+			types.add(new PriceMethod("", "o_ac_membersonly_icon"));
+			if(isMember) {
+				startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.LINK);
+			}
+		} else {
+			AccessResult acResult = acService.isAccessible(entry, getIdentity(), false);
+			if(acResult.isAccessible()) {
+				startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.LINK);
+			} else if (acResult.getAvailableMethods().size() > 0) {
+				for(OfferAccess access:acResult.getAvailableMethods()) {
+					AccessMethod method = access.getMethod();
+					String type = (method.getMethodCssClass() + "_icon").intern();
+					Price p = access.getOffer().getPrice();
+					String price = p == null || p.isEmpty() ? "" : PriceFormat.fullFormat(p);
+					types.add(new PriceMethod(price, type));
+				}
+				startLink = uifactory.addFormLink("start", "start", "book", null, layoutCont, Link.LINK);
+			} else {
+				startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.LINK);
+				startLink.setEnabled(false);
+			}
+		}
+		
+		if(types.isEmpty()) {
+			layoutCont.contextRemove("ac");
+		} else {
+			layoutCont.contextPut("ac", types);
+		}
+		
+		if(isMember) {
+			//show the list of groups
+			SearchBusinessGroupParams params = new SearchBusinessGroupParams(getIdentity(), true, true);
+			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, entry, 0, -1);
+			List<String> groupLinkNames = new ArrayList<>(groups.size());
+			for(BusinessGroup group:groups) {
+				String groupLinkName = "grp_" + ++cmpcount;
+				FormLink link = uifactory.addFormLink(groupLinkName, "group", group.getName(), null, layoutCont, Link.LINK | Link.NONTRANSLATED);
+				link.setUserObject(group.getKey());
+				groupLinkNames.add(groupLinkName);
+			}
+			layoutCont.contextPut("groups", groupLinkNames);
+		} else {
+			layoutCont.contextRemove("groups");
+		}
 	}
 	
 	@Override
@@ -441,15 +437,16 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 				cmc.deactivate();
 			} else if (event == Event.DONE_EVENT) {
 				cmc.deactivate();
-				updateView(ureq);
+				updateView(ureq, flc);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
-		} else if (source == editCtrl) {
+		} else if (editCtrl == source) {
 			if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				// RepositoryEntry changed
-				updateView(ureq);
+				entry = repositoryService.loadByKey(entry.getKey());
+				updateView(ureq, flc);
 			}
-		} else if (source == deleteDialogCtrl){
+		} else if (deleteDialogCtrl == source){
 			if (DialogBoxUIFactory.isYesEvent(event)){
 				deleteRepositoryEntry(ureq, getWindowControl());
 			}	

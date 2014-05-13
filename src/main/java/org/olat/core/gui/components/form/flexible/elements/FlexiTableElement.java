@@ -28,6 +28,7 @@ package org.olat.core.gui.components.form.flexible.elements;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
@@ -217,12 +218,20 @@ public interface FlexiTableElement extends FormItem {
 	 * 
 	 * @param callout
 	 */
-	public void setExtendedSearchCallout(ExtendedFlexiTableSearchController callout);
+	public void setExtendedSearch(ExtendedFlexiTableSearchController controller, boolean callout);
+	
+	
+	public boolean isExtendedSearchExpanded();
+	
+	/**
+	 * Open the extended search
+	 */
+	public void expandExtendedSearch(UserRequest ureq);
 	
 	/**
 	 * Close the extended search callout if open
 	 */
-	public void closeExtendedSearch();
+	public void collapseExtendedSearch();
 	
 	/**
 	 * Return the page size

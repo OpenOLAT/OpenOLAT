@@ -250,7 +250,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		if(rie.anyExportedPropertiesAvailable()) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(TestFileResource.TYPE_NAME);
 			RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
-				locale, rie.importGetExportedFile(), null);
+				false, locale, rie.importGetExportedFile(), null);
 			IQEditController.setIQReference(re, getModuleConfiguration());
 		}
 	}

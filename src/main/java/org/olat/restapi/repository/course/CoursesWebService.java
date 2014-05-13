@@ -348,7 +348,7 @@ public class CoursesWebService {
 		}
 		
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(CourseModule.getCourseTypeName());
-		RepositoryEntry re = handler.importResource(identity, displayName, null, Locale.ENGLISH, fCourseImportZIP, null);
+		RepositoryEntry re = handler.importResource(identity, displayName, null, true, Locale.ENGLISH, fCourseImportZIP, null);
 
 		if(StringHelper.containsNonWhitespace(softKey)) {
 			re.setSoftkey(softKey);

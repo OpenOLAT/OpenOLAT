@@ -138,8 +138,8 @@ public class WikiHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, Locale locale,
-			File file, String filename) {
+	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, boolean withReferences,
+			Locale locale, File file, String filename) {
 		WikiResource wikiResource = new WikiResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(wikiResource);
 		File rootDirectory = WikiManager.getInstance().getWikiRootContainer(resource).getBasefile();

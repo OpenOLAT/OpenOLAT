@@ -1053,7 +1053,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private void populateToolC() {
 		//tools
 		Dropdown editTools = new Dropdown("editTools", "tools.tools.header", false, getTranslator());
-		stackedPanel.addTool(editTools, false);
+		stackedPanel.addTool(editTools);
 		
 		previewLink = LinkFactory.createToolLink(CMD_TOOLS_PREVIEW, translate("tools.tools.preview"), this, "b_toolbox_preview");
 		editTools.addComponent(previewLink);
@@ -1066,7 +1066,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 
 		//add
 		Dropdown addItemTools = new Dropdown("editTools", "tools.add.header", false, getTranslator());
-		stackedPanel.addTool(addItemTools, false);
+		stackedPanel.addTool(addItemTools);
 
 		addPoolLink = LinkFactory.createToolLink(CMD_TOOLS_ADD_QPOOL, translate("tools.import.qpool"), this, "o_mi_qpool_import");
 		addItemTools.addComponent(addPoolLink);
@@ -1089,11 +1089,11 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		// change
 		//tc.addHeader(translate("tools.change.header"));
 		deleteLink = LinkFactory.createToolLink(CMD_TOOLS_CHANGE_DELETE, translate("tools.change.delete"), this, "b_toolbox_delete");
-		stackedPanel.addTool(deleteLink, false);
+		stackedPanel.addTool(deleteLink);
 		moveLink = LinkFactory.createToolLink(CMD_TOOLS_CHANGE_MOVE, translate("tools.change.move"), this, "b_toolbox_move");
-		stackedPanel.addTool(moveLink, false);
+		stackedPanel.addTool(moveLink);
 		copyLink = LinkFactory.createToolLink(CMD_TOOLS_CHANGE_COPY, translate("tools.change.copy"), this, "b_toolbox_copy");
-		stackedPanel.addTool(copyLink, false);
+		stackedPanel.addTool(copyLink);
 	}
 
 	/**

@@ -40,7 +40,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoyUIFactory;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -60,13 +59,15 @@ public class CreateRepositoryEntryController extends FormBasicController {
 	private RichTextElement descriptionEl;
 	
 	private RepositoryEntry addedEntry;
+	private final String type;
 	private final RepositoryHandler handler;
 	
 	private Object userObject;
 	
-	public CreateRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryHandler handler) {
+	public CreateRepositoryEntryController(UserRequest ureq, WindowControl wControl, String type, RepositoryHandler handler) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
+		this.type = type;
 		this.handler = handler;
 		initForm(ureq);
 	}
@@ -89,21 +90,13 @@ public class CreateRepositoryEntryController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String type = handler.getSupportedTypes().get(0);
-		StringBuilder typeDisplayText = new StringBuilder(100);
-		if (type != null) { // add image and typename code
-			typeDisplayText.append("<span class=\"b_with_small_icon_left ");
-			typeDisplayText.append(RepositoyUIFactory.getIconCssClass(type));
-			typeDisplayText.append("\">");
-			String tName = NewControllerFactory.translateResourceableTypeName(type, getLocale());
-			typeDisplayText.append(tName);
-			typeDisplayText.append("</span>");
+		String typeName;
+		if (type != null) {
+			typeName = NewControllerFactory.translateResourceableTypeName(type, getLocale());
 		} else {
-			typeDisplayText.append(translate("cif.type.na"));
+			typeName = translate("cif.type.na");
 		}
-		uifactory.addStaticExampleText("cif.type", typeDisplayText.toString(), formLayout);
-		
-		uifactory.addSpacerElement("spacer1", formLayout, false);
+		uifactory.addStaticExampleText("cif.type", typeName, formLayout);
 
 		displaynameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, "", formLayout);
 		displaynameEl.setDisplaySize(30);

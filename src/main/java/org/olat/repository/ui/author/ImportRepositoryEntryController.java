@@ -21,12 +21,15 @@ package org.olat.repository.ui.author;
 
 import java.io.File;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -63,8 +66,12 @@ public class ImportRepositoryEntryController extends FormBasicController {
 	private SpacerElement spacerEl;
 	private FormSubmit importButton;
 	private FileElement uploadFileEl;
+	private StaticTextElement typeEl;
 	private TextElement displaynameEl;
 	private RichTextElement descriptionEl;
+	private MultipleSelectionElement referencesEl;
+	
+	private final static String[] refKeys = new String[]{ "checked" };
 	
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
@@ -83,11 +90,18 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		
 		spacerEl = uifactory.addSpacerElement("spacer1", formLayout, false);
 		spacerEl.setVisible(false);
-
+		
+		typeEl = uifactory.addStaticTextElement("cif.type", "cif.type", "", formLayout);
+		typeEl.setVisible(false);
+		
 		displaynameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, "", formLayout);
 		displaynameEl.setDisplaySize(30);
 		displaynameEl.setMandatory(true);
 		displaynameEl.setVisible(false);
+		
+		String[] refValues = new String[]{ "" };
+		referencesEl = uifactory.addCheckboxesHorizontal("references", "references", formLayout, refKeys, refValues, null);
+		referencesEl.setVisible(false);
 
 		descriptionEl = uifactory.addRichTextElementForStringData("cif.description", "cif.description",
 				"", 10, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
@@ -170,8 +184,10 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		String description = descriptionEl.getValue();
 		File uploadedFile = uploadFileEl.getUploadFile();
 		String uploadedFilename = uploadFileEl.getUploadFileName();
+		boolean withReferences = referencesEl.isAtLeastSelected(1);
 		
-		importedEntry = handlerForUploadedResource.importResource(getIdentity(), displayname, description, getLocale(), uploadedFile, uploadedFilename);
+		importedEntry = handlerForUploadedResource.importResource(getIdentity(), displayname, description,
+				withReferences, getLocale(), uploadedFile, uploadedFilename);
 
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
 				LoggingResourceable.wrap(importedEntry, OlatResourceableType.genRepoEntry));
@@ -185,16 +201,27 @@ public class ImportRepositoryEntryController extends FormBasicController {
 			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
 			ResourceEvaluation eval = handler.acceptImport(uploadedFile, uploadedFilename);
 			if(eval != null && eval.isValid()) {
-				updateResourceInfos(eval, handler);
+				updateResourceInfos(eval, type, handler);
 				break;
 			}
 		}
 	}
 	
-	private void updateResourceInfos(ResourceEvaluation eval, RepositoryHandler handler) {
+	private void updateResourceInfos(ResourceEvaluation eval, String type, RepositoryHandler handler) {
 		handlerForUploadedResource = handler;
+		typeEl.setVisible(true);
+		if (type != null) { // add image and typename code
+			String tName = NewControllerFactory.translateResourceableTypeName(type, getLocale());
+			typeEl.setValue(tName);
+		} else {
+			typeEl.setValue(translate("cif.type.na"));
+		}
 		displaynameEl.setVisible(true);
 		displaynameEl.setValue(eval.getDisplayname());
+		referencesEl.setVisible(eval.isReferences());
+		if(eval.isReferences()) {
+			referencesEl.select(refKeys[0], true);
+		}
 		descriptionEl.setVisible(true);
 		descriptionEl.setValue(eval.getDescription());
 		importButton.setEnabled(handler != null);

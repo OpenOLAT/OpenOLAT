@@ -21,7 +21,6 @@ package org.olat.core.gui.components.stack;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
@@ -41,19 +40,12 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	
 	private static final ComponentRenderer RENDERER = new TooledStackedPanelRenderer();
 	
-	private List<Tool> generalTools = new ArrayList<>();
-	
 	public TooledStackedPanel(String name, Translator translator, ComponentEventListener listener) {
 		this(name, translator, listener, null);
 	}
 	
 	public TooledStackedPanel(String name, Translator translator, ComponentEventListener listener, String cssClass) {
 		super(name, translator, listener, cssClass);
-	}
-	
-	@Override
-	public Component getComponent(String name) {
-		return super.getComponent(name);
 	}
 
 	@Override
@@ -65,9 +57,6 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		for(Link crumb:stack) {
 			cmps.add(crumb);
 		}
-		for(Tool tool:generalTools) {
-			cmps.add(tool.getComponent());
-		}
 		
 		TooledBreadCrumb currentCrumb = getCurrentCrumb();
 		for(Tool tool:currentCrumb.getTools()) {
@@ -75,11 +64,6 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		}
 
 		return cmps;
-	}
-
-	@Override
-	public Map<String, Component> getComponentMap() {
-		return super.getComponentMap();
 	}
 
 	@Override
@@ -98,7 +82,7 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	 */
 	public void addTool(Component toolComponent) {
 		if(toolComponent != null) {
-			addTool(toolComponent, false);
+			addTool(toolComponent, null);
 		}
 	}
 
@@ -106,21 +90,19 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	 * If the component is null, it will simply not be added,
 	 * @param toolComponent
 	 */
-	public void addTool(Component toolComponent, boolean general) {
+	public void addTool(Component toolComponent, Align align) {
 		if(toolComponent == null) return;
 		
-		Tool tool = new Tool(toolComponent);
-		if(general) {
-			generalTools.add(tool);
-		} else {
-			getCurrentCrumb().addTool(tool);
-		}
+		Tool tool = new Tool(toolComponent, align);
+		getCurrentCrumb().addTool(tool);
 	}
 	
 	public List<Tool> getTools() {
 		List<Tool> currentTools = new ArrayList<>();
-		currentTools.addAll(generalTools);
 		currentTools.addAll(getCurrentCrumb().getTools());
+		if(this.isShowCloseLink()) {
+			currentTools.add(new Tool(getCloseLink(), Align.right));
+		}
 		return currentTools;
 	}
 	
@@ -132,10 +114,16 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	}
 	
 	public static class Tool {
+		private final  Align align;
 		private final Component component;
 		
-		public Tool(Component component) {
+		public Tool(Component component, Align align) {
+			this.align = align;
 			this.component = component;
+		}
+		
+		public Align getAlign() {
+			return align;
 		}
 
 		public Component getComponent() {
@@ -157,5 +145,10 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		public void addTool(Tool tool) {
 			tools.add(tool);
 		}
+	}
+	
+	public enum Align {
+		left,
+		right
 	}
 }

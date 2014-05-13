@@ -108,7 +108,7 @@ public class BlogHandler implements RepositoryHandler {
 
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description,
-			Locale locale, File file, String filename) {
+			boolean withReferences, Locale locale, File file, String filename) {
 
 		OLATResource resource = OLATResourceManager.getInstance().createAndPersistOLATResourceInstance(new BlogFileResource());
 		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();

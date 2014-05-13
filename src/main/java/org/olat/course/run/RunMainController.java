@@ -1141,7 +1141,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				editTools.addComponent(dbLink);
 			}
 			
-			all.addTool(editTools, true);
+			all.addTool(editTools);
 		}
 	}
 	
@@ -1176,7 +1176,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 		
 		if(groupTools.size() > 0) {
-			all.addTool(groupTools, false);
+			all.addTool(groupTools);
 		}
 	}
 	
@@ -1186,26 +1186,26 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			calendarLink = LinkFactory.createToolLink("calendar",translate("command.calendar"), this);
 			calendarLink.setPopup(true);//"950", "750"
 			calendarLink.setIconLeftCSS("o_icon o_icon_calendar");
-			all.addTool(calendarLink, false);
+			all.addTool(calendarLink);
 		}
 		if (cc.hasGlossary()) {
-			all.addTool(glossaryToolCtr.getInitialComponent(), false);
+			all.addTool(glossaryToolCtr.getInitialComponent());
 		}
 		if (showCourseConfigLink) {
 			detailsLink = LinkFactory.createToolLink("courseconfig",translate("command.courseconfig"), this);
-			all.addTool(detailsLink, false);
+			all.addTool(detailsLink);
 		}
 		if (!isGuest) {
 			noteLink = LinkFactory.createToolLink("personalnote",translate("command.personalnote"), this);
 			noteLink.setPopup(true);//"750", "550"
-			all.addTool(noteLink, false);
+			all.addTool(noteLink);
 		}
 		if (offerBookmark && !isGuest) {
 			boolean marked = markManager.isMarked(courseRepositoryEntry, getIdentity(), null);
 			String css = marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE;
 			bookmarkLink = LinkFactory.createToolLink("bookmark",translate("command.bookmark"), this);
 			bookmarkLink.setIconLeftCSS(css);
-			all.addTool(bookmarkLink, false);
+			all.addTool(bookmarkLink);
 		}
 		if (cc.isEfficencyStatementEnabled() && course.hasAssessableNodes() && !isGuest) {
 			// link to efficiency statements should
@@ -1218,7 +1218,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			// data exists for user
 			efficiencyStatementsLink = LinkFactory.createToolLink("efficiencystatement",translate("command.efficiencystatement"), this);
 			efficiencyStatementsLink.setPopup(true);//"750", "800"
-			all.addTool(efficiencyStatementsLink, false);
+			all.addTool(efficiencyStatementsLink);
 			
 			UserEfficiencyStatement es = efficiencyStatementManager
 					.getUserEfficiencyStatementLight(courseRepositoryEntry.getKey(), getIdentity());
@@ -1233,7 +1233,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				&& CourseModule.isCourseChatEnabled() && cc.isChatEnabled();
 		if(chatIsEnabled) {
 			chatLink = LinkFactory.createToolLink("chat",translate("command.coursechat"), this);
-			all.addTool(chatLink, false);
+			all.addTool(chatLink);
 		}
 		
 		if (CourseModule.displayParticipantsCount() && !isGuest) {

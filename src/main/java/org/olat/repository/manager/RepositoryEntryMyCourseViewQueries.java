@@ -144,7 +144,7 @@ public class RepositoryEntryMyCourseViewQueries {
 		}
 		
 		if(!count) {
-			appendMyViewOrderBy(params.getOrderBy(), sb);
+			appendMyViewOrderBy(params.getOrderBy(), params.isOrderByAsc(), sb);
 		}
 
 		TypedQuery<T> dbQuery = dbInstance.getCurrentEntityManager()
@@ -243,47 +243,70 @@ public class RepositoryEntryMyCourseViewQueries {
 		}
 	}
 	
-	private void appendMyViewOrderBy(OrderBy orderBy, StringBuilder sb) {
+	private void appendMyViewOrderBy(OrderBy orderBy, boolean asc, StringBuilder sb) {
 		if(orderBy != null) {
 			switch(orderBy) {
 				case automatic:
-					sb.append(" order by lower(v.displayname) asc");
+					sb.append(" order by lower(v.displayname)");
+					appendAsc(sb, asc);
 					break;
 				case favorit:
-					sb.append(" order by v.markKey nulls last, lower(v.displayname) asc");
+					if(asc) {
+						sb.append(" order by v.markKey nulls last, lower(v.displayname) asc");
+					} else {
+						sb.append(" order by v.markKey nulls first, lower(v.displayname) desc");
+					}
 					break;
 				case lastVisited:
-					sb.append(" order by v.recentLaunch nulls last, v.recentLaunch desc, lower(v.displayname) asc");
+					sb.append(" order by v.recentLaunch ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case passed:
-					sb.append(" order by v.passed nulls last, v.score desc, lower(v.displayname) asc");
+					sb.append(" order by v.passed ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case score:
-					sb.append(" order by v.score nulls last, v.score desc, lower(v.displayname) asc");
+					sb.append(" order by v.score ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case title:
-					sb.append(" order by lower(v.displayname) asc");
+					sb.append(" order by lower(v.displayname)");
+					appendAsc(sb, asc);
 					break;
 				case lifecycle:
-					sb.append(" order by v.lifecycle.key nulls last, lifecycle.validFrom desc, lower(v.displayname) asc");
+					sb.append(" order by lifecycle.validFrom ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case author:
-					sb.append(" order by v.authors nulls last, lower(v.authors) asc");
+					sb.append(" order by lower(v.authors)");
+					appendAsc(sb, asc).append(" nulls last");
 					break;
 				case creationDate:
-					sb.append(" order by v.creationDate desc, lower(v.displayname) asc");
+					sb.append(" order by v.creationDate ");
+					appendAsc(sb, asc).append(", lower(v.displayname) asc");
 					break;
 				case lastModified:
-					sb.append(" order by v.lastModified desc, lower(v.displayname) asc");
+					sb.append(" order by v.lastModified ");
+					appendAsc(sb, asc).append(", lower(v.displayname) asc");
 					break;
 				case rating:
-					sb.append(" order by v.averageRating nulls last, v.averageRating desc, lower(v.displayname) asc");
+					sb.append(" order by v.averageRating ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;	
 				default:
-					sb.append(" order by lower(v.displayname) asc");
+					sb.append(" order by lower(v.displayname)");
+					appendAsc(sb, asc);
 					break;
 			}
 		}
 	}
-
+	
+	private final StringBuilder appendAsc(StringBuilder sb, boolean asc) {
+		if(asc) {
+			sb.append(" asc");
+		} else {
+			sb.append(" desc");
+		}
+		return sb;
+	}
 }

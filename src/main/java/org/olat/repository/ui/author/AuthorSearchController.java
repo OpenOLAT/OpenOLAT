@@ -20,6 +20,7 @@
 package org.olat.repository.ui.author;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -32,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -48,7 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AuthorSearchController extends FormBasicController{
+public class AuthorSearchController extends FormBasicController implements ExtendedFlexiTableSearchController {
 
 	private TextElement id; // only for admins
 	private TextElement displayName;
@@ -62,6 +64,13 @@ public class AuthorSearchController extends FormBasicController{
 	
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
+	
+	public AuthorSearchController(UserRequest ureq, WindowControl wControl, boolean isAdmin) {
+		super(ureq, wControl, "search");
+		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
+		this.isAdmin = isAdmin;
+		initForm(ureq);
+	}
 
 	public AuthorSearchController(UserRequest ureq, WindowControl wControl, boolean isAdmin, Form form) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "search", form);
@@ -103,13 +112,19 @@ public class AuthorSearchController extends FormBasicController{
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
 		searchButton = uifactory.addFormLink("search", buttonLayout, Link.BUTTON);
+		uifactory.addFormCancelButton("quick.search", buttonLayout, ureq, getWindowControl());
 	}
 
 	@Override
 	protected void doDispose() {
 		//
 	}
-	
+
+	@Override
+	public List<String> getConditionalQueries() {
+		return Collections.emptyList();
+	}
+
 	/**
 	 * @return Return value of ID field.
 	 */
@@ -166,7 +181,7 @@ public class AuthorSearchController extends FormBasicController{
 	
 	@Override
 	protected void formCancelled(UserRequest ureq) {
-		fireEvent (ureq, Event.CANCELLED_EVENT); 
+		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
 	@Override

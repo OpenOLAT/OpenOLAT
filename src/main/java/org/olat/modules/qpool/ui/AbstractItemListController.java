@@ -142,7 +142,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		itemsTable.setSelectAllEnable(true);
 		itemsTable.setMultiSelect(true);
 		itemsTable.setSearchEnabled(true);
-		itemsTable.setExtendedSearchCallout(extendedSearchCtrl);
+		itemsTable.setExtendedSearch(extendedSearchCtrl, true);
 		itemsTable.setRendererType(FlexiTableRendererType.dataTables);
 		itemsTable.setColumnLabelForDragAndDrop(Cols.title.ordinal());
 
@@ -184,7 +184,7 @@ public abstract class AbstractItemListController extends FormBasicController
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == extendedSearchCtrl) {
-			itemsTable.closeExtendedSearch();
+			itemsTable.collapseExtendedSearch();
 		}
 		super.event(ureq, source, event);
 	}

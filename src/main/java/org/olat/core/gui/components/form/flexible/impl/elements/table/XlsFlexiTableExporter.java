@@ -84,8 +84,11 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 			for (int c = 0; c<numOfColumns; c++) {
 				FlexiColumnModel cd = columns.get(c);
 				Cell cell = dataRow.createCell(c);
-				Object value = dataModel.getValueAt(r, cd.getColumnIndex());
-				renderCell(cell, value, r, ftC, cd, translator);
+				int colIndex = cd.getColumnIndex();
+				if(colIndex >= 0) {
+					Object value = dataModel.getValueAt(r, colIndex);
+					renderCell(cell, value, r, ftC, cd, translator);
+				}
 			}
 		}
 	}

@@ -116,6 +116,12 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 				searchParams.setFilters(null);
 			}
 		}
+		
+		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
+			OrderBy o = OrderBy.valueOf(orderBy[0].getKey());
+			searchParams.setOrderBy(o);
+			searchParams.setOrderByAsc(orderBy[0].isAsc());
+		}
 
 		if(StringHelper.containsNonWhitespace(query)) {
 			try {

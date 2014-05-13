@@ -240,7 +240,7 @@ public abstract class AbstractFeedCourseNode extends GenericCourseNode {
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
 		if (rie.anyExportedPropertiesAvailable()) {
 			RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
-				locale, rie.importGetExportedFile(), null);
+				false, locale, rie.importGetExportedFile(), null);
 			FeedNodeEditController.setReference(re, getModuleConfiguration());
 		}
 	}

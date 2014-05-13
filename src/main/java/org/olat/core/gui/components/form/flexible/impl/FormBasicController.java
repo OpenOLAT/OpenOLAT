@@ -71,10 +71,12 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
  */
 public abstract class FormBasicController extends BasicController {
 
+	
 	public static final int LAYOUT_DEFAULT = 0;
 	public static final int LAYOUT_HORIZONTAL = 1;
 	public static final int LAYOUT_VERTICAL = 2;
 	public static final int LAYOUT_CUSTOM = 3;
+	public static final int LAYOUT_BAREBONE = 4;
 
 	protected FormLayoutContainer flc;
 
@@ -148,6 +150,11 @@ public abstract class FormBasicController extends BasicController {
 			flc = FormLayoutContainer.createVerticalFormLayout("ffo_vertical", getTranslator());		
 			mainForm = Form.create(mainFormId, "ffo_main_vertical", flc, this);
 
+		} else if (layout == LAYOUT_BAREBONE) {
+			// init with bare bone layout
+			flc = FormLayoutContainer.createBareBoneFormLayout("ffo_barebone", getTranslator());		
+			mainForm = Form.create(mainFormId, "ffo_main_barebone", flc, this);
+			
 		} else if (layout == LAYOUT_CUSTOM) {
 			throw new AssertException("Use another constructor to work with a custom layout!");
 
@@ -168,6 +175,10 @@ public abstract class FormBasicController extends BasicController {
 		} else if (layout == LAYOUT_VERTICAL) {
 			// init with vertical layout
 			flc = FormLayoutContainer.createVerticalFormLayout("ffo_vertical", getTranslator());		
+
+		} else if (layout == LAYOUT_BAREBONE) {
+			// init with vertical layout
+			flc = FormLayoutContainer.createBareBoneFormLayout("ffo_barebone", getTranslator());		
 
 		} else if (layout == LAYOUT_CUSTOM && customLayoutPageName != null) {
 			// init with provided layout
@@ -523,7 +534,8 @@ public abstract class FormBasicController extends BasicController {
 			flc.contextPut("off_css_class", cssClassName);
 		}
 	}
-	
+
+	@Override
 	protected void setTranslator(Translator translator) {
 		super.setTranslator(translator);
 		flc.setTranslator(translator);

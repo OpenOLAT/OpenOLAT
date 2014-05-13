@@ -295,7 +295,7 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 		if(rie.anyExportedPropertiesAvailable()) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(ImsCPFileResource.TYPE_NAME);
 			RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
-					locale, rie.importGetExportedFile(), null);
+					false, locale, rie.importGetExportedFile(), null);
 			CPEditController.setCPReference(re, getModuleConfiguration());
 		}
 	}
