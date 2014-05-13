@@ -40,9 +40,9 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private String idAndRefs;
 	private String author;
 	private String displayname;
+	private String description;
 	
 	private OrderBy orderBy;
-	private List<Filter> filters;
 	private List<String> resourceTypes;
 	private List<Long> repoEntryKeys;
 	
@@ -75,6 +75,14 @@ public class SearchAuthorRepositoryEntryViewParams {
 		this.displayname = displayname;
 	}
 
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
 	public List<Long> getRepoEntryKeys() {
 		return repoEntryKeys;
 	}
@@ -89,20 +97,6 @@ public class SearchAuthorRepositoryEntryViewParams {
 
 	public void setOrderBy(OrderBy orderBy) {
 		this.orderBy = orderBy;
-	}
-
-	public List<Filter> getFilters() {
-		return filters;
-	}
-
-	public void setFilters(List<Filter> filters) {
-		this.filters = filters;
-	}
-	
-	public boolean isLifecycleFilterDefined() {
-		return filters != null && (filters.contains(Filter.upcomingCourses)
-				|| filters.contains(Filter.currentCourses)
-				|| filters.contains(Filter.oldCourses));
 	}
 	
 	public boolean isResourceTypesDefined() {

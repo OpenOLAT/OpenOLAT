@@ -21,7 +21,10 @@ package org.olat.repository.ui.author;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.olat.core.CoreSpringFactory;
@@ -45,6 +48,7 @@ import org.olat.search.QueryException;
 import org.olat.search.ServiceNotAvailableException;
 import org.olat.search.service.searcher.SearchClient;
 import org.olat.search.service.searcher.SearchClientLocal;
+import org.olat.user.UserManager;
 
 /**
  * 
@@ -58,8 +62,8 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 
 	private final SearchAuthorRepositoryEntryViewParams searchParams;
 	
-
 	private final ACService acService;
+	private final UserManager userManager;
 	private final SearchClient searchClient;
 	private final RepositoryService repositoryService;
 	private final AuthoringEntryDataSourceUIFactory uifactory;
@@ -72,6 +76,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		this.uifactory = uifactory;
 		
 		acService = CoreSpringFactory.getImpl(ACService.class);
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		searchClient = CoreSpringFactory.getImpl(SearchClientLocal.class);
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 	}
@@ -125,17 +130,27 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 	}
 
 	private List<AuthoringEntryRow> processViewModel(List<RepositoryEntryAuthorView> repoEntries) {
+		Set<String> newNames = new HashSet<String>();
 		List<OLATResource> resourcesWithAC = new ArrayList<>(repoEntries.size());
 		for(RepositoryEntryAuthorView entry:repoEntries) {
 			if(entry.isValidOfferAvailable()) {
 				resourcesWithAC.add(entry.getOlatResource());
 			}
+			final String author = entry.getAuthor();
+			if(StringHelper.containsNonWhitespace(author)) {
+				newNames.add(author);
+			}
 		}
-		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC);
 		
+		Map<String,String> fullNames = userManager.getUserDisplayNamesByUserName(newNames);
+		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC);
+
 		List<AuthoringEntryRow> items = new ArrayList<AuthoringEntryRow>();
 		for(RepositoryEntryAuthorView entry:repoEntries) {
-			String fullname = "";
+			String fullname = fullNames.get(entry.getAuthor());
+			if(fullname == null) {
+				fullname = entry.getAuthor();
+			}
 			AuthoringEntryRow row = new AuthoringEntryRow(entry, fullname);
 			//bookmark
 			row.setMarked(entry.isMarked());

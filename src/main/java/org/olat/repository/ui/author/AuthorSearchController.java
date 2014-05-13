@@ -196,6 +196,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		e.setId(getId());
 		e.setAuthor(getAuthor());
 		e.setDisplayname(getDisplayName());
+		e.setDescription(getDescription());
 		e.setType(getRestrictedType());
 		fireEvent(ureq, e);
 	}

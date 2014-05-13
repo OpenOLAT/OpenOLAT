@@ -64,6 +64,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
@@ -428,7 +429,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void doSearch(SearchEvent se) {
-		if(se.getType() != null) {
+		if(StringHelper.containsNonWhitespace(se.getType())) {
 			searchParams.setResourceTypes(Collections.singletonList(se.getType()));
 		} else {
 			searchParams.setResourceTypes(null);
@@ -437,6 +438,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		searchParams.setIdAndRefs(se.getId());
 		searchParams.setAuthor(se.getAuthor());
 		searchParams.setDisplayname(se.getDisplayname());
+		searchParams.setDescription(se.getDescription());
 		tableEl.reset();
 	}
 	

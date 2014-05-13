@@ -35,6 +35,7 @@ public class SearchEvent extends Event implements StateEntry {
 	private String id;
 	private String displayname;
 	private String author;
+	private String description;
 	private String type;
 	
 	public SearchEvent() {
@@ -65,6 +66,15 @@ public class SearchEvent extends Event implements StateEntry {
 	public void setAuthor(String author) {
 		this.author = author;
 	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
 
 	public String getType() {
 		return type;

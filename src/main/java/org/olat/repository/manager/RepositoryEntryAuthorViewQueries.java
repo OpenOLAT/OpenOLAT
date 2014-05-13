@@ -20,13 +20,15 @@
 package org.olat.repository.manager;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -34,6 +36,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.SearchAuthorRepositoryEntryViewParams;
+import org.olat.user.UserImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -123,6 +126,42 @@ public class RepositoryEntryAuthorViewQueries {
 		if(params.getMarked() != null) {
 			sb.append(" and v.markKey ").append(params.getMarked().booleanValue() ? " is not null " : " is null ");
 		}
+		
+		String author = params.getAuthor();
+		if (StringHelper.containsNonWhitespace(author)) { // fuzzy author search
+			author = PersistenceHelper.makeFuzzyQueryString(author);
+
+			sb.append(" and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership, ")
+			     .append(IdentityImpl.class.getName()).append(" as identity, ").append(UserImpl.class.getName()).append(" as user")
+		         .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity=identity and identity.user=user")
+		         .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
+		         .append("      and (");
+			PersistenceHelper.appendFuzzyLike(sb, "user.userProperties['firstName']", "author", dbInstance.getDbVendor());
+			sb.append(" or ");
+			PersistenceHelper.appendFuzzyLike(sb, "user.userProperties['lastName']", "author", dbInstance.getDbVendor());
+			sb.append(" or ");
+			PersistenceHelper.appendFuzzyLike(sb, "identity.name", "author", dbInstance.getDbVendor());
+			sb.append(" ))");
+		}
+
+		String displayname = params.getDisplayname();
+		if (StringHelper.containsNonWhitespace(displayname)) {
+			//displayName = '%' + displayName.replace('*', '%') + '%';
+			//query.append(" and v.displayname like :displayname");
+			displayname = PersistenceHelper.makeFuzzyQueryString(displayname);
+			sb.append(" and ");
+			PersistenceHelper.appendFuzzyLike(sb, "v.displayname", "displayname", dbInstance.getDbVendor());
+		}
+		
+		String desc = params.getDescription();
+		if (StringHelper.containsNonWhitespace(desc)) {
+			//desc = '%' + desc.replace('*', '%') + '%';
+			//query.append(" and v.description like :desc");
+			desc = PersistenceHelper.makeFuzzyQueryString(desc);
+			sb.append(" and ");
+			PersistenceHelper.appendFuzzyLike(sb, "v.description", "desc", dbInstance.getDbVendor());
+		}
+		
 		Long id = null;
 		String refs = null;
 		if(StringHelper.containsNonWhitespace(params.getIdAndRefs())) {
@@ -149,15 +188,22 @@ public class RepositoryEntryAuthorViewQueries {
 		if (params.isResourceTypesDefined()) {
 			dbQuery.setParameter("resourcetypes", resourceTypes);
 		}
-		if(params.isLifecycleFilterDefined()) {
-			dbQuery.setParameter("now", new Date());
-		}
 		if(id != null) {
 			dbQuery.setParameter("vKey", id);
 		}
 		if(refs != null) {
 			dbQuery.setParameter("ref", refs);
 		}
+		if (StringHelper.containsNonWhitespace(author)) { // fuzzy author search
+			dbQuery.setParameter("author", author);
+		}
+		if (StringHelper.containsNonWhitespace(displayname)) {
+			dbQuery.setParameter("displayname", displayname);
+		}
+		if (StringHelper.containsNonWhitespace(desc)) {
+			dbQuery.setParameter("desc", desc);
+		}
+
 		dbQuery.setParameter("identityKey", identity.getKey());
 		return dbQuery;
 	}
