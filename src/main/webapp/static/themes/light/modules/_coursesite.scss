@@ -149,7 +149,7 @@ $o-coursesite-catalog-border : $brand-primary;
 				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
 					height: $o-coursesite-rowelem-height-sm;	
 					width: $o-coursesite-rowelem-width-sm;		
-					.o_score, .o_comments {
+					.o_score, .o_comments, .o_label {
 						display: none;
 					}					
 					

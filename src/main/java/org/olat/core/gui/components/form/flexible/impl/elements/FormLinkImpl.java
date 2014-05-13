@@ -264,4 +264,11 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 			component.setActive(isActive);
 		}		
 	}
+
+	@Override
+	public void setPrimary(boolean isPrimary) {
+		if (component != null) {
+			component.setPrimary(isPrimary);
+		}		
+	}
 }

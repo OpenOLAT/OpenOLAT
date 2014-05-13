@@ -75,4 +75,9 @@ public interface FormLink extends FormItem{
 	 */
 	public void setActive(boolean isActive);
 
+	/**
+	 * @param true: link is rendered as a primary link; false: rendered as secondary link
+	 */
+	public void setPrimary(boolean isPrimary);
+
 }

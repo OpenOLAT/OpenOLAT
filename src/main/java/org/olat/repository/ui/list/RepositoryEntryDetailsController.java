@@ -216,12 +216,12 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				// members only always show lock icon
 				types.add(new PriceMethod("", "o_ac_membersonly_icon"));
 				if(isMember) {
-					startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.LINK);
+					startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.BUTTON);
 				}
 			} else {
 				AccessResult acResult = acService.isAccessible(entry, getIdentity(), false);
 				if(acResult.isAccessible()) {
-					startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.LINK);
+					startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.BUTTON);
 				} else if (acResult.getAvailableMethods().size() > 0) {
 					for(OfferAccess access:acResult.getAvailableMethods()) {
 						AccessMethod method = access.getMethod();
@@ -230,11 +230,14 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 						String price = p == null || p.isEmpty() ? "" : PriceFormat.fullFormat(p);
 						types.add(new PriceMethod(price, type));
 					}
-					startLink = uifactory.addFormLink("start", "start", "book", null, layoutCont, Link.LINK);
+					startLink = uifactory.addFormLink("start", "start", "book", null, layoutCont, Link.BUTTON);
 				} else {
-					startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.LINK);
+					startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.BUTTON);
 					startLink.setEnabled(false);
 				}
+				
+				startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
+				startLink.setPrimary(true);
 			}
 			
 			if(!types.isEmpty()) {

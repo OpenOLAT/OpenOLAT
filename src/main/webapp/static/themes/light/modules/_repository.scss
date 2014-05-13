@@ -1,0 +1,42 @@
+.o_repo_details {
+	.jumbotron {
+		h1 i {
+			display: none;
+		}
+		.o_media {
+			@extend .pull-right;
+			margin-top: 20px;
+			margin-left: 2em;
+			margin-bottom: 2em;
+		}
+	}
+	
+	.o_overview {
+		i {
+			margin-right: 0.5em;		
+		}
+		div {
+			margin-bottom: 0.25em;
+		}
+	}
+
+	.o_start {
+		margin: 2em 0;
+		a {
+			display: block;
+		}
+	}
+	
+	
+	@media (max-width: $screen-xs-max) { 
+		.jumbotron {
+			p {
+				font-size: floor($jumbotron-font-size * 0.75);
+			}		
+			.o_media {
+				margin-top: 0;
+			}
+		}
+    }	
+    
+}

@@ -28,6 +28,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_edit_file { @extend .o_icon-edit;}
 .o_icon_edit_metadata { @extend .o_icon-edit; color: #996633;}
 .o_icon_error {@extend .o_icon-exclamation;}
+.o_icon_expenditure {@extend .o_icon-clock-o;}
 .o_icon_failed {@extend .o_icon-times-circle;}
 .o_icon_filter {@extend .o_icon-filter;}
 .o_icon_help { @extend .o_icon-question-circle; @extend .o_icon-lg; cursor: help;}
@@ -37,8 +38,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_move_right { @extend .o_icon-angle-double-right;}
 .o_icon_new_document { @extend .o_icon-fighter-jet; color:pink;}
 .o_icon_new_folder { @extend .o_icon-fighter-jet; color:violet;}
+.o_icon_language {@extend .o_icon-globe; }
 .o_icon_list {@extend .o_icon-list; }
-.o_icon_lifecycle {@extend .o_icon-clock-o;}
+.o_icon_lifecycle {@extend .o_icon-calendar;}
 .o_icon_login {@extend .o_icon-sign-in;}
 .o_icon_logout {@extend .o_icon-sign-out;}
 .o_icon_mandatory {@extend .o_icon-asterisk; color: #f0ad4e;}
@@ -74,6 +76,10 @@ $fa-css-prefix: "o_icon" !default;
 a.o_icon {
 	@extend .o_undecorated;
 }
+
+/* repository type icons */
+.o_CourseModule_icon { @extend .o_icon-book; }
+
 
 /* Access control icons */
 .o_ac_token_icon { @extend .o_icon-key;}
