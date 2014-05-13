@@ -22,7 +22,6 @@ package org.olat.course.area;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -47,8 +46,9 @@ import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.ui.NewAreaController;
 import org.olat.group.ui.area.BGAreaEditController;
-import org.olat.repository.RepositoryTableModel;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -68,7 +68,8 @@ public class CourseAreasController extends MainLayoutBasicController {
 	private BGAreaEditController editController;
 	private NewAreaController newAreaController;
 	
-	private final BGAreaManager areaManager;
+	@Autowired
+	private BGAreaManager areaManager;
 	private final BGAreaTableModel areaDataModel;
 	
 	private final OLATResource resource;
@@ -77,9 +78,8 @@ public class CourseAreasController extends MainLayoutBasicController {
 		super(ureq, wControl);
 		
 		this.resource = resource;
-		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
 
-		Translator resourceTrans = Util.createPackageTranslator(RepositoryTableModel.class, getLocale(), getTranslator());
+		Translator resourceTrans = Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator());
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("resources.noresources"));
 		tableCtrl = new TableController(tableConfig, ureq, getWindowControl(), resourceTrans);

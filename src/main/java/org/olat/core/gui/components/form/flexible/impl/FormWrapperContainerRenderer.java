@@ -160,7 +160,5 @@ class FormWrapperContainerRenderer implements ComponentRenderer {
 		if (toRender != null) {
 			renderer.renderHeaderIncludes(sb, toRender, rstate);
 		}
-
 	}
-
 }

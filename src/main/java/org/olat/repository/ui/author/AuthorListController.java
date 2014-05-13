@@ -25,6 +25,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.NewControllerFactory;
+import org.olat.admin.user.UserSearchController;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.events.MultiIdentityChosenEvent;
+import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
@@ -55,6 +59,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -94,12 +99,14 @@ public class AuthorListController extends FormBasicController implements Activat
 	private CloseableModalController cmc;
 	private StepsMainRunController wizardCtrl;
 	private AuthorSearchController searchCtrl;
+	private UserSearchController userSearchCtr;
 	private AuthoringEntryDetailsController detailsCtrl;
 	private ImportRepositoryEntryController importCtrl;
 	private CreateRepositoryEntryController createCtrl;
 
 	private Link importLink;
 	private Dropdown createDropdown;
+	private FormLink addOwnersButton;
 	
 	@Autowired
 	private MarkManager markManager;
@@ -110,7 +117,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	
 	public AuthorListController(UserRequest ureq, WindowControl wControl, String i18nName,
 			SearchAuthorRepositoryEntryViewParams searchParams) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+		super(ureq, wControl, "entries");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 
 		this.searchParams = searchParams;
@@ -154,7 +161,6 @@ public class AuthorListController extends FormBasicController implements Activat
 		//search form
 		searchCtrl = new AuthorSearchController(ureq, getWindowControl(), true, mainForm);
 		listenTo(searchCtrl);
-		//formLayout.add("search", searchCtrl.getInitialFormItem());
 		
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -188,6 +194,9 @@ public class AuthorListController extends FormBasicController implements Activat
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_coursetable");
 		tableEl.setFilters(null, getFilters());
+		tableEl.setMultiSelect(true);
+		
+		addOwnersButton = uifactory.addFormLink("tools.add.owners", formLayout, Link.BUTTON);
 	}
 	
 	private List<FlexiTableFilter> getFilters() {
@@ -276,15 +285,30 @@ public class AuthorListController extends FormBasicController implements Activat
 				RepositoryEntryRef repoEntryKey = oe.getRepositoryEntry();
 				doOpenDetails(ureq, repoEntryKey);
 			}
+		} else if(userSearchCtr == source) {
+			@SuppressWarnings("unchecked")
+			List<AuthoringEntryRow> rows = (List<AuthoringEntryRow>)userSearchCtr.getUserObject();
+			if (event instanceof MultiIdentityChosenEvent) {
+				MultiIdentityChosenEvent mice = (MultiIdentityChosenEvent) event; 
+				doAddOwners(mice.getChosenIdentities(), rows);
+			} else if (event instanceof SingleIdentityChosenEvent) {
+				SingleIdentityChosenEvent  sice = (SingleIdentityChosenEvent) event;
+				List<Identity> futureOwners = Collections.singletonList(sice.getChosenIdentity());
+				doAddOwners(futureOwners, rows);
+			}
+			cmc.deactivate();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(userSearchCtr);
 		removeAsListenerAndDispose(createCtrl);
 		removeAsListenerAndDispose(importCtrl);
 		removeAsListenerAndDispose(wizardCtrl);
 		removeAsListenerAndDispose(cmc);
+		userSearchCtr = null;
 		createCtrl = null;
 		importCtrl = null;
 		wizardCtrl = null;
@@ -298,7 +322,21 @@ public class AuthorListController extends FormBasicController implements Activat
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink) {
+		if(addOwnersButton == source) {
+			Set<Integer> selections = tableEl.getMultiSelectedIndex();
+			if(selections.isEmpty()) {
+				//get rows
+			} else {
+				List<AuthoringEntryRow> rows = new ArrayList<>();
+				for(Integer i:selections) {
+					AuthoringEntryRow row = model.getObject(i.intValue());
+					if(row != null) {
+						rows.add(row);
+					}
+				}
+				doAddOwners(ureq, rows);
+			}
+		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
 			if("mark".equals(cmd)) {
@@ -321,7 +359,7 @@ public class AuthorListController extends FormBasicController implements Activat
 					launch(ureq, row);
 				}
 			}
-		}
+		} 
 		super.formInnerEvent(ureq, source, event);
 	}
 
@@ -400,6 +438,30 @@ public class AuthorListController extends FormBasicController implements Activat
 		searchParams.setAuthor(se.getAuthor());
 		searchParams.setDisplayname(se.getDisplayname());
 		tableEl.reset();
+	}
+	
+	private void doAddOwners(UserRequest ureq, List<AuthoringEntryRow> rows) {
+		if(userSearchCtr != null) return;
+		
+		removeAsListenerAndDispose(userSearchCtr);
+		userSearchCtr = new UserSearchController(ureq, getWindowControl(), false, true, UserSearchController.ACTION_KEY_CHOOSE_FINISH);
+		userSearchCtr.setUserObject(rows);
+		listenTo(userSearchCtr);
+		
+		String title = translate("tools.add.owners");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), userSearchCtr.getInitialComponent(),
+				true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doAddOwners(List<Identity> futureOwners, List<AuthoringEntryRow> rows) {
+		for(AuthoringEntryRow row:rows) {
+			RepositoryEntry re = repositoryService.loadByKey(row.getKey());
+			for(Identity futureOwner:futureOwners) {
+				repositoryService.addRole(futureOwner, re, GroupRoles.owner.name());
+			}
+		}
 	}
 	
 	private void launch(UserRequest ureq, AuthoringEntryRow row) {
