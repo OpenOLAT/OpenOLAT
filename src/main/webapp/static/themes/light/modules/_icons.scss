@@ -53,6 +53,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_readwrite { @extend .o_icon-edit; }
 .o_icon_refresh { @extend .o_icon-refresh; } 
 .o_icon_search {@extend .o_icon-search;}
+.o_icon_show_more { @extend .o_icon-toggle-down; }
+.o_icon_show_less { @extend .o_icon-toggle-up; }
 .o_icon_sort {@extend .o_icon-sort;}
 .o_icon_sort_asc {@extend .o_icon-sort-asc;}
 .o_icon_sort_desc {@extend .o_icon-sort-desc;}

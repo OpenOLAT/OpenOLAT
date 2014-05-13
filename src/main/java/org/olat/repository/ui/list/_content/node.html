@@ -1,30 +1,68 @@
-<div class="o_catalog b_clearfix">	
-	#if($catalogEntryDesc || $r.available("catThumbnail"))
-		<div class="b_clearfix"><div class="o_catalog_desc">
-			#if($catThumbnail)
-				<div class="o_catalog_thumbnail" style="width:200px; height:200px; float:left; background:transparent url('$mapperThumbnailUrl/${catThumbnail}.png') no-repeat 50% 50%;">&nbsp;</div>
-			#end
-			<h4>$catalogEntryName</h4>
-			$r.xssScan($catalogEntryDesc)
-		</div></div>
-	#end
-	
+<div id="$r.getCId()">
+	<div class="o_catalog container-fluid">
+
+		<div class="o_level o_level_${catalogLevel} row">
+			<div class="o_visual">
+				#if($catThumbnail)
+					<img src="$mapperThumbnailUrl/${catThumbnail}.png" alt="$r.escapeHtml($catalogEntryName)"/>
+				#else
+					<div class="o_visual_not_available"></div>			
+				#end
+			</div>
+			<div class="o_meta o_withEllipsis clearfix">
+				<h2 class="o_title">
+					$catalogEntryName
+				</h2>
+				#if($catalogEntryDesc)	
+				<div class="o_desc">
+					$r.xssScan($catalogEntryDesc)
+				</div>
+				#end
+				<div class="o_ellipsis_links">
+					<a href="#" onclick="javascript: OPOL.Ellipsis.showOverflow(this); return false;" class="o_morelink">
+						<i class="o_icon o_icon_show_more"></i> $r.translate("read.more")
+					</a>
+					<a href="#" onclick="javascript: OPOL.Ellipsis.hideOverflow(this); return false;" class="o_lesslink">
+						<i class="o_icon o_icon_show_less"></i> $r.translate("read.less")
+					</a>
+				</div>
+			</div>
+		</div>
+		
 	#if($subCategories.size != 0)
-		<div class="o_catalog_itemlist b_clearfix">
+		<div class="o_sublevels row clearfix">
 			#foreach($id in $subCategories)
 				#set($imgId = "image_${id}")
-				<div class="o_catalog_item">
+				<div class="o_sublevel">
+					<div class="o_visual">
 					#if($r.get($imgId))
-						<div class="o_catalog_item_img" style="background:transparent url('$mapperThumbnailUrl/${r.get($imgId)}.png') no-repeat 50% 50%;">
-							$r.render("cat_${id}")
-						</div>
-					#else 
-						<div class="o_catalog_item_img f_thumbnail_unavailable">$r.render("cat_${id}")</div>
+						<img src="$mapperThumbnailUrl/${r.get($imgId)}.png" alt="$r.escapeHtml($r.get("title_${id}"))"/>
+					#else
+						<div class="o_visual_not_available"></div>			
 					#end
-					<div class="o_catalog_item_details">$r.render("cat_${id}")</div>
+					</div>
+					<div class="o_meta">
+						<h4 class="o_title">
+							$r.render("cat_${id}")
+						</h4>
+					</div>
 				</div>
 			#end
 		</div>
 	#end
+
+	</div>	## END o_catalog
+	
+	## Render course list component
+	$r.render("entries")
+
+<script type="text/javascript">
+/* <![CDATA[ */ 
+## Initialize the ellipsis code to hide overlflowed text
+	jQuery(document).ready(function() {
+		OPOL.Ellipsis.initEllipsisElement("#${r.getCId()} .o_withEllipsis");
+	});
+/* ]]> */
+</script>
+
 </div>
-$r.render("entries")

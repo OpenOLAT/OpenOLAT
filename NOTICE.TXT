@@ -118,6 +118,7 @@ This produce uses softeare based on the MIT License
 * Script.aculo.us javascript framework (MIT License) [http://script.aculo.us]
 * jQuery JavaScript DOM library (MIT License) [http://jquery.com]
 * jQuery-UI JavaScript UI library (MIT License) [http://jqueryui.com]
+* jQuery.dotdotdot library (MIT License) [http://dotdotdot.frebsite.nl]
 
 
 -----------------------------------------------------------------------

@@ -38,7 +38,7 @@ public class MainPanelRenderer extends PanelRenderer {
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
 
-		sb.append("<div id='o_main' class='b_hidecol1 b_hidecol2'>\n")
+		sb.append("<div id='o_main' class='row'>\n")
 		  .append("<div id='o_main_center' class='split-pane'>\n")
 		  .append("<div id='o_main_center_content' class='b_clearfix'>\n")
 		  .append("<a id='b_content' name='content'></a>\n")
@@ -49,7 +49,6 @@ public class MainPanelRenderer extends PanelRenderer {
 		
 		sb.append("</div>\n")
 		  .append("</div>\n")
-		  .append("<div id='b_ie_clearing'>&nbsp;</div>\n")
 		  .append("</div>\n")
 		  .append("</div>\n");
 	}

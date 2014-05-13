@@ -1,12 +1,50 @@
 /* custom layout */
 
-$o-coursesite-rowelem-width-md : 225px;
-$o-coursesite-rowelem-height-md : 150px;
-$o-coursesite-rowelem-width-sm : 150px;
-$o-coursesite-rowelem-height-sm : 100px;
+$o-coursesite-rowelem-width-md : 180px;
+$o-coursesite-rowelem-height-md : 120px;
+$o-coursesite-rowelem-width-sm : 120px;
+$o-coursesite-rowelem-height-sm : 80px;
 $o-coursesite-rowelem-width-xs : 75px;
 $o-coursesite-rowelem-height-xs : 50px;
-$o-coursesite-rowelem-border : #eee;
+$o-coursesite-rowelem-border : $brand-primary;
+
+$o-coursesite-catalog-space : $padding-large-vertical * 2;
+$o-coursesite-catalog-space-sm : $padding-large-vertical;
+$o-coursesite-catalog-space-xs : $padding-xs-vertical;
+$o-coursesite-catalog-border : $brand-primary;
+
+.o_visual {
+	position: absolute;
+	top: 0; left: 0;
+	overflow: hidden;
+	height: $o-coursesite-rowelem-height-md;	
+	width: $o-coursesite-rowelem-width-md;
+	vertical-align: middle;
+	
+	@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+		height: $o-coursesite-rowelem-height-sm;	
+		width: $o-coursesite-rowelem-width-sm;		
+	}
+	@media (max-width: $screen-xs-max) { 
+		height: $o-coursesite-rowelem-height-xs;	
+		width: $o-coursesite-rowelem-width-xs;		
+	}	
+	
+	img {
+		width: 100%;
+		height: auto;
+	}
+	
+	.o_visual_not_available {
+		width: 100%;
+		height: 100%;
+		background-image:url('#{$o-images-path}no_preview.png');
+		background-repeat:no-repeat;
+		background-position:50% 50%;		
+		background-size: contain;
+	}
+}
+
 
 .o_coursetable {
 	&.o_rendertype_custom {	
@@ -14,79 +52,50 @@ $o-coursesite-rowelem-border : #eee;
 			position: relative;
 			border: 1px solid $o-coursesite-rowelem-border;
 			margin-bottom: floor($line-height-computed / 2);
+			
 			.o_visual {
-				position: absolute;
-				top: 0; left: 0;
-				height: $o-coursesite-rowelem-height-md;	
-				width: $o-coursesite-rowelem-width-md;
-				overflow: hidden;
-
-				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-					height: $o-coursesite-rowelem-height-sm;	
-					width: $o-coursesite-rowelem-width-sm;		
-				}
-				@media (max-width: $screen-xs-max) { 
-					height: $o-coursesite-rowelem-height-xs;	
-					width: $o-coursesite-rowelem-width-xs;		
-				}	
-				
-				vertical-align: middle;
-				img {
-					width: 100%;
-					height: auto;
-				}
-				.o_visual_not_available {
-					width: 100%;
-					height: 100%;
-					background-image:url('#{$o-images-path}no_preview.png');
-					background-repeat:no-repeat;
-					background-position:50% 50%;		
-					background-size: contain;
-				}
+				border-right: 1px solid $o-coursesite-rowelem-border;		
 			}
-	
+			
 			.o_access {
 				position: absolute;
 				top: 0; right: 0;
 				height: $o-coursesite-rowelem-height-md;	
 				width: $o-coursesite-rowelem-width-md;
 				overflow: hidden;
+				border-left: 1px solid $o-coursesite-rowelem-border;
 				padding-top: floor($line-height-computed / 2);
 				
 				
-				.o_state, .o_score, .o_recent {
+				.o_state, .o_score {
 					@extend .small;
-					.o_label {
-						@extend .col-xs-4;
-						padding: 0 1em;		
-						@extend .text-muted;
-						@include text-overflow();
-					}
+					padding: 0 1em;		
 					height: floor($o-coursesite-rowelem-height-md / 6);
 					line-height: floor($o-coursesite-rowelem-height-md / 6);
 					position: relative;
+					@include text-overflow();
+				}	
 					
-					.o_passed, .o_failed, .o_unknown, .o_points, .o_date {
-						@extend .col-xs-8;
-						padding: 0 1em;
-					}
-					.o_passed {
-						@extend .text-success;
-						font-weight: bold;
-					}
-					.o_failed {
-						@extend .text-danger;
-						font-weight: bold;
-					}
-					.o_unknown {
+				.o_passed {
+					@extend .text-success;
+					font-weight: bold;
+				}
+				.o_failed {
+					@extend .text-danger;
+					font-weight: bold;
+				}
+				.o_score {
+					position: relative; 
+					left: 2px;
+					.o_label {
 						@extend .text-muted;
 					}
-				}	
+				}
 						
 				.o_social {
 					position: absolute;
 					width: 100%;
-					bottom: floor($o-coursesite-rowelem-height-md / 4);
+					bottom: floor($o-coursesite-rowelem-height-md / 4) + 2px;
 					height: floor($o-coursesite-rowelem-height-md / 6);
 					padding-left: 1em;
 				
@@ -113,9 +122,7 @@ $o-coursesite-rowelem-border : #eee;
 						@include text-overflow();
 					}
 					.o_methods {
-					}
-					
-				
+					}				
 				}
 				
 				
@@ -141,7 +148,7 @@ $o-coursesite-rowelem-border : #eee;
 				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
 					height: $o-coursesite-rowelem-height-sm;	
 					width: $o-coursesite-rowelem-width-sm;		
-					.o_recent, .o_label, .o_unknown, .o_score, .o_comments {
+					.o_score, .o_comments {
 						display: none;
 					}					
 					
@@ -170,9 +177,9 @@ $o-coursesite-rowelem-border : #eee;
 					margin: 0; /* box moves down otherwhise, replaced with padding */
 					position: relative;
 					@extend .text-primary;
-					line-height: 1em;
 					@include text-overflow();
 					a {
+						@extend .o_undecorated;
 						display: block;
 					}
 				}
@@ -244,4 +251,141 @@ $o-coursesite-rowelem-border : #eee;
 		}
 	}
 }
+
+
+/* the course catalog */
+.o_catalog {
+	.o_level {
+		position: relative;
+		margin-bottom: $o-coursesite-catalog-space / 2;
+		padding: 0;
+
+		border-top: 1px solid $o-coursesite-catalog-border;
+		border-bottom: 1px solid $o-coursesite-catalog-border;
+
+		.o_visual {
+			height: $o-coursesite-rowelem-width-md;	
+		}	
+
+		.o_meta {
+			position: relative;
+			min-height: $o-coursesite-rowelem-width-md;	
+			height: $o-coursesite-rowelem-width-md;	
+			overflow: hidden;
+		
+			margin: 0 0 0 $o-coursesite-rowelem-width-md;
+			padding: 1em 0.5em 0.5em 2em;
+
+			.o_title {
+				margin: 0; /* box moves down otherwhise, replaced with padding */
+				@extend .text-primary;
+				@include text-overflow();
+				a {
+					@extend .o_undecorated;
+					display: block;
+				}
+			}
+			.o_desc {
+				padding: 1em 0 0.5em 0;
+			}
+		}
+
+		@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+			.o_visual {
+				height: $o-coursesite-rowelem-width-sm;	
+			}
+			.o_meta {
+				min-height: $o-coursesite-rowelem-width-sm;	
+				height: $o-coursesite-rowelem-width-sm;	
+				margin: 0 0 0 $o-coursesite-rowelem-width-sm;
+			}
+		}	
+		@media (max-width: $screen-xs-max) { 
+			.o_visual {
+				height: $o-coursesite-rowelem-width-xs;	
+			}	
+			.o_meta {
+				min-height: $o-coursesite-rowelem-width-xs;	
+				height: $o-coursesite-rowelem-width-xs;	
+				margin: 0 0 0 $o-coursesite-rowelem-width-xs;
+				padding: 0 0 0 1em;
+				.o_title {
+					line-height: $o-coursesite-rowelem-width-xs;
+				}
+				.o_desc {
+					display: none;
+				}	
+			}
+		}
+	}	
+	
+	.o_sublevels {
+		position: relative;
+		margin-bottom: $o-coursesite-catalog-space;
+		@extend .clearfix;
+		
+		.o_sublevel {
+			position: relative;
+			@extend .pull-left; 
+			margin: 0 0 $o-coursesite-catalog-space $o-coursesite-catalog-space;
+			width: $o-coursesite-rowelem-width-md;	
+
+			&:first-child {
+				margin-left: 0;			
+			}
+						
+			.o_visual {
+				border: 1px solid $o-coursesite-catalog-border;
+				position: relative;
+				height: $o-coursesite-rowelem-width-md;					
+			}	
+			.o_meta {
+				position: absolute;
+				left: 0;
+				bottom: 0;
+				width: 100%;
+				border: 1px solid $o-coursesite-catalog-border;
+				border-top: 0;
+				background-color: rgba(255,255,255,0.7);
+				
+				.o_title {
+					margin: 0; /* box moves down otherwhise, replaced with padding */
+					@extend .text-primary;
+					text-align: center;
+					line-height: 2em;
+					width: 100%;
+					a {
+						@extend .o_undecorated;
+						display: block;
+					}
+				}				
+			}
+
+			@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+				width: $o-coursesite-rowelem-width-sm;	
+				margin: 0 0 $o-coursesite-catalog-space-sm $o-coursesite-catalog-space-sm;
+	
+				.o_visual {
+					height: $o-coursesite-rowelem-width-sm;	
+				}	
+				.o_title {
+					font-size: 90%;
+				}
+			}
+			@media (max-width: $screen-xs-max) { 
+				width: $o-coursesite-rowelem-width-sm;	
+				margin: 0 0 $o-coursesite-catalog-space-xs $o-coursesite-catalog-space-xs;
+				
+				.o_visual {
+					height: $o-coursesite-rowelem-width-sm;	
+					width: $o-coursesite-rowelem-width-sm;	
+				}	
+				.o_title {
+					font-size: 90%;
+				}
+			}	
+		}
+	}
+}
+ 
 

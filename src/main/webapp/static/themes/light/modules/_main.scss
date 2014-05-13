@@ -41,16 +41,26 @@
 			}
 
 			#o_main_center_content {
-				padding: $grid-gutter-width;
+				padding: $grid-gutter-width floor($grid-gutter-width / 2);
 			}
 		}
-		
-		
 	}
 	
 	#o_toplink {
 		position: absolute;
 		bottom: 10px; right: 10px;
 	}
+
+	@media (max-width: $screen-xs-max) { 
+		#o_main_container {
+			#o_main_center {
+				#o_main_center_content {
+					padding: floor($grid-gutter-width / 2);
+				}
+			}
+		}
+	}
+
+
 } 
 

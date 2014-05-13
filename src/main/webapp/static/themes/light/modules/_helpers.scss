@@ -12,19 +12,15 @@ div.o_chelp_wrapper {
 	position: relative;
 	@extend .pull-right;
 }
-/*
-fieldset a.o_chelp, 
-fieldset div.o_chelp_wrapper a.o_chelp { 
-	position: absolute; 
-	top: -1.5em; right: -0.8em; 
-}
-*/
 
+/* add to links that should not be decorated (system links) */ 
 .o_undecorated {
 	&:hover,&:focus {
 		text-decoration: none;
 	}
 }
+
+/* text that should be on one line, e.g. in tables */
 .o_nowrap {
 	white-space: nowrap;
 }	
@@ -49,49 +45,32 @@ fieldset div.o_chelp_wrapper a.o_chelp {
 .o_segments_content {
 	margin-top: $line-height-computed;
 }
-
-/*
-#o_chelp {
-}
-#o_chelp_content { padding: 0;}
-#b_ch_topnav_search div.b_form_element_wrapper.b_form_horizontal { margin:2px 0 0 0; }
-#o_chelp_rating { 
-	text-align: center; margin-top: 20px; padding: 10px; border-top: 1px #ACAAAA solid; 
-	 h4{ font-size: 90%; margin: 0; font-style: italic; }
-	 table {
-		 display: inline-block; 
-		 td { width: 50%; }
-	 }
-}
-.o_chelp_icon {background-image: url(../openolat/images/help.png); }
-*/
 	
 
-/*
-.b_with_small_icon_right {
-	padding: 0 20px 0 0;
-}
-.b_with_small_icon_left {
-	padding: 0 0 0 20px;
-}
-.b_small_icon {
-	height: $top_nav_line_height;
-}
-
-
-.inlineblock {
-	width: 200px;
-    min-height: 250px;
-    border: 1px solid #000;
-    display: -moz-inline-stack;
-    display: inline-block;
-    vertical-align: top;
-    margin: 5px;
-    zoom: 1;
-    *display: inline;
-    _height: 250px;
-}
-
-*/
-
-	
+/* Styling for overflow text with ellipsis (see js/ellipsis.js) */
+.o_withEllipsis {
+	.o_ellipsis_links {
+		@extend .pull-right;	
+	}
+	.o_morelink, .o_lesslink {
+		display: none;
+		@extend .o_undecorated;
+	}
+	&.o_hasOverflow {
+		.o_morelink {
+			display: block;		
+		}
+		.o_lesslink {
+			display: none;
+		}
+		&.o_showOverflow {
+			height: auto !important;
+			.o_morelink {
+				display: none;		
+			}
+			.o_lesslink {
+				display: block;
+			}
+		}
+	}
+}		

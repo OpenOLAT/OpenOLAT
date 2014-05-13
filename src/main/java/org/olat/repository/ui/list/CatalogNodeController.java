@@ -72,11 +72,20 @@ public class CatalogNodeController extends BasicController implements Activateab
 		this.wrapInMainPanel = wrapInMainPanel;
 
 		VelocityContainer mainVC = createVelocityContainer("node");
+		mainVC.setDomReplacementWrapperRequired(false); // uses own DOM ID
 		
 		mapperThumbnailUrl = registerCacheableMapper(ureq, "catalogentryImage", new CatalogEntryImageMapper());
 		mainVC.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
 		
 		mainVC.contextPut("catalogEntryName", catalogEntry.getName());
+		int level  = 0;
+		CatalogEntry parent = catalogEntry.getParent();
+		while (parent != null) {
+			level++;
+			parent = parent.getParent();			
+		}
+		mainVC.contextPut("catalogLevel", level);
+
 		if(StringHelper.containsNonWhitespace(catalogEntry.getDescription())) {
 			mainVC.contextPut("catalogEntryDesc", catalogEntry.getDescription());
 		}
@@ -103,6 +112,8 @@ public class CatalogNodeController extends BasicController implements Activateab
 				link.setCustomDisplayText(entry.getName());
 				link.setUserObject(entry.getKey());
 				subCategories.add(Integer.toString(count));
+				String titleId = "title_" + count;
+				mainVC.contextPut(titleId, entry.getName());
 			}
 		}
 		mainVC.contextPut("subCategories", subCategories);

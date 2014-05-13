@@ -10,7 +10,7 @@
 		<div class="o_go_xs visible-xs">
 			<i class=" o_icon o_icon_start o_icon-lg"></i>
 		</div>
-		<h3 class="o_title">$r.render($row.getSelectLinkName())</h3>
+		<h4 class="o_title">$r.render($row.getSelectLinkName())</h4>
 		#if($row.authors)
 			<div class="o_author"><span class="text-muted">$r.translate("course.made.by")</span> $row.authors</div>
 		#end
@@ -41,48 +41,26 @@
 		#end
 
 		#if($row.isMember() || $row.getVisit() > 0)
-			<div class="o_state row">
-				<div class="o_label">
-					$r.translate("details.label.status"):
-				</div>
-
+			#if($row.passed || $row.failed)
+			<div class="o_state row #if($row.passed) o_passed #else o_failed #end">
 				#if($row.passed)
-				<div class="o_passed">
 					<i class="o_icon o_icon_passed"></i>
 					$r.translate("passed.true")
-				</div>
 				#elseif($row.failed)
-				<div class="o_failed">
 					<i class="o_icon o_icon_failed"></i>
 					$r.translate("passed.false")
-				</div>
-				#else
-				<div class="o_unknown">$r.translate("passed.unknown")</div>			
 				#end
 			</div>
+			#end
 		
 			#if($row.score) 
 			<div class="o_score row">
-				<div class="o_label">
-					$r.translate("details.label.score"):
-				</div>
-				<div class="o_points">
-					$row.score
-				</div>							
+				$row.score 
+				<span class="o_label">
+					$r.translate("details.label.score")
+				</span>
 			</div> 
-			#end
-
-			#if($row.recentLaunch)
-			<div class="o_recent row">
-				<div class="o_label">
-					$r.translate("details.label.recent"):
-				</div>
-				<div class="o_date">
-					$r.formatDateAndTime($row.recentLaunch)
-				</div>							
-			</div> 
-			#end
-			
+			#end			
 		#end
 		
 		#if($row.accessTypes && !$row.isMember())
