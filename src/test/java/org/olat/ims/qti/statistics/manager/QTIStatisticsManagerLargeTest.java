@@ -295,7 +295,7 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 		QTIStatisticSearchParams searchParams = new QTIStatisticSearchParams(olatResource, olatResourceDetail);
 		StatisticsItem stats  = qtim.getItemStatistics(itemObject.getItemIdent(), maxValue, searchParams);
 
-		double difficulty = rightAnswersQ2 / numberOfParticipants;
+		double difficulty = rightAnswersQ2 / (double)numberOfParticipants;
 		Assert.assertEquals(difficulty, stats.getDifficulty(), 0.1);
 		Assert.assertEquals(scoreQ2, stats.getAverageScore(), 0.1);
 		Assert.assertEquals(wrongAnswersQ2, stats.getNumOfIncorrectAnswers());
