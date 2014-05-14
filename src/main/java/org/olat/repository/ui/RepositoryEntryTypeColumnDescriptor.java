@@ -17,11 +17,12 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.repository;
+package org.olat.repository.ui;
 
 import java.util.Locale;
 
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Description:<br>

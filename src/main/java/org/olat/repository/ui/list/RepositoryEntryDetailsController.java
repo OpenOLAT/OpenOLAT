@@ -26,7 +26,6 @@ import java.util.List;
 import org.olat.NewControllerFactory;
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
@@ -67,16 +66,17 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.RepositoyUIFactory;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.PriceMethod;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OfferAccess;
 import org.olat.resource.accesscontrol.model.Price;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -95,31 +95,29 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	private final RepositoryEntry entry;
 	private final RepositoryEntryRow row;
 
-	private final UserRatingsDAO userRatingsDao;
-	private final ACService acService;
-	private final MarkManager markManager;
-	private final CatalogManager catalogManager;
-	private final RepositoryService repositoryService;
-	private final BusinessGroupService businessGroupService;
-	private final EfficiencyStatementManager effManager;
-	private final UserCourseInformationsManager userCourseInfosManager;
+	@Autowired
+	private UserRatingsDAO userRatingsDao;
+	@Autowired
+	private ACService acService;
+	@Autowired
+	private MarkManager markManager;
+	@Autowired
+	private CatalogManager catalogManager;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
+	private EfficiencyStatementManager effManager;
+	@Autowired
+	private UserCourseInformationsManager userCourseInfosManager;
 	
 	private String baseUrl;
 	
 	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntryRow row) {
 		super(ureq, wControl, "details");
-		
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 
-		acService = CoreSpringFactory.getImpl(ACService.class);
-		markManager = CoreSpringFactory.getImpl(MarkManager.class);
-		catalogManager = CoreSpringFactory.getImpl(CatalogManager.class);
-		userRatingsDao = CoreSpringFactory.getImpl(UserRatingsDAO.class);
-		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		effManager = CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		userCourseInfosManager = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
-		
 		this.row = row;
 		entry = repositoryService.loadByKey(row.getKey());
 		

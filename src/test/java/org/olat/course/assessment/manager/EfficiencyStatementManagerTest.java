@@ -36,7 +36,7 @@ import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.SearchRepositoryEntryParameters;
+import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 

@@ -63,7 +63,7 @@ import org.olat.modules.fo.restapi.ForumCourseNodeWebService;
 import org.olat.modules.fo.restapi.ForumVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.SearchRepositoryEntryParameters;
+import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.restapi.support.MediaTypeVariants;

@@ -17,11 +17,10 @@
  * 12.10.2011 by frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.repository.controllers;
+package org.olat.repository.ui.author;
 
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -34,6 +33,7 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
@@ -48,7 +48,9 @@ import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -62,15 +64,15 @@ public class RepositoryMembersController extends AbstractMemberListController {
 	private Link importMemberLink, addMemberLink;
 	private StepsMainRunController importMembersWizard;
 	
-	private final RepositoryManager repositoryManager;
-	private final BusinessGroupService businessGroupService;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 	public RepositoryMembersController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry) {
-		super(ureq, wControl, repoEntry, "all_member_list");
+		super(ureq, wControl, repoEntry, null, "all_member_list",
+				Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		
-		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-
 		this.repoEntry = repoEntry;
 		boolean managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
 		addMemberLink = LinkFactory.createButton("add.member", mainVC, this);

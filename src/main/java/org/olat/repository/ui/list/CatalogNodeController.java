@@ -43,7 +43,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.SearchMyRepositoryEntryViewParams;
+import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.ui.CatalogEntryImageMapper;
 
 /**

@@ -46,8 +46,8 @@ import org.olat.core.util.Util;
 import org.olat.course.CourseModule;
 import org.olat.group.ui.edit.BusinessGroupEditResourceController;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryTableModel;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.repository.ui.RepositoryTableModel;
 
 /**
  * 

@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.repository.controllers;
+package org.olat.repository.ui.author;
 
 import java.io.File;
 import java.util.Date;
@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -63,13 +62,14 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.RepositoyUIFactory;
+import org.olat.repository.controllers.MediaContainerFilter;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -108,10 +108,14 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	
 	private static final String[] dateKeys = new String[]{ "none", "private", "public"};
 
-	private final UserManager userManager;
-	private final RepositoryService repositoryService;
-	private final RepositoryManager repositoryManager;
-	private final RepositoryEntryLifecycleDAO lifecycleDao;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryEntryLifecycleDAO lifecycleDao;
 
 	/**
 	 * Create a repository add controller that adds the given resourceable.
@@ -122,11 +126,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	 */
 	public RepositoryEditDescriptionController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean isSubWorkflow) {
 		super(ureq, wControl, "bgrep");
-		setBasePackage(RepositoryManager.class);
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
-		lifecycleDao = CoreSpringFactory.getImpl(RepositoryEntryLifecycleDAO.class);
+		setBasePackage(RepositoryService.class);
 		this.isSubWorkflow = isSubWorkflow;
 		this.repositoryEntry = entry;
 		repoEntryType = repositoryEntry.getOlatResource().getResourceableTypeName();
@@ -157,19 +157,17 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		// Add resource type
 		String typeName = null;
 		OLATResource res = repositoryEntry.getOlatResource();
-		if (res != null) typeName = res.getResourceableTypeName();
-		StringBuilder typeDisplayText = new StringBuilder(100);
-		if (typeName != null) { // add image and typename code
-			typeDisplayText.append("<span class=\"b_with_small_icon_left ");
-			typeDisplayText.append(RepositoyUIFactory.getIconCssClass(repositoryEntry));
-			typeDisplayText.append("\">");
-			String tName = NewControllerFactory.translateResourceableTypeName(typeName, getLocale());
-			typeDisplayText.append(tName);
-			typeDisplayText.append("</span>");
-		} else {
-			typeDisplayText.append(translate("cif.type.na"));
+		if (res != null) {
+			typeName = res.getResourceableTypeName();
 		}
-		uifactory.addStaticExampleText("cif.type", typeDisplayText.toString(), descCont);
+		
+		String typeDisplay ;
+		if (typeName != null) { // add image and typename code
+			typeDisplay = NewControllerFactory.translateResourceableTypeName(typeName, getLocale());
+		} else {
+			typeDisplay = translate("cif.type.na");
+		}
+		uifactory.addStaticExampleText("cif.type", typeDisplay, descCont);
 		
 		uifactory.addSpacerElement("spacer1", descCont, false);
 

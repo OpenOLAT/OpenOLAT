@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.repository;
+package org.olat.repository.controllers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,6 +67,7 @@ import org.olat.fileresource.types.XlsFileResource;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.portfolio.EPTemplateMapResource;
+import org.olat.repository.RepositoryModule;
 
 /**
  * Initial Date:  08.07.2003

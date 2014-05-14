@@ -25,7 +25,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
-import org.olat.repository.RepositoryTableModel;
+import org.olat.repository.ui.RepositoryTableModel;
 
 /**
  * The remove link appear only if the repository is not managed (flag groups)

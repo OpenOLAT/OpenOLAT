@@ -49,10 +49,10 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryTypeColumnDescriptor;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.delete.service.RepositoryDeletionManager;
+import org.olat.repository.ui.RepositoryEntryTypeColumnDescriptor;
 
 /**
  * Controller for 'Ready-to-delete' tab.

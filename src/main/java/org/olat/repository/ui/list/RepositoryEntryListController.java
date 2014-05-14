@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
@@ -62,11 +61,12 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.SearchMyRepositoryEntryViewParams;
-import org.olat.repository.SearchMyRepositoryEntryViewParams.Filter;
-import org.olat.repository.SearchMyRepositoryEntryViewParams.OrderBy;
+import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
+import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
+import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.list.RepositoryEntryDataModel.Cols;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -88,15 +88,15 @@ public class RepositoryEntryListController extends FormBasicController
 	private RepositoryEntryDetailsController detailsCtrl;
 	
 	private final String mapperThumbnailUrl;
-	private final MarkManager markManager;
-	private final UserRatingsDAO userRatingsDao;
+	@Autowired
+	private MarkManager markManager;
+	@Autowired
+	private UserRatingsDAO userRatingsDao;
 	
 	public RepositoryEntryListController(UserRequest ureq, WindowControl wControl,
 			SearchMyRepositoryEntryViewParams searchParams, BreadcrumbPanel stackPanel) {
 		super(ureq, wControl, "repoentry_table");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
-		markManager = CoreSpringFactory.getImpl(MarkManager.class);
-		userRatingsDao = CoreSpringFactory.getImpl(UserRatingsDAO.class);
 		mapperThumbnailUrl = registerCacheableMapper(ureq, "repositoryentryImage", new RepositoryEntryImageMapper());
 		
 		this.stackPanel = stackPanel;
@@ -162,7 +162,7 @@ public class RepositoryEntryListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.comments.i18nKey(), Cols.comments.ordinal()));
 
 		model = new RepositoryEntryDataModel(dataSource, columnsModel);
-		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "table", model, 20, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "table", model, 20, true, getTranslator(), formLayout);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setSearchEnabled(true);

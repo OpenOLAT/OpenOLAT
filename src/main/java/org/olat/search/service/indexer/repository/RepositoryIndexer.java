@@ -40,7 +40,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.SearchRepositoryEntryParameters;
+import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.search.SearchModule;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.RepositoryEntryDocument;

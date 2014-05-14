@@ -46,10 +46,10 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryTypeColumnDescriptor;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.delete.service.RepositoryDeletionManager;
+import org.olat.repository.ui.RepositoryEntryTypeColumnDescriptor;
 
 /**
  * Controller for tab 'Learning-resource selection' 

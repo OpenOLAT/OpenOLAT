@@ -41,7 +41,7 @@ import org.olat.modules.wiki.restapi.vo.WikiVO;
 import org.olat.modules.wiki.restapi.vo.WikiVOes;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.SearchRepositoryEntryParameters;
+import org.olat.repository.model.SearchRepositoryEntryParameters;
 
 /**
  * 

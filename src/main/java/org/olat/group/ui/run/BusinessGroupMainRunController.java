@@ -94,7 +94,7 @@ import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryTableModel;
+import org.olat.repository.ui.RepositoryTableModel;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ACUIFactory;

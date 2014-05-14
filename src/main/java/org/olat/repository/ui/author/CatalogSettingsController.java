@@ -94,7 +94,7 @@ public class CatalogSettingsController extends FormBasicController {
 		
 		List<CatalogEntry> catalogEntries = catalogManager.getCatalogCategoriesFor(entry);
 		model = new CategoriesListModel(catalogEntries, columnsModel);
-		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "table", model, 200, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "table", model, 200, true, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
 	}
 	

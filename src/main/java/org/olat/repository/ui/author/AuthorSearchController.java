@@ -61,21 +61,24 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	
 	private String[] limitTypes;
 	private boolean isAdmin;
+	private boolean cancelAllowed;
 	
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
-	public AuthorSearchController(UserRequest ureq, WindowControl wControl, boolean isAdmin) {
+	public AuthorSearchController(UserRequest ureq, WindowControl wControl, boolean isAdmin, boolean cancelAllowed) {
 		super(ureq, wControl, "search");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.isAdmin = isAdmin;
+		this.cancelAllowed = cancelAllowed;
 		initForm(ureq);
 	}
 
-	public AuthorSearchController(UserRequest ureq, WindowControl wControl, boolean isAdmin, Form form) {
+	public AuthorSearchController(UserRequest ureq, WindowControl wControl, boolean isAdmin, boolean cancelAllowed, Form form) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "search", form);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.isAdmin = isAdmin;
+		this.cancelAllowed = cancelAllowed;
 		initForm(ureq);
 	}
 	
@@ -112,7 +115,9 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
 		searchButton = uifactory.addFormLink("search", buttonLayout, Link.BUTTON);
-		uifactory.addFormCancelButton("quick.search", buttonLayout, ureq, getWindowControl());
+		if(cancelAllowed) {
+			uifactory.addFormCancelButton("quick.search", buttonLayout, ureq, getWindowControl());
+		}
 	}
 
 	@Override

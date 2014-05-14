@@ -59,9 +59,8 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryTableModel;
-import org.olat.repository.SearchForm;
-import org.olat.repository.SearchRepositoryEntryParameters;
+import org.olat.repository.model.SearchRepositoryEntryParameters;
+import org.olat.repository.ui.RepositoryTableModel;
 
 /**
 *  Description:

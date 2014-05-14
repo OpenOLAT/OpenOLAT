@@ -36,9 +36,9 @@ import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
-import org.olat.repository.SearchMyRepositoryEntryViewParams;
-import org.olat.repository.SearchMyRepositoryEntryViewParams.Filter;
-import org.olat.repository.SearchMyRepositoryEntryViewParams.OrderBy;
+import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
+import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
+import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -56,10 +56,10 @@ import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.portfolio.EPTemplateMapResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryTableModel;
 import org.olat.repository.controllers.RepositorySearchController.Can;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.RepositoryTableModel;
 import org.olat.repository.ui.author.CreateRepositoryEntryController;
 import org.olat.repository.ui.author.ImportRepositoryEntryController;
 

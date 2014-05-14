@@ -17,7 +17,7 @@
  * 12.10.2011 by frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.repository;
+package org.olat.repository.model;
 
 import java.util.ArrayList;
 import java.util.List;

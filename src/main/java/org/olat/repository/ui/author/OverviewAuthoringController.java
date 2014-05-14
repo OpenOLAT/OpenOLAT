@@ -43,8 +43,8 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -145,7 +145,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Favorits", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			markedCtrl = new AuthorListController(ureq, bwControl, "search.mark", searchParams);
+			markedCtrl = new AuthorListController(ureq, bwControl, "search.mark", searchParams, false);
 			listenTo(markedCtrl);
 		}
 		
@@ -162,7 +162,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("My", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			myEntriesCtrl = new AuthorListController(ureq, bwControl, "search.my", searchParams);
+			myEntriesCtrl = new AuthorListController(ureq, bwControl, "search.my", searchParams, false);
 			listenTo(myEntriesCtrl);
 		}
 
@@ -179,8 +179,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			searchEntriesCtrl = new AuthorListController(ureq, bwControl, "search.generic", searchParams);
-			listenTo(searchEntriesCtrl);
+			searchEntriesCtrl = new AuthorListController(ureq, bwControl, "search.generic", searchParams, true);
 		}
 		
 		addToHistory(ureq, searchEntriesCtrl);

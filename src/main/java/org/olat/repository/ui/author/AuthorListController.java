@@ -72,9 +72,9 @@ import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.TransientRepositoryEntryRef;
 import org.olat.repository.ui.author.AuthoringEntryDataModel.Cols;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -91,12 +91,12 @@ public class AuthorListController extends FormBasicController implements Activat
 	private FlexiTableElement tableEl;
 	private final TooledStackedPanel stackPanel;
 	
+	private boolean startExtendedSearch;
 	
 	private AuthoringEntryDataModel model;
 	private AuthoringEntryDataSource dataSource;
 	private final SearchAuthorRepositoryEntryViewParams searchParams;
 
-	
 	private CloseableModalController cmc;
 	private StepsMainRunController wizardCtrl;
 	private AuthorSearchController searchCtrl;
@@ -117,11 +117,12 @@ public class AuthorListController extends FormBasicController implements Activat
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public AuthorListController(UserRequest ureq, WindowControl wControl, String i18nName,
-			SearchAuthorRepositoryEntryViewParams searchParams) {
+			SearchAuthorRepositoryEntryViewParams searchParams, boolean startExtendedSearch) {
 		super(ureq, wControl, "entries");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 
 		this.searchParams = searchParams;
+		this.startExtendedSearch = startExtendedSearch;
 		
 		importLink = LinkFactory.createLink("cmd.import.ressource", getTranslator(), this);
 		importLink.setDomReplacementWrapperRequired(false);
@@ -160,7 +161,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//search form
-		searchCtrl = new AuthorSearchController(ureq, getWindowControl(), true, mainForm);
+		searchCtrl = new AuthorSearchController(ureq, getWindowControl(), true, !startExtendedSearch, mainForm);
 		listenTo(searchCtrl);
 		
 		//add the table
@@ -188,14 +189,19 @@ public class AuthorListController extends FormBasicController implements Activat
 				new StaticFlexiCellRenderer("" /* translate("edit") */, "edit", "o_icon-lg o_icon_edit")));
 		
 		model = new AuthoringEntryDataModel(dataSource, columnsModel);
-		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "table", model, 20, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "table", model, 20, !startExtendedSearch, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
 		tableEl.setExportEnabled(true);
 		tableEl.setExtendedSearch(searchCtrl, false);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_coursetable");
-		tableEl.setFilters(null, getFilters());
 		tableEl.setMultiSelect(true);
+		
+		if(startExtendedSearch) {
+			tableEl.expandExtendedSearch(ureq);
+		} else {
+			tableEl.setFilters(null, getFilters());
+		}
 		
 		addOwnersButton = uifactory.addFormLink("tools.add.owners", formLayout, Link.BUTTON);
 	}

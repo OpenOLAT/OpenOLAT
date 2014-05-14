@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.repository;
+package org.olat.repository.ui;
 
 import java.util.Locale;
 
@@ -25,6 +25,8 @@ import org.olat.NewControllerFactory;
 import org.olat.core.gui.components.table.CustomCssCellRenderer;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryShort;
 
 /**
  * Description:<br>

@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -47,8 +46,9 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
-import org.olat.repository.SearchMyRepositoryEntryViewParams;
+import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -71,15 +71,14 @@ public class OverviewRepositoryListController extends BasicController implements
 	private CatalogNodeController catalogCtrl;
 	private BreadcrumbedStackedPanel catalogStackPanel;
 	
-	private final CatalogManager catalogManager;
-	private final RepositoryModule repositoryModule;
+	@Autowired
+	private CatalogManager catalogManager;
+	@Autowired
+	private RepositoryModule repositoryModule;
 	
 	public OverviewRepositoryListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
-		
-		catalogManager = CoreSpringFactory.getImpl(CatalogManager.class);
-		repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
 
 		mainPanel = new MainPanel("myCoursesMainPanel");
 		mainPanel.setDomReplaceable(false);

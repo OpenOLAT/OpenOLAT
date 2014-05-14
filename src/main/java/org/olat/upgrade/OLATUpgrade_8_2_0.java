@@ -42,7 +42,7 @@ import org.olat.group.model.BGAreaReference;
 import org.olat.group.model.BusinessGroupReference;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.SearchRepositoryEntryParameters;
+import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.upgrade.model.BGAreaUpgrade;

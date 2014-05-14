@@ -127,15 +127,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private Map<String,FormItem> components = new HashMap<String,FormItem>();
 	
 	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, FlexiTableDataModel<?> tableModel) {
-		this(ureq, wControl, name, null, tableModel, -1);
+		this(ureq, wControl, name, null, tableModel, -1, true);
 	}
 	
 	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, Translator translator, FlexiTableDataModel<?> tableModel) {
-		this(ureq, wControl, name, translator, tableModel, -1);
+		this(ureq, wControl, name, translator, tableModel, -1, true);
 	}
 	
 	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, Translator translator,
-			FlexiTableDataModel<?> tableModel, int pageSize) {
+			FlexiTableDataModel<?> tableModel, int pageSize, boolean loadOnStart) {
 		super(name);
 		this.wControl = wControl;
 		this.dataModel = tableModel;
@@ -163,7 +163,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			setPage(0);
 		}
 		
-		if(dataSource != null) {
+		if(dataSource != null && loadOnStart) {
 			//preload it
 			dataSource.load(null, null, 0, pageSize);
 		}

@@ -49,8 +49,8 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryLight;
 import org.olat.repository.RepositoryEntryOrder;
-import org.olat.repository.RepositoryEntryTypeColumnDescriptor;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.ui.RepositoryEntryTypeColumnDescriptor;
 
 
 /**

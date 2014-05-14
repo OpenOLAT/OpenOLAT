@@ -46,9 +46,9 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.login.LoginModule;
-import org.olat.repository.PropPupForm;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryModule;
+import org.olat.repository.ui.author.PropPupForm;
 
 /**
  * Description:<br>

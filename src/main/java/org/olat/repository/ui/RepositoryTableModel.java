@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.repository;
+package org.olat.repository.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,9 +47,12 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.login.LoginModule;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatus;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
-import org.olat.repository.ui.RepositoryEntryAccessColumnDescriptor;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;

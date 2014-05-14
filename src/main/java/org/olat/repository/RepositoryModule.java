@@ -28,6 +28,7 @@ import org.olat.core.id.context.SiteContextEntryControllerCreator;
 import org.olat.core.util.StringHelper;
 import org.olat.course.site.CourseSiteContextEntryControllerCreator;
 import org.olat.group.BusinessGroupModule;
+import org.olat.repository.site.MyCoursesSite;
 import org.olat.repository.site.RepositorySite;
 
 /**
@@ -71,6 +72,9 @@ public class RepositoryModule extends AbstractOLATModule {
 		
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(RepositorySite.class.getSimpleName(),
 				new SiteContextEntryControllerCreator(RepositorySite.class));
+		
+		NewControllerFactory.getInstance().addContextEntryControllerCreator(MyCoursesSite.class.getSimpleName(),
+				new SiteContextEntryControllerCreator(MyCoursesSite.class));
 		
 		updateProperties();
 	}

@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.repository;
+package org.olat.repository.ui.author;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +42,8 @@ import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.login.LoginModule;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 
@@ -66,7 +68,7 @@ public class PropPupForm extends FormBasicController {
 	
 	private String[] keys, values;
 	
-	private RepositoryHandler handler = null;
+	private RepositoryHandler handler;
 	/**
 	 * The details form is initialized with data collected from entry and typeName. Handler is looked-up by
 	 * the given handlerName and not by the entry's resourceableType. This is to allow for an entry with no resourceable

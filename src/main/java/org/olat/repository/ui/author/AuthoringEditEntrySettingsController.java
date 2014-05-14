@@ -19,7 +19,6 @@
  */
 package org.olat.repository.ui.author;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -33,9 +32,9 @@ import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.controllers.RepositoryEditDescriptionController;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -50,13 +49,14 @@ public class AuthoringEditEntrySettingsController extends BasicController {
 	private final RepositoryEditDescriptionController descriptionCtrl;
 	
 	private RepositoryEntry entry;
+	@Autowired
 	private RepositoryService repositoryService;
 	
 	public AuthoringEditEntrySettingsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntryRef entryRef) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
-		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+
 		entry = repositoryService.loadByKey(entryRef.getKey());
 
 		descriptionCtrl = new RepositoryEditDescriptionController(ureq, getWindowControl(), entry, false);
