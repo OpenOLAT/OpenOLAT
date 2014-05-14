@@ -186,6 +186,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	public void setRendererType(FlexiTableRendererType rendererType) {
+		// activate active render button
+		customTypeButton.setActive(FlexiTableRendererType.custom == rendererType);
+		classicTypeButton.setActive(FlexiTableRendererType.classic == rendererType);
+		dataTablesTypeButton.setActive(FlexiTableRendererType.dataTables == rendererType);
+		// update render type
 		this.rendererType = rendererType;
 		if(component != null) {
 			component.setDirty(true);

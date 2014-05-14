@@ -163,8 +163,8 @@ public class RepositoryEntryListController extends FormBasicController
 
 		model = new RepositoryEntryDataModel(dataSource, columnsModel);
 		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "table", model, 20, true, getTranslator(), formLayout);
-		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
+		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setElementCssClass("o_coursetable o_rendertype_custom");
