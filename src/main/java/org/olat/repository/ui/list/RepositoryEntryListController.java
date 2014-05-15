@@ -213,7 +213,7 @@ public class RepositoryEntryListController extends FormBasicController
 				row.setMarked(marked);
 			} else if ("select".equals(cmd) || "start".equals(cmd)){
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
-				doOpen(ureq, row);
+				doOpenDetails(ureq, row);
 			} else if ("details".equals(cmd)){
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
 				doOpenDetails(ureq, row);
