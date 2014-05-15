@@ -60,9 +60,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append(" ").append(css);
 		}
 		switch(ftE.getRendererType()) {
-			case custom: sb.append("o_rendertype_custom"); break;
-			case classic: sb.append("o_rendertype_classic"); break;
-			case dataTables: sb.append("o_rendertype_dataTables"); break;
+			case custom: sb.append(" o_rendertype_custom"); break;
+			case classic: sb.append(" o_rendertype_classic"); break;
+			case dataTables: sb.append(" o_rendertype_dataTables"); break;
 		}
 		sb.append(" table-responsive\">");
 		String id = ftC.getFormDispatchId();

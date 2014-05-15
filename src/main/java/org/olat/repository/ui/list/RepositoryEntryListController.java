@@ -168,7 +168,7 @@ public class RepositoryEntryListController extends FormBasicController
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(false);
-		tableEl.setElementCssClass("o_coursetable o_rendertype_custom");
+		tableEl.setElementCssClass("o_coursetable");
 		VelocityContainer row = createVelocityContainer("row_1");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);

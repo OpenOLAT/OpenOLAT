@@ -55,7 +55,7 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 		if (css != null) {
 			sb.append(" ").append(css);
 		}
-		sb.append("\">");
+		sb.append(" o_rendertype_custom\">");
 		
 		//render body
 		sb.append("<div class='o_table_body container-fluid'>");
