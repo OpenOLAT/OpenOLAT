@@ -40,7 +40,7 @@ import org.olat.core.id.Roles;
  */
 public interface SearchService {
 	
-	public static final Version OO_LUCENE_VERSION = Version.LUCENE_45;
+	public static final Version OO_LUCENE_VERSION = Version.LUCENE_48;
 	
   /**
    * 

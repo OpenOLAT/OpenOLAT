@@ -102,7 +102,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	private RichTextElement description, objectives, requirements, credits;
 	private SingleSelection dateTypesEl, publicDatesEl;
 	private DateChooser startDateEl, endDateEl;
-	private FormLink deleteImage;
+	private FormLink deleteImage, deleteMovie;
 	private FormSubmit submit;
 	private FormLayoutContainer descCont, privateDatesCont;
 	
@@ -190,7 +190,6 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		}
 		language.select(selected, true);
 		
-		VFSLeaf movie = repositoryService.getIntroductionMovie(repositoryEntry);
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
 		mediaContainer = handler.getMediaContainer(repositoryEntry);
 		if(mediaContainer != null && mediaContainer.getName().equals("media")) {
@@ -287,7 +286,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		boolean managed = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
 		
 		VFSLeaf img = repositoryManager.getImage(repositoryEntry);
-		deleteImage = uifactory.addFormLink("delete", "cmd.delete", null, descCont, Link.BUTTON);
+		deleteImage = uifactory.addFormLink("deleteimg", "cmd.delete", null, descCont, Link.BUTTON);
 		deleteImage.setVisible(img != null && !managed);
 
 		fileUpload = uifactory.addFileElement("rentry.pic", "rentry.pic", descCont);
@@ -300,6 +299,11 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		}
 		fileUpload.setVisible(!managed);
 		fileUpload.limitToMimeType(imageMimeTypes, null, null);
+		
+
+		VFSLeaf movie = repositoryService.getIntroductionMovie(repositoryEntry);
+		deleteMovie = uifactory.addFormLink("deletemovie", "cmd.delete", null, descCont, Link.BUTTON);
+		deleteMovie.setVisible(movie != null && !managed);
 		
 		movieUpload = uifactory.addFileElement("rentry.movie", "rentry.movie", descCont);
 		movieUpload.setMaxUploadSizeKB(movieUploadlimitKB, null, null);
@@ -381,18 +385,31 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			VFSLeaf img = repositoryManager.getImage(repositoryEntry);
 			if(fileUpload.getUploadFile() != null) {
 				fileUpload.reset();
-				
 				if(img == null) {
 					deleteImage.setVisible(false);
-					fileUpload.setLabel("rentry.pic", null);
 				} else {
 					deleteImage.setVisible(true);
-					fileUpload.setLabel(null, null);
 				}
 			} else if(img != null) {
 				repositoryManager.deleteImage(repositoryEntry);
 				deleteImage.setVisible(false);
-				fileUpload.setLabel("rentry.pic", null);
+				fileUpload.setInitialFile(null);
+			}
+
+			flc.setDirty(true);
+		} else if (source == deleteMovie) {
+			VFSLeaf movie = repositoryService.getIntroductionMovie(repositoryEntry);
+			if(movieUpload.getUploadFile() != null) {
+				movieUpload.reset();
+				if(movie == null) {
+					deleteMovie.setVisible(false);
+				} else {
+					deleteMovie.setVisible(true);
+				}
+			} else if(movie != null) {
+				movie.delete();
+				deleteMovie.setVisible(false);
+				movieUpload.setInitialFile(null);
 			}
 
 			flc.setDirty(true);

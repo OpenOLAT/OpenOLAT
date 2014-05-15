@@ -117,7 +117,7 @@ public class RepositoryEntryAuthorViewQueries {
 
 		sb.append(" where v.identityKey=:identityKey ");
 		if(params.getRepoEntryKeys() != null && params.getRepoEntryKeys().size() > 0) {
-			sb.append(" and v.key=:repoEntryKeys ");
+			sb.append(" and v.key in (:repoEntryKeys)");
 		}
 
 		if (params.isResourceTypesDefined()) {
@@ -179,7 +179,7 @@ public class RepositoryEntryAuthorViewQueries {
 			}
 			sb.append(")");	
 		}
-		
+
 		TypedQuery<T> dbQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), type);
 		if(params.getRepoEntryKeys() != null && params.getRepoEntryKeys().size() > 0) {

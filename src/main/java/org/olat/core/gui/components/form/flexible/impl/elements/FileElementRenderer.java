@@ -82,7 +82,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 		// Read-write view
 		if (fileComp.isEnabled()) {
 			ImageFormItem previewCmp = fileElem.getPreviewFormItem();
-			if(previewCmp != null) {
+			if(previewCmp != null && previewCmp.isEnabled() && previewCmp.isVisible()) {
 				sb.append("<div class='o_filepreview'>");	
 				renderer.render(previewCmp.getComponent(), sb, args);
 				sb.append("</div>");

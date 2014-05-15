@@ -146,6 +146,7 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 				VFSLeaf media = new LocalFileImpl(tempUploadFile);
 				previewEl.setMedia(media, uploadMimeType);
 				previewEl.setMaxWithAndHeightToFitWithin(300, 200);
+				previewEl.setVisible(true);
 			}
 			// Mark associated component dirty, that it gets rerendered
 			component.setDirty(true);
@@ -188,6 +189,16 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 		if (tempUploadFile != null && tempUploadFile.exists()) {
 			tempUploadFile.delete();
 			tempUploadFile = null;
+		}
+		if(previewEl != null) {
+			if(initialFile != null) {
+				VFSLeaf media = new LocalFileImpl(initialFile);
+				previewEl.setMedia(media);
+				previewEl.setMaxWithAndHeightToFitWithin(300, 200);
+				previewEl.setVisible(true);
+			} else if(previewEl != null) {
+				previewEl.setVisible(false);
+			}
 		}
 		uploadFilename = null;
 		uploadMimeType = null;
@@ -302,6 +313,9 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 			VFSLeaf media = new LocalFileImpl(initialFile);
 			previewEl.setMedia(media);
 			previewEl.setMaxWithAndHeightToFitWithin(300, 200);
+			previewEl.setVisible(true);
+		} else if(previewEl != null) {
+			previewEl.setVisible(false);
 		}
 	}
 

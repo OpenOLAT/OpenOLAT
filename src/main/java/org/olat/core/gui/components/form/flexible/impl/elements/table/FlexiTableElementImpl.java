@@ -187,9 +187,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public void setRendererType(FlexiTableRendererType rendererType) {
 		// activate active render button
-		customTypeButton.setActive(FlexiTableRendererType.custom == rendererType);
-		classicTypeButton.setActive(FlexiTableRendererType.classic == rendererType);
-		dataTablesTypeButton.setActive(FlexiTableRendererType.dataTables == rendererType);
+		if(customTypeButton != null) {
+			customTypeButton.setActive(FlexiTableRendererType.custom == rendererType);
+		}
+		if(classicTypeButton != null) {
+			classicTypeButton.setActive(FlexiTableRendererType.classic == rendererType);
+		}
+		if(dataTablesTypeButton != null) {
+			dataTablesTypeButton.setActive(FlexiTableRendererType.dataTables == rendererType);
+		}
 		// update render type
 		this.rendererType = rendererType;
 		if(component != null) {
@@ -202,24 +208,27 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	@Override
-	public void setAvailableRendererTypes(FlexiTableRendererType... rendererType) {
-		this.availableRendererType = rendererType;
-		if(rendererType != null && rendererType.length > 1) {
+	public void setAvailableRendererTypes(FlexiTableRendererType... rendererTypes) {
+		this.availableRendererType = rendererTypes;
+		if(rendererTypes != null && rendererTypes.length > 1) {
 			String dispatchId = component.getDispatchID();
 			//custom
 			customTypeButton = new FormLinkImpl(dispatchId + "_customRTypeButton", "rCustomRTypeButton", "", Link.BUTTON + Link.NONTRANSLATED);
 			customTypeButton.setTranslator(translator);
 			customTypeButton.setIconLeftCSS("o_icon o_icon_list o_icon-lg");
+			customTypeButton.setActive(FlexiTableRendererType.custom == rendererType);
 			components.put("rTypeCustom", customTypeButton);
 			//classic tables
 			classicTypeButton = new FormLinkImpl(dispatchId + "_classicRTypeButton", "rClassicRTypeButton", "", Link.BUTTON + Link.NONTRANSLATED);
 			classicTypeButton.setTranslator(translator);
 			classicTypeButton.setIconLeftCSS("o_icon o_icon_table o_icon-lg");
+			classicTypeButton.setActive(FlexiTableRendererType.classic == rendererType);
 			components.put("rTypeClassic", classicTypeButton);
 			//jquery tables
 			dataTablesTypeButton = new FormLinkImpl(dispatchId + "_dataTablesRTypeButton", "rDataTablesRTypeButton", "", Link.BUTTON + Link.NONTRANSLATED);
 			dataTablesTypeButton.setTranslator(translator);
 			dataTablesTypeButton.setIconLeftCSS("o_icon o_icon_table o_icon-lg");
+			dataTablesTypeButton.setActive(FlexiTableRendererType.dataTables == rendererType);
 			components.put("rTypeDataTables", dataTablesTypeButton);
 			
 			if(getRootForm() != null) {

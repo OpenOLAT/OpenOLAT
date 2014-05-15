@@ -68,9 +68,9 @@
 		<org.hibernate.version>4.3.5.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.17.1</com.sun.jersey.version>
 		<jackson.version>1.9.2</jackson.version>
-		<org.mysql.version>5.1.29</org.mysql.version>
-		<org.postgresql.version>9.3-1100-jdbc41</org.postgresql.version>
-		<org.infinispan.version>6.0.1.Final</org.infinispan.version>
+		<org.mysql.version>5.1.30</org.mysql.version>
+		<org.postgresql.version>9.3-1101-jdbc41</org.postgresql.version>
+		<org.infinispan.version>6.0.2.Final</org.infinispan.version>
 		<lucene.version>4.8.0</lucene.version>
 
 	    <!-- properties for testing and Q&A -->
@@ -2241,7 +2241,7 @@
 			<dependency>
 				<groupId>org.jboss.arquillian</groupId>
 				<artifactId>arquillian-bom</artifactId>
-				<version>1.1.3.Final</version>
+				<version>1.1.4.Final</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
