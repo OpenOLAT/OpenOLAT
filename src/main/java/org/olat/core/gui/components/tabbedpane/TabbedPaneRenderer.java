@@ -36,6 +36,7 @@ import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * @author Felix Jost
@@ -55,7 +56,12 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 		int selPane = tb.getSelectedPane();
 		boolean iframePostEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
 		 		
-		sb.append("<ul class='nav nav-tabs'>");
+		sb.append("<ul class='nav nav-tabs");
+		String css = tb.getElementCssClass();
+		if (StringHelper.containsNonWhitespace(css)) {
+			sb.append(" ").append(css);
+		}
+		sb.append("'>");
 		for (int i = 0; i < cnt; i++) {
 			String tabName = tb.getDisplayNameAt(i);
 			// Render active tab as non clickable, passive tabs with link

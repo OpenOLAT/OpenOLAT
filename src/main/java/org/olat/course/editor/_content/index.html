@@ -1,3 +1,4 @@
+<div id="$r.getCId()" class="o_course_editor">
 #*
 	render error/warnings here
 *#
@@ -81,9 +82,12 @@
 #end
 
 #if($courseNode)
-<h4 class="b_with_small_icon_left $courseNodeCss">
-	$r.escapeHtml($courseNode.getShortTitle())
-</h4>
+<div class="page-header">
+	<h2>
+		<i class="o_icon $courseNodeCss"></i> 
+		$r.escapeHtml($courseNode.getShortTitle())
+	</h2>
+</div>
 #end
 #if($targetSelection)
 	$r.render("insertTargetSelection")
@@ -94,10 +98,14 @@
 	$r.translate("course.building.block.disabled")<br/><br/>
 	$r.render("alternative")
 #end
-<div class="o_courseeditor_legend b_small">
+<div class="o_block small ">
 	<strong>$r.translate("legend.title")</strong>
-	<div class="o_midlock">$r.translate("legend.cond")</div>
-	<div class="o_miderr">$r.translate("legend.err")</div>
-	<div class="o_midwarn">$r.translate("legend.warn")</div>
-	<div class="o_midpub">$r.translate("legend.ok")</div>
+	<ul class="list-unstyled">
+		<li><i class="o_icon o_icon-fw o_midlock"></i> $r.translate("legend.cond")</li>
+		<li><i class="o_icon o_icon-fw o_miderr"></i> $r.translate("legend.err")</li>
+		<li><i class="o_icon o_icon-fw o_midwarn"></i> $r.translate("legend.warn")</li>
+		<li><i class="o_icon o_icon-fw o_midpub"></i> $r.translate("legend.ok")</li>
+	</ul>
 </div>
+
+</div>##END o_course_editor

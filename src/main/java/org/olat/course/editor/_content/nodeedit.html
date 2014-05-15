@@ -1,8 +1,10 @@
-<fieldset class="b_clearfix">
-	<legend>$r.translate("nodeConfigForm.title")</legend>
-	$r.contextHelpWithWrapper("org.olat.course.editor","ced-des.html","help.hover.des")
-	<div class="b_floatbox">
-		<div class="b_small b_float_right">Id: $nodeId</div>
+<fieldset id="$r.getCId()" class="o_form form-horizontal o_desc" role="form">
+	<legend>
+		$r.contextHelpWithWrapper("org.olat.course.editor","ced-des.html","help.hover.des")
+		$r.translate("nodeConfigForm.title")
+	</legend>
+	<div class="clearfix">
+		<div class="small pull-left">Id: $nodeId</div>
 	</div>
 	$r.render("nodeConfigForm")
 	

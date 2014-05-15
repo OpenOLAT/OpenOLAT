@@ -244,6 +244,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		} else {
 			ICourse course = CourseFactory.openCourseEditSession(ores.getResourceableId());
 			main = createVelocityContainer("index");
+			main.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 			
 			OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", ores.getResourceableId());
 			RepositoryEntry repo = RepositoryManager.getInstance().lookupRepositoryEntry(courseOres, false);
@@ -303,6 +304,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			selTree.addListener(this);
 
 			tabbedNodeConfig = new TabbedPane("tabbedNodeConfig", ureq.getLocale());
+			tabbedNodeConfig.setElementCssClass("o_node_config");
 			main.put(tabbedNodeConfig.getComponentName(), tabbedNodeConfig);
 			
 			alternativeLink = LinkFactory.createButton("alternative", main, this);

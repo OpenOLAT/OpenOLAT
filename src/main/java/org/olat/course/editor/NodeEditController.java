@@ -111,6 +111,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		
 		// description and metadata component		
 		descriptionVc = this.createVelocityContainer("nodeedit");
+		descriptionVc.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 		Long repoKey = RepositoryManager.getInstance().lookupRepositoryEntryKey(course, true);
 		
 		StringBuilder extLink = new StringBuilder();
