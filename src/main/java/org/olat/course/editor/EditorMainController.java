@@ -385,7 +385,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		Dropdown nodeTools = new Dropdown("insertNodes", NLS_COMMAND_DELETENODE_HEADER, false, getTranslator());
 		stackPanel.addTool(nodeTools);
 		
-		deleteNodeLink = LinkFactory.createToolLink(CMD_DELNODE, translate(NLS_COMMAND_DELETENODE), this, "o_icon_delete");
+		deleteNodeLink = LinkFactory.createToolLink(CMD_DELNODE, translate(NLS_COMMAND_DELETENODE), this, "o_icon_delete_item");
 		nodeTools.addComponent(deleteNodeLink);
 		moveNodeLink = LinkFactory.createToolLink(CMD_MOVENODE, translate(NLS_COMMAND_MOVENODE), this, "o_icon_move");
 		nodeTools.addComponent(moveNodeLink);

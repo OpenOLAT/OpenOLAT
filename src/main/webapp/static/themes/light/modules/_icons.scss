@@ -89,6 +89,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_tool { @extend .o_icon-gear; }
 .o_icon_top {@extend .o_icon-chevron-up; }
 .o_icon_upload {@extend .o_icon-upload; }
+.o_icon_wizard{@extend .o_icon-magic; }
 
 /* do not move link icons */
 a.o_icon {
