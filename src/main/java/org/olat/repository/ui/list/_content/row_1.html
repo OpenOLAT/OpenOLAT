@@ -69,9 +69,11 @@
 				$r.translate("details.orders"):
 			</div>
 			<div class="o_methods">
+				<ul class="list-inline">
 				#foreach($type in $row.accessTypes)
-					<i class="o_icon $type.type o_icon-lg"></i>
+					<li title="$r.escapeHtml("$type.displayName")"><i class="o_icon $type.type o_icon-lg"></i>#if($type.price && $type.price.length() > 0) ($type.price)#end</li>
 				#end
+				</ul>
 			</div>							
 		</div> 
 		#end

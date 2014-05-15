@@ -115,11 +115,11 @@ $o-coursesite-catalog-border : $brand-primary;
 				
 				.o_bookings {
 					padding: 0 0 0 1em;							
+					@include text-overflow();
 					.o_label {
 						margin-bottom: 1em;		
 						@extend .text-muted;
 						@extend .small;
-						@include text-overflow();
 					}
 					.o_methods {
 						color: $brand-info;

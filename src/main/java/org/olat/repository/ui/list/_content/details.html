@@ -1,14 +1,14 @@
 <div class="o_repo_details">
-	<div class="o_lead">					
+	<div class="o_lead clearfix">					
+		<h1>
+			<i class="o_icon $cssClass o_icon-lg"></i>
+			$r.escapeHtml($v.displayname)
+		</h1>
 		#if($r.available("thumbnail"))
 		<div class="o_media">
 			$r.render("thumbnail")
 		</div>
 		#end
-		<h1>
-			<i class="o_icon $cssClass o_icon-lg"></i>
-			$r.escapeHtml($v.displayname)
-		</h1>
 		<div class="o_desc">
 			$description
 		</div>

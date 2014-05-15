@@ -90,6 +90,8 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 		posterMapper = new MediaMapper();
 		mapperId = UUID.randomUUID().toString();
 		posterMapperUrl = CoreSpringFactory.getImpl(MapperService.class).register(usess, mapperId, posterMapper);		
+		// renderer provides own DOM ID
+		setDomReplacementWrapperRequired(false);
 	}
 
 	/**

@@ -3,14 +3,13 @@
 	
 	.o_lead {
 		@extend .jumbotron;
-		h1 i {
-			display: none;
-		}
 		.o_media {
 			@extend .pull-right;
-			margin-top: 20px;
 			margin-left: 2em;
-			margin-bottom: 2em;
+			margin-bottom: 2em;			
+		}
+		h1 i {
+			display: none;
 		}
 	}
 	

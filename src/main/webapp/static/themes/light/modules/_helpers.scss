@@ -36,6 +36,18 @@ div.o_chelp_wrapper {
 	}
 }
 
+
+/* media classes for video and image component */
+.o_video {
+	display: inline-block;
+}
+
+.o_image {
+	display: inline-block;
+	max-width: 100%;
+}
+
+
 .o_rotate_90 {
 	-webkit-transform: rotate(-90deg);
 	-moz-transform: rotate(-90deg);

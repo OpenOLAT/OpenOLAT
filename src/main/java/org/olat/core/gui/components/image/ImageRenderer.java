@@ -64,14 +64,15 @@ public class ImageRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderMovie(StringOutput sb, ImageComponent ic) {
-		String imgId = "mov_" + ic.getDispatchID();
+		// Use configured calculated scaled size, fallback to default size
 		int width = 320;
 		int height = 240;
-		Size size = ic.getRealSize();
+		Size size = ic.getScaledSize();
 		if(size != null) {
 			width = size.getWidth();
 			height = size.getHeight() + 20;//+20 because of toolbar
 		}
+		// Add video name with mime type ending for better browser support
 		String mapperUrl = ic.getMapperUrl();
 		String name = ic.getMedia().getName();
 		if(name.lastIndexOf('.') > 0) {
@@ -79,12 +80,17 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		} else {
 			mapperUrl += "/video." + ic.getSuffix(ic.getMimeType());
 		}
-		// check for poster image
+		// Add poster image if available
 		String poster = null;
 		if (ic.getPoster() != null) {
 			poster = ic.getPosterMapperUrl() + "/" + ic.getPoster().getName();
 		}
 		
+		// Provide own component dispatch ID and wrap in div
+		String compId = "o_c" + ic.getDispatchID();
+		sb.append("<div id='").append(compId).append("' class='o_video'>"); // START component
+		// The inner component 
+		String imgId = "mov_" + ic.getDispatchID();
 		sb.append("<div id='").append(imgId).append("' name='").append(imgId).append("'></div>")
 		  .append("<script type='text/javascript'>")
 		  .append("/* <![CDATA[ */")
@@ -95,11 +101,16 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		}
 		sb.append(");")
 		  .append("/* ]]> */")
-		  .append("</script>");
+		  .append("</script>")
+		  .append("</div>"); // ENDcomponent
 	}
 	
 	private void renderImage(StringOutput sb, ImageComponent ic) {
-		String imgId = "img_" + ic.getDispatchID();
+		// Provide own component dispatch ID and wrap in div
+		String compId = "o_c" + ic.getDispatchID();
+		sb.append("<div id='").append(compId).append("' class='o_image'>"); // START component
+		// The inner component 
+		String imgId = "o_img" + ic.getDispatchID();
 		sb.append("<img").append(" id='").append(imgId).append("'");
 		Size size = ic.getScaledSize();
 		if (size != null) {
@@ -114,7 +125,7 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		} else {
 			mapperUrl += "/?" + System.nanoTime();
 		}
-		sb.append(" src='").append(mapperUrl).append("' class='img-responsive'/>");
+		sb.append(" src='").append(mapperUrl).append("'/>");
 		
 		if(ic.isCropSelectionEnabled()) {
 			sb.append("<input id='").append(imgId).append("_x' name='").append(imgId).append("_x' type='hidden' value='' />")
@@ -141,5 +152,7 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		      .append("/* ]]> */\n")
 		      .append("</script>");
 		}
+		sb.append("</div>"); // ENDcomponent
+
 	}
 }
