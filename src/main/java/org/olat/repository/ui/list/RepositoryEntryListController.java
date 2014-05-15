@@ -211,10 +211,10 @@ public class RepositoryEntryListController extends FormBasicController
 				link.setIconLeftCSS(marked ? "o_icon o_icon_bookmark o_icon-lg" : "o_icon o_icon_bookmark_add o_icon-lg");
 				link.getComponent().setDirty(true);
 				row.setMarked(marked);
-			} else if ("select".equals(cmd) || "start".equals(cmd)){
+			} else if ("start".equals(cmd)){
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
-				doOpenDetails(ureq, row);
-			} else if ("details".equals(cmd)){
+				doOpen(ureq, row);
+			} else if ("select".equals(cmd) || "details".equals(cmd)){
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
 				doOpenDetails(ureq, row);
 			} else if ("comments".equals(cmd)){
