@@ -19,6 +19,9 @@
  */
 package org.olat.repository.ui.author;
 
+import org.olat.core.gui.translator.Translator;
+
+
 /**
  * Delegate to the controller the job of forgeing the link.
  * 
@@ -29,5 +32,7 @@ package org.olat.repository.ui.author;
 public interface AuthoringEntryDataSourceUIFactory {
 
 	public void forgeMarkLink(AuthoringEntryRow row);
+	
+	public Translator getTranslator();
 
 }

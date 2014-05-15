@@ -20,6 +20,11 @@ div.o_chelp_wrapper {
 	}
 }
 
+/* a block of content that should have margins */
+.o_block {
+	margin: 0.75em 0;
+}
+
 /* text that should be on one line, e.g. in tables */
 .o_nowrap {
 	white-space: nowrap;

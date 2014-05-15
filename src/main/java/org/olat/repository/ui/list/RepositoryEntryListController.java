@@ -54,6 +54,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -374,14 +375,16 @@ public class RepositoryEntryListController extends FormBasicController
 	@Override
 	public void forgeStartLink(RepositoryEntryRow row) {
 		String label;
+		boolean isStart = true;
 		if(row.getAccessTypes() != null && !row.getAccessTypes().isEmpty() && !row.isMember()) {
 			label = "book";
+			isStart = false;
 		} else {
 			label = "start";
 		}
 		FormLink startLink = uifactory.addFormLink("start_" + row.getKey(), "start", label, null, null, Link.LINK);
 		startLink.setUserObject(row);
-		startLink.setCustomEnabledLinkCSS("o_start");
+		startLink.setCustomEnabledLinkCSS(isStart ? "o_start" : "o_book");
 		startLink.setIconRightCSS("o_icon o_icon_start");
 		row.setStartLink(startLink);
 	}	
@@ -424,4 +427,10 @@ public class RepositoryEntryListController extends FormBasicController
 		commentsLink.setIconLeftCSS(css);
 		row.setCommentsLink(commentsLink);
 	}
+
+	@Override
+	public Translator getTranslator() {
+		return super.getTranslator();
+	}
+	
 }

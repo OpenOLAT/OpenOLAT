@@ -42,6 +42,8 @@ import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
@@ -65,6 +67,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 	
 
 	private final ACService acService;
+	private final AccessControlModule acModule;
 	private final SearchClient searchClient;
 	private final RepositoryService repositoryService;
 	private final RepositoryManager repositoryManager;
@@ -77,6 +80,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		this.searchParams = searchParams;
 		
 		acService = CoreSpringFactory.getImpl(ACService.class);
+		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
 		searchClient = CoreSpringFactory.getImpl(SearchClientLocal.class);
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
@@ -165,7 +169,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			List<PriceMethod> types = new ArrayList<PriceMethod>();
 			if (entry.isMembersOnly()) {
 				// members only always show lock icon
-				types.add(new PriceMethod("", "o_ac_membersonly_icon"));
+				types.add(new PriceMethod("", "o_ac_membersonly_icon", uifactory.getTranslator().translate("cif.access.membersonly.short")));
 			} else {
 				// collect access control method icons
 				OLATResource resource = entry.getOlatResource();
@@ -174,7 +178,9 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 						for(PriceMethodBundle bundle:resourceAccess.getMethods()) {
 							String type = (bundle.getMethod().getMethodCssClass() + "_icon").intern();
 							String price = bundle.getPrice() == null || bundle.getPrice().isEmpty() ? "" : PriceFormat.fullFormat(bundle.getPrice());
-							types.add(new PriceMethod(price, type));
+							AccessMethodHandler amh = acModule.getAccessMethodHandler(bundle.getMethod().getType());
+							String displayName = amh.getMethodName(uifactory.getTranslator().getLocale());
+							types.add(new PriceMethod(price, type, displayName));
 						}
 					}
 				}

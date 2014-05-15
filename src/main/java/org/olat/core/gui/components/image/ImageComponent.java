@@ -68,6 +68,11 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 	private final String mapperUrl;
 	private final MediaMapper mapper;
 
+	// optional in case of video: poster image
+	private VFSLeaf poster;
+	private String posterMapperUrl;
+	private MediaMapper posterMapper;
+
 	private Size realSize;
 	private Size scaledSize;
 	private float scalingFactor;
@@ -81,6 +86,10 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 		mapper = new MediaMapper();
 		String mapperId = UUID.randomUUID().toString();
 		mapperUrl = CoreSpringFactory.getImpl(MapperService.class).register(usess, mapperId, mapper);
+		// optional poster frame for videos
+		posterMapper = new MediaMapper();
+		mapperId = UUID.randomUUID().toString();
+		posterMapperUrl = CoreSpringFactory.getImpl(MapperService.class).register(usess, mapperId, posterMapper);		
 	}
 
 	/**
@@ -128,10 +137,17 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 		return media;
 	}
 
+	public VFSLeaf getPoster() {
+		return poster;
+	}
+	
 	@Override
 	public void dispose() {
 		if(mapper != null) {
 			CoreSpringFactory.getImpl(MapperService.class).cleanUp(Collections.<Mapper>singletonList(mapper));
+		}
+		if(posterMapper != null) {
+			CoreSpringFactory.getImpl(MapperService.class).cleanUp(Collections.<Mapper>singletonList(posterMapper));
 		}
 	}
 
@@ -160,10 +176,22 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 		setDirty(true);
 		setMedia(new LocalFileImpl(mediaFile));
 	}
+
+	public void setPoster(VFSLeaf poster) {
+		setDirty(true);
+		this.poster = poster;
+		posterMapper.setMediaFile(poster);
+	}
+
 	
 	public String getMapperUrl() {
 		return mapperUrl;
 	}
+
+	public String getPosterMapperUrl() {
+		return posterMapperUrl;
+	}
+
 	
 	public String getMimeType() {
 		if(mimeType != null) {

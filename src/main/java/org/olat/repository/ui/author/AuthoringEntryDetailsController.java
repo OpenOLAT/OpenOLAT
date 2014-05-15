@@ -88,7 +88,9 @@ import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OfferAccess;
 import org.olat.resource.accesscontrol.model.Price;
@@ -130,6 +132,8 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 
 	@Autowired
 	private ACService acService;
+	@Autowired
+	private AccessControlModule acModule;
 	@Autowired
 	private MarkManager markManager;
 	@Autowired
@@ -364,7 +368,7 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 		List<PriceMethod> types = new ArrayList<PriceMethod>();
 		if (entry.isMembersOnly()) {
 			// members only always show lock icon
-			types.add(new PriceMethod("", "o_ac_membersonly_icon"));
+			types.add(new PriceMethod("", "o_ac_membersonly_icon", translate("cif.access.membersonly.short")));
 			if(isMember) {
 				startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.LINK);
 			}
@@ -378,7 +382,9 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 					String type = (method.getMethodCssClass() + "_icon").intern();
 					Price p = access.getOffer().getPrice();
 					String price = p == null || p.isEmpty() ? "" : PriceFormat.fullFormat(p);
-					types.add(new PriceMethod(price, type));
+					AccessMethodHandler amh = acModule.getAccessMethodHandler(method.getType());
+					String displayName = amh.getMethodName(getLocale());
+					types.add(new PriceMethod(price, type, displayName));
 				}
 				startLink = uifactory.addFormLink("start", "start", "book", null, layoutCont, Link.LINK);
 			} else {

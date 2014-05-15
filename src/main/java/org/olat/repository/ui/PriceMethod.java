@@ -28,10 +28,12 @@ package org.olat.repository.ui;
 public class PriceMethod {
 	private String price;
 	private String type;
+	private String displayName;
 	
-	public PriceMethod(String price, String type) {
+	public PriceMethod(String price, String type, String displayName) {
 		this.price = price;
 		this.type = type;
+		this.displayName = displayName;
 	}
 	
 	public String getPrice() {
@@ -40,5 +42,9 @@ public class PriceMethod {
 	
 	public String getType() {
 		return type;
+	}
+	
+	public String getDisplayName() {
+		return displayName;
 	}
 }

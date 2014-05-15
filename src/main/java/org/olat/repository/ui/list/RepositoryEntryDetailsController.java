@@ -71,7 +71,9 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
+import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OfferAccess;
 import org.olat.resource.accesscontrol.model.Price;
@@ -99,6 +101,8 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	private UserRatingsDAO userRatingsDao;
 	@Autowired
 	private ACService acService;
+	@Autowired
+	private AccessControlModule acModule;
 	@Autowired
 	private MarkManager markManager;
 	@Autowired
@@ -162,6 +166,10 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				if(movie != null) {
 					ic.setMedia(movie);
 					ic.setMaxWithAndHeightToFitWithin(500, 300);
+					// add poster image
+					if (image != null) {
+						ic.setPoster(image);
+					}
 				} else {
 					ic.setMedia(image);
 					ic.setMaxWithAndHeightToFitWithin(500, 300);
@@ -187,8 +195,9 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			} else {
 				marked = row.isMarked();
 			}
-			markLink = uifactory.addFormLink("mark", "mark", "&nbsp;&nbsp;&nbsp;&nbsp;", null, layoutCont, Link.NONTRANSLATED);
-			markLink.setCustomEnabledLinkCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+			markLink = uifactory.addFormLink("mark", "mark", marked ? "details.bookmark.remove" : "details.bookmark", null, layoutCont, Link.LINK);
+			markLink.setElementCssClass("o_bookmark");
+			markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 			
 			Integer myRating = row.getMyRating();
 			Float averageRating = row.getAverageRating();
@@ -212,28 +221,38 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			List<PriceMethod> types = new ArrayList<PriceMethod>();
 			if (entry.isMembersOnly()) {
 				// members only always show lock icon
-				types.add(new PriceMethod("", "o_ac_membersonly_icon"));
+				types.add(new PriceMethod("", "o_ac_membersonly_icon", translate("cif.access.membersonly.short")));
 				if(isMember) {
-					startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.BUTTON);
+					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
+					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
+					startLink.setElementCssClass("o_start");
 				}
 			} else {
 				AccessResult acResult = acService.isAccessible(entry, getIdentity(), false);
 				if(acResult.isAccessible()) {
-					startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.BUTTON);
+					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
+					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
+					startLink.setElementCssClass("o_start");
 				} else if (acResult.getAvailableMethods().size() > 0) {
 					for(OfferAccess access:acResult.getAvailableMethods()) {
 						AccessMethod method = access.getMethod();
 						String type = (method.getMethodCssClass() + "_icon").intern();
 						Price p = access.getOffer().getPrice();
 						String price = p == null || p.isEmpty() ? "" : PriceFormat.fullFormat(p);
-						types.add(new PriceMethod(price, type));
+						AccessMethodHandler amh = acModule.getAccessMethodHandler(method.getType());
+						String displayName = amh.getMethodName(getLocale());
+						types.add(new PriceMethod(price, type, displayName));
 					}
-					startLink = uifactory.addFormLink("start", "start", "book", null, layoutCont, Link.BUTTON);
+					String linkText = translate("book.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
+					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
+					startLink.setCustomEnabledLinkCSS("btn btn-success"); // custom style
+					startLink.setElementCssClass("o_book");
 				} else {
-					startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.BUTTON);
+					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
+					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
 					startLink.setEnabled(false);
+					startLink.setElementCssClass("o_start");
 				}
-				
 				startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
 				startLink.setPrimary(true);
 			}
@@ -333,7 +352,9 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				doOpenCategory(ureq, categoryKey);
 			} else if("mark".equals(cmd)) {
 				boolean marked = doMark();
+				markLink.setI18nKey(marked ? "details.bookmark.remove" : "details.bookmark");
 				markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+
 			} else if("comments".equals(cmd)) {
 				doOpenComments(ureq);
 			} else if("start".equals(cmd)) {

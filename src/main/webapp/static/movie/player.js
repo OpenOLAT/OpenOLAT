@@ -1,6 +1,6 @@
 var BPlayer = {
-	insertPlayer: function (address,domId,width,height,start,duration,provider,streamer,autostart,repeat,controlbar) {
-		BPlayer.insertHTML5Player(address,domId,width,height,start,duration,provider,streamer,autostart,repeat,controlbar);
+	insertPlayer: function (address,domId,width,height,start,duration,provider,streamer,autostart,repeat,controlbar,poster) {
+		BPlayer.insertHTML5Player(address,domId,width,height,start,duration,provider,streamer,autostart,repeat,controlbar,poster);
 	},
 	
 	playSound : function(soundUrl, domId) {
@@ -23,7 +23,7 @@ var BPlayer = {
 		}
 	},
 
-	insertHTML5Player : function (address,domId,width,height,start,duration,provider,streamer,autostart,repeat,controlbar) {
+	insertHTML5Player : function (address,domId,width,height,start,duration,provider,streamer,autostart,repeat,controlbar,poster) {
 		var videoUrl = address
 		if(address.indexOf('://') < 0 && (address.indexOf('/secstatic/qtieditor/') >= 0 || address.indexOf('/secstatic/qti/') >= 0)) {
 			videoUrl = address;
@@ -72,6 +72,9 @@ var BPlayer = {
 		}
 		if(controlbar != undefined && !controlbar) {
 			args.controlbar = "none";
+		}
+		if(poster) {
+			args.image = poster;
 		}
 		
 		if(BPlayer.isIE8() && domId != 'prev_container' && jQuery('#' + domId).is("span")) {

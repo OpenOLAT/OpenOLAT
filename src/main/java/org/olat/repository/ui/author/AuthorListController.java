@@ -59,6 +59,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -148,6 +149,11 @@ public class AuthorListController extends FormBasicController implements Activat
 		stackPanel.addTool(createDropdown);
 	}
 	
+	@Override
+	public Translator getTranslator() {
+		return super.getTranslator();
+	}
+
 	private void addCreateLink(String type, Dropdown dropdown) {
 		Link createLink = LinkFactory.createLink(type, getTranslator(), this);
 		createLink.setUserObject(type);

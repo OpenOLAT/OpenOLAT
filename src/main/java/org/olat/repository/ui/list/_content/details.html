@@ -1,10 +1,10 @@
 <div class="o_repo_details">
-	<div class="jumbotron">					
-	#if($r.available("thumbnail"))
+	<div class="o_lead">					
+		#if($r.available("thumbnail"))
 		<div class="o_media">
 			$r.render("thumbnail")
 		</div>
-	#end
+		#end
 		<h1>
 			<i class="o_icon $cssClass o_icon-lg"></i>
 			$r.escapeHtml($v.displayname)
@@ -15,95 +15,139 @@
 	</div>
 
 	<div class="row">
-		<div class="col-xs-12 col-sm-5 col-md-4 pull-right"><div class="row">
-		<div class="col-xs-6 col-sm-12">
-			<div class="o_overview">
-				<h4>$r.translate("details.overview")</h4>
-				#if($v.lifecycle || $v.lifecycle.softKey || $row.lifecycle.start || $row.lifecycle.end)
-				<div title="$r.translateInAttribute("cif.dates")">
-					<i class="o_icon o_icon_lifecycle"></i> 
-					#if($!v.lifecycle.private && $v.lifecycle.softKey) $v.lifecycle.softKey #end
-					#if($v.lifecycle.validFrom) $r.formatDate($v.lifecycle.validFrom) #end
-					#if($v.lifecycle.validTo) - $r.formatDate($v.lifecycle.validTo) #end
-				</div>
-				#end
-				#if($v.expenditureOfWork)
-				<div title="$r.translateInAttribute("details.expenditureOfWork.desc")">
-					<i class="o_icon o_icon_expenditure"></i>  
-					$r.translate("details.expenditureOfWork", $r.escapeHtml($v.expenditureOfWork))
-				</div>
-				#end
-				#if($v.mainLanguage)
-				<div title="$r.translateInAttribute("cif.mainLanguage")">
-					<i class="o_icon o_icon_language"></i> 
-					$r.escapeHtml($v.mainLanguage)
-				</div>
-				#end
-			</div>
-			<div class=".o_social">
-				<h4>$r.translate("ratings")</h4>
-				$r.render("rating")
-				$r.render("comments")
-			</div>
-			#if($v.authors)
-			<div class="o_authors">
-				<h4>$r.translate("cif.authors")</h4>
-				$r.escapeHtml($v.authors)
-			</div>
-			#end
-			<div class="o_start">
-				$r.render("start")
-			</div>
-			
-		</div>
-		<div class="col-xs-6 col-sm-12">
-			#if($passed || $failed || $score)
-				<div class="f_metadata_score">
-				#if($passed)
-					$r.translate("passed.true")
-				#elseif($failed)
-					$r.translate("passed.false")
-				#end
-				#if($score) <span>$r.translate("details.score", $score)</span> #end
-				</div>
-			#end
 	
-			#if($recentLaunch)
-				<p>$r.translate("cif.lastusage"): $r.formatDateAndTime($recentLaunch)</p>
-			#end
-			
-			#if($categories && $categories.size() > 0)
-				<h5>$r.translate("cif.categories")</h5>
-				<ul>
-				#foreach($category in $categories)
-					<li>$r.render($category)</li>
+		<div class="col-xs-12 col-sm-5 col-md-4 pull-right"><div class="row">		
+			<div class="col-xs-6 col-sm-12">
+				<div class="o_overview">
+					<h3>$r.translate("details.overview")</h3>
+					#if($v.lifecycle || $v.lifecycle.softKey || $row.lifecycle.start || $row.lifecycle.end)
+					<div title="$r.translateInAttribute("cif.dates")">
+						<i class="o_icon o_icon_lifecycle"></i> 
+						#if($!v.lifecycle.private && $v.lifecycle.softKey) $v.lifecycle.softKey #end
+						#if($v.lifecycle.validFrom) $r.formatDate($v.lifecycle.validFrom) #end
+						#if($v.lifecycle.validTo) - $r.formatDate($v.lifecycle.validTo) #end
+					</div>
+					#end
+					#if($v.expenditureOfWork)
+					<div title="$r.translateInAttribute("details.expenditureOfWork.desc")">
+						<i class="o_icon o_icon_expenditure"></i>  
+						$r.translate("details.expenditureOfWork", $r.escapeHtml($v.expenditureOfWork))
+					</div>
+					#end
+					#if($v.mainLanguage)
+					<div title="$r.translateInAttribute("cif.mainLanguage")">
+						<i class="o_icon o_icon_language"></i> 
+						$r.escapeHtml($v.mainLanguage)
+					</div>
+					#end
+				</div>
+				<div class="o_social o_block">
+					<h4>$r.translate("ratings")</h4>
+					$r.render("rating")
+					$r.render("comments")
+				</div>
+				#if($v.authors)
+				<div class="o_authors o_block">
+					<h4>$r.translate("cif.authors")</h4>
+					$r.escapeHtml($v.authors)
+				</div>
 				#end
-				</ul>
-			#end
-			
-			#if($groups && $groups.size() > 0)
-				<h5>$r.translate("cif.groups")</h5>
-				<ul>
-				#foreach($group in $groups)
-					<li>$r.render($group)</li>
+				
+				#if($categories && $categories.size() > 0)
+				<div class="o_categories o_block">
+					<h4>$r.translate("cif.categories")</h4>
+					<ul class="list-unstyled">
+					#foreach($category in $categories)
+						<li>$r.render($category)</li>
+					#end
+					</ul>
+				</div>
 				#end
-				</ul>
-			#end
-		</div>
-		</div>
-		</div>		
+				
+				#if($ac)
+				<div class="o_bookings o_block">
+					<h4>$r.translate("details.orders")</h4>
+					<ul class="list-unstyled">
+					#foreach($ac_type in $ac)
+						<li>
+							<i class='o_icon $ac_type.type o_icon-fw'></i>  
+							$ac_type.displayName
+							#if($ac_type.price && $ac_type.price.length() > 0) ($ac_type.price)#end
+						</li>
+					#end
+					</ul>
+				</div>
+				#end	
+	
+				$r.render("start")			
+			</div>
+	
+			<div class="col-xs-6 col-sm-12">
+				<div class="o_personal">
+					<h3>$r.translate("details.personal")</h3>
+					<table class="table"><tbody>
+						#if($passed || $failed)
+						<tr class="o_state #if($passed) o_passed #else o_failed #end">
+							<th>$r.translate("details.label.status")</th>
+							<td>
+							#if($passed)
+								<i class="o_icon o_icon_passed"></i>
+								$r.translate("passed.true")
+							#elseif($failed)
+								<i class="o_icon o_icon_failed"></i>
+								$r.translate("passed.false")
+							#end
+							</td>
+						</tr>
+						#end
+					
+						#if($score) 
+						<tr class="o_score">
+							<th>$r.translate("details.label.score")</th>
+							<td>$score</td> 
+						</tr> 
+						#end			
 		
+						#if($recentLaunch)
+						<tr class="o_recent">					
+							<th>$r.translate("cif.lastusage"):</th>
+							<td>$r.formatDateAndTime($recentLaunch)
+						<tr>
+						#end
 		
-		<div class="col-xs-12 col-sm-7 col-md-8 pull-left">
+						<tr class="o_bookmark">					
+							<th>$r.translate("details.bookmark.label"):</th>
+							<td>$r.render("mark")</td>
+						<tr>
+	
+					#if($groups && $groups.size() > 0)
+						<tr class="o_groups">					
+							<th>$r.translate("cif.groups")</th>
+							<td>
+								<ul class="list-unstyled">
+								#foreach($group in $groups)
+									<li>$r.render($group)</li>
+								#end
+								</ul>
+							</td>
+						</tr>
+					#end
+	
+					</tbody>
+					</table>				
+					
+				</div>
+			</div>
+			
+		</div></div>		
+		
+		<div class="col-xs-12 col-sm-7 col-md-8">
 			#if($objectives)
 				<div class="o_objectives">
 					<h3>$r.translate("cif.objectives")</h3>
 					$objectives
 				</div>
 			#end		
-		</div>
-
-		<div class="col-xs-12 col-sm-7 col-md-8">
 			#if($requirements)
 				<div class="o_requirements">
 					<h3>$r.translate("cif.requirements")</h3>
@@ -117,22 +161,8 @@
 				</div>
 			#end
 		</div>
-		
 
 	</div>
-	
-
-		<p>$r.render("mark")</p>
 		
-		#if($ac)
-			#foreach($ac_type in $ac)
-				#if($ac_type.price && $ac_type.price.length() > 0)
-					<span class='b_float_right b_with_small_icon_left $ac_type.type'>$ac_type.price</span>
-				#else
-					<span class='b_float_right b_small_icon $ac_type.type'></span>
-				#end
-			#end
-		#end
-	</div>
 </div>
 

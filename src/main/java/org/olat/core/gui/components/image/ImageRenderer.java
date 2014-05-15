@@ -79,12 +79,21 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		} else {
 			mapperUrl += "/video." + ic.getSuffix(ic.getMimeType());
 		}
+		// check for poster image
+		String poster = null;
+		if (ic.getPoster() != null) {
+			poster = ic.getPosterMapperUrl() + "/" + ic.getPoster().getName();
+		}
 		
 		sb.append("<div id='").append(imgId).append("' name='").append(imgId).append("'></div>")
 		  .append("<script type='text/javascript'>")
 		  .append("/* <![CDATA[ */")
 		  .append("BPlayer.insertPlayer('").append(Settings.createServerURI()).append(mapperUrl);
-		sb.append("','").append(imgId).append("',").append(width).append(",").append(height).append(",'video');")
+		sb.append("','").append(imgId).append("',").append(width).append(",").append(height).append(",'video'");
+		if (poster != null) {
+			sb.append(",null,null,null,null,null,null,'").append(poster).append("'");
+		}
+		sb.append(");")
 		  .append("/* ]]> */")
 		  .append("</script>");
 	}

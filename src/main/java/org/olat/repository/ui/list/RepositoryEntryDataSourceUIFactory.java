@@ -19,6 +19,8 @@
  */
 package org.olat.repository.ui.list;
 
+import org.olat.core.gui.translator.Translator;
+
 
 /**
  * 
@@ -43,5 +45,7 @@ public interface RepositoryEntryDataSourceUIFactory {
 	public void forgeRatings(RepositoryEntryRow row);
 	
 	public void forgeComments(RepositoryEntryRow row);
+	
+	public Translator getTranslator();
 
 }

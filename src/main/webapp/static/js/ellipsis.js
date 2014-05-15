@@ -41,7 +41,6 @@
 			// initialize dotdotdot plugin on element
 			$(elem).dotdotdot({
 				callback : function(isTruncated){
-					console.log(isTruncated);
 					if (isTruncated) {
 						// add marker class
 						$(this).addClass('o_hasOverflow');

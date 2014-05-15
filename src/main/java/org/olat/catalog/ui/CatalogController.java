@@ -41,7 +41,6 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
@@ -86,10 +85,13 @@ import org.olat.repository.ui.RepositoryTableModel;
 import org.olat.repository.ui.author.RepositoryEditDescriptionController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <pre>
@@ -218,12 +220,20 @@ public class CatalogController extends BasicController implements Activateable2 
 	private LockResult catModificationLock;
 	public static final String LOCK_TOKEN = "catalogeditlock";
 
-	private final CatalogManager cm;
-	private final ACService acService;
-	private final MarkManager markManager;
-	private final UserManager userManager;
-	private final RepositoryManager repositoryManager;
-	private final RepositoryService repositoryService;
+	@Autowired
+	private CatalogManager cm;
+	@Autowired
+	private ACService acService;
+	@Autowired
+	private AccessControlModule acModule;
+	@Autowired
+	private MarkManager markManager;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	/**
 	 * Init with catalog root
@@ -236,13 +246,6 @@ public class CatalogController extends BasicController implements Activateable2 
 		// fallback translator to repository package to reduce redundant translations
 		super(ureq, wControl, Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale()));
 		
-		cm = CatalogManager.getInstance();
-		acService = CoreSpringFactory.getImpl(ACService.class);
-		markManager = CoreSpringFactory.getImpl(MarkManager.class);
-		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
-		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
-
 		List<CatalogEntry> rootNodes = cm.getRootCatalogEntries();
 		CatalogEntry rootce;
 		if (rootNodes.isEmpty()) {
@@ -872,7 +875,7 @@ public class CatalogController extends BasicController implements Activateable2 
 				List<PriceMethod> types = new ArrayList<PriceMethod>();
 				if (entry.getRepositoryEntry().isMembersOnly()) {
 					// members only always show lock icon
-					types.add(new PriceMethod("", "o_ac_membersonly_icon"));
+					types.add(new PriceMethod("", "o_ac_membersonly_icon", translate("cif.access.membersonly.short")));
 				} else {
 					// collect access control method icons
 					OLATResource resource = entry.getRepositoryEntry().getOlatResource();
@@ -881,7 +884,9 @@ public class CatalogController extends BasicController implements Activateable2 
 							for(PriceMethodBundle bundle:resourceAccess.getMethods()) {
 								String type = (bundle.getMethod().getMethodCssClass() + "_icon").intern();
 								String price = bundle.getPrice() == null || bundle.getPrice().isEmpty() ? "" : PriceFormat.fullFormat(bundle.getPrice());
-								types.add(new PriceMethod(price, type));
+								AccessMethodHandler amh = acModule.getAccessMethodHandler(bundle.getMethod().getType());
+								String displayName = amh.getMethodName(getLocale());
+								types.add(new PriceMethod(price, type, displayName));
 							}
 						}
 					}
