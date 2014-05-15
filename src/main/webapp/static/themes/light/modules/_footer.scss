@@ -51,23 +51,14 @@
 
 /*  social links (FB, twitter, google) from SocialModule.java */
 #o_share { 
-	margin-top: 5px;
+	margin-top: 10px;
 	width:250px; 
 	a { 
-		margin: 0 3px 0 0; 
-		background-repeat: no-repeat; 
-		width: 16px; height: 16px; 
-		float: left; display: inline; 
+		margin: 0 5px 0 0; 
+		float: left;
 		@include o-opacity(60);
 	}
 	a:hover { 
 		@include o-opacity(100); 
 	}
-	#o_facebook {background-image: url('#{$o-images-path}social/facebook_16.png');}
-	#o_twitter {background-image: url('#{$o-images-path}social/twitter_16.png');}
-	#o_google {background-image: url('#{$o-images-path}social/google_16.png');}
-	#o_delicious {background-image: url('#{$o-images-path}social/delicious_16.png');}
-	#o_digg {background-image: url('#{$o-images-path}social/digg_16.png');}
-	#o_mail {background-image: url('#{$o-images-path}social/email_16.png');}
-	#o_link {background-image: url('#{$o-images-path}social/link_16.png');}
 }

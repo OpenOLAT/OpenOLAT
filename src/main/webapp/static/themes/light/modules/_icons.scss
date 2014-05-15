@@ -78,7 +78,7 @@ a.o_icon {
 }
 
 /* repository type icons */
-.o_CourseModule_icon { @extend .o_icon-book; }
+.o_CourseModule_icon { @extend .o_icon-cube; }
 
 
 /* Access control icons */
@@ -87,6 +87,15 @@ a.o_icon {
 .o_ac_group_icon { @extend .o_icon-group;}
 .o_ac_membersonly_icon { @extend .o_icon-lock;}
 .o_ac_paypal_icon { @extend .o_icon-credit-card;}
+
+/* social share icons */
+.o_icon_facebook {@extend .o_icon-facebook-square;}
+.o_icon_twitter {@extend .o_icon-twitter-square;}
+.o_icon_google {@extend .o_icon-google-plus-square;}
+.o_icon_delicious {@extend .o_icon-delicious;}
+.o_icon_digg {@extend .o_icon-digg;}
+.o_icon_mail {@extend .o_icon-envelope-square;}
+.o_icon_link {@extend .o_icon-link;}
 
 
 /* portrait / avatar icons */

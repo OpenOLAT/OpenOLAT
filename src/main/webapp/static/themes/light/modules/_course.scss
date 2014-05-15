@@ -1,9 +1,31 @@
-.o_sp_icon {@extend .o_icon; @extend .o_icon-file-text-o; }
-.o_st_icon {@extend .o_icon; @extend .o_icon-archive; }
-.o_tu_icon {@extend .o_icon; @extend .o_icon-file-o; }
+.o_sp_icon {@extend .o_icon-file-text-o; }
+.o_st_icon {@extend .o_icon-cubes; }
+.o_tu_icon {@extend .o_icon-external-link; }
+.o_bc_icon {@extend .o_icon-folder-open-o;}
+.o_lti_icon {@extend .o_icon-external-link; }
+.o_cp_icon {@extend .o_icon-archive; }
+.o_cp_item {@extend .o_icon-file-text-o;}
+.o_scorm_icon {@extend .o_icon-archive; }
+.o_en_icon {@extend .o_icon-sign-in; }
+.o_fo_icon {@extend .o_icon-comments-o; }
+.o_co_icon {@extend .o_icon-envelope-o; }
+.o_infomsg_icon {@extend .o_icon-info-circle; }
+.o_cal_icon {@extend .o_icon-calendar; }
+.o_wiki_icon {@extend .o_icon-globe; }
+.o_podcast_icon {@extend .o_icon-video-camera; }
+.o_blog_icon {@extend .o_icon-bullhorn; }
+.o_ep_icon {@extend .o_icon-puzzle-piece; }
+.o_iqtest_icon {@extend .o_icon-pencil-square-o; }
+.o_iqself_icon {@extend .o_icon-pencil-square-o; }
+.o_iqsurv_icon {@extend .o_icon-meh-o; }
+.o_ta_icon {@extend .o_icon-tasks; }
+.o_ms_icon {@extend .o_icon-thumbs-o-up; }
+.o_dialog_icon {@extend .o_icon-files-o; }
+.o_projectbroker_icon {@extend .o_icon-circle-o; }
 
-.o_midpub {@extend .o_icon; color: green; @extend .o_icon-check-circle; }
-.o_midwarn {@extend .o_icon; color: orange; @extend .o_icon-warning; }
-.o_midlock {@extend .o_icon; @extend .o_icon-lock;}
-.o_miderr {@extend .o_icon; color: red; @extend .o_icon-warning;}
-.o_middel {@extend .o_icon; @extend .o_icon-eraser;}
+
+.o_midpub {color: green; @extend .o_icon-check-circle; }
+.o_midwarn {color: orange; @extend .o_icon-warning; }
+.o_midlock {@extend .o_icon-lock;}
+.o_miderr {color: red; @extend .o_icon-warning;}
+.o_middel {@extend .o_icon-eraser;}

@@ -18,19 +18,33 @@
 <div id="o_share">
 #foreach ($link in $shareLinks)
 	#if ($link == "twitter")
-		<a id="o_twitter" href="#" target="_blank" title="$r.translateInAttribute("share.twitter")" onclick="window.open('http://twitter.com/share?url='+o_shareSocialUrl()+'&text='+o_shareSocialTitle());return false;"></a>
+		<a id="o_twitter" href="#" target="_blank" title="$r.translateInAttribute("share.twitter")" onclick="window.open('http://twitter.com/share?url='+o_shareSocialUrl()+'&text='+o_shareSocialTitle());return false;">
+			<i class="o_icon o_icon_twitter o_icon-lg"></i>
+		</a>
 	#elseif ($link == "facebook")
-		<a id="o_facebook" href="#" target="_blank" title="$r.translateInAttribute("share.facebook")" onclick="window.open('http://www.facebook.com/sharer.php?u='+o_shareSocialUrl()+'&t='+o_shareSocialTitle());return false;"></a>
+		<a id="o_facebook" href="#" target="_blank" title="$r.translateInAttribute("share.facebook")" onclick="window.open('http://www.facebook.com/sharer.php?u='+o_shareSocialUrl()+'&t='+o_shareSocialTitle());return false;">
+			<i class="o_icon o_icon_facebook o_icon-lg"></i>		
+		</a>
 	#elseif ($link == "google")
-		<a id="o_google" href="#" target="_blank" title="$r.translateInAttribute("share.google")" onclick="window.open('https://www.google.com/bookmarks/mark?op=add&bkmk='+o_shareSocialUrl()+'&title='+o_shareSocialTitle());return false;"></a>
+		<a id="o_google" href="#" target="_blank" title="$r.translateInAttribute("share.google")" onclick="window.open('https://www.google.com/bookmarks/mark?op=add&bkmk='+o_shareSocialUrl()+'&title='+o_shareSocialTitle());return false;">
+			<i class="o_icon o_icon_google o_icon-lg"></i>		
+		</a>
 	#elseif ($link == "delicious")
-		<a id="o_delicious" href="#" target="_blank" title="$r.translateInAttribute("share.delicious")" onclick="window.open('http://www.delicious.com/save?url='+o_shareSocialUrl()+'&title='+o_shareSocialTitle());return false;"></a>
+		<a id="o_delicious" href="#" target="_blank" title="$r.translateInAttribute("share.delicious")" onclick="window.open('http://www.delicious.com/save?url='+o_shareSocialUrl()+'&title='+o_shareSocialTitle());return false;">
+			<i class="o_icon o_icon_delicious o_icon-lg"></i>		
+		</a>
 	#elseif ($link == "digg")
-		<a id="o_digg" href="#" title="$r.translateInAttribute("share.digg")" onclick="window.open('http://digg.com/submit?url='+o_shareSocialUrl()+'&title='+o_shareSocialTitle());return false;"></a>
+		<a id="o_digg" href="#" title="$r.translateInAttribute("share.digg")" onclick="window.open('http://digg.com/submit?url='+o_shareSocialUrl()+'&title='+o_shareSocialTitle());return false;">		
+			<i class="o_icon o_icon_digg o_icon-lg"></i>
+		</a>
 	#elseif ($link == "mail")	
-		<a id="o_mail" href="mailto:?body=$baseURL" title="$r.translateInAttribute("share.mail")"></a>
+		<a id="o_mail" href="mailto:?body=$baseURL" title="$r.translateInAttribute("share.mail")">
+			<i class="o_icon o_icon_mail o_icon-lg"></i>		
+		</a>
 	#elseif ($link == "link")	
-		<a id="o_link" href="#" onclick="javascript:o_shareSocialLink();"></a>
+		<a id="o_link" href="#" onclick="javascript:o_shareSocialLink();">
+			<i class="o_icon o_icon_link o_icon-lg"></i>
+		</a>
 		<script type="text/javascript">
 		/* <![CDATA[ */
 			function o_shareSocialLink() {

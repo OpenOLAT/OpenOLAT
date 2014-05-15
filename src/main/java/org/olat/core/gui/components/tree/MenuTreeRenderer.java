@@ -188,7 +188,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 				ubu.appendTarget(target);
 			}
 			String openCloseCss = renderChildren ? "close" : "open";
-			target.append(" class='o_tree_oc_l").append(level).append("'><i class='o_icon o_icon_").append(openCloseCss).append("_tree'>&nbsp;</i></a>");
+			target.append(" class='o_tree_oc_l").append(level).append("'><i class='o_icon o_icon_").append(openCloseCss).append("_tree'></i></a>");
 		} else if (level != 0 && chdCnt == 0) {
 			target.append("<span class=\"o_tree_leaf o_tree_oc_l").append(level).append("\">&nbsp;</span>");
 		}
@@ -200,10 +200,6 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		target.append("<a class='o_tree_l").append(level);
 		
 		// add icon css class
-		String iconCssClass = curRoot.getIconCssClass();
-		if (iconCssClass != null) {
-			target.append(" ").append(iconCssClass);			
-		}
 		if (selected) {
 			// add css class to identify active element
 			target.append(" active");			
@@ -253,6 +249,11 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		}
 		target.append(">");
 
+		String iconCssClass = curRoot.getIconCssClass();
+		if (iconCssClass != null) {
+			target.append("<i class='o_icon ").append(iconCssClass).append("'></i> ");			
+		}
+		
 		// display title and close menu item
 		target.append("<span");
 		if(tree.isDragEnabled() || tree.isDropEnabled()) {
