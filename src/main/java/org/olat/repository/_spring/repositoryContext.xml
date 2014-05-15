@@ -70,7 +70,7 @@
 		<property name="order" value="7216" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
-				<property name="factoryName" value="org.olat.repository.RepositoyUIFactory"/>
+				<property name="factoryName" value="org.olat.repository.ui.RepositoyUIFactory"/>
 				<property name="factoryMethod" value="createLifecylceAdminController"/>
 			</bean>
 		</property>
