@@ -197,8 +197,9 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	 * @param softkey
 	 */
 	public void setSoftkey(String softkey) {
-		if (softkey.length() > 36)
+		if (softkey.length() > 36) {
 			throw new AssertException("Trying to set a softkey which is too long...");
+		}
 		this.softkey = softkey;
 	}
 	

@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
@@ -51,6 +52,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -60,6 +62,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -83,24 +86,33 @@ public class AssessmentManagerTest extends OlatTestCase  {
 	private final Boolean passed = Boolean.TRUE;
 	private final Boolean fullyAssessed = Boolean.TRUE;
 	
+	@Autowired
+	private EfficiencyStatementManager efficiencyStatementManager;
+	
 	@Before
 	public void setUp() throws Exception {		
 		try {
 			log.info("setUp start ------------------------");
 			
-			tutor = JunitTestHelper.createAndPersistIdentityAsUser("junit_tutor_" + UUID.randomUUID().toString().replace("-", ""));
-			student = JunitTestHelper.createAndPersistIdentityAsUser("junit_student_" + UUID.randomUUID().toString().replace("-", ""));
+			Identity author = JunitTestHelper.createAndPersistIdentityAsUser("junit_auth-" + UUID.randomUUID().toString());
+			tutor = JunitTestHelper.createAndPersistIdentityAsUser("junit_tutor-" + UUID.randomUUID().toString());
+			student = JunitTestHelper.createAndPersistIdentityAsUser("junit_student-" + UUID.randomUUID().toString());
 			
-      //import "Demo course" into the bcroot_junittest
-			RepositoryEntry repositoryEntry = JunitTestHelper.deployDemoCourse();
+			//import "Demo course" into the bcroot_junittest
+			RepositoryEntry repositoryEntry = JunitTestHelper.deployDemoCourse(author);
 			Long resourceableId = repositoryEntry.getOlatResource().getResourceableId();
 			System.out.println("Demo course imported - resourceableId: " + resourceableId);
 		
 			course = CourseFactory.loadCourse(resourceableId);
 			DBFactory.getInstance().closeSession();
 						
-			course.getCourseEnvironment().getCourseConfig().setEfficencyStatementIsEnabled(true);
+			CourseConfig config = course.getCourseEnvironment().getCourseConfig();
+			config.setEfficencyStatementIsEnabled(true);
+			CourseFactory.setCourseConfig(course.getResourceableId(), config);
+			
 			course = CourseFactory.loadCourse(resourceableId);
+			config = course.getCourseEnvironment().getCourseConfig();
+			Assert.assertTrue(config.isEfficencyStatementEnabled());
 			
 			log.info("setUp done ------------------------");					
 		} catch (RuntimeException e) {
@@ -149,39 +161,39 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
 		boolean incrementAttempts = true;
 		//assessableCourseNode.updateUserScoreEvaluation(scoreEvaluation, userCourseEnv, tutor, incrementAttempts); //alternative
-   	assessmentManager.saveScoreEvaluation(assessableCourseNode, tutor, student, scoreEvaluation, userCourseEnv, incrementAttempts);
-   	DBFactory.getInstance().closeSession();
-   	//the attempts mut have been incremented
-   	//assertEquals(attempts, assessableCourseNode.getUserAttempts(userCourseEnv)); //alternative
-   	assertEquals(attempts, assessmentManager.getNodeAttempts(assessableCourseNode, student));
-    				
+		assessmentManager.saveScoreEvaluation(assessableCourseNode, tutor, student, scoreEvaluation, userCourseEnv, incrementAttempts);
+		DBFactory.getInstance().closeSession();
+		//the attempts mut have been incremented
+		//assertEquals(attempts, assessableCourseNode.getUserAttempts(userCourseEnv)); //alternative
+		assertEquals(attempts, assessmentManager.getNodeAttempts(assessableCourseNode, student));
+						
 		assessmentManager.saveNodeCoachComment(assessableCourseNode, student, coachComment);
 		//assessableCourseNode.updateUserCoachComment(coachComment, userCourseEnv); //alternative
 		
-    assessmentManager.saveNodeComment(assessableCourseNode, tutor, student, userComment);
+		assessmentManager.saveNodeComment(assessableCourseNode, tutor, student, userComment);
 		//assessableCourseNode.updateUserUserComment(userComment, userCourseEnv, tutor); //alternative
     
-    attempts++;
-    assessmentManager.saveNodeAttempts(assessableCourseNode, tutor, student, attempts);
-    assertEquals(attempts, assessmentManager.getNodeAttempts(assessableCourseNode, student));    	
+		attempts++;
+		assessmentManager.saveNodeAttempts(assessableCourseNode, tutor, student, attempts);
+		assertEquals(attempts, assessmentManager.getNodeAttempts(assessableCourseNode, student));    	
 		//assessableCourseNode.updateUserAttempts(attempts, userCourseEnv, tutor); //alternative
-            
-    assertEquals(score, assessmentManager.getNodeScore(assessableCourseNode, student));
-    assertEquals(passed, assessmentManager.getNodePassed(assessableCourseNode, student));
-    assertEquals(assessmentID, assessmentManager.getAssessmentID(assessableCourseNode, student));
-    
-    assertEquals(coachComment, assessmentManager.getNodeCoachComment(assessableCourseNode, student));
-    assertEquals(userComment, assessmentManager.getNodeComment(assessableCourseNode, student));
-						
-    System.out.println("Finish testing AssessmentManager read/write methods");
-    
-    checkEfficiencyStatementManager();
-    assertNotNull("no course at the end of test",course);
-    try {
-    	course = CourseFactory.loadCourse(course.getResourceableId());
-    } catch (Exception ex ) {
-    	fail("Could not load course at the end of test Exception=" + ex);
-    }
+		        
+		assertEquals(score, assessmentManager.getNodeScore(assessableCourseNode, student));
+		assertEquals(passed, assessmentManager.getNodePassed(assessableCourseNode, student));
+		assertEquals(assessmentID, assessmentManager.getAssessmentID(assessableCourseNode, student));
+		
+		assertEquals(coachComment, assessmentManager.getNodeCoachComment(assessableCourseNode, student));
+		assertEquals(userComment, assessmentManager.getNodeComment(assessableCourseNode, student));
+							
+		System.out.println("Finish testing AssessmentManager read/write methods");
+
+		checkEfficiencyStatementManager();
+		assertNotNull("no course at the end of test",course);
+		try {
+			course = CourseFactory.loadCourse(course.getResourceableId());
+		} catch (Exception ex ) {
+			fail("Could not load course at the end of test Exception=" + ex);
+		}
 		assertNotNull("no course after loadCourse", course);
 	}
 	
@@ -201,10 +213,8 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		RepositoryEntry courseRepositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(
 				OresHelper.createOLATResourceableInstance(CourseModule.class, courseResId), false);
 		assertNotNull(courseRepositoryEntry);
-    //	check the stored EfficiencyStatement		
+		// check the stored EfficiencyStatement		
 		EfficiencyStatement efficiencyStatement = checkEfficiencyStatement(courseRepositoryEntry);
-		
-		EfficiencyStatementManager efficiencyStatementManager = EfficiencyStatementManager.getInstance();
 		//force the storing of the efficiencyStatement - this is usually done only at Learnresource/modify properties/Efficiency statement (ON)
 		efficiencyStatementManager.updateEfficiencyStatements(course, identitiyList);
 		DBFactory.getInstance().closeSession();
@@ -254,9 +264,9 @@ public class AssessmentManagerTest extends OlatTestCase  {
 	 * @return
 	 */
 	private EfficiencyStatement checkEfficiencyStatement(RepositoryEntry courseRepositoryEntry) {
-		EfficiencyStatementManager efficiencyStatementManager = EfficiencyStatementManager.getInstance();
-    //check the stored EfficiencyStatement		
-		EfficiencyStatement efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatement(courseRepositoryEntry.getKey(), student);
+		//check the stored EfficiencyStatement		
+		EfficiencyStatement efficiencyStatement = efficiencyStatementManager
+				.getUserEfficiencyStatement(courseRepositoryEntry.getKey(), student);
 		assertNotNull(efficiencyStatement);
 		List<Map<String,Object>> assessmentNodes = efficiencyStatement.getAssessmentNodes();
 		Iterator<Map<String,Object>> listIterator = assessmentNodes.iterator();
@@ -274,5 +284,4 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		assertEquals(passed,efficiencyStatementManager.getPassed(assessableCourseNode.getIdent(), efficiencyStatement));
 		return efficiencyStatement;
 	}
-	
 }

@@ -63,7 +63,7 @@ public class PersonalRSSFeed extends SyndFeedImpl {
 	 * @param identity The users identity
 	 * @param token The users RSS-authentication token
 	 */
-	public PersonalRSSFeed(Identity identity, String token) {
+	public PersonalRSSFeed(Identity identity) {
 		super();
 		setFeedType("rss_2.0");
 		setEncoding(RSSServlet.DEFAULT_ENCODING);

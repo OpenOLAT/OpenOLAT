@@ -168,7 +168,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	 * 
 	 * @param ureq
 	 */
-	public void collapseComments(UserRequest ureq) {
+	void collapseComments() {
 		if (!canExpandToFullView) { throw new AssertException("Can not collapse messages when controller initialized as not expandable"); }
 		userCommentsAndRatingsVC.remove(commentsCtr.getInitialComponent());
 		removeAsListenerAndDispose(commentsCtr);
@@ -236,7 +236,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 			if (canExpandToFullView) {
 				if (isExpanded) {
 					// Collapse
-					collapseComments(ureq);
+					collapseComments();
 				} else {
 					// Expand now
 					expandComments(ureq);

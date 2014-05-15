@@ -94,7 +94,8 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 			id2 = JunitTestHelper.createAndPersistIdentityAsUser("project-id2-" + UUID.randomUUID().toString());
 
 			if (resourceableId == null) {
-				RepositoryEntry repositoryEntry = JunitTestHelper.deployDemoCourse();
+				Identity author = JunitTestHelper.createAndPersistIdentityAsUser("project-auth-" + UUID.randomUUID().toString());
+				RepositoryEntry repositoryEntry = JunitTestHelper.deployDemoCourse(author);
 				resourceableId = repositoryEntry.getOlatResource().getResourceableId();
 				System.out.println("Demo course imported - resourceableId: " + resourceableId);
 			}

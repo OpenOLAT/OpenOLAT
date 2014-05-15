@@ -295,7 +295,7 @@ create table if not exists o_repositoryentry (
    version mediumint unsigned not null,
    lastmodified datetime,
    creationdate datetime,
-   softkey varchar(30) not null unique,
+   softkey varchar(36) not null unique,
    external_id varchar(64),
    external_ref varchar(64),
    managed_flags varchar(255),

@@ -34,8 +34,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.manager.BasicManager;
@@ -281,10 +279,11 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 			sb.append("select statement from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as statement ")
 			  .append(" where statement.identity.key=:identityKey and statement.courseRepoKey=:repoKey");
 
-			DBQuery query = dbInstance.createQuery(sb.toString());
-			query.setLong("identityKey", identity.getKey());
-			query.setLong("repoKey", courseRepoEntryKey);
-			List<UserEfficiencyStatementImpl> statement = query.list();
+			List<UserEfficiencyStatementImpl> statement = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), UserEfficiencyStatementImpl.class)
+					.setParameter("identityKey", identity.getKey())
+					.setParameter("repoKey", courseRepoEntryKey)
+					.getResultList();
 			if(statement.isEmpty()) {
 				return null;
 			}
@@ -301,10 +300,11 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 			sb.append("select statement from ").append(UserEfficiencyStatementLight.class.getName()).append(" as statement ")
 			  .append(" where statement.identity.key=:identityKey and statement.courseRepoKey=:repoKey");
 
-			DBQuery query = dbInstance.createQuery(sb.toString());
-			query.setLong("identityKey", identity.getKey());
-			query.setLong("repoKey", courseRepoEntryKey);
-			List<UserEfficiencyStatement> statement = query.list();
+			List<UserEfficiencyStatement> statement = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), UserEfficiencyStatement.class)
+					.setParameter("identityKey", identity.getKey())
+					.setParameter("repoKey", courseRepoEntryKey)
+					.getResultList();
 			if(statement.isEmpty()) {
 				return null;
 			}
@@ -321,9 +321,10 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 			sb.append("select statement from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as statement ")
 			  .append(" where statement.key=:key");
 
-			DBQuery query = dbInstance.createQuery(sb.toString());
-			query.setLong("key", key);
-			List<UserEfficiencyStatementImpl> statement = query.list();
+			List<UserEfficiencyStatementImpl> statement = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), UserEfficiencyStatementImpl.class)
+					.setParameter("key", key)
+					.getResultList();
 			if(statement.isEmpty()) {
 				return null;
 			}
@@ -426,15 +427,14 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	protected List<EfficiencyStatement> findEfficiencyStatements(Identity identity) {
 		List<EfficiencyStatement> efficiencyStatements = new ArrayList<EfficiencyStatement>();
 		try {
-			dbInstance = DBFactory.getInstance();
-
 			StringBuilder sb = new StringBuilder();
 			sb.append("select statement from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as statement ")
 			  .append(" where statement.identity.key=:identityKey");
 
-			DBQuery query = dbInstance.createQuery(sb.toString());
-			query.setLong("identityKey", identity.getKey());
-			List<UserEfficiencyStatementImpl> statements = query.list();
+			List<UserEfficiencyStatementImpl> statements = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), UserEfficiencyStatementImpl.class)
+					.setParameter("identityKey", identity.getKey())
+					.getResultList();
 			for(UserEfficiencyStatementImpl statement:statements) {
 				EfficiencyStatement s = (EfficiencyStatement)xstream.fromXML(statement.getStatementXml());
 				efficiencyStatements.add(s);
@@ -474,10 +474,10 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 			sb.append("select distinct(statement.identity) from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as statement ")
 			  .append(" where statement.courseRepoKey=:repoKey");
 
-			DBQuery query = dbInstance.createQuery(sb.toString());
-			query.setLong("repoKey", courseRepoEntryKey);
-			List<Identity> identities = query.list();
-			return identities;
+			return dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), Identity.class)
+					.setParameter("repoKey", courseRepoEntryKey)
+					.getResultList();
 		} catch (Exception e) {
 			logError("findIdentitiesWithEfficiencyStatements: " + courseRepoEntryKey, e);
 			return Collections.emptyList();
@@ -495,9 +495,10 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 			sb.append("select statement from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as statement ")
 			  .append(" where statement.courseRepoKey=:repoKey");
 
-			DBQuery query = dbInstance.createQuery(sb.toString());
-			query.setLong("repoKey", courseRepoEntryKey);
-			List<UserEfficiencyStatementImpl> statements = query.list();
+			List<UserEfficiencyStatementImpl> statements = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), UserEfficiencyStatementImpl.class)
+					.setParameter("repoKey", courseRepoEntryKey)
+					.getResultList();
 			for(UserEfficiencyStatementImpl statement:statements) {
 				dbInstance.deleteObject(statement);
 			}

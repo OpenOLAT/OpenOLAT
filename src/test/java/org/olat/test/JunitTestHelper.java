@@ -28,7 +28,9 @@
 */
 package org.olat.test;
 
-import java.util.List;
+import java.io.File;
+import java.net.URL;
+import java.util.Locale;
 import java.util.Random;
 import java.util.UUID;
 
@@ -42,20 +44,21 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
-import org.olat.course.DeployableCourseExport;
-import org.olat.properties.Property;
-import org.olat.properties.PropertyManager;
+import org.olat.course.CourseModule;
+import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.user.UserManager;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Description:<br>
@@ -69,6 +72,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  *         http://www.frentix.com
  */
 public class JunitTestHelper {
+	
+	private static final OLog log = Tracing.createLoggerFor(JunitTestHelper.class);
 	
 	public static final String PWD = "A6B7C8";
 
@@ -190,44 +195,24 @@ public class JunitTestHelper {
 	 * Deploys/imports the "Demo Course".
 	 * @return the created RepositoryEntry
 	 */
-	public static RepositoryEntry deployDemoCourse() {
-		
+	public static RepositoryEntry deployDemoCourse(Identity initialAuthor) {		
+		String displayname = "Demo-Kurs-7.1";
+		String description = "";
+
 		RepositoryEntry re = null;
-		PropertyManager propertyManager = PropertyManager.getInstance();
-		List<Property> l = propertyManager.findProperties(null, null, null, "_o3_", "deployedCourses");
-		if (l.size() > 0) {
-			re = RepositoryManager.getInstance().lookupRepositoryEntry(l.get(0).getLongValue());
-			if (re != null) {
-				//try to load it
-				try {
-					CourseFactory.loadCourse(re.getOlatResource());
-					return re;
-				} catch(Exception ex) {
-					propertyManager.deleteProperties(null, null, null, "_o3_", "deployedCourses");
-					RepositoryManager.getInstance().deleteRepositoryEntry(re);
-				}
-			}
-		}
-		
-		ClassPathXmlApplicationContext beanContext = null;
 		try {
-			createAndPersistIdentityAsAdmin("administrator");
-			beanContext = new ClassPathXmlApplicationContext("/org/olat/test/_spring/demoCourseExport.xml");
-			DeployableCourseExport export = (DeployableCourseExport)beanContext.getBean("demoCourse");
-			if (!export.getDeployableCourseZipFile().exists()) {
-				//do not throw exception as users may upload bad file
-				System.out.println("Cannot deploy course from file: " + export.getIdentifier());
-				return null;
-			}
-			re = CourseFactory.deployCourseFromZIP(export.getDeployableCourseZipFile(), 4);	
-			if (re != null) {
-				Property prop = propertyManager.createPropertyInstance(null, null, null, "_o3_", "deployedCourses", export.getVersion(), re.getKey(), export.getIdentifier(), null);
-				propertyManager.saveProperty(prop);
-			}
-		} finally {
-			beanContext.close();
+			URL courseUrl = JunitTestHelper.class.getResource("file_resources/Demo-Kurs-7.1.zip");
+			File courseFile = new File(courseUrl.toURI());
+			
+			RepositoryHandler courseHandler = RepositoryHandlerFactory.getInstance()
+					.getRepositoryHandler(CourseModule.getCourseTypeName());
+			re = courseHandler.importResource(initialAuthor, displayname, description, true, Locale.ENGLISH, courseFile, null);
+			
+			ICourse course = CourseFactory.loadCourse(re.getOlatResource());
+			CourseFactory.publishCourse(course, RepositoryEntry.ACC_USERS, false,  initialAuthor, Locale.ENGLISH);
+		} catch (Exception e) {
+			log.error("", e);
 		}
 		return re;
 	}
-
 }

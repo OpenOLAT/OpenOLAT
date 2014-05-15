@@ -26,7 +26,6 @@
 package org.olat.ims.qti.repository.handlers;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -68,18 +67,6 @@ import de.bps.onyx.plugin.run.OnyxRunController;
  * 
  */
 public class QTISurveyHandler extends QTIHandler {
-	private static final boolean LAUNCHEABLE = true;
-	private static final boolean DOWNLOADEABLE = true;
-	private static final boolean EDITABLE = true;
-
-	static List<String> supportedTypes;
-
-	/**
-	 * Default constructor.
-	 */
-	public QTISurveyHandler() {
-		super();
-	}
 	
 	@Override
 	public boolean isCreate() {
@@ -108,43 +95,30 @@ public class QTISurveyHandler extends QTIHandler {
 		return super.importResource(initialAuthor, displayname, description, new SurveyFileResource(), file, filename);
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getSupportedTypes()
-	 */
-	public List<String> getSupportedTypes() {
-		return supportedTypes;
+	@Override
+	public String getSupportedType() {
+		return SurveyFileResource.TYPE_NAME;
 	}
 
-	static { // initialize supported types
-		supportedTypes = new ArrayList<String>(1);
-		supportedTypes.add(SurveyFileResource.TYPE_NAME);
-	}
-	
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsLaunch()
-	 */
+	@Override
 	public boolean supportsLaunch(RepositoryEntry repoEntry) {
-		return LAUNCHEABLE;
+		return true;
 	}
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsDownload()
-	 */
+
+	@Override
 	public boolean supportsDownload(RepositoryEntry repoEntry) {
-		return DOWNLOADEABLE;
+		return true;
 	}
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#supportsEdit()
-	 */
+
+	@Override
 	public boolean supportsEdit(RepositoryEntry repoEntry) {
 		if (OnyxModule.isOnyxTest(repoEntry.getOlatResource())) {
 			return false;
 		}
-		return EDITABLE;
+		return true;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getCreateWizardController(org.olat.core.id.OLATResourceable, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
+	@Override
 	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		throw new AssertException("Trying to get wizard where no creation wizard is provided for this type.");
 	}
@@ -174,9 +148,6 @@ public class QTISurveyHandler extends QTIHandler {
 		return layoutCtr;
 	}
 
-	/**
-	 * @see org.olat.repository.handlers.RepositoryHandler#getEditorController(org.olat.core.id.OLATResourceable org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		OLATResource res = re.getOlatResource();
@@ -199,11 +170,13 @@ public class QTISurveyHandler extends QTIHandler {
 			return null;
 		}
 	}
-	
+
+	@Override
 	protected String getDeletedFilePrefix() {
 		return "del_qtisurvey_"; 
 	}
-	
+
+	@Override
 	public WizardCloseResourceController createCloseResourceController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		throw new AssertException("not implemented");
 	}

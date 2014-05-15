@@ -26,8 +26,6 @@
 package org.olat.repository.handlers;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 
 import org.olat.admin.quota.QuotaConstants;
@@ -89,11 +87,6 @@ import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 public class ImsCPHandler extends FileHandler {
 	
 	private static final OLog log = Tracing.createLoggerFor(ImsCPHandler.class);
-	
-	public static final String PROCESS_CREATENEW = "new";
-	public static final String PROCESS_IMPORT = "add";
-	
-	private static final List<String> supportedTypes = Collections.singletonList(ImsCPFileResource.TYPE_NAME);
 	
 	@Override
 	public boolean isCreate() {
@@ -204,8 +197,8 @@ public class ImsCPHandler extends FileHandler {
 	}
 
 	@Override
-	public List<String> getSupportedTypes() {
-		return supportedTypes;
+	public String getSupportedType() {
+		return ImsCPFileResource.TYPE_NAME;
 	}
 
 	@Override

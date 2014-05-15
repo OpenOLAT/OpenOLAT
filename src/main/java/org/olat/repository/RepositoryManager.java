@@ -36,9 +36,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.LockModeType;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
-import org.hibernate.type.StandardBasicTypes;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
@@ -1168,23 +1168,23 @@ public class RepositoryManager extends BasicManager {
 	}
 	
 	public int countGenericANDQueryWithRolesRestriction(SearchRepositoryEntryParameters params) {
-		DBQuery dbQuery = createGenericANDQueryWithRolesRestriction(params, false, true);
-		Number count = (Number)dbQuery.uniqueResult();
+		Query dbQuery = createGenericANDQueryWithRolesRestriction(params, false, true);
+		Number count = (Number)dbQuery.getSingleResult();
 		return count.intValue();
 	}
 	
 	public List<RepositoryEntry> genericANDQueryWithRolesRestriction(SearchRepositoryEntryParameters params, int firstResult, int maxResults, boolean orderBy) {
 		
-		DBQuery dbQuery = createGenericANDQueryWithRolesRestriction(params, orderBy, false);
+		Query dbQuery = createGenericANDQueryWithRolesRestriction(params, orderBy, false);
 		dbQuery.setFirstResult(firstResult);
 		if(maxResults > 0) {
 			dbQuery.setMaxResults(maxResults);
 		}
-		List<RepositoryEntry> res = dbQuery.list();
+		List<RepositoryEntry> res = dbQuery.getResultList();
 		return res;
 	}
 	
-	private DBQuery createGenericANDQueryWithRolesRestriction(SearchRepositoryEntryParameters params, boolean orderBy, boolean count) {
+	private Query createGenericANDQueryWithRolesRestriction(SearchRepositoryEntryParameters params, boolean orderBy, boolean count) {
 		String displayName = params.getDisplayName();
 		String author = params.getAuthor();
 		String desc = params.getDesc();
@@ -1241,20 +1241,20 @@ public class RepositoryManager extends BasicManager {
 	             .append(")))");
 			
 		} else if (params.isOnlyOwnedResources()) {
-			query.append(" where v.access>0 and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership  ")
+			query.append(" where (v.access>0 and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership  ")
 		         .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup")
 		         .append("      and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.owner.name()).append("'")
-		         .append("  )");
+		         .append("  ))");
 			setIdentity = true;
 		} else if (params.isOnlyExplicitMember()) {
-			query.append(" where  v.access>=").append(RepositoryEntry.ACC_USERS)
+			query.append(" where  (v.access>=").append(RepositoryEntry.ACC_USERS)
 			     .append(" or (")
 			     .append("  v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true")
 			     .append("  and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership  ")
 			     .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey ")
 			     .append("      and membership.role in ('").append(GroupRoles.owner.name()).append("','").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')")
 			     .append("  )")
-			     .append(" )");
+			     .append(" ))");
 			
 			setIdentity = true;
 		} else {
@@ -1333,8 +1333,8 @@ public class RepositoryManager extends BasicManager {
 		if(!count && orderBy) {
 			query.append(" order by v.displayname, v.key ASC");
 		}
-
-		DBQuery dbQuery = dbInstance.createQuery(query.toString());
+		
+		Query dbQuery = dbInstance.getCurrentEntityManager().createQuery(query.toString());
 		if(institut) {
 			dbQuery.setParameter("institution", institution);
 		}
@@ -1351,10 +1351,10 @@ public class RepositoryManager extends BasicManager {
 			dbQuery.setParameter("desc", desc);
 		}
 		if (var_resourcetypes) {
-			dbQuery.setParameterList("resourcetypes", resourceTypes, StandardBasicTypes.STRING);
+			dbQuery.setParameter("resourcetypes", resourceTypes);
 		}
 		if(params.getRepositoryEntryKeys() != null && !params.getRepositoryEntryKeys().isEmpty()) {
-			dbQuery.setParameterList("entryKeys", params.getRepositoryEntryKeys());
+			dbQuery.setParameter("entryKeys", params.getRepositoryEntryKeys());
 		}
 		if(StringHelper.containsNonWhitespace(params.getExternalId())) {
 			dbQuery.setParameter("externalId", params.getExternalId());

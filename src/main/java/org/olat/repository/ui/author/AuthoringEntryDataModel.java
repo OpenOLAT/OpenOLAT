@@ -91,7 +91,7 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		displayName("cif.displayname"),
 		author("table.header.author"),
 		authors("table.header.author"),
-		access("table.header.author"),
+		access("table.header.access"),
 		creationDate("table.header.date"),
 		lastUsage("table.header.lastusage"),
 		mark("table.header.mark");

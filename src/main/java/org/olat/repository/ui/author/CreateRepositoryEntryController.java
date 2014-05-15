@@ -24,7 +24,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -56,18 +55,15 @@ public class CreateRepositoryEntryController extends FormBasicController {
 	
 	private FormLink wizardButton;
 	private TextElement displaynameEl;
-	private RichTextElement descriptionEl;
 	
 	private RepositoryEntry addedEntry;
-	private final String type;
 	private final RepositoryHandler handler;
 	
 	private Object userObject;
 	
-	public CreateRepositoryEntryController(UserRequest ureq, WindowControl wControl, String type, RepositoryHandler handler) {
+	public CreateRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryHandler handler) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
-		this.type = type;
 		this.handler = handler;
 		initForm(ureq);
 	}
@@ -91,8 +87,8 @@ public class CreateRepositoryEntryController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String typeName;
-		if (type != null) {
-			typeName = NewControllerFactory.translateResourceableTypeName(type, getLocale());
+		if (handler != null) {
+			typeName = NewControllerFactory.translateResourceableTypeName(handler.getSupportedType(), getLocale());
 		} else {
 			typeName = translate("cif.type.na");
 		}
@@ -101,11 +97,6 @@ public class CreateRepositoryEntryController extends FormBasicController {
 		displaynameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, "", formLayout);
 		displaynameEl.setDisplaySize(30);
 		displaynameEl.setMandatory(true);
-
-		descriptionEl = uifactory.addRichTextElementForStringData("cif.description", "cif.description",
-				"", 10, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
-		descriptionEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
-		descriptionEl.setMandatory(true);
 		
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
@@ -137,14 +128,6 @@ public class CreateRepositoryEntryController extends FormBasicController {
 			displaynameEl.clearError();
 		}
 		
-		// Check for empty description
-		if (!StringHelper.containsNonWhitespace(descriptionEl.getValue())) {
-			descriptionEl.setErrorKey("cif.error.description.empty", new String[] {});
-			allOk = false;
-		} else {
-			descriptionEl.clearError();
-		}
-
 		return allOk & super.validateFormLogic(ureq);
 	}
 
@@ -173,9 +156,8 @@ public class CreateRepositoryEntryController extends FormBasicController {
 
 	private void doCreate() {
 		String displayname = displaynameEl.getValue();
-		String description = descriptionEl.getValue();
 		
-		addedEntry = handler.createResource(getIdentity(), displayname, description, getLocale());
+		addedEntry = handler.createResource(getIdentity(), displayname, "", getLocale());
 
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
 				LoggingResourceable.wrap(addedEntry, OlatResourceableType.genRepoEntry));

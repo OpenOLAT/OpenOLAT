@@ -71,7 +71,7 @@
 		<org.mysql.version>5.1.29</org.mysql.version>
 		<org.postgresql.version>9.3-1100-jdbc41</org.postgresql.version>
 		<org.infinispan.version>6.0.1.Final</org.infinispan.version>
-		<lucene.version>4.5.1</lucene.version>
+		<lucene.version>4.8.0</lucene.version>
 
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
@@ -1095,7 +1095,7 @@
 			<id>central</id>
 			<name>Maven Repository Switchboard</name>
 			<layout>default</layout>
-			<url>http://repo1.maven.org/maven2</url>
+			<url>http://central.maven.org/maven2</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
@@ -1683,7 +1683,7 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
-			<version>1.8.4</version>
+			<version>1.8.5</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -2174,13 +2174,13 @@
 		<dependency>
 		    <groupId>io.undertow</groupId>
 		    <artifactId>undertow-core</artifactId>
-		    <version>1.0.0.Final</version>
+		    <version>1.0.9.Final</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 		    <groupId>io.undertow</groupId>
 		    <artifactId>undertow-servlet</artifactId>
-		    <version>1.0.0.Final</version>
+		    <version>1.0.9.Final</version>
 			<scope>test</scope>
 		</dependency>
     
@@ -2273,17 +2273,15 @@
 				<version>2.9</version>
 			</plugin>
 			<!-- Javadoc -->
-
-
 			<!-- <reportSets> <reportSet> <reports> <report>javadoc</report> -->
 			<!-- Note: leave this line commented out if unit tests are not to be documented 
 				<report>test-javadoc</report>report> -->
 			<!-- </reports> </reportSet> </reportSets> </plugin> -->
 			<plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jxr-plugin</artifactId>
-        <version>2.3</version>
-      </plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jxr-plugin</artifactId>
+				<version>2.3</version>
+			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>cobertura-maven-plugin</artifactId>

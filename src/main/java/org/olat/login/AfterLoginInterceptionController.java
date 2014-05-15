@@ -153,7 +153,7 @@ public class AfterLoginInterceptionController extends BasicController {
 		listenTo(wiz);
 
 		// get first Ctrl into Wizard
-		putControllerToPanel(ureq, wControl, 0);
+		putControllerToPanel(0);
 		vC.put("actualPanel", actualPanel);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), vC, true, translate("runonce.title"), false);	
@@ -201,7 +201,7 @@ public class AfterLoginInterceptionController extends BasicController {
 	 * @param wControl
 	 * @param ctrNr
 	 */
-	private void putControllerToPanel(UserRequest ureq, WindowControl wControl, int ctrNr) {
+	private void putControllerToPanel(int ctrNr) {
 		if (aftctrls.get(ctrNr) == null) return;
 		actualCtrNr = ctrNr;
 		wiz.setCurStep(ctrNr + 1);
@@ -277,7 +277,7 @@ public class AfterLoginInterceptionController extends BasicController {
 	 */
 	private void activateNextOrCloseModal(UserRequest ureq){
 		if ((actualCtrNr + 1) < aftctrls.size()) {
-			putControllerToPanel(ureq, getWindowControl(), actualCtrNr + 1);
+			putControllerToPanel(actualCtrNr + 1);
 		} else {
 			removeAsListenerAndDispose(actCtrl);
 			cmc.deactivate();

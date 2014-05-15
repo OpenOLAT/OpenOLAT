@@ -80,6 +80,7 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.author.CreateRepositoryEntryController;
 import org.olat.search.service.indexer.LifeFullIndexer;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -122,15 +123,16 @@ public class QuestionListController extends AbstractItemListController implement
 	private ReferencableEntriesSearchController importTestCtrl;
 	
 	private QuestionItemCollection itemCollection;
-	
-	private final LifeFullIndexer lifeFullIndexer;
-	private final RepositoryManager repositoryManager;
+
+	@Autowired
+	private LifeFullIndexer lifeFullIndexer;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public QuestionListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source, String key) {
 		super(ureq, wControl, source, key);
-
-		lifeFullIndexer = CoreSpringFactory.getImpl(LifeFullIndexer.class);
-		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 	}
 
 	@Override
@@ -639,8 +641,8 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(addController);
 		
 		String type = TestFileResource.TYPE_NAME;
-		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(type);
-		addController = new CreateRepositoryEntryController(ureq, getWindowControl(), type, handler);
+		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
+		addController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
 		addController.setUserObject(new QItemList(items));
 		listenTo(addController);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), addController.getInitialComponent());

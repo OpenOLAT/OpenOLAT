@@ -48,7 +48,7 @@ import org.olat.course.ICourse;
 import org.olat.login.LoginModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryModule;
-import org.olat.repository.ui.author.PropPupForm;
+import org.olat.repository.RepositoryService;
 
 /**
  * Description:<br>
@@ -129,9 +129,9 @@ class PublishStep01 extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			Translator pt = Util.createPackageTranslator(PropPupForm.class, getLocale(), getTranslator());
+			Translator pt = Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator());
 			
-			FormItemContainer fic = FormLayoutContainer.createCustomFormLayout("access", pt, this.velocity_root+"/publish_courseaccess.html");
+			FormItemContainer fic = FormLayoutContainer.createCustomFormLayout("access", pt, velocity_root + "/publish_courseaccess.html");
 			formLayout.add(fic);
 
 			List<String> keyList = new ArrayList<String>();

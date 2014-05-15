@@ -241,7 +241,8 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//prepare some courses
-		RepositoryEntry entry = JunitTestHelper.deployDemoCourse();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsUser("auth-" + UUID.randomUUID().toString());
+		RepositoryEntry entry = JunitTestHelper.deployDemoCourse(author);
 		if (!repositoryService.hasRole(id1, entry, GroupRoles.participant.name())){
 			repositoryService.addRole(id1, entry, GroupRoles.participant.name());
 		}

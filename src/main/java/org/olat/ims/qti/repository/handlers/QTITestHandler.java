@@ -26,7 +26,6 @@
 package org.olat.ims.qti.repository.handlers;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -68,13 +67,6 @@ import de.bps.onyx.plugin.run.OnyxRunController;
  * 
  */
 public class QTITestHandler extends QTIHandler {
-
-	private static List<String> supportedTypes = Collections.singletonList(TestFileResource.TYPE_NAME);
-
-	/**
-	 * Default construcotr.
-	 */
-	public QTITestHandler() { super(); } 
 	
 	@Override
 	public boolean isCreate() {
@@ -104,8 +96,8 @@ public class QTITestHandler extends QTIHandler {
 	}
 
 	@Override
-	public List<String> getSupportedTypes() {
-		return supportedTypes;
+	public String getSupportedType() {
+		return TestFileResource.TYPE_NAME;
 	}
 
 	@Override

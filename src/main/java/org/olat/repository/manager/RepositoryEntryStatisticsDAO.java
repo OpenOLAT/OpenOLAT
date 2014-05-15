@@ -139,6 +139,12 @@ public class RepositoryEntryStatisticsDAO implements UserRatingsDelegate, UserCo
 	}
 	
 	private RepositoryEntryStatistics loadStatisticsForUpdate(OLATResourceable repositoryEntryRes) {
+		if(repositoryEntryRes instanceof RepositoryEntry) {
+			RepositoryEntry re = (RepositoryEntry)repositoryEntryRes;
+			dbInstance.getCurrentEntityManager().detach(re);
+			dbInstance.getCurrentEntityManager().detach(re.getStatistics());
+		}
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select stats from ").append(RepositoryEntryStatistics.class.getName()).append(" as stats")
 		  .append(" where stats.key in (select v.statistics.key from ").append(RepositoryEntry.class.getName()).append(" as v where v.key=:key)");

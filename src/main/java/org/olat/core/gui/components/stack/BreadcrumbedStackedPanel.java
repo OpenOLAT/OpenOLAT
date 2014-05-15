@@ -76,7 +76,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		// Add back link before the bread crumbs, when pressed delegates click to current bread-crumb - 1
 		closeLink = LinkFactory.createCustomLink("close", "close", null, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, null, this);
 		closeLink.setIconLeftCSS("o_icon o_icon_close_tab");
-		closeLink.setCustomDisplayText(translator.translate("doclose"));
+		closeLink.setCustomDisplayText(translator.translate("close"));
 		closeLink.setAccessKey("x"); // allow navigation using keyboard
 	}
 	

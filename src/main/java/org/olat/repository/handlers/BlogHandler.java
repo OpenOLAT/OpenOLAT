@@ -20,8 +20,6 @@
 package org.olat.repository.handlers;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
@@ -73,8 +71,6 @@ import org.olat.resource.references.ReferenceManager;
  */
 // Loads of parameters are unused
 public class BlogHandler implements RepositoryHandler {
-
-	private static final List<String> supportedTypes = Collections.singletonList(BlogFileResource.TYPE_NAME);
 
 	@Override
 	public boolean isCreate() {
@@ -200,8 +196,8 @@ public class BlogHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public List<String> getSupportedTypes() {
-		return supportedTypes;
+	public String getSupportedType() {
+		return BlogFileResource.TYPE_NAME;
 	}
 
 	@Override

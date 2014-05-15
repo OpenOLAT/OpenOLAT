@@ -49,7 +49,6 @@ public class RepositoryEntryAccessColumnDescriptor implements CustomCellRenderer
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 		if(val instanceof RepositoryEntry) {
 			RepositoryEntry re = (RepositoryEntry)val;
-		//fxdiff VCRP-1,2: access control of resources
 			if(re.isMembersOnly()) {
 				sb.append(translator.translate("table.header.access.membersonly")); 
 			} else {
@@ -70,8 +69,7 @@ public class RepositoryEntryAccessColumnDescriptor implements CustomCellRenderer
 							sb.append(translator.translate("table.header.access.guest"));
 						}
 						break;
-					}
-					default:						
+					} default:						
 						// OLAT-6272 in case of broken repo entries with no access code
 						// return error instead of nothing
 						sb.append("ERROR");

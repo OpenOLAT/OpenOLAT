@@ -29,8 +29,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
@@ -78,18 +76,10 @@ import org.olat.resource.OLATResourceManager;
 public class WebDocumentHandler extends FileHandler {
 	
 	private static final OLog log = Tracing.createLoggerFor(WebDocumentHandler.class);
-	private static final List<String> supportedTypes;
-	static { // initialize supported types
-		supportedTypes = new ArrayList<String>(10);
-		supportedTypes.add(FileResource.GENERIC_TYPE_NAME);
-		supportedTypes.add(DocFileResource.TYPE_NAME);
-		supportedTypes.add(XlsFileResource.TYPE_NAME);
-		supportedTypes.add(PowerpointFileResource.TYPE_NAME);
-		supportedTypes.add(PdfFileResource.TYPE_NAME);
-		supportedTypes.add(SoundFileResource.TYPE_NAME);
-		supportedTypes.add(MovieFileResource.TYPE_NAME);
-		supportedTypes.add(AnimationFileResource.TYPE_NAME);
-		supportedTypes.add(ImageFileResource.TYPE_NAME);
+	private final String supportedType;
+
+	public WebDocumentHandler(String type) {
+		supportedType = type;
 	}
 	
 	@Override
@@ -121,21 +111,21 @@ public class WebDocumentHandler extends FileHandler {
 		ResourceEvaluation eval = new ResourceEvaluation(false);
 		String extension = FileUtils.getFileSuffix(filename);
 		if(StringHelper.containsNonWhitespace(extension)) {
-			if (DocFileResource.validate(filename)) {
+			if (DocFileResource.TYPE_NAME.equals(supportedType) && DocFileResource.validate(filename)) {
 				eval.setValid(true);
-			} else if (XlsFileResource.validate(filename)) {
+			} else if (XlsFileResource.TYPE_NAME.equals(supportedType) && XlsFileResource.validate(filename)) {
 				eval.setValid(true);
-			} else if (PowerpointFileResource.validate(filename)) {
+			} else if (PowerpointFileResource.TYPE_NAME.equals(supportedType) && PowerpointFileResource.validate(filename)) {
 				eval.setValid(true);
-			} else if (PdfFileResource.validate(filename)) {
+			} else if (PdfFileResource.TYPE_NAME.equals(supportedType) && PdfFileResource.validate(filename)) {
 				eval.setValid(true);
-			} else if (ImageFileResource.validate(filename)) {
+			} else if (ImageFileResource.TYPE_NAME.equals(supportedType) && ImageFileResource.validate(filename)) {
 				eval.setValid(true);
-			} else if (MovieFileResource.validate(filename)) {
+			} else if (MovieFileResource.TYPE_NAME.equals(supportedType) && MovieFileResource.validate(filename)) {
 				eval.setValid(true);
-			} else if (SoundFileResource.validate(filename)) {
+			} else if (SoundFileResource.TYPE_NAME.equals(supportedType) && SoundFileResource.validate(filename)) {
 				eval.setValid(true);
-			} else if (AnimationFileResource.validate(filename)) {
+			} else if (AnimationFileResource.TYPE_NAME.equals(supportedType) && AnimationFileResource.validate(filename)) {
 				eval.setValid(true);
 			}
 		}
@@ -147,21 +137,21 @@ public class WebDocumentHandler extends FileHandler {
 			Locale locale, File file, String filename) {
 		
 		FileResource ores;
-		if (DocFileResource.validate(filename)) {
+		if (DocFileResource.TYPE_NAME.equals(supportedType) && DocFileResource.validate(filename)) {
 			ores = new DocFileResource();
-		} else if (XlsFileResource.validate(filename)) {
+		} else if (XlsFileResource.TYPE_NAME.equals(supportedType) && XlsFileResource.validate(filename)) {
 			ores = new XlsFileResource();
-		} else if (PowerpointFileResource.validate(filename)) {
+		} else if (PowerpointFileResource.TYPE_NAME.equals(supportedType) && PowerpointFileResource.validate(filename)) {
 			ores = new PowerpointFileResource();
-		} else if (PdfFileResource.validate(filename)) {
+		} else if (PdfFileResource.TYPE_NAME.equals(supportedType) && PdfFileResource.validate(filename)) {
 			ores = new PdfFileResource();
-		} else if (ImageFileResource.validate(filename)) {
+		} else if (ImageFileResource.TYPE_NAME.equals(supportedType) && ImageFileResource.validate(filename)) {
 			ores = new ImageFileResource();
-		} else if (MovieFileResource.validate(filename)) {
+		} else if (MovieFileResource.TYPE_NAME.equals(supportedType) && MovieFileResource.validate(filename)) {
 			ores = new MovieFileResource();
-		} else if (SoundFileResource.validate(filename)) {
+		} else if (SoundFileResource.TYPE_NAME.equals(supportedType) && SoundFileResource.validate(filename)) {
 			ores = new SoundFileResource();
-		} else if (AnimationFileResource.validate(filename)) {
+		} else if (AnimationFileResource.TYPE_NAME.equals(supportedType) && AnimationFileResource.validate(filename)) {
 			ores = new AnimationFileResource();
 		} else {
 			return null;
@@ -200,8 +190,8 @@ public class WebDocumentHandler extends FileHandler {
 	}
 
 	@Override
-	public List<String> getSupportedTypes() {
-		return supportedTypes;
+	public String getSupportedType() {
+		return supportedType;
 	}
 
 	@Override

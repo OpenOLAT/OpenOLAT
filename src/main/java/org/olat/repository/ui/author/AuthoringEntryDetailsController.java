@@ -107,6 +107,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AuthoringEntryDetailsController extends FormBasicController implements Activateable2 {
 	
+	public static final OLATResourceable EDIT_SETTINGS_ORES = OresHelper.createOLATResourceableInstance("Settings", 0l);
+	
 	private FormLink markLink, startLink;
 	
 	private Link editLink, launchLink,
@@ -423,7 +425,13 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries == null || entries.isEmpty()) return;
+		
+		ContextEntry entry = entries.get(0);
+		String segment = entry.getOLATResourceable().getResourceableTypeName();
+		if(EDIT_SETTINGS_ORES.getResourceableTypeName().equals(segment)) {
+			doEditSettings(ureq);
+		}
 	}
 
 	@Override

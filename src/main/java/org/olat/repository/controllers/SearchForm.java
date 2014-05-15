@@ -47,6 +47,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.Util;
 import org.olat.course.CourseModule;
 import org.olat.fileresource.types.AnimationFileResource;
 import org.olat.fileresource.types.BlogFileResource;
@@ -68,6 +69,7 @@ import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.portfolio.EPTemplateMapResource;
 import org.olat.repository.RepositoryModule;
+import org.olat.repository.RepositoryService;
 
 /**
  * Initial Date:  08.07.2003
@@ -113,6 +115,12 @@ public class SearchForm extends FormBasicController{
 		}
 	}
 
+	public SearchForm(UserRequest ureq, WindowControl wControl, boolean withCancel, boolean isAdmin, String[] limitTypes) {
+		this(ureq, wControl, withCancel, isAdmin);
+		this.limitTypes = limitTypes;
+		update();
+	}
+	
 	/**
 	 * Generic search form.
 	 * @param name Internal form name.
@@ -121,17 +129,14 @@ public class SearchForm extends FormBasicController{
 	 * @param isAdmin Is calling identity an administrator? If yes, allow search by ID
 	 * @param limitTypes Limit searches to specific types.
 	 */
-	public SearchForm(UserRequest ureq, WindowControl wControl, boolean withCancel, boolean isAdmin) {
+	private SearchForm(UserRequest ureq, WindowControl wControl, boolean withCancel, boolean isAdmin) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));		
+		
 		this.withCancel = withCancel;
 		this.isAdmin = isAdmin;
 		managedEnabled = CoreSpringFactory.getImpl(RepositoryModule.class).isManagedRepositoryEntries();
 		initForm(ureq);
-	}
-	public SearchForm(UserRequest ureq, WindowControl wControl, boolean withCancel, boolean isAdmin, String[] limitTypes) {
-		this(ureq, wControl, withCancel, isAdmin);
-		this.limitTypes = limitTypes;
-		update();
 	}
 	
 	@Override
@@ -148,7 +153,9 @@ public class SearchForm extends FormBasicController{
 	/**
 	 * @return Is ID field available?
 	 */
-	public boolean hasId() { return (id != null && !id.isEmpty()); }
+	public boolean hasId() {
+		return (id != null && !id.isEmpty());
+	}
 	
 	/**
 	 * @return Return value of ID field.
@@ -182,7 +189,7 @@ public class SearchForm extends FormBasicController{
 	}
 
 	/**
-	 * @return Descritpion field value.
+	 * @return Description field value.
 	 */
 	public String getDescription() {
 		return description.getValue();

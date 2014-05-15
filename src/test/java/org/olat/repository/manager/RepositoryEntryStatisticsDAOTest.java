@@ -209,7 +209,9 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 		log.info("testIncrementDownloadCounter finished");
 	}
 
-	
+	/**
+	 * Test concurrent increment of the launch counter
+	 */
 	@Test
 	public void concurrentIncrementLaunchCounter() {
 		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));

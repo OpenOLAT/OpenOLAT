@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -98,14 +97,7 @@ import org.olat.resource.references.ReferenceManager;
 public class WikiHandler implements RepositoryHandler {
 	
 	private static final OLog log = Tracing.createLoggerFor(WikiHandler.class);
-	private static final List<String> supportedTypes = Collections.singletonList(WikiResource.TYPE_NAME);
 
-	/**
-	 * Comment for <code>PROCESS_CREATENEW</code>
-	 */
-	public static final String PROCESS_CREATENEW = "cn";
-	public static final String PROCESS_UPLOAD = "pu";
-	
 	@Override
 	public boolean isCreate() {
 		return true;
@@ -203,8 +195,8 @@ public class WikiHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public List<String> getSupportedTypes() {
-		return supportedTypes;
+	public String getSupportedType() {
+		return WikiResource.TYPE_NAME;
 	}
 
 	@Override

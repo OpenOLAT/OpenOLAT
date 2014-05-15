@@ -32,6 +32,7 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
@@ -55,13 +56,14 @@ import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.portfolio.EPTemplateMapResource;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.RepositorySearchController.Can;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.RepositoryTableModel;
 import org.olat.repository.ui.author.CreateRepositoryEntryController;
 import org.olat.repository.ui.author.ImportRepositoryEntryController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -91,7 +93,10 @@ public class ReferencableEntriesSearchController extends BasicController {
 
 	private SegmentViewComponent segmentView;
 	private Link myEntriesLink, allEntriesLink, searchEntriesLink, adminEntriesLink;
-	private Link createRessourceButton, importRessourceButton;
+	private Link importRessourceButton;
+	private Component createRessourceCmp;
+	private List<Link> createRessourceButtons;
+	
 	private CreateRepositoryEntryController createController;
 	private ImportRepositoryEntryController importController;
 	private CloseableModalController cmc;
@@ -104,10 +109,12 @@ public class ReferencableEntriesSearchController extends BasicController {
 	private final Can canBe;
 	
 	private Object userObject;
+	
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String limitType, String commandLabel) {
-		this(wControl, ureq, new String[]{limitType}, null, commandLabel, true, true, true, false, false, Can.referenceable);
-		setBasePackage(RepositoryManager.class);
+		this(wControl, ureq, new String[]{ limitType }, null, commandLabel, true, true, true, false, false, Can.referenceable);
 	}
 	
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String[] limitTypes, String commandLabel) {
@@ -129,7 +136,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 		this.canImport = canImport;
 		this.canCreate = canCreate;
 		this.limitTypes = limitTypes;
-		setBasePackage(RepositoryManager.class);
+		setBasePackage(RepositoryService.class);
 		mainVC = createVelocityContainer("referencableSearch");
 		
 		if(limitTypes != null && limitTypes.length == 1 && limitTypes[0] != null) {
@@ -142,8 +149,21 @@ public class ReferencableEntriesSearchController extends BasicController {
 		
 		// do instantiate buttons
 		if (canCreate && isCreateButtonVisible()) {
-			createRessourceButton = LinkFactory.createButtonSmall("cmd.create.ressource", mainVC, this);
-			createRessourceButton.setElementCssClass("o_sel_repo_popup_create_resource");
+			if(limitTypes != null && limitTypes.length == 1) {
+				Link createButton = LinkFactory.createButtonSmall("cmd.create.ressource", mainVC, this);
+				createButton.setElementCssClass("o_sel_repo_popup_create_resource");
+				RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(limitTypes[0]);
+				createButton.setUserObject(handler);
+				createRessourceCmp = createButton;
+			} else if(limitTypes != null && limitTypes.length > 1) {
+				Dropdown dropdown = new Dropdown("cmd.create.ressource", "cmd.create.ressource", false, getTranslator());
+				for(String limitType:limitTypes) {
+					RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(limitType);
+					Link createLink = LinkFactory.createLink(handler.getSupportedType(), getTranslator(), this);
+					dropdown.addComponent(createLink);
+				}
+				createRessourceCmp = dropdown;
+			}
 		}
 		if (canImport && isImportButtonVisible()) {
 			importRessourceButton = LinkFactory.createButtonSmall("cmd.import.ressource", mainVC, this);
@@ -263,11 +283,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 		return selectedRepositoryEntries;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
 			if(event instanceof SegmentViewEvent) {
@@ -294,11 +310,10 @@ public class ReferencableEntriesSearchController extends BasicController {
 					searchCtr.displayAdminSearchForm();
 				}
 			}
-		} else if(source == createRessourceButton) {
+		} else if(source == createRessourceCmp || createRessourceButtons.contains(source)) {
 			removeAsListenerAndDispose(createController);
-			String type = null;
-			RepositoryHandler handler = null;
-			createController = new CreateRepositoryEntryController(ureq, getWindowControl(), type, handler);
+			RepositoryHandler handler = (RepositoryHandler)((Link)source).getUserObject();
+			createController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
 			listenTo(createController);
 			
 			removeAsListenerAndDispose(cmc);
@@ -322,11 +337,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 		}
 	}
 
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		String cmd = event.getCommand();
 		if (source == searchCtr) {

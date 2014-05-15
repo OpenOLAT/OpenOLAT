@@ -29,10 +29,14 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.manager.EPXStreamHandler;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -47,6 +51,8 @@ public class EPImportTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private OLATResourceManager resourceManager;
+	@Autowired
 	private EPFrontendManager epFrontendManager;
 	
 	
@@ -55,9 +61,12 @@ public class EPImportTest extends OlatTestCase {
 		URL mapUrl = EPImportTest.class.getResource("map_81.xml.zip");
 		assertNotNull(mapUrl);
 		File mapFile = new File(mapUrl.toURI());
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableType("EPMapTemplate");
+		OLATResource resource = resourceManager.createAndPersistOLATResourceInstance(ores);
 		//import the map
 		PortfolioStructure rootStructure = EPXStreamHandler.getAsObject(mapFile, false);
-		PortfolioStructureMap importedMap = epFrontendManager.importPortfolioMapTemplate(rootStructure, null);
+		PortfolioStructureMap importedMap = epFrontendManager.importPortfolioMapTemplate(rootStructure, resource);
 		Assert.assertNotNull(importedMap);
 		dbInstance.commitAndCloseSession();
 	}

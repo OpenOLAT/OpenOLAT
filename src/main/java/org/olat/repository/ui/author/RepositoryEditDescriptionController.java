@@ -378,9 +378,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 				flc.setDirty(true);
 			}
 		} else if (source == deleteImage) {
-
 			VFSLeaf img = repositoryManager.getImage(repositoryEntry);
-			
 			if(fileUpload.getUploadFile() != null) {
 				fileUpload.reset();
 				

@@ -126,7 +126,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		// prepare filesystem and set course base path and course folder paths
 		prepareFilesystem();
 		courseConfig = CourseConfigManagerImpl.getInstance().loadConfigFor(this); // load or init defaults
-		courseEnvironment = new CourseEnvironmentImpl(this);		
+		courseEnvironment = new CourseEnvironmentImpl(this);
 	}
 	
 

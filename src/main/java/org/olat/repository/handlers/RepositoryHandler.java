@@ -26,7 +26,6 @@
 package org.olat.repository.handlers;
 
 import java.io.File;
-import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
@@ -58,7 +57,7 @@ public interface RepositoryHandler {
 	/**
 	 * @return Return the typeNames of OLATResourceable this Handler can handle.
 	 */
-	public List<String> getSupportedTypes();
+	public String getSupportedType();
 	
 	/**
 	 * This resource support creation within OpenOLAT.

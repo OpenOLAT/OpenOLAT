@@ -20,6 +20,7 @@
 package org.olat.course.condition;
 
 import java.util.Collection;
+import java.util.UUID;
 
 import junit.framework.Assert;
 
@@ -84,9 +85,10 @@ public class ConditionTest extends OlatTestCase {
 	}
 	
 	private UserCourseEnvironment getUserDemoCourseEnvironment() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsUser("junit_auth-" + UUID.randomUUID().toString());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("condition");
 		Roles roles = new Roles(false, false, false, false, false, false, false);
-		RepositoryEntry re = JunitTestHelper.deployDemoCourse();
+		RepositoryEntry re = JunitTestHelper.deployDemoCourse(author);
 		ICourse course = CourseFactory.loadCourse(re.getOlatResource());
 		IdentityEnvironment identityEnv = new IdentityEnvironment(id, roles);
 		UserCourseEnvironment uce = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());

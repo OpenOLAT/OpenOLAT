@@ -116,7 +116,7 @@ public class DbStorage extends LogDelegator implements PreferencesStorage{
 	private DbPrefs getPreferencesForProperty(Identity identity, Property guiProperty) {
 		DbPrefs prefs;
 		try {
-			prefs = createDbPrefsFrom(identity, guiProperty, guiProperty.getTextValue());
+			prefs = createDbPrefsFrom(identity, guiProperty.getTextValue());
 		} catch (Exception e) {
 			prefs = doGuiPrefsMigration( guiProperty, identity);
 		}
@@ -130,7 +130,7 @@ public class DbStorage extends LogDelegator implements PreferencesStorage{
 		return prefs;
 	}
 
-	private DbPrefs createDbPrefsFrom(Identity identity, Property guiProperty, String textValue) {
+	private DbPrefs createDbPrefsFrom(Identity identity, String textValue) {
 		DbPrefs prefs = (DbPrefs) xstream.fromXML(textValue);
 		prefs.setIdentity(identity); // reset transient value
 		return prefs;
@@ -140,7 +140,7 @@ public class DbStorage extends LogDelegator implements PreferencesStorage{
 		String migratedTextValue = doCalendarRefactoringMigration(guiProperty.getTextValue());
 		// add new migration methode here 
 		try {
-			return createDbPrefsFrom(identity, guiProperty, migratedTextValue);
+			return createDbPrefsFrom(identity, migratedTextValue);
 		} catch (Exception e) {
 			// Migration failed => return empty db-prefs
 			return createEmptyDbPrefs(identity,false);

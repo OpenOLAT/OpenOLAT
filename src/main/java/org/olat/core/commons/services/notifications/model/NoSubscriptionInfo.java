@@ -25,6 +25,8 @@
 
 package org.olat.core.commons.services.notifications.model;
 
+import java.util.Locale;
+
 import org.olat.core.commons.services.notifications.SubscriptionInfo;
 
 /**
@@ -38,23 +40,16 @@ import org.olat.core.commons.services.notifications.SubscriptionInfo;
  */
 public class NoSubscriptionInfo extends SubscriptionInfo {
 
-	/**
-	 * 
-	 */
 	public NoSubscriptionInfo() {
 		super(null, null, null, null);
 	}
 
-	/**
-	 * @see org.olat.core.commons.services.notifications.SubscriptionInfo#getSpecificInfo(java.lang.String)
-	 */
-	public String getSpecificInfo(String mimeType) {
+	@Override
+	public String getSpecificInfo(String mimeType, Locale locale) {
 		return "";
 	}
 
-	/**
-	 * @see org.olat.core.commons.services.notifications.SubscriptionInfo#hasNews()
-	 */
+	@Override
 	public boolean hasNews() {
 		return false;
 	}
@@ -68,6 +63,5 @@ public class NoSubscriptionInfo extends SubscriptionInfo {
 	public String getCustomUrl() {
 		return null;
 	}
-
 }
 

@@ -26,8 +26,6 @@
 package org.olat.repository.handlers;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.GroupRoles;
@@ -77,13 +75,6 @@ import org.olat.resource.references.ReferenceManager;
  * @author gnaegi
  */
 public class SharedFolderHandler implements RepositoryHandler {
-
-	private static final List<String> supportedTypes = Collections.singletonList(SharedFolderFileResource.TYPE_NAME);
-	
-	/**
-	 * Comment for <code>PROCESS_CREATENEW</code>
-	 */
-	public static final String PROCESS_CREATENEW = "cn";
 	
 	@Override
 	public boolean isCreate() {
@@ -139,8 +130,8 @@ public class SharedFolderHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public List<String> getSupportedTypes() {
-		return supportedTypes;
+	public String getSupportedType() {
+		return SharedFolderFileResource.TYPE_NAME;
 	}
 
 	@Override

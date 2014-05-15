@@ -33,8 +33,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -132,8 +130,6 @@ public class CourseHandler implements RepositoryHandler {
 
 	public static final String EDITOR_XML = "editortreemodel.xml";
 	private static final OLog log = Tracing.createLoggerFor(CourseHandler.class);
-
-	private static final List<String> supportedTypes = Collections.singletonList(CourseModule.getCourseTypeName());
 	
 	@Override
 	public boolean isCreate() {
@@ -445,8 +441,8 @@ public class CourseHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public List<String> getSupportedTypes() {
-		return supportedTypes;
+	public String getSupportedType() {
+		return CourseModule.getCourseTypeName();
 	}
 
 	@Override

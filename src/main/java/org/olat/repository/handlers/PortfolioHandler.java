@@ -22,8 +22,6 @@ package org.olat.repository.handlers;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
@@ -84,11 +82,6 @@ import de.bps.onyx.plugin.StreamMediaResource;
 public class PortfolioHandler implements RepositoryHandler {
 	private static final OLog log = Tracing.createLoggerFor(PortfolioHandler.class);
 	
-	public static final String PROCESS_CREATENEW = "create_new";
-	public static final String PROCESS_UPLOAD = "upload";
-	
-	private static final List<String> supportedTypes = Collections.singletonList(EPTemplateMapResource.TYPE_NAME);
-	
 	@Override
 	public boolean isCreate() {
 		return true;
@@ -133,7 +126,16 @@ public class PortfolioHandler implements RepositoryHandler {
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, boolean withReferences,
 			Locale locale, File file, String filename) {
-		return null;
+		EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
+		EPStructureManager eSTMgr = CoreSpringFactory.getImpl(EPStructureManager.class);
+		
+		PortfolioStructure structure = EPXStreamHandler.getAsObject(file, false);
+		OLATResource resource = eSTMgr.createPortfolioMapTemplateResource();
+		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
+				.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		
+		ePFMgr.importPortfolioMapTemplate(structure, resource);
+		return re;
 	}
 	
 	@Override
@@ -243,7 +245,7 @@ public class PortfolioHandler implements RepositoryHandler {
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq,
 			WindowControl wControl) {
-		EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+		EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		PortfolioStructureMap map = (PortfolioStructureMap)ePFMgr.loadPortfolioStructure(re.getOlatResource());
 		EPSecurityCallback secCallback = EPSecurityCallbackFactory.getSecurityCallback(ureq, map, ePFMgr);
 		Controller epCtr = EPUIFactory.createPortfolioStructureMapController(ureq, wControl, map, secCallback);
@@ -252,14 +254,12 @@ public class PortfolioHandler implements RepositoryHandler {
 			layoutCtr.addActivateableDelegate((Activateable2)epCtr);
 		}
 		layoutCtr.addDisposableChildController(epCtr);
-		//fxdiff VCRP-1: access control of learn resources
-		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, layoutCtr);
-		return wrapper;
+		return new RepositoryMainAccessControllerWrapper(ureq, wControl, re, layoutCtr);
 	}
 
 	@Override
-	public List<String> getSupportedTypes() {
-		return supportedTypes;
+	public String getSupportedType() {
+		return EPTemplateMapResource.TYPE_NAME;
 	}
 
 	@Override

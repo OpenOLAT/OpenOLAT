@@ -20,8 +20,6 @@
 package org.olat.repository.handlers;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
@@ -73,10 +71,6 @@ import org.olat.resource.references.ReferenceManager;
  */
 // Loads of parameters are unused
 public class PodcastHandler implements RepositoryHandler {
-	public static final String PROCESS_CREATENEW = "create_new";
-	public static final String PROCESS_UPLOAD = "upload";
-
-	private static final List<String> supportedTypes = Collections.singletonList(PodcastFileResource.TYPE_NAME);
 	
 	@Override
 	public boolean isCreate() {
@@ -200,8 +194,8 @@ public class PodcastHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public List<String> getSupportedTypes() {
-		return supportedTypes;
+	public String getSupportedType() {
+		return PodcastFileResource.TYPE_NAME;
 	}
 
 	@Override

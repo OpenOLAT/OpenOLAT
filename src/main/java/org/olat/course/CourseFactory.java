@@ -294,19 +294,11 @@ public class CourseFactory extends BasicManager {
 			OLATResourceable courseResourceable = OresHelper.createOLATResourceableInstance(PersistingCourseImpl.class, resourceableId);
 			course = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(courseResourceable, new SyncerCallback<PersistingCourseImpl>() {
 				public PersistingCourseImpl execute() {
-					PersistingCourseImpl theCourse = null;
-					theCourse = getCourseFromCache(resourceableId);
+					PersistingCourseImpl theCourse = getCourseFromCache(resourceableId);
 					if (theCourse == null) {
-						long startTime = 0;
-						long endTime = 0;
-						if (log.isDebug()) startTime = System.currentTimeMillis();
 						theCourse = new PersistingCourseImpl(resourceableId);
 						theCourse.load();
-						if (log.isDebug()) endTime = System.currentTimeMillis();
 						putCourseInCache(resourceableId, theCourse);
-						long diff = 0;
-						if (log.isDebug()) diff = Long.valueOf(endTime - startTime);
-						if (log.isDebug()) 	log.debug("[[" + resourceableId + "[[" + diff + "[[" + theCourse.getCourseTitle());
 					}
 					return theCourse;
 				}

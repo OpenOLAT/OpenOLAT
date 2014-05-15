@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -46,7 +45,6 @@ import org.olat.core.util.Util;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -68,7 +66,6 @@ public class ImportRepositoryEntryController extends FormBasicController {
 	private FileElement uploadFileEl;
 	private StaticTextElement typeEl;
 	private TextElement displaynameEl;
-	private RichTextElement descriptionEl;
 	private MultipleSelectionElement referencesEl;
 	
 	private final static String[] refKeys = new String[]{ "checked" };
@@ -102,12 +99,6 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		String[] refValues = new String[]{ "" };
 		referencesEl = uifactory.addCheckboxesHorizontal("references", "references", formLayout, refKeys, refValues, null);
 		referencesEl.setVisible(false);
-
-		descriptionEl = uifactory.addRichTextElementForStringData("cif.description", "cif.description",
-				"", 10, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
-		descriptionEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
-		descriptionEl.setMandatory(true);
-		descriptionEl.setVisible(false);
 		
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
@@ -144,7 +135,6 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		if(handlerForUploadedResource != null) {
 			doImport();
 			fireEvent(ureq, Event.DONE_EVENT);
-			fireEvent(ureq, new EntryChangedEvent(importedEntry, EntryChangedEvent.ADDED));
 		}
 	}
 	
@@ -165,14 +155,6 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		} else {
 			displaynameEl.clearError();
 		}
-		
-		// Check for empty description
-		if (!StringHelper.containsNonWhitespace(descriptionEl.getValue())) {
-			descriptionEl.setErrorKey("cif.error.description.empty", new String[] {});
-			allOk = false;
-		} else {
-			descriptionEl.clearError();
-		}
 
 		return allOk & handlerForUploadedResource != null & super.validateFormLogic(ureq);
 	}
@@ -181,12 +163,11 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		if(handlerForUploadedResource == null) return;
 		
 		String displayname = displaynameEl.getValue();
-		String description = descriptionEl.getValue();
 		File uploadedFile = uploadFileEl.getUploadFile();
 		String uploadedFilename = uploadFileEl.getUploadFileName();
 		boolean withReferences = referencesEl.isAtLeastSelected(1);
 		
-		importedEntry = handlerForUploadedResource.importResource(getIdentity(), displayname, description,
+		importedEntry = handlerForUploadedResource.importResource(getIdentity(), displayname, "",
 				withReferences, getLocale(), uploadedFile, uploadedFilename);
 
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
@@ -201,17 +182,17 @@ public class ImportRepositoryEntryController extends FormBasicController {
 			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
 			ResourceEvaluation eval = handler.acceptImport(uploadedFile, uploadedFilename);
 			if(eval != null && eval.isValid()) {
-				updateResourceInfos(eval, type, handler);
+				updateResourceInfos(eval, handler);
 				break;
 			}
 		}
 	}
 	
-	private void updateResourceInfos(ResourceEvaluation eval, String type, RepositoryHandler handler) {
+	private void updateResourceInfos(ResourceEvaluation eval, RepositoryHandler handler) {
 		handlerForUploadedResource = handler;
 		typeEl.setVisible(true);
-		if (type != null) { // add image and typename code
-			String tName = NewControllerFactory.translateResourceableTypeName(type, getLocale());
+		if (handler != null) { // add image and typename code
+			String tName = NewControllerFactory.translateResourceableTypeName(handler.getSupportedType(), getLocale());
 			typeEl.setValue(tName);
 		} else {
 			typeEl.setValue(translate("cif.type.na"));
@@ -222,8 +203,6 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		if(eval.isReferences()) {
 			referencesEl.select(refKeys[0], true);
 		}
-		descriptionEl.setVisible(true);
-		descriptionEl.setValue(eval.getDescription());
 		importButton.setEnabled(handler != null);
 	}
 }

@@ -62,6 +62,7 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -134,7 +135,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		for(String type:types) {
 			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
 			if(handler != null && handler.isCreate()) {
-				addCreateLink(type, createDropdown);
+				addCreateLink(handler, createDropdown);
 			}
 		}
 		
@@ -154,9 +155,9 @@ public class AuthorListController extends FormBasicController implements Activat
 		return super.getTranslator();
 	}
 
-	private void addCreateLink(String type, Dropdown dropdown) {
-		Link createLink = LinkFactory.createLink(type, getTranslator(), this);
-		createLink.setUserObject(type);
+	private void addCreateLink(RepositoryHandler handler, Dropdown dropdown) {
+		Link createLink = LinkFactory.createLink(handler.getSupportedType(), getTranslator(), this);
+		createLink.setUserObject(handler);
 		dropdown.addComponent(createLink);
 	}
 	
@@ -249,10 +250,9 @@ public class AuthorListController extends FormBasicController implements Activat
 		if(importLink == source) {
 			doImport(ureq);
 		} else if(source instanceof Link && ((Link)source).getUserObject() instanceof String) {
-			String type = (String)((Link)source).getUserObject();
-			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
+			RepositoryHandler handler = (RepositoryHandler)((Link)source).getUserObject();
 			if(handler != null) {
-				doCreate(ureq, type, handler);
+				doCreate(ureq, handler);
 			}
 		}
 		super.event(ureq, source, event);
@@ -265,7 +265,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		} else if(createCtrl == source) {
 			cmc.deactivate();
 			if(Event.DONE_EVENT.equals(event)) {
-				doOpenDetails(ureq, createCtrl.getAddedEntry());
+				doOpenDetailsSettings(ureq, createCtrl.getAddedEntry());
 				cleanUp();
 			} else if(CreateRepositoryEntryController.CREATION_WIZARD.equals(event)) {
 				doPostCreateWizard(ureq, createCtrl.getAddedEntry(), createCtrl.getHandler());
@@ -275,7 +275,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		}  else if(importCtrl == source) {
 			cmc.deactivate();
 			if(Event.DONE_EVENT.equals(event)) {
-				doOpenDetails(ureq, importCtrl.getImportedEntry());
+				doOpenDetailsSettings(ureq, importCtrl.getImportedEntry());
 				cleanUp();
 			} else {
 				cleanUp();
@@ -285,7 +285,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				getWindowControl().pop();
 				RepositoryEntry newEntry = (RepositoryEntry)wizardCtrl.getRunContext().get("authoringNewEntry");
 				cleanUp();
-				doOpenDetails(ureq, newEntry);
+				doOpenDetailsSettings(ureq, newEntry);
 			}
 		} else if(searchCtrl == source) {
 			if(event instanceof SearchEvent) {
@@ -400,6 +400,18 @@ public class AuthorListController extends FormBasicController implements Activat
 		return detailsCtrl;
 	}
 	
+	private AuthoringEntryDetailsController doOpenDetailsSettings(UserRequest ureq, RepositoryEntryRef entry) {
+		RepositoryEntryAuthorView view = repositoryService.loadAuthorView(getIdentity(), entry);
+		String fullnameAuthor = "";
+		AuthoringEntryRow row = new AuthoringEntryRow(view, fullnameAuthor);
+		detailsCtrl = doOpenDetails(ureq, row);
+		
+		ContextEntry editEntry = BusinessControlFactory.getInstance().createContextEntry(AuthoringEntryDetailsController.EDIT_SETTINGS_ORES);
+		List<ContextEntry> entries = Collections.singletonList(editEntry);
+		detailsCtrl.activate(ureq, entries, null);
+		return detailsCtrl;
+	}
+	
 	private void doImport(UserRequest ureq) {
 		if(importCtrl != null) return;
 
@@ -415,11 +427,11 @@ public class AuthorListController extends FormBasicController implements Activat
 		cmc.activate();
 	}
 	
-	private void doCreate(UserRequest ureq, String type, RepositoryHandler handler) {
+	private void doCreate(UserRequest ureq, RepositoryHandler handler) {
 		if(createCtrl != null) return;
 
 		removeAsListenerAndDispose(createCtrl);
-		createCtrl = new CreateRepositoryEntryController(ureq, getWindowControl(), type, handler);
+		createCtrl = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
 		listenTo(createCtrl);
 		removeAsListenerAndDispose(cmc);
 		

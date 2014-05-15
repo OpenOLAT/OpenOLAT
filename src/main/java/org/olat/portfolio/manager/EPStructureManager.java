@@ -1541,13 +1541,13 @@ public class EPStructureManager extends BasicManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select element from ").append(EPStructureElement.class.getName()).append(" element")
 		  .append(" left join fetch element.olatResource as oRes")
-		  .append(" left join fetch element.group as baseGroup");
+		  .append(" left join fetch element.group as baseGroup")
+		  .append(" where element.key=:key");;
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setLong("key", key);
-		
-		@SuppressWarnings("unchecked")
-		List<PortfolioStructure> resources = query.list();
+		List<PortfolioStructure> resources = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PortfolioStructure.class)
+				.setParameter("key", key)
+				.getResultList();
 		// if not found, it is an empty list
 		if (resources.isEmpty()) return null;
 		return resources.get(0);

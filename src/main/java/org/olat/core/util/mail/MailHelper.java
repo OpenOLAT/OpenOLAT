@@ -71,7 +71,10 @@ public class MailHelper {
 	}
 	
 	public static String getMailFooter(MailBundle bundle) {
-		return getMailFooter(bundle.getFromId());
+		if(bundle.getFromId() != null) {
+			return getMailFooter(bundle.getFromId());
+		}
+		return getMailFooter(I18nModule.getDefaultLocale());
 	}
 	
 

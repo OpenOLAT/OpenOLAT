@@ -32,6 +32,15 @@ import java.util.Set;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
+import org.olat.fileresource.types.AnimationFileResource;
+import org.olat.fileresource.types.DocFileResource;
+import org.olat.fileresource.types.FileResource;
+import org.olat.fileresource.types.ImageFileResource;
+import org.olat.fileresource.types.MovieFileResource;
+import org.olat.fileresource.types.PdfFileResource;
+import org.olat.fileresource.types.PowerpointFileResource;
+import org.olat.fileresource.types.SoundFileResource;
+import org.olat.fileresource.types.XlsFileResource;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.stereotype.Service;
 
@@ -50,7 +59,6 @@ public class RepositoryHandlerFactory {
 	static {
 		handlerMap = new HashMap<String, RepositoryHandler>(21);
 
-		registerHandler(new WebDocumentHandler());
 		registerHandler(new ImsCPHandler());
 		registerHandler(new SCORMCPHandler());
 		registerHandler(new CourseHandler());
@@ -60,12 +68,20 @@ public class RepositoryHandlerFactory {
 		registerHandler(new BlogHandler());
 		registerHandler(new GlossaryHandler());
 		registerHandler(new PortfolioHandler());
+		
+		registerHandler(new WebDocumentHandler(FileResource.GENERIC_TYPE_NAME));
+		registerHandler(new WebDocumentHandler(DocFileResource.TYPE_NAME));
+		registerHandler(new WebDocumentHandler(XlsFileResource.TYPE_NAME));
+		registerHandler(new WebDocumentHandler(PowerpointFileResource.TYPE_NAME));
+		registerHandler(new WebDocumentHandler(PdfFileResource.TYPE_NAME));
+		registerHandler(new WebDocumentHandler(SoundFileResource.TYPE_NAME));
+		registerHandler(new WebDocumentHandler(MovieFileResource.TYPE_NAME));
+		registerHandler(new WebDocumentHandler(AnimationFileResource.TYPE_NAME));
+		registerHandler(new WebDocumentHandler(ImageFileResource.TYPE_NAME));
 	}
 
 	public static void registerHandler(RepositoryHandler handler) {
-		for (String type : handler.getSupportedTypes()) {
-			handlerMap.put(type, handler);
-		}
+		handlerMap.put(handler.getSupportedType(), handler);
 	}
 	
 	public static RepositoryHandlerFactory getInstance() {

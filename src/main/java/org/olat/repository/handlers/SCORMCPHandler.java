@@ -26,8 +26,6 @@
 package org.olat.repository.handlers;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
@@ -70,12 +68,6 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  */
 public class SCORMCPHandler extends FileHandler {
-
-	private static final List<String> supportedTypes = Collections.singletonList(ScormCPFileResource.TYPE_NAME);
-
-	public SCORMCPHandler() {
-		//
-	}
 	
 	@Override
 	public boolean isCreate() {
@@ -166,8 +158,8 @@ public class SCORMCPHandler extends FileHandler {
 	}
 
 	@Override
-	public List<String> getSupportedTypes() {
-		return supportedTypes;
+	public String getSupportedType() {
+		return ScormCPFileResource.TYPE_NAME;
 	}
 
 	@Override

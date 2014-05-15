@@ -56,7 +56,9 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.portfolio.EPTemplateMapResource;
+import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.manager.EPStructureManager;
+import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
@@ -426,8 +428,11 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(EPTemplateMapResource.TYPE_NAME);
 			RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
 					false, locale, rie.importGetExportedFile(), null);
-			//TODO missing map
-			PortfolioCourseNodeEditController.setReference(re, null, getModuleConfiguration());
+			if(re != null) {
+				EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
+				PortfolioStructure map = ePFMgr.loadPortfolioStructure(re.getOlatResource());
+				PortfolioCourseNodeEditController.setReference(re, map, getModuleConfiguration());
+			}
 		}
 	}
 }

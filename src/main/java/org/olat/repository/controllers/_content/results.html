@@ -1,0 +1,24 @@
+#if ($withBack)
+	$r.render("backLink")
+	<br />
+	<br />	
+#end
+#if ($isGuest)
+	<div class="b_warning" >${r.translate("filtered.first")}${r.render("repo.login")}${r.translate("filtered.second")}</div>
+#end
+$r.render("repotable")
+#if ($hasResults)
+	<div class="b_xsmall">$r.translate("table.header.access.desc")</div>
+	#if ($withCancel)
+		<p>
+			$r.render("cancel")
+		<p>
+	#end
+#else
+	<br />
+	#if ($withCancel)
+		<p>
+			$r.render("cancel")
+		<p>
+	#end
+#end

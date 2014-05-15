@@ -30,9 +30,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.UUID;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
@@ -56,8 +59,9 @@ public class UserNodeAuditManagerTest extends OlatTestCase  {
 		try {
 			log.info("setUp start ------------------------");
 			
-      //import "Demo course" into the bcroot_junittest
-			RepositoryEntry repositoryEntry = JunitTestHelper.deployDemoCourse();
+			//import "Demo course" into the bcroot_junittest
+			Identity author = JunitTestHelper.createAndPersistIdentityAsUser("auth-" + UUID.randomUUID().toString());
+			RepositoryEntry repositoryEntry = JunitTestHelper.deployDemoCourse(author);
 			Long resourceableId = repositoryEntry.getOlatResource().getResourceableId();
 			System.out.println("Demo course imported - resourceableId: " + resourceableId);
 					

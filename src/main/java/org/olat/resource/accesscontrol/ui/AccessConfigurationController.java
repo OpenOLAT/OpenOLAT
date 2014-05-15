@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -52,6 +51,7 @@ import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.Offer;
 import org.olat.resource.accesscontrol.model.OfferAccess;
 import org.olat.resource.accesscontrol.model.OfferImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -67,8 +67,6 @@ public class AccessConfigurationController extends FormBasicController {
 	private List<FormLink> addMethods = new ArrayList<FormLink>();
 	private final String displayName;
 	private final OLATResource resource;
-	private final AccessControlModule acModule;
-	private final ACService acService;
 
 	private CloseableModalController cmc;
 	private FormLayoutContainer confControllerContainer;
@@ -81,6 +79,11 @@ public class AccessConfigurationController extends FormBasicController {
 	private boolean allowPaymentMethod;
 	private final boolean editable;
 	
+	@Autowired
+	private ACService acService;
+	@Autowired
+	private AccessControlModule acModule;
+	
 	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, OLATResource resource,
 			String displayName, boolean allowPaymentMethod, boolean editable) {
 		super(ureq, wControl, "access_configuration");
@@ -88,8 +91,6 @@ public class AccessConfigurationController extends FormBasicController {
 		this.resource = resource;
 		this.displayName = displayName;
 		this.allowPaymentMethod = allowPaymentMethod;
-		acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
-		acService = CoreSpringFactory.getImpl(ACService.class);
 		embbed = false;
 		this.editable = editable;
 		emptyConfigGrantsFullAccess = true; 
@@ -105,8 +106,6 @@ public class AccessConfigurationController extends FormBasicController {
 		this.resource = resource;
 		this.displayName = displayName;
 		this.allowPaymentMethod = allowPaymentMethod;
-		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
-		acService = CoreSpringFactory.getImpl(ACService.class);
 		embbed = true;
 		emptyConfigGrantsFullAccess = false;
 		
@@ -115,10 +114,6 @@ public class AccessConfigurationController extends FormBasicController {
 	
 	public int getNumOfBookingConfigurations() {
 		return confControllers.size();
-	}
-	
-	public FormItem getInitialFormItem() {
-		return flc;
 	}
 
 	@Override
@@ -134,7 +129,7 @@ public class AccessConfigurationController extends FormBasicController {
 				String title = handler.getMethodName(getLocale());
 				FormLink add = uifactory.addFormLink("create." + handler.getType(), title, null, formLayout, Link.LINK | Link.NONTRANSLATED);
 				add.setUserObject(method);
-				add.setIconLeftCSS((method.getMethodCssClass() + "_icon").intern());
+				add.setIconLeftCSS( ("o_icon " + method.getMethodCssClass() + "_icon o_icon-lg").intern());
 				addMethods.add(add);
 				formLayout.add(add.getName(), add);
 			}

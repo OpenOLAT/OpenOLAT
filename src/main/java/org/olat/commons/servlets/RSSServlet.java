@@ -212,8 +212,6 @@ public class RSSServlet extends HttpServlet {
 		}
 
 		// create rss feed for user notifications
-		SyndFeed feed = new PersonalRSSFeed(identity, idToken);
-		//TODO implements some caching
-		return feed;
+		return new PersonalRSSFeed(identity);
 	}
 }

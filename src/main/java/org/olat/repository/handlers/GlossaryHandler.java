@@ -26,8 +26,6 @@
 package org.olat.repository.handlers;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -82,7 +80,6 @@ import org.olat.resource.references.ReferenceManager;
  */
 public class GlossaryHandler implements RepositoryHandler {
 
-	private static final List<String> supportedTypes = Collections.singletonList(GlossaryResource.TYPE_NAME);
 	
 	public static final String PROCESS_CREATENEW = "cn";
 	public static final String PROCESS_UPLOAD = "pu";
@@ -154,8 +151,8 @@ public class GlossaryHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public List<String> getSupportedTypes() {
-		return supportedTypes;
+	public String getSupportedType() {
+		return GlossaryResource.TYPE_NAME;
 	}
 
 	@Override
