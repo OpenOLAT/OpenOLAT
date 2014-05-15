@@ -396,7 +396,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 
 		int alignment = fcm.getAlignment();
-		String cssClass = (alignment == FlexiColumnModel.ALIGNMENT_LEFT ? "b_align_normal" : (alignment == FlexiColumnModel.ALIGNMENT_RIGHT ? "b_align_inverse" : "b_align_center"));
+		String cssClass = (alignment == FlexiColumnModel.ALIGNMENT_LEFT ? "text-left" : (alignment == FlexiColumnModel.ALIGNMENT_RIGHT ? "text-right" : "text-center"));
 		// add css class for first and last column to support older browsers
 		if (col == 0) cssClass += " b_first_child";
 		if (col == numOfCols-1) cssClass += " b_last_child";				

@@ -191,7 +191,7 @@ public class ItemRow implements QuestionItemView {
 	
 	public void setMark(boolean mark) {
 		if(markLink != null) {
-			markLink.setIconLeftCSS(mark ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+			markLink.setIconLeftCSS("o_icon o_icon-lg " +  (mark ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON));
 		}
 	}
 

@@ -247,6 +247,12 @@ $o-coursesite-catalog-border : $brand-primary;
 		.o_start, .o_book {
 			white-space: nowrap;
 		}
+		.o_repoentry_type {
+			color: $gray;
+		}
+		.o_repoentry_ac {
+			color: $gray;
+		}
 	}
 }
 

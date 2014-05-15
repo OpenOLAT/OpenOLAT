@@ -22,7 +22,12 @@
 .o_ms_icon {@extend .o_icon-thumbs-o-up; }
 .o_dialog_icon {@extend .o_icon-files-o; }
 .o_projectbroker_icon {@extend .o_icon-circle-o; }
-
+.o_ll_icon{@extend .o_icon-link;}
+.o_cmembers_icon{@extend .o_icon-users;}
+.o_cl_icon{@extend .o_icon-check-square-o;}
+.o_vc_icon{@extend .o_icon-desktop;}
+.o_vitero_icon{@extend .o_icon-desktop;}
+.o_openmeetings_icon{@extend .o_icon-desktop;}
 
 .o_midpub {color: green; @extend .o_icon-check-circle; }
 .o_midwarn {color: orange; @extend .o_icon-warning; }

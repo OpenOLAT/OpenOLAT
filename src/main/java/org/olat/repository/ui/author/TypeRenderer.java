@@ -19,14 +19,17 @@
  */
 package org.olat.repository.ui.author;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryShort;
+import org.olat.repository.ui.RepositoyUIFactory;
 
 /**
  * 
@@ -48,26 +51,27 @@ public class TypeRenderer implements FlexiCellRenderer {
 		}
 		
 		if(type == null) {
-			target.append(translator.translate("cif.type.na"));
+			type = translator.translate("cif.type.na");
 		} else {
-			String name	= NewControllerFactory.translateResourceableTypeName(type, translator.getLocale());
-			target.append(name);
+			type = NewControllerFactory.translateResourceableTypeName(type, translator.getLocale());
 		}
-
-		/*
+		type = StringEscapeUtils.escapeHtml(type);
+		
 		String cssClass = "";
 		boolean managed = false;
-		if(cellValue instanceof RepositoryEntryShort) {
-			RepositoryEntryShort re = (RepositoryEntryShort)cellValue;
+		if (cellValue instanceof RepositoryEntryShort) {
+			RepositoryEntryShort re = (RepositoryEntryShort) cellValue;
 			cssClass = RepositoyUIFactory.getIconCssClass(re);
 		} else if (cellValue instanceof RepositoryEntry) {
-			RepositoryEntry re = (RepositoryEntry)cellValue;
+			RepositoryEntry re = (RepositoryEntry) cellValue;
 			cssClass = RepositoyUIFactory.getIconCssClass(re);
 			managed = StringHelper.containsNonWhitespace(re.getManagedFlagsString());
 		}
-		String finalCss = (managed ? "o_icon b_managed_icon " : "o_icon ") + cssClass;
-		target.append("<i class='").append(finalCss).append("'> </i>");
-		target.append(cssClass);
-		*/
+		target.append("<div class='o_nowrap o_repoentry_type'>");
+		if (managed) {
+			target.append("<i class='o_icon o_icon_managed' title=\"").append(translator.translate("cif.managedflags")).append("\"></i> ");
+		}
+		target.append("<i class='o_icon o_icon-lg ").append(cssClass).append("' title=\"").append(type).append("\"></i>");
+		target.append("</div>");
 	}
 }

@@ -121,8 +121,14 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 	 */
 	@Override
 	public String getIconCssClass() {
-		CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(cn.getType());
-		return cnConfig.getIconCSSClass();
+		if (getParent() == null) {
+			// Spacial case for root node
+			return "o_CourseModule_icon";
+		} else {
+			CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(cn.getType());
+			return cnConfig.getIconCSSClass();
+		}
+
 	}
 
 	@Override

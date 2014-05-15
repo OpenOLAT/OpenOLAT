@@ -127,7 +127,13 @@ public class NodeEvaluation extends GenericNode {
 			String type = courseNode.getType();
 			CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(type);
 			if(cnConfig != null) {
-				String nodeCssClass = cnConfig.getIconCSSClass();
+				String nodeCssClass = null;
+				if (courseNode.getParent() == null) {
+					// Spacial case for root node
+					nodeCssClass = "o_CourseModule_icon";
+				} else {
+					nodeCssClass = cnConfig.getIconCSSClass();					
+				}
 				gtn.setIconCssClass(nodeCssClass);
 			}
 			gtn.setUserObject(this); // the current NodeEval is set into the treenode

@@ -176,10 +176,12 @@ public class LinkFactory {
 		return link;
 	}
 	
-	public static Link createToolLink(String name, String label, ComponentEventListener listener, String elementCssClass){
+	public static Link createToolLink(String name, String label, ComponentEventListener listener, String iconCssClass){
 		Link link = new Link(name, name, label, Link.LINK | Link.NONTRANSLATED, null, listener);
 		link.setDomReplacementWrapperRequired(false);
-		link.setElementCssClass(elementCssClass);
+		if (iconCssClass != null) {			
+			link.setIconLeftCSS("o_icon o_icon-fw " + iconCssClass);
+		}
 		return link;
 	}
 	

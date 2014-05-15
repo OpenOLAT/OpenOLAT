@@ -265,7 +265,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 				if (re.isMembersOnly()) {
 					// members only always show lock icon
 					List<String> types = new ArrayList<String>(1);
-					types.add("b_access_membersonly");
+					types.add("o_ac_membersonly");
 					return types;
 				}
 				OLATResourceAccess access = repoEntriesWithOffer.get(re.getOlatResource().getKey());

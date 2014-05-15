@@ -20,16 +20,14 @@
 package org.olat.repository.ui.author;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.resource.accesscontrol.model.OLATResourceAccess;
-import org.olat.resource.accesscontrol.model.Price;
-import org.olat.resource.accesscontrol.model.PriceMethodBundle;
-import org.olat.resource.accesscontrol.ui.PriceFormat;
+import org.olat.repository.ui.PriceMethod;
 
 /**
  * 
@@ -42,12 +40,13 @@ public class ACRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(StringOutput sb, Object val, int row,
 			FlexiTableComponent source, URLBuilder ubu, Translator translator)  {
+		sb.append("<div class='o_nowrap o_repoentry_ac'>");
 		if(val instanceof Collection) {
 			Collection<?> accessTypes = (Collection<?>)val;
 			for(Object accessType:accessTypes) {
 				if(accessType instanceof String) {
 					String type = (String)accessType;
-					sb.append("<i class='o_icon ").append(type).append("_icon o_icon-lg'></i>");
+					sb.append("<i class='o_icon ").append(type).append(" o_icon-lg'></i>");
 				}
 			}
 		} else if(val instanceof Boolean) {
@@ -55,18 +54,23 @@ public class ACRenderer implements FlexiCellRenderer {
 			if(acessControlled) {
 				sb.append("<i class='o_icon o_ac_group_icon o_icon-lg'></i>");
 			}
-		} else if (val instanceof OLATResourceAccess) {
-			OLATResourceAccess access = (OLATResourceAccess)val;
-			for(PriceMethodBundle bundle:access.getMethods()) {
-				Price price = bundle.getPrice();
-				String type = bundle.getMethod().getMethodCssClass();
-				if(price == null || price.isEmpty()) {
-					sb.append("<i class='o_icon ").append(type).append("_icon o_icon-lg'></i>");
-				} else {
-					String p = PriceFormat.fullFormat(price);
-					sb.append("<span class='o_nowrap'><i class='o_icon ").append(type).append("_icon o_icon-lg'></i> ").append(p).append("</span>");
+		} else if (val instanceof AuthoringEntryRow) {
+			AuthoringEntryRow entry = (AuthoringEntryRow)val;
+			List<PriceMethod> methods = entry.getAccessTypes();
+			if (methods != null && methods.size() > 0) {
+				sb.append("<ul class='list-inline'>");
+				for (PriceMethod priceMethod : methods) {
+					String price = priceMethod.getPrice();
+					String type = priceMethod.getType();
+					sb.append("<li title=\"").append(priceMethod.getDisplayName()).append("\"><i class='o_icon ").append(type).append(" o_icon-lg'></i></li>");
+					if(price != null && !price.isEmpty()) {
+						sb.append(" ").append(price);
+					}
+					sb.append("</li>");
 				}
+				sb.append("</ul>");
 			}
 		}
+		sb.append("</div>");
 	}
 }

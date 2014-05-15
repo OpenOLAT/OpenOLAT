@@ -930,7 +930,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			String businessPath = "[RepositoryEntry:" + courseRepositoryEntry.getKey() + "]";
 			markManager.setMark(courseRepositoryEntry, getIdentity(), null, businessPath);
 		}
-		String css = marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE;
+		String css = marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON;
 		bookmarkLink.setIconLeftCSS(css);
 	}
 
@@ -1084,29 +1084,29 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			Dropdown editTools = new Dropdown("editTools", "header.tools", false, getTranslator());
 			if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
 				boolean managed = RepositoryEntryManagedFlag.isManaged(courseRepositoryEntry, RepositoryEntryManagedFlag.editcontent);
-				editLink = LinkFactory.createToolLink("edit.cmd", translate("command.openeditor"), this, "o_sel_course_open_editor");
+				editLink = LinkFactory.createToolLink("edit.cmd", translate("command.openeditor"), this, "o_icon_courseeditor");
 				editLink.setEnabled(!managed);
 				editTools.addComponent(editLink);
-				editSettingsLink = LinkFactory.createToolLink("settings.cmd", translate("command.settings"), this, "o_sel_course_settings");
+				editSettingsLink = LinkFactory.createToolLink("settings.cmd", translate("command.settings"), this, "o_icon_settings");
 				editSettingsLink.setEnabled(!managed);
 				editTools.addComponent(editSettingsLink);
-				folderLink = LinkFactory.createToolLink("cfd", translate("command.coursefolder"), this);
+				folderLink = LinkFactory.createToolLink("cfd", translate("command.coursefolder"), this, "o_icon_coursefolder");
 				folderLink.setEnabled(!managed);
 				editTools.addComponent(folderLink);
-				areaLink = LinkFactory.createToolLink("careas", translate("command.courseareas"), this, "o_toolbox_courseareas");
+				areaLink = LinkFactory.createToolLink("careas", translate("command.courseareas"), this, "o_icon_courseareas");
 				areaLink.setEnabled(!managed);
 				editTools.addComponent(areaLink);
 			}
 			if (hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || isCourseAdmin) {
-				userMgmtLink = LinkFactory.createToolLink("unifiedusermngt", translate("command.opensimplegroupmngt"), this, "o_sel_course_open_membersmgmt");
+				userMgmtLink = LinkFactory.createToolLink("unifiedusermngt", translate("command.opensimplegroupmngt"), this, "o_icon_membersmanagement");
 				editTools.addComponent(userMgmtLink);
 			}
 			if (hasCourseRight(CourseRights.RIGHT_ARCHIVING) || isCourseAdmin) {
-				archiverLink = LinkFactory.createToolLink("archiver", translate("command.openarchiver"), this);
+				archiverLink = LinkFactory.createToolLink("archiver", translate("command.openarchiver"), this, "o_icon_archive_tool");
 				editTools.addComponent(archiverLink);
 			}
 			if (hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseCoach || isCourseAdmin) {
-				assessmentLink = LinkFactory.createToolLink("assessment",translate("command.openassessment"), this);
+				assessmentLink = LinkFactory.createToolLink("assessment",translate("command.openassessment"), this, "o_icon_assessment_tool");
 				editTools.addComponent(assessmentLink);
 			}
 			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin || isCourseCoach) {
@@ -1123,21 +1123,21 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					}
 				}, course.getRunStructure().getRootNode(), true).visitAll();
 				if(testNodes.intValue() > 0) {
-					testStatisticLink = LinkFactory.createToolLink("qtistatistic", translate("command.openteststatistic"), this);
+					testStatisticLink = LinkFactory.createToolLink("qtistatistic", translate("command.openteststatistic"), this, "o_icon_statistics_tool");
 					editTools.addComponent(testStatisticLink);
 				}
 				
 				if(surveyNodes.intValue() > 0) {
-					surveyStatisticLink = LinkFactory.createToolLink("qtistatistic", translate("command.opensurveystatistic"), this);
+					surveyStatisticLink = LinkFactory.createToolLink("qtistatistic", translate("command.opensurveystatistic"), this, "o_icon_statistics_tool");
 					editTools.addComponent(surveyStatisticLink);
 				}
 			}
 			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
-				courseStatisticLink = LinkFactory.createToolLink("statistic",translate("command.openstatistic"), this);
+				courseStatisticLink = LinkFactory.createToolLink("statistic",translate("command.openstatistic"), this, "o_icon_statistics_tool");
 				editTools.addComponent(courseStatisticLink);
 			}
 			if (CourseDBManager.getInstance().isEnabled() && (hasCourseRight(CourseRights.RIGHT_DB) || isCourseAdmin)) {
-				dbLink = LinkFactory.createToolLink("customDb",translate("command.opendb"), this);
+				dbLink = LinkFactory.createToolLink("customDb",translate("command.opendb"), this, "o_icon_coursedb");
 				editTools.addComponent(dbLink);
 			}
 			
@@ -1183,7 +1183,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private void initGeneralTools(CourseConfig cc) {
 		// new toolbox 'general'
 		if (cc.isCalendarEnabled() && !isGuest) {
-			calendarLink = LinkFactory.createToolLink("calendar",translate("command.calendar"), this);
+			calendarLink = LinkFactory.createToolLink("calendar",translate("command.calendar"), this, "o_icon_calendar");
 			calendarLink.setPopup(true);//"950", "750"
 			calendarLink.setIconLeftCSS("o_icon o_icon_calendar");
 			all.addTool(calendarLink);
@@ -1192,19 +1192,18 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			all.addTool(glossaryToolCtr.getInitialComponent());
 		}
 		if (showCourseConfigLink) {
-			detailsLink = LinkFactory.createToolLink("courseconfig",translate("command.courseconfig"), this);
+			detailsLink = LinkFactory.createToolLink("courseconfig",translate("command.courseconfig"), this, "o_icon_settings");
 			all.addTool(detailsLink);
 		}
 		if (!isGuest) {
-			noteLink = LinkFactory.createToolLink("personalnote",translate("command.personalnote"), this);
+			noteLink = LinkFactory.createToolLink("personalnote",translate("command.personalnote"), this, "o_icon_notes");
 			noteLink.setPopup(true);//"750", "550"
 			all.addTool(noteLink);
 		}
 		if (offerBookmark && !isGuest) {
 			boolean marked = markManager.isMarked(courseRepositoryEntry, getIdentity(), null);
-			String css = marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE;
-			bookmarkLink = LinkFactory.createToolLink("bookmark",translate("command.bookmark"), this);
-			bookmarkLink.setIconLeftCSS(css);
+			String css = marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON;
+			bookmarkLink = LinkFactory.createToolLink("bookmark",translate("command.bookmark"), this, css);
 			all.addTool(bookmarkLink);
 		}
 		if (cc.isEfficencyStatementEnabled() && course.hasAssessableNodes() && !isGuest) {
@@ -1216,7 +1215,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			// assessment data exists for user
 			// - appear as link when configured, assessable node exist and assessment
 			// data exists for user
-			efficiencyStatementsLink = LinkFactory.createToolLink("efficiencystatement",translate("command.efficiencystatement"), this);
+			efficiencyStatementsLink = LinkFactory.createToolLink("efficiencystatement",translate("command.efficiencystatement"), this, "o_icon_certificate");
 			efficiencyStatementsLink.setPopup(true);//"750", "800"
 			all.addTool(efficiencyStatementsLink);
 			
@@ -1232,7 +1231,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		boolean chatIsEnabled = !isGuest && imModule.isEnabled() && imModule.isCourseEnabled()
 				&& CourseModule.isCourseChatEnabled() && cc.isChatEnabled();
 		if(chatIsEnabled) {
-			chatLink = LinkFactory.createToolLink("chat",translate("command.coursechat"), this);
+			chatLink = LinkFactory.createToolLink("chat",translate("command.coursechat"), this, "o_icon_chat");
 			all.addTool(chatLink);
 		}
 		

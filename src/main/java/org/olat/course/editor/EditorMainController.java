@@ -348,13 +348,13 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		Dropdown editTools = new Dropdown("editTools", NLS_HEADER_TOOLS, false, getTranslator());
 		stackPanel.addTool(editTools);
 		
-		previewLink = LinkFactory.createToolLink(CMD_COURSEPREVIEW, translate(NLS_COMMAND_COURSEPREVIEW), this, "b_toolbox_preview");
+		previewLink = LinkFactory.createToolLink(CMD_COURSEPREVIEW, translate(NLS_COMMAND_COURSEPREVIEW), this, "o_icon_preview");
 		editTools.addComponent(previewLink);
-		publishLink = LinkFactory.createToolLink(CMD_PUBLISH, translate(NLS_COMMAND_PUBLISH), this, "b_toolbox_publish");
+		publishLink = LinkFactory.createToolLink(CMD_PUBLISH, translate(NLS_COMMAND_PUBLISH), this, "o_icon_publish");
 		editTools.addComponent(publishLink);
 		
 		if(closeEditor) {
-			closeLink = LinkFactory.createToolLink(CMD_CLOSEEDITOR, translate(NLS_COMMAND_CLOSEEDITOR), this, "b_toolbox_close");
+			closeLink = LinkFactory.createToolLink(CMD_CLOSEEDITOR, translate(NLS_COMMAND_CLOSEEDITOR), this, "o_icon_close_tool");
 			editTools.addComponent(closeLink);
 		}
 
@@ -367,7 +367,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		for (String courseNodeAlias : cnf.getRegisteredCourseNodeAliases()) {
 			CourseNodeConfiguration cnConfig = cnf.getCourseNodeConfiguration(courseNodeAlias);
 			try {
-				//toolC.addLink(TB_ACTION + courseNodeAlias, cnConfig.getLinkText(getLocale()), courseNodeAlias, cnConfig.getIconCSSClass());
 				Link l = LinkFactory.createToolLink(TB_ACTION + courseNodeAlias, cnConfig.getLinkText(getLocale()), this, cnConfig.getIconCSSClass());
 				elementsTools.addComponent(l);
 			} catch (Exception e) {
@@ -378,19 +377,19 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		Dropdown multiTools = new Dropdown("insertNodes", NLS_ADMIN_HEADER, false, getTranslator());
 		stackPanel.addTool(multiTools);
 		
-		multiSpsLink = LinkFactory.createToolLink(CMD_MULTI_SP, translate(NLS_MULTI_SPS), this, "b_toolbox_copy");
+		multiSpsLink = LinkFactory.createToolLink(CMD_MULTI_SP, translate(NLS_MULTI_SPS), this, "o_icon_wizard");
 		multiTools.addComponent(multiSpsLink);
-		multiCheckListLink = LinkFactory.createToolLink(CMD_MULTI_CHECKLIST, translate(NLS_MULTI_CHECKLIST), this, "b_toolbox_copy");
+		multiCheckListLink = LinkFactory.createToolLink(CMD_MULTI_CHECKLIST, translate(NLS_MULTI_CHECKLIST), this, "o_icon_wizard");
 		multiTools.addComponent(multiCheckListLink);
 		
 		Dropdown nodeTools = new Dropdown("insertNodes", NLS_COMMAND_DELETENODE_HEADER, false, getTranslator());
 		stackPanel.addTool(nodeTools);
 		
-		deleteNodeLink = LinkFactory.createToolLink(CMD_DELNODE, translate(NLS_COMMAND_DELETENODE), this, "b_toolbox_delete");
+		deleteNodeLink = LinkFactory.createToolLink(CMD_DELNODE, translate(NLS_COMMAND_DELETENODE), this, "o_icon_delete");
 		nodeTools.addComponent(deleteNodeLink);
-		moveNodeLink = LinkFactory.createToolLink(CMD_MOVENODE, translate(NLS_COMMAND_MOVENODE), this, "b_toolbox_move");
+		moveNodeLink = LinkFactory.createToolLink(CMD_MOVENODE, translate(NLS_COMMAND_MOVENODE), this, "o_icon_move");
 		nodeTools.addComponent(moveNodeLink);
-		copyNodeLink = LinkFactory.createToolLink(CMD_COPYNODE, translate(NLS_COMMAND_COPYNODE), this, "b_toolbox_copy");
+		copyNodeLink = LinkFactory.createToolLink(CMD_COPYNODE, translate(NLS_COMMAND_COPYNODE), this, "o_icon_copy");
 		nodeTools.addComponent(copyNodeLink);
 	}
 	
@@ -598,7 +597,14 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		main.contextPut("courseNodeDisabled", disabled);
 		alternativeLink.setVisible(disabled && !cnConfig.getAlternativeCourseNodes().isEmpty());
 		alternativeLink.setUserObject(chosenNode);
-		main.contextPut("courseNodeCss", cnConfig.getIconCSSClass());
+		String nodeCssClass = null;
+		if (chosenNode.getParent() == null) {
+			// Spacial case for root node
+			nodeCssClass = "o_CourseModule_icon";
+		} else {
+			nodeCssClass = cnConfig.getIconCSSClass();					
+		}
+		main.contextPut("courseNodeCss", nodeCssClass);
 		main.contextPut("courseNode", chosenNode);
 	}
 
