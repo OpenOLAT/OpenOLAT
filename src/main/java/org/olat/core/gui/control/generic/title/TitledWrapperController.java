@@ -58,9 +58,10 @@ public class TitledWrapperController extends BasicController implements Cloneabl
 	
 	private static final String COMPONENT_NAME = "child";
 	//Velocity variable
+	private static final String SUBTITLE_VAR = "subTitle";
 	private static final String TITLE_VAR = "title";
 	private static final String TITLE_SIZE = "size";
-	private static final String TITLE_CSS = "titleCss";
+	private static final String ICON_CSS = "iconCss";
 	private static final String WRAPPER_CSS = "wrapperCss";
 	private static final String CONTEXT_TITLE_VAR = "contextTitle";
 	private static final String DESCRIPTION_TITLE_VAR = "descriptionTitle";
@@ -93,6 +94,8 @@ public class TitledWrapperController extends BasicController implements Cloneabl
 	public TitledWrapperController(UserRequest ureq, WindowControl wControl, Controller controller, String wrapperCss, TitleInfo titleInfo) {
 		super(ureq, wControl);		
 		theVelocityContainer = createVelocityContainer("titled_wrapper");
+		theVelocityContainer.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
+		
 		if (controller != null) {
 			contentController = controller;
 			listenTo(contentController);
@@ -104,15 +107,17 @@ public class TitledWrapperController extends BasicController implements Cloneabl
 
 		// set title info variables
 		theVelocityContainer.contextPut(TITLE_VAR, StringHelper.escapeHtml(titleInfo.getTitle()));	
+		theVelocityContainer.contextPut(SUBTITLE_VAR, StringHelper.escapeHtml(titleInfo.getSubTitle()));	
 		theVelocityContainer.contextPut(CONTEXT_TITLE_VAR, titleInfo.getContextTitle());
 		theVelocityContainer.contextPut(TITLE_SIZE, titleInfo.getTitleSize());			
 		theVelocityContainer.contextPut(USE_SEPARATOR, Boolean.valueOf(titleInfo.isSeparatorEnabled()));			
-		theVelocityContainer.contextPut(TITLE_CSS, titleInfo.getCssClass());
+		theVelocityContainer.contextPut(ICON_CSS, titleInfo.getIconCssClass());
 		theVelocityContainer.contextPut(WRAPPER_CSS, wrapperCss);
 		
 		//set the description if any
 		if (StringHelper.containsNonWhitespace(titleInfo.getDescription())) {
 			descriptionContainer = createVelocityContainer("desc_wrapped");
+			descriptionContainer.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 			
 			String desc = titleInfo.getDescription();
 			String latexIt = Formatter.formatLatexFormulas(desc);
@@ -123,7 +128,7 @@ public class TitledWrapperController extends BasicController implements Cloneabl
 					"  ", " ", descriptionContainer);
 			
 			if (StringHelper.containsNonWhitespace(titleInfo.getDescriptionTitle())) {
-				descriptionContainer.contextPut(DESCRIPTION_TITLE_VAR, titleInfo.getDescriptionCssClass());
+				descriptionContainer.contextPut(DESCRIPTION_TITLE_VAR, titleInfo.getDescriptionTitle());
 			}
 			
 			theVelocityContainer.put(DESCRIPTION_VAR, descriptionController.getInitialComponent());
@@ -197,6 +202,12 @@ public class TitledWrapperController extends BasicController implements Cloneabl
 		theVelocityContainer.contextPut(TITLE_VAR, title);	
 	}
 	/**
+	 * @param SubTitle The sub title
+	 */
+	public void setSubTitle(String subTitle) {
+		theVelocityContainer.contextPut(SUBTITLE_VAR, subTitle);	
+	}
+	/**
 	 * @param contextTitle The optional context of the title.
 	 */
 	public void setContextTitle(String contextTitle) {
@@ -210,10 +221,10 @@ public class TitledWrapperController extends BasicController implements Cloneabl
 		theVelocityContainer.contextPut(TITLE_SIZE, titleSize);			
 	}
 	/**
-	 * @param cssClass One or multiple CSS classes placed on the H element
+	 * @param cssClass with the icon definition used in the title
 	 */
-	public void setTitleCssClass(String cssClass) {
-		theVelocityContainer.contextPut(TITLE_CSS, cssClass);					
+	public void setIconCssClass(String cssClass) {
+		theVelocityContainer.contextPut(ICON_CSS, cssClass);					
 	}
 	/**
 	 * @param useSeparator true to set a HR element after the title, false to not
@@ -229,8 +240,9 @@ public class TitledWrapperController extends BasicController implements Cloneabl
 			Controller wrappedAndCloned = ((CloneableController)contentController).cloneController(ureq, wControl);
 			TitledWrapperController clone = new TitledWrapperController(ureq, wControl, wrappedAndCloned, wrapperCss, titleInfo);
 			clone.setTitle((String)theVelocityContainer.getContext().get(TITLE_VAR));
+			clone.setSubTitle((String)theVelocityContainer.getContext().get(SUBTITLE_VAR));
 			clone.setContextTitle((String)theVelocityContainer.getContext().get(CONTEXT_TITLE_VAR));
-			clone.setTitleCssClass((String)theVelocityContainer.getContext().get(TITLE_CSS));
+			clone.setIconCssClass((String)theVelocityContainer.getContext().get(ICON_CSS));
 			clone.setSeparatorEnabled((Boolean)theVelocityContainer.getContext().get(USE_SEPARATOR));	
 			clone.setTitleSize((Integer)theVelocityContainer.getContext().get(TITLE_SIZE));	
 			return clone;

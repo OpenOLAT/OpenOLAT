@@ -43,12 +43,13 @@ public class TitleInfo {
 
 	private String contextTitle;
 	private String title;
+	private String subTitle;
 	private String descriptionTitle;
 	private String persistedId;
 	private String description;
-	private int titleSize = TITLE_SIZE_H3; // default
+	private int titleSize = TITLE_SIZE_H2; // default
 	private boolean separatorEnabled = false;
-	private String cssClass = "";
+	private String cssIconClass = "";
 	private String descriptionCssClass = "";
 
 	/**
@@ -127,11 +128,11 @@ public class TitleInfo {
 		this.separatorEnabled = separatorEnabled;
 	}
 
-	public String getCssClass() {
-		return this.cssClass;
+	public String getIconCssClass() {
+		return this.cssIconClass;
 	}
-	public void setCssClass(String cssClass) {
-		this.cssClass = cssClass;
+	public void setIconCssClass(String cssClass) {
+		this.cssIconClass = cssClass;
 	}
 
 	public String getDescriptionCssClass() {
@@ -139,5 +140,12 @@ public class TitleInfo {
 	}
 	public void setDescriptionCssClass(String descriptionCssClass) {
 		this.descriptionCssClass = descriptionCssClass;
+	}
+
+	public void setSubTitle(String subTitle) {
+		this.subTitle = subTitle;
+	}
+	public String getSubTitle() {
+		return this.subTitle;
 	}
 }
