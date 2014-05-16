@@ -72,7 +72,7 @@
 			</bean>
 		</property>
 		<property name="navigationKey" value="booking" />
-		<property name="iconCssClass" value="b_with_small_icon_left b_order_icon" />
+		<property name="iconCssClass" value="" />
 		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />
 		<property name="translationPackage" value="org.olat.home" />
 		<property name="i18nActionKey" value="menu.orders"/>

@@ -37,7 +37,6 @@ import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.image.ImageComponent;
@@ -61,7 +60,6 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.filter.FilterFactory;
@@ -86,6 +84,8 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoyUIFactory;
+import org.olat.repository.ui.list.RepositoryEntryDetailsController;
+import org.olat.repository.ui.list.RepositoryEntryRow;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -105,7 +105,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AuthoringEntryDetailsController extends FormBasicController implements Activateable2 {
+public class AuthoringEntryDetailsController extends RepositoryEntryDetailsController implements Activateable2 {
 	
 	public static final OLATResourceable EDIT_SETTINGS_ORES = OresHelper.createOLATResourceableInstance("Settings", 0l);
 	
@@ -129,8 +129,6 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 	private final TooledStackedPanel stackPanel;
 	
 	private boolean corrupted;
-	private RepositoryEntry entry;
-	private final AuthoringEntryRow row;
 
 	@Autowired
 	private ACService acService;
@@ -161,13 +159,9 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 	private LockResult lockResult;
 	
 	public AuthoringEntryDetailsController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel stackPanel, AuthoringEntryRow row) {
-		super(ureq, wControl, "details");
-		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
-
+			TooledStackedPanel stackPanel, RepositoryEntryRow row) {
+		super(ureq, wControl, row);
 		this.stackPanel = stackPanel;
-		this.row = row;
-		entry = repositoryService.loadByKey(row.getKey());
 		
 		Identity identity = getIdentity();
 		Roles roles = ureq.getUserSession().getRoles();
@@ -182,7 +176,7 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 		initForm(ureq);
 		
 		if(stackPanel != null) {
-			String displayName = row.getDisplayname();
+			String displayName = row.getDisplayName();
 			stackPanel.pushController(displayName, this);
 			initToolbar(ureq);
 		}
@@ -223,10 +217,12 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 		if (isAuthor || isOwner) {
 			if (isOwner) {
 				editLink = LinkFactory.createToolLink("edit", translate("details.openeditor"), this, "o_sel_repo_edit_descritpion");
+				editLink.setIconLeftCSS("o_icon o_icon_edit");
 				boolean editManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.editcontent);
 				editLink.setEnabled(handler.supportsEdit(entry) && !corrupted && !editManaged);
 
 				editSettingsLink = LinkFactory.createToolLink("editdesc", translate("details.chprop"), this, "o_sel_repor_edit_properties");
+				editSettingsLink.setIconLeftCSS("o_icon o_icon_settings");
 				editSettingsLink.setEnabled(!corrupted);
 
 				if(repositoryModule.isCatalogEnabled()) {
@@ -315,6 +311,7 @@ public class AuthoringEntryDetailsController extends FormBasicController impleme
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		super.initForm(formLayout, listener, ureq);
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("v", entry);

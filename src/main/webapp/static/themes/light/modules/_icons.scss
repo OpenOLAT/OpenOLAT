@@ -44,6 +44,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_filter {@extend .o_icon-filter;}
 .o_icon_help { @extend .o_icon-question-circle; @extend .o_icon-lg; cursor: help;}
 .o_icon_impress { @extend .o_icon-info-circle; }
+.o_icon_mail { @extend .o_icon-envelope-o; }
 .o_icon_membersmanagement { @extend .o_icon-users;}
 .o_icon_message { @extend .o_icon-envelope;}
 .o_icon_move{ @extend .o_icon-arrows;}

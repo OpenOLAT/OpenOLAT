@@ -94,8 +94,8 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	private CloseableModalController cmc;
 	private UserCommentsController commentsCtrl;
 	
-	private final RepositoryEntry entry;
-	private final RepositoryEntryRow row;
+	protected RepositoryEntry entry;
+	protected RepositoryEntryRow row;
 
 	@Autowired
 	private UserRatingsDAO userRatingsDao;
@@ -119,7 +119,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	private String baseUrl;
 	
 	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntryRow row) {
-		super(ureq, wControl, "details");
+		super(ureq, wControl, Util.getPackageVelocityRoot(RepositoryEntryDetailsController.class) + "/details.html");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 
 		this.row = row;

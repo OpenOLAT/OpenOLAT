@@ -230,7 +230,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 						Link link = LinkFactory.createLink(linkName, container, this);
 						link.setUserObject(gAe);
 						link.setCustomDisplayText(gAe.getActionText(getLocale()));
-						link.setCustomEnabledLinkCSS(node.getIconCssClass());
+						link.setIconLeftCSS(node.getIconCssClass());
 						linksName.add(linkName);
 					} else if("config".equals(gAe.getParentTreeNodeIdentifier())) {
 						GenericTreeNode node = gAe.createMenuNode(ureq);
@@ -238,7 +238,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 						Link link = LinkFactory.createLink(linkName, container, this);
 						link.setUserObject(gAe);
 						link.setCustomDisplayText(gAe.getActionText(getLocale()));
-						link.setCustomEnabledLinkCSS(node.getIconCssClass());
+						link.setIconLeftCSS(node.getIconCssClass());
 						configLinksName.add(linkName);
 					}
 				}	

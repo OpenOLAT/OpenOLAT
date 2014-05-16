@@ -71,6 +71,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
+import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -79,6 +80,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.TransientRepositoryEntryRef;
 import org.olat.repository.ui.author.AuthoringEntryDataModel.Cols;
+import org.olat.repository.ui.list.RepositoryEntryRow;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -382,13 +384,12 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private AuthoringEntryDetailsController doOpenDetails(UserRequest ureq, RepositoryEntryRef entry) {
-		RepositoryEntryAuthorView view = repositoryService.loadAuthorView(getIdentity(), entry);
-		String fullnameAuthor = "";
-		AuthoringEntryRow row = new AuthoringEntryRow(view, fullnameAuthor);
+		RepositoryEntryMyView view = repositoryService.loadMyView(getIdentity(), entry);
+		RepositoryEntryRow row = new RepositoryEntryRow(view);
 		return doOpenDetails(ureq, row);
 	}
 	
-	private AuthoringEntryDetailsController doOpenDetails(UserRequest ureq, AuthoringEntryRow row) {
+	private AuthoringEntryDetailsController doOpenDetails(UserRequest ureq, RepositoryEntryRow row) {
 		stackPanel.popUpToRootController(ureq);
 
 		removeAsListenerAndDispose(detailsCtrl);

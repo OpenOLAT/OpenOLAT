@@ -12,7 +12,7 @@
 		<property name="order" value="102" />
 		<property name="enabled" value="${minimalhome.ext.calendar}"></property>
 		<property name="navigationKey" value="calendar" />
-		<property name="iconCssClass" value="b_with_small_icon_left o_cal_icon" />
+		<property name="iconCssClass" value="o_icon o_icon-fw o_icon_calendar" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.home.HomeCalendarController"/>
@@ -33,7 +33,7 @@
 		<property name="order" value="103" />
 		<property name="enabled" value="${minimalhome.ext.notifications}"></property>
 		<property name="navigationKey" value="notifications" />
-		<property name="iconCssClass" value="b_with_small_icon_left o_notifications_icon" />
+		<property name="iconCssClass" value="" />
 		<property name="actionController">
 			<bean class="org.olat.home.controllerCreators.NotificationsControllerCreator" scope="prototype"/>
 		</property>
@@ -75,7 +75,7 @@
 		<property name="order" value="105" />
 		<property name="enabled" value="${minimalhome.ext.userfolder}"></property>
 		<property name="navigationKey" value="userfolder" />
-		<property name="iconCssClass" value="b_with_small_icon_left o_bc_icon" />
+		<property name="iconCssClass" value="o_icon o_icon-fw o_bc_icon" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.core.commons.modules.bc.FolderRunController"/>
@@ -97,7 +97,7 @@
 		<property name="order" value="106" />
 		<property name="enabled" value="${minimalhome.ext.notelist}"></property>
 		<property name="navigationKey" value="notelist" />
-		<property name="iconCssClass" value="b_with_small_icon_left o_notes_icon" />
+		<property name="iconCssClass" value="o_icon o_icon-fw o_icon_notes" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.note.NoteListController"/>
@@ -119,7 +119,7 @@
 		<property name="order" value="107" />
 		<property name="enabled" value="${minimalhome.ext.efficiencystatement}"></property>
 		<property name="navigationKey" value="effstatements" />
-		<property name="iconCssClass" value="b_with_small_icon_left o_efficiencystatement_icon" />
+		<property name="iconCssClass" value="" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.course.assessment.EfficiencyStatementsListController"/>
@@ -202,7 +202,7 @@
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="110" />
 		<property name="enabled" value="true" />
-		<property name="iconCssClass" value="b_with_small_icon_left o_settings" />
+		<property name="iconCssClass" value="o_icon o_icon-fw o_icon_settings" />
 		<property name="navigationKey" value="mysettings" />
 		<property name="parentTreeNodeIdentifier" value="config" />
 		<property name="actionController">	

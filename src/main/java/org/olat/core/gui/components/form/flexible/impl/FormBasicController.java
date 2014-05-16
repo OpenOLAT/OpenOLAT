@@ -205,10 +205,16 @@ public abstract class FormBasicController extends BasicController {
 	protected void constructorInit(String mainFormId, String pageName) {
 		String ffo_pagename = null;
 		if (pageName != null) {
-			// init with provided layout
-			String vc_pageName = velocity_root + "/" + pageName + ".html";
-			ffo_pagename = "ffo_" + pageName;
-			flc = FormLayoutContainer.createCustomFormLayout(ffo_pagename, getTranslator(), vc_pageName);
+			if(pageName.endsWith(".html")) {
+				// init with provided layout
+				ffo_pagename = "ffo_" + pageName.replace("/", "_");
+				flc = FormLayoutContainer.createCustomFormLayout(ffo_pagename, getTranslator(), pageName);
+			} else {
+				// init with provided layout
+				String vc_pageName = velocity_root + "/" + pageName + ".html";
+				ffo_pagename = "ffo_" + pageName;
+				flc = FormLayoutContainer.createCustomFormLayout(ffo_pagename, getTranslator(), vc_pageName);
+			}
 		} else {
 			// init with default layout
 			ffo_pagename="ffo_default";

@@ -95,7 +95,7 @@ public class CSSIconFlexiCellRenderer implements FlexiCellRenderer {
 			target.append("\" title=\"");
 			target.append(StringEscapeUtils.escapeHtml(hoverText));
 		}
-		target.append("\">&nsbp;</i>");
+		target.append("\"> </i>");
 		if(delegate == null) {
 			target.append(getCellValue(cellValue));
 		} else {
