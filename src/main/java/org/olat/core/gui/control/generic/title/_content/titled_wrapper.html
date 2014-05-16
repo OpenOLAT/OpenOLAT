@@ -1,19 +1,26 @@
-<div class="b_titled_wrapper $wrapperCss">
+<div id="$r.getCId()" class="o_titled_wrapper $wrapperCss">
 #if($title)
-	<h$size class="b_titled_wrapper $titleCss">
+	<h${size}>
+		#if($iconCss) 
+		<i class="o_icon $iconCss"></i> 
+		#end
 		#if($contextTitle)
 			<span>$contextTitle:</span>
 		#end	
 		$title
+		#if($subTitle)
+			<small>$subTitle:</small>
+		#end			
 	</h$size>
 #end
 #if($r.available("description"))
-<div class="b_titled_wrapper_desc">
 	$r.render("description")
-</div>
 #end
 #if($separator)
 	<hr />
 #end
-$r.render("child")
+<div class="o_content">
+	$r.render("child")
 </div>
+</div>
+

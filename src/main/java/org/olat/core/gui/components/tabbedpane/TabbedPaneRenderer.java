@@ -56,7 +56,7 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 		int selPane = tb.getSelectedPane();
 		boolean iframePostEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
 		 		
-		sb.append("<ul class='nav nav-tabs");
+		sb.append("<ul class='o_tabbed_pane nav nav-tabs");
 		String css = tb.getElementCssClass();
 		if (StringHelper.containsNonWhitespace(css)) {
 			sb.append(" ").append(css);
