@@ -66,6 +66,7 @@ public class PeekViewWrapperController extends BasicController {
 		super(ureq, wControl);
 
 		peekViewWrapperVC = createVelocityContainer("peekViewWrapper");
+		peekViewWrapperVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 		// Add course node to get title etc
 		peekViewWrapperVC.contextPut("coursenode", courseNode);
 		// Add link to jump to course node
@@ -73,8 +74,9 @@ public class PeekViewWrapperController extends BasicController {
 		nodeLink.setCustomDisplayText(StringHelper.escapeHtml(courseNode.getShortTitle()));
 		// Add css class for course node type
 		String iconCSSClass = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass();
-		nodeLink.setCustomEnabledLinkCSS("b_with_small_icon_left o_gotoNode " + iconCSSClass);
+		nodeLink.setIconLeftCSS("o_icon o_icon-fw " + iconCSSClass);
 		nodeLink.setUserObject(courseNode.getIdent());
+		nodeLink.setElementCssClass("o_gotoNode");
 		// Add optional peekViewController
 		if (peekViewController != null) {
 			this.peekViewController = peekViewController;

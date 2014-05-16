@@ -81,12 +81,13 @@ public class STCourseNodeRunController extends BasicController {
 		addLoggingResourceable(LoggingResourceable.wrap(stCourseNode));
 
 		myContent = createVelocityContainer("run");
+		myContent.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 		
 		// read display configuration
 		ModuleConfiguration config = stCourseNode.getModuleConfiguration();
 		// configure number of display rows
 		int rows = config.getIntegerSafe(STCourseNodeEditController.CONFIG_KEY_COLUMNS, 1);
-		myContent.contextPut("layoutType", (rows == 1 ? "o_course_run_toc_one_column" : "o_course_run_toc_two_columns"));
+		myContent.contextPut("layoutType", rows);
 		// the display type: toc or peekview
 		String displayType = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE, STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW);
 

@@ -21,23 +21,10 @@
 			margin-bottom: 0.25em;
 		}
 	}
-
+		
 	.o_start, .o_book {
 		margin: 2em 0;
 		@extend .btn-block;
-	}
-	
-	.o_personal {
-		.o_passed {
-			@extend .success;
-			@extend .text-success;
-			font-weight: bold;
-		}
-		.o_failed {
-			@extend .danger;
-			@extend .text-danger;
-			font-weight: bold;
-		}		
 	}
 	
 	.o_social {
@@ -62,5 +49,14 @@
 			}
 		}
     }	
+    
+    
+    // make two column layout switch to one column if very small
+	@media (max-width: floor($screen-xs-max * 0.8)) { 
+		.o_subcolumn {
+			width: 100%;
+		}
+	}
+
     
 }

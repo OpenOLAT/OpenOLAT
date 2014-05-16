@@ -30,12 +30,12 @@ div.o_chelp_wrapper {
 	white-space: nowrap;
 }	
 
-/* titles with subtitles
+/* titles with subtitles */
 .o_titled_wrapper {
 	margin-top: $padding-large-vertical * 2;
 	.o_desc { }
 	.o_content {
-		margin-top: $padding-large-vertical;	
+		margin-top: $padding-large-vertical * 2;	
 	}
 }
 

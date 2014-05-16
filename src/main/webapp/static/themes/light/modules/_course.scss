@@ -34,3 +34,69 @@
 .o_midlock {@extend .o_icon-lock;}
 .o_miderr {color: red; @extend .o_icon-warning;}
 .o_middel {@extend .o_icon-eraser;}
+
+.o_passed {
+	@extend .success;
+	@extend .text-success;
+	font-weight: bold;
+	th {
+		color: $text-color		
+	}
+}
+.o_failed {
+	@extend .danger;
+	@extend .text-danger;
+	font-weight: bold;
+	th {
+		color: $text-color		
+	}
+}		
+.o_unknown {
+	@extend .warning;
+	@extend .text-warning;
+	font-weight: bold;
+	th {
+		color: $text-color		
+	}
+}		
+
+
+.o_course_run {
+	.o_toc {
+		.o_entry {
+			@extend .small;
+			@extend .o_block;
+
+			.o_shorttitle {
+				border-bottom: 1px solid $gray-light;
+			}
+			.o_displaytitle {
+				margin-top: $padding-small-vertical;
+				@extend .text-muted;	
+			}
+			.o_objectives {
+				margin-top: $padding-large-vertical;
+				font-style: italic; 
+			}
+			.o_peekview {}
+			
+		}
+	}
+	
+	.o_personal {
+		.o_label {
+			@extend .text-muted;
+		}
+		.o_status {
+		
+		}
+	}
+}
+
+.o_st_peekview {
+	ul {
+		li {
+			margin-bottom: 0.5em;
+		}
+	}
+}

@@ -76,8 +76,9 @@ public class STPeekViewController extends BasicController {
 				nodeLink.setCustomDisplayText(child.getShortTitle());
 				// Add css class for course node type
 				String iconCSSClass = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(child.getType()).getIconCSSClass();
-				nodeLink.setCustomEnabledLinkCSS("b_with_small_icon_left o_gotoNode " + iconCSSClass);
+				nodeLink.setIconLeftCSS("o_icon o_icon-fw " + iconCSSClass);
 				nodeLink.setUserObject(child.getIdent());
+				nodeLink.setElementCssClass("o_gotoNode");
 			}
 		}
 		// Add course node to get title etc

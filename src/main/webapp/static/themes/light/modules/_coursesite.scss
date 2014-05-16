@@ -76,14 +76,6 @@ $o-coursesite-catalog-border : $brand-primary;
 					@include text-overflow();
 				}	
 					
-				.o_passed {
-					@extend .text-success;
-					font-weight: bold;
-				}
-				.o_failed {
-					@extend .text-danger;
-					font-weight: bold;
-				}
 				.o_score {
 					position: relative; 
 					left: 2px;

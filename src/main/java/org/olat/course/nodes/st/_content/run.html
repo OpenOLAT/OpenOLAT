@@ -1,104 +1,98 @@
+<div id="$r.getCId()" class="o_course_run">
 #if ($hasScore || $hasPassed)
-	<div class="o_course_run_scoreinfo">
-		<h4>$r.translate("score.title")</h4>		
-		<table>
+	<div class="o_personal row">
+		<h4 class="col-sm-12">$r.translate("score.title")</h4>
+		<div class="col-sm-12 col-md-6">
+			<table class="table">
 			<tbody>
-			#if ($hasScore)
-				<tr>
-					<td>			
-						$r.translate("calcedscore"): 
-					</td>
+				#if ($hasPassed)
+				<tr class="o_state #if ($hasPassedValue && $scorePassed) o_passed #elseif($hasPassedValue && !$scorePassed) o_failed #else o_unknown #end">
+					<th>$r.translate("calcedpassed")</th>
 					<td>
-						#if($scoreScore)		
-							$scoreScore
-						#else
-							<i>$r.translate("score.noinfo")</i>
-						#end
+					#if($hasPassedValue && $scorePassed)	
+						<i class="o_icon o_icon_passed"></i> 
+						$r.translate("passed.yes")
+					#elseif($hasPassedValue && !$scorePassed)		
+						<i class="o_icon o_icon_failed"></i> 
+						$r.translate("passed.no")
+					#else
+						$r.translate("passed.noinfo")
+					#end
 					</td>
 				</tr>
-			#end
-			#if ($hasPassed)
-				<tr>
-					<td>			
-						$r.translate("calcedpassed"): 
-					</td>
+				#end
+	
+				#if ($hasScore)
+				<tr class="o_score">
+					<th>$r.translate("calcedscore")</th>
 					<td>
-						#if ($hasPassedValue && $scorePassed == true)		
-							<span class="o_passed">$r.translate("passed.yes")</span>
-						#elseif($hasPassedValue && $scorePassed == false)		
-							<span class="o_notpassed">$r.translate("passed.no")</span>
-						#else
-							<i>$r.translate("passed.noinfo")</i>
-						#end
-					</td>
-				</tr>
-			#end
+					#if($scoreScore)		
+						$scoreScore
+					#else
+						$r.translate("score.noinfo")
+					#end
+					</td> 
+				</tr> 
+				#end			
 			</tbody>
-		</table>
+			</table>				
+		</div>
+    </div>
+ #end
+
+#if ($children.size() > 0)
+	<div class="o_toc #if ($layoutType == 1) o_one_column #else o_two_column #end row">
+		#foreach($coursenode in $children)
+			## display in two rows when scren is larger than 992px and two columns layout selected
+			<div class="col-sm-12 #if ($layoutType == 2) col-md-6 o_column #end">
+				$r.render("childView_${coursenode.getIdent()}")
+			</div>
+		#end
 	</div>
 #end
 
-#if ($children.size() > 0)
-	#if ($layoutType == "o_course_run_toc_one_column")
-		<div class="o_course_run_toc o_course_run_toc_one_column">
-		#foreach($coursenode in $children)
-			$r.render("childView_${coursenode.getIdent()}")
-		#end
-		</div>
-	#else 	
-		<div class="o_course_run_toc o_course_run_toc_two_columns">
-		#foreach($coursenode in $children)
-			## Build a 2-column subcolumn layout for every row except for the last item 
-			## if we have an uneven number of items. In this case use the full width.
-			#if ($velocityCount == $children.size() && ($velocityCount % 2 == 1))
-				$r.render("childView_${coursenode.getIdent()}")
-			#else 
-				#if ($velocityCount % 2 == 1)
-					#set ($align = "l")
-					<div class="b_subcolumns">
-				#else
-					#set ($align = "r")			
-				#end
-				<div class="b_c50${align}"><div class="b_subc${align}">
-					$r.render("childView_${coursenode.getIdent()}")
-				</div></div>
-				#if ($velocityCount % 2 == 0 || $velocityCount == $children.size())			
-					</div>
-				#end
-			#end
-			
-		#end
-		</div>
-	#end
-#end
-
-
-## Scroll to position 0,0 first to fix jump which is expected by users and otherwhise does not happen in ajax mode (OLAT-3387)
-## Add event JS event listeners for click and keydown events on all the gotonodes links
 <script type="text/javascript">
 /* <![CDATA[ */ 
 jQuery(function() {
-	jQuery('div.o_course_run_toc a.o_gotoNode').each(function(n,m) {
-		jQuery(m).on('keydown click', function(){window.scrollTo(0,0);});
+	## Add event JS event listeners for click and keydown events on all the gotonodes links to jump to top
+	jQuery('.o_course_run .o_toc a.o_gotoNode').each(function(n,m) {
+		jQuery(m).on('keydown click', function(){console.log('sdf');o_scrollToElement('#o_top');});
 	});
-	#if ($layoutType == "o_course_run_toc_two_columns")
-		## resize items to match height on each row, not possible via CSS 
-		jQuery('div.o_course_run_toc_two_columns > div.b_subcolumns').each(function(pos, n) {
-			try {
-				var children = jQuery('div.o_course_run_toc_entry', n);
-			    var maxHeight = 0;
-			    children.each(function(posMap, child) {
-			    	var height = jQuery(child).innerHeight();
-			    	if(height > maxHeight) maxHeight = height; 
-			    });
-			    children.each(function(c, child) {
-			    	var childEl = jQuery(child);
-			   		var padding = parseInt(childEl.css('padding-top')) + parseInt(childEl.css('padding-bottom'));
-			  		childEl.height((maxHeight - padding) + 'px');
-			    });
-			} catch (e) { if(console) console.log(e) }
+
+	## resize items to match height on each row, not possible via CSS 
+	#if ($layoutType == 2)
+	if (jQuery(window).width() > 992) {
+		jQuery(function() {
+		    var maxHeight = 0;
+			var lastElem = null;
+			## find hightest element for each pair
+			jQuery('.o_course_run .o_toc .o_entry').each(function(pos, child) {
+				try {
+					if (pos % 2 == 0) {
+						## save for next iteration
+						maxHeight = jQuery(child).innerHeight();
+						lastElem = child;
+					} else {
+				    	var height = jQuery(child).innerHeight();
+				    	if(height > maxHeight) {
+				    		## second is larger than first, update first
+				    		maxHeight = height; 
+					    	var el = jQuery(lastElem);
+					   		var padding = parseInt(el.css('padding-top')) + parseInt(el.css('padding-bottom'));
+					  		el.height((maxHeight - padding) + 'px');
+				    	} else {
+				    		## first is larger than second, update second
+					    	var el = jQuery(child);
+					   		var padding = parseInt(el.css('padding-top')) + parseInt(el.css('padding-bottom'));
+					  		el.height((maxHeight - padding) + 'px');			    		
+				    	}
+					}
+				} catch (e) { if(console) console.log(e) }
+			});
 		});
+	}
 	#end
 });
 /* ]]> */
 </script>
+</div>
