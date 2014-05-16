@@ -501,12 +501,10 @@ public class BusinessControlFactory {
 			return null;
 		}
 		
-		try {
-			BusinessControlFactory bCF = BusinessControlFactory.getInstance(); 
-			List<ContextEntry> ceList = bCF.createCEListFromString(bPathString);
+		try { 
+			List<ContextEntry> ceList = createCEListFromString(bPathString);
 			String busPath = getBusinessPathAsURIFromCEList(ceList); 
-			
-			return WebappHelper.getServletContextPath() +"/url/"+busPath;
+			return WebappHelper.getServletContextPath() + "/url/" + busPath;
 		} catch(Exception e) {
 			log.error("Error with business path: " + bPathString, e);
 			return null;

@@ -44,6 +44,7 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 	
 	private String i18nKey;
 	private boolean button = false;
+	private boolean embbeded = false;
 	private String iconCSS;
 	private List<Component> components = new ArrayList<>();
 	
@@ -67,6 +68,14 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 
 	public void setButton(boolean button) {
 		this.button = button;
+	}
+
+	public boolean isEmbbeded() {
+		return embbeded;
+	}
+
+	public void setEmbbeded(boolean embbeded) {
+		this.embbeded = embbeded;
 	}
 
 	public String getIconCSS() {

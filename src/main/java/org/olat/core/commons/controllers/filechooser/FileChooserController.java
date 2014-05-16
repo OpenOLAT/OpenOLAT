@@ -85,7 +85,7 @@ public class FileChooserController extends BasicController {
 	 *            true: show a file chooser title and description; false: show
 	 *            only the tree without a title
 	 */
-	FileChooserController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, VFSItemFilter customItemFilter, boolean onlyLeafsSelectable, boolean showTitle) {
+	FileChooserController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, VFSItemFilter customItemFilter, boolean onlyLeafsSelectable) {
 		super(ureq, wControl);
 		this.rootContainer = rootContainer;
 		this.onlyLeafsSelectable = onlyLeafsSelectable;

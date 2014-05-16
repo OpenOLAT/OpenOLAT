@@ -59,7 +59,7 @@ public class FileChooserUIFactory {
 	 *          false: all items can be selected
 	 */
 	public static FileChooserController createFileChooserController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, VFSItemFilter customItemFilter, boolean onlyLeafsSelectable) {
-		return new FileChooserController(ureq, wControl, rootContainer, customItemFilter, onlyLeafsSelectable, true);
+		return new FileChooserController(ureq, wControl, rootContainer, customItemFilter, onlyLeafsSelectable);
 	}
 
 	/**
@@ -76,7 +76,7 @@ public class FileChooserUIFactory {
 	 *          false: all items can be selected
 	 */
 	public static FileChooserController createFileChooserControllerWithoutTitle(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, VFSItemFilter customItemFilter, boolean onlyLeafsSelectable) {
-		return new FileChooserController(ureq, wControl, rootContainer, customItemFilter, onlyLeafsSelectable, false);
+		return new FileChooserController(ureq, wControl, rootContainer, customItemFilter, onlyLeafsSelectable);
 	}
 
 	/**
@@ -95,7 +95,7 @@ public class FileChooserUIFactory {
 	 *            can be selected
 	 */
 	public static FileChooserController createFileChooserController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, boolean showLeafs, boolean onlyLeafsSelectable) {
-		return new FileChooserController(ureq, wControl, rootContainer, (showLeafs ? null : containerFilter), onlyLeafsSelectable, true);
+		return new FileChooserController(ureq, wControl, rootContainer, (showLeafs ? null : containerFilter), onlyLeafsSelectable);
 	}
 
 	/**
@@ -114,7 +114,7 @@ public class FileChooserUIFactory {
 	 *            can be selected
 	 */
 	public static FileChooserController createFileChooserControllerWithoutTitle(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, boolean showLeafs, boolean onlyLeafsSelectable) {
-		return new FileChooserController(ureq, wControl, rootContainer, (showLeafs ? null : containerFilter), onlyLeafsSelectable, false);
+		return new FileChooserController(ureq, wControl, rootContainer, (showLeafs ? null : containerFilter), onlyLeafsSelectable);
 	}
 
 	/**

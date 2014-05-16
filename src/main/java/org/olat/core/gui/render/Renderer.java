@@ -219,7 +219,7 @@ public class Renderer {
 					sb.append("<div id='o_c").append(source.getDispatchID());
 				}
 				if(Settings.isDebuging()) {
-					sb.append("' title='").append(source.getComponentName());
+					//sb.append("' title='").append(source.getComponentName());
 				}
 				sb.append("'>");
 			}			

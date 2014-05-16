@@ -26,6 +26,7 @@ import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
 import org.olat.core.util.StringHelper;
+import org.olat.course.site.CourseSite;
 import org.olat.course.site.CourseSiteContextEntryControllerCreator;
 import org.olat.group.BusinessGroupModule;
 import org.olat.repository.site.MyCoursesSite;
@@ -65,6 +66,9 @@ public class RepositoryModule extends AbstractOLATModule {
 	public void init() {
 		// Add controller factory extension point to launch groups
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(RepositoryEntry.class.getSimpleName(),
+				new CourseSiteContextEntryControllerCreator());
+		
+		NewControllerFactory.getInstance().addContextEntryControllerCreator(CourseSite.class.getSimpleName(),
 				new CourseSiteContextEntryControllerCreator());
 		
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(CatalogEntry.class.getSimpleName(),

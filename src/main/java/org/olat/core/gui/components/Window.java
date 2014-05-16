@@ -218,7 +218,7 @@ public class Window extends AbstractComponent {
 	 * @see org.olat.core.gui.components.Container#getComponent(java.lang.String)
 	 */
 	public Component getComponent(String name) {
-		throw new AssertException("please use getContentPane()");
+		throw new AssertException("please use getContentPane(): " + name);
 	}
 
 	/**
@@ -809,7 +809,6 @@ public class Window extends AbstractComponent {
 		this.customCSS = customCSS;
 	}
 	
-	//fxdiff FXOLAT-119: update business path
 	public Command handleBusinessPath(UserRequest ureq) {
 		HistoryPoint p = ureq.getUserSession().getLastHistoryPoint();
 		if(p != null && StringHelper.containsNonWhitespace(p.getBusinessPath())) {
@@ -817,7 +816,7 @@ public class Window extends AbstractComponent {
 			List<ContextEntry> ces = p.getEntries();
 			String url = BusinessControlFactory.getInstance().getAsURIString(ces, true);
 			sb.append("try { o_info.businessPath='").append(url).append("';");
-			sb.append("b_shareActiveSocialUrl(); } catch(e) { }");
+			sb.append("o_shareActiveSocialUrl(); } catch(e) { }");
 			return new JSCommand(sb.toString());
 		}
 		return null;

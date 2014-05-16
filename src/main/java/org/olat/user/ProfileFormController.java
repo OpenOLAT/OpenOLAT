@@ -147,7 +147,6 @@ public class ProfileFormController extends FormBasicController {
 		formContext.put("username", identity.getName());
 		
 		String currentGroup = null;
-		List<UserPropertyHandler> homepagePropertyHanders = UserManager.getInstance().getUserPropertyHandlersFor(HomePageConfig.class.getCanonicalName(), isAdministrativeUser);
 		// show a form element for each property handler 
 		FormLayoutContainer groupContainer = null;
 		for (UserPropertyHandler userPropertyHandler : this.userPropertyHandlers) {
@@ -255,16 +254,17 @@ public class ProfileFormController extends FormBasicController {
 	public void updateFromFormData(final HomePageConfig config, final Identity identity) {
 		User user = identity.getUser();
 		// For each user property...
-		for (UserPropertyHandler userPropertyHandler : this.userPropertyHandlers) {
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 
 			// ...get the value from the form field and store it into the user
 			// property...
-			FormItem formItem = this.formItems.get(userPropertyHandler.getName());
-
-			userPropertyHandler.updateUserFromFormItem(user, formItem);
+			FormItem formItem = formItems.get(userPropertyHandler.getName());
+			if(formItem.isEnabled()) {
+				userPropertyHandler.updateUserFromFormItem(user, formItem);
+			}
 
 			// ...and store the "publish" flag for each property.
-			MultipleSelectionElement checkbox = this.publishCheckboxes.get("checkbox_" + userPropertyHandler.getName());
+			MultipleSelectionElement checkbox = publishCheckboxes.get("checkbox_" + userPropertyHandler.getName());
 			if (checkbox != null) {
 				// null when not enabled for the org.olat.user.HomePageConfig usage
 				// identifier key
@@ -291,7 +291,9 @@ public class ProfileFormController extends FormBasicController {
 		// update each user field
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			FormItem formItem = formItems.get(userPropertyHandler.getName());
-			userPropertyHandler.updateUserFromFormItem(user, formItem);
+			if(formItem.isEnabled()) {
+				userPropertyHandler.updateUserFromFormItem(user, formItem);
+			}
 		}
 		return identity;
 	}

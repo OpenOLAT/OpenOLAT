@@ -4,9 +4,9 @@
 	xmlns:context="http://www.springframework.org/schema/context" 
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+  http://www.springframework.org/schema/beans/spring-beans.xsd 
   http://www.springframework.org/schema/context 
-  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+  http://www.springframework.org/schema/context/spring-context.xsd">
 
 	<!-- 
 		Configure the users properties, forms and tables 
@@ -948,7 +948,30 @@
 							</list>
 						</property>						
 					</bean>
-				</entry>			
+				</entry>
+				
+				<entry key="org.olat.admin.landingpages.LandingPagesModule">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Properties used in the administration of landing pages. " />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyGender" />
+								<ref bean="userPropertyStreet" />
+								<ref bean="userPropertyExtendedAddress" />
+								<ref bean="userPropertyPoBox" />
+								<ref bean="userPropertyZipCode" />
+								<ref bean="userPropertyRegion" />
+								<ref bean="userPropertyCity" />
+								<ref bean="userPropertyCountry" />
+								<ref bean="userPropertyInstitutionalName" />
+								<ref bean="userPropertyInstitutionalUserIdentifier" />
+								<ref bean="userPropertyInstitutionalEmail" />
+								<ref bean="userPropertyOrgUnit" />
+								<ref bean="userPropertyStudySubject" />
+							</list>
+						</property>						
+					</bean>
+				</entry>
 				
 				<!--
 					Default configuration in case nothing else matches.

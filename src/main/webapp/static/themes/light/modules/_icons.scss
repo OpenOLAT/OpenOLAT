@@ -47,8 +47,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_membersmanagement { @extend .o_icon-users;}
 .o_icon_message { @extend .o_icon-envelope;}
 .o_icon_move{ @extend .o_icon-arrows;}
+.o_icon_move_down { @extend .o_icon-angle-double-down;}
 .o_icon_move_left { @extend .o_icon-angle-double-left;}
 .o_icon_move_right { @extend .o_icon-angle-double-right;}
+.o_icon_move_up { @extend .o_icon-angle-double-up;}
 .o_icon_new_document { @extend .o_icon-fighter-jet; color:pink;}
 .o_icon_new_folder { @extend .o_icon-fighter-jet; color:violet;}
 .o_icon_notes{@extend .o_icon-pencil; }

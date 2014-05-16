@@ -419,7 +419,7 @@
 			</list>
 		</property>
 		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
-	</bean>			
+	</bean>
 	<!--  the spring-extensions ("Software Module") menu-entry -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 			<property name="order" value="7207" />

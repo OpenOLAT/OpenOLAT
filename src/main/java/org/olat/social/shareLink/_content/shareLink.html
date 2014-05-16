@@ -10,7 +10,12 @@
 		if(o_info.businessPath && o_info.businessPath.length > 0) return o_info.businessPath;
 		return '$baseURL';
 	} 
-	function o_shareSocialTitle() { return document.title; }
+	function o_shareSocialTitle() {
+		return document.title;
+	}
+	function o_shareCallout() {
+		return '<p><span>$r.translate("share.link")</span>:<br/><input id="callout_share_link_in" type="text" name="cl_share_link" value="' + o_shareSocialUrl() + '" /></p>';
+	}
 /* ]]> */
 </script>
 
@@ -42,40 +47,19 @@
 			<i class="o_icon o_icon_mail o_icon-lg"></i>		
 		</a>
 	#elseif ($link == "link")	
-		<a id="o_link" href="#" onclick="javascript:o_shareSocialLink();">
+		<a id="o_link" href="#">
 			<i class="o_icon o_icon_link o_icon-lg"></i>
 		</a>
 		<script type="text/javascript">
 		/* <![CDATA[ */
-			function o_shareSocialLink() {
-				var callout = '';
-				callout += '<div id="o_callout_sharesociallink" class="o_callout_area b_clearfix" style="z-index:101;"><div class="b_floatscrollbox"><a name="b_modal"></a><div class="b_callout"><div class="o_callout_top_left_arrow"></div><div class="o_callout_top_left_arrow-border"></div>';
-				callout += '<div id="callout_layer_sharesociallink" class="o_callout_content"><div id="callout_layer_content_sharesociallink">';
-				callout += '<p><span>$r.translate("share.link")</span>:<br/><input id="callout_share_link_in" type="text" name="cl_share_link" size="64" value="' + o_shareSocialUrl() + '" /></p>';
-				callout += '</div></div></div></div></div><div id="o_callout_overlay_sharesociallink" class="o_callout_overlay" style="z-index:100;"></div>';
-			
-				jQuery('body').append(callout);
-				jQuery('#callout_layer_sharesociallink').each(function(index, el) {
-					jQuery(el).parents('div.o_callout_area').next('div.o_callout_overlay').each(function(index2, el2) {
-						jQuery(el2).click(function() {
-							jQuery('#o_callout_overlay_sharesociallink').remove();
-							jQuery('#o_callout_sharesociallink').remove();
-						});
-					});
-				});
-				
-				jQuery('#o_callout_sharesociallink').each(function(index, el) {
-					var targetEl = jQuery('#b_link');
-					var targetOffset = targetEl.offset();
-					if(targetOffset) {
-						var callout = jQuery(el);
-						callout.offset({
-							top: (targetOffset.top + targetEl.height() + 15) ,
-							left: (targetOffset.left - 23)
-						}).css('zindex', 105);
-					}
-				});
-			}
+			jQuery(function() {
+				jQuery("#o_link").popover({
+				    	placement : 'top',
+				    	html: true,
+				    	trigger: 'click',
+				    	content: o_shareCallout
+				 });
+			});
 		/* ]]> */
 		</script>
 	#end

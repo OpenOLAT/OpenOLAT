@@ -68,7 +68,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 	@Override
 	public Controller createController(List<ContextEntry> ces, UserRequest ureq, WindowControl wControl) {
 		Controller ctrl = null;;
-		RepositoryEntry re = getRepositoryEntry(ces.get(0));
+		RepositoryEntry re = getRepositoryEntry(ureq, ces.get(0));
 		if(ces.size() > 1) {
 			ContextEntry subcontext = ces.get(1);
 			if("Editor".equals(subcontext.getOLATResourceable().getResourceableTypeName())) {
@@ -93,7 +93,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 	 */
 	@Override
 	public String getTabName(ContextEntry ce, UserRequest ureq) {
-		RepositoryEntry re = getRepositoryEntry(ce);
+		RepositoryEntry re = getRepositoryEntry(ureq, ce);
 		CourseSiteDef siteDef = getCourseSite(ureq, re);
 		if(siteDef != null) {
 			return "Hello";
@@ -106,7 +106,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 	 */
 	@Override
 	public String getSiteClassName(List<ContextEntry> ces, UserRequest ureq) {
-		RepositoryEntry re = getRepositoryEntry(ces.get(0));
+		RepositoryEntry re = getRepositoryEntry(ureq, ces.get(0));
 		CourseSiteDef siteDef = getCourseSite(ureq, re);
 		if(siteDef != null) {
 			return siteDef.getClass().getName().replace("Def", "");
@@ -116,7 +116,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 	
 	@Override
 	public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
-		return getRepositoryEntry(ce) != null;
+		return getRepositoryEntry(ureq, ce) != null;
 	}
 
 	private SiteDefinitions getSitesDefinitions() {
@@ -146,14 +146,43 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 		return null;
 	}
 	
-	private RepositoryEntry getRepositoryEntry(ContextEntry ce) {
+	private RepositoryEntry getRepositoryEntry(UserRequest ureq, ContextEntry ce) {
 		if(repoEntry == null) {
 			if(ce.getOLATResourceable() instanceof RepositoryEntry) {
 				repoEntry = (RepositoryEntry)ce.getOLATResourceable();
 			} else {
 				OLATResourceable ores = ce.getOLATResourceable();
-				RepositoryManager rm = RepositoryManager.getInstance();
-				repoEntry = rm.lookupRepositoryEntry(ores.getResourceableId());
+				if("CourseSite".equals(ores.getResourceableTypeName())) {
+					int id = ores.getResourceableId().intValue();
+					CourseSiteDef courseSiteDef = null;
+					List<SiteDefinition> siteDefList = getSitesDefinitions().getSiteDefList();
+					if(id == 2) {
+						for(SiteDefinition siteDef:siteDefList) {
+							if(siteDef instanceof CourseSiteDef2) {
+								courseSiteDef = (CourseSiteDef)siteDef;
+							}
+						}
+					} else if(id == 1) {
+						for(SiteDefinition siteDef:siteDefList) {
+							if(siteDef instanceof CourseSiteDef) {
+								courseSiteDef = (CourseSiteDef)siteDef;
+							}
+						}
+					}
+					
+					if(courseSiteDef != null) {
+						CourseSiteConfiguration config = courseSiteDef.getCourseSiteconfiguration();
+						LanguageConfiguration langConfig = courseSiteDef.getLanguageConfiguration(ureq, config);
+						if(langConfig != null) {
+							String softKey = langConfig.getRepoSoftKey();
+							RepositoryManager rm = RepositoryManager.getInstance();
+							repoEntry = rm.lookupRepositoryEntryBySoftkey(softKey, false);
+						}
+					}
+				} else {
+					RepositoryManager rm = RepositoryManager.getInstance();
+					repoEntry = rm.lookupRepositoryEntry(ores.getResourceableId());
+				}
 			}
 		}
 		return repoEntry;

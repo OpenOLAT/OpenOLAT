@@ -9,6 +9,7 @@
 	<import resource="classpath:/org/olat/admin/registration/_spring/registrationContext.xml"/>
 	<import resource="classpath:/org/olat/admin/sysinfo/_spring/sysinfoContext.xml"/>
 	<import resource="classpath:/org/olat/admin/user/delete/service/_spring/deletionContext.xml"/>
+	<import resource="classpath:/org/olat/admin/landingpages/_spring/landingPagesContext.xml"/>
 
 	<bean id="adminModule" class="org.olat.admin.AdminModule">
 		<constructor-arg index="0" ref="propertyManager" />
@@ -56,5 +57,8 @@
 			</list>
 		</property>
 	</bean>
+	
+	
+	
 
 </beans>

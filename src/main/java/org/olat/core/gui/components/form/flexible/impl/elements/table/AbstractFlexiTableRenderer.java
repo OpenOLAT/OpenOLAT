@@ -417,6 +417,13 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				formItem.getComponent().getHTMLRendererSingleton().render(renderer, target, formItem.getComponent(),
 					ubu, translator, renderResult, null);
 			}
+		} else if(cellValue instanceof Component) {
+			Component cmp = (Component)cellValue;
+			cmp.setTranslator(translator);
+			if(cmp.isVisible()) {
+				cmp.getHTMLRendererSingleton().render(renderer, target, cmp,
+					ubu, translator, renderResult, null);
+			}
 		} else {
 			fcm.getCellRenderer().render(target, cellValue, row, ftC, ubu, translator);
 		}

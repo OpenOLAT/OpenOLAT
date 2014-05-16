@@ -31,10 +31,13 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -107,6 +110,7 @@ public class ChangePrefsController extends BasicController {
 	 *      org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == myContent) {
 			if (event.getCommand().equals("exeBack")) {
@@ -114,7 +118,8 @@ public class ChangePrefsController extends BasicController {
 			}
 		} 
 	}
-
+	
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == generalPrefsCtr) {
 			if (event == Event.DONE_EVENT) {
@@ -129,6 +134,7 @@ public class ChangePrefsController extends BasicController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		//
 	}
@@ -152,9 +158,9 @@ class SpecialPrefsForm extends FormBasicController {
 	private Identity tobeChangedIdentity;
 	private Preferences prefs;
 	private MultipleSelectionElement prefsElement;
-	//fxdiff BAKS-7 Resume function
 	private SingleSelection resumeElement;
 	private SingleSelection backElement;
+	private TextElement landingPageEl;
 	private String[] keys, values;
 	private boolean useAjaxCheckbox = false;
 	private String[] resumeKeys, resumeValues;
@@ -192,7 +198,7 @@ class SpecialPrefsForm extends FormBasicController {
 					translate("accessibility.web2aMode.label")
 			};
 		}
-		//fxdiff BAKS-7 Resume function
+		
 		resumeKeys = new String[]{"none", "auto", "ondemand"}; 
 		resumeValues = new String[] {
 				translate("resume.none"),
@@ -221,13 +227,15 @@ class SpecialPrefsForm extends FormBasicController {
 		}
 		prefs.put(WindowManager.class, "web2a-beta-on", prefsElement.getSelectedKeys().contains("web2a"));
 		
-		//fxdiff BAKS-7 Resume function
 		if(resumeElement != null) {
 			prefs.put(WindowManager.class, "resume-prefs", resumeElement.getSelectedKey());
 		}
 		if(backElement != null) {
 			prefs.put(WindowManager.class, "back-enabled", backElement.isSelected(0));
 		}
+		String landingPage = landingPageEl.isVisible() ? landingPageEl.getValue() : "";
+		prefs.put(WindowManager.class, "landing-page", landingPage);
+		
 		if (ureq.getIdentity().equalsByPersistableKey(tobeChangedIdentity)) {
 			showInfo("preferences.successful");
 		}
@@ -236,6 +244,16 @@ class SpecialPrefsForm extends FormBasicController {
 		prefs.save();
 	}
 	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(resumeElement == source) {
+			if(resumeElement.isOneSelected()) {
+				landingPageEl.setVisible(!resumeElement.getSelectedKey().equals("auto"));
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		update();
@@ -252,7 +270,11 @@ class SpecialPrefsForm extends FormBasicController {
 		if(historyModule.isResumeEnabled()) {
 			resumeElement = uifactory.addRadiosVertical("resume", "resume.label", formLayout, resumeKeys, resumeValues);
 			resumeElement.setElementCssClass("o_sel_home_settings_resume");
+			resumeElement.addActionListener(FormEvent.ONCHANGE);
 		}
+		
+		landingPageEl = uifactory.addTextElement("landingpages", "landing.pages", 256, "", formLayout);
+		
 		if(historyModule.isBackEnabled()) {
 			backElement = uifactory.addRadiosVertical("back-enabling", "back.label", formLayout, yesNoKeys, yesNoValues);
 			backElement.setElementCssClass("o_sel_home_settings_back_enabling");
@@ -273,7 +295,7 @@ class SpecialPrefsForm extends FormBasicController {
 			prefsElement.select("ajax", ajax == null ? true: ajax.booleanValue());
 		}
 		prefsElement.select("web2a", web2a == null ? false: web2a.booleanValue());
-		//fxdiff BAKS-7 Resume function
+		boolean landingPageVisible = true;
 		if(resumeElement != null) {
 			String resumePrefs = (String)prefs.get(WindowManager.class, "resume-prefs");
 			if(StringHelper.containsNonWhitespace(resumePrefs)) {
@@ -285,6 +307,10 @@ class SpecialPrefsForm extends FormBasicController {
 				} catch (Exception e) {
 					logError("Unavailable setting for resume function: " + defaultSetting, e);
 				}
+			}
+			
+			if(resumeElement.isOneSelected()) {
+				landingPageVisible = !resumeElement.getSelectedKey().equals("auto");
 			}
 		}
 		if(backElement != null) {
@@ -299,6 +325,10 @@ class SpecialPrefsForm extends FormBasicController {
 
 			backElement.select(selected, true);
 		}
+
+		String landingPage = (String)prefs.get(WindowManager.class, "landing-page");
+		landingPageEl.setValue(landingPage);
+		landingPageEl.setVisible(landingPageVisible);
 	}
 	
 	@Override
@@ -308,7 +338,6 @@ class SpecialPrefsForm extends FormBasicController {
 	
 }
 
-// fxdiff FXOLAT-149 
 /**
  * Controller to reset the users GUI prefs and other preferences
  */

@@ -138,9 +138,9 @@ public class SitesConfigurationController extends FormBasicController {
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, SiteCols.defaultOrder.i18nKey(), SiteCols.defaultOrder.ordinal(), false, null));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("up", SiteCols.up.ordinal(), "up",
-				new StaticFlexiCellRenderer("&nbsp;&nbsp;", "up", "b_small_table_icon b_move_up_icon")));
+				new StaticFlexiCellRenderer(" ", "up", "o_icon_move_up o_icon-lg")));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("down", SiteCols.down.ordinal(), "down",
-				new StaticFlexiCellRenderer("&nbsp;&nbsp;", "down", "b_small_table_icon b_move_down_icon")));
+				new StaticFlexiCellRenderer(" ", "down", "o_icon_move_down o_icon-lg")));
 
 		model = new SiteDefModel(columnsModel);
 		
@@ -157,7 +157,7 @@ public class SitesConfigurationController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-	 if(source == tableEl) {
+		if(source == tableEl) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				if("up".equals(se.getCommand())) {

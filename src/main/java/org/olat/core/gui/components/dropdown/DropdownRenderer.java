@@ -41,8 +41,10 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 	public void render(Renderer renderer, StringOutput sb, Component source,
 			URLBuilder ubu, Translator translator, RenderResult renderResult,
 			String[] args) {
-		
+
 		Dropdown dropdown = (Dropdown)source;
+		sb.append("<div class='btn-group'>", dropdown.isEmbbeded());
+		
 		Iterable<Component> components = dropdown.getComponents();
 		if(dropdown.isButton()) {
 			sb.append("<button class='btn btn-default dropdown-toggle'");
@@ -74,6 +76,6 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 				sb.append("</li>");
 			}
 		}
-		sb.append("</ul>");
+		sb.append("</ul>").append("</div>", dropdown.isEmbbeded());
 	}
 }
