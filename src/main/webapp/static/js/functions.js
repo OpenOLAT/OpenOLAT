@@ -1121,32 +1121,28 @@ function showInfoBox(title, content){
 * The last parameter buttonCallback is optional. if a callback js 
 * function is given it will be execute when the user clicks ok or closes the message box
 */
-function showMessageBox(type, title, message, buttonCallback){
+function showMessageBox(type, title, message, buttonCallback) {
 	if(type == 'info'){
 		showInfoBox(title, message);
 		return null;
 	} else {
-		var prefix;
+		var content = '<div id="myFunctionalModal" class="modal fade" role="dialog"><div class="modal-dialog"><div class="modal-content">';
+		content += '<div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
+        content += '<h4 class="modal-title">' + title + '</h4></div>';	
+		content += '<div class="modal-body alert ';
 		if("warn" == type) {
-			prefix = '<div><div class="alert alert-warning">';
+			content += 'alert-warning';
 		} else if("error" == type) {
-			prefix = '<div><div class="alert alert-danger">';
+			content += 'alert-danger';
 		} else {
-			prefix = '<div><div class="alert alert-info">';
+			content += 'alert-info';
 		}
-		return jQuery(prefix + '<p>' + message + '</p></div></div>').dialog({
-			modal: true,
-			title: title,
-			resizable:false,
-			close: function(event, ui) {
-				try {
-					jQuery(this).dialog('destroy').remove()
-				} catch(e) {
-					//possible if the user has closed the window
-				}
-			}
-		}).dialog('open').dialog("widget").css('z-index', 11000);
-		
+		content += '"><p>' + message + '</p></div></div></div></div>';
+		jQuery('#myFunctionalModal').remove();
+		jQuery('body').append(content);
+		return jQuery('#myFunctionalModal').modal('show').on('hidden.bs.modal', function (e) {
+			jQuery('#myFunctionalModal').remove();
+		});
 	}
 }
 

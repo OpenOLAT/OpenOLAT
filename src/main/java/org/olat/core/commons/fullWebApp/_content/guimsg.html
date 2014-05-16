@@ -14,7 +14,7 @@
 		var dialog = showMessageBox("warn", "$r.translate("warn.header")",  "$r.get("guiMessage").renderWarn()");
 		setTimeout(function(){
 			try {
-				jQuery(dialog).dialog('destroy').remove();
+				jQuery(dialog).modal('hide');
 			} catch(e) {
 				//possible if the user has closed the window
 			}
