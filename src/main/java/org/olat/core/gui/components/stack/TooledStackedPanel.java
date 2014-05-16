@@ -97,7 +97,9 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	
 	public List<Tool> getTools() {
 		List<Tool> currentTools = new ArrayList<>();
-		for(int i=0; i<stack.size(); i++) {
+		
+		int lastStep = stack.size() - 1;
+		for(int i=0; i<lastStep; i++) {
 			Object uo = stack.get(i).getUserObject();
 			if(uo instanceof TooledBreadCrumb) {
 				TooledBreadCrumb crumb = (TooledBreadCrumb)uo;
