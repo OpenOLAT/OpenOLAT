@@ -50,19 +50,15 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 
 	@Override
 	public Iterable<Component> getComponents() {
-		List<Component> cmps = new ArrayList<>(3 + stack.size());
+		List<Component> cmps = new ArrayList<>();
 		cmps.add(getBackLink());
-		cmps.add(getCloseLink());
 		cmps.add(getContent());
 		for(Link crumb:stack) {
 			cmps.add(crumb);
 		}
-		
-		TooledBreadCrumb currentCrumb = getCurrentCrumb();
-		for(Tool tool:currentCrumb.getTools()) {
+		for(Tool tool:getTools()) {
 			cmps.add(tool.getComponent());
 		}
-
 		return cmps;
 	}
 
@@ -81,27 +77,41 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	 * @param toolComponent
 	 */
 	public void addTool(Component toolComponent) {
-		if(toolComponent != null) {
-			addTool(toolComponent, null);
-		}
+		addTool(toolComponent, null, false);
+	}
+	
+	public void addTool(Component toolComponent, Align align) {
+		addTool(toolComponent, align, false);
 	}
 
 	/**
 	 * If the component is null, it will simply not be added,
 	 * @param toolComponent
 	 */
-	public void addTool(Component toolComponent, Align align) {
+	public void addTool(Component toolComponent, Align align, boolean inherit) {
 		if(toolComponent == null) return;
 		
-		Tool tool = new Tool(toolComponent, align);
+		Tool tool = new Tool(toolComponent, align, inherit);
 		getCurrentCrumb().addTool(tool);
 	}
 	
 	public List<Tool> getTools() {
 		List<Tool> currentTools = new ArrayList<>();
+		for(int i=0; i<stack.size(); i++) {
+			Object uo = stack.get(i).getUserObject();
+			if(uo instanceof TooledBreadCrumb) {
+				TooledBreadCrumb crumb = (TooledBreadCrumb)uo;
+				List<Tool> tools = crumb.getTools();
+				for(Tool tool:tools) {
+					if(tool.isInherit()) {
+						currentTools.add(tool);
+					}
+				}
+			}
+		}
 		currentTools.addAll(getCurrentCrumb().getTools());
-		if(this.isShowCloseLink()) {
-			currentTools.add(new Tool(getCloseLink(), Align.right));
+		if(isShowCloseLink()) {
+			currentTools.add(new Tool(getCloseLink(), Align.right, false));
 		}
 		return currentTools;
 	}
@@ -115,13 +125,19 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	
 	public static class Tool {
 		private final  Align align;
+		private final boolean inherit;
 		private final Component component;
 		
-		public Tool(Component component, Align align) {
+		public Tool(Component component, Align align, boolean inherit) {
 			this.align = align;
+			this.inherit = inherit;
 			this.component = component;
 		}
 		
+		public boolean isInherit() {
+			return inherit;
+		}
+
 		public Align getAlign() {
 			return align;
 		}

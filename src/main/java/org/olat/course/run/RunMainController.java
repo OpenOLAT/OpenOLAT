@@ -1141,7 +1141,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				editTools.addComponent(dbLink);
 			}
 			
-			all.addTool(editTools);
+			all.addTool(editTools, null, true);
 		}
 	}
 	
