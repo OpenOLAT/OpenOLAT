@@ -58,6 +58,7 @@ public class DownloadComponent extends AbstractComponent {
 	public DownloadComponent(String name, MediaResource downloadItem) {
 		super(name);
 		this.mediaResource = downloadItem;
+		this.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 	}
 
 	/**
@@ -194,7 +195,7 @@ public class DownloadComponent extends AbstractComponent {
 	private static String getCssIconClass(String fileName) {
 		int typePos = fileName.lastIndexOf(".");
 		if (typePos > 0) {
-			return "b_filetype_" + fileName.substring(typePos + 1);
+			return "o_filetype_" + fileName.substring(typePos + 1);
 		}
 		return null;
 	}

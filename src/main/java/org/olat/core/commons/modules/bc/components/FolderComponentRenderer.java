@@ -122,13 +122,13 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 		}
 		target.append(">");
 
-		target.append("<div class=\"b_briefcase_createactions clearfix\"><ul class='nav navbar-nav'>");
+		target.append("<div class=\"o_bc_createactions clearfix\"><ul class='nav navbar-nav navbar-right'>");
 		if (canWrite) {
 			// add folder actions: upload file, create new folder, create new file
 
 			if(canVersion) {
 			// deleted files
-				target.append("<li><a class=\"b_briefcase_deletedfiles\" href=\"");
+				target.append("<li><a class=\"o_bc_deletedfiles\" href=\"");
 				ubu.buildURI(target, new String[] { VelocityContainer.COMMAND_ID }, new String[] { "dfiles"  }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 				target.append("\"");
 				if (iframePostEnabled) { // add ajax iframe target
@@ -136,7 +136,7 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 					ubu.appendTarget(so);
 					target.append(so.toString());
 				}
-				target.append(">");
+				target.append("><i class='o_icon o_icon_recycle o_icon-fw'></i> ");
 				target.append(translator.translate("dfiles"));
 				target.append("</a></li>");
 			}
@@ -145,7 +145,7 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 				if(fc.getExternContainerForCopy() != null && (fc.getExternContainerForCopy().getLocalSecurityCallback() == null ||
 						fc.getExternContainerForCopy().getLocalSecurityCallback().canCopy())) {
 					//option copy file
-					target.append("<li><a class=\"b_briefcase_newfile\" href=\"");
+					target.append("<li><a class=\"o_bc_copy\" href=\"");
 					ubu.buildURI(target, new String[] { VelocityContainer.COMMAND_ID }, new String[] { "copyfile"  }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 					target.append("\"");
 					if (iframePostEnabled) { // add ajax iframe target
@@ -153,13 +153,13 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 						ubu.appendTarget(so);
 						target.append(so.toString());
 					}
-					target.append(">");
+					target.append("><i class='o_icon o_icon_copy o_icon-fw'></i> ");
 					target.append(translator.translate("copyfile"));
 					target.append("</a></li>");
 				}
 				
 				// option upload	
-				target.append("<li><a class='b_briefcase_upload' href=\"");
+				target.append("<li><a class='o_bc_upload' href=\"");
 				ubu.buildURI(target, new String[] { VelocityContainer.COMMAND_ID }, new String[] { "ul"  }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 				target.append("\"");
 				if (iframePostEnabled) { // add ajax iframe target
@@ -167,13 +167,13 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 					ubu.appendTarget(so);
 					target.append(so.toString());
 				}
-				target.append("><i class='o_icon o_icon_upload'>&nbsp;</i>");
+				target.append("><i class='o_icon o_icon_upload o_icon-fw'></i> ");
 				target.append(translator.translate("ul"));			
 				target.append("</a></li>");
 	
 				if(canCreateFolder) {
 					// option new folder
-					target.append("<li><a class=\"b_briefcase_newfolder\" href=\"");
+					target.append("<li><a class=\"b_bc_newfolder\" href=\"");
 					ubu.buildURI(target, new String[] { VelocityContainer.COMMAND_ID }, new String[] { "cf"  }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 					target.append("\"");
 					if (iframePostEnabled) { // add ajax iframe target
@@ -181,13 +181,13 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 						ubu.appendTarget(so);
 						target.append(so.toString());
 					}
-					target.append("><i class='o_icon o_icon_new_folder'>&nbsp;</i>");
+					target.append("><i class='o_icon o_icon_new_folder o_icon-fw'></i> ");
 					target.append(translator.translate("cf"));
 					target.append("</a></li>");
 				}
 	
 				// option new file
-				target.append("<li><a class=\"b_briefcase_newfile\" href=\"");
+				target.append("<li><a class=\"b_bc_newfile\" href=\"");
 				ubu.buildURI(target, new String[] { VelocityContainer.COMMAND_ID }, new String[] { "cfile"  }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 				target.append("\"");
 				if (iframePostEnabled) { // add ajax iframe target
@@ -195,7 +195,7 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 					ubu.appendTarget(so);
 					target.append(so.toString());
 				}
-				target.append("><i class='o_icon o_icon_new_document'>&nbsp;</i>");
+				target.append("><i class='o_icon o_icon_new_document o_icon-fw'></i> ");
 				target.append(translator.translate("cfile"));
 				target.append("</a></li>");
 			}

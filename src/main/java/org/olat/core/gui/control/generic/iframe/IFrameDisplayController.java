@@ -66,8 +66,8 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	protected static final String FILE_SUFFIX_JS = ".js";
 	private static final String COMMAND_DOWNLOAD = "command.download";
 
-	private VelocityContainer myContent = createVelocityContainer("index");
-	private VelocityContainer eventVC = createVelocityContainer("event");
+	private final VelocityContainer myContent = createVelocityContainer("index");
+	private final VelocityContainer eventVC = createVelocityContainer("event");
 	private Panel newUriEventPanel;
 	private Panel main;
 	private IFrameDeliveryMapper contentMapper;
@@ -93,6 +93,8 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 */
 	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, File fileRoot) {
 		this(ureq, wControl, new LocalFolderImpl(fileRoot), null, null);
+		
+		myContent.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID		
 	}
 	
 	/**
@@ -326,7 +328,8 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		if(allow) {
 			if(downloadLink == null) {
 				downloadLink = LinkFactory.createCustomLink(COMMAND_DOWNLOAD, COMMAND_DOWNLOAD, "", Link.NONTRANSLATED, myContent, this);
-				downloadLink.setCustomEnabledLinkCSS("b_content_download");
+				downloadLink.setCustomEnabledLinkCSS("o_download");
+				downloadLink.setIconLeftCSS("o_icon o_icon_download o_icon-lg");
 				downloadLink.setTooltip(getTranslator().translate(COMMAND_DOWNLOAD));
 			} else if (!downloadLink.isVisible()) {
 				downloadLink.setVisible(true);

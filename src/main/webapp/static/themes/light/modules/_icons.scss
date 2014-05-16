@@ -9,6 +9,7 @@ $fa-css-prefix: "o_icon" !default;
 @import "../../../font-awesome/scss/font-awesome";
 
 /* OpenOLAT Icons */
+.o_icon_actions { @extend .o_icon-gears;}
 .o_icon_archive_tool{ @extend .o_icon-download;}
 .o_icon_assessment_tool{ @extend .o_icon-trophy;}
 .o_icon_bookmark { @extend .o_icon-bookmark; color: #996633; }
@@ -37,13 +38,16 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_download { @extend .o_icon-download;}
 .o_icon_edit { @extend .o_icon-edit;}
 .o_icon_edit_file { @extend .o_icon-edit;}
-.o_icon_edit_metadata { @extend .o_icon-edit; color: #996633;}
-.o_icon_error {@extend .o_icon-exclamation;}
+.o_icon_edit_metadata { @extend .o_icon-gear;}
+.o_icon_eportfolio_add {@extend .o_icon-puzzle-piece;}
+.o_icon_error {@extend .o_icon-exclamation-circle; color: $brand-danger;}
 .o_icon_expenditure {@extend .o_icon-clock-o;}
 .o_icon_failed {@extend .o_icon-times-circle;}
 .o_icon_filter {@extend .o_icon-filter;}
+.o_icon_group {@extend .o_icon-users; }
 .o_icon_help { @extend .o_icon-question-circle; @extend .o_icon-lg; cursor: help;}
 .o_icon_impress { @extend .o_icon-info-circle; }
+.o_icon_info {@extend .o_icon-info-circle; color: $brand-info}
 .o_icon_mail { @extend .o_icon-envelope-o; }
 .o_icon_membersmanagement { @extend .o_icon-users;}
 .o_icon_message { @extend .o_icon-envelope;}
@@ -52,18 +56,21 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_move_left { @extend .o_icon-angle-double-left;}
 .o_icon_move_right { @extend .o_icon-angle-double-right;}
 .o_icon_move_up { @extend .o_icon-angle-double-up;}
-.o_icon_new_document { @extend .o_icon-fighter-jet; color:pink;}
-.o_icon_new_folder { @extend .o_icon-fighter-jet; color:violet;}
+.o_icon_new { @extend .o_icon-asterisk; color: $brand-success;}
+.o_icon_new_document { @extend .o_icon-file-text; }
+.o_icon_new_folder { @extend .o_icon-folder;}
 .o_icon_notes{@extend .o_icon-pencil; }
 .o_icon_language {@extend .o_icon-globe; }
 .o_icon_list {@extend .o_icon-list; }
 .o_icon_lifecycle {@extend .o_icon-calendar;}
+.o_icon_locked {@extend .o_icon-lock;}
 .o_icon_login {@extend .o_icon-sign-in;}
 .o_icon_logout {@extend .o_icon-sign-out;}
 .o_icon_mandatory {@extend .o_icon-asterisk; color: #f0ad4e;}
 .o_icon_managed{@extend .o_icon-retweet; color: $text-muted}
 .o_icon_open_tree {@extend .o_icon-caret-right;}
 .o_icon_passed {@extend .o_icon-check-circle;}
+.o_icon_post { @extend .o_icon-comment-o; }
 .o_icon_preview {@extend .o_icon-eye;}
 .o_icon_print {@extend .o_icon-print;}
 .o_icon_publish{ @extend .o_icon-share;}
@@ -72,6 +79,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_read { @extend .o_icon-fighter-jet; color: green;}
 .o_icon_readonly { @extend .o_icon-edit; color:red;}
 .o_icon_readwrite { @extend .o_icon-edit; }
+.o_icon_recycle { @extend .o_icon-recycle; }
 .o_icon_refresh { @extend .o_icon-refresh; } 
 .o_icon_search {@extend .o_icon-search;}
 .o_icon_settings{ @extend .o_icon-gears;}
@@ -91,7 +99,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_to_read { @extend .o_icon-fighter-jet; color:blue;}
 .o_icon_tool { @extend .o_icon-gear; }
 .o_icon_top {@extend .o_icon-chevron-up; }
+.o_icon_user {@extend .o_icon-user; }
 .o_icon_upload {@extend .o_icon-upload; }
+.o_icon_version {@extend .o_icon-history;}
+.o_icon_warn {@extend .o_icon-exclamation-triangle; color: $brand-danger;}
 .o_icon_wizard{@extend .o_icon-magic; }
 
 /* do not move link icons */
@@ -105,7 +116,7 @@ a.o_icon {
 .o_FileResource-BLOG_icon{ @extend .o_icon-bullhorn; }
 .o_FileResource-IMSCP_icon{ @extend .o_icon-archive; }
 .o_FileResource-PODCAST_icon	{ @extend .o_icon-video-camera; }
-.o_FileResource.SHAREDFOLDER {@extend .o_icon-external-link; }
+.o_FileResource-SHAREDFOLDER {@extend .o_icon-external-link; }
 .o_FileResource-SCORMCP_icon{ @extend .o_icon-archive; }
 .o_FileResource-SURVEY_icon{ @extend .o_icon-meh-o; }
 .o_FileResource-TEST_icon{ @extend .o_icon-pencil-square-o; }
@@ -117,6 +128,81 @@ a.o_icon {
 .o_ac_group_icon { @extend .o_icon-group;}
 .o_ac_membersonly_icon { @extend .o_icon-lock;}
 .o_ac_paypal_icon { @extend .o_icon-credit-card;}
+
+/* File type icons */
+/* first the default that is used as base class. will be overriden by following classes */
+.o_filetype_file,
+.o_filetype_ico		{ @extend .o_icon-file-o; }
+.o_filetype_folder 	{ @extend .o_icon-folder-o; }
+.o_filetype_folder_open { @extend .o_icon-folder-open-o; }	
+/* filesystem icons, mark important to override ext definitions */
+.o_filetype_zip,
+.o_filetype_gz,
+.o_filetype_tar,
+.o_filetype_tgz { @extend .o_icon-file-archive-o; }
+.o_filetype_css,
+.o_filetype_js,
+.o_filetype_java,
+.o_filetype_numbers,
+.o_filetype_ods,
+.o_filetype_xml,
+.o_filetype_xsl { @extend .o_icon-file-code-o; }
+.o_filetype_bat_icon,
+.o_filetype_bat,
+.o_filetype_exe,
+.o_filetype_app,
+.o_filetype_sh { @extend .o_icon-file-code-o; }
+.o_filetype_xls, 
+.o_filetype_xlsx { @extend .o_icon-file-excel-o; }
+.o_filetype_png,
+.o_filetype_tiff,
+.o_filetype_webp,
+.o_filetype_gif,
+.o_filetype_ico,
+.o_filetype_jpeg, 
+.o_filetype_bmp,
+.o_filetype_odg,
+.o_filetype_eps,
+.o_filetype_jpg { @extend .o_icon-file-image-o; }
+.o_filetype_psd,
+.o_filetype_avi,
+.o_filetype_dvi,
+.o_filetype_mp4, 
+.o_filetype_m4v, 
+.o_filetype_webm, 
+.o_filetype_ogg,
+.o_filetype_video, 
+.o_filetype_mov,
+.o_filetype_mpeg,
+.o_filetype_mpg,
+.o_filetype_qt,
+.o_filetype_ra,
+.o_filetype_ram,
+.o_filetype_swf,
+.o_filetype_flv { @extend .o_icon-file-video-o; }
+.o_filetype_midi,
+.o_filetype_audio, 
+.o_filetype_mp3,
+.o_filetype_m3u,
+.o_filetype_wav { @extend .o_icon-file-audio-o; }
+.o_filetype_ps,
+.o_filetype_pdf { @extend .o_icon-file-pdf-o; }
+.o_filetype_key,
+.o_filetype_odp,
+.o_filetype_ppt, 
+.o_filetype_pptx { @extend .o_icon-file-powerpoint-o; }
+.o_filetype_odf,
+.o_filetype_rtf,
+.o_filetype_readme, 
+.o_filetype_README,
+.o_filetype_log,
+.o_filetype_txt,
+.o_filetype_htm, 
+.o_filetype_html { @extend .o_icon-file-text-o; }
+.o_filetype_pages,
+.o_filetype_doc, 
+.o_filetype_docx { @extend .o_icon-file-word-o; }
+
 
 /* social share icons */
 .o_icon_facebook {@extend .o_icon-facebook-square;}

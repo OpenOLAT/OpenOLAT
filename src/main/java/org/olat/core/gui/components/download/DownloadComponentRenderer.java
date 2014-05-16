@@ -59,24 +59,9 @@ public class DownloadComponentRenderer implements ComponentRenderer {
 		if (comp.getDownloadMediaResoruce() == null)
 			return;
 
-		sb.append("<a href=\"");
+		sb.append("<a id='o_c").append(comp.getDispatchID()).append("' href=\"");
 		ubu.buildURI(sb, null, null, AJAXFlags.MODE_NORMAL); // rendered in new window anyway
 		sb.append("\"");
-		// Icon css class
-		String iconCssClass = comp.getLinkCssIconClass();
-		String cssArg = (args != null && args.length > 1 ? args[0] : null); // optional render argument
-		if (iconCssClass != null || cssArg != null) {
-			sb.append(" class=\"");
-			if (iconCssClass != null) {
-				sb.append("b_with_small_icon_left ");
-				sb.append(iconCssClass);
-				sb.append(" ");
-			}
-			if (cssArg != null) {
-				sb.append(cssArg);
-			}
-			sb.append("\"");
-		}
 		// Tooltip
 		String tip = comp.getLinkToolTip();
 		if (tip != null) {
@@ -85,6 +70,21 @@ public class DownloadComponentRenderer implements ComponentRenderer {
 			  .append("\"");
 		}
 		sb.append(" target=\"_blank\">");
+		// Icon css class
+		String iconCssClass = comp.getLinkCssIconClass();
+		String cssArg = (args != null && args.length > 1 ? args[0] : null); // optional render argument
+		if (iconCssClass != null || cssArg != null) {
+			sb.append("<i class=\"");
+			if (iconCssClass != null) {
+				sb.append("o_icon ");
+				sb.append(iconCssClass);
+				sb.append(" ");
+			}
+			if (cssArg != null) {
+				sb.append(cssArg);
+			}
+			sb.append("\"></i> ");
+		}
 		// Link Text
 		String text = comp.getLinkText();
 		if (text != null) {

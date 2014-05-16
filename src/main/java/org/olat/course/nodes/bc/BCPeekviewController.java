@@ -35,6 +35,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -91,13 +92,8 @@ public class BCPeekviewController extends BasicController implements Controller 
 			// add link to item
 			// Add link to jump to course node
 			if (leaf instanceof LocalFileImpl) {
-				LocalFileImpl localFile = (LocalFileImpl) leaf;
-				int lastDot = localFile.getName().lastIndexOf(".");
-				String cssClass = "";
-				if (lastDot > 0 ) {
-					cssClass = "b_filetype_" + localFile.getName().substring(lastDot+1);
-				}
-				DownloadComponent dlComp = new DownloadComponent("nodeLinkDL_"+(i+1), leaf, leaf.getName(), translate("preview.downloadfile"), "b_filetype_file o_gotoNode " + cssClass);
+				DownloadComponent dlComp = new DownloadComponent("nodeLinkDL_"+(i+1), leaf, leaf.getName(), translate("preview.downloadfile"), CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
+				dlComp.setElementCssClass("o_gotoNode");
 				peekviewVC.put("nodeLinkDL_"+(i+1),dlComp);
 			} else {
 				// hu? don't konw how to work with non-local impls
@@ -106,7 +102,8 @@ public class BCPeekviewController extends BasicController implements Controller 
 		peekviewVC.contextPut("leafs", leafs);
 		// Add link to show all items (go to node)
 		Link allItemsLink = LinkFactory.createLink("peekview.allItemsLink", peekviewVC, this);
-		allItemsLink.setCustomEnabledLinkCSS("b_float_right");
+		allItemsLink.setIconRightCSS("o_icon o_icon_start");
+		allItemsLink.setElementCssClass("pull-right");
 		putInitialPanel(peekviewVC);
 	}
 

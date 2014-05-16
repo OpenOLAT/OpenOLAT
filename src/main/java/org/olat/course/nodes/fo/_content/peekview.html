@@ -1,14 +1,14 @@
-<div class="o_forum_peekview b_clearfix">
+<div class="o_forum_peekview clearfix">
 #foreach( $message in $messages ) 	
 	<div class="o_forum_peekview_message">
 		<h5>
 			$r.render("nodeLink_${message.getKey()}")
+			<small class="o_nowrap">
+				#set($user=$message.getCreator().getUser())
+				$r.escapeHtml($user.getProperty("firstName", null)) $r.escapeHtml($user.getProperty("lastName", null))
+				($formatter.formatDateAndTime($message.getCreationDate()))
+			</small>
 		</h5>
-		<div class="o_peekview_author">
-			#set($user=$message.getCreator().getUser())
-			$r.escapeHtml($user.getProperty("firstName", null)) $r.escapeHtml($user.getProperty("lastName", null))
-			($formatter.formatDateAndTime($message.getCreationDate()))
-		</div>
 		$r.formatLatexFormulas($message.getBody())
 	</div>
 #end

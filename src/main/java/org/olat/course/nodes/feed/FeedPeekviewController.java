@@ -104,14 +104,16 @@ public class FeedPeekviewController extends BasicController implements Controlle
 				// Add link to jump to course node
 				Link nodeLink = LinkFactory.createLink("nodeLink_" + item.getGuid(), peekviewVC, this);
 				nodeLink.setCustomDisplayText(StringHelper.escapeHtml(item.getTitle()));
-				nodeLink.setCustomEnabledLinkCSS("b_with_small_icon_left o_feed_item_icon o_gotoNode");
+				nodeLink.setIconLeftCSS("o_icon o_" + feed.getResourceableTypeName().replace(".", "-") + "_icon");
+				nodeLink.setCustomEnabledLinkCSS("o_gotoNode");
 				nodeLink.setUserObject(item.getGuid());
 			}
 		}
 		peekviewVC.contextPut("items", items);
 		// Add link to show all items (go to node)
 		Link allItemsLink = LinkFactory.createLink("peekview.allItemsLink", peekviewVC, this);
-		allItemsLink.setCustomEnabledLinkCSS("b_float_right");
+		allItemsLink.setIconRightCSS("o_icon o_icon_start");
+		allItemsLink.setCustomEnabledLinkCSS("pull-right");
 		// Add Formatter for proper date formatting
 		peekviewVC.contextPut("formatter", Formatter.getInstance(getLocale()));
 		putInitialPanel(peekviewVC);

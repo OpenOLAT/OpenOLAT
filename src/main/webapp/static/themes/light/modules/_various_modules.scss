@@ -1,0 +1,33 @@
+/* iframe display controller - used to deliver all course contents */
+.o_iframedisplay {
+	iframe {
+		width: 100%;
+	}
+}
+/* normally content is wrapped in a single page which uses an iframedisplay */
+.o_singlepage {
+	.o_edit {
+		position: absolute;
+		top: $padding-large-vertical;
+		right: $padding-base-horizontal + $padding-xs-horizontal + $line-height-computed;
+ 	}
+}
+/* the clone controller is used to pop content out of the window into another window. */
+.o_content_popup {
+	position: absolute;
+	top: $padding-large-vertical;
+	right: $padding-base-horizontal;
+}
+/* briefcase (folder) module */
+
+.o_bc_empty{}
+.o_bc_table{}
+.o_bc_meta {
+	@extend .small;
+	.o_comment{}
+	.o_thumbnail{
+		width:200px; 
+		height:200px;
+	}
+	.o_author {}
+}

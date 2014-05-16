@@ -30,17 +30,17 @@ package org.olat.core.gui.util;
  */
 public class CSSHelper {
 	// Filetype icons
-	private static final String CSS_CLASS_FILETYPE_FILE_PREFIX = "b_filetype_";
+	private static final String CSS_CLASS_FILETYPE_FILE_PREFIX = "o_filetype_";
 	public static final String CSS_CLASS_FILETYPE_FILE = CSS_CLASS_FILETYPE_FILE_PREFIX + "file";
 	public static final String CSS_CLASS_FILETYPE_FOLDER = CSS_CLASS_FILETYPE_FILE_PREFIX + "folder";
 	// Standard icons
-	public static final String CSS_CLASS_USER = "b_user_icon";
-	public static final String CSS_CLASS_GROUP = "b_group_icon";
+	public static final String CSS_CLASS_USER = "o_icon_user";
+	public static final String CSS_CLASS_GROUP = "o_icon_group";
 	// Message icons
-	public static final String CSS_CLASS_ERROR = "b_error_icon";
-	public static final String CSS_CLASS_WARN = "b_warn_icon";
-	public static final String CSS_CLASS_INFO = "b_info_icon";
-	public static final String CSS_CLASS_NEW = "b_new_icon";
+	public static final String CSS_CLASS_ERROR = "o_icon_error";
+	public static final String CSS_CLASS_WARN = "o_icon_warn";
+	public static final String CSS_CLASS_INFO = "o_icon_info";
+	public static final String CSS_CLASS_NEW = "o_icon_new";
 
 	/**
 	 * Get the icon css class for a file based on the file ending (e.g. hello.pdf)

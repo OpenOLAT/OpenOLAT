@@ -78,13 +78,15 @@ public class FOPeekviewController extends BasicController implements Controller 
 			// Add link to jump to course node
 			Link nodeLink = LinkFactory.createLink("nodeLink_" + message.getKey(), peekviewVC, this);
 			nodeLink.setCustomDisplayText(StringHelper.escapeHtml(message.getTitle()));
-			nodeLink.setCustomEnabledLinkCSS("b_with_small_icon_left o_forum_message_icon o_gotoNode");
+			nodeLink.setIconLeftCSS("o_icon o_icon_post");
+			nodeLink.setCustomEnabledLinkCSS("o_gotoNode");
 			nodeLink.setUserObject(Long.toString(message.getKey()));				
 		}
 		peekviewVC.contextPut("messages", messages);
 		// Add link to show all items (go to node)
 		Link allItemsLink = LinkFactory.createLink("peekview.allItemsLink", peekviewVC, this);
-		allItemsLink.setCustomEnabledLinkCSS("b_float_right");
+		allItemsLink.setIconRightCSS("o_icon o_icon_start");
+		allItemsLink.setCustomEnabledLinkCSS("pull-right");
 		// Add Formatter for proper date formatting
 		peekviewVC.contextPut("formatter", Formatter.getInstance(getLocale()));
 		//

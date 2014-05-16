@@ -248,8 +248,9 @@ public class SinglePageController extends BasicController implements CloneableCo
 	 */
 	public void allowPageEditing() {
 		editLink = LinkFactory.createCustomLink(COMMAND_EDIT, COMMAND_EDIT, "", Link.NONTRANSLATED, myContent, this);
-		editLink.setCustomEnabledLinkCSS("b_content_edit");
-		editLink.setTooltip(translate(COMMAND_EDIT));
+		editLink.setElementCssClass("o_edit");
+		editLink.setIconLeftCSS("o_icon o_icon_edit_file o_icon-lg");
+		editLink.setTitle(translate(COMMAND_EDIT));
 	}
 	
 	public void setAllowDownload(boolean allow) {
@@ -266,8 +267,6 @@ public class SinglePageController extends BasicController implements CloneableCo
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == idc) {
 			if (event instanceof OlatCmdEvent) {
-				//TODO:gs legacy code???
-				//FIXME:fj:b move to other place (whole class) since single page controller could be used generically
 		    OlatCmdEvent oce = (OlatCmdEvent) event;
 		    String nodeId = oce.getSubcommand();
 		    ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_BROWSE_GOTO_NODE, getClass(),
