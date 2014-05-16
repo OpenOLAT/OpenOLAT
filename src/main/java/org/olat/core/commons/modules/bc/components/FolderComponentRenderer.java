@@ -206,12 +206,14 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 		
 		// add current file bread crumb path
 		crumbRenderer.render(fc, target, ubu, true, iframePostEnabled);			
+
 		// add file listing for current folder
+		target.append("<div class='o_table_wrapper'>");
 		listRenderer.render(fc, target, ubu, translator, iframePostEnabled);
 
 		if (fc.getCurrentContainerChildren().size() > 0) {
+			target.append("<div class='o_table_footer'>");
 			if (canWrite || canDelete || canMail) {
-				
 				
 				target.append("<div class=\"o_table_checkall input-sm\">");
 				target.append("<label class='checkbox-inline'><a href=\"#\" onclick=\"javascript:b_briefcase_toggleCheck('").append(formName).append("', true)\">");
@@ -270,7 +272,9 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 				}
 				target.append("</div>");
 			}
+			target.append("</div>");
 		}
+		target.append("</div>");
 
 		target.append("</form>");
 	}

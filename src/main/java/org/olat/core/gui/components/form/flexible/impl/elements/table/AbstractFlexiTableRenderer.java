@@ -66,7 +66,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 		sb.append(" table-responsive\">");
 		String id = ftC.getFormDispatchId();
-		sb.append("<table id=\"").append(id).append("\" class=\"table table-bordered table-hover table-responsive\">");
+		sb.append("<table id=\"").append(id).append("\" class=\"table table-condensed  table-striped table-hover table-responsive\">");
 		
 		//render headers
 		renderHeaders(sb, ftC, translator);
