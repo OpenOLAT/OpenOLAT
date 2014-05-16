@@ -285,8 +285,8 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 				  sb.append("<script type='text/javascript'>/* <![CDATA[ */")
 				    .append("jQuery(function() {")
 					  .append("  jQuery('#o_sel_info_msg_title_").append(key).append(",#o_sel_info_msg_link_").append(key).append("').tooltip({")
-					  .append("	  items: 'a,span',")
-					  .append("   content: function(){ return jQuery('#o_sel_info_tooltip_").append(key).append("').html(); }")
+					  .append("	  html: true,")
+					  .append("   title: function(){ return jQuery('#o_sel_info_tooltip_").append(key).append("').html(); }")
 					  .append("  });")
 					  .append("});")
 					  .append("/* ]]> */</script>");

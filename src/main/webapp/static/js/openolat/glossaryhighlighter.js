@@ -212,8 +212,8 @@ function o_tm_addExtToolTip(glossaryMainTerm, highlightString, occurrence){
 
 				var glossUrl = mapperPath + glossaryMainTerm + '.html';
 				targetChk.tooltip({
-					items: '#' + targetId,
-					content: function(evt, ui) {
+					html: true,
+					title: function(evt, ui) {
 				        var elem = jQuery(this);
 				        jQuery.ajax(glossUrl).always(function(data, textStatus, jqXHR) {
 				        	elem.tooltip('option', 'content', data).tooltip('open');

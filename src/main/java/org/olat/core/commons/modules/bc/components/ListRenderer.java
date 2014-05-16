@@ -301,7 +301,7 @@ public class ListRenderer {
 		//file metadata as tooltip
 		if (metaInfo != null) {
 			boolean hasMeta = false;
-			sb.append("<div id='o_sel_doc_tooltip_").append(pos).append("' class='b_ext_tooltip_wrapper b_briefcase_meta' style='display:none;'>");
+			sb.append("<div id='o_sel_doc_tooltip_").append(pos).append("' class='b_briefcase_meta' style='display:none;'>");
 			if (StringHelper.containsNonWhitespace(metaInfo.getTitle())) {
 				String title = StringHelper.escapeHtml(metaInfo.getTitle());
 				sb.append("<h5>").append(Formatter.escapeDoubleQuotes(title)).append("</h5>");
@@ -350,6 +350,18 @@ public class ListRenderer {
 			    .append("/* <![CDATA[ */")
 				  .append("jQuery(function() {")
 					.append("  jQuery('#o_sel_doc_").append(pos).append("').tooltip({")
+					.append("	  html: true,")
+					.append("     title: function(){ return jQuery('#o_sel_doc_tooltip_").append(pos).append("').html(); }")
+					.append("  });")
+					.append("});")
+					.append("/* ]]> */")
+					.append("</script>");
+
+				/*
+				sb.append("<script type='text/javascript'>")
+			    .append("/* <![CDATA[ *//*")
+				  .append("jQuery(function() {")
+					.append("  jQuery('#o_sel_doc_").append(pos).append("').tooltip({")
 					.append("	  items: 'a', tooltipClass: 'b_briefcase_meta ")
 					.append(isContainer ? "b_briefcase_folder " : "b_briefcase_file ")
 					.append(hasMetaAuthor ? "b_briefcase_with_meta_author " : "b_briefcase_with_uploader_author ")
@@ -358,8 +370,10 @@ public class ListRenderer {
 					.append("     content: function(){ return jQuery('#o_sel_doc_tooltip_").append(pos).append("').html(); }")
 					.append("  });")
 					.append("});")
-					.append("/* ]]> */")
+					.append("/* ]]> *//*")
 					.append("</script>");
+				
+				*/
 			}
 		}
 		sb.append("</td><td>");

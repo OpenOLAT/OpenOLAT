@@ -109,8 +109,8 @@
 /* <![CDATA[ */
 jQuery(function() {
 	jQuery('#leaf$ri').tooltip({
-		items: "span",
-		content: function(){ return jQuery('#o_tooltip_$ri').html(); }	
+		html: true,
+		title: function(){ return jQuery('#o_tooltip_$ri').html(); }	
 	});
 });
 /* ]]> */
