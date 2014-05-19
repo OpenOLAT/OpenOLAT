@@ -599,10 +599,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				&& extendedSearchButton.getFormDispatchId().equals(dispatchuri)) {
 			expandExtendedSearch(ureq);
 		} else if(dispatchuri != null && StringHelper.containsNonWhitespace(filter)) {
-			filter(filter);
+			doFilter(filter);
 		} else if(exportButton != null
 				&& exportButton.getFormDispatchId().equals(dispatchuri)) {
-			export(ureq);
+			doExport(ureq);
 		} else if(dispatchuri != null && select != null && select.equals("checkall")) {
 			doSelectAll();
 		} else if(dispatchuri != null && select != null && select.equals("uncheckall")) {
@@ -687,7 +687,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 	}
 	
-	protected void filter(String filterKey) {
+	private void doFilter(String filterKey) {
 		if(filterKey == null) {
 			for(FlexiTableFilter filter:filters) {
 				filter.setSelected(false);
@@ -699,8 +699,16 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		
 		if(dataModel instanceof FilterableFlexiTableModel) {
+			rowCount = -1;
+			currentPage = 0;
+			currentFirstResult = 0;
+			
 			((FilterableFlexiTableModel)dataModel).filter(filterKey);
 		} else if(dataSource != null) {
+			rowCount = -1;
+			currentPage = 0;
+			currentFirstResult = 0;
+
 			List<String> conditionalQueries = Collections.singletonList(filterKey);
 			dataSource.clear();
 			dataSource.load(null, conditionalQueries, 0, getPageSize(), orderBy);
@@ -708,7 +716,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		component.setDirty(true);
 	}
 	
-	protected void export(UserRequest ureq) {
+	private void doExport(UserRequest ureq) {
 		MediaResource resource;
 		if(dataModel instanceof ExportableFlexiTableDataModel) {
 			resource = ((ExportableFlexiTableDataModel)dataModel).export(component);

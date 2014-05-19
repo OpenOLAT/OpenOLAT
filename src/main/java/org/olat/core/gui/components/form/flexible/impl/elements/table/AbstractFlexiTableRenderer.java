@@ -501,7 +501,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				nearright = maxPage - page;
 				nearleft += (nearleft - nearright);
 			}
-			for (int i = 1; i <= maxPage; i++) {
+			for (int i = 0; i <= maxPage; i++) {
 				// adapt stepsize if needed
 				stepSize = adaptStepIfNeeded(page, maxStepSize, stepSize, i);
 	
@@ -511,7 +511,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 					isStep = isStep && (stepCnt % useEveryStep == 0);
 				}
 				isNear = (i > (page - nearleft) && i < (page + nearright));
-				if (i == 1 || i == maxPage || isStep || isNear) {
+				if (i == 0 || i == maxPage || isStep || isNear) {
 					appendPagenNumberLink(sb, ftC, page, i);
 				}
 			}

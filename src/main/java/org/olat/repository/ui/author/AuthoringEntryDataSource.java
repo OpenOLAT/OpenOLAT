@@ -108,7 +108,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		if(condQueries != null && condQueries.size() > 0) {
 			String filter = condQueries.get(0);
 			if(StringHelper.containsNonWhitespace(filter)) {
-				searchParams.addResourceTypes(filter);
+				searchParams.setResourceTypes(Collections.singletonList(filter));
 			} else {
 				searchParams.setResourceTypes(null);
 			}
