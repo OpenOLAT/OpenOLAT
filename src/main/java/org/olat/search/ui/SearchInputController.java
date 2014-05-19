@@ -182,14 +182,17 @@ public class SearchInputController extends FormBasicController {
 		}
 		
 		if (displayOption.equals(DisplayOption.STANDARD) || displayOption.equals(DisplayOption.BUTTON)) {
-			searchButton = uifactory.addFormLink("search", "", "", formLayout, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS);
-			searchButton.setCustomEnabledLinkCSS("o_fulltext_search_button b_small_icon");
+			searchButton = uifactory.addFormLink("search", "", "", formLayout, Link.NONTRANSLATED);
+			searchButton.setIconLeftCSS("o_icon o_icon-fw o_icon_search o_icon-lg");
+			String searchLabel = getTranslator().translate("search");
+			searchButton.setLinkTitle(searchLabel);
 		} else if (displayOption.equals(DisplayOption.BUTTON_WITH_LABEL)) {
 			searchButton = uifactory.addFormLink("search", formLayout, Link.BUTTON_SMALL);
 		} else if (displayOption.equals(DisplayOption.STANDARD_TEXT)) {
 			String searchLabel = getTranslator().translate("search");
 			searchButton = uifactory.addFormLink("search", searchLabel, "", formLayout, Link.NONTRANSLATED + Link.BUTTON_SMALL);
 		}
+		searchButton.setCustomEnabledLinkCSS("o_search");
 		searchButton.setEnabled(true);
 	}
 	

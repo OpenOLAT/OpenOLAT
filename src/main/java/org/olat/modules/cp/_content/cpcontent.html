@@ -1,6 +1,6 @@
-<div class="o_module_cp_wrapper b_clearfix">
+<div class="o_module_cp_wrapper clearfix">
 	#if($r.available("search_input") || $r.available("previous") || $r.available("next") || $r.available("print"))
-		<div id="o_local_fulltextsearch"><div class="o_cp_navigation">
+		<div class="o_tools clearfix">
 			#if($r.available("previous"))
 				$r.render("previous")
 			#end
@@ -11,12 +11,18 @@
 				$r.render("print")
 			#end
 			#if($r.available("search_input"))
+				<div class="o_search_wrapper">
 				$r.render("search_input")
+				</div>
 			#end
-		</div></div>		
+		</div>		
 	#end
-	<div class="b_floatscrollbox">
-	$r.render("cpContent")
+	#if($isIframeDelivered)
+		$r.render("cpContent")
+	#else 
+	<div class="o_scrollblock">
+		$r.render("cpContent")
 	</div>
+	#end
 </div>
 

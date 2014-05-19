@@ -131,11 +131,13 @@ public class CPDisplayController extends BasicController implements Activateable
 			cpComponent = new HtmlStaticPageComponent("", rootContainer);
 			cpComponent.addListener(this);
 			myContent.put("cpContent", cpComponent);
+			myContent.contextPut("isIframeDelivered", Boolean.FALSE);
 		} else {
 			cpContentCtr = new IFrameDisplayController(ureq, getWindowControl(),rootContainer, null, ores, deliveryOptions);
 			cpContentCtr.setAllowDownload(true);
 			listenTo(cpContentCtr);
 			myContent.put("cpContent", cpContentCtr.getInitialComponent());
+			myContent.contextPut("isIframeDelivered", Boolean.TRUE);
 		}
 
 		// even if we do not show the menu, we need to build parse the manifest and
@@ -162,10 +164,11 @@ public class CPDisplayController extends BasicController implements Activateable
 		
 		//fxdiff VCRP-14: print cp
 		if(showPrint) {
-			printLink = LinkFactory.createLink("print", myContent, this);
-			printLink.setCustomEnabledLinkCSS("b_small_icon o_cp_print_icon");
-			printLink.setCustomDisplayText("Print");
-			printLink.setTooltip("print");
+			printLink = LinkFactory.createCustomLink("print", "print", null, Link.LINK + Link.NONTRANSLATED, myContent, this);
+			printLink.setCustomDisplayText("");
+			printLink.setIconLeftCSS("o_icon o_icon-fw o_icon_print o_icon-lg");
+			printLink.setCustomEnabledLinkCSS("o_print");
+			printLink.setTitle(translate("print.node"));
 			
 			String themeBaseUri = wControl.getWindowBackOffice().getWindow().getGuiTheme().getBaseURI();
 			printMapper = new CPPrintMapper(ctm, rootContainer, themeBaseUri);
@@ -175,16 +178,20 @@ public class CPDisplayController extends BasicController implements Activateable
 		
 		//fxdiff VCRP-13: cp navigation
 		if(showNavigation) {
-			nextLink = LinkFactory.createLink("next", myContent, this);
-			nextLink.setCustomEnabledLinkCSS("b_small_icon o_cp_next_icon");
-			nextLink.setCustomDisplayText("&nbsp;&nbsp;");
-			nextLink.setTooltip("next");
-			previousLink = LinkFactory.createLink("previous", myContent, this);
-			previousLink.setCustomEnabledLinkCSS("b_small_icon o_cp_previous_icon");
-			previousLink.setCustomDisplayText("&nbsp;&nbsp;");
-			previousLink.setTooltip("next");
-		  myContent.put("next", nextLink);
-		  myContent.put("previous", previousLink);
+			nextLink = LinkFactory.createCustomLink("next", "next", null, Link.LINK + Link.NONTRANSLATED, myContent, this);
+			nextLink.setCustomDisplayText("");
+			nextLink.setIconLeftCSS("o_icon o_icon-fw o_icon_next o_icon-lg");
+			nextLink.setCustomEnabledLinkCSS("o_next");
+			nextLink.setTitle(translate("next"));
+			
+			previousLink = LinkFactory.createCustomLink("previous", "previous", null, Link.LINK + Link.NONTRANSLATED, myContent, this);
+			previousLink.setCustomDisplayText("");
+			previousLink.setIconLeftCSS("o_icon o_icon-fw o_icon_previous o_icon-lg");
+			previousLink.setCustomEnabledLinkCSS("o_previous");
+			previousLink.setTitle(translate("previous"));
+			
+			myContent.put("next", nextLink);
+			myContent.put("previous", previousLink);
 		}
 
 		LoggingResourceable nodeInfo = null;

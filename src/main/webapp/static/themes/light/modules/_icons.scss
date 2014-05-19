@@ -61,6 +61,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_new { @extend .o_icon-asterisk; color: $brand-success;}
 .o_icon_new_document { @extend .o_icon-file-text; }
 .o_icon_new_folder { @extend .o_icon-folder;}
+.o_icon_next{@extend .o_icon-arrow-circle-right; }
 .o_icon_notes{@extend .o_icon-pencil; }
 .o_icon_notification { @extend .o_icon-rss;}
 .o_icon_language {@extend .o_icon-globe; }
@@ -77,6 +78,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_password { @extend .o_icon-key;}
 .o_icon_post { @extend .o_icon-comment-o; }
 .o_icon_preview {@extend .o_icon-eye;}
+.o_icon_previous{@extend .o_icon-arrow-circle-left; }
 .o_icon_print {@extend .o_icon-print;}
 .o_icon_publish{ @extend .o_icon-share;}
 .o_icon_rating_on { @extend .o_icon-star;}
