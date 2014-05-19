@@ -296,7 +296,9 @@ public class CheckListAssessmentController extends FormBasicController implement
 			secGroups.add(re.getParticipantGroup());
 			List<RepositoryEntryMembership> repoMemberships = repositoryManager.getRepositoryEntryMembership(re);
 			for(RepositoryEntryMembership repoMembership:repoMemberships) {
-				if(repoMembership.getParticipantRepoKey() == null) continue;
+				if(repoMembership.getParticipantRepoKey() == null) {
+					continue;
+				}
 				missingIdentityKeys.add(repoMembership.getIdentityKey());
 			}
 		}
@@ -569,6 +571,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 				courseNode.updateScoreEvaluation(userCourseEnv, identity);
 			}
 		}
+		
+		reloadTable();
 	}
 	
 	private void doDisableEditingMode() {
