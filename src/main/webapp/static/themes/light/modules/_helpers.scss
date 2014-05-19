@@ -28,7 +28,7 @@ div.o_chelp_wrapper {
 	margin: 2em 0;
 }
 /* overflowing content that should have scrollbar */
-.o_scrollblock
+.o_scrollblock {
 	overflow-x: auto;  // this must stay on "auto", change to "hidden" and the everything goes to hell
 	overflow-y: hidden;
 }
@@ -44,7 +44,6 @@ div.o_chelp_wrapper {
 		}
 	}
 }
-
 
 
 
