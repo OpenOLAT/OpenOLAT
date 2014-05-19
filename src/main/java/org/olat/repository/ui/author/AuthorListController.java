@@ -250,7 +250,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(importLink == source) {
 			doImport(ureq);
-		} else if(source instanceof Link && ((Link)source).getUserObject() instanceof String) {
+		} else if(source instanceof Link && ((Link)source).getUserObject() instanceof RepositoryHandler) {
 			RepositoryHandler handler = (RepositoryHandler)((Link)source).getUserObject();
 			if(handler != null) {
 				doCreate(ureq, handler);
