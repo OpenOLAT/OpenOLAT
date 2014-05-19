@@ -20,10 +20,33 @@ div.o_chelp_wrapper {
 	}
 }
 
-/* a block of content that should have margins */
+/* a block of content that should have margins like a paragraph */
 .o_block {
-	margin: 0.75em 0;
+	margin: 1em 0;
 }
+.o_block_large {
+	margin: 2em 0;
+}
+/* overflowing content that should have scrollbar */
+.o_scrollblock
+	overflow-x: auto;  // this must stay on "auto", change to "hidden" and the everything goes to hell
+	overflow-y: hidden;
+}
+
+/* multiple buttons, center aligned */
+.o_button_group {
+	@extend .o_block_large;
+	text-align: center;
+	a, input, button {
+		margin-right: 1em;		
+		&:last-child {
+			margin-right: 0;		
+		}
+	}
+}
+
+
+
 
 /* text that should be on one line, e.g. in tables */
 .o_nowrap {

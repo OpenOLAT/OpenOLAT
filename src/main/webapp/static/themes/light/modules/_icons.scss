@@ -105,7 +105,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_user {@extend .o_icon-user; }
 .o_icon_upload {@extend .o_icon-upload; }
 .o_icon_version {@extend .o_icon-history;}
-.o_icon_warn {@extend .o_icon-exclamation-triangle; color: $brand-danger;}
+.o_icon_warn {@extend .o_icon-exclamation-triangle; color: $brand-warning;}
 .o_icon_wizard{@extend .o_icon-magic; }
 
 /* do not move link icons */

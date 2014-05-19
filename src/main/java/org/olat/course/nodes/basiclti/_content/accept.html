@@ -1,39 +1,39 @@
-<div class="b_warning">
+<div class="o_warning">
 	<h4>$r.translate("accept.title")</h4>
 	<p>
 		$r.translate("accept.intro")
 	</p>
 
-<table class="b_grid">
-#if ($userData.get('firstName'))
-	<tr>
-		<td>$r.translateWithPackage("org.olat.user.propertyhandlers","form.name.firstName") </td>
-		<td>$userData.get('firstName')</td>
-	</tr>
-#end
-#if ($userData.get('lastName'))
-	<tr>
-		<td>$r.translateWithPackage("org.olat.user.propertyhandlers","form.name.lastName") </td>
-		<td>$userData.get('lastName')</td>
-	</tr>
-#end
-#if ($userData.get('email'))
-	<tr>
-		<td>$r.translateWithPackage("org.olat.user.propertyhandlers","form.name.email") </td>
-		<td>$userData.get('email')</td>
-	</tr>
-#end
-
-#foreach ($name in $customUserData.propertyNames())
-	<tr>
-		<td>$r.translateWithPackage("org.olat.user.propertyhandlers","form.name.$name")</td>
-		<td>$customUserData.getProperty($name)</td>
-	</tr>
-#end
-</table>
-
-<div class="b_button_group">
-	$r.render("accept")
-</div>
+	<table class="table table-condensed table-bordered">
+	#if ($userData.get('firstName'))
+		<tr>
+			<td>$r.translateWithPackage("org.olat.user.propertyhandlers","form.name.firstName") </td>
+			<td>$userData.get('firstName')</td>
+		</tr>
+	#end
+	#if ($userData.get('lastName'))
+		<tr>
+			<td>$r.translateWithPackage("org.olat.user.propertyhandlers","form.name.lastName") </td>
+			<td>$userData.get('lastName')</td>
+		</tr>
+	#end
+	#if ($userData.get('email'))
+		<tr>
+			<td>$r.translateWithPackage("org.olat.user.propertyhandlers","form.name.email") </td>
+			<td>$userData.get('email')</td>
+		</tr>
+	#end
+	
+	#foreach ($name in $customUserData.propertyNames())
+		<tr>
+			<td>$r.translateWithPackage("org.olat.user.propertyhandlers","form.name.$name")</td>
+			<td>$customUserData.getProperty($name)</td>
+		</tr>
+	#end
+	</table>
+	
+	<div class="o_button_group">
+		$r.render("accept")
+	</div>	
 
 </div>

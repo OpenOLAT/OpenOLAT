@@ -91,6 +91,11 @@
 		
 		}
 	}
+	
+	.o_no_scoreinfo {
+		@extend .o_important;
+	}	
+	
 }
 
 .o_st_peekview {

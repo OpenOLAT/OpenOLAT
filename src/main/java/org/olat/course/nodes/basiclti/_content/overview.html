@@ -1,47 +1,55 @@
 #if ($isassessable)	
-	<div class="o_course_run_scoreinfo">
-		<h4>$r.translate("score.title")</h4>		
-		<table>
+	<div class="o_personal row">
+		<h4 class="col-sm-12">$r.translate("score.title")</h4>
+		#if($attempts > 0)
+		<div class="col-sm-12 col-md-6">
+			<table class="table">
 			<tbody>
-				<tr>
-					<td>			
-						$r.translate("attempts.yourattempts"): 
-					</td>
+				#if ($hasPassed)
+				<tr class="o_state #if ($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
+					<th>$r.translate("passed.yourpassed")</th>
 					<td>
-						$attempts
+					#if($hasPassedValue && $passed)	
+						<i class="o_icon o_icon_passed"></i> 
+						$r.translate("passed.yes")
+					#elseif($hasPassedValue && !$passed)		
+						<i class="o_icon o_icon_failed"></i> 
+						$r.translate("passed.no")
+					#else
+						$r.translate("passed.noinfo")
+					#end
 					</td>
 				</tr>
-	#if($attempts > 0)
-		#if ($score)
-				<tr>
-					<td>			
-						$r.translate("score.yourscore"): 
-					</td>
+				#end
+	
+				#if ($hasScore)
+				<tr class="o_score">
+					<th>$r.translate("score.yourscore")</th>
 					<td>
 						$score
-					</td>
-				</tr>
-		#end
-				<tr>
-					<td>			
-						$r.translate("passed.yourpassed"): 
-					</td>
+					</td> 
+				</tr> 
+				#end					
+				
+				<tr class="o_attempts">
+					<th>$r.translate("attempts.yourattempts")</th>
 					<td>
-						#if($hasPassedValue && $passed == true)		
-							<span class="o_passed">$r.translate("passed.yes")</span>
-						#elseif($hasPassedValue && $passed == false)		
-							<span class="o_notpassed">$r.translate("passed.no")</span>
-						#end
-					</td>
-				</tr>	
+						$attempts
+					</td> 
+				</tr> 
+						
 			</tbody>
-		</table>
-	#else
-			</tbody>
-		</table>
-
-		<div class="o_course_run_scoreinfo_noinfo">$r.translate("score.noscoreinfoyet")</div>
-	#end
-	</div>
+			</table>				
+		</div>
+		#else 
+		<div class="col-sm-12">
+			<div class="o_no_scoreinfo">
+				$r.translate("score.noscoreinfoyet")
+			</div>
+		</div>
+		#end
+    </div>
 #end
-$r.render("start")
+<div class="o_button_group">
+	$r.render("start")
+</div>
