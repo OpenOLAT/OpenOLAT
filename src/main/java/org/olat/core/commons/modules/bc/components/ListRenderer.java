@@ -35,7 +35,6 @@ import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
-import org.olat.core.gui.control.generic.folder.FolderHelper;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -148,8 +147,8 @@ public class ListRenderer {
 		sb.append(">").append(translator.translate("header.Size")).append("</a>");		
 		sb.append("</th><th>");
 
-		sb.append("<a href=\"");																																							// file modification date column
-		ubu.buildURI(sb, new String[] { PARAM_SORTID }, new String[] { FolderComponent.SORT_DATE }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
+		sb.append("<a href=\"");																																							// file type column
+		ubu.buildURI(sb, new String[] { PARAM_SORTID }, new String[] { FolderComponent.SORT_TYPE }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 		sb.append("\"");
 		if (iframePostEnabled) { // add ajax iframe target
 			StringOutput so = new StringOutput();
@@ -299,21 +298,21 @@ public class ListRenderer {
 				sb.append("</div>");
 				hasMeta = true;
 			}
-			boolean hasThumbnail = false;
+			//boolean hasThumbnail = false;
 			if(metaInfo.isThumbnailAvailable()) {
 				sb.append("<div class='o_thumbnail' style='background-image:url("); 
 				ubu.buildURI(sb, new String[] { PARAM_SERV_THUMBNAIL}, new String[] { "x" }, pathAndName, AJAXFlags.MODE_NORMAL);
 				sb.append("); background-repeat:no-repeat; background-position:50% 50%;'></div>");
 				hasMeta = true;
-				hasThumbnail = true;
+				//hasThumbnail = true;
 			}
 
 			// first try author info from metadata (creator)
-			boolean hasMetaAuthor = false;
+			//boolean hasMetaAuthor = false;
 			String author = metaInfo.getCreator();
 			// fallback use file author (uploader)
 			if (StringHelper.containsNonWhitespace(author)) {
-				hasMetaAuthor = true;
+				//hasMetaAuthor = true;
 			} else {
 				author = metaInfo.getAuthor();
 				if(!"-".equals(author)) {
@@ -332,15 +331,16 @@ public class ListRenderer {
 			if (hasMeta) {
 				// render tooltip only when it contains something
 				sb.append("<script type='text/javascript'>")
-			    .append("/* <![CDATA[ */")
-				  .append("jQuery(function() {")
-					.append("  jQuery('#o_sel_doc_").append(pos).append("').tooltip({")
-					.append("	  html: true,")
-					.append("     title: function(){ return jQuery('#o_sel_doc_tooltip_").append(pos).append("').html(); }")
-					.append("  });")
-					.append("});")
-					.append("/* ]]> */")
-					.append("</script>");
+			      .append("/* <![CDATA[ */")
+				  .append("jQuery(function() {\n")
+				  .append("  jQuery('#o_sel_doc_").append(pos).append("').tooltip({\n")
+				  .append("	   html: true,\n")
+				  .append("	   container: 'body',\n")
+				  .append("    title: function(){ return jQuery('#o_sel_doc_tooltip_").append(pos).append("').html(); }\n")
+				  .append("  });\n")
+				  .append("});")
+				  .append("/* ]]> */")
+				  .append("</script>");
 
 				/*
 				sb.append("<script type='text/javascript'>")

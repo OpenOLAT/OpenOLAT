@@ -58,3 +58,15 @@ body .modal {
 	position: absolute;
     overflow: visible;
 }
+
+body div.tooltip-inner {
+	max-width:400px;
+}
+
+body div.popover {
+	max-width:450px;
+}
+
+body .modal-body.alert {
+	border-radius:0;
+}
