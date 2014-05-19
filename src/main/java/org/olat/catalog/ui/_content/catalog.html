@@ -2,29 +2,41 @@
 	## first render bread-crumb category navigation
 	#set ($lastIndex = $history.size() - 1)
 	#set ($ri = 0)
-	<div class="o_catalog_nav">
+	<ol class="breadcrumb">
 		#foreach($child in $history)
 			#if($ri < $lastIndex)
-				<a href="$r.commandURIbg("history$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget()>$r.escapeHtml($child.getName())</a> &gt; 
+				<li><a href="$r.commandURIbg("history$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget()>$r.escapeHtml($child.getName())</a></li>
 			#else
-				<strong>$r.escapeHtml($child.getName())</strong>
+				<li class='active'><strong>$r.escapeHtml($child.getName())</strong></li>
 			#end
 			#set ($ri = $ri +1)
 		#end
-	</div>
+	</ol>
 	
 	## render category description
-	<div class="o_catalog_title b_with_small_icon_left o_catalog_cat_icon">
-		$r.translate("category") <strong>$r.escapeHtml($currentCatalogEntry.getName())</strong>			
-	</div>
-	#if ($currentCatalogEntry.getDescription() || $r.available("catThumbnail"))
-		<div class="b_clearfix"><div class="o_catalog_desc">
-			#if($r.available("catThumbnail"))
-				<div class="o_catalog_thumbnail">$r.render("catThumbnail")</div>
-			#end
-			$r.xssScan($currentCatalogEntry.getDescription())
-		</div></div>
-	#end
+	<div class="o_catalog"><div class="o_level o_level_${catalogLevel}">
+			<div class="o_visual">
+				#if($r.available("catThumbnail"))
+					$r.render("catThumbnail")
+				#else
+					<div class="o_visual_not_available"></div>			
+				#end
+			</div>
+			<div class="o_meta o_withEllipsis clearfix">
+				<h2 class="o_title">$r.escapeHtml($currentCatalogEntry.getName())</h2>
+				#if($currentCatalogEntry.getDescription())	
+				<div class="o_desc">$r.xssScan($currentCatalogEntry.getDescription())</div>
+				#end
+				<div class="o_ellipsis_links">
+					<a href="#" onclick="javascript: OPOL.Ellipsis.showOverflow(this); return false;" class="o_morelink">
+						<i class="o_icon o_icon_show_more"></i> $r.translate("read.more")
+					</a>
+					<a href="#" onclick="javascript: OPOL.Ellipsis.hideOverflow(this); return false;" class="o_lesslink">
+						<i class="o_icon o_icon_show_less"></i> $r.translate("read.less")
+					</a>
+				</div>
+			</div>
+	</div></div>
 		
 	## calculate some temporary variables
 	#set($hasChildren = false)
@@ -54,57 +66,29 @@
 		</div>
 	#end
 	
-	## the hint that the list entries may not be complete due to guest access restrictions
-	#if ($isGuest)
-		<div class="b_warning">${r.translate("filtered.first")}${r.render("cat.login")}${r.translate("filtered.second")}</div>
-	#end
-	
 	## render list of children items: repository entries in this category
 	#set ($ri = 0)
 	#set ($i = 0)
 	#if ($hasChildren)
-		<div class="o_catalog_link_title">
-			$r.translate("title.leaves")
-		</div>
-		<table class="table b_full">
+		<h4>$r.translate("title.leaves")</h4>
+		<table class="table">
 		#foreach($child in $children)
 			#if ($child.getType()==$leaf)
-
-					#if($i%2==0)
-						<tr>
-					#else
-						<tr class="b_table_odd">
-					#end	
-						<td>
-							<div class="clearfix">
-								#if ($canRemoveAllLinks || $hasOwnedLinks)
-									#if($canRemoveAllLinks || $ownedLinks.contains($child))
-									  <a href="$r.commandURIbg("edit.leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_float_right">$r.translate("edit")</a>
-									  <a href="$r.commandURIbg("remove.leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_float_right">$r.translate("delete")</a>
-									  <a href="$r.commandURIbg("move.leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_float_right">$r.translate("move")</a>
-									#end
-								#end
-								<a href="$r.commandURIbg("detail.leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_float_right">$r.translate("details.header")</a>
-								#if($r.get("ac_$ri"))
-									#foreach($ac_type in $r.get("ac_$ri"))
-										#if($ac_type.price && $ac_type.price.length() > 0)
-											<span class='o_nowrap'><i class='o_icon $ac_type.type o_icon-lg'></i> $ac_type.price</span>
-										#else
-											<i class='o_icon $ac_type.type o_icon-lg'></i>
-										#end
-									#end
-								#end
-								<a href="$r.commandURIbg("leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_with_small_icon_left ${iconRenderer.getIconCssClass($child.getRepositoryEntry())}">
-									<span id="leaf$ri">$r.escapeHtml($child.getRepositoryEntry().getDisplayname())</span>
-								</a>
-								<div id="o_tooltip_$ri" style="display:none;">
-									#if($r.available("image$ri"))
-										<div class="o_repository_resource_image">$r.render("image$ri")</div>
-										<div class="b_ext_tooltip_wrapper" style="min-height:110px">$child.getRepositoryEntry().getFormattedDescription()</div>
-									#else
-										<div class="b_ext_tooltip_wrapper">$child.getRepositoryEntry().getFormattedDescription()</div>
-									#end								
-								</div>
+				<tr>
+					<td>
+						<a href="$r.commandURIbg("leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_with_small_icon_left ${iconRenderer.getIconCssClass($child.getRepositoryEntry())}">
+							<span id="leaf$ri">$r.escapeHtml($child.getRepositoryEntry().getDisplayname())</span>
+						</a>
+						#set ($repoDesc = $child.getRepositoryEntry().getFormattedDescription())
+						#if($r.available("image$ri") || ($repoDesc && $repoDesc.length() > 0))
+						<div id="o_tooltip_$ri" style="display:none;">
+							#if($r.available("image$ri"))
+								<div class="o_repository_resource_image">$r.render("image$ri")</div>
+								<div class="b_ext_tooltip_wrapper" style="min-height:110px">$repoDesc</div>
+							#else
+								<div class="b_ext_tooltip_wrapper">$repoDesc</div>
+							#end								
+						</div>
 <script type="text/javascript">
 /* <![CDATA[ */
 jQuery(function() {
@@ -115,11 +99,22 @@ jQuery(function() {
 });
 /* ]]> */
 </script>
-							</div>
-						</td>				
-					</tr>
-					#set ($i = $i +1)	
-
+					#end
+					#if ($canRemoveAllLinks || $hasOwnedLinks)
+						#if($canRemoveAllLinks || $ownedLinks.contains($child))
+							</td><td>	
+								  <a href="$r.commandURIbg("edit.leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_float_right">$r.translate("edit")</a>
+							</td><td>
+								<a href="$r.commandURIbg("remove.leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_float_right">$r.translate("delete")</a>
+							</td><td>
+								<a href="$r.commandURIbg("move.leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_float_right">$r.translate("move")</a>
+						#end
+					#end
+					</td><td>
+						<a href="$r.commandURIbg("detail.leaf$ri")" onclick="return o2cl()" onkeypress="return o2cl()" $r.bgTarget() class="b_float_right">$r.translate("details.header")</a>
+					</td>				
+				</tr>
+				#set ($i = $i +1)
 			#end
 			#set ($ri = $ri +1)
 		#end
@@ -138,5 +133,4 @@ jQuery(function() {
 		<pre>$guestExtLink</pre>
 	#b_togglebox_end()
 	</div>
-	
 </div>
