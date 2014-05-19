@@ -60,4 +60,13 @@
 	margin-left: 0.5em;
 }
 
+
+/* bootstrap extensions */
+.o_info, o_note, o_important, o_warning, o_error {
+	.table-bordered td {
+		border-color: $gray-dark;
+	}
+}
+
+
 	

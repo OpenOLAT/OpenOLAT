@@ -48,7 +48,7 @@ p.o_important, div.o_important {margin: 20px 0;} /* tiny needs something here */
 	border-color: #FF9E3E;
 	h2, h3, h4, h5 { color: #FF9E3E;}
 }
-o.b_warning, div.o_warning {margin: 20px 0;} /* tiny needs something here */
+o.o_warning, div.o_warning {margin: 20px 0;} /* tiny needs something here */
 
 .o_error {
 	@extend .o_info;
@@ -56,14 +56,14 @@ o.b_warning, div.o_warning {margin: 20px 0;} /* tiny needs something here */
 	border-color: #d9534f;
 	h2, h3, h4, h5 { color: #d9534f;}
 }
-o.b_error, div.o_error {margin: 20px 0;} /* tiny needs something here */
+o.o_error, div.o_error {margin: 20px 0;} /* tiny needs something here */
 
-.b_border_box { 
+.o_border_box { 
 	border: 1px solid $gray-light; 
 	padding: 1em;
 	@include o-border-radius(2px); 
 }
-p.b_border_box, div.b_border_box {margin: 1em 0;} /* tiny needs something here */
+p.o_border_box, div.o_border_box {margin: 1em 0;} /* tiny needs something here */
 
 
 /* nice table formatting */

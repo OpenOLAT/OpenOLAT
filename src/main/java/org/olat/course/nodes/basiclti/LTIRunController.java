@@ -178,6 +178,7 @@ public class LTIRunController extends BasicController {
 		acceptPage.contextPut("userData", userData);
 		acceptPage.contextPut("customUserData", customUserData);
 		acceptLink = LinkFactory.createButton("accept", acceptPage, this);
+		acceptLink.setPrimary(true);
 		mainPanel.setContent(acceptPage);
 	}
 	
@@ -292,6 +293,7 @@ public class LTIRunController extends BasicController {
 		startPage.contextPut("displayTitle", courseNode.getLongTitle());
 		
 		startButton = LinkFactory.createButton("start", startPage, this);
+		startButton.setPrimary(true);
 
 		Boolean assessable = config.getBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		if(assessable != null && assessable.booleanValue()) {
