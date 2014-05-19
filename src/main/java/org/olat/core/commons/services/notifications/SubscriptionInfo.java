@@ -78,7 +78,7 @@ public class SubscriptionInfo {
 		if (!hasNews()) return "";
 		StringBuilder sb = new StringBuilder();
 		boolean firstDone = false;
-		if (mimeType.equals(SubscriptionInfo.MIME_HTML)) sb.append("<ul>");
+		if (mimeType.equals(SubscriptionInfo.MIME_HTML)) sb.append("<ul class='list-unstyled'>");
 		for (SubscriptionListItem subListItem : subsList) {
 			if (firstDone && mimeType.equals(SubscriptionInfo.MIME_PLAIN)) {
 				sb.append("\n");

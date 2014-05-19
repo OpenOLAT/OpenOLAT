@@ -116,7 +116,7 @@ public class TableRenderer implements ComponentRenderer {
 		// starting real table table
 		target.append("<div class=\"o_table_wrapper table-responsive\" id=\"b_overflowscrollbox_").append(table.hashCode()).append("\">");
 
-		target.append("<table id=\"b_table").append(table.hashCode()).append("\" class=\"o_table table table-bordered table-hover").append(CLOSE_HTML_BRACE);
+		target.append("<table id=\"b_table").append(table.hashCode()).append("\" class=\"o_table table table-striped table-condensed table-hover").append(CLOSE_HTML_BRACE);
 		appendHeaderLinks(target, translator, table, formName, cols, asc);
 		appendDataRows(renderer, target, ubu, table, iframePostEnabled, cols, selRowUnSelectable, selRowId, startRowId, endRowId);
 		target.append("</table><div class='o_table_footer'>");

@@ -251,6 +251,12 @@ public class XSSFilterTest {
 	}
 	
 	@Test
+	public void test_font_awesome() {
+		// for now i tags must have at least a space to not b removed
+		t("<i class=\"o_icon o_icon_dev\"> </i> ", "<i class=\"o_icon o_icon_dev\"> </i> ");
+	}
+	
+	@Test
 	public void test_big_tiny_output(){
 		testsToRun = 1;
 		String input = "<br>";

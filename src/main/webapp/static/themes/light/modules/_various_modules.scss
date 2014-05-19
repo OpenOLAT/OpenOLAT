@@ -50,6 +50,36 @@
 	.o_author {}
 }
 
+/* notifications and subscription */
+.o_notifications_news_wrapper {
+	.o_notifications_news_datechooser {}
+	.o_notifications_news_subscription {
+		margin: $padding-large-vertical 0;
+		h4 i {
+			display: none;
+		}
+		.o_notifications_news_context {
+			@extend .text-muted;	
+		}
+		.o_notifications_news_content {
+			margin-left: 1.5em;
+			position: relative;
+			.o_icon {
+				position: absolute;
+				left: -1.5em;
+				line-height: 1.5em;
+				top: 0;
+			}
+			.o_date {
+				@extend .text-muted;
+			}
+		}
+		.o_notifications_news_url {
+			margin-left: 1.5em;			
+		}
+	}
+}
+
 /* toogle box */
 .o_togglebox_wrapper {
 	a.o_togglebox_closed i {

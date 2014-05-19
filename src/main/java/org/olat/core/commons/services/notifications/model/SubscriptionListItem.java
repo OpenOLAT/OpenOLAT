@@ -126,12 +126,11 @@ public class SubscriptionListItem {
 		Translator trans = Util.createPackageTranslator(ContextualSubscriptionController.class, locale);
 		Formatter form = Formatter.getInstance(locale);
 		String datePart = trans.translate("subscription.listitem.dateprefix", new String [] { form.formatDateAndTime(date) } ) ; 
+		sb.append("<li>");			
 		if (iconCssClass != null) {
-			sb.append("<li class=\"b_with_small_icon_left ");
+			sb.append("<i class=\"o_icon o_icon-fw ");
 			sb.append(iconCssClass);
-			sb.append("\">");
-		} else {
-			sb.append("<li>");			
+			sb.append("\"></i>");
 		}
 		if (StringHelper.containsNonWhitespace(link)) {
 			sb.append("<a href=\""); 
@@ -142,7 +141,7 @@ public class SubscriptionListItem {
 			sb.append(new OWASPAntiSamyXSSFilter().filter(description.trim()));
 		}
 		if (StringHelper.containsNonWhitespace(link)) sb.append("</a>");
-		sb.append(" ").append(datePart.trim());
+		sb.append(" <span class='o_nowrap o_date'>").append(datePart.trim()).append("</span>");
 		sb.append("</li>");
 		return sb.toString();
 	}

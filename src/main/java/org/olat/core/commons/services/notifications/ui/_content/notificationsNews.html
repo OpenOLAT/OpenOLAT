@@ -1,15 +1,19 @@
 <div class="o_notifications_news_wrapper">
-	<h4>$r.translate("news.title")</h4>
+	<h3>$r.translate("news.title")</h3>
 	<p>
 		$r.translate("news.desc")
 	</p>
-	<div class="o_notifications_news_datechooser">
-		<div class="b_float_right">
-			$r.render("emailLink")
+	<div class="o_notifications_news_datechooser o_block_large row">
+		<div class="col-xs-12 col-sm-6">
+			$r.render("dateChooserCtr")
 		</div>
-		$r.render("dateChooserCtr")
-		
+		<div class="col-xs-12 col-sm-6">
+			<div class="pull-right">
+				$r.render("emailLink")
+			</div>
+		</div>
 	</div>
+	
 #foreach($sub in $subs)
 	#if($subsFormatter.hasNews($sub))
 	<div class="o_notifications_news_subscription">
@@ -36,6 +40,7 @@
 			#if($subscrItem) 
 			<a href="$subscrItem.getLink()" onkeypress="return o2cl();" onclick="return o2cl();">
 				$r.translate("resource.open", $subsFormatter.getType($sub))
+				<i class="o_icon o_icon_start"></i>
 			</a>
 			#end
 		#end

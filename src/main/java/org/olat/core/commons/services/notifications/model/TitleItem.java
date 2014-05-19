@@ -42,9 +42,9 @@ public class TitleItem extends SubscriptionInfoItem {
 			return "<h4>" + content + "</h4>";
 		} else {
 			StringBuffer sb = new StringBuffer();
-			sb.append("<h4 class=\"b_with_small_icon_left ");
+			sb.append("<h4><i class=\"o_icon o_icon-fw ");
 			sb.append(iconCssClass);
-			sb.append("\">");
+			sb.append("\"> </i>"); // space required by antisamy
 			sb.append(content);
 			sb.append("</h4>");
 			return sb.toString();

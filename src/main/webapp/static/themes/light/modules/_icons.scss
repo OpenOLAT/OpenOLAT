@@ -88,6 +88,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_readwrite { @extend .o_icon-edit; }
 .o_icon_recycle { @extend .o_icon-recycle; }
 .o_icon_refresh { @extend .o_icon-refresh; } 
+.o_icon_rss { @extend .o_icon-rss;}
 .o_icon_search {@extend .o_icon-search;}
 .o_icon_settings{ @extend .o_icon-gears;}
 .o_icon_show_more { @extend .o_icon-toggle-down; }
@@ -128,6 +129,12 @@ a.o_icon {
 .o_FileResource-SURVEY_icon{ @extend .o_icon-meh-o; }
 .o_FileResource-TEST_icon{ @extend .o_icon-pencil-square-o; }
 .o_FileResource-WIKI_icon{ @extend .o_icon-globe; }
+
+/* notification icons */
+.o_forum_message_icon {@extend .o_icon-comment-o; }
+.o_calendar_icon {@extend .o_icon-calendar; }
+
+
 
 /* Access control icons */
 .o_ac_token_icon { @extend .o_icon-key;}
