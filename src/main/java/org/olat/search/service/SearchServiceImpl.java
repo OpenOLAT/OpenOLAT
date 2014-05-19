@@ -260,6 +260,9 @@ public class SearchServiceImpl implements SearchService {
 			Future<List<Long>> futureResults = searchExecutor.submit(run);
 			List<Long> results = futureResults.get();
 			queryCount++;
+			if(results == null) {
+				results = new ArrayList<Long>(1);
+			}
 			return results;
 		} catch (Exception e) {
 			log.error("", e);
