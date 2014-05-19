@@ -106,11 +106,17 @@ public class UserToolsModule extends AbstractOLATModule {
 		return availableUserTools;
 	}
 	
+	/**
+	 * Empty set is the same as all tools are available.
+	 * @return
+	 */
 	public Set<String> getAvailableUserToolSet() {
-		String[] tools = availableUserTools.split(",");
 		Set<String> toolSet = new HashSet<>();
-		for(String tool:tools) {
-			toolSet.add(tool);
+		if(StringHelper.containsNonWhitespace(availableUserTools)) {
+			String[] tools = availableUserTools.split(",");
+			for(String tool:tools) {
+				toolSet.add(tool);
+			}
 		}
 		return toolSet;
 	}
