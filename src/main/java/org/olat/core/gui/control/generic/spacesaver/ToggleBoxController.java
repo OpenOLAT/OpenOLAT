@@ -43,8 +43,8 @@ import org.olat.core.util.prefs.Preferences;
  */
 public class ToggleBoxController extends BasicController {
 
-	private static final String CSS_OPENED = "b_togglebox_opened";
-	private static final String CSS_CLOSED = "b_togglebox_closed";
+	private static final String CSS_OPENED = "o_togglebox_opened";
+	private static final String CSS_CLOSED = "o_togglebox_closed";
 
 	private Boolean toggleStatus;
 	private final String titleOpen;
@@ -72,15 +72,14 @@ public class ToggleBoxController extends BasicController {
 		
 		mainVC = createVelocityContainer("togglebox");
 		toggleButton = LinkFactory.createCustomLink("toggle", "toggle", "", Link.NONTRANSLATED, mainVC, this);
+		toggleButton.setIconLeftCSS("o_icon o_icon-fw");
 
 		Preferences prefs = ureq.getUserSession().getGuiPreferences();
 		toggleStatus = (Boolean) prefs.get(this.getClass(), key, defaultToggleStatus);
 		mainVC.put("cmpToToggle", componentToToggle);
 
-		hideButton = LinkFactory.createLink("hide", mainVC, this);
-		//hideButton = LinkFactory.createCustomLink("hide", "hide", "Hide", Link.LINK, mainVC, this);
-		hideButton.setCustomEnabledLinkCSS("b_togglebox_hide");
-	
+		hideButton = LinkFactory.createLink("hide", mainVC, this);	
+		hideButton.setCustomEnabledLinkCSS("o_togglebox_hide");
 		updateUI();
 
 		putInitialPanel(mainVC);
@@ -88,10 +87,10 @@ public class ToggleBoxController extends BasicController {
 	
 	protected void updateUI() {
 		if(toggleStatus.booleanValue()) {
-			toggleButton = LinkFactory.createCustomLink("toggle", "toggle", titleClose, Link.NONTRANSLATED, mainVC, this);
+			toggleButton.setCustomDisplayText(titleClose);
 			toggleButton.setCustomEnabledLinkCSS(CSS_OPENED);
 		} else {
-			toggleButton = LinkFactory.createCustomLink("toggle", "toggle", titleOpen, Link.NONTRANSLATED, mainVC, this);
+			toggleButton.setCustomDisplayText(titleOpen);
 			toggleButton.setCustomEnabledLinkCSS(CSS_CLOSED);
 		}
 		mainVC.contextPut("toggleStatus", toggleStatus);
@@ -123,6 +122,4 @@ public class ToggleBoxController extends BasicController {
 			}
 		}
 	}
-	//backup of the shrink link
-	//<a class="b_togglebox_hide" href="#" onclick="Effect.Shrink('my_toggle_box_uuid',{ direction:'top-left', afterFinish: function() { top.o_openUriInMainWindow('$r.commandURI("hide")'); }}); return false;"><span>Hide</span></a>
 }

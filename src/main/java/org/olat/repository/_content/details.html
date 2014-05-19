@@ -158,13 +158,13 @@ $r.render("backLink")
 
 	#if($isOwner)
 	
-		#b_togglebox_start("o_repo_details" $r.translate("addinfo.owner"))
+		#o_togglebox_start("o_repo_details" $r.translate("addinfo.owner"))
 			<fieldset>
 				<legend>$r.translate('details.owner')</legend>
 				
 				$r.render('ownertable')
 			</fieldset>
 			$r.render('vc_infopanel')
-		#b_togglebox_end()
+		#o_togglebox_end()
 	#end
 #end

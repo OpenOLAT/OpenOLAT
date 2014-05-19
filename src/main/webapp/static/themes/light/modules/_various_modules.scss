@@ -20,7 +20,9 @@
 }
 /* briefcase (folder) module */
 
-.o_bc_empty{}
+.o_bc_empty{
+	@extend .o_important;
+}
 .o_bc_table{}
 .o_bc_meta {
 	@extend .small;
@@ -30,4 +32,25 @@
 		height:200px;
 	}
 	.o_author {}
+}
+
+/* toogle box */
+.o_togglebox_wrapper {
+	a.o_togglebox_closed i {
+		@extend .o_icon_open_togglebox;
+	}
+	a.o_togglebox_opened i {
+		@extend .o_icon_close_togglebox;
+	}
+	div.o_togglebox {
+		position: relative;
+		@extend .o_info;
+		margin: 0;
+		.o_togglebox_hide {
+			position: absolute;
+			bottom: 0.5em;
+			right: 1em;		
+			@extend .small;
+		}
+	}
 }

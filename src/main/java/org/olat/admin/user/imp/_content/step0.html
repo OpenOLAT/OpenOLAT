@@ -15,12 +15,16 @@ $r.translate("formatexplanation.conventions")
 	<li>$r.translateWithPackage("org.olat.user", "form.checkUsername")</li>
 </ul>
 
-#b_togglebox_start("o_usermanagement_importexample" "$r.translate('import.example')")
+#o_togglebox_start("o_usermanagement_importexample" "$r.translate('import.example')")
 	#if($canCreateOLATPassword)
 		<img alt="$r.translateInAttribute("import.example")" src='$r.staticLink('images/screen/userimport.png')' />
 	#else
 		<img alt="$r.translateInAttribute("import.example")" src='$r.staticLink('images/screen/userimport_nopwd.png')' />
 	#end
-#b_togglebox_end()
-<a href="$mapperURI/UserImportSample.xls" target="_blank" class="b_with_small_icon_left b_filetype_xls">$r.translate("download.example")</a>
-
+#o_togglebox_end()
+<p>
+	<a href="$mapperURI/UserImportSample.xls" target="_blank">
+	 	<i class="o_icon o_filetype_xls o_icon-lg"></i> 
+		$r.translate("download.example")
+	</a>
+</p>

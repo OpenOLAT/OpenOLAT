@@ -3,10 +3,7 @@ Database Url: <span style=color:blue>$hibernateConnectionUrl</span>
 Userdata are stored under: <span style=color:blue>$userDataRoot</span>
 <hr/>
 <div>
-<a href="#" id="o_olat_propertiesOpener" class="b_togglebox_closed" onclick="b_togglebox('o_olat_properties', this); return false;"onkeypress="b_togglebox('o_olat_properties', this); return false;">
-Show olat.properties (System default values)</a> 
-<div id="o_olat_properties" class="b_togglebox" style="display: none">
-	<div class="b_togglebox_content">
+#o_togglebox_start("o_olat_propertiesOpener" "Show olat.properties (System default values)")
 	<fieldset >
 	<legend>olat.properties</legend>
 	#foreach($prop in $defaultProperties)
@@ -37,25 +34,20 @@ Show olat.properties (System default values)</a>
 		#end
 	#end
 	</fieldset>
-	</div>
-</div>
-</div>
+#o_togglebox_end()
+
 <hr/>
-<div>
-<a href="#" id="o_olat_local_propertiesOpener" class="b_togglebox_closed" onclick="b_togglebox('o_olat_local_properties', this); return false;"onkeypress="b_togglebox('o_olat_local_properties', this); return false;">
-Show olat.local.properties (Properties that overwrite the default Properties)</a> 
-<div id="o_olat_local_properties" class="b_togglebox" style="display: none">
-	<div class="b_togglebox_content">
+
+#o_togglebox_start("o_olat_local_propertiesOpener" "Show olat.local.properties (Properties that overwrite the default Properties)")
 	<fieldset>
-	<legend>$overwritePropertiesLocation</legend>
+	<code>$overwritePropertiesLocation</code>
 			<form action="#">
-<textarea rows="10" cols="20">
+<textarea rows="10" cols="20" class="form-control">
 #foreach($prop in $overwriteProperties)
 $prop.getKey()=$prop.getValue()
 #end
 </textarea>
 			</form>
 	</fieldset>
-	</div>
-</div>
-</div>
+#o_togglebox_end()
+	

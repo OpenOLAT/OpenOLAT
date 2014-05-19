@@ -10,7 +10,7 @@
 	</div>
 #if($webdavhttp or $webdavhttps)
 	<div class="b_briefcase_webdav">
-	#b_togglebox_start("b_briefcase_webdav_link" "$r.translate('webdav.link')")
+	#o_togglebox_start("b_briefcase_webdav_link" "$r.translate('webdav.link')")
 		<div class="b_float_right">$r.contextHelp("org.olat.core.commons.modules.bc", "bc-webdav.html","help.hover.webdav")</div> 
 		#if($webdavhttps)
 			<p>
@@ -28,7 +28,7 @@
 				<code>$webdavhttp</code>
 			</p>
 		#end		
-	#b_togglebox_end()
+	#o_togglebox_end()
 	</div>
 #end
 #if($editQuota)

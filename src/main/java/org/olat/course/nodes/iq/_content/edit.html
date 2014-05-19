@@ -25,7 +25,7 @@
 		</p>
 
 		#if ($showOutcomes)
-				#b_togglebox_start("o_course_node_outcomes" $r.translate("outcomes.title"))
+				#o_togglebox_start("o_course_node_outcomes" $r.translate("outcomes.title"))
 				<table>
 					<tbody>
 						#foreach($key in $outcomes.keySet())
@@ -33,7 +33,7 @@
 		           		 #end
 		            </tbody>
 				</table>
-				#b_togglebox_end()
+				#o_togglebox_end()
 		#else
 			<table>
 				<tbody>			

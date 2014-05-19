@@ -123,18 +123,18 @@
 
 #if ($log && $showChangelog)
     <p /> 
-    #b_togglebox_start("o_course_run_log" $r.translate("log.title"))
+    #o_togglebox_start("o_course_run_log" $r.translate("log.title"))
     <pre>
 $log
     </pre>
-    #b_togglebox_end()
+    #o_togglebox_end()
   #end
     
   #if($changeLog)
     <p /> 
-    #b_togglebox_start("o_course_run_changelog" $r.translate("changelog.title"))
+    #o_togglebox_start("o_course_run_changelog" $r.translate("changelog.title"))
     <pre>
 $changeLog
     </pre>
-    #b_togglebox_end()
+    #o_togglebox_end()
   #end

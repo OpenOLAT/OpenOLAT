@@ -108,7 +108,7 @@ public class ListRenderer {
 		List<VFSItem> children = fc.getCurrentContainerChildren();
 		// folder empty?
 		if (children.size() == 0) {
-			sb.append("<div class=\"b_bc_empty\">");
+			sb.append("<div class=\"o_bc_empty\"><i class='o_icon o_icon_warn'></i> ");
 			sb.append(translator.translate("NoFiles"));
 			sb.append("</div>");
 			return;
@@ -437,7 +437,7 @@ public class ListRenderer {
 					sb.append(so.toString());
 				}
 				sb.append(" title=\"").append(StringHelper.escapeHtml(translator.translate("mf.edit")))
-					.append("\"><i class=\"o_icon b_icon-fw o_icon_edit_metadata\"></i></a>");
+					.append("\"><i class=\"o_icon o_icon-fw o_icon_edit_metadata\"></i></a>");
 
 			} else if (actionCount > 1) {
 				// add actions to menu if multiple actions available
@@ -456,7 +456,7 @@ public class ListRenderer {
 						ubu.appendTarget(so);
 						sb.append(so.toString());
 					}
-					sb.append("><i class=\"o_icon b_icon-fw o_icon_edit_metadata\"></i> ").append(StringHelper.escapeHtml(translator.translate("mf.edit"))).append("</a></li>");
+					sb.append("><i class=\"o_icon o_icon-fw o_icon_edit_metadata\"></i> ").append(StringHelper.escapeHtml(translator.translate("mf.edit"))).append("</a></li>");
 				}
 				// content edit action
 				if (isEditable) {
@@ -469,7 +469,7 @@ public class ListRenderer {
 						ubu.appendTarget(so);
 						sb.append(so.toString());
 					}
-					sb.append("><i class=\"o_icon b_icon-fw o_icon_edit_file\"></i> ").append(StringHelper.escapeHtml(translator.translate("editor"))).append("</a></li>");
+					sb.append("><i class=\"o_icon o_icon-fw o_icon_edit_file\"></i> ").append(StringHelper.escapeHtml(translator.translate("editor"))).append("</a></li>");
 				}
 			
 				// versions action
@@ -484,7 +484,7 @@ public class ListRenderer {
 						ubu.appendTarget(so);
 						sb.append(so.toString());
 					}
-					sb.append("><i class=\"o_icon b_icon-fw o_icon_version\"></i> ").append(StringHelper.escapeHtml(translator.translate("versions"))).append("</a></li>");
+					sb.append("><i class=\"o_icon o_icon-fw o_icon_version\"></i> ").append(StringHelper.escapeHtml(translator.translate("versions"))).append("</a></li>");
 				}
 	
 				// eportfolio collect action
@@ -502,7 +502,7 @@ public class ListRenderer {
 								ubu.appendTarget(so);
 								sb.append(so.toString());
 							}
-							sb.append("><i class=\"o_icon b_icon-fw o_icon_eportfolio_add\"></i> ").append(StringHelper.escapeHtml(translator.translate("eportfolio"))).append("</a></li>");
+							sb.append("><i class=\"o_icon o_icon-fw o_icon_eportfolio_add\"></i> ").append(StringHelper.escapeHtml(translator.translate("eportfolio"))).append("</a></li>");
 						}
 					}
 				}

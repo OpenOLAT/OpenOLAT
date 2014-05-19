@@ -735,7 +735,6 @@ function contextHelpWindow(URI) {
 	helpWindow.focus();
 }
 
-//TODO: for 5.3 add popup capability to link and table
 function o_openPopUp(url, windowname, width, height, menubar) {
 	// generic window popup function
 	attributes = "height=" + height + ", width=" + width + ", resizable=yes, scrollbars=yes, left=100, top=100, ";
@@ -748,13 +747,12 @@ function o_openPopUp(url, windowname, width, height, menubar) {
 	win.focus();
 }
 
-function b_togglebox(domid, toggler) {
+function o_togglebox(domid, toggler) {
 	// toggle the domid element and switch the toggler classes
-	jQuery('#'+domid).slideToggle(400, function() {
-		var togglerEl = jQuery(toggler);
-		togglerEl.toggleClass('b_togglebox_closed');
-		togglerEl.toggleClass('b_togglebox_opened');
-	});
+	var togglerEl = jQuery(toggler);
+	togglerEl.toggleClass('o_togglebox_closed');
+	togglerEl.toggleClass('o_togglebox_opened');
+	jQuery('#'+domid).slideToggle(400);
 }
 
 function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveButton) {

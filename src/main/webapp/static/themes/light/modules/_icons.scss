@@ -23,6 +23,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_close_tab {@extend .o_icon-times;}
 .o_icon_close_tool{ @extend .o_icon-times;}
 .o_icon_close_tree {@extend .o_icon-caret-down;}
+.o_icon_close_togglebox {@extend .o_icon-caret-down;}
 .o_icon_copy{ @extend .o_icon-copy;}
 .o_icon_courseareas{ @extend .o_icon-circle-thin;}
 .o_icon_coursedb{ @extend .o_icon-database;}
@@ -71,6 +72,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_mandatory {@extend .o_icon-asterisk; color: #f0ad4e;}
 .o_icon_managed{@extend .o_icon-retweet; color: $text-muted}
 .o_icon_open_tree {@extend .o_icon-caret-right;}
+.o_icon_open_togglebox {@extend .o_icon-caret-right;}
 .o_icon_passed {@extend .o_icon-check-circle;}
 .o_icon_password { @extend .o_icon-key;}
 .o_icon_post { @extend .o_icon-comment-o; }

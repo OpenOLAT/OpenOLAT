@@ -2,7 +2,7 @@ $r.translate("step0.content")
 <p>$r.translate("step.notmandatory")</p>
 <br />
 
-#b_togglebox_start("o_usermanagement_bulkChange" "$r.translate('step0.formatexplanation.link')")
+#o_togglebox_start("o_usermanagement_bulkChange" "$r.translate('step0.formatexplanation.link')")
 	$r.translate('step0.formatexplanation.text') 
 	<table class="b_table b_grid"><tbody>
 		#foreach( $propertyHandler in $userPropertyHandlers )
@@ -20,4 +20,4 @@ $r.translate("step0.content")
 		</tr>
 		#end
 	</tbody></table>	
-#b_togglebox_end()
+#o_togglebox_end()

@@ -29,7 +29,8 @@ div.o_chelp_wrapper {
 }
 /* overflowing content that should have scrollbar */
 .o_scrollblock {
-	overflow-x: auto;  // this must stay on "auto", change to "hidden" and the everything goes to hell
+	/* this must stay on "auto", change to "hidden" and the everything goes to hell */
+	overflow-x: auto;  
 	overflow-y: hidden;
 }
 
@@ -44,8 +45,6 @@ div.o_chelp_wrapper {
 		}
 	}
 }
-
-
 
 /* text that should be on one line, e.g. in tables */
 .o_nowrap {

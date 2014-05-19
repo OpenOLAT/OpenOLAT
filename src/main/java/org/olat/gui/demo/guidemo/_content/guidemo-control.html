@@ -32,9 +32,9 @@ $r.render("guidemo.window.control.push")
 <br />
 <h4>Additional infos</h4>
 <p>
-	This is done directly in velocity using the b_togglebox_start and b_togglebox_end makros.
+	This is done directly in velocity using the o_togglebox_start and o_togglebox_end makros.
 </p>
-#b_togglebox_start("testdomid" "check me out, I got some stuff in me")
+#o_togglebox_start("testdomid" "check me out, I got some stuff in me")
 	<strong>aöksldfjasjd</strong>
 	<p>
 		föasldkj aösdfskld
@@ -44,15 +44,15 @@ $r.render("guidemo.window.control.push")
 		<li>ösdkja</li>
 		<li>kjösdfaasj ald ads</li>
 	</ul>
-#b_togglebox_end()
+#o_togglebox_end()
 <br />
-#b_togglebox_start("infoContent" "Here are some additional details")
+#o_togglebox_start("infoContent" "Here are some additional details")
 	Welcome, you found the cool hidden stuff...
 	Click again to close this
-#b_togglebox_end()
+#o_togglebox_end()
 <br />
-#b_togglebox_start("secondContent" "And click here to get the other details")
+#o_togglebox_start("secondContent" "And click here to get the other details")
 	Trallala, jepee this is such a cool framework this OLAT thing, really, it rocks so much!
 	<p>
 	And again, some other text...
-#b_togglebox_end()
+#o_togglebox_end()

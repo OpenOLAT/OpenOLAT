@@ -125,7 +125,7 @@ public class TitledWrapperController extends BasicController implements Cloneabl
 			descriptionContainer.contextPut(DESCRIPTION_CSS, titleInfo.getDescriptionCssClass());
 
 			descriptionController = new ToggleBoxController(ureq, wControl, titleInfo.getPersistedId(),
-					"  ", " ", descriptionContainer);
+					translate("titlewrapper.linkopened"), translate("titlewrapper.linkclosed"), descriptionContainer);
 			
 			if (StringHelper.containsNonWhitespace(titleInfo.getDescriptionTitle())) {
 				descriptionContainer.contextPut(DESCRIPTION_TITLE_VAR, titleInfo.getDescriptionTitle());
