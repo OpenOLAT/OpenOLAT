@@ -17,32 +17,37 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.admin.user.tools;
+package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import java.util.Date;
 import java.util.Locale;
 
-import org.olat.core.extensions.action.GenericActionExtension;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
 
 /**
+ * Render a date (date only and no time)
  * 
- * Initial date: 16.05.2014<br>
+ * 
+ * Initial date: 19.05.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserTool {
-	private final String key;
-	private final String label;
+public class DateFlexiCellRenderer implements FlexiCellRenderer {
 	
-	public UserTool(GenericActionExtension gAe, Locale locale) {
-		key = gAe.getUniqueExtensionID();
-		label = gAe.getActionText(locale);
+	private final Formatter format;
+	
+	public DateFlexiCellRenderer(Locale locale) {
+		format = Formatter.getInstance(locale);
 	}
 
-	public String getKey() {
-		return key;
-	}
-
-	public String getLabel() {
-		return label;
+	@Override
+	public void render(StringOutput target, Object cellValue, int row,
+			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+		if(cellValue instanceof Date) {
+			target.append(format.formatDate((Date)cellValue));
+		}
 	}
 }
