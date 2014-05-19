@@ -6,10 +6,11 @@
   http://www.springframework.org/schema/beans/spring-beans.xsd">
   
   	<import resource="classpath:/org/olat/admin/jmx/_spring/jmxContext.xml"/>
+	<import resource="classpath:/org/olat/admin/landingpages/_spring/landingPagesContext.xml"/>
 	<import resource="classpath:/org/olat/admin/registration/_spring/registrationContext.xml"/>
 	<import resource="classpath:/org/olat/admin/sysinfo/_spring/sysinfoContext.xml"/>
 	<import resource="classpath:/org/olat/admin/user/delete/service/_spring/deletionContext.xml"/>
-	<import resource="classpath:/org/olat/admin/landingpages/_spring/landingPagesContext.xml"/>
+	<import resource="classpath:/org/olat/admin/user/tools/_spring/userToolsContext.xml"/>
 
 	<bean id="adminModule" class="org.olat.admin.AdminModule">
 		<constructor-arg index="0" ref="propertyManager" />
@@ -57,8 +58,5 @@
 			</list>
 		</property>
 	</bean>
-	
-	
-	
 
 </beans>

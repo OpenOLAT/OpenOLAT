@@ -38,6 +38,7 @@
 		
 	Ellipsis.prototype.initEllipsisElement = function(query) {
 		$(query).each(function(index, elem) {
+			return;
 			// initialize dotdotdot plugin on element
 			$(elem).dotdotdot({
 				callback : function(isTruncated){

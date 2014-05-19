@@ -76,14 +76,9 @@ public class ListRenderer {
 	public static final String PARAM_EPORT = "epadd";
 	/** View thumbnail */
 	public static final String PARAM_SERV_THUMBNAIL = "servthumb";
-	
-	/** dummy file types */
-	private static final String TYPE_FILE = "file";
-	
+
 	private VFSLockManager lockManager;
 	private UserManager userManager;
-
- 	private boolean bgFlag = true;
  	
 	/**
 	 * Default constructor.
@@ -188,7 +183,7 @@ public class ListRenderer {
 		String currentContainerPath = fc.getCurrentContainerPath();
 		if (currentContainerPath.length() > 0 && currentContainerPath.charAt(0) == '/')
 			currentContainerPath = currentContainerPath.substring(1);
-		bgFlag = true;
+
 		sb.append("<tbody>");
 		
 		for (int i = 0; i < children.size(); i++) {

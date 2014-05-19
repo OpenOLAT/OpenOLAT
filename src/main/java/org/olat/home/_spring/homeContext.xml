@@ -33,7 +33,7 @@
 		<property name="order" value="103" />
 		<property name="enabled" value="${minimalhome.ext.notifications}"></property>
 		<property name="navigationKey" value="notifications" />
-		<property name="iconCssClass" value="" />
+		<property name="iconCssClass" value="o_icon o_icon-fw o_icon_notification" />
 		<property name="actionController">
 			<bean class="org.olat.home.controllerCreators.NotificationsControllerCreator" scope="prototype"/>
 		</property>
@@ -119,7 +119,7 @@
 		<property name="order" value="107" />
 		<property name="enabled" value="${minimalhome.ext.efficiencystatement}"></property>
 		<property name="navigationKey" value="effstatements" />
-		<property name="iconCssClass" value="" />
+		<property name="iconCssClass" value="o_icon o_icon-fw  o_icon_certificate" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.course.assessment.EfficiencyStatementsListController"/>
@@ -179,7 +179,7 @@
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="109" />
 		<property name="enabled" value="true" />
-		<property name="iconCssClass" value="b_with_small_icon_left o_login_guests" />
+		<property name="iconCssClass" value="o_icon o_icon-fw o_icon_user" />
 		<property name="navigationKey" value="profil" />
 		<property name="parentTreeNodeIdentifier" value="config" />
 		<property name="actionController">	
@@ -225,7 +225,7 @@
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="112" />
 		<property name="enabled" value="true" />
-		<property name="iconCssClass" value="b_with_small_icon_left o_locked_icon" />
+		<property name="iconCssClass" value="o_icon o_icon-fw o_icon_password" />
 		<property name="navigationKey" value="mypassword" />
 		<property name="parentTreeNodeIdentifier" value="config" />
 		<property name="actionController">	

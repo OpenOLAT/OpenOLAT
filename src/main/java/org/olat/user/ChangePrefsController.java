@@ -74,6 +74,7 @@ public class ChangePrefsController extends BasicController {
 	private VelocityContainer myContent;
 	private Controller generalPrefsCtr;
 	private Controller specialPrefsCtr;
+	private Controller toolsPrefsCtr;
 	private Controller resetCtr;
 	
 	/**
@@ -94,12 +95,15 @@ public class ChangePrefsController extends BasicController {
 		specialPrefsCtr = new SpecialPrefsForm(ureq, wControl, changeableIdentity);
 		listenTo(specialPrefsCtr);
 		
-		// fxdiff FXOLAT-149
 		resetCtr = new UserPrefsResetForm(ureq, wControl, changeableIdentity);
 		listenTo(resetCtr);
 		
+		toolsPrefsCtr = new ToolsPrefsController(ureq, wControl, changeableIdentity);
+		listenTo(toolsPrefsCtr);
+		
 		myContent.put("general", generalPrefsCtr.getInitialComponent());
 		myContent.put("special", specialPrefsCtr.getInitialComponent());
+		myContent.put("tools", toolsPrefsCtr.getInitialComponent());
 		myContent.put("reset", resetCtr.getInitialComponent());
 		
 		putInitialPanel(myContent);

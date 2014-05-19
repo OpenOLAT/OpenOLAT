@@ -16,6 +16,9 @@
 		</ul>
 	</li>
 #end
+#foreach($personalTool in $toolSet)
+	 <li>$r.render($personalTool)</li>
+#end
 #if ($r.available("groupchatcontroller"))
 	<li id="o_navbar_imgroupclient">
 		$r.render("groupchatcontroller")

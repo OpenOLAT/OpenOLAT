@@ -21,9 +21,12 @@ package org.olat.gui.control;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.NewControllerFactory;
+import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.impressum.ImpressumMainController;
@@ -34,6 +37,7 @@ import org.olat.core.extensions.Extension;
 import org.olat.core.extensions.ExtensionElement;
 import org.olat.core.extensions.action.GenericActionExtension;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.image.ImageComponent;
@@ -48,10 +52,12 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
@@ -66,6 +72,7 @@ import org.olat.search.ui.SearchInputController;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.GenderPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -84,9 +91,16 @@ public class OlatTopNavController extends BasicController implements GenericEven
 	private InstantMessagingMainController imController;
 	
 	private EventBus singleUserEventCenter;
-	private final DisplayPortraitManager portraitManager;
-	private final UserManager userManager;
 	private OLATResourceable ass;
+
+	@Autowired
+	private ExtManager extManager;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private UserToolsModule userToolsModule;
+	@Autowired
+	private DisplayPortraitManager portraitManager;
 	
 	public OlatTopNavController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, false, true);
@@ -94,10 +108,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 	
 	public OlatTopNavController(UserRequest ureq, WindowControl wControl, boolean impressum, boolean search) {
 		super(ureq, wControl);
-		
 		topNavVC = createVelocityContainer("topnav");
-		portraitManager = DisplayPortraitManager.getInstance();
-		userManager = UserManager.getInstance();
 		
 		boolean isGuest = ureq.getUserSession().getRoles().isGuestOnly();
 		boolean isInvitee = ureq.getUserSession().getRoles().isInvitee();
@@ -108,7 +119,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 			listenTo(imController);
 			topNavVC.put("imclient", imController.getInitialComponent());
 		}
-		//
+
 		// the help link
 		if(!isInvitee && CourseModule.isHelpCourseEnabled()) {
 			helpLink = LinkFactory.createLink("topnav.help", topNavVC, this);
@@ -146,27 +157,25 @@ public class OlatTopNavController extends BasicController implements GenericEven
 			Component menu =  getMenuCmp(ureq);
 			topNavVC.put("myMenu", menu);
 			// the user profile
+			User user = getIdentity().getUser();
 			Component portrait = getPortraitCmp(ureq);
 			if (portrait != null) {
 				topNavVC.put("portrait", portrait);
 			} else {
 				GenderPropertyHandler genderHander = (GenderPropertyHandler) userManager.getUserPropertiesConfig().getPropertyHandler(UserConstants.GENDER);
-				String gender = genderHander.getInternalValue(getIdentity().getUser());
+				String gender = genderHander.getInternalValue(user);
 				topNavVC.contextPut("gender", (gender == null || gender.equals("-") ? "" : gender + "_"));				
 			}
 			
 			// the label to open the personal menu
-			String[] attr = new String[] {getIdentity().getUser().getProperty(UserConstants.FIRSTNAME, getLocale()), getIdentity().getUser().getProperty(UserConstants.LASTNAME, getLocale()), getIdentity().getName()};
+			String[] attr = new String[] { user.getProperty(UserConstants.FIRSTNAME, getLocale()), user.getProperty(UserConstants.LASTNAME, getLocale()), getIdentity().getName()};
 			String myMenuText = translate("topnav.my.menu.label", attr);
 			topNavVC.contextPut("myMenuLabel", myMenuText);
-			
-
 		}
 		
 		putInitialPanel(topNavVC);
 	}
 	
-
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == helpLink) {
@@ -216,30 +225,53 @@ public class OlatTopNavController extends BasicController implements GenericEven
 	private void loadPersonalTools(UserRequest ureq, VelocityContainer container) {
 		List<String> linksName = new ArrayList<String>();
 		List<String> configLinksName = new ArrayList<String>();
+		List<String> toolSetLinksName = new ArrayList<String>();
 		
-		ExtManager extm = ExtManager.getInstance();
-		for (Extension anExt : extm.getExtensions()) {
+		Preferences prefs = ureq.getUserSession().getGuiPreferences();
+		String selectedTools = (String)prefs.get(WindowManager.class, "user-tools");
+		if(!StringHelper.containsNonWhitespace(selectedTools)) {
+			selectedTools = userToolsModule.getDefaultPresetOfUserTools();
+		}
+		Set<String> selectedToolSet = new HashSet<>();
+		if(StringHelper.containsNonWhitespace(selectedTools)) {
+			String[] selectedToolArr = selectedTools.split(",");
+			for(String selectedTool:selectedToolArr) {
+				selectedToolSet.add(selectedTool);
+			}
+		}
+		
+		for (Extension anExt : extManager.getExtensions()) {
 			// check for sites
 			ExtensionElement ae = anExt.getExtensionFor(HomeMainController.class.getName(), ureq);
 			if (ae != null && ae instanceof GenericActionExtension) {
 				if(anExt.isEnabled()){
 					GenericActionExtension gAe = (GenericActionExtension) ae;
+					GenericTreeNode node = gAe.createMenuNode(ureq);
+					String linkName = "personal.tool." + node.getIdent();
+					Link link = LinkFactory.createLink(linkName, container, this);
+					link.setUserObject(gAe);
+					String label = gAe.getActionText(getLocale());
+					link.setCustomDisplayText(label);
+					String iconCssClass = node.getIconCssClass();
+					link.setIconLeftCSS(iconCssClass);
+					
 					if(!StringHelper.containsNonWhitespace(gAe.getParentTreeNodeIdentifier())) {
-						GenericTreeNode node = gAe.createMenuNode(ureq);
-						String linkName = "personal.tool." + node.getIdent();
-						Link link = LinkFactory.createLink(linkName, container, this);
-						link.setUserObject(gAe);
-						link.setCustomDisplayText(gAe.getActionText(getLocale()));
-						link.setIconLeftCSS(node.getIconCssClass());
 						linksName.add(linkName);
 					} else if("config".equals(gAe.getParentTreeNodeIdentifier())) {
-						GenericTreeNode node = gAe.createMenuNode(ureq);
-						String linkName = "personal.tool." + node.getIdent();
-						Link link = LinkFactory.createLink(linkName, container, this);
-						link.setUserObject(gAe);
-						link.setCustomDisplayText(gAe.getActionText(getLocale()));
-						link.setIconLeftCSS(node.getIconCssClass());
 						configLinksName.add(linkName);
+					}
+					
+					if(selectedToolSet.contains(gAe.getUniqueExtensionID())) {
+						String linkAltName = "personal.tool.alt." + node.getIdent();
+						Link linkAlt = LinkFactory.createLink(linkAltName, topNavVC, this);
+						linkAlt.setUserObject(gAe);
+						if(!StringHelper.containsNonWhitespace(iconCssClass)) {
+							linkAlt.setCustomDisplayText(label);
+						} else {
+							linkAlt.setCustomDisplayText("");
+						}
+						linkAlt.setIconLeftCSS(iconCssClass);
+						toolSetLinksName.add(linkAltName);
 					}
 				}	
 			}
@@ -247,6 +279,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 		
 		container.contextPut("personalTools", linksName);
 		container.contextPut("configs", configLinksName);
+		topNavVC.contextPut("toolSet", toolSetLinksName);
 	}
 	
 	protected void doOpenHelp(UserRequest ureq) {

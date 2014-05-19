@@ -170,7 +170,7 @@ public class UserModule extends AbstractOLATModule {
 		}
 		// Cleanup, otherwhise this subjects will have problems in normal OLAT
 		// operation
-		DBFactory.getInstance(false).intermediateCommit();
+		DBFactory.getInstance().commitAndCloseSession();
 		
 		adminUserName = getStringConfigParameter("adminUserName", "administrator", false);
 		

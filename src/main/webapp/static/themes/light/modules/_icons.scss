@@ -12,6 +12,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_actions { @extend .o_icon-gears;}
 .o_icon_archive_tool{ @extend .o_icon-download;}
 .o_icon_assessment_tool{ @extend .o_icon-trophy;}
+.o_icon_booking { @extend .o_icon-dollar; }
 .o_icon_bookmark { @extend .o_icon-bookmark; color: #996633; }
 .o_icon_bookmark_add { @extend .o_icon-bookmark-o; color: #999999;}
 .o_icon_calendar { @extend .o_icon-calendar;}
@@ -60,6 +61,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_new_document { @extend .o_icon-file-text; }
 .o_icon_new_folder { @extend .o_icon-folder;}
 .o_icon_notes{@extend .o_icon-pencil; }
+.o_icon_notification { @extend .o_icon-rss;}
 .o_icon_language {@extend .o_icon-globe; }
 .o_icon_list {@extend .o_icon-list; }
 .o_icon_lifecycle {@extend .o_icon-calendar;}
@@ -70,6 +72,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_managed{@extend .o_icon-retweet; color: $text-muted}
 .o_icon_open_tree {@extend .o_icon-caret-right;}
 .o_icon_passed {@extend .o_icon-check-circle;}
+.o_icon_password { @extend .o_icon-key;}
 .o_icon_post { @extend .o_icon-comment-o; }
 .o_icon_preview {@extend .o_icon-eye;}
 .o_icon_print {@extend .o_icon-print;}

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean id="userToolsModule" class="org.olat.admin.user.tools.UserToolsModule" 
+		init-method="init" depends-on="coordinatorManager">
+		<property name="persistedProperties">
+			<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
+				<constructor-arg index="0" ref="coordinatorManager"/>
+				<constructor-arg index="1" ref="userToolsModule"/>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="7206" />
+		<property name="navigationKey" value="usertools" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.admin.user.tools.ui.UserToolsAdminController"/>
+			</bean>
+		</property>
+		<property name="i18nActionKey" value="menu.usertools"/>
+		<property name="i18nDescriptionKey" value="menu.usertools.alt"/>
+		<property name="translationPackage" value="org.olat.admin"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
+	</bean>	
+             
+</beans>
