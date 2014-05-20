@@ -79,6 +79,39 @@
 		}
 	}
 }
+.o_noti {
+	margin: $padding-base-vertical 0 $padding-base-vertical $padding-base-horizontal;
+	@extend .pull-right;
+	@extend .text-muted;	
+	@extend .small;
+	.o_label {
+		@extend .o_undecorated;
+		@extend .text-muted;	
+		cursor:help;
+	}
+	@media (max-width: $screen-xs-max) { 
+		.o_label span {
+			display: none;
+		}	
+	}
+	
+}
+
+/* Calendar */
+.o_cal_toptoolbar {
+	margin-bottom: $padding-base-vertical;
+	.o_cal_toptoolbar_sub, .o_cal_toptoolbar_help {
+		@extend .pull-left;
+		margin-right: $padding-base-horizontal;
+	}
+}
+.o_cal {
+	.fc-header-title h2 {
+		@extend h4;
+	}
+}
+
+
 
 /* toogle box */
 .o_togglebox_wrapper {

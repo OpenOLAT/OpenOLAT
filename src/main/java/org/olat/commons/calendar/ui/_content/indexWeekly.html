@@ -1,33 +1,33 @@
 <div id="o_cal_config_below_cal_container">
-	<div class="o_cal_toptoolbar b_clearfix" style="position:relative;">
-	  <div class="o_cal_search_subscribe" style="float:left;">
-			<span class="o_noti_actions">
-				#if ($hasSubscription)
-					#if ($isSubscribed)
-						<span class="o_noti_u_icon">$r.render("cal.unsubscribe")</span>
-					#else
-						<span class="o_noti_s_icon">$r.render("cal.subscribe")</span>
-					#end
-				#end
-			</span>
-	  </div>
-		#if ($r.available("calsubscription"))
-  		<div class="b_subcr" style="float:right;">
-				$r.render("calsubscription")
+	<div class="o_cal_toptoolbar clearfix">
+		#if ($hasSubscription)
+			<div class="o_cal_toptoolbar_sub">
+			#if ($isSubscribed)
+				$r.render("cal.unsubscribe")
+			#else
+				$r.render("cal.subscribe")
+			#end
+			</div>
+			<div class="o_cal_toptoolbar_help">
+			#if ($caller == "home")
+				$r.contextHelp("org.olat.commons.calendar","personal-calendar.html","help.hover.personalcal")
+			#elseif ($caller == "course")
+				$r.contextHelp("org.olat.commons.calendar","course-calendar.html","help.hover.coursecal")
+			#elseif ($caller == "collab")
+				$r.contextHelp("org.olat.commons.calendar","group-calendar.html","help.hover.groupcal")
+			#elseif ($caller == "profile")
+				$r.contextHelp("org.olat.commons.calendar","personal-calendar.html","help.hover.cal")
+			#end
 			</div>
 		#end
-
-		#if ($caller == "home")
-			$r.contextHelpWithWrapper("org.olat.commons.calendar","personal-calendar.html","help.hover.personalcal")
-		#elseif ($caller == "course")
-			$r.contextHelpWithWrapper("org.olat.commons.calendar","course-calendar.html","help.hover.coursecal")
-		#elseif ($caller == "collab")
-			$r.contextHelpWithWrapper("org.olat.commons.calendar","group-calendar.html","help.hover.groupcal")
-		#elseif ($caller == "profile")
-			$r.contextHelpWithWrapper("org.olat.commons.calendar","personal-calendar.html","help.hover.cal")
+		#if ($r.available("calsubscription"))
+			$r.render("calsubscription")
 		#end
+
 	</div>
-  $r.render("calendar")
+	<div class="o_cal">
+	  $r.render("calendar")
+	</div>
   $r.render("calendarConfig")
   #if ($caller == "home")
   	$r.render("importedCalendarConfig")

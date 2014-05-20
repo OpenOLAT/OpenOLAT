@@ -320,17 +320,35 @@ public class VelocityRenderDecorator implements Closeable{
 			if (hooverText != null) {
 				hooverText = StringEscapeUtils.escapeHtml(hooverText);
 			}
-			String langCode = renderer.getTranslator().getLocale().toString();
-			sb.append("<a href=\"javascript:contextHelpWindow('");
-			Renderer.renderNormalURI(sb, "help/");
-			sb.append(langCode).append("/").append(packageName).append("/").append(pageName);
-			sb.append("')\" title=\"").append(hooverText).append("\" class=\"o_chelp\"><i class='o_icon o_icon_help'></i> ");
+			sb.append("<a href=\"javascript:");
+			sb.append(contextHelpJSCommand(packageName, pageName));
+			sb.append("\" title=\"").append(hooverText).append("\" class=\"o_chelp\"><i class='o_icon o_icon_help'></i> ");
 			sb.append(renderer.getTranslator().translate("help"));
 			sb.append("</a>");
 		}
 		return sb;
 	}
 
+	/**
+	 * Create a js command to open a specific context help page
+	 * @param packageName
+	 * @param pageName
+	 * @return
+	 */
+	public StringOutput contextHelpJSCommand(String packageName, String pageName) {
+		StringOutput sb = new StringOutput(100);
+		if (ContextHelpModule.isContextHelpEnabled()) {
+			String langCode = renderer.getTranslator().getLocale().toString();
+			sb.append("contextHelpWindow('");
+			Renderer.renderNormalURI(sb, "help/");
+			sb.append(langCode).append("/").append(packageName).append("/").append(pageName);
+			sb.append("')");
+		}
+		return sb;
+	}
+	
+	
+	
 	/**
 	 * Create a link that can be used within a context help page to link to
 	 * another context help page from the same package.

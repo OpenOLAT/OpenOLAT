@@ -67,6 +67,7 @@ public class ContextualSubscriptionController extends BasicController {
 		this.subscriptionContext = subscriptionContext;
 		this.publisherData = publisherData;
 		myContent = createVelocityContainer("consubs");
+		myContent.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 		
 		if (subscriptionContext == null) {
 			putInitialPanel(new Panel("empty:nosubscription"));
@@ -76,11 +77,15 @@ public class ContextualSubscriptionController extends BasicController {
 		detailsPanel = new Panel("subscription_detail");
 		allPanel = new Panel("subscription_all");
 
-		subscribeButton = LinkFactory.createButtonSmall("command.subscribe", myContent, this);
-		subscribeButton.setCustomEnabledLinkCSS("b_noti_subscribe_link");
+		subscribeButton = LinkFactory.createCustomLink("command.subscribe", "command.subscribe", "off", Link.LINK, myContent, this);
+		subscribeButton.setCustomEnabledLinkCSS("o_noti_subscribe_link o_button_toggle");
+		subscribeButton.setIconLeftCSS("o_icon o_icon_toggle");
+		subscribeButton.setTitle("command.subscribe");
 		
-		unsubscribeButton = LinkFactory.createButtonSmall("command.unsubscribe", myContent, this);
-		unsubscribeButton.setCustomEnabledLinkCSS("b_noti_unsubscribe_link");
+		unsubscribeButton = LinkFactory.createCustomLink("command.unsubscribe", "command.unsubscribe", "on", Link.LINK, myContent, this);
+		unsubscribeButton.setCustomEnabledLinkCSS("o_noti_unsubscribe_link o_button_toggle o_on");
+		unsubscribeButton.setIconRightCSS("o_icon o_icon_toggle");
+		unsubscribeButton.setTitle("command.unsubscribe");
 		
 		notifManager = NotificationsManager.getInstance();
 		// if subscribed, offer a unsubscribe button and vica versa.
