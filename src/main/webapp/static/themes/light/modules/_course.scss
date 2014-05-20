@@ -59,6 +59,9 @@
 		color: $text-color		
 	}
 }		
+.o_noinfo {
+	@extend .text-muted;
+}		
 
 
 .o_course_run {
@@ -85,7 +88,6 @@
 	.o_statusinfo {
 		@extend .o_note;
 	}
-	
 }
 
 .o_st_peekview {
@@ -95,3 +97,12 @@
 		}
 	}
 }
+
+.o_cl_line {
+	margin-bottom: $padding-large-vertical;
+	padding-bottom: $padding-small-vertical;
+	&.o_even {
+		background-color: $table-bg-accent;
+	}
+}
+

@@ -1,35 +1,38 @@
-	#if ($hasDisc)
-		<div class="o_course_run_disclaimer">
-			$r.render("disc")
-		</div>
-	#end
+#if ($hasDisc)
+	<div class="panel panel-default o_disclaimer">
+	  	<div class="panel-heading">$r.translate("disclaimer")</div>
+		<div class="panel-body">
+		$r.render("disc")
+  		</div>
+	</div>
+#end
 	
 	
-	#if ($attempts == 0)
-		<div class="o_course_run_statusinfo">
-			<p>
-				$r.translate("Intro.surv")	
-			</p>
-			<p>	
-				$r.translate("info.survey")
-			</p>
-		</div>
-				
-		<div class="b_button_group">
-			$r.render("start")
-		</div>	
-	#else
-		<div class="o_course_run_statusinfo">
-			$r.translate("info.survey.alreadydone")
-		</div>
-	#end
+#if ($attempts == 0)
+	<div class="o_statusinfo">
+		<p>
+			$r.translate("Intro.surv")	
+		</p>
+		<p>	
+			$r.translate("info.survey")
+		</p>
+	</div>
+			
+	<div class="o_button_group">
+		$r.render("start")
+	</div>	
+#else
+	<div class="o_statusinfo">
+		$r.translate("info.survey.alreadydone")
+	</div>
+#end
 	
 	
-	#if($changeLog)
-		<p />	
-		#o_togglebox_start("o_course_run_changelog" $r.translate("changelog.title"))
-		<pre>
+#if($changeLog)
+	<p />	
+	#o_togglebox_start("o_course_run_changelog" $r.translate("changelog.title"))
+	<pre class="small">
 $changeLog
-		</pre>
-		#o_togglebox_end()
-	#end
+	</pre>
+	#o_togglebox_end()
+#end
