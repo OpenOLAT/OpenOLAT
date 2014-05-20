@@ -219,8 +219,8 @@ public class IQComponentRenderer implements ComponentRenderer {
 				}
 			}
 			
-			sb.append("<div class=\"b_subcolumns\">");
-			sb.append("<div class='col-md-4'>");
+			sb.append("<div class=\"row\">");
+			sb.append("<div class='col-sm-offset-1 col-sm-3'>");
 			
 			sb.append("<input class=\"btn btn-primary\" type=\"submit\" name=\"olat_fosm\" value=\"");
 			if (ai.isSectionPage())
@@ -229,9 +229,8 @@ public class IQComponentRenderer implements ComponentRenderer {
 				sb.append(StringEscapeUtils.escapeHtml(translator.translate("submitSingleAnswer")));
 			sb.append("\"");
 			if (!displayForm) sb.append(" style=\"display: none;\"");
-			sb.append(" />");
-			
-			sb.append("</div><div class='col-md-8'>");
+			sb.append(" />")
+			  .append("</div><div class='col-md-8'>");
 
 			if (memo && memoId != null) {
 				sb.append("<div class=\"o_qti_item_note_box_title\">");
@@ -243,19 +242,16 @@ public class IQComponentRenderer implements ComponentRenderer {
 				if (isDefaultMemo) {
 					sb.append(" onfocus=\"clrMemo(this);\"");
 				}
-				sb.append(">");
-				sb.append(memoTx);
-				sb.append("</textarea>");
-				sb.append("</div>");
-				sb.append("</div>");
+				sb.append(">")
+				  .append(memoTx)
+				  .append("</textarea>")
+				  .append("</div>")
+				  .append("</div>");
 			}
 			
-			sb.append("</div>");
-			
-			sb.append("</form>");
-			
-			
-			sb.append("</div>");
+			sb.append("</div>")//end memo
+			  .append("</div>")//end row
+			  .append("</form>");
 		}
 		
 		if (status == QTIConstants.ASSESSMENT_FINISHED) {

@@ -126,13 +126,13 @@ public class ChoiceItemController extends DefaultController implements Controlle
 				}
 			} else if (cmd.equals("editq")) {
 				editQuestion = item.getQuestion().getQuestion();
-				displayMaterialFormController(ureq, editQuestion, restrictedEdit);
-				
+				displayMaterialFormController(ureq, editQuestion, restrictedEdit,
+						trnsltr.translate("fieldset.legend.question"));
 			} else if (cmd.equals("editr")) {
 				editResponse = item.getQuestion().getResponses().get(posid);
 				Material responseMat = editResponse.getContent();
-				displayMaterialFormController(ureq, responseMat, restrictedEdit);
-
+				displayMaterialFormController(ureq, responseMat, restrictedEdit,
+						trnsltr.translate("fieldset.legend.answers"));
 			} else if (cmd.equals("addchoice")) {
 				ChoiceQuestion question = (ChoiceQuestion) item.getQuestion();
 				List<Response> choices = question.getResponses();
@@ -285,10 +285,11 @@ public class ChoiceItemController extends DefaultController implements Controlle
 	 * @param mat
 	 * @param isRestrictedEditMode
 	 */
-	private void displayMaterialFormController(UserRequest ureq, Material mat, boolean isRestrictedEditMode) {
+	private void displayMaterialFormController(UserRequest ureq, Material mat, boolean isRestrictedEditMode, String title) {
 		matFormCtr = new MaterialFormController(ureq, getWindowControl(), mat, qtiPackage, isRestrictedEditMode);
 		matFormCtr.addControllerListener(this);
-		dialogCtr = new CloseableModalController(getWindowControl(), "close", matFormCtr.getInitialComponent());
+		dialogCtr = new CloseableModalController(getWindowControl(), "close",
+				matFormCtr.getInitialComponent(), true, title);
 		matFormCtr.addControllerListener(dialogCtr);
 		dialogCtr.activate();
 	}

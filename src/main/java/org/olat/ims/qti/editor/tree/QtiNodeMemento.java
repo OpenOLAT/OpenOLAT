@@ -35,26 +35,20 @@ import org.olat.core.util.memento.DefaultMemento;
  * @author patrick
  */
 public class QtiNodeMemento extends DefaultMemento {
-	/**
-	 * 
-	 */
-	public QtiNodeMemento() {
-		super();
-	}
 
 	/**
 	 * 
 	 * @param qtiData
 	 */
-	protected void setQtiState(Map qtiData){
+	protected void setQtiState(Map<String,Object> qtiData){
 		super.setState(qtiData);
 	}
 	/**
 	 * 
 	 * @return
 	 */
-	protected Map getQtiState(){
-		return (Map)super.getState();
+	protected Map<String,Object> getQtiState(){
+		return (Map<String,Object>)super.getState();
 	}
 	
 }

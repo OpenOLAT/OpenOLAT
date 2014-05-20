@@ -1,16 +1,13 @@
-<fieldset>
-	<legend>$r.translate("fieldset.legend.answers")</legend>
+<fieldset class="o_form form-horizontal" role="form">
+	<legend>$r.translate("fieldset.legend.answers")
 	#if ($isSurveyMode == "true")
-		
-			$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-answer-surv-3.html","help.hover.qti-answer-3")
-		
+		$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-answer-surv-3.html","help.hover.qti-answer-3")
 	#else
-		
-			$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-answer-test-3.html","help.hover.qti-answer-3")
-		
+		$r.contextHelpWithWrapper("org.olat.ims.qti.editor","qed-answer-test-3.html","help.hover.qti-answer-3")
 	#end
+	</legend>
 	
-		<form action="$r.formURIbg("sfib")" id="ofo_tab_fibitem" $r.bgTarget() method="post">
+	<form action="$r.formURIbg("sfib")" id="ofo_tab_fibitem" $r.bgTarget() method="post">
 		#if ($question.getResponses().size() > 0)
 		<table class="table table-bordered">
 		<thead>
@@ -122,23 +119,20 @@
 		</table>
 		#end
 
-
 		<p>
 		<br />
 		#if(!$isRestrictedEdit)
-		<a href="$r.commandURIbg("addtext")" $r.bgTarget() onclick="return o2cl()"  onkeypress="return o2cl()" class="b_button"><span>$r.translate("add_text")</span></a>
+		<a href="$r.commandURIbg("addtext")" $r.bgTarget() onclick="return o2cl()" onkeypress="return o2cl()" class="btn btn-default"><span>$r.translate("add_text")</span></a>
 		&nbsp;
-		<a href="$r.commandURIbg("addblank")" $r.bgTarget() onclick="return o2cl()"  onkeypress="return o2cl()" class="b_button"><span>$r.translate("add_blank")</span></a>
+		<a href="$r.commandURIbg("addblank")" $r.bgTarget() onclick="return o2cl()" onkeypress="return o2cl()" class="btn btn-default"><span>$r.translate("add_blank")</span></a>
 		<br />&nbsp;
 		#end
 		</p>
 
 #if($isSurveyMode.equals("false") && !$isRestrictedEdit)
-		<table>
-			<tr>
-				<td>$r.translate("valuation_method")</td>
-				<td>
-					<select id="valmethod" name="valuation_method" size="1" onchange="if(this.form.valmethod.options.selectedIndex==0){shadeFormElement('single');}else{unShadeFormElement('single');}" onclick="return setFormDirty('ofo_tab_fibitem')" >
+		<div class="form-group">
+			<label class="control-label col-sm-3">$r.translate("valuation_method")</label>
+			<div class="col-sm-9"><select id="valmethod" name="valuation_method" class="form-control" onchange="if(this.form.valmethod.options.selectedIndex==0){shadeFormElement('single');}else{unShadeFormElement('single');}" onclick="return setFormDirty('ofo_tab_fibitem')" >
 					<option value="multi" 
 					#if(!$question.isSingleCorrect())
 						selected
@@ -153,33 +147,29 @@
 						#set ($readonly = "")
 					#end
 					>$r.translate("valuation_method_single")</option>
-					</select>
-				</td>
-			</tr>
-			<tr>
-				<td>$r.translate("single_score") <i>$r.translate("valuation_method_single")</i></td>
-				<td>
-					<input id="single" type="text" name="single_score" value="$!question.getSingleCorrectScore()" size="4" class="$css" $readonly onchange="return setFormDirty('ofo_tab_fibitem')" onclick="return setFormDirty('ofo_tab_fibitem')"/>
-				</td>
-			</tr>
+			</select></div>
+		</div>
+		<div class="form-group">
+			<label class="control-label col-sm-3">$r.translate("single_score") <i>$r.translate("valuation_method_single")</i></label>
+			<div class="col-sm-9">
+				<input id="single" type="text" name="single_score" value="$!question.getSingleCorrectScore()" size="4" class="form-control $css" $readonly onchange="return setFormDirty('ofo_tab_fibitem')" onclick="return setFormDirty('ofo_tab_fibitem')"/>
+			</div>
+		</div>
 		
-			<tr>
-				<td>$r.translate("min_value")</td>
-				<td>
-					<input type="text" name="min_value" value="$!question.getMinValue()" size="4" onchange="return setFormDirty('ofo_tab_fibitem')" onclick="return setFormDirty('ofo_tab_fibitem')"/>
-				</td>
-			</tr>
-			<tr>
-				<td>$r.translate("max_value")</td>
-				<td>
-					<input type="text" name="max_value" value="$!question.getMaxValue()" size="4" onchange="return setFormDirty('ofo_tab_fibitem')" onclick="return setFormDirty('ofo_tab_fibitem')"/>
-				</td>
-			</tr>
-		</table>
+		<div class="form-group">
+			<label class="control-label col-sm-3">$r.translate("min_value")</label>
+			<div class="col-sm-9">
+				<input type="text" name="min_value" value="$!question.getMinValue()" size="4" class="form-control" onchange="return setFormDirty('ofo_tab_fibitem')" onclick="return setFormDirty('ofo_tab_fibitem')"/>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="control-label col-sm-3">$r.translate("max_value")</label>
+			<div class="col-sm-9">
+				<input type="text" name="max_value" value="$!question.getMaxValue()" size="4" class="form-control" onchange="return setFormDirty('ofo_tab_fibitem')" onclick="return setFormDirty('ofo_tab_fibitem')"/>
+			</div>
+		</div>
 #end
-
-<br />
-<div class="btn-group"><input type="submit" value="$r.translateInAttribute("submit")" class="btn btn-primary" name="olat_fosm"/></div>
-</form>
-
-</fieldset>
+	<div class="col-sm-offset-3 col-sm-9 "><div class="btn-group">
+		<input type="submit" value="$r.translateInAttribute("submit")" class="btn btn-primary" name="olat_fosm"/>
+	</div>
+</form></fieldset>

@@ -140,20 +140,20 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 		else target.append(internalTranslator.translate("selectiontree.noentries"));
 		target.append("<br /><br />");
 		if (atLeastOneIsAccessible && tree.getFormButtonKey() != null) {
-			target.append("<button type=\"submit\" class=\"b_button o_sel_submit_selection\" name=\"" + Form.SUBMIT_IDENTIFICATION + "\" value=\"");
+			target.append("<button type=\"submit\" class=\"btn btn-primary o_sel_submit_selection\" name=\"" + Form.SUBMIT_IDENTIFICATION + "\" value=\"");
 			target.append(StringEscapeUtils.escapeHtml(translator.translate(tree.getFormButtonKey())));
 			if (!tree.isAllowEmptySelection()) {
 				target.append("\" onclick=\"return seltree_check();\" onkeypress=\"return seltree_check();\">");
 			} else {
 				target.append("\">");
 			}
-			target.append("<span>").append(translator.translate(tree.getFormButtonKey())).append("</span></button>");
+			target.append(translator.translate(tree.getFormButtonKey())).append("</button>");
 			
 		}
 		if(tree.isShowCancelButton()){
-			target.append("<button type=\"submit\" class=\"b_button o_sel_cancel_selection\" name=\"" + Form.CANCEL_IDENTIFICATION + "\" value=\"");
+			target.append(" <button type=\"submit\" class=\"btn btn-default o_sel_cancel_selection\" name=\"" + Form.CANCEL_IDENTIFICATION + "\" value=\"");
 			target.append(StringEscapeUtils.escapeHtml(translator.translate("cancel"))).append("\">");
-			target.append("<span>").append(translator.translate("cancel")).append("</span></button>");
+			target.append(translator.translate("cancel")).append("</button>");
 		}
 		target.append("</form></div>");
 	}

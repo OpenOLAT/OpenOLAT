@@ -187,9 +187,8 @@ public class FeedbackFormController extends FormBasicController {
 
 		FormLayoutContainer switchLayout = FormLayoutContainer.createDefaultFormLayout("switchLayout", getTranslator());
 		overallFeedbackLayout = FormLayoutContainer.createDefaultFormLayout("overallFeedbackLayout", getTranslator());
-		responseLevelHintsLayout = FormLayoutContainer.createCustomFormLayout("responseLevelHintsLayout", getTranslator(), Util
-				.getPackageVelocityRoot(this.getClass())
-				+ "/response_level_feedback.html");
+		responseLevelHintsLayout = FormLayoutContainer.createCustomFormLayout("responseLevelHintsLayout", getTranslator(),
+				Util.getPackageVelocityRoot(this.getClass()) + "/response_level_feedback.html");
 		// add the layouts to the custom layout
 		formLayout.add(switchLayout);
 		formLayout.add(overallFeedbackLayout);
@@ -226,14 +225,14 @@ public class FeedbackFormController extends FormBasicController {
 		RichTextElement masteryFeedback = uifactory.addRichTextElementForStringData("richTextElement", "item_feedback_mastery", masteryMat
 				.renderAsHtml(mediaBaseUrl), 4, -1, true, baseContainer, null, masteryEditLayout, ureq.getUserSession(), getWindowControl());
 		FormLink editLink = uifactory.addFormLink("editLink", masteryEditLayout, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS);
-		((Link) editLink.getComponent()).setCustomDisplayText("");
-		((Link) editLink.getComponent()).setCustomEnabledLinkCSS("b_small_icon b_edit_icon qti_edit_link");
+		((Link) editLink.getComponent()).setCustomDisplayText(" ");
+		((Link) editLink.getComponent()).setIconLeftCSS("o_icon o_icon_edit o_icon-lg qti_edit_link");
 		registerFeedbackElement(masteryMat, masteryFeedback, editLink);
 
 		// One Failure Layout
-		FormLayoutContainer failureEditLayout = FormLayoutContainer.createCustomFormLayout("failureEditLayout", getTranslator(), Util
-				.getPackageVelocityRoot(this.getClass())
-				+ "/rich_text_and_edit_link.html");
+		FormLayoutContainer failureEditLayout = FormLayoutContainer
+				.createCustomFormLayout("failureEditLayout", getTranslator(), Util
+				.getPackageVelocityRoot(this.getClass()) + "/rich_text_and_edit_link.html");
 		failureEditLayout.setLabel("item_feedback_fail", null);
 		overallFeedbackLayout.add(failureEditLayout);
 		RichTextElement failureFeedback = uifactory.addRichTextElementForStringData("richTextElement", "item_feedback_fail", failureMat
@@ -241,7 +240,7 @@ public class FeedbackFormController extends FormBasicController {
 		failureFeedback.setLabel("item_feedback_fail", null);
 		FormLink failureLink = uifactory.addFormLink("editLink", failureEditLayout, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS);
 		((Link) failureLink.getComponent()).setCustomDisplayText("");
-		((Link) failureLink.getComponent()).setCustomEnabledLinkCSS("b_small_icon b_edit_icon");
+		((Link) failureLink.getComponent()).setIconLeftCSS("o_icon o_icon_edit o_icon-lg");
 		registerFeedbackElement(failureMat, failureFeedback, failureLink);
 
 		// Feedback for each response when single or multiple choice question
@@ -259,8 +258,8 @@ public class FeedbackFormController extends FormBasicController {
 						.renderAsHtml(mediaBaseUrl), 4, -1, true, baseContainer, null, responseLevelHintsLayout, ureq.getUserSession(),
 						getWindowControl());
 				FormLink link = uifactory.addFormLink("link_" + i, responseLevelHintsLayout, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS);
-				((Link) link.getComponent()).setCustomDisplayText("");
-				((Link) link.getComponent()).setCustomEnabledLinkCSS("b_small_icon b_edit_icon");
+				((Link) link.getComponent()).setCustomDisplayText(" ");
+				((Link) link.getComponent()).setIconLeftCSS("o_icon o_icon_edit o_icon-lg");
 				registerFeedbackElement(responseFeedbackMat, responseHintText, link);
 				// get response for displaying
 				Material responseMat = response.getContent();
@@ -272,7 +271,7 @@ public class FeedbackFormController extends FormBasicController {
 			hasResponseLevelHints = i > 1;
 		}
 
-		this.flc.contextPut("hasResponseLevelHints", hasResponseLevelHints);
+		flc.contextPut("hasResponseLevelHints", hasResponseLevelHints);
 		responseLevelHintsLayout.contextPut("responses", responses);
 		showHideFeedbackFields();
 	}

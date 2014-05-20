@@ -722,7 +722,7 @@ function setFormDirty(formId) {
 			mySubmit = myForm.olat_fosm;
 		}
 		// set dirty css class
-		if(mySubmit) mySubmit.className ="o_button_dirty";
+		if(mySubmit) mySubmit.className ="btn o_button_dirty";
 	} else if(jQuery(document).ooLog().isDebugEnabled()) {
 		jQuery(document).ooLog('debug',"Error in setFormDirty, myForm was null for formId=" + formId, "functions.js");
 	}
@@ -1077,7 +1077,7 @@ function setFlexiFormDirty(formId){
 	jQuery('#'+formId).each(function() {
 		var submitId = jQuery(this).data('FlexiSubmit');
 		if(submitId != null) {
-			jQuery('#'+submitId).addClass('o_button_dirty');
+			jQuery('#'+submitId).addClass('btn o_button_dirty');
 			o2c=1;
 		}
 	});

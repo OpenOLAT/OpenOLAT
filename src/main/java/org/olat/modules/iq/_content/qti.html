@@ -1,8 +1,6 @@
 <script type="text/javascript">
-/*
-* little hack to allow next clicks after clicking cancel on the js confirm dialog.
-* Should be properly done by olat modal dialog and get rid of js dialogs: gs
-*/
+## little hack to allow next clicks after clicking cancel on the js confirm dialog.
+## Should be properly done by olat modal dialog and get rid of js dialogs: gs
 function confirmSubmit() {
 	if (!confirm("$r.translate('confirmSubmit')")){
 		o_allowNextClick();
@@ -29,9 +27,9 @@ function confirmSuspend() {
 }
 </script>
 
-<div id="o_qti_run" class="#if($qtistatus.isSurvey())o_qti_survey #else o_qti_test #end">
+<div id="o_qti_run" class="#if($qtistatus.isSurvey())o_qti_survey #else o_qti_test #end clearfix">
 	<div id="o_qti_run_title">
-		<strong>$qtistatus.getTitle()</strong>
+		<div class="pull-right">
   	#if ($qtistatus.isOpen())
 		#if ($qtistatus.isSurvey())
 			<a class="btn btn-default #if($allQuestionsAnswered) o_button_dirty #end" href="$r.commandURI("sas")" onclick="{if (o2cl()) return confirmSubmit(); else return false;}"><span>$r.translate("submitSurvey")</span></a>
@@ -53,12 +51,14 @@ function confirmSuspend() {
   	#elseif(!$qtistatus.isPreview())
 		$r.render("close")
  	#end
+ 		</div>
+		<h3>$qtistatus.getTitle()</h3>
   	</div>
 
 	<div id="o_qti_run_score">
 	#if (!$qtistatus.isSurvey() && $displayScoreProgress && $qtistatus.score)
-		<div id="o_qti_scoreinfo">
-			<div id="o_qti_run_scoreinfo">
+		<div id="o_qti_scoreinfo" class="panel panel-default"><div class="panel-body">
+			<div id="o_qti_run_scoreinfo" class="col-sm-3">
 			#if ($qtistatus.hasMaxScore())
 	    		#if ($qtistatus.maxScore == "-1.0")
 	  				$r.translate("actualPoints"): $qtistatus.score / $r.translate("noMaxScore")
@@ -69,130 +69,97 @@ function confirmSuspend() {
 				$r.translate("actualPoints"): $qtistatus.score
 			#end
 	  		</div>
-			<div id="o_qti_run_scoreprogress">
-			$r.render("qtiscoreprogress", "nl")
-			</div>
-		</div>
+			<div id="o_qti_run_scoreprogress" class="col-sm-3">$r.render("qtiscoreprogress", "nl")</div>
+		</div></div>
 	#end
 	
 	#if ($displayQuestionProgress)
-		<div id="o_qti_questioninfo">
-			<div id="o_qti_run_questioninfo">
+		<div id="o_qti_questioninfo" class="row">
+			<div id="o_qti_run_questioninfo" class="col-sm-3">
 				$qtistatus.getQuestionProgressLabel()
 			</div>
-			<div id="o_qti_run_questionprogress" >
-			$r.render("qtiquestionprogress", "nl")
-			</div>
+			<div id="o_qti_run_questionprogress" class="col-sm-3">$r.render("qtiquestionprogress", "nl")</div>
 		</div>
 	#end
 	</div>
-	
 
-	<div id="o_qti_run_status">
+	<div id="o_qti_run_status" class="clearfix">
 	#if ($qtistatus.hasAssessTimeLimit())
-		<div class="b_with_small_icon_left o_qti_timelimit_icon">$r.translate("timelimit.assessment"): $qtistatus.getAssessTimeLimit()</div>
+		<i class="o_icon o_icon_timelimit"> </i>$r.translate("timelimit.assessment"): $qtistatus.getAssessTimeLimit()
 	#end
 	</div>
 
-	<div id="o_qti_run_main" class="b_subcolumns clearfix">
+	<div id="o_qti_run_main" class="clearfix">
 		#if ($displayMenu)
-		<div id="o_qti_run_menu" class="col-md-4">
-			<div class="b_subcl">			
-				<div id="o_qti_run_menu_inner" class="b_floatbox">
-					$r.render("qticomp", "menu")
-				</div>	
+		<div id="o_qti_run_menu" class="col-md-4">		
+			<div id="o_qti_run_menu_inner" class="b_floatbox">
+				$r.render("qticomp", "menu")
 			</div>
 		</div>
 		#end
 	
-	
 		<div id="o_qti_run_content" class="#if($displayMenu) col-md-8 #end">
-			<div class="b_subcr">
 			#if ($qtistatus.hasError())
-			<div class="b_warning">$qtistatus.error</div>
+			<div class="o_warning">$qtistatus.error</div>
 			#end
 			#if ($qtistatus.hasMessage())
-			<div class="b_important">$qtistatus.message</div>	
+			<div class="o_important">$qtistatus.message</div>	
 			#end
-			</div>
 			
-			#if ($qtistatus.isOpen())
-			<div class="b_subcr">			
+			#if ($qtistatus.isOpen())			
 				<div id="o_qti_run_content_inner" class="b_floatscrollbox">
 				
 				#if ($qtistatus.hasItemTimeLimit() && !$qtistatus.hasItemAttemptsLimit())
 					#if ($qtistatus.hasItemTimeLimitExeeded())
-							<div class="b_warning">
-								<div class="b_with_small_icon_left o_qti_timelimit_icon">
-									$r.translate("timelimit.item"): $qtistatus.getItemTimeLimit()
-								</div>
+							<div class="o_warning"><i class="o_icon o_icon_timelimit"> </i>
+								$r.translate("timelimit.item"): $qtistatus.getItemTimeLimit()
 							</div>						
 					#else 					
-							<div id="o_qti_info_timelimit" class="b_note">
-								<div class="b_with_small_icon_left o_qti_timelimit_icon">
-									$r.translate("timelimit.item"): $qtistatus.getItemTimeLimit()
-								</div>
+							<div id="o_qti_info_timelimit" class="o_note"><i class="o_icon o_icon_timelimit"> </i>
+								$r.translate("timelimit.item"): $qtistatus.getItemTimeLimit()
 							</div>	
 					#end
 				#end
 				
 				#if (!$qtistatus.hasItemTimeLimit() && $qtistatus.hasItemAttemptsLimit())
 					#if($qtistatus.hasAttemptsExeeded())
-							<div class="b_warning">						
-								<div class="b_with_small_icon_left o_qti_attemptslimit_icon">
-									$qtistatus.getItemAttemptsLeft()
-								</div>
+							<div class="o_warning"><i class="o_icon o_icon_attempt_limit"> </i>
+								$qtistatus.getItemAttemptsLeft()
 							</div>
 						#else
-							<div class="b_note">
-								<div class="b_with_small_icon_left o_qti_attemptslimit_icon">
-									$qtistatus.getItemAttemptsLeft()
-								</div>
+							<div class="o_note"><i class="o_icon o_icon_attempt_limit"> </i>
+								$qtistatus.getItemAttemptsLeft()
 							</div>
 						#end
 				#end
 				
 				#if ($qtistatus.hasItemTimeLimit() && $qtistatus.hasItemAttemptsLimit())
 						#if($qtistatus.hasAttemptsExeeded())
-							<div class="b_warning">						
-								<div class="b_with_small_icon_left o_qti_attemptslimit_icon">$qtistatus.getItemAttemptsLeft()</div>
+							<div class="o_warning"><i class="o_icon_ o_icon_attempt_limit"> </i>
+								$qtistatus.getItemAttemptsLeft()
 							</div>
 						#else
-							
 							#if ($qtistatus.hasItemTimeLimitExeeded())
-								<div class="b_warning">
-									<div class="b_with_small_icon_left o_qti_timelimit_icon">
-										$r.translate("timelimit.item"): $qtistatus.getItemTimeLimit()
-									</div>
+								<div class="o_warning"><i class="o_icon o_icon_timelimit"> </i>
+									$r.translate("timelimit.item"): $qtistatus.getItemTimeLimit()
 								</div>						
 							#else 					
-								<div id="o_qti_info_timelimit" class="b_note">
-									<div class="b_with_small_icon_left o_qti_timelimit_icon">
-										$r.translate("timelimit.item"): $qtistatus.getItemTimeLimit()
-									</div>
+								<div id="o_qti_info_timelimit" class="o_note"><i class="o_icon o_icon_timelimit"> </i>
+									$r.translate("timelimit.item"): $qtistatus.getItemTimeLimit()
 								</div>	
-								<div class="b_note">
-									<div class="b_with_small_icon_left o_qti_attemptslimit_icon">
-										$qtistatus.getItemAttemptsLeft()
-									</div>
+								<div class="o_note"><i class="o_icon o_icon_attempt_limit"> </i>
+									$qtistatus.getItemAttemptsLeft()
 								</div>						
 							#end
 						#end
-					
 				#end
-					
-					
-						$r.render("qticomp", "qtiform")
-						
-					
-				</div>
+				
+				$r.render("qticomp", "qtiform")
 			</div>
-			#elseif($qtistatus.isClosed())
-			<div class="b_subcr">			
+			#elseif($qtistatus.isClosed())		
 				<div id="o_qti_run_content_inner" class="b_floatscrollbox">
-						$r.render("qticomp", "qtiform")
+					$r.render("qticomp", "qtiform")
 				</div>
-			</div>
 			#end
 		</div>
 	</div>

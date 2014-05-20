@@ -67,7 +67,7 @@ public class AssessmentController extends TabbableDefaultController implements C
 		this.assessment = assessment;
 		this.qtiPackage = qtiPackage;
 				
-		main = this.createVelocityContainer("tab_assess");
+		main = createVelocityContainer("tab_assess");
 		main.contextPut("assessment", assessment);
 		// fix missing selection ordering, new feature introduced in 9.3.3
 		if (assessment.getSelection_ordering() == null) {

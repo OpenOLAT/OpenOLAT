@@ -114,7 +114,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	private FormLayoutContainer(String id, String name, Translator formTranslator, String page) {
 		super(id, name, false);
 		formLayoutContainer = new VelocityContainer(id == null ? null : id + "_VC", name, page, formTranslator, null);
-		if (page.equals(LAYOUT_DEFAULT) || page.equals(LAYOUT_VERTICAL) || page.equals(LAYOUT_VERTICAL) || page.equals(LAYOUT_BUTTONGROUP)) {
+		if (page.equals(LAYOUT_DEFAULT) || page.equals(LAYOUT_VERTICAL) || page.equals(LAYOUT_HORIZONTAL) || page.equals(LAYOUT_BUTTONGROUP)) {
 			// optimize for lower DOM element count - provides its own DOM ID in velocity template
 			formLayoutContainer.setDomReplacementWrapperRequired(false);
 		}

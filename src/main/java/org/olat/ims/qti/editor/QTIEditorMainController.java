@@ -430,12 +430,12 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				}
 				
 				// enable/disable delete and move
-				// if (!restrictedEdit) {
 				// only available in full edit mode
 				if (clickedNode instanceof AssessmentNode) {
 					deleteLink.setEnabled(false);
 					moveLink.setEnabled(false);
 					copyLink.setEnabled(false);
+					stackedPanel.setDirty(true);
 				} else {
 					deleteLink.setEnabled(true && !restrictedEdit);
 					moveLink.setEnabled(true && !restrictedEdit);
@@ -444,8 +444,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 					} else {
 						copyLink.setEnabled(false);
 					}
+					stackedPanel.setDirty(true);
 				}
-				// }
 			}
 		} else if (source == moveTree) { // catch move operations
 			cmc.deactivate();

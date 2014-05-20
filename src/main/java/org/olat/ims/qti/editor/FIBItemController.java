@@ -297,7 +297,8 @@ public class FIBItemController extends DefaultController implements ControllerEv
 	private void displayMaterialFormController(UserRequest ureq, Material mat, boolean isRestrictedEditMode) {
 		matFormCtr = new MaterialFormController(ureq, getWindowControl(), mat, qtiPackage, isRestrictedEditMode);
 		matFormCtr.addControllerListener(this);
-		dialogCtr = new CloseableModalController(getWindowControl(), "close", matFormCtr.getInitialComponent());
+		dialogCtr = new CloseableModalController(getWindowControl(), "close",
+				matFormCtr.getInitialComponent(), true, trnsltr.translate("questionform_answer"));
 		matFormCtr.addControllerListener(dialogCtr);
 		dialogCtr.activate();
 	}	

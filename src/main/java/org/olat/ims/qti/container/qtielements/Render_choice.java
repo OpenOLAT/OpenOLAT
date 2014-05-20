@@ -125,8 +125,10 @@ public class Render_choice extends GenericQTIElement {
 	public void render(StringBuilder buffer, RenderInstructions ri) {
 		if (kprim) {
 			ri.put(RenderInstructions.KEY_RENDER_CLASS, "kprim");
-			buffer.append("<table class=\"o_qti_item_kprim\" cellpadding=\"2\" cellspacing=\"0\">");
-			buffer.append("<tr><th align=\"center\">+</th><th align=\"center\">-</th><th></th></tr>");
+			buffer.append("<table class='table o_qti_item_kprim'>")
+			      .append("<thead><tr>")
+			      .append("<th class='o_qti_item_kprim_input'>+</th><th class='o_qti_item_kprim_input'>-</th><th></th>")
+			      .append("</tr></thead><tbody>");
 		} else {
 			if (ri.containsKey(RenderInstructions.KEY_RENDER_AUTOENUM_LIST)) {
 				ri.put(RenderInstructions.KEY_RENDER_AUTOENUM_IDX, "0");
@@ -137,7 +139,7 @@ public class Render_choice extends GenericQTIElement {
 
 		super.render(buffer, ri);
 		if (kprim) {
-			buffer.append("</table>");
+			buffer.append("</tbody></table>");
 		} else {
 			buffer.append("</div>");
 		}

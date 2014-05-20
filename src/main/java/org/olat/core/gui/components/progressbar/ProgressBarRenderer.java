@@ -27,10 +27,9 @@
 package org.olat.core.gui.components.progressbar;
 
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -41,15 +40,7 @@ import org.olat.core.util.StringHelper;
  * 
  * @author Andreas Ch. Kapp
  */
-public class ProgressBarRenderer implements ComponentRenderer {
-
-	/**
-	 * This is a singleton. There must be an empty contructor for the
-	 * Class.forName() call.
-	 */
-	public ProgressBarRenderer() {
-		super();
-	}
+public class ProgressBarRenderer extends DefaultComponentRenderer {
 
 	/**
 	 * @see org.olat.core.gui.render.ui.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
@@ -66,7 +57,7 @@ public class ProgressBarRenderer implements ComponentRenderer {
 		if (!ubar.getIsNoMax()) percent = 100 * ubar.getActual() / ubar.getMax();
 		if (percent < 0) percent = 0;
 		if (percent > 100) percent = 100;
-		target.append("<div class=\"b_progress\"><div class=\"b_progress_bar\" style=\"width:")
+		target.append("<div class='progress'><div class='progress-bar' style=\"width:")
 			.append(ubar.getWidth())
 			.append("px;\"><div style=\"width:")
 			.append(Math.round(percent * ubar.getWidth() / 100))
@@ -98,23 +89,4 @@ public class ProgressBarRenderer implements ComponentRenderer {
 		}
 		target.append("</div>");
 	}
-
-	/**
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component)
-	 */
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-	//  
-	}
-
-	/**
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator)
-	 */
-	public void renderHeaderIncludes(Renderer renderer, StringOutput target, Component source, URLBuilder url, Translator translator,
-			RenderingState rstate) {
-	//  
-	}
-
 }

@@ -62,7 +62,7 @@ public class ACRenderer implements FlexiCellRenderer {
 				for (PriceMethod priceMethod : methods) {
 					String price = priceMethod.getPrice();
 					String type = priceMethod.getType();
-					sb.append("<li title=\"").append(priceMethod.getDisplayName()).append("\"><i class='o_icon ").append(type).append(" o_icon-lg'></i></li>");
+					sb.append("<li title=\"").append(priceMethod.getDisplayName()).append("\"><i class='o_icon ").append(type).append(" o_icon-lg'></i>");
 					if(price != null && !price.isEmpty()) {
 						sb.append(" ").append(price);
 					}

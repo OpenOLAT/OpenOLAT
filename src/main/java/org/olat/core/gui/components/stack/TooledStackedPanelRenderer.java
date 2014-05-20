@@ -120,7 +120,6 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderTools(List<Tool> tools, Renderer renderer, StringOutput sb, String[] args) {
-		
 		int numOfTools = tools.size();
 		for(int i=0; i<numOfTools; i++) {
 			Tool tool = tools.get(i);
@@ -137,7 +136,5 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 			renderer.render(cmp, sb, args);
 			sb.append("</li>");
 		}
-		
-		
 	}
 }

@@ -179,7 +179,7 @@ public class ItemNode extends GenericQtiNode {
 
 		// Item metadata
 		QtiNodeMemento qnm = new QtiNodeMemento();
-		Map qtiState = new HashMap();
+		Map<String,Object> qtiState = new HashMap<>();
 		qtiState.put("ID", item.getIdent());
 		qtiState.put("TITLE", item.getTitle());
 		qtiState.put("OBJECTIVES", item.getObjectives());
@@ -253,7 +253,7 @@ public class ItemNode extends GenericQtiNode {
 		String retVal = null;
 		if (mem instanceof QtiNodeMemento) {
 			QtiNodeMemento qnm = (QtiNodeMemento) mem;
-			Map qtiState = qnm.getQtiState();
+			Map<String,Object> qtiState = qnm.getQtiState();
 			//
 			String oldTitle = (String) qtiState.get("TITLE");
 			String newTitle = item.getTitle();

@@ -114,19 +114,15 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 			sb.append(id);
 			sb.append("\" name=\"");
 			sb.append(id);
-			sb.append("\"");
+			sb.append("\" class='form-control'");
 			if (teC.getCols() != -1) {
-				sb.append(" cols=\"");
-				sb.append(teC.getCols());
-				sb.append("\"");
+				sb.append(" cols=\"").append(teC.getCols()).append("\"");
 			} 
 			if (teC.isAutoHeightEnabled()){
 				sb.append(" onkeyup='try{var iter=0; while ( this.scrollHeight>this.offsetHeight && iter < 99){ iter++; this.rows = this.rows + 1}} catch(e){}'");				
 			}
 			if (rows != -1) {
-				sb.append(" rows=\"");		
-				sb.append(rows);
-				sb.append("\"");
+				sb.append(" rows=\"").append(rows).append("\"");
 			}
 			sb.append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()));
 			sb.append(" >");

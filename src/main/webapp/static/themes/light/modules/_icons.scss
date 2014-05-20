@@ -12,6 +12,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_actions { @extend .o_icon-gears;}
 .o_icon_archive_tool{ @extend .o_icon-download;}
 .o_icon_assessment_tool{ @extend .o_icon-trophy;}
+.o_icon_attempt_limit{ @extend .o_icon-refresh; }
 .o_icon_booking { @extend .o_icon-dollar; }
 .o_icon_bookmark { @extend .o_icon-bookmark; color: #996633; }
 .o_icon_bookmark_add { @extend .o_icon-bookmark-o; color: #999999;}
@@ -104,6 +105,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_status_unavailable { @extend .o_icon-times-circle-o; color: #996633; }
 .o_icon_statistics_tool{ @extend .o_icon-tachometer;}
 .o_icon_table {@extend .o_icon-table; }
+.o_icon_timelimit{ @extend .o_icon-bomb; }
 .o_icon_to_read { @extend .o_icon-fighter-jet; color:blue;}
 .o_icon_tool { @extend .o_icon-gear; }
 .o_icon_top {@extend .o_icon-chevron-up; }
