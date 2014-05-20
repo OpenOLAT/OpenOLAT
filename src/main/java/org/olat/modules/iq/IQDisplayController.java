@@ -212,6 +212,7 @@ public class IQDisplayController extends DefaultController implements GenericEve
 			myContent.put("autoCompleteJsCss", autoCompleteJsCss);
 		}
 		closeButton = LinkFactory.createButton("close", myContent, this);
+		closeButton.setPrimary(true);
 		
 		qtiscoreprogress = new ProgressBar("qtiscoreprogress", 150, 0, 0, "");
 		myContent.put("qtiscoreprogress", qtiscoreprogress);

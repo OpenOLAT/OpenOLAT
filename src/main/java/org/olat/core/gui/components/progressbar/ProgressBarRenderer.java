@@ -57,13 +57,13 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 		if (!ubar.getIsNoMax()) percent = 100 * ubar.getActual() / ubar.getMax();
 		if (percent < 0) percent = 0;
 		if (percent > 100) percent = 100;
-		target.append("<div class='progress'><div class='progress-bar' style=\"width:")
+		target.append("<div class='progress' style=\"width:")
 			.append(ubar.getWidth())
-			.append("px;\"><div style=\"width:")
+			.append("px;\"><div class='progress-bar' style=\"width:")
 			.append(Math.round(percent * ubar.getWidth() / 100))
 			.append("px\" title=\"")
 			.append(Math.round(percent * ubar.getWidth() / 100))
-			.append("%\"></div></div>");
+			.append("%\"></div>");
 		if (renderLabels) {
 			target.append("<div class=\"b_progress_label\">");
 			if (ubar.isPercentagesEnabled()) {
