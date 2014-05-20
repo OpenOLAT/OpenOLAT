@@ -96,6 +96,7 @@ import org.olat.testutils.codepoints.server.Codepoint;
 public class Window extends AbstractComponent {
 	
 	private static final OLog log = Tracing.createLoggerFor(Window.class);
+	private static final DispatchResult NO_DISPATCHRESULT = new DispatchResult(false, false, false);
 	
 	private static final String LOG_SEPARATOR = "^$^";
 	/**
@@ -292,7 +293,6 @@ public class Window extends AbstractComponent {
 			
 			GlobalSettings gsettings = wbackofficeImpl.getGlobalSettings();
 			boolean bgEnab = gsettings.getAjaxFlags().isIframePostEnabled();
-			//System.out.println("in window:");
 			// -------------------------
 			// ----- ajax mode ---------
 			// -------------------------
@@ -310,7 +310,9 @@ public class Window extends AbstractComponent {
 						//--> boolean inlineAfterBackForward = false;
 						// FIXME:fj:b avoid double traversal to find component again below					
 						String s_compID = ureq.getComponentID();
-						if (s_compID == null) throw new AssertException("no component id found in req:" + ureq.toString());
+						if (s_compID == null) {
+							throw new AssertException("no component id found in req:" + ureq.toString());
+						}
 						// throws NumberFormatException if not a number
 						//long compID = Long.parseLong(s_compID); 
 						List<Component> foundPath = new ArrayList<Component>(10);
@@ -333,10 +335,12 @@ public class Window extends AbstractComponent {
 						// 2.) collect dirty components (top-down, return from sub-path when first dirty node met)
 						// 3.) return to sender...
 						boolean didDispatch = false;
+						boolean switchScreenMode = false;
 						if (validForDispatching) {
 							DispatchResult dispatchResult = doDispatchToComponent(ureq, null);  // FIXME:fj:c enable time stats for ajax-mode
 							didDispatch = dispatchResult.isDispatch();
 							incTimestamp = dispatchResult.isIncTimestamp();
+							switchScreenMode = dispatchResult.isSwitchScreenMode();
 							if (isDebugLog) {
 								long durationAfterDoDispatchToComponent = System.currentTimeMillis() - debug_start;
 								log.debug("Perf-Test: Window durationAfterDoDispatchToComponent=" + durationAfterDoDispatchToComponent);
@@ -346,7 +350,12 @@ public class Window extends AbstractComponent {
 						MediaResource mmr = null;
 						//REVIEW:PB: this will be the code allowing back forward navigation
 						//-----> if (didDispatch || inlineAfterBackForward) {
-						if (didDispatch || !validForDispatching) {
+						if (switchScreenMode) {
+							//force RELOAD with a redirect to itself
+							String reRenderUri = buildURIFor(this, timestampID, null);
+							Command rmrcom = CommandFactory.createParentRedirectTo(reRenderUri);
+							wbackofficeImpl.sendCommandTo(rmrcom);
+						} else if (didDispatch || !validForDispatching) {
 							if (validForDispatching) {
 								Window ww = ureq.getDispatchResult().getResultingWindow();
 								if (ww != null) {
@@ -1063,12 +1072,12 @@ public class Window extends AbstractComponent {
 	 */
 	private DispatchResult doDispatchToComponent(UserRequest ureq, StringBuilder debugMsg) {
 		String s_compID = ureq.getComponentID();
-		if (s_compID == null) return new DispatchResult(false, false); //throw new AssertException("no component id found in req:" + ureq.toString());
-		
-		
+		if (s_compID == null) {
+			return NO_DISPATCHRESULT;
+		}
+
 		Component target;
 		List<Component> foundPath = new ArrayList<Component>(10);
-		
 		// OLAT-1973
 		if (GUIInterna.isLoadPerformanceMode()) {
 			String compPath = ureq.getParameter("e");
@@ -1120,16 +1129,18 @@ public class Window extends AbstractComponent {
 		if (target == null) {
 			// there was a component id given, but no matching target could be found
 			fireEvent(ureq, COMPONENTNOTFOUND);
-			return new DispatchResult(false, false);
+			return NO_DISPATCHRESULT;
 			// do not dispatch; which means just rerender later; good if
 			// the
 			// gui tree was changed by another thread in the meantime.
 			// do not throw an exception here, because this can happen if the gui
 			// tree was changed by another thread in the meantime
 		}
-		if (!target.isVisible()) { throw new OLATRuntimeException(Window.class, "target with name: '" + target.getComponentName()
-				+ "', was invisible, but called to dispatch", null); }
-		boolean toDispatch = true; //TODO:fj:c is foundpath needed for something else than the enabled-check. if no -> one boolean is enough
+		if (!target.isVisible()) {
+			throw new OLATRuntimeException(Window.class, "target with name: '" + target.getComponentName() + "', was invisible, but called to dispatch", null);
+		}
+		
+		boolean toDispatch = true;
 		boolean incTimestamp = false;
 		for (Iterator<Component> iter = foundPath.iterator(); iter.hasNext();) {
 			Component curComp = iter.next();
@@ -1138,6 +1149,7 @@ public class Window extends AbstractComponent {
 				break;
 			}
 		}
+		
 		if (toDispatch) {
 			latestDispatchComponentInfo = target.getComponentName() + " :" + target.getExtendedDebugInfo();
 			latestDispatchedComp = target;
@@ -1150,9 +1162,7 @@ public class Window extends AbstractComponent {
 			List<Component> ancestors = ComponentHelper.findAncestorsOrSelfByID(getContentPane(), target);
 			for(Component ancestor:ancestors) {
 				incTimestamp |= ancestor.isSilentlyDynamicalCmp();
-				//System.out.println("Ancestor -> " + ancestor.getComponentName() + " :: " + ancestor);
 			}
-			//System.out.println("Target -> " + highDynamical + " :: " + target);
 
 			// after dispatching, commit (docu)
 			DBFactory.getInstance().commit();
@@ -1160,43 +1170,9 @@ public class Window extends AbstractComponent {
 			// add the new URL to the browser history, but not if the klick resulted in a new browser window (a href .. target=...) or in a download (excel or such)
 			wbackofficeImpl.fireCycleEvent(END_OF_DISPATCH_CYCLE);
 			
-			
 			// if loglevel is set accordingly, collect anonymous controller usage statistics.
 			if (debugMsg != null) {
-				Controller c = target.getLatestDispatchedController();
-				if (c != null) {
-					WindowControl wCo = null;
-					try {
-						wCo = c.getWindowControlForDebug();
-					} catch (Exception e) {
-						// getWindowControl throw an Assertion if wControl = null
-					}
-					if (wCo != null) {
-						String coInfo = "";
-						WindowControlInfo wci = wCo.getWindowControlInfo();
-						while (wci != null) {
-							String cName = wci.getControllerClassName();
-							coInfo = cName + ":" + coInfo;  
-							wci = wci.getParentWindowControlInfo();
-						}
-						
-						BusinessControl bc = wCo.getBusinessControl();
-						String businessPath = bc == null? "n/a":bc.getAsString();
-						String compName = target.getComponentName();
-						String msg = "wci:"+coInfo+"%%"+compName+"%%"+businessPath+"%%";
-						// allowed for debugging, dispatching is already over
-						Event ev = target.getAndClearLatestFiredEvent();
-						if (ev != null) {
-							msg += ev.getClass().getName()+":"+ev.getCommand()+"%%";
-						}
-						String targetInfo = target.getExtendedDebugInfo();
-						msg += targetInfo+"%%";
-						debugMsg.append(msg).append(LOG_SEPARATOR);
-						//Tracing.logDebug(msg, WindowStats.class);
-					} else {
-						// no windowcontrol -> ignore						
-					}
-				} // else: a component with -no- controller as listener, makes no sense in 99.99% of the cases; ignore in those rare cases
+				appendDispatchDebugInfos(target, debugMsg);
 			} else { 
 				// no debug level, consume the left over event (for minor memory reasons)
 				target.getAndClearLatestFiredEvent();
@@ -1204,9 +1180,50 @@ public class Window extends AbstractComponent {
 			
 			// we do not want to keep a reference which could be old.
 			// in case we do not reach the next line because of an exception in dispatch(), we clear the value in the exceptionwindowcontroller's error handling			
-			latestDispatchedComp = null; 
+			latestDispatchedComp = null;
 		}
-		return new DispatchResult(toDispatch, incTimestamp);
+		
+		ChiefController chief = Windows.getWindows(ureq).getChiefController();
+		boolean switchScreenMode = chief == null ?
+				false : chief.getScreenMode().wishScreenModeSwitch(true);
+		return new DispatchResult(toDispatch, incTimestamp, switchScreenMode);
+	}
+	
+	private void appendDispatchDebugInfos(Component target, StringBuilder debugMsg) {
+		Controller c = target.getLatestDispatchedController();
+		if (c != null) {
+			WindowControl wCo = null;
+			try {
+				wCo = c.getWindowControlForDebug();
+			} catch (Exception e) {
+				// getWindowControl throw an Assertion if wControl = null
+			}
+			if (wCo != null) {
+				String coInfo = "";
+				WindowControlInfo wci = wCo.getWindowControlInfo();
+				while (wci != null) {
+					String cName = wci.getControllerClassName();
+					coInfo = cName + ":" + coInfo;  
+					wci = wci.getParentWindowControlInfo();
+				}
+				
+				BusinessControl bc = wCo.getBusinessControl();
+				String businessPath = bc == null? "n/a":bc.getAsString();
+				String compName = target.getComponentName();
+				String msg = "wci:"+coInfo+"%%"+compName+"%%"+businessPath+"%%";
+				// allowed for debugging, dispatching is already over
+				Event ev = target.getAndClearLatestFiredEvent();
+				if (ev != null) {
+					msg += ev.getClass().getName()+":"+ev.getCommand()+"%%";
+				}
+				String targetInfo = target.getExtendedDebugInfo();
+				msg += targetInfo+"%%";
+				debugMsg.append(msg).append(LOG_SEPARATOR);
+				//Tracing.logDebug(msg, WindowStats.class);
+			} else {
+				// no windowcontrol -> ignore						
+			}
+		} // else: a component with -no- controller as listener, makes no sense in 99.99% of the cases; ignore in those rare cases
 	}
 	
 	private List<Component> findComponentsWithChildName(final String childName, Component searchRoot) {
@@ -1297,14 +1314,20 @@ public class Window extends AbstractComponent {
 class DispatchResult {
 	private final boolean dispatch;
 	private final boolean incTimestamp;
+	private final boolean switchScreenMode;
 	
-	public DispatchResult(boolean dispatch, boolean incTimestamp) {
+	public DispatchResult(boolean dispatch, boolean incTimestamp, boolean switchScreenMode) {
 		this.dispatch = dispatch;
 		this.incTimestamp = incTimestamp;
+		this.switchScreenMode = switchScreenMode;
 	}
 
 	public boolean isDispatch() {
 		return dispatch;
+	}
+
+	public boolean isSwitchScreenMode() {
+		return switchScreenMode;
 	}
 
 	public boolean isIncTimestamp() {

@@ -42,15 +42,12 @@ import org.olat.login.DmzBFWCParts;
  */
 public class DMZShibRegistrationContentControllerCreator implements ControllerCreator {
 
-	/**
-	 * @see org.olat.core.gui.control.creator.ControllerCreator#createController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
+	@Override
 	public Controller createController(UserRequest lureq, WindowControl lwControl) {
 		DmzBFWCParts dmzSitesAndNav = new DmzBFWCParts();
 		AutoCreator contentControllerCreator = new AutoCreator();
 		contentControllerCreator.setClassName(ShibbolethRegistrationController.class.getName());
 		dmzSitesAndNav.setContentControllerCreator(contentControllerCreator);
-		return new BaseFullWebappController(lureq, dmzSitesAndNav );
+		return new BaseFullWebappController(lureq, dmzSitesAndNav);
 	}
-
 }

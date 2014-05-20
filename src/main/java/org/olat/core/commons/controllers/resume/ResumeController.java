@@ -121,8 +121,6 @@ public class ResumeController extends FormBasicController implements SupportsAft
 		return interception;
 	}
 	
-
-	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source.equals(noButton)){

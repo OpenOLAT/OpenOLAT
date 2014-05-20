@@ -541,8 +541,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				if (nodeid != null) {
 					CourseNode identNode = course.getRunStructure().getNode(nodeid);
 					boolean success = updateTreeAndContent(ureq, identNode, null);
-					if (success) currentCourseNode = identNode;
-					else getWindowControl().setWarning(translate("msg.nodenotavailableanymore"));
+					if (success) {
+						currentCourseNode = identNode;
+					} else {
+						getWindowControl().setWarning(translate("msg.nodenotavailableanymore"));
+					}
 				}
 			}
 		}

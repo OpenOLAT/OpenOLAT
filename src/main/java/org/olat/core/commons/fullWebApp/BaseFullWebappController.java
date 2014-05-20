@@ -61,9 +61,11 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.ScreenMode;
 import org.olat.core.gui.control.VetoableCloseController;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
@@ -118,6 +120,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private Controller jsLoggerC;
 	private List<String> bodyCssClasses = new ArrayList<>(3);
 
+	private final ScreenMode screenMode = new ScreenMode();
 	private WindowBackOffice wbo;
 	
 	// STARTED
@@ -163,12 +166,6 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		super(ureq, null);
 
 		this.baseFullWebappControllerParts = baseFullWebappControllerParts;
-		
-		Object fullScreen = Windows.getWindows(ureq).getAttribute("FULL_SCREEN");
-		if(Boolean.TRUE.equals(fullScreen)) {
-			addBodyCssClass("b_full_screen");
-			Windows.getWindows(ureq).setAttribute("FULL_SCREEN", null);
-		}
 
 		guiMessage = new GUIMessage();
 		guimsgPanel = new OncePanel("guimsgPanel");
@@ -181,7 +178,6 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		// define the new windowcontrol
 		WindowControl myWControl = new BaseFullWebappWindowControl(this, wbo);
 		overrideWindowControl(myWControl);
-
 
 		/*
 		 * BaseFullWebappController provides access to Dynamic Tabs
@@ -213,30 +209,31 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		initializeBase(ureq, winman, initialPanel);
 		
 		if (CoreSpringFactory.containsBean("fullWebApp.AfterLoginInterceptionControllerCreator")){
-        		// present an overlay with configured afterlogin-controllers or nothing if none configured.
+        	// present an overlay with configured afterlogin-controllers or nothing if none configured.
         		// presented only once per session.
-        		Boolean alreadySeen = ((Boolean)ureq.getUserSession().getEntry(PRESENTED_AFTER_LOGIN_WORKFLOW));
-        		if (ureq.getUserSession().isAuthenticated() && alreadySeen == null) {
-        			Controller aftLHookCtr = ((ControllerCreator) CoreSpringFactory.getBean("fullWebApp.AfterLoginInterceptionControllerCreator")).createController(ureq, getWindowControl());
-        			listenTo(aftLHookCtr);
-        			aftLHookCtr.getInitialComponent();
-        			ureq.getUserSession().putEntry(PRESENTED_AFTER_LOGIN_WORKFLOW, Boolean.TRUE);
-        		}
+        	Boolean alreadySeen = ((Boolean)ureq.getUserSession().getEntry(PRESENTED_AFTER_LOGIN_WORKFLOW));
+        	if (ureq.getUserSession().isAuthenticated() && alreadySeen == null) {
+        		Controller aftLHookCtr = ((ControllerCreator) CoreSpringFactory.getBean("fullWebApp.AfterLoginInterceptionControllerCreator"))
+        				.createController(ureq, getWindowControl());
+        		listenTo(aftLHookCtr);
+        		aftLHookCtr.getInitialComponent();
+        		ureq.getUserSession().putEntry(PRESENTED_AFTER_LOGIN_WORKFLOW, Boolean.TRUE);
+        	}
+		}
+		
+		Object fullScreen = Windows.getWindows(ureq).getAttribute("FULL_SCREEN");
+		if(Boolean.TRUE.equals(fullScreen)) {
+			Windows.getWindows(ureq).setAttribute("FULL_SCREEN", null);
+			screenMode.setMode(Mode.full);
 		}
 
-		/*
-		 * register for cycle event to be able to adjust the guimessage place
-		 */
+		// register for cycle event to be able to adjust the guimessage place
 		getWindowControl().getWindowBackOffice().addCycleListener(this);
-		/*
-		 * register for locale change events -> 
-		 */
+		// register for locale change events -> 
 		//move to a i18nModule? languageManger? languageChooserController?
 		OLATResourceable wrappedLocale = OresHelper.createOLATResourceableType(Locale.class);
 		ureq.getUserSession().getSingleUserEventCenter().registerFor(this, getIdentity(), wrappedLocale);
-		/*
-		 * register for global sticky message changed events
-		 */
+		// register for global sticky message changed events
 		GlobalStickyMessage.registerForGlobalStickyMessage(this, ureq.getIdentity());
 	}
 	
@@ -333,6 +330,8 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 
 	private void initialize(UserRequest ureq) {
 		mainVc = createVelocityContainer("fullwebapplayout");
+		mainVc.contextPut("screenMode", screenMode);
+		
 		// use separate container for navigation to prevent full page refresh in ajax mode on site change
 		// nav is not a controller part because it is a fundamental part of the BaseFullWebAppConroller.
 		navSitesVc = createVelocityContainer("nav_sites");
@@ -666,7 +665,6 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	}
 
 	// FROM FULLCHIEFCONTROLLER
-	//fxdiff BAKS-7 Resume function
 	private void activateSite(SiteInstance s, UserRequest ureq,
 			List<ContextEntry> entries, boolean forceReload) {
 		BornSiteInstance bs = siteToBornSite.get(s);
@@ -698,11 +696,10 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			siteToBornSite.put(s, new BornSiteInstance(gs, resC));
 		}
 		doActivateSite(s, gs);
-		//fxdiff BAKS-7 Resume function
 		if(resC instanceof Activateable2) {
 			((Activateable2)resC).activate(ureq, entries, null);
 		}
-		//fxdiff perhaps has activation changed the gui stack and it need to be updated
+		//perhaps has activation changed the gui stack and it need to be updated
 		setGuiStack(gs);
 	}
 
@@ -778,17 +775,23 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		Window myWindow = getWindowControl().getWindowBackOffice().getWindow();
 		myWindow.setCustomCSS(customCSS);
 		// add css component to view
-		mainVc.put("jsAndCss", customCSS.getJSAndCSSComponent());		
+		mainVc.put("jsAndCss", customCSS.getJSAndCSSComponent());
 		
 		addCustomThemeJS();
 	}
-	
+
+	@Override
+	public ScreenMode getScreenMode() {
+		return screenMode;
+	}
+
 	/**
 	 * adds a css-Classname to the OLAT body-tag
 	 * 
 	 * @param cssClass
 	 *            the name of a css-Class
 	 */
+	@Override
 	public void addBodyCssClass(String cssClass) {
 		// sets class for full page refreshes
 		bodyCssClasses.add(cssClass);
@@ -796,7 +799,6 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		// only relevant in AJAX mode
 		JSCommand jsc = new JSCommand("try { jQuery('#b_body').addClass('" + cssClass + "'); } catch(e){if(o_info.debug) console.log(e) }");
 		getWindowControl().getWindowBackOffice().sendCommandTo(jsc);
-
 	}
 
 	/**
@@ -805,6 +807,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	 * @param cssClass
 	 *            the name of a css-Class
 	 */
+	@Override
 	public void removeBodyCssClass(String cssClass) {
 		// sets class for full page refreshes
 		bodyCssClasses.remove(cssClass);

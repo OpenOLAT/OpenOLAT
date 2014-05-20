@@ -29,6 +29,7 @@ import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController;
 
@@ -106,18 +107,15 @@ public class LayoutMain3ColsPreviewController extends MainLayoutBasicController 
 	 * Activate this preview workflow
 	 */
 	public void activate() {
-		if(fullScreen)
-			getWindowControl().pushAsModalDialog(previewVC);
-		else
-			getWindowControl().pushToMainArea(previewVC);
+		getWindowControl().pushToMainArea(previewVC);
 	}
 	
-	//fxdiff FXOLAT-116: SCORM improvements
+	
 	public void setAsFullscreen(UserRequest ureq) {
 		ChiefController cc = Windows.getWindows(ureq).getChiefController();
 		if (cc != null) {
 			thebaseChief = cc;
-			thebaseChief.addBodyCssClass("b_full_screen");
+			thebaseChief.getScreenMode().setMode(Mode.full);
 		}
 		fullScreen = true;
 	}
@@ -127,9 +125,8 @@ public class LayoutMain3ColsPreviewController extends MainLayoutBasicController 
 	 */
 	public void deactivate() {
 		getWindowControl().pop();
-		// fxdiff FXOLAT-116: SCORM improvements
 		if (fullScreen) {
-			thebaseChief.removeBodyCssClass("b_full_screen");
+			thebaseChief.getScreenMode().setMode(Mode.standard);
 		}
 	}
 

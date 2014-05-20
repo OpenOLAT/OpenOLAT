@@ -29,6 +29,7 @@ import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController;
 
@@ -110,10 +111,7 @@ public class LayoutMain3ColsBackController extends MainLayoutBasicController imp
 	 * Activate this back workflow
 	 */
 	public void activate() {
-		if(fullScreen)
-			getWindowControl().pushAsModalDialog(backVC);
-		else
-			getWindowControl().pushToMainArea(backVC);
+		getWindowControl().pushToMainArea(backVC);
 	}
 	
 	public boolean isFullScreen() {
@@ -124,7 +122,7 @@ public class LayoutMain3ColsBackController extends MainLayoutBasicController imp
 		ChiefController cc = Windows.getWindows(ureq).getChiefController();
 		if (cc != null) {
 			thebaseChief = cc;
-			thebaseChief.addBodyCssClass("b_full_screen");
+			thebaseChief.getScreenMode().setMode(Mode.full);
 		}
 		fullScreen = true;
 	}
@@ -135,9 +133,8 @@ public class LayoutMain3ColsBackController extends MainLayoutBasicController imp
 	 */
 	public void deactivate() {
 		getWindowControl().pop();
-		// fxdiff FXOLAT-116: SCORM improvements
 		if (fullScreen && thebaseChief != null) {
-			thebaseChief.removeBodyCssClass("b_full_screen");
+			thebaseChief.getScreenMode().setMode(Mode.standard);
 		}
 	}
 
@@ -150,10 +147,12 @@ public class LayoutMain3ColsBackController extends MainLayoutBasicController imp
 	//
 	// Methods from the 3 col layout:
 	//
+	@Override
 	public void hideCol1(boolean hide) {
 		this.layoutCtr.hideCol1(hide);
 	}
 
+	@Override
 	public void hideCol2(boolean hide) {
 		this.layoutCtr.hideCol2(hide);
 	}

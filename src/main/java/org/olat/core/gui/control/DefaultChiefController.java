@@ -39,10 +39,8 @@ import org.olat.core.logging.AssertException;
 public abstract class DefaultChiefController extends DefaultController implements ChiefController {
 	private Window window;
 	private WindowControl windowControl;
-
-	/**
-	 * 
-	 */
+	private final ScreenMode screenMode = new ScreenMode();
+	
 	public DefaultChiefController() {
 		super(null);
 		// nothing to do
@@ -63,6 +61,11 @@ public abstract class DefaultChiefController extends DefaultController implement
 	 */
 	protected void setWindow(Window window) {
 		this.window = window;
+	}
+
+	@Override
+	public ScreenMode getScreenMode() {
+		return screenMode;
 	}
 
 	/**
@@ -99,5 +102,4 @@ public abstract class DefaultChiefController extends DefaultController implement
 	protected void setWindowControl(WindowControl windowControl) {
 		this.windowControl = windowControl;
 	}
-
 }

@@ -179,7 +179,7 @@ public class AuthHelper {
 		if (!ureq.getUserSession().isAuthenticated()) throw new AssertException("not authenticated!");
 		
 		BaseFullWebappControllerParts guestSitesAndNav = new GuestBFWCParts();
-		ChiefController cc = new BaseFullWebappController(ureq, guestSitesAndNav );
+		ChiefController cc = new BaseFullWebappController(ureq, guestSitesAndNav);
 		Windows.getWindows(ureq.getUserSession()).setChiefController(cc);
 		log.debug("set session-attribute 'AUTHCHIEFCONTROLLER'");
 		return cc;

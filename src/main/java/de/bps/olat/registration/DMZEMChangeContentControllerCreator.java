@@ -40,13 +40,13 @@ import de.bps.olat.user.ChangeEMailController;
  */
 public class DMZEMChangeContentControllerCreator implements ControllerCreator {
 
+	@Override
 	public Controller createController(UserRequest lureq, WindowControl lwControl) {
 		DmzBFWCParts dmzSitesAndNav = new DmzBFWCParts();
 		dmzSitesAndNav.showTopNav(false);
 		AutoCreator contentControllerCreator = new AutoCreator();
 		contentControllerCreator.setClassName(ChangeEMailController.class.getName());
 		dmzSitesAndNav.setContentControllerCreator(contentControllerCreator);
-		return new BaseFullWebappController(lureq, dmzSitesAndNav );		
+		return new BaseFullWebappController(lureq, dmzSitesAndNav);		
 	}
-
 }

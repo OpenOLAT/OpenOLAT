@@ -43,6 +43,8 @@ public interface ChiefController extends Controller {
 	 */
 	public WindowControl getWindowControl();
 	
+	public ScreenMode getScreenMode();
+	
 	/**
 	 * Set a class to the &lt;body&gt;
 	 * @param cssClass

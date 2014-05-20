@@ -34,6 +34,7 @@ import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController;
@@ -187,7 +188,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		ChiefController cc = Windows.getWindows(ureq).getChiefController();
 		if (cc != null) {
 			thebaseChief = cc;
-			thebaseChief.addBodyCssClass("b_full_screen");
+			thebaseChief.getScreenMode().setMode(Mode.full);
 		} else {
 			Windows.getWindows(ureq).setAttribute("FULL_SCREEN", Boolean.TRUE);
 		}
@@ -195,26 +196,21 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	}
 	
 	public void activate() {
-		if(fullScreen)
-			getWindowControl().pushAsModalDialog(layoutMainVC);
-		else
-			getWindowControl().pushToMainArea(layoutMainVC);
+		getWindowControl().pushToMainArea(layoutMainVC);
 	}
 	
 	public void deactivate(UserRequest ureq) {
 		getWindowControl().pop();
-		// fxdiff FXOLAT-116: SCORM improvements
 		if (fullScreen) {
 			if(thebaseChief != null) {
-				thebaseChief.removeBodyCssClass("b_full_screen");
+				thebaseChief.getScreenMode().setMode(Mode.standard);
 			} else if (ureq != null){
 				ChiefController cc = Windows.getWindows(ureq).getChiefController();
 				if (cc != null) {
 					thebaseChief = cc;
-					thebaseChief.removeBodyCssClass("b_full_screen");
+					thebaseChief.getScreenMode().setMode(Mode.standard);
 				}
 			}
-			
 		}
 	}
 
