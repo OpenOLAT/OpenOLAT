@@ -66,7 +66,6 @@
 		.o_entry {
 			@extend .small;
 			@extend .o_block;
-
 			.o_shorttitle {
 				border-bottom: 1px solid $gray-light;
 			}
@@ -78,23 +77,14 @@
 				margin-top: $padding-large-vertical;
 				font-style: italic; 
 			}
-			.o_peekview {}
-			
 		}
-	}
-	
-	.o_personal {
-		.o_label {
-			@extend .text-muted;
-		}
-		.o_status {
-		
-		}
-	}
-	
+	}	
 	.o_no_scoreinfo {
 		@extend .o_important;
 	}	
+	.o_statusinfo {
+		@extend .o_note;
+	}
 	
 }
 

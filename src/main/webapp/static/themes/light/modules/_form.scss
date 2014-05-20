@@ -100,19 +100,17 @@ $toggle-size: 16px !default;
 	@include border-bottom-radius($toggle-size/2 + 1px);
 	background: $gray-lighter;
 	display: inline-block;
-	padding: 0;
-	margin: 0;
 	height: $toggle-size + 2px;
 	line-height: $toggle-size;
 	font-size: $toggle-size;
 	text-align: left;
-	@extend .o_undecorated;
 	padding: 0 0.5em 0 0;
+	margin: 0;
+	@extend .o_undecorated;
 	
 	i {
 		color: $gray-light;
-		text-shadow: 2px 0 2px rgba(0,0,0,.25);
-		
+		text-shadow: 1px 0 2px rgba(0,0,0,.25);		
 	}	
 	span {
 		line-height: $toggle-size;
@@ -126,7 +124,7 @@ $toggle-size: 16px !default;
 		padding: 0 0 0 0.5em;
 		i {
 			color: $brand-primary;
-			text-shadow: -2px 0 2px rgba(0,0,0,.25);
+			text-shadow: -1px 0 2px rgba(0,0,0,.25);
 		}	
 	}
 }
