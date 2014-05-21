@@ -43,8 +43,8 @@ import org.olat.core.util.prefs.Preferences;
  */
 public class ToggleBoxController extends BasicController {
 
-	private static final String CSS_OPENED = "o_togglebox_opened";
-	private static final String CSS_CLOSED = "o_togglebox_closed";
+	private static final String CSS_OPENED = "o_opener o_in";
+	private static final String CSS_CLOSED = "o_opener";
 
 	private Boolean toggleStatus;
 	private final String titleOpen;
@@ -79,7 +79,7 @@ public class ToggleBoxController extends BasicController {
 		mainVC.put("cmpToToggle", componentToToggle);
 
 		hideButton = LinkFactory.createLink("hide", mainVC, this);	
-		hideButton.setCustomEnabledLinkCSS("o_togglebox_hide");
+		hideButton.setCustomEnabledLinkCSS("o_hide");
 		updateUI();
 
 		putInitialPanel(mainVC);

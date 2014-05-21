@@ -1,6 +1,8 @@
 #if ($hasDisc)
 	<div class="panel panel-default o_disclaimer">
-	  	<div class="panel-heading">$r.translate("disclaimer")</div>
+	  	<div class="panel-heading">
+	  		<h4 class="panel-title">$r.translate("disclaimer")</h4>
+	  	</div>
 		<div class="panel-body">
 		$r.render("disc")
   		</div>
@@ -29,10 +31,11 @@
 	
 	
 #if($changeLog)
-	<p />	
+<div class="o_box">
 	#o_togglebox_start("o_course_run_changelog" $r.translate("changelog.title"))
 	<pre class="small">
 $changeLog
 	</pre>
 	#o_togglebox_end()
+</div>
 #end

@@ -113,23 +113,26 @@
 
 
 
-/* toogle box */
+/* toogle box, based on bootstrap collapse plugin */
 .o_togglebox_wrapper {
-	a.o_togglebox_closed i {
-		@extend .o_icon_open_togglebox;
+	.o_opener {
+		i {
+			@extend .o_icon_open_togglebox;
+		}
+		&.o_in i {
+			@extend .o_icon_close_togglebox;
+		}
 	}
-	a.o_togglebox_opened i {
-		@extend .o_icon_close_togglebox;
-	}
-	div.o_togglebox {
+	div.o_togglebox_content {
 		position: relative;
 		@extend .o_info;
 		margin: 0;
-		.o_togglebox_hide {
+		.o_hide {
 			position: absolute;
 			bottom: 0.5em;
 			right: 1em;		
 			@extend .small;
 		}
 	}
+	
 }

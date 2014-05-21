@@ -747,14 +747,6 @@ function o_openPopUp(url, windowname, width, height, menubar) {
 	win.focus();
 }
 
-function o_togglebox(domid, toggler) {
-	// toggle the domid element and switch the toggler classes
-	var togglerEl = jQuery(toggler);
-	togglerEl.toggleClass('o_togglebox_closed');
-	togglerEl.toggleClass('o_togglebox_opened');
-	jQuery('#'+domid).slideToggle(400);
-}
-
 function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveButton) {
 	// file upload forms are rendered transparent and have a fake input field that is rendered.
 	// on change events of the real input field this method is triggered to display the file 

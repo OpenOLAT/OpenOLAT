@@ -35,6 +35,7 @@
 .o_miderr {color: red; @extend .o_icon-warning;}
 .o_middel {@extend .o_icon-eraser;}
 
+/* score info status classes */
 .o_passed {
 	@extend .success;
 	@extend .text-success;
@@ -63,7 +64,7 @@
 	@extend .text-muted;
 }		
 
-
+/* general course run classes */
 .o_course_run {
 	.o_toc {
 		.o_entry {
@@ -90,6 +91,7 @@
 	}
 }
 
+/* structure course element */
 .o_st_peekview {
 	ul {
 		li {
@@ -98,6 +100,7 @@
 	}
 }
 
+/* checklist course element */
 .o_cl_line {
 	margin-bottom: $padding-large-vertical;
 	padding-bottom: $padding-small-vertical;

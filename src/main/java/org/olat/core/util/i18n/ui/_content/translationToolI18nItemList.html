@@ -24,12 +24,12 @@
 					$r.render("translateBundle_$currentBundle")
 				</div>
 				<div class="o_tooglebox_wrapper">
-					<a href="#" id="" class="o_togglebox_closed" onclick="o_togglebox('$b_translation_item_$velocityCount', this); return false;" onkeypress="o_togglebox('$b_translation_item_$velocityCount', this); return false;">
+					<a href="#" data-toggle="collapse" data-target="#$b_translation_item_$velocityCount"  class="o_opener" onclick="jQuery(this).toggleClass('o_in')">
 						<b class="b_with_small_icon_left b_translation_package_icon">$r.translate("generic.bundle"): $currentBundle </b> 
 					</a>
 				</div>
 			</div>
-			<div id="$b_translation_item_$velocityCount" class="b_togglebox" style="display: none"><div class="b_togglebox_content">
+			<div id="$b_translation_item_$velocityCount" class="collapse"><div class="o_togglebox_content">
 		#end
 		<div class="b_translation_list_item b_with_small_icon_left b_translation_item_icon">$item.getKey()</div>
 	#end

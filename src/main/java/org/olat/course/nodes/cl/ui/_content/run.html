@@ -1,6 +1,8 @@
 #if($hasScoreField || $hasPassedField)
 	<div class="panel panel-default o_personal">
-	  	<div class="panel-heading">$r.translate("score.title")</div>
+	  	<div class="panel-heading">
+	  		<h4 class="panel-title">$r.translate("score.title")</h4>
+	  	</div>
 		<table class="table">
 		<tbody>
 			#if ($hasScoreField)
@@ -53,38 +55,44 @@
 
 #if ($hasCommentField)		
 	<div class="panel panel-default o_comment">
-	  	<div class="panel-heading">$r.translate("comment.title")</div>
-		<div class="panel-body">
+	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseComment">
+	  		<h4 class="panel-title">$r.translate("comment.title")</h4>
+	  	</div>
+		<div id="collapseComment" class="panel-collapse collapse in"><div class="panel-body">
 			#if($comment)
 				$comment
 			#else
 				<div class="o_noinfo">$r.translate("comment.nocomment")</div>
 			#end
-  		</div>
+  		</div></div>
 	</div>
 #end
 
 
 #if($infoTextUser)
 	<div class="panel panel-default o_disclaimer">
-	  	<div class="panel-heading">$r.translate("info.title")</div>
-		<div class="panel-body">
+	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDisclaimer">
+	  		<h4 class="panel-title">$r.translate("info.title")</h4>
+	  	</div>
+		<div id="collapseDisclaimer" class="panel-collapse collapse in"><div class="panel-body">
 			$r.formatLatexFormulas($infoTextUser)
-  		</div>
+  		</div></div>
 	</div>
 #end
 
 #if($dueDate)
 	<div class="panel panel-default o_duedate #if($afterDueDate) o_duedate_passed #end">
-	  	<div class="panel-heading">$r.translate("config.due.date")</div>
-		<div class="panel-body">
+	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDuedate">
+	  		<h4 class="panel-title">$r.translate("config.due.date")</h4>
+	  	</div>
+		<div id="collapseDuedate" class="panel-collapse collapse in"><div class="panel-body">
 			<p>
 				$r.translate("run.due.date.desc")
 			</p>
 			<p class="#if($afterDueDate) o_passed #else o_failed #end">
 				$r.translate("run.due.date", $r.formatDateAndTime($dueDate))
 			</p>
-  		</div>
+  		</div></div>
 	</div>
 #end
 
@@ -113,4 +121,3 @@
 		</div>
 	</div>
 #end
-</div>

@@ -1,11 +1,11 @@
 #macro (o_togglebox_start $uid $title)
 <div class="o_togglebox_wrapper o_block o_scrollblock">
-	<a href="#" id="${uid}Opener" class="o_togglebox_closed" onclick="o_togglebox('$uid', this); return false;" onkeypress="o_togglebox('$uid', this); return false;">
+	<a href="#$uid" data-toggle="collapse" data-target="#${uid}" class="o_opener" onclick="jQuery(this).toggleClass('o_in'); return false;">
 		<i class="o_icon o_icon-fw o_icon-lg"></i> 
 		$title
 	</a>
-	<div id="$uid" class="o_togglebox" style="display: none">
-		<div class="o_togglebox_content">	
+	<div id="$uid" class="collapse">
+		<div class="o_togglebox_content clearfix">	
 #end
 
 #macro (o_togglebox_end)

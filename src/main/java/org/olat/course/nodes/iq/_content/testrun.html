@@ -1,7 +1,9 @@
 #if ($enableScoreInfo)
 	#if($attempts > 0)
 		<div class="panel panel-default o_personal">
-		  	<div class="panel-heading">$r.translate("score.title")</div>
+		  	<div class="panel-heading">
+	  			<h4 class="panel-title">$r.translate("score.title")</h4>
+	  		</div>
 			<table class="table">
 			<tbody>
 				<tr class="o_attempts_config">
@@ -37,16 +39,18 @@
 					</td>
 				</tr>
 			</tbody>
-			</table>				
+			</table>
 		</div>
 	
 		#if ($comment)		
 		<div class="panel panel-default o_comment">
-		  	<div class="panel-heading">$r.translate("comment.yourcomment")</div>
-			<div class="panel-body">
+		  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseComment">
+	  			<h4 class="panel-title">$r.translate("comment.yourcomment")</h4>
+	  		</div>
+		<div id="collapseComment" class="panel-collapse collapse in"><div class="panel-body">
 				$comment
 	  		</div>
-		</div>
+		</div></div>
 		#end
 
 	#else
@@ -66,8 +70,10 @@
 	
 #if($showResultsOnHomePage && $attempts >0)	
 	<div class="panel panel-default o_results">
-	  	<div class="panel-heading">$r.translate("showResults.title")</div>
-		<div class="panel-body">
+	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseResults">
+	  		<h4 class="panel-title">$r.translate("showResults.title")</h4>
+	  	</div>
+		<div id="collapseResults" class="panel-collapse collapse in"><div class="panel-body">
 		  	#if($showResultsVisible)
 				#if ($showResults)
 					$r.render("command.hideResults")					  				  
@@ -86,7 +92,7 @@
 		  	#else
 			  	$visibilityPeriod
 			#end
-  		</div>
+  		</div></div>
 	</div>
 #end
 
@@ -97,19 +103,23 @@
 	</div>		
 	#if ($hasDisc)
 	<div class="panel panel-default o_disclaimer">
-	  	<div class="panel-heading">$r.translate("disclaimer")</div>
-		<div class="panel-body">
+	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDisclaimer">
+	  		<h4 class="panel-title">$r.translate("disclaimer")</h4>
+	  	</div>
+	  	<div id="collapseDisclaimer" class="panel-collapse collapse in"><div class="panel-body">
 		$r.render("disc")
-  		</div>
+  		</div></div>
 	</div>
 	#end
 #else
 	#if ($hasDisc)
 	<div class="panel panel-default o_disclaimer">
-	  	<div class="panel-heading">$r.translate("disclaimer")</div>
-		<div class="panel-body">
+	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDisclaimer">
+	  		<h4 class="panel-title">$r.translate("disclaimer")</h4>
+	  	</div>
+	  	<div id="collapseDisclaimer" class="panel-collapse collapse in"><div class="panel-body">
 		$r.render("disc")
-  		</div>
+  		</div></div>
 	</div>
 	#end
 		
@@ -134,7 +144,7 @@
 #end
 
 #if ($log && $showChangelog)
-<div class=o_box">
+<div class="o_box">
     #o_togglebox_start("o_course_run_log" $r.translate("log.title"))
     <pre class="small">
 $log
@@ -144,7 +154,7 @@ $log
 #end
     
 #if($changeLog)
-<div class=o_box">
+<div class="o_box">
     #o_togglebox_start("o_course_run_changelog" $r.translate("changelog.title"))
     <pre class="small">
 $changeLog
