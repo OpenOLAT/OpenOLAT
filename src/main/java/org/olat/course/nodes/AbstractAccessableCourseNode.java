@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
@@ -178,7 +179,8 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	}
 	
 	/** Factory method to launch course element assessment tools. limitToGroup is optional to skip he the group choose step */
-	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, AssessmentToolOptions options) {
+	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			CourseEnvironment courseEnv, AssessmentToolOptions options) {
 		return Collections.emptyList();
 	}
 	

@@ -37,8 +37,9 @@ public class MainPanelRenderer extends PanelRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
-
-		sb.append("<div id='o_main' class='row'>\n")
+		String cssClass = ((MainPanel)source).getCssClass();
+		
+		sb.append("<div id='o_main' class='row ").append(cssClass, cssClass != null).append("'>\n")
 		  .append("<div id='o_main_center' class='split-pane'>\n")
 		  .append("<div id='o_main_center_content' class='b_clearfix'>\n")
 		  .append("<a id='b_content' name='content'></a>\n")

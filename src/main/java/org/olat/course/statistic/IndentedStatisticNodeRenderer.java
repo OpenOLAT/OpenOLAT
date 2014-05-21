@@ -102,30 +102,23 @@ public class IndentedStatisticNodeRenderer implements CustomCellRenderer {
 
 		Integer indent = (Integer) nodeData.get(AssessmentHelper.KEY_INDENT);
 		String type = (String)  nodeData.get(AssessmentHelper.KEY_TYPE);
-
 		if (type==null) {
 			sb.append(title);
 			return;
 		}
+		appendIndent(sb,indent);
 		
 		String cssClass = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(type).getIconCSSClass();
-		
-		
-		appendIndent(sb,indent);
-		sb.append("<span class=\"b_with_small_icon_left ").append(cssClass);
+		sb.append("<i class='o_icon ").append(cssClass).append("'> </i> <span ");
 		if (altText != null) {
-			sb.append("\" title= \"").append(StringEscapeUtils.escapeHtml(altText));
+			sb.append("title= \"").append(StringEscapeUtils.escapeHtml(altText));
 		}
-		sb.append("\">");
-		sb.append(title);
-		sb.append("</span>");
+		sb.append("\">").append(title).append("</span>");
 	}
-
 	
-  private void appendIndent(StringOutput sb, Integer indent) {
-  	for (int i = 0; i < indent.intValue(); i++) {
+	private void appendIndent(StringOutput sb, Integer indent) {
+		for (int i = 0; i < indent.intValue(); i++) {
 			sb.append(INDENT);
 		}
-  }
-
+	}
 }

@@ -27,6 +27,7 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
@@ -58,17 +59,19 @@ import org.olat.ims.qti.statistics.QTIType;
  */
 public class StatisticCourseNodesController extends BasicController implements Activateable2 {
 	private final MenuTree courseTree;
+	private final TooledStackedPanel stackPanel;
 	private final LayoutMain3ColsController layoutCtr;
 	private Controller currentCtrl;
 	
 	private final QTIType[] types;
 	private final StatisticResourceOption options;
 	
-	public StatisticCourseNodesController(UserRequest ureq, WindowControl wControl,
+	public StatisticCourseNodesController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			UserCourseEnvironment userCourseEnv, QTIType ... types) {
 		super(ureq, wControl);
 
 		this.types = types;
+		this.stackPanel = stackPanel;
 		options = new StatisticResourceOption();
 		
 		boolean admin = userCourseEnv.isAdmin();
@@ -175,10 +178,10 @@ public class StatisticCourseNodesController extends BasicController implements A
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(selectedNode.getIdent(), 0l), null);
 		if(selectedNode instanceof StatisticResourceNode) {
 			StatisticResourceNode node = (StatisticResourceNode)selectedNode;
-			currentCtrl = node.getResult().getController(ureq, swControl, node);
+			currentCtrl = node.getResult().getController(ureq, swControl, stackPanel, node);
 		} else {
 			StatisticResourceNode node = getStatisticNodeInParentLine(selectedNode);
-			currentCtrl = node.getResult().getController(ureq, swControl, selectedNode);
+			currentCtrl = node.getResult().getController(ureq, swControl, stackPanel, selectedNode);
 		}
 		
 		if(currentCtrl != null) {

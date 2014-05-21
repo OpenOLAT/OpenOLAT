@@ -30,12 +30,9 @@ import java.util.Date;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
-import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
-import org.olat.core.gui.components.form.flexible.impl.elements.SpacerElementImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -47,21 +44,19 @@ import org.olat.core.util.Util;
  */
 public class DateChooserForm extends FormBasicController {
 
-	private FormLayoutContainer titleContainer;
-	private JSDateChooser fromDate;
-	private JSDateChooser toDate;
-	private FormSubmit subm;
+	private DateChooser fromDate;
+	private DateChooser toDate;
 	private final long numDaysRange_;
 	
 	public DateChooserForm(UserRequest ureq, WindowControl wControl, long numDaysRange) {
 		super(ureq, wControl);
 		
 		numDaysRange_ = numDaysRange;
-		initForm(this.flc, this, ureq);
+		initForm(ureq);
 	}
 	
 	public Date getFromDate() {
-		if (fromDate!=null && fromDate.getDate()!=null) {
+		if (fromDate!=null && fromDate.getDate() != null) {
 			return fromDate.getDate();
 		} else {
 			return null;
@@ -69,7 +64,7 @@ public class DateChooserForm extends FormBasicController {
 	}
 	
 	public Date getToDate() {
-		if (toDate!=null && toDate.getDate()!=null) {
+		if (toDate!=null && toDate.getDate() != null) {
 			return toDate.getDate();
 		} else {
 			return null;
@@ -133,32 +128,18 @@ public class DateChooserForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, final UserRequest ureq) {
-		titleContainer = FormLayoutContainer.createHorizontalFormLayout("titleLayout", getTranslator());
-		formLayout.add(titleContainer);
-
-		// spacer
-		formLayout.add(new SpacerElementImpl("spacer1"));
-		
 		long defaultWeekRange = numDaysRange_ * 24 * 60 * 60 * 1000;
 		
-    // from date
-		fromDate = new JSDateChooser("fromDate", new Date(new Date().getTime()-defaultWeekRange), getLocale());
-		fromDate.setLabel("datechooser.bdate", null);
+		// from date
+		fromDate = uifactory.addDateChooser("datechooser.bdate",  new Date(new Date().getTime()-defaultWeekRange), formLayout);
 		fromDate.setExampleKey("datechooser.example.bdate", null);
 		fromDate.setDisplaySize(fromDate.getExampleDateString().length());
-		formLayout.add(fromDate);
 		// end date
-		toDate = new JSDateChooser("toDate", new Date(), getLocale());
-		toDate.setLabel("datechooser.edate", null);
+		toDate = uifactory.addDateChooser("datechooser.edate", new Date(), formLayout);
 		toDate.setExampleKey("datechooser.example.edate", null);
 		toDate.setDisplaySize(toDate.getExampleDateString().length());
-		formLayout.add(toDate);
 		
-		// submit button
-		subm = new FormSubmit("subm", "datechooser.generate");
-		formLayout.add(subm);
-
-		formLayout.add(new SpacerElementImpl("spacer2"));
+		uifactory.addFormSubmitButton( "datechooser.generate", formLayout);
 	}
 
 	@Override

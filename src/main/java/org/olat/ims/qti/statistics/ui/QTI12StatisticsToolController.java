@@ -30,8 +30,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.stack.BreadcrumbPanel;
-import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeEvent;
@@ -61,12 +60,12 @@ import org.olat.resource.OLATResource;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI12StatisticsToolController extends BasicController implements BreadcrumbPanelAware, Activateable2 {
+public class QTI12StatisticsToolController extends BasicController implements Activateable2 {
 
 	private MenuTree courseTree;
 	private final Link statsButton;
 	private Controller currentCtrl;
-	private BreadcrumbPanel stackPanel;
+	private final TooledStackedPanel stackPanel;
 	private LayoutMain3ColsController layoutCtr;
 
 	private final ArchiveOptions options;
@@ -76,9 +75,11 @@ public class QTI12StatisticsToolController extends BasicController implements Br
 
 	private final QTIStatisticSearchParams searchParams;
 	
-	public QTI12StatisticsToolController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
+	public QTI12StatisticsToolController(UserRequest ureq, WindowControl wControl, 
+			TooledStackedPanel stackPanel, CourseEnvironment courseEnv,
 			AssessmentToolOptions asOptions, QTICourseNode courseNode) {
 		super(ureq, wControl);
+		this.stackPanel = stackPanel;
 		this.options = new ArchiveOptions();
 		this.options.setGroup(asOptions.getGroup());
 		this.options.setIdentities(asOptions.getIdentities());
@@ -98,11 +99,6 @@ public class QTI12StatisticsToolController extends BasicController implements Br
 		VelocityContainer mainVC = createVelocityContainer("stats_button");
 		statsButton = LinkFactory.createButton("menu.title", mainVC, this);
 		putInitialPanel(mainVC);
-	}
-	
-	@Override
-	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
-		this.stackPanel = stackPanel;
 	}
 
 	@Override
@@ -146,7 +142,7 @@ public class QTI12StatisticsToolController extends BasicController implements Br
 	private void doSelectNode(UserRequest ureq, TreeNode selectedNode) {
 		removeAsListenerAndDispose(currentCtrl);
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(selectedNode.getIdent(), 0l), null);
-		currentCtrl = result.getController(ureq, swControl, selectedNode);
+		currentCtrl = result.getController(ureq, swControl, stackPanel, selectedNode);
 		if(currentCtrl != null) {
 			listenTo(currentCtrl);
 			layoutCtr.setCol3(currentCtrl.getInitialComponent());

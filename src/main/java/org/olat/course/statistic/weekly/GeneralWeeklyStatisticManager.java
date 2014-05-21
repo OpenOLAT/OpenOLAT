@@ -29,7 +29,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.StringTokenizer;
 
 import org.olat.core.commons.persistence.DBFactory;
@@ -100,11 +99,11 @@ public class GeneralWeeklyStatisticManager implements IStatisticManager {
 		dbQuery.setLong("resId", courseRepositoryEntryKey);
 		if (fromDate!=null) {
 			dbQuery.setString("yearFromDate", getYear(sdf, fromDate));
-			dbQuery.setString("weekFromDate", getWeek(sdf, fromDate, MysqlWeekHelper.getMysqlWeekMode(Locale.getDefault())));
+			dbQuery.setString("weekFromDate", getWeek(sdf, fromDate));
 		}
 		if (toDate!=null) {
 			dbQuery.setString("yearToDate", getYear(sdf, toDate));
-			dbQuery.setString("weekToDate", getWeek(sdf, toDate, MysqlWeekHelper.getMysqlWeekMode(Locale.getDefault())));
+			dbQuery.setString("weekToDate", getWeek(sdf, toDate));
 		}
 		// note: we use the default locale here since the WeeklyStatisticUpdater uses the default as well
 		//       there is no such concept as 'weekly stats table per user locale'
@@ -116,7 +115,7 @@ public class GeneralWeeklyStatisticManager implements IStatisticManager {
 		return statisticResult;
 	}
 
-	private String getWeek(SimpleDateFormat sdf, Date date, int mysqlWeekMode) {
+	private String getWeek(SimpleDateFormat sdf, Date date) {
 		sdf.applyPattern("w");
 		return sdf.format(date);
 	}

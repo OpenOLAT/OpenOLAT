@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -37,6 +36,9 @@ import org.olat.core.gui.components.chart.BarSeries.Stringuified;
 import org.olat.core.gui.components.chart.StatisticsComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.link.LinkPopupSettings;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -73,18 +75,20 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 	private final Long courseResourceID;
 	private final Long repoEntryId;
 	
-	private final Link downloadRawLink;
 	private final VelocityContainer mainVC;
+	private final TooledStackedPanel stackPanel;
+	private final Link printLink, downloadRawLink;
 	
 	private final SeriesFactory seriesfactory;
 	private final QTIStatisticResourceResult resourceResult;
 	private final QTIStatisticsManager qtiStatisticsManager;
 
-	public QTI12AssessmentStatisticsController(UserRequest ureq, WindowControl wControl,
+	public QTI12AssessmentStatisticsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			QTIStatisticResourceResult resourceResult, boolean printMode) {
 		super(ureq, wControl);
 		
 		type = resourceResult.getType();
+		this.stackPanel = stackPanel;
 		this.resourceResult = resourceResult;
 		mediaBaseURL = resourceResult.getMediaBaseURL();
 		seriesfactory = new SeriesFactory(resourceResult, getTranslator());
@@ -94,10 +98,23 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 		
 		mainVC = createVelocityContainer("statistics_assessment");
 		mainVC.put("loadd3js", new StatisticsComponent("d3loader"));
+		
 		mainVC.contextPut("printMode", new Boolean(printMode));
-		downloadRawLink = LinkFactory.createLink("download.raw.data", mainVC, this);
-		downloadRawLink.setCustomEnabledLinkCSS("b_content_download");
-		mainVC.put("download", downloadRawLink);
+		if(stackPanel != null) {
+			printLink = LinkFactory.createToolLink("print", translate("print"), this);
+			printLink.setIconLeftCSS("o_icon o_icon_print o_icon-lg");
+			printLink.setPopup(new LinkPopupSettings(680, 500, "qti-stats"));
+			stackPanel.addTool(printLink, Align.right);
+
+			downloadRawLink = LinkFactory.createToolLink("download", translate("download.raw.data"), this);
+			stackPanel.addTool(downloadRawLink, Align.right);
+		} else {
+			printLink = null;
+			downloadRawLink = LinkFactory.createLink("download.raw.data", mainVC, this);
+			downloadRawLink.setCustomEnabledLinkCSS("b_content_download");
+			mainVC.put("download", downloadRawLink);
+		}
+		downloadRawLink.setIconLeftCSS("o_icon o_icon_download o_icon-lg");
 
 		//cut value
 		QTICourseNode testNode = resourceResult.getTestCourseNode();
@@ -138,7 +155,10 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-		//
+		if(stackPanel != null) {
+			stackPanel.removeTool(downloadRawLink);
+			stackPanel.removeTool(printLink);
+		}
 	}
 
 	private Float getCutValueSetting(QTICourseNode testNode) {
@@ -282,7 +302,7 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if("print".equals(event.getCommand())){
+		if(printLink == source) {
 			printPages(ureq);
 		} else if(downloadRawLink == source) {
 			doDownloadRawData(ureq);
@@ -297,11 +317,7 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 	private void printPages(UserRequest ureq) {
 		ControllerCreator printControllerCreator = new ControllerCreator() {
 			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				Controller printCtr = new QTI12PrintController(lureq, lwControl, resourceResult);
-				Component view = printCtr.getInitialComponent();
-				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, null, view, null);
-				layoutCtr.addCssClassToMain("o_qti_print");
-				return layoutCtr;
+				return new QTI12PrintController(lureq, lwControl, resourceResult);
 			}					
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);

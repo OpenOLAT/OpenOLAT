@@ -1,7 +1,6 @@
-<p>$r.render("statisticResult")</p>
+$r.render("statisticResult")
 #if($hasChart)
-	<hr class="b_form_spacer"/>
-	<p>$chartIntro</p>
+	<div class="o_desc">$chartIntro</div>
 	$r.render("chart")
 #end
 

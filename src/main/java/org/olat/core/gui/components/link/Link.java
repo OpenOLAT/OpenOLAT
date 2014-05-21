@@ -104,7 +104,7 @@ public class Link extends AbstractComponent {
 	private boolean hasTooltip;
 	private boolean suppressDirtyFormWarning = false;
 	private boolean isDownloadLink = false;
-	private boolean popup = false;
+	private LinkPopupSettings popup;
 
 	/**
 	 * 
@@ -221,10 +221,22 @@ public class Link extends AbstractComponent {
 	}
 	
 	public boolean isPopup() {
-		return popup;
+		return popup != null;
 	}
 
 	public void setPopup(boolean popup) {
+		if(popup) {
+			this.popup = new LinkPopupSettings();
+		} else {
+			this.popup = null;
+		}
+	}
+	
+	public LinkPopupSettings getPopup() {
+		return popup;
+	}
+	
+	public void setPopup(LinkPopupSettings popup) {
 		this.popup = popup;
 	}
 

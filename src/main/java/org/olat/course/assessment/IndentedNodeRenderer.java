@@ -95,9 +95,9 @@ public class IndentedNodeRenderer implements CustomCellRenderer {
 			appendIndent(sb, indent);
 		}
 		
-		sb.append("<span class=\"b_with_small_icon_left ").append(cssClass);
+		sb.append("<i class=\"o_icon ").append(cssClass).append("\"> </i> <span");
 		if (altText != null) {
-			sb.append("\" title= \"").append(StringHelper.escapeHtml(altText));
+			sb.append(" title= \"").append(StringHelper.escapeHtml(altText));
 		}
 		sb.append("\">");
 		sb.append(StringHelper.escapeHtml(title));

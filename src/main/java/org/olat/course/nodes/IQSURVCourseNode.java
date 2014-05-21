@@ -34,6 +34,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
@@ -86,7 +87,6 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	private static final long serialVersionUID = 1672009454920536416L;
 	private static final OLog log = Tracing.createLoggerFor(IQSURVCourseNode.class);
 
-	private static final String PACKAGE = Util.getPackageName(IQSURVCourseNode.class);
 	private static final String TYPE = "iqsurv";
 	/** category that is used to persist the node properties */
 	public static final String PROPERTY_CATEGORY = "iqsu";
@@ -124,10 +124,10 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	}
 	
 	@Override
-	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl,
+	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			CourseEnvironment courseEnv, AssessmentToolOptions options) {
 		List<Controller> tools = new ArrayList<>();
-		tools.add(new QTI12StatisticsToolController(ureq, wControl, courseEnv, options, this));
+		tools.add(new QTI12StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
 		return tools;
 	}
 

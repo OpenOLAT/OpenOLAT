@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.panel.MainPanel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -51,7 +52,11 @@ public class QTI12PrintController extends BasicController {
 		
 		mainVC = createVelocityContainer("print");
 		initView(ureq, resourceResult);
-		putInitialPanel(mainVC);
+		
+		MainPanel mainPanel = new MainPanel("statsPrintPanel");
+		mainPanel.setContent(mainVC);
+		mainPanel.setCssClass("o_qti_print");
+		putInitialPanel(mainPanel);
 	}
 	
 	private void initView(UserRequest ureq, QTIStatisticResourceResult resourceResult) {
@@ -65,7 +70,7 @@ public class QTI12PrintController extends BasicController {
 		int count = 0;
 		List<String> pageNames = new ArrayList<>();
 
-		Controller assessmentCtrl = resourceResult.getController(ureq, getWindowControl(), rootNode, true);
+		Controller assessmentCtrl = resourceResult.getController(ureq, getWindowControl(), null, rootNode, true);
 		
 		String pageName = "page" + count++;
 		mainVC.put(pageName, assessmentCtrl.getInitialComponent());
@@ -75,7 +80,7 @@ public class QTI12PrintController extends BasicController {
 			INode sectionNode = rootNode.getChildAt(i);
 			for(int j=0; j<sectionNode.getChildCount(); j++) {
 				TreeNode itemNode = (TreeNode)sectionNode.getChildAt(j);
-				Controller itemCtrl = resourceResult.getController(ureq, getWindowControl(), itemNode, true);
+				Controller itemCtrl = resourceResult.getController(ureq, getWindowControl(), null, itemNode, true);
 				
 				String itemPageName = "page" + count++;
 				mainVC.put(itemPageName, itemCtrl.getInitialComponent());

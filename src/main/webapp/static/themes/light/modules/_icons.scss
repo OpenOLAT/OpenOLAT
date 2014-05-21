@@ -137,7 +137,12 @@ a.o_icon {
 .o_forum_message_icon {@extend .o_icon-comment-o; }
 .o_calendar_icon {@extend .o_icon-calendar; }
 
-
+/* tests icons */
+.o_mi_qtisc { @extend .o_icon-dot-circle-o; }
+.o_mi_qtimc { @extend .o_icon-check-square-o; }
+.o_mi_qtikprim { @extend .o_icon-check-square;  }
+.o_mi_qtifib { @extend .o_icon-ellipsis-h; }
+.o_mi_qtiessay { @extend .o_icon-align-left; }
 
 /* Access control icons */
 .o_ac_token_icon { @extend .o_icon-key;}

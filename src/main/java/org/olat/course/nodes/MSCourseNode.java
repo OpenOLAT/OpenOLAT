@@ -33,6 +33,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
@@ -433,7 +434,8 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Assess
 	}
 
 	@Override
-	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, AssessmentToolOptions options) {
+	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			CourseEnvironment courseEnv, AssessmentToolOptions options) {
 		List<Controller> tools = new ArrayList<>(1);
 		tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, this));
 		return tools;

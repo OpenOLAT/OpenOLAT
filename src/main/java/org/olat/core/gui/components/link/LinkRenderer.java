@@ -171,9 +171,12 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				sb.append("\" ");
 			} else if(link.isPopup()) {
 				StringOutput href = new StringOutput();
+				LinkPopupSettings popup = link.getPopup();
 				ubu.buildURI(href, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command },
 						link.getModURI(), AJAXFlags.MODE_NORMAL);
-				sb.append("href=\"javascript:void(o_openPopUp('").append(href).append("', 'Open', 500, 400))").append("\" ");
+				sb.append("href=\"javascript:void(o_openPopUp('").append(href).append("','")
+				  .append(popup.getTarget()).append("',").append(popup.getWidth())
+				  .append(",").append(popup.getHeight()).append("))").append("\" ");
 			} else {
 				sb.append("href=\"");
 				ubu.buildURI(sb, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command },

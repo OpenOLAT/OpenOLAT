@@ -2,24 +2,8 @@
 <div class="o_qti_statistics o_qti_statistics_print">
 #else
 <div class="o_qti_statistics">
-	<div class="o_buttons_box_right">
-		<script type="text/javascript">
-		function $r.getId("print")() {
-			try {
-				var ww = window.open('$r.commandURI("print")', '$winid', 'height=400, width=600, left=0, top=0, location=no, menubar=no, resizable=yes, scrollbars=yes, toolbar=no');
-				ww.focus();
-			} catch(e) {
-				if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','Error when trying to print qti statistics' , "");
-			}
-		}
-		</script>
-		<a class="b_with_small_icon_left o_print_icon" href='javascript:$r.getId("print")()' title='$r.translateInAttribute("print")'>
-			<span>$r.translate("print")</span>
-		</a>
-		$r.render("download")
-	</div>
 	#if($hasEssay)
-		<div class="b_warning">#if($type == "survey") $r.translate("essay.warning.survey") #else $r.translate("essay.warning.test") #end</div>
+		<div class="o_warning">#if($type == "survey") $r.translate("essay.warning.survey") #else $r.translate("essay.warning.test") #end</div>
 	#end
 #end
 <h4>$r.translate("fig.title")</h4>

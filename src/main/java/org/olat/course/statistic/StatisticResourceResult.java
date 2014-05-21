@@ -20,6 +20,7 @@
 package org.olat.course.statistic;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
@@ -34,6 +35,6 @@ public interface StatisticResourceResult {
 	
 	public TreeModel getSubTreeModel();
 	
-	public Controller getController(UserRequest ureq, WindowControl wControl, TreeNode selectedNode);
+	public Controller getController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, TreeNode selectedNode);
 
 }

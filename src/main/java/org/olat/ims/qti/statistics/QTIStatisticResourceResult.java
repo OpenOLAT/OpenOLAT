@@ -22,6 +22,7 @@ package org.olat.ims.qti.statistics;
 import org.dom4j.Document;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeModel;
@@ -149,15 +150,16 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 	}
 
 	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl, TreeNode selectedNode) {
-		return getController(ureq, wControl, selectedNode, false);
+	public Controller getController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, TreeNode selectedNode) {
+		return getController(ureq, wControl, stackPanel, selectedNode, false);
 	}
 	
-	public Controller getController(UserRequest ureq, WindowControl wControl, TreeNode selectedNode, boolean printMode) {	
+	public Controller getController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			TreeNode selectedNode, boolean printMode) {	
 		if(selectedNode instanceof StatisticResourceNode) {
-			return createAssessmentController(ureq, wControl, printMode);
+			return createAssessmentController(ureq, wControl, stackPanel, printMode);
 		} else if(selectedNode instanceof SectionNode) {
-			return createAssessmentController(ureq, wControl, printMode);	
+			return createAssessmentController(ureq, wControl, stackPanel, printMode);	
 		} else if(selectedNode instanceof ItemNode) {
 			Section section = null;
 			INode sectionNode = selectedNode.getParent();
@@ -170,12 +172,13 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 		return null;
 	}
 	
-	private Controller createAssessmentController(UserRequest ureq, WindowControl wControl, boolean printMode) {
+	private Controller createAssessmentController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			boolean printMode) {
 		Controller ctrl;
 		if (type == QTIType.onyx){
 			ctrl = new QTI21OnyxAssessmentStatisticsController(ureq, wControl, this, printMode);
 		} else {
-			ctrl = new QTI12AssessmentStatisticsController(ureq, wControl, this, printMode);
+			ctrl = new QTI12AssessmentStatisticsController(ureq, wControl, stackPanel, this, printMode);
 		}
 		CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance()
 				.getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType());

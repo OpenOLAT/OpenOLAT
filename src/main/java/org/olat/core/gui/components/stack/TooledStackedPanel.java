@@ -20,6 +20,7 @@
 package org.olat.core.gui.components.stack;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.gui.components.Component;
@@ -83,6 +84,16 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	public void addTool(Component toolComponent, Align align) {
 		addTool(toolComponent, align, false);
 	}
+	
+	public void removeTool(Component toolComponent) {
+		if(toolComponent == null) return;
+
+		for(Iterator<Tool> it=getCurrentCrumb().getTools().iterator(); it.hasNext(); ) {
+			if(toolComponent == it.next().getComponent()) {
+				it.remove();
+			}
+		}
+	}
 
 	/**
 	 * If the component is null, it will simply not be added,
@@ -93,6 +104,7 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		
 		Tool tool = new Tool(toolComponent, align, inherit);
 		getCurrentCrumb().addTool(tool);
+		setDirty(true);
 	}
 	
 	public List<Tool> getTools() {
@@ -162,6 +174,10 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		
 		public void addTool(Tool tool) {
 			tools.add(tool);
+		}
+		
+		public void removeTool(Tool tool) {
+			tools.remove(tool);
 		}
 	}
 	

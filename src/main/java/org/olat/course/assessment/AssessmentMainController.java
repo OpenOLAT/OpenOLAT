@@ -47,8 +47,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -201,7 +201,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	
 	private EfficiencyStatementAssessmentController esac;
 	private BulkAssessmentOverviewController bulkAssOverviewCtrl;
-	private final BreadcrumbPanel stackPanel;
+	private final TooledStackedPanel stackPanel;
 
 	private RepositoryEntry re;
 	private OLATResourceable ores;
@@ -217,8 +217,8 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	 * @param course
 	 * @param assessmentCallback
 	 */
-	public AssessmentMainController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, OLATResourceable ores,
-			IAssessmentCallback assessmentCallback) {
+	public AssessmentMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			OLATResourceable ores, IAssessmentCallback assessmentCallback) {
 		super(ureq, wControl);	
 		
 		onyxModule = CoreSpringFactory.getImpl(OnyxModule.class);
@@ -834,7 +834,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			} else {
 				options.setGroup(group);
 			}
-			List<Controller> tools = courseNode.createAssessmentTools(ureq, getWindowControl(), courseEnv, options);
+			List<Controller> tools = courseNode.createAssessmentTools(ureq, getWindowControl(), stackPanel, courseEnv, options);
 			int count = 0;
 			for(Controller tool:tools) {
 				listenTo(tool);

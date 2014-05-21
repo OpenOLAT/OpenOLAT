@@ -35,7 +35,8 @@ import org.olat.core.commons.persistence.PersistentObject;
  * @author Stefan
  */
 public class DayOfWeekStat extends PersistentObject {
-	
+
+	private static final long serialVersionUID = -5632266056691684451L;
 	private String businessPath;
 	private int day;
 	private int value;

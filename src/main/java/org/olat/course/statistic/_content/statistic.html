@@ -1,13 +1,17 @@
-<h4>$r.translate("statistic.title")<div style="float: right;">$r.contextHelp($package, $packageHtml,"help.hover.statistic")</div></h4>
-<p>$r.translate("statistic.intro", $statsSince)
-	#if(!$r.translate('statistic.intro.more').startsWith('no translation::::'))
-		$r.translate('statistic.intro.more')
-	#end
-</p><p>$r.render("statisticResult")</p>
-
+<div class="o_course_stats">
+<fieldset class="o_form form-horizontal">
+	<legend>
+		$r.contextHelpWithWrapper($package, $packageHtml,"help.hover.statistic")
+		$r.translate("statistic.title")</legend>
+<div class="o_desc">$r.translate("statistic.intro", $statsSince)
+#if(!$r.translate('statistic.intro.more').startsWith('no translation::::'))
+	$r.translate('statistic.intro.more')
+#end</div>
+</fieldset>
+$r.render("statisticResult")
 #if($hasChart)
-	<hr class="b_form_spacer"/>
-	<p>$chartIntro</p>
+	<div class="o_desc">$chartIntro</div>
 	$r.render("chart")
 #end
+</div>
 	

@@ -34,6 +34,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
@@ -138,10 +139,10 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	}
 
 	@Override
-	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl,
+	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			CourseEnvironment courseEnv, AssessmentToolOptions options) {
 		List<Controller> tools = new ArrayList<>();
-		tools.add(new QTI12StatisticsToolController(ureq, wControl, courseEnv, options, this));
+		tools.add(new QTI12StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
 		return tools;
 	}
 

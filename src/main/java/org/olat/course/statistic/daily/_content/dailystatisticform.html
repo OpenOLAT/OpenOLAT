@@ -1,8 +1,7 @@
-<h4>$r.translate("statistic.title") <div style="float: right;">$r.contextHelp("org.olat.course.statistic.daily","statistic_daily.html","help.hover.statistic")</div></h4>
-	<p>
-		$r.translate("statistic.intro", $statsSince)
-	</p>
-		
- 	<p>
-		$r.render("statisticForm")
-	</p>
+<fieldset class="o_form form-horizontal">
+	<legend>
+		$r.contextHelpWithWrapper("org.olat.course.statistic.daily","statistic_daily.html","help.hover.statistic")
+		$r.translate("statistic.title")</legend>
+	<div class="o_desc">$r.translate("statistic.intro", $statsSince)</div>
+	$r.render("statisticForm")
+</fieldset>

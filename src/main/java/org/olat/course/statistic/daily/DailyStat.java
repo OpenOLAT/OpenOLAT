@@ -37,7 +37,8 @@ import org.olat.core.commons.persistence.PersistentObject;
  * @author Stefan
  */
 public class DailyStat extends PersistentObject {
-	
+
+	private static final long serialVersionUID = -2731771358539901670L;
 	private String businessPath;
 	private Date day;
 	private int value;

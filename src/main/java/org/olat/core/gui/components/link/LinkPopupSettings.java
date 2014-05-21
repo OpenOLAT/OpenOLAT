@@ -17,41 +17,39 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.panel;
-
-import org.olat.core.gui.components.ComponentRenderer;
+package org.olat.core.gui.components.link;
 
 /**
  * 
- * This component wrapped the content to mimic
- * the 3 columns main controller with only
- * one column.
- * 
- * 
- * Initial date: 28.01.2014<br>
+ * Initial date: 21.05.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MainPanel extends SimpleStackedPanel {
+public class LinkPopupSettings {
 	
-	private static final ComponentRenderer RENDERER = new MainPanelRenderer();
+	private final int width;
+	private final int height;
+	private final String target;
 	
-	private String cssClass;
+	public LinkPopupSettings() {
+		this(500, 400, "Open");
+	}
 	
-	public MainPanel(String name) {
-		super(name);
+	public LinkPopupSettings(int width, int height, String target) {
+		this.width = width;
+		this.height = height;
+		this.target = target;
 	}
 
-	public String getCssClass() {
-		return cssClass;
+	public int getWidth() {
+		return width;
 	}
 
-	public void setCssClass(String cssClass) {
-		this.cssClass = cssClass;
+	public int getHeight() {
+		return height;
 	}
 
-	@Override
-	public ComponentRenderer getHTMLRendererSingleton() {
-		return RENDERER;
+	public String getTarget() {
+		return target;
 	}
 }

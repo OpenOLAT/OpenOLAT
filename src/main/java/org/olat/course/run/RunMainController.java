@@ -888,7 +888,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl swControl = addToHistory(ureq, ores, null);
 		if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin || isCourseCoach) {
-			StatisticCourseNodesController statsToolCtr = new StatisticCourseNodesController(ureq, swControl, uce, types);
+			StatisticCourseNodesController statsToolCtr = new StatisticCourseNodesController(ureq, swControl, all, uce, types);
 			currentToolCtr = statsToolCtr;
 			listenTo(statsToolCtr);
 			all.pushController(translate(i18nCrumbKey), statsToolCtr);

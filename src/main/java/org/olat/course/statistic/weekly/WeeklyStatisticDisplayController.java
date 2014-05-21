@@ -51,9 +51,9 @@ public class WeeklyStatisticDisplayController extends StatisticDisplayController
 	protected Component createInitialComponent(UserRequest ureq) {
 		setVelocityRoot(Util.getPackageVelocityRoot(getClass()));
 
-		weeklyStatisticVc_ = this.createVelocityContainer("weeklystatisticparent");
+		weeklyStatisticVc_ = createVelocityContainer("weeklystatisticparent");
 		
-		weeklyStatisticFormVc_ = this.createVelocityContainer("weeklystatisticform");
+		weeklyStatisticFormVc_ = createVelocityContainer("weeklystatisticform");
 		form_ = new DateChooserForm(ureq, getWindowControl(), 8*7);
 		listenTo(form_);
 		weeklyStatisticFormVc_.put("statisticForm", form_.getInitialComponent());
