@@ -113,7 +113,7 @@ public class AutoCompleterController extends BasicController {
 		}
 		
 		myContent.put("typeahead", new CustomJSComponent("typeahead", new String[] {
-				"js/jquery/typeahead/typeahead.bundle.js"
+				"js/jquery/typeahead/typeahead.bundle.min.js"
 		}));
 		
 		myContent.contextPut("showDisplayKey", Boolean.valueOf(showDisplayKey));

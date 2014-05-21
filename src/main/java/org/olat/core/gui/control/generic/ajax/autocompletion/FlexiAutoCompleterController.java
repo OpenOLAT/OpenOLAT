@@ -149,7 +149,7 @@ public class FlexiAutoCompleterController extends FormBasicController {
 		// Configure displaying parameters
 		
 		layoutCont.add("typeahead", new CustomJSFormItem("typeahead", new String[] {
-				"js/jquery/typeahead/typeahead.bundle.js"
+				"js/jquery/typeahead/typeahead.bundle.min.js"
 		}));
 	
 		if (label != null) {
