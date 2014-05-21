@@ -60,11 +60,7 @@ public class CustomJSComponent extends AbstractComponent {
 		this.jsFilePaths = jsFilePaths;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.components.Component#validate(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.render.ValidationResult)
-	 */
+	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);
 		JSAndCSSAdder jsadder = vr.getJsAndCSSAdder();
@@ -86,5 +82,4 @@ public class CustomJSComponent extends AbstractComponent {
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}
-
 }

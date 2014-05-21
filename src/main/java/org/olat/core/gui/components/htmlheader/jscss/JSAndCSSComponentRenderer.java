@@ -28,14 +28,7 @@
 */
 package org.olat.core.gui.components.htmlheader.jscss;
 
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.render.RenderResult;
-import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
-import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.render.URLBuilder;
-import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 
 /**
 * Description:<br>
@@ -45,35 +38,6 @@ import org.olat.core.gui.translator.Translator;
 *
 * @author Felix Jost
 */
-public class JSAndCSSComponentRenderer implements ComponentRenderer {
+public class JSAndCSSComponentRenderer extends DefaultComponentRenderer {
 
-	/**
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator,
-	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
-	 */
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
-			RenderResult renderResult, String[] args) {
-		// nothing to render
-		//throw new OLATRuntimeException(JSAndCSSComponentRenderer.class, "render method should never be called for JsCssComponentRenderer. You must not include this component using $r.render(...) in a velocity page, simply adding it to a container using container.put(\"header\", thiscomponent) will do", null);
-	}
-
-	/**
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component)
-	 */
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-		// do nothing
-	}
-
-	/**
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator)
-	 */
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
-			RenderingState rstate) {
-		// do nothing
-	}
 }

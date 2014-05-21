@@ -34,6 +34,7 @@ import org.json.JSONObject;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.htmlheader.jscss.CustomJSComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -110,6 +111,11 @@ public class AutoCompleterController extends BasicController {
 		if (label != null) {
 			myContent.contextPut("autocompleter_label", label);
 		}
+		
+		myContent.put("typeahead", new CustomJSComponent("typeahead", new String[] {
+				"js/jquery/typeahead/typeahead.bundle.js"
+		}));
+		
 		myContent.contextPut("showDisplayKey", Boolean.valueOf(showDisplayKey));
 		myContent.contextPut("inputWidth", Integer.valueOf(inputWidth));
 		myContent.contextPut("minChars", Integer.valueOf(minChars));

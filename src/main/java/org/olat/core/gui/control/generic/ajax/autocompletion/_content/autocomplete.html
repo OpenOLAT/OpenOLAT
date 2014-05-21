@@ -1,14 +1,14 @@
 <div class="b_form_auto_completer">
 	#if($flexi)
-		<div id="$r.getId("aj_ac_f")">
+		<div id='$r.getId("aj_ac_f")'>
 	#else
-		<form id="$r.getId("aj_ac_f")" action="$r.formURIbg('select')" method="post" $r.bgTarget()>
+		<form id='$r.getId("aj_ac_f")' action="$r.formURIbg('select')" method="post" $r.bgTarget()>
 	#end
     #if ($autocompleter_label)
 		$autocompleter_label 
 	#end
 	<div class="$formElementClass">
-	    <input type="text" size="$inputWidth" name='$r.getId("b_autocomplete_input")' id='$r.getId("b_autocomplete_input")' />
+	    <input type="text" size="$inputWidth" class="form-control" name='$r.getId("b_autocomplete_input")' id='$r.getId("b_autocomplete_input")' />
 	</div>	
 	#if($flexi)
 		</div>
@@ -16,46 +16,42 @@
 		</form>
 	#end
 </div>
-
 <script type="text/javascript">
 /* <![CDATA[ */ 
 jQuery(function(){
-	var myAuto = jQuery('#$r.getId("b_autocomplete_input")').autocomplete({
-		minLength: 3,
-		source: function( request, response ) {
-			jQuery.ajax({
-				url: '$mapuri',
-				data: request,
-				dataType: "json",
-				type: "POST",
-				success: function( data ) {
-					response(jQuery.map( data, function( item ) {
-						return {
-							label: item.value,
-							username: item.displayKey,
-							cssClass: item.cssClass,
-							value: item.key
-						}
-					}));
-				}
-	    });
-	  },
-	  open: function() {
-		  jQuery(this).autocomplete('widget').css('z-index', 10000);
-	  },
-	  select: function( event, ui ) {
-			$r.javaScriptBgCommand("select") + '?key=' + ui.item.value;
-			return false;
+	var fullNameTypeahead = new Bloodhound({
+		datumTokenizer: function (d) {
+			return Bloodhound.tokenizers.whitespace(d.value);
+		},
+		queryTokenizer: Bloodhound.tokenizers.whitespace,
+		remote: {
+			url: '${mapuri}?term=%QUERY',
+			filter: function ( response ) {
+				return jQuery.map(response, function (object) {
+					return {
+						value: '' + object.key,
+						#if($showDisplayKey)
+						fullName: object.displayKey + ": " + object.value
+						#else
+						fullName: object.value
+          				#end
+					};
+				});
+			}
 		}
-	}).__renderItem = function(ul, item) {
-		var itemVal = "<a><div class='b_form_auto_completer_item search-item " + item.cssClass + "'>";
-		#if($showDisplayKey)
-		itemVal += "<span class=\'b_key\'>" + item.username + ": </span>";
-		#end
-		itemVal += "<span class='b_value'>" + item.label + "</span>";
-		itemVal += "</div></a>";
-		return jQuery("<li>").append(itemVal).appendTo(ul);
-	};
+	});
+	fullNameTypeahead.initialize();
+	jQuery('#$r.getId("b_autocomplete_input")').typeahead({
+		hint: false,
+		highlight: false,
+		minLength: 3
+	},{
+		minLength: 3,
+		displayKey: 'fullName',
+		source: fullNameTypeahead.ttAdapter()
+	}).on('typeahead:selected', function (e, object) { 
+		$r.javaScriptBgCommand("select") + '?key=' + object.value;
+	});
 });
 /* ]]> */
 </script>

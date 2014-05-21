@@ -45,10 +45,8 @@ public class AutoCompleterMapper implements Mapper {
 		this.gprovider = gprovider;
 	}
 
-	@Override
-	@SuppressWarnings({ "synthetic-access" })			
+	@Override		
 	public MediaResource handle(String relPath, HttpServletRequest request) {
-
 		// Read query and generate JSON result
 		String lastN = request.getParameter(PARAM_QUERY);
 		JSONArray result;

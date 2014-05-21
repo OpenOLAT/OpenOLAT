@@ -63,18 +63,16 @@ public class JSONMediaResource extends DefaultMediaResource {
 		super.prepare(hres);
 		try {
 			hres.setCharacterEncoding(encoding);
-		} catch (Exception e1) {
-			e1.printStackTrace();
+		} catch (Exception e) {
+			log.warn("", e);
 		}
-		
-		
+
 		try {
 			if(jsonObject != null) {
 				jsonObject.write(hres.getWriter());
 			} else if(jsonArray != null) {
 				jsonArray.write(hres.getWriter());
 			}
-
 		} catch (JSONException e) {
 			log.error("", e);
 		} catch (IOException e) {
@@ -82,9 +80,7 @@ public class JSONMediaResource extends DefaultMediaResource {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getInputStream()
-	 */
+	@Override
 	public InputStream getInputStream() {
 		return null;
 	}
