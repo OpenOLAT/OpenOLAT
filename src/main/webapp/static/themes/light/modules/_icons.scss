@@ -227,13 +227,15 @@ a.o_icon {
 
 
 /* social share icons */
+.o_icon_apple {@extend .o_icon-apple;}
 .o_icon_facebook {@extend .o_icon-facebook-square;}
 .o_icon_twitter {@extend .o_icon-twitter-square;}
 .o_icon_google {@extend .o_icon-google-plus-square;}
 .o_icon_delicious {@extend .o_icon-delicious;}
 .o_icon_digg {@extend .o_icon-digg;}
-.o_icon_mail {@extend .o_icon-envelope-square;}
+.o_icon_mailto {@extend .o_icon-envelope-square;}
 .o_icon_link {@extend .o_icon-link;}
+.o_icon_yahoo {@extend .o_icon-yahoo;}
 
 
 /* portrait / avatar icons */
@@ -255,4 +257,3 @@ a.o_icon {
 .o_portrait_dummy_female_small   {background-image: url('#{$o-images-path}portrait/dummy_female_small.png');}
 .o_portrait_dummy_male_small     {background-image: url('#{$o-images-path}portrait/dummy_male_small.png');}
 .o_portrait_anonymous_small 	 {background-image: url('#{$o-images-path}portrait/dummy_small.png'); } 
-

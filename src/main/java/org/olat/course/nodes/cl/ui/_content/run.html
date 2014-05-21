@@ -1,7 +1,7 @@
 #if($hasScoreField || $hasPassedField)
 	<div class="panel panel-default o_personal">
 	  	<div class="panel-heading">
-	  		<h4 class="panel-title">$r.translate("score.title")</h4>
+	  		<h4 class="panel-title">$r.translate("personal.title")</h4>
 	  	</div>
 		<table class="table">
 		<tbody>
@@ -53,17 +53,13 @@
 	</div>
 #end
 
-#if ($hasCommentField)		
+#if ($comment)		
 	<div class="panel panel-default o_comment">
 	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseComment">
 	  		<h4 class="panel-title">$r.translate("comment.title")</h4>
 	  	</div>
 		<div id="collapseComment" class="panel-collapse collapse in"><div class="panel-body">
-			#if($comment)
-				$comment
-			#else
-				<div class="o_noinfo">$r.translate("comment.nocomment")</div>
-			#end
+			$comment
   		</div></div>
 	</div>
 #end
@@ -89,35 +85,40 @@
 			<p>
 				$r.translate("run.due.date.desc")
 			</p>
-			<p class="#if($afterDueDate) o_passed #else o_failed #end">
+			<p class="#if($afterDueDate) o_failed #else o_passed #end">
+				<i class="o_icon o_icon_calendar o_icon-fw"></i>
 				$r.translate("run.due.date", $r.formatDateAndTime($dueDate))
 			</p>
   		</div></div>
 	</div>
 #end
 
-<div class="o_cl row">
-	<div class="col-xs-12 col-sm-2"><h5>$r.translate("run.mark")</h5></div>
-	<div class="col-xs-12 col-sm-10"><h5>$r.translate("run.info")</h5></div>
-</div>
-#foreach($checkbox in $checkboxList)
-	<div class="o_cl_line row clearfix #if($velocityCount %2 == 0) o_even #else o_odd #end">
-		<div class="col-xs-12 col-sm-2">
-			$r.render($checkbox.checkboxElName)
-		</div>
-		<div class="col-xs-12 col-sm-10">
-			<h5 class="o_cl_title">
-				$checkbox.title 
-				#if($withScore && $checkbox.pointsAvailable) 
-				<small>$r.translate("box.points.info", $checkbox.points)</small>
-				#end
-			</h5>
-			#if($checkbox.description)
-				<div class="o_cl_desc">$checkbox.description</div>
-			#end
-			#if($checkbox.checkbox.filename)
-				<div class="o_cl_file">$r.render($checkbox.downloadName)</div>
-			#end
-		</div>
+<div class="o_cl o_block_large">
+	<div class="o_cl_header hidden-xs row">
+		<div class="col-sm-3"><h4>$r.translate("run.mark")</h4></div>
+		<div class="col-sm-6"><h4>$r.translate("run.info")</h4></div>
 	</div>
-#end
+	<hr class="hidden-xs" />
+	#foreach($checkbox in $checkboxList)
+		<div class="o_cl_line row clearfix #if($velocityCount %2 == 0) o_even #else o_odd #end">
+			<div class="col-xs-12 col-sm-3">
+				$r.render($checkbox.checkboxElName)
+			</div>
+			<div class="col-xs-12 col-sm-9">
+				<h4 class="o_cl_title">
+					$checkbox.title 
+					#if($withScore && $checkbox.pointsAvailable) 
+					<small>$r.translate("box.points.info", $checkbox.points)</small>
+					#end
+				</h4>
+				#if($checkbox.description)
+					<div class="o_cl_desc">$checkbox.description</div>
+				#end
+				#if($checkbox.checkbox.filename)
+					<div class="o_cl_file">$r.render($checkbox.downloadName)</div>
+				#end
+			</div>
+		</div>
+	#end
+</div>
+

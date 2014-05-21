@@ -1,17 +1,20 @@
 #foreach($memberLink in $memberLinks)
-	<div class="o_cmember">
-		<div class="o_cmember_portrait_wrapper">
-			#if($memberLink.getUserObject().isPortraitAvailable())
-				<div class="o_cmember_portrait" style="background-image: url('$avatarBaseURL/$memberLink.getUserObject().getKey()/portrait_small.jpg')"></div>
-			#else
-				<div class="o_cmember_portrait $memberLink.getUserObject().getPortraitCssClass()"></div>
-			#end
-		</div>
-		<div class="o_cmember_info_wrapper">
-			$r.render($memberLink.getComponent().getComponentName())
-			#if($r.available($memberLink.getUserObject().getEmailLink().getComponent().getComponentName()))
-				$r.render($memberLink.getUserObject().getEmailLink().getComponent().getComponentName())
-			#end
+	<div class="o_cmember col-xs-12 col-sm-6 col-md-4 ">
+		<div class="clearfix">
+			<div class="o_portrait pull-left">
+				#if($memberLink.getUserObject().isPortraitAvailable())
+					<img src="$r.staticLink("images/transparent.gif")" class="o_small" style="background-image: url('$avatarBaseURL/$memberLink.getUserObject().getKey()/portrait_small.jpg')" alt="$r.escapeHtml("$memberLink.getUserObject().getFullName()")" />
+				#else
+					<img src="$r.staticLink("images/transparent.gif")" class="o_small $memberLink.getUserObject().getPortraitCssClass()" alt="$r.escapeHtml("$memberLink.getUserObject().getFullName()")" />
+				#end
+	
+			</div>
+			<div class="o_cmember_info_wrapper">
+				$r.render($memberLink.getComponent().getComponentName())
+				#if($r.available($memberLink.getUserObject().getEmailLink().getComponent().getComponentName()))
+					$r.render($memberLink.getUserObject().getEmailLink().getComponent().getComponentName())
+				#end
+			</div>
 		</div>
 	</div>
 #end

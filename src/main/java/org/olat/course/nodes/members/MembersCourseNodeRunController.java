@@ -124,12 +124,12 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		
 		boolean canEmail =  canEmail(owners, coaches);
 		if(canEmail) {
-			ownersEmailLink = uifactory.addFormLink("owners-email", "", null, formLayout, Link.NONTRANSLATED);
-			ownersEmailLink.setCustomEnabledLinkCSS("b_small_icon o_cmembers_mail");
-			coachesEmailLink = uifactory.addFormLink("coaches-email", "", null, formLayout, Link.NONTRANSLATED);
-			coachesEmailLink.setCustomEnabledLinkCSS("b_small_icon o_cmembers_mail");
-			participantsEmailLink = uifactory.addFormLink("participants-email", "", null, formLayout, Link.NONTRANSLATED);
-			participantsEmailLink.setCustomEnabledLinkCSS("b_small_icon o_cmembers_mail");
+			ownersEmailLink = uifactory.addFormLink("owners-email", "members.email.title", null, formLayout, Link.BUTTON_XSMALL);
+			ownersEmailLink.setIconLeftCSS("o_icon o_icon_mail");
+			coachesEmailLink = uifactory.addFormLink("coaches-email", "members.email.title", null, formLayout, Link.BUTTON_XSMALL);
+			coachesEmailLink.setIconLeftCSS("o_icon o_icon_mail");
+			participantsEmailLink = uifactory.addFormLink("participants-email", "members.email.title", null, formLayout, Link.BUTTON_XSMALL);
+			participantsEmailLink.setIconLeftCSS("o_icon o_icon_mail");
 			
 			formLayout.add("owners-email", ownersEmailLink);
 			formLayout.add("coaches-email", coachesEmailLink);
@@ -197,9 +197,10 @@ public class MembersCourseNodeRunController extends FormBasicController {
 			memberLinks.add(idLink);
 			
 			if(withEmail) {
-				FormLink emailLink = uifactory.addFormLink("mail_" + identity.getKey(), fullname, null, formLayout, Link.NONTRANSLATED);
+				FormLink emailLink = uifactory.addFormLink("mail_" + identity.getKey(), "", null, formLayout, Link.NONTRANSLATED);
 				emailLink.setUserObject(member);
-				emailLink.setCustomEnabledLinkCSS("b_small_icon o_cmembers_mail");
+				emailLink.setIconLeftCSS("o_icon o_icon_mail o_icon-lg");
+				emailLink.setElementCssClass("o_mail");
 				formLayout.add(emailLink.getComponent().getComponentName(), emailLink);
 				emailLinks.add(emailLink);
 				member.setEmailLink(emailLink);

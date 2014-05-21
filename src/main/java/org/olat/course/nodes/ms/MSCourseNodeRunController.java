@@ -38,6 +38,7 @@ import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -63,7 +64,8 @@ public class MSCourseNodeRunController extends DefaultController {
 	 */
 	public MSCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, AssessableCourseNode msCourseNode, boolean displayNodeInfo) {
 		super(wControl);
-		Translator trans = Util.createPackageTranslator(MSCourseNodeRunController.class, ureq.getLocale());
+		Translator fallbackTrans = Util.createPackageTranslator(CourseNode.class, ureq.getLocale());
+		Translator trans = Util.createPackageTranslator(MSCourseNodeRunController.class, ureq.getLocale(), fallbackTrans);
 		
 		myContent = new VelocityContainer("olatmsrun", VELOCITY_ROOT + "/run.html", trans, this);
 		
@@ -102,7 +104,9 @@ public class MSCourseNodeRunController extends DefaultController {
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD));
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD));
 	    String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-	    myContent.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, (infoTextUser == null ? "" : infoTextUser));
+	    if(StringHelper.containsNonWhitespace(infoTextUser)) {
+	    	myContent.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
+	    }
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE)));
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MIN, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN)));
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MAX, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX)));

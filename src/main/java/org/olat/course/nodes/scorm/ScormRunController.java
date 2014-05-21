@@ -45,9 +45,11 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -106,7 +108,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 	 */
 	public ScormRunController(ModuleConfiguration config, UserRequest ureq, UserCourseEnvironment userCourseEnv, WindowControl wControl,
 			ScormCourseNode scormNode, boolean isPreview) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		// assertion to make sure the moduleconfig is valid
 		if (!ScormEditController.isModuleConfigValid(config))
 			throw new AssertException("scorm run controller had an invalid module config:" + config.toString());

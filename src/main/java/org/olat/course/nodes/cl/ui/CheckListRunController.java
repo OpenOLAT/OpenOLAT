@@ -40,6 +40,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -49,6 +50,7 @@ import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -56,6 +58,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.CheckListCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.cl.CheckboxManager;
 import org.olat.course.nodes.cl.model.Checkbox;
@@ -99,7 +102,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 	 */
 	public CheckListRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			OLATResourceable courseOres, CheckListCourseNode courseNode) {
-		super(ureq, wControl, "run");
+		super(ureq, wControl, "run", Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		
 		this.courseNode = courseNode;
 		this.courseOres = courseOres;

@@ -2,7 +2,7 @@
 	#if($attempts > 0)
 		<div class="panel panel-default o_personal">
 		  	<div class="panel-heading">
-	  			<h4 class="panel-title">$r.translate("score.title")</h4>
+	  			<h4 class="panel-title">$r.translate("personal.title")</h4>
 	  		</div>
 			<table class="table">
 			<tbody>
@@ -34,7 +34,7 @@
 						<i class="o_icon o_icon_failed"></i> 
 						$r.translate("passed.no")
 					#else
-						$r.translate("passed.noinfo")
+						$r.translateWithPackage("org.olat.course.nodes.st", "passed.noinfo")
 					#end
 					</td>
 				</tr>

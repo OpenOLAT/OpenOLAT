@@ -2,17 +2,28 @@
 	#if ($callback.mayEditMetadata())
 		<div class="o_feed_edit">$r.render("feed.edit")</div>
 	#end		
-	<h3>$r.escapeHtml($feed.getTitle())</h3>
-	<p class="o_blog_description">$!helper.getFeedDescriptionForBrowser()</p>
+	<h2>	
+		<i class="o_icon o_icon-fw o_icon o_FileResource-BLOG_icon"></i> 
+		$r.escapeHtml($!feed.getTitle())
+	</h2>
 	#if ($helper.getImageUrl() && $helper.getImageUrl() != "")
-		<img class="icon" src="$helper.getImageUrl()" alt="Blog Image" />
+		<img class="o_media" src="$helper.getImageUrl()" alt="Blog Image" />
 	#end
-	#if ( !$feed.isUndefined() )
-		<div class="o_blog_subscription">
-			<a href="$!helper.getFeedUrl()" class="o_blog_rss_link" target="_blank">$r.translate("blog.subscribe.to.this.feed")</a>
-		</div>
-	#end	
-	#if ($feed.getAuthor() && $feed.getAuthor() != "")
-		<p class="o_author">$r.translate("feed.author") $r.escapeHtml($helper.getFeedAuthor()). $r.translate("feed.last.change") $!helper.getLastModified()</p>
-	#end
+
+	<div class="o_block">
+		#if ($!feed.getAuthor())
+			<div class="o_author">$r.translate("feed.author"): $r.escapeHtml($helper.getFeedAuthor())</div>
+		#end
+		<div class="o_date">$r.translate("feed.last.change") $!helper.getLastModified()	</div>
+		<div class="o_desc o_info">$!helper.getFeedDescriptionForBrowser()</div>
+	
+		#if ( !$feed.isUndefined() )
+			<div class="o_subscription">
+				<a href="$!helper.getFeedUrl()" class="o_nowrap" target="_blank">
+					<i class="o_icon o_icon-fw o_icon_rss"></i> 
+					$r.translate("blog.subscribe.to.this.feed")
+				</a>
+			</div>
+		#end	
+	</div>
 </div>

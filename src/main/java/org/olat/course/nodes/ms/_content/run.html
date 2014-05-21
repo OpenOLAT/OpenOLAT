@@ -1,95 +1,85 @@
-	<div class="o_course_run_scoreinfo">
-	#if ($hasScoreField)
-		<h4>$r.translate("score.title")</h4>
-		<table>
-			<tbody>
-				<tr>
-					<td>
-						$r.translate("score.min"):
-					</td>
-					<td>
-						$scoreMin
-					</td>
-				</tr>
-				<tr>
-					<td>
-						$r.translate("score.max"): 
-					</td>
-					<td>
-						$scoreMax
-					</td>
-				</tr>
-				<tr>
-					<td>			
-						$r.translate("score.yourscore"): 
-					</td>
-					<td>
-						#if($score)		
-							$score
-						#else
-							<div class="o_course_run_scoreinfo_noinfo">$r.translate("score.noscore")</div>
-						#end
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	#end
-
-	#if ($hasPassedField)
-		<h4>$r.translate("passed.title")</h4>
-		<table>
-			<tbody>	
-			#if ($passedCutValue)
-				<tr>
-					<td>
-						$r.translate("passed.cut"):
-					</td>
-					<td>
-						$passedCutValue
-					</td>
-				</tr>
-			#end
-				<tr>
-					<td>			
-						$r.translate("passed.yourpassed"):
-					</td>
-					<td>
-						#if($hasPassedValue && $passed == true)		
-							<span class="o_passed">$r.translate("passed.yes")</span>
-						#elseif($hasPassedValue && $passed == false)		
-							<span class="o_notpassed">$r.translate("passed.no")</span>
-						#else
-							<div class="o_course_run_scoreinfo_noinfo">$r.translate("passed.nopassed")</div>
-						#end
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	#end
-
-	#if ($hasCommentField)
-		<h4>$r.translate("comment.title")</h4>
-		#if ($comment)
-			$comment
-		#else
-			<div class="o_course_run_scoreinfo_noinfo">$r.translate("comment.nocomment")</div>
+<div class="panel panel-default o_personal">
+  	<div class="panel-heading">
+ 			<h4 class="panel-title">$r.translate("personal.title")</h4>
+ 		</div>
+	<table class="table">
+	<tbody>
+		#if ($hasScoreField)
+		<tr class="o_score_config_min">
+			<th>$r.translate("score.min")</th>
+			<td>$scoreMin</td>
+		</tr>
+		<tr class="o_score_config_max">
+			<th>$r.translate("score.max")</th>
+			<td>$scoreMax</td>
+		</tr>
+		<tr class="o_score">
+			<th>$r.translate("score.yourscore")</th>
+			<td>
+			#if($score)		
+				$score
+			#else
+				<div class="o_noinfo">$r.translate("score.noscore")</div>
+			#end				
+			</td> 
+		</tr>
+		#end 
+		
+		#if ($hasPassedField)
+		#if ($passedCutValue)
+		<tr class="o_cutval">
+			<th>$r.translate("passed.cut")</th>
+			<td>$passedCutValue</td>
+		</tr>
 		#end
-	#end
-	</div>
+		<tr class="o_state #if ($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
+			<th>$r.translate("passed.yourpassed")</th>
+			<td>
+			#if($hasPassedValue && $passed)	
+				<i class="o_icon o_icon_passed"></i> 
+				$r.translate("passed.yes")
+			#elseif($hasPassedValue && !$passed)		
+				<i class="o_icon o_icon_failed"></i> 
+				$r.translate("passed.no")
+			#else
+				<div class="o_noinfo">$r.translate("passed.nopassed")</div>
+			#end
+			</td>
+		</tr>
+		#end
+	</tbody>
+	</table>
+</div>
 
-#if ($infoTextUser != "")
-	<div class="o_course_run_disclaimer">
-		<h4>$r.translate("info.title")</h4>
-		$r.formatLatexFormulas($infoTextUser)
+#if ($comment)		
+	<div class="panel panel-default o_comment">
+	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseComment">
+	  		<h4 class="panel-title">$r.translate("comment.title")</h4>
+	  	</div>
+		<div id="collapseComment" class="panel-collapse collapse in"><div class="panel-body">
+			$comment
+  		</div></div>
+	</div>
+#end
+
+#if($infoTextUser)
+	<div class="panel panel-default o_disclaimer">
+	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDisclaimer">
+	  		<h4 class="panel-title">$r.translate("info.title")</h4>
+	  	</div>
+		<div id="collapseDisclaimer" class="panel-collapse collapse in"><div class="panel-body">
+			$r.formatLatexFormulas($infoTextUser)
+  		</div></div>
 	</div>
 #end
 
 
-	#if ($log)
-		<p />	
-		#o_togglebox_start("o_course_run_log" $r.translate("log.title"))
-		<pre>
+#if($log)
+<div class="o_box">
+    #o_togglebox_start("o_course_run_log" $r.translate("log.title"))
+    <pre class="small">
 $log
-		</pre>
-		#o_togglebox_end()
-	#end
+    </pre>
+    #o_togglebox_end()
+</div>
+#end

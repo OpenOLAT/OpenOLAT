@@ -58,6 +58,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.Util;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
@@ -139,7 +140,7 @@ public class IQRunController extends BasicController implements GenericEventList
 	 * @param testCourseNode
 	 */
 	IQRunController(UserCourseEnvironment userCourseEnv, ModuleConfiguration moduleConfiguration, IQSecurityCallback secCallback, UserRequest ureq, WindowControl wControl, IQTESTCourseNode testCourseNode) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		
 		this.modConfig = moduleConfiguration;
 		this.secCallback = secCallback;
@@ -230,7 +231,7 @@ public class IQRunController extends BasicController implements GenericEventList
 	 * @param selftestCourseNode
 	 */
 	IQRunController(UserCourseEnvironment userCourseEnv, ModuleConfiguration moduleConfiguration, IQSecurityCallback secCallback, UserRequest ureq, WindowControl wControl, IQSELFCourseNode selftestCourseNode) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		
 		this.modConfig = moduleConfiguration;
 		this.secCallback = secCallback;
@@ -271,7 +272,7 @@ public class IQRunController extends BasicController implements GenericEventList
 	 * @param surveyCourseNode
 	 */
 	IQRunController(UserCourseEnvironment userCourseEnv, ModuleConfiguration moduleConfiguration, IQSecurityCallback secCallback, UserRequest ureq, WindowControl wControl, IQSURVCourseNode surveyCourseNode) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		
 		this.modConfig = moduleConfiguration;
 		this.secCallback = secCallback;

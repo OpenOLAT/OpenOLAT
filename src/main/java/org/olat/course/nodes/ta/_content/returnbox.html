@@ -1,12 +1,17 @@
-<div class="o_course_run_returnbox">
-	#if($hasNotification == true)
-		$r.render("subscription")
-	#end
-	<h4>$r.translate("returnbox.title")</h4>		
-	<p>
-		$r.translate("returnbox.intro")
-	</p>
-	<p>
-		$r.render("returnbox")
-	</p>
+<div class="panel panel-default o_returnbox">
+	<div class="panel-heading" data-toggle="collapse" data-target="#collapseReturnbox">
+		<h4 class="panel-title">$r.translate("returnbox.title")</h4>
+	</div>
+	<div id="collapseReturnbox" class="panel-collapse collapse in">
+		<div class="panel-body">
+			#if($hasNotification == true)
+				$r.render("subscription")
+			#end
+			<p>
+				$r.translate("returnbox.intro")
+			</p>
+			<hr />
+			$r.render("returnbox")  	
+		</div>  	
+	</div>
 </div>

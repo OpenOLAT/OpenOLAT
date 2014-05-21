@@ -1,22 +1,33 @@
 <div class="o_cmembers">
 	#if($hasOwners)
-		<div class="b_clearfix">
-			<h4>$r.translate("members.owners") #if($r.available("owners-email")) $r.render("owners-email") #end</h4>
+		<div class="clearfix">
+			<h4>$r.translate("members.owners")</h4>
+			#if($r.available("owners-email")) 
+				$r.render("owners-email") 
+			#end
 			$r.render("owners")
 		</div>
 	#end
 	#if($hasCoaches)
-		<div class="b_clearfix">
-			<h4>$r.translate("members.coaches") #if($r.available("coaches-email")) $r.render("coaches-email") #end</h4>
+		<div class="clearfix o_block">
+			<h4>$r.translate("members.coaches")</h4>
+			#if($r.available("coaches-email")) 
+				$r.render("coaches-email") 
+			#end
 			$r.render("coaches")
 		</div>
 	#end
-	<div class="b_clearfix">
-		<h4>$r.translate("members.participants") #if($hasParticipants && $r.available("participants-email")) $r.render("participants-email") #end</h4>
+	<div class="clearfix o_block">
+		<h4>$r.translate("members.participants")</h4>
+		#if($r.available("participants-email")) 
+			$r.render("participants-email") 
+		#end
 		#if($hasParticipants)
 			$r.render("participants")
 		#else
-			$r.translate("members.noParticipants.message")
+			<div class="o_important">
+				$r.translate("members.noParticipants.message")
+			</div>
 		#end
 	</div>
 </div>

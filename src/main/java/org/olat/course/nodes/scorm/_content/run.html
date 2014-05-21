@@ -1,64 +1,59 @@
 #if ($isassessable)	
-	<div class="o_course_run_scoreinfo">
-		<h4>$r.translate("score.title")</h4>		
-		<table>
+	#if($attempts > 0)
+		<div class="panel panel-default o_personal">
+		  	<div class="panel-heading">
+	  			<h4 class="panel-title">$r.translate("personal.title")</h4>
+	  		</div>
+			<table class="table">
 			<tbody>
-				<tr>
-					<td>			
-						$r.translate("attempts.yourattempts"): 
-					</td>
+				<tr class="o_attempts">
+					<th>$r.translate("attempts.yourattempts")</th>
+					<td>$attempts</td> 
+				</tr> 
+				<tr class="o_score">
+					<th>$r.translate("score.yourscore")</th>
+					<td>$score</td> 
+				</tr> 
+				<tr class="o_state #if ($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
+					<th>$r.translate("passed.yourpassed")</th>
 					<td>
-						$attempts
+					#if($hasPassedValue && $passed)	
+						<i class="o_icon o_icon_passed"></i> 
+						$r.translate("passed.yes")
+					#elseif($hasPassedValue && !$passed)		
+						<i class="o_icon o_icon_failed"></i> 
+						$r.translate("passed.no")
+					#else
+						$r.translateWithPackage("org.olat.course.nodes.st", "passed.noinfo")
+					#end
 					</td>
 				</tr>
-	#if ($attempts >0)
-		#if ($score)
-				<tr>
-					<td>			
-						$r.translate("score.yourscore"): 
-					</td>
-					<td>
-						$score
-					</td>
-				</tr>
+			</tbody>
+			</table>
+		</div>
+	
+		#if ($comment)		
+		<div class="panel panel-default o_comment">
+		  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseComment">
+	  			<h4 class="panel-title">$r.translate("comment.yourcomment")</h4>
+	  		</div>
+		<div id="collapseComment" class="panel-collapse collapse in"><div class="panel-body">
+				$comment
+	  		</div>
+		</div></div>
 		#end
-				<tr>
-					<td>			
-						$r.translate("passed.yourpassed"): 
-					</td>
-					<td>
-						#if($hasPassedValue && $passed == true)		
-							<span class="o_passed">$r.translate("passed.yes")</span>
-						#elseif($hasPassedValue && $passed == false)		
-							<span class="o_notpassed">$r.translate("passed.no")</span>
-						#end
-					</td>
-				</tr>
-				#if ($comment)
-					<tr>
-						<td>			
-							$r.translate("comment.yourcomment"): 
-						</td>
-						<td>
-							$comment
-						</td>
-					</tr>
-				#end
-			</tbody>
-		</table>		
-	#else
-			</tbody>
-		</table>
 
-		<div class="o_course_run_scoreinfo_noinfo">$r.translate("score.noscoreinfoyet")</div>
+	#else
+		<div class="o_no_scoreinfo">
+			$r.translate("score.noscoreinfoyet")
+		</div>
 	#end
-	</div>
 #end
 
-## <OLATCE-289>
 #if ($maxAttemptsReached)
+<div class="o_warning">
 	$r.translate("attempts.max.reached")
+</div>
 #else
 	$r.render("chooseScormRunMode")
 #end
-## </OLATCE-289>

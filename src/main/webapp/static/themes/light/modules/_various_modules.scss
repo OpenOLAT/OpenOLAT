@@ -111,6 +111,24 @@
 	}
 }
 
+/* Feed (Blog/Podcast */
+.o_feed {
+	.o_media {
+		@extend .img-thumbnail;
+	}
+	.o_date, .o_author {
+		@extend .text-muted;
+	}
+	.o_subscription {
+		a {	
+			margin-right: 1.5em;
+		}
+		form {
+			margin-top: $padding-base-vertical;	
+		}
+	}
+}
+
 
 
 /* toogle box, based on bootstrap collapse plugin */

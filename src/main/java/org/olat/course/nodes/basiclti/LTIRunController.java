@@ -37,8 +37,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -50,8 +50,10 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.SortedProperties;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.BasicLTICourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -91,7 +93,7 @@ public class LTIRunController extends BasicController {
 	
 	public LTIRunController(WindowControl wControl, ModuleConfiguration config, UserRequest ureq, BasicLTICourseNode ltCourseNode,
 			CourseEnvironment courseEnv) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		this.courseNode = ltCourseNode;
 		this.config = config;
 		this.roles = ureq.getUserSession().getRoles();
@@ -119,7 +121,7 @@ public class LTIRunController extends BasicController {
 	 */
 	public LTIRunController(WindowControl wControl, ModuleConfiguration config, UserRequest ureq, BasicLTICourseNode ltCourseNode,
 			UserCourseEnvironment userCourseEnv) {
- 		super(ureq, wControl);
+ 		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		this.courseNode = ltCourseNode;
 		this.config = config;
 		this.userCourseEnv = userCourseEnv;

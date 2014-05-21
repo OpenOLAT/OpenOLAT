@@ -4,27 +4,35 @@
 			$r.render("feed.edit")
 		</div>
 	#end	
-	<h3>$!feed.getTitle()</h3>
+	<h2>	
+		<i class="o_icon o_icon-fw o_icon o_FileResource-PODCAST_icon"></i> 
+		$r.escapeHtml($!feed.getTitle())
+	</h2>
 	#if ($!helper.getImageUrl())
-		<img class="icon" src="$helper.getImageUrl()" alt="Podcast Icon" />
-	#else
-		<div class="o_podcast_no_image"><span>$r.translate("feed.no.image")</span></div>
+		<img class="o_media" src="$helper.getImageUrl()" alt="Podcast Icon" />
 	#end
-	<p class="o_podcast_date">$!helper.getLastModified()</p>
-	#if ($!feed.getAuthor())
-		<p class="o_author">$r.translate("feed.author"): $r.escapeHtml($helper.getFeedAuthor())</p>
-	#end
-	<p class="o_podcast_description">$!helper.getFeedDescriptionForBrowser()</p>
-</div>
-#if ( !$feed.isUndefined() && $helper.getFeedUrl() )
-	<div class="o_podcast_subscription">
-		<a href="$!helper.getFeedUrl()" class="o_podcast_rss_link" target="_blank"></a>
-		<h5>$r.translate("podcast.subscribe.to.this.feed")</h5>
-		$r.render("feedUrlComponent")
-		<p>
-			<a href="$!helper.getITunesUrl()" target="_blank"><img src="$r.staticLink("images/addto/itunes.png")" /></a>
-			<a href="$!helper.getYahooUrl()" target="_blank"><img src="$r.staticLink("images/addto/yahoo.gif")" /></a>
-			<a href="$!helper.getGoogleUrl()" target="_blank"><img src="$r.staticLink("images/addto/google.gif")" /></a>
-		</p>
+	<div class="o_block">
+		#if ($!feed.getAuthor())
+			<div class="o_author">$r.translate("feed.author"): $r.escapeHtml($helper.getFeedAuthor())</div>
+		#end
+		<div class="o_date">$r.translateWithPackage("org.olat.modules.webFeed.ui.blog","feed.last.change") $!helper.getLastModified()	</div>
+		<div class="o_desc o_info">$!helper.getFeedDescriptionForBrowser()</div>
+		#if ( !$feed.isUndefined() && $helper.getFeedUrl() )
+		<div class="o_subscription">
+			<a href="$!helper.getFeedUrl()" class="o_nowrap" target="_blank">
+				<i class="o_icon o_icon-fw o_icon_rss"></i> 
+				$r.translate("podcast.subscribe.to.this.feed")
+			</a>
+			<a href="$!helper.getITunesUrl()" class="o_nowrap" target="_blank">
+				<i class="o_icon o_icon-fw o_icon_apple"></i> 		
+				iTunes
+			</a>
+			<a href="$!helper.getYahooUrl()" class="o_nowrap" target="_blank">
+				<i class="o_icon o_icon-fw o_icon_yahoo"></i> 		
+				yahoo
+			</a>
+			$r.render("feedUrlComponent")
+		</div>
+		#end	
 	</div>
-#end	
+</div>

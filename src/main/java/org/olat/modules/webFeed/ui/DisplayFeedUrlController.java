@@ -98,8 +98,9 @@ public class DisplayFeedUrlController extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		feedUrl = uifactory.addTextAreaElement("feedUrl", "feed.url.label", 5000, 1, 1, true, helper.getFeedUrl(), this.flc);
+		feedUrl = uifactory.addTextElement("feedUrl", "feed.url.label", 5000, helper.getFeedUrl(), this.flc);
 		// no editing. selecting allowed only
+		feedUrl.setLabel(null, null);
 		feedUrl.setEnabled(false);
 		feedUrl.addActionListener(FormEvent.ONCLICK);
 	}

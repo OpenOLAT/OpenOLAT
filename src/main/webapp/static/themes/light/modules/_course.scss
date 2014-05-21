@@ -114,3 +114,18 @@
 	@extend .o_note
 }
 
+/* member list course element */
+.o_cmembers {
+	.o_cmember {
+		margin: $padding-base-horizontal 0;
+		.o_portrait {
+			margin-right: $padding-base-vertical;		
+		}
+		.o_cmember_info_wrapper {
+			line-height: 30px;
+			.o_mail {
+				margin-left: $padding-base-vertical;					
+			}
+		}
+	}
+}
