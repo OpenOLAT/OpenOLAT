@@ -169,7 +169,7 @@ public class DialogBoxController extends BasicController {
 	}
 
 	public void activate() {
-		getWindowControl().pushAsModalDialog(this.getInitialComponent());
+		getWindowControl().pushAsModalDialog(getInitialComponent());
 	}
 	
 	/**

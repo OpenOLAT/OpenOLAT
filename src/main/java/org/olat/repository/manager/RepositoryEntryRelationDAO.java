@@ -313,10 +313,10 @@ public class RepositoryEntryRelationDAO {
 	
 	public List<RepositoryEntryToGroupRelation> getRelations(List<Group> groups) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(rel) from repoentrytogroup as rel")
+		sb.append("select rel from repoentrytogroup as rel")
 		  .append(" inner join fetch rel.entry as entry")
 		  .append(" inner join fetch rel.group as baseGroup")
-		  .append(" where entry.group.key=:groupKey");
+		  .append(" where baseGroup in (:groups)");
 
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), RepositoryEntryToGroupRelation.class)

@@ -1,22 +1,21 @@
 <fieldset>
-  	<legend>$r.translate("fieldset.legend.displaymembers")</legend>
-	$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-member.html","help.hover.bgGrpMngmnt")
+  	<legend>
+  		$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-member.html","help.hover.bgGrpMngmnt")
+  		$r.translate("fieldset.legend.displaymembers")</legend>
   	$r.render("displayMembers")
 </fieldset>
 <fieldset>
-	<legend>$r.translate("group.edit.tab.members")</legend>
-	<div style="position: relative;">
-		<div class="o_buttons_box_right" style="top: 0em;">
-			#if($r.available("addMembers"))
-				$r.render("addMembers")
-			#end
-			#if($r.available("importMembers"))
-				$r.render("importMembers")
-			#end
-		</div>
-		
+	<legend>
 		$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-memberOwner.html","help.hover.bgGrpMngmntOwner")
-		$r.render("members")
+		$r.translate("group.edit.tab.members")</legend>
+	<div class="pull-right">
+		#if($r.available("addMembers"))
+			$r.render("addMembers")
+		#end
+		#if($r.available("importMembers"))
+			$r.render("importMembers")
+		#end
 	</div>
+	$r.render("members")
 </fieldset>
 

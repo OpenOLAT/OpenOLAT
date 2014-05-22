@@ -71,6 +71,7 @@ public class BGResourcesCellRenderer implements CustomCellRenderer {
 						}
 						sb.append(StringHelper.escapeHtml(relation.getDisplayname()));
 					} else if(count >= 2) {
+						sb.append(" ");
 						Link link = LinkFactory.createLink("repo_entry_" + UUID.randomUUID().toString(), container, listeningController);
 						link.setCustomDisplayText("...");
 						link.setUserObject(item.getBusinessGroup());
@@ -80,6 +81,7 @@ public class BGResourcesCellRenderer implements CustomCellRenderer {
 						link.getHTMLRendererSingleton().render(renderer, sb, link, ubu, translator, renderResult, null);
 						break;
 					} else {
+						if(count > 0) sb.append(" ");
 						Link link = LinkFactory.createLink("repo_entry_" + UUID.randomUUID().toString(), container, listeningController);
 						link.setIconLeftCSS("o_icon o_CourseModule_icon");
 						link.setCustomDisplayText(StringHelper.escapeHtml(relation.getDisplayname()));

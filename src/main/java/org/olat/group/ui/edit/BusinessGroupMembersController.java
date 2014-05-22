@@ -21,7 +21,6 @@ package org.olat.group.ui.edit;
 
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -49,6 +48,7 @@ import org.olat.group.GroupLoggingAction;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.group.ui.main.SearchMembersParams;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -64,13 +64,13 @@ public class BusinessGroupMembersController extends BasicController {
 	private StepsMainRunController importMembersWizard;
 	
 	private BusinessGroup businessGroup;
-	private final BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 	public BusinessGroupMembersController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl);
 		
 		this.businessGroup = businessGroup;
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
 		mainVC = createVelocityContainer("tab_bgGrpMngmnt");
 		putInitialPanel(mainVC);
@@ -180,7 +180,7 @@ public class BusinessGroupMembersController extends BasicController {
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-				addMembers(ureq, runContext);
+				addMembers(runContext);
 				return StepsMainRunController.DONE_MODIFIED;
 			}
 		};
@@ -198,7 +198,7 @@ public class BusinessGroupMembersController extends BasicController {
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-				addMembers(ureq, runContext);
+				addMembers(runContext);
 				if(runContext.containsKey("notFounds")) {
 					showWarning("user.notfound", runContext.get("notFounds").toString());
 				}
@@ -212,7 +212,7 @@ public class BusinessGroupMembersController extends BasicController {
 		getWindowControl().pushAsModalDialog(importMembersWizard.getInitialComponent());
 	}
 	
-	protected void addMembers(UserRequest ureq, StepsRunContext runContext) {
+	private void addMembers(StepsRunContext runContext) {
 		@SuppressWarnings("unchecked")
 		List<Identity> members = (List<Identity>)runContext.get("members");
 		

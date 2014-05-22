@@ -94,6 +94,7 @@ import org.olat.modules.openmeetings.OpenMeetingsModule;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoryTableModel;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
@@ -102,6 +103,7 @@ import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -195,9 +197,12 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 	private boolean isAdmin;
 
-	private final ACService acService;
-	private final BaseSecurity securityManager;
-	private final BusinessGroupService businessGroupService;
+	@Autowired
+	private ACService acService;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	private EventBus singleUserEventBus;
 	private String adminNodeId; // reference to admin menu item
 
@@ -232,10 +237,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		 * on the group for a very short time. If this is not possible, then the
 		 * lastUsage is already up to date within one-day-precision.
 		 */
-		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		businessGroup = businessGroupService.setLastUsageFor(getIdentity(), bGroup);
-		acService = CoreSpringFactory.getImpl(ACService.class);
 		if(businessGroup == null) {
 			VelocityContainer vc = createVelocityContainer("deleted");
 			vc.contextPut("name", bGroup.getName());
@@ -265,7 +267,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		// package translator with default group fallback translators and type
 		// translator
 		setTranslator(Util.createPackageTranslator(BGControllerFactory.class, getLocale(), getTranslator()));
-		resourceTrans = Util.createPackageTranslator(RepositoryTableModel.class, getLocale(), getTranslator());
+		resourceTrans = Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator());
 
 		// main component layed out in panel
 		main = createVelocityContainer("bgrun");
@@ -991,7 +993,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setTitle(translate("menutree.news"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_INFORMATION);
 			gtnChild.setAltText(translate("menutree.news.alt"));
-			gtnChild.setIconCssClass("o_news_icon");
+			gtnChild.setIconCssClass("o_icon_news");
 			root.addChild(gtnChild);
 			//fxdiff BAKS-7 Resume function
 			nodeInformation = gtnChild;
@@ -1013,7 +1015,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setTitle(translate("menutree.resources"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_SHOW_RESOURCES);
 			gtnChild.setAltText(translate("menutree.resources.alt"));
-			gtnChild.setIconCssClass("o_course_icon");
+			gtnChild.setIconCssClass("o_CourseModule_icon");
 			root.addChild(gtnChild);
 			//fxdiff BAKS-7 Resume function
 			nodeResources = gtnChild;
@@ -1026,7 +1028,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setTitle(translate("menutree.members"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_MEMBERSLIST);
 			gtnChild.setAltText(translate("menutree.members.alt"));
-			gtnChild.setIconCssClass("b_group_icon");
+			gtnChild.setIconCssClass("o_icon_group");
 			root.addChild(gtnChild);
 			//fxdiff BAKS-7 Resume function
 			nodeGroupOwners = gtnChild;
@@ -1069,7 +1071,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setTitle(translate("menutree.chat"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_CHAT);
 			gtnChild.setAltText(translate("menutree.chat.alt"));
-			gtnChild.setIconCssClass("o_chat_icon");
+			gtnChild.setIconCssClass("o_icon_chat");
 			root.addChild(gtnChild);
 		}
 
@@ -1112,13 +1114,11 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_ADMINISTRATION);
 			gtnChild.setIdent(ACTIVITY_MENUSELECT_ADMINISTRATION);
 			gtnChild.setAltText(translate("menutree.administration.alt"));
-			gtnChild.setIconCssClass("o_admin_icon");
+			gtnChild.setIconCssClass("o_icon_settings");
 			root.addChild(gtnChild);
 			adminNodeId = gtnChild.getIdent();
-			//fxdiff BAKS-7 Resume function
 			nodeAdmin = gtnChild;
 
-			//fxdiff VCRP-1,2: access control of resources
 			AccessControlModule acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
 			if(acModule.isEnabled() && acService.isResourceAccessControled(businessGroup.getResource(), null)) {
 				gtnChild = new GenericTreeNode();
@@ -1126,7 +1126,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				gtnChild.setUserObject(ACTIVITY_MENUSELECT_AC);
 				gtnChild.setIdent(ACTIVITY_MENUSELECT_AC);
 				gtnChild.setAltText(translate("menutree.ac.alt"));
-				gtnChild.setIconCssClass("b_order_icon");
+				gtnChild.setIconCssClass("o_icon_booking");
 				root.addChild(gtnChild);
 			}
 		}

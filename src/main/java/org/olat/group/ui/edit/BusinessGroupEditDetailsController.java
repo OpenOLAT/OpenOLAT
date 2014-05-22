@@ -19,7 +19,6 @@
  */
 package org.olat.group.ui.edit;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -30,6 +29,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BusinessGroupFormController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -41,13 +41,13 @@ public class BusinessGroupEditDetailsController extends BasicController {
 	private final BusinessGroupFormController editController;
 	
 	private BusinessGroup businessGroup;
-	private final BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	public BusinessGroupEditDetailsController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl);
 		
 		this.businessGroup = businessGroup;
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
 		mainVC = createVelocityContainer("tab_bgDetail");
 
