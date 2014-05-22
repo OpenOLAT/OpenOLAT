@@ -1,4 +1,4 @@
-<div class="modal show $cssClass" id='$r.getId("b_closablewapper_")'><div class="modal-dialog modal-lg"><div class="modal-content">
+<div id='$r.getId("b_closablewapper_")' class="modal show $cssClass"><div class="modal-dialog modal-lg"><div class="modal-content">
 	<div class="modal-header">
 		#if($closeIcon)
 			$r.render("closeIcon")
@@ -16,9 +16,12 @@
 			$r.render("$button")
 		#end
 	</div>
-</div>
-
+</div></div></div>
 ## always show top of modal dialog when on long pages
 <script type="text/javascript">
+/* <![CDATA[ */	
+jQuery(function() {
 	o_scrollToElement('#o_top');
+});
+/* ]]> */
 </script>
