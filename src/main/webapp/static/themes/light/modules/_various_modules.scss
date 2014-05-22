@@ -94,8 +94,13 @@
 			display: none;
 		}	
 	}
-	
 }
+.panel-body .o_noti {
+	/* override default margin */
+	margin: 0;
+}
+
+
 
 /* Calendar */
 .o_cal_toptoolbar {

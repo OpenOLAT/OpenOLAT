@@ -7,10 +7,9 @@
 			#if($hasNotification == true)
 				$r.render("subscription")
 			#end
-			<p>
-				$r.translate("returnbox.intro")
-			</p>
-			<hr />
+			$r.translate("returnbox.intro")
+		</div>
+		<div class="panel-body">
 			$r.render("returnbox")  	
 		</div>  	
 	</div>

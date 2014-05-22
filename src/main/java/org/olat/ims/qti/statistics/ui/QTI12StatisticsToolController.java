@@ -35,7 +35,6 @@ import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeNode;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -96,9 +95,10 @@ public class QTI12StatisticsToolController extends BasicController implements Ac
 			searchParams.setLimitToGroups(alt.getGroups());
 		}
 		
-		VelocityContainer mainVC = createVelocityContainer("stats_button");
-		statsButton = LinkFactory.createButton("menu.title", mainVC, this);
-		putInitialPanel(mainVC);
+		statsButton = LinkFactory.createButton("menu.title", null, this);
+		statsButton.setTranslator(getTranslator());
+		putInitialPanel(statsButton);
+		getInitialComponent().setSpanAsDomReplaceable(true); // override to wrap panel as span to not break link layout 
 	}
 
 	@Override

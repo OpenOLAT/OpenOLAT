@@ -1,20 +1,28 @@
-<div class="o_course_run_task">
-	<h4>$r.translate("task.title")</h4>		
-#if ($taskText)
-	<p>
-		$r.formatLatexFormulas($taskText)
-	</p>
-#end
-#if ($nomoretasks)
-	<p>
-		<i>$nomoretasks</i>
-	</p>
-#else
-	<p>
-		$r.translate("task.assigned")
-	</p>
-	<p>
-		<strong>$assignedtask</strong>&nbsp;&nbsp; $r.render("task.launch")
-	</p>
-#end
+<div class="panel panel-default o_task">
+	<div class="panel-heading" data-toggle="collapse" data-target="#collapseTask">
+		<h4 class="panel-title">$r.translate("task.title")</h4>
+	</div>
+	<div id="collapseTask" class="panel-collapse collapse in">
+	#if ($taskText)
+		<div class="panel-body">
+			$r.formatLatexFormulas($taskText)
+		</div>
+	#end
+
+	#if ($nomoretasks)
+		<div class="panel-body">
+			<i>$nomoretasks</i>
+		</div>
+	#else
+		<div class="panel-body">			
+			<p>
+			$r.translate("task.assigned")
+			</p>
+			<p>
+				<i class="o_icon $taskIcon"></i> $assignedtask 
+				$r.render("task.launch")
+			</p>
+		</div>
+	#end
+	</div>
 </div>

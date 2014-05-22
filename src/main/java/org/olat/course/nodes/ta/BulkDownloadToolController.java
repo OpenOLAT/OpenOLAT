@@ -23,7 +23,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -56,9 +55,10 @@ public class BulkDownloadToolController extends BasicController {
 		this.courseNode = courseNode;
 		courseOres = courseEnv.getCourseGroupManager().getCourseResource();
 		
-		VelocityContainer mainVC = createVelocityContainer("start_button");
-		downloadButton = LinkFactory.createButton("bulk.download.title", mainVC, this);
-		putInitialPanel(mainVC);
+		downloadButton = LinkFactory.createButton("bulk.download.title", null, this);
+		downloadButton.setTranslator(getTranslator());
+		putInitialPanel(downloadButton);
+		getInitialComponent().setSpanAsDomReplaceable(true); // override to wrap panel as span to not break link layout 
 	}
 	
 	@Override

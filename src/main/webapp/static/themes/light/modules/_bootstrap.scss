@@ -74,3 +74,8 @@ body .modal-body.alert {
 body .progress {
 	margin-bottom:0;
 }
+
+/* extend panel to contain multiple separated bodies */
+.panel-body:nth-child(n+2) {
+	border-top: 1px solid $panel-default-border;
+}

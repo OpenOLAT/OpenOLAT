@@ -1,12 +1,16 @@
-<div class="o_course_run_solutionbox">
-	#if($hasNotification == true)
-		$r.render("subscription")
-	#end
-	<h4>$r.translate("solutionbox.title")</h4>		
-	<p>
-		$r.translate("solutionbox.intro")
-	</p>
-	<p>
-		$r.render("solutionbox")
-	</p>
+<div class="panel panel-default o_dropbox">
+	<div class="panel-heading" data-toggle="collapse" data-target="#collapseSolution">
+		<h4 class="panel-title">$r.translate("solutionbox.title")</h4>
+	</div>
+	<div id="collapseSolution" class="panel-collapse collapse in">
+		<div class="panel-body">
+			#if($hasNotification == true)
+				$r.render("subscription")
+			#end
+			$r.translate("solutionbox.intro")
+		</div>
+		<div class="panel-body">
+			$r.render("solutionbox")
+		</div>  	
+	</div>
 </div>
