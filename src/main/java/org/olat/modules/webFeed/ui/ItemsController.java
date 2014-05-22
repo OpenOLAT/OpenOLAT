@@ -157,11 +157,17 @@ public class ItemsController extends BasicController implements Activateable2 {
 		vcItems.contextPut("helper", helper);
 
 		olderItemsLink = LinkFactory.createLink("feed.older.items", vcItems, this);
-		olderItemsLink.setCustomEnabledLinkCSS("b_table_backward");
+		olderItemsLink.setCustomDisplayText("&laquo;");
+		olderItemsLink.setCustomEnabledLinkCSS("o_backward");
+		olderItemsLink.setTitle("feed.older.items");
+
 		newerItemsLink = LinkFactory.createLink("feed.newer.items", vcItems, this);
-		newerItemsLink.setCustomEnabledLinkCSS("b_table_forward");
+		newerItemsLink.setCustomEnabledLinkCSS("o_forward");
+		newerItemsLink.setCustomDisplayText("&raquo;");
+		newerItemsLink.setTitle("feed.newer.items");
+		
 		startpageLink = LinkFactory.createLink("feed.startpage", vcItems, this);
-		startpageLink.setCustomEnabledLinkCSS("b_table_first_page");
+		startpageLink.setCustomEnabledLinkCSS("o_first_page");
 
 		if (callback.mayEditItems() || callback.mayCreateItems()) {
 			createEditButtons(ureq, feed);
@@ -310,7 +316,8 @@ public class ItemsController extends BasicController implements Activateable2 {
 	private void createItemLink(Item item) {
 		String guid = item.getGuid();
 		Link itemLink_more = LinkFactory.createCustomLink("link.to." + guid, "link.to." + guid, "feed.link.more", Link.LINK, vcItems, this);
-		itemLink_more.setCustomEnabledLinkCSS("b_link_forward");
+		itemLink_more.setIconRightCSS("o_icon o_icon_start");
+		itemLink_more.setCustomEnabledLinkCSS("o_link_forward");
 		itemLink_more.setUserObject(item);
 		
 		Link itemLink_title = LinkFactory.createCustomLink("titlelink.to." + guid, "titlelink.to." + guid, StringEscapeUtils.escapeHtml(item.getTitle()), Link.NONTRANSLATED, vcItems, this);
@@ -335,9 +342,9 @@ public class ItemsController extends BasicController implements Activateable2 {
 	private void createButtonsForItem(UserRequest ureq, Item item) {
 		String guid = item.getGuid();
 		Link editButton = LinkFactory.createCustomLink("feed.edit.item." + guid, "feed.edit.item." + guid, "feed.edit.item",
-				Link.BUTTON_XSMALL, vcItems, this);
+				Link.BUTTON_SMALL, vcItems, this);
 		editButton.setElementCssClass("o_sel_feed_item_edit");
-		Link deleteButton = LinkFactory.createCustomLink("delete." + guid, "delete." + guid, "delete", Link.BUTTON_XSMALL, vcItems, this);
+		Link deleteButton = LinkFactory.createCustomLink("delete." + guid, "delete." + guid, "delete", Link.BUTTON_SMALL, vcItems, this);
 		deleteButton.setElementCssClass("o_sel_feed_item_delete");
 
 		if(feedResource.isInternal() && getIdentity().getKey() != null && getIdentity().getKey().equals(item.getAuthorKey())) {

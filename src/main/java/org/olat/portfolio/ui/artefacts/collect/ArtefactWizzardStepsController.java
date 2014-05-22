@@ -28,7 +28,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -58,7 +57,6 @@ public class ArtefactWizzardStepsController extends BasicController {
 	private Controller collectStepsCtrl;
 	EPFrontendManager ePFMgr;
 	private PortfolioModule portfolioModule;
-	private VelocityContainer collectLinkVC;
 	private Link addLink;
 	AbstractArtefact artefact;
 	private OLATResourceable ores;
@@ -134,21 +132,22 @@ public class ArtefactWizzardStepsController extends BasicController {
 	 * @param artefact
 	 */
 	private void initCollectLinkVelocity() {
-		collectLinkVC = createVelocityContainer("collectLink");
-		
 		addLink = LinkFactory.createCustomLink("add.to.eportfolio", "add.to.eportfolio", "", Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED,
-				collectLinkVC, this);
+				null, this);
 		addLink.setCustomEnabledLinkCSS("b_eportfolio_add");
+		addLink.setIconLeftCSS("o_icon o_icon-lg o_icon_eportfolio_add");
 		addLink.setTooltip(translate("add.to.eportfolio"));
-
+		addLink.setTranslator(getTranslator());
 		// check for an already existing artefact with same businessPath, change collect-item
 		List<AbstractArtefact> existingArtefacts = ePFMgr.loadArtefactsByBusinessPath(businessPath, getIdentity());
 		if (existingArtefacts!=null){
 			int amount = existingArtefacts.size();
+			addLink.setIconLeftCSS("o_icon o_icon-lg o_icon_eportfolio_add");
 			addLink.setCustomEnabledLinkCSS("b_eportfolio_add_again");
 			addLink.setTooltip(translate("add.to.eportfolio.again", String.valueOf(amount)));	
 		}
-		putInitialPanel(collectLinkVC);
+		putInitialPanel(addLink);
+		getInitialComponent().setSpanAsDomReplaceable(true); // special case since controller is actually just a link 
 	}
 
 	

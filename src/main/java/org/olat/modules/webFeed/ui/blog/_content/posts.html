@@ -1,101 +1,113 @@
-<div class="o_blog_posts b_clearfix">
+<div class="o_blog_posts clearfix">
 #if ($callback.mayCreateItems() && $feed.isInternal())
-	<div class="b_float_right b_clearfix">
+	<div class="pull-right">
 		$r.render("feed.add.item")
 	</div>
 #end
-<h4 class="o_blog_posts">$r.translate("blog.posts") ($helper.itemsCount($callback))</h4>
-#if (!$feed.hasItems() )
-	$r.contextHelpWithWrapper("org.olat.modules.webFeed.ui.blog","internal-external.html","chelp.hover")
-	<p>$r.translate("blog.has.no.episodes")</p>
-#end
-#if ( $callback.mayEditMetadata() && $feed.isUndefined() && $r.available("feed.make.internal"))
-	<div class="o_blog_no_posts b_msg_dialog b_important">
-		<p>$r.translate("blog.internal.or.external")</p>
-		$r.render("feed.make.internal")
-		$r.render("feed.make.external")
+##<h4 class="o_title">$r.translate("blog.posts") ($helper.itemsCount($callback))</h4>
+<div class="clearfix"></div>
+
+#if (!$feed.hasItems())
+	<div class="o_blog_no_posts o_important">
+		<p>
+			<i class="o_icon o_icon_warn"></i>
+			$r.translate("blog.has.no.episodes")
+		</p>
+		#if ( $callback.mayEditMetadata() && $feed.isUndefined() && $r.available("feed.make.internal"))
+			$r.contextHelpWithWrapper("org.olat.modules.webFeed.ui.blog","internal-external.html","chelp.hover")
+			<p>$r.translate("blog.internal.or.external")</p>
+			<div class="o_button_group">
+				$r.render("feed.make.internal")
+				$r.render("feed.make.external")
+			</div>
+		#end
 	</div>
 #else
-
 	<!-- loop over episodes -->
 	#foreach( $post in $helper.getItems($callback) ) 	
-		<div class="o_post b_clearfix $!post.extraCSSClass()">
-			#if (( $helper.isAuthor($post) && !$post.isDraft()) && $feed.isInternal() && $r.available("feed.artefact.item.$post.getGuid()"))
-				<div class="b_float_right">
-					<span class="o_post_artefact_collector">$r.render("feed.artefact.item.$post.getGuid()")</span>
+		<div class="o_post o_block_with_datecomp clearfix $!post.extraCSSClass()">
+			<div class="o_head">
+				#if (( $helper.isAuthor($post) && !$post.isDraft()) && $feed.isInternal() && $r.available("feed.artefact.item.$post.getGuid()"))
+					<div class="pull-right">
+						$r.render("feed.artefact.item.$post.getGuid()")
+					</div>
+				#end
+				<h3 class="o_title">
+				#if ( $post.getContent() && $post.getContent() != "" )
+					$r.render("titlelink.to.$post.getGuid()")
+				#else
+					$r.escapeHtml($post.getTitle())
+				#end
+				#if($r.available("date.$post.getGuid()"))
+					<small>
+						$r.render("date.$post.getGuid()")
+					</small>
+				#end
+				</h3>
+				<div class="o_meta">				
+				#set ( $info = $helper.getInfo($post) )
+				#if ( $info )
+					$info
+					#if($helper.isModified($post)), 
+						<div class="text-warning">$r.escapeHtml($helper.getModifierInfo($post))</div>
+					#end
+				#end
 				</div>
-			#end
-			#if($r.available("date.$post.getGuid()"))
-				$r.render("date.$post.getGuid()")
-			#end
-			
-			<h5>
-			#if ( $post.getContent() && $post.getContent() != "" )
-				$r.render("titlelink.to.$post.getGuid()")
-			#else
-				$r.escapeHtml($post.getTitle())
-			#end
-			</h5>
-			
-			#set ( $info = $helper.getInfo($post) )
-			#if ( $info )
-				<p class="o_item_info">
-				$info#if($helper.isModified($post)), <span class="o_item_info_mod">$r.escapeHtml($helper.getModifierInfo($post))</span>#end
-				</p>
-			#end
-			<p></p>
-			<div class="o_post-description">
-			 $!helper.getItemDescriptionForBrowser($post) 
 			</div>
 			
-				<ul class="o_post-readmorelinks">
+			<div class="o_content">
+				 $!helper.getItemDescriptionForBrowser($post) 
+			</div>
+			
+			<div class="clearfix">
+				<ul class="o_readmore list-inline pull-right">
 					#if ( $post.getContent() && $post.getContent() != "" )
 						<li>$r.render("link.to.$post.getGuid()")</li>
 					#end
 					#if ($feed.isExternal() && $post.getExternalLink())
-						<li><a href="$!post.getExternalLink()" target="_blank" class="b_link_extern">$r.translate("feed.item.original")</a></li>
+						<li><a href="$!post.getExternalLink()" target="_blank">
+							$r.translate("feed.item.original") 
+							<i class="o_icon o_icon_start"></i>
+						</a></li>
 					#end
 				</ul>
+
+				#if ($r.available("commentsAndRating.${post.getGuid()}"))
+				<div class="pull-left">
+					$r.render("commentsAndRating.${post.getGuid()}")
+				</div>
+				#end
+			</div>
 				
-				<div class="o_post-editlinks">
-				#if (( $callback.mayEditItems() || ($callback.mayCreateItems() && $post.isDraft())) && $feed.isInternal())
-					#if ($r.available("feed.edit.item.$post.getGuid()"))
-					<div class="b_clearfix">
-						<div class="o_post_edit b_float_right">
-							## special case: this item has been added by another user and thus we 
-							## don't yet have links for this item. But we can still display the content
-							$r.render("feed.edit.item.$post.getGuid()")
-							#if ($callback.mayDeleteItems() || ($callback.mayCreateItems() && $post.isDraft()))
-								$r.render("delete.$post.getGuid()")
-							#end
-						</div>
-					</div>
+			#if (( $callback.mayEditItems() || ($callback.mayCreateItems() && $post.isDraft())) && $feed.isInternal())
+			<div class="o_button_group">
+				#if ($r.available("feed.edit.item.$post.getGuid()"))
+					## special case: this item has been added by another user and thus we 
+					## don't yet have links for this item. But we can still display the content
+					$r.render("feed.edit.item.$post.getGuid()")
+					#if ($callback.mayDeleteItems() || ($callback.mayCreateItems() && $post.isDraft()))
+						$r.render("delete.$post.getGuid()")
 					#end
 				#end
-				</div>
-				
-				#if ($r.available("commentsAndRating.${post.getGuid()}"))
-					$r.render("commentsAndRating.${post.getGuid()}")
-				#end
-			
-			
+			</div>
+			#end
 		</div>
 	#end
 	
-	<div id="o_link_container">
-	#if ( $helper.hasOlderItems() )
-		<div class="o_older_items">
+	<ul class="pagination">
+		#if ( $helper.hasOlderItems() )
+		<li>
 			$r.render("feed.older.items")
-		</div>
-	#end
-	#if ( $helper.hasNewerItems() )
-		<div class="o_newer_items">
-			$r.render("feed.newer.items")
-		</div>
-		<div class="o_home">
+		</li>
+		#end
+		#if ( $helper.hasNewerItems() )
+		<li>
 			$r.render("feed.startpage")
-		</div>
-	#end
-	</div>
+		</li>
+		<li>
+			$r.render("feed.newer.items")
+		</li>
+		#end
+	</ul>
 #end
 </div>

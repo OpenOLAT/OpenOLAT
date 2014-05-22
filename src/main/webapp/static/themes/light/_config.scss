@@ -45,6 +45,22 @@ $o-tree-padding-steps-px : 15px !default;
 $o-tree-padding-opener-left-px : 1px !default;
 $o-tree-padding-opener-top-px : 8px;
 
+
+$o-coursesite-rowelem-width-md : 180px;
+$o-coursesite-rowelem-height-md : 120px;
+$o-coursesite-rowelem-width-sm : 120px;
+$o-coursesite-rowelem-height-sm : 80px;
+$o-coursesite-rowelem-width-xs : 75px;
+$o-coursesite-rowelem-height-xs : 50px;
+$o-coursesite-rowelem-border : $brand-primary;
+
+$o-coursesite-catalog-space : $padding-large-vertical * 2;
+$o-coursesite-catalog-space-sm : $padding-large-vertical;
+$o-coursesite-catalog-space-xs : $padding-xs-vertical;
+$o-coursesite-catalog-border : $brand-primary;
+
+
+
 /*
 FIXME:oo10 LEGACY VARIABLES
 

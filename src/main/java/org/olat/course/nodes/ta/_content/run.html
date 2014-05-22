@@ -1,3 +1,6 @@
+#if ($hasScoring)
+	$r.render("scoringController")
+#end
 #if ($hasTask)
 	$r.render("taskController")
 #end
@@ -12,7 +15,4 @@
 
 #if ($hasSolution)
 	$r.render("solutionController")
-#end
-#if ($hasScoring)
-	$r.render("scoringController")
 #end
