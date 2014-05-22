@@ -1,7 +1,4 @@
-<div class="b_clearfix">
-	$r.render("segments") <br/>	
-		
-	#if($r.available("segmentCmp"))
-		$r.render("segmentCmp")
-	#end
-</div>
+$r.render("segments")
+#if($r.available("segmentCmp"))
+	$r.render("segmentCmp")
+#end

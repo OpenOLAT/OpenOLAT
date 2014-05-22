@@ -22,7 +22,7 @@ package org.olat.repository.ui;
 import java.util.Locale;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.gui.components.table.CustomCssCellRenderer;
+import org.olat.core.gui.components.table.IconCssCellRenderer;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.repository.RepositoryEntry;
@@ -38,7 +38,7 @@ import org.olat.repository.RepositoryEntryShort;
  * 
  * @author Florian Gnägi, http://www.frentix.com
  */
-public class RepositoryEntryIconRenderer extends CustomCssCellRenderer {
+public class RepositoryEntryIconRenderer extends IconCssCellRenderer {
 	private Locale locale;
 
 	/**
@@ -86,10 +86,8 @@ public class RepositoryEntryIconRenderer extends CustomCssCellRenderer {
 			cssClass = RepositoyUIFactory.getIconCssClass(re);
 			managed = StringHelper.containsNonWhitespace(re.getManagedFlagsString());
 		}
-		return (managed ? "b_small_icon b_managed_icon " : "b_small_icon ") + cssClass;
+		return (managed ? "o_icon o_managed_icon " : "o_icon ") + cssClass;
 	}
-	
-
 
 	/**
 	 * @see org.olat.core.gui.components.table.CustomCssCellRenderer#getHoverText(java.lang.Object)

@@ -1,8 +1,10 @@
 <fieldset>
-	<legend>$r.translate("fieldset.legend.details")</legend>
-	$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-des.html","help.hover.bgDetail")
-		<div class="b_floatbox">
-		<div class="b_small b_float_right">Id: $groupid</div>
-	</div>
+	<legend>
+		$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-des.html","help.hover.bgDetail")
+		$r.translate("fieldset.legend.details")</legend>
+	<div class="form-horizontal"><div class="form-group">
+		<label class="control-label col-sm-3">Id</label>
+		<div class="col-sm-9"><p class="form-control-static">$groupid</p></div>
+	</div></div>
 	$r.render("businessGroupForm")
 </fieldset>

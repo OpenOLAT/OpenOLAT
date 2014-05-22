@@ -28,7 +28,6 @@ package org.olat.group.ui.edit;
 import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -61,6 +60,7 @@ import org.olat.group.GroupLoggingAction;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description: <BR>
@@ -77,8 +77,10 @@ public class BusinessGroupEditController extends BasicController implements Cont
 
 	private boolean hasResources;
 	private BusinessGroup currBusinessGroup;
-	private final BusinessGroupService businessGroupService;
-	private final AccessControlModule acModule;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
+	private AccessControlModule acModule;
 
 	private TabbedPane tabbedPane;
 	private VelocityContainer mainVC;
@@ -112,10 +114,6 @@ public class BusinessGroupEditController extends BasicController implements Cont
 		//            basically forcing any logging action called within the bg editor to be of type 'admin'
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
 		addLoggingResourceable(LoggingResourceable.wrap(businessGroup));
-		
-		// Initialize managers
-		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		// Initialize translator:
 		setTranslator(Util.createPackageTranslator(BGControllerFactory.class, getLocale(), getTranslator()));

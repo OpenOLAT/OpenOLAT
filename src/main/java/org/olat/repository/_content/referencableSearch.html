@@ -1,6 +1,6 @@
 <div class="o_sel_search_referenceable_entries">
-	<h4 #if($titleCss) class="$titleCss" #end>$r.translate("referencableSearch.title")</h4>
-	<div class="o_buttons_box_right">
+	<h4>#if($titleCss)<i class="$titleCss"> </i> #end$r.translate("referencableSearch.title")</h4>
+	<div class="pull-right">
 		#if($r.available("cmd.create.ressource"))
 			$r.render("cmd.create.ressource")
 		#end
@@ -8,6 +8,8 @@
 			$r.render("cmd.import.ressource")
 		#end
 	</div>
-	$r.render("segments")<br/>
-	$r.render("searchCtr")
+	$r.render("segments")
+	<div class="o_segments_content">
+		$r.render("searchCtr")
+	</div>
 </div>

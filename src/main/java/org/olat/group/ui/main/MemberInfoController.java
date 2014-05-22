@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
@@ -132,13 +133,15 @@ public class MemberInfoController extends FormBasicController {
 		}
 		
 		//links
-		homeLink = uifactory.addFormLink("home", formLayout, "b_link_left_icon b_link_to_home");
+		homeLink = uifactory.addFormLink("home", formLayout, Link.BUTTON);
+		homeLink.setIconLeftCSS("o_icon o_icon_home");
 		formLayout.add("home", homeLink);
-		contactLink = uifactory.addFormLink("contact", formLayout, "b_link_left_icon b_link_mail");
+		contactLink = uifactory.addFormLink("contact", formLayout, Link.BUTTON);
+		contactLink.setIconLeftCSS("o_icon o_icon_mail");
 		formLayout.add("contact", contactLink);
 		
 		if(repoEntryKey != null) {
-			assessmentLink = uifactory.addFormLink("assessment", formLayout, "b_link_left_icon b_link_assessment");
+			assessmentLink = uifactory.addFormLink("assessment", formLayout, "o_icon o_icon_assessment");
 			formLayout.add("assessment", assessmentLink);
 		}
 	}

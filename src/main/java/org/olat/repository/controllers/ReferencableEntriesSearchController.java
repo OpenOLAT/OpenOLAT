@@ -140,7 +140,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 		mainVC = createVelocityContainer("referencableSearch");
 		
 		if(limitTypes != null && limitTypes.length == 1 && limitTypes[0] != null) {
-			mainVC.contextPut("titleCss", "b_with_small_icon_left o_" + limitTypes[0] + "_icon");
+			mainVC.contextPut("titleCss", "o_icon o_" + limitTypes[0] + "_icon");
 		}
 
 		// add repo search controller

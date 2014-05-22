@@ -44,7 +44,6 @@ import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
  * Initial Date:  26 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-//fxdiff VCRP-1,2: access control of resources
 public class BusinessGroupEditAccessController extends FormBasicController {
 	
 	private final boolean managed;

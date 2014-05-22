@@ -26,11 +26,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -62,6 +62,7 @@ import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntryMembership;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -82,8 +83,10 @@ public class EditMembershipController extends FormBasicController {
 	
 	private final BusinessGroup businessGroup;
 	private final RepositoryEntry repoEntry;
-	private final RepositoryManager repositoryManager;
-	private final BusinessGroupService businessGroupService;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	private static final String[] keys = new String[] { "ison" };
 	private static final String[] values = new String[] {""};
@@ -96,8 +99,6 @@ public class EditMembershipController extends FormBasicController {
 		this.repoEntry = repoEntry;
 		this.businessGroup = businessGroup;
 		this.withButtons = true;
-		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
 		memberships = repositoryManager.getRepositoryEntryMembership(repoEntry, member);
 		initForm(ureq);
@@ -132,8 +133,6 @@ public class EditMembershipController extends FormBasicController {
 		this.repoEntry = repoEntry;
 		this.businessGroup = businessGroup;
 		this.withButtons = true;
-		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
 		memberships = Collections.emptyList();
 
@@ -150,8 +149,6 @@ public class EditMembershipController extends FormBasicController {
 		this.repoEntry = repoEntry;
 		this.businessGroup = businessGroup;
 		this.withButtons = false;
-		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
 		memberships = Collections.emptyList();
 
@@ -250,7 +247,8 @@ public class EditMembershipController extends FormBasicController {
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.waitingList", 6));
 		
 		tableDataModel = new EditMemberTableDataModel(Collections.<MemberOption>emptyList(), tableColumnModel);
-		uifactory.addTableElement(ureq, getWindowControl(), "groupList", tableDataModel, formLayout);
+		FlexiTableElement tableEl = uifactory.addTableElement(ureq, getWindowControl(), "groupList", tableDataModel, formLayout);
+		tableEl.setCustomizeColumns(false);
 		
 		if(withButtons) {
 			FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());

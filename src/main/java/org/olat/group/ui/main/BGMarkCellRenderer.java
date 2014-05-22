@@ -56,10 +56,9 @@ public class BGMarkCellRenderer implements CustomCellRenderer {
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 		if(val instanceof BGTableItem && renderer != null) {
 			BGTableItem item = (BGTableItem)val;
-			sb.append("<div class='b_mark'>");
-			
+		
 			Link link = LinkFactory.createLink("marked_" + UUID.randomUUID().toString(), container, listeningController);
-			link.setCustomDisplayText("&#160;&#160;&#160;");
+			link.setCustomDisplayText(" ");
 			if(item.isMarked()) {
 				link.setIconLeftCSS(Mark.MARK_CSS_LARGE);
 			} else {
@@ -69,7 +68,6 @@ public class BGMarkCellRenderer implements CustomCellRenderer {
 			URLBuilder ubu = renderer.getUrlBuilder().createCopyFor(link);
 			RenderResult renderResult = new RenderResult();
 			link.getHTMLRendererSingleton().render(renderer, sb, link, ubu, translator, renderResult, null);
-			sb.append("</div>");
 		}
 	}
 }
