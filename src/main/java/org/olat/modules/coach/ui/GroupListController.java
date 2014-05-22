@@ -21,7 +21,6 @@ package org.olat.modules.coach.ui;
 
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.table.ColumnDescriptor;
@@ -44,8 +43,8 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.GroupStatEntry;
-
 import org.olat.modules.coach.ui.GroupsTableDataModel.Columns;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -64,14 +63,12 @@ public class GroupListController extends BasicController implements Activateable
 	private GroupController groupCtrl;
 	
 	private boolean hasChanged = false;
-	
-	private final CoachingService coachingService;
+	@Autowired
+	private CoachingService coachingService;
 	
 	public GroupListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		coachingService = CoreSpringFactory.getImpl(CoachingService.class);
-
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("error.no.found"));
 		tableConfig.setDownloadOffered(true);

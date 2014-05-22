@@ -1,9 +1,7 @@
 #if ($courseNode)
-	<span class="b_with_small_icon_left $courseNodeCss"><strong>$r.escapeHtml($courseNode.getShortTitle())</strong></span>
+	<h2><i class="o_icon $courseNodeCss"> </i> $r.escapeHtml($courseNode.getShortTitle())
 	#if ($courseNode.getLongTitle() && $courseNode.getLongTitle() != "")
-		($r.escapeHtml($courseNode.getLongTitle()))
-	#end
-	<br />
-	<hr />
+		<small>$r.escapeHtml($courseNode.getLongTitle())</small>
+	#end</h2>
 #end
 $r.render("content")

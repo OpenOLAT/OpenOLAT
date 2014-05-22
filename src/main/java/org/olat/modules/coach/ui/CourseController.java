@@ -22,7 +22,6 @@ package org.olat.modules.coach.ui;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -56,6 +55,7 @@ import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.ui.EfficiencyStatementEntryTableDataModel.Columns;
 import org.olat.modules.coach.ui.ToolbarController.Position;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -86,14 +86,14 @@ public class CourseController extends BasicController implements Activateable2 {
 	
 	private final RepositoryEntry course;
 	private final CourseStatEntry courseStat;
-	private final CoachingService coachingService;
+	@Autowired
+	private CoachingService coachingService;
 	
 	public CourseController(UserRequest ureq, WindowControl wControl, RepositoryEntry course, CourseStatEntry courseStat, int index, int numOfCourses) {
 		super(ureq, wControl);
 		
 		this.course = course;
 		this.courseStat = courseStat;
-		coachingService = CoreSpringFactory.getImpl(CoachingService.class);
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("error.no.found"));
@@ -121,34 +121,39 @@ public class CourseController extends BasicController implements Activateable2 {
 		listenTo(toolbar);
 
 		backLink = toolbar.addToolbarLink("back", this, Position.left);
-		backLink.setCustomEnabledLinkCSS("b_link_back");
+		backLink.setIconLeftCSS("o_icon o_icon_back");
 
 		previous = toolbar.addToolbarLink("previous", this, Position.center);
-		previous.setCustomEnabledLinkCSS("b_with_small_icon_left   b_move_left_icon");
+		previous.setIconLeftCSS("o_icon o_icon_move_left");
+		previous.setCustomDisabledLinkCSS("navbar-text");
 		previous.setEnabled(entries.size() > 1);
 		
 		detailsCmp = toolbar.addToolbarText("", this, Position.center);
-		
+
 		next = toolbar.addToolbarLink("next", this, Position.center);
-		next.setCustomEnabledLinkCSS("b_with_small_icon_right   b_move_right_icon");
+		next.setIconRightCSS("o_icon o_icon_move_right");
+		next.setCustomDisabledLinkCSS("navbar-text");
 		next.setEnabled(entries.size() > 1);
 		
 		//courses next,previous
 		previousCourse = toolbar.addToolbarLink("previous.course", this, Position.center);
-		previousCourse.setCustomEnabledLinkCSS("b_with_small_icon_left  b_move_left_icon");
+		previousCourse.setIconLeftCSS("o_icon o_icon_move_left");
+		previousCourse.setCustomDisabledLinkCSS("navbar-text");
 		previousCourse.setEnabled(numOfCourses > 1);
 		
 		detailsCourseCmp = toolbar.addToolbarText("details.course", "", this, Position.center);
+		detailsCourseCmp.setCssClass("navbar-text");
 		detailsCourseCmp.setText(translate("students.details", new String[]{
 				StringHelper.escapeHtml(course.getDisplayname()),
 				Integer.toString(index + 1), Integer.toString(numOfCourses)
 		}));
 		nextCourse = toolbar.addToolbarLink("next.course", this, Position.center);
-		nextCourse.setCustomEnabledLinkCSS("b_with_small_icon_right   b_move_right_icon");
+		nextCourse.setIconRightCSS("o_icon o_icon_move_right");
+		nextCourse.setCustomDisabledLinkCSS("navbar-text");
 		nextCourse.setEnabled(numOfCourses > 1);
 		
 		openCourse = LinkFactory.createButton("open", courseDetailsVC, this);
-		openCourse.setCustomEnabledLinkCSS("b_link_left_icon b_link_course");
+		openCourse.setIconLeftCSS("o_icon o_CourseModule_icon");
 		courseDetailsVC.put("open", openCourse);
 		
 		mainVC.put("toolbar", toolbar.getInitialComponent());

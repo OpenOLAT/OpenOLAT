@@ -276,6 +276,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			allUsersButton = LinkFactory.createButtonSmall("cmd.all.users", groupChoose, this);
 			groupChoose.contextPut("isFiltering", Boolean.TRUE);
 			backLinkGC = LinkFactory.createLinkBack(groupChoose, this);
+			backLinkGC.setIconLeftCSS("o_icon o_icon_back");
 	
 			userChoose = createVelocityContainer("userchoose");
 
@@ -283,9 +284,11 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			filterCourseNodesButton  = LinkFactory.createButtonSmall("cmd.filterCourseNodes", userChoose, this);
 			userChoose.contextPut("isFiltering", Boolean.TRUE);
 			backLinkUC = LinkFactory.createLinkBack(userChoose, this);
+			backLinkUC.setIconLeftCSS("o_icon o_icon_back");
 			
 			onyxReporterVC = createVelocityContainer("onyxreporter");
 			backLinkOR = LinkFactory.createLinkBack(onyxReporterVC, this);
+			backLinkOR.setIconLeftCSS("o_icon o_icon_back");
 
 			nodeChoose = createVelocityContainer("nodechoose");
 

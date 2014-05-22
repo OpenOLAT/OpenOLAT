@@ -33,49 +33,36 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.util.StringHelper;
 
 /**
- * Description:<br>
- * Render a cell with an custom css class applied. The hover text is optional
  * 
- * <P>
- * Initial Date:  Nov 13, 2006 <br>
- * @author guido
+ * Initial date: 22.05.2014<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public abstract class CustomCssCellRenderer implements CustomCellRenderer {
+public abstract class IconCssCellRenderer implements CustomCellRenderer {
 
+	@Override
 	public void render(final StringOutput sb, final Renderer renderer, final Object val, final Locale locale, final int alignment, final String action) {
 		if (renderer == null) {
 			// render for export
 			String value = getCellValue(val);
-			if ( ! StringHelper.containsNonWhitespace(value) ) {
-				// try css class
-				value = getCssClass(val);
-				if (! StringHelper.containsNonWhitespace(value)) {
-					// try title
-					value = getHoverText(val);
-				} else {
-					// remove helper css classes
-					if (value != null){
-						value = value.replace("b_small_icon", "").trim();
-					}
-				}
+			if (!StringHelper.containsNonWhitespace(value)) {
+				value = getHoverText(val);
 			}
 			sb.append(value);
 		} else {
-			sb.append("<i class=\"");
-			sb.append(getCssClass(val));
+			sb.append("<i class='").append(getCssClass(val)).append("'> </i> <span");
 			String hoverText = getHoverText(val);
 			if (StringHelper.containsNonWhitespace(hoverText)) {
-				sb.append("\" title=\"");
+				sb.append(" title=\"");
 				sb.append(StringEscapeUtils.escapeHtml(hoverText));
 			}
 			sb.append("\">");
 			sb.append(getCellValue(val));
 			sb.append("</span>");			
 		}
-		
 	}
+	
 	protected abstract String getCssClass(Object val);
 	protected abstract String getCellValue(Object val);
 	protected abstract String getHoverText(Object val);
-	
 }

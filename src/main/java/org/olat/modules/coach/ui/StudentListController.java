@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -50,8 +49,8 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.StudentStatEntry;
-
 import org.olat.modules.coach.ui.StudentsTableDataModel.Columns;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -73,15 +72,14 @@ public class StudentListController extends BasicController implements Activateab
 	private boolean hasChanged;
 	
 	private final Map<Long,String> identityFullNameMap= new HashMap<Long,String>();
-	private final BaseSecurity securityManager;
-	private final CoachingService coachingService;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private CoachingService coachingService;
 	
 	public StudentListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		coachingService = CoreSpringFactory.getImpl(CoachingService.class);
-		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
-
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("error.no.found"));
 		tableConfig.setDownloadOffered(true);

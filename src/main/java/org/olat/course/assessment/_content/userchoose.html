@@ -1,30 +1,27 @@
-<h5>
-#if($showGroup)
-	$r.translate("userchoose.withGroups.title", ["$groupName"])
-#else
-	$r.translate("userchoose.title")
-#end
-</h5>
-
 #if ($showBack)
 	$r.render("backLink")
-	#if ($showFilterButton)
-		<p />
-		<div class="b_float_right">
-			#if ($isFiltering)
-				$r.render("cmd.showAllCourseNodes")
-			#else
-			    $r.render("cmd.filterCourseNodes")
-			#end
-		</div>
-		<br />
-	#end
 #end
-<div style="clear:right">
+
+#if($showGroup)
+	<h3>$r.translate("userchoose.withGroups.title", ["$groupName"])</h3>
+#else
+	<h3>$r.translate("userchoose.title")</h3>
+#end
+
+#if ($showFilterButton)
+	<div class="pull-right">
+		#if ($isFiltering)
+			$r.render("cmd.showAllCourseNodes")
+		#else
+		    $r.render("cmd.filterCourseNodes")
+		#end
+	</div>
+#end
+
 $r.render("userlisttable")
-</div>
+
 #if ($toolCmpNames)
-	<div class="b_button_group">
+	<div class="btn-group">
 	#foreach($toolCmpName in $toolCmpNames)
 		$r.render($toolCmpName)
 	#end

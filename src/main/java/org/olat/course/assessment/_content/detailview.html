@@ -1,57 +1,55 @@
 #if ($courseNodeInfosVisible && $courseNode)
-	<div class="b_with_small_icon_left $courseNodeCss">$r.escapeHtml($courseNode.getShortTitle())
+	<h2><i class="o_icon $courseNodeCss"> </i> $r.escapeHtml($courseNode.getShortTitle())
 	#if ($courseNode.getLongTitle() && $courseNode.getLongTitle() != "")
 		($r.escapeHtml($courseNode.getLongTitle()))
 	#end
-	</div>
-	<hr />
+	</h2>
 #end
 
 #if($titleVisible)
+$r.render("backLink")
 <h4>$r.translate("detailview.title")</h4>
-$r.render("backLink")<br /><br />
 #end
 
 #if($identityInfosVisible)
-<table class="b_table">
-	<tr>
-		<td>
-			<span class="b_with_small_icon_left b_user_icon">$r.escapeHtml($user.getProperty("firstName", $locale)) $r.escapeHtml($user.getProperty("lastName", $locale))</span>
-		</td>
-		<td>
+<div class="panel panel-default">
+	<ul class="list-group">
+		<li class="list-group-item">
+			<span><i class="o_icon o_icon_user"> </i> $r.escapeHtml($user.getProperty("firstName", $locale)) $r.escapeHtml($user.getProperty("lastName", $locale))</span>
+		</li>
+		<li class="list-group-item">
 			#if ($user.getProperty("institutionalName", $locale) && $user.getProperty("institutionalName", $locale).length() > 0)
 				#set ($inst = $r.escapeHtml($user.getProperty("institutionalName", $locale)))
 			#end
 			#if ($user.getProperty("institutionalUserIdentifier", $locale) && $user.getProperty("institutionalUserIdentifier", $locale).length() > 0)
 				#set ($matnr = $r.escapeHtml($user.getProperty("institutionalUserIdentifier", $locale)))
 			#end
-			$user.getProperty("email", $locale)
+			<span><i class="o_icon o_icon_mail"> </i> $user.getProperty("email", $locale)
 			#if ($user.getProperty("institutionalEmail", $locale) && $user.getProperty("institutionalEmail", $locale) != "" && $user.getProperty("email", $locale) != $user.getProperty("institutionalEmail", $locale))
 			 / $user.getProperty("institutionalEmail", $locale)
-			#end
-			#if ($inst)
-				<br />$inst
-			#end
-			#if ($matnr)
-				<br />$matnr
-			#end
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<span class="b_with_small_icon_left b_group_icon">$r.translate("participantgroups.title")</span>
-		</td>
-		<td>
+			#end</span>
+		</li>
+		#if ($inst)
+			<li class="list-group-item"><span><i class="o_icon o_icon_institution"> </i> $inst</span></li>
+		#end
+		#if ($matnr)
+			<li class="list-group-item"><span>$matnr</span></li>
+		#end
+		<li class="list-group-item">
+			<span><i class="o_icon o_icon_group"> </i> $r.translate("participantgroups.title")</span>
+		</li>
+		#if($participantGroups.size() > 0)
+		<li class="list-group-item">
 			#foreach($group in $participantGroups)
 				$r.escapeHtml($group.getName())
 				#if ($velocityCount < $participantGroups.size())
 			,
 				#end
 			#end
-		</td>
-	</tr>
-</table>
-<hr />
+		</li>
+		#end
+	</ul>
+</div>
 #end
 
 #if ($infoCoach && $infoCoach != "")
@@ -65,17 +63,13 @@ $r.render("backLink")<br /><br />
 	$r.render("detailsController")
 #end
 
-
 $r.render("assessmentform")
 
-	
 #if($showLog && $log)
 	<div class="o_course_run_log">
 		<h4>$r.translate("log.title")</h4>
 		$r.render("command.hidelog")
-		<pre>
-$log
-		</pre>
+		<pre>$log</pre>
 	</div>
 #elseif ($log)
 	$r.render("command.showlog")

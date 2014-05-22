@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -58,11 +57,11 @@ import org.olat.modules.co.ContactFormController;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.StudentStatEntry;
-import org.olat.repository.RepositoryEntry;
-import org.olat.user.UserManager;
-
 import org.olat.modules.coach.ui.EfficiencyStatementEntryTableDataModel.Columns;
 import org.olat.modules.coach.ui.ToolbarController.Position;
+import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -93,16 +92,16 @@ public class StudentCoursesController extends BasicController implements Activat
 	
 	private final Identity student;
 	private final StudentStatEntry statEntry;
-	private final UserManager userManager;
-	private final CoachingService coachingService;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private CoachingService coachingService;
 	
 	public StudentCoursesController(UserRequest ureq, WindowControl wControl, StudentStatEntry statEntry, Identity student, int index, int numOfStudents) {
 		super(ureq, wControl);
 		
 		this.student = student;
 		this.statEntry = statEntry;
-		coachingService = CoreSpringFactory.getImpl(CoachingService.class);
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("error.no.found"));
@@ -136,34 +135,39 @@ public class StudentCoursesController extends BasicController implements Activat
 		
 		mainVC.put("toolbar", toolbar.getInitialComponent());
 		backLink = toolbar.addToolbarLink("back", this, Position.left);
-		backLink.setCustomEnabledLinkCSS("b_link_back");
+		backLink.setIconLeftCSS("o_icon o_icon_back");
 		previous = toolbar.addToolbarLink("previous.course", this, Position.center);
-		previous.setCustomEnabledLinkCSS("b_with_small_icon_left b_with_small_icon_only b_move_left_icon");
+		previous.setIconLeftCSS("o_icon o_icon_move_left");
+		previous.setCustomDisabledLinkCSS("navbar-text");
 		previous.setEnabled(statements.size() > 1);
 		detailsCmp = toolbar.addToolbarText("details", this, Position.center);
 		next = toolbar.addToolbarLink("next.course", this, Position.center);
-		next.setCustomEnabledLinkCSS("b_with_small_icon_right b_with_small_icon_only b_move_right_icon");
+		next.setIconRightCSS("o_icon o_icon_move_right");
+		next.setCustomDisabledLinkCSS("navbar-text");
 		next.setEnabled(statements.size() > 1);
 		
 		//students next,previous
 		previousStudent = toolbar.addToolbarLink("previous.student", this, Position.center);
-		previousStudent.setCustomEnabledLinkCSS("b_with_small_icon_left b_with_small_icon_only b_move_left_icon");
+		previousStudent.setIconLeftCSS("o_icon o_icon_move_left");
+		previousStudent.setCustomDisabledLinkCSS("navbar-text");
 		previousStudent.setEnabled(numOfStudents > 1);
 		
 		detailsStudentCmp = toolbar.addToolbarText("details.student", "", this, Position.center);
+		detailsStudentCmp.setCssClass("navbar-text");
 		detailsStudentCmp.setText(translate("students.details", new String[]{
 				fullName, Integer.toString(index + 1), Integer.toString(numOfStudents)
 		}));
 		nextStudent = toolbar.addToolbarLink("next.student", this, Position.center);
-		nextStudent.setCustomEnabledLinkCSS("b_with_small_icon_right b_with_small_icon_only b_move_right_icon");
+		nextStudent.setIconRightCSS("o_icon o_icon_move_right");
+		nextStudent.setCustomDisabledLinkCSS("navbar-text");
 		nextStudent.setEnabled(numOfStudents > 1);
 		
 		contactLink = LinkFactory.createButton("contact.link", detailsVC, this);
-		contactLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_mail");
+		contactLink.setIconLeftCSS("o_icon o_icon_mail");
 		detailsVC.put("contact", contactLink);
 		
 		homeLink = LinkFactory.createButton("home.link", detailsVC, this);
-		homeLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_to_home");
+		homeLink.setIconLeftCSS("o_icon o_icon_home");
 		detailsVC.put("home", homeLink);
 
 		setDetailsToolbarVisible(false);

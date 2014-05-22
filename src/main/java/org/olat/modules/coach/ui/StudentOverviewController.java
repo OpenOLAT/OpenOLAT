@@ -137,21 +137,25 @@ public class StudentOverviewController extends BasicController implements Activa
 		mainVC.put("toolbar", toolbar.getInitialComponent());
 
 		previous = toolbar.addToolbarLink("previous", this, Position.center);
-		previous.setCustomEnabledLinkCSS("b_with_small_icon_left b_with_small_icon_only b_move_left_icon");
+		previous.setIconLeftCSS("o_icon o_icon_move_left");
+		previous.setCustomDisabledLinkCSS("navbar-text");
 		previous.setEnabled(statements.size() > 1);
 		detailsCmp = toolbar.addToolbarText("details", this, Position.center);
+		
 		next = toolbar.addToolbarLink("next", this, Position.center);
-		next.setCustomEnabledLinkCSS("b_with_small_icon_right b_with_small_icon_only b_move_right_icon");
+		next.setIconRightCSS("o_icon o_icon_move_right");
+		next.setCustomDisabledLinkCSS("navbar-text");
 		next.setEnabled(statements.size() > 1);
+		
 		backLink = toolbar.addToolbarLink("back", this, Position.left);
-		backLink.setCustomEnabledLinkCSS("b_link_back");
+		backLink.setIconLeftCSS("o_icon");
 
 		contactLink = LinkFactory.createButton("contact.link", detailsVC, this);
-		contactLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_mail");
+		contactLink.setIconLeftCSS("o_icon o_icon_mail");
 		detailsVC.put("contact", contactLink);
 		
 		homeLink = LinkFactory.createButton("home.link", detailsVC, this);
-		homeLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_to_home");
+		homeLink.setIconLeftCSS("o_icon o_icon_home");
 		detailsVC.put("home", homeLink);
 
 		setDetailsToolbarVisible(false);

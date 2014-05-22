@@ -38,15 +38,12 @@ public class CoachAdminController extends FormBasicController {
 	private MultipleSelectionElement enabled;
 	
 	private String[] values = {""};
-	private String[] keys = {"on"};
+	private static final String[] keys = {"on"};
 	
 	public CoachAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		values = new String[] {
-				getTranslator().translate("coaching.on")
-			};
-		
+		values = new String[] { translate("coaching.on") };
 		initForm(ureq);
 	}
 
@@ -63,7 +60,6 @@ public class CoachAdminController extends FormBasicController {
 			enabled = uifactory.addCheckboxesHorizontal("coaching.enabled", formLayout, keys, values, null);
 			enabled.select(keys[0], restEnabled);
 
-	
 			final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 			buttonGroupLayout.setRootForm(mainForm);
 			layoutContainer.add(buttonGroupLayout);

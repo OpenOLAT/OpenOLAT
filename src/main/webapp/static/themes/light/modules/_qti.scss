@@ -13,8 +13,8 @@ div.o_qti_item_itemfeedback {
 }
 
 .d3chart {
-	.bar_green { fill: #9dd53a; }
-	.bar_red { fill: #f85032; }
+	.bar_green { fill: $brand-success; }
+	.bar_red { fill: $brand-danger; }
 	.bar_grey { fill: lightgrey; }
 }
 

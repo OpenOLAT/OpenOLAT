@@ -73,6 +73,7 @@ public class LinkFactory {
 	public static Link createLinkBack(VelocityContainer vc, ComponentEventListener listener){
 		Link backLink = new Link("backLink", "back", "back", Link.LINK_BACK, vc, listener);
 		backLink.setAccessKey("b");
+		backLink.setIconLeftCSS("o_icon o_icon_back");
 		return backLink;
 	}
 	

@@ -20,10 +20,9 @@
 package org.olat.core.gui.components.text;
 
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -41,14 +40,7 @@ import org.olat.core.gui.translator.Translator;
  * 
  * @author gnaegi
  */
-class TextComponentRenderer implements ComponentRenderer {
-	
-	/**
-	 * Default constructor
-	 */
-	TextComponentRenderer() {
-		// Constructor is only package scope
-	}
+class TextComponentRenderer extends DefaultComponentRenderer {
 
 	/**
 	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
@@ -69,45 +61,17 @@ class TextComponentRenderer implements ComponentRenderer {
 			String tag = comp.getSpanAsDomReplaceable() ? "span" : "div";
 			// In any case render a span or div. If in ajax mode, another span/div
 			// will be wrapped around this to identify the component.
-			sb.append("<");
-			sb.append(tag);
+			sb.append("<").append(tag);
 			// Add optional css class
 			if (cssClass != null) {
-				sb.append(" class=\"");
-				sb.append(cssClass);
-				sb.append("\"");
+				sb.append(" class='").append(cssClass).append("'");
 			}
-			sb.append(">");
-			sb.append(text);
-			sb.append("</");
-			sb.append(tag);
-			sb.append(">");
+			if(!comp.isDomReplacementWrapperRequired()) {
+				sb.append(" id='").append(comp.getDispatchID()).append("'");
+			}
+			sb.append(">")
+			  .append(text)
+			  .append("</").append(tag).append(">");
 		}
 	}
-
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.RenderingState)
-	 */
-	@Override
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-	// nothing to render
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder,
-	 *      org.olat.core.gui.translator.Translator,
-	 *      org.olat.core.gui.render.RenderingState)
-	 */
-	@Override
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
-			RenderingState rstate) {
-	// nothing to render
-	}
-
 }

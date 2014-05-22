@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -56,9 +55,9 @@ import org.olat.group.BusinessGroupService;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GroupStatEntry;
-
 import org.olat.modules.coach.ui.EfficiencyStatementEntryTableDataModel.Columns;
 import org.olat.modules.coach.ui.ToolbarController.Position;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -87,15 +86,15 @@ public class GroupController extends BasicController implements Activateable2 {
 	
 	private final BusinessGroup group;
 	private final GroupStatEntry entry;
-	private final CoachingService coachingService;
-	private final BusinessGroupService groupManager;
+	@Autowired
+	private CoachingService coachingService;
+	@Autowired
+	private BusinessGroupService groupManager;
 	
 	public GroupController(UserRequest ureq, WindowControl wControl, GroupStatEntry groupStatistic, int index, int numOfGroups) {
 		super(ureq, wControl);
 		
 		this.entry = groupStatistic;
-		coachingService = CoreSpringFactory.getImpl(CoachingService.class);
-		groupManager = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("error.no.found"));
@@ -120,30 +119,35 @@ public class GroupController extends BasicController implements Activateable2 {
 		listenTo(toolbar);
 		
 		backLink = toolbar.addToolbarLink("back", this, Position.left);
-		backLink.setCustomEnabledLinkCSS("b_link_back");
+		backLink.setIconLeftCSS("o_icon o_icon_back");
 
 		//next/previous student
 		previous = toolbar.addToolbarLink("previous", this, Position.center);
-		previous.setCustomEnabledLinkCSS("b_with_small_icon_left b_with_small_icon_only b_move_left_icon");
+		previous.setIconLeftCSS("o_icon o_icon_move_left");
+		previous.setCustomDisabledLinkCSS("navbar-text");
 		previous.setEnabled(allGroup.size() > 1);
 		
 		detailsCmp = toolbar.addToolbarText("", this, Position.center);
 	
 		next = toolbar.addToolbarLink("next", this, Position.center);
-		next.setCustomEnabledLinkCSS("b_with_small_icon_right b_with_small_icon_only b_move_right_icon");
+		next.setIconRightCSS("o_icon o_icon_move_right");
+		next.setCustomDisabledLinkCSS("navbar-text");
 		next.setEnabled(allGroup.size() > 1);
 		//next/previous group
 		//students next,previous
 		previousGroup = toolbar.addToolbarLink("previous.group", this, Position.center);
-		previousGroup.setCustomEnabledLinkCSS("b_with_small_icon_left b_with_small_icon_only b_move_left_icon");
+		previousGroup.setIconLeftCSS("o_icon o_icon_move_left");
+		previousGroup.setCustomDisabledLinkCSS("navbar-text");
 		previousGroup.setEnabled(numOfGroups > 1);
 		
 		detailsGroupCmp = toolbar.addToolbarText("details.group", "", this, Position.center);
+		detailsGroupCmp.setCssClass("navbar-text");
 		detailsGroupCmp.setText(translate("students.details", new String[]{
 				StringHelper.escapeHtml(group.getName()), Integer.toString(index + 1), Integer.toString(numOfGroups)
 		}));
 		nextGroup = toolbar.addToolbarLink("next.group", this, Position.center);
-		nextGroup.setCustomEnabledLinkCSS("b_with_small_icon_right b_with_small_icon_only b_move_right_icon");
+		nextGroup.setIconRightCSS("o_icon o_icon_move_right");
+		nextGroup.setCustomDisabledLinkCSS("navbar-text");
 		nextGroup.setEnabled(numOfGroups > 1);
 
 
@@ -151,7 +155,7 @@ public class GroupController extends BasicController implements Activateable2 {
 		groupDetailsVC.contextPut("groupName", StringHelper.escapeHtml(group.getName()));
 		
 		openGroup = LinkFactory.createButton("open.group", groupDetailsVC, this);
-		openGroup.setCustomEnabledLinkCSS("b_link_left_icon b_link_group");
+		openGroup.setIconLeftCSS("o_icon o_icon_group");
 		groupDetailsVC.put("open", openGroup);
 
 		mainVC.put("toolbar", toolbar.getInitialComponent());

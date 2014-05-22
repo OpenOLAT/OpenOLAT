@@ -1,21 +1,13 @@
-<div class="b_float_right">
-	$r.contextHelp("org.olat.course.assessment","course-assess-tool.html","help.hover.assess")
-</div>
-<h5>$r.translate("index.title")</h5>
+$r.contextHelpWithWrapper("org.olat.course.assessment","course-assess-tool.html","help.hover.assess")
+<h2><i class="o_icon o_icon_assessment_tool"> </i> $r.translate("index.title")</h2>
 #if($hasAssessableNodes)
-<p>
-	$r.translate("index.intro")
-</p>
-<p>
-	$r.translate("index.slow")
-</p>
-<div class="b_clearfix">
+<p>$r.translate("index.intro")</p>
+<p>$r.translate("index.slow")</p>
+<div class="clearfix">
 	$r.render("assessmentSubscription")
 	<h5>$r.translate("index.notifications.title")</h5>
 	$r.translate("index.notifications.assessment")
 </div>
 #else
-	<p>
-		$r.translate("index.noAssessableNodes")
-	</p>
+	<p>$r.translate("index.noAssessableNodes")</p>
 #end

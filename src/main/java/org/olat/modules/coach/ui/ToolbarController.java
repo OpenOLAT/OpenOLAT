@@ -118,6 +118,8 @@ public class ToolbarController extends BasicController {
 
 	public TextComponent addToolbarText(String name, String text, Object owner, Position pos) {
 		TextComponent textCmp = TextFactory.createTextComponentFromString(name, text, null, true, toolbarVC);
+		textCmp.setDomReplacementWrapperRequired(false);
+		textCmp.setCssClass("navbar-text");
 		addToolbarComponentToMapAndList(textCmp, owner, pos);
 		return textCmp;
 	}

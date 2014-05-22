@@ -63,11 +63,11 @@ public class CourseNodeRenderer implements FlexiCellRenderer {
 				appendIndent(sb, indent);
 			}
 			
-			sb.append("<span class=\"b_with_small_icon_left ").append(cssClass);
+			sb.append("<i class='o_icon ").append(cssClass).append("'> </i> ").append("<span");
 			if (altText != null) {
-				sb.append("\" title= \"").append(StringHelper.escapeHtml(altText));
+				sb.append(" title= \"").append(StringHelper.escapeHtml(altText)).append("\"");
 			}
-			sb.append("\">").append(StringHelper.escapeHtml(title)).append("</span>");
+			sb.append(">").append(StringHelper.escapeHtml(title)).append("</span>");
 		}
 	}
 

@@ -752,6 +752,11 @@ public class Window extends AbstractComponent {
 						if (renderResult.getRenderException() != null) {
 							throw new OLATRuntimeException(Window.class, renderResult.getLogMsg(), renderResult.getRenderException());
 						}
+						
+						//to check HTML by reload
+						//System.out.println("****************************************************");
+						//System.out.println(result.toString());
+						//System.out.println("****************************************************");
 		
 						// after rendering we know if some component awaits further async
 						// calls

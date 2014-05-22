@@ -19,16 +19,15 @@
  */
 package org.olat.modules.coach.ui;
 
-import org.olat.core.gui.components.table.CustomCssCellRenderer;
+import org.olat.core.gui.components.table.IconCssCellRenderer;
 import org.olat.course.assessment.AssessmentHelper;
-
 import org.olat.modules.coach.ui.LightedValue.Light;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class LightIconRenderer extends CustomCssCellRenderer {
+public class LightIconRenderer extends IconCssCellRenderer {
 
 	@Override
 	protected String getCssClass(Object val) {
@@ -42,11 +41,11 @@ public class LightIconRenderer extends CustomCssCellRenderer {
 				return null;
 			}
 			switch(light) {
-				case grey: return "o_black_led";
-				case green: return "o_green_led";
-				case yellow: return "o_yellow_led";
-				case red: return "o_red_led";
-				case black: return "o_black_led";
+				case grey: return "o_icon o_black_led";
+				case green: return "o_icon o_green_led";
+				case yellow: return "o_icon o_yellow_led";
+				case red: return "o_icon o_red_led";
+				case black: return "o_icon o_black_led";
 				default: return null;
 			}
 		}

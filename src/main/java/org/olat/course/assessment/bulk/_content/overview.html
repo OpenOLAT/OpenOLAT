@@ -1,27 +1,16 @@
-<div class="b_float_right">$r.contextHelp("org.olat.course.assessment.bulk", "bulkassessment_overview.html","help.hover.bulkassessment_overview")</div> 
-<h4 class="b_with_small_icon_left b_group_icon">
-	$r.translate("bulk.wizard.title")
-</h4>
-<p>
-	$r.translate("bulk.wizard.desc")
-</p>
-<p>
-	$r.translate("bulk.wizard.start")
-</p>
-<div class="b_button_group">
+$r.contextHelpWithWrapper("org.olat.course.assessment.bulk", "bulkassessment_overview.html","help.hover.bulkassessment_overview")
+<h2><i class="o_icon o_icon_group"> </i> $r.translate("bulk.wizard.title")</h2>
+<p>$r.translate("bulk.wizard.desc")</p>
+<p>$r.translate("bulk.wizard.start")</p>
+<div class="btn-group">
 	#if($r.available("new.bulk"))
 		$r.render("new.bulk")
 	#end
 </div>
-
 #if ($hasScheduledTasks)
-<h5>
-	$r.translate("schedule.listing.title")
-</h5>
-<p>
-	$r.translate("schedule.listing.desc")
-</p>
-<div class="b_clearfix">
+<div class="">
+	<h3>$r.translate("schedule.listing.title")</h3>
+	<div class="o_info">$r.translate("schedule.listing.desc")</div>
 	$r.render("taskList")
 </div>
 #end

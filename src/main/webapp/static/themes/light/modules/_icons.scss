@@ -13,6 +13,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_archive_tool{ @extend .o_icon-download;}
 .o_icon_assessment_tool{ @extend .o_icon-trophy;}
 .o_icon_attempt_limit{ @extend .o_icon-refresh; }
+.o_icon_back { @extend .o_icon-chevron-left; }
 .o_icon_booking { @extend .o_icon-dollar; }
 .o_icon_bookmark { @extend .o_icon-bookmark; color: #996633; }
 .o_icon_bookmark_add { @extend .o_icon-bookmark-o; color: #999999;}
@@ -49,8 +50,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_filter {@extend .o_icon-filter;}
 .o_icon_group {@extend .o_icon-users; }
 .o_icon_help { @extend .o_icon-question-circle; @extend .o_icon-lg; cursor: help;}
+.o_icon_home { @extend .o_icon-home; }
 .o_icon_impress { @extend .o_icon-info-circle; }
 .o_icon_info {@extend .o_icon-info-circle; color: $brand-info}
+.o_icon_institution { @extend .o_icon-bank; }
 .o_icon_mail { @extend .o_icon-envelope-o; }
 .o_icon_membersmanagement { @extend .o_icon-users;}
 .o_icon_message { @extend .o_icon-envelope;}
@@ -143,6 +146,12 @@ a.o_icon {
 .o_mi_qtikprim { @extend .o_icon-check-square;  }
 .o_mi_qtifib { @extend .o_icon-ellipsis-h; }
 .o_mi_qtiessay { @extend .o_icon-align-left; }
+
+/* coaching */
+.o_black_led { @extend .o_icon-circle; color: $brand-primary; }
+.o_green_led { @extend .o_icon-circle; color: $brand-success; }
+.o_yellow_led { @extend .o_icon-circle; color: $brand-warning; }
+.o_red_led { @extend .o_icon-circle; color: $brand-danger; }
 
 /* Access control icons */
 .o_ac_token_icon { @extend .o_icon-key;}
