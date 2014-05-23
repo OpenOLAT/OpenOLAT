@@ -21,6 +21,7 @@ package org.olat.core.gui.components.dropdown;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -96,6 +97,18 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 		if(spacer != null) {
 			components.add(spacer);
 		}
+	}
+	
+	public void removeComponent(String name) {
+		for(Iterator<Component> it=components.iterator(); it.hasNext(); ) {
+			if(it.next().getComponentName().equals(name)) {
+				it.remove();
+			}
+		}
+	}
+	
+	public void removeAllComponents() {
+		components.clear();
 	}
 	
 	public int size() {

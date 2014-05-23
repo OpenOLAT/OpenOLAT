@@ -1,4 +1,4 @@
-<h1 class="o_wikimod_heading">$page.getPageName().replace("_"," ")</h1>
+<h3 class="o_wikimod_heading">$page.getPageName().replace("_"," ")</h3>
 
 $r.render("versions")
 
@@ -7,7 +7,7 @@ $r.render("versions")
 		<div>
 		#set($oldVersion = $page.getVersion() - 1)
 		#set($versionFromTo = ["$oldVersion", "$page.getVersion()"])
-		<h3 class="o_wikimod_heading">$r.translate("diff.comparing", $versionFromTo)</h3>
+		<h4 class="o_wikimod_heading">$r.translate("diff.comparing", $versionFromTo)</h4>
 		#foreach($diff in $diffs)
 			##Size: $diff.getSize()<br />
 			##From: $diff.getFrom()<br />

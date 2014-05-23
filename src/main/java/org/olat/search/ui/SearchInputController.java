@@ -191,6 +191,7 @@ public class SearchInputController extends FormBasicController {
 		} else if (displayOption.equals(DisplayOption.STANDARD_TEXT)) {
 			String searchLabel = getTranslator().translate("search");
 			searchButton = uifactory.addFormLink("search", searchLabel, "", formLayout, Link.NONTRANSLATED + Link.BUTTON_SMALL);
+			searchButton.setIconLeftCSS("o_icon o_icon-fw o_icon_search o_icon-lg");
 		}
 		searchButton.setCustomEnabledLinkCSS("o_search");
 		searchButton.setEnabled(true);

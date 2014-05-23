@@ -33,6 +33,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -50,6 +51,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.nodes.WikiCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.wiki.Wiki;
@@ -74,17 +76,11 @@ public class WikiRunController extends BasicController implements Activateable2 
 	private ModuleConfiguration config;
 	private CloneController cloneCtr;
 	
-	/**
-	 * 
-	 * @param wControl
-	 * @param ureq
-	 * @param wikiCourseNode
-	 * @param cenv
-	 */
-	public WikiRunController(WindowControl wControl, UserRequest ureq, WikiCourseNode wikiCourseNode, CourseEnvironment cenv, NodeEvaluation ne) {
+
+	public WikiRunController(WindowControl wControl, UserRequest ureq, WikiCourseNode wikiCourseNode,
+			CourseEnvironment cenv, NodeEvaluation ne) {
 		super(ureq, wControl);
 		this.courseEnv = cenv;
-		
 		this.config = wikiCourseNode.getModuleConfiguration();
 		addLoggingResourceable(LoggingResourceable.wrap(wikiCourseNode));
 		
@@ -119,7 +115,7 @@ public class WikiRunController extends BasicController implements Activateable2 
 			wikiCtr = WikiManager.getInstance().createWikiMainController(ureq, wControl, re.getOlatResource(), callback, null);
 		}
 		listenTo(wikiCtr);
-		
+
 		Controller wrappedCtr = TitledWrapperHelper.getWrapper(ureq, wControl, wikiCtr, wikiCourseNode, Wiki.CSS_CLASS_WIKI_ICON);
 		
 		CloneLayoutControllerCreatorCallback clccc = new CloneLayoutControllerCreatorCallback() {
@@ -174,5 +170,10 @@ public class WikiRunController extends BasicController implements Activateable2 
 	protected void doDispose() {
 		//
 	}
-
+	
+	public NodeRunConstructionResult createNodeRunConstructionResult() {
+		TreeModel wikiTreeModel = wikiCtr.getAndUseExternalTree();
+		String selNodeId = wikiTreeModel.getRootNode().getChildAt(0).getIdent();
+		return new NodeRunConstructionResult(this, wikiTreeModel, selNodeId, wikiCtr);
+	}
 }

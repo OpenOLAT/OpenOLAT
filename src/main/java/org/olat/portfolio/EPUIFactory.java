@@ -148,8 +148,7 @@ public class EPUIFactory {
 		PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
 		EPArtefactHandler<?> handler = portfolioModule.getArtefactHandler(ores.getResourceableTypeName());
 		if (portfolioModule.isEnabled() && handler != null && handler.isEnabled()) {
-			ArtefactWizzardStepsController artWizzCtrl = new ArtefactWizzardStepsController(ureq, wControl, ores, businessPath);
-			return artWizzCtrl;
+			return new ArtefactWizzardStepsController(ureq, wControl, ores, businessPath);
 		}
 		return null;
 	}

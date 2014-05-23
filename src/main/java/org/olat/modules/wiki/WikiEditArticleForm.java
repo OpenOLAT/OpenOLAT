@@ -53,7 +53,7 @@ public class WikiEditArticleForm extends FormBasicController {
 	private WikiPage page;
 	
 	public WikiEditArticleForm(UserRequest ureq, WindowControl wControl, WikiPage page) {
-		super(ureq, wControl);
+		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
 		this.page = page;
 		initForm(ureq);
 	}
@@ -98,6 +98,7 @@ public class WikiEditArticleForm extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
 		wikiContent = uifactory.addTextAreaElement("wikiContentElement", 20, 110, page.getContent() , formLayout);
+		wikiContent.setLabel(null, null);
 		wikiContent.preventValueTrim(true);//OO-31 prevent trimming, so first line can be with inset (wiki pre-formatted)
 
 		updateComment = uifactory.addTextElement("wikiUpdateComment", null, 40, "", formLayout);

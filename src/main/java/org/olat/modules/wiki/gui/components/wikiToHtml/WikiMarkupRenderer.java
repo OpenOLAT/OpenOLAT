@@ -33,11 +33,10 @@ import org.jamwiki.parser.ParserDocument;
 import org.jamwiki.parser.ParserInput;
 import org.jamwiki.parser.jflex.JFlexParser;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -53,11 +52,7 @@ import org.olat.core.util.Formatter;
  * 
  * @author guido
  */
-public class WikiMarkupRenderer implements ComponentRenderer {
-
-	protected WikiMarkupRenderer() {
-	//
-	}
+public class WikiMarkupRenderer extends DefaultComponentRenderer {
 
 	/**
 	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
@@ -67,6 +62,7 @@ public class WikiMarkupRenderer implements ComponentRenderer {
 	 *      org.olat.core.gui.translator.Translator,
 	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
+	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		WikiMarkupComponent wikiComp = (WikiMarkupComponent) source;
@@ -74,24 +70,20 @@ public class WikiMarkupRenderer implements ComponentRenderer {
 		AJAXFlags flags = renderer.getGlobalSettings().getAjaxFlags();
 		boolean iframePostEnabled = flags.isIframePostEnabled();
 		
-		//ParserInput parserInput = wikiComp.getParserInput();
-		
-		
-		
 		ParserInput input = new ParserInput();
-    input.setWikiUser(null);
-    input.setAllowSectionEdit(false);
-    input.setDepth(10);
-    input.setContext("");
-    //input.setTableOfContents(null);
-    input.setLocale(new Locale("en"));
-    //input.setVirtualWiki(Long.toString(wikiComp.getOres().getResourceableId()));
-    input.setTopicName("dummy");
-    input.setUserIpAddress("0.0.0.0");
-    OlatWikiDataHandler dataHandler = new OlatWikiDataHandler(wikiComp.getOres(), wikiComp.getImageBaseUri());
-    input.setDataHandler(dataHandler);
+		input.setWikiUser(null);
+		input.setAllowSectionEdit(false);
+		input.setDepth(10);
+		input.setContext("");
+		//input.setTableOfContents(null);
+		input.setLocale(new Locale("en"));
+		//input.setVirtualWiki(Long.toString(wikiComp.getOres().getResourceableId()));
+		input.setTopicName("dummy");
+		input.setUserIpAddress("0.0.0.0");
+		OlatWikiDataHandler dataHandler = new OlatWikiDataHandler(wikiComp.getOres(), wikiComp.getImageBaseUri());
+		input.setDataHandler(dataHandler);
     
-    StringOutput out = new StringOutput(100);
+		StringOutput out = new StringOutput(100);
 		ubu.buildURI(out, null , null, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 		String uri = out.toString();
 		
@@ -124,29 +116,4 @@ public class WikiMarkupRenderer implements ComponentRenderer {
 		sb.append("changeAnchorTargets('").append(uniqueId).append("');");
 		sb.append("/* ]]> */</script>");
 	}
-
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder,
-	 *      org.olat.core.gui.translator.Translator,
-	 *      org.olat.core.gui.render.RenderingState)
-	 */
-	@Override
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
-			RenderingState rstate) {
-		//
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.RenderingState)
-	 */
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-	//
-	}
-
 }

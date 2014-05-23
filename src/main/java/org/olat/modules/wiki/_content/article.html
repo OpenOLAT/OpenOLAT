@@ -1,5 +1,5 @@
 #set($pageName = $page.getPageName())
-<h1 class="o_wikimod_heading">
+<h3 class="o_wikimod_heading">
 #if($pageName == "Index")
 	$r.translate("navigation.mainpage")
 #elseif($pageName == "O_a_to_z")
@@ -13,7 +13,7 @@
 #else
 	$pageName.replace("_"," ")
 #end
-</h1>
+</h3>
 <div class="o_wikimod-article-box">
 	#if ($r.available("wikiArticle"))
 		$r.render("wikiArticle")

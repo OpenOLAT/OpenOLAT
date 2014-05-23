@@ -15,6 +15,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_attempt_limit{ @extend .o_icon-refresh; }
 .o_icon_audio{ @extend .o_icon-volume-up; }
 .o_icon_back { @extend .o_icon-chevron-left; }
+.o_icon_bold { @extend .o_icon-bold; }
 .o_icon_booking { @extend .o_icon-dollar; }
 .o_icon_bookmark { @extend .o_icon-bookmark; color: #996633; }
 .o_icon_bookmark_add { @extend .o_icon-bookmark-o; color: #999999;}
@@ -27,6 +28,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_close_tool{ @extend .o_icon-times;}
 .o_icon_close_tree {@extend .o_icon-caret-down;}
 .o_icon_close_togglebox {@extend .o_icon-caret-down;}
+.o_icon_code{ @extend .o_icon-code;}
 .o_icon_copy{ @extend .o_icon-copy;}
 .o_icon_courseareas{ @extend .o_icon-circle-thin;}
 .o_icon_coursedb{ @extend .o_icon-database;}
@@ -50,12 +52,15 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_failed {@extend .o_icon-times-circle;}
 .o_icon_filter {@extend .o_icon-filter;}
 .o_icon_group {@extend .o_icon-users; }
+.o_icon_header { @extend .o_icon-header;}
 .o_icon_help { @extend .o_icon-question-circle; @extend .o_icon-lg; cursor: help;}
 .o_icon_home { @extend .o_icon-home; }
 .o_icon_impress { @extend .o_icon-info-circle; }
 .o_icon_info {@extend .o_icon-info-circle; color: $brand-info}
 .o_icon_institution { @extend .o_icon-bank; }
+.o_icon_italic { @extend .o_icon-italic; }
 .o_icon_mail { @extend .o_icon-envelope-o; }
+.o_icon_math { @extend .o_icon-rocket; }
 .o_icon_membersmanagement { @extend .o_icon-users;}
 .o_icon_message { @extend .o_icon-envelope;}
 .o_icon_move{ @extend .o_icon-arrows;}
@@ -72,7 +77,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_notes{@extend .o_icon-pencil; }
 .o_icon_notification { @extend .o_icon-rss;}
 .o_icon_language {@extend .o_icon-globe; }
+.o_icon_link {@extend .o_icon-link; }
 .o_icon_list {@extend .o_icon-list; }
+.o_icon_list_num  {@extend .o_icon-list-ol; }
 .o_icon_lifecycle {@extend .o_icon-calendar;}
 .o_icon_locked {@extend .o_icon-lock;}
 .o_icon_login {@extend .o_icon-sign-in;}
@@ -101,6 +108,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_settings{ @extend .o_icon-gears;}
 .o_icon_show_more { @extend .o_icon-toggle-down; }
 .o_icon_show_less { @extend .o_icon-toggle-up; }
+.o_icon_spacer { @extend .o_icon-arrows-h; }
 .o_icon_sort {@extend .o_icon-sort;}
 .o_icon_sort_asc {@extend .o_icon-sort-asc;}
 .o_icon_sort_desc {@extend .o_icon-sort-desc;}

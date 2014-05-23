@@ -177,6 +177,12 @@ public class LinkFactory {
 		return link;
 	}
 	
+	public static Link createToolLink(String name, String cmd, String label, ComponentEventListener listener){
+		Link link = new Link(name, cmd, label, Link.LINK | Link.NONTRANSLATED, null, listener);
+		link.setDomReplacementWrapperRequired(false);
+		return link;
+	}
+	
 	public static Link createToolLink(String name, String label, ComponentEventListener listener, String iconCssClass){
 		Link link = new Link(name, name, label, Link.LINK | Link.NONTRANSLATED, null, listener);
 		link.setDomReplacementWrapperRequired(false);

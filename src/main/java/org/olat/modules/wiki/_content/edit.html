@@ -1,13 +1,13 @@
-<div class="b_floatbox">
+<div class="clearfix">
 #if($isGuest)
-	<div class="b_warning">$r.translate("guest.no.edit")</div>
+	<div class="o_warning">$r.translate("guest.no.edit")</div>
 #elseif(!$lockEntry.isSuccess())
-	<div class="b_warning">$r.translate("page.locked", [$page.getPageName(), $lockEntry.getOwner().getName()])</div>
+	<div class="o_warning">$r.translate("page.locked", [$page.getPageName(), $lockEntry.getOwner().getName()])</div>
 #else
 	## normal edit workflow
 	#if ($r.available("versionDisplay"))
 		<br />
-		<div style="text-align:right;" class="o_wikimod_warn">
+		<div class="o_wikimod_warn o_warning">
 			#if($isDirty)
 				$r.translate("preview.edit",$page.getPageName())
 			#end
@@ -16,44 +16,54 @@
 		<div class="o_wikimod_version">
 			$r.render("versionDisplay")
 		</div>
-		<br />
 	#end
-	
-	#if($mayDeleteArticle)
-		<div class="b_float_right">
+	<h3>
+		$r.contextHelpWithWrapper("org.olat.course.nodes.wiki","ced-wiked.html","help.hover.wikisyntax") 
+		$r.translate("edit"):$page.getPageName().replace("_"," ")</h3>
+
+	<div class="btn-toolbar" role="toolbar">
+		<div class="btn-group">
+			<a href="#" title="$r.translateInAttribute("button.bold")" class="btn btn-default o_wikimod_btn_bold" onclick="insertTags('\'\'\'','\'\'\'','$r.translate("enter.bold")')"><i class="o_icon o_icon_bold"> </i></a>
+			<a href="#" title="$r.translateInAttribute("button.italic")" class="btn btn-default o_wikimod_btn_italic" onclick="insertTags('\'\'','\'\'','$r.translate("enter.italic")')"><i class="o_icon o_icon_italic"> </i></a>
+			<a href="#" title="$r.translateInAttribute("button.headline")" class="btn btn-default o_wikimod_btn_headline" onclick="insertTags('\n==','==\n','$r.translate("enter.headline")')"><i class="o_icon o_icon_header"> </i></a>
+		</div><div class="btn-group">
+			<a href="#" title="$r.translateInAttribute("button.list")" class="btn btn-default o_wikimod_btn_list" onclick="insertTags('\n* ','\n','$r.translate("enter.list")')"><i class="o_icon o_icon_list"> </i></a>
+			<a href="#" title="$r.translateInAttribute("button.numlist")" class="btn btn-default o_wikimod_btn_numlist" onclick="insertTags('\n# ','\n','$r.translate("enter.numlist")')"><i class="o_icon o_icon_list_num"> </i></a>
+		</div><div class="btn-group">
+			<a href="#" title="$r.translateInAttribute("button.image")" class="btn btn-default o_wikimod_btn_image" onclick="insertTags('[[Image:',']]','$r.translate("enter.image")')"><i class="o_icon o_filetype_jpg"> </i></a>
+			<a href="#" title="$r.translateInAttribute("button.media")" class="btn btn-default o_wikimod_btn_media" onclick="insertTags('[[Media:',']]','$r.translate("enter.media")')"><i class="o_icon o_icon_audio"> </i></a>
+			<a href="#" title="$r.translateInAttribute("button.math")" class="btn btn-default o_wikimod_btn_math" onclick="insertTags('<math>','<'\/math>','$r.translate("enter.math")')"><i class="o_icon o_icon_math"> </i></a>
+			<a href="#" title="$r.translateInAttribute("button.link")" class="btn btn-default o_wikimod_btn_link" onclick="insertTags('[[',']]','$r.translate("enter.link")')"><i class="o_icon o_icon_link"> </i></a>
+			<a href="#" title="$r.translateInAttribute("button.extlink")" class="btn btn-default o_wikimod_btn_extlink" onclick="insertTags('[',']','$r.translate("enter.extlink")')"><i class="o_icon o_icon_link"> </i></a>
+			<a href="#" title="$r.translateInAttribute("button.nowiki")" class="btn btn-default o_wikimod_btn_nowiki" onclick="insertTags('<nowiki>','<\/nowiki>','$r.translate("enter.nowiki")')"><i class="o_icon o_icon_code"> </i></a>
+			<a href="#" title="$r.translateInAttribute("button.hr")" class="btn btn-default o_wikimod_btn_hr" onclick="insertTags('\n----\n','','')"><i class="o_icon o_icon_spacer"> </i></a>
+		</div>
+		#if($linkList.size() > 0)	
+		<div class="btn-group">
+  			<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">$r.translateInAttribute("link.insert") <span class="caret"></span></button>
+  			<ul class="dropdown-menu" role="menu">
+  				#foreach($link in $linkList)
+  					<li><a href="#" onclick="javascript:insertTags('[[',']]','$link')">$link</a></li>
+				#end
+  			</ul>
+		</div>
+		#end
+		#if($fileList.size() > 0)
+		<div class="btn-group">
+			<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">$r.translateInAttribute("media.insert") <span class="caret"></span></button>
+  			<ul class="dropdown-menu" role="menu">
+  				#foreach($file in $fileList)
+  					<li><a href="#" onclick="javascript:insertMediaTag('$r.escapeHtml($file.getName())')">$r.escapeHtml($file.getName())</a></li>
+				#end
+  			</ul>
+		</div>
+		#end
+		#if($mayDeleteArticle)
+		<div class="btn-group">
 			$r.render("delete.page")
 		</div>
-	#end
-	<h1 class="o_wikimod_heading">
-		$r.translate("edit"):$page.getPageName().replace("_"," ")
-	</h1>
-	<div class="o_wikimod_btn">
-		$r.contextHelpWithWrapper("org.olat.course.nodes.wiki","ced-wiked.html","help.hover.wikisyntax") 
-		<a href="#" title="$r.translateInAttribute("button.bold")" class="o_wikimod_btn_bold" onclick="insertTags('\'\'\'','\'\'\'','$r.translate("enter.bold")')"></a>
-		<a href="#" title="$r.translateInAttribute("button.italic")" class="o_wikimod_btn_italic" onclick="insertTags('\'\'','\'\'','$r.translate("enter.italic")')"></a>
-		<a href="#" title="$r.translateInAttribute("button.headline")" class="o_wikimod_btn_headline" onclick="insertTags('\n==','==\n','$r.translate("enter.headline")')"></a>
-		<a href="#" title="$r.translateInAttribute("button.list")" class="o_wikimod_btn_list" onclick="insertTags('\n* ','\n','$r.translate("enter.list")')"></a>
-		<a href="#" title="$r.translateInAttribute("button.numlist")" class="o_wikimod_btn_numlist" onclick="insertTags('\n# ','\n','$r.translate("enter.numlist")')"></a>
-		<a href="#" title="$r.translateInAttribute("button.image")" class="o_wikimod_btn_image" onclick="insertTags('[[Image:',']]','$r.translate("enter.image")')"></a>
-		<a href="#" title="$r.translateInAttribute("button.media")" class="o_wikimod_btn_media" onclick="insertTags('[[Media:',']]','$r.translate("enter.media")')"></a>
-		<a href="#" title="$r.translateInAttribute("button.math")" class="o_wikimod_btn_math" onclick="insertTags('<math>','<\/math>','$r.translate("enter.math")')"></a>
-		<a href="#" title="$r.translateInAttribute("button.link")" class="o_wikimod_btn_link" onclick="insertTags('[[',']]','$r.translate("enter.link")')"></a>
-		<a href="#" title="$r.translateInAttribute("button.extlink")" class="o_wikimod_btn_extlink" onclick="insertTags('[',']','$r.translate("enter.extlink")')"></a>
-		<a href="#" title="$r.translateInAttribute("button.nowiki")" class="o_wikimod_btn_nowiki" onclick="insertTags('<nowiki>','<\/nowiki>','$r.translate("enter.nowiki")')"></a>
-		<a href="#" title="$r.translateInAttribute("button.hr")" class="o_wikimod_btn_hr" onclick="insertTags('\n----\n','','')"></a>
+		#end
 	</div>
-	#if($linkList.size() > 0)	
-		<div class="o_wikimod_linkchooser">
-			<select style="position:relative" id="wikiLinkChooser" size="1">
-				#foreach($link in $linkList)
-					<option value="$link">$link</option>
-				#end
-			</select>
-			<input type="submit" onclick="javascript:insertTags('[[',']]',document.getElementById('wikiLinkChooser').value)" value="$r.translateInAttribute("link.insert")" class="b_button b_small" />
-		</div>
-	#end
-	$r.render("fileList")
-
 	## EDIT FORM
 	<div class="o_wikimod_editform_wrapper">
 		$r.render('editForm')
@@ -72,7 +82,6 @@
 		$r.render('manage.media')
 		<br />
 	#o_togglebox_end()
-	<br />
 #end
 
 #if (!$r.available("versionDisplay"))

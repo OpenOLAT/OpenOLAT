@@ -113,10 +113,7 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 		postExportCondition(preConditionEdit, envMapper, backwardsCompatible);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse)
-	 */
+	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course,UserCourseEnvironment euce) {
 		WikiEditController childTabCntrllr = new WikiEditController(getModuleConfiguration(), ureq, wControl, this, course,euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
@@ -124,24 +121,17 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
+	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		if(ne.isCapabilityAccessible("access")) {
 			WikiRunController wikiController = new WikiRunController(wControl, ureq, this, userCourseEnv.getCourseEnvironment(), ne);
-			return new NodeRunConstructionResult(wikiController);
+			return wikiController.createNodeRunConstructionResult();
 		}
 		Controller controller = MessageUIFactory.createInfoMessage(ureq, wControl, null, this.getNoAccessExplanation());
-		return new NodeRunConstructionResult(controller, null, null, null);
+		return new NodeRunConstructionResult(controller);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
-	 */
+	@Override
 	public StatusDescription isConfigValid() {
 		/*
 		 * first check the one click cache
@@ -165,10 +155,7 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 		return sd;
 	}
 
-
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
+	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
 		//only here we know which translator to take for translating condition error messages
@@ -177,11 +164,8 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}
-	
-	
-	/**
-	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
-	 */
+
+	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		//"false" because we do not want to be strict, but just indicate whether
 		// the reference still exists or not
@@ -189,9 +173,7 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 		return entry;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
-	 */
+	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		//wiki is a repo entry
 		return true;
@@ -272,19 +254,19 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 	 * 
 	 * @see org.olat.course.nodes.GenericCourseNode#calcAccessAndVisibility(org.olat.course.condition.interpreter.ConditionInterpreter, org.olat.course.run.userview.NodeEvaluation)
 	 */
+	@Override
 	protected void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
 	  super.calcAccessAndVisibility(ci, nodeEval);
 		
 	  boolean editor = (getPreConditionEdit().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionEdit()));
 		nodeEval.putAccessStatus("editarticle", editor);		
 	}
-		
-	
+
+	@Override
 	public void cleanupOnDelete(ICourse course) {
 		// mark the subscription to this node as deleted
 		SubscriptionContext subsContext = WikiManager.createTechnicalSubscriptionContextForCourse(course.getCourseEnvironment(), this);
 		NotificationsManager.getInstance().delete(subsContext);
 	
 	}
-
 }
