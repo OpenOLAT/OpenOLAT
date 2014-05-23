@@ -1809,7 +1809,7 @@ public class EPStructureManager extends BasicManager {
 	
 	private RepositoryEntry createRepositoryEntry(Identity identity, OLATResource oresable, String title) {
 		// create a repository entry
-		RepositoryEntry addedEntry = repositoryService.create(identity, "-", title, null, oresable, RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry addedEntry = repositoryService.create(identity, null, "-", title, null, oresable, RepositoryEntry.ACC_OWNERS);
 
 		return addedEntry;
 	}

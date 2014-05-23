@@ -426,8 +426,8 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
 		if (rie.anyExportedPropertiesAvailable()) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(EPTemplateMapResource.TYPE_NAME);
-			RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
-					false, locale, rie.importGetExportedFile(), null);
+			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
+					rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
 			if(re != null) {
 				EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 				PortfolioStructure map = ePFMgr.loadPortfolioStructure(re.getOlatResource());

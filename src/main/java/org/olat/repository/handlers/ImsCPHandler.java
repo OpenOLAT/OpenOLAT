@@ -97,7 +97,7 @@ public class ImsCPHandler extends FileHandler {
 	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Locale locale) {
 		OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance("FileResource.IMSCP");
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();
 
 		Translator translator = Util.createPackageTranslator(CPContentController.class, locale);
@@ -122,13 +122,13 @@ public class ImsCPHandler extends FileHandler {
 	}
 	
 	@Override
-	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, boolean withReferences,
-			Locale locale, File file, String filename) {
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
+			boolean withReferences, Locale locale, File file, String filename) {
 
 		ImsCPFileResource cpResource = new ImsCPFileResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(cpResource);
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		
 		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();
 		File zipRoot = new File(fResourceFileroot, FileResourceManager.ZIPDIR);

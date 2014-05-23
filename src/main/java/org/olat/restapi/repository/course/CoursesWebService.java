@@ -348,7 +348,7 @@ public class CoursesWebService {
 		}
 		
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(CourseModule.getCourseTypeName());
-		RepositoryEntry re = handler.importResource(identity, displayName, null, true, Locale.ENGLISH, fCourseImportZIP, null);
+		RepositoryEntry re = handler.importResource(identity, null, displayName, null, true, Locale.ENGLISH, fCourseImportZIP, null);
 
 		if(StringHelper.containsNonWhitespace(softKey)) {
 			re.setSoftkey(softKey);
@@ -410,8 +410,8 @@ public class CoursesWebService {
 			
 			OLATResource sourceResource = src.getOlatResource();
 			OLATResource copyResource = OLATResourceManager.getInstance().createOLATResourceInstance(sourceResource.getResourceableTypeName());
-			RepositoryEntry preparedEntry = repositoryService.create(ureq.getIdentity(), resName, name, description,
-					copyResource, RepositoryEntry.ACC_OWNERS);
+			RepositoryEntry preparedEntry = repositoryService.create(ureq.getIdentity(), null, resName, name,
+					description, copyResource, RepositoryEntry.ACC_OWNERS);
 		
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(src);
 			preparedEntry = handler.copy(src, preparedEntry);
@@ -504,7 +504,7 @@ public class CoursesWebService {
 		// create a repository entry
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(oresable);
-		RepositoryEntry addedEntry = repositoryService.create(initialAuthor, "-", shortTitle, null, ores, 0);
+		RepositoryEntry addedEntry = repositoryService.create(initialAuthor, null, "-", shortTitle, null, ores, 0);
 		if(StringHelper.containsNonWhitespace(softKey) && softKey.length() <= 30) {
 			addedEntry.setSoftkey(softKey);
 		}

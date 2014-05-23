@@ -96,7 +96,7 @@ public class ImportGlossaryReferencesController {
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(resource);
 		
 		RepositoryEntry importedRepositoryEntry = repositoryService.create(owner,
-				importExport.getResourceName(), importExport.getDisplayName(), importExport.getDescription(), ores, 0);
+				null, importExport.getResourceName(), importExport.getDisplayName(), importExport.getDescription(), ores, 0);
 
 			// set the new glossary reference
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();

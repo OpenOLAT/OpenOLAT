@@ -87,7 +87,7 @@ public class BlogHandler implements RepositoryHandler {
 		OLATResourceable ores = FeedManager.getInstance().createBlogResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(ores);
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();
 		return re;
 	}
@@ -103,15 +103,15 @@ public class BlogHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description,
-			boolean withReferences, Locale locale, File file, String filename) {
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
+			String description, boolean withReferences, Locale locale, File file, String filename) {
 
 		OLATResource resource = OLATResourceManager.getInstance().createAndPersistOLATResourceInstance(new BlogFileResource());
 		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();
 		File blogRoot = new File(fResourceFileroot, FeedManager.getInstance().getFeedKind(resource));
 		FileResource.copyResource(file, filename, blogRoot);
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();
 		return re;
 	}

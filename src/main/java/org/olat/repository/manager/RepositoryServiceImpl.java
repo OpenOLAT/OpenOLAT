@@ -98,9 +98,9 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
-	public RepositoryEntry create(Identity initialAuthor, String resourceName,
-			String displayname, String description, OLATResource resource, int access) {
-		return create(null, initialAuthor, resourceName, displayname, description, resource, access);
+	public RepositoryEntry create(Identity initialAuthor, String initialAuthorAlt,
+			String resourceName, String displayname, String description, OLATResource resource, int access) {
+		return create(initialAuthorAlt, initialAuthor, resourceName, displayname, description, resource, access);
 	}
 	
 	private RepositoryEntry create(String initialAuthorName, Identity initialAuthor, String resourceName,
@@ -112,6 +112,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 			re.setInitialAuthor(initialAuthorName);
 		} else if(initialAuthor != null) {
 			re.setInitialAuthor(initialAuthor.getName());
+		} else {
+			re.setInitialAuthor("-");
 		}
 		re.setCreationDate(now);
 		re.setLastModified(now);

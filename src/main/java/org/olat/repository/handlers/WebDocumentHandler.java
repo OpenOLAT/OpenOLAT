@@ -133,8 +133,8 @@ public class WebDocumentHandler extends FileHandler {
 	}
 	
 	@Override
-	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, boolean withReferences,
-			Locale locale, File file, String filename) {
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
+			boolean withReferences, Locale locale, File file, String filename) {
 		
 		FileResource ores;
 		if (DocFileResource.TYPE_NAME.equals(supportedType) && DocFileResource.validate(filename)) {
@@ -168,7 +168,7 @@ public class WebDocumentHandler extends FileHandler {
 		}
 
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();
 		return re;
 	}

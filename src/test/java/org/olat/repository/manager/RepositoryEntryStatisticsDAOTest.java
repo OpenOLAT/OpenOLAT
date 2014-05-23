@@ -92,7 +92,7 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 	public void updateRatingStatistics() {
 		//create an entry
 		Identity id = JunitTestHelper.createAndPersistIdentityAsAuthor("update-mark-");
-		RepositoryEntry re = repositoryService.create(id, "-", "Statistics", "", null, 0);
+		RepositoryEntry re = repositoryService.create(id, null, "-", "Statistics", "", null, 0);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(re);
 		Assert.assertNotNull(re.getStatistics());
@@ -110,7 +110,7 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 	public void updateCommentsStatistics() {
 		//create an entry
 		Identity id = JunitTestHelper.createAndPersistIdentityAsAuthor("update-comment-");
-		RepositoryEntry re = repositoryService.create(id, "-", "Statistics", "", null, 0);
+		RepositoryEntry re = repositoryService.create(id, null, "-", "Statistics", "", null, 0);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(re);
 		Assert.assertNotNull(re.getStatistics());

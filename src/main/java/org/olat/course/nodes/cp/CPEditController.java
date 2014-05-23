@@ -168,11 +168,8 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 		}
 		
 		Boolean cpMenu = config.getBooleanEntry(NodeEditController.CONFIG_COMPONENT_MENU);
-		//fxdiff VCRP-13: cp navigation
 		Boolean cpNavButtons = config.getBooleanEntry(CPEditController.CONFIG_SHOWNAVBUTTONS);
-		String contentEncoding = (String)config.get(NodeEditController.CONFIG_CONTENT_ENCODING);
-		String jsEncoding = (String)config.get(NodeEditController.CONFIG_JS_ENCODING);
-		cpMenuForm = new CompMenuForm(ureq, wControl, cpMenu, cpNavButtons, contentEncoding, jsEncoding);
+		cpMenuForm = new CompMenuForm(ureq, wControl, cpMenu, cpNavButtons);
 		listenTo(cpMenuForm);
 		
 		cpConfigurationVc.put("cpMenuForm", cpMenuForm.getInitialComponent());
@@ -399,7 +396,7 @@ class CompMenuForm extends FormBasicController {
 	private boolean compNavButtonsConfig;
 
 	
-	CompMenuForm(UserRequest ureq, WindowControl wControl, Boolean compMenuConfig, Boolean compNavButtons, String contentEncoding, String jsEncoding) {
+	CompMenuForm(UserRequest ureq, WindowControl wControl, Boolean compMenuConfig, Boolean compNavButtons) {
 		super(ureq, wControl);
 		compMenuConfig = compMenuConfig == null ? true:compMenuConfig.booleanValue();
 		//fxdiff VCRP-13: cp navigation

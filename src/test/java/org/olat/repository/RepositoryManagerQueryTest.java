@@ -236,8 +236,8 @@ public class RepositoryManagerQueryTest extends OlatTestCase {
 		OLATResource r =  OLATResourceManager.getInstance().createOLATResourceInstance(TEST_RES_NAME);
 		db.saveObject(r);
 		// now make a repository entry for this course
-		RepositoryEntry re = repositoryService.create(owner, "Lernen mit OLAT " + i,
-				"JunitTest_RepositoryEntry_" + i, "Description of learning by OLAT " + i, r, RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry re = repositoryService.create(owner, null,
+				"Lernen mit OLAT " + i, "JunitTest_RepositoryEntry_" + i, "Description of learning by OLAT " + i, r, RepositoryEntry.ACC_OWNERS);
 		//db.commit();
 		return re;
 	}

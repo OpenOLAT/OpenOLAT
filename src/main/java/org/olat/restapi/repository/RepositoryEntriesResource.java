@@ -341,7 +341,7 @@ public class RepositoryEntriesResource {
 		
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(newResource);
-		RepositoryEntry addedEntry = repositoryService.create(identity, resourcename, displayname, null, ores, 0);
+		RepositoryEntry addedEntry = repositoryService.create(identity, null, resourcename, displayname, null, ores, 0);
 		if(StringHelper.containsNonWhitespace(softkey)) {
 			addedEntry.setSoftkey(softkey);
 		}

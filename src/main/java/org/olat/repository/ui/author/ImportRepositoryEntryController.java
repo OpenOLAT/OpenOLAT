@@ -167,8 +167,8 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		String uploadedFilename = uploadFileEl.getUploadFileName();
 		boolean withReferences = referencesEl.isAtLeastSelected(1);
 		
-		importedEntry = handlerForUploadedResource.importResource(getIdentity(), displayname, "",
-				withReferences, getLocale(), uploadedFile, uploadedFilename);
+		importedEntry = handlerForUploadedResource.importResource(getIdentity(), null, displayname,
+				"", withReferences, getLocale(), uploadedFile, uploadedFilename);
 
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
 				LoggingResourceable.wrap(importedEntry, OlatResourceableType.genRepoEntry));

@@ -647,8 +647,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 			dbInstance.getCurrentEntityManager().persist(r);
 			
 			// now make a repository entry for this course
-			RepositoryEntry re = repositoryService.create(owner, "Lernen mit OLAT " + i,
-					"JunitTest_RepositoryEntry_" + i, "yo man description bla bla + i", r, RepositoryEntry.ACC_OWNERS_AUTHORS);			
+			RepositoryEntry re = repositoryService.create(owner, null,
+					"Lernen mit OLAT " + i, "JunitTest_RepositoryEntry_" + i, "yo man description bla bla + i", r, RepositoryEntry.ACC_OWNERS_AUTHORS);			
 			if ((i % 2 > 0)) {
 				re.setCanReference(true);
 			}
@@ -1115,9 +1115,9 @@ public class RepositoryManagerTest extends OlatTestCase {
 		dbInstance.saveObject(r);
 		
 		// now make a repository entry for this course
-		final RepositoryEntry re = repositoryService.create(owner, "Lernen mit OLAT " + i,
-				"JunitTest_RepositoryEntry_" + i, "yo man description bla bla + i", r,
-				RepositoryEntry.ACC_OWNERS_AUTHORS);
+		final RepositoryEntry re = repositoryService.create(owner, null,
+				"Lernen mit OLAT " + i, "JunitTest_RepositoryEntry_" + i, "yo man description bla bla + i",
+				r, RepositoryEntry.ACC_OWNERS_AUTHORS);
 		return re;
 	}
 }

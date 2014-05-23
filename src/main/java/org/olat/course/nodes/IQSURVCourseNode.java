@@ -293,8 +293,8 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
 		if(rie.anyExportedPropertiesAvailable()) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(SurveyFileResource.TYPE_NAME);
-			RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
-				false, locale, rie.importGetExportedFile(), null);
+			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
+				rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
 			IQEditController.setIQReference(re, getModuleConfiguration());
 		}
 	}

@@ -140,8 +140,8 @@ public class CopyRepositoryEntryController extends FormBasicController {
 		
 		OLATResource sourceResource = sourceEntry.getOlatResource();
 		OLATResource copyResource = resourceManager.createOLATResourceInstance(sourceResource.getResourceableTypeName());
-		copyEntry = repositoryService.create(getIdentity(), sourceEntry.getResourcename(), displayname, description,
-				copyResource, RepositoryEntry.ACC_OWNERS);
+		copyEntry = repositoryService.create(getIdentity(), null, sourceEntry.getResourcename(), displayname,
+				description, copyResource, RepositoryEntry.ACC_OWNERS);
 	
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(sourceEntry);
 		copyEntry = handler.copy(sourceEntry, copyEntry);

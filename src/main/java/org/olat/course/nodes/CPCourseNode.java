@@ -101,7 +101,7 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 		NodeRunConstructionResult ncr;
 		updateModuleConfigDefaults(false);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ICourse.class, userCourseEnv.getCourseEnvironment().getCourseResourceableId());
-		CPRunController cprunC = new CPRunController(getModuleConfiguration(), ureq, userCourseEnv, wControl, this, nodecmd, ores);
+		CPRunController cprunC = new CPRunController(getModuleConfiguration(), ureq, wControl, this, nodecmd, ores);
 		ncr = cprunC.createNodeRunConstructionResult(ureq);
 		return ncr;
 	}
@@ -294,8 +294,8 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
 		if(rie.anyExportedPropertiesAvailable()) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(ImsCPFileResource.TYPE_NAME);
-			RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
-					false, locale, rie.importGetExportedFile(), null);
+			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
+					rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
 			CPEditController.setCPReference(re, getModuleConfiguration());
 		}
 	}

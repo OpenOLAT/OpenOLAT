@@ -94,7 +94,7 @@ public class GlossaryHandler implements RepositoryHandler {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		GlossaryResource glossaryResource = GlossaryManager.getInstance().createGlossary();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(glossaryResource);
-		RepositoryEntry re = repositoryService.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();
 		return re;
 	}
@@ -115,15 +115,15 @@ public class GlossaryHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, boolean withReferences,
-			Locale locale, File file, String filename) {
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
+			boolean withReferences, Locale locale, File file, String filename) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		GlossaryResource glossaryResource = GlossaryManager.getInstance().createGlossary();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(glossaryResource);
 		//copy resources
 		File glossyPath = GlossaryManager.getInstance().getGlossaryRootFolder(glossaryResource).getBasefile();
 		FileResource.copyResource(file, filename, glossyPath);
-		RepositoryEntry re = repositoryService.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();
 		return re;
 	}

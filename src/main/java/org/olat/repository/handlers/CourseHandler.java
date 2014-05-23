@@ -140,7 +140,7 @@ public class CourseHandler implements RepositoryHandler {
 	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Locale locale) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
-		RepositoryEntry re = repositoryService.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();
 		
 		ICourse course = CourseFactory.createEmptyCourse(resource, "New Course", "New Course", "");
@@ -229,8 +229,8 @@ public class CourseHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description,
-			boolean withReferences, Locale locale, File file, String filename) {
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
+			String description, boolean withReferences, Locale locale, File file, String filename) {
 
 		OLATResource newCourseResource = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
 		ICourse course = CourseFactory.importCourseFromZip(newCourseResource, file);
@@ -243,7 +243,7 @@ public class CourseHandler implements RepositoryHandler {
 		OLATResource courseResource = cgm.getCourseResource();
 		
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, "", displayname, description, courseResource, RepositoryEntry.ACC_OWNERS);
+				.create(initialAuthor, null, "", displayname, description, courseResource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();
 		
 
@@ -312,8 +312,8 @@ public class CourseHandler implements RepositoryHandler {
 		// create repository entry
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(resource);
-		RepositoryEntry importedRepositoryEntry = repositoryService.create(owner, importExport.getResourceName(),
-				importExport.getDisplayName(), importExport.getDescription(), ores, 0);
+		RepositoryEntry importedRepositoryEntry = repositoryService.create(owner, null,
+				importExport.getResourceName(), importExport.getDisplayName(), importExport.getDescription(), ores, 0);
 
 		// set the new shared folder reference
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
@@ -345,7 +345,7 @@ public class CourseHandler implements RepositoryHandler {
 		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(resource);
 		
 		RepositoryEntry importedRepositoryEntry = repositoryService.create(owner,
-				importExport.getResourceName(), importExport.getDisplayName(), importExport.getDescription(), ores, 0);
+				null, importExport.getResourceName(), importExport.getDisplayName(), importExport.getDescription(), ores, 0);
 
 			// set the new glossary reference
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();

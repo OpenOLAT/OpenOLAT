@@ -113,8 +113,8 @@ public class WikiHandler implements RepositoryHandler {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		WikiResource wikiResource = WikiManager.getInstance().createWiki();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(wikiResource);
-		RepositoryEntry re = repositoryService.create(initialAuthor, WikiManager.WIKI_RESOURCE_FOLDER_NAME,
-				displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null,
+				WikiManager.WIKI_RESOURCE_FOLDER_NAME, displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();
 		return re;
 	}
@@ -130,14 +130,14 @@ public class WikiHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, boolean withReferences,
-			Locale locale, File file, String filename) {
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
+			boolean withReferences, Locale locale, File file, String filename) {
 		WikiResource wikiResource = new WikiResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(wikiResource);
 		File rootDirectory = WikiManager.getInstance().getWikiRootContainer(resource).getBasefile();
 		WikiManager.getInstance().importWiki(file, filename, rootDirectory);
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-			.create(initialAuthor, WikiManager.WIKI_RESOURCE_FOLDER_NAME, displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+			.create(initialAuthor, null, WikiManager.WIKI_RESOURCE_FOLDER_NAME, displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();
 		return re;
 	}

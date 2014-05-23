@@ -86,6 +86,7 @@ public interface RepositoryHandler {
 	/**
 	 * 
 	 * @param initialAuthor
+	 * @param initialAuthorAlt TODO
 	 * @param displayname
 	 * @param description
 	 * @param withReferences if true import references
@@ -94,8 +95,8 @@ public interface RepositoryHandler {
 	 * @param filename
 	 * @return
 	 */
-	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description,
-			boolean withReferences, Locale locale, File file, String filename);	
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
+			String description, boolean withReferences, Locale locale, File file, String filename);	
 	
 	/**
 	 * 

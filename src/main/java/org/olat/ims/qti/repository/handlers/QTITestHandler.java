@@ -90,8 +90,8 @@ public class QTITestHandler extends QTIHandler {
 	}
 
 	@Override
-	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, boolean withReferences,
-			Locale locale, File file, String filename) {
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
+			boolean withReferences, Locale locale, File file, String filename) {
 		return super.importResource(initialAuthor, displayname, description, new TestFileResource(), file, filename);
 	}
 

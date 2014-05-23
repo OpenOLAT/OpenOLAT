@@ -212,8 +212,8 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
 		if(rie.anyExportedPropertiesAvailable()) {
 			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(WikiResource.TYPE_NAME);
-			RepositoryEntry re = handler.importResource(owner, rie.getDisplayName(), rie.getDescription(),
-				false, locale, rie.importGetExportedFile(), null);
+			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
+				rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
 			WikiEditController.setWikiRepoReference(re, getModuleConfiguration());
 		}
 	}

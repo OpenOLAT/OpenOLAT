@@ -91,8 +91,8 @@ public class SharedFolderHandler implements RepositoryHandler {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		SharedFolderFileResource folderResource = SharedFolderManager.getInstance().createSharedFolder();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(folderResource);
-		RepositoryEntry re = repositoryService.create(initialAuthor, SharedFolderFileResource.RESOURCE_NAME,
-				displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null,
+				SharedFolderFileResource.RESOURCE_NAME, displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();
 		return re;
 	}
@@ -108,8 +108,8 @@ public class SharedFolderHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, boolean withReferences,
-			Locale locale, File file, String filename) {
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
+			boolean withReferences, Locale locale, File file, String filename) {
 		return null;
 	}
 	

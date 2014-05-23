@@ -206,7 +206,7 @@ public class JunitTestHelper {
 			
 			RepositoryHandler courseHandler = RepositoryHandlerFactory.getInstance()
 					.getRepositoryHandler(CourseModule.getCourseTypeName());
-			re = courseHandler.importResource(initialAuthor, displayname, description, true, Locale.ENGLISH, courseFile, null);
+			re = courseHandler.importResource(initialAuthor, null, displayname, description, true, Locale.ENGLISH, courseFile, null);
 			
 			ICourse course = CourseFactory.loadCourse(re.getOlatResource());
 			CourseFactory.publishCourse(course, RepositoryEntry.ACC_USERS, false,  initialAuthor, Locale.ENGLISH);

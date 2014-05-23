@@ -95,13 +95,13 @@ public class SCORMCPHandler extends FileHandler {
 	}
 	
 	@Override
-	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, boolean withReferences,
-			Locale locale, File file, String filename) {
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
+			boolean withReferences, Locale locale, File file, String filename) {
 		
 		ScormCPFileResource scormResource = new ScormCPFileResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(scormResource);
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		
 		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();
 		File zipRoot = new File(fResourceFileroot, FileResourceManager.ZIPDIR);

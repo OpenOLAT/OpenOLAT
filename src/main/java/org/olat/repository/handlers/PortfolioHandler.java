@@ -99,7 +99,7 @@ public class PortfolioHandler implements RepositoryHandler {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		
 		OLATResource resource = eSTMgr.createPortfolioMapTemplateResource();
-		RepositoryEntry re = repositoryService.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 
 		PortfolioStructureMap mapTemp = eSTMgr.createAndPersistPortfolioMapTemplateFromEntry(initialAuthor, re);
 		// add a page, as each map should have at least one per default!
@@ -124,15 +124,15 @@ public class PortfolioHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public RepositoryEntry importResource(Identity initialAuthor, String displayname, String description, boolean withReferences,
-			Locale locale, File file, String filename) {
+	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
+			boolean withReferences, Locale locale, File file, String filename) {
 		EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		EPStructureManager eSTMgr = CoreSpringFactory.getImpl(EPStructureManager.class);
 		
 		PortfolioStructure structure = EPXStreamHandler.getAsObject(file, false);
 		OLATResource resource = eSTMgr.createPortfolioMapTemplateResource();
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		
 		ePFMgr.importPortfolioMapTemplate(structure, resource);
 		return re;

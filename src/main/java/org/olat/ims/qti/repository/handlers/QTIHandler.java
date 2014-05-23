@@ -82,7 +82,7 @@ public abstract class QTIHandler extends FileHandler {
 			String displayname, String description, Locale locale) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(ores);
-		RepositoryEntry re = repositoryService.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();
 		
 		File fRepositoryQTI = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), "qti.zip");
@@ -100,7 +100,7 @@ public abstract class QTIHandler extends FileHandler {
 		FileResource.copyResource(file, filename, zipDir);
 		ZipUtil.zipAll(zipDir, new File(fResourceFileroot, "qti.zip"));
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();
 		//zip it
 		return re;
