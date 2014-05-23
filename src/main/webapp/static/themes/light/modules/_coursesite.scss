@@ -77,17 +77,13 @@
 					height: floor($o-coursesite-rowelem-height-md / 6);
 					padding-left: 1em;
 				
-					.o_rating_wrapper {
-						@extend .pull-left;
-						.o_rating {
-							.o_rating_title, o_rating_legend, .o_rating_explanation { 
-								display: none; 
-							}
+					.o_rating {
+						.o_rating_title, o_rating_legend, .o_rating_explanation { 
+							display: none; 
 						}
 					}
 					.o_comments {
 						@extend .o_undecorated;
-						margin-left: 1em;
 					}
 				}
 				

@@ -176,13 +176,11 @@ public class YearNavigationController extends BasicController {
 		// links in the velcity page.
 		mainVC = createVelocityContainer("yearnavigation");
 		next = LinkFactory.createCustomLink("navi.forward", "navi.forward", null, Link.NONTRANSLATED, mainVC, this);
-		next.setCustomEnabledLinkCSS("b_small_icon b_forward_icon b_float_right");
-		next.setCustomDisabledLinkCSS("b_small_icon b_forward_icon b_float_right"); // b_disabled added by link component
+		next.setIconLeftCSS("o_icon o_icon_next_page");
 		next.setTooltip(translate("navi.forward"));
 		//
 		previous = LinkFactory.createCustomLink("navi.backward", "navi.backward", null, Link.NONTRANSLATED, mainVC, this);
-		previous.setCustomEnabledLinkCSS("b_small_icon b_backward_icon b_float_left");
-		previous.setCustomDisabledLinkCSS("b_small_icon b_backward_icon b_float_left");
+		previous.setIconLeftCSS("o_icon o_icon_previous_page");
 		previous.setTooltip(translate("navi.backward"));
 		//
 		if (mainPanel == null) {

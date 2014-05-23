@@ -9,7 +9,6 @@
 	#if ($helper.getImageUrl() && $helper.getImageUrl() != "")
 		<img class="o_media" src="$helper.getImageUrl()" alt="Blog Image" />
 	#end
-
 	<div class="o_block">
 		#if ($!feed.getAuthor())
 			<div class="o_author">$r.translate("feed.author"): $r.escapeHtml($helper.getFeedAuthor())</div>

@@ -134,7 +134,7 @@
 	}
 }
 .o_block_with_datecomp {
-	@extend .o_block;
+	@extend .o_block_large; /* large to have space for year */
 	.o_head {
 		position: relative;
 		padding-left: $line-height-computed * 2 + $padding-base-horizontal;
@@ -155,6 +155,9 @@
 		@extend .o_block;
 		border-left: 5px solid $blockquote-border-color;
 		padding: 0 $line-height-computed;
+	}
+	.o_block_footer {
+		padding-left: $line-height-computed + 5px;
 	}
 }
 
@@ -187,6 +190,21 @@
 		}
 		form {
 			margin-top: $padding-base-vertical;	
+		}
+	}
+	.o_blog_posts {
+		.o_ratings_and_comments {
+			.o_rating_wrapper {
+				@extend .pull-left;
+				.o_rating_title, .o_rating_explanation, .o_legend {
+					display: none;
+				}		
+			}
+			a.o_comments {
+				span {
+					display: none;
+				}
+			}
 		}
 	}
 }

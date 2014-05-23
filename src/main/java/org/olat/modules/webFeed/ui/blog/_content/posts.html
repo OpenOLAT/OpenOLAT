@@ -59,24 +59,24 @@
 				 $!helper.getItemDescriptionForBrowser($post) 
 			</div>
 			
-			<div class="clearfix">
-				<ul class="o_readmore list-inline pull-right">
-					#if ( $post.getContent() && $post.getContent() != "" )
-						<li>$r.render("link.to.$post.getGuid()")</li>
+			<div class="o_block_footer">
+				<div class="clearfix">
+					<ul class="o_readmore list-inline pull-right">
+						#if ( $post.getContent() && $post.getContent() != "" )
+							<li>$r.render("link.to.$post.getGuid()")</li>
+						#end
+						#if ($feed.isExternal() && $post.getExternalLink())
+							<li><a href="$!post.getExternalLink()" target="_blank">
+								$r.translate("feed.item.original") 
+								<i class="o_icon o_icon_start"></i>
+							</a></li>
+						#end
+					</ul>
+	
+					#if ($r.available("commentsAndRating.${post.getGuid()}"))
+						$r.render("commentsAndRating.${post.getGuid()}")
 					#end
-					#if ($feed.isExternal() && $post.getExternalLink())
-						<li><a href="$!post.getExternalLink()" target="_blank">
-							$r.translate("feed.item.original") 
-							<i class="o_icon o_icon_start"></i>
-						</a></li>
-					#end
-				</ul>
-
-				#if ($r.available("commentsAndRating.${post.getGuid()}"))
-				<div class="pull-left">
-					$r.render("commentsAndRating.${post.getGuid()}")
 				</div>
-				#end
 			</div>
 				
 			#if (( $callback.mayEditItems() || ($callback.mayCreateItems() && $post.isDraft())) && $feed.isInternal())

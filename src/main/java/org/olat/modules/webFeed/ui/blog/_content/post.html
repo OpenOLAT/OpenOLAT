@@ -1,49 +1,66 @@
-<div class="o_blog_post">
-	<div class="back_link">
+<div class="o_post">
+	<div class="o_block_large_bottom">
 		$r.render("backLink")
 	</div>
-	<div class="o_post b_clearfix $!item.extraCSSClass()">
-		#if (( $helper.isAuthor($item) && !$item.isDraft()) && $feed.isInternal() && $r.available("artefactLink"))
-			<div class="b_float_right">
-				<span class="o_post_artefact_collector">$r.render("artefactLink")</span>
-			</div>
-		#end
-		#if($r.available("dateComp"))
-			$r.render("dateComp")
-		#end
-		<h5>$r.escapeHtml($item.getTitle())</h5>
-		<p class="o_description">
-			$!helper.getItemDescriptionForBrowser($item)
-		</p>
-		#if ($item.getContent() && $item.getContent() != "")
-		<p class="o_content">
-			$!helper.getItemContentForBrowser($item)
-		</p>
-		#end
-		#if (( $callback.mayEditItems() || ($callback.mayCreateItems() && $item.isDraft())) && $feed.isInternal())
-			#if ($r.available("editButton"))
-			<div class="b_float_right">
-				## special case: this item has been added by another user and thus we 
-				## don't yet have links for this item. But we can still display the content
-				$r.render("editButton")
-				#if ($callback.mayDeleteItems() || ($callback.mayCreateItems() && $item.isDraft()))
-					$r.render("deleteButton")
-				#end
+	<div class="o_block_with_datecomp clearfix $!item.extraCSSClass()">
+		<div class="o_head">
+			#if (( $helper.isAuthor($item) && !$item.isDraft()) && $feed.isInternal() && $r.available("artefactLink"))
+			<div class="pull-right">
+				$r.render("artefactLink")	
 			</div>
 			#end
-		#end	
-		
-		#set ( $info = $!helper.getInfo($item) )
-		#if ( $info )
-			<p class="o_item_info">
+			#if($r.available("dateComp"))
+				$r.render("dateComp")
+			#end
+			<h3 class="o_title">
+				$r.escapeHtml($item.getTitle())
+			</h3>
+			<div class="o_meta">				
+			#set ( $info = $helper.getInfo($item) )
+			#if ( $info )
 				$info
-				#if ($feed.isExternal() && $item.getExternalLink())
-					<br /><a href="$!item.getExternalLink()" target="_blank" class="b_link_extern"><span>$r.translate("feed.item.original")</span></a>
+				#if($helper.isModified($item)), 
+					<div class="text-warning">$r.escapeHtml($helper.getModifierInfo($item))</div>
 				#end
-			</p>
+			#end
+			</div>
+		</div>
+	
+		<div class="o_content">
+			$!helper.getItemDescriptionForBrowser($item)
+			#if ($item.getContent() && $item.getContent() != "")
+				<div class="o_block_large_top">
+				$!helper.getItemContentForBrowser($item)
+				</div>
+			#end
+		</div>
+	
+		#if (( $callback.mayEditItems() || ($callback.mayCreateItems() && $item.isDraft())) && $feed.isInternal())
+		#if ($r.available("editButton"))
+		<div class="o_button_group">
+			## special case: this item has been added by another user and thus we 
+			## don't yet have links for this item. But we can still display the content
+			$r.render("editButton")
+			#if ($callback.mayDeleteItems() || ($callback.mayCreateItems() && $item.isDraft()))
+				$r.render("deleteButton")
+			#end
+		</div>
 		#end
+		#end			
+	</div>
+	
+	<div class="o_block_footer">
+		<div class="clearfix">
+			#if ($feed.isExternal() && $item.getExternalLink())
+				<a href="$!item.getExternalLink()" target="_blank" class="pull-right">
+					$r.translate("feed.item.original") 
+					<i class="o_icon o_icon_start"></i>
+				</a>
+			#end
+
+			#if($r.available("commentsAndRating"))
+				$r.render("commentsAndRating")
+			#end
+		</div>
 	</div>
 </div>
-#if($r.available("commentsAndRating"))
-	$r.render("commentsAndRating")
-#end

@@ -1,41 +1,93 @@
-<div class="back_link o_podcast">
-	$r.render("backLink")
-</div>
-<div class="o_podcast_episode b_clearfix">
-	#if ($callback.mayEditItems() && $feed.isInternal())
-		<div class="b_float_right b_clearfix">
-			## special case: this item has been added by another user and thus we 
-			## don't yet have links for this item. But we can still display the content
-			#if ($r.available("feed.edit.item.$episode.getGuid()"))
-				$r.render("feed.edit.item.$episode.getGuid()")
-				#if ($callback.mayDeleteItems())
-					$r.render("delete.$episode.getGuid()")
+<div class="o_podcast">
+	<div class="o_block_large_bottom">
+		$r.render("backLink")
+	</div>
+	<div class="o_podcast o_block_with_datecomp clearfix $!item.extraCSSClass()">
+		<div class="o_head">
+			#if (( $helper.isAuthor($item) && !$item.isDraft()) && $feed.isInternal() && $r.available("artefactLink"))
+			<div class="pull-right">
+				$r.render("artefactLink")	
+			</div>
+			#end
+			#if($r.available("dateComp"))
+				$r.render("dateComp")
+			#end
+			<h3 class="o_title">
+				$r.escapeHtml($item.getTitle())
+				<i class="o_icon o_icon_$helper.getMediaType($item.getEnclosure())"></i>
+			</h3>
+			<div class="o_meta">				
+			#set ( $info = $helper.getInfo($item) )
+			#if ( $info )
+				$info
+				#if($helper.isModified($item)), 
+					<div class="text-warning">$r.escapeHtml($helper.getModifierInfo($item))</div>
 				#end
 			#end
+			</div>
 		</div>
-	#end
-	#if ("$!item.getExternalLink()" != "")
-		<a href="$item.getExternalLink()" target="_blank">
-	#end
-	<h5>$r.escapeHtml($!item.getTitle())</h5>
-	#if ("$!item.getExternalLink()" != "")
-		</a>
-	#end
-	<p class="o_podcast_date">$!helper.getLastModified($item)</p>
-	<p class="o_podcast_description">$!helper.getItemDescriptionForBrowser($item)</p>
 	
-	#if ($!item.getEnclosure())								
-		<div id="o_podcast_episode" class="o_podcast_$!helper.getMediaType($item.getEnclosure())"><a href="http://www.macromedia.com/go/getflashplayer">Get the Flash Player</a> to see this media file.</div>
-		<a href="$!helper.getMediaUrl($item)" target="_blank" class="b_with_small_icon_left b_filetype_mov">$r.translate("podcast.episode.download")</a>
-		
-		<!-- siehe auch http://www.jcplayer.com (noncommercial creative commons licence, doch was genau heisst 'noncommercial'? -->
-		<script type="text/javascript">
-		/* <![CDATA[ */
-			BPlayer.insertPlayer("$!helper.getMediaUrl($item)","o_podcast_episode",400,24,"$!helper.getMediaType($item.getEnclosure())");
-		/* ]]> */
-		</script>
-	#end
+		<div class="o_content">
+			$!helper.getItemDescriptionForBrowser($item)
+
+			#if ($item.getContent() && $item.getContent() != "")
+			<div class="o_block_large_top">
+				$!helper.getItemContentForBrowser($item)
+			</div>
+			#end
+
+			#if ($!item.getEnclosure())								
+			<div class="o_block_large_top">
+				<div id="o_podcast_episode_$velocityCount" name="o_podcast_episode_$velocityCount" class="o_podcast_$!helper.getMediaType($item.getEnclosure())" >
+					<a href="http://www.macromedia.com/go/getflashplayer">Get the Flash Player</a> to see this media file.
+				</div>
+				
+				<div class="o_block_top">
+					<a href="$!helper.getMediaUrl($item)" target="_blank">
+						<i class="o_icon o_icon-fw o_filetype_$!helper.getMediaType($item.getEnclosure())"></i> 
+						$r.translate("podcast.episode.download")
+					</a>
+				</div>
+
+				<script type="text/javascript">
+				/* <![CDATA[ */
+				#if ($!helper.getMediaType($item.getEnclosure()) == "video")
+					BPlayer.insertPlayer("$!helper.getMediaUrl($item)","o_podcast_episode_$velocityCount",$!helper.getWidth($item),$!helper.getHeight($item),"video");
+				#else
+					BPlayer.insertPlayer("$!helper.getMediaUrl($item)","o_podcast_episode_$velocityCount",400,24,"sound");
+				#end
+				/* ]]> */
+				</script>
+			</div>
+			#end
+		</div>
+	
+		#if (( $callback.mayEditItems() || ($callback.mayCreateItems() && $item.isDraft())) && $feed.isInternal())
+		#if ($r.available("editButton"))
+		<div class="o_button_group">
+			## special case: this item has been added by another user and thus we 
+			## don't yet have links for this item. But we can still display the content
+			$r.render("editButton")
+			#if ($callback.mayDeleteItems() || ($callback.mayCreateItems() && $item.isDraft()))
+				$r.render("deleteButton")
+			#end
+		</div>
+		#end
+		#end			
+	</div>
+	
+	<div class="o_block_footer">
+		<div class="clearfix">
+			#if ($feed.isExternal() && $item.getExternalLink())
+				<a href="$!item.getExternalLink()" target="_blank" class="pull-right">
+					$r.translate("feed.item.original") 
+					<i class="o_icon o_icon_start"></i>
+				</a>
+			#end
+
+			#if($r.available("commentsAndRating"))
+				$r.render("commentsAndRating")
+			#end
+		</div>
+	</div>
 </div>
-#if($r.available("commentsAndRating"))
-	$r.render("commentsAndRating")
-#end

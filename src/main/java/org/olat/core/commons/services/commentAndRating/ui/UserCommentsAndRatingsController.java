@@ -110,7 +110,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 			userCommentsAndRatingsVC.contextPut("enableComments", Boolean.valueOf(enableComments));
 			// Link with comments count to expand view
 			commentsCountLink = LinkFactory.createLink("comments.count", this.userCommentsAndRatingsVC, this);
-			commentsCountLink.setTooltip("comments.count.tooltip");
+			commentsCountLink.setTitle("comments.count.tooltip");
 			// Init view with values from DB
 			updateCommentCountView();
 		}

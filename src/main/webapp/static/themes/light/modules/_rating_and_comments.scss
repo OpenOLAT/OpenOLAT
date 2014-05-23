@@ -1,0 +1,64 @@
+.o_rating {
+	.o_rating_title {
+		font-size: $font-size-small;	
+	}
+	.o_rating_items {
+		white-space: nowrap;	
+		.o_icon {
+			color:$brand-warning;
+			&:hover {
+				color: $brand-primary;
+			}		
+		}
+		.o_legend {
+			margin-left: 1em;
+			font-size: $font-size-small;		
+			line-height: 1em;
+		}
+		&.o_enabled {
+			.o_icon:hover {
+				@extend .o_icon_rating_on;					
+			}		
+		}
+	}	
+	.o_rating_explanation {
+		font-size: $font-size-small;
+		@extend .text-muted;
+	}
+	
+	@media (max-width: $screen-sm-max) {
+		.o_rating_title, .o_rating_explanation {
+			display: none;
+		}
+	}
+}
+
+.o_comments { 
+	.o_comment_wrapper {
+		.o_avatar { 
+			@extend .pull-left;
+			margin: 0 1em 0 0;
+		}
+		.o_reply, .o_delete {
+			@extend .pull-right;		
+		}
+		h5 {
+			@extend .small;
+		}
+		.o_comment { 
+			@extend .small;
+		}
+	}
+} 
+
+.o_ratings_and_comments {
+	.o_rating_wrapper {
+		vertical-align: middle;
+		display: inline-block;
+	}
+	a.o_comments {
+		margin-left: $padding-large-vertical;
+		position: relative;
+		top: 0.1em; /* fix line correlation to stars */
+	}
+}

@@ -1,10 +1,25 @@
 #if ( $year )
-<div class="b_year_navigation">
-	$r.render("navi.backward") $r.render("navi.forward") $r.render("yearLink")
-	<ul class="b_months">
-		#foreach ( $month in $year.getMonths() )
-			<li>$r.render("month_$month.getName()") ($month.itemsCount())</li>
-		#end
+<div class="o_year_navigation">
+	<ul class="pager o_years">
+		#if ($r.available("navi.backward"))
+	  		<li class="previous">$r.render("navi.backward")</li>
+	  	#else
+	  		<li class="next disabled"><i class="o_icon o_icon_previous_page"></i></li>  	
+	  	#end
+	 	<li >$r.render("yearLink")</li>
+	 	#if ($r.available("navi.forward"))
+	  		<li class="next">$r.render("navi.forward")</li>
+	  	#else
+	  		<li class="previous disabled"><i class="o_icon o_icon_next_page"></i></li>  	
+	  	#end
 	</ul>
+	<ul class="list-group o_month">
+		#foreach ( $month in $year.getMonths() )
+			<li class="list-group-item o_month">
+				$r.render("month_$month.getName()")
+			    <span class="badge">$month.itemsCount()</span>
+		  	</li>
+		#end
+</ul>
 </div>
 #end
