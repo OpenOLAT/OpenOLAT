@@ -11,7 +11,7 @@
 			position: absolute;
 			
 			#o_main_left_content {
-				padding: $grid-gutter-width;
+				padding: $grid-gutter-width $grid-gutter-width $grid-gutter-width floor($grid-gutter-width / 2);
 			}
 		}
 		#o_main_right {
@@ -25,6 +25,10 @@
 		}
 		#o_main_center {
 			position: relative;
+			
+			h2:first-child {
+				margin-top: 0;
+			}
 
 			@media screen and (max-width: 767px) {
 				margin-left: 0 !important;
