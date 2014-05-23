@@ -136,12 +136,12 @@ create or replace view o_gp_business_v  as (
 drop view o_bs_gp_membership_v;
 create or replace view o_bs_gp_membership_v as (
    select
+      gp.group_id as group_id,
       membership.id as membership_id,
       membership.fk_identity_id as fk_identity_id,
       membership.lastmodified as lastmodified,
       membership.creationdate as creationdate,
-      membership.g_role as g_role,
-      gp.group_id as group_id
+      membership.g_role as g_role
    from o_bs_group_member as membership
    inner join o_gp_business as gp on (gp.fk_group_id=membership.fk_group_id)
 );
@@ -171,7 +171,6 @@ create or replace view o_gp_business_to_repository_v as (
 );
 
 -- contacts
-drop view o_gp_contactkey_v;
 create view o_gp_contactkey_v as (
    select
       bg_member.id as membership_id,
@@ -188,7 +187,6 @@ create view o_gp_contactkey_v as (
       (bgroup.participantsintern=true and bg_member.g_role='participant')
 );
 
-drop view o_gp_contactext_v;
 create view o_gp_contactext_v as (
    select
       bg_member.id as membership_id,
@@ -228,7 +226,6 @@ create or replace view o_re_membership_v as (
 );
 
 -- coaching
-drop view o_as_eff_statement_students_v;
 create view o_as_eff_statement_students_v as (
    select
       sg_re.repositoryentry_id as re_id,
@@ -248,7 +245,6 @@ create view o_as_eff_statement_students_v as (
    left join o_as_user_course_infos as pg_initial_launch on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)
 );
 
-drop view o_as_eff_statement_courses_v;
 create view o_as_eff_statement_courses_v as (
    select
       sg_re.repositoryentry_id as re_id,
@@ -294,7 +290,6 @@ create view o_as_eff_statement_groups_v as (
 );
 
 -- new views
-drop view o_repositoryentry_my_v;
 create view o_repositoryentry_my_v as (
    select
       re.repositoryentry_id as re_id,
@@ -339,7 +334,6 @@ create view o_repositoryentry_my_v as (
    left join o_as_user_course_infos as courseinfos on (courseinfos.fk_identity=ident.id and re.fk_olatresource=courseinfos.fk_resource_id)
 );
 
-drop view o_repositoryentry_author_v;
 create view o_repositoryentry_author_v as (
    select
       re.repositoryentry_id as re_id,
@@ -375,7 +369,6 @@ create view o_repositoryentry_author_v as (
    inner join o_repositoryentry_stats as stats on (re.fk_stats=stats.id)
    left join o_mark as mark on (mark.creator_id=ident.id and re.repositoryentry_id=mark.resid and mark.resname='RepositoryEntry')
 );
-
 
 -- drop views
 drop view o_gp_visible_participant_v;
