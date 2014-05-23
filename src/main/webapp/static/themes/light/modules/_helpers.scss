@@ -49,6 +49,17 @@ div.o_chelp_wrapper {
 	overflow-x: auto;  
 	overflow-y: hidden;
 }
+.o_copy_code {
+	overflow-x: auto;  
+	overflow-y: auto;
+  	font-family: $font-family-monospace;
+  	padding: 2px 4px;
+  	font-size: 90%;
+  	color: $code-color;
+ 	background-color: $code-bg;
+  	white-space: nowrap;
+  	border-radius: $border-radius-base;
+}
 
 /* multiple buttons, center aligned */
 .o_button_group {

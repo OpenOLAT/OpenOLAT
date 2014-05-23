@@ -14,10 +14,9 @@
 		</div>
 	</div>
 
-	#set ($hasContent = ($objectives && $requirements && $credits))
 	<div class="row">
-		<div class="col-xs-12 #if($hasContent) col-sm-5 col-md-4  pull-right #end"><div class="row">		
-			<div class="col-xs-6 #if($hasContent) col-sm-12 #end o_subcolumn">
+		<div class="col-xs-12 col-sm-5 col-md-4 pull-right"><div class="row">		
+			<div class="col-xs-6 col-sm-12 o_subcolumn">
 				<div class="o_overview">
 					<h3>$r.translate("details.overview")</h3>
 					#if($v.lifecycle || $v.lifecycle.softKey || $row.lifecycle.start || $row.lifecycle.end)
@@ -82,7 +81,7 @@
 				$r.render("start")			
 			</div>
 			
-			<div class="col-xs-6 #if($hasContent) col-sm-12 #end o_subcolumn">
+			<div class="col-xs-6 col-sm-12 o_subcolumn">
 				<div class="o_personal">
 					<h3>$r.translate("details.personal")</h3>
 					<table class="table"><tbody>
@@ -140,8 +139,8 @@
 			</div>
 			
 		</div></div>		
-		
-		#if ($hasContent)
+
+		## START LEFT COLUMN		
 		<div class="col-xs-12 col-sm-7 col-md-8">
 			#if($objectives)
 				<div class="o_objectives">
@@ -161,10 +160,137 @@
 					$credits
 				</div>
 			#end
+			
+			<div class="panel panel-default">
+				<div class="panel-heading" data-toggle="collapse" data-target="#collapseInfo">
+			    	<h3 class="panel-title">
+						#if ($isGuestAllowed)
+							$r.contextHelpWithWrapper("org.olat.repository","rep-meta-guest.html","help.hover.rep.detail")
+						#else
+							$r.contextHelpWithWrapper("org.olat.repository","rep-meta-learner.html","help.hover.rep.detail")
+						#end
+						$r.translate("details.entryinfoheader")
+			    	</h3>
+				</div>
+				<div id="collapseInfo" class="panel-collapse collapse in">
+					<table class="table table-condensed table-striped"><tbody>
+						<tr><th>$r.translate("cif.id")</th><td>$v.getKey()</td></tr>
+						#if ($roles.isOLATAdmin())		
+						<tr><th>$r.translate("cif.ores_id")</th><td>$v.getOlatResource().getResourceableId()</td></tr>
+						<tr><th>$r.translate("cif.softkey")</th><td>$v.getSoftkey()</td></tr>
+						#end
+						#if($v.getExternalId())
+						<tr><th>$r.translate("cif.externalid")</th><td>$v.getExternalId()</td></tr>
+						#end
+						#if($v.getExternalRef())
+						<tr><th>$r.translate("cif.externalref")</th><td>$v.getExternalRef()</td></tr>
+						#end
+						<tr><th>$r.translate("orderby.creationDate")</th><td>$r.formatDateAndTime($v.getCreationDate())</td></tr>
+						<tr><th>$r.translate("orderby.lastModified")</th><td>$r.formatDateAndTime($v.getLastModified())</td></tr>
+						
+						#if ($isAuthor || $roles.isOLATAdmin() || $roles.isAuthor() || $roles.isInstitutionalResourceManager())		
+						<tr><th>$r.translate("cif.access")</th><td>$r.translate("$accessI18n")</td></tr>
+						<tr><th>$r.translate("cif.initialAuthor")</th><td>$v.getInitialAuthor()</td></tr>
+						<tr><th>$r.translate("cif.owners")</th><td>TODO</td></tr>
+					</tbody></table>
+					<div class="panel-body">
+						<h5>$r.translate("details.extlinkheader")</h5>
+						<div class="o_copy_code">$extlink</div>
+						#if ($isGuestAllowed)
+						<div class="o_copy_code">${extlink}?guest=true&amp;lang=${userlang}</div>
+						#end
+					</div>
+				</div>
+			</div>
+
+			<div class="panel panel-default">
+				<div class="panel-heading" data-toggle="collapse" data-target="#collapseUsage">
+			    	<h3 class="panel-title">
+						$r.contextHelpWithWrapper("org.olat.repository",'rep-meta-info-reference.html','help.hover.rep.detail')
+						$r.translate("details.referenceinfoheader")
+			    	</h3>
+				</div>
+				<div id="collapseUsage" class="panel-collapse collapse">
+					<table class="table table-condensed table-striped"><tbody>
+						#if ($referenceDetails)
+						<tr>
+							<th>$r.translate("details.referenceinfo")</th>
+							<td>$referenceDetails</td>
+						</tr>
+						#end
+							#if ($isAuthor || $roles.isOLATAdmin() || $roles.isInstitutionalResourceManager())
+							<tr><th>$r.translate("cif.lastusage")</th><td>$r.formatDateAndTime($v.getStatistics().getLastUsage())</td></tr>
+							<tr><th>$r.translate("cif.usedbycnt")</th><td>$numUsers</td></tr>
+							<tr><th>$r.translate("cif.launched")</th><td>#if ($v.getStatistics().getLaunchCounter()) $v.getStatistics().getLaunchCounter() #else 0 #end</td></tr>
+							<tr><th>$r.translate("cif.downloaded")</th><td>#if ($v.getStatistics().getDowloadCounter()) $v.getStatistics().getDowloadCounter() #else 0 #end</td></tr>
+							#end
+						#end
+					</tbody></table>
+				</div>
+			</div>
+
+			#if ($v.getManagedFlags().size() > 0)
+			<div class="panel panel-default">
+				<div class="panel-heading" data-toggle="collapse" data-target="#collapseManaged">
+			    	<h3 class="panel-title">
+						$r.contextHelpWithWrapper("org.olat.admin.restapi","managed.html","help.hover.managed")
+						$r.translate("cif.managedflags")
+			    	</h3>
+				</div>
+				<div id="collapseManaged" class="panel-collapse collapse">
+					<div class="panel-body">
+						$r.translate("managed.resource.intro")
+					</div>
+					<div class="panel-body">
+						<ul>
+						#foreach ($flag in $v.getManagedFlags())
+							<li>$r.translate("managed.flags.course.${flag}")</li>
+						#end
+						</ul>
+					</div>
+				</div>
+			</div>
+			#end
+
 		</div>
-		#end
+		## END LEFT COLUMN		
 		
 	</div>
-		
 </div>
 
+
+#*
+
+
+#if ($isOwner || $isAuthor)
+	<h3>
+	$r.translate("addinfo.owner")
+	</h3>
+	#if($iscourse && $CourseInfoForm)
+			$r.render("CourseInfoForm")
+	#else
+		<fieldset>
+			<legend>$r.translate("details.typeinfoheader")</legend>
+			$r.contextHelpWithWrapper("org.olat.repository",'rep-meta-info.html','help.hover.rep.detail')
+			#if ($hasHandlerDetails)
+				$r.render("handlerDetails")
+			#else
+			<i>$r.translate("details.notypeinfo")</i>
+			#end
+		</fieldset>
+	#end
+
+	#if($isOwner)
+	
+		#o_togglebox_start("o_repo_details" $r.translate("addinfo.owner"))
+			<fieldset>
+				<legend>$r.translate('details.owner')</legend>
+				
+				$r.render('ownertable')
+			</fieldset>
+			$r.render('vc_infopanel')
+		#o_togglebox_end()
+	#end
+#end
+
+*#

@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
@@ -47,10 +48,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -61,6 +64,7 @@ import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.UserCourseInformations;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.course.run.RunMainController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -78,6 +82,7 @@ import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OfferAccess;
 import org.olat.resource.accesscontrol.model.Price;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
+import org.olat.resource.references.ReferenceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -115,6 +120,10 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	private EfficiencyStatementManager effManager;
 	@Autowired
 	private UserCourseInformationsManager userCourseInfosManager;
+	@Autowired
+	private CoordinatorManager coordinatorManager;
+	@Autowired
+	private ReferenceManager referenceManager;
 	
 	private String baseUrl;
 	
@@ -216,8 +225,17 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			
 			//load memberships
 			boolean isMember = repositoryService.isMember(getIdentity(), entry);
+			if (isMember) {
+				Boolean isAuthor = Boolean.valueOf(repositoryService.hasRole(getIdentity(), entry, GroupRoles.owner.name()));
+				layoutCont.contextPut("isEntryAuthor", isAuthor);
+			}
+			// push roles to velocity as well
+			layoutCont.contextPut("roles", ureq.getUserSession().getRoles());
+			
+			
 			
 			//access control
+			String accessI18n;
 			List<PriceMethod> types = new ArrayList<PriceMethod>();
 			if (entry.isMembersOnly()) {
 				// members only always show lock icon
@@ -227,6 +245,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
 					startLink.setElementCssClass("o_start");
 				}
+				accessI18n = "cif.access.membersonly";
 			} else {
 				AccessResult acResult = acService.isAccessible(entry, getIdentity(), false);
 				if(acResult.isAccessible()) {
@@ -255,7 +274,19 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				}
 				startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
 				startLink.setPrimary(true);
+				
+				switch (entry.getAccess()) {
+					case 1: accessI18n = "cif.access.owners";					
+						break;
+					case 2: accessI18n = "cif.access.owners_authors";					
+						break;
+					case 3: accessI18n = "cif.access.owners_authors";					
+						break;
+					case 4: accessI18n = "cif.access.users_guests";					
+						break;
+				}
 			}
+			layoutCont.contextPut("accessI18n", "cif.access.membersonly");
 			
 			if(!types.isEmpty()) {
 				layoutCont.contextPut("ac", types);
@@ -312,6 +343,27 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				}
 			}
 			layoutCont.contextPut("recentLaunch", recentLaunch);
+			
+			// show how many users are currently using this resource
+            String numUsers;
+            OLATResourceable ores = entry.getOlatResource();
+            int cnt = 0;
+            OLATResourceable courseRunOres = OresHelper.createOLATResourceableInstance(RunMainController.ORES_TYPE_COURSE_RUN, entry.getOlatResource().getResourceableId());
+            if (ores != null) cnt = coordinatorManager.getCoordinator().getEventBus().getListeningIdentityCntFor(courseRunOres);
+            numUsers = String.valueOf(cnt);
+            layoutCont.contextPut("numUsers", numUsers);
+            
+            // Where is it in use
+            String referenceDetails = referenceManager.getReferencesToSummary(entry.getOlatResource(), getLocale());
+            if (referenceDetails != null) {
+            	layoutCont.contextPut("referenceDetails", referenceDetails);
+            }
+            
+            // Link to bookmark entry
+            String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
+            layoutCont.contextPut("extlink", url);
+            layoutCont.contextPut("isGuestAllowed", (entry.getAccess() >= RepositoryEntry.ACC_USERS_GUESTS ? Boolean.TRUE : Boolean.FALSE));
+
 		}
 	}
 	
