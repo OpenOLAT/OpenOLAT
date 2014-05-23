@@ -69,7 +69,7 @@ class PublishStep00a extends BasicStep implements Step {
 		return new PublishStep00aForm(ureq, windowControl, form, stepsRunContext);
 	}
 
-	class PublishStep00aForm extends StepFormBasicController{
+	private static class PublishStep00aForm extends StepFormBasicController{
 
 		public PublishStep00aForm(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -89,9 +89,9 @@ class PublishStep00a extends BasicStep implements Step {
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			//
-			if(containsRunContextKey("STEP00.warningMessage")){
+			if(containsRunContextKey("STEP00.warningMessage")) {
 				uifactory.addStaticTextElement("warnings", null,(String)getFromRunContext("STEP00.warningMessage"), formLayout);
-			}else{
+			} else {
 				uifactory.addStaticTextElement("warnings", null, translate("publish.nowarnings"), formLayout);
 			}
 		}

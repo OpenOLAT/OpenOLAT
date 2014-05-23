@@ -33,8 +33,8 @@ import org.olat.core.id.OLATResourceable;
  */
 public interface Mark {
 	
-	public static final String MARK_CSS_ICON = "o_icon_bookmark";
-	public static final String MARK_ADD_CSS_ICON = "o_icon_bookmark_add";
+	public static final String MARK_CSS_ICON = "o_icon o_icon_bookmark";
+	public static final String MARK_ADD_CSS_ICON = "o_icon o_icon_bookmark_add";
 	
 	public static final String MARK_CSS_LARGE = "o_icon o_icon_bookmark o_icon-lg";
 	public static final String MARK_ADD_CSS_LARGE = "o_icon o_icon_bookmark_add o_icon-lg";

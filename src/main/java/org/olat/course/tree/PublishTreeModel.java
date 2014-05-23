@@ -28,7 +28,6 @@ package org.olat.course.tree;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.INodeFilter;
 import org.olat.course.Structure;
@@ -49,7 +48,7 @@ public class PublishTreeModel extends GenericTreeModel implements INodeFilter {
 	 * 
 	 * @param cetm
 	 */
-	public PublishTreeModel(CourseEditorTreeModel cetm, Structure runStructure, Translator translator) {
+	public PublishTreeModel(CourseEditorTreeModel cetm, Structure runStructure) {
 		// build InsertModel (copy of this Structure with all possible
 		// insert-positions)
 		GenericTreeNode gtn = new GenericTreeNode();
@@ -67,7 +66,7 @@ public class PublishTreeModel extends GenericTreeModel implements INodeFilter {
 		gtn.setIdent(cetn.getIdent());
 		gtn.setTitle(cetn.getTitle());
 		gtn.setAltText(cetn.getAltText());
-		gtn.setIconCssClass(cetn.getIconCssClass());
+		gtn.setIconCssClass("o_icon " + cetn.getIconCssClass());
 
 		if (parentIsNew || parentIsDeleted || parentIsMoved) gtn.setAccessible(false);
 		else {

@@ -226,8 +226,8 @@ class PublishStep00 extends BasicStep {
 				warnings += "</ul>";
 				errors += "</ul>";
 				//
-				errorTxt += "<P/>" + errors;
-				warningTxt += "<P/>" + warnings;
+				errorTxt += "<p/>" + errors;
+				warningTxt += "<p/>" + warnings;
 
 				if(errCnt > 0){
 					//if an error found

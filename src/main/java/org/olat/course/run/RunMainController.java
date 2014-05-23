@@ -926,15 +926,18 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	private void toogleBookmark() {
+		String css;
 		boolean marked = markManager.isMarked(courseRepositoryEntry, getIdentity(), null);
 		if(marked) {
 			markManager.removeMark(courseRepositoryEntry, getIdentity(), null);
+			css = Mark.MARK_ADD_CSS_ICON;
 		} else {
 			String businessPath = "[RepositoryEntry:" + courseRepositoryEntry.getKey() + "]";
 			markManager.setMark(courseRepositoryEntry, getIdentity(), null, businessPath);
+			css = Mark.MARK_CSS_ICON;
 		}
-		String css = marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON;
 		bookmarkLink.setIconLeftCSS(css);
+		bookmarkLink.setDirty(true);
 	}
 
 	/**

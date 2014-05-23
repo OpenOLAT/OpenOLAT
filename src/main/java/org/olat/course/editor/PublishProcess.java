@@ -118,7 +118,7 @@ public class PublishProcess {
 		//o_clusterOK yb guido: it save to hold a reference to the course inside the editor
 		this.course = course;
 		this.editorTreeModel = cetm;
-		publishTreeModel = new PublishTreeModel(editorTreeModel, course.getRunStructure(), null);
+		publishTreeModel = new PublishTreeModel(editorTreeModel, course.getRunStructure());
 		repositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(course, false);
 		translator = Util.createPackageTranslator(PublishProcess.class, locale);
 	}
