@@ -94,8 +94,70 @@
 			display: none;
 		}	
 	}
-	
 }
+.panel-body .o_noti {
+	/* override default margin */
+	margin: 0;
+}
+
+/* Date component, used in info course element, blog etc */
+.o_datecomp {
+	position: relative; 
+	width: $line-height-computed * 2; 
+	height: $line-height-computed + floor($line-height-computed * 1.5) + 2px; 
+	border: 1px solid $gray; 
+	margin-right: $padding-base-horizontal; 
+	text-align: center; 
+	vertical-align: middle; 
+	
+	div.o_year {
+		position: absolute; 
+		left: 0;
+		width: 100%;
+		top: -$line-height-computed; 
+		height: $line-height-computed; 
+		line-height: $line-height-computed; 
+		font-size: ceil($font-size-base * 0.7);
+	}
+	div.o_month {
+		height: $line-height-computed; 
+		line-height: $line-height-computed; 
+		font-size: $font-size-small; 
+		@extend .bg-primary;
+	}
+	div.o_day {
+		height: floor($line-height-computed * 1.5);
+		line-height: floor($line-height-computed * 1.5);
+		font-size: $font-size-large;
+		border-top: 1px solid $gray;  
+		background-color: $body-bg;
+	}
+}
+.o_block_with_datecomp {
+	@extend .o_block;
+	.o_head {
+		position: relative;
+		padding-left: $line-height-computed * 2 + $padding-base-horizontal;
+	}
+	.o_datecomp {
+		position: absolute;
+		top: 0.2em;
+		left: 0;		
+	}
+	.o_title {
+		margin-top: 0;
+	}
+	.o_meta {
+		@extend .text-muted;
+		@extend .small;
+	}
+	.o_content {
+		@extend .o_block;
+		border-left: 5px solid $blockquote-border-color;
+		padding: 0 $line-height-computed;
+	}
+}
+
 
 /* Calendar */
 .o_cal_toptoolbar {

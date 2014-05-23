@@ -1,6 +1,6 @@
 <div class="o_blog_info">
 	#if ($callback.mayEditMetadata())
-		<div class="o_feed_edit">$r.render("feed.edit")</div>
+		<div class="o_edit pull-right">$r.render("feed.edit")</div>
 	#end		
 	<h2>	
 		<i class="o_icon o_icon-fw o_icon o_FileResource-BLOG_icon"></i> 
@@ -15,7 +15,9 @@
 			<div class="o_author">$r.translate("feed.author"): $r.escapeHtml($helper.getFeedAuthor())</div>
 		#end
 		<div class="o_date">$r.translate("feed.last.change") $!helper.getLastModified()	</div>
+		#if ($helper.getFeedDescriptionForBrowser() != "")
 		<div class="o_desc o_info">$!helper.getFeedDescriptionForBrowser()</div>
+		#end
 	
 		#if ( !$feed.isUndefined() )
 			<div class="o_subscription">

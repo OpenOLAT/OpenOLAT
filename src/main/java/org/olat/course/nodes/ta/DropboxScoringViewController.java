@@ -51,6 +51,7 @@ import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.FileMediaResource;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
@@ -193,6 +194,7 @@ public class DropboxScoringViewController extends BasicController {
 		assignedTask = TaskController.getAssignedTask(assessedIdentity, userCourseEnv.getCourseEnvironment(), node);
 		if (assignedTask != null) {
 			myContent.contextPut("assignedtask", assignedTask);
+			myContent.contextPut("taskIcon", CSSHelper.createFiletypeIconCssClassFor(assignedTask));
 			if (!(assignedTask.toLowerCase().endsWith(".html") || assignedTask.toLowerCase().endsWith(".htm") || assignedTask.toLowerCase().endsWith(".txt"))){
 				taskLaunchButton.setTarget("_blank");
 			}

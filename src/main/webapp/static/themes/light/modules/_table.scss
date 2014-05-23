@@ -68,5 +68,16 @@
 	}
 }
 
+/* table embedded in panels */
+.panel {
+	.o_table_layout {
+		border-top: 1px solid $panel-default-border;
+		padding-top: $padding-base-vertical;
+	}
+	.o_table_count {
+		padding: 0 $panel-body-padding;
+	}
+
+}
 
 	

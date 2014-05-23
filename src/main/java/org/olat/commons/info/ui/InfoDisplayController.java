@@ -208,14 +208,14 @@ public class InfoDisplayController extends FormBasicController {
 			
 			if(secCallback.canEdit()) {
 				String editName = "info.edit." + info.getKey();
-				FormLink link = uifactory.addFormLink(editName, "edit", "edit", flc, Link.BUTTON);
+				FormLink link = uifactory.addFormLink(editName, "edit", "edit", flc, Link.BUTTON_SMALL);
 				link.setUserObject(info);
 				editLinks.add(link);
 				flc.add(link);
 			}
 			if(secCallback.canDelete()) {
 				String delName = "info.delete." + info.getKey();
-				FormLink link = uifactory.addFormLink(delName, "delete", "delete", flc, Link.BUTTON);
+				FormLink link = uifactory.addFormLink(delName, "delete", "delete", flc, Link.BUTTON_SMALL);
 				link.setUserObject(info);
 				deleteLinks.add(link);
 				flc.add(link);

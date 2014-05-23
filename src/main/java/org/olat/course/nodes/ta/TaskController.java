@@ -50,6 +50,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
@@ -143,7 +144,7 @@ public class TaskController extends BasicController {
 		
 		myContent = createVelocityContainer("taskAssigned");
 		
-		taskLaunchButton = LinkFactory.createButtonSmall("task.launch", myContent, this);
+		taskLaunchButton = LinkFactory.createButtonXSmall("task.launch", myContent, this);
 		taskLaunchButton.setTarget("_blank");
 		taskLaunchButton.setAjaxEnabled(false); // opened in new window
 		
@@ -294,6 +295,7 @@ public class TaskController extends BasicController {
 		myContent.put("task.launch", taskLaunchButton);
 		myContent.contextPut(VC_ASSIGNEDTASK, assignedTask);
 		myContent.contextPut(VC_ASSIGNEDTASK_NEWWINDOW,Boolean.TRUE);
+		myContent.contextPut("taskIcon", CSSHelper.createFiletypeIconCssClassFor(assignedTask));
 		panel.setContent(myContent);
 	}
 	

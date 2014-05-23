@@ -49,6 +49,7 @@ public class DateComponent extends AbstractComponent {
 		super(name);
 		this.setDate(date);
 		this.setShowYear(showYear);
+		this.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 	}	
 
 	/**

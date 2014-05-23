@@ -1,38 +1,62 @@
 #if ($hasTask)
-<div class="o_course_run_task">
-	<h4>$r.translate("task.title")</h4>
-	#if ($assignedtask)
-		<p>
-			$r.translate("task.scoring.assigned")
-		</p>
-		<p>
-			<strong>$assignedtask</strong>&nbsp;&nbsp;&nbsp;
-			$r.render("task.launch")
-			$r.render("task.cancel")
-		</p>
-	#else
-		$r.translate("task.scoring.notassigned")
-	#end
+<div class="panel panel-default o_task">
+	<div class="panel-heading" data-toggle="collapse" data-target="#collapseTask">
+		<h4 class="panel-title">$r.translate("task.title")</h4>
+	</div>
+	<div id="collapseTask" class="panel-collapse collapse in">
+	<div class="panel-body">			
+		#if ($assignedtask)
+			<p>
+				$r.translate("task.scoring.assigned")
+			</p>
+			<p>
+				<i class="o_icon $taskIcon"></i> $assignedtask 
+				$r.render("task.launch")
+				$r.render("task.cancel")
+			</p>
+		#else
+			$r.translate("task.scoring.notassigned")
+		#end
+	</div>
+	</div>
 </div>
 #end
 
 #if ($hasDropbox)
-<div class="o_course_run_dropbox">
-	<h4>$r.translate("dropbox.title")</h4>
-	$r.render("dropbox")
+<div class="panel panel-default o_dropbox">
+	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDropbox">
+		<h4 class="panel-title">$r.translate("dropbox.title")</h4>
+	</div>
+	<div id="collapseDropbox" class="panel-collapse collapse in">
+		<div class="panel-body">
+			$r.render("dropbox")
+		</div>  	
+	</div>
 </div>
 #end
 
 #if ($hasReturnbox)
-<div class="o_course_run_returnbox">
-	<h4>$r.translate("returnbox.title")</h4>
-	$r.render("returnbox")
+<div class="panel panel-default o_returnbox">
+	<div class="panel-heading" data-toggle="collapse" data-target="#collapseReturnbox">
+		<h4 class="panel-title">$r.translate("returnbox.title")</h4>
+	</div>
+	<div id="collapseReturnbox" class="panel-collapse collapse in">
+		<div class="panel-body">
+			$r.render("returnbox")
+		</div>
+	</div>
 </div>
 #end
 
 #if ($hasStatusPullDown)
-<fieldset>
-	<legend>$r.translate("status.title")</legend>
-	$r.render("statusForm")
-</fieldset>
+<div class="panel panel-default o_returnbox">
+	<div class="panel-heading" data-toggle="collapse" data-target="#collapseStatus">
+		<h4 class="panel-title">$r.translate("status.title")</h4>
+	</div>
+	<div id="collapseStatus" class="panel-collapse collapse in">
+		<div class="panel-body">
+			$r.render("statusForm")
+		</div>
+	</div>
+</div>
 #end

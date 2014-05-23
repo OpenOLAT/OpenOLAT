@@ -1,17 +1,46 @@
-#if($r.available("new_message"))
-	<div class="b_clearfix"><div class="b_float_right o_infomsg_create_button">
-		$r.render("new_message")
-	</div></div>
+#if($infos.isEmpty())
+	<div class="o_important">
+		<p>
+		$r.translate("display.no_messages")
+		</p>
+		#if($r.available("new_message"))
+		<div class="o_button_group">
+			$r.render("new_message")
+		</div>
+		#end		
+	</div>		
+#else 
+	#if($r.available("new_message"))
+		<div class="clearfix">
+			<div class="o_infomsg_create_button pull-right">
+				$r.render("new_message")
+			</div>
+		</div>
+	#end	
 #end
-<div class="o_infomsgs b_clearfix">
-	#if($infos.isEmpty())
-		<p class="b_important">$r.translate("display.no_messages")</p>
-	#end
+
+
+<div class="o_infomsg o_block_with_datecomp clearfix">
 	
 	#foreach($info in $infos)
-		<div class="o_infomsg b_clearfix">
+		<div class="o_msg o_block_large clearfix">
+			<div class="o_head">
+				$r.render("info.date.${info.getKey()}")
+				<h3 class="o_title">
+					$r.escapeHtml(${info.getTitle()})				
+				</h3>
+				<div class="o_meta">
+					$info.getInfos()
+					#if($info.isModified()), 
+						<div class="text-warning">$info.getModifier()</div>
+					#end
+				</div>
+			</div>
+			#if($info.getMessage())
+				<div class="o_content">$info.getMessage()</div>
+			#end
 			#if($r.available("info.delete.${info.getKey()}") or $r.available("info.edit.${info.getKey()}"))
-				<div class="b_float_right">
+				<div class="o_button_group">
 					#if($r.available("info.edit.${info.getKey()}"))
 						$r.render("info.edit.${info.getKey()}")
 					#end
@@ -20,16 +49,9 @@
 					#end
 				</div>
 			#end
-			$r.render("info.date.${info.getKey()}")
-			<h5>$r.escapeHtml(${info.getTitle()})</h5>
-			<p class="o_item_info">$info.getInfos()#if($info.isModified()), <span class="o_item_info_mod">$info.getModifier()</span>#end</p>
-			<p></p>
-			#if($info.getMessage())
-				<p>$info.getMessage()</p>
-			#end
 		</div>
 	#end
-	<div class="b_float_right b_clearfix">
+	<div class="pull-right clearfix">
 		#if($r.available("display.old_messages"))
 			$r.render("display.old_messages")
 		#end

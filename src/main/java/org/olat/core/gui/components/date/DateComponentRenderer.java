@@ -67,7 +67,8 @@ public class DateComponentRenderer implements ComponentRenderer {
 		Date date = dateC.getDate();
 		Locale locale = translator.getLocale();
 
-		sb.append("<div class=\"b_datecomp ");
+		sb.append("<div id=\"o_c").append(dateC.getDispatchID());
+		sb.append("\" class=\"o_datecomp");
 		// Optional css class as render arg
 		if (args != null && args.length == 1) {
 			sb.append(args[0]);
@@ -77,7 +78,7 @@ public class DateComponentRenderer implements ComponentRenderer {
 		if (dateC.isShowYear()) {
 			SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy", locale);
 			String year = yearFormat.format(date);
-			sb.append("<div class=\"b_year b_year_").append(year);
+			sb.append("<div class=\"o_year o_year_").append(year);
 			sb.append("\"><span>");
 			sb.append(year);
 			sb.append("</span>");
@@ -85,7 +86,7 @@ public class DateComponentRenderer implements ComponentRenderer {
 		}
 		// Add month.
 		SimpleDateFormat monthNumberFormat = new SimpleDateFormat("MM", locale);
-		sb.append("<div class=\"b_month b_month_").append(monthNumberFormat.format(date));
+		sb.append("<div class=\"o_month o_month_").append(monthNumberFormat.format(date));
 		sb.append("\"><span>");
 		SimpleDateFormat monthDisplayFormat = new SimpleDateFormat("MMM", locale);
 		sb.append(monthDisplayFormat.format(date).toUpperCase());
@@ -94,7 +95,7 @@ public class DateComponentRenderer implements ComponentRenderer {
 		// Add day
 		SimpleDateFormat dayFormat = new SimpleDateFormat("dd", locale);
 		String day = dayFormat.format(date); 
-		sb.append("<div class=\"b_day b_day_").append(day);
+		sb.append("<div class=\"o_day o_day_").append(day);
 		sb.append("\"><span>");
 		sb.append(day);
 		sb.append("</span>");

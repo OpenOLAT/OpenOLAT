@@ -69,8 +69,6 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class WikiRunController extends BasicController implements Activateable2 {
 	
-	private Panel main;
-	
 	private CourseEnvironment courseEnv;
 	private WikiMainController wikiCtr;
 	private ModuleConfiguration config;
@@ -88,7 +86,6 @@ public class WikiRunController extends BasicController implements Activateable2 
 		this.courseEnv = cenv;
 		
 		this.config = wikiCourseNode.getModuleConfiguration();
-		main = new Panel("wikirunmain");
 		addLoggingResourceable(LoggingResourceable.wrap(wikiCourseNode));
 		
 		//get repository entry in "strict" mode
@@ -144,13 +141,13 @@ public class WikiRunController extends BasicController implements Activateable2 
 		if (wrappedCtr instanceof CloneableController) {
 			cloneCtr = new CloneController(ureq, getWindowControl(), (CloneableController)wrappedCtr, clccc);
 			listenTo(cloneCtr);
-			main.setContent(cloneCtr.getInitialComponent());
-			putInitialPanel(main);
+			putInitialPanel(cloneCtr.getInitialComponent());
+		} else {
+			putInitialPanel(new Panel("uups.no.clone.controller"));			
 		}
 	}
 
 	@Override
-	//fxdiff BAKS-7 Resume function
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		wikiCtr.activate(ureq, entries, state);
@@ -172,8 +169,7 @@ public class WikiRunController extends BasicController implements Activateable2 
 	}
 
 	/**
-	 * @see org.olat.core.gui.//content = new VelocityContainer("wikirun", VELOCITY_ROOT + "/run.html", translator, this);
-		control.DefaultController#doDispose(boolean)
+	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
 	protected void doDispose() {
 		//

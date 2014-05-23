@@ -1,9 +1,10 @@
 #if($r.available("backLink"))
 	<h2>$r.translate("identityoverview.title")</h2>
 	$r.render("backLink")
-	<br><br>
 #end
+<div class="o_block">
 #if($r.available("identityInfos"))
 	$r.render("identityInfos")
 #end
 $r.render("assessmentOverviewTable")
+</div>

@@ -97,11 +97,11 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			cssSb.append("btn btn-lg ");
 			cssSb.append(link.isPrimary() ? "btn-primary" : "btn-default");
 		} else if (presentation == Link.LINK_BACK) {
-			cssSb.append("b_link_back");
+			cssSb.append("o_link_back");
 		} else if (presentation == Link.TOOLENTRY_DEFAULT) {
-			cssSb.append("b_toolbox_link");
+			cssSb.append("o_toolbox_link");
 		} else if (presentation == Link.TOOLENTRY_CLOSE) {
-			cssSb.append("b_toolbox_close");
+			cssSb.append("o_toolbox_close");
 		} else if (presentation == Link.LINK_CUSTOM_CSS) {
 			String customCss = ( link.isEnabled() ? link.getCustomEnabledLinkCSS() : link.getCustomDisabledLinkCSS() );
 			cssSb.append( customCss == null ? "" : customCss );
@@ -224,7 +224,9 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			if (link.getIconLeftCSS() != null) {
 				sb.append("<i class='").append(link.getIconLeftCSS()).append("'");
 				sb.append("></i> "); // one space needed
-			}			
+			} else if (presentation == Link.LINK_BACK) {
+				sb.append("<i class='o_icon o_icon_back'></i> "); // one space needed				
+			}
 			
 			sb.append("<span>"); // inner wrapper for layouting
 			if (customDisplayText != null) {

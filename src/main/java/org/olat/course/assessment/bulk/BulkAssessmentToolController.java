@@ -29,7 +29,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -54,7 +53,6 @@ import org.olat.resource.OLATResource;
 public class BulkAssessmentToolController extends BasicController {
 	
 	private final Link startButton;
-	private final VelocityContainer mainVC;
 	private final AssessableCourseNode courseNode;
 
 	private DialogBoxController errorCtrl;
@@ -68,9 +66,10 @@ public class BulkAssessmentToolController extends BasicController {
 		taskManager = CoreSpringFactory.getImpl(TaskExecutorManager.class);
 		courseOres = courseEnv.getCourseGroupManager().getCourseResource();
 		
-		mainVC = createVelocityContainer("start_button");
-		startButton = LinkFactory.createButton("new.bulk", mainVC, this);
-		putInitialPanel(mainVC);
+		startButton = LinkFactory.createButton("new.bulk", null, this);
+		startButton.setTranslator(getTranslator());
+		putInitialPanel(startButton);
+		getInitialComponent().setSpanAsDomReplaceable(true); // override to wrap panel as span to not break link layout 
 	}
 	
 	@Override
