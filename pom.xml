@@ -150,6 +150,7 @@
 												<include>${basedir}/target/jquery/jquery/openolat/jquery.oolog.min.js</include>
 												<include>${basedir}/target/jquery/jquery/openolat/jquery.translator.min.js</include>
 												<include>${basedir}/target/jquery/jquery/periodic/jquery.periodic.min.js</include>
+												<include>${basedir}/target/jquery/jquery/transit/jquery.transit.min.js</include>
 												<include>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/jquery.tinymce.min.js</include>
 												<include>${basedir}/src/main/webapp/static/js/jquery/dotdotdot/jquery.dotdotdot.min.js</include>
 											</includes>

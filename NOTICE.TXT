@@ -119,6 +119,7 @@ This produce uses softeare based on the MIT License
 * jQuery JavaScript DOM library (MIT License) [http://jquery.com]
 * jQuery-UI JavaScript UI library (MIT License) [http://jqueryui.com]
 * jQuery.dotdotdot library (MIT License) [http://dotdotdot.frebsite.nl]
+* jQuery transit library (MIT License) [http://ricostacruz.com/jquery.transit]
 
 
 -----------------------------------------------------------------------

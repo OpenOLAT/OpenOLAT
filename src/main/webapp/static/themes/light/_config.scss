@@ -27,6 +27,15 @@ $o-page-width-max : 1324px !default;
 $navbar-margin-bottom : 0 !default; /* no space between nav and content */
 $navbar-collapse-max-height: 100% !default;
 
+$o-offcanvas-width : 250px !default;
+$o-offcanvas-padding-horizontal: $navbar-padding-horizontal !default;
+$o-offcanvas-padding-vertical: $navbar-padding-vertical !default;
+$o-offcanvas-border :  $navbar-inverse-border !default;
+$o-offcanvas-bg : $navbar-inverse-bg !default;
+$o-offcanvas-link-hover-bg : $navbar-inverse-link-hover-bg;
+$o-offcanvas-color: $navbar-inverse-color;
+$o-offcanvas-link-hover-color : $navbar-inverse-link-hover-color;
+
 /* Background color of the main content area. */
 $o-main-outer-bg : #fff !default;
 $o-main-inner-bg : #fff !default;

@@ -1,9 +1,3 @@
-$o-offcanvas-width : 250px !default;
-$o-offcanvas-padding-horizontal: $navbar-padding-horizontal !default;
-$o-offcanvas-padding-vertical: $navbar-padding-vertical !default;
-$o-offcanvas-bg : $navbar-inverse-bg !default;
-$o-offcanvas-border :  $navbar-inverse-border !default;
-$o-offcanvas-color: $navbar-inverse-color;
 
 body {
 	overflow-x: hidden;
@@ -13,35 +7,13 @@ body {
 .o_container_offcanvas {
 	position: relative;
 	max-width: $o-page-width-max;
+
+	/* transition for media queries changes */
 	-webkit-transition: all .25s ease-in-out;
 	-moz-transition: all .25s ease-in-out;
 	-o-transition: all .25s ease-in-out;
 	-m-transition: all .25s ease-in-out;
 	transition: all .25s ease-in-out;
-}
-
-#o_offcanvas_right {
-	position: absolute;
-	top: 0;
-	right: -$o-offcanvas-width;
-	width: $o-offcanvas-width;
-
-	padding	: $o-offcanvas-padding-horizontal $o-offcanvas-padding-vertical;
-	background-color: $o-offcanvas-bg;
-	color: $o-offcanvas-color;
-  	border: 1px solid $o-offcanvas-border;
-  	
-	// Prevent floats from breaking the navbar
- 	@include clearfix();
-	
-	min-height: 100%;
-	z-index: 10;
-	-webkit-transition: all .25s ease-out;
-	-moz-transition: all .25s ease-out;
-	-o-transition: all .25s ease-out;
-	-m-transition: all .25s ease-out;
-	transition: all .25s ease-out;
-	
 }
 
 /* make page a bid smaller when max width is almost reached. */
@@ -62,15 +34,32 @@ body {
 	}
 }
 
-/* trigger transition of offcanvas menu */
-body.o_offcanvas_right_visible {
-	#o_offcanvas_right {
-		right: 0;
-		@include box-shadow(0px 0px 4px 3px rgba(0,0,0,.25));
-	}
+
+/* 	
+	Offcanvas is an absolute container positioned box outside the viewport. 
+	In closed state the element is hidden. To make the offcanvas appear
+	translations are performed using JavaScript. See navbar.js 
+   	Navbar.showRight(), Navbar.hideRight() and Navbar.toggleRight() 
+*/
+#o_offcanvas_right {
+	position: absolute;
+	top: 0;
+	right: -$o-offcanvas-width;
+	width: $o-offcanvas-width;
+
+	padding	: $o-offcanvas-padding-horizontal $o-offcanvas-padding-vertical;
+	background-color: $o-offcanvas-bg;
+	color: $o-offcanvas-color;
+  	border: 1px solid $o-offcanvas-border;
+	@include box-shadow(0px 0px 4px 3px rgba(0,0,0,.25));
+  	
+	// Prevent floats from breaking the navbar
+ 	@include clearfix();
+	
+	min-height: 100%;
+	z-index: 10;
+	display: none;
 }
-
-
 
 
 

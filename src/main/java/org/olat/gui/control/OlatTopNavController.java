@@ -270,7 +270,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 						} else {
 							linkAlt.setCustomDisplayText("");
 						}
-						linkAlt.setIconLeftCSS(iconCssClass);
+						linkAlt.setIconLeftCSS(iconCssClass + " o_icon-lg");
 						toolSetLinksName.add(linkAltName);
 					}
 				}	

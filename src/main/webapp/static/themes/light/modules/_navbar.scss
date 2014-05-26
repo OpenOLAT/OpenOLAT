@@ -1,5 +1,4 @@
 #o_navbar_wrapper {
-//	@extend .o_navbar-inverse;
 	z-index: 4;
 	#o_navbar_container {
 		position: relative;
@@ -13,56 +12,95 @@
 				content: "\221E";
 			}		
 		}
+	}		
+}
 		
-		.o_navbar_tabs {
-			li a {
-				padding-right: $grid-gutter-width;
+.o_navbar {
+	.o_navbar_tabs {
+		li a {
+			padding-right: $grid-gutter-width;
+		}
+		.o_navbar_tab_close {
+			position: absolute;
+			top: floor($grid-gutter-width / 2); 
+			right:0.5em;
+			padding: 0;
+			width: 1em; height: 1em;
+			i {
+				&:before { color: #A87E7E; }
 			}
-			.o_navbar_tab_close {
-				position: absolute;
-				top: floor($grid-gutter-width / 2); 
-				right:0.5em;
-				padding: 0;
-				width: 1em; height: 1em;
-				i {
-					&:before { color: #A87E7E; }
-				}
-				&:hover { 
-					i:before { color: #CC0000; }
-				}
+			&:hover { 
+				i:before { color: #CC0000; }
 			}
 		}
-		
-		#o_navbar_tools {
-		
-			#o_navbar_langchooser {
-				color: $navbar-default-color;
-				padding: floor($grid-gutter-width / 2);
-				form span + div {
-					display: inline;
+	}
+	
+	#o_navbar_tools {
+		#o_navbar_langchooser {
+			color: $navbar-default-color;
+			padding: floor($grid-gutter-width / 2);
+			form span + div {
+				display: inline;
+			}
+		}
+		#o_navbar_help a i {
+			/* help icon */
+			margin-right: 0.4em;
+		}
+		#o_navbar_my_menu {
+			.dropdown-toggle {
+				padding-left: floor($grid-gutter-width / 2) + 30px;
+			}
+			img {
+				position: absolute;
+				left: floor($grid-gutter-width / 4);
+				top: floor(30px - $line-height-computed);
+				height: 30px;
+				width: 30px;
+				@extend .img-circle;
+			}
+		}
+	}
+	
+	&.o_navbar-offcanvas {
+		.o_navbar_tab_close {
+			top: 10px; 
+		}
+		.o_navbar_personalTool {
+			display: none;
+		}	
+		#o_navbar_my_menu, 
+		#o_navbar_search_opener {
+			a {
+				color: $o-offcanvas-color;
+				&:hover,
+				&:focus {
+					color: $o-offcanvas-link-hover-color;
+					background-color: $o-offcanvas-link-hover-bg;
 				}
 			}
-			#o_navbar_help a i {
-				/* help icon */
-				margin-right: 0.4em;
+			/* override dropdown styles */
+			.dropdown-toggle {
+				display: none;
 			}
-			#o_navbar_my_menu {
-				.dropdown-toggle {
-					padding-left: floor($grid-gutter-width / 2) + 30px;
-				}
-				img {
-					position: absolute;
-					left: floor($grid-gutter-width / 4);
-					top: floor(30px - $line-height-computed);
-					height: 30px;
-					width: 30px;
-					@extend .img-circle;
-				}
+			.dropdown-menu {
+				box-shadow: none;
+				position: relative;
+				top: 0;
+				left: 0;
+				display: block;
+				float: none;
+				background-color: $o-offcanvas-bg;
+				color: $o-offcanvas-color;
+				font-size: $font-size-base;
+
+			 	.divider {
+				   background: none;
+			  	}
 			}
-		}		
+		}
 	}
 }
-
 
 
 

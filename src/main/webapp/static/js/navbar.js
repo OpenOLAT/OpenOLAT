@@ -39,8 +39,11 @@
 			tabsDirty : false,
 			toolsW : 0,
 			toolsOffCanvas : false,
-			toolsDirty : false
+			toolsDirty : false,
+			offCanvasWidth : 0
 		};
+		// get site of menu from css
+		this.state.offCanvasWidth = parseInt($('#o_offcanvas_right').css('width').replace(/[^\d.]/g,''));
 		
 		this.initListners();
 		this.calculateWidth();
@@ -94,6 +97,8 @@
 			this.state.tabsDirty = false;
 			this.state.toolsDirty = false;	
 			this.state.busy = false;
+			// close offcanvas when clicking a link
+			this.hideRight();
 		}
 	}
 	
@@ -226,15 +231,26 @@
 	}
 	
 	Navbar.prototype.showRight = function() {
-		if (!this.state.rightVisible) {
-			$('body').addClass('o_offcanvas_right_visible');	    	
-			this.state.rightVisible = true;			
+		if (!this.state.rightVisible) {					
+			var that = this;
+			var box = $('#o_offcanvas_right');
+			box.show().transition({ x: -that.state.offCanvasWidth}, function() {
+				$('body').addClass('o_offcanvas_right_visible');	    	
+				that.state.rightVisible = true;			
+			} );
+			
 		}
 	}
 	Navbar.prototype.hideRight = function() {
 		if (this.state.rightVisible) {
-			$('body').removeClass('o_offcanvas_right_visible');	    	
-			this.state.rightVisible = false;	    				
+			var that = this;
+			var box = $('#o_offcanvas_right');
+			box.transition({ x: that.state.offCanvasWidth}, function() {
+				box.hide();
+				$('body').removeClass('o_offcanvas_right_visible');	    	
+				that.state.rightVisible = false;	    				
+			} );
+
 		}
 	}
 	Navbar.prototype.toggleRight = function() {
