@@ -1091,19 +1091,28 @@ function showInfoBox(title, content){
 	// Factory method to create message box
 	var uuid = Math.floor(Math.random() * 0x10000 /* 65536 */).toString(16);
 	var info = '<div id="' + uuid
-	     + '" class="b_msg-div msg" style="display:none;"><div class="alert alert-info alert-fixed-top b_msg_info_content b_msg_info_winicon o_sel_info_message"><h3>'
-		 + title + '</h3>' + content + '<br/><br/></div></div>';
+	     + '" class="o_alert_info "><div class="alert alert-info clearfix o_sel_info_message"><i class="o_icon o_icon_close"></i><h3><i class="o_icon o_icon_info"></i> '
+		 + title + '</h3><p>' + content + '</p></div></div>';
     var msgCt = jQuery('#o_messages').prepend(info);
-    // Hide message automatically
+    // Hide message automatically based on content length
     var time = (content.length > 150) ? 8000 : ((content.length > 70) ? 6000 : 4000);
-    jQuery('#' + uuid).slideDown(300).delay(time).slideUp(300);
+
+    // Callback to remove after reading
+    var cleanup = function() {
+    	jQuery('#' + uuid)
+    		.transition({top : '-100%'}, function() {
+    			jQuery('#' + uuid).remove();
+    		});    	
+    };
+    // Show info box now
+    jQuery('#' + uuid).show().transition({ top: 0 });
+    
     // Visually remove message box immediately when user clicks on it
-    // The ghost event from above is triggered anyway. 
     jQuery('#' + uuid).click(function(e) {
-    	jQuery('#' + uuid).remove();
+    	cleanup();
     });
 	
-    // Help GC, prevent cyclic reference from on-click closure (OLAT-5755)
+    // Help GC, prevent cyclic reference from on-click closure
     title = null;
     content = null;
     msgCt = null;
