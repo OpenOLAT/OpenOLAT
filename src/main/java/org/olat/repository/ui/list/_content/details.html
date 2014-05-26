@@ -9,9 +9,11 @@
 			$r.render("thumbnail")
 		</div>
 		#end
+		#if($description && $description.length() > 0)
 		<div class="o_desc">
 			$description
 		</div>
+		#end
 	</div>
 
 	<div class="row">
