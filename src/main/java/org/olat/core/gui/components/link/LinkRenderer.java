@@ -253,8 +253,11 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			if (link.getIconRightCSS() != null) {
 				sb.append(" <i class='").append(link.getIconRightCSS()).append("'"); // one space needed
 				sb.append("></i> "); 
-			}			
-
+			}
+			
+			if(link.getBadge() != null) {
+				renderer.render(link.getBadge(), sb, args);
+			}
 			sb.append("</a>");
 			
 			//on click() is part of prototype.js

@@ -42,6 +42,14 @@ p.o_note, div.o_note {margin: 20px 0;} /* tiny needs something here */
 }
 p.o_important, div.o_important {margin: 20px 0;} /* tiny needs something here */
 
+.o_success {
+	@extend .o_info;
+	background-color: #d6e9c6;
+	border-color: #3c763d;
+	h2, h3, h4, h5 { color: #3c763d;}
+}
+o.o_success, div.o_success {margin: 20px 0;} /* tiny needs something here */
+
 .o_warning {
 	@extend .o_info;
 	background-color: #FFD5AA;

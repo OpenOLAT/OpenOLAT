@@ -35,6 +35,7 @@ import java.util.Set;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.badge.Badge.Level;
 import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.htmlheader.HtmlHeaderComponent;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
@@ -53,6 +54,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -128,10 +130,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private static final String CMD_CLOSEEDITOR = "cmd.close";
 	private static final String CMD_PUBLISH = "pbl";
 	private static final String CMD_COURSEPREVIEW = "cprev";
-	private static final String CMD_KEEPCLOSED_ERROR = "keep.closed.error";
-	private static final String CMD_KEEPOPEN_ERROR = "keep.open.error";
-	private static final String CMD_KEEPCLOSED_WARNING = "keep.closed.warning";
-	private static final String CMD_KEEPOPEN_WARNING = "keep.open.warning";
 	private static final String CMD_MULTI_SP = "cmp.multi.sp";
 	private static final String CMD_MULTI_CHECKLIST = "cmp.multi.checklist";
 
@@ -158,9 +156,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private static final String NLS_ADMIN_HEADER = "command.admin.header";
 	private static final String NLS_MULTI_SPS = "command.multi.sps";
 	private static final String NLS_MULTI_CHECKLIST = "command.multi.checklist";
-	
-	private Boolean errorIsOpen = Boolean.TRUE;
-	private Boolean warningIsOpen = Boolean.FALSE;
 
 	private MenuTree menuTree;
 	private VelocityContainer main;
@@ -178,21 +173,20 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private DialogBoxController deleteDialogController;		
 	private LayoutMain3ColsController columnLayoutCtr;
 	private AlternativeCourseNodeController alternateCtr;
+	private EditorStatusController statusCtr;
 	
 	private LockResult lockEntry;
 	
 	private HtmlHeaderComponent hc;
 	private EditorUserCourseEnvironmentImpl euce;
 	
-	private Link undelButton;
-	private Link keepClosedErrorButton, keepOpenErrorButton, keepClosedWarningButton, keepOpenWarningButton;
-	private Link alternativeLink;
-	
+	private Link undelButton, alternativeLink, statusLink;
 	private Link previewLink, publishLink, closeLink;
 	private Link deleteNodeLink, moveNodeLink, copyNodeLink;
 	private Link multiSpsLink, multiCheckListLink;
 	
 	private CloseableModalController cmc;
+	private CloseableCalloutWindowController calloutCtrl;
 	
 	private MultiSPController multiSPChooserCtr;
 	private final TooledStackedPanel stackPanel;
@@ -253,10 +247,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			setDisposedMsgController(disposedRestartController);
 			
 			undelButton = LinkFactory.createButton("undeletenode.button", main, this);
-			keepClosedErrorButton = LinkFactory.createCustomLink("keepClosedErrorButton", CMD_KEEPCLOSED_ERROR, "keep.closed", Link.BUTTON_SMALL, main, this);
-			keepOpenErrorButton = LinkFactory.createCustomLink("keepOpenErrorButton", CMD_KEEPOPEN_ERROR, "keep.open", Link.BUTTON_SMALL, main, this);
-			keepClosedWarningButton = LinkFactory.createCustomLink("keepClosedWarningButton", CMD_KEEPCLOSED_WARNING, "keep.closed", Link.BUTTON_SMALL, main, this);
-			keepOpenWarningButton = LinkFactory.createCustomLink("keepOpenWarningButton", CMD_KEEPOPEN_WARNING, "keep.open", Link.BUTTON_SMALL, main, this);
 			
 			// set the custom course css
 			enableCustomCss(ureq);
@@ -279,12 +269,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			CourseEditorEnv cev = new CourseEditorEnvImpl(cetm, course.getCourseEnvironment().getCourseGroupManager(), ureq.getLocale());
 			euce = new EditorUserCourseEnvironmentImpl(cev);
 			euce.getCourseEditorEnv().setCurrentCourseNodeId(null);
-			/*
-			 * validate course and update course status
-			 */
-			euce.getCourseEditorEnv().validateCourse();
-			StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
-			updateCourseStatusMessages(ureq.getLocale(), courseStatus);
+			
 
 			long lpTimeStamp = cetm.getLatestPublishTimestamp();
 			if (lpTimeStamp == -1) {				
@@ -323,6 +308,11 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	
 			stackPanel.pushController("Editor", this);
 			initToolbar(externStack == null);
+			
+			// validate course and update course status
+			euce.getCourseEditorEnv().validateCourse();
+			StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
+			updateCourseStatusMessages(ureq.getLocale(), courseStatus);
 
 			// add as listener to course so we are being notified about course events:
 			// - deleted events
@@ -393,6 +383,11 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		nodeTools.addComponent(moveNodeLink);
 		copyNodeLink = LinkFactory.createToolLink(CMD_COPYNODE, translate(NLS_COMMAND_COPYNODE), this, "o_icon_copy");
 		nodeTools.addComponent(copyNodeLink);
+		
+		statusLink = LinkFactory.createToolLink("status", translate("status"), this, null);
+		statusLink.setUserObject(new EditedCourseStatus());
+		statusLink.setCustomEnabledLinkCSS("navbar-link");
+		stackPanel.addTool(statusLink);
 	}
 	
 	/**
@@ -410,41 +405,14 @@ public class EditorMainController extends MainLayoutBasicController implements G
 					TreeEvent te = (TreeEvent) event;
 					String nodeId = te.getNodeId();
 					updateViewForSelectedNodeId(ureq, nodeId);				
-				//fxdiff VCRP-9: drag and drop in menu tree
 				} else if(event.getCommand().equals(MenuTree.COMMAND_TREENODE_DROP)) {
 					TreeDropEvent te = (TreeDropEvent) event;
 					dropNodeAsChild(ureq, course, te.getDroppedNodeId(), te.getTargetNodeId(), te.isAsChild(), te.isAtTheEnd());
 				}
 			} else if (source == main) {
 				if (event.getCommand().startsWith(NLS_START_HELP_WIZARD)) {
-					String findThis = event.getCommand().substring(NLS_START_HELP_WIZARD.length());
-					StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
-					for (int i = 0; i < courseStatus.length; i++) {
-						String key = courseStatus[i].getDescriptionForUnit() + "." + courseStatus[i].getShortDescriptionKey();
-						if (key.equals(findThis)) {
-							menuTree.setSelectedNodeId(courseStatus[i].getDescriptionForUnit());
-							euce.getCourseEditorEnv().setCurrentCourseNodeId(courseStatus[i].getDescriptionForUnit());
-							jumpToNodeEditor(courseStatus[i].getActivateableViewIdentifier(), ureq,
-									cetm.getCourseNode(courseStatus[i].getDescriptionForUnit()));
-							break;
-						}
-					}
-					euce.getCourseEditorEnv().validateCourse();
-					courseStatus = euce.getCourseEditorEnv().getCourseStatus();
-					updateCourseStatusMessages(ureq.getLocale(), courseStatus);
+					doStartHelpWizard(ureq, event);
 				}
-			} else if (source == keepClosedErrorButton){
-				errorIsOpen = Boolean.FALSE;
-				main.contextPut("errorIsOpen", errorIsOpen);
-			} else if (source == keepOpenErrorButton){
-				errorIsOpen = Boolean.TRUE;
-				main.contextPut("errorIsOpen", errorIsOpen);
-			} else if (source == keepClosedWarningButton){
-				warningIsOpen = Boolean.FALSE;
-				main.contextPut("warningIsOpen", warningIsOpen);
-			} else if (source == keepOpenWarningButton){
-				warningIsOpen = Boolean.TRUE;
-				main.contextPut("warningIsOpen", warningIsOpen);
 			} else if (source == undelButton){
 				doUndelete(ureq, course);
 			} else if(source == alternativeLink) {
@@ -463,6 +431,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				doMove(ureq, course, false);
 			} else if(copyNodeLink == source) {
 				doMove(ureq, course, true);
+			} else if(statusLink == source) {
+				doOpenStatusOverview(ureq);
 			} else if(multiSpsLink == source) {
 				launchSinglePagesWizard(ureq, course);
 			} else if(multiCheckListLink == source) {
@@ -649,6 +619,12 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
 				updateCourseStatusMessages(ureq.getLocale(), courseStatus);
 			}
+		} else if (source == statusCtr) {
+			if (event.getCommand().startsWith(NLS_START_HELP_WIZARD)) {
+				doStartHelpWizard(ureq, event);
+			}
+			calloutCtrl.deactivate();
+			cleanUp();
 		} else if (source == publishStepsController) {
 			getWindowControl().pop();
 			removeAsListenerAndDispose(publishStepsController);
@@ -781,6 +757,13 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		}
 	}
 	
+	private void cleanUp() {
+		removeAsListenerAndDispose(calloutCtrl);
+		removeAsListenerAndDispose(statusCtr);
+		calloutCtrl = null;
+		statusCtr = null;
+	}
+	
 	private void doMove(UserRequest ureq, ICourse course, boolean copy) {
 		TreeNode tn = menuTree.getSelectedNode();
 		if (tn == null) {
@@ -894,8 +877,41 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		listenTo(cmc);
 		cmc.activate();
 	}
+	
+	private void doOpenStatusOverview(UserRequest ureq) {
+		removeAsListenerAndDispose(statusCtr);
+		
+		statusCtr = new EditorStatusController(ureq, getWindowControl());
+		listenTo(statusCtr);
+		
+		euce.getCourseEditorEnv().validateCourse();
+		StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
+		statusCtr.updateStatus(cetm, courseStatus);	
 
-	//fxdiff VCRP-9: drag and drop in menu tree
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				statusCtr.getInitialComponent(), statusLink, "", true, null);
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();	
+	}
+	
+	private void doStartHelpWizard(UserRequest ureq, Event event) {
+		String findThis = event.getCommand().substring(NLS_START_HELP_WIZARD.length());
+		StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
+		for (int i = 0; i < courseStatus.length; i++) {
+			String key = courseStatus[i].getDescriptionForUnit() + "." + courseStatus[i].getShortDescriptionKey();
+			if (key.equals(findThis)) {
+				menuTree.setSelectedNodeId(courseStatus[i].getDescriptionForUnit());
+				euce.getCourseEditorEnv().setCurrentCourseNodeId(courseStatus[i].getDescriptionForUnit());
+				jumpToNodeEditor(courseStatus[i].getActivateableViewIdentifier(), ureq,
+						cetm.getCourseNode(courseStatus[i].getDescriptionForUnit()));
+				break;
+			}
+		}
+		euce.getCourseEditorEnv().validateCourse();
+		courseStatus = euce.getCourseEditorEnv().getCourseStatus();
+		updateCourseStatusMessages(ureq.getLocale(), courseStatus);
+	}
+
 	private void dropNodeAsChild(UserRequest ureq, ICourse course, String droppedNodeId, String targetNodeId, boolean asChild, boolean atTheEnd) {
 		menuTree.setDirty(true); // setDirty when moving
 		CourseNode droppedNode = cetm.getCourseNode(droppedNodeId);
@@ -972,28 +988,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	 * @param courseStatus
 	 */
 	private void updateCourseStatusMessages(Locale locale, StatusDescription[] courseStatus) {
-
-		/*
-		 * clean up velocity context
-		 */
-		main.contextRemove("hasWarnings");
-		main.contextRemove("warningIsForNode");
-		main.contextRemove("warningMessage");
-		main.contextRemove("warningHelpWizardLink");
-		main.contextRemove("warningsCount");
-		main.contextRemove("warningIsOpen");
-		main.contextRemove("hasErrors");
-		main.contextRemove("errorIsForNode");
-		main.contextRemove("errorMessage");
-		main.contextRemove("errorHelpWizardLink");
-		main.contextRemove("errorsCount");
-		main.contextRemove("errorIsOpen");
-		if (courseStatus == null || courseStatus.length == 0) {
-			main.contextPut("hasCourseStatus", Boolean.FALSE);
-			main.contextPut("errorIsOpen", Boolean.FALSE);
-			return;
-		}
-		//
 		List<String> errorIsForNode = new ArrayList<String>();
 		List<String> errorMessage = new ArrayList<String>();
 		List<String> errorHelpWizardLink = new ArrayList<String>();
@@ -1027,29 +1021,13 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				warningHelpWizardLink.add(helpWizardCmd);
 			}
 		}
-		/*
-		 * 
-		 */
-		if (errCnt > 0 || warCnt > 0) {
-			if (warCnt > 0) {
-				main.contextPut("hasWarnings", Boolean.TRUE);
-				main.contextPut("warningIsForNode", warningIsForNode);
-				main.contextPut("warningMessage", warningMessage);
-				main.contextPut("warningHelpWizardLink", warningHelpWizardLink);
-				main.contextPut("warningsCount", new String[] { Integer.toString(warCnt) });
-				main.contextPut("warningIsOpen", warningIsOpen);
-			}
-			if (errCnt > 0) {
-				main.contextPut("hasErrors", Boolean.TRUE);
-				main.contextPut("errorIsForNode", errorIsForNode);
-				main.contextPut("errorMessage", errorMessage);
-				main.contextPut("errorHelpWizardLink", errorHelpWizardLink);
-				main.contextPut("errorsCount", new String[] { Integer.toString(errCnt) });
-				main.contextPut("errorIsOpen", errorIsOpen);
-			}
+		
+		if (errCnt > 0) {
+			statusLink.setBadge(Integer.toString(errCnt), Level.error);
+		} else if (warCnt > 0) {
+			statusLink.setBadge(Integer.toString(warCnt), Level.warning);
 		} else {
-			main.contextPut("hasWarnings", Boolean.FALSE);
-			main.contextPut("hasErrors", Boolean.FALSE);
+			statusLink.setBadge("\u2713", Level.success);
 		}
 	}
 

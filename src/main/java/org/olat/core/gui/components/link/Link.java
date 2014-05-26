@@ -30,6 +30,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.badge.Badge;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.AssertException;
@@ -104,6 +105,7 @@ public class Link extends AbstractComponent {
 	private boolean hasTooltip;
 	private boolean suppressDirtyFormWarning = false;
 	private boolean isDownloadLink = false;
+	private Badge badge;
 	private LinkPopupSettings popup;
 
 	/**
@@ -238,6 +240,19 @@ public class Link extends AbstractComponent {
 	
 	public void setPopup(LinkPopupSettings popup) {
 		this.popup = popup;
+	}
+	
+	public Badge getBadge() {
+		return badge;
+	}
+	
+	public void setBadge(String message, Badge.Level level) {
+		if(badge == null) {
+			badge = new Badge(getComponentName() + "_BADGE");
+		}
+		badge.setMessage(message);
+		badge.setLevel(level);
+		setDirty(true);
 	}
 
 	public int getPresentation() {
