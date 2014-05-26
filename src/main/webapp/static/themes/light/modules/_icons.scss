@@ -49,6 +49,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_eportfolio_add {@extend .o_icon-puzzle-piece;}
 .o_icon_error {@extend .o_icon-exclamation-circle; color: $brand-danger;}
 .o_icon_expenditure {@extend .o_icon-clock-o;}
+.o_icon_external_link { @extend .o_icon-external-link } 
 .o_icon_failed {@extend .o_icon-times-circle;}
 .o_icon_filter {@extend .o_icon-filter;}
 .o_icon_group {@extend .o_icon-users; }
@@ -60,7 +61,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_institution { @extend .o_icon-bank; }
 .o_icon_italic { @extend .o_icon-italic; }
 .o_icon_mail { @extend .o_icon-envelope-o; }
-.o_icon_math { @extend .o_icon-rocket; }
+.o_icon_math { @extend .o_icon-slack; }
 .o_icon_membersmanagement { @extend .o_icon-users;}
 .o_icon_message { @extend .o_icon-envelope;}
 .o_icon_move{ @extend .o_icon-arrows;}

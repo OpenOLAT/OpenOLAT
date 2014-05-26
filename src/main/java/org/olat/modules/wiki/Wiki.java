@@ -66,6 +66,7 @@ import org.olat.modules.wiki.versioning.DifferenceService;
  * @author guido schnider
  */
 public class Wiki implements WikiContainer, Serializable {
+	private static final long serialVersionUID = -244524942476374366L;
 	public static final String CSS_CLASS_WIKI_ICON = "o_wiki_icon";
 
 	// synchronized map of all pages of a wiki as the whole model (wiki object) gets cached this object itself is save for cluster mode

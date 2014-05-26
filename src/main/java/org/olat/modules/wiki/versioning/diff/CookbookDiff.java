@@ -311,7 +311,7 @@ public class CookbookDiff {
       else if (blocklen[printoldline] < 0)
         skipOld();
       else if (oldInfo.other[printoldline] == printnewline)
-        showSame(result);
+        showSame();
       else
         showMove(result);
     }
@@ -461,7 +461,7 @@ public class CookbookDiff {
    * Expects printnewline and printoldline at start of
    * two blocks that aren't to be displayed.
    */
-  private void showSame(List<ChangeInfo> result) {
+  private void showSame() {
     int count;
     printstatus = idle;
     if (newInfo.other[printnewline] != printoldline) {

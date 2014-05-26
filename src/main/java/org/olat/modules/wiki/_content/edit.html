@@ -19,7 +19,7 @@
 	#end
 	<h3>
 		$r.contextHelpWithWrapper("org.olat.course.nodes.wiki","ced-wiked.html","help.hover.wikisyntax") 
-		$r.translate("edit"):$page.getPageName().replace("_"," ")</h3>
+		$r.translate("edit"): $page.getPageName().replace("_"," ")</h3>
 
 	<div class="btn-toolbar" role="toolbar">
 		<div class="btn-group">
@@ -34,7 +34,7 @@
 			<a href="#" title="$r.translateInAttribute("button.media")" class="btn btn-default o_wikimod_btn_media" onclick="insertTags('[[Media:',']]','$r.translate("enter.media")')"><i class="o_icon o_icon_audio"> </i></a>
 			<a href="#" title="$r.translateInAttribute("button.math")" class="btn btn-default o_wikimod_btn_math" onclick="insertTags('<math>','<'\/math>','$r.translate("enter.math")')"><i class="o_icon o_icon_math"> </i></a>
 			<a href="#" title="$r.translateInAttribute("button.link")" class="btn btn-default o_wikimod_btn_link" onclick="insertTags('[[',']]','$r.translate("enter.link")')"><i class="o_icon o_icon_link"> </i></a>
-			<a href="#" title="$r.translateInAttribute("button.extlink")" class="btn btn-default o_wikimod_btn_extlink" onclick="insertTags('[',']','$r.translate("enter.extlink")')"><i class="o_icon o_icon_link"> </i></a>
+			<a href="#" title="$r.translateInAttribute("button.extlink")" class="btn btn-default o_wikimod_btn_extlink" onclick="insertTags('[',']','$r.translate("enter.extlink")')"><i class="o_icon o_icon_external_link"> </i></a>
 			<a href="#" title="$r.translateInAttribute("button.nowiki")" class="btn btn-default o_wikimod_btn_nowiki" onclick="insertTags('<nowiki>','<\/nowiki>','$r.translate("enter.nowiki")')"><i class="o_icon o_icon_code"> </i></a>
 			<a href="#" title="$r.translateInAttribute("button.hr")" class="btn btn-default o_wikimod_btn_hr" onclick="insertTags('\n----\n','','')"><i class="o_icon o_icon_spacer"> </i></a>
 		</div>
@@ -56,11 +56,6 @@
   					<li><a href="#" onclick="javascript:insertMediaTag('$r.escapeHtml($file.getName())')">$r.escapeHtml($file.getName())</a></li>
 				#end
   			</ul>
-		</div>
-		#end
-		#if($mayDeleteArticle)
-		<div class="btn-group">
-			$r.render("delete.page")
 		</div>
 		#end
 	</div>

@@ -52,9 +52,14 @@ public class WikiEditArticleForm extends FormBasicController {
 	private TextElement updateComment;
 	private WikiPage page;
 	
-	public WikiEditArticleForm(UserRequest ureq, WindowControl wControl, WikiPage page) {
+
+	private final WikiSecurityCallback securityCallback;
+	
+	public WikiEditArticleForm(UserRequest ureq, WindowControl wControl, WikiPage page,
+			WikiSecurityCallback securityCallback) {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
 		this.page = page;
+		this.securityCallback = securityCallback;
 		initForm(ureq);
 	}
 
@@ -108,6 +113,9 @@ public class WikiEditArticleForm extends FormBasicController {
 		formLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
 		uifactory.addFormLink("save.and.close", buttonLayout, Link.BUTTON);
+		if(getIdentity().getKey().equals(Long.valueOf(page.getInitalAuthor())) || securityCallback.mayEditWikiMenu()) {
+			uifactory.addFormLink("delete.page", buttonLayout, Link.BUTTON);
+		}
 		uifactory.addFormLink("preview", buttonLayout, Link.BUTTON);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}

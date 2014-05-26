@@ -10,6 +10,9 @@
 	<li>$r.render("search_article")</li>
 #end
 </ul><ul class="nav navbar-nav navbar-right" >
+	#if($r.available("navigation.create.article"))
+	<li>$r.render("navigation.create.article")</li>
+	#end
 	##if($navigationEnabled)
 		<li>$r.render("navi")</li>
 		<li>$r.render("wikiMenuDropdown")</li>

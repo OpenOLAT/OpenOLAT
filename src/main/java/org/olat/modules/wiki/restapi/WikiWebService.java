@@ -61,7 +61,7 @@ public class WikiWebService {
 	 * @return
 	 */
 	@GET
-	@Produces({ "application/zip", MediaType.APPLICATION_OCTET_STREAM })
+	@Produces({"application/zip", MediaType.APPLICATION_OCTET_STREAM })
 	public Response exportWiki(@PathParam("wikiKey") String wikiKey, @Context HttpServletRequest request, @Context HttpServletResponse response) {
 		if (wikiKey == null)
 			return Response.serverError().status(Status.BAD_REQUEST).build();

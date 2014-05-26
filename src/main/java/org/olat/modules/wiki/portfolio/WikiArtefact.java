@@ -33,6 +33,7 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
  */
 public class WikiArtefact extends AbstractArtefact {
 
+	private static final long serialVersionUID = -3208512062986405560L;
 	public static final String ARTEFACT_TYPE = WikiResource.TYPE_NAME;
 
 	@Override

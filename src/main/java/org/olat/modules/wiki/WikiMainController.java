@@ -70,6 +70,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.clone.CloneableController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
@@ -148,15 +149,17 @@ public class WikiMainController extends BasicController implements CloneableCont
 	private List<ChangeInfo> diffs = new ArrayList<ChangeInfo>(2);
 	private SubscriptionContext subsContext;
 	private LockResult lockEntry;
-	private Link archiveLink, closePreviewButton, deletePageButton, manageMediaButton, toMainPageLink, a2zLink, changesLink, editMenuButton, revertVersionButton;
+	private Link archiveLink, closePreviewButton, createLink, manageMediaButton, toMainPageLink,
+		a2zLink, changesLink, editMenuButton, revertVersionButton;
 	private TableController mediaTableCtr;
 	private MediaFilesTableModel mediaFilesTableModel;
 	private TableGuiConfiguration tableConfig;
 	private WikiSecurityCallback securityCallback;
-	private WikiArticleSearchForm searchOrCreateArticleForm;
 	private Controller searchCtrl;
+	private WikiArticleSearchForm createArticleForm;
+	private CloseableCalloutWindowController calloutCtrl;
 	private StackedPanel mainPanel;
-	
+
 	private Dropdown wikiMenuDropdown, navigationDropdown, breadcrumpDropdown;
 	private GenericTreeNode navigationNode, navMainPageNode, navAZNode, navChangesNode, wikiMenuNode;
 	
@@ -164,7 +167,6 @@ public class WikiMainController extends BasicController implements CloneableCont
 	public static final String ACTION_SHOW = "view.version";
 	private static final String ACTION_EDIT_MENU = "editMenu";
 	private static final String ACTION_CLOSE_PREVIEW = "preview.close";
-	private static final String ACTION_DELETE_PAGE = "delete.page";
 	private static final String ACTION_MANAGE_MEDIA = "manage.media";
 	private static final String ACTION_DELETE_MEDIAS = "delete.medias";
 	private static final String ACTION_DELETE_MEDIA = "delete.media";
@@ -252,13 +254,14 @@ public class WikiMainController extends BasicController implements CloneableCont
 
 		archiveLink = LinkFactory.createLink("archive.wiki", navigationContent, this);
 		archiveLink.setIconLeftCSS("o_icon o_icon_archive_tool");
-		archiveLink.setDomReplaceable(false);
+		archiveLink.setDomReplacementWrapperRequired(false);
 		archiveLink.setTitle("archive.wiki.title");
+		
+		createLink = LinkFactory.createLink("navigation.create.article", navigationContent, this);
+		createLink.setIconLeftCSS("o_icon o_icon_create");
+		createLink.setDomReplacementWrapperRequired(false);
 
 		content.put("navigation", navigationContent);
-		searchOrCreateArticleForm = new WikiArticleSearchForm(ureq, getWindowControl());
-		searchOrCreateArticleForm.addControllerListener(this);
-		navigationContent.put("searchArticleForm", searchOrCreateArticleForm.getInitialComponent());
 		
 		//search
 		if(!ureq.getUserSession().getRoles().isGuestOnly()) {
@@ -302,11 +305,10 @@ public class WikiMainController extends BasicController implements CloneableCont
 		editContent = createVelocityContainer("edit");
 		imageDisplay = createVelocityContainer("imagedisplay");
 		closePreviewButton = LinkFactory.createButtonSmall(ACTION_CLOSE_PREVIEW, editContent, this);
-		deletePageButton = LinkFactory.createButton(ACTION_DELETE_PAGE, editContent, this);
 		manageMediaButton = LinkFactory.createButtonSmall(ACTION_MANAGE_MEDIA, editContent, this);
 		
 		editContent.contextPut("isGuest", Boolean.valueOf(ureq.getUserSession().getRoles().isGuestOnly()));
-		wikiEditForm = new WikiEditArticleForm(ureq, wControl, page);
+		wikiEditForm = new WikiEditArticleForm(ureq, wControl, page, securityCallback);
 		listenTo(wikiEditForm);
 		editContent.contextPut("editformid", "ofo_"+wikiEditForm.hashCode());
 
@@ -561,15 +563,22 @@ public class WikiMainController extends BasicController implements CloneableCont
 			//archive a snapshot of the wiki in the users personal folder
 			archiveWikiDialogCtr = activateOkCancelDialog(ureq, null, translate("archive.question"), archiveWikiDialogCtr);
 			return;
+		} else if (source == createLink) {
+			removeAsListenerAndDispose(calloutCtrl);
+			removeAsListenerAndDispose(createArticleForm);
+			
+			createArticleForm = new WikiArticleSearchForm(ureq, getWindowControl());
+			listenTo(createArticleForm);
+			calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+					createArticleForm.getInitialComponent(), createLink, "", true, null);
+			listenTo(calloutCtrl);
+			calloutCtrl.activate();	
 		} else if (source == versioningContent) {
 			//nothing to do
 		} else if (source == editContent) {
 			//nothing to do
 		} else if (source == closePreviewButton){
 			editContent.remove(wikiVersionDisplayComp);
-		} else if (source == deletePageButton){
-			removePageDialogCtr = activateOkCancelDialog(ureq, null, translate("question", page.getPageName()), removePageDialogCtr);
-			return;
 		} else if (source == manageMediaButton){
 			if(wiki.getMediaFileListWithMetadata().size() > 0){
 				mediaMgntContent = createVelocityContainer("media");
@@ -616,7 +625,6 @@ public class WikiMainController extends BasicController implements CloneableCont
 			 * tabbed pane change to edit tab
 			 **********************************************************************/
 			wikiEditForm.resetUpdateComment();
-			editContent.contextPut("mayDeleteArticle", Boolean.valueOf(getIdentity().getKey().equals(Long.valueOf(page.getInitalAuthor() )) || securityCallback.mayEditWikiMenu() ));
 			editContent.contextPut("linkList", wiki.getListOfAllPageNames());
 			editContent.contextPut("fileList", wiki.getMediaFileList());
 			// try to edit acquire lock for this page
@@ -904,8 +912,10 @@ public class WikiMainController extends BasicController implements CloneableCont
 			}
 		}
 
-		else if (source == searchOrCreateArticleForm) {
-			String query = searchOrCreateArticleForm.getQuery();
+		else if (source == createArticleForm) {
+			calloutCtrl.deactivate();
+			
+			String query = createArticleForm.getQuery();
 			if (!StringHelper.containsNonWhitespace(query)) {
 				query = WikiPage.WIKI_INDEX_PAGE;
 			}
@@ -921,7 +931,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 				breadcrumpDropdown.addComponent(pageLink);
 			}
 			tabs.setSelectedPane(0);
-		}else if (source == wikiEditForm) {
+		} else if (source == wikiEditForm) {
 			//set recent page id to the page currently used
 			this.pageId = page.getPageId();
 			
@@ -939,6 +949,10 @@ public class WikiMainController extends BasicController implements CloneableCont
 			} else if (event.getCommand().equals("preview")) {
 				wantPreview = true;
 				event = Event.DONE_EVENT;
+			} else if(event.getCommand().equals("delete.page")) {
+				String msg = translate("question", page.getPageName());
+				removePageDialogCtr = activateOkCancelDialog(ureq, null, msg, removePageDialogCtr);
+				return;
 			}
 
 			boolean dirty = !wikiEditForm.getWikiContent().equals(page.getContent());	
