@@ -71,7 +71,11 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 			if(component instanceof Spacer) {
 				sb.append("<li class='divider'></li>");
 			} else {
-				sb.append("<li>");
+				if(component.isEnabled()) {
+					sb.append("<li>");
+				} else {
+					sb.append("<li class='disabled'>");
+				}
 				renderer.render(component, sb, args);
 				sb.append("</li>");
 			}

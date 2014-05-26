@@ -188,6 +188,7 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(entry);
 	
 		launchLink = LinkFactory.createToolLink("launch", translate("details.launch"), this, "o_sel_repo_launch");
+		launchLink.setIconLeftCSS("o_icon o_icon-fw o_icon_details");
 		launchLink.setEnabled(checkIsRepositoryEntryLaunchable(ureq) && !corrupted);
 
 		if (!isGuestOnly) {
@@ -202,8 +203,10 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 			}
 
 			downloadLink = LinkFactory.createToolLink("download", translate("details.download"), this, "o_sel_repo_download");
+			downloadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
 			downloadLink.setEnabled(canDownload && !corrupted);
 			downloadCompatLink = LinkFactory.createToolLink("downloadcompat", translate("details.download.compatible"), this, "o_sel_repo_download_backward");
+			downloadCompatLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
 			downloadCompatLink.setEnabled(canDownload && !corrupted
 					&& "CourseModule".equals(entry.getOlatResource().getResourceableTypeName()));
 			
@@ -222,7 +225,7 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 				editLink.setEnabled(handler.supportsEdit(entry) && !corrupted && !editManaged);
 
 				editSettingsLink = LinkFactory.createToolLink("editdesc", translate("details.chprop"), this, "o_sel_repor_edit_properties");
-				editSettingsLink.setIconLeftCSS("o_icon o_icon_settings");
+				editSettingsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_settings");
 				editSettingsLink.setEnabled(!corrupted);
 
 				if(repositoryModule.isCatalogEnabled()) {
@@ -235,25 +238,30 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 						&& !closeManaged
 						&& (!RepositoryManager.getInstance().createRepositoryEntryStatus(entry.getStatusCode()).isClosed())) {
 					closeLink = LinkFactory.createToolLink("close", translate("details.close.ressoure"), this, "o_sel_repo_close_resource");
+					closeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_close_resource");
 					closeLink.setEnabled(!corrupted);
 				}
 			}
 		
 			if(isAuthor) {	
 				copyLink = LinkFactory.createToolLink("close", translate("details.copy"), this, "o_sel_repo_copy");
+				copyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
 				boolean copyManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.copy);
 				copyLink.setEnabled((isOwner || entry.getCanCopy()) && !corrupted && !copyManaged);
 			}
 			
 			if (isOwner) {
 				deleteLink = LinkFactory.createToolLink("delete", translate("details.delete"), this, "o_sel_repo_delete");
+				deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 				boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete);
 				deleteLink.setEnabled(!corrupted && !deleteManaged);
 				
 				membersLink = LinkFactory.createToolLink("members", translate("details.members"), this, "o_sel_repo_members");
+				membersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_membersmanagement");
 				membersLink.setEnabled(!corrupted);
 				
 				orderLink = LinkFactory.createToolLink("order", translate("details.orders"), this, "o_sel_repo_booking");
+				orderLink.setIconLeftCSS("o_icon o_icon-fw o_icon_booking");
 				boolean booking = acService.isResourceAccessControled(entry.getOlatResource(), null);
 				orderLink.setEnabled(!corrupted && booking);
 			}
