@@ -4,7 +4,7 @@ function shadeFormElement(elementId){
 	// PARAM: The default value used when unshading element
 	// (fg)
 	var elem = document.getElementById(elementId);
-	elem.className = "b_disabled";
+	elem.className = "o_disabled";
 	elem.readOnly = true;
 	// set input focus (cursor) to current element
 	elem.focus();
@@ -25,7 +25,7 @@ function shadeFormTextareas(){
 	var areas = document.getElementsByTagName("textarea");
 	if (areas == null) return;
 	for (var i=0; i < areas.length; ++i){
-		areas[i].className = "b_disabled";
+		areas[i].className = "o_disabled";
 		areas[i].readOnly = true;
 	}
 }

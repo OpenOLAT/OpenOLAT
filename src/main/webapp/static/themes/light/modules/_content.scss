@@ -115,7 +115,7 @@ table {
 /* font styles  */
 .b_selected, p.b_selected, div.b_selected { font-weight: bold; }	
 .b_dimmed, p.b_dimmed, div.b_dimmed { @include o-opacity(40); }
-.b_disabled, p.b_disabled, div.b_disabled { color: $gray-light; }
+.o_disabled, p.o_disabled, div.o_disabled { color: $gray-light; }
 .b_deleted, p.b_deleted, div.b_deleted { text-decoration: line-through; }	
 
 /* font sizes relative to parent object */

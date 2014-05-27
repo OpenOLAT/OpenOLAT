@@ -50,14 +50,14 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 		List<Tool> tools = panel.getTools();
 		if(breadCrumbs.size() > 1 || tools.size() > 0) {
 			String mainCssClass = panel.getCssClass();
-			sb.append("<div id='o_main_toolbar' class='navbar navbar-default clearfix ").append(mainCssClass, mainCssClass != null).append("'>")
+			sb.append("<div id='o_main_toolbar' class='o_toolbar clearfix ").append(mainCssClass, mainCssClass != null).append("'>")
 			  .append("<div class='o_breadcrumb container-fluid'>");
 
 			Link backLink = panel.getBackLink();
 			int numOfCrumbs = breadCrumbs.size();
 			if(backLink.isVisible() && numOfCrumbs > 1) {
-				sb.append("<ul class='nav navbar-nav navbar-left'>")
-				  .append("<li><a href='#' class='dropdown-toggle' data-toggle='dropdown'>&#x25C4; <b class='caret'></b></a>")
+				sb.append("<ul class='o_tools o_tools_left'>")
+				  .append("<li class='o_tool_dropdown'><a href='#' class='dropdown-toggle' data-toggle='dropdown'>&#x25C4; <b class='caret'></b></a>")
 				  .append("<ul class='dropdown-menu' role='menu'>")
 				  /*.append("<li class='o_breadcrumb_back'>");
 				backLink.getHTMLRendererSingleton().render(renderer, sb, backLink, ubu, translator, renderResult, args);
@@ -71,27 +71,27 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 				sb.append("</ul></li></ul>");
 			}
 			
-			List<Tool> notAlignedTools = getTools(tools, null);
-			if(notAlignedTools.size() > 0) {
-				sb.append("<ul class='nav navbar-nav'>");
-				renderTools(notAlignedTools, renderer, sb, args);
-				sb.append("</ul>");
-			}
-			
 			List<Tool> leftTools = getTools(tools, Align.left);
 			if(leftTools.size() > 0) {
-				sb.append("<ul class='nav navbar-nav navbar-left'>");
+				sb.append("<ul class='o_tools o_tools_left'>");
 				renderTools(leftTools, renderer, sb, args);
 				sb.append("</ul>");
 			}
 			
 			List<Tool> rightTools = getTools(tools, Align.right);
 			if(rightTools.size() > 0) {
-				sb.append("<ul class='nav navbar-nav navbar-right'>");
+				sb.append("<ul class='o_tools o_tools_right'>");
 				renderTools(rightTools, renderer, sb, args);
 				sb.append("</ul>");
 			}
 
+			List<Tool> notAlignedTools = getTools(tools, null);
+			if(notAlignedTools.size() > 0) {
+				sb.append("<ul class='o_tools o_tools_center'>");
+				renderTools(notAlignedTools, renderer, sb, args);
+				sb.append("</ul>");
+			}
+			
 			sb.append("</div></div>");
 		}
 		
@@ -124,15 +124,18 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 		for(int i=0; i<numOfTools; i++) {
 			Tool tool = tools.get(i);
 			Component cmp = tool.getComponent();
-			String cssClass;
-			if(cmp instanceof Dropdown) {
-				cssClass = "dropdown";
-			} else if(cmp instanceof Link && !cmp.isEnabled()) {
-				cssClass = "navbar-text";
-			} else {
-				cssClass = "";
+			String cssClass = tool.getToolCss();
+			if (cssClass == null) {
+				// use defaults
+				if(cmp instanceof Dropdown) {
+					cssClass = "o_tool_dropdown dropdown";
+				} else if(cmp instanceof Link && !cmp.isEnabled()) {
+					cssClass = "o_text";
+				} else {
+					cssClass = "o_tool";
+				}				
 			}
-			sb.append("<li class='o_tool ").append(cssClass).append("'>");
+			sb.append("<li class='").append(cssClass).append("'>");
 			renderer.render(cmp, sb, args);
 			sb.append("</li>");
 		}

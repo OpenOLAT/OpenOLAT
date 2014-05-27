@@ -1,11 +1,28 @@
-<span class="b_toolbox_toggle_wrapper">
-#if($r.available("command.glossary.on"))
-$r.render("command.glossary.on") / $r.translate("command.glossary.off")
-#else
-$r.translate("command.glossary.on") / $r.render("command.glossary.off")
-#end
-</span>
-<a id="o_sel_course_glossary" href="$r.commandURI("command.glossary")" target="o_glossary" onclick="return o2cl()" class="b_toolbox_link">$r.translate("command.glossary")</a>
-<script>// <![CDATA[
+<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+	<i class="o_icon o_FileResource-GLOSSARY_icon"> </i>
+	<span>$r.translate("command.glossary")</span> 
+	<i class="o_icon o_icon_caret"> </i>
+</a>
+<ul class="dropdown-menu" role="menu">
+	<li>
+		<a id="o_sel_course_glossary" href="$r.commandURI("command.glossary")" target="o_glossary" onclick="return o2cl()">
+			<span>
+				$r.translate("command.glossary.open")
+			</span>
+		</a>
+	</li>
+	
+	<li>
+	#if($r.available("command.glossary.on.alt"))
+		$r.render("command.glossary.on.alt")
+	#else
+		$r.render("command.glossary.off.alt")
+	#end
+	</li>
+</ul>
+
+<script>
+// <![CDATA[
 	jQuery('#o_sel_course_glossary').each(function(index, el){ jQuery(el).click(function() { setTimeout(removeBusyAfterDownload, 1200)}) });
-// ]]></script>
+// ]]>
+</script>

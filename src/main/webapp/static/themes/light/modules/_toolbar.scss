@@ -1,0 +1,114 @@
+.o_toolbar {
+	@extend .navbar;
+	@extend .navbar-default;
+	text-align: center;
+	min-height: $o-toolbar-height-md;
+	
+	.o_tools {
+		@extend .list-inline;
+		margin-top: $o-toolbar-margin-top-md;
+		margin-bottom: $o-toolbar-margin-bottom-md;
+
+		.o_tool, .o_text {
+			position: relative;
+			margin: 0 10px;	
+			a, .o_disabled {
+				i {
+					font-size: $o-toolbar-size-icon-md;
+				}
+				span {
+					display: block;
+					font-size: $o-toolbar-size-text-md;
+				}
+				@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
+					i {
+						font-size: $o-toolbar-size-icon-sm;
+					}
+					span {
+						font-size: $o-toolbar-size-text-sm;
+					}
+				}
+				@media (max-width: $screen-xs-max) { 
+					i {
+						font-size: $o-toolbar-size-icon-xs;
+					}
+					span {
+						display: none;
+					}
+				}
+			}
+		}
+			
+		.o_tool_dropdown {
+			position: relative;
+			a.dropdown-toggle {
+				i {
+					font-size: $o-toolbar-size-icon-md;
+				}
+				span {
+					display: block;
+					font-size: $o-toolbar-size-text-md;
+				}
+				.o_icon_caret {
+					position: absolute;
+					right: 50%;
+					top: floor($o-toolbar-size-icon-md / 4);
+					margin-right: floor($o-toolbar-size-icon-md * -1.25);
+					font-size: $o-toolbar-size-caret-md;
+				}
+				@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
+					i {
+						font-size: $o-toolbar-size-icon-sm;
+					}
+					span, .o_icon_caret {
+						font-size: $o-toolbar-size-text-sm;
+					}
+					.o_icon_caret {
+						top: floor($o-toolbar-size-icon-sm / 4);
+						margin-right: floor($o-toolbar-size-icon-sm * -1.25);	
+						font-size: $o-toolbar-size-caret-sm;				
+					}
+				}
+				@media (max-width: $screen-xs-max) { 
+					i {
+						font-size: $o-toolbar-size-icon-xs;
+					}
+					span, .o_icon_caret {
+						display: none;
+					}
+				}				
+			}
+			.dropdown-menu {
+				text-align: left;
+			}
+		}	
+	}
+
+	.o_tools_left {
+		@extend .pull-left;
+	}
+	.o_tools_right {
+		@extend .pull-right;
+	}
+	.o_tools_center {
+		// default
+	}
+	
+	@media (max-width: $screen-sm-max) { 
+		min-height: $o-toolbar-height-sm;
+		.o_tools {
+			margin-top: $o-toolbar-margin-top-sm;
+			margin-bottom: $o-toolbar-margin-bottom-sm;
+		}
+	}
+	@media (max-width: $screen-xs-max) { 
+		min-height: $o-toolbar-height-xs;
+		text-align: left;
+		.o_tools {
+			margin-top: $o-toolbar-margin-top-xs;
+			margin-bottom: $o-toolbar-margin-bottom-xs;
+		}
+	}
+	
+
+}

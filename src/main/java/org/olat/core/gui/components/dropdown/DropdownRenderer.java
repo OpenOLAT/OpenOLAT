@@ -57,9 +57,9 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		}
 		String i18nKey = dropdown.getI18nKey();
 		if(StringHelper.containsNonWhitespace(i18nKey)) {
-			sb.append(dropdown.getTranslator().translate(dropdown.getI18nKey()));
+			sb.append("<span>").append(dropdown.getTranslator().translate(dropdown.getI18nKey())).append("</span>");
 		}
-		sb.append(" <b class='caret'></b>");
+		sb.append(" <i class='o_icon o_icon_caret'> </i>");
 		
 		if(dropdown.isButton()) {
 			sb.append("</button>");

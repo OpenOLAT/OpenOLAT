@@ -43,6 +43,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.MainPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.SelectionTree;
@@ -334,25 +335,19 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	
 	private void initToolbar(boolean closeEditor) {
 		
-		Dropdown editTools = new Dropdown("editTools", NLS_HEADER_TOOLS, false, getTranslator());
-		stackPanel.addTool(editTools);
 		
 		previewLink = LinkFactory.createToolLink(CMD_COURSEPREVIEW, translate(NLS_COMMAND_COURSEPREVIEW), this, "o_icon_preview");
-		editTools.addComponent(previewLink);
+		stackPanel.addTool(previewLink, Align.right);
 		publishLink = LinkFactory.createToolLink(CMD_PUBLISH, translate(NLS_COMMAND_PUBLISH), this, "o_icon_publish");
-		editTools.addComponent(publishLink);
+		stackPanel.addTool(publishLink, Align.right);
 		
-		if(closeEditor) {
-			closeLink = LinkFactory.createToolLink(CMD_CLOSEEDITOR, translate(NLS_COMMAND_CLOSEEDITOR), this, "o_icon_close_tool");
-			editTools.addComponent(closeLink);
-		}
-
-		createNodeLink = LinkFactory.createToolLink(NLS_HEADER_INSERTNODES, translate(NLS_HEADER_INSERTNODES), this);
+		createNodeLink = LinkFactory.createToolLink(NLS_HEADER_INSERTNODES, translate(NLS_HEADER_INSERTNODES), this, "o_icon_add");
 		createNodeLink.setDomReplacementWrapperRequired(false);
-		stackPanel.addTool(createNodeLink);
+		stackPanel.addTool(createNodeLink, Align.left);
 
 		Dropdown nodeTools = new Dropdown("insertNodes", NLS_COMMAND_DELETENODE_HEADER, false, getTranslator());
-		stackPanel.addTool(nodeTools);
+		nodeTools.setIconCSS("o_icon o_icon_customize");
+		stackPanel.addTool(nodeTools, Align.left);
 		
 		deleteNodeLink = LinkFactory.createToolLink(CMD_DELNODE, translate(NLS_COMMAND_DELETENODE), this, "o_icon_delete_item");
 		nodeTools.addComponent(deleteNodeLink);
@@ -364,7 +359,13 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		statusLink = LinkFactory.createToolLink("status", translate("status"), this, null);
 		statusLink.setUserObject(new EditedCourseStatus());
 		statusLink.setCustomEnabledLinkCSS("navbar-link");
-		stackPanel.addTool(statusLink);
+		stackPanel.addTool(statusLink, Align.right);
+
+		if(closeEditor) {
+			closeLink = LinkFactory.createToolLink(CMD_CLOSEEDITOR, translate(NLS_COMMAND_CLOSEEDITOR), this, "o_icon_close_tool");
+			stackPanel.addTool(closeLink, Align.right);
+		}
+
 	}
 	
 	/**

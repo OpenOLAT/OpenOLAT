@@ -49,6 +49,7 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeEvent;
@@ -1084,6 +1085,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				|| hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
 
 			Dropdown editTools = new Dropdown("editTools", "header.tools", false, getTranslator());
+			editTools.setIconCSS("o_icon o_icon_tools");
 			if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
 				boolean managed = RepositoryEntryManagedFlag.isManaged(courseRepositoryEntry, RepositoryEntryManagedFlag.editcontent);
 				editLink = LinkFactory.createToolLink("edit.cmd", translate("command.openeditor"), this, "o_icon_courseeditor");
@@ -1143,12 +1145,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				editTools.addComponent(dbLink);
 			}
 			
-			all.addTool(editTools, null, true);
+			all.addTool(editTools, Align.left, true);
 		}
 	}
 	
 	private void initGroupTools() {
 		Dropdown groupTools = new Dropdown("editTools", "header.tools.participatedGroups", false, getTranslator());
+		groupTools.setIconCSS("o_icon o_icon_group");
 
 		// 2) add coached groups
 		if (uce.getCoachedGroups().size() > 0) {
@@ -1178,56 +1181,24 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 		
 		if(groupTools.size() > 0) {
-			all.addTool(groupTools);
+			all.addTool(groupTools, Align.left);
 		}
 	}
 	
 	private void initGeneralTools(CourseConfig cc) {
 		// new toolbox 'general'
+		if (showCourseConfigLink) {
+			detailsLink = LinkFactory.createToolLink("courseconfig",translate("command.courseconfig"), this, "o_icon_details");
+			all.addTool(detailsLink);
+		}		
 		if (cc.isCalendarEnabled() && !isGuest) {
 			calendarLink = LinkFactory.createToolLink("calendar",translate("command.calendar"), this, "o_icon_calendar");
 			calendarLink.setPopup(true);//"950", "750"
-			calendarLink.setIconLeftCSS("o_icon o_icon_calendar");
 			all.addTool(calendarLink);
 		}
 		if (cc.hasGlossary()) {
-			all.addTool(glossaryToolCtr.getInitialComponent());
+			all.addTool(glossaryToolCtr.getInitialComponent(), null, false, "o_tool_dropdown dropdown");
 		}
-		if (showCourseConfigLink) {
-			detailsLink = LinkFactory.createToolLink("courseconfig",translate("command.courseconfig"), this, "o_icon_settings");
-			all.addTool(detailsLink);
-		}
-		if (!isGuest) {
-			noteLink = LinkFactory.createToolLink("personalnote",translate("command.personalnote"), this, "o_icon_notes");
-			noteLink.setPopup(true);//"750", "550"
-			all.addTool(noteLink);
-		}
-		if (offerBookmark && !isGuest) {
-			boolean marked = markManager.isMarked(courseRepositoryEntry, getIdentity(), null);
-			String css = marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON;
-			bookmarkLink = LinkFactory.createToolLink("bookmark",translate("command.bookmark"), this, css);
-			all.addTool(bookmarkLink);
-		}
-		if (cc.isEfficencyStatementEnabled() && course.hasAssessableNodes() && !isGuest) {
-			// link to efficiency statements should
-			// - not appear when not configured in course configuration
-			// - not appear when configured in course configuration but no assessable
-			// node exist
-			// - appear but dimmed when configured, assessable node exist but no
-			// assessment data exists for user
-			// - appear as link when configured, assessable node exist and assessment
-			// data exists for user
-			efficiencyStatementsLink = LinkFactory.createToolLink("efficiencystatement",translate("command.efficiencystatement"), this, "o_icon_certificate");
-			efficiencyStatementsLink.setPopup(true);//"750", "800"
-			all.addTool(efficiencyStatementsLink);
-			
-			UserEfficiencyStatement es = efficiencyStatementManager
-					.getUserEfficiencyStatementLight(courseRepositoryEntry.getKey(), getIdentity());
-			if (es == null) {
-				efficiencyStatementsLink.setEnabled(false);
-			}
-		}
-		
 		//add group chat to toolbox
 		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
 		boolean chatIsEnabled = !isGuest && imModule.isEnabled() && imModule.isCourseEnabled()
@@ -1241,6 +1212,39 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			//TODO toolbox
 			//addCurrentUserCount(myTool);
 		}
+		
+		// Personal tools on right side
+		if (cc.isEfficencyStatementEnabled() && course.hasAssessableNodes() && !isGuest) {
+			// link to efficiency statements should
+			// - not appear when not configured in course configuration
+			// - not appear when configured in course configuration but no assessable
+			// node exist
+			// - appear but dimmed when configured, assessable node exist but no
+			// assessment data exists for user
+			// - appear as link when configured, assessable node exist and assessment
+			// data exists for user
+			efficiencyStatementsLink = LinkFactory.createToolLink("efficiencystatement",translate("command.efficiencystatement"), this, "o_icon_certificate");
+			efficiencyStatementsLink.setPopup(true);//"750", "800"
+			all.addTool(efficiencyStatementsLink, Align.right);
+			
+			UserEfficiencyStatement es = efficiencyStatementManager
+					.getUserEfficiencyStatementLight(courseRepositoryEntry.getKey(), getIdentity());
+			if (es == null) {
+				efficiencyStatementsLink.setEnabled(false);
+			}
+			if (!isGuest) {
+				noteLink = LinkFactory.createToolLink("personalnote",translate("command.personalnote"), this, "o_icon_notes");
+				noteLink.setPopup(true);//"750", "550"
+				all.addTool(noteLink, Align.right);
+			}
+			if (offerBookmark && !isGuest) {
+				boolean marked = markManager.isMarked(courseRepositoryEntry, getIdentity(), null);
+				String css = marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON;
+				bookmarkLink = LinkFactory.createToolLink("bookmark",translate("command.bookmark"), this, css);
+				all.addTool(bookmarkLink, Align.right);
+			}
+		}
+
 	}
 
 	private void updateCurrentUserCount() {

@@ -13,13 +13,15 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_archive_tool{ @extend .o_icon-download;}
 .o_icon_assessment_tool{ @extend .o_icon-trophy;}
 .o_icon_attempt_limit{ @extend .o_icon-refresh; }
+.o_icon_add{ @extend .o_icon-plus-circle; }
 .o_icon_audio{ @extend .o_icon-volume-up; }
 .o_icon_back { @extend .o_icon-chevron-left; }
 .o_icon_bold { @extend .o_icon-bold; }
 .o_icon_booking { @extend .o_icon-dollar; }
 .o_icon_bookmark { @extend .o_icon-bookmark; color: #996633; }
-.o_icon_bookmark_add { @extend .o_icon-bookmark-o; color: #999999;}
+.o_icon_bookmark_add { @extend .o_icon-bookmark-o; }
 .o_icon_calendar { @extend .o_icon-calendar;}
+.o_icon_caret { @extend .o_icon-caret-down;}
 .o_icon_certificate{ @extend .o_icon-certificate;}
 .o_icon_chat { @extend .o_icon-comment-o; }
 .o_icon_check {@extend .o_icon-check; }
@@ -41,7 +43,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_customize {@extend .o_icon-gear;}
 .o_icon_delete_item{ @extend .o_icon-trash-o;}
 .o_icon_delete { @extend .o_icon-minus-circle; color: #A87E7E;}
-.o_icon_details { @extend .o_icon-eye; }
+.o_icon_details { @extend .o_icon-lightbulb-o; }
 .o_icon_dev { @extend .o_icon-bug;}
 .o_icon_download { @extend .o_icon-download;}
 .o_icon_edit { @extend .o_icon-edit;}
@@ -126,6 +128,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_toggle {@extend .o_icon-circle; }
 .o_icon_to_read { @extend .o_icon-fighter-jet; color:blue;}
 .o_icon_tool { @extend .o_icon-gear; }
+.o_icon_tools { @extend .o_icon-wrench; }
 .o_icon_top {@extend .o_icon-chevron-up; }
 .o_icon_user {@extend .o_icon-user; }
 .o_icon_upload {@extend .o_icon-upload; }

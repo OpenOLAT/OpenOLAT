@@ -146,7 +146,7 @@ public class GroupSelectionController extends FormBasicController {
 			createNew = new FormLinkImpl("create");
 			//is a button
 			createNew.setCustomEnabledLinkCSS("b_button");
-			createNew.setCustomDisabledLinkCSS("b_button b_disabled");
+			createNew.setCustomDisabledLinkCSS("b_button o_disabled");
 			// create new group/area on the right side
 			formLayout.add(createNew);
 		}

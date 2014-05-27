@@ -93,13 +93,9 @@ public class CourseGlossaryToolLinkController extends BasicController {
 		Preferences prefs = ureq.getUserSession().getGuiPreferences();
 		Boolean state = (Boolean) prefs.get(CourseGlossaryToolLinkController.class, guiPrefsKey);
 		if (state == null || !state.booleanValue()) {
-			onCommand = LinkFactory.createLink("command.glossary.on", mainVC, this);
-			onCommand.setTitle("command.glossary.on.alt");
-			onCommand.setCustomEnabledLinkCSS("b_toolbox_toggle");
+			onCommand = LinkFactory.createLink("command.glossary.on.alt", mainVC, this);
 		} else {
-			offCommand = LinkFactory.createLink("command.glossary.off", mainVC, this);
-			offCommand.setTitle("command.glossary.off.alt");
-			offCommand.setCustomEnabledLinkCSS("b_toolbox_toggle");
+			offCommand = LinkFactory.createLink("command.glossary.off.alt", mainVC, this);
 		}
 
 		// keep reference to textMarkerContainerCtr for later enabling/disabling
@@ -122,9 +118,7 @@ public class CourseGlossaryToolLinkController extends BasicController {
 			prefs.save();
 			// update gui
 			mainVC.remove(onCommand);
-			offCommand = LinkFactory.createLink("command.glossary.off", mainVC, this);
-			offCommand.setTitle("command.glossary.off.alt");
-			offCommand.setCustomEnabledLinkCSS("b_toolbox_toggle");
+			offCommand = LinkFactory.createLink("command.glossary.off.alt", mainVC, this);
 			// notify textmarker controller
 			glossMarkupItmCtr.setTextMarkingEnabled(true);
 			fireEvent(ureq, new Event("glossaryOn"));
@@ -136,9 +130,7 @@ public class CourseGlossaryToolLinkController extends BasicController {
 			prefs.save();
 			// update gui
 			mainVC.remove(offCommand);
-			onCommand = LinkFactory.createLink("command.glossary.on", mainVC, this);
-			onCommand.setTitle("command.glossary.on.alt");
-			onCommand.setCustomEnabledLinkCSS("b_toolbox_toggle");
+			onCommand = LinkFactory.createLink("command.glossary.on.alt", mainVC, this);
 			// notify textmarker controller
 			glossMarkupItmCtr.setTextMarkingEnabled(false);
 			fireEvent(ureq, new Event("glossaryOff"));

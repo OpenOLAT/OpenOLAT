@@ -230,7 +230,7 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 			String cssClass = child.getCssClass();
 			if (cssClass != null) sb.append("<span class=\"").append(cssClass).append("\">");
 			if (!child.isAccessible() && greyOutNonSelectable) {
-				sb.append("<span class=\"b_disabled\">");
+				sb.append("<span class=\"o_disabled\">");
 				if(tree.isEscapeHtml()) {					
 				  sb.append(StringEscapeUtils.escapeHtml(child.getTitle()));
 				} else {					

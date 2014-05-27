@@ -79,7 +79,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 		StringBuilder cssSb = new StringBuilder("");
 		cssSb.append("class=\"");
 		if (!link.isEnabled()) {
-			cssSb.append(" b_disabled ");
+			cssSb.append(" o_disabled ");
 		}
 		if (link.isActive()) {
 			cssSb.append(" active ");
@@ -310,7 +310,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				sb.append("></i> "); // one space needed
 			}			
 
-			sb.append(text);
+			sb.append("<span>").append(text).append("</span>");
 			
 			// CSS icon
 			if (link.getIconRightCSS() != null) {

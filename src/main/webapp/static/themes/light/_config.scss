@@ -36,6 +36,24 @@ $o-offcanvas-link-hover-bg : $navbar-inverse-link-hover-bg;
 $o-offcanvas-color: $navbar-inverse-color;
 $o-offcanvas-link-hover-color : $navbar-inverse-link-hover-color;
 
+$o-toolbar-size-icon-md 		: ceil($font-size-base * 1.25) !default;
+$o-toolbar-size-text-md 		: ceil($font-size-base * 0.85) !default;
+$o-toolbar-size-caret-md 		: $font-size-base !default;
+$o-toolbar-size-icon-sm 		: ceil($font-size-base * 1.1) !default;
+$o-toolbar-size-text-sm 		: ceil($font-size-base * 0.75) !default;
+$o-toolbar-size-caret-sm 		: ceil($font-size-base * 0.85) !default;
+$o-toolbar-size-icon-xs 		: ceil($font-size-base * 1.4) !default;
+$o-toolbar-height-md			: 30px !default;
+$o-toolbar-height-sm			: 23px !default;
+$o-toolbar-height-xs			: 20px !default;
+$o-toolbar-margin-top-md			: 8px !default;
+$o-toolbar-margin-bottom-md			: 5px !default;
+$o-toolbar-margin-top-sm			: 6px !default;
+$o-toolbar-margin-bottom-sm			: 4px !default;
+$o-toolbar-margin-top-xs			: 6px !default;
+$o-toolbar-margin-bottom-xs			: 4px !default;
+
+
 /* Background color of the main content area. */
 $o-main-outer-bg : #fff !default;
 $o-main-inner-bg : #fff !default;

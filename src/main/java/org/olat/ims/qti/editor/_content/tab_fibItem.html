@@ -65,7 +65,7 @@
 					## No maxLength to allow input of many synonyms
 					<input type="text" name="content_q$count" size="$content.getSize()" value="$r.escapeHtml($content.getCorrectBlank())" onchange="return setFormDirty('ofo_tab_fibitem')" onclick="return setFormDirty('ofo_tab_fibitem')">				
 					#else
-					<input type="text" name="content_q$count" size="$content.getSize()" value="" class="b_disabled" disabled>				
+					<input type="text" name="content_q$count" size="$content.getSize()" value="" class="o_disabled" disabled>				
 					#end
 				#end
 					<input type="hidden" name="ident_q$count" value="$content.getIdent()" />
@@ -137,7 +137,7 @@
 					#if(!$question.isSingleCorrect())
 						selected
 						#set ($readonly = 'readonly=\"readonly\"')
-						#set ($css = "b_disabled")
+						#set ($css = "o_disabled")
 					#end
 					>$r.translate("valuation_method_multi")</option>
 					<option value="single" 

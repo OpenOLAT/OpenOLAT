@@ -120,7 +120,7 @@ class SelectionTreeComponentRenderer extends DefaultComponentRenderer {
 				String cssClass = child.getCssClass();
 				if (cssClass != null) sb.append("<span class=\"").append(cssClass).append("\">");
 				if (!child.isAccessible()) {
-					sb.append("<span class=\"b_disabled\">");
+					sb.append("<span class=\"o_disabled\">");
 					sb.append(StringEscapeUtils.escapeHtml(child.getTitle()));											
 					sb.append("</span>");
 				} else {

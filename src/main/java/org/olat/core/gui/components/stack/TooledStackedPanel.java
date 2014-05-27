@@ -78,11 +78,14 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	 * @param toolComponent
 	 */
 	public void addTool(Component toolComponent) {
-		addTool(toolComponent, null, false);
+		addTool(toolComponent, null, false, null);
 	}
 	
 	public void addTool(Component toolComponent, Align align) {
-		addTool(toolComponent, align, false);
+		addTool(toolComponent, align, false, null);
+	}
+	public void addTool(Component toolComponent, Align align, boolean inherit) {
+		addTool(toolComponent, align, inherit, null);
 	}
 	
 	public void removeTool(Component toolComponent) {
@@ -99,10 +102,10 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	 * If the component is null, it will simply not be added,
 	 * @param toolComponent
 	 */
-	public void addTool(Component toolComponent, Align align, boolean inherit) {
+	public void addTool(Component toolComponent, Align align, boolean inherit, String css) {
 		if(toolComponent == null) return;
 		
-		Tool tool = new Tool(toolComponent, align, inherit);
+		Tool tool = new Tool(toolComponent, align, inherit, css);
 		getCurrentCrumb().addTool(tool);
 		setDirty(true);
 	}
@@ -125,7 +128,7 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		}
 		currentTools.addAll(getCurrentCrumb().getTools());
 		if(isShowCloseLink()) {
-			currentTools.add(new Tool(getCloseLink(), Align.right, false));
+			currentTools.add(new Tool(getCloseLink(), Align.right, false, null));
 		}
 		return currentTools;
 	}
@@ -141,11 +144,13 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		private final  Align align;
 		private final boolean inherit;
 		private final Component component;
+		private String toolCss;
 		
-		public Tool(Component component, Align align, boolean inherit) {
+		public Tool(Component component, Align align, boolean inherit, String toolCss) {
 			this.align = align;
 			this.inherit = inherit;
 			this.component = component;
+			this.toolCss = toolCss;
 		}
 		
 		public boolean isInherit() {
@@ -159,6 +164,11 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		public Component getComponent() {
 			return component;
 		}
+		
+		public String getToolCss() {
+			return toolCss;
+		}
+		
 	}
 	
 	public static class TooledBreadCrumb extends BreadCrumb {
