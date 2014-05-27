@@ -107,7 +107,7 @@ public class MemberSearchForm extends FormBasicController {
 		for(int i=roleKeys.length; i-->0; ) {
 			roleValues[i] = translate("search." + roleKeys[i]);
 		}
-		rolesEl = uifactory.addCheckboxesHorizontal("roles", "search.roles", rightContainer, roleKeys, roleValues, null);
+		rolesEl = uifactory.addCheckboxesHorizontal("roles", "search.roles", rightContainer, roleKeys, roleValues);
 		for(String roleKey: roleKeys) {
 			rolesEl.select(roleKey, true);
 		}

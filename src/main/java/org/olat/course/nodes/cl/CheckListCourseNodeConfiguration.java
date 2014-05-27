@@ -27,6 +27,7 @@ import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeGroup;
 
 /**
  * 
@@ -34,7 +35,7 @@ import org.olat.course.nodes.CourseNodeConfiguration;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CheckListCourseNodeConfiguration extends AbstractCourseNodeConfiguration implements CourseNodeConfiguration {
+public class CheckListCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 
 	private CheckListCourseNodeConfiguration() {
 		super();
@@ -45,9 +46,6 @@ public class CheckListCourseNodeConfiguration extends AbstractCourseNodeConfigur
 		return new CheckListCourseNode();
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getLinkText(java.util.Locale)
-	 */
 	@Override
 	public String getLinkText(Locale locale) {
 		Translator fallback = Util.createPackageTranslator(CourseNodeConfiguration.class, locale);
@@ -55,24 +53,18 @@ public class CheckListCourseNodeConfiguration extends AbstractCourseNodeConfigur
 		return translator.translate("title_checklist");
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getCSSClass()
-	 */
 	@Override
 	public String getIconCSSClass() {
 		return "o_cl_icon";
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getLinkCSSClass()
-	 */
-	@Override
-	public String getLinkCSSClass() {
-		return null;
-	}
-
 	@Override
 	public String getAlias() {
 		return "checklist";
+	}
+	
+	@Override
+	public String getGroup() {
+		return CourseNodeGroup.test.name();
 	}
 }

@@ -63,7 +63,7 @@ public class EPCollectStepForm02 extends StepFormBasicController {
 
 		String[] theKeys = new String[] { Boolean.TRUE.toString() };
 		String[] theValues = new String[] { translate("copyright.yes") };
-		crCheck = uifactory.addCheckboxesHorizontal("copyright.label", null, formLayout, theKeys, theValues, null);
+		crCheck = uifactory.addCheckboxesHorizontal("copyright.label", null, formLayout, theKeys, theValues);
 		if (getFromRunContext("copyright.accepted") != null && (Boolean) getFromRunContext("copyright.accepted")) {
 			crCheck.select(Boolean.TRUE.toString(), true);
 		}

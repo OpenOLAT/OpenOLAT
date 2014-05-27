@@ -192,11 +192,10 @@ public class FormUIFactory {
 	 * @param layouter
 	 * @param keys
 	 * @param values
-	 * @param cssClasses
 	 * @return
 	 */
-	public MultipleSelectionElement addCheckboxesHorizontal(String name, FormItemContainer formLayout, String[] keys, String values[], String[] cssClasses) {
-		return addCheckboxesHorizontal(name, name, formLayout, keys, values, cssClasses);
+	public MultipleSelectionElement addCheckboxesHorizontal(String name, FormItemContainer formLayout, String[] keys, String values[]) {
+		return addCheckboxesHorizontal(name, name, formLayout, keys, values);
 	}
 	
 	/**
@@ -207,12 +206,11 @@ public class FormUIFactory {
 	 * @param formLayout
 	 * @param keys
 	 * @param values
-	 * @param cssClasses
 	 * @return
 	 */
-	public MultipleSelectionElement addCheckboxesHorizontal(String name, String i18nLabel, FormItemContainer formLayout, String[] keys, String values[], String[] cssClasses) {
+	public MultipleSelectionElement addCheckboxesHorizontal(String name, String i18nLabel, FormItemContainer formLayout, String[] keys, String values[]) {
 		MultipleSelectionElement mse = new MultipleSelectionElementImpl(name, MultipleSelectionElementImpl.createHorizontalLayout(name));
-		mse.setKeysAndValues(keys, values, cssClasses);
+		mse.setKeysAndValues(keys, values);
 		setLabelIfNotNull(i18nLabel, mse);
 		formLayout.add(mse);
 		return mse;
@@ -231,8 +229,27 @@ public class FormUIFactory {
 	 * @param columns Currently 1 and 2 columns are supported
 	 * @return
 	 */
-	public MultipleSelectionElement addCheckboxesVertical(String name, FormItemContainer formLayout, String[] keys, String values[], String[] cssClasses, int columns) {
-		return addCheckboxesVertical(name, name, formLayout, keys, values, cssClasses, columns);
+	public MultipleSelectionElement addCheckboxesVertical(String name, FormItemContainer formLayout, String[] keys, String values[], int columns) {
+		return addCheckboxesVertical(name, name, formLayout, keys, values, null, null, columns);
+	}
+	
+	/**
+	 * 
+	 * See above
+	 * @param name
+	 * @param formLayout
+	 * @param keys
+	 * @param values
+	 * @param iconLeftCSS Icon placed with an &lt;i&gt; tag
+	 * @param columns
+	 * @return
+	 */
+	public MultipleSelectionElement addCheckboxesVertical(String name, FormItemContainer formLayout, String[] keys, String values[], String[] iconLeftCSS, int columns) {
+		return addCheckboxesVertical(name, name, formLayout, keys, values, null, iconLeftCSS, columns);
+	}
+	
+	public MultipleSelectionElement addCheckboxesVertical(String name, String i18nLabel, FormItemContainer formLayout, String[] keys, String values[], int columns) {
+		return addCheckboxesVertical(name, i18nLabel, formLayout, keys, values, null, null, columns);
 	}
 		
 	/**
@@ -246,9 +263,10 @@ public class FormUIFactory {
 	 * @param columns
 	 * @return
 	 */
-	public MultipleSelectionElement addCheckboxesVertical(String name, String i18nLabel, FormItemContainer formLayout, String[] keys, String values[], String[] cssClasses, int columns) {
+	public MultipleSelectionElement addCheckboxesVertical(String name, String i18nLabel, FormItemContainer formLayout,
+			String[] keys, String values[], String[] cssClasses, String[] iconLeftCSS, int columns) {
 		MultipleSelectionElement mse = new MultipleSelectionElementImpl(name, MultipleSelectionElementImpl.createVerticalLayout(name, columns));
-		mse.setKeysAndValues(keys, values, cssClasses);
+		mse.setKeysAndValues(keys, values, cssClasses, iconLeftCSS);
 		setLabelIfNotNull(i18nLabel, mse);
 		formLayout.add(mse);
 		return mse;

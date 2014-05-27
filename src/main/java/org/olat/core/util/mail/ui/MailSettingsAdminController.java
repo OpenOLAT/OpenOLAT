@@ -68,7 +68,7 @@ public class MailSettingsAdminController extends FormBasicController  {
 		setFormContextHelp(MailUIFactory.class.getPackage().getName(), "mail-admin.html", "chelp.mail-admin.title");
 		
 		boolean internEnabled = isEnabled();
-		enabled = uifactory.addCheckboxesHorizontal("mail.admin.intern.enabled", formLayout, keys, values, null);
+		enabled = uifactory.addCheckboxesHorizontal("mail.admin.intern.enabled", formLayout, keys, values);
 		enabled.select(keys[0], internEnabled);
 		enabled.addActionListener(FormEvent.ONCHANGE);
 		

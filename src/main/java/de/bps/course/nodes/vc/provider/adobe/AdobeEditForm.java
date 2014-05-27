@@ -66,7 +66,7 @@ public class AdobeEditForm extends FormBasicController {
     // meeting options
     String[] accessKeys = new String[] {OPTION_OPEN_MEETING, OPTION_START_MEETING};
     String[] accessVals = new String[] {translate(OPTION_OPEN_MEETING), translate(OPTION_START_MEETING)};
-    multiSelectOptions = uifactory.addCheckboxesVertical("vc.access", "vc.access.label", formLayout, accessKeys, accessVals, null, 1);
+    multiSelectOptions = uifactory.addCheckboxesVertical("vc.access", "vc.access.label", formLayout, accessKeys, accessVals, 1);
     multiSelectOptions.select(OPTION_START_MEETING, !config.isGuestStartMeetingAllowed());
     multiSelectOptions.select(OPTION_OPEN_MEETING, !config.isGuestAccessAllowed());
     multiSelectOptions.setVisible(showOptions);

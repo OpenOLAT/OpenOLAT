@@ -110,7 +110,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		Boolean dueDateBool = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_CLOSE_AFTER_DUE_DATE);
 		Date dueDate = (Date)config.get(CheckListCourseNode.CONFIG_KEY_DUE_DATE);
 		String[] theValues = new String[] { "" };
-		dueDateEl = uifactory.addCheckboxesHorizontal("duedate", "config.due.date.on", formLayout, onKeys, theValues, null);
+		dueDateEl = uifactory.addCheckboxesHorizontal("duedate", "config.due.date.on", formLayout, onKeys, theValues);
 		dueDateEl.addActionListener(FormEvent.ONCHANGE);
 		if(dueDateBool != null && dueDateBool.booleanValue()) {
 			dueDateEl.select(onKeys[0], true);
@@ -130,7 +130,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		Float minVal = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN);
 		Float maxVal = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 		String[] pointsValues = new String[]{ translate("config.points.on") };
-		scoreGrantedEl = uifactory.addCheckboxesHorizontal("points", "config.points", formLayout, onKeys, pointsValues, null);
+		scoreGrantedEl = uifactory.addCheckboxesHorizontal("points", "config.points", formLayout, onKeys, pointsValues);
 		scoreGrantedEl.addActionListener(FormEvent.ONCHANGE);
 		if(scoreGrantedBool == null || (scoreGrantedBool != null && scoreGrantedBool.booleanValue())) {
 			scoreGrantedEl.select(onKeys[0], true);
@@ -154,7 +154,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		Integer sumCutValue = (Integer)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CUTVALUE);
 		Boolean manualCorr = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_MANUAL_CORRECTION);
 		
-		passedEl = uifactory.addCheckboxesHorizontal("passed", "config.passed", formLayout, onKeys, theValues, null);
+		passedEl = uifactory.addCheckboxesHorizontal("passed", "config.passed", formLayout, onKeys, theValues);
 		passedEl.addActionListener(FormEvent.ONCHANGE);
 		if(passedBool == null || (passedBool != null && passedBool.booleanValue())) {
 			passedEl.select(onKeys[0], true);
@@ -193,7 +193,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		uifactory.addSpacerElement("spacer-passed", formLayout, false);
 
 		//comment
-		commentEl = uifactory.addCheckboxesHorizontal("comment", "config.comment", formLayout, onKeys, theValues, null);
+		commentEl = uifactory.addCheckboxesHorizontal("comment", "config.comment", formLayout, onKeys, theValues);
 		Boolean commentBool = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
 		if(commentBool != null && commentBool.booleanValue()) {
 			commentEl.select(onKeys[0], true);

@@ -68,7 +68,7 @@ public class EPArtefactAttributeSettingController extends FormBasicController {
 			Entry<String, Boolean> entry = iterator.next();
 			String attKey = entry.getKey();
 			Boolean attVal = artAttribConfig.get(attKey);			
-			MultipleSelectionElement chkBox = uifactory.addCheckboxesHorizontal(attKey, formLayout, keys, values, null);
+			MultipleSelectionElement chkBox = uifactory.addCheckboxesHorizontal(attKey, formLayout, keys, values);
 			chkBox.addActionListener(FormEvent.ONCHANGE );
 			if (attVal == null) attVal = entry.getValue(); // either use users settings or the defaults
 			chkBox.select(keys[0], attVal);

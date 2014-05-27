@@ -27,6 +27,7 @@ import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.InfoCourseNode;
 
 /**
@@ -38,16 +39,20 @@ import org.olat.course.nodes.InfoCourseNode;
  * Initial Date:  3 aug. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class InfoCourseNodeConfiguration extends AbstractCourseNodeConfiguration implements CourseNodeConfiguration  {
+public class InfoCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 
 	public static final String CONFIG_DURATION = "duration";
 	public static final String CONFIG_LENGTH = "length";
 	public static final String CONFIG_AUTOSUBSCRIBE = "autosubscribe";
 	
-	
 	@Override
 	public String getAlias() {
 		return "info";
+	}
+	
+	@Override
+	public String getGroup() {
+		return CourseNodeGroup.other.name();
 	}
 
 	@Override
@@ -65,10 +70,5 @@ public class InfoCourseNodeConfiguration extends AbstractCourseNodeConfiguration
 	@Override
 	public String getIconCSSClass() {
 		return "o_infomsg_icon";
-	}
-
-	@Override
-	public String getLinkCSSClass() {
-		return null;
 	}
 }

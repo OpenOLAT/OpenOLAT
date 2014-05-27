@@ -111,7 +111,7 @@ public class DelimChooseForm extends FormBasicController {
 		fileNameSuffixEl.setDisplaySize(5);
 		fileNameSuffixEl.setExampleKey("form.filenamesuffix.ex", null); 
 		
-		taglessMattext = uifactory.addCheckboxesVertical("taglessmattext", "form.taglessmattext", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		taglessMattext = uifactory.addCheckboxesVertical("taglessmattext", "form.taglessmattext", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		
 		uifactory.addFormSubmitButton("form.finished", formLayout);
 	}

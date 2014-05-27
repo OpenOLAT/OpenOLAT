@@ -1,0 +1,12 @@
+<div id="o_course_editor_choose_nodetype" class="row">
+#foreach($group in $linkNames)
+	<div class="col-sm-3">
+		<h5>$r.translate($group.name)</h5>
+		<ul>
+		#foreach($nodeType in $group.nodeTypes)
+			<li>$r.render($nodeType)</li>
+		#end
+		</ul>	
+	</div>
+#end
+</div>

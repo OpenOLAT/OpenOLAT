@@ -268,7 +268,7 @@ class SpecialPrefsForm extends FormBasicController {
 		setFormTitle("title.prefs.special");
 		setFormContextHelp(this.getClass().getPackage().getName(), "home-prefs-special.html", "help.hover.home.prefs.special");
 		
-		prefsElement = uifactory.addCheckboxesVertical("prefs", "title.prefs.accessibility", formLayout, keys, values, null, 1);
+		prefsElement = uifactory.addCheckboxesVertical("prefs", "title.prefs.accessibility", formLayout, keys, values, 1);
 		prefsElement.setElementCssClass("o_sel_home_settings_accessibility");
 
 		if(historyModule.isResumeEnabled()) {
@@ -368,7 +368,7 @@ class UserPrefsResetForm extends FormBasicController {
 		keys = new String[]{"guiprefs", "sysprefs", "resume"};
 		values = new String[] {translate("reset.elements.guiprefs"), translate("reset.elements.sysprefs"), translate("reset.elements.resume")};
 		
-		resetElements = uifactory.addCheckboxesVertical("prefs", "reset.elements", formLayout, keys, values, null, 1);
+		resetElements = uifactory.addCheckboxesVertical("prefs", "reset.elements", formLayout, keys, values, 1);
 		resetElements.setElementCssClass("o_sel_home_settings_reset_sysprefs");
 		
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());

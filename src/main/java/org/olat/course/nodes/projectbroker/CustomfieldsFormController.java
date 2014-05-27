@@ -183,7 +183,7 @@ public class CustomfieldsFormController extends FormBasicController {
 		if (i == 0)  valueElement.setExampleKey("customfield.example.value", null);
 		customFieldValueElementList.add(valueElement);
 		
-		MultipleSelectionElement tableEnabledElement = uifactory.addCheckboxesHorizontal("customfield.table.enabled." + i, null, formLayout, keys, values, null);
+		MultipleSelectionElement tableEnabledElement = uifactory.addCheckboxesHorizontal("customfield.table.enabled." + i, null, formLayout, keys, values);
 		tableEnabledElement.select(keys[0], customField.isTableViewEnabled());
 		customFieldTableFlagElementList.add(tableEnabledElement);
 

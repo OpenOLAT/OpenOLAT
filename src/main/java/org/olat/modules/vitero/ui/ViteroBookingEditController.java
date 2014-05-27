@@ -148,7 +148,7 @@ public class ViteroBookingEditController extends FormBasicController {
 		}
 		roomSizeEl.setEnabled(editable);
 		
-		autoSignIn = uifactory.addCheckboxesHorizontal("booking.autoSignIn", formLayout, autoSignInKeys, autoSignInValues, null);
+		autoSignIn = uifactory.addCheckboxesHorizontal("booking.autoSignIn", formLayout, autoSignInKeys, autoSignInValues);
 		if(booking.isAutoSignIn()) {
 			autoSignIn.select(autoSignInKeys[0], true);
 		}

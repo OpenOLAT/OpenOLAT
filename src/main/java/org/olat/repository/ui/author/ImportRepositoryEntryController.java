@@ -97,7 +97,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		displaynameEl.setVisible(false);
 		
 		String[] refValues = new String[]{ "" };
-		referencesEl = uifactory.addCheckboxesHorizontal("references", "references", formLayout, refKeys, refValues, null);
+		referencesEl = uifactory.addCheckboxesHorizontal("references", "references", formLayout, refKeys, refValues);
 		referencesEl.setVisible(false);
 		
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());

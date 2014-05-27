@@ -99,7 +99,7 @@ class I18nConfigController extends FormBasicController {
 			defaultLangValues[i] = all;
 		}
 		ArrayHelper.sort(defaultlangKeys, defaultLangValues, false, true, false);
-		String[] defaultLangCssClasses = i18nMgr.createLanguageFlagsCssClasses(defaultlangKeys, "b_with_small_icon_left");
+		String[] defaultLangCssClasses = i18nMgr.createLanguageFlagsCssClasses(defaultlangKeys, "o_flag");
 		defaultLangSelection = uifactory.addDropdownSingleselect("configuration.defaultLangSelection", formLayout, defaultlangKeys,
 				defaultLangValues, defaultLangCssClasses);
 		defaultLangSelection.addActionListener(FormEvent.ONCHANGE);
@@ -127,9 +127,9 @@ class I18nConfigController extends FormBasicController {
 			availableValues[i] = all;
 		}
 		ArrayHelper.sort(availablelangKeys, availableValues, false, true, false);
-		String[] availableLangCssClasses = i18nMgr.createLanguageFlagsCssClasses(availablelangKeys, "b_with_small_icon_left");
+		String[] availableLangIconCss = i18nMgr.createLanguageFlagsCssClasses(availablelangKeys, "o_flag");
 		enabledLangSelection = uifactory.addCheckboxesVertical("configuration.enabledLangSelection", null, formLayout, availablelangKeys,
-				availableValues, availableLangCssClasses, 2);
+				availableValues, null, availableLangIconCss, 2);
 		enabledLangSelection.setEscapeHtml(false);
 		enabledLangSelection.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 		// Enable current enabled languages

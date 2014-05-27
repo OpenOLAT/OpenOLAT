@@ -138,7 +138,7 @@ public class BGCopyPreparationStepController extends StepFormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		ce = uifactory.addCheckboxesVertical("toCopy", "bgcopywizard.copyform.label", formLayout, keys, values, null, 1);
+		ce = uifactory.addCheckboxesVertical("toCopy", "bgcopywizard.copyform.label", formLayout, keys, values, 1);
 		ce.select("Tools", true);
 		if(coursesEnabled) {
 			ce.select("Courses", true);

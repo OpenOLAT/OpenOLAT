@@ -87,7 +87,7 @@ public class OptionsFormController extends FormBasicController {
 		
 		//create form elements
 		int nbrOfParticipantsValue = config.getNbrParticipantsPerTopic();
-		selectionLimitedAttendees = uifactory.addCheckboxesHorizontal("form.options.number.of.topics.per.participant", formLayout, keys, values,null);
+		selectionLimitedAttendees = uifactory.addCheckboxesHorizontal("form.options.number.of.topics.per.participant", formLayout, keys, values);
 		nbrOfAttendees = uifactory.addIntegerElement("form.options.number.of.participants.per.topic_nbr", nbrOfParticipantsValue, formLayout);
 		nbrOfAttendees.setMinValueCheck(0, null);
 		nbrOfAttendees.setDisplaySize(3);
@@ -101,12 +101,12 @@ public class OptionsFormController extends FormBasicController {
 		selectionLimitedAttendees.addActionListener(FormEvent.ONCLICK);
 		
 		final Boolean selectionAcceptValue = config.isAcceptSelectionManually();
-		selectionAccept = uifactory.addCheckboxesVertical("form.options.selection.accept", formLayout, keys, values, null, 1);
+		selectionAccept = uifactory.addCheckboxesVertical("form.options.selection.accept", formLayout, keys, values, 1);
 		selectionAccept.select(keys[0], selectionAcceptValue);
 		selectionAccept.addActionListener(FormEvent.ONCLICK);
 
 		final Boolean autoSignOut = config.isAutoSignOut();
-		selectionAutoSignOut = uifactory.addCheckboxesVertical("form.options.auto.sign.out", formLayout, keys, values, null, 1);
+		selectionAutoSignOut = uifactory.addCheckboxesVertical("form.options.auto.sign.out", formLayout, keys, values, 1);
 		selectionAutoSignOut.select(keys[0], autoSignOut);
 		// enable auto-sign-out only when 'accept-selection' is enabled
 		selectionAutoSignOut.setVisible(selectionAcceptValue);

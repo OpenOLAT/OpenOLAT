@@ -126,9 +126,9 @@ public class ChoiceController extends FormBasicController {
 		}else if(singleSelection && !layoutVertical){
 			entrySelector = uifactory.addRadiosHorizontal(selectionName, null, formLayout, keysIn, translatedKeys);
 		}else if(!singleSelection && layoutVertical){
-			entrySelector = uifactory.addCheckboxesVertical(selectionName, null, formLayout, keysIn, translatedKeys, null, 1);
+			entrySelector = uifactory.addCheckboxesVertical(selectionName, null, formLayout, keysIn, translatedKeys, 1);
 		}else if(!singleSelection && !layoutVertical){
-			entrySelector = uifactory.addCheckboxesHorizontal(selectionName, null, formLayout, keysIn, translatedKeys, null);
+			entrySelector = uifactory.addCheckboxesHorizontal(selectionName, null, formLayout, keysIn, translatedKeys);
 		}
 		
 		// add Submit

@@ -207,7 +207,7 @@ class NewUserForm extends FormBasicController {
 			// checkBox: generate user with OLAT authentication or not
 			String[] authKeys = {"xx"};
 			String[] authValues = {translate("new.form.auth.true")};
-			authCheckbox = uifactory.addCheckboxesHorizontal("new.form.auth", formLayout, authKeys, authValues, null);
+			authCheckbox = uifactory.addCheckboxesHorizontal("new.form.auth", formLayout, authKeys, authValues);
 			authCheckbox.select("xx", showPasswordFields);
 			authCheckbox.addActionListener(FormEvent.ONCLICK);
 

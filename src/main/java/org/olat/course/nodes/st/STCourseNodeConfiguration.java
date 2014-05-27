@@ -33,6 +33,7 @@ import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.STCourseNode;
 /**
  * 
@@ -40,42 +41,38 @@ import org.olat.course.nodes.STCourseNode;
  * TODO: guido Class Description for STCourseNodeConfiguration
  * 
  */
-public class STCourseNodeConfiguration extends AbstractCourseNodeConfiguration implements CourseNodeConfiguration {
+public class STCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 	transient public static int MAX_PEEKVIEW_CHILD_NODES = 10; // default 10
 	
 	private STCourseNodeConfiguration() {
 		super();
 	}
 
+	@Override
 	public CourseNode getInstance() {
 		return new STCourseNode();
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getLinkText(java.util.Locale)
-	 */
+	@Override
 	public String getLinkText(Locale locale) {
 		Translator fallback = Util.createPackageTranslator(CourseNodeConfiguration.class, locale);
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale, fallback);
 		return translator.translate("title_st");
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getCSSClass()
-	 */
+	@Override
 	public String getIconCSSClass() {
 		return "o_st_icon";
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getLinkCSSClass()
-	 */
-	public String getLinkCSSClass() {
-		return null;
-	}
-
+	@Override
 	public String getAlias() {
 		return "st";
+	}
+	
+	@Override
+	public String getGroup() {
+		return CourseNodeGroup.content.name();
 	}
 
 	/**

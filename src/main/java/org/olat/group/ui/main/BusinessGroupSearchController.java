@@ -166,7 +166,7 @@ public class BusinessGroupSearchController extends FormBasicController implement
 		if(showAdminTools) {
 			String[] keys = new String[] { "headless" };
 			String[] values = new String[] { translate("search.headless.check") };
-			headlessEl = uifactory.addCheckboxesHorizontal("headless.groups", "search.headless", rightContainer, keys, values, null);
+			headlessEl = uifactory.addCheckboxesHorizontal("headless.groups", "search.headless", rightContainer, keys, values);
 			headlessEl.setElementCssClass("o_sel_group_search_headless_field");
 		}
 

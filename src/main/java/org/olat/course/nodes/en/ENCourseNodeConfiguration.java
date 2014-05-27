@@ -32,46 +32,43 @@ import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.ENCourseNode;
 
 /**
  * Description:<br>
  * TODO: guido Class Description for ENCourseNodeConfiguration
  */
-public class ENCourseNodeConfiguration extends AbstractCourseNodeConfiguration implements CourseNodeConfiguration {
+public class ENCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 
 	private ENCourseNodeConfiguration() {
 		super();
 	}
 
+	@Override
 	public CourseNode getInstance() {
 		return new ENCourseNode();
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getLinkText(java.util.Locale)
-	 */
+	@Override
 	public String getLinkText(Locale locale) {
 		Translator fallback = Util.createPackageTranslator(CourseNodeConfiguration.class, locale);
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale, fallback);
 		return translator.translate("title_en");
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getCSSClass()
-	 */
+	@Override
 	public String getIconCSSClass() {
 		return "o_en_icon";
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getLinkCSSClass()
-	 */
-	public String getLinkCSSClass() {
-		return null;
-	}
-
+	@Override
 	public String getAlias() {
 		return "en";
+	}
+	
+	@Override
+	public String getGroup() {
+		return CourseNodeGroup.other.name();
 	}
 }

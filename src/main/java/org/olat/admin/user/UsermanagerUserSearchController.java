@@ -858,17 +858,12 @@ class UsermanagerUserSearchForm extends FormBasicController {
 
 		uifactory.addSpacerElement("space1", formLayout, false);
 		roles = uifactory.addCheckboxesVertical(
-				"roles", "search.form.title.roles", formLayout, roleKeys, roleValues,
-				null, 1
-		);
-		
-		
+				"roles", "search.form.title.roles", formLayout, roleKeys, roleValues, 1);
+
 		uifactory.addSpacerElement("space2", formLayout, false);
 		auth = uifactory.addCheckboxesVertical(
 				"auth", "search.form.title.authentications",
-				formLayout, authKeys, authValues, null, 1
-		);
-		
+				formLayout, authKeys, authValues, 1);
 		
 		uifactory.addSpacerElement("space3", formLayout, false);
 		status = uifactory.addRadiosVertical(

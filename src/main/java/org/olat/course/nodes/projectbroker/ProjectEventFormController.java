@@ -79,7 +79,7 @@ public class ProjectEventFormController extends FormBasicController {
 			String[] values = new String[] { translate(eventType.getI18nKey() + ".label"), translate(KEY_EVENT_TABLE_VIEW_ENABLED) };
 			boolean isEventEnabled = config.isProjectEventEnabled(eventType);
 			boolean isTableViewEnabled = config.isProjectEventTableViewEnabled(eventType);
-			MultipleSelectionElement projectEventElement = uifactory.addCheckboxesVertical(eventType.toString(), null, formLayout, keys, values, null, 1);
+			MultipleSelectionElement projectEventElement = uifactory.addCheckboxesVertical(eventType.toString(), null, formLayout, keys, values, 1);
 			projectEventElement.select(keys[0], isEventEnabled);
 			projectEventElement.setVisible(keys[1], isEventEnabled);
 			projectEventElement.select(keys[1], isTableViewEnabled);

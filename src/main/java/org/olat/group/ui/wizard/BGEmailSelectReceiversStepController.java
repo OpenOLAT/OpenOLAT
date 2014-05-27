@@ -53,7 +53,7 @@ public class BGEmailSelectReceiversStepController extends StepFormBasicControlle
 				translate("email.select.receiver.tutor"),
 				translate("email.select.receiver.participant")
 		};
-		receiversEl = uifactory.addCheckboxesVertical("select.receivers", "email.select.receivers", formLayout, receiverKeys, receiverValues, null, 1);
+		receiversEl = uifactory.addCheckboxesVertical("select.receivers", "email.select.receivers", formLayout, receiverKeys, receiverValues, 1);
 		receiversEl.select(receiverKeys[0], true);
 		receiversEl.select(receiverKeys[1], true);
 	}

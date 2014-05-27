@@ -137,13 +137,13 @@ class ImportStep01 extends BasicStep {
 			if(!updateIdents.isEmpty()) {
 				String[] updateValues = new String[]{ translate("update.user") };
 				updateEl = uifactory
-						.addCheckboxesHorizontal("update.user", textContainer, new String[]{"on"}, updateValues, null);
+						.addCheckboxesHorizontal("update.user", textContainer, new String[]{"on"}, updateValues);
 				updateEl.select("on", true);
 				
 				if(canCreateOLATPassword) {
 					String[] theValues = new String[]{ translate("update.password") };
 					updatePasswordEl = uifactory
-							.addCheckboxesHorizontal("update.password", textContainer, new String[]{"on"}, theValues, null);
+							.addCheckboxesHorizontal("update.password", textContainer, new String[]{"on"}, theValues);
 				}
 			}
 

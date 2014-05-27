@@ -27,6 +27,7 @@ import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.OpenMeetingsCourseNode;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
 
@@ -39,22 +40,26 @@ import org.olat.modules.openmeetings.OpenMeetingsModule;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class OpenMeetingsCourseNodeConfiguration extends AbstractCourseNodeConfiguration implements CourseNodeConfiguration {
+public class OpenMeetingsCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 
+	@Override
 	public String getAlias() {
 		return "openmeetings";
 	}
+	
+	@Override
+	public String getGroup() {
+		return CourseNodeGroup.virtualClassroom.name();
+	}
 
+	@Override
 	public String getIconCSSClass() {
 		return "o_openmeetings_icon";
 	}
 
+	@Override
 	public CourseNode getInstance() {
 		return new OpenMeetingsCourseNode();
-	}
-
-	public String getLinkCSSClass() {
-		return "o_openmeetings_icon";
 	}
 
 	public String getLinkText(Locale locale) {
@@ -67,9 +72,5 @@ public class OpenMeetingsCourseNodeConfiguration extends AbstractCourseNodeConfi
 	public boolean isEnabled() {
 		OpenMeetingsModule module = CoreSpringFactory.getImpl(OpenMeetingsModule.class);
 		return module.isEnabled();
-	}
-
-	public String getName() {
-		return getAlias();
 	}
 }

@@ -175,13 +175,19 @@ public class CcStep00 extends BasicStep {
 
 			// prepare checkboxes
 			String[] keys = new String[] { "sp", "en", "bc", "fo", "co" };
-			String[] values = new String[] { translator.translate("cce.informationpage"), translator.translate("cce.enrollment"),
-					translator.translate("cce.downloadfolder"), translator.translate("cce.forum"), translator.translate("cce.contactform") };
-
+			String[] values = new String[] {
+					translator.translate("cce.informationpage"), translator.translate("cce.enrollment"),
+					translator.translate("cce.downloadfolder"), translator.translate("cce.forum"),
+					translator.translate("cce.contactform")
+			};
 			// CSS for thumbs
-			String[] cssClasses = new String[] { "cc_sp", "en_sp", "bc_sp", "fo_sp", "co_sp", };
+			String[] iconCSS = new String[] {
+					"o_icon o_sp_icon", "o_icon o_en_icon",
+					"o_icon o_bc_icon", "o_icon o_fo_icon",
+					"o_icon o_co_icon"
+			};
 			// show checkbox
-			rightsChooser = FormUIFactory.getInstance().addCheckboxesVertical("rightsChooser", fic, keys, values, cssClasses, 1);
+			rightsChooser = FormUIFactory.getInstance().addCheckboxesVertical("rightsChooser", fic, keys, values, iconCSS, 1);
 			rightsChooser.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 			// create edit button for enrollment and hide it
 			editButtonEnrollment = FormUIFactory.getInstance().addFormLink("cce.edit", fic);

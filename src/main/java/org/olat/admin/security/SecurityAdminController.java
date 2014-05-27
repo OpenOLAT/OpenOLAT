@@ -62,17 +62,17 @@ public class SecurityAdminController extends FormBasicController {
 		String[] values = new String[]{ "" };
 		
 		// on: force top top frame (more security); off: allow in frame (less security)
-		topFrameEl = uifactory.addCheckboxesHorizontal("sec.topframe", "sec.topframe", formLayout, keys, values, null);
+		topFrameEl = uifactory.addCheckboxesHorizontal("sec.topframe", "sec.topframe", formLayout, keys, values);
 		topFrameEl.select("on", securityModule.isForceTopFrame());
 		topFrameEl.addActionListener(FormEvent.ONCHANGE);
 		
 		// on: block wiki (more security); off: do not block wiki (less security)
-		wikiEl = uifactory.addCheckboxesHorizontal("sec.wiki", "sec.wiki", formLayout, keys, values, null);
+		wikiEl = uifactory.addCheckboxesHorizontal("sec.wiki", "sec.wiki", formLayout, keys, values);
 		wikiEl.select("off", securityModule.isWikiEnabled());
 		wikiEl.addActionListener(FormEvent.ONCHANGE);
 
 		// on: force file download in folder component (more security); off: allow execution of content (less security)
-		forceDownloadEl = uifactory.addCheckboxesHorizontal("sec.download", "sec.force.download", formLayout, keys, values, null);
+		forceDownloadEl = uifactory.addCheckboxesHorizontal("sec.download", "sec.force.download", formLayout, keys, values);
 		forceDownloadEl.select("on", folderModule.isForceDownload());
 		forceDownloadEl.addActionListener(FormEvent.ONCHANGE);
 	}

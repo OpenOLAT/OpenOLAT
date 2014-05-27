@@ -122,7 +122,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
 public class EditorMainController extends MainLayoutBasicController implements GenericEventListener {
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(EditorMainController.class);
 	
-	private static final String TB_ACTION = "o_tb_do_";
+	protected static final String TB_ACTION = "o_tb_do_";
 
 	private static final String CMD_COPYNODE = "copyn";
 	private static final String CMD_MOVENODE = "moven";
@@ -130,8 +130,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private static final String CMD_CLOSEEDITOR = "cmd.close";
 	private static final String CMD_PUBLISH = "pbl";
 	private static final String CMD_COURSEPREVIEW = "cprev";
-	private static final String CMD_MULTI_SP = "cmp.multi.sp";
-	private static final String CMD_MULTI_CHECKLIST = "cmp.multi.checklist";
+	protected static final String CMD_MULTI_SP = "cmp.multi.sp";
+	protected static final String CMD_MULTI_CHECKLIST = "cmp.multi.checklist";
 
 	// NLS support
 	
@@ -153,9 +153,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private static final String NLS_DELETENODE_ERROR_ROOTNODE = "deletenode.error.rootnode";
 	private static final String NLS_MOVECOPYNODE_ERROR_SELECTFIRST = "movecopynode.error.selectfirst";
 	private static final String NLS_MOVECOPYNODE_ERROR_ROOTNODE = "movecopynode.error.rootnode";
-	private static final String NLS_ADMIN_HEADER = "command.admin.header";
-	private static final String NLS_MULTI_SPS = "command.multi.sps";
-	private static final String NLS_MULTI_CHECKLIST = "command.multi.checklist";
 
 	private MenuTree menuTree;
 	private VelocityContainer main;
@@ -163,7 +160,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private TabbedPane tabbedNodeConfig;
 	private SelectionTree selTree;
 
-	CourseEditorTreeModel cetm;
+	private CourseEditorTreeModel cetm;
 	private TabbableController nodeEditCntrllr;
 	private StepsMainRunController publishStepsController;
 	private StepsMainRunController checklistWizard;
@@ -174,6 +171,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private LayoutMain3ColsController columnLayoutCtr;
 	private AlternativeCourseNodeController alternateCtr;
 	private EditorStatusController statusCtr;
+	private ChooseNodeController chooseNodeTypeCtr;
 	
 	private LockResult lockEntry;
 	
@@ -182,8 +180,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	
 	private Link undelButton, alternativeLink, statusLink;
 	private Link previewLink, publishLink, closeLink;
-	private Link deleteNodeLink, moveNodeLink, copyNodeLink;
-	private Link multiSpsLink, multiCheckListLink;
+	private Link createNodeLink, deleteNodeLink, moveNodeLink, copyNodeLink;
 	
 	private CloseableModalController cmc;
 	private CloseableCalloutWindowController calloutCtrl;
@@ -350,30 +347,10 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			editTools.addComponent(closeLink);
 		}
 
-		//toolC.addHeader(translate(NLS_HEADER_INSERTNODES));
-		
-		Dropdown elementsTools = new Dropdown("insertNodes", NLS_HEADER_INSERTNODES, false, getTranslator());
-		stackPanel.addTool(elementsTools);
-		
-		CourseNodeFactory cnf = CourseNodeFactory.getInstance();
-		for (String courseNodeAlias : cnf.getRegisteredCourseNodeAliases()) {
-			CourseNodeConfiguration cnConfig = cnf.getCourseNodeConfiguration(courseNodeAlias);
-			try {
-				Link l = LinkFactory.createToolLink(TB_ACTION + courseNodeAlias, cnConfig.getLinkText(getLocale()), this, cnConfig.getIconCSSClass());
-				elementsTools.addComponent(l);
-			} catch (Exception e) {
-				log.error("Error while trying to add a course buildingblock of type \""+courseNodeAlias +"\" to the editor", e);
-			}
-		}
-		
-		Dropdown multiTools = new Dropdown("insertNodes", NLS_ADMIN_HEADER, false, getTranslator());
-		stackPanel.addTool(multiTools);
-		
-		multiSpsLink = LinkFactory.createToolLink(CMD_MULTI_SP, translate(NLS_MULTI_SPS), this, "o_icon_wizard");
-		multiTools.addComponent(multiSpsLink);
-		multiCheckListLink = LinkFactory.createToolLink(CMD_MULTI_CHECKLIST, translate(NLS_MULTI_CHECKLIST), this, "o_icon_wizard");
-		multiTools.addComponent(multiCheckListLink);
-		
+		createNodeLink = LinkFactory.createToolLink(NLS_HEADER_INSERTNODES, translate(NLS_HEADER_INSERTNODES), this);
+		createNodeLink.setDomReplacementWrapperRequired(false);
+		stackPanel.addTool(createNodeLink);
+
 		Dropdown nodeTools = new Dropdown("insertNodes", NLS_COMMAND_DELETENODE_HEADER, false, getTranslator());
 		stackPanel.addTool(nodeTools);
 		
@@ -425,6 +402,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			} else if(closeLink == source) {
 				doReleaseEditLock();
 				fireEvent(ureq, Event.DONE_EVENT);
+			} else if(createNodeLink == source) { 
+				doOpenNodeTypeChooser(ureq);
 			} else if(deleteNodeLink == source) {
 				doDeleteNode(ureq);
 			} else if(moveNodeLink == source) {
@@ -433,13 +412,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				doMove(ureq, course, true);
 			} else if(statusLink == source) {
 				doOpenStatusOverview(ureq);
-			} else if(multiSpsLink == source) {
-				launchSinglePagesWizard(ureq, course);
-			} else if(multiCheckListLink == source) {
-				launchChecklistsWizard(ureq);
-			} else if(source instanceof Link && event.getCommand().startsWith(TB_ACTION)) {
-				String cnAlias = event.getCommand().substring(TB_ACTION.length());
-				doCreate(ureq, course, cnAlias);
 			}
 		} catch (RuntimeException e) {
 			log.warn(RELEASE_LOCK_AT_CATCH_EXCEPTION+" [in event(UserRequest,Component,Event)]", e);			
@@ -625,6 +597,21 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			}
 			calloutCtrl.deactivate();
 			cleanUp();
+		} else if (source == chooseNodeTypeCtr) {
+			cmc.deactivate();
+
+			String cmd = event.getCommand();
+			if(cmd.startsWith(TB_ACTION)) {
+				CourseNode newNode = chooseNodeTypeCtr.getCreatedNode();
+				cleanUp();		
+				doInsert(ureq, newNode);
+			} else if(CMD_MULTI_SP.equals(cmd)) {
+				cleanUp();
+				launchSinglePagesWizard(ureq, course);
+			} else if(CMD_MULTI_CHECKLIST.equals(cmd)) {
+				cleanUp();
+				launchChecklistsWizard(ureq);
+			}
 		} else if (source == publishStepsController) {
 			getWindowControl().pop();
 			removeAsListenerAndDispose(publishStepsController);
@@ -662,17 +649,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				}
 			}
 		} else if (source == cmc) {
-			//aggressive clean-up
-			removeAsListenerAndDispose(multiSPChooserCtr);
-			removeAsListenerAndDispose(moveCopyController);
-			removeAsListenerAndDispose(insertNodeController);
-			removeAsListenerAndDispose(alternateCtr);
-			removeAsListenerAndDispose(cmc);
-			moveCopyController = null;
-			insertNodeController = null;
-			multiSPChooserCtr = null;
-			alternateCtr = null;
-			cmc = null;
+			cleanUp();
 		} else if (source == moveCopyController) {	
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {					
@@ -757,11 +734,26 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		}
 	}
 	
+	/**
+	 * Aggressive clean-up of popup controllers
+	 */
 	private void cleanUp() {
+		removeAsListenerAndDispose(insertNodeController);
+		removeAsListenerAndDispose(moveCopyController);
+		removeAsListenerAndDispose(multiSPChooserCtr);
+		removeAsListenerAndDispose(chooseNodeTypeCtr);
+		removeAsListenerAndDispose(alternateCtr);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(statusCtr);
+		removeAsListenerAndDispose(cmc);
+		insertNodeController = null;
+		moveCopyController = null;
+		chooseNodeTypeCtr = null;
+		multiSPChooserCtr = null;
+		alternateCtr = null;
 		calloutCtrl = null;
 		statusCtr = null;
+		cmc = null;
 	}
 	
 	private void doMove(UserRequest ureq, ICourse course, boolean copy) {
@@ -874,6 +866,23 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		insertNodeController = new InsertNodeController(ureq, getWindowControl(), course, cnAlias);				
 		listenTo(insertNodeController);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), insertNodeController.getInitialComponent(), true, translate(NLS_INSERTNODE_TITLE));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doOpenNodeTypeChooser(UserRequest ureq) {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(chooseNodeTypeCtr);
+		
+		menuTree.getSelectedNode();
+		
+		TreeNode tn = menuTree.getSelectedNode();
+		CourseEditorTreeNode cetn = tn == null ? null : cetm.getCourseEditorNodeById(tn.getIdent());
+		chooseNodeTypeCtr = new ChooseNodeController(ureq, getWindowControl(), ores, cetn);
+		listenTo(chooseNodeTypeCtr);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), chooseNodeTypeCtr.getInitialComponent(),
+				true, translate(NLS_INSERTNODE_TITLE));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -1121,13 +1130,15 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	
 	private void launchSinglePagesWizard(UserRequest ureq, ICourse course) {
 		removeAsListenerAndDispose(multiSPChooserCtr);
+		removeAsListenerAndDispose(cmc);
+		
 		VFSContainer rootContainer = course.getCourseEnvironment().getCourseFolderContainer();
 		CourseEditorTreeNode selectedNode = (CourseEditorTreeNode)menuTree.getSelectedNode();
 		multiSPChooserCtr = new MultiSPController(ureq, getWindowControl(), rootContainer, ores, selectedNode);
 		listenTo(multiSPChooserCtr);
 		
-		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), multiSPChooserCtr.getInitialComponent());
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				multiSPChooserCtr.getInitialComponent(), true, translate("multi.sps.title"));
 		listenTo(cmc);
 		cmc.activate();
 	} 

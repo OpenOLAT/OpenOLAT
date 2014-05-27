@@ -66,7 +66,7 @@ public class DedupMembersConfirmationController extends FormBasicController {
 		String[] values = new String[] {
 				translate("dedup.members.coaches"), translate("dedup.members.particpants")
 		};
-		typEl = uifactory.addCheckboxesVertical("typ", "dedup.members.typ", optionsCont, keys, values, null, 1);
+		typEl = uifactory.addCheckboxesVertical("typ", "dedup.members.typ", optionsCont, keys, values, 1);
 		typEl.select(keys[0], true);
 		typEl.select(keys[1], true);
 

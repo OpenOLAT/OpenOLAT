@@ -27,6 +27,7 @@ import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.ViteroCourseNode;
 import org.olat.modules.vitero.ViteroModule;
 
@@ -39,24 +40,29 @@ import org.olat.modules.vitero.ViteroModule;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ViteroCourseNodeConfiguration extends AbstractCourseNodeConfiguration implements CourseNodeConfiguration {
+public class ViteroCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 
+	@Override
 	public String getAlias() {
 		return "vitero";
 	}
 
+	@Override
+	public String getGroup() {
+		return CourseNodeGroup.virtualClassroom.name();
+	}
+
+	@Override
 	public String getIconCSSClass() {
 		return "o_vitero_icon";
 	}
 
+	@Override
 	public CourseNode getInstance() {
 		return new ViteroCourseNode();
 	}
 
-	public String getLinkCSSClass() {
-		return "o_vitero_icon";
-	}
-
+	@Override
 	public String getLinkText(Locale locale) {
 		Translator fallback = Util.createPackageTranslator(CourseNodeConfiguration.class, locale);
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale, fallback);
@@ -67,9 +73,5 @@ public class ViteroCourseNodeConfiguration extends AbstractCourseNodeConfigurati
 	public boolean isEnabled() {
 		ViteroModule viteroModule = CoreSpringFactory.getImpl(ViteroModule.class);
 		return viteroModule.isEnabled();
-	}
-
-	public String getName() {
-		return getAlias();
 	}
 }

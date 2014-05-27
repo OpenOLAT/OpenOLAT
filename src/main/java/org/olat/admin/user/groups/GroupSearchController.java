@@ -251,7 +251,7 @@ public class GroupSearchController extends StepFormBasicController {
 	
 	private MultipleSelectionElement createSelection(String name) {
 		MultipleSelectionElement selection = new MultipleSelectionElementImpl(name, MultipleSelectionElementImpl.createVerticalLayout("checkbox",1));
-		selection.setKeysAndValues(new String[]{"on"}, new String[]{""}, null);
+		selection.setKeysAndValues(new String[]{"on"}, new String[]{""});
 		tableCont.add(name, selection);
 		return selection;
 	}

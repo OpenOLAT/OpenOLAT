@@ -157,12 +157,12 @@ public class BGMailTemplateController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(!mandatoryEmail) {
-			sendMail = uifactory.addCheckboxesVertical("sendmail", "", formLayout, new String[]{"xx"}, new String[]{translate("mailtemplateform.sendMailSwitchElem")}, null, 1);
+			sendMail = uifactory.addCheckboxesVertical("sendmail", "", formLayout, new String[]{"xx"}, new String[]{translate("mailtemplateform.sendMailSwitchElem")}, 1);
 			sendMail.select("xx", true);
 			sendMail.addActionListener(FormEvent.ONCLICK);
 		}
 		
-		defaultTemplate = uifactory.addCheckboxesVertical("deftemplate", "", formLayout, new String[]{"xx"}, new String[]{translate("mailtemplateform.defaultTemplate")}, null, 1);
+		defaultTemplate = uifactory.addCheckboxesVertical("deftemplate", "", formLayout, new String[]{"xx"}, new String[]{translate("mailtemplateform.defaultTemplate")}, 1);
 		if(!customizingAvailable && StringHelper.containsNonWhitespace(template.getSubjectTemplate())) {
 			defaultTemplate.select("xx", true);
 		}
@@ -180,7 +180,7 @@ public class BGMailTemplateController extends FormBasicController {
 		}
 		
 		if(ccSenderAllowed) {
-			ccSender = uifactory.addCheckboxesVertical("tcpfrom", "", formLayout, new String[]{"xx"}, new String[]{translate(NLS_CONTACT_SEND_CP_FROM)}, null, 1);
+			ccSender = uifactory.addCheckboxesVertical("tcpfrom", "", formLayout, new String[]{"xx"}, new String[]{translate(NLS_CONTACT_SEND_CP_FROM)}, 1);
 		}
 		
 		if(useSubmit || useCancel) {

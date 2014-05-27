@@ -104,7 +104,7 @@ public class LinksPortletEditController extends FormBasicController {
 				return true;
 			}
 		});
-		openPopup = uifactory.addCheckboxesHorizontal("link.open.new.window", "link.open.new.window", formLayout, new String[]{TARGET_BLANK}, new String[]{""}, new String[]{""});
+		openPopup = uifactory.addCheckboxesHorizontal("link.open.new.window", "link.open.new.window", formLayout, new String[]{TARGET_BLANK}, new String[]{""});
 		if (portletLink.getTarget().equals(TARGET_BLANK)) {
 			openPopup.selectAll();
 		}

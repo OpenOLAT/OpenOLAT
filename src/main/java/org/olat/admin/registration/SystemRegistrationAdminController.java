@@ -99,7 +99,7 @@ public class SystemRegistrationAdminController extends FormBasicController {
 		//
 		// Add website
 		publishWebSiteSelection = uifactory.addCheckboxesVertical("registration.publishWebSiteSelection", null,  formLayout,
-				new String[] { YES }, new String[] { "" }, null, 1);
+				new String[] { YES }, new String[] { "" }, 1);
 		publishWebSiteSelection.addActionListener(FormEvent.ONCLICK);
 		boolean publishWebsiteConfig = registrationModule.isPublishWebsite();
 		publishWebSiteSelection.select(YES, publishWebsiteConfig);
@@ -123,7 +123,7 @@ public class SystemRegistrationAdminController extends FormBasicController {
 		//
 		// Add announce list
 		addToAnnounceListSelection = uifactory.addCheckboxesVertical("registration.addToAnnounceListSelection", null, formLayout,
-				new String[] { YES }, new String[] { "" }, null, 1);
+				new String[] { YES }, new String[] { "" }, 1);
 		addToAnnounceListSelection.addActionListener(FormEvent.ONCLICK);
 		addToAnnounceListSelection.select(YES, registrationModule.isNotifyReleases());
 		//

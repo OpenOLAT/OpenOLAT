@@ -192,7 +192,7 @@ class UserBulkChangeStep01 extends BasicStep {
 
 			// usermanager:
 			if (isAdmin || isUserManager || iAmOlatAdmin) {
-				chkUserManager = uifactory.addCheckboxesVertical("Usermanager", "table.role.useradmin", innerFormLayout, new String[] { "Usermanager" }, new String[] { "" }, null, 1);
+				chkUserManager = uifactory.addCheckboxesVertical("Usermanager", "table.role.useradmin", innerFormLayout, new String[] { "Usermanager" }, new String[] { "" }, 1);
 				chkUserManager.select("Usermanager", false);
 				chkUserManager.addActionListener(FormEvent.ONCLICK);
 
@@ -206,7 +206,7 @@ class UserBulkChangeStep01 extends BasicStep {
 
 			// groupmanager
 			if (isAdmin || isGroupManager || iAmOlatAdmin) {
-				chkGroupManager = uifactory.addCheckboxesVertical("Groupmanager", "table.role.groupadmin", innerFormLayout, new String[] { "Groupmanager" }, new String[] { "" }, null, 1);
+				chkGroupManager = uifactory.addCheckboxesVertical("Groupmanager", "table.role.groupadmin", innerFormLayout, new String[] { "Groupmanager" }, new String[] { "" }, 1);
 				chkGroupManager.select("Groupmanager", false);
 				chkGroupManager.addActionListener(FormEvent.ONCLICK);
 
@@ -220,7 +220,7 @@ class UserBulkChangeStep01 extends BasicStep {
 
 			// author
 			if (isAdmin || isAuthor || iAmOlatAdmin) {
-				chkAuthor = uifactory.addCheckboxesVertical("Author", "table.role.author", innerFormLayout, new String[] { "Author" }, new String[] { "" }, null, 1);
+				chkAuthor = uifactory.addCheckboxesVertical("Author", "table.role.author", innerFormLayout, new String[] { "Author" }, new String[] { "" }, 1);
 				chkAuthor.select("Author", false);
 				chkAuthor.addActionListener(FormEvent.ONCLICK);
 
@@ -237,7 +237,7 @@ class UserBulkChangeStep01 extends BasicStep {
 			
 			// sysadmin
 			if (isAdmin || iAmOlatAdmin) {
-				chkAdmin = uifactory.addCheckboxesVertical("Admin", "table.role.admin", innerFormLayout, new String[] { "Admin" }, new String[] { "" }, null, 1);
+				chkAdmin = uifactory.addCheckboxesVertical("Admin", "table.role.admin", innerFormLayout, new String[] { "Admin" }, new String[] { "" }, 1);
 				chkAdmin.select("Admin", false);
 				chkAdmin.addActionListener(FormEvent.ONCLICK);
 
@@ -251,7 +251,7 @@ class UserBulkChangeStep01 extends BasicStep {
 
 			// status
 			if (isAdmin || iAmOlatAdmin) {
-				chkStatus = uifactory.addCheckboxesVertical("Status", "table.role.status", innerFormLayout, new String[] { "Status" }, new String[] { "" }, null, 1);
+				chkStatus = uifactory.addCheckboxesVertical("Status", "table.role.status", innerFormLayout, new String[] { "Status" }, new String[] { "" }, 1);
 				chkStatus.select("Status", false);
 				chkStatus.addActionListener(FormEvent.ONCLICK);
 

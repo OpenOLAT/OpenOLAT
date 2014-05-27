@@ -33,45 +33,42 @@ import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.COCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeGroup;
 
 /**
  * Description:<br>
  * TODO: guido Class Description for COCourseNodeConfiguration
  */
-public class COCourseNodeConfiguration extends AbstractCourseNodeConfiguration implements CourseNodeConfiguration {
+public class COCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 
 	private COCourseNodeConfiguration() {
 		super();
 	}
 
+	@Override
 	public CourseNode getInstance() {
 		return new COCourseNode();
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getLinkText(java.util.Locale)
-	 */
+	@Override
 	public String getLinkText(Locale locale) {
 		Translator fallback = Util.createPackageTranslator(CourseNodeConfiguration.class, locale);
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale, fallback);
 		return translator.translate("title_co");
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getCSSClass()
-	 */
+	@Override
 	public String getIconCSSClass() {
 		return "o_co_icon";
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getLinkCSSClass()
-	 */
-	public String getLinkCSSClass() {
-		return null;
-	}
-
+	@Override
 	public String getAlias() {
 		return "co";
+	}
+	
+	@Override
+	public String getGroup() {
+		return CourseNodeGroup.other.name();
 	}
 }

@@ -70,7 +70,7 @@ public class PoolEditController extends FormBasicController {
 		
 		String[] keys = new String[]{"on"};
 		String[] values = new String[]{""};
-		publicEl = uifactory.addCheckboxesHorizontal("pool.public", formLayout, keys, values, null);
+		publicEl = uifactory.addCheckboxesHorizontal("pool.public", formLayout, keys, values);
 		boolean publicPool = pool == null ? false : pool.isPublicPool();
 		publicEl.select("on", publicPool);
 

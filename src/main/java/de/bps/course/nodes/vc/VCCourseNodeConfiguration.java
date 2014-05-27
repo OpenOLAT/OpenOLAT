@@ -27,6 +27,7 @@ import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeGroup;
 
 import de.bps.course.nodes.VCCourseNode;
 
@@ -40,24 +41,29 @@ import de.bps.course.nodes.VCCourseNode;
  * @author Jens Lindner(jlindne4@hs-mittweida.de)
  * @author skoeber
  */
-public class VCCourseNodeConfiguration extends AbstractCourseNodeConfiguration implements CourseNodeConfiguration {
+public class VCCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 
+	@Override
 	public String getAlias() {
 		return "vc";
 	}
+	
+	@Override
+	public String getGroup() {
+		return CourseNodeGroup.virtualClassroom.name();
+	}
 
+	@Override
 	public String getIconCSSClass() {
 		return "o_vc_icon";
 	}
 
+	@Override
 	public CourseNode getInstance() {
 		return new VCCourseNode();
 	}
 
-	public String getLinkCSSClass() {
-		return "o_vc_icon";
-	}
-
+	@Override
 	public String getLinkText(Locale locale) {
 		Translator fallback = Util.createPackageTranslator(CourseNodeConfiguration.class, locale);
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale, fallback);

@@ -120,7 +120,7 @@ public class PaypalAccessConfigurationController extends AbstractConfigurationMe
 			currencyEl.select("CHF", true);
 		}
 		
-		vatEnabledEl = uifactory.addCheckboxesHorizontal("vat.enabled", "vat.enabled", formLayout, vatKeys, vatValues, null);
+		vatEnabledEl = uifactory.addCheckboxesHorizontal("vat.enabled", "vat.enabled", formLayout, vatKeys, vatValues);
 		if(acModule.isVatEnabled()) {
 			vatEnabledEl.select(vatKeys[0], true);
 		}

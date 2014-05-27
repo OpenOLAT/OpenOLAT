@@ -86,12 +86,12 @@ public class AccessControlAdminController extends FormBasicController {
 		setFormTitle("admin.title");
 		setFormDescription("admin.desc");
 
-		enabled = uifactory.addCheckboxesHorizontal("ac.enabled", formLayout, keys, values, null);
+		enabled = uifactory.addCheckboxesHorizontal("ac.enabled", formLayout, keys, values);
 		enabled.select(keys[0], acModule.isEnabled());
 		
 		uifactory.addSpacerElement("spaceman", formLayout, false);
 		
-		methods = uifactory.addCheckboxesVertical("ac.methods", formLayout, methodKeys, methodValues, null, 1);
+		methods = uifactory.addCheckboxesVertical("ac.methods", formLayout, methodKeys, methodValues, 1);
 		methods.select("free.method", acModule.isFreeEnabled());
 		methods.select("token.method", acModule.isTokenEnabled());
 		methods.select("paypal.method", acModule.isPaypalEnabled());
@@ -100,7 +100,7 @@ public class AccessControlAdminController extends FormBasicController {
 		
 		uifactory.addSpacerElement("itgirl", formLayout, false);
 		
-		homeEnabled = uifactory.addCheckboxesHorizontal("ac.home.enabled", formLayout, keys, values, null);
+		homeEnabled = uifactory.addCheckboxesHorizontal("ac.home.enabled", formLayout, keys, values);
 		homeEnabled.select(keys[0], acModule.isPaypalEnabled() || acModule.isHomeOverviewEnabled());
 		
 		final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());

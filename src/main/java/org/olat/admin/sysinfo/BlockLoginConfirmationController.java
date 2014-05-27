@@ -49,7 +49,7 @@ public class BlockLoginConfirmationController extends FormBasicController {
 		formLayout.add(optionsCont);
 		formLayout.add("options", optionsCont);
 		String[] values = new String[] { translate("persist.block.login")};
-		persistEl = uifactory.addCheckboxesVertical("block.login.options", "block.login.options", optionsCont, keys, values, null, 1);
+		persistEl = uifactory.addCheckboxesVertical("block.login.options", "block.login.options", optionsCont, keys, values, 1);
 		persistEl.select(keys[0], true);
 
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

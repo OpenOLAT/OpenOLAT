@@ -75,7 +75,7 @@ public class GroupLeaveDialogBoxController extends FormBasicController {
 		String[] values = new String[]{
 				translate("dialog.modal.bg.mail.text")
 		};
-		sendMail = uifactory.addCheckboxesHorizontal("send.mail", null, formLayout, keys, values, null);
+		sendMail = uifactory.addCheckboxesHorizontal("send.mail", null, formLayout, keys, values);
 
 		if(!groupsToDelete.isEmpty()) {
 			String deletMsg = translate("unsubscribe.group.del");
@@ -84,7 +84,7 @@ public class GroupLeaveDialogBoxController extends FormBasicController {
 			String[] delValues = new String[]{
 					translate("group.delete.confirmation")
 			};
-			groupDeleteEl = uifactory.addCheckboxesHorizontal("group.del", null, formLayout, keys, delValues, null);
+			groupDeleteEl = uifactory.addCheckboxesHorizontal("group.del", null, formLayout, keys, delValues);
 			groupDeleteEl.select(keys[0], true);
 		}
 		

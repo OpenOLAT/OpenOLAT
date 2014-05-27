@@ -83,10 +83,10 @@ public class StructureNodeStepController extends StepFormBasicController {
 		uifactory.addSpacerElement("spaceman", formLayout, false);
 		
 		String[] pointValues = new String[]{ translate("points.sum.checklists") };
-		pointsEl = uifactory.addCheckboxesHorizontal("points", formLayout, onKeys, pointValues, null);
+		pointsEl = uifactory.addCheckboxesHorizontal("points", formLayout, onKeys, pointValues);
 		
 		String[] passedValues = new String[]{ "" };
-		passedEl = uifactory.addCheckboxesHorizontal("passed", "config.passed", formLayout, onKeys, passedValues, null);
+		passedEl = uifactory.addCheckboxesHorizontal("passed", "config.passed", formLayout, onKeys, passedValues);
 		passedEl.addActionListener(FormEvent.ONCHANGE);
 
 		String[] outputValues = new String[]{

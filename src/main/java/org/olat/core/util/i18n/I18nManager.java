@@ -1287,7 +1287,7 @@ public class I18nManager extends BasicManager {
 		for (int i = 0; i < languageKeys.length; i++) {
 			String cssClasses = (additionalCssClass == null ? "" : additionalCssClass);
 			String langKey = languageKeys[i];
-			cssClasses += " b_flag_" + langKey;
+			cssClasses += " o_flag_" + langKey;
 			flagsCssClasses[i] = cssClasses;
 		}
 		return flagsCssClasses;

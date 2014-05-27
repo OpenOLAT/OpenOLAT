@@ -93,7 +93,7 @@ public class RightsMetadataController extends FormBasicController  {
 		
 		String[] keys = new String[]{ "on" };
 		String[] values = new String[]{ "" };
-		copyrightEl = uifactory.addCheckboxesHorizontal("rights.copyright", "rights.copyright", metaCont, keys, values, null);
+		copyrightEl = uifactory.addCheckboxesHorizontal("rights.copyright", "rights.copyright", metaCont, keys, values);
 		copyrightEl.setEnabled(false);
 	
 		descriptionEl = uifactory.addStaticTextElement("rights.description", "", metaCont);

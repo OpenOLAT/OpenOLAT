@@ -176,7 +176,7 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 		jsOptionEl = uifactory.addRadiosVertical("option.js", formLayout, jsKeys, jsValues);
 		jsOptionEl.addActionListener(FormEvent.ONCHANGE);
 		
-		glossarEl = uifactory.addCheckboxesHorizontal("option.glossary", formLayout, new String[]{"on"}, new String[]{""}, null);
+		glossarEl = uifactory.addCheckboxesHorizontal("option.glossary", formLayout, new String[]{"on"}, new String[]{""});
 
 		String[] values = new String[]{ translate("height.auto"), "460px", "480px", 
 				"500px", "520px", "540px", "560px", "580px",

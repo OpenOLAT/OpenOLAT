@@ -155,9 +155,9 @@ public class LogFileChooserForm extends FormBasicController {
 			setFormDescription("course.logs.intro");
 			setFormContextHelp("org.olat.course.archiver", "arch-logf.html", "help.hover.log");
 			
-			aE = uifactory.addCheckboxesVertical("a", "logfilechooserform.logadmin", formLayout, new String[]{"xx"}, new String[]{""}, null, 1);
-			uE = uifactory.addCheckboxesVertical("u", "logfilechooserform.loguser",  formLayout, new String[]{"xx"}, new String[]{""}, null, 1);
-			sE = uifactory.addCheckboxesVertical("s", "logfilechooserform.logstat",  formLayout, new String[]{"xx"}, new String[]{""}, null, 1);
+			aE = uifactory.addCheckboxesVertical("a", "logfilechooserform.logadmin", formLayout, new String[]{"xx"}, new String[]{""}, 1);
+			uE = uifactory.addCheckboxesVertical("u", "logfilechooserform.loguser",  formLayout, new String[]{"xx"}, new String[]{""}, 1);
+			sE = uifactory.addCheckboxesVertical("s", "logfilechooserform.logstat",  formLayout, new String[]{"xx"}, new String[]{""}, 1);
 			
 			aE.setVisible(admin || a);
 			uE.setVisible(admin || u);

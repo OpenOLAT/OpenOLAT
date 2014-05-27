@@ -28,6 +28,7 @@ import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.portfolio.PortfolioModule;
 
@@ -40,7 +41,7 @@ import org.olat.portfolio.PortfolioModule;
  * Initial Date:  6 oct. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class PortfolioCourseNodeConfiguration extends AbstractCourseNodeConfiguration implements CourseNodeConfiguration {
+public class PortfolioCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 
 	public static final String MAP_KEY = "map-key";
 	public static final String REPO_SOFT_KEY = "repo-soft-key";
@@ -63,6 +64,11 @@ public class PortfolioCourseNodeConfiguration extends AbstractCourseNodeConfigur
 	public String getAlias() {
 		return "ep";
 	}
+	
+	@Override
+	public String getGroup() {
+		return CourseNodeGroup.other.name();
+	}
 
 	@Override
 	public CourseNode getInstance() {
@@ -79,11 +85,6 @@ public class PortfolioCourseNodeConfiguration extends AbstractCourseNodeConfigur
 	@Override
 	public String getIconCSSClass() {
 		return "o_ep_icon";
-	}
-
-	@Override
-	public String getLinkCSSClass() {
-		return null;
 	}
 
 	/**

@@ -206,7 +206,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		} else {
 			keyDetailsformMax = "detailsform.max.members.label";
 		}
-		selectionMaxMembers = uifactory.addCheckboxesHorizontal(keyDetailsformMax, formLayout, keys, values,null);
+		selectionMaxMembers = uifactory.addCheckboxesHorizontal(keyDetailsformMax, formLayout, keys, values);
 		maxMembers = uifactory.addIntegerElement("form.options.number.of.participants.per.topic_nbr", project.getMaxMembers(), formLayout);
 		maxMembers.setMinValueCheck(0, null);
 		maxMembers.setDisplaySize(3);
@@ -301,7 +301,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		}
 		attachmentFileName.addActionListener(FormEvent.ONCHANGE);
 
-		mailNotification = uifactory.addCheckboxesHorizontal("detailsform.mail.notification.label", formLayout, keys, values, null);
+		mailNotification = uifactory.addCheckboxesHorizontal("detailsform.mail.notification.label", formLayout, keys, values);
 		mailNotification.select(keys[0], project.isMailNotificationEnabled());
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());

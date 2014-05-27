@@ -32,13 +32,14 @@ import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.TUCourseNode;
 
 /**
  * Description:<br>
  * TODO: guido Class Description for TUCourseNodeConfiguration
  */
-public class TUCourseNodeConfiguration extends AbstractCourseNodeConfiguration implements CourseNodeConfiguration {
+public class TUCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 
 	/**
 	 * [spring only]
@@ -48,34 +49,30 @@ public class TUCourseNodeConfiguration extends AbstractCourseNodeConfiguration i
 		super();
 	}
 
+	@Override
 	public CourseNode getInstance() {
 		return new TUCourseNode();
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getLinkText(java.util.Locale)
-	 */
+	@Override
 	public String getLinkText(Locale locale) {
 		Translator fallback = Util.createPackageTranslator(CourseNodeConfiguration.class, locale);
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale, fallback);
 		return translator.translate("title_tu");
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getCSSClass()
-	 */
+	@Override
 	public String getIconCSSClass() {
 		return "o_tu_icon";
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getLinkCSSClass()
-	 */
-	public String getLinkCSSClass() {
-		return null;
-	}
-
+	@Override
 	public String getAlias() {
 		return "tu";
+	}
+	
+	@Override
+	public String getGroup() {
+		return CourseNodeGroup.content.name();
 	}
 }

@@ -76,7 +76,7 @@ public class ViteroAdminBookingRawInfosController extends FormBasicController {
 		}
 		uifactory.addStaticTextElement("group.name", name, formLayout);
 
-		MultipleSelectionElement autoSignIn = uifactory.addCheckboxesHorizontal("booking.autoSignIn", formLayout, autoSignInKeys, autoSignInValues, null);
+		MultipleSelectionElement autoSignIn = uifactory.addCheckboxesHorizontal("booking.autoSignIn", formLayout, autoSignInKeys, autoSignInValues);
 		if(booking.isAutoSignIn()) {
 			autoSignIn.select(autoSignInKeys[0], true);
 		}

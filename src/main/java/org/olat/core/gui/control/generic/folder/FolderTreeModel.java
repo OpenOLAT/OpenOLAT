@@ -76,7 +76,7 @@ public class FolderTreeModel extends GenericTreeModel {
 		this.fileFilter = fileFilter;
 
 		GenericTreeNode newRoot = new GenericTreeNode(rootContainer.getName(), rootContainer.getName());
-		newRoot.setIconCssClass("b_filetype_folder");
+		newRoot.setIconCssClass("o_filetype_folder");
 		setRootNode(newRoot);
 		if (allowRootFolderSelect) { // include root folder as selection
 			GenericTreeNode effectiveRoot = new GenericTreeNode("/", "/");
@@ -116,7 +116,7 @@ public class FolderTreeModel extends GenericTreeModel {
 				// container node
 				String filePath = parentPath + childName + "/";
 				GenericTreeNode tChild = new GenericTreeNode(childName, filePath); // filePath is the information to be remembered later
-				tChild.setIconCssClass("b_filetype_folder");
+				tChild.setIconCssClass("o_filetype_folder");
 				tChild.setAltText(child.getName());
 				tChild.setAccessible(selectableFolders ? (child.canWrite() == VFSConstants.YES) : false);
 				tParent.addChild(tChild);
@@ -134,7 +134,7 @@ public class FolderTreeModel extends GenericTreeModel {
 				GenericTreeNode tChild = new GenericTreeNode(childName, filePath);
 				String type = FolderHelper.extractFileType(childName, locale);
 				if (!FolderHelper.isKnownFileType(type)) { type = "file"; }
-				tChild.setIconCssClass("b_filetype_" + type);
+				tChild.setIconCssClass("o_filetype_" + type);
 				tChild.setAltText(childName);
 				tChild.setAccessible(selectableFiles);
 				tParent.addChild(tChild);

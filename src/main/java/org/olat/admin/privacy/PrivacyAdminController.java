@@ -71,7 +71,7 @@ public class PrivacyAdminController extends FormBasicController {
 				translate("admin.props.groupmanagers"),
 				translate("admin.props.administrators")
 		};
-		adminPropsEl = uifactory.addCheckboxesVertical("admin.props", propsCont, adminPropKeys, adminPropValues, null, 1);
+		adminPropsEl = uifactory.addCheckboxesVertical("admin.props", propsCont, adminPropKeys, adminPropValues, 1);
 		adminPropsEl.select("users", "enabled".equals(module.getUserSearchAdminPropsForUsers()));
 		adminPropsEl.select("authors", "enabled".equals(module.getUserSearchAdminPropsForAuthors()));
 		adminPropsEl.select("usermanagers", "enabled".equals(module.getUserSearchAdminPropsForUsermanagers()));
@@ -81,7 +81,7 @@ public class PrivacyAdminController extends FormBasicController {
 		
 		uifactory.addSpacerElement("admin.space.1", propsCont, true);
 
-		lastloginEl = uifactory.addCheckboxesVertical("last.login", propsCont, adminPropKeys, adminPropValues, null, 1);
+		lastloginEl = uifactory.addCheckboxesVertical("last.login", propsCont, adminPropKeys, adminPropValues, 1);
 		lastloginEl.select("users", "enabled".equals(module.getUserLastLoginVisibleForUsers()));
 		lastloginEl.select("authors", "enabled".equals(module.getUserLastLoginVisibleForAuthors()));
 		lastloginEl.select("usermanagers", "enabled".equals(module.getUserLastLoginVisibleForUsermanagers()));
@@ -94,7 +94,7 @@ public class PrivacyAdminController extends FormBasicController {
 		tuCont.setFormTitle(translate("tunnel.title"));
 		tuCont.setFormDescription(translate("tunnel.desc"));
 		
-		tunnelEl = uifactory.addCheckboxesHorizontal("tunnel.cbb", tuCont, onKeys, new String[]{""}, null);
+		tunnelEl = uifactory.addCheckboxesHorizontal("tunnel.cbb", tuCont, onKeys, new String[]{""});
 		tunnelEl.select("on", "enabled".equals(module.getUserInfosTunnelCourseBuildingBlock()));
 		tunnelEl.addActionListener(FormEvent.ONCHANGE);
 	}

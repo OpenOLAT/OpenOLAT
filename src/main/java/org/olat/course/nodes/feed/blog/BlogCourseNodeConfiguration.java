@@ -27,6 +27,7 @@ import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.BlogCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeGroup;
 
 /**
  * The blog course node configuration class
@@ -36,7 +37,7 @@ import org.olat.course.nodes.CourseNodeConfiguration;
  * 
  * @author gwassmann
  */
-public class BlogCourseNodeConfiguration extends AbstractCourseNodeConfiguration implements CourseNodeConfiguration {
+public class BlogCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 
 	private static final String ICON_CSS_CLASS = "o_blog_icon";
 	
@@ -44,38 +45,27 @@ public class BlogCourseNodeConfiguration extends AbstractCourseNodeConfiguration
 		super();
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getAlias()
-	 */
+	@Override
 	public String getAlias() {
 		return BlogCourseNode.TYPE;
 	}
+	
+	@Override
+	public String getGroup() {
+		return CourseNodeGroup.content.name();
+	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getIconCSSClass()
-	 */
+	@Override
 	public String getIconCSSClass() {
 		return ICON_CSS_CLASS;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getInstance()
-	 */
+	@Override
 	public CourseNode getInstance() {
 		return new BlogCourseNode();
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getLinkCSSClass()
-	 */
-	public String getLinkCSSClass() {
-		// No particular styles
-		return null;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getLinkText(java.util.Locale)
-	 */
+	@Override
 	public String getLinkText(Locale locale) {
 		Translator fallback = Util.createPackageTranslator(CourseNodeConfiguration.class, locale);
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale, fallback);

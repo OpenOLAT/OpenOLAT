@@ -80,6 +80,7 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.TransientRepositoryEntryRef;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.AuthoringEntryDataModel.Cols;
 import org.olat.repository.ui.list.RepositoryEntryRow;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -160,6 +161,7 @@ public class AuthorListController extends FormBasicController implements Activat
 
 	private void addCreateLink(RepositoryHandler handler, Dropdown dropdown) {
 		Link createLink = LinkFactory.createLink(handler.getSupportedType(), getTranslator(), this);
+		createLink.setIconLeftCSS("o_icon o_icon-fw " + RepositoyUIFactory.getIconCssClass(handler.getSupportedType()));
 		createLink.setUserObject(handler);
 		dropdown.addComponent(createLink);
 	}

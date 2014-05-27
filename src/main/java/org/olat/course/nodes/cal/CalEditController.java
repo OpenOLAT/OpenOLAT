@@ -265,7 +265,7 @@ public class CalEditController extends ActivateableTabbableDefaultController imp
 			boolean autoSubscribe = getAutoSubscribe(config);
 			String[] subscribesKeys = new String[]{""};
 			String[] subscribesValues = new String[]{translate("pane.tab.auto_subscribe.value")};
-			autoSubscribeEl = uifactory.addCheckboxesHorizontal("pane.tab.auto_subscribe", formLayout, subscribesKeys, subscribesValues, null);
+			autoSubscribeEl = uifactory.addCheckboxesHorizontal("pane.tab.auto_subscribe", formLayout, subscribesKeys, subscribesValues);
 			autoSubscribeEl.select("", autoSubscribe);
 			autoSubscribeEl.setLabel("pane.tab.auto_subscribe", null);
 			

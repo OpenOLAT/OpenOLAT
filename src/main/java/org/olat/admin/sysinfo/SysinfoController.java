@@ -162,7 +162,7 @@ public class SysinfoController extends FormBasicController {
 		//cluster
 		boolean clusterMode = "Cluster".equals(Settings.getClusterMode());
 		MultipleSelectionElement clusterEl
-			= uifactory.addCheckboxesHorizontal("cluster", "sysinfo.cluster", serverCont, new String[]{"xx"}, new String[]{""}, null);
+			= uifactory.addCheckboxesHorizontal("cluster", "sysinfo.cluster", serverCont, new String[]{"xx"}, new String[]{""});
 		clusterEl.setEnabled(false);
 		clusterEl.select("xx", clusterMode);
 		

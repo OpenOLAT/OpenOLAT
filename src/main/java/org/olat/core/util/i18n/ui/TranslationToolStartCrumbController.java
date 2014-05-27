@@ -261,14 +261,14 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		missingBundlesSelection.select(ALL_BUNDLES_IDENTIFYER, true);
 		// Add missing bundles children switch
 		missingBundlesIncludeBundlesChildrenSwitch = formFactory.addCheckboxesHorizontal("missingBundlesIncludeBundlesChildrenSwitch", null,
-				this.flc, new String[] { KEYS_ENABLED }, new String[] { KEYS_EMPTY }, null);//disabled label by setting i18nLabel to null
+				this.flc, new String[] { KEYS_ENABLED }, new String[] { KEYS_EMPTY });//disabled label by setting i18nLabel to null
 		missingBundlesIncludeBundlesChildrenSwitch.select(KEYS_ENABLED, true);
 		missingBundlesIncludeBundlesChildrenSwitch.addActionListener(FormEvent.ONCLICK);
 		formLayout.add(missingBundlesIncludeBundlesChildrenSwitch);
 		missingBundlesIncludeBundlesChildrenSwitch.setEnabled(false);
 		// Add priority sort switch
 		missingBundlesPrioritySortSwitch = formFactory.addCheckboxesHorizontal("missingBundlesPrioritySortSwitch", null, this.flc,
-				new String[] { KEYS_ENABLED }, new String[] { KEYS_EMPTY }, null);//disabled label by setting i18nLabel to null
+				new String[] { KEYS_ENABLED }, new String[] { KEYS_EMPTY });//disabled label by setting i18nLabel to null
 		missingBundlesPrioritySortSwitch.select(KEYS_ENABLED, true);
 		missingBundlesPrioritySortSwitch.addActionListener(FormEvent.ONCLICK);
 		formLayout.add(missingBundlesPrioritySortSwitch);
@@ -287,14 +287,14 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		existingBundlesSelection.select(ALL_BUNDLES_IDENTIFYER, true);
 		// Add existing bundles children switch
 		existingBundlesIncludeBundlesChildrenSwitch = formFactory.addCheckboxesHorizontal("existingBundlesIncludeBundlesChildrenSwitch", null, 
-				this.flc, new String[] { KEYS_ENABLED }, new String[] { KEYS_EMPTY }, null);//disabled label by setting i18nLabel to null
+				this.flc, new String[] { KEYS_ENABLED }, new String[] { KEYS_EMPTY });//disabled label by setting i18nLabel to null
 		existingBundlesIncludeBundlesChildrenSwitch.select(KEYS_ENABLED, true);
 		existingBundlesIncludeBundlesChildrenSwitch.addActionListener(FormEvent.ONCLICK);
 		formLayout.add(existingBundlesIncludeBundlesChildrenSwitch);
 		existingBundlesIncludeBundlesChildrenSwitch.setEnabled(false);
 		// Add priority sort switch
 		existingBundlesPrioritySortSwitch = formFactory.addCheckboxesHorizontal("existingBundlesPrioritySortSwitch", null, this.flc,
-				new String[] { KEYS_ENABLED }, new String[] { KEYS_EMPTY }, null);//disabled label by setting i18nLabel to null
+				new String[] { KEYS_ENABLED }, new String[] { KEYS_EMPTY });//disabled label by setting i18nLabel to null
 		existingBundlesPrioritySortSwitch.select(KEYS_ENABLED, true);
 		existingBundlesPrioritySortSwitch.addActionListener(FormEvent.ONCLICK);
 		formLayout.add(existingBundlesPrioritySortSwitch);
@@ -313,14 +313,14 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		allBundlesSelection.select(ALL_BUNDLES_IDENTIFYER, true);
 		// Add all bundles children switch
 		allBundlesIncludeBundlesChildrenSwitch = formFactory.addCheckboxesHorizontal("allBundlesIncludeBundlesChildrenSwitch", null, this.flc,
-				new String[] { KEYS_ENABLED }, new String[] { KEYS_EMPTY }, null);//disabled label by setting i18nLabel to null
+				new String[] { KEYS_ENABLED }, new String[] { KEYS_EMPTY });//disabled label by setting i18nLabel to null
 		allBundlesIncludeBundlesChildrenSwitch.select(KEYS_ENABLED, true);
 		allBundlesIncludeBundlesChildrenSwitch.addActionListener(FormEvent.ONCLICK);
 		formLayout.add(allBundlesIncludeBundlesChildrenSwitch);
 		allBundlesIncludeBundlesChildrenSwitch.setEnabled(false);
 		// Add priority sort switch
 		allBundlesPrioritySortSwitch = formFactory.addCheckboxesHorizontal("allBundlesPrioritySortSwitch", null, this.flc,
-				new String[] { KEYS_ENABLED }, new String[] { KEYS_EMPTY }, null);//disabled label by setting i18nLabel to null
+				new String[] { KEYS_ENABLED }, new String[] { KEYS_EMPTY });//disabled label by setting i18nLabel to null
 		allBundlesPrioritySortSwitch.select(KEYS_ENABLED, true);
 		allBundlesPrioritySortSwitch.addActionListener(FormEvent.ONCLICK);
 		formLayout.add(allBundlesPrioritySortSwitch);
@@ -363,13 +363,13 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		searchBundlesSelection.select(ALL_BUNDLES_IDENTIFYER, true);
 		// Add search bundles children switch
 		searchBundlesIncludeBundlesChildrenSwitch = formFactory.addCheckboxesHorizontal("searchBundlesIncludeBundlesChildrenSwitch",
-				"generic.limit.bundles.includeChildren", searchLayoutContainer, new String[] { KEYS_ENABLED }, new String[] { KEYS_EMPTY }, null);
+				"generic.limit.bundles.includeChildren", searchLayoutContainer, new String[] { KEYS_ENABLED }, new String[] { KEYS_EMPTY });
 		searchBundlesIncludeBundlesChildrenSwitch.select(KEYS_ENABLED, true);
 		searchBundlesIncludeBundlesChildrenSwitch.addActionListener(FormEvent.ONCLICK);
 		searchBundlesIncludeBundlesChildrenSwitch.setEnabled(false);
 		// Add priority sort switch
 		searchBundlesPrioritySortSwitch = formFactory.addCheckboxesHorizontal("searchBundlesPrioritySortSwitch", "generic.sort.by.priority",
-				searchLayoutContainer, new String[] { KEYS_ENABLED }, new String[] { KEYS_EMPTY }, null);
+				searchLayoutContainer, new String[] { KEYS_ENABLED }, new String[] { KEYS_EMPTY });
 		searchBundlesPrioritySortSwitch.select(KEYS_ENABLED, true);
 		searchBundlesPrioritySortSwitch.addActionListener(FormEvent.ONCLICK);
 		formLayout.add(searchBundlesPrioritySortSwitch);

@@ -174,7 +174,7 @@ public class MessageEditController extends FormBasicController {
 
 		// show stickyCheckBox only if moderator and message is threadtop
 		stickyCheckBox = uifactory.addCheckboxesHorizontal("stickyCheckBox", null, formLayout, new String[] { STICKY_SET_IDENTIFIER },
-				new String[] { translate("msg.sticky") }, new String[] { "" });
+				new String[] { translate("msg.sticky") });
 		Status msgStatus = Status.getStatus(message.getStatusCode());
 		if (msgStatus.isSticky()) stickyCheckBox.select(STICKY_SET_IDENTIFIER, true);
 		if (!(forumCallback.mayEditMessageAsModerator() && message.getParent() == null)) {

@@ -333,7 +333,7 @@ class CloseRessourceOptionForm extends FormBasicController {
 		
 		String[] keys = new String[] {"form.clean.catalog", "form.clean.groups"};
 		String[] values = new String[] {translator.translate("form.clean.catalog"), translator.translate("form.clean.groups")};
-		checkboxClean = uifactory.addCheckboxesVertical("form.clean.catalog", null, formLayout, keys, values, null, 1);
+		checkboxClean = uifactory.addCheckboxesVertical("form.clean.catalog", null, formLayout, keys, values, 1);
 		
 		submit = new FormSubmit("next", "next");
 		back = new FormReset("back", "back");

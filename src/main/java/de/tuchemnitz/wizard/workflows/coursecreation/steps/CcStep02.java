@@ -155,7 +155,7 @@ public class CcStep02 extends BasicStep {
 			formLayout.add(formItems);
 
 			// create access limit checkbox
-			publishCheckbox = FormUIFactory.getInstance().addCheckboxesVertical("publishCheckbox", formItems, new String[] {"ison"}, new String[] {""}, null, 1);
+			publishCheckbox = FormUIFactory.getInstance().addCheckboxesVertical("publishCheckbox", formItems, new String[] {"ison"}, new String[] {""}, 1);
 			publishCheckbox.setLabel("car.makepublic", null);
 			publishCheckbox.select("ison", true);
 

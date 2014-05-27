@@ -68,16 +68,16 @@ public class CatalogAdminController extends FormBasicController {
 		formLayout.add("functions", serverCont);
 
 		boolean enabled = repositoryModule.isCatalogEnabled();
-		enableEl = uifactory.addCheckboxesHorizontal("catalog.enable", "catalog.enable", serverCont, new String[]{"xx"}, new String[]{""}, null);
+		enableEl = uifactory.addCheckboxesHorizontal("catalog.enable", "catalog.enable", serverCont, new String[]{"xx"}, new String[]{""});
 		enableEl.select("xx", enabled);
 		enableEl.addActionListener(FormEvent.ONCLICK);
 		
-		enableBrowsingEl = uifactory.addCheckboxesHorizontal("catalog.browsing", "catalog.browsing", serverCont, new String[]{"xx"}, new String[]{""}, null);
+		enableBrowsingEl = uifactory.addCheckboxesHorizontal("catalog.browsing", "catalog.browsing", serverCont, new String[]{"xx"}, new String[]{""});
 		enableBrowsingEl.select("xx", repositoryModule.isCatalogBrowsingEnabled());
 		enableBrowsingEl.setEnabled(enabled);
 		enableBrowsingEl.addActionListener(FormEvent.ONCLICK);
 
-		siteEl = uifactory.addCheckboxesHorizontal("catalog.site", "catalog.site", serverCont, new String[]{"xx"}, new String[]{""}, null);
+		siteEl = uifactory.addCheckboxesHorizontal("catalog.site", "catalog.site", serverCont, new String[]{"xx"}, new String[]{""});
 		siteEl.select("xx", repositoryModule.isCatalogSiteEnabled());
 		siteEl.setEnabled(enabled);
 		siteEl.addActionListener(FormEvent.ONCLICK);

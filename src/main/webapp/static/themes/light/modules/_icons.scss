@@ -150,6 +150,18 @@ a.o_icon {
 .o_FileResource-SURVEY_icon{ @extend .o_icon-meh-o; }
 .o_FileResource-TEST_icon{ @extend .o_icon-pencil-square-o; }
 .o_FileResource-WIKI_icon{ @extend .o_icon-globe; }
+.o_FileResource-SHAREDFOLDER_icon { @extend .o_icon-folder-open-o; }
+.o_FileResource-GLOSSARY_icon { @extend .o_icon-graduation-cap; }
+.o_FileResource-PDF_icon { @extend .o_icon-file-pdf-o; }
+.o_FileResource-XLS_icon { @extend .o_icon-file-excel-o; }
+.o_FileResource-PPT_icon { @extend .o_icon-file-powerpoint-o; }
+.o_FileResource-DOC_icon { @extend .o_icon-file-word-o; }
+.o_FileResource-ANIM_icon { @extend .o_icon-file-video-o; }
+.o_FileResource-IMAGE_icon { @extend .o_icon-file-image-o; }
+.o_FileResource-SOUND_icon { @extend .o_icon-file-audio-o; }
+.o_FileResource-MOVIE_icon { @extend .o_icon-file-video-o; }
+.o_FileResource-FILE_icon { @extend .o_icon-file-o; }
+
 
 /* notification icons */
 .o_forum_message_icon {@extend .o_icon-comment-o; }

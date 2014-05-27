@@ -193,7 +193,7 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		compareArea.setEnabled(false); // read only
 		compareArea.setVisible(compareEnabledPrefs.booleanValue());
 		compareSwitch = formFactory.addCheckboxesHorizontal("compareSwitch", null, this.flc, new String[] { KEYS_ENABLED },
-				new String[] { KEYS_EMPTY }, null);//i18nLabel set to null -> disabled label
+				new String[] { KEYS_EMPTY });//i18nLabel set to null -> disabled label
 		compareSwitch.select(KEYS_ENABLED, compareEnabledPrefs.booleanValue());
 		compareSwitch.addActionListener(FormEvent.ONCLICK);
 		formLayout.add(compareSwitch);

@@ -44,6 +44,7 @@ class CheckboxElementComponent extends FormBaseComponentImpl {
 	private final SelectionElement selectionWrapper;
 	private final int which;
 	private boolean escapeHtml = true;
+	private String iconLeftCSS;
 	private final String cssClass;
 	private static final ComponentRenderer RENDERER = new CheckboxRenderer();
 	//public static final String RENDERARG_ESCAPEHTML = "ESC_HTML";
@@ -64,11 +65,13 @@ class CheckboxElementComponent extends FormBaseComponentImpl {
 	 *            Optional css class to be added to the checkbox in a span
 	 *            element. Can be NULL
 	 */
-	CheckboxElementComponent(String name, Translator translator, SelectionElement selectionWrapper, int which, String cssClass) {
+	CheckboxElementComponent(String name, Translator translator, SelectionElement selectionWrapper, int which,
+			String cssClass, String iconLeftCSS) {
 		super(name, translator);
 		this.selectionWrapper = selectionWrapper;
 		this.which = which;
 		this.cssClass = cssClass;
+		this.iconLeftCSS = iconLeftCSS;
 	}
 
 	/**
@@ -111,6 +114,14 @@ class CheckboxElementComponent extends FormBaseComponentImpl {
 		return cssClass;
 	}
 	
+	public String getIconLeftCSS() {
+		return iconLeftCSS;
+	}
+
+	public void setIconLeftCSS(String iconLeftCSS) {
+		this.iconLeftCSS = iconLeftCSS;
+	}
+
 	public int getAction(){
 		return selectionWrapper.getAction();
 	}

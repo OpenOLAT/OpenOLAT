@@ -91,7 +91,7 @@ public class MultiSelectionTree extends MultipleSelectionElementImpl implements 
 				if(selectableFilter.isSelectable(tn)){
 					// apply css class of tree node to checkbox label wrapper as well
 					String cssClass = tn.getCssClass(); 
-					CheckboxElementComponent ssec = new CheckboxElementComponent(getName()+"_"+keys[i], translator, this, i, cssClass);
+					CheckboxElementComponent ssec = new CheckboxElementComponent(getName()+"_"+keys[i], translator, this, i, null, cssClass);
 					checkboxitems.put(keys[i], ssec);
 				} else {
 					StaticTextElement ste = new StaticTextElementImpl(keys[i], tn.getTitle());
@@ -143,8 +143,8 @@ public class MultiSelectionTree extends MultipleSelectionElementImpl implements 
 	}
 
 	@Override
-	public void setKeysAndValues(String[] keys, String[] values, String[] cssClasses) {
-		super.setKeysAndValues(keys, values, cssClasses);
+	public void setKeysAndValues(String[] keys, String[] values, String[] cssClasses, String[] iconLeftCSS) {
+		super.setKeysAndValues(keys, values, cssClasses, iconLeftCSS);
 		// set menu tree dirty to render new values
 		this.component.setDirty(true);
 	}

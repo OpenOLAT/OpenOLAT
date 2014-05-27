@@ -143,7 +143,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		
 		String boxId = "box_" + checkbox.getCheckboxId();
 		MultipleSelectionElement boxEl = uifactory
-				.addCheckboxesHorizontal(boxId, null, formLayout, onKeys, values, null);
+				.addCheckboxesHorizontal(boxId, null, formLayout, onKeys, values);
 		boxEl.setEnabled(!readOnly);
 		boxEl.setLabel(checkbox.getTitle(), null, false);
 		boxEl.showLabel(true);

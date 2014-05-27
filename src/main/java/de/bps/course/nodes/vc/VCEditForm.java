@@ -125,7 +125,7 @@ public class VCEditForm extends FormBasicController {
     boolean useDates = !dateList.isEmpty() | config.isUseMeetingDates();
     String[] accessKeys = new String[] {OPTION_DATES};
   	String[] accessVals = new String[] {translate(OPTION_DATES)};
-  	multiSelectOptions = uifactory.addCheckboxesVertical("vc.options", "vc.options.label", editVC, accessKeys, accessVals, null, 1);
+  	multiSelectOptions = uifactory.addCheckboxesVertical("vc.options", "vc.options.label", editVC, accessKeys, accessVals, 1);
   	multiSelectOptions.select(OPTION_DATES, useDates);
   	multiSelectOptions.addActionListener(FormEvent.ONCHANGE);
 

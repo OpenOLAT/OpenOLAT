@@ -122,7 +122,7 @@ public class GroupSelectionController extends FormBasicController {
 			if (event == Event.DONE_EVENT) {
 				loadNamesAndKeys();
 				// select new value
-				entrySelector.setKeysAndValues(groupKeys, groupNames, null);
+				entrySelector.setKeysAndValues(groupKeys, groupNames);
 				entrySelector.select(groupCreateCntrllr.getCreatedGroup().getKey().toString(), true);
 				
 				//inform condition config easy about new groups -> which informs further
@@ -151,7 +151,7 @@ public class GroupSelectionController extends FormBasicController {
 			formLayout.add(createNew);
 		}
 
-		entrySelector = uifactory.addCheckboxesVertical("entries",  null, formLayout, groupKeys, groupNames, null, 1);
+		entrySelector = uifactory.addCheckboxesVertical("entries",  null, formLayout, groupKeys, groupNames, 1);
 		// submitCancel after checkboxes
 		Submit subm = new FormSubmit("subm", "apply");
 		Reset reset = new FormReset("reset", "cancel");

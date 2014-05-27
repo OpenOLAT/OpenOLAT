@@ -416,7 +416,7 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 			radioButtonOwner.select(NLS_RADIO_ALL, true);
 			radioButtonOwner.addActionListener(FormEvent.ONCLICK);
 			if ( (keysOwner != null) && (valuesOwner != null) ) {
-				multiSelectionOwnerKeys = uifactory.addCheckboxesVertical("multiSelectionOwnerKeys", "", formLayout, keysOwner, valuesOwner, null, 1);
+				multiSelectionOwnerKeys = uifactory.addCheckboxesVertical("multiSelectionOwnerKeys", "", formLayout, keysOwner, valuesOwner, 1);
 			}
 		//}
 		
@@ -424,14 +424,14 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 		radioButtonPartips.select(NLS_RADIO_ALL, true);
 		radioButtonPartips.addActionListener(FormEvent.ONCLICK);
 		if ( (keysPartips != null) && (valuesPartips != null) ) {
-			multiSelectionPartipKeys = uifactory.addCheckboxesVertical("multiSelectionPartipKeys", "", formLayout, keysPartips, valuesPartips, null, 1);
+			multiSelectionPartipKeys = uifactory.addCheckboxesVertical("multiSelectionPartipKeys", "", formLayout, keysPartips, valuesPartips, 1);
 		} 
 			
 		radioButtonWaitings = uifactory.addRadiosVertical("radioButtonWaiting", "sendtochooser.form.radio.waitings", formLayout, radioKeysWaitings, radioValuesWaitings);
 		radioButtonWaitings.select(NLS_RADIO_NOTHING, true);
 		radioButtonWaitings.addActionListener(FormEvent.ONCLICK);
 		if ( (keysWaitings != null) && (valuesWaitings != null) ) {
-			multiSelectionWaitingKeys = uifactory.addCheckboxesVertical("multiSelectionWaitingKeys", "", formLayout, keysWaitings, valuesWaitings, null, 1);
+			multiSelectionWaitingKeys = uifactory.addCheckboxesVertical("multiSelectionWaitingKeys", "", formLayout, keysWaitings, valuesWaitings, 1);
 		} 
 		
 		uifactory.addSpacerElement("space", formLayout, true);

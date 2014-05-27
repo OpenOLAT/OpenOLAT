@@ -127,7 +127,7 @@ public class CPFileImportController extends FormBasicController {
 		// checkboxes
 		String[] keys = { "htm", "pdf", "doc", "xls", "ppt", ALL };
 		String[] values = { "HTML", "PDF", "Word", "Excel", "PowerPoint", translate("cpfileuploadcontroller.form.all.types") };
-		checkboxes = uifactory.addCheckboxesVertical("checkboxes", "cpfileuploadcontroller.form.file.types", this.flc, keys, values, null, 1);
+		checkboxes = uifactory.addCheckboxesVertical("checkboxes", "cpfileuploadcontroller.form.file.types", this.flc, keys, values, 1);
 		checkboxes.setVisible(false);
 
 		// Submit and cancel buttons

@@ -89,7 +89,7 @@ public class ViteroConfigurationController extends FormBasicController {
 			FormLayoutContainer moduleFlc = FormLayoutContainer.createDefaultFormLayout("flc_module", getTranslator());
 			layoutContainer.add(moduleFlc);
 		
-			viteroEnabled = uifactory.addCheckboxesHorizontal("vitero.module.enabled", moduleFlc, enabledKeys, enabledValues, null);
+			viteroEnabled = uifactory.addCheckboxesHorizontal("vitero.module.enabled", moduleFlc, enabledKeys, enabledValues);
 			viteroEnabled.select(enabledKeys[0], viteroModule.isEnabled());
 			viteroEnabled.addActionListener(FormEvent.ONCHANGE);
 			

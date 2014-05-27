@@ -113,7 +113,7 @@ public class AreaSelectionController extends FormBasicController {
 			if (event == Event.DONE_EVENT) {
 				loadNamesAndKeys();
 				// select new value
-				entrySelector.setKeysAndValues(areaKeys, areaNames, null);
+				entrySelector.setKeysAndValues(areaKeys, areaNames);
 				entrySelector.select(areaCreateCntrllr.getCreatedArea().getKey().toString(), true);
 				
 				//inform condition config easy about new groups -> which informs further
@@ -140,7 +140,7 @@ public class AreaSelectionController extends FormBasicController {
 		}
 
 		
-		entrySelector = uifactory.addCheckboxesVertical("entries",  null, boundTo, areaKeys, areaNames, null, 1);
+		entrySelector = uifactory.addCheckboxesVertical("entries",  null, boundTo, areaKeys, areaNames, 1);
 		// submitCancel after checkboxes
 		//
 		Submit subm = new FormSubmit("subm", "apply");

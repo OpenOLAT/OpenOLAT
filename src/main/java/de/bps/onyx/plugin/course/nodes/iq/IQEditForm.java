@@ -180,7 +180,7 @@ public class IQEditForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
-		limitAttempts = uifactory.addCheckboxesVertical("limitAttempts", "qti.form.limit.attempts", formLayout, new String[] { "xx" }, new String[] { null }, null, 1);
+		limitAttempts = uifactory.addCheckboxesVertical("limitAttempts", "qti.form.limit.attempts", formLayout, new String[] { "xx" }, new String[] { null }, 1);
 
 		Integer confAttempts = (Integer) modConfig.get(IQEditController.CONFIG_KEY_ATTEMPTS);
 		if (confAttempts == null) {
@@ -209,7 +209,7 @@ public class IQEditForm extends FormBasicController {
 		String[] valuesShowSolution = new String[]{""};
 		//Surveys do not have a solution
 		if(!isSurvey){
-			allowShowSolutionBox = uifactory.addCheckboxesVertical("allowShowSolution", "qti.form.allowShowSolution", formLayout, allowShowSolution, valuesShowSolution, null, 1);
+			allowShowSolutionBox = uifactory.addCheckboxesVertical("allowShowSolution", "qti.form.allowShowSolution", formLayout, allowShowSolution, valuesShowSolution, 1);
 			allowShowSolutionBox.addActionListener(FormEvent.ONCLICK);
 			if(confAllowShowSolution!=null){
 				allowShowSolutionBox.select(ALLOW, confAllowShowSolution);
@@ -223,7 +223,7 @@ public class IQEditForm extends FormBasicController {
 		String[] allowSuspension = new String[] { ALLOW };
 		String[] valuesSuspesion = new String[] { "" };
 		allowSuspensionBox = uifactory.addCheckboxesVertical("allowSuspension", "qti.form.allowSuspension", formLayout, allowSuspension,
-				valuesSuspesion, null, 1);
+				valuesSuspesion, 1);
 		allowSuspensionBox.addActionListener(FormEvent.ONCLICK);
 		if (confAllowSuspension != null) {
 			allowSuspensionBox.select(ALLOW, confAllowSuspension);
@@ -287,7 +287,7 @@ public class IQEditForm extends FormBasicController {
 		boolean confEnableShowResultOnHomePage = (showResultOnHomePage != null) ? showResultOnHomePage.booleanValue() : false;
 		confEnableShowResultOnHomePage = !noSummary && confEnableShowResultOnHomePage;
 		showResultsOnHomePage = uifactory.addCheckboxesVertical("qti_enableResultsOnHomePage", "qti.form.results.onhomepage", formLayout, new String[] { "xx" },
-				new String[] { null }, null, 1);
+				new String[] { null }, 1);
 		showResultsOnHomePage.select("xx", confEnableShowResultOnHomePage);
 		showResultsOnHomePage.addActionListener(FormEvent.ONCLICK);
 		showResultsOnHomePage.setVisible(!isSurvey);
@@ -299,7 +299,7 @@ public class IQEditForm extends FormBasicController {
 		}
 
 		showResultsDateDependentButton = uifactory.addCheckboxesVertical("qti_showresult", "qti.form.show.results", formLayout, new String[] { "xx" },
-				new String[] { null }, null, 1);
+				new String[] { null }, 1);
 		if (isAssessment || isSelfTest) {
 			showResultsDateDependentButton.select("xx", showResultsDateDependent);
 			showResultsDateDependentButton.addActionListener(FormEvent.ONCLICK);

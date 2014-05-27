@@ -136,7 +136,7 @@ public class CheckboxEditController extends FormBasicController {
 		
 		String[] onKeys = new String[] { "on" };
 		String[] onValues = new String[] { translate("award.point.on") };
-		awardPointEl = uifactory.addCheckboxesHorizontal("points", formLayout, onKeys, onValues, null);
+		awardPointEl = uifactory.addCheckboxesHorizontal("points", formLayout, onKeys, onValues);
 		awardPointEl.setVisible(withScore);
 		awardPointEl.addActionListener(FormEvent.ONCHANGE);
 		if(checkbox.getPoints() != null) {

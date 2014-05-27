@@ -442,7 +442,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	private List<UserResultWrapper> wrapIdentities(List<Identity> identities) {
 		List<UserResultWrapper> wrappers = new ArrayList<UserResultWrapper>(identities.size());
 		for(Identity identity:identities) {
-			MultipleSelectionElement selectEl = uifactory.addCheckboxesHorizontal("sel_" + identity.getKey(), null, flc, new String[]{"on"}, new String[]{""}, null);
+			MultipleSelectionElement selectEl = uifactory.addCheckboxesHorizontal("sel_" + identity.getKey(), null, flc, new String[]{"on"}, new String[]{""});
 			FormLink selectLink = uifactory.addFormLink("sel_lin_" + identity.getKey(), "select", null, flc, Link.LINK);
 			selectLink.setUserObject(identity);
 			wrappers.add(new UserResultWrapper(identity, selectLink, selectEl));

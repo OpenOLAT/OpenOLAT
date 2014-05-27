@@ -230,7 +230,7 @@ public class FileUploadController extends FormBasicController {
 
 			String[] keys = new String[]{"resize"};
 			String[] values = new String[]{translate("resize_image")};
-			resizeEl = uifactory.addCheckboxesHorizontal("resize_image", resizeCont, keys, values, null);
+			resizeEl = uifactory.addCheckboxesHorizontal("resize_image", resizeCont, keys, values);
 			resizeEl.setLabel(null, null);
 			resizeEl.select("resize", true);
 		}

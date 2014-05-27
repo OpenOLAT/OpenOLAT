@@ -102,7 +102,6 @@ public class MultiSPController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("multi.sps.title");
 		setFormDescription("multi.sps.desc");
 		
 		if(formLayout instanceof FormLayoutContainer) {
@@ -130,8 +129,8 @@ public class MultiSPController extends FormBasicController {
 	
 		String[] singleKey = new String[]{ node.getId() };
 		String[] singleValue = new String[]{ node.getName() };
-		String[] css = new String[]{ "b_with_small_icon_left " + node.getIconCssClass() };
-		MultipleSelectionElement nodeSelection = uifactory.addCheckboxesVertical("print.node.list." + nodeSelections.size(), layoutcont, singleKey, singleValue, css, 1);
+		String[] iconCSS = new String[]{ "o_icon o_icon-fw " + node.getIconCssClass() };
+		MultipleSelectionElement nodeSelection = uifactory.addCheckboxesVertical("print.node.list." + nodeSelections.size(), layoutcont, singleKey, singleValue, iconCSS, 1);
 		nodeSelection.setLabel("multi.sps.file", null);
 		
 		nodeSelection.setUserObject(node);
@@ -330,7 +329,7 @@ public class MultiSPController extends FormBasicController {
 		
 		public String getIconCssClass() {
 			if(item instanceof VFSContainer) {
-				return "b_filetype_folder";
+				return "o_filetype_folder";
 			}
 			return CSSHelper.createFiletypeIconCssClassFor(item.getName());
 		}

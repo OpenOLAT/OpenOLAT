@@ -300,9 +300,7 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 		RolesSE = uifactory.addCheckboxesVertical(
 				"roles", "rightsForm.roles", formLayout,
 				roleKeys.toArray(new String[roleKeys.size()]),
-				roleValues.toArray(new String[roleValues.size()]),
-				null, 1
-		);
+				roleValues.toArray(new String[roleValues.size()]), 1);
 		rolesSep = uifactory.addSpacerElement("rolesSep", formLayout, false);
 		
 		statusRE = uifactory.addRadiosVertical(

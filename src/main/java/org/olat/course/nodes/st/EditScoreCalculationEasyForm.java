@@ -236,7 +236,7 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 			nodeValues[allNodesList.size()] = translate("scform.deletedNode");
 		}
 		
-		MultipleSelectionElement mse = uifactory.addCheckboxesVertical(elemId, formLayout, nodeKeys, nodeValues, null, 2);
+		MultipleSelectionElement mse = uifactory.addCheckboxesVertical(elemId, formLayout, nodeKeys, nodeValues, 2);
 		// preselect nodes from configuration
 		if (scoreCalculator != null && selectedNodeList != null) {
 			for (Iterator<String> iter = selectedNodeList.iterator(); iter.hasNext();) {
@@ -281,7 +281,7 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
-		hasScore = uifactory.addCheckboxesHorizontal("scform.hasScore", formLayout, new String[]{"xx"}, new String[]{null}, null);
+		hasScore = uifactory.addCheckboxesHorizontal("scform.hasScore", formLayout, new String[]{"xx"}, new String[]{null});
 		hasScore.select("xx", sc != null && sc.getSumOfScoreNodes() != null && sc.getSumOfScoreNodes().size() > 0);
 		hasScore.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 		
@@ -292,7 +292,7 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 		
 		uifactory.addSpacerElement("spacer", formLayout, false);
 		
-		hasPassed = uifactory.addCheckboxesHorizontal("scform.passedtype", formLayout, new String[]{"xx"}, new String[]{null}, null);
+		hasPassed = uifactory.addCheckboxesHorizontal("scform.passedtype", formLayout, new String[]{"xx"}, new String[]{null});
 		hasPassed.select("xx", sc != null && sc.getPassedType() != null && !sc.getPassedType().equals(ScoreCalculator.PASSED_TYPE_NONE));
 		hasPassed.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 		

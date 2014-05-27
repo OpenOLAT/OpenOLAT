@@ -273,7 +273,7 @@ public class TUConfigForm extends FormBasicController {
 		selectables.select(loadedConfig, true);
 		selectables.addActionListener(FormEvent.ONCLICK);
 		
-		checkboxPagePasswordProtected = uifactory.addCheckboxesVertical("checkbox", "TUConfigForm.protected", formLayout, new String[] { "ison" }, new String[] { "" }, null, 1);
+		checkboxPagePasswordProtected = uifactory.addCheckboxesVertical("checkbox", "TUConfigForm.protected", formLayout, new String[] { "ison" }, new String[] { "" }, 1);
 		
 		checkboxPagePasswordProtected.select("ison", (user != null) && !user.equals(""));
 		// register for on click event to hide/disable other elements

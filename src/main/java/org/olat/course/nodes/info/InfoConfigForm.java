@@ -102,7 +102,7 @@ public class InfoConfigForm extends FormBasicController {
 			lengthSelection.select("5", true);
 		}
 		
-		autoSubscribeSelection = uifactory.addCheckboxesHorizontal("auto_subscribe", formLayout, autoSubscribeKeys, autoSubscribeValues, null);
+		autoSubscribeSelection = uifactory.addCheckboxesHorizontal("auto_subscribe", formLayout, autoSubscribeKeys, autoSubscribeValues);
 		String autoSubscribeStr = (String)config.get(InfoCourseNodeConfiguration.CONFIG_AUTOSUBSCRIBE);
 		if("on".equals(autoSubscribeStr) || !StringHelper.containsNonWhitespace(autoSubscribeStr)) {
 			autoSubscribeSelection.select("on", true);

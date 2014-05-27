@@ -281,7 +281,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 	
 	private FormItem decorate(FormItem item, FormLayoutContainer formLayout) {
 		String itemName = item.getName();
-		MultipleSelectionElement checkbox = uifactory.addCheckboxesVertical("cbx_" + itemName, itemName, formLayout, new String[] { itemName }, EMPTY_VALUES, null, 1);
+		MultipleSelectionElement checkbox = uifactory.addCheckboxesVertical("cbx_" + itemName, itemName, formLayout, new String[] { itemName }, EMPTY_VALUES, 1);
 		checkbox.select(itemName, false);
 		checkbox.addActionListener(FormEvent.ONCLICK);
 		checkbox.setUserObject(item);

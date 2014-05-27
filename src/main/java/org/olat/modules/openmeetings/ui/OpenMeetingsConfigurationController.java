@@ -83,7 +83,7 @@ public class OpenMeetingsConfigurationController extends FormBasicController {
 			FormLayoutContainer moduleFlc = FormLayoutContainer.createDefaultFormLayout("flc_module", getTranslator());
 			layoutContainer.add(moduleFlc);
 		
-			moduleEnabled = uifactory.addCheckboxesHorizontal("openmeetings.module.enabled", moduleFlc, enabledKeys, enabledValues, null);
+			moduleEnabled = uifactory.addCheckboxesHorizontal("openmeetings.module.enabled", moduleFlc, enabledKeys, enabledValues);
 			moduleEnabled.select(enabledKeys[0], openMeetingsModule.isEnabled());
 			moduleEnabled.addActionListener(FormEvent.ONCHANGE);
 			

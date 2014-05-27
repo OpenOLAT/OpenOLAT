@@ -80,7 +80,7 @@ public class EPArtefactTagSelectionController extends FormBasicController {
 			values[i] = tag; 
 			i++;
 		}
-		chkBox = (MultipleSelectionElementImpl) uifactory.addCheckboxesVertical("tag", null, formLayout, keys, values, null, 2);
+		chkBox = (MultipleSelectionElementImpl) uifactory.addCheckboxesVertical("tag", null, formLayout, keys, values, 2);
 		
 		if (selectedTagsList != null) {
 			String[] selectedKeys = selectedTagsList.toArray(new String[0]);

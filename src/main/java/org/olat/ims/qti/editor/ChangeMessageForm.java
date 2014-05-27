@@ -78,7 +78,7 @@ public class ChangeMessageForm extends FormBasicController {
 		setFormDescription("form.chngmsg.info");
 		
 		userMsg = uifactory.addTextAreaElement("userMsg", "form.chngmsg.usermsg", -1, 7, 80, true, "", formLayout);
-		chkbx = uifactory.addCheckboxesVertical("learnerYes", "form.chngmsg.informlearners", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		chkbx = uifactory.addCheckboxesVertical("learnerYes", "form.chngmsg.informlearners", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		formLayout.add(buttonLayout);

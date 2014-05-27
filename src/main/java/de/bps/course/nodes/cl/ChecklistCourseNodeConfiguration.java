@@ -26,6 +26,7 @@ import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeGroup;
 
 import de.bps.course.nodes.ChecklistCourseNode;
 
@@ -37,43 +38,33 @@ import de.bps.course.nodes.ChecklistCourseNode;
  * Initial Date:  23.07.2009 <br>
  * @author bja <bja@bps-system.de>
  */
-public class ChecklistCourseNodeConfiguration extends AbstractCourseNodeConfiguration implements CourseNodeConfiguration {
+public class ChecklistCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 	
 	private ChecklistCourseNodeConfiguration() {
 	}
 
-	
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getAlias()
-	 */
+	@Override
 	public String getAlias() {
 		return "cl";
 	}
+	
+	@Override
+	public String getGroup() {
+		return CourseNodeGroup.other.name();
+	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getIconCSSClass()
-	 */
+	@Override
 	public String getIconCSSClass() {
 		return "o_cl_icon";
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getInstance()
-	 */
+
+	@Override
 	public CourseNode getInstance() {
 		return new ChecklistCourseNode();
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getLinkCSSClass()
-	 */
-	public String getLinkCSSClass() {
-		return "o_cl_icon";
-	}
-
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getLinkText(java.util.Locale)
-	 */
+	@Override
 	public String getLinkText(Locale locale) {
 		Translator fallback = Util.createPackageTranslator(CourseNodeConfiguration.class, locale);
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale, fallback);

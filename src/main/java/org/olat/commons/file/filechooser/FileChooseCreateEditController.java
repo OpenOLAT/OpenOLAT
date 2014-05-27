@@ -719,7 +719,7 @@ class AllowRelativeLinksForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		allowRelativeLinks = uifactory.addCheckboxesVertical("allowRelativeLinks", "allowRelativeLinks", formLayout, new String[] {"xx"}, new String[] {null}, null, 1);
+		allowRelativeLinks = uifactory.addCheckboxesVertical("allowRelativeLinks", "allowRelativeLinks", formLayout, new String[] {"xx"}, new String[] {null}, 1);
 		allowRelativeLinks.select("xx", isOn);
 		allowRelativeLinks.addActionListener(FormEvent.ONCLICK);
 	}

@@ -74,7 +74,7 @@ public class UserToolsAdminController extends FormBasicController {
 			toolValues[i] = userTool.getLabel();
 		}
 
-		availableEl = uifactory.addCheckboxesVertical("available.tools", "available.tools", formLayout, toolKeys, toolValues, null, 1);
+		availableEl = uifactory.addCheckboxesVertical("available.tools", "available.tools", formLayout, toolKeys, toolValues, 1);
 		availableEl.addActionListener(FormEvent.ONCHANGE);
 		
 		if(!userToolsModule.isUserToolsDisabled()) {
@@ -92,7 +92,7 @@ public class UserToolsAdminController extends FormBasicController {
 			}
 		}
 
-		presetEl = uifactory.addCheckboxesVertical("preset.tools", "preset.tools", formLayout, toolKeys, toolValues, null, 1);
+		presetEl = uifactory.addCheckboxesVertical("preset.tools", "preset.tools", formLayout, toolKeys, toolValues, 1);
 		presetEl.addActionListener(FormEvent.ONCHANGE);
 	}
 	

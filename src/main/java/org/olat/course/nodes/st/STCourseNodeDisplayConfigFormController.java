@@ -94,7 +94,7 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 			CourseEditorTreeNode child = node.getCourseEditorTreeNodeChildAt(i);
 			selectedPeekviewChildKeys[i] = child.getIdent();
 			selectedPeekviewChildValues[i] = child.getTitle() + " (" + child.getIdent() + ")";
-			selectedPeekviewChildCssClasses[i] = child.getIconCssClass() + " b_with_small_icon_left";
+			selectedPeekviewChildCssClasses[i] = "o_icon " + child.getIconCssClass();
 		}
 		selectedPeekviewChildNodesConfig = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_PEEKVIEW_CHILD_NODES, "");
 		// initialize the form now
@@ -169,7 +169,7 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 		// Number of rows (only available in system or peekview type)
 		SpacerElement spacerCols = formFact.addSpacerElement("spacerCols", formLayout, true);
 		displayTwoColumns = formFact
-				.addCheckboxesVertical("displayTwoColumns", formLayout, new String[] { "on" }, new String[] { "" }, null, 1);
+				.addCheckboxesVertical("displayTwoColumns", formLayout, new String[] { "on" }, new String[] { "" }, 1);
 		displayTwoColumns.setLabel("displayTwoColumns", null);
 		displayTwoColumns.addActionListener(FormEvent.ONCLICK);
 		if (columnsConfig == 2) {

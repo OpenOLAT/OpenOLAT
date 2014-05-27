@@ -45,6 +45,8 @@ public interface MultipleSelectionElement extends SelectionElement {
 	 * @return a Set of Strings
 	 */
 	public Set<String> getSelectedKeys();
+	
+	public void setKeysAndValues(String[] keys, String values[]);
 
 	/**
 	 * 
@@ -54,7 +56,7 @@ public interface MultipleSelectionElement extends SelectionElement {
 	 *            The CSS classes that should be used in the form element for
 	 *            each key-value pair or NULL not not use special styling
 	 */
-	public void setKeysAndValues(String[] keys, String values[], String[] cssClasses);
+	public void setKeysAndValues(String[] keys, String values[], String[] cssClasses, String[] iconLeftCSS);
 	
 	public Set<String> getKeys();
 	

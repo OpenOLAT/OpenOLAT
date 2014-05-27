@@ -59,7 +59,7 @@ public class SendMailConfirmationController extends StepFormBasicController {
 		List<Long> partGroups = (List<Long>) getFromRunContext("partGroups");
 		
 		String[] values = new String[] { translate("step3.send.mail") };
-		typEl = uifactory.addCheckboxesVertical("typ", "step3.send.label", formLayout, keys, values, null, 1);
+		typEl = uifactory.addCheckboxesVertical("typ", "step3.send.label", formLayout, keys, values, 1);
 		typEl.setEnabled(ownGroups.size() > 0 || partGroups.size() > 0);
 	}
 	

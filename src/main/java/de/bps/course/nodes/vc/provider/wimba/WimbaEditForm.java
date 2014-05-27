@@ -61,7 +61,7 @@ public class WimbaEditForm extends FormBasicController {
     // options
     String[] optionKeys = new String[] {OPTION_GUEST_ACCESS};
     String[] optionVals = new String[] {translate(OPTION_GUEST_ACCESS)};
-    multiSelectOptions = uifactory.addCheckboxesVertical("vc.options", "vc.options.label", formLayout, optionKeys, optionVals, null, 1);
+    multiSelectOptions = uifactory.addCheckboxesVertical("vc.options", "vc.options.label", formLayout, optionKeys, optionVals, 1);
     multiSelectOptions.select(OPTION_GUEST_ACCESS, config.isGuestAccessAllowed());
     multiSelectOptions.showLabel(false);
     

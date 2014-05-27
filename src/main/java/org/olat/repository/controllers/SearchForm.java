@@ -81,7 +81,7 @@ import org.olat.repository.RepositoryService;
  * to a special type
  * 
  */
-public class SearchForm extends FormBasicController{
+public class SearchForm extends FormBasicController {
 
 	private TextElement id; // only for admins
 	private TextElement displayName;
@@ -277,13 +277,13 @@ public class SearchForm extends FormBasicController{
 		externalRef.setElementCssClass("o_sel_repo_search_external_ref");
 		externalRef.setVisible(managedEnabled);
 
-		typesSelection = uifactory.addCheckboxesVertical("search.limit.type", formLayout, new String[]{"xx"}, new String[]{""}, new String[]{null}, 1);
+		typesSelection = uifactory.addCheckboxesVertical("search.limit.type", formLayout, new String[]{"xx"}, new String[]{""}, 1);
 		typesSelection.addActionListener(FormEvent.ONCLICK);
 		typesSelection.setElementCssClass("o_sel_repo_search_type_limit");
 		
 		String[] typeKeys = getResources().toArray(new String[0]);
-		String[] typeCssClasess = getCssResources(getResources());
-		types = uifactory.addCheckboxesVertical("cif_types", "cif.type", formLayout, typeKeys, getTranslatedResources(getResources()), typeCssClasess, 1);
+		String[] iconCSS = getCssResources(getResources());
+		types = uifactory.addCheckboxesVertical("cif_types", "cif.type", formLayout, typeKeys, getTranslatedResources(getResources()), null, iconCSS, 1);
 		types.setElementCssClass("o_sel_repo_search_types");
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
@@ -314,8 +314,12 @@ public class SearchForm extends FormBasicController{
 	private String[] getCssResources(List<String> resources) {
 		String[] cssClasses= new String[resources.size()];
 		int count = 0;
-		for(String key: resources){
-			cssClasses[count++] = "o_sel_repo_search_" + key.toLowerCase().replace(".", "_");
+		for(String key: resources) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("o_icon o_icon-fw o_").append(key.replace(".", "-"))
+			  .append("_icon o_sel_repo_search_")
+			  .append(key.toLowerCase().replace(".", "_"));
+			cssClasses[count++] = sb.toString();
 		}
 		return cssClasses;
 	}

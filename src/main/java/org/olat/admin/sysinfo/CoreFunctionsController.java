@@ -58,17 +58,17 @@ public class CoreFunctionsController extends FormBasicController {
 		formLayout.add("functions", serverCont);
 
 		MultipleSelectionElement clusterEl
-			= uifactory.addCheckboxesHorizontal("webdav", "core.webdav", serverCont, new String[]{"xx"}, new String[]{""}, null);
+			= uifactory.addCheckboxesHorizontal("webdav", "core.webdav", serverCont, new String[]{"xx"}, new String[]{""});
 		clusterEl.setEnabled(false);
 		clusterEl.select("xx", CoreSpringFactory.getImpl(WebDAVModule.class).isEnabled());
 
 		MultipleSelectionElement jsMathEl
-			= uifactory.addCheckboxesHorizontal("jsmath", "core.jsMath", serverCont, new String[]{"xx"}, new String[]{""}, null);
+			= uifactory.addCheckboxesHorizontal("jsmath", "core.jsMath", serverCont, new String[]{"xx"}, new String[]{""});
 		jsMathEl.setEnabled(false);
 		jsMathEl.select("xx", Boolean.TRUE);
 		
 		MultipleSelectionElement restEl
-		= uifactory.addCheckboxesHorizontal("restapi", "core.restapi", serverCont, new String[]{"xx"}, new String[]{""}, null);
+		= uifactory.addCheckboxesHorizontal("restapi", "core.restapi", serverCont, new String[]{"xx"}, new String[]{""});
 		restEl.setEnabled(false);
 		RestModule restModule = CoreSpringFactory.getImpl(RestModule.class);
 		restEl.select("xx", restModule.isEnabled());

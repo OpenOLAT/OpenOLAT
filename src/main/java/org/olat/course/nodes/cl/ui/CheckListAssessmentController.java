@@ -499,7 +499,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 				MultipleSelectionElement[] checkedEls = new MultipleSelectionElement[numOfCheckbox];
 				for(int i=0; i<numOfCheckbox; i++) {
 					String checkName = "c" + i + "-" + row.getIdentityKey();
-					checkedEls[i] = uifactory.addCheckboxesHorizontal(checkName, null, flc, onKeys, onValues, null);
+					checkedEls[i] = uifactory.addCheckboxesHorizontal(checkName, null, flc, onKeys, onValues);
 					if(checked != null && i<checked.length && checked[i] != null) {
 						checkedEls[i].select(onKeys[0], checked[i].booleanValue());
 					}

@@ -94,7 +94,7 @@ public class CourseSiteAdminController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("admin.menu.title");
 
-		enableToolbar = uifactory.addCheckboxesHorizontal("site.enable.toolbar", "site.enable.toolbar", formLayout, new String[]{ "x" }, new String[]{ "" }, null);
+		enableToolbar = uifactory.addCheckboxesHorizontal("site.enable.toolbar", "site.enable.toolbar", formLayout, new String[]{ "x" }, new String[]{ "" });
 		enableToolbar.addActionListener(FormEvent.ONCHANGE);
 		if(siteConfiguration.isToolbar()) {
 			enableToolbar.select("x", true);
@@ -262,7 +262,7 @@ public class CourseSiteAdminController extends FormBasicController {
 					null, 32, configuration.getTitle(), formLayout);
 			formLayout.add("site.flexi.title.hook." + language, titleEl);
 			defLangEl = uifactory.addCheckboxesHorizontal("site.def." + language, null,
-					formLayout, new String[]{ "x"}, new String[]{ "" }, null);
+					formLayout, new String[]{ "x"}, new String[]{ "" });
 			
 			if(configuration.isDefaultConfiguration()) {
 				defLangEl.select("x", true);

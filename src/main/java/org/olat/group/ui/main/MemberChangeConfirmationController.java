@@ -80,7 +80,7 @@ public class MemberChangeConfirmationController extends FormBasicController {
 		String[] values = new String[] {
 				translate("remove.send.mail")
 		};
-		mailEl = uifactory.addCheckboxesVertical("typ", "remove.send.mail.label", optionsCont, keys, values, null, 1);
+		mailEl = uifactory.addCheckboxesVertical("typ", "remove.send.mail.label", optionsCont, keys, values, 1);
 		mailEl.select(keys[0], true);
 		mailEl.setEnabled(!mandatoryEmail);
 		

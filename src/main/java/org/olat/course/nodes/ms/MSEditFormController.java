@@ -149,7 +149,7 @@ public class MSEditFormController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// Create the "score granted" field...
-		scoreGranted = uifactory.addCheckboxesVertical("form.score", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		scoreGranted = uifactory.addCheckboxesVertical("form.score", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		scoreGranted.addActionListener(FormEvent.ONCLICK);
 		Boolean sf = (Boolean) modConfig.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		scoreGranted.select("xx", sf == null ? false : sf.booleanValue());
@@ -175,7 +175,7 @@ public class MSEditFormController extends FormBasicController {
 		uifactory.addSpacerElement("spacer1", formLayout, false);
 
 		// Create the "display passed / failed"
-		displayPassed = uifactory.addCheckboxesVertical("form.passed", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		displayPassed = uifactory.addCheckboxesVertical("form.passed", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		displayPassed.addActionListener(FormEvent.ONCLICK);
 		Boolean pf = (Boolean) modConfig.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
 		if (pf == null) pf = Boolean.TRUE;
@@ -201,7 +201,7 @@ public class MSEditFormController extends FormBasicController {
 		uifactory.addSpacerElement("spacer2", formLayout, false);
 
 		// Create the "individual comment" dropdown.
-		commentFlag = uifactory.addCheckboxesVertical("form.comment", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		commentFlag = uifactory.addCheckboxesVertical("form.comment", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		Boolean cf = (Boolean) modConfig.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
 		if (cf == null) cf = Boolean.TRUE;
 		commentFlag.select("xx", cf.booleanValue());

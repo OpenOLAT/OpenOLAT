@@ -212,12 +212,11 @@ public class GlossaryFlexionController extends FormBasicController {
 			Collections.sort(glossItemFlexions);
 			String[] flexionKeys = ArrayHelper.toArray(glossItemFlexions);
 			String[] flexionValues = new String[flexionKeys.length];
-			String[] flexionCSS = new String[flexionKeys.length];
 			for (int i = 0; i < flexionKeys.length; i++) {
 				flexionValues[i] = glossItemFlexions.get(i);
 			}
-			existingFlexions = uifactory.addCheckboxesVertical("existing.flexions.checkboxes", null, formLayout, flexionKeys, flexionValues, flexionCSS,
-					1);
+			existingFlexions = uifactory.addCheckboxesVertical("existing.flexions.checkboxes", null, formLayout,
+					flexionKeys, flexionValues, 1);
 			existingFlexions.addActionListener(FormEvent.ONCLICK);
 			for (String flexKey : existingKeys) {
 				existingFlexions.select(flexKey, true);
@@ -226,7 +225,6 @@ public class GlossaryFlexionController extends FormBasicController {
 			selectAllLink = uifactory.addFormLink("flexions.select.all", formLayout, Link.LINK);
 			deselectAllLink = uifactory.addFormLink("flexions.select.none", formLayout, Link.LINK);
 		}
-
 	}
 
 	/**

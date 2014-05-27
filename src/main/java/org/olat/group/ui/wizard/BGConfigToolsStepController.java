@@ -86,7 +86,7 @@ public class BGConfigToolsStepController extends StepFormBasicController {
 			String[] values = new String[]{ translate("collabtools.named." + k) };
 			
 			String i18n = first ? "config.tools.desc" : null;
-			MultipleSelectionElement selectEl = uifactory.addCheckboxesHorizontal(k, i18n, formLayout, keys, values, null);
+			MultipleSelectionElement selectEl = uifactory.addCheckboxesHorizontal(k, i18n, formLayout, keys, values);
 			selectEl.addActionListener(FormEvent.ONCHANGE);
 			toolList.add(selectEl);
 			

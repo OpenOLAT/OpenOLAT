@@ -49,7 +49,7 @@ public class GenericCheckboxPropertyHandler extends AbstractUserPropertyHandler 
 	public FormItem addFormItem(Locale locale, User user, String usageIdentifyer, boolean isAdministrativeUser,
 			FormItemContainer formItemContainer) {
 		SelectionElement sElem = null;
-		sElem = FormUIFactory.getInstance().addCheckboxesVertical(getName(), i18nFormElementLabelKey(), formItemContainer, new String[] { getName() }, new String[]{ "" }, null, 1);
+		sElem = FormUIFactory.getInstance().addCheckboxesVertical(getName(), i18nFormElementLabelKey(), formItemContainer, new String[] { getName() }, new String[]{ "" }, 1);
 		
 		UserManager um = UserManager.getInstance();
 		if ( um.isUserViewReadOnly(usageIdentifyer, this) && ! isAdministrativeUser) {

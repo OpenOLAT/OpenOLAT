@@ -282,7 +282,7 @@ class UserBulkChangeStep00 extends BasicStep {
 			// add input field for password
 			Boolean canChangePwd = BaseSecurityModule.USERMANAGER_CAN_MODIFY_PWD;
 			if (canChangePwd.booleanValue() || isOLATAdmin) {
-				checkbox = uifactory.addCheckboxesVertical("checkboxPWD", "form.name.pwd", innerFormLayout, new String[] { "changePWD" }, new String[] { "" }, null, 1);
+				checkbox = uifactory.addCheckboxesVertical("checkboxPWD", "form.name.pwd", innerFormLayout, new String[] { "changePWD" }, new String[] { "" }, 1);
 				checkbox.select("changePWD", false);
 				checkbox.addActionListener(FormEvent.ONCLICK);
 				formitem = uifactory.addTextElement(UserBulkChangeManager.PWD_IDENTIFYER, "password", 127, null, innerFormLayout);
@@ -310,7 +310,7 @@ class UserBulkChangeStep00 extends BasicStep {
 				languageValues[p] = locdescs.get(key);
 				p++;
 			}
-			checkbox = uifactory.addCheckboxesVertical("checkboxLang", "form.name.language", innerFormLayout, new String[] { "changeLang" }, new String[] { "" }, null, 1);
+			checkbox = uifactory.addCheckboxesVertical("checkboxLang", "form.name.language", innerFormLayout, new String[] { "changeLang" }, new String[] { "" }, 1);
 			checkbox.select("changeLang", false);
 			checkbox.addActionListener(FormEvent.ONCLICK);
 			formitem = uifactory.addDropdownSingleselect(UserBulkChangeManager.LANG_IDENTIFYER, innerFormLayout, languageKeys, languageValues, null);
@@ -333,7 +333,8 @@ class UserBulkChangeStep00 extends BasicStep {
 				if(!(userPropertyHandler instanceof GenericUnique127CharTextPropertyHandler)) {
 					userPropertyHandlers.add(userPropertyHandler);
 
-					checkbox = uifactory.addCheckboxesVertical("checkbox" + i, "form.name." + userPropertyHandler.getName(), innerFormLayout, new String[] { "change" + userPropertyHandler.getName() }, new String[] { "" }, null, 1);
+					checkbox = uifactory.addCheckboxesVertical("checkbox" + i, "form.name." + userPropertyHandler.getName(), innerFormLayout,
+							new String[] { "change" + userPropertyHandler.getName() }, new String[] { "" }, 1);
 					checkbox.select("change" + userPropertyHandler.getName(), false);
 					checkbox.addActionListener(FormEvent.ONCLICK);
 	

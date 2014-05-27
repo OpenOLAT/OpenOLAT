@@ -90,7 +90,7 @@ public class IMPreferenceController extends FormBasicController {
 		
 		ImPreferences imPrefs = imService.getImPreferences(changeableIdentity);
 		
-		toogleVisibility = uifactory.addCheckboxesVertical("online_list", "form.onlinelist", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		toogleVisibility = uifactory.addCheckboxesVertical("online_list", "form.onlinelist", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		toogleVisibility.select("xx", imPrefs.isVisibleToOthers());
 		toogleVisibility.addActionListener(FormEvent.ONCHANGE);
 		

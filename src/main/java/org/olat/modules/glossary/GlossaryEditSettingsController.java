@@ -66,7 +66,7 @@ public class GlossaryEditSettingsController extends FormBasicController {
 		String[] regKeys = {"true"};
 		String[] regValues = {""};
 		
-		editByUserEnabled = uifactory.addCheckboxesHorizontal("edit.onoff", formLayout, regKeys, regValues, null);
+		editByUserEnabled = uifactory.addCheckboxesHorizontal("edit.onoff", formLayout, regKeys, regValues);
 		editByUserEnabled.addActionListener(FormEvent.ONCLICK);
 		
 		Properties glossProps = GlossaryItemManager.getInstance().getGlossaryConfig(glossaryFolder);

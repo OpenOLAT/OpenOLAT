@@ -87,7 +87,7 @@ public class RestapiAdminController extends FormBasicController {
 			layoutContainer.add(accessDataFlc);
 
 			String[] values = new String[] { getTranslator().translate("rest.on") };
-			enabled = uifactory.addCheckboxesHorizontal("rest.enabled", accessDataFlc, keys, values, null);
+			enabled = uifactory.addCheckboxesHorizontal("rest.enabled", accessDataFlc, keys, values);
 			enabled.select(keys[0], restEnabled);
 			enabled.addActionListener(FormEvent.ONCHANGE);
 			
@@ -98,12 +98,12 @@ public class RestapiAdminController extends FormBasicController {
 			layoutContainer.add(managedFlc);
 			
 			String[] valueGrps = new String[] { getTranslator().translate("rest.on") };
-			managedGroupsEl = uifactory.addCheckboxesHorizontal("managed.group", managedFlc, keys, valueGrps, null);
+			managedGroupsEl = uifactory.addCheckboxesHorizontal("managed.group", managedFlc, keys, valueGrps);
 			managedGroupsEl.addActionListener(FormEvent.ONCHANGE);
 			managedGroupsEl.select(keys[0], groupModule.isManagedBusinessGroups());
 			
 			String[] valueRes = new String[] { getTranslator().translate("rest.on") };
-			managedRepoEl = uifactory.addCheckboxesHorizontal("managed.repo", managedFlc, keys, valueRes, null);
+			managedRepoEl = uifactory.addCheckboxesHorizontal("managed.repo", managedFlc, keys, valueRes);
 			managedRepoEl.addActionListener(FormEvent.ONCHANGE);
 			managedRepoEl.select(keys[0], repositoryModule.isManagedRepositoryEntries());
 		}

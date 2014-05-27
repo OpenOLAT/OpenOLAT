@@ -110,7 +110,7 @@ public class ToolsPrefsController extends FormBasicController {
 			toolKeys = new String[0];
 			toolValues = new String[0];
 		}
-		presetEl = uifactory.addCheckboxesVertical("usertools.set", "usertools.set", formLayout, toolKeys, toolValues, null, 1);
+		presetEl = uifactory.addCheckboxesVertical("usertools.set", "usertools.set", formLayout, toolKeys, toolValues, 1);
 		presetEl.addActionListener(FormEvent.ONCHANGE);
 		presetEl.setEnabled(enabled);
 		

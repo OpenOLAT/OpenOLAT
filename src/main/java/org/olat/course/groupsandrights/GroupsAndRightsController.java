@@ -148,7 +148,7 @@ public class GroupsAndRightsController extends FormBasicController {
 	private MultipleSelectionElement createSelection(boolean selected) {
 		String name = "cb" + UUID.randomUUID().toString().replace("-", "");
 		MultipleSelectionElement selection = new MultipleSelectionElementImpl(name, MultipleSelectionElementImpl.createVerticalLayout("checkbox",1));
-		selection.setKeysAndValues(keys, values, null);
+		selection.setKeysAndValues(keys, values);
 		flc.add(name, selection);
 		selection.select(keys[0], selected);
 		return selection;

@@ -32,6 +32,7 @@ import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.ScormCourseNode;
 
 /**
@@ -40,46 +41,36 @@ import org.olat.course.nodes.ScormCourseNode;
  * 
  * @author guido
  */
-public class ScormCourseNodeConfiguration extends AbstractCourseNodeConfiguration implements CourseNodeConfiguration {
+public class ScormCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 	
 	private ScormCourseNodeConfiguration() {
 		super();
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getInstance()
-	 */
+	@Override
 	public CourseNode getInstance() {
 		return new ScormCourseNode();
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getLinkText(java.util.Locale)
-	 */
+	@Override
 	public String getLinkText(Locale locale) {
 		Translator fallback = Util.createPackageTranslator(CourseNodeConfiguration.class, locale);
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale, fallback);
 		return translator.translate("title_scorm");
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getIconCSSClass()
-	 */
+	@Override
 	public String getIconCSSClass() {
 		return "o_scorm_icon";
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getLinkCSSClass()
-	 */
-	public String getLinkCSSClass() {
-		return null;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.CourseNodeConfiguration#getAlias()
-	 */
+	@Override
 	public String getAlias() {
 		return "scorm";
+	}
+	
+	@Override
+	public String getGroup() {
+		return CourseNodeGroup.test.name();
 	}
 }

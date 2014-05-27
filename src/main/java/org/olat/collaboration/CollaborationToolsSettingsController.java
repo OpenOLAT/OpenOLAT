@@ -312,9 +312,7 @@ class ChoiceOfToolsForm extends FormBasicController {
 		ms = uifactory.addCheckboxesVertical(
 				"selection", formLayout, 
 				theKeys.toArray(new String[theKeys.size()]),
-				theValues.toArray(new String[theValues.size()]),
-				null, 1
-		);
+				theValues.toArray(new String[theValues.size()]), 1);
 		for (int i=0; i<availableTools.length; i++) {
 			ms.select(""+i, cts.isToolEnabled(availableTools[i]));
 		}

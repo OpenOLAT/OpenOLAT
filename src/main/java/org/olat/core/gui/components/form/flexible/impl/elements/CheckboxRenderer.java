@@ -27,11 +27,10 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -45,11 +44,12 @@ import org.olat.core.util.StringHelper;
  * Initial Date:  04.01.2007 <br>
  * @author patrickb
  */
-class CheckboxRenderer implements ComponentRenderer {
+class CheckboxRenderer extends DefaultComponentRenderer {
 
 	/**
 	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator, org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
+	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		
@@ -69,20 +69,12 @@ class CheckboxRenderer implements ComponentRenderer {
 		
 		boolean selected = cec.isSelected();
 		
-		
 		//read write view
 		String cssClass = cec.getCssClass(); //optional CSS class
-		sb.append("<div class='checkbox ");
-		if (cssClass !=  null) sb.append(cssClass);		
-		sb.append("'>");
-		sb.append("<input type=\"checkbox\" ");
-		sb.append("id=\"");
-		sb.append(cec.getFormDispatchId());
-		sb.append("\" ");
-		sb.append(subStrName);
-		sb.append(" value=\"");
-		sb.append(key);
-		sb.append("\"");
+		sb.append("<div class='o_checkbox ").append(cssClass, cssClass !=  null).append("'>")
+		  .append("<input type='checkbox' id='").append(cec.getFormDispatchId()).append("' ")
+		  .append(subStrName)
+		  .append(" value='").append(key).append("'");
 		if (selected) sb.append(" checked=\"checked\" ");
 		if(!source.isEnabled()){
 			sb.append(" disabled=\"disabled\" ");
@@ -91,10 +83,15 @@ class CheckboxRenderer implements ComponentRenderer {
 			sb.append(FormJSHelper.getRawJSFor(cec.getRootForm(),cec.getSelectionElementFormDisId(), cec.getAction()));
 		}
 		sb.append(" />");
+		String iconLeftCSS = cec.getIconLeftCSS();
+		if (StringHelper.containsNonWhitespace(iconLeftCSS)) {
+			sb.append(" <i class='").append(iconLeftCSS).append("'> </i> ");
+		}
+		
 		if (StringHelper.containsNonWhitespace(value)) {
-			sb.append("<label for=\"").append(cec.getFormDispatchId()).append("\">");
-			sb.append(value);
-			sb.append("</label>");			
+			sb.append("<label for=\"").append(cec.getFormDispatchId()).append("\">")
+			  .append(value)
+			  .append("</label>");			
 		}
 		sb.append("</div>");
 		
@@ -104,24 +101,5 @@ class CheckboxRenderer implements ComponentRenderer {
 			sb.append(FormJSHelper.getSetFlexiFormDirtyForCheckbox(cec.getRootForm(), cec.getFormDispatchId()));
 			sb.append(FormJSHelper.getJSEnd());
 		}
-	
 	}
-
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.RenderingState)
-	 */
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-	// TODO Auto-generated method stub
-
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator, org.olat.core.gui.render.RenderingState)
-	 */
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
-			RenderingState rstate) {
-	// TODO Auto-generated method stub
-
-	}
-
 }

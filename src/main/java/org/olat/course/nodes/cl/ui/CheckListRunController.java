@@ -202,7 +202,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 		
 		String boxId = "box_" + checkbox.getCheckboxId();
 		MultipleSelectionElement el = uifactory
-				.addCheckboxesHorizontal(boxId, null, formLayout, onKeys, values, null);
+				.addCheckboxesHorizontal(boxId, null, formLayout, onKeys, values);
 		el.setEnabled(canCheck && !readOnly);
 		el.addActionListener(FormEvent.ONCHANGE);
 

@@ -104,8 +104,7 @@ public class DialogConfigForm extends FormBasicController {
 		
 		select = uifactory.addCheckboxesVertical(
 				"forumAsPopup", "selection.forumAsPopup.label",
-				formLayout, new String[]{"xx"}, new String[]{null}, null, 1
-		);
+				formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		
 		String selectConfig = (String) config.get(DialogConfigForm.DIALOG_CONFIG_INTEGRATION);
 		select.select ("xx", selectConfig == CONFIG_INTEGRATION_VALUE_POPUP);

@@ -520,19 +520,19 @@ class VarForm extends FormBasicController {
 		setFormTitle("headerform");
 		setFormContextHelp("org.olat.course.nodes.scorm","ced-scorm-settings.html","help.hover.scorm-settings-filename");
 		
-		showMenuEl = uifactory.addCheckboxesVertical("showmenu", "showmenu.label", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		showMenuEl = uifactory.addCheckboxesVertical("showmenu", "showmenu.label", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		showMenuEl.select("xx", showMenu);
 		
-		skipLaunchPageEl = uifactory.addCheckboxesVertical("skiplaunchpage", "skiplaunchpage.label", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		skipLaunchPageEl = uifactory.addCheckboxesVertical("skiplaunchpage", "skiplaunchpage.label", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		skipLaunchPageEl.select("xx", skipLaunchPage);
 		
-		showNavButtonsEl = uifactory.addCheckboxesVertical("shownavbuttons", "shownavbuttons.label", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		showNavButtonsEl = uifactory.addCheckboxesVertical("shownavbuttons", "shownavbuttons.label", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		showNavButtonsEl.select("xx", showNavButtons);
 		//fxdiff FXOLAT-116: SCORM improvements
-		fullWindowEl = uifactory.addCheckboxesVertical("fullwindow", "fullwindow.label", formLayout, new String[]{"fullwindow"}, new String[]{null}, null, 1);
+		fullWindowEl = uifactory.addCheckboxesVertical("fullwindow", "fullwindow.label", formLayout, new String[]{"fullwindow"}, new String[]{null}, 1);
 		fullWindowEl.select("fullwindow", fullWindow);
 		
-		closeOnFinishEl = uifactory.addCheckboxesVertical("closeonfinish", "closeonfinish.label", formLayout, new String[]{"closeonfinish"}, new String[]{null}, null, 1);
+		closeOnFinishEl = uifactory.addCheckboxesVertical("closeonfinish", "closeonfinish.label", formLayout, new String[]{"closeonfinish"}, new String[]{null}, 1);
 		closeOnFinishEl.select("closeonfinish", closeOnFinish);
 
 		isAssessableEl = uifactory.addRadiosVertical("isassessable", "assessable.label", formLayout, assessableKeys, assessableValues);
@@ -550,7 +550,7 @@ class VarForm extends FormBasicController {
 		
 		// <OLATCE-289>
 		isAssessableEl.addActionListener(FormEvent.ONCHANGE);
-		advanceScoreEl = uifactory.addCheckboxesVertical("advanceScore", "advance.score.label", formLayout, new String[]{"ison"}, new String[]{null}, null, 1);
+		advanceScoreEl = uifactory.addCheckboxesVertical("advanceScore", "advance.score.label", formLayout, new String[]{"ison"}, new String[]{null}, 1);
 		advanceScoreEl.select("ison", advanceScore);
 		advanceScoreEl.addActionListener(FormEvent.ONCHANGE);
 
@@ -564,7 +564,7 @@ class VarForm extends FormBasicController {
 		RulesFactory.createShowRule(isAssessableEl, assessableKeys[1], cutValueEl, formLayout);
 		RulesFactory.createHideRule(isAssessableEl, assessableKeys[2], cutValueEl, formLayout);
 
-		scoreAttemptsEl = uifactory.addCheckboxesVertical("scoreAttempts", "attempts.depends.label", formLayout, new String[]{"ison"}, new String[]{null}, null, 1);
+		scoreAttemptsEl = uifactory.addCheckboxesVertical("scoreAttempts", "attempts.depends.label", formLayout, new String[]{"ison"}, new String[]{null}, 1);
 		scoreAttemptsEl.select("ison", scoreAttempts);
 		scoreAttemptsEl.addActionListener(FormEvent.ONCHANGE);
 		

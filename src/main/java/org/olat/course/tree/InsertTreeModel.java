@@ -37,6 +37,7 @@ import org.olat.course.nodes.CourseNode;
  */
 public class InsertTreeModel extends GenericTreeModel {
 
+	private static final long serialVersionUID = -3770001422175650965L;
 	private int nodeCnt = -1;
 	
 	public InsertTreeModel(CourseEditorTreeModel cetm) {

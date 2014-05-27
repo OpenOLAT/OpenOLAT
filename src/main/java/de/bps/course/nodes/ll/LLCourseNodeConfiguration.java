@@ -26,6 +26,7 @@ import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeGroup;
 
 import de.bps.course.nodes.LLCourseNode;
 
@@ -38,7 +39,7 @@ import de.bps.course.nodes.LLCourseNode;
  *
  * @author Marcel Karras (toka@freebits.de)
  */
-public class LLCourseNodeConfiguration extends AbstractCourseNodeConfiguration implements CourseNodeConfiguration {
+public class LLCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 
 	/**
 	 * [spring only]
@@ -47,42 +48,31 @@ public class LLCourseNodeConfiguration extends AbstractCourseNodeConfiguration i
 	private LLCourseNodeConfiguration() {
 		super();
 	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
+
+	@Override
 	public String getAlias() {
 		return "ll";
 	}
+	
+	@Override
+	public String getGroup() {
+		return CourseNodeGroup.other.name();
+	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	@Override
 	public String getIconCSSClass() {
 		return "o_ll_icon";
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	@Override
 	public CourseNode getInstance() {
 		return new LLCourseNode();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public String getLinkCSSClass() {
-		return "o_ll_icon";
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
+	@Override
 	public String getLinkText(Locale locale) {
 		Translator fallback = Util.createPackageTranslator(CourseNodeConfiguration.class, locale);
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale, fallback);
 		return translator.translate("title_ll");
 	}
-
 }

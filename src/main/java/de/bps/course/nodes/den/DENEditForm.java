@@ -72,7 +72,7 @@ public class DENEditForm extends FormBasicController {
 
 		Boolean initialCancelEnrollEnabled  = (Boolean) moduleConfig.get(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED);
 		
-		enableCancelEnroll = uifactory.addCheckboxesHorizontal("enableCancelEnroll", "form.enableCancelEnroll", formLayout, new String[] { "ison" }, new String[] { "" }, null);
+		enableCancelEnroll = uifactory.addCheckboxesHorizontal("enableCancelEnroll", "form.enableCancelEnroll", formLayout, new String[] { "ison" }, new String[] { "" });
 		enableCancelEnroll.select("ison", initialCancelEnrollEnabled);
 		
 		subm = new FormSubmit("subm", "submit");

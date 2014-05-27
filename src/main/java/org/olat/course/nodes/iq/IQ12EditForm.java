@@ -159,7 +159,7 @@ public class IQ12EditForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
-		limitAttempts = uifactory.addCheckboxesVertical("limitAttempts", "qti.form.limit.attempts", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		limitAttempts = uifactory.addCheckboxesVertical("limitAttempts", "qti.form.limit.attempts", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		
 		Integer confAttempts = (Integer) modConfig.get(IQEditController.CONFIG_KEY_ATTEMPTS);
 		if (confAttempts == null) confAttempts = new Integer(0);
@@ -169,7 +169,7 @@ public class IQ12EditForm extends FormBasicController {
 		attempts.setMaxValueCheck(20, null);
 		
 		//add it
-		blockAfterSuccess = uifactory.addCheckboxesVertical("blockAfterSuccess", "qti.form.block.afterSuccess", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		blockAfterSuccess = uifactory.addCheckboxesVertical("blockAfterSuccess", "qti.form.block.afterSuccess", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		Boolean block = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS);
 		blockAfterSuccess.select("xx", block == null ? false : block.booleanValue() );
 		
@@ -188,16 +188,16 @@ public class IQ12EditForm extends FormBasicController {
 		}
 		
 		Boolean fullWindow = (Boolean) modConfig.get(IQEditController.CONFIG_FULLWINDOW);
-		fullWindowEl = uifactory.addCheckboxesVertical("fullwindow", "qti.form.fullwindow", formLayout, new String[]{"fullwindow"}, new String[]{null}, null, 1);
+		fullWindowEl = uifactory.addCheckboxesVertical("fullwindow", "qti.form.fullwindow", formLayout, new String[]{"fullwindow"}, new String[]{null}, 1);
 		fullWindowEl.select("fullwindow", fullWindow == null ? true : fullWindow.booleanValue());
 		
 		Boolean CdisplayMenu = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_DISPLAYMENU);
-		displayMenu = uifactory.addCheckboxesVertical("qti_displayMenu", "qti.form.menudisplay", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		displayMenu = uifactory.addCheckboxesVertical("qti_displayMenu", "qti.form.menudisplay", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		displayMenu.select("xx", CdisplayMenu == null ? true : CdisplayMenu );
 		displayMenu.addActionListener(FormEvent.ONCLICK);
 		
 		Boolean CenableMenu = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_ENABLEMENU);
-		enableMenu = uifactory.addCheckboxesVertical("qti_enableMenu", "qti.form.menuenable", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		enableMenu = uifactory.addCheckboxesVertical("qti_enableMenu", "qti.form.menuenable", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		enableMenu.select("xx", CenableMenu == null ? true : CenableMenu);
 		
 		menuRenderOptions = uifactory.addRadiosVertical("qti_form_menurenderoption", "qti.form.menurender", formLayout, menuRenderOptKeys, menuRenderOptValues);
@@ -226,33 +226,33 @@ public class IQ12EditForm extends FormBasicController {
 		
 		Boolean bDisplayQuestionTitle = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_QUESTIONTITLE);
 		boolean confDisplayQuestionTitle = (bDisplayQuestionTitle != null) ? bDisplayQuestionTitle.booleanValue() : true;
-		displayQuestionTitle = uifactory.addCheckboxesVertical("qti_displayQuestionTitle", "qti.form.questiontitle", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		displayQuestionTitle = uifactory.addCheckboxesVertical("qti_displayQuestionTitle", "qti.form.questiontitle", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		displayQuestionTitle.select("xx", confDisplayQuestionTitle);
 
 		//display  automatic enumetation of choice options
 		Boolean bAutoEnum = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_AUTOENUM_CHOICES);
 		boolean confAutoEnum = (bAutoEnum != null) ? bAutoEnum.booleanValue() : false;
-		autoEnumerateChoices = uifactory.addCheckboxesVertical("qti_AutoEnumChoices", "qti.form.auto.enumerate.choices", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		autoEnumerateChoices = uifactory.addCheckboxesVertical("qti_AutoEnumChoices", "qti.form.auto.enumerate.choices", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		autoEnumerateChoices.select("xx", confAutoEnum);
 		
 		//provide  memo field
 		Boolean bMemo = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_MEMO);
 		boolean confMemo = (bMemo != null) ? bMemo.booleanValue() : false;
-		provideMemoField = uifactory.addCheckboxesVertical("qti_provideMemoField", "qti.form.auto.memofield", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		provideMemoField = uifactory.addCheckboxesVertical("qti_provideMemoField", "qti.form.auto.memofield", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		provideMemoField.select("xx", confMemo);
 		
 		
 		// question progress
 		Boolean bEnableQuestionProgress = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_QUESTIONPROGRESS);
 		boolean confEnableQuestionProgress = (bEnableQuestionProgress != null) ? bEnableQuestionProgress.booleanValue() : true;
-		displayQuestionProgress	= uifactory.addCheckboxesVertical("qti_enableQuestionProgress", "qti.form.questionprogress", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		displayQuestionProgress	= uifactory.addCheckboxesVertical("qti_enableQuestionProgress", "qti.form.questionprogress", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		displayQuestionProgress.select("xx", confEnableQuestionProgress);
 		displayQuestionProgress.setVisible(!isSurvey);
 		
 		// score progress
 		Boolean bEnableScoreProgress = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_SCOREPROGRESS);
 		boolean confEnableScoreProgress = (bEnableScoreProgress != null) ? bEnableScoreProgress.booleanValue() : true;
-		displayScoreProgress = uifactory.addCheckboxesVertical("resultTitle", "qti.form.scoreprogress", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		displayScoreProgress = uifactory.addCheckboxesVertical("resultTitle", "qti.form.scoreprogress", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		
 		if (isAssessment || isSelfTest) {
 			displayScoreProgress.select("xx", confEnableScoreProgress);			
@@ -274,7 +274,7 @@ public class IQ12EditForm extends FormBasicController {
 			if (configKeyType != null && configKeyType.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS))
 				confEnableCancel = false;
 		}
-		enableCancel = uifactory.addCheckboxesVertical("qti_enableCancel", "qti.form.enablecancel", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		enableCancel = uifactory.addCheckboxesVertical("qti_enableCancel", "qti.form.enablecancel", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		enableCancel.select("xx", confEnableCancel);
 		
 		if (isSelfTest) {
@@ -286,7 +286,7 @@ public class IQ12EditForm extends FormBasicController {
 		// enable suspend
 		Boolean bEnableSuspend = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_ENABLESUSPEND);
 		boolean confEnableSuspend = (bEnableSuspend != null) ? bEnableSuspend.booleanValue() : false;
-		enableSuspend = uifactory.addCheckboxesVertical("qti_enableSuspend", "qti.form.enablesuspend", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		enableSuspend = uifactory.addCheckboxesVertical("qti_enableSuspend", "qti.form.enablesuspend", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		enableSuspend.select("xx", confEnableSuspend);
 	
 		uifactory.addSpacerElement("s2", formLayout, true);
@@ -294,7 +294,7 @@ public class IQ12EditForm extends FormBasicController {
 		//Show score infos on start page
 		Boolean bEnableScoreInfos = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
 	  boolean enableScoreInfos = (bEnableScoreInfos != null) ? bEnableScoreInfos.booleanValue() : true;
-		scoreInfo = uifactory.addCheckboxesVertical("qti_scoreInfo", "qti.form.scoreinfo", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		scoreInfo = uifactory.addCheckboxesVertical("qti_scoreInfo", "qti.form.scoreinfo", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		scoreInfo.select("xx", enableScoreInfos);
 		if (isAssessment || isSelfTest) {
 			scoreInfo.select("xx", enableScoreInfos);
@@ -313,7 +313,7 @@ public class IQ12EditForm extends FormBasicController {
 		Boolean showResultOnHomePage = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
 		boolean confEnableShowResultOnHomePage = (showResultOnHomePage != null) ? showResultOnHomePage.booleanValue() : false;
 		confEnableShowResultOnHomePage = !noSummary && confEnableShowResultOnHomePage;
-		showResultsOnHomePage = uifactory.addCheckboxesVertical("qti_enableResultsOnHomePage", "qti.form.results.onhomepage", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		showResultsOnHomePage = uifactory.addCheckboxesVertical("qti_enableResultsOnHomePage", "qti.form.results.onhomepage", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		showResultsOnHomePage.select("xx", confEnableShowResultOnHomePage);
 		showResultsOnHomePage.addActionListener(FormEvent.ONCLICK);
 		showResultsOnHomePage.setVisible(!isSurvey);
@@ -324,7 +324,7 @@ public class IQ12EditForm extends FormBasicController {
 			showResultsDateDependent = showResultsActive.booleanValue();
 		}
 
-		showResultsDateDependentButton = uifactory.addCheckboxesVertical("qti_showresult", "qti.form.show.results", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		showResultsDateDependentButton = uifactory.addCheckboxesVertical("qti_showresult", "qti.form.show.results", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		if (isAssessment || isSelfTest) {
 			showResultsDateDependentButton.select("xx", showResultsDateDependent);
 			showResultsDateDependentButton.addActionListener(FormEvent.ONCLICK);
@@ -346,7 +346,7 @@ public class IQ12EditForm extends FormBasicController {
 		Boolean showResultOnFinish = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_RESULT_ON_FINISH);
 		boolean confEnableShowResultOnFinish = (showResultOnFinish != null) ? showResultOnFinish.booleanValue() : true;
 		confEnableShowResultOnFinish = !noSummary && confEnableShowResultOnFinish;
-		showResultsAfterFinishTest = uifactory.addCheckboxesVertical("qti_enableResultsOnFinish", "qti.form.results.onfinish", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		showResultsAfterFinishTest = uifactory.addCheckboxesVertical("qti_enableResultsOnFinish", "qti.form.results.onfinish", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		showResultsAfterFinishTest.select("xx", confEnableShowResultOnFinish);
 		showResultsAfterFinishTest.addActionListener(FormEvent.ONCLICK);
 		showResultsAfterFinishTest.setVisible(!isSurvey);

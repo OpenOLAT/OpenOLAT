@@ -56,16 +56,16 @@ public class WebDAVAdminController extends FormBasicController {
 
 		boolean enabled = webDAVModule.isEnabled();
 		String[] values = new String[] { getTranslator().translate("webdav.on") };
-		enableModuleEl = uifactory.addCheckboxesHorizontal("webdavModule", "webdav.module", formLayout, new String[]{"xx"}, values, null);
+		enableModuleEl = uifactory.addCheckboxesHorizontal("webdavModule", "webdav.module", formLayout, new String[]{"xx"}, values);
 		enableModuleEl.select("xx", enabled);
 		enableModuleEl.addActionListener(FormEvent.ONCHANGE);
 		
-		enableLinkEl = uifactory.addCheckboxesHorizontal("webdavLink", "webdav.link", formLayout, new String[]{"xx"}, values, null);
+		enableLinkEl = uifactory.addCheckboxesHorizontal("webdavLink", "webdav.link", formLayout, new String[]{"xx"}, values);
 		enableLinkEl.select("xx", webDAVModule.isLinkEnabled());
 		enableLinkEl.addActionListener(FormEvent.ONCHANGE);
 		enableLinkEl.setEnabled(enabled);
 		
-		enableDigestEl = uifactory.addCheckboxesHorizontal("webdavDigest", "webdav.digest", formLayout, new String[]{"xx"}, values, null);
+		enableDigestEl = uifactory.addCheckboxesHorizontal("webdavDigest", "webdav.digest", formLayout, new String[]{"xx"}, values);
 		enableDigestEl.select("xx", webDAVModule.isDigestAuthenticationEnabled());
 		enableDigestEl.addActionListener(FormEvent.ONCHANGE);
 		enableDigestEl.setEnabled(enabled);

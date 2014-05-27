@@ -138,9 +138,9 @@ public class SearchAdminForm extends FormBasicController {
 		blackList = uifactory.addTextAreaElement("search.admin.label.blackList", 3, 80, "", formLayout);
 		blackList.setExampleKey("search.admin.label.blackList.example", null);
 		
-		excelFileEnabled = uifactory.addCheckboxesHorizontal("search.admin.label.enableExcel", formLayout, new String[]{"on"}, new String[]{""}, null);
-		pptFileEnabled = uifactory.addCheckboxesHorizontal("search.admin.label.enablePpt", formLayout, new String[]{"on"}, new String[]{""}, null);
-		pdfFileEnabled = uifactory.addCheckboxesHorizontal("search.admin.label.enablePdf", formLayout, new String[]{"on"}, new String[]{""}, null);
+		excelFileEnabled = uifactory.addCheckboxesHorizontal("search.admin.label.enableExcel", formLayout, new String[]{"on"}, new String[]{""});
+		pptFileEnabled = uifactory.addCheckboxesHorizontal("search.admin.label.enablePpt", formLayout, new String[]{"on"}, new String[]{""});
+		pdfFileEnabled = uifactory.addCheckboxesHorizontal("search.admin.label.enablePdf", formLayout, new String[]{"on"}, new String[]{""});
 
 		submit = new FormSubmit("submit", "submit");
 		formLayout.add(submit);

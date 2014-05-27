@@ -84,7 +84,7 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 				translate("user.allow.create"),
 				translate("author.allow.create")
 		};
-		allowEl = uifactory.addCheckboxesVertical("module.admin.allow.create", optionsContainer, onKeys, values, null, 1);
+		allowEl = uifactory.addCheckboxesVertical("module.admin.allow.create", optionsContainer, onKeys, values, 1);
 		allowEl.select("user", module.isUserAllowedCreate());
 		allowEl.select("author", module.isAuthorAllowedCreate());
 		allowEl.addActionListener(FormEvent.ONCHANGE);
@@ -93,12 +93,12 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		formLayout.add(resourceAssignmentContainer);
 		
 		String[] courseValues = new String[]{ translate("module.resource.courses.grant") };
-		assignCoursesEl = uifactory.addCheckboxesVertical("module.resource.courses", resourceAssignmentContainer, assignKeys, courseValues, null, 1);
+		assignCoursesEl = uifactory.addCheckboxesVertical("module.resource.courses", resourceAssignmentContainer, assignKeys, courseValues, 1);
 		assignCoursesEl.select(assignKeys[0], module.isGroupManagersAllowedToLinkCourses());
 		assignCoursesEl.addActionListener(FormEvent.ONCHANGE);
 		
 		String[] groupValues = new String[]{ translate("module.resource.groups.grant") };
-		assignGroupsEl = uifactory.addCheckboxesVertical("module.resource.groups", resourceAssignmentContainer, assignKeys, groupValues, null, 1);
+		assignGroupsEl = uifactory.addCheckboxesVertical("module.resource.groups", resourceAssignmentContainer, assignKeys, groupValues, 1);
 		assignGroupsEl.select(assignKeys[0], module.isResourceManagersAllowedToLinkGroups());
 		assignGroupsEl.addActionListener(FormEvent.ONCHANGE);
 		
@@ -111,7 +111,7 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 				translate("enrolment.email.groupmanagers"),
 				translate("enrolment.email.administrators")
 		};
-		enrolmentEl = uifactory.addCheckboxesVertical("mandatory.enrolment", privacyOptionsContainer, enrollmentKeys, enrollmentValues, null, 1);
+		enrolmentEl = uifactory.addCheckboxesVertical("mandatory.enrolment", privacyOptionsContainer, enrollmentKeys, enrollmentValues, 1);
 		enrolmentEl.select("users", "true".equals(module.getMandatoryEnrolmentEmailForUsers()));
 		enrolmentEl.select("authors", "true".equals(module.getMandatoryEnrolmentEmailForAuthors()));
 		enrolmentEl.select("usermanagers", "true".equals(module.getMandatoryEnrolmentEmailForUsermanagers()));
@@ -126,7 +126,7 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 				translate("enrolment.email.groupmanagers"),
 				translate("enrolment.email.administrators")
 		};
-		membershipEl = uifactory.addCheckboxesVertical("mandatory.membership", privacyOptionsContainer, enrollmentKeys, membershipValues, null, 1);
+		membershipEl = uifactory.addCheckboxesVertical("mandatory.membership", privacyOptionsContainer, enrollmentKeys, membershipValues, 1);
 		membershipEl.select("users", "true".equals(module.getAcceptMembershipForUsers()));
 		membershipEl.select("authors", "true".equals(module.getAcceptMembershipForAuthors()));
 		membershipEl.select("usermanagers", "true".equals(module.getAcceptMembershipForUsermanagers()));

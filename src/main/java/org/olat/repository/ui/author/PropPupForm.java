@@ -189,15 +189,15 @@ public class PropPupForm extends FormBasicController {
 			flc.contextPut("off_warn", warning);
 		}
 		
-		canCopy = uifactory.addCheckboxesVertical("cif_canCopy", "cif.canCopy", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		canCopy = uifactory.addCheckboxesVertical("cif_canCopy", "cif.canCopy", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		canCopy.select("xx", entry.getCanCopy());
 		canCopy.setEnabled(!managedSettings);
 		
-		canReference = uifactory.addCheckboxesVertical("cif_canReference", "cif.canReference", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		canReference = uifactory.addCheckboxesVertical("cif_canReference", "cif.canReference", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		canReference.select("xx", entry.getCanReference());
 		canReference.setEnabled(!managedSettings);
 
-		canDownload = uifactory.addCheckboxesVertical("cif_canDownload", "cif.canDownload", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		canDownload = uifactory.addCheckboxesVertical("cif_canDownload", "cif.canDownload", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		canDownload.select("xx", entry.getCanDownload());
 		canDownload.setVisible(handler != null && handler.supportsDownload(this.entry));
 			

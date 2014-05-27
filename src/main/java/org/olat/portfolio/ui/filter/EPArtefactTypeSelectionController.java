@@ -77,7 +77,7 @@ public class EPArtefactTypeSelectionController extends FormBasicController {
 			Translator handlerTrans = handler.getHandlerTranslator(getTranslator());
 			this.flc.setTranslator(handlerTrans);
 			String handlerClass = PortfolioFilterController.HANDLER_PREFIX + handler.getClass().getSimpleName() + PortfolioFilterController.HANDLER_TITLE_SUFFIX;
-			MultipleSelectionElement chkBox = uifactory.addCheckboxesHorizontal(handlerClass, formLayout, keys, values, null);
+			MultipleSelectionElement chkBox = uifactory.addCheckboxesHorizontal(handlerClass, formLayout, keys, values);
 			if (selectedTypeList != null && selectedTypeList.contains(handler.getType())) {
 				chkBox.select(keys[0], true);
 			}

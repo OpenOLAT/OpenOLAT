@@ -57,7 +57,7 @@ public class CoachAdminController extends FormBasicController {
 			
 			boolean restEnabled = isEnabled();
 
-			enabled = uifactory.addCheckboxesHorizontal("coaching.enabled", formLayout, keys, values, null);
+			enabled = uifactory.addCheckboxesHorizontal("coaching.enabled", formLayout, keys, values);
 			enabled.select(keys[0], restEnabled);
 
 			final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());

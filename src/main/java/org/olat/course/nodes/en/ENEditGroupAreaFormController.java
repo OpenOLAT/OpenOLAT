@@ -239,7 +239,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 
 		// enrolment
 		Boolean initialCancelEnrollEnabled  = (Boolean) moduleConfig.get(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED);
-		enableCancelEnroll = uifactory.addCheckboxesHorizontal("enableCancelEnroll", "form.enableCancelEnroll", formLayout, new String[] { "ison" }, new String[] { "" }, null);
+		enableCancelEnroll = uifactory.addCheckboxesHorizontal("enableCancelEnroll", "form.enableCancelEnroll", formLayout, new String[] { "ison" }, new String[] { "" });
 		enableCancelEnroll.select("ison", initialCancelEnrollEnabled);
 		
 		subm = uifactory.addFormSubmitButton("submit", formLayout);

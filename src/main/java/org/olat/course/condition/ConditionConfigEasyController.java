@@ -738,7 +738,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		/*
 		 * yes / no chooser defines if learner do not see the building block at all
 		 */
-		attributeSwitch = uifactory.addCheckboxesVertical("attributeSwitch", "form.easy.attributeSwitch", formLayout, new String[] { "ison" }, new String[] { "" }, null, 1);
+		attributeSwitch = uifactory.addCheckboxesVertical("attributeSwitch", "form.easy.attributeSwitch", formLayout, new String[] { "ison" }, new String[] { "" }, 1);
 		attributeSwitch.select("ison", validatedCondition.getAttributeConditions()!=null);
 		// register for on click event to hide/disable other elements
 		attributeSwitch.addActionListener(FormEvent.ONCLICK);
@@ -1078,7 +1078,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		/*
 		 * yes / no chooser defines if learner do not see the building block at all
 		 */
-		coachExclusive = uifactory.addCheckboxesHorizontal("coachExclusive", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.coachExclusive") }, null);
+		coachExclusive = uifactory.addCheckboxesHorizontal("coachExclusive", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.coachExclusive") });
 		boolean coachesAndAdminsInitValue = validatedCondition.isEasyModeCoachesAndAdmins();
 		coachExclusive.select("ison", coachesAndAdminsInitValue);
 		
@@ -1096,7 +1096,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		/*
 		 * yes / no chooser defines if learner do not see the building block at all
 		 */
-		applyRulesForCoach = uifactory.addCheckboxesHorizontal("applyRulesForCoach", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.applyRulesForCoach") }, null);
+		applyRulesForCoach = uifactory.addCheckboxesHorizontal("applyRulesForCoach", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.applyRulesForCoach") });
 		if(isDateGroupAssessmentOAttributeSwitchOn()) {
 			applyRulesForCoach.setVisible(true);
 		} else {
@@ -1141,7 +1141,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		toDate.setDisplaySize(toDate.getExampleDateString().length());
 		dateSubContainer.add(toDate);
 
-		dateSwitch = uifactory.addCheckboxesHorizontal("dateSwitch", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.dateSwitch") }, null);
+		dateSwitch = uifactory.addCheckboxesHorizontal("dateSwitch", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.dateSwitch") });
 		if (fromDate.getDate() != null || toDate.getDate() != null) {
 			dateSwitch.select("ison", true);
 		} else {
@@ -1164,7 +1164,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		List<Long> areaKeyList  = validatedCondition.getEasyModeGroupAreaAccessIdList();
 		String areaInitVal = getAreaNames(areaKeyList);
 
-		groupSwitch = uifactory.addCheckboxesHorizontal("groupSwitch", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.groupSwitch") }, null);
+		groupSwitch = uifactory.addCheckboxesHorizontal("groupSwitch", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.groupSwitch") });
 		// initialize selection
 		if (!groupKeyList.isEmpty() || !areaKeyList.isEmpty()) {
 			groupSwitch.select("ison", true);
@@ -1213,7 +1213,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		String cutInitStrValue = validatedCondition.getEasyModeCutValue();
 		int cutInitValue = 0;
 		
-		assessmentSwitch = uifactory.addCheckboxesHorizontal("assessmentSwitch", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.assessmentSwitch") }, null);
+		assessmentSwitch = uifactory.addCheckboxesHorizontal("assessmentSwitch", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.assessmentSwitch") });
 		assessmentSwitch.addActionListener(FormEvent.ONCLICK);
 		
 

@@ -63,6 +63,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	protected String[] keys;
 	protected String[] values;
 	private String[] cssClasses;
+	private String[] iconLeftCSS;
 	private Set<String> selected;
 	
 	protected FormLayouter formLayoutContainer;
@@ -103,10 +104,17 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		return selected;
 	}
 
-	public void setKeysAndValues(String[] keys, String[] values, String[] cssClasses){
+	@Override
+	public void setKeysAndValues(String[] keys, String[] values) {
+		setKeysAndValues(keys, values, null, null);
+	}
+
+	@Override
+	public void setKeysAndValues(String[] keys, String[] values, String[] cssClasses, String[] iconLeftCSS) {
 		this.keys = keys;
 		this.values = values;
 		this.cssClasses = cssClasses;
+		this.iconLeftCSS = iconLeftCSS;
 		//
 		// remove all elements
 		// add new elements
@@ -351,7 +359,8 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		// create and add radio elements
 		String[] items = new String[keys.length];
 		for (int i = 0; i < keys.length; i++) {
-			CheckboxElementComponent ssec = new CheckboxElementComponent(getName()+"_"+keys[i], translator, this, i, (cssClasses == null ? null : cssClasses[i]));
+			CheckboxElementComponent ssec = new CheckboxElementComponent(getName()+"_"+keys[i], translator, this, i,
+					(cssClasses == null ? null : cssClasses[i]), (iconLeftCSS == null ? null : iconLeftCSS[i]));
 			formLayoutContainer.put(getName()+"_"+keys[i], ssec);
 			items[i] = getName()+"_"+keys[i];
 			ssec.setEnabled(isEnabled());

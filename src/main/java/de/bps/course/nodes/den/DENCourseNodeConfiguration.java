@@ -26,30 +26,36 @@ import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeGroup;
 
 import de.bps.course.nodes.DENCourseNode;
 
-public class DENCourseNodeConfiguration extends AbstractCourseNodeConfiguration implements CourseNodeConfiguration {
+public class DENCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 	
 	DENCourseNodeConfiguration() {
 	}
-	
+
+	@Override
 	public String getAlias() {
 		return "den";
 	}
+	
+	@Override
+	public String getGroup() {
+		return CourseNodeGroup.other.name();
+	}
 
+	@Override
 	public String getIconCSSClass() {
 		return "o_den_icon";
 	}
 
+	@Override
 	public CourseNode getInstance() {
 		return new DENCourseNode();
 	}
 
-	public String getLinkCSSClass() {
-		return null;
-	}
-
+	@Override
 	public String getLinkText(Locale locale) {
 		Translator fallback = Util.createPackageTranslator(CourseNodeConfiguration.class, locale);
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale, fallback);

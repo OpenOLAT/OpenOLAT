@@ -140,7 +140,7 @@ public class EnrollmentEditForm extends FormBasicController {
 		keys = new String[] { "ison" };
 		values = new String[] { "" };
 
-		accessLimit = uifactory.addCheckboxesVertical("accessLimit", formLayout, keys, values, null, 1);
+		accessLimit = uifactory.addCheckboxesVertical("accessLimit", formLayout, keys, values, 1);
 		accessLimit.setLabel("en.accesscheckbox", null);
 		accessLimit.select("ison", courseConfig.getEnableAccessLimit());
 		accessLimit.addActionListener(FormEvent.ONCLICK);
@@ -154,7 +154,7 @@ public class EnrollmentEditForm extends FormBasicController {
 			values[i] = elements.get(i);
 		}
 
-		courseElements = uifactory.addCheckboxesVertical("courseElements", formLayout, keys, values, null, 1);
+		courseElements = uifactory.addCheckboxesVertical("courseElements", formLayout, keys, values, 1);
 		courseElements.setLabel("en.selectelements", null);
 
 		if (!accessLimit.isSelected(0)) courseElements.setVisible(false);

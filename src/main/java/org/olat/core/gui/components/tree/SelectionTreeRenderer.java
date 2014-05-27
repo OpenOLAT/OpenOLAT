@@ -258,7 +258,7 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 				}
 			}
 			if (cssClass != null) sb.append("</span>");
-
+			renderNodeDecorators(sb, child);
 			// END of choice div
 			sb.append("</div></div>"); 
 
@@ -282,25 +282,26 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 		// item icon css class and icon decorator (for each icon quadrant a div, eclipse style)
 		String iconCssClass = node.getIconCssClass();
 		if (iconCssClass != null) {
-			sb.append("<div class=\"").append(iconCssClass).append("\" title=\"").append(StringEscapeUtils.escapeHtml(node.getAltText())).append("\">");
-			
-			String deco1 = node.getIconDecorator1CssClass();
-			if (deco1 != null)
-				sb.append("<span class=\"").append(deco1).append("\"></span>");
-			
-			String deco2 = node.getIconDecorator2CssClass();
-			if (deco2 != null)
-				sb.append("<span class=\"").append(deco2).append("\"></span>");
-			
-			String deco3 = node.getIconDecorator3CssClass();
-			if (deco3 != null)
-				sb.append("<span class=\"").append(deco3).append("\"></span>");
-			
-			String deco4 = node.getIconDecorator4CssClass();
-			if (deco4 != null)
-				sb.append("<span class=\"").append(deco4).append("\"></span>");
-
-			sb.append("</div>");			
+			sb.append("<div title=\"").append(StringEscapeUtils.escapeHtml(node.getAltText()))
+			  .append("\"><i class='o_icon ").append(iconCssClass).append("'> </i></div>");
+		}
+	}
+	private void renderNodeDecorators(StringOutput sb, TreeNode node) {	
+		String deco1 = node.getIconDecorator1CssClass();
+		if (deco1 != null) {
+			sb.append("<span class='badge pull-right ").append(deco1).append("'></span>");
+		}
+		String deco2 = node.getIconDecorator2CssClass();
+		if (deco2 != null) {
+			sb.append("<span class='badge pull-right ").append(deco2).append("'></span>");
+		}
+		String deco3 = node.getIconDecorator3CssClass();
+		if (deco3 != null) {
+			sb.append("<span class='badge pull-right ").append(deco3).append("'></span>");
+		}
+		String deco4 = node.getIconDecorator4CssClass();
+		if (deco4 != null) {
+			sb.append("<span class='badge pull-right").append(deco4).append("'></span>");
 		}
 	}
 

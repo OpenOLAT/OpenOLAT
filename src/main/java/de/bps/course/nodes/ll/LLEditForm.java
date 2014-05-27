@@ -326,7 +326,7 @@ public class LLEditForm extends FormBasicController {
 		lTarget.setUserObject(link);
 		lTargetInputList.add(index, lTarget);
 		//add html target
-		MultipleSelectionElement htmlTargetSelection = uifactory.addCheckboxesHorizontal("html_target" + counter, titleContainer, new String[]{BLANK_KEY}, new String[]{""}, null);
+		MultipleSelectionElement htmlTargetSelection = uifactory.addCheckboxesHorizontal("html_target" + counter, titleContainer, new String[]{BLANK_KEY}, new String[]{""});
 		htmlTargetSelection.setUserObject(link);
 		htmlTargetSelection.select(BLANK_KEY, "_blank".equals(link.getHtmlTarget()));
 		lHtmlTargetInputList.add(index, htmlTargetSelection);

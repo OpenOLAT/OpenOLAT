@@ -26,6 +26,7 @@ import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.MembersCourseNode;
 
 /**
@@ -37,7 +38,7 @@ import org.olat.course.nodes.MembersCourseNode;
  * Initial Date:  11 mars 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class MembersCourseNodeConfiguration extends AbstractCourseNodeConfiguration implements CourseNodeConfiguration {
+public class MembersCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 	
 	private MembersCourseNodeConfiguration() {
 		super();
@@ -46,6 +47,11 @@ public class MembersCourseNodeConfiguration extends AbstractCourseNodeConfigurat
 	@Override
 	public String getAlias() {
 		return "cmembers";
+	}
+	
+	@Override
+	public String getGroup() {
+		return CourseNodeGroup.other.name();
 	}
 
 	@Override
@@ -63,10 +69,5 @@ public class MembersCourseNodeConfiguration extends AbstractCourseNodeConfigurat
 	@Override
 	public String getIconCSSClass() {
 		return "o_cmembers_icon";
-	}
-
-	@Override
-	public String getLinkCSSClass() {
-		return null;
 	}
 }

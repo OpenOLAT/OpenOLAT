@@ -105,7 +105,7 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 		roomSizeEl = uifactory.addStaticTextElement("room.size", "room.size", "", formLayout);
 		moderationModeEl = uifactory.addStaticTextElement("mod", "room.moderation.mode", "", formLayout);
 		String[] recordingValues = new String[]{ translate("room.recording.enabled") };
-		recordingEl = uifactory.addCheckboxesHorizontal("recording", "room.recording", formLayout, recordingKeys, recordingValues, null);
+		recordingEl = uifactory.addCheckboxesHorizontal("recording", "room.recording", formLayout, recordingKeys, recordingValues);
 		recordingEl.setEnabled(false);
 		roomCommentEl = uifactory.addStaticTextElement("room.comment", "room.comment", "", formLayout);
 

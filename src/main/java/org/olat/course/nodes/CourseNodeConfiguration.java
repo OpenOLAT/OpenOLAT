@@ -39,13 +39,13 @@ public interface CourseNodeConfiguration extends ConfigOnOff{
 
 	public String getAlias();
 	
+	public String getGroup();
+	
 	public CourseNode getInstance();
 	
 	public String getLinkText(Locale locale);
 	
 	public String getIconCSSClass();
-	
-	public String getLinkCSSClass();
 	
 	public int getOrder();
 	

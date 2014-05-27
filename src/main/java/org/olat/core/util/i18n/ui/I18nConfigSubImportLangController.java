@@ -91,7 +91,7 @@ class I18nConfigSubImportLangController extends FormBasicController {
 		//
 		// Add checkboxes for the found languages - hide so far
 		String[] langKeys = new String[]{};
-		importKeys = uifactory.addCheckboxesVertical("configuration.management.package.import.select", this.flc, langKeys, langKeys, null, 1);
+		importKeys = uifactory.addCheckboxesVertical("configuration.management.package.import.select", flc, langKeys, langKeys, 1);
 		importKeys.setVisible(false);
 		//
 		// Add cancel and submit in button group layout
@@ -160,7 +160,7 @@ class I18nConfigSubImportLangController extends FormBasicController {
 				//
 				// enable language key selection
 				String[] langKeys = ArrayHelper.toArray(importLangKeys);
-				importKeys.setKeysAndValues(langKeys, langKeys, null);
+				importKeys.setKeysAndValues(langKeys, langKeys);
 				importKeys.selectAll();
 				importKeys.setVisible(true);
 				// In language adaption mode the import is done as a package - can't deselect anything

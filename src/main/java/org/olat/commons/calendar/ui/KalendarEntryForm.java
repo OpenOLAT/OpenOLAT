@@ -321,7 +321,7 @@ public class KalendarEntryForm extends FormBasicController {
 		end.setMandatory(true);
 		end.setDate(event.getEnd());
 		
-		allDayEvent = uifactory.addCheckboxesVertical("allday", "cal.form.allday", formLayout, new String[]{"xx"}, new String[]{null}, null, 1);
+		allDayEvent = uifactory.addCheckboxesVertical("allday", "cal.form.allday", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		allDayEvent.select("xx", event.isAllDayEvent());
 		
 		chooseRecurrence = uifactory.addDropdownSingleselect("cal.form.recurrence", formLayout, keysRecurrence, valuesRecurrence, null);

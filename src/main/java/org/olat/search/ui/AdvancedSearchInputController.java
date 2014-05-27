@@ -131,7 +131,7 @@ public class AdvancedSearchInputController extends FormBasicController {
 			documentTypeKeys[j] = documentType.getKey();
 			documentTypeValues[j++] = documentType.getValue();
 		}
-		documentTypeQuery = uifactory.addCheckboxesHorizontal("doc_type", "form.search.label.documenttype", formLayout, documentTypeKeys, documentTypeValues, null);
+		documentTypeQuery = uifactory.addCheckboxesHorizontal("doc_type", "form.search.label.documenttype", formLayout, documentTypeKeys, documentTypeValues);
 		
 		//metadatas
 		SearchMetadataFieldsProvider metadataProvider = (SearchMetadataFieldsProvider) CoreSpringFactory.getBean("SearchMetadataFieldsProvider");

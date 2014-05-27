@@ -110,15 +110,15 @@ public class RegistrationAdminController extends FormBasicController {
 		settingsContainer.setFormTitle(translate("admin.registration.title"));
 		formLayout.add(settingsContainer);
 		
-		registrationElement = uifactory.addCheckboxesHorizontal("enable.self.registration", "admin.enableRegistration", settingsContainer, enableRegistrationKeys, enableRegistrationValues, null);
+		registrationElement = uifactory.addCheckboxesHorizontal("enable.self.registration", "admin.enableRegistration", settingsContainer, enableRegistrationKeys, enableRegistrationValues);
 		registrationElement.addActionListener(FormEvent.ONCHANGE);
 		registrationElement.select("on", registrationModule.isSelfRegistrationEnabled());
 		
-		registrationLoginElement = uifactory.addCheckboxesHorizontal("enable.registration.login", "admin.enableRegistrationLogin", settingsContainer, enableRegistrationKeys, enableRegistrationValues, null);
+		registrationLoginElement = uifactory.addCheckboxesHorizontal("enable.registration.login", "admin.enableRegistrationLogin", settingsContainer, enableRegistrationKeys, enableRegistrationValues);
 		registrationLoginElement.addActionListener(FormEvent.ONCHANGE);
 		registrationLoginElement.select("on", registrationModule.isSelfRegistrationLoginEnabled());
 
-		registrationLinkElement = uifactory.addCheckboxesHorizontal("enable.registration.link", "admin.enableRegistrationLink", settingsContainer, enableRegistrationKeys, enableRegistrationValues, null);
+		registrationLinkElement = uifactory.addCheckboxesHorizontal("enable.registration.link", "admin.enableRegistrationLink", settingsContainer, enableRegistrationKeys, enableRegistrationValues);
 		registrationLinkElement.addActionListener(FormEvent.ONCHANGE);
 		registrationLinkElement.select("on", registrationModule.isSelfRegistrationLinkEnabled());
 		
@@ -143,7 +143,7 @@ public class RegistrationAdminController extends FormBasicController {
 		
 		uifactory.addStaticTextElement("admin.registration.staticprop.error", null, translate("admin.registration.staticprop.desc"), staticPropContainer);
 		
-		staticPropElement = uifactory.addCheckboxesHorizontal("enable.staticprop", "admin.enableStaticProp", staticPropContainer, enableRegistrationKeys, enableRegistrationValues, null);
+		staticPropElement = uifactory.addCheckboxesHorizontal("enable.staticprop", "admin.enableStaticProp", staticPropContainer, enableRegistrationKeys, enableRegistrationValues);
 		staticPropElement.addActionListener(FormEvent.ONCHANGE);
 		staticPropElement.select("on", registrationModule.isStaticPropertyMappingEnabled());
 
