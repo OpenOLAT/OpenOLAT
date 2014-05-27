@@ -134,6 +134,7 @@ public class OverviewRepositoryListController extends BasicController implements
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
 			if(event instanceof SegmentViewEvent) {
+				cleanUp();
 				SegmentViewEvent sve = (SegmentViewEvent)event;
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
@@ -146,6 +147,16 @@ public class OverviewRepositoryListController extends BasicController implements
 				}
 			}
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(catalogCtrl);
+		removeAsListenerAndDispose(markedCtrl);
+		removeAsListenerAndDispose(myCoursesCtrl);
+		catalogCtrl = null;
+		markedCtrl = null;
+		myCoursesCtrl = null;
+		
 	}
 	
 	private RepositoryEntryListController doOpenMark(UserRequest ureq) {

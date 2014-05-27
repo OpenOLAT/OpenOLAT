@@ -243,5 +243,7 @@ public interface FlexiTableElement extends FormItem {
 	
 	public void setPage(int page);
 	
+	public void sort(String sortKey, boolean asc);
+	
 	public void reloadData();
 }

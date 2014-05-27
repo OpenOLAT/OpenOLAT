@@ -660,7 +660,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 	}
 	
-	protected void sort(String sortKey, boolean asc) {
+	public void sort(String sortKey, boolean asc) {
 		SortKey key = new SortKey(sortKey, asc);
 		orderBy = new SortKey[]{ key };
 		if(dataModel instanceof SortableFlexiTableDataModel) {
