@@ -59,13 +59,14 @@
 				#end
 			</div>
 		#end
+		<div class="pull-right">
 		#if ($tableConfig.isPreferencesOffered())
 			$r.render("prefLink")
 		#end
-		
 		#if ($tableConfig.isDownloadOffered())	
 			$r.render("downloadLink")
 		#end
+		</div>
 	</div>
 	<div class="clearfix"></div>
 	$r.render("table", $tableConfig.getCssPrefix())

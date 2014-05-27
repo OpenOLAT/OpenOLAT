@@ -31,6 +31,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -123,7 +124,8 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 		Translator myTrans = userManager.getPropertyHandlerTranslator(getTranslator());
 		ImportMemberOverviewDataModel userTableModel = new ImportMemberOverviewDataModel(oks, resultingPropertyHandlers,
 				isAdministrativeUser, getLocale(), tableColumnModel);
-		uifactory.addTableElement(ureq, getWindowControl(), "users", userTableModel, myTrans, formLayout);
+		FlexiTableElement tableEl = uifactory.addTableElement(ureq, getWindowControl(), "users", userTableModel, myTrans, formLayout);
+		tableEl.setCustomizeColumns(false);
 	}
 	
 	private void loadModel(List<String> keys) {

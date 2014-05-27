@@ -107,6 +107,7 @@ public class QEducationalContextsAdminController extends FormBasicController {
 		model = new LevelDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "levels", model, getTranslator(), formLayout);
 		tableEl.setRendererType(FlexiTableRendererType.classic);
+		tableEl.setCustomizeColumns(false);
 		
 		createType = uifactory.addFormLink("create.level", formLayout, Link.BUTTON);
 	}

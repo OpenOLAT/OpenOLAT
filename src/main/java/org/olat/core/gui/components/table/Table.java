@@ -35,6 +35,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.choice.ChoiceModel;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.StringOutputPool;
@@ -704,8 +705,8 @@ public class Table extends AbstractComponent {
 	/**
 	 * @return a tabledatamodel for a choice
 	 */
-	protected TableDataModel createChoiceTableDataModel() {
-		return new ChoiceTableDataModel(this.isMultiSelect(), this.allCDs, this.columnOrder, this.getTranslator());
+	protected ChoiceModel createChoiceModel() {
+		return new ChoiceTableDataModel(isMultiSelect(), allCDs, columnOrder, getTranslator());
 	}
 
 	/**
@@ -973,7 +974,7 @@ public class Table extends AbstractComponent {
 
 }
 
-class ChoiceTableDataModel extends BaseTableDataModelWithoutFilter {
+class ChoiceTableDataModel implements ChoiceModel {
 	
 	private boolean isMultiSelect;
 	private List<ColumnDescriptor> allCDs;
@@ -986,11 +987,8 @@ class ChoiceTableDataModel extends BaseTableDataModelWithoutFilter {
 		this.columnOrder = columnOrder;
 		this.translator = translator;
 	}
-	
-	public int getColumnCount() {
-		return 2;
-	}
 
+	@Override
 	public int getRowCount() {
 		// if this is a multiselect table, we do not want the checkboxes of
 		// the multiselect to be disabled. therefore we simply exclude the entire
@@ -1002,15 +1000,24 @@ class ChoiceTableDataModel extends BaseTableDataModelWithoutFilter {
 		}
 	}
 
-	public Object getValueAt(final int row, final int col) {
-		ColumnDescriptor cd = allCDs.get(isMultiSelect? (row + 1): row);
-		switch (col) {
-			case 0: // on/off indicator; true if column is visible
-				return (columnOrder.contains(cd) ? Boolean.TRUE : Boolean.FALSE);
-			case 1: // name of columndescriptor
-				return cd.translateHeaderKey() ? translator.translate(cd.getHeaderKey()) : cd.getHeaderKey();
-			default:
-				return "ERROR";
-		}
+	@Override
+	public Boolean isEnabled(int row) {
+		ColumnDescriptor cd = getObject(row);
+		return columnOrder.contains(cd) ? Boolean.TRUE : Boolean.FALSE;
+	}
+
+	@Override
+	public String getLabel(int row) {
+		ColumnDescriptor cd = getObject(row);
+		return cd.translateHeaderKey() ? translator.translate(cd.getHeaderKey()) : cd.getHeaderKey();
+	}
+
+	@Override
+	public boolean isDisabled(int row) {
+		return false;
+	}
+	
+	public ColumnDescriptor getObject(int row) {
+		return allCDs.get(isMultiSelect? (row + 1): row);
 	}
 }

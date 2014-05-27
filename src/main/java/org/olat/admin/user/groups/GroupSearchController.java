@@ -143,6 +143,7 @@ public class GroupSearchController extends StepFormBasicController {
 		
 		tableDataModel = new GroupTableDataModel(Collections.<GroupWrapper>emptyList(), tableColumnModel);
 		table = uifactory.addTableElement(ureq, getWindowControl(), "groupList", tableDataModel, tableCont);
+		table.setCustomizeColumns(false);
 		tableCont.add("groupList", table);
 		
 		if (!isUsedInStepWizzard()) {
@@ -155,7 +156,7 @@ public class GroupSearchController extends StepFormBasicController {
 	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doSearchGroups(ureq);
+		doSearchGroups();
 	}
 	
 	@Override
@@ -171,7 +172,7 @@ public class GroupSearchController extends StepFormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == searchButton || source == searchLink || source == search) {
-			doSearchGroups(ureq);
+			doSearchGroups();
 		} else if(source == saveLink) {
 			if(validateFormLogic(ureq)) {
 				doSave(ureq);
@@ -181,9 +182,9 @@ public class GroupSearchController extends StepFormBasicController {
 		}
 	}
 	
-	private void doSearchGroups(UserRequest ureq) {
+	private void doSearchGroups() {
 		String searchValue = search.getValue();
-		doSearchGroups(searchValue, ureq);
+		doSearchGroups(searchValue);
 		lastSearchValue = searchValue;
 	}
 
@@ -194,7 +195,7 @@ public class GroupSearchController extends StepFormBasicController {
 	 * @param searchValue
 	 * @param ureq
 	 */
-	private void doSearchGroups(String searchValue, UserRequest ureq) {	
+	private void doSearchGroups(String searchValue) {	
 		if (StringHelper.containsNonWhitespace(searchValue)) {
 			SearchBusinessGroupParams param1s = new SearchBusinessGroupParams();
 			param1s.setNameOrDesc(searchValue);
@@ -267,7 +268,7 @@ public class GroupSearchController extends StepFormBasicController {
 				|| (lastSearchValue != null && !lastSearchValue.equals(searchValue))) {
 			// User pressed enter in input field to search for groups, no group
 			// selected yet. Just search for groups that matches for this input
-			doSearchGroups(searchValue, ureq);
+			doSearchGroups(searchValue);
 			lastSearchValue = searchValue;
 			return false;
 		}

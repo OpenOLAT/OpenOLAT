@@ -146,6 +146,8 @@ public class SitesConfigurationController extends FormBasicController {
 		
 		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "sitesTable", model, getTranslator(), formLayout);
 		tableEl.setRendererType(FlexiTableRendererType.classic);
+		tableEl.setCustomizeColumns(true);
+		tableEl.setAndLoadPersistedPreferences(ureq, "sites-admin");
 		
 		reload(ureq);
 	}

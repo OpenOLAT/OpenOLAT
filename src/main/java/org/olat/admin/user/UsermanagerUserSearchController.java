@@ -327,7 +327,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("table", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		tableCtr = ExtendedIdentitiesTableControllerFactory.createController(tdm, ureq, bwControl, actionEnabled);
+		tableCtr = ExtendedIdentitiesTableControllerFactory.createController(tdm, ureq, bwControl);
 		listenTo(tableCtr);
 		
 		if (showEmailButton) {

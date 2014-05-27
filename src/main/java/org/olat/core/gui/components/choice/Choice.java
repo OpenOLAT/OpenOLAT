@@ -33,7 +33,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.table.Table;
-import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
@@ -46,26 +45,18 @@ import org.olat.core.util.Util;
 public class Choice extends AbstractComponent {
 	private static final ComponentRenderer RENDERER = new ChoiceRenderer();
 
-	/**
-	 * Comment for <code>EVENT_VALIDATION_OK</code>
-	 */
 	public static final Event EVNT_VALIDATION_OK = new Event("validation ok");
-	/**
-	 * Comment for <code>EVENT_FORM_CANCELLED</code>
-	 */
 	public static final Event EVNT_FORM_CANCELLED = new Event("form_cancelled");
-	/**
-	 * Comment for <code>CANCEL_IDENTIFICATION</code>
-	 */
+	public static final Event EVNT_FORM_RESETED = new Event("form_reseted");
 	public static final String CANCEL_IDENTIFICATION = "olat_foca";
+	public static final String RESET_IDENTIFICATION = "olat_fore";
 
-	private String submitKey;
-	private String cancelKey;
+	private String submitKey, cancelKey, resetKey;
 	private boolean displayOnly = false;
 	private List<Integer> selectedRows = new ArrayList<Integer>();
 	private List<Integer> removedRows = new ArrayList<Integer>();
 	private List<Integer> addedRows = new ArrayList<Integer>();
-	private TableDataModel<?> tableDataModel;
+	private ChoiceModel model;
 
 	/**
 	 * @param name of the component
@@ -85,21 +76,24 @@ public class Choice extends AbstractComponent {
 	/**
 	 * @see org.olat.core.gui.components.Component#dispatchRequest(org.olat.core.gui.UserRequest)
 	 */
+	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		// since we are a >form<, this must be a submit or a cancel
 		// check for cancel first
 		if (ureq.getParameter(CANCEL_IDENTIFICATION) != null) {
 			fireEvent(ureq, EVNT_FORM_CANCELLED);
+		} else if (ureq.getParameter(RESET_IDENTIFICATION) != null) {
+			fireEvent(ureq, EVNT_FORM_RESETED);
 		} else {
 			selectedRows.clear();
 			removedRows.clear();
 			addedRows.clear();
 			// standard behavior: set all values, validate, and fire Event
-			int size = tableDataModel.getRowCount();
+			int size = model.getRowCount();
 			for (int i = 0; i < size; i++) {
 				String keyN = "c" + i;
 				String exists = ureq.getParameter(keyN);
-				Boolean oldV = (Boolean) tableDataModel.getValueAt(i, 0); // column 0
+				Boolean oldV = model.isEnabled(i); // column 0
 				// must always
 				// return a
 				// Boolean
@@ -125,41 +119,29 @@ public class Choice extends AbstractComponent {
 			fireEvent(ureq, EVNT_VALIDATION_OK);
 		}
 	}
-
-	/**
-	 * @return String
-	 */
-	public String getCancelKey() {
-		return cancelKey;
-	}
-
-	/**
-	 * @return String
-	 */
+	
 	public String getSubmitKey() {
 		return submitKey;
 	}
 
-	/**
-	 * @param string
-	 */
+	public void setSubmitKey(String string) {
+		submitKey = string;
+	}
+	
+	public String getCancelKey() {
+		return cancelKey;
+	}
+
 	public void setCancelKey(String string) {
 		cancelKey = string;
 	}
 
-	/**
-	 * @param string
-	 */
-	public void setSubmitKey(String string) {
-		submitKey = string;
+	public String getResetKey() {
+		return resetKey;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#getExtendedDebugInfo()
-	 */
-	public String getExtendedDebugInfo() {
-		return "choice: "
-				+ (tableDataModel == null ? "no model!" : "rows:" + tableDataModel.getRowCount() + ", cols:" + tableDataModel.getColumnCount());
+	public void setResetKey(String resetKey) {
+		this.resetKey = resetKey;
 	}
 
 	/**
@@ -186,8 +168,8 @@ public class Choice extends AbstractComponent {
 	/**
 	 * @return TableDataModel
 	 */
-	public TableDataModel<?> getTableDataModel() {
-		return tableDataModel;
+	public ChoiceModel getModel() {
+		return model;
 	}
 
 	/**
@@ -198,8 +180,8 @@ public class Choice extends AbstractComponent {
 	 * 
 	 * @param model
 	 */
-	public void setTableDataModel(TableDataModel<?> model) {
-		tableDataModel = model;
+	public void setModel(ChoiceModel model) {
+		this.model = model;
 	}
 
 	/**
@@ -217,7 +199,13 @@ public class Choice extends AbstractComponent {
 		return removedRows;
 	}
 
+	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
+	}
+	
+	@Override
+	public String getExtendedDebugInfo() {
+		return "choice: " + (model == null ? "no model!" : "rows:" + model.getRowCount());
 	}
 }

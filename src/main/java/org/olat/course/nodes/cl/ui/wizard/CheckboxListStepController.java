@@ -102,6 +102,7 @@ public class CheckboxListStepController extends StepFormBasicController {
 		List<Checkbox> boxList = data.getCheckboxList();
 		model = new CheckboxConfigDataModel(boxList, getTranslator(), columnsModel);
 		boxTable = uifactory.addTableElement(ureq, getWindowControl(), "checkbox-list", model, getTranslator(), tableCont);
+		boxTable.setCustomizeColumns(false);
 	}
 	
 	@Override

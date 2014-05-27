@@ -266,12 +266,13 @@ public class TableController extends BasicController {
 		contentVc.contextPut(VC_VAR_HAS_TABLE_SEARCH, Boolean.FALSE);
 
 		//preference + download links
-		preferenceLink = LinkFactory.createCustomLink("prefLink", "cmd.changecols", "", Link.NONTRANSLATED, contentVc, this);
-		preferenceLink.setCustomEnabledLinkCSS("b_table_prefs");
+		preferenceLink = LinkFactory.createCustomLink("prefLink", "cmd.changecols", "", Link.BUTTON | Link.NONTRANSLATED, contentVc, this);
+		preferenceLink.setCustomEnabledLinkCSS("o_icon o_icon-lg o_icon_customize");
 		preferenceLink.setTooltip(translate("command.changecols"));
-		downloadLink = LinkFactory.createCustomLink("downloadLink", "cmd.download", "", Link.NONTRANSLATED, contentVc, this);
+		
+		downloadLink = LinkFactory.createCustomLink("downloadLink", "cmd.download", "", Link.BUTTON | Link.NONTRANSLATED, contentVc, this);
 		downloadLink.setTooltip(translate("table.export.title"));
-		downloadLink.setCustomEnabledLinkCSS("b_table_download");
+		downloadLink.setCustomEnabledLinkCSS("o_icon o_icon-lg o_icon_download");
 		
 		putInitialPanel(contentVc);
 	}
@@ -380,7 +381,7 @@ public class TableController extends BasicController {
 
 	private Choice getColumnListAndTheirVisibility() {
 		Choice choice = new Choice("colchoice", getTranslator());
-		choice.setTableDataModel(table.createChoiceTableDataModel());
+		choice.setModel(table.createChoiceModel());
 		choice.addListener(this);
 		choice.setCancelKey("cancel");
 		choice.setSubmitKey("save");

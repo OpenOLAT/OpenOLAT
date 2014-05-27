@@ -25,10 +25,9 @@
 
 package org.olat.group.ui.area;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.gui.components.table.DefaultTableDataModel;
+import org.olat.core.gui.components.choice.ChoiceModel;
 import org.olat.group.BusinessGroup;
 
 /**
@@ -37,7 +36,8 @@ import org.olat.group.BusinessGroup;
  * 
  * @author gnaegi
  */
-public class GroupsToAreaDataModel extends DefaultTableDataModel<BusinessGroup> {
+public class GroupsToAreaDataModel implements ChoiceModel {
+	private final List<BusinessGroup> allGroups;
 	private final List<BusinessGroup> inAreaGroups;
 
 	/**
@@ -48,32 +48,31 @@ public class GroupsToAreaDataModel extends DefaultTableDataModel<BusinessGroup> 
 	 *          checked rows.
 	 */
 	public GroupsToAreaDataModel(List<BusinessGroup> allGroups, List<BusinessGroup> inAreaGroups) {
-		super(allGroups);
+		this.allGroups = allGroups;
 		this.inAreaGroups = inAreaGroups;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
-	 */
-	public int getColumnCount() {
-		return 2;
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
-	 */
-	public Object getValueAt(int row, int col) {
-		if (col == 0) {
-			return inAreaGroups.contains(getObject(row)) ? Boolean.TRUE : Boolean.FALSE;
-		} else if (col == 1) {
-			return getObject(row).getName();
-		} else {
-			return "ERROR";
-		}
+	@Override
+	public int getRowCount() {
+		return allGroups == null ? 0 : allGroups.size();
 	}
 
 	@Override
-	public GroupsToAreaDataModel createCopyWithEmptyList() {
-		return new GroupsToAreaDataModel(new ArrayList<BusinessGroup>(), inAreaGroups);
+	public Boolean isEnabled(int row) {
+		return inAreaGroups.contains(getObject(row)) ? Boolean.TRUE : Boolean.FALSE;
+	}
+
+	@Override
+	public String getLabel(int row) {
+		return getObject(row).getName();
+	}
+
+	@Override
+	public boolean isDisabled(int row) {
+		return false;
+	}
+	
+	public BusinessGroup getObject(int row) {
+		return allGroups.get(row);
 	}
 }

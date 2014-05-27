@@ -72,6 +72,11 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	}
 
 	@Override
+	public boolean isAlwaysVisible() {
+		return false;
+	}
+
+	@Override
 	public String getAction() {
 		return null;
 	}

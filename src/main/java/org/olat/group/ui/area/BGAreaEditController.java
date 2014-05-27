@@ -140,7 +140,7 @@ public class BGAreaEditController extends BasicController {
 		groupsChoice = new Choice("groupsChoice", getTranslator());
 		groupsChoice.setSubmitKey("submit");
 		groupsChoice.setCancelKey("cancel");
-		groupsChoice.setTableDataModel(groupsDataModel);
+		groupsChoice.setModel(groupsDataModel);
 		groupsChoice.addListener(this);
 		groupsTabVC.put("groupsChoice", groupsChoice);
 		groupsTabVC.contextPut("noGroupsFound", (allGroups.size() > 0 ? Boolean.FALSE : Boolean.TRUE));

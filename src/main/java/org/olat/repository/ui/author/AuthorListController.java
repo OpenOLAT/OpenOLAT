@@ -96,6 +96,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AuthorListController extends FormBasicController implements Activateable2, AuthoringEntryDataSourceUIFactory {
 
+	private final String i18nName;
 	private FlexiTableElement tableEl;
 	private final TooledStackedPanel stackPanel;
 	
@@ -129,6 +130,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		super(ureq, wControl, "entries");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 
+		this.i18nName = i18nName;
 		this.searchParams = searchParams;
 		this.startExtendedSearch = startExtendedSearch;
 		
@@ -221,6 +223,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		tableEl.setElementCssClass("o_coursetable");
 		tableEl.setMultiSelect(true);
 		tableEl.setSortSettings(new FlexiTableSortOptions(true));
+		tableEl.setAndLoadPersistedPreferences(ureq, "authors-list-" + i18nName);
 		
 		if(startExtendedSearch) {
 			tableEl.expandExtendedSearch(ureq);

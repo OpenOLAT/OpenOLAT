@@ -107,6 +107,7 @@ public class QItemTypesAdminController extends FormBasicController {
 		model = new QItemTypeDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "types", model, getTranslator(), formLayout);
 		tableEl.setRendererType(FlexiTableRendererType.classic);
+		tableEl.setCustomizeColumns(false);
 		
 		createType = uifactory.addFormLink("create.type", formLayout, Link.BUTTON);
 	}

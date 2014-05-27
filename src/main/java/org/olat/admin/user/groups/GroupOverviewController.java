@@ -119,7 +119,7 @@ public class GroupOverviewController extends BasicController {
 		tableDataModel = new BusinessGroupTableModelWithType(getTranslator(), 4);
 		groupListCtr.setTableDataModel(tableDataModel);
 		
-		updateModel(ureq);
+		updateModel();
 		
 		addGroups = LinkFactory.createButton("add.groups", vc, this);		
 		vc.put("table.groups", groupListCtr.getInitialComponent());	
@@ -132,7 +132,7 @@ public class GroupOverviewController extends BasicController {
 	 * @param identity
 	 * @return
 	 */
-	private void updateModel(UserRequest ureq) {
+	private void updateModel() {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setIdentity(identity);
 		params.setOwner(true);
@@ -203,7 +203,7 @@ public class GroupOverviewController extends BasicController {
 				if (currBusinessGroup==null) {
 					//group seems to be removed meanwhile, reload table and show error
 					showError("group.removed");
-					updateModel(ureq);	
+					updateModel();	
 				} else if (TABLE_ACTION_LAUNCH.equals(te.getActionId())) {
 					NewControllerFactory.getInstance().launch("[BusinessGroup:" + currBusinessGroup.getKey() + "]", ureq, getWindowControl());
 				} else if (TABLE_ACTION_UNSUBSCRIBE.equals(te.getActionId())){
@@ -230,7 +230,7 @@ public class GroupOverviewController extends BasicController {
 				boolean mailMandatory = groupModule.isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles());
 				if(mailMandatory) {
 					doAddToGroups(groupsEv, true);
-					updateModel(ureq);
+					updateModel();
 				} else {
 					confirmSendMailBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.send.mail"), confirmSendMailBox);
 					confirmSendMailBox.setUserObject(groupsEv);
@@ -241,7 +241,7 @@ public class GroupOverviewController extends BasicController {
 			boolean sendMail = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
 			AddToGroupsEvent groupsEv = (AddToGroupsEvent)confirmSendMailBox.getUserObject();
 			doAddToGroups(groupsEv, sendMail);
-			updateModel(ureq);
+			updateModel();
 		} else if (source == removeFromGrpDlg){
 			if(event == Event.DONE_EVENT) {
 				boolean sendMail = removeFromGrpDlg.isSendMail();
@@ -331,7 +331,7 @@ public class GroupOverviewController extends BasicController {
 			}
 		}
 
-		updateModel(ureq);
+		updateModel();
 
 		StringBuilder groupNames = new StringBuilder();
 		for(BusinessGroup group:groupsToLeave) {

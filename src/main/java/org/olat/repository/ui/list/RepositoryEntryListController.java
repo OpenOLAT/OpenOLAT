@@ -82,6 +82,7 @@ public class RepositoryEntryListController extends FormBasicController
 	private final List<Link> filters = new ArrayList<>();
 	private final List<Link> orderBy = new ArrayList<>();
 
+	private final String name;
 	private FlexiTableElement tableEl;
 	private RepositoryEntryDataModel model;
 	private DefaultRepositoryEntryDataSource dataSource;
@@ -97,11 +98,11 @@ public class RepositoryEntryListController extends FormBasicController
 	private UserRatingsDAO userRatingsDao;
 	
 	public RepositoryEntryListController(UserRequest ureq, WindowControl wControl,
-			SearchMyRepositoryEntryViewParams searchParams, BreadcrumbPanel stackPanel) {
+			SearchMyRepositoryEntryViewParams searchParams, String name, BreadcrumbPanel stackPanel) {
 		super(ureq, wControl, "repoentry_table");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		mapperThumbnailUrl = registerCacheableMapper(ureq, "repositoryentryImage", new RepositoryEntryImageMapper());
-		
+		this.name = name;
 		this.stackPanel = stackPanel;
 		
 		dataSource = new DefaultRepositoryEntryDataSource(searchParams, this);
@@ -178,6 +179,7 @@ public class RepositoryEntryListController extends FormBasicController
 		VelocityContainer row = createVelocityContainer("row_1");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
+		tableEl.setAndLoadPersistedPreferences(ureq, "re-list-" + name);
 	}
 
 	@Override

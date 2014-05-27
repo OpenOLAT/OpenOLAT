@@ -58,6 +58,11 @@ public class StaticFlexiColumnModel extends AbstractFlexiColumnModel {
 	}
 
 	@Override
+	public boolean isAlwaysVisible() {
+		return true;
+	}
+
+	@Override
 	public String getAction() {
 		return action;
 	}

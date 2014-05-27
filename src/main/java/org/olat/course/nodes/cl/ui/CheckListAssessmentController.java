@@ -254,6 +254,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 			table.setFilters("participants", filters);
 		}
 		table.setExportEnabled(true);
+		table.setCustomizeColumns(true);
+		table.setAndLoadPersistedPreferences(ureq, "checklist-assessment");
 		
 		pdfExport = uifactory.addFormLink("pdf.export", formLayout, Link.BUTTON);
 		pdfExport.setEnabled(numOfCheckbox > 0);

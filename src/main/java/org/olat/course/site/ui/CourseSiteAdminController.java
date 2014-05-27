@@ -144,6 +144,7 @@ public class CourseSiteAdminController extends FormBasicController {
 		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "languageTable", model, getTranslator(), tableLayout);
 		tableEl.setRendererType(FlexiTableRendererType.classic);
 		tableEl.setCustomizeColumns(true);
+		tableEl.setAndLoadPersistedPreferences(ureq, "course-site-admin");
 
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsLayout);

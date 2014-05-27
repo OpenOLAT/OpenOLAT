@@ -20,10 +20,9 @@
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import org.olat.core.gui.components.table.TableDataModel;
+import org.olat.core.gui.components.choice.ChoiceModel;
 import org.olat.core.gui.translator.Translator;
 
 /**
@@ -32,7 +31,7 @@ import org.olat.core.gui.translator.Translator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class VisibleFlexiColumnsModel implements TableDataModel<FlexiColumnModel> {
+public class VisibleFlexiColumnsModel implements ChoiceModel {
 	
 	private Set<Integer> enabledCols = new HashSet<Integer>();
 	private final Translator translator;
@@ -45,44 +44,32 @@ public class VisibleFlexiColumnsModel implements TableDataModel<FlexiColumnModel
 	}
 
 	@Override
-	public int getColumnCount() {
-		return 2;
-	}
-
-	@Override
 	public int getRowCount() {
 		return columns == null ? 0 : columns.getColumnCount();
 	}
 
 	@Override
-	public Object getValueAt(int row, int col) {
+	public Boolean isEnabled(int row) {
 		FlexiColumnModel cd = getObject(row);
-		switch (col) {
-			case 0: // on/off indicator; true if column is visible
-				return (enabledCols.contains(new Integer(cd.getColumnIndex())) ? Boolean.TRUE : Boolean.FALSE);
-			case 1: // name of column
-				if(cd.getHeaderLabel() != null) {
-					return cd.getHeaderLabel();
-				}
-				return translator.translate(cd.getHeaderKey());
-			default:
-				return "ERROR";
-		}
+		return cd.isAlwaysVisible() || enabledCols.contains(new Integer(cd.getColumnIndex()))
+				? Boolean.TRUE : Boolean.FALSE;
 	}
 
 	@Override
+	public String getLabel(int row) {
+		FlexiColumnModel cd = getObject(row);
+		return cd.getHeaderLabel() == null ?
+				translator.translate(cd.getHeaderKey()) : cd.getHeaderLabel();
+	}
+
+	@Override
+	public boolean isDisabled(int row) {
+		FlexiColumnModel cd = getObject(row);
+		return cd.isAlwaysVisible();
+	}
+
 	public FlexiColumnModel getObject(int row) {
 		if(columns == null) return null;
 		return columns.getColumnModel(row);
-	}
-
-	@Override
-	public void setObjects(List<FlexiColumnModel> objects) {
-		//
-	}
-
-	@Override
-	public VisibleFlexiColumnsModel createCopyWithEmptyList() {
-		return new VisibleFlexiColumnsModel(columns, enabledCols, translator);
 	}
 }

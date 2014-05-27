@@ -114,6 +114,7 @@ public class PoolsAdminController extends FormBasicController {
 
 		model = new PoolDataModel(columnsModel, getTranslator());
 		poolTable = uifactory.addTableElement(ureq, getWindowControl(), "pools", model, getTranslator(), formLayout);
+		poolTable.setCustomizeColumns(false);
 		
 		poolTable.setRendererType(FlexiTableRendererType.classic);
 		reloadModel();

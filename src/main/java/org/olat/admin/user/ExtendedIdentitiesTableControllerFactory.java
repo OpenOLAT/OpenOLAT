@@ -55,7 +55,7 @@ public class ExtendedIdentitiesTableControllerFactory {
 	/**
 	 * @param args
 	 */
-	public static TableController createController(ExtendedIdentitiesTableDataModel dataModel, UserRequest ureq, WindowControl wControl, boolean actionEnabled) {
+	public static TableController createController(ExtendedIdentitiesTableDataModel dataModel, UserRequest ureq, WindowControl wControl) {
 		Locale loc = ureq.getLocale();
 		Translator trans = Util.createPackageTranslator(ExtendedIdentitiesTableControllerFactory.class, loc);
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();

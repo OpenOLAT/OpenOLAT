@@ -44,10 +44,10 @@ import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.choice.Choice;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -66,6 +66,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ValidationStatus;
+import org.olat.core.util.prefs.Preferences;
 
 
 /**
@@ -75,6 +76,8 @@ import org.olat.core.util.ValidationStatus;
  */
 public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableElement, FormItemCollection,
 	ControllerEventListener, ComponentEventListener {
+	
+	//private static final XStream prefsXStream 
 
 	//settings
 	private boolean multiSelect;
@@ -83,6 +86,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		FlexiTableRendererType.classic
 	};
 	
+	private String persistentId;
 	private boolean customizeColumns = true;
 	
 	private int rowCount = -1;
@@ -262,18 +266,28 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		this.multiSelect = multiSelect;
 	}
 
+	@Override
 	public boolean isCustomizeColumns() {
 		return customizeColumns;
 	}
 
+	@Override
 	public void setCustomizeColumns(boolean customizeColumns) {
 		this.customizeColumns = customizeColumns;
 	}
 
+	@Override
+	public void setAndLoadPersistedPreferences(UserRequest ureq, String id) {
+		persistentId = id;
+		loadCustomSettings(ureq);
+	}
+
+	@Override
 	public String getWrapperSelector() {
 		return wrapperSelector;
 	}
 
+	@Override
 	public void setWrapperSelector(String wrapperSelector) {
 		this.wrapperSelector = wrapperSelector;
 	}
@@ -645,12 +659,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		} else if(customTypeButton != null
 				&& customTypeButton.getFormDispatchId().equals(dispatchuri)) {
 			setRendererType(FlexiTableRendererType.custom);
+			saveCustomSettings(ureq);
 		} else if(classicTypeButton != null
 				&& classicTypeButton.getFormDispatchId().equals(dispatchuri)) {
 			setRendererType(FlexiTableRendererType.classic);
+			saveCustomSettings(ureq);
 		} else if(dataTablesTypeButton != null
 				&& dataTablesTypeButton.getFormDispatchId().equals(dispatchuri)) {
 			setRendererType(FlexiTableRendererType.dataTables);
+			saveCustomSettings(ureq);
 		} else {
 			FlexiTableColumnModel colModel = dataModel.getTableColumnModel();
 			for(int i=colModel.getColumnCount(); i-->0; ) {
@@ -685,8 +702,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public void dispatchEvent(UserRequest ureq, Component source, Event event) {
 		if(source instanceof Choice) {
-			Choice visibleColsChoice = (Choice)source;
-			setCustomizedColumns(visibleColsChoice);
+			if(Choice.EVNT_VALIDATION_OK.equals(event)) {
+				Choice visibleColsChoice = (Choice)source;
+				setCustomizedColumns(ureq, visibleColsChoice);
+			} else if(Choice.EVNT_FORM_RESETED.equals(event)) {
+				resetCustomizedColumns(ureq);
+			}
 			callout.deactivate();
 		}
 	}
@@ -790,7 +811,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	public boolean isColumnModelVisible(FlexiColumnModel col) {
-		return enabledColumnIndex.contains(col.getColumnIndex());
+		return col.isAlwaysVisible() || enabledColumnIndex.contains(col.getColumnIndex());
 	}
 
 	@Override
@@ -805,10 +826,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 	}
 	
-	protected void setCustomizedColumns(Choice visibleColsChoice) {
+	protected void setCustomizedColumns(UserRequest ureq, Choice visibleColsChoice) {
 		List<Integer> visibleCols = visibleColsChoice.getSelectedRows();
 		if(visibleCols.size() > 1) {
-			VisibleFlexiColumnsModel model = (VisibleFlexiColumnsModel)visibleColsChoice.getTableDataModel();
+			VisibleFlexiColumnsModel model = (VisibleFlexiColumnsModel)visibleColsChoice.getModel();
 			for(int i=model.getRowCount(); i-->0; ) {
 				FlexiColumnModel col = model.getObject(i);
 				if(visibleCols.contains(new Integer(i))) {
@@ -818,15 +839,56 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				}
 			}
 		}
+		saveCustomSettings(ureq);
 		component.setDirty(true);
+	}
+	
+	protected void resetCustomizedColumns(UserRequest ureq) {
+		enabledColumnIndex.clear();
+		for(int i=dataModel.getTableColumnModel().getColumnCount(); i-->0; ) {
+			FlexiColumnModel col = dataModel.getTableColumnModel().getColumnModel(i);
+			if(col.isDefaultVisible()) {
+				enabledColumnIndex.add(new Integer(col.getColumnIndex()));
+			}
+		}
+		saveCustomSettings(ureq);
+		component.setDirty(true);
+	} 
+	
+	private void saveCustomSettings(UserRequest ureq) {
+		if(StringHelper.containsNonWhitespace(persistentId)) {
+			Preferences prefs = ureq.getUserSession().getGuiPreferences();
+			FlexiTablePreferences tablePrefs =
+					new FlexiTablePreferences(enabledColumnIndex, rendererType);
+			prefs.put(FlexiTableElement.class, persistentId, tablePrefs);
+			prefs.save();
+		}
+	}
+	
+	private void loadCustomSettings(UserRequest ureq) {
+		if(StringHelper.containsNonWhitespace(persistentId)) {
+			Preferences prefs = ureq.getUserSession().getGuiPreferences();
+			FlexiTablePreferences tablePrefs = (FlexiTablePreferences)prefs.get(FlexiTableElement.class, persistentId);
+			if(tablePrefs != null) {
+				if(tablePrefs.getEnabledColumnIndex() != null) {
+					enabledColumnIndex.clear();
+					enabledColumnIndex.addAll(tablePrefs.getEnabledColumnIndex());
+				}
+				
+				if(tablePrefs.getRendererType() != null) {
+					setRendererType(tablePrefs.getRendererType());
+				}
+			}
+		}
 	}
 	
 	private Choice getColumnListAndTheirVisibility() {
 		Choice choice = new Choice("colchoice", getTranslator());
-		choice.setTableDataModel(new VisibleFlexiColumnsModel(dataModel.getTableColumnModel(), enabledColumnIndex, getTranslator()));
+		choice.setModel(new VisibleFlexiColumnsModel(dataModel.getTableColumnModel(), enabledColumnIndex, getTranslator()));
 		choice.addListener(this);
 		choice.setCancelKey("cancel");
 		choice.setSubmitKey("save");
+		choice.setResetKey("reset");
 		return choice;
 	}
 

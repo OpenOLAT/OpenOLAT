@@ -94,6 +94,14 @@ public interface FlexiTableElement extends FormItem {
 	public void setCustomizeColumns(boolean customizeColumns);
 	
 	/**
+	 * Set the id of the preferences saved on the database.
+	 * 
+	 * @param ureq
+	 * @param id
+	 */
+	public void setAndLoadPersistedPreferences(UserRequest ureq, String id);
+	
+	/**
 	 * @return The CSS selector used to calculate the height of the table
 	 * (datatables variant only)
 	 */

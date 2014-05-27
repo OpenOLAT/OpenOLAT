@@ -95,6 +95,7 @@ public class LifecycleAdminController extends FormBasicController {
 		model = new LifecycleDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "cycles", model, getTranslator(), formLayout);
 		tableEl.setRendererType(FlexiTableRendererType.classic);
+		tableEl.setCustomizeColumns(false);
 		
 		createLifeCycle = uifactory.addFormLink("create.lifecycle", formLayout, Link.BUTTON);
 	}

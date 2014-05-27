@@ -25,7 +25,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AbstractFlexiColumnModel implements FlexiColumnModel {
+public abstract class AbstractFlexiColumnModel implements FlexiColumnModel {
 
 	private int alignment;
 	private String headerKey;

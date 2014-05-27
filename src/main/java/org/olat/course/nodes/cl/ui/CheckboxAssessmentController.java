@@ -221,7 +221,9 @@ public class CheckboxAssessmentController extends FormBasicController {
 
 		model = new CheckboxAssessmentDataModel(boxRows, columnsModel);
 		table = uifactory.addTableElement(ureq, getWindowControl(), "checkbox-list", model, getTranslator(), formLayout);
+		table.setCustomizeColumns(true);
 		table.setEditMode(true);
+		table.setAndLoadPersistedPreferences(ureq, "checkbox-assessment");
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
