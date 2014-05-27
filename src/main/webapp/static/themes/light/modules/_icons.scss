@@ -16,6 +16,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_add{ @extend .o_icon-plus-circle; }
 .o_icon_audio{ @extend .o_icon-volume-up; }
 .o_icon_back { @extend .o_icon-chevron-left; }
+.o_icon_back_history {@extend .o_icon-history;}
 .o_icon_bold { @extend .o_icon-bold; }
 .o_icon_booking { @extend .o_icon-dollar; }
 .o_icon_bookmark { @extend .o_icon-bookmark; color: #996633; }
@@ -60,6 +61,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_help { @extend .o_icon-question-circle; @extend .o_icon-lg; cursor: help;}
 .o_icon_home { @extend .o_icon-home; }
 .o_icon_impress { @extend .o_icon-info-circle; }
+.o_icon_import { @extend .o_icon-upload; }
 .o_icon_info {@extend .o_icon-info-circle; color: $brand-info}
 .o_icon_institution { @extend .o_icon-bank; }
 .o_icon_italic { @extend .o_icon-italic; }
@@ -122,7 +124,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_status_chat { @extend .o_icon-comment; }
 .o_icon_status_dnd { @extend .o_icon-dot-circle-o; color: #CCCC33; }
 .o_icon_status_unavailable { @extend .o_icon-times-circle-o; color: #996633; }
-.o_icon_statistics_tool{ @extend .o_icon-tachometer;}
+.o_icon_statistics_tool{ @extend .o_icon-bar-chart-o;}
 .o_icon_table {@extend .o_icon-table; }
 .o_icon_timelimit{ @extend .o_icon-bomb; }
 .o_icon_toggle {@extend .o_icon-circle; }

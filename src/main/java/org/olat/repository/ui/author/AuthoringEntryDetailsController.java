@@ -188,7 +188,7 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(entry);
 	
 		launchLink = LinkFactory.createToolLink("launch", translate("details.launch"), this, "o_sel_repo_launch");
-		launchLink.setIconLeftCSS("o_icon o_icon-fw o_icon_details");
+		launchLink.setIconLeftCSS("o_icon o_icon-fw o_icon_start");
 		launchLink.setEnabled(checkIsRepositoryEntryLaunchable(ureq) && !corrupted);
 
 		if (!isGuestOnly) {
@@ -212,7 +212,7 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 			
 			boolean marked = markManager.isMarked(entry, getIdentity(), null);
 			String css = marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE;
-			bookmarkLink = LinkFactory.createToolLink("downloadcompat", "" /* translate("details.bookmark") */, this);
+			bookmarkLink = LinkFactory.createToolLink("downloadcompat", translate("details.bookmark") , this);
 			bookmarkLink.setEnabled(!corrupted);
 			bookmarkLink.setIconLeftCSS(css);
 		}
@@ -267,7 +267,6 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 			}
 		}
 		
-		stackPanel.addTool(launchLink);
 		
 		if(downloadCompatLink.isEnabled()) {
 			Dropdown downloadDropdown = new Dropdown("downloads", "details.download", false, getTranslator());
@@ -278,23 +277,27 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 			stackPanel.addTool(downloadLink);
 		}
 
-		stackPanel.addTool(editLink);
-		stackPanel.addTool(editSettingsLink);
+		
+		Dropdown tools = new Dropdown("tools", "toolbox.tools", false, getTranslator());
+		tools.setIconCSS("o_icon o_icon_tools");
+		tools.addComponent(catalogLink);
+		tools.addComponent(membersLink);
+		tools.addComponent(orderLink);
+		stackPanel.addTool(tools,Align.left);
 		
 		Dropdown editActions = new Dropdown("edit-actions", "toolbox.actions", false, getTranslator());
+		editActions.setIconCSS("o_icon o_icon_actions");
 		editActions.addComponent(copyLink);
 		editActions.addComponent(new Spacer("one"));
 		editActions.addComponent(closeLink);
 		editActions.addComponent(deleteLink);
-		stackPanel.addTool(editActions);
-
-		Dropdown tools = new Dropdown("tools", "toolbox.tools", false, getTranslator());
-		tools.addComponent(catalogLink);
-		tools.addComponent(membersLink);
-		tools.addComponent(orderLink);
-		stackPanel.addTool(tools);
+		stackPanel.addTool(editActions, Align.left);
 		
+		stackPanel.addTool(editLink, Align.left);
+		stackPanel.addTool(editSettingsLink, Align.left);
+
 		stackPanel.addTool(bookmarkLink, Align.right);
+		stackPanel.addTool(launchLink, Align.right);
 		
 	}
 	

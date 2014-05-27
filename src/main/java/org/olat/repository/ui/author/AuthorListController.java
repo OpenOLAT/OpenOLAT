@@ -55,6 +55,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiC
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -136,10 +137,12 @@ public class AuthorListController extends FormBasicController implements Activat
 		
 		importLink = LinkFactory.createLink("cmd.import.ressource", getTranslator(), this);
 		importLink.setDomReplacementWrapperRequired(false);
+		importLink.setIconLeftCSS("o_icon o_icon_import");
 		
 		Set<String> types = repositoryHandlerFactory.getSupportedTypes();
 
 		createDropdown = new Dropdown("cmd.create.ressource", "cmd.create.ressource", false, getTranslator());
+		createDropdown.setIconCSS("o_icon o_icon_add");
 		for(String type:types) {
 			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
 			if(handler != null && handler.isCreate()) {
@@ -154,8 +157,8 @@ public class AuthorListController extends FormBasicController implements Activat
 		stackPanel = new TooledStackedPanel(i18nName, getTranslator(), this);
 		stackPanel.setShowCloseLink(false);
 		stackPanel.pushController(translate(i18nName), this);
-		stackPanel.addTool(importLink);
-		stackPanel.addTool(createDropdown);
+		stackPanel.addTool(createDropdown, Align.left);
+		stackPanel.addTool(importLink, Align.left);
 	}
 	
 	@Override

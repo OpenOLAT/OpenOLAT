@@ -51,17 +51,20 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 		if(breadCrumbs.size() > 1 || tools.size() > 0) {
 			String mainCssClass = panel.getCssClass();
 			sb.append("<div id='o_main_toolbar' class='o_toolbar clearfix ").append(mainCssClass, mainCssClass != null).append("'>")
-			  .append("<div class='o_breadcrumb container-fluid'>");
+			  .append("<div class='container-fluid'>");
 
 			Link backLink = panel.getBackLink();
 			int numOfCrumbs = breadCrumbs.size();
 			if(backLink.isVisible() && numOfCrumbs > 1) {
-				sb.append("<ul class='o_tools o_tools_left'>")
-				  .append("<li class='o_tool_dropdown'><a href='#' class='dropdown-toggle' data-toggle='dropdown'>&#x25C4; <b class='caret'></b></a>")
-				  .append("<ul class='dropdown-menu' role='menu'>")
-				  /*.append("<li class='o_breadcrumb_back'>");
+				// breadcrum back link
+				sb.append("<ul class='o_breadcrumb'>")
+				.append("<li class='o_breadcrumb_back'>");
 				backLink.getHTMLRendererSingleton().render(renderer, sb, backLink, ubu, translator, renderResult, args);
-				sb.append("</li>")*/;
+				sb.append("</li>");
+				// breadcrum history
+				sb.append("<li class='o_history o_tool_dropdown'>")
+				  .append("<a href='#' class='dropdown-toggle' data-toggle='dropdown'><i class='o_icon o_icon_back_history'></i></a>")
+				  .append("<ul class='dropdown-menu' role='menu'>");
 				
 				for(int i=0; i<numOfCrumbs; i++) {
 					sb.append("<li>");

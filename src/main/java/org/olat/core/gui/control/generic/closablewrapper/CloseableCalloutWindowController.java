@@ -97,7 +97,7 @@ public class CloseableCalloutWindowController extends BasicController {
 			setDOMTarget(targetDomID);
 			// Config options, see setter methods
 			calloutVC.contextPut("closable", Boolean.toString(closable));
-			calloutVC.contextPut("cssClasses", (cssClasses == null ? "b_small" : cssClasses));
+			calloutVC.contextPut("cssClasses", (cssClasses == null ? "small" : cssClasses));
 			if (title != null) {
 				String escapedTitle = StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(title));
 				calloutVC.contextPut("title", escapedTitle);
@@ -132,7 +132,7 @@ public class CloseableCalloutWindowController extends BasicController {
 	public CloseableCalloutWindowController(UserRequest ureq,
 			WindowControl wControl, Component calloutWindowContent,
 			Link targetLink, String title, boolean closable, String cssClasses) {
-		this(ureq, wControl, calloutWindowContent, targetLink.getDispatchID(), title, closable, cssClasses);
+		this(ureq, wControl, calloutWindowContent, "o_c" + targetLink.getDispatchID(), title, closable, cssClasses);
 	}
 
 	/**

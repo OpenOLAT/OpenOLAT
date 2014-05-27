@@ -26,7 +26,7 @@ jQuery(function() {
 			} else {
 				callout.offset({
 					top: (targetOffset.top + targetEl.height() + 15) ,
-					left: (targetOffset.left + targetEl.width()) - callout.width() 
+					left: (targetOffset.left + targetEl.width()) - callout.width()/2 
 				});
 			}
 			callout.css('display','block').css('zindex', o_info.zseed + 5);

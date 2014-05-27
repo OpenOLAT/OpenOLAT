@@ -334,13 +334,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	}
 	
 	private void initToolbar(boolean closeEditor) {
-		
-		
-		previewLink = LinkFactory.createToolLink(CMD_COURSEPREVIEW, translate(NLS_COMMAND_COURSEPREVIEW), this, "o_icon_preview");
-		stackPanel.addTool(previewLink, Align.right);
-		publishLink = LinkFactory.createToolLink(CMD_PUBLISH, translate(NLS_COMMAND_PUBLISH), this, "o_icon_publish");
-		stackPanel.addTool(publishLink, Align.right);
-		
 		createNodeLink = LinkFactory.createToolLink(NLS_HEADER_INSERTNODES, translate(NLS_HEADER_INSERTNODES), this, "o_icon_add");
 		createNodeLink.setDomReplacementWrapperRequired(false);
 		stackPanel.addTool(createNodeLink, Align.left);
@@ -358,9 +351,13 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		
 		statusLink = LinkFactory.createToolLink("status", translate("status"), this, null);
 		statusLink.setUserObject(new EditedCourseStatus());
-		statusLink.setCustomEnabledLinkCSS("navbar-link");
 		stackPanel.addTool(statusLink, Align.right);
 
+		previewLink = LinkFactory.createToolLink(CMD_COURSEPREVIEW, translate(NLS_COMMAND_COURSEPREVIEW), this, "o_icon_preview");
+		stackPanel.addTool(previewLink, Align.right);
+		publishLink = LinkFactory.createToolLink(CMD_PUBLISH, translate(NLS_COMMAND_PUBLISH), this, "o_icon_publish");
+		stackPanel.addTool(publishLink, Align.right);
+		
 		if(closeEditor) {
 			closeLink = LinkFactory.createToolLink(CMD_CLOSEEDITOR, translate(NLS_COMMAND_CLOSEEDITOR), this, "o_icon_close_tool");
 			stackPanel.addTool(closeLink, Align.right);
