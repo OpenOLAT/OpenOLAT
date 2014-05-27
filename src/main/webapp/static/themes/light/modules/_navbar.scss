@@ -35,7 +35,7 @@
 		}
 	}
 	
-	#o_navbar_tools {
+	#o_navbar_tools_permanent {
 		#o_navbar_langchooser {
 			color: $navbar-default-color;
 			padding: floor($grid-gutter-width / 2);
@@ -46,6 +46,11 @@
 		#o_navbar_help a i {
 			/* help icon */
 			margin-right: 0.4em;
+		}
+	}
+	#o_navbar_tools_personal {
+		.o_navbar_tool a {
+			padding-right: 5px;
 		}
 		#o_navbar_my_menu {
 			.dropdown-toggle {
@@ -60,17 +65,19 @@
 				@extend .img-circle;
 			}
 		}
+		.o_logout {
+			color: $brand-danger;
+		}
 	}
 	
 	&.o_navbar-offcanvas {
 		.o_navbar_tab_close {
 			top: 10px; 
 		}
-		.o_navbar_personalTool {
+		.o_navbar_tool {
 			display: none;
 		}	
-		#o_navbar_my_menu, 
-		#o_navbar_search_opener {
+		#o_navbar_my_menu {
 			a {
 				color: $o-offcanvas-color;
 				&:hover,
@@ -78,8 +85,19 @@
 					color: $o-offcanvas-link-hover-color;
 					background-color: $o-offcanvas-link-hover-bg;
 				}
+				&.o_logout {
+					color: $brand-danger;
+					&:hover,
+					&:focus {
+						color: $brand-danger;
+					}
+				}
+				
 			}
 			/* override dropdown styles */
+			.dropdown-header {
+				padding-left: $navbar-padding-horizontal;	
+			}
 			.dropdown-toggle {
 				display: none;
 			}
@@ -187,6 +205,7 @@
   position: relative;
   float: right;
   margin-right: $navbar-padding-horizontal;
+  margin-left: $navbar-padding-horizontal;
   padding: 9px 10px;
   @include navbar-vertical-align(34px);
   background-color: transparent;

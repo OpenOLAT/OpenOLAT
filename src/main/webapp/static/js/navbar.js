@@ -31,15 +31,16 @@
 			busy: false,
 			brandW : 0,
 			toggleW : 0,
+			permanentToolW : 0,
 			sitesW : 0,
 			sitesOffCanvas : false,
 			sitesDirty : false,
 			tabsW : 0,
 			tabsOffCanvas : false,
 			tabsDirty : false,
-			toolsW : 0,
-			toolsOffCanvas : false,
-			toolsDirty : false,
+			personalToolsW : 0,
+			personalToolsOffCanvas : false,
+			personalToolsDirty : false,
 			offCanvasWidth : 0
 		};
 		// get site of menu from css
@@ -64,7 +65,7 @@
 			//console.log('tabs dirty');
 		},this));
 		$(document).on("oo.nav.tools.modified", $.proxy(function() {
-			this.state.toolsDirty = true;
+			this.state.personalToolsDirty = true;
 			//console.log('tools dirty');
 		},this));
 
@@ -89,13 +90,13 @@
 		}
 	}
 	Navbar.prototype.onDOMreplacementCallback = function() {
-		if (!this.state.busy && (this.state.sitesDirty || this.state.tabsDirty || this.state.toolsDirty)) {			
+		if (!this.state.busy && (this.state.sitesDirty || this.state.tabsDirty || this.state.personalToolsDirty)) {			
 			this.state.busy = true;
 			this.calculateWidth();
 			this.optimize();		
 			this.state.sitesDirty = false;
 			this.state.tabsDirty = false;
-			this.state.toolsDirty = false;	
+			this.state.personalToolsDirty = false;	
 			this.state.busy = false;
 			// close offcanvas when clicking a link
 			this.hideRight();
@@ -109,6 +110,8 @@
 	    // toggle and branding
 	    this.state.toggleW = $('.o_navbar-toggle').outerWidth(true);
 	    this.state.brandW = $('.o_navbar-brand').outerWidth(true);
+	    // the permanent tools. only the personal tools are put to offsite
+	    this.state.permanentToolW = $('#o_navbar_tools_permanent').outerWidth(true);
 	    // the real content: sites, tabs and tools
 	    if (!this.state.sitesOffCanvas) {
 	    	this.state.sitesW = $('.o_navbar_sites').outerWidth(true);
@@ -116,14 +119,15 @@
 	    if (!this.state.tabsOffCanvas) {
 	    	this.state.tabsW = $('.o_navbar_tabs').outerWidth(true);	    	
 	    }
-	    if (!this.state.toolsOffCanvas) {
-	    	this.state.toolsW = $('#o_navbar_tools').outerWidth(true) + 15;	    	
+	    if (!this.state.personalToolsOffCanvas) {
+	    	this.state.personalToolsW = $('#o_navbar_tools_personal').outerWidth(true) + 15;	    	
 	    }
 	    
-//	    console.log('calculateWidth w:' + this.state.navbarW + ' s:'+this.state.sitesW + ' d:'+this.state.tabsW + ' t:'+this.state.toolsW + ' o:'+this.getOverflow() );
+//	    console.log('calculateWidth w:' + this.state.navbarW + ' s:'+this.state.sitesW + ' d:'+this.state.tabsW + ' t:'+this.state.personalToolsW + ' o:'+this.getOverflow() );
 	}
 
 	Navbar.prototype.getOverflow = function(e) {
+		// Calculate if more space is used in navbar than available. Get total width and substract feature by feature
 		var o = this.state.navbarW;
 		if (!this.state.sitesOffCanvas) {
 			o -= this.state.sitesW;
@@ -131,13 +135,16 @@
 		if (!this.state.tabsOffCanvas) {
 			o -= this.state.tabsW;
 		}
-		if (!this.state.toolsOffCanvas) {
-			o -= this.state.toolsW;
+		if (!this.state.personalToolsOffCanvas) {
+			o -= this.state.personalToolsW;
 		}
-		if (this.state.toolsOffCanvas || this.state.tabsOffCanvas || this.state.sitesOffCanvas) {
+		if (this.state.personalToolsOffCanvas || this.state.tabsOffCanvas || this.state.sitesOffCanvas) {
+			// subtract the space used for toggle only when toggle is actually used
 			o -= this.state.toggleW;
 		}
+		// always subtract the space used by brand and the permanent tools
 		o -= this.state.brandW;
+		o -= this.state.permanentToolW;
 		return -o;
 	}
 	    
@@ -145,11 +152,11 @@
 		var o = this.getOverflow();
 //		console.log('optimize o:' + o);
 		// Move from toolbar to offcanvas
-		while (o > 0 && (!this.state.toolsOffCanvas || !this.state.tabsOffCanvas || !this.state.sitesOffCanvas)) {
-			if (!this.state.toolsOffCanvas) {	
+		while (o > 0 && (!this.state.personalToolsOffCanvas || !this.state.tabsOffCanvas || !this.state.sitesOffCanvas)) {
+			if (!this.state.personalToolsOffCanvas) {	
 //				console.log('collapse tools ' + o);
-				$('.o_navbar_tools').prependTo('#o_offcanvas_container'); 
-				this.state.toolsOffCanvas = true;
+				$('#o_navbar_tools_personal').prependTo('#o_offcanvas_container'); 
+				this.state.personalToolsOffCanvas = true;
 				o = this.getOverflow();	
 				continue;
 			}			
@@ -171,7 +178,7 @@
 			break;
 		}
 		// Move from offcanvas to toolbar
-		while (o < 0 && (this.state.toolsOffCanvas || this.state.tabsOffCanvas || this.state.sitesOffCanvas)) {
+		while (o < 0 && (this.state.personalToolsOffCanvas || this.state.tabsOffCanvas || this.state.sitesOffCanvas)) {
 			if (this.state.sitesOffCanvas) {
 				if (-o >= this.state.sitesW) {
 //					console.log('uncollapse sites ' + o);
@@ -194,11 +201,11 @@
 					break;
 				}
 			}
-			if (this.state.toolsOffCanvas) {
-				if (-o >= this.state.toolsW) {	
+			if (this.state.personalToolsOffCanvas) {
+				if (-o >= this.state.personalToolsW) {	
 //					console.log('uncollapse tools ' + o);
-					$('.o_navbar_tools').appendTo('#o_navbar_container .o_navbar-collapse'); 
-					this.state.toolsOffCanvas = false;
+					$('#o_navbar_tools_personal').prependTo('#o_navbar_container .o_navbar-collapse .o_navbar_tools'); 
+					this.state.personalToolsOffCanvas = false;
 					o = this.getOverflow();	
 					continue;
 				} else {
@@ -207,7 +214,7 @@
 			}
 			break;
 		}
-		if (this.state.toolsOffCanvas || this.state.tabsOffCanvas || this.state.sitesOffCanvas) {
+		if (this.state.personalToolsOffCanvas || this.state.tabsOffCanvas || this.state.sitesOffCanvas) {
 			this.showToggle();
 		} else {
 			this.hideToggle();

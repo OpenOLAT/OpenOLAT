@@ -109,6 +109,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 	public OlatTopNavController(UserRequest ureq, WindowControl wControl, boolean impressum, boolean search) {
 		super(ureq, wControl);
 		topNavVC = createVelocityContainer("topnav");
+		topNavVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacmenet ID
 		
 		boolean isGuest = ureq.getUserSession().getRoles().isGuestOnly();
 		boolean isInvitee = ureq.getUserSession().getRoles().isInvitee();

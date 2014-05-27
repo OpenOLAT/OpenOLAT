@@ -1366,9 +1366,9 @@ function b_briefcase_toggleCheck(ref, checked) {
 /*
  * print command, prints iframes when available
  */
-function b_doPrint() {
+function o_doPrint() {
 	// When we have an iframe, issue print command on iframe directly
-	var iframes =  jQuery('div.b_iframe_wrapper iframe');
+	var iframes =  jQuery('div.o_iframedisplay iframe');
 	if (iframes.length > 0) {
 		try {
 			var iframe = iframes[0];

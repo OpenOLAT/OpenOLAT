@@ -1,50 +1,55 @@
-<ul id="o_navbar_tools" class="nav o_navbar-nav o_navbar-right">
-#if($r.available("topnav.impressum"))
-	<li id="o_navbar_impress">
-		$r.render("topnav.impressum")
-	</li>
-#end
-#if (!$inAssessment && $r.available("search_input"))
-	<li id="o_navbar_search_opener" class="dropdown">
-		<a href="#" class="dropdown-toggle" data-toggle="dropdown" title="$r.translate("search")">
-			<i class="o_icon o_icon_search o_icon-lg"></i>
-		</a>
-		<ul class="dropdown-menu">          
-			<li id="o_navbar_search" class="o_navbar-form" role="search">
-				$r.render("search_input")
-			</li>
-		</ul>
-	</li>
-#end
-#foreach($personalTool in $toolSet)
-	 <li class="o_navbar_personalTool">$r.render($personalTool)</li>
-#end
-#if ($r.available("groupchatcontroller"))
-	<li id="o_navbar_imgroupclient">
-		$r.render("groupchatcontroller")
-	</li>
-#end
-#if ($r.available("imclient"))
-	<li id="o_navbar_imclient" class="clearfix">
-		$r.render("imclient")
-	</li>
-#end
-#if (!$isGuest)
-	<li id="o_navbar_my_menu" class="dropdown o_portrait">
-		<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-			#if($r.available("portrait"))
-				$r.render("portrait") 
-			#else 
-				<img src="$r.staticLink("images/transparent.gif")" class="o_small o_portrait_dummy_${gender}small"/>
-			#end
-			$myMenuLabel
-			<b class="caret"></b>
-		</a>	
-		$r.render("myMenu")
-	</li>
-#else
-	<li id="o_navbar_login">
-		$r.render("topnav.login")
-	</li>
-#end
-</ul>
+<div id="$r.getCId()" class="o_navbar_tools">
+	<ul id="o_navbar_tools_personal" class="nav o_navbar-nav o_navbar-right">
+	#foreach($personalTool in $toolSet)
+		 <li class="o_navbar_tool">$r.render($personalTool)</li>
+	#end
+	#if (!$isGuest)
+		<li id="o_navbar_my_menu" class="dropdown o_portrait">
+			<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+				#if($r.available("portrait"))
+					$r.render("portrait") 
+				#else 
+					<img src="$r.staticLink("images/transparent.gif")" class="o_small o_portrait_dummy_${gender}small"/>
+				#end
+				$myMenuLabel
+				<b class="caret"></b>
+			</a>	
+			$r.render("myMenu")
+		</li>
+	#else
+		<li id="o_navbar_login">
+			$r.render("topnav.login")
+		</li>
+	#end
+	</ul>
+	
+	<ul id="o_navbar_tools_permanent" class="nav o_navbar-nav o_navbar-right">
+	#if($r.available("topnav.impressum"))
+		<li id="o_navbar_impress">
+			$r.render("topnav.impressum")
+		</li>
+	#end
+	#if (!$inAssessment && $r.available("search_input"))
+		<li id="o_navbar_search_opener" class="dropdown">
+			<a href="#" class="dropdown-toggle" data-toggle="dropdown" title="$r.translate("search")">
+				<i class="o_icon o_icon_search o_icon-lg"></i>
+			</a>
+			<ul class="dropdown-menu dropdown-menu-right">          
+				<li id="o_navbar_search" class="o_navbar-form" role="search">
+					$r.render("search_input")
+				</li>
+			</ul>
+		</li>
+	#end
+	#if ($r.available("groupchatcontroller"))
+		<li id="o_navbar_imgroupclient">
+			$r.render("groupchatcontroller")
+		</li>
+	#end
+	#if ($r.available("imclient"))
+		<li id="o_navbar_imclient" class="clearfix">
+			$r.render("imclient")
+		</li>
+	#end
+	</ul>
+</div>
