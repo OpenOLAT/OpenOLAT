@@ -7,7 +7,7 @@ div.o_callout_overlay {
 	top: -100%;	
 	left: 0;
 	display: none;
- 	z-index: 1035;
+ 	z-index: 2000; /* modal is 1050 */
  	width: 100%;
  	text-align: center;
  	
