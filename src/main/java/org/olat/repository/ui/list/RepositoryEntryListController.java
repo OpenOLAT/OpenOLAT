@@ -33,6 +33,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
@@ -146,7 +147,7 @@ public class RepositoryEntryListController extends FormBasicController
 		sorters.add(new FlexiTableSort(translate("orderby.creationDate"), OrderBy.creationDate.name()));
 		sorters.add(new FlexiTableSort(translate("orderby.lastModified"), OrderBy.lastModified.name()));
 		sorters.add(new FlexiTableSort(translate("orderby.rating"), OrderBy.rating.name()));
-		tableEl.setSorts("", sorters);
+		tableEl.setSortSettings(new FlexiTableSortOptions(sorters));
 	}
 
 	@Override

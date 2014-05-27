@@ -38,6 +38,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
+import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
@@ -112,6 +113,12 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 			} else {
 				searchParams.setResourceTypes(null);
 			}
+		}
+		
+		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
+			OrderBy o = OrderBy.valueOf(orderBy[0].getKey());
+			searchParams.setOrderBy(o);
+			searchParams.setOrderByAsc(orderBy[0].isAsc());
 		}
 		
 		if(StringHelper.containsNonWhitespace(query)) {

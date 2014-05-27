@@ -96,6 +96,6 @@ public class CourseChatSettingsForm extends FormBasicController {
 	  		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_IM_DISABLED, getClass());
 	  	}
 
-		fireEvent (ureq, Event.DONE_EVENT);
+		fireEvent (ureq, Event.CHANGED_EVENT);
 	}
 }

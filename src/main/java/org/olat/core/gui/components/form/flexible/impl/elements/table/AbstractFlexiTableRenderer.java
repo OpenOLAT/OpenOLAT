@@ -304,27 +304,31 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		for(int i=0; i<cols; i++) {
 			FlexiColumnModel fcm = columnModel.getColumnModel(i);
 			if(ftE.isColumnModelVisible(fcm)) {
-				renderHeader(target, ftC, fcm, col++, cols, translator);
+				renderHeader(target, ftC, fcm, col++, translator);
 			}
 		}
 		
 		target.append("</tr></thead>");
 	}
 	
-	protected void renderHeader(StringOutput target, FlexiTableComponent ftC, FlexiColumnModel fcm, int colPos, int numOfCols, Translator translator) {
+	protected void renderHeader(StringOutput target, FlexiTableComponent ftC, FlexiColumnModel fcm, int colPos, Translator translator) {
+		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		String header = getHeader(fcm, translator);
+		target.append("<th>").append(header);
+		if(ftE.getSortOptions() == null || !ftE.getSortOptions().isFromColumnModel()) {
+			renderHeaderSort(target, ftC, fcm, colPos, translator);
+		}
+		target.append("</th>");
+	}
+	
+	private String getHeader(FlexiColumnModel fcm, Translator translator) {
 		String header;
 		if(StringHelper.containsNonWhitespace(fcm.getHeaderLabel())) {
 			header = fcm.getHeaderLabel();
 		} else {
 			header = translator.translate(fcm.getHeaderKey());
 		}
-		target.append("<th class=\"");
-		// add css class for first and last column to support older browsers
-		if (colPos == 0) target.append(" b_first_child");
-		if (colPos == numOfCols-1) target.append(" b_last_child");
-		target.append("\">").append(header);
-		renderHeaderSort(target, ftC, fcm, colPos, translator);
-		target.append("</th>");
+		return header;
 	}
 	
 	protected abstract void renderHeaderSort(StringOutput target, FlexiTableComponent ftC, FlexiColumnModel fcm, int colPos, Translator translator);

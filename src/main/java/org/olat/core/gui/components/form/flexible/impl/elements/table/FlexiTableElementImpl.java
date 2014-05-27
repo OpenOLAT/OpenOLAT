@@ -44,6 +44,7 @@ import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.choice.Choice;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
@@ -116,7 +117,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private String wrapperSelector;
 
 	private SortKey[] orderBy;
-	private List<FlexiTableSort> sorts;
+	private FlexiTableSortOptions sortOptions;
 	private List<FlexiTableFilter> filters;
 	private Object selectedObj;
 	private boolean allSelectedIndex;
@@ -337,16 +338,46 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	public boolean isSortEnabled() {
-		return sorts != null && sorts.size() > 0;
+		return sortOptions != null && (sortOptions.getSorts().size() > 0 || sortOptions.isFromColumnModel());
+	}
+	
+	public FlexiTableSortOptions getSortOptions() {
+		return sortOptions;
 	}
 	
 	public List<FlexiTableSort> getSorts() {
-		return sorts;
+		List<FlexiTableSort> sorts;
+		if(sortOptions == null) {
+			sorts = Collections.<FlexiTableSort>emptyList();
+		} else if(sortOptions.getSorts() != null && sortOptions.getSorts().size() > 0) {
+			sorts = sortOptions.getSorts();
+		} else if(sortOptions.isFromColumnModel()) {
+			FlexiTableColumnModel columnModel = getTableDataModel().getTableColumnModel();
+			
+			int cols = columnModel.getColumnCount();
+			sorts = new ArrayList<>(cols);
+			for(int i=0; i<cols; i++) {
+				FlexiColumnModel fcm = columnModel.getColumnModel(i);
+				if (fcm.isSortable() && fcm.getSortKey() != null) {
+					String header;
+					if(StringHelper.containsNonWhitespace(fcm.getHeaderLabel())) {
+						header = fcm.getHeaderLabel();
+					} else {
+						header = translator.translate(fcm.getHeaderKey());
+					}
+					sorts.add(new FlexiTableSort(header, fcm.getSortKey()));
+				}
+			}
+			sortOptions.setSorts(sorts);
+		} else {
+			sorts = Collections.<FlexiTableSort>emptyList();
+		}
+		return sorts; 
 	}
 
 	@Override
-	public void setSorts(String label, List<FlexiTableSort> sorts) {
-		this.sorts = sorts;
+	public void setSortSettings(FlexiTableSortOptions options) {
+		this.sortOptions = options;
 	}
 
 	@Override
@@ -660,6 +691,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 	}
 	
+	@Override
 	public void sort(String sortKey, boolean asc) {
 		SortKey key = new SortKey(sortKey, asc);
 		orderBy = new SortKey[]{ key };
@@ -670,8 +702,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			dataSource.load(null, conditionalQueries, 0, getPageSize(), orderBy);
 		}
 
-		if(sorts != null) {
-			for(FlexiTableSort sort:sorts) {
+		if(sortOptions != null) {
+			for(FlexiTableSort sort:sortOptions.getSorts()) {
 				boolean selected = sort.getSortKey().getKey().equals(sortKey);
 				sort.setSelected(selected);
 				if(selected) {

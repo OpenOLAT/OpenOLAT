@@ -235,7 +235,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			
 			
 			//access control
-			String accessI18n;
+			String accessI18n = null;
 			List<PriceMethod> types = new ArrayList<PriceMethod>();
 			if (entry.isMembersOnly()) {
 				// members only always show lock icon
@@ -286,7 +286,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 						break;
 				}
 			}
-			layoutCont.contextPut("accessI18n", "cif.access.membersonly");
+			layoutCont.contextPut("accessI18n", accessI18n);
 			
 			if(!types.isEmpty()) {
 				layoutCont.contextPut("ac", types);

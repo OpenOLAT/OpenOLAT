@@ -43,6 +43,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private String description;
 	
 	private OrderBy orderBy;
+	private boolean orderByAsc;
 	private List<String> resourceTypes;
 	private List<Long> repoEntryKeys;
 	
@@ -99,6 +100,14 @@ public class SearchAuthorRepositoryEntryViewParams {
 		this.orderBy = orderBy;
 	}
 	
+	public boolean isOrderByAsc() {
+		return orderByAsc;
+	}
+
+	public void setOrderByAsc(boolean orderByAsc) {
+		this.orderByAsc = orderByAsc;
+	}
+
 	public boolean isResourceTypesDefined() {
 		return resourceTypes != null && resourceTypes.size() > 0;
 	}
@@ -139,29 +148,18 @@ public class SearchAuthorRepositoryEntryViewParams {
 	}
 	
 	public enum OrderBy {
-		automatic,
+		key,
 		favorit,
-		lastVisited,
-		passed,
-		score,
-		title,
-		lifecycle,
+		type,
+		displayname,
+		authors,
 		author,
+		ac,
 		creationDate,
-		lastModified,
-		rating	
-	}
-	
-	public enum Filter {
-		currentCourses,
-		oldCourses,
-		upcomingCourses,
-		asParticipant,
-		asCoach,
-		asAuthor,
-		notBooked,
-		passed,
-		notPassed,
-		withoutPassedInfos
+		lastUsage,
+		lifecycleLabel,
+		lifecycleSoftkey,
+		lifecycleStart,
+		lifecycleEnd
 	}
 }

@@ -945,17 +945,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 * 
 	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(Event event) {	
-		
 		if (event instanceof MultiUserEvent) {
-			
 			if (event.getCommand().equals(JOINED) || event.getCommand().equals(LEFT)) {
 				updateCurrentUserCount();
-				return;
 			}
-		}
-		
-		if (event instanceof PublishEvent) {
+		} else if (event instanceof PublishEvent) {
 			PublishEvent pe = (PublishEvent) event;
 			if (pe.getState() == PublishEvent.PRE_PUBLISH) {
 				// so far not interested in PRE PUBLISH event, but one could add user

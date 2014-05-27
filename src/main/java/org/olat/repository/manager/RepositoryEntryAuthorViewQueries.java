@@ -36,6 +36,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
+import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
 import org.olat.user.UserImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -179,6 +180,9 @@ public class RepositoryEntryAuthorViewQueries {
 			}
 			sb.append(")");	
 		}
+		if(!count) {
+			appendAuthorViewOrderBy(params.getOrderBy(), params.isOrderByAsc(), sb);
+		}
 
 		TypedQuery<T> dbQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), type);
@@ -206,5 +210,85 @@ public class RepositoryEntryAuthorViewQueries {
 
 		dbQuery.setParameter("identityKey", identity.getKey());
 		return dbQuery;
+	}
+	
+	private void appendAuthorViewOrderBy(OrderBy orderBy, boolean asc, StringBuilder sb) {
+		if(orderBy != null) {
+			switch(orderBy) {
+				case key:
+					sb.append(" order by v.key");
+					appendAsc(sb, asc);
+					break;
+				case favorit:
+					if(asc) {
+						sb.append(" order by v.markKey nulls last, lower(v.displayname) asc");
+					} else {
+						sb.append(" order by v.markKey nulls first, lower(v.displayname) desc");
+					}
+					break;
+				case type:
+					sb.append(" order by res.resName");
+					appendAsc(sb, asc);
+					break;
+				case displayname:
+					sb.append(" order by lower(v.displayname)");
+					appendAsc(sb, asc);	
+					break;
+				case authors:
+					sb.append(" order by lower(v.authors)");
+					appendAsc(sb, asc).append(", lower(v.displayname) asc");
+					break;
+				case author:
+					sb.append(" order by lower(v.author)");
+					appendAsc(sb, asc).append(", lower(v.displayname) asc");	
+					break;
+				case ac:
+					if(asc) {
+						sb.append(" order by v.offersAvailable nulls last, lower(v.displayname) asc");
+					} else {
+						sb.append(" order by v.offersAvailable nulls first, lower(v.displayname) desc");
+					}
+					break;
+				case creationDate:
+					sb.append(" order by v.creationDate ");
+					appendAsc(sb, asc).append(", lower(v.displayname) asc");
+					break;
+				case lastUsage:
+					sb.append(" order by v.lastUsage ");
+					appendAsc(sb, asc).append(", lower(v.displayname) asc");
+					break;
+				case lifecycleLabel:
+					if(asc) {
+						sb.append(" order by lifecycle.label nulls last, lower(v.displayname) asc");
+					} else {
+						sb.append(" order by lifecycle.label nulls last, lower(v.displayname) desc");
+					}
+					break;
+				case lifecycleSoftkey:
+					if(asc) {
+						sb.append(" order by lifecycle.softKey nulls last, lower(v.displayname) asc");
+					} else {
+						sb.append(" order by lifecycle.softKey nulls last, lower(v.displayname) desc");
+					}
+					break;	
+				case lifecycleStart:
+					sb.append(" order by lifecycle.validFrom ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					break;
+				case lifecycleEnd:
+					sb.append(" order by lifecycle.validTo ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					break;
+			}
+		}
+	}
+	
+	private final StringBuilder appendAsc(StringBuilder sb, boolean asc) {
+		if(asc) {
+			sb.append(" asc");
+		} else {
+			sb.append(" desc");
+		}
+		return sb;
 	}
 }

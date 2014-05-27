@@ -6,6 +6,9 @@
 		}
 		.table {
 			margin-top: $line-height-computed;
+			td ul {
+				margin: 0;
+			}
 		}
 	}	
 	&.o_table_edit {}

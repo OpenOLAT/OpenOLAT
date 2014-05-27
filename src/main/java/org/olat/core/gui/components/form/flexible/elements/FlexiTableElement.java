@@ -188,7 +188,7 @@ public interface FlexiTableElement extends FormItem {
 	 * @param label
 	 * @param sorts
 	 */
-	public void setSorts(String label, List<FlexiTableSort> sorts);
+	public void setSortSettings(FlexiTableSortOptions options);
 	
 	/**
 	 * Enable export
