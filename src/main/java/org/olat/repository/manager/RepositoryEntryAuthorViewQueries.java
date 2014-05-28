@@ -117,6 +117,13 @@ public class RepositoryEntryAuthorViewQueries {
 		}
 
 		sb.append(" where v.identityKey=:identityKey ");
+		//only my entries as author
+		sb.append(" and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
+		  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=v.identityKey")
+		  .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
+		  .append(" )");
+		
+		
 		if(params.getRepoEntryKeys() != null && params.getRepoEntryKeys().size() > 0) {
 			sb.append(" and v.key in (:repoEntryKeys)");
 		}

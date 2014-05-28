@@ -4,7 +4,9 @@ $r.contextHelpWithWrapper("org.olat.course.assessment","course-assess-tool.html"
 <p>$r.translate("index.intro")</p>
 <p>$r.translate("index.slow")</p>
 <div class="clearfix">
-	$r.render("assessmentSubscription")
+	#if($r.available("assessmentSubscription"))
+		$r.render("assessmentSubscription")
+	#end
 	<h5>$r.translate("index.notifications.title")</h5>
 	$r.translate("index.notifications.assessment")
 </div>
