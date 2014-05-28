@@ -1101,8 +1101,9 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			LanguageChangedEvent lce = (LanguageChangedEvent)event;
 			getTranslator().setLocale(lce.getNewLocale());
 			initialize(lce.getCurrentUreq());
-			initialPanel.popContent();
-			initialPanel.pushContent(mainVc);
+			//TODO
+			//initialPanel.popContent();
+			//initialPanel.pushContent(mainVc);
 		} else if (event instanceof ChiefControllerMessageEvent) {
 			// msg can be set to show only on one node or on all nodes
 			String msg = GlobalStickyMessage.getGlobalStickyMessage();//either null, or the global message or the per-node-message

@@ -141,6 +141,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 			SearchAuthorRepositoryEntryViewParams searchParams
 				= new SearchAuthorRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 			searchParams.setMarked(Boolean.TRUE);
+			searchParams.setOwnedResourcesOnly(false);
 
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Favorits", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
@@ -158,6 +159,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		if(myEntriesCtrl == null) {
 			SearchAuthorRepositoryEntryViewParams searchParams
 				= new SearchAuthorRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
+			searchParams.setOwnedResourcesOnly(true);
 
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("My", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
@@ -175,6 +177,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		if(searchEntriesCtrl == null) {
 			SearchAuthorRepositoryEntryViewParams searchParams
 				= new SearchAuthorRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
+			searchParams.setOwnedResourcesOnly(false);
 
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));

@@ -33,6 +33,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
@@ -118,11 +119,20 @@ public class RepositoryEntryAuthorViewQueries {
 
 		sb.append(" where v.identityKey=:identityKey ");
 		//only my entries as author
-		sb.append(" and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
-		  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=v.identityKey")
-		  .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
-		  .append(" )");
-		
+		if(params.isOwnedResourcesOnly()) {
+			sb.append(" and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
+			  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=v.identityKey")
+			  .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
+			  .append(" )");
+		} else {
+			sb.append(" and (v.access>=").append(RepositoryEntry.ACC_OWNERS_AUTHORS)
+			  .append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS)
+			  .append("   and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
+			  .append("     where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=v.identityKey")
+			  .append("       and membership.role='").append(GroupRoles.owner.name()).append("'")
+			  .append("   )")
+			  .append(" ))");
+		}
 		
 		if(params.getRepoEntryKeys() != null && params.getRepoEntryKeys().size() > 0) {
 			sb.append(" and v.key in (:repoEntryKeys)");
