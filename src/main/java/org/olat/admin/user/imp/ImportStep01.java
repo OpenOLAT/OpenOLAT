@@ -31,7 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.AbstractCSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -186,7 +186,7 @@ class ImportStep01 extends BasicStep {
  * Initial Date:  21.03.2008 <br>
  * @author gnaegi
  */
-class UserNewOldCustomFlexiCellRenderer extends CSSIconFlexiCellRenderer {
+class UserNewOldCustomFlexiCellRenderer extends AbstractCSSIconFlexiCellRenderer {
 
 	@Override
 	protected String getCellValue(Object cellValue) {

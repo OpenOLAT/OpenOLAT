@@ -43,11 +43,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;/**
  * <p>
  */
 
-import org.apache.commons.lang.StringEscapeUtils;
-import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.StringHelper;
 
 /**
  * <h3>Description:</h3>
@@ -57,10 +53,9 @@ import org.olat.core.util.StringHelper;
  * 
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
-public class CSSIconFlexiCellRenderer implements FlexiCellRenderer {
+public class CSSIconFlexiCellRenderer extends AbstractCSSIconFlexiCellRenderer {
 	
 	private final String cssClass;
-	private final FlexiCellRenderer delegate;
 	
 	public CSSIconFlexiCellRenderer() {
 		this(null, null);
@@ -75,43 +70,21 @@ public class CSSIconFlexiCellRenderer implements FlexiCellRenderer {
 	}
 	
 	public CSSIconFlexiCellRenderer(String cssClass, FlexiCellRenderer delegate) {
+		super(delegate);
 		this.cssClass = cssClass;
-		this.delegate = delegate;
-	}
-
-	  /**
-	   * Render Date type with Formatter depending on locale. Render all other types with toString. 
-	   * @param target
-	   * @param cellValue
-	   * @param translator
-	   */	
-	@Override
-	public void render(StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-				URLBuilder ubu, Translator translator) {
-		target.append("<span><i class=\"o_icon ")
-		     .append(getCssClass(cellValue));
-		String hoverText = getHoverText(cellValue, translator);
-		if (StringHelper.containsNonWhitespace(hoverText)) {
-			target.append("\" title=\"");
-			target.append(StringEscapeUtils.escapeHtml(hoverText));
-		}
-		target.append("\"> </i>");
-		if(delegate == null) {
-			target.append(getCellValue(cellValue));
-		} else {
-			delegate.render(target, cellValue, row, source, ubu, translator);
-		}
-		target.append("</span>");			
 	}
 		
+	@Override
 	protected String getCssClass(Object val) {
 		return cssClass;
 	}
-	
+
+	@Override
 	protected String getCellValue(Object val) {
 		return "  ";
 	}
-	
+
+	@Override
 	protected String getHoverText(Object val, Translator translator) {
 		return null;
 	}

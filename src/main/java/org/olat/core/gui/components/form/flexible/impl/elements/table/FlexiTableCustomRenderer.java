@@ -62,7 +62,7 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 		renderBody(renderer, sb, ftC, ubu, translator, renderResult);
 		sb.append("</div>");
 
-		renderFooterButtons(renderer, sb, ftC, ubu, translator, renderResult, args);
+		renderFooterButtons(sb, ftC, translator);
 		sb.append("</div>");
 		
 		//source

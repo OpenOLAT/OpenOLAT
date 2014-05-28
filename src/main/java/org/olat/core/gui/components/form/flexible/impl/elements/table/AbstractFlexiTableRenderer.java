@@ -75,7 +75,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		renderBody(renderer, sb, ftC, ubu, translator, renderResult);
 		sb.append("</tbody></table>");
 		
-		renderFooterButtons(renderer, sb, ftC, ubu, translator, renderResult, args);
+		renderFooterButtons(sb, ftC, translator);
 		sb.append("</div>");
 		
 		//source
@@ -256,8 +256,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 	}
 	
-	protected void renderFooterButtons(Renderer renderer, StringOutput sb, FlexiTableComponent ftC, URLBuilder ubu, Translator translator,
-			RenderResult renderResult, String[] args) {
+	protected void renderFooterButtons(StringOutput sb, FlexiTableComponent ftC, Translator translator) {
 
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		if(ftE.isSelectAllEnable()) {
