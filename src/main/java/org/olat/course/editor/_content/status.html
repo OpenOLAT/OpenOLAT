@@ -1,15 +1,18 @@
 #set ($fixit = $r.translate("fix.it"))
 #if($hasErrors.booleanValue())
 	<div id="o_course_editor_errorbox" class="clearfix">
-		<h4>$r.translate("toggle.coursestatus.errors", $errorsCount)</h4>
+		<h4>
+			<i class="o_icon o_icon-fw o_icon_error"></i>
+			$r.translate("toggle.coursestatus.errors", $errorsCount)
+		</h4>
 		<ul class="o_error">
 		#foreach($elem in $errorIsForNode)
 			<li>
 			#set ($counter = $velocityCount - 1)
 			#if($errorHelpWizardLink.get($counter)!="NONE")
-				<strong><a href="$r.commandURI($errorHelpWizardLink.get($counter))" title="${fixit}">$r.escapeHtml(${elem})</a></strong>
+				<h5><a href="$r.commandURI($errorHelpWizardLink.get($counter))" title="${fixit}">$r.escapeHtml(${elem})</a></h5>
 			#else
-				<strong>$r.escapeHtml(${elem})</strong>		
+				<h5>$r.escapeHtml(${elem})</h5>		
 			#end
 			$r.escapeHtml(${errorMessage.get(${counter})})
 			</li>
@@ -20,15 +23,18 @@
 
 #if($hasWarnings.booleanValue())	
 	<div id="o_course_editor_warningbox" class="clearfix">
-		<h4>$r.translate("toggle.coursestatus.warnings", $warningsCount)</h4>
+		<h4>
+			<i class="o_icon o_icon-fw o_icon_warn"></i>
+			$r.translate("toggle.coursestatus.warnings", $warningsCount)
+		</h4>
 		<ul>
 		#foreach($elem in $warningIsForNode)
 			<li>
 			#set ($counter = $velocityCount - 1)
 			#if($warningHelpWizardLink.get($counter)!="NONE")
-				<strong><a href="$r.commandURI($warningHelpWizardLink.get($counter))" title="${fixit}">$r.escapeHtml(${elem})</a></strong>
+				<h5><a href="$r.commandURI($warningHelpWizardLink.get($counter))" title="${fixit}">$r.escapeHtml(${elem})</a></h5>
 			#else
-				<strong>$r.escapeHtml(${elem})</strong>		
+				<h5>$r.escapeHtml(${elem})</h5>		
 			#end
 			$r.escapeHtml(${warningMessage.get(${counter})})
 			</li>
@@ -39,7 +45,20 @@
 
 #if(!$hasErrors.booleanValue() && !$hasWarnings.booleanValue())
 	<div id="o_course_editor_okbox" class="clearfix">
-		<h4>$r.translate("toggle.coursestatus.ok")</h4>
+		<h4>
+			<i class="o_icon o_icon-fw o_icon_info"></i>
+			$r.translate("toggle.coursestatus.ok")
+		</h4>
 		<div id="o_course_editor_ok" class="o_success">$r.translate("coursestatus.ok.message")</div>
 	</div>
 #end
+
+<div class="o_block small ">
+	<strong>$r.translate("legend.title")</strong>
+	<ul class="list-unstyled">
+		<li><i class="o_icon o_icon-fw o_midlock"></i> $r.translate("legend.cond")</li>
+		<li><i class="o_icon o_icon-fw o_miderr"></i> $r.translate("legend.err")</li>
+		<li><i class="o_icon o_icon-fw o_midwarn"></i> $r.translate("legend.warn")</li>
+		<li><i class="o_icon o_icon-fw o_midpub"></i> $r.translate("legend.ok")</li>
+	</ul>
+</div>
