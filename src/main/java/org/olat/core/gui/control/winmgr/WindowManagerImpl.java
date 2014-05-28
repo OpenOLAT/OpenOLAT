@@ -252,7 +252,7 @@ public class WindowManagerImpl extends BasicManager implements WindowManager {
 	public PopupBrowserWindow createNewPopupBrowserWindowFor(UserRequest ureq, ControllerCreator contentControllerCreator) {
 		//supports the open(ureq) method
 		PopupBrowserWindowController cc = pbwcc.createNewPopupBrowserController(ureq, contentControllerCreator);
-		cc.addBodyCssClass("b_body_popup");
+		cc.addBodyCssClass("o_body_popup");
 		return cc;
 	}
 	
@@ -262,7 +262,7 @@ public class WindowManagerImpl extends BasicManager implements WindowManager {
 		PopupBrowserWindowController cc = pbwcc.createNewUnauthenticatedPopupWindowController(ureq, contentControllerCreator);
 		//the content controller for the popupwindow is generated and set
 		//at the moment the open method is called!!
-		cc.addBodyCssClass("b_body_popup");
+		cc.addBodyCssClass("o_body_popup");
 		return cc;
 	}
 	

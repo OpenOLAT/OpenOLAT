@@ -234,9 +234,9 @@ function o_init() {
 	}	
 }
 
-function b_initEmPxFactor() {
+function o_initEmPxFactor() {
 	// read px value for 1 em from hidden div
-	o_info.emPxFactor = jQuery('#b_width_1em').width();
+	o_info.emPxFactor = jQuery('#o_width_1em').width();
 	if (o_info.emPxFactor == 0 || o_info.emPxFactor == 'undefined') {
 		o_info.emPxFactor = 12; // default value for all strange settings
 		if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','Could not read with of element b_width_1em, set o_info.emPxFactor to 12', "functions.js");
@@ -684,10 +684,10 @@ function showAjaxBusy() {
 		if (o_info.linkbusy) {
 			// try/catch because can fail in full page refresh situation when called before DOM is ready
 			try {
-				jQuery('#b_ajax_busy').each(function(index, el) {
-					jQuery(el).addClass('b_ajax_busy');
-					jQuery('#b_body').addClass('b_ajax_busy');
-				});
+				jQuery('#o_body').addClass('o_ajax_busy');
+				jQuery('#o_ajax_busy').modal({show: true, backdrop: 'static', keyboard: 'false'});
+				// fix modal conflic with modal dialogs, make ajax busy appear always above modal dialogs
+				jQuery('body > .modal-backdrop').css({'z-index' : 1200});
 			} catch (e) {
 				if(console) console.log(e);
 			}
@@ -698,10 +698,8 @@ function showAjaxBusy() {
 function removeAjaxBusy() {
 	// try/catch because can fail in full page refresh situation when called before page DOM is ready
 	try {
-		jQuery('#b_ajax_busy').each(function(index, el) {
-			jQuery(el).removeClass('b_ajax_busy');
-			jQuery('#b_body').removeClass('b_ajax_busy');
-		});
+		jQuery('#o_body').removeClass('o_ajax_busy');
+		jQuery('#o_ajax_busy').modal('hide');
 	} catch (e) {
 		if(console) console.log(e);
 	}

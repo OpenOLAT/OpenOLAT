@@ -33,7 +33,7 @@ function gotoSite(event) {
 	var offsetTop = pos.top;
 
 	var i=0;
-	for(var offsetParent = Element.getOffsetParent(el); offsetParent.id != 'b_body'; offsetParent = Element.getOffsetParent(offsetParent)) {
+	for(var offsetParent = Element.getOffsetParent(el); offsetParent.id != 'o_body'; offsetParent = Element.getOffsetParent(offsetParent)) {
 		var posn = Element.positionedOffset(offsetParent);
 		if(offsetParent.id != "o_main_center" && offsetParent.id != "b_page") {//ie give it an offset which is the same as _content
 			offsetLeft += posn.left;

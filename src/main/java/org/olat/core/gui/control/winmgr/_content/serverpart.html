@@ -14,7 +14,7 @@ function initPolling () {
 }
 
 ##observe mouse/keyboard activity to resume polling
-jQuery("#b_body").bind("mouseover click keypress", function(event){initPolling();});
+jQuery("#o_body").bind("mouseover click keypress", function(event){initPolling();});
 
 o_info.mainwinref = this.window;
 o_info.wins = {};
