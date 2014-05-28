@@ -54,7 +54,7 @@
 jQuery(function() {
 	## Add event JS event listeners for click and keydown events on all the gotonodes links to jump to top
 	jQuery('.o_course_run .o_toc a.o_gotoNode').each(function(n,m) {
-		jQuery(m).on('keydown click', function(){console.log('sdf');o_scrollToElement('#o_top');});
+		jQuery(m).on('keydown click', function(){o_scrollToElement('#o_top');});
 	});
 
 	## resize items to match height on each row, not possible via CSS 

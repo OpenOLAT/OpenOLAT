@@ -1,15 +1,18 @@
 <div id="o_main" class="$mainCssClasses row">
 #if($existsCol1 && $r.visible("col1"))
-	<div id="o_main_left" class="split-pane" style="$!col1CustomCSSStyles">
+	<div id="o_main_left" style="$!col1CustomCSSStyles">
 		<a name="o_main_left"></a>
 		<div id="o_main_left_content" class="clearfix"> 
 			$r.render("col1")	
 		</div>
+		<div id="o_main_left_toggle" class="hidden-print">
+		  <span class="sr-only">Toggle content menu</span>
+		  <i class="o_icon o_icon-bars"></i>
+		</div>
 	</div>
-	<div class="split-pane-divider" id="my-divider"></div>
 #end
 #if($existsCol2 && $r.visible("col2"))	
-	<div id="o_main_right" class="split-pane" style="$!col2CustomCSSStyles">
+	<div id="o_main_right" style="$!col2CustomCSSStyles">
 		<a name="o_main_right"></a>
 		<div id="o_main_right_content" class="clearfix"> 
 			$r.render("col2")
@@ -17,9 +20,9 @@
 	</div>
 #end
 #if($existsCol3 && $r.visible("col3"))	
-	<div id="o_main_center" class="split-pane" style="$!col3CustomCSSStyles1 $!col3CustomCSSStyles2">
+	<div id="o_main_center"> ## style="$!col3CustomCSSStyles1 $!col3CustomCSSStyles2">
 		<a id="o_content" name="content"></a> 
-		<div id="o_main_center_content" class="clearfix">			          
+		<div id="o_main_center_content" class="clearfix o_scrollblock">			          
 	       	<div id="o_main_center_content_inner">
 				<a name="o_main_center"></a>
 				$r.render("col3")		
@@ -37,57 +40,113 @@ jQuery().ready(function() {
 	jQuery("#o_main_left").resizable({
         handles: 'e',
         containment: '#o_main',
-	    grid: [1, 10000],
+	    grid: [o_info.emPxFactor, 10000],
 	    stop: function() {
-			var newEmWidth = Math.round(jQuery('#o_main_left').width() / o_info.emPxFactor);
+	    	var leftCol = jQuery('#o_main_left');
+			var newEmWidth = Math.round(leftCol.width() / o_info.emPxFactor);
+			leftCol.width(newEmWidth + 'em');
 			jQuery.post('$r.commandURI("saveCol1Width")' + newEmWidth);
 	    }
-	}).bind( "resize", resize_right);
-
-	function resize_right(event, ui) {
-		if(ui == null) return;
-	    var width = ui.size.width;
-	    var leftWidth = jQuery("#o_main_right").width();
-        var contWidth = jQuery('#o_main').width() - leftWidth;
-	    var middleWidth = jQuery("#o_main_center").width();
-	    if(middleWidth > contWidth) {
-	    	jQuery('#o_main_left').css('width', width);
-	    }
-	    jQuery('#o_main_center').css('width', (contWidth - width));
-	    jQuery('#o_main_center').css('margin-left', width);
-	};
+	});
 
 	## init offcanvas menu
-	jQuery('[data-toggle=offcanvas]').click(function () {
-		jQuery('.row-offcanvas').toggleClass('active')
+	//TODO fg: move to separate file
+	window.menuState = {
+		open : true,
+		docked : true			
+	};
+	
+	window.o_showMenu = function() {
+		if (!menuState.open) {
+			jQuery('#o_main_left_content').show();
+			jQuery('#o_main_left').transition({'x': '0'}, function() {
+				menuState.open = true;
+			});
+		} 
+	};
+	window.o_hideMenu = function() {
+		if (!menuState.docked && menuState.open) {
+			var l = jQuery('#o_main_left');
+			jQuery('#o_main_left_content').hide();
+			l.transition({'x': '-' + l.css('width')}, function() {
+				menuState.open = false;
+			});			
+		} 
+	};
+	window.o_undockMenu = function() {
+		if (menuState.docked) {
+			var left = jQuery('#o_main_left');
+			var offset = 0;
+			try {	
+				offset = left.offset().top;
+				offset -= jQuery('#o_navbar_wrapper').outerHeight(false);
+			} catch (e) {}
+
+			jQuery('#o_main_left_toggle').show();
+			left.css({position: 'absolute'})
+				.addClass('o_offcanvas')
+				.transition({'y': '-' + offset}, function() {
+					OPOL.adjustHeight();
+					// close menu when something happens on the screen
+					jQuery(document).on('click', '.o_tree_link', o_hideMenu);
+					menuState.docked = false;
+			});			
+		} 
+	};
+	window.o_dockMenu = function() {
+		o_showMenu();
+		if (!menuState.docked) {
+			jQuery('#o_main_left').transition({'y': 0}, function() {
+				jQuery('#o_main_left').css({position: 'relative'})
+					.removeClass('o_offcanvas');
+				OPOL.adjustHeight();
+				jQuery('#o_main_left_toggle').hide();
+				jQuery(document).off('click', '.o_tree_link', o_hideMenu);
+				menuState.docked = true;
+			})			
+		} 
+	};
+	window.o_responsiveMenu = function() {
+		if (jQuery(window).width() < 992) {
+			// same breakpoint as bootstrap screen-md
+			o_undockMenu();
+		} else {
+			o_dockMenu();
+		}
+		
+	};
+
+	// toggle menu on toggle events
+	jQuery('#o_main_left_toggle').on('click', function() {
+		if (menuState.open) {
+			o_hideMenu();
+		} else {
+			o_showMenu();
+		}
 	});
+	// recalculate menu when browser is resized
+	jQuery(document).on("oo.window.resize.after", o_responsiveMenu);
+	// do initialization now
+	o_responsiveMenu();
 
 #end
 
 #if($existsCol2 && $r.visible("col2"))		
-	jQuery("#o_main_center").resizable({
-        handles: 'e',
+	jQuery("#o_main_right").resizable({
+        handles: 'w',
         containment: '#o_main',
-	    grid: [1, 10000],
+	    grid: [o_info.emPxFactor, 10000],
 	    stop: function() {
-			var newEmWidth = Math.round(jQuery('#o_main_right').width() / o_info.emPxFactor);
+	    	var rightCol = jQuery('#o_main_right');
+			var newEmWidth = Math.round(rightCol.width() / o_info.emPxFactor);
+			rightCol.width(newEmWidth + 'em');
 			jQuery.post('$r.commandURI("saveCol2Width")' + newEmWidth);
 	    }
-	}).bind( "resize", resize_left);
-
-	function resize_left(event, ui) {
-			if(ui == null) return;
-	    var width = ui.size.width;
-	    var rightWidth = jQuery("#o_main_left").width();
-        var contWidth = jQuery('#o_main').width() - rightWidth;
-	    if(width > contWidth) {
-	    	width = contWidth;
-	    	jQuery('#o_main_center').css('width', width);
-	    }
-	    jQuery('#o_main_right').css('width', (contWidth - width));
-	};
+	});
 #end
 });
+
+
 /* ]]> */
 </script>
 #end

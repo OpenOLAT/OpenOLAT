@@ -76,8 +76,8 @@
 		$(window).on("orientationchange", $.proxy(this.hideRight,this));
 				
 		// Add application event listeners to trigger offcanvas menu
-		$('.o_navbar-toggle').on('click', $.proxy(this.toggleRight,this));
-		$('.o_offcanvas_close').on('click', $.proxy(this.hideRight,this));
+		$('#o_navbar_right-toggle').on('click', $.proxy(this.toggleRight,this));
+		$('#o_offcanvas_right .o_offcanvas_close').on('click', $.proxy(this.hideRight,this));
 //		$('#o_offcanvas_right').on('click', $.proxy(this.hideRight,this));
 	}
 	
@@ -108,7 +108,7 @@
 	    // Get the dimensions of the viewport
 	    this.state.navbarW = el.innerWidth();
 	    // toggle and branding
-	    this.state.toggleW = $('.o_navbar-toggle').outerWidth(true);
+	    this.state.toggleW = $('#o_navbar_right-toggle').outerWidth(true);
 	    this.state.brandW = $('.o_navbar-brand').outerWidth(true);
 	    // the permanent tools. only the personal tools are put to offsite
 	    this.state.permanentToolW = $('#o_navbar_tools_permanent').outerWidth(true);
@@ -155,21 +155,21 @@
 		while (o > 0 && (!this.state.personalToolsOffCanvas || !this.state.tabsOffCanvas || !this.state.sitesOffCanvas)) {
 			if (!this.state.personalToolsOffCanvas) {	
 //				console.log('collapse tools ' + o);
-				$('#o_navbar_tools_personal').prependTo('#o_offcanvas_container'); 
+				$('#o_navbar_tools_personal').prependTo('#o_offcanvas_right_container'); 
 				this.state.personalToolsOffCanvas = true;
 				o = this.getOverflow();	
 				continue;
 			}			
 			if (!this.state.tabsOffCanvas) {
 //				console.log('collapse tabs ' + o);
-				$('.o_navbar_tabs').prependTo('#o_offcanvas_container'); 
+				$('.o_navbar_tabs').prependTo('#o_offcanvas_right_container'); 
 				this.state.tabsOffCanvas = true;
 				o = this.getOverflow();				
 				continue;
 			}
 			if (!this.state.sitesOffCanvas) {
 //				console.log('collapse sites ' + o);
-				$('.o_navbar_sites').prependTo('#o_offcanvas_container'); 
+				$('.o_navbar_sites').prependTo('#o_offcanvas_right_container'); 
 				this.state.sitesOffCanvas = true;
 				o = this.getOverflow();				
 				continue;
@@ -226,17 +226,16 @@
 	
 	Navbar.prototype.showToggle = function() {
 		if (!this.state.toggleVisible) {
-			$('.o_navbar-toggle').show();	    	
+			$('#o_navbar_right-toggle').show();	    	
 			this.state.toggleVisible = true;			
 		}
 	}
 	Navbar.prototype.hideToggle = function() {
 		if (this.state.toggleVisible) {
-			$('.o_navbar-toggle').hide();	    	
+			$('#o_navbar_right-toggle').hide();	    	
 			this.state.toggleVisible = false;			
 		}
 	}
-	
 	Navbar.prototype.showRight = function() {
 		if (!this.state.rightVisible) {					
 			var that = this;

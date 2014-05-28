@@ -5,6 +5,7 @@
 	border: 1px solid $o-tree-border-color;
     @include border-top-radius($o-tree-border-radius);
     @include border-bottom-radius($o-tree-border-radius);
+    overflow: hidden;
 
 	a {
 		color : $o-tree-link-color;
@@ -24,6 +25,7 @@
 		li {
 			margin: 0;
 			padding: 0;
+			white-space: nowrap;
 		}
 		
 		li div {
@@ -109,4 +111,10 @@
 	.o_dnd_l9 { margin-left:8em !important; }
 	.o_dnd_l10 { margin-left:9em !important; }
 	.o_dnd_l11 { margin-left:10em !important; }
+}
+
+.o_offcanvas {
+	.o_tree {
+		border: 0;
+	}
 }

@@ -315,7 +315,6 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 				localLayoutConfig.setCol1WidthEM(parsedWidth);
 				saveGuiPrefs(ureq, localLayoutConfig);
 				layoutMainVC.contextPut("col1CustomCSSStyles", "width: " + localLayoutConfig.getCol1WidthEM() + "em;");
-				layoutMainVC.contextPut("col3CustomCSSStyles1", "margin-left: " + localLayoutConfig.getCol1WidthEM() + "em;");
 				// don't refresh view in ajax mode!
 				layoutMainVC.setDirty(false);
 				
@@ -323,7 +322,6 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 				localLayoutConfig.setCol2WidthEM(parsedWidth);
 				saveGuiPrefs(ureq, localLayoutConfig);
 				layoutMainVC.contextPut("col2CustomCSSStyles", "width: " + localLayoutConfig.getCol2WidthEM() + "em;");
-				layoutMainVC.contextPut("col3CustomCSSStyles2", "margin-right: " + localLayoutConfig.getCol2WidthEM() + "em;");
 				// don't refresh view in ajax mode!
 				layoutMainVC.setDirty(false);
 			}

@@ -53,7 +53,7 @@ $o-toolbar-margin-bottom-sm		: 4px !default;
 $o-toolbar-margin-top-xs		: 6px !default;
 $o-toolbar-margin-bottom-xs		: 4px !default;
 
-$o-tree-bg						: $list-group-bg !default;
+$o-tree-bg						: none !default;
 $o-tree-border-color			: $list-group-border !default;
 $o-tree-border-radius			: $list-group-border-radius !default;
 $o-tree-link-color 				: $navbar-default-link-color !default;
@@ -71,8 +71,12 @@ $o-tree-link-active-parent-font-weight		: $o-tree-link-active-font-weight !defau
 
 
 /* Background color of the main content area. */
-$o-main-outer-bg : #fff !default;
-$o-main-inner-bg : #fff !default;
+$o-main-outer-bg 	: #fff !default;
+$o-main-inner-bg 	: #fff !default;
+$o-main-left-bg		: #fff !default;
+$o-main-center-bg	: inherit !default;
+$o-main-right-bg	: inherit !default;
+
 
 $o-footer-height : 60px !default;
 $o-footer-outer-bg : #f5f5f5 !default;

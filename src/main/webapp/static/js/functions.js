@@ -869,42 +869,44 @@ OPOL.getMainColumnsMaxHeight =  function(){
 };
 
 OPOL.adjustHeight = function() {
-	// Adjust the height of col1 2 and 3 based on the max column height. Takes 
-	// into account the padding/border/margin. 
+	// Adjust the height of col1 2 and 3 based on the max column height. 
 	// This is necessary to implement layouts where the three columns have different
 	// backgounds and to enlarge the menu and content area to always show the whole 
-	// content
+	// content. It is also required by the left menu offcanvas feature.
 	try {
-		var col1HeightDiff = 0,
-		col2HeightDiff = 0,
-		col1DomElement = jQuery('#o_main_left_content'),
-		col2DomElement = jQuery('#o_main_right_content');
+		var contentHeight = 0;
+		col1 = jQuery('#o_main_left_content').outerHeight(true);
+		col2 = jQuery('#o_main_right_content').outerHeight(true);
+		col3 = jQuery('#o_main_center_content').outerHeight(true);
 
-		// First calculate the outher fluff (padding, border, margin) and reset height
-		if (col1DomElement != 'undefined' && col1DomElement != null){
-			col1HeightDiff = col1DomElement.outerHeight(true) - col1DomElement.height();
-			col1DomElement.height('auto');			
-		}
-		if (col2DomElement != 'undefined' && col2DomElement != null){
-			col2HeightDiff = col2DomElement.outerHeight(true) - col2DomElement.height();
-			col2DomElement.height('auto');
-		}
-		
+		contentHeight = Math.max(col1, col2, col3);
 		// Assign new col height
-		var contentHeight = OPOL.getMainColumnsMaxHeight();
-		if (col1DomElement != 'undefined' && col1DomElement != null){
-			col1DomElement.height(contentHeight-col1HeightDiff);
+		if (col1 != null){
+			jQuery('#o_main_left').css({'min-height' : contentHeight});
 		}
-		if (col2DomElement != 'undefined' && col2DomElement != null){
-			col2DomElement.height(contentHeight-col2HeightDiff);
+		if (col2 != null){
+			jQuery('#o_main_right').css({'min-height' : contentHeight});
+		}
+		if (col3 != null){
+			jQuery('#o_main_center').css({'min-height' : contentHeight});
 		}
 	} catch (e) {
 		if(console)	console.log(e);			
 	}
 };
+/* Register to resize event and fire an event when the resize is finished */
+jQuery(window).resize(function() {
+	clearTimeout(o_info.resizeId);
+	o_info.resizeId = setTimeout(function() {
+		jQuery(document).trigger("oo.window.resize.after");
+	}, 500);
+});
+
 // execute after each DOM replacement cycle and on initial document load
+jQuery(document).on("oo.window.resize.after", OPOL.adjustHeight);
 jQuery(document).on("oo.dom.replacement.after", OPOL.adjustHeight);
 jQuery().ready(OPOL.adjustHeight);
+
 
 function o_scrollToElement(elem) {
 	jQuery('html, body').animate({

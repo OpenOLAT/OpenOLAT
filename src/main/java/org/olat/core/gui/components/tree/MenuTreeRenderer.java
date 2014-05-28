@@ -197,7 +197,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		// mark active item as strong for accessablity reasons
 		
 		target.append("<strong>", selected);
-		target.append("<a class='o_tree_l").append(level);
+		target.append("<a class='o_tree_link o_tree_l").append(level);
 		
 		// add icon css class
 		if (selected) {
