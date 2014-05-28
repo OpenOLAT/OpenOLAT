@@ -115,7 +115,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			// only set a target on an enabled link, target in span makes no sense
 			if (link.getTarget() != null){
 				cssSb.append(" target=\""+ link.getTarget() +"\"");
-			}	else if (iframePostEnabled && link.isEnabled() && !flexiformlink) {
+			} else if (iframePostEnabled && link.isEnabled() && !flexiformlink) {
 				//flexi form link is excluded because the form post goes to the
 				//iframe
 				StringOutput so = new StringOutput();
@@ -174,9 +174,9 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				LinkPopupSettings popup = link.getPopup();
 				ubu.buildURI(href, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command },
 						link.getModURI(), AJAXFlags.MODE_NORMAL);
-				sb.append("href=\"javascript:void(o_openPopUp('").append(href).append("','")
+				sb.append("href=\"#\" onclick=\"o_openPopUp('").append(href).append("','")
 				  .append(popup.getTarget()).append("',").append(popup.getWidth())
-				  .append(",").append(popup.getHeight()).append("))").append("\" ");
+				  .append(",").append(popup.getHeight()).append("); return false;\" ");
 			} else {
 				sb.append("href=\"");
 				ubu.buildURI(sb, new String[] { VelocityContainer.COMMAND_ID }, new String[] { command },
@@ -209,7 +209,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				}
 			}
 
-			if (/* !link.isEnabledForLongTransaction && */!flexiformlink) {
+			if (/* !link.isEnabledForLongTransaction && */!flexiformlink && (!link.isPopup()  || link.getTarget() != null)) {
 				// clash with onclick ... FIXME:pb/as find better solution to solve this
 				// problem.
 				String clickCmd = (link.isSuppressDirtyFormWarning() ? "o2c=0;return o2cl();" : "return o2cl();");

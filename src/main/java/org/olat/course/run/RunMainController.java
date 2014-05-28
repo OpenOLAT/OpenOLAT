@@ -999,6 +999,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					UserEfficiencyStatement es = efficiencyStatementManager
 							.getUserEfficiencyStatementLight(courseRepositoryEntry.getKey(), identity);
 					efficiencyStatementsLink.setEnabled(es != null);
+					efficiencyStatementsLink.setPopup(true);//"750", "800"
 				}
 				// raise a flag to indicate refresh
 				needsRebuildAfterRunDone = true;

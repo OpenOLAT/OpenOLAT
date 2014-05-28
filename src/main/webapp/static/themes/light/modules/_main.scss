@@ -73,7 +73,12 @@
 			
 			#o_main_center_content {
 				padding: 0 floor($grid-gutter-width / 2);
-				/* no hight - used to calcualte inner content height in OPOL.adjustHeight() function */
+				/* no hight - used to calculate inner content height in OPOL.adjustHeight() function */
+				
+				#o_main_center_content_inner {
+					/* space to top link */
+					padding-bottom: floor($grid-gutter-width / 2);
+				}
 			}
 		}		
 	}
@@ -82,6 +87,7 @@
 		position: absolute;
 		bottom: 0; right: 10px;
 		text-align: center;
+		z-index: 5;
 		@extend .o_undecorated;
 	}
 

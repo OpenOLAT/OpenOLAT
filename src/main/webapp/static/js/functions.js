@@ -692,7 +692,7 @@ function showAjaxBusy() {
 				if(console) console.log(e);
 			}
 		}
-	}, 500);
+	}, 700);
 }
 
 function removeAjaxBusy() {
