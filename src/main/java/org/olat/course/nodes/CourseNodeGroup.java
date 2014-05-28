@@ -30,10 +30,10 @@ package org.olat.course.nodes;
  */
 public enum CourseNodeGroup {
 	
-	test,
-	virtualClassroom,
 	content,
+	assessment,
+	collaboration,
+	management,
 	other
-	
 
 }

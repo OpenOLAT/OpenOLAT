@@ -52,7 +52,7 @@ public class InfoCourseNodeConfiguration extends AbstractCourseNodeConfiguration
 	
 	@Override
 	public String getGroup() {
-		return CourseNodeGroup.other.name();
+		return CourseNodeGroup.management.name();
 	}
 
 	@Override

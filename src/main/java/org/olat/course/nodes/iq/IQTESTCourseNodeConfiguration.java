@@ -72,6 +72,6 @@ public class IQTESTCourseNodeConfiguration extends AbstractCourseNodeConfigurati
 	
 	@Override
 	public String getGroup() {
-		return CourseNodeGroup.test.name();
+		return CourseNodeGroup.assessment.name();
 	}
 }

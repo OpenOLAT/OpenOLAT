@@ -69,7 +69,6 @@ import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
@@ -138,7 +137,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	
 	private static final String NLS_PUBLISHED_NEVER_YET = "published.never.yet";
 	private static final String NLS_PUBLISHED_LATEST = "published.latest";
-	private static final String NLS_HEADER_TOOLS = "header.tools";
 	private static final String NLS_COMMAND_COURSEPREVIEW = "command.coursepreview";
 	private static final String NLS_COMMAND_PUBLISH = "command.publish";
 	private static final String NLS_COMMAND_CLOSEEDITOR = "command.closeeditor";
@@ -856,18 +854,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		getWindowControl().getWindowBackOffice().sendCommandTo(resizeCommand);
 	}
 	
-	private void doCreate(UserRequest ureq, ICourse course, String cnAlias) {
-		if (cnAlias == null) throw new AssertException("Received event from ButtonController which is not registered with the toolbox.");
-		removeAsListenerAndDispose(insertNodeController);
-		removeAsListenerAndDispose(cmc);
-		
-		insertNodeController = new InsertNodeController(ureq, getWindowControl(), course, cnAlias);				
-		listenTo(insertNodeController);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), insertNodeController.getInitialComponent(), true, translate(NLS_INSERTNODE_TITLE));
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
 	private void doOpenNodeTypeChooser(UserRequest ureq) {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(chooseNodeTypeCtr);
@@ -880,7 +866,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		listenTo(chooseNodeTypeCtr);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), chooseNodeTypeCtr.getInitialComponent(),
-				true, translate(NLS_INSERTNODE_TITLE));
+				true, translate("header.insertnodes"));
 		listenTo(cmc);
 		cmc.activate();
 	}

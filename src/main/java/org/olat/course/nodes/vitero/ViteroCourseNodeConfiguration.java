@@ -49,7 +49,7 @@ public class ViteroCourseNodeConfiguration extends AbstractCourseNodeConfigurati
 
 	@Override
 	public String getGroup() {
-		return CourseNodeGroup.virtualClassroom.name();
+		return CourseNodeGroup.collaboration.name();
 	}
 
 	@Override

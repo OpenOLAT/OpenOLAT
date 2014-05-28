@@ -71,6 +71,6 @@ public class ScormCourseNodeConfiguration extends AbstractCourseNodeConfiguratio
 	
 	@Override
 	public String getGroup() {
-		return CourseNodeGroup.test.name();
+		return CourseNodeGroup.content.name();
 	}
 }

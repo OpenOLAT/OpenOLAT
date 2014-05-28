@@ -78,6 +78,6 @@ public class WikiCourseNodeConfiguration extends AbstractCourseNodeConfiguration
 	
 	@Override
 	public String getGroup() {
-		return CourseNodeGroup.content.name();
+		return CourseNodeGroup.collaboration.name();
 	}
 }

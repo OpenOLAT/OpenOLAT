@@ -67,7 +67,7 @@ public class PortfolioCourseNodeConfiguration extends AbstractCourseNodeConfigur
 	
 	@Override
 	public String getGroup() {
-		return CourseNodeGroup.other.name();
+		return CourseNodeGroup.assessment.name();
 	}
 
 	@Override

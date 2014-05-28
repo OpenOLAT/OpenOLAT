@@ -38,6 +38,7 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 
@@ -87,7 +88,7 @@ public class ChooseNodeController extends BasicController {
 				if("sp".equals(courseNodeAlias)) {
 					typesGroup.getNodeTypes().add(multiSpsLink.getComponentName());
 					mainVC.put(multiSpsLink.getComponentName(), multiSpsLink);
-				} else if("cl".equals(courseNodeAlias)) {
+				} else if("checklist".equals(courseNodeAlias)) {
 					typesGroup.getNodeTypes().add(multiCheckListLink.getComponentName());
 					mainVC.put(multiCheckListLink.getComponentName(), multiCheckListLink);
 				}
@@ -96,6 +97,7 @@ public class ChooseNodeController extends BasicController {
 			}
 		}
 		
+		mainVC.contextPut("groupNames", CourseNodeGroup.values());
 		mainVC.contextPut("linkNames", linkNames);
 		putInitialPanel(mainVC);
 	}

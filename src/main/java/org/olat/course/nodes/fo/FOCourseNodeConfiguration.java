@@ -73,6 +73,6 @@ public class FOCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 	
 	@Override
 	public String getGroup() {
-		return CourseNodeGroup.other.name();
+		return CourseNodeGroup.collaboration.name();
 	}
 }

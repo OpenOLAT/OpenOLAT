@@ -50,7 +50,7 @@ public class VCCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 	
 	@Override
 	public String getGroup() {
-		return CourseNodeGroup.virtualClassroom.name();
+		return CourseNodeGroup.collaboration.name();
 	}
 
 	@Override

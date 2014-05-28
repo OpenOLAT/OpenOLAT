@@ -68,6 +68,6 @@ public class TACourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 
 	@Override
 	public String getGroup() {
-		return CourseNodeGroup.test.name();
+		return CourseNodeGroup.assessment.name();
 	}
 }

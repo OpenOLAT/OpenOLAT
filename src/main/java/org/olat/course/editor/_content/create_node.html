@@ -1,12 +1,15 @@
-<div id="o_course_editor_choose_nodetype" class="row">
-#foreach($group in $linkNames)
-	<div class="col-sm-3">
-		<h5>$r.translate($group.name)</h5>
-		<ul>
-		#foreach($nodeType in $group.nodeTypes)
-			<li>$r.render($nodeType)</li>
-		#end
-		</ul>	
-	</div>
-#end
+<div id="o_course_editor_choose_nodetype">
+	<div class="o_info">$r.translate("header.insertnodes.desc")</div>
+	#foreach($name in $groupNames)
+		#set($group = $linkNames.get("$name"))
+		<div class="o_block">
+			<h4>$r.translate($group.name)</h4>
+	
+			<div class="row">
+			#foreach($nodeType in $group.nodeTypes)
+				<div class="col-sm-6">$r.render($nodeType)</div>
+			#end
+			</div>
+		</div>
+	#end
 </div>

@@ -74,6 +74,6 @@ public class DialogCourseNodeConfiguration extends AbstractCourseNodeConfigurati
 	
 	@Override
 	public String getGroup() {
-		return CourseNodeGroup.other.name();
+		return CourseNodeGroup.collaboration.name();
 	}
 }

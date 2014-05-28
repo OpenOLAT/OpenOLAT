@@ -51,7 +51,7 @@ public class MembersCourseNodeConfiguration extends AbstractCourseNodeConfigurat
 	
 	@Override
 	public String getGroup() {
-		return CourseNodeGroup.other.name();
+		return CourseNodeGroup.collaboration.name();
 	}
 
 	@Override
