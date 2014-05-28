@@ -1,6 +1,6 @@
-<div id="o_main" class="$mainCssClasses row row-offcanvas row-offcanvas-left">
+<div id="o_main" class="$mainCssClasses row">
 #if($existsCol1 && $r.visible("col1"))
-	<div id="o_main_left" class="split-pane sidebar-offcanvas" >##style="$!col1CustomCSSStyles" role="navigation">
+	<div id="o_main_left" class="split-pane" style="$!col1CustomCSSStyles">
 		<a name="o_main_left"></a>
 		<div id="o_main_left_content" class="clearfix"> 
 			$r.render("col1")	
@@ -18,18 +18,13 @@
 #end
 #if($existsCol3 && $r.visible("col3"))	
 	<div id="o_main_center" class="split-pane" style="$!col3CustomCSSStyles1 $!col3CustomCSSStyles2">
-		<a id="b_content" name="content"></a> 
-		<div id="o_offcanvas_toggle" class="pull-left visible-xs">
-           	<button type="button" class="btn btn-primary btn-xs" data-toggle="offcanvas">Toggle nav</button>
-        </div>
+		<a id="o_content" name="content"></a> 
 		<div id="o_main_center_content" class="clearfix">			          
-	       	<div id="o_main_center_content_inner" class="b_floatscrollbox">
+	       	<div id="o_main_center_content_inner">
 				<a name="o_main_center"></a>
 				$r.render("col3")		
 			</div>
 		</div>
-		## IE column clearing
-		<div id="b_ie_clearing">&nbsp;</div>
 	</div>
 #end
 </div>

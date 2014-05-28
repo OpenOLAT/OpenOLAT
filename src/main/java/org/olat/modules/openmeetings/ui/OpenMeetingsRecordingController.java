@@ -56,7 +56,7 @@ public class OpenMeetingsRecordingController extends BasicController {
 		mainVC = createVelocityContainer("recording");
 		downloadLink = LinkFactory.createLink("download", mainVC, this);
 		downloadLink.setTarget("_blank");
-		downloadLink.setCustomEnabledLinkCSS("b_content_download");
+		downloadLink.setCustomEnabledLinkCSS("o_content_download");
 
 		try {
 			String url = openMeetingsManager.getRecordingURL(recording);

@@ -1,13 +1,22 @@
 .o_tree {
 	position: relative;
 	display: block;
-	background-color: $list-group-bg;
-	border: 1px solid $list-group-border;
-    @include border-top-radius($list-group-border-radius);
-    @include border-bottom-radius($list-group-border-radius);
+	background-color: $o-tree-bg;
+	border: 1px solid $o-tree-border-color;
+    @include border-top-radius($o-tree-border-radius);
+    @include border-bottom-radius($o-tree-border-radius);
+
+	a {
+		color : $o-tree-link-color;
+		background-color : $o-tree-link-bg;
+		&:hover,
+		&:focus {
+			color: $o-tree-link-hover-color;
+			background-color : $o-tree-link-hover-bg;
+		}
+	}
 
 	ul {
-		background-color: white;
 		margin: 0;
 		padding: 0;
 		list-style-type: none;
@@ -18,9 +27,9 @@
 		}
 		
 		li div {
-			position: relative;
-			margin-bottom: -1px;
-			border-bottom: 1px solid $list-group-border;
+				position: relative;
+				margin-bottom: -1px;
+				border-bottom: 1px solid $o-tree-border-color;
 		}
 		
 		@for $i from 0 through 11 {
@@ -60,12 +69,23 @@
 		}
 		
 		li a.active {
-			font-weight: bold;
+			color : $o-tree-link-active-color;
+			background-color : $o-tree-link-active-bg;
+			&:hover,
+			&:focus {
+				color: $o-tree-link-active-hover-color;
+				background-color : $o-tree-link-active-hover-bg;
+			}
+			font-weight: $o-tree-link-active-font-weight;
 		}
 		
 		li a.active_parent {
-			color: black;
-			font-weight: bold;
+			color : $o-tree-link-active-parent-color;
+			&:hover,
+			&:focus {
+				color: $o-tree-link-active-parent-hover-color;
+			}
+			font-weight: $o-tree-link-active-parent-font-weight;
 		}
 	}
 	

@@ -111,7 +111,7 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 		} else {
 			printLink = null;
 			downloadRawLink = LinkFactory.createLink("download.raw.data", mainVC, this);
-			downloadRawLink.setCustomEnabledLinkCSS("b_content_download");
+			downloadRawLink.setCustomEnabledLinkCSS("o_content_download");
 			mainVC.put("download", downloadRawLink);
 		}
 		downloadRawLink.setIconLeftCSS("o_icon o_icon_download o_icon-lg");

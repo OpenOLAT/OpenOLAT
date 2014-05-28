@@ -46,12 +46,28 @@ $o-toolbar-size-icon-xs 		: ceil($font-size-base * 1.4) !default;
 $o-toolbar-height-md			: 30px !default;
 $o-toolbar-height-sm			: 23px !default;
 $o-toolbar-height-xs			: 20px !default;
-$o-toolbar-margin-top-md			: 8px !default;
-$o-toolbar-margin-bottom-md			: 5px !default;
-$o-toolbar-margin-top-sm			: 6px !default;
-$o-toolbar-margin-bottom-sm			: 4px !default;
-$o-toolbar-margin-top-xs			: 6px !default;
-$o-toolbar-margin-bottom-xs			: 4px !default;
+$o-toolbar-margin-top-md		: 8px !default;
+$o-toolbar-margin-bottom-md		: 5px !default;
+$o-toolbar-margin-top-sm		: 6px !default;
+$o-toolbar-margin-bottom-sm		: 4px !default;
+$o-toolbar-margin-top-xs		: 6px !default;
+$o-toolbar-margin-bottom-xs		: 4px !default;
+
+$o-tree-bg						: $list-group-bg !default;
+$o-tree-border-color			: $list-group-border !default;
+$o-tree-border-radius			: $list-group-border-radius !default;
+$o-tree-link-color 				: $navbar-default-link-color !default;
+$o-tree-link-bg					: none !default;
+$o-tree-link-hover-color 		: $navbar-default-link-hover-color !default;
+$o-tree-link-hover-bg			: $navbar-default-bg !default;
+$o-tree-link-active-color 		: $link-color !default;
+$o-tree-link-active-bg			: none !default;
+$o-tree-link-active-hover-color : $link-hover-color !default;
+$o-tree-link-active-hover-bg	: $gray-lighter !default;
+$o-tree-link-active-font-weight	: bold !default;
+$o-tree-link-active-parent-color 			: $o-tree-link-color !default;
+$o-tree-link-active-parent-hover-color 		: $o-tree-link-hover-color !default;
+$o-tree-link-active-parent-font-weight		: $o-tree-link-active-font-weight !default;
 
 
 /* Background color of the main content area. */
