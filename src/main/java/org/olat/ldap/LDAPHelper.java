@@ -220,9 +220,9 @@ public class LDAPHelper {
 			try {
 				keyStore = KeyStore.getInstance(LDAPLoginModule.getTrustStoreType());
 				keyStore.load(new FileInputStream(LDAPLoginModule.getTrustStoreLocation()), (LDAPLoginModule.getTrustStorePwd() != null) ? LDAPLoginModule.getTrustStorePwd().toCharArray() : null);
-				Enumeration aliases = keyStore.aliases();
+				Enumeration<String> aliases = keyStore.aliases();
 				while (aliases.hasMoreElements()) {
-					String alias = (String) aliases.nextElement();
+					String alias = aliases.nextElement();
 					Certificate cert = keyStore.getCertificate(alias);
 					if (cert instanceof X509Certificate) {
 						return isCertificateValid((X509Certificate)cert, daysFromNow);

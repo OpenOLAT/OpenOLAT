@@ -301,11 +301,8 @@ public class IQComponentRenderer implements ComponentRenderer {
 		long sSec = millis / 1000;
 		long sMin = sSec / 60;
 		sSec = sSec - (sMin * 60);
-		StringOutput sb = new StringOutput();
-		sb.append(sMin);
-		sb.append("'&nbsp;");
-		sb.append(sSec);
-		sb.append("\"");
+		StringBuilder sb = new StringBuilder();
+		sb.append(sMin).append("'&nbsp;").append(sSec).append("\"");
 		return sb.toString();
 	}
 	
@@ -530,7 +527,7 @@ public class IQComponentRenderer implements ComponentRenderer {
 			if (itc.isOpen()) {
 			  displayItem(sb, renderer, ubu, itc, ai);
 			} else {
-				displayItemClosed(sb,renderer,itc);
+				displayItemClosed(sb,renderer);
 			}
 		}
 	}
@@ -541,7 +538,7 @@ public class IQComponentRenderer implements ComponentRenderer {
 	 * @param renderer
 	 * @param itc
 	 */
-	private void displayItemClosed(StringOutput sb, Renderer renderer,ItemContext itc) {
+	private void displayItemClosed(StringOutput sb, Renderer renderer) {
 		StringBuilder buffer = new StringBuilder(100);		
 		buffer.append("<div class=\"b_warning\"><strong>").append(renderer.getTranslator().translate("couldNotDisplayItem")).append("</strong></div>");
 		sb.append(buffer);

@@ -128,7 +128,7 @@ public class ScormCPFileResource extends FileResource {
 			throw new AddingResourceException("scorm.no.scorm.namespace");
 		}
 		
-		Map nsuris = new HashMap(5);
+		Map<String, Object> nsuris = new HashMap<>(5);
 		nsuris.put("ns", nsuri);
 		nsuris.put("adluri", adluri);
 		//we might have a scorm 2004 which we do not yet support
@@ -161,7 +161,7 @@ public class ScormCPFileResource extends FileResource {
 				if (sequences.size() > 0) throw new AddingResourceException("scorm.found.seqencing"); // seqencing elements found -> scorm 2004
 		}
 		
-		Set set = new HashSet();
+		Set<String> set = new HashSet<String>();
 		for (Iterator iter = items.iterator(); iter.hasNext();) {
 			Element item = (Element) iter.next();
 			String identifier = item.attributeValue("identifier");

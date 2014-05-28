@@ -266,9 +266,9 @@ public class IQManager implements UserDataDeletable {
 	 */
 	public ItemsInput getItemsInput(UserRequest ureq) {
 		ItemsInput result = new ItemsInput();
-		Enumeration params = ureq.getHttpReq().getParameterNames();
+		Enumeration<String> params = ureq.getHttpReq().getParameterNames();
 		while (params.hasMoreElements()) {
-			String paramKey = (String) params.nextElement();
+			String paramKey = params.nextElement();
 			StringTokenizer st = new StringTokenizer(paramKey, "§", false);
 			String value = ureq.getParameter(paramKey);
 			if (st.countTokens() == 4) {

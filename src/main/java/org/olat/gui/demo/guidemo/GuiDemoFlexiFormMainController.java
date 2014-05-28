@@ -131,7 +131,7 @@ public class GuiDemoFlexiFormMainController extends BasicController {
 		
 		sourceP = new Panel("sourceP");
 		VelocityContainer sourceVC = createVelocityContainer(firstDemo);
-		ShrinkController sc = new ShrinkController(ureq, getWindowControl(), false, sourceVC, "toggle source");
+		ShrinkController sc = new ShrinkController(false, sourceVC, "toggle source");
 		sourceP.setContent(sc.getInitialComponent());
 
 		content_sourceVC.put("content", mainVC);
@@ -167,7 +167,7 @@ public class GuiDemoFlexiFormMainController extends BasicController {
 				ControllerCreator cc = demos.get(uob);
 				//update source
 				VelocityContainer sourceVC = createVelocityContainer(uob);
-				ShrinkController sc = new ShrinkController(ureq, getWindowControl(), false, sourceVC, "toggle source");
+				ShrinkController sc = new ShrinkController(false, sourceVC, "toggle source");
 				sourceP.setContent(sc.getInitialComponent());
 				
 				//cleanup former democontroller

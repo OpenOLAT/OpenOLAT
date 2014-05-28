@@ -348,7 +348,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 			cleanUpPopups();
 		} else if (source == leaveDialogBox) {
 			if (event != Event.CANCELLED_EVENT && DialogBoxUIFactory.isYesEvent(event)) {
-				doLeave(ureq, (BusinessGroup)leaveDialogBox.getUserObject());
+				doLeave((BusinessGroup)leaveDialogBox.getUserObject());
 				reloadModel();
 			}
 		} else if (source == groupCreateController) {
@@ -453,7 +453,7 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 	 * 
 	 * @param ureq
 	 */
-	private void doLeave(UserRequest ureq, BusinessGroup group) {
+	private void doLeave(BusinessGroup group) {
 		List<Identity> identityToRemove = Collections.singletonList(getIdentity());
 		// 1) remove as owner
 		if (businessGroupService.hasRoles(getIdentity(), group, GroupRoles.coach.name())) {

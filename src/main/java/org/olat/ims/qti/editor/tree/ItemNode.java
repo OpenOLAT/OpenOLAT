@@ -125,7 +125,7 @@ public class ItemNode extends GenericQtiNode {
 		if (myTabbedPane == null) {
 			try {
 				myTabbedPane = new TabbedPane("tabbedPane", ureq.getLocale());
-				TabbableController tabbCntrllr = new ItemNodeTabbedFormController(item, qtiPackage, ureq, wControl, trnsltr, editorMainController
+				TabbableController tabbCntrllr = new ItemNodeTabbedFormController(item, qtiPackage, ureq, wControl, editorMainController
 						.isRestrictedEdit());
 				tabbCntrllr.addTabs(myTabbedPane);
 				tabbCntrllr.addControllerListener(editorMainController);

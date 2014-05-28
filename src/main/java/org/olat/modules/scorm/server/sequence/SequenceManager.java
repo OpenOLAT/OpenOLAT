@@ -55,7 +55,7 @@ public class SequenceManager extends BasicManager {
 	/**
 	 * our hashtable of reloaditemsequences
 	 */
-	private Hashtable _itemSequences = new Hashtable();
+	private Hashtable<String,ItemSequence> _itemSequences = new Hashtable<>();
 
 	/**
 	 * A string to hold our currently loaded sco.
@@ -91,7 +91,7 @@ public class SequenceManager extends BasicManager {
 	public String findFirstItemToLaunch() {
 		for (int i = 0; i <= _itemCount; i++) {
 			String id = findItemFromIndex(i);
-			ItemSequence anItem = (ItemSequence) _itemSequences.get(id);
+			ItemSequence anItem = _itemSequences.get(id);
 			String preReqs = "";
 			if (anItem.hasPrerequisites()) {
 				preReqs = anItem.getPrerequisites();
@@ -114,10 +114,10 @@ public class SequenceManager extends BasicManager {
 	 * @return package status
 	 */
 	public String[][] getPackageStatus() {
-		Vector v = new Vector();
+		Vector<String[]> v = new Vector<>();
 		for (int i = 0; i <= _itemCount; i++) {
 			String id = findItemFromIndex(i);
-			ItemSequence anItem = (ItemSequence) _itemSequences.get(id);
+			ItemSequence anItem = _itemSequences.get(id);
 			if (!anItem.getLaunchUrl().equals("javascript:void(0)")) {
 				//
 				String[] itemStatus = { String.valueOf(anItem.getSequence()), _prereqManager.getStatus(id) };
@@ -216,7 +216,7 @@ public class SequenceManager extends BasicManager {
 	 * @return an ItemSequence
 	 */
 	public ItemSequence getItem(String itemId) {
-		ItemSequence anItem = (ItemSequence) _itemSequences.get(itemId);
+		ItemSequence anItem = _itemSequences.get(itemId);
 		return anItem;
 	}
 
@@ -262,7 +262,7 @@ public class SequenceManager extends BasicManager {
 	 * @return an url string
 	 */
 	public String getLaunchFromId(String scoIdentifier) {
-		ItemSequence anItem = (ItemSequence) _itemSequences.get(scoIdentifier);
+		ItemSequence anItem = _itemSequences.get(scoIdentifier);
 		String theURL = anItem.getLaunchUrl();
 		if (theURL == null) theURL = "";
 		return theURL;
@@ -276,7 +276,7 @@ public class SequenceManager extends BasicManager {
 	 */
 	public int getSequenceFromId(String scoIdentifier) {
 		if (scoIdentifier.equals(COURSE_COMPLETED)) { return COURSE_COMPLETED_VALUE; }
-		ItemSequence anItem = (ItemSequence) _itemSequences.get(scoIdentifier);
+		ItemSequence anItem = _itemSequences.get(scoIdentifier);
 		return anItem.getSequence();
 	}
 
@@ -288,10 +288,10 @@ public class SequenceManager extends BasicManager {
 	 * @return a sco ID
 	 */
 	public String findItemFromIndex(int index) {
-		Enumeration keys = _itemSequences.keys();
+		Enumeration<String> keys = _itemSequences.keys();
 		while (keys.hasMoreElements()) {
-			String scoID = (String) keys.nextElement();
-			ItemSequence anItem = (ItemSequence) _itemSequences.get(scoID);
+			String scoID = keys.nextElement();
+			ItemSequence anItem = _itemSequences.get(scoID);
 			if (anItem.getSequence() == index) { return anItem.getItemId(); }
 		}
 		return null;
@@ -304,7 +304,7 @@ public class SequenceManager extends BasicManager {
 	 * @return true or false
 	 */
 	public boolean isFirstItem(String scoIdentifier) {
-		ItemSequence anItem = (ItemSequence) _itemSequences.get(scoIdentifier);
+		ItemSequence anItem = _itemSequences.get(scoIdentifier);
 		int seqPosition = anItem.getSequence();
 		return (seqPosition == 1);
 	}
@@ -316,7 +316,7 @@ public class SequenceManager extends BasicManager {
 	 * @return true or false
 	 */
 	public boolean isLastItem(String scoIdentifier) {
-		ItemSequence anItem = (ItemSequence) _itemSequences.get(scoIdentifier);
+		ItemSequence anItem = _itemSequences.get(scoIdentifier);
 		int seqPosition = anItem.getSequence();
 		return (seqPosition == _itemSequences.size());
 	}

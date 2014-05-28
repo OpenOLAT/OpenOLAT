@@ -31,7 +31,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 
 /**
@@ -62,7 +61,7 @@ public class ShrinkController extends DefaultController {
 	 * @param shrinkcontent
 	 * @param title the name of the link to click (e.g "Details")
 	 */
-	public ShrinkController(UserRequest ureq, WindowControl wControl, boolean initiallyExpanded, Component shrinkcontent, String title) {
+	public ShrinkController(boolean initiallyExpanded, Component shrinkcontent, String title) {
 		super(null);
 		this.shrinkcontent = shrinkcontent;
 		isLarge = initiallyExpanded;

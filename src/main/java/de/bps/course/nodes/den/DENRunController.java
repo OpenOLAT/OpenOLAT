@@ -99,7 +99,7 @@ public class DENRunController extends BasicController implements GenericEventLis
 		denManager = DENManager.getInstance();
 
 		//prepare table for run view
-		createOrUpdateDateTable(ureq, getWindowControl(), denCourseNode);
+		createOrUpdateDateTable(ureq, denCourseNode);
 		runDENTable = denManager.createRunDatesTable(ureq, wControl, getTranslator(), runTableData);
 		listenTo(runDENTable);
 		
@@ -147,7 +147,7 @@ public class DENRunController extends BasicController implements GenericEventLis
 	 * @param denCourseNode
 	 * @param initialize
 	 */
-	private void createOrUpdateDateTable(UserRequest ureq, WindowControl wControl, DENCourseNode denCourseNode) {
+	private void createOrUpdateDateTable(UserRequest ureq, DENCourseNode denCourseNode) {
 		//prepare table for run view
 		runTableDataList = denManager.getDENEvents(ores.getResourceableId(), denCourseNode.getIdent());
 		runTableData = new DENRunTableDataModel(runTableDataList, ureq, denCourseNode, cancelEnrollEnabled, getTranslator());
@@ -204,7 +204,7 @@ public class DENRunController extends BasicController implements GenericEventLis
 					status = denManager.cancelEnroll(ureq.getIdentity(), calEvent, ores, courseNode);
 					if(!status.isCancelled()) showError();
 				}
-				createOrUpdateDateTable(ureq, getWindowControl(), courseNode);
+				createOrUpdateDateTable(ureq, courseNode);
 				runDENTable.setTableDataModel(runTableData);
 				fireEvent(ureq, Event.DONE_EVENT);
 				// inform subscription context about changes

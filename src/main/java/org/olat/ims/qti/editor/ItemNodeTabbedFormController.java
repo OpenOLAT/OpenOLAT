@@ -34,7 +34,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableDefaultController;
-import org.olat.core.gui.translator.Translator;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.Question;
 
@@ -60,7 +59,7 @@ public class ItemNodeTabbedFormController extends TabbableDefaultController {
 	 * @param wControl
 	 * @param trnsltr
 	 */
-	public ItemNodeTabbedFormController(Item item, QTIEditorPackage qtiPackage, UserRequest ureq, WindowControl wControl, Translator trnsltr,
+	public ItemNodeTabbedFormController(Item item, QTIEditorPackage qtiPackage, UserRequest ureq, WindowControl wControl,
 			boolean restrictedEdit) {
 		super(ureq, wControl);
 		this.restrictedEdit = restrictedEdit;
