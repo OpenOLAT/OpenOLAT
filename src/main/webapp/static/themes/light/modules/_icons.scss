@@ -6,7 +6,7 @@ $fa-font-path:        "../../../font-awesome/fonts" !default;
  * font-awesome icon names 
  */
 $fa-css-prefix: "o_icon" !default;
-@import "../../../font-awesome/scss/font-awesome"; 
+@import "../../../font-awesome/scss/font-awesome";
 
 /* OpenOLAT Icons */
 .o_icon_actions { @extend .o_icon-gears;}
