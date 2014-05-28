@@ -289,7 +289,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			} else {
 				text = translator.translate(i18n);
 			}
-			sb.append("<span ");
+			sb.append("<a ");
 			if (elementId != null) sb.append(" id=\"").append(elementId).append("\" ");
 			
 			String description = link.getTextReasonForDisabling();
@@ -302,7 +302,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				description = mdq.replaceAll("\\\\\"");
 				sb.append(" title=\"").append(description).append("\" ");
 			}
-			sb.append(cssSb).append(">");
+			sb.append(cssSb).append(" href='#' onclick='return false;'>");
 
 			// CSS icon
 			if (link.getIconLeftCSS() != null) {
@@ -318,7 +318,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				sb.append("></i> "); 
 			}			
 
-			sb.append("</span>");
+			sb.append("</a>");
 		}
 		if(link.getStartsDownload() || link.getTarget() != null){
 			//if the link starts a download -> the o_afterserver is not called in

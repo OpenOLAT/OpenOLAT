@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -79,11 +80,12 @@ public class CatalogSettingsController extends FormBasicController {
 		initForm(ureq);
 		
 		stackPanel.pushController(translate("details.categoriesheader"), this);
-		addToCatalogLink = LinkFactory.createToolLink("addtocat", "", this);
+		addToCatalogLink = LinkFactory.createToolLink("addtocat", "", this, "o_icon_add");
 		
-		addToCatalogLink = LinkFactory.createToolLink("cat", translate("details.catadd"), this, "o_sel_repo_add_to_catalog");
+		addToCatalogLink = LinkFactory.createToolLink("cat", translate("details.catadd"), this, "o_icon_add");
+		addToCatalogLink.setElementCssClass("o_sel_repo_add_to_catalog");
 		addToCatalogLink.setEnabled((entry.getAccess() >= RepositoryEntry.ACC_USERS || entry.isMembersOnly()));
-		stackPanel.addTool(addToCatalogLink);
+		stackPanel.addTool(addToCatalogLink, Align.left);
 	}
 
 	@Override

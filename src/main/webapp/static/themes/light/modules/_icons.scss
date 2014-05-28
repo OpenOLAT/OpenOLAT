@@ -23,11 +23,12 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_bookmark_add { @extend .o_icon-bookmark-o; }
 .o_icon_calendar { @extend .o_icon-calendar;}
 .o_icon_caret { @extend .o_icon-caret-down;}
+.o_icon_catalog { @extend .o_icon-sitemap;}
 .o_icon_certificate{ @extend .o_icon-certificate;}
 .o_icon_chat { @extend .o_icon-comment-o; }
 .o_icon_check {@extend .o_icon-check; }
 .o_icon_close {@extend .o_icon-times;}
-.o_icon_close_resource { @extend .o_icon-stop; }
+.o_icon_close_resource { @extend .o_icon-power-off; }
 .o_icon_close_tab {@extend .o_icon-times;}
 .o_icon_close_tool{ @extend .o_icon-times;}
 .o_icon_close_tree {@extend .o_icon-caret-down;}
