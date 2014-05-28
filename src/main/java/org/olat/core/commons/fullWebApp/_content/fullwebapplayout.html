@@ -143,7 +143,7 @@ $r.renderHeaderIncludes()
 ## Page title taken from org.olat.core package
 <title>$r.translate("page.appname") - $r.translate("page.title")</title></head>
 ## TODO:fj pb: Review order
-<body onload="b_start();" id="b_body" class="#foreach($cssClass in $bodyCssClasses)$cssClass #end b_lang_$r.getLanguageCode()">
+<body onload="b_start();" id="o_body" class="#foreach($cssClass in $bodyCssClasses)$cssClass #end b_lang_$r.getLanguageCode()">
 ## if in debug mode, it is a invisible component which is only visible by wrapping debug information around all other
 ## components.
 <!-- START guiDebug -->
@@ -260,14 +260,15 @@ $r.render("modalpanel")
 ## ---- END #b_nav ---
 
 ## the div for the busy-wait animated-gif
-<div id="b_ajax_busy" class=""></div>
+<div id="o_ajax_busy"><i class="o_icon o_icon_busy o_icon-5x o_icon-spin"></i></div>
+
 ## hidden div for EM-PX factor readout 
-<div id="b_width_1em" style="width:1em; position: absolute; left: -1000px;"></div>
+<div id="o_width_1em" style="width:1em; position: absolute; left: -1000px;"></div>
 <div><script type="text/javascript">
 /* <![CDATA[ */ 
 // init size and listen to text resize events
 jQuery(function() {
-	b_initEmPxFactor(); 
+	o_initEmPxFactor(); 
 });
 /* ]]> */
 </script></div></body></html>

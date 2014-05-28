@@ -797,7 +797,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		bodyCssClasses.add(cssClass);
 
 		// only relevant in AJAX mode
-		JSCommand jsc = new JSCommand("try { jQuery('#b_body').addClass('" + cssClass + "'); } catch(e){if(o_info.debug) console.log(e) }");
+		JSCommand jsc = new JSCommand("try { jQuery('#o_body').addClass('" + cssClass + "'); } catch(e){if(o_info.debug) console.log(e) }");
 		getWindowControl().getWindowBackOffice().sendCommandTo(jsc);
 	}
 
@@ -813,7 +813,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		bodyCssClasses.remove(cssClass);
 		
 		//only relevant in AJAX mode
-		JSCommand jsc = new JSCommand("try { jQuery('#b_body').removeClass('" + cssClass + "'); } catch(e){if(o_info.debug) console.log(e) }");
+		JSCommand jsc = new JSCommand("try { jQuery('#o_body').removeClass('" + cssClass + "'); } catch(e){if(o_info.debug) console.log(e) }");
 		getWindowControl().getWindowBackOffice().sendCommandTo(jsc);
 	}
 	
