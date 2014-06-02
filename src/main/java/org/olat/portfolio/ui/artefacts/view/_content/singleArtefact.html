@@ -1,92 +1,72 @@
-<div class="b_form b_artefact b_clearfix" >
-	#if ($cssClosed != "") 
-		<div class="$!cssClosed">&nbsp;&nbsp;&nbsp;&nbsp;</div>
-	#end
-	<h4 class="b_with_small_icon_left $artefact.getIcon()">$r.escapeHtml($!artefact.getTitle())</h4>
-	#if ($artAttribConfig.get("artefact.title"))
-	<div class="b_form_element_wrapper b_clearfix">
-		<div class="b_form_element_label">$r.translate("artefact.title")</div>
-		<div class="b_form_element">$r.render("title")</div>
+<div class="panel panel-default b_artefact">
+	<div class="panel-heading">
+		#if ($cssClosed != "") 
+			<div class="$!cssClosed">&nbsp;&nbsp;&nbsp;&nbsp;</div>
+		#end
+		<h4><i class="o_icon $artefact.getIcon()"> </i> $r.escapeHtml($!artefact.getTitle())</h4>
 	</div>
-	#end
-	#if ($artAttribConfig.get("artefact.author"))
-	<div class="b_form_element_wrapper b_clearfix">
-		<div class="b_form_element_label">$r.translate("artefact.author")</div>
-		<div class="b_form_element">$artefact.getAuthor().getName()</div>
-	</div>
-	#end
-	#if ($artAttribConfig.get("artefact.description"))
-	<div class="b_form_element_wrapper b_clearfix">
-		<div class="b_form_element_label">$r.translate("artefact.description")</div>
-		<div class="b_form_element">
-			#if ($r.available("descriptionBtn")) $r.render("descriptionBtn") 
-			#else $!artefact.getDescription() 
-			#end 
-		</div>
-	</div>
-	#end
-	#if ($artAttribConfig.get("artefact.date"))
-	<div class="b_form_element_wrapper b_clearfix">
-		<div class="b_form_element_label">$r.translate("artefact.date")</div>
-		##<div class="b_form_element">$!creationDate</div>
-		<div class="b_form_element">$r.formatDateAndTime($artefact.getCreationDate())</div>
-	</div>
-	#end
-	#if ($artAttribConfig.get("artefact.source"))
-	<div class="b_form_element_wrapper b_clearfix">
-		<div class="b_form_element_label">$r.translate("artefact.source")</div>
-		<div class="b_form_element">$!artefact.getSource()</div>
-	</div>
-	#end
-	#if ($artAttribConfig.get("artefact.sourcelink"))
-	<div class="b_form_element_wrapper b_clearfix">
-		<div class="b_form_element_label">$r.translate("artefact.sourcelink")</div>
-		<div class="b_form_element">$!artefactSourceLink</div>
-	</div>
-	#end	
-	#if ($artAttribConfig.get("artefact.tags"))
-	<div class="b_form_element_wrapper b_clearfix">
-		<div class="b_form_element_label">$r.translate("artefact.tags")</div>
-    	<div class="b_form_element $!tagclass">$r.render("tagTextbox")</div>
-	</div>
-	#end
-	#if ($artAttribConfig.get("artefact.tags.readonly"))
-	<div class="b_form_element_wrapper b_clearfix">
-		<div class="b_form_element_label">$r.translate("artefact.tags")</div>
-    	<div class="b_form_element">$!tags</div>
-	</div>
-	#end
-	#if ($artAttribConfig.get("artefact.used.in.maps"))
-	<div class="b_form_element_wrapper b_clearfix">
-		<div class="b_form_element_label">$r.translate("artefact.used.in.maps")</div>
-		<div class="b_form_element">
-			#foreach($map in $maps)
-				$r.render($map.component.componentName)
-			#end
-		</div>
-	</div>
-	#end
-	#if ($artAttribConfig.get("artefact.reflexion"))
-	<div class="b_form_element_wrapper b_clearfix">
-		<div class="b_form_element_label">$r.translate("artefact.reflexion")</div>
-		<div class="b_form_element">
-			#if ($r.available("reflexionBtn")) $r.render("reflexionBtn") 
-			#else $!artefact.getReflexion() 
-			#end 
-		</div>
-	</div>
-	#end
-	#if ($artAttribConfig.get("artefact.handlerdetails"))
-	<div class="b_form_element_wrapper b_clearfix">
-		<div class="b_form_element_label">$r.translate("artefact.handlerdetails")</div>
-		<div class="b_form_element">#if ($r.available("detailsController")) $r.render("detailsController") #end </div>
-	</div>
-	#end
-	
-	<div class="b_actions b_clearfix">
+	<table class="table table-condensed table-striped"><tbody>
+		#if ($artAttribConfig.get("artefact.title"))
+		<tr><th>$r.translate("artefact.title")</th>
+		    <td>$r.render("title")</td></tr>
+		#end
+		#if ($artAttribConfig.get("artefact.author"))
+		<tr><th>$r.translate("artefact.author")</th>
+			<td>$artefact.getAuthor().getName()</td></tr>
+		#end
+		#if ($artAttribConfig.get("artefact.description"))
+		<tr><th>$r.translate("artefact.description")</th>
+			<td class="b_form_element">
+				#if ($r.available("descriptionBtn")) $r.render("descriptionBtn") 
+				#else $!artefact.getDescription() #end 
+			</td></tr>
+		#end
+		#if ($artAttribConfig.get("artefact.date"))
+		<tr><th>$r.translate("artefact.date")</th>
+			<td>$r.formatDateAndTime($artefact.getCreationDate())</td></tr>
+		#end
+		#if ($artAttribConfig.get("artefact.source"))
+		<tr>
+			<th>$r.translate("artefact.source")</th>
+			<td>$!artefact.getSource()</div>
+		</tr>
+		#end
+		#if ($artAttribConfig.get("artefact.sourcelink"))
+		<tr><th>$r.translate("artefact.sourcelink")</th>
+			<td>$!artefactSourceLink</td></tr>
+		#end	
+		#if ($artAttribConfig.get("artefact.tags"))
+		<tr><th>$r.translate("artefact.tags")</dithv>
+	    	<td class="$!tagclass">$r.render("tagTextbox")</td></tr>
+		#end
+		#if ($artAttribConfig.get("artefact.tags.readonly"))
+		<tr><th>$r.translate("artefact.tags")</th>
+	    	<td>$!tags</td></tr>
+		#end
+		#if ($artAttribConfig.get("artefact.used.in.maps"))
+		<tr><th>$r.translate("artefact.used.in.maps")</th>
+			<td>
+				#foreach($map in $maps)
+					$r.render($map.component.componentName)
+				#end
+			</td></tr>
+		#end
+		#if ($artAttribConfig.get("artefact.reflexion"))
+		<tr><th>$r.translate("artefact.reflexion")</th>
+			<td>
+				#if ($r.available("reflexionBtn")) $r.render("reflexionBtn") 
+				#else $!artefact.getReflexion() 
+				#end 
+			</td></tr>
+		#end
+		#if ($artAttribConfig.get("artefact.handlerdetails"))
+		<tr><th>$r.translate("artefact.handlerdetails")</th>
+			<td>#if ($r.available("detailsController")) $r.render("detailsController") #end </td></tr>
+		#end
+	</tbody></table>
+</div>
+<div class="o_actions clearfix">
 	#if ($r.available("details.link")) <div class="b_float_right"> $r.render("details.link") </div> #end
 	#if ($r.available("delete.artefact")) <div class="b_float_left">$r.render("delete.artefact")</div> #end
 	#if ($r.available("choose.artefact")) <p style="text-align: center">$r.render("choose.artefact")</p> #end
-	</div>
 </div>
-

@@ -22,7 +22,6 @@ package org.olat.portfolio.ui.structel.edit;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -51,6 +50,7 @@ import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.portfolio.ui.structel.EPAddElementsController;
 import org.olat.portfolio.ui.structel.EPArtefactClicked;
 import org.olat.portfolio.ui.structel.EPStructureChangeEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -66,8 +66,10 @@ public class EPTOCController extends BasicController {
 	protected static final String ARTEFACT_NODE_CLICKED = "artefactNodeClicked";
 	private static final String DELETE_LINK_CMD = "delete";
 	private static final String ROOT_NODE_IDENTIFIER = "rootStruct";
-	protected final EPFrontendManager ePFMgr;
-	protected final EPStructureManager eSTMgr;
+	@Autowired
+	private EPFrontendManager ePFMgr;
+	@Autowired
+	private EPStructureManager eSTMgr;
 	protected PortfolioStructureMap rootNode;
 	protected final EPSecurityCallback secCallback;
 	private MenuTree treeCtr;
@@ -85,8 +87,6 @@ public class EPTOCController extends BasicController {
 		super(ureq, wControl);
 		this.secCallback = secCallback;
 		tocV = createVelocityContainer("toc");
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
-		eSTMgr = (EPStructureManager) CoreSpringFactory.getBean("epStructureManager");
 		this.rootNode = rootNode;
 		TreeModel treeModel = buildTreeModel();
 		treeCtr = new MenuTree("toc");
@@ -100,9 +100,10 @@ public class EPTOCController extends BasicController {
 		treeCtr.setRootVisible(true);
 
 		tocV.put("tocTree", treeCtr);		
-		delButton = LinkFactory.createCustomLink("deleteButton", DELETE_LINK_CMD, "&nbsp;&nbsp;&nbsp;", Link.NONTRANSLATED, tocV, this);
+		delButton = LinkFactory.createCustomLink("deleteButton", DELETE_LINK_CMD, "", Link.NONTRANSLATED, tocV, this);
 		delButton.setTooltip(translate("deleteButton"));
 		delButton.setCustomEnabledLinkCSS("b_delete_icon b_eportfolio_del_link ");
+		delButton.setIconLeftCSS("o_icon o_icon_delete");
 		tocV.put("deleteButton", delButton);		
 
 		if(selectedEl == null) {

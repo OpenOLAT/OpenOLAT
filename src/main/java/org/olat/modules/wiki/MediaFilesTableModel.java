@@ -26,13 +26,16 @@ package org.olat.modules.wiki;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.gui.components.table.CustomCssCellRenderer;
+import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.components.table.TableController;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.user.UserManager;
@@ -105,27 +108,19 @@ public class MediaFilesTableModel extends DefaultTableDataModel<MediaFileElement
 		return this.objects.get(row);
 	}
 
-	private class StrikeThroughCellRenderer extends CustomCssCellRenderer {
-
+	private static class StrikeThroughCellRenderer implements CustomCellRenderer {
 		@Override
-		protected String getCssClass(Object val) {
+		public void render(final StringOutput sb, final Renderer renderer, final Object val, final Locale locale, final int alignment, final String action) {
 			String filename = (String) val;
-			if (filename.endsWith(WikiMainController.METADATA_SUFFIX)) return "wiki-file-deleted";
-			return "";
+			if (renderer == null) {
+				sb.append(filename);
+			} else {
+				sb.append("<span class='");
+				if (filename.endsWith(WikiMainController.METADATA_SUFFIX)) {
+					sb.append("o_wiki-file-deleted");
+				}
+				sb.append("'>").append(filename.substring(0, filename.lastIndexOf(".")));			
+			}
 		}
-
-		@Override
-		protected String getCellValue(Object val) {
-			String filename = (String) val;
-			if (filename.endsWith(WikiMainController.METADATA_SUFFIX)) { return filename.substring(0, filename.lastIndexOf(".")); }
-			return filename;
-		}
-
-		@Override
-		protected String getHoverText(Object val) {
-			return null;
-		}
-
 	}
-
 }

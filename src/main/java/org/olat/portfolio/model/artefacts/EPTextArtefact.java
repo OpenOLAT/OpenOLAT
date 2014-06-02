@@ -21,7 +21,7 @@ package org.olat.portfolio.model.artefacts;
 
 /**
  * Description:<br>
- * TODO: rhaag Class Description for EPTextArtefact
+ * Artefact of type text
  * 
  * <P>
  * Initial Date:  01.09.2010 <br>
@@ -29,6 +29,7 @@ package org.olat.portfolio.model.artefacts;
  */
 public class EPTextArtefact extends AbstractArtefact {
 
+	private static final long serialVersionUID = -3705686575442377717L;
 	public static final String TEXT_ARTEFACT_TYPE = "text";
 	
 	/**
@@ -44,8 +45,6 @@ public class EPTextArtefact extends AbstractArtefact {
 	 */
 	@Override
 	public String getIcon() {
-		return "b_filetype_txt";
+		return "o_filetype_txt";
 	}
-
-
 }

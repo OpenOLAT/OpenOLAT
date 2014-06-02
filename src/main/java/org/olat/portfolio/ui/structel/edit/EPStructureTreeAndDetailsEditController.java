@@ -21,7 +21,6 @@ package org.olat.portfolio.ui.structel.edit;
 
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -45,6 +44,7 @@ import org.olat.portfolio.ui.structel.EPArtefactClicked;
 import org.olat.portfolio.ui.structel.EPMapViewController;
 import org.olat.portfolio.ui.structel.EPStructureChangeEvent;
 import org.olat.portfolio.ui.structel.EPStructureEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -56,7 +56,10 @@ import org.olat.portfolio.ui.structel.EPStructureEvent;
  */
 public class EPStructureTreeAndDetailsEditController extends FormBasicController {
 
-	private final EPFrontendManager ePFMgr;
+	@Autowired
+	private EPFrontendManager ePFMgr;
+	@Autowired
+	private PortfolioModule portfolioModule;
 	private PortfolioStructureMap rootStructure;
 	private PortfolioStructure selectedStructure;
 	private final EPSecurityCallback secCallback;
@@ -72,7 +75,6 @@ public class EPStructureTreeAndDetailsEditController extends FormBasicController
 		this.secCallback = secCallback;
 		this.rootStructure = rootStructure;
 		this.selectedStructure = selectedStructure;
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		
 		Translator pt = Util.createPackageTranslator(EPMapViewController.class, ureq.getLocale(), getTranslator());
 		setTranslator(pt);
@@ -87,7 +89,6 @@ public class EPStructureTreeAndDetailsEditController extends FormBasicController
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
 		List<String> allStyles = portfolioModule.getAvailableMapStyles();
 		int amount = allStyles.size();
 		String[] theKeys = new String[amount];

@@ -11,7 +11,7 @@ jQuery(function(){
 
 <div class="o_efficiencystatement">
 	#if($r.available("collectArtefactLink"))
-		$r.render("collectArtefactLink")
+		<div class="pull-right">$r.render("collectArtefactLink")</div>
 	#end
 	<h3><i class="o_icon o_icon_certificate"> </i> $r.translate("efficiencystatement.title")</h3>
 	<div class="row form-horizontal">

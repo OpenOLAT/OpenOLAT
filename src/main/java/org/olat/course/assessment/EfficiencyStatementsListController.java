@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
@@ -65,6 +64,7 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.ui.artefacts.collect.ArtefactWizzardStepsController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -84,7 +84,10 @@ public class EfficiencyStatementsListController extends BasicController {
 	private DialogBoxController confirmDeleteCtr;
 	private UserEfficiencyStatementLight efficiencyStatement;
 	private Controller ePFCollCtrl;
+	@Autowired
 	private PortfolioModule portfolioModule;
+	@Autowired
+	private EfficiencyStatementManager esm;
 	
 	/**
 	 * Constructor
@@ -106,14 +109,12 @@ public class EfficiencyStatementsListController extends BasicController {
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor(CMD_LAUNCH_COURSE, "table.header.launchcourse", translate("table.action.launchcourse")));
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor(CMD_DELETE, "table.header.delete", translate("table.action.delete")));
 
-		portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
 		EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(EfficiencyStatementArtefact.ARTEFACT_TYPE);
 		if(portfolioModule.isEnabled() && artHandler != null && artHandler.isEnabled()) {
 			tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.artefact", 5, CMD_ARTEFACT, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_CENTER, new AsArtefactCellRenderer()));
 		}
 		listenTo(tableCtr);
 		
-		EfficiencyStatementManager esm = EfficiencyStatementManager.getInstance();
 		List<UserEfficiencyStatementLight> efficiencyStatementsList = esm.findEfficiencyStatementsLight(ureq.getIdentity());
 		efficiencyStatementsListModel = new EfficiencyStatementsListModel(efficiencyStatementsList);
 		tableCtr.setTableDataModel(efficiencyStatementsListModel);
@@ -218,9 +219,9 @@ public class EfficiencyStatementsListController extends BasicController {
 		 */
 		@Override
 		public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-			sb.append("<span class=\"b_eportfolio_add_again\" title=\"")
+			sb.append("<i class='o_icon o_icon-lg o_icon_eportfolio_add'> </i> <span title=\"")
 				.append(translate("table.add.as.artefact"))
-				.append("\" style=\"background-repeat: no-repeat; background-position: center center; padding: 2px 8px;\">&nbsp;</span>");
+				.append("\"> </span>");
 		}
 	}
 }

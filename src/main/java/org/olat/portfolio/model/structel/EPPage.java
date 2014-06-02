@@ -30,18 +30,13 @@ package org.olat.portfolio.model.structel;
 public class EPPage extends EPStructureElement  {
 
 	private static final long serialVersionUID = -3612344225824264507L;
-
-	/**
-	 * 
-	 */
-	public EPPage() {
-		//
-	}
 	
+	@Override
 	public String getIcon(){
-		return "b_ep_page_icon";
+		return "o_ep_icon_page";
 	}
 	
+	@Override
 	public boolean equals(Object obj) {
 		if(obj == this) {
 			return true;

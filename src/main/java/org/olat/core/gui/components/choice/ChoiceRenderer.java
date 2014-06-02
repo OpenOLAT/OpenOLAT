@@ -83,9 +83,13 @@ public class ChoiceRenderer extends DefaultComponentRenderer {
 			      .append("</td>");
 			
 			String label = model.getLabel(i);
-			target.append("<td class='b_choice_textrow'>")
-			      .append(StringEscapeUtils.escapeHtml(label))
-			      .append("</td></tr>");
+			target.append("<td class='b_choice_textrow'>");
+			if(choice.isEscapeHtml()) {
+				target.append(StringEscapeUtils.escapeHtml(label));
+			} else {
+				target.append(label);
+			}
+			target.append("</td></tr>");
 		}
 		// Toggle all on/off
 		target.append("<tr><td colspan='2' class=\"b_togglecheck\">")

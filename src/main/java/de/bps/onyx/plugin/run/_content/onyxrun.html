@@ -51,9 +51,9 @@
 			<td>$r.translate("assessment.state"): </td>
 			<td>
 			#if($passed == true)		
-				<span class="o_passed">$r.translate("passed.yes")</span>
+				<span class="o_state o_passed"><i class\="o_icon o_icon_passed"> </i> $r.translate("passed.yes")</span>
 			#elseif($passed == false)
-				<span class="o_notpassed">$r.translate("passed.no")</span>
+				<span class="o_state o_failed"><i class="o_icon o_icon_failed"> </i> $r.translate("passed.no")</span>
 			#end
 			</td>
 		</tr>

@@ -1,15 +1,13 @@
-<div class="b_clearfix">	
-#if($r.available("map.editButton"))
-		<div class="b_float_right b_eportfolio_edit_link">	
-			$r.render("map.editButton")
-		</div>
-#end
-
+<div class="btn-toolbar" role="toolbar">
 #if($r.available("backLink"))
-	$r.render("backLink")
+	<div class="btn-group">$r.render("backLink")</div>
+#end	
+#if($r.available("map.editButton"))
+	<div class="b_eportfolio_edit_link btn-group pull-right">	
+		$r.render("map.editButton")
+	</div>
 #end
 </div>
-
 <div class="b_eportfolio_map $!style">
 	<div class="b_ep_relative"> ## needed for positioning
 		<div class="b_map_header">

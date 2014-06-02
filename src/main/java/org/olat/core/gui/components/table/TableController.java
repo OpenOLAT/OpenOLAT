@@ -325,7 +325,10 @@ public class TableController extends BasicController {
 		} else if (source == colsChoice) {
 			if (event == Choice.EVNT_VALIDATION_OK) {
 				//sideeffect on table and prefs
-				applyAndcheckChangedColumnsChoice(ureq);
+				applyAndcheckChangedColumnsChoice(ureq, colsChoice.getSelectedRows());
+			} else if (event == Choice.EVNT_FORM_RESETED) {
+				//sideeffect on table and prefs
+				applyAndcheckChangedColumnsChoice(ureq, colsChoice.getAllRows());
 			} else { // cancelled
 				cmc.deactivate();
 			}
@@ -355,8 +358,7 @@ public class TableController extends BasicController {
 		}
 	}
 
-	private void applyAndcheckChangedColumnsChoice(final UserRequest ureq) {
-		List<Integer> selRows = colsChoice.getSelectedRows();
+	private void applyAndcheckChangedColumnsChoice(final UserRequest ureq, List<Integer> selRows) {
 		if (selRows.size() == 0) {
 			showError("error.selectatleastonecolumn");
 		} else {
@@ -383,7 +385,9 @@ public class TableController extends BasicController {
 		Choice choice = new Choice("colchoice", getTranslator());
 		choice.setModel(table.createChoiceModel());
 		choice.addListener(this);
+		choice.setEscapeHtml(false);
 		choice.setCancelKey("cancel");
+		choice.setResetKey("reset");
 		choice.setSubmitKey("save");
 		return choice;
 	}

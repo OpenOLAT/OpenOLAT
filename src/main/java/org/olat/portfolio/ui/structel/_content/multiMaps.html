@@ -11,7 +11,7 @@
 	</div>
 #end
 
-<ul class="b_eportfolio_maps">
+<div class="b_eportfolio_maps container-fluid">
 	#foreach($map in $userMaps)
 	#set($viewLink = "viewLink$velocityCount")
 	#set($delLink = "deleteLink$velocityCount")
@@ -20,27 +20,29 @@
 	#set($courseLink = "courseLink$velocityCount")
 	#set($courseName = "courseName$velocityCount")
 	#set($index = ($velocityCount - 1))
+	#set($newRow = ($velocityCount % 3))
 	#if($map.getClass().getSimpleName() == "EPStructuredMapTemplate") #set($addTempStamp = "template") #end
-	<li class="$!mapStyles.get($index) $!addTempStamp">	 
-		<h4>$r.escapeHtml($map.title)</h4> 
-		<div class="b_map_descr">$r.xssScan($map.shortenedDescription)</div>
-		<div class="b_map_info">
-		#if ($owners.get($index)) <p>$r.translate("map.owners", $r.escapeHtml($owners.get($index))) </p> #end
-		<p>$amounts.get($index)
-		#if ($deadLines.get($index)) <br/> $r.translate("map.deadline", "$r.formatDate($deadLines.get($index))")  #end
-		#if ($restriStats.get($index)) <br/> $r.translate("map.restriction.overview", $restriStats.get($index))  #end
-		</p>
-		#if($r.available($viewLink))  $r.render($viewLink) <br/>#end
-		#if($r.get($courseLink))
-			$r.translate("course.link.intro.small"): <a href="$r.get($courseLink)">$r.get($!courseName)</a><br/>
-		#end
-		#if($r.available($shareLink)) $r.render($shareLink) <br/> #end
-		#if($r.available($delLink))   $r.render($delLink) <br/> #end
-		#if($r.available($copyLink))  $r.render($copyLink) #end
+	<div class="col-sm-4 $!mapStyles.get($index) $!addTempStamp">	 
+		<div class="panel panel-default">
+			<div class="panel-heading"><h4>$r.escapeHtml($map.title)</h4></div>
+			<div class="panel-body">$r.xssScan($map.shortenedDescription)</div>
+			<table class="table table-condensed table-striped"><tbody>
+			#if ($owners.get($index)) <tr><td>$r.translate("map.owners", $r.escapeHtml($owners.get($index)))</td></tr> #end
+			<tr><td>$amounts.get($index)</td></tr>
+			#if ($deadLines.get($index)) <tr><td>$r.translate("map.deadline", "$r.formatDate($deadLines.get($index))")</td></tr> #end
+			#if ($restriStats.get($index)) <tr><td>$r.translate("map.restriction.overview", $restriStats.get($index))</td></tr> #end
+			#if($r.available($viewLink))  <tr><td>$r.render($viewLink)</td></tr>#end
+			#if($r.get($courseLink))
+				<tr><td>$r.translate("course.link.intro.small"): <a href="$r.get($courseLink)">$r.get($!courseName)</a></td></tr>
+			#end
+			#if($r.available($shareLink)) <tr><td>$r.render($shareLink)</td></tr> #end
+			#if($r.available($delLink))  <tr><td>$r.render($delLink)</td></tr> #end
+			#if($r.available($copyLink)) <tr><td>$r.render($copyLink)</td></tr> #end
+			</tbody></table>
 		</div>
-	</li>
+	</div>
 	#end
-</ul>
+</div>
 
 #if($!showPaging)
 	<div class="b_map_page">

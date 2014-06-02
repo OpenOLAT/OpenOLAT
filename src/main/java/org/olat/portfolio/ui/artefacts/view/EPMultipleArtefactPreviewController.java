@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -45,6 +44,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -62,6 +62,7 @@ public class EPMultipleArtefactPreviewController extends BasicController impleme
 	private VelocityContainer vC;
 	private Link artAttribBtn;
 	private List<Controller> artefactCtrls;
+	@Autowired
 	private EPFrontendManager ePFMgr;
 	private EPArtefactAttributeSettingController artAttribCtlr;
 	private Map<String, Boolean> artAttribConfig;
@@ -78,7 +79,6 @@ public class EPMultipleArtefactPreviewController extends BasicController impleme
 		super(ureq, wControl);
 		this.artefactChooseMode = artefactChooseMode;
 		vC = createVelocityContainer("multiArtefact");
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		if (!artefactChooseMode) {
 			artAttribBtn = LinkFactory.createCustomLink("detail.options", "detail.options", "", Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, vC, this);
 			artAttribBtn.setTooltip(translate("detail.options"));

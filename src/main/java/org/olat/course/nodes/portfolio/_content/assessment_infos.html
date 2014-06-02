@@ -55,9 +55,9 @@
 					</td>
 					<td>
 						#if($hasPassedValue && $passed == true)		
-							<span class="o_passed">$r.translate("map.passed")</span>
+							<span class="o_state o_passed">$r.translate("map.passed")</span>
 						#elseif($hasPassedValue && $passed == false)		
-							<span class="o_notpassed">$r.translate("map.not.passed")</span>
+							<span class="o_state o_failed"><i class="o_icon o_icon_failed"> </i> $r.translate("map.not.passed")</span>
 						#else
 							<div class="o_course_run_scoreinfo_noinfo">$r.translate("map.not.rated.yet")</div>
 						#end

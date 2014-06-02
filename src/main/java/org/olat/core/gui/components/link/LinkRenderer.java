@@ -202,10 +202,10 @@ public class LinkRenderer extends DefaultComponentRenderer {
 					} else {
 						text = translator.translate(title);
 					}
-					text = StringEscapeUtils.escapeJavaScript(text);
-					sb.append(" title=\"\"");
-					extJsSb.append(elementId).append(".tooltip({content:function(){ return \"").append(text).append("\";}});");
-					hasExtJsSb = true;
+					//text = StringEscapeUtils.escapeJavaScript(text);
+					sb.append(" title=\"").append(StringEscapeUtils.escapeHtml(text)).append("\"");
+					//extJsSb.append(elementId).append(".tooltip({ html:true, container:'body', title:function(){ return \"").append(text).append("\";}});");
+					//hasExtJsSb = true;
 				}
 			}
 
@@ -334,7 +334,6 @@ public class LinkRenderer extends DefaultComponentRenderer {
 		//now append all gathered javascript stuff if any
 		if(hasExtJsSb){
 			// Execute anonymous function (closure) now (OLAT-5755)
-
 			extJsSb.append("})();");
 			extJsSb.append("\n/* ]]> */\n</script>");
 			sb.append(extJsSb);

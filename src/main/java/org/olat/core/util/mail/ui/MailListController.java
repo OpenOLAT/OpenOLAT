@@ -156,7 +156,7 @@ public class MailListController extends BasicController implements Activateable2
 			tableCtr.addColumnDescriptor(new DefaultColumnDescriptor(Columns.sendDate.i18nKey(), Columns.sendDate.ordinal(), null, getLocale()));
 		} else {
 			//read / marked / context / from / subject / receivedDate
-			CustomCellRenderer readRenderer = new BooleanCSSCellRenderer(getTranslator(), "o_icon o_icon_read", "o_icon o_icon_to_read", "mail.read", "mail.unread");
+			CustomCellRenderer readRenderer = new BooleanCSSCellRenderer(getTranslator(), "o_icon o_icon-lg o_icon_read", "o_icon o_icon-lg o_icon_to_read", "mail.read", "mail.unread");
 			tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Columns.read.i18nKey(), Columns.read.ordinal(), CMD_READ_TOGGLE, 
 				getLocale(), ColumnDescriptor.ALIGNMENT_CENTER, readRenderer));
 			CustomCellRenderer markRenderer = new BooleanCSSCellRenderer(getTranslator(), Mark.MARK_CSS_LARGE, Mark.MARK_ADD_CSS_LARGE, "mail.marked", "mail.unmarked");

@@ -1,27 +1,21 @@
-<div class="b_subcolumns">
+<div class="container-fluid">
 	#set($innerCounter = 1)
 	#foreach($artefactCtrlCompLine in $artefactCtrlCompLines)
-		<div class="b_clearfix">
-			#foreach($artefactCtrlPanel in $artefactCtrlCompLine)
-				#set($specialCtrlName = "special$artefactCtrlPanel.componentName")
-				#set($optionsLinkName = "optionsLink$innerCounter")
-				#if($r.available($specialCtrlName))
-					<div class="b_eportfolio_preview_c100l">
-						<div class="b_artefact">
-							$r.render($artefactCtrlPanel.componentName)
-							<div class="b_artefact_optionslink">$r.render($optionsLinkName)</div>
-						</div>
-					</div>
-				#else
-					<div class="b_eportfolio_preview_c33l b_c33l">
-						<div class="b_form b_artefact b_clearfix" >
-						$r.render($artefactCtrlPanel.componentName)
-						<div class="b_artefact_optionslink">$r.render($optionsLinkName)</div>
-						</div>
-					</div>
-				#end
-				#set($innerCounter = $innerCounter + 1)
+		#foreach($artefactCtrlPanel in $artefactCtrlCompLine)
+			#set($specialCtrlName = "special$artefactCtrlPanel.componentName")
+			#set($optionsLinkName = "optionsLink$innerCounter")
+			#if($r.available($specialCtrlName))
+				<div class="col-sm-12 b_artefact">
+					$r.render($artefactCtrlPanel.componentName)
+					<div class="b_artefact_optionslink">$r.render($optionsLinkName)</div>
+				</div>
+			#else
+				<div class="col-sm-4 b_artefact">
+					$r.render($artefactCtrlPanel.componentName)
+					<div class="b_artefact_optionslink">$r.render($optionsLinkName)</div>
+				</div>
 			#end
-		</div>
+			#set($innerCounter = $innerCounter + 1)
+		#end
 	#end
 </div>

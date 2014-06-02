@@ -23,7 +23,7 @@
 	</div>
 	#end
 	
-	<div class="b_subcolumns">
+	<div class="container-fluid">
 		#foreach($artefactComp in $artefactCtrlComps)
 			#if ($velocityCount % 2 == 0)
 				#set($leftRight = "r")
@@ -31,12 +31,9 @@
 				#set($leftRight = "l")
 			#end
 		
-			<div class="b_c50$leftRight">
-				<div class="b_subc$leftRight">
-					#set($artCtrl = "artCtrl$velocityCount")
-					$r.render($artCtrl)
-					<br/>
-				</div>
+			<div class="col-sm-6">
+				#set($artCtrl = "artCtrl$velocityCount")
+				$r.render($artCtrl)
 			</div>
 		#end
 	</div>

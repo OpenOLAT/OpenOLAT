@@ -194,6 +194,7 @@ public class EfficiencyStatementController extends BasicController {
 				if(portfolioModule.isEnabled() && artHandler != null && artHandler.isEnabled()) {
 					collectArtefactLink = LinkFactory.createCustomLink("collectArtefactLink", "collectartefact", "", Link.NONTRANSLATED, userDataVC, this);
 					collectArtefactLink.setCustomEnabledLinkCSS("b_eportfolio_add_again");
+					collectArtefactLink.setIconLeftCSS("o_icon o_icon-lg o_icon_eportfolio_add");
 				}
 			}
 		} else {

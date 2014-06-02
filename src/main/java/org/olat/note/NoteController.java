@@ -121,7 +121,8 @@ public class NoteController extends FormBasicController implements GenericEventL
 
 		// we don't use FormUIFactory.addFormSubmitButton(...) here since that would cause the following custom CSS setting to get ignored.
 		editButton = new FormLinkImpl("edit", "edit", "edit", Link.BUTTON_SMALL);
-		editButton.setCustomEnabledLinkCSS("b_float_right b_button b_small");
+		editButton.setCustomEnabledLinkCSS("pull-right btn btn-default");
+		editButton.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		formLayout.add(editButton);
 		
 		noteField = uifactory.addRichTextElementForStringData("noteField", null, n.getNoteText(), 20, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());

@@ -31,8 +31,8 @@ import org.olat.group.BusinessGroupShort;
  */
 public class BusinessGroupNameCellRenderer extends CustomCssCellRenderer {
 
-	private static final String cssClass = "b_small_table_icon b_group_icon";
-	private static final String managedCssClass = "b_small_table_icon b_group_icon b_managed_icon";
+	private static final String cssClass = "o_icon o_icon_group";
+	private static final String managedCssClass = "o_icon o_icon_group o_icon_managed";
 	
 	public BusinessGroupNameCellRenderer() {
 		//

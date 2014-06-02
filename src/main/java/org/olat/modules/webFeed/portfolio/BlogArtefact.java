@@ -33,7 +33,8 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class BlogArtefact extends AbstractArtefact {
-	
+
+	private static final long serialVersionUID = 4567310119289463310L;
 	public static final String TYPE = BlogFileResource.TYPE_NAME;
 	public static final String BLOG_FILE_NAME = "item.xml";
 

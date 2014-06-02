@@ -46,6 +46,6 @@ public abstract class EPAbstractMap extends EPStructureElement implements Portfo
 	
 	@Override
 	public String getIcon(){
-		return "b_ep_map_icon";
+		return "o_ep_icon_map";
 	}
 }

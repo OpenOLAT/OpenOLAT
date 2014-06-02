@@ -51,11 +51,11 @@ public class ScoreCellRenderer implements FlexiCellRenderer {
 				target.append(AssessmentHelper.getRoundedScore(score));
 			} else {
 				if(cutValue.compareTo(score) <= 0) {
-					target.append("<span class='o_passed'>")
+					target.append("<span class='o_state o_passed'> <i class='o_icon o_icon_passed'> </i> ")
 					      .append(AssessmentHelper.getRoundedScore(score))
 					      .append("</span>");
 				} else {
-					target.append("<span class='o_notpassed'>")
+					target.append("<span class='o_state o_failed'><i class='o_icon o_icon_failed'> </i> ")
 					      .append(AssessmentHelper.getRoundedScore(score))
 					      .append("</span>");
 				}

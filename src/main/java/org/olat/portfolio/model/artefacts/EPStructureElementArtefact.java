@@ -31,7 +31,8 @@ import org.olat.portfolio.model.structel.EPStructureElement;
  * @author srosse, stephane.rosse@frentix.com, http.//www.frentix.com
  */
 public class EPStructureElementArtefact extends AbstractArtefact {
-	
+
+	private static final long serialVersionUID = -9179795976449029211L;
 	private EPStructureElement structureElement;
 	public static final String STRUCTUREELEMENT_ARTEFACT_TYPE = "ep-structure-element";
 

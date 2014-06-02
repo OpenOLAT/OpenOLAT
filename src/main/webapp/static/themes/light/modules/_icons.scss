@@ -106,7 +106,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_publish{ @extend .o_icon-share;}
 .o_icon_rating_on { @extend .o_icon-star;}
 .o_icon_rating_off { @extend .o_icon-star-o;}
-.o_icon_read { @extend .o_icon-fighter-jet; color: green;}
+.o_icon_read { @extend .o_icon-circle-o; }
 .o_icon_readonly { @extend .o_icon-edit; color:red;}
 .o_icon_readwrite { @extend .o_icon-edit; }
 .o_icon_recycle { @extend .o_icon-recycle; }
@@ -130,7 +130,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_table {@extend .o_icon-table; }
 .o_icon_timelimit{ @extend .o_icon-bomb; }
 .o_icon_toggle {@extend .o_icon-circle; }
-.o_icon_to_read { @extend .o_icon-fighter-jet; color:blue;}
+.o_icon_to_read { @extend .o_icon-circle; }
 .o_icon_tool { @extend .o_icon-gear; }
 .o_icon_tools { @extend .o_icon-wrench; }
 .o_icon_top {@extend .o_icon-chevron-up; }

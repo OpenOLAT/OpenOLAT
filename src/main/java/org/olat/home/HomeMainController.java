@@ -26,7 +26,6 @@ import org.olat.core.extensions.ExtManager;
 import org.olat.core.extensions.action.GenericActionExtension;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -49,14 +48,16 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class HomeMainController extends MainLayoutBasicController implements Activateable2 {
 
-	private BreadcrumbPanel stackPanel;
+	private BreadcrumbedStackedPanel stackPanel;
 	private LayoutMain3ColsController contentCtr;
 
 	public HomeMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 
 		stackPanel = new BreadcrumbedStackedPanel("homeStackPanel", getTranslator(), this);
+		stackPanel.setInvisibleCrumb(2);
 		putInitialPanel(stackPanel);
+		stackPanel.pushController("main", this);
 	}
 	
 	@Override

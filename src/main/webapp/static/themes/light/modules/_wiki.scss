@@ -5,3 +5,7 @@
 .o_wikimod_editform_wrapper {
 	margin-top: $grid-gutter-width;
 }
+
+.o_wiki-file-deleted {
+	text-decoration:line-through;
+}

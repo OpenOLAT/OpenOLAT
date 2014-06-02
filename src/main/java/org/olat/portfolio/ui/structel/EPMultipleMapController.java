@@ -228,7 +228,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 				Link vLink = LinkFactory.createCustomLink(VIEW_LINK_PREFIX + i, "viewMap" + map.getResourceableId(), "view.map",
 						Link.LINK, vC, this);
 				vLink.setUserObject(map);
-				vLink.setCustomEnabledLinkCSS("b_with_small_icon_right b_open_icon");
+				vLink.setIconRightCSS("o_icon o_icon_start");
 				
 				//can always try to delete your own map, but exercise only if the course was deleted
 				vC.remove(vC.getComponent(DELETE_LINK_PREFIX + i)); // remove as update could require hiding it

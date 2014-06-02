@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -44,6 +43,7 @@ import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.ui.EPArtefactPoolRunController;
 import org.olat.portfolio.ui.artefacts.view.EPArtefactChoosenEvent;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -63,6 +63,7 @@ public class EPAddElementsController extends BasicController {
 	private PortfolioStructure portfolioStructure;
 	private VelocityContainer addLinkVC;
 	private Link addStructLink;
+	@Autowired
 	private EPFrontendManager ePFMgr;
 	public static final String ADD_ARTEFACT = "Artefact";
 	public static final String ADD_PAGE = "page";
@@ -84,14 +85,15 @@ public class EPAddElementsController extends BasicController {
 	public EPAddElementsController(UserRequest ureq, WindowControl wControl, PortfolioStructure portStruct) {
 		super(ureq, wControl);
 		this.portfolioStructure = portStruct;
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		addLinkVC = createVelocityContainer("addLink");
-		addStructLink = LinkFactory.createCustomLink("popupLink", "add", "&nbsp;&nbsp;&nbsp;", Link.NONTRANSLATED, addLinkVC, this);
+		addStructLink = LinkFactory.createCustomLink("popupLink", "add", "", Link.NONTRANSLATED, addLinkVC, this);
+		addStructLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		addStructLink.setVisible(false);
 
-		linkArtefactLink = LinkFactory.createCustomLink("linkArtefact", "link", "&nbsp;&nbsp;&nbsp;", Link.NONTRANSLATED, addLinkVC, this);
+		linkArtefactLink = LinkFactory.createCustomLink("linkArtefact", "link", "", Link.NONTRANSLATED, addLinkVC, this);
 		linkArtefactLink.setTooltip(translate("linkArtefact.tooltip"));
 		linkArtefactLink.setCustomEnabledLinkCSS("b_eportfolio_add_link b_eportfolio_link");
+		linkArtefactLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 
 		for (String key : typeSet) {
 			typeMap.put(key, Boolean.FALSE);

@@ -57,6 +57,8 @@ public class Choice extends AbstractComponent {
 	private List<Integer> removedRows = new ArrayList<Integer>();
 	private List<Integer> addedRows = new ArrayList<Integer>();
 	private ChoiceModel model;
+	
+	private boolean escapeHtml = true;
 
 	/**
 	 * @param name of the component
@@ -144,6 +146,14 @@ public class Choice extends AbstractComponent {
 		this.resetKey = resetKey;
 	}
 
+	public boolean isEscapeHtml() {
+		return escapeHtml;
+	}
+
+	public void setEscapeHtml(boolean escapeHtml) {
+		this.escapeHtml = escapeHtml;
+	}
+
 	/**
 	 * @return boolean
 	 */
@@ -163,6 +173,15 @@ public class Choice extends AbstractComponent {
 	 */
 	public List<Integer> getSelectedRows() {
 		return selectedRows;
+	}
+	
+	public List<Integer> getAllRows() {
+		int size = model.getRowCount();
+		List<Integer> allRows = new ArrayList<>(size);
+		for (int i = 0; i < size; i++) {
+			allRows.add(new Integer(i));
+		}
+		return allRows;
 	}
 
 	/**

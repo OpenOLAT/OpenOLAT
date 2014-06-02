@@ -41,6 +41,7 @@ import org.olat.portfolio.EPUIFactory;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -52,6 +53,7 @@ import org.olat.user.UserManager;
 public class EPArtefactViewReadOnlyController extends BasicController {
 
 	private VelocityContainer vC;
+	@Autowired
 	private EPFrontendManager ePFMgr;
 	private Link detailsLink;
 	private AbstractArtefact artefact;
@@ -75,7 +77,6 @@ public class EPArtefactViewReadOnlyController extends BasicController {
 			detailsLink.setElementCssClass("o_sel_artefact_details");
 		}
 		
-		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		List<String> tags = ePFMgr.getArtefactTags(artefact);
 		List<String> escapedTags = new ArrayList<String>(tags.size());
 		for(String tag:tags) {

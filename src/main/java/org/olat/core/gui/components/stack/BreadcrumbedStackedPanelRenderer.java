@@ -43,14 +43,14 @@ public class BreadcrumbedStackedPanelRenderer extends DefaultComponentRenderer {
 			RenderResult renderResult, String[] args) {
 		BreadcrumbedStackedPanel panel = (BreadcrumbedStackedPanel) source;
 		List<Link> breadCrumbs = panel.getBreadCrumbs();
-		if(breadCrumbs.size() > 1) {
+		if(breadCrumbs.size() > panel.getInvisibleCrumb()) {
 			String mainCssClass = panel.getCssClass();
 			sb.append("<div class='o_breadcrumb ").append(mainCssClass, mainCssClass != null).append("'>")
 			  .append("<ol class='breadcrumb'>");
 
 			Link backLink = panel.getBackLink();
 			int numOfCrumbs = breadCrumbs.size();
-			if(backLink.isVisible() && numOfCrumbs > 1) {
+			if(backLink.isVisible() && numOfCrumbs > panel.getInvisibleCrumb()) {
 				sb.append("<li class='o_breadcrumb_back'>");
 				backLink.getHTMLRendererSingleton().render(renderer, sb, backLink, ubu, translator, renderResult, args);
 				sb.append("</li>");

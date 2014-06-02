@@ -886,6 +886,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		Choice choice = new Choice("colchoice", getTranslator());
 		choice.setModel(new VisibleFlexiColumnsModel(dataModel.getTableColumnModel(), enabledColumnIndex, getTranslator()));
 		choice.addListener(this);
+		choice.setEscapeHtml(false);
 		choice.setCancelKey("cancel");
 		choice.setSubmitKey("save");
 		choice.setResetKey("reset");

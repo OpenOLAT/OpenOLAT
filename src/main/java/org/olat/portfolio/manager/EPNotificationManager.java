@@ -56,7 +56,7 @@ public class EPNotificationManager {
 			if ("page".equals(notification.getType())) {
 				String bPath = rootBusinessPath + "[EPPage:" + notification.getPageKey() + "]";
 				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
-				item = new SubscriptionListItem(translator.translate("li.newpage", title), linkUrl, bPath, notification.getCreationDate(), "b_ep_page_icon");
+				item = new SubscriptionListItem(translator.translate("li.newpage", title), linkUrl, bPath, notification.getCreationDate(), "o_ep_icon_page");
 				item.setUserObject(notification.getPageKey());
 			} else {
 				String bPath = rootBusinessPath;
@@ -64,7 +64,7 @@ public class EPNotificationManager {
 					bPath = rootBusinessPath + "[EPPage:" + notification.getPageKey() + "]";
 				}
 				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
-				item = new SubscriptionListItem(translator.translate("li.newstruct", title), linkUrl, bPath, notification.getCreationDate(), "b_ep_struct_icon");
+				item = new SubscriptionListItem(translator.translate("li.newstruct", title), linkUrl, bPath, notification.getCreationDate(), "o_ep_icon_struct");
 				item.setUserObject(notification.getPageKey());
 			}
 			if(item != null) {

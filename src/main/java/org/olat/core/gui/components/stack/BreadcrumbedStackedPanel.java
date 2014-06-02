@@ -52,6 +52,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 	protected final Link backLink;
 	protected final Link closeLink;
 	
+	private int invisibleCrumb = 1;
 	private String cssClass;
 	private boolean showCloseLink;
 	
@@ -87,6 +88,14 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 
 	public void setCssClass(String cssClass) {
 		this.cssClass = cssClass;
+	}
+
+	public int getInvisibleCrumb() {
+		return invisibleCrumb;
+	}
+
+	public void setInvisibleCrumb(int invisibleCrumb) {
+		this.invisibleCrumb = invisibleCrumb;
 	}
 
 	public Link getBackLink() {

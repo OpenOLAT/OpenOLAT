@@ -37,7 +37,8 @@ import org.olat.resource.OLATResourceManager;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class LiveBlogArtefact extends AbstractArtefact {
-	
+
+	private static final long serialVersionUID = -5053371748195771395L;
 	public static final String TYPE = "liveblog";
 
 	@Override
@@ -47,7 +48,7 @@ public class LiveBlogArtefact extends AbstractArtefact {
 
 	@Override
 	public String getIcon() {
-		return "b_ep_liveblog_icon";
+		return "o_ep_icon_liveblog";
 	}
 	
 	public Feed getFeedLight() {

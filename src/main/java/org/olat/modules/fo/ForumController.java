@@ -76,6 +76,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
@@ -392,13 +394,13 @@ public class ForumController extends BasicController implements GenericEventList
 		} else if (source == archiveThreadButton){
 			archiveThDiaCtr = activateYesNoDialog(ureq, null, translate("archive.thread.dialog"), archiveThDiaCtr);
 		} else if (source == closeThreadButton) {
-			closeThread(ureq, currentMsg, true);
+			closeThread(currentMsg, true);
 		} else if (source == openThreadButton) {
-			closeThread(ureq, currentMsg, false);
+			closeThread(currentMsg, false);
 		} else if (source == hideThreadButton) {
-			hideThread(ureq, currentMsg, true);
+			hideThread(currentMsg, true);
 		} else if (source == showThreadButton) {
-			hideThread(ureq, currentMsg, false);		
+			hideThread(currentMsg, false);		
 		}	else if (source == vcThreadView) {
 			if (cmd.startsWith("attachment_")) {
 				Map<String, Object> messageMap = getMessageMapFromCommand(ureq.getIdentity(), cmd);
@@ -1511,7 +1513,7 @@ public class ForumController extends BasicController implements GenericEventList
 	 * @param msg
 	 * @param closed
 	 */
-	private void closeThread(UserRequest ureq, Message msg, boolean closed) {	
+	private void closeThread(Message msg, boolean closed) {	
 		//if the input message is not the Threadtop get the Threadtop message
 		if(msg != null && msg.getThreadtop()!=null) {
 			msg = msg.getThreadtop();
@@ -1544,7 +1546,7 @@ public class ForumController extends BasicController implements GenericEventList
 	 * @param msg
 	 * @param hidden
 	 */
-	private void hideThread(UserRequest ureq, Message msg, boolean hidden) {		
+	private void hideThread(Message msg, boolean hidden) {		
     //if the input message is not the Threadtop get the Threadtop message
 		if(msg != null && msg.getThreadtop()!=null) {
 			msg = msg.getThreadtop();
@@ -1585,29 +1587,24 @@ public class ForumController extends BasicController implements GenericEventList
 	 * Initial Date:  09.07.2007 <br>
 	 * @author Lavinia Dumitrescu
 	 */
-	class StickyThreadCellRenderer extends CustomCssCellRenderer {
-
+	private static class StickyThreadCellRenderer implements CustomCellRenderer {
 		@Override
-		protected String getCssClass(Object val) {			
-			ForumHelper.MessageWrapper messageWrapper = (ForumHelper.MessageWrapper) val; 
-			if (messageWrapper.isSticky()) {			
-				return "o_forum_thread_sticky";
+		public void render(final StringOutput sb, final Renderer renderer, final Object val, final Locale locale, final int alignment, final String action) {
+			if(val instanceof ForumHelper.MessageWrapper) {
+				ForumHelper.MessageWrapper messageWrapper = (ForumHelper.MessageWrapper)val;
+				String content = messageWrapper.toString();
+				if (renderer == null) {
+					sb.append(content);
+				} else {
+					sb.append("<span class='");
+					if (messageWrapper.isSticky()) {			
+						sb.append("o_forum_thread_sticky");
+					}
+					sb.append("'>").append(content).append("</span>");			
+				}
 			}
-			return "";
 		}
-
-		@Override
-		protected String getCellValue(Object val) {			
-			ForumHelper.MessageWrapper messageWrapper = (ForumHelper.MessageWrapper) val;
-			return messageWrapper.toString();
-		}		
-
-		@Override
-		protected String getHoverText(Object val) {
-			return null;
 	}	
-	}	
-	
 	
 	/**
 	 * 
@@ -1703,10 +1700,8 @@ public class ForumController extends BasicController implements GenericEventList
 
 		@Override
 		protected String getCssClass(Object val) {
-			//val.toString()
 			// use small icon and create icon class for resource: o_FileResource-SHAREDFOLDER_icon
-			return "b_small_icon " + "o_forum_" + ((String) val) + "_icon";
+			return "o_icon o_forum_" + ((String)val) + "_icon";
 		}
 	}
-	
 }

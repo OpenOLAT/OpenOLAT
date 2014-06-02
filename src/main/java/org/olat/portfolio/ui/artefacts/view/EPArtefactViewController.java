@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -66,6 +65,7 @@ import org.olat.portfolio.ui.artefacts.collect.EPCollectStepForm03;
 import org.olat.portfolio.ui.artefacts.collect.EPReflexionChangeEvent;
 import org.olat.resource.OLATResource;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -80,6 +80,7 @@ public class EPArtefactViewController extends FormBasicController {
 
 	private AbstractArtefact artefact;
 	private TextElement title;
+	@Autowired
 	private EPFrontendManager ePFMgr;
 	private FormLink deleteBtn;
 	private DialogBoxController delYesNoDialog;
@@ -89,6 +90,7 @@ public class EPArtefactViewController extends FormBasicController {
 	private TextBoxListElement tblE;
 	private boolean viewOnlyMode;
 	private boolean artefactInClosedMap;
+	@Autowired
 	private PortfolioModule portfolioModule;
 	private final boolean detailsLinkEnabled;
 	
@@ -102,8 +104,6 @@ public class EPArtefactViewController extends FormBasicController {
 
 	public EPArtefactViewController(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact, Map<String, Boolean> artAttribConfig, boolean artefactChooseMode, boolean viewOnlyMode, boolean detailsLink) {
 		super(ureq, wControl, "singleArtefact");
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
-		portfolioModule = (PortfolioModule)CoreSpringFactory.getBean("portfolioModule");
 		
 		this.artefact = artefact;
 		this.artefactChooseMode = artefactChooseMode;

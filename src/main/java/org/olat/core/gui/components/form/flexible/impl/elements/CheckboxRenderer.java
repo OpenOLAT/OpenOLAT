@@ -89,7 +89,7 @@ class CheckboxRenderer extends DefaultComponentRenderer {
 		}
 		
 		if (StringHelper.containsNonWhitespace(value)) {
-			sb.append("<label for=\"").append(cec.getFormDispatchId()).append("\">")
+			sb.append(" <label for=\"").append(cec.getFormDispatchId()).append("\">")
 			  .append(value)
 			  .append("</label>");			
 		}

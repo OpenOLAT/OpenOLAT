@@ -25,6 +25,7 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
 
 public class ForumArtefact extends AbstractArtefact {
 
+	private static final long serialVersionUID = -1315885067800017656L;
 	public static final String FORUM_ARTEFACT_TYPE = OresHelper.calculateTypeName(Forum.class);
 
 	@Override

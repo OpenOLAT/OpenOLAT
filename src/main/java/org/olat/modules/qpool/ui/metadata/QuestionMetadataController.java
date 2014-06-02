@@ -64,7 +64,7 @@ public class QuestionMetadataController extends FormBasicController  {
 		setFormContextHelp("org.olat.modules.qpool.ui.metadata", "question.html", "help.hover.question");
 		if(edit) {
 			editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
-			editLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_edit b_small");
+			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		}
 		
 		FormLayoutContainer metaCont = FormLayoutContainer.createDefaultFormLayout("metadatas", getTranslator());

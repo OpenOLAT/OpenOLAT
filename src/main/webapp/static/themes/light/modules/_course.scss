@@ -109,6 +109,14 @@
 	}
 }
 
+/* forum course element */
+.o_forum_thread_sticky { font-weight: bold; }
+.o_forum_status_thread_icon { @extend .o_icon-comments-o; }
+.o_forum_status_sticky_closed_icon { @extend .o_icon-ban; }
+.o_forum_status_sticky_icon { @extend .o_icon-comments; }
+.o_forum_status_closed_icon { @extend .o_icon-ban; }
+
+
 /* statistics */
 .o_course_stats .o_desc {
 	@extend .o_note

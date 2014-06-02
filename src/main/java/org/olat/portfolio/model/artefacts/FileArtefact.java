@@ -31,7 +31,8 @@ import org.olat.core.gui.util.CSSHelper;
  * @author srosse, stephane.rosse@frentix.com, www.frentix.com
  */
 public class FileArtefact extends AbstractArtefact {
-	
+
+	private static final long serialVersionUID = -3719232086297906741L;
 	// the filename of the linked file, relative to artefact-folder
 	private String filename;
 	public static final String FILE_ARTEFACT_TYPE = "bc";
@@ -41,7 +42,7 @@ public class FileArtefact extends AbstractArtefact {
 		if (getFilename()!=null){
 			return CSSHelper.createFiletypeIconCssClassFor(getFilename());
 		}
-		return "b_filetype_file";
+		return "o_filetype_file";
 	}
 
 

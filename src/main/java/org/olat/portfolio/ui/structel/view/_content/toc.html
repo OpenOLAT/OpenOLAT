@@ -1,8 +1,8 @@
-<div class="b_portfolio_toc">
-	<div class="b_float_right">$r.render("artOnOffLink")</div>
+<div class="o_portfolio_toc">
+	<div class="pull-right">$r.render("artOnOffLink")</div>
 	<h1>$r.translate("toc.root")</h1>
 	#if ($tocList)
-	<ul>
+	<ul class="list-unstyled">
 		#foreach($tocElement in $tocList)
 			<li class="level$tocElement.getLevel() type_$tocElement.getType()">
 			#set($titleLink = $tocElement.getTitleLink().getComponentName())
@@ -11,17 +11,17 @@
 			
 			$r.render($titleLink)
 			#if ($r.available($iconLink)) 
-				<span class="link">$r.render($iconLink)</span>
+				<span class="o_ep_link">$r.render($iconLink)</span>
 			#end
 			#if ($r.available($commentLink)) 
-				<span class="commentlink">$r.render($commentLink)</span>
+				<span class="o_ep_commentlink">$r.render($commentLink)</span>
 			#end
 			</li>
 		#end
 	</ul>
 	#end
 	#if($r.available("commentCtrl"))
-		<div class="b_clearfix">
+		<div class="clearfix">
 			$r.render("commentCtrl")
 		</div>
 	#end

@@ -228,9 +228,9 @@ public class EPStructureElement extends PersistentObject implements PortfolioStr
 		return olatResource == null ? null : olatResource.getResourceableTypeName(); 
 	}
 
-
+	@Override
 	public String getIcon(){
-		return "b_ep_struct_icon";
+		return "o_ep_icon_struct";
 	}
 
 
