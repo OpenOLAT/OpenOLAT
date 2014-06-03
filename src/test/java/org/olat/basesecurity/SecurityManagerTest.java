@@ -43,6 +43,7 @@ import java.util.UUID;
 import junit.framework.Assert;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
@@ -236,7 +237,8 @@ public class SecurityManagerTest extends OlatTestCase {
 		assertEquals(testLogin,authentication.getAuthusername());
 	}
 
-	@Test public void testCountUniqueUserLoginsSince(){
+	@Test @Ignore
+	public void testCountUniqueUserLoginsSince(){
 
    	// Set lastLogin for 4 test users to now
 		DB db = DBFactory.getInstance();

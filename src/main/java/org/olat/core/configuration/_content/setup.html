@@ -2,15 +2,13 @@ Database Url: <span style=color:blue>$hibernateConnectionUrl</span>
 <br/>
 Userdata are stored under: <span style=color:blue>$userDataRoot</span>
 <hr/>
-<div>
-#o_togglebox_start("o_olat_propertiesOpener" "Show olat.properties (System default values)")
-	<fieldset >
-	<legend>olat.properties</legend>
+<div class="panel panel-default">
+	<div class="panel-heading" data-toggle="collapse" data-target="#olatproperties">
+		<h3 class="panel-title">olat.properties</h3>
+	</div>
+	<ul id="olatproperties" class="panel-collapse collapse list-group">
 	#foreach($prop in $defaultProperties)
-		#if ($prop.getKey() == "delimiter")
-			<br/>
-		#else
-			<div>
+		<li class="list-group-item">
 			#if ($prop.isOverwritten())
 			#set ($overwriteValue = $r.escapeHtml($prop.getOverwriteValue()))
 				<span style="color:red" title="$overwriteValue">X</span>
@@ -30,24 +28,22 @@ Userdata are stored under: <span style=color:blue>$userDataRoot</span>
 			#else
 				<span style=color:blue>$r.escapeHtml($prop.getValue())</span>
 			#end
-			</div>
-		#end
+		</li>
 	#end
-	</fieldset>
-#o_togglebox_end()
-
-<hr/>
-
-#o_togglebox_start("o_olat_local_propertiesOpener" "Show olat.local.properties (Properties that overwrite the default Properties)")
-	<fieldset>
-	<code>$overwritePropertiesLocation</code>
-			<form action="#">
-<textarea rows="10" cols="20" class="form-control">
-#foreach($prop in $overwriteProperties)
-$prop.getKey()=$prop.getValue()
-#end
-</textarea>
-			</form>
-	</fieldset>
-#o_togglebox_end()
-	
+	</ul>
+</div>
+<div class="panel panel-default">
+	<div class="panel-heading" data-toggle="collapse" data-target="#olatlocalproperties">
+		<h3 class="panel-title">olat.local.properties</h3>
+	</div>
+	<div id="olatlocalproperties" class="panel-collapse collapse list-group" class="panel-body">
+		<code>$overwritePropertiesLocation</code>
+		<form class="form" action="#">
+			<textarea rows="50" cols="20" class="form-control">
+				#foreach($prop in $overwriteProperties)
+					$prop.getKey()=$prop.getValue()
+				#end
+			</textarea>
+		</form>
+	</div>
+</div>

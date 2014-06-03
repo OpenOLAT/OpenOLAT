@@ -24,6 +24,7 @@ import java.util.UUID;
 
 import junit.framework.Assert;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.dispatcher.mapper.manager.MapperDAO;
@@ -166,7 +167,7 @@ public class MapperDAOTest extends OlatTestCase {
 		Assert.assertNull(deletedMapper);
 	}
 	
-	@Test
+	@Test @Ignore
 	public void testDeleteMapperByMapper_expirationDate() throws Exception {
 		//create mappers
 		String mapperIdToDeleteShortLived = UUID.randomUUID().toString();
