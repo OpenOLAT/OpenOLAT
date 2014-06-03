@@ -605,9 +605,12 @@
     	  height = placeholderheight - margin.top - margin.bottom;
     	
     	var cut = settings.cut;
-    	
+    	var maxScore = d3.max(values, function(d) { return d; });
+    	if(maxScore < 1.0) {
+    		maxScore = 1.0;
+    	}
     	var x = d3.scale.linear()
-    	  .domain([0, 3.0])
+    	  .domain([0, maxScore])
     	  .range([0, width]);
     	
     	var data = d3.layout.histogram()

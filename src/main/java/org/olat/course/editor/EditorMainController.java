@@ -213,14 +213,15 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
 		addLoggingResourceable(LoggingResourceable.wrap(CourseFactory.loadCourse(ores)));
 		
+		// try to acquire edit lock for this course.			
+		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(ores, ureq.getIdentity(), CourseFactory.COURSE_EDITOR_LOCK);
+
 		if(CourseFactory.isCourseEditSessionOpen(ores.getResourceableId())) {
 			MainPanel empty = new MainPanel("empty");
 			putInitialPanel(empty);
 			return;
 		}
 		
-		// try to acquire edit lock for this course.			
-		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(ores, ureq.getIdentity(), CourseFactory.COURSE_EDITOR_LOCK);
 		OLATResourceable lockEntryOres = OresHelper.createOLATResourceableInstance(LockEntry.class, 0l);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), lockEntryOres);
 		

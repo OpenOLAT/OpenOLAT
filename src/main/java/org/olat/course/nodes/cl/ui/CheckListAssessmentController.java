@@ -559,6 +559,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 				courseNode.updateScoreEvaluation(userCourseEnv, identity);
 			}
 		}
+		
+		reloadTable();
 	}
 	
 	private void doDisableEditingMode() {

@@ -426,6 +426,7 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 	 */
 	@Override
 	public void delete(DBMailLight mail, Identity identity, boolean deleteMetaMail) {
+		if(mail == null) return;//already deleted
 		if(StringHelper.containsNonWhitespace(mail.getMetaId()) && deleteMetaMail) {
 			List<DBMailLight> mails = getEmailsByMetaId(mail.getMetaId());
 			for(DBMailLight childMail:mails) {

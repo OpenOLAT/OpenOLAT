@@ -49,10 +49,10 @@ public class BulkAssessmentSettings implements Serializable {
 		
 		if (courseNode instanceof TACourseNode) {
 			Boolean hasReturnBox = (Boolean)courseNode.getModuleConfiguration().get(TACourseNode.CONF_RETURNBOX_ENABLED);
-			hasReturnFiles = hasReturnBox.booleanValue();				
+			hasReturnFiles = hasReturnBox == null ? false : hasReturnBox.booleanValue();				
 		} else if (courseNode instanceof ProjectBrokerCourseNode) {
 			Boolean hasReturnBox = (Boolean)courseNode.getModuleConfiguration().get(ProjectBrokerCourseNode.CONF_RETURNBOX_ENABLED);
-			hasReturnFiles = hasReturnBox.booleanValue();				
+			hasReturnFiles = hasReturnBox == null ? false : hasReturnBox.booleanValue();				
 		} else {
 			hasReturnFiles = false;			
 		}

@@ -278,21 +278,26 @@ public class CheckListRunController extends FormBasicController implements Contr
 		} else {
 			theOne = wrapper.getDbCheckbox();
 		}
-
-		Float score;
-		if(checked) {
-			score = wrapper.getCheckbox().getPoints();
+		
+		if(theOne == null) {
+			//only warning because this happen in course preview
+			logWarn("A checkbox is missing: " + courseOres + " / " + courseNode.getIdent(), null);
 		} else {
-			score = 0f;
+			Float score;
+			if(checked) {
+				score = wrapper.getCheckbox().getPoints();
+			} else {
+				score = 0f;
+			}
+			checkboxManager.check(theOne, getIdentity(), score, new Boolean(checked));
+			//make sure all results is on the database before calculating some scores
+			//manager commit already DBFactory.getInstance().commit();
+			
+			courseNode.updateScoreEvaluation(userCourseEnv, getIdentity());
+			
+			Checkbox checkbox = wrapper.getCheckbox();
+			logUpdateCheck(checkbox.getCheckboxId(), checkbox.getTitle());
 		}
-		checkboxManager.check(theOne, getIdentity(), score, new Boolean(checked));
-		//make sure all results is on the database before calculating some scores
-		//manager commit already DBFactory.getInstance().commit();
-		
-		courseNode.updateScoreEvaluation(userCourseEnv, getIdentity());
-		
-		Checkbox checkbox = wrapper.getCheckbox();
-		logUpdateCheck(checkbox.getCheckboxId(), checkbox.getTitle());
 		
 		exposeUserDataToVC(flc);
 	}
