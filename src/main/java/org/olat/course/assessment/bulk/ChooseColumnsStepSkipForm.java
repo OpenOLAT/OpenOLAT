@@ -27,7 +27,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.course.assessment.model.BulkAssessmentColumnSettings;
 
 /**
  * 
@@ -37,7 +36,7 @@ import org.olat.course.assessment.model.BulkAssessmentColumnSettings;
  */
 public class ChooseColumnsStepSkipForm extends StepFormBasicController {
 
-	public ChooseColumnsStepSkipForm(UserRequest ureq, WindowControl wControl, BulkAssessmentColumnSettings columnsSettings,
+	public ChooseColumnsStepSkipForm(UserRequest ureq, WindowControl wControl,
 			StepsRunContext runContext, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		setTranslator(new HeaderColumnTranslator(getTranslator()));		

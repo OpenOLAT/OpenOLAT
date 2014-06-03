@@ -75,7 +75,7 @@ public class BulkAssessment_2b_ChooseColumnsStep extends BasicStep {
 		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode);
 		boolean onlyReturnFiles = (!settings.isHasScore() && !settings.isHasPassed() && !settings.isHasUserComment());
 		if (onlyReturnFiles) {
-			return new ChooseColumnsStepSkipForm(ureq, wControl, savedColumnsSettings, context, form);						
+			return new ChooseColumnsStepSkipForm(ureq, wControl, context, form);						
 		} else {
 			return new ChooseColumnsStepForm(ureq, wControl, savedColumnsSettings, context, form);			
 		}

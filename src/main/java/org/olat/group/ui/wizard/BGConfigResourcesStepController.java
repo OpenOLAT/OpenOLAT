@@ -46,6 +46,7 @@ import org.olat.core.util.Util;
 import org.olat.course.CourseModule;
 import org.olat.group.ui.edit.BusinessGroupEditResourceController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.ui.RepositoryTableModel;
 
@@ -66,6 +67,7 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 			StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "resources");
 		setTranslator(Util.createPackageTranslator(BusinessGroupEditResourceController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		
 		initForm(ureq);
 	}

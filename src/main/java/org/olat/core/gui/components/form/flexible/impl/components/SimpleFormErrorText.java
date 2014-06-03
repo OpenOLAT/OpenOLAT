@@ -27,13 +27,14 @@ package org.olat.core.gui.components.form.flexible.impl.components;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -44,29 +45,18 @@ import org.olat.core.gui.translator.Translator;
  * @author patrickb
  */
 public class SimpleFormErrorText extends FormBaseComponentImpl {
-	private static final ComponentRenderer RENDERER = new ComponentRenderer() {
-
-		@Override
-		public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
-				RenderingState rstate) {
-			//
-		}
-
-		@Override
-		public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-			//
-		}
-
+	private static final ComponentRenderer RENDERER = new DefaultComponentRenderer() {
 		@Override
 		public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 				RenderResult renderResult, String[] args) {
 			SimpleFormErrorText stc = (SimpleFormErrorText) source;
+			if(StringHelper.containsNonWhitespace(stc.getText())) {
 			// error component only
-			sb.append("<div class='o_error' id='o_c").append(source.getDispatchID()).append("'>");
-			sb.append(stc.text);
-			sb.append("</div>");
+				sb.append("<div class='o_error' id='o_c").append(source.getDispatchID()).append("'>")
+				  .append(stc.getText())
+				  .append("</div>");
+			}
 		}
-
 	};
 
 	private final String text;
@@ -77,6 +67,10 @@ public class SimpleFormErrorText extends FormBaseComponentImpl {
 		this.setDomReplacementWrapperRequired(false);
 		setDirty(true);
 	}
+	
+	public String getText() {
+		return text;
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
@@ -85,5 +79,4 @@ public class SimpleFormErrorText extends FormBaseComponentImpl {
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}
-
 }

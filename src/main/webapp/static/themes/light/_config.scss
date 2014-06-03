@@ -69,6 +69,8 @@ $o-tree-link-active-parent-color 			: $o-tree-link-color !default;
 $o-tree-link-active-parent-hover-color 		: $o-tree-link-hover-color !default;
 $o-tree-link-active-parent-font-weight		: $o-tree-link-active-font-weight !default;
 
+$o-table-row-selected-color     : pink;
+
 
 /* Background color of the main content area. */
 $o-main-outer-bg 	: #fff !default;
@@ -105,6 +107,7 @@ $o-coursesite-catalog-space : $padding-large-vertical * 2;
 $o-coursesite-catalog-space-sm : $padding-large-vertical;
 $o-coursesite-catalog-space-xs : $padding-xs-vertical;
 $o-coursesite-catalog-border : $brand-primary;
+
 
 
 

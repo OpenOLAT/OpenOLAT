@@ -511,7 +511,7 @@ public class BusinessGroupDAO {
 		if(StringHelper.containsNonWhitespace(params.getCourseTitle())) {
 			where = where(query, where);
 			query.append(" bgi.key in (")
-			     .append("   select bgRel.groupKey from ").append(BGRepositoryEntryRelation.class.getName()).append(" bgRel ")
+			     .append("   select bgRel.relationId.groupKey from repoentryrelationview bgRel ")
 			     .append("     where ");
 			searchLikeAttribute(query, "bgRel", "repositoryEntryDisplayName", "displayName");
 			query.append(" )");

@@ -103,6 +103,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_previous{@extend .o_icon-arrow-circle-left; }
 .o_icon_previous_page{@extend .o_icon-angle-double-left; }
 .o_icon_print {@extend .o_icon-print;}
+.o_icon_private {@extend .o_icon-print;}
 .o_icon_publish{ @extend .o_icon-share;}
 .o_icon_rating_on { @extend .o_icon-star;}
 .o_icon_rating_off { @extend .o_icon-star-o;}

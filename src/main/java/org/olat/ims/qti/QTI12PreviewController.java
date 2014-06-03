@@ -22,7 +22,6 @@ package org.olat.ims.qti;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -46,7 +45,6 @@ import org.olat.modules.qpool.QuestionItem;
  */
 public class QTI12PreviewController extends BasicController {
 	
-	private final Panel mainPanel;
 	private final VelocityContainer mainVC;
 	private ItemPreviewController previewCtrl;
 	private QTI12MetadataController metadataCtrl;
@@ -58,7 +56,6 @@ public class QTI12PreviewController extends BasicController {
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 
 		mainVC = createVelocityContainer("qti_preview");
-		mainPanel = new Panel("qti12preview");
 		
 		VFSLeaf leaf = qpoolService.getRootFile(qitem);
 		if(leaf == null) {
@@ -71,8 +68,7 @@ public class QTI12PreviewController extends BasicController {
 				String mapperUrl = registerMapper(ureq, new VFSContainerMapper(directory));
 				previewCtrl = new ItemPreviewController(wControl, item, mapperUrl, translator);
 				listenTo(previewCtrl);
-				mainPanel.setContent(previewCtrl.getInitialComponent());
-				
+				mainVC.put("preview", previewCtrl.getInitialComponent());
 				if(!summary) {
 					metadataCtrl = new QTI12MetadataController(ureq, getWindowControl(), item);
 					listenTo(metadataCtrl);
@@ -81,7 +77,6 @@ public class QTI12PreviewController extends BasicController {
 			}
 		}
 		
-		mainVC.put("preview", mainPanel);
 		putInitialPanel(mainVC);
 	}
 	

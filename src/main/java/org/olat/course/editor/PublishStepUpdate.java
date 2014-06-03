@@ -108,7 +108,7 @@ class PublishStepUpdate extends BasicStep {
 					CourseNodeConfiguration config = courseNodeFactory.getCourseNodeConfiguration(courseNode.getType());	
 					String cssClass = config.getIconCSSClass();
 					String nodeName = courseNode.getShortName();
-					notes.append("<div class='b_with_small_icon_left ").append(cssClass).append("'><b>").append(nodeName).append("</b></div><ul>");
+					notes.append("<i class='o_icon o_icon-fw ").append(cssClass).append("'> </i> <b>").append(nodeName).append("</b><ul>");
 					for ( ;currentDesc != null && currentDesc.getDescriptionForUnit().equals(nodeId); currentDesc = (it.hasNext() ? it.next() : null)) {
 						notes.append("<li>").append(currentDesc.getShortDescription(ureq.getLocale())).append("</li>");
 					}

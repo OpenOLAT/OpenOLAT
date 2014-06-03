@@ -22,7 +22,6 @@ package org.olat.admin.user.bulkChange;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.filter.FilterFactory;
@@ -67,7 +66,7 @@ public class GroupAddOverviewModel extends DefaultTableDataModel<BusinessGroup> 
 			case 0: // name
 				String name = group.getName();
 				if(name == null) return "";
-				return StringEscapeUtils.escapeHtml(name);
+				return name;
 			case 1: // description
 				String desc = group.getDescription();
 				return FilterFactory.getHtmlTagAndDescapingFilter().filter(desc);		

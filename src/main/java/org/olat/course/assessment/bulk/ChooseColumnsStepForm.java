@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -139,7 +140,8 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 		}
 		
 		overviewDataModel.setTableColumnModel(tableColumnModel);
-		uifactory.addTableElement(ureq, getWindowControl(), "overviewList", overviewDataModel, formLayout);
+		FlexiTableElement tableEl = uifactory.addTableElement(ureq, getWindowControl(), "overviewList", overviewDataModel, formLayout);
+		tableEl.setCustomizeColumns(false);
 	}
 	
 	private String getSelectedKey(int pos, int settings, String[] theKeys) {

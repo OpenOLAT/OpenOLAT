@@ -104,8 +104,8 @@ public class PoolsAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.publicPool.i18nKey(), Cols.publicPool.ordinal(),
 				true, "publicPool", FlexiColumnModel.ALIGNMENT_LEFT,
 				new BooleanCellRenderer(
-						new CSSIconFlexiCellRenderer("o_public"),
-						new CSSIconFlexiCellRenderer("o_private"))
+						new CSSIconFlexiCellRenderer("o_icon_public_pool"),
+						new CSSIconFlexiCellRenderer("o_icon_private_pool"))
 		));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18nKey(), Cols.name.ordinal(), true, "name"));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", translate("edit"), "edit-pool"));

@@ -19,7 +19,6 @@
  */
 package org.olat.modules.qpool.ui.admin;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -39,6 +38,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.ui.QuestionsController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -55,11 +55,11 @@ public class TaxonomyLevelController extends FormBasicController {
 	private DialogBoxController confirmDeleteCtrl;
 	
 	private TaxonomyLevel taxonomyLevel;
-	private final QPoolService qpoolService;
+	@Autowired
+	private QPoolService qpoolService;
 	
 	public TaxonomyLevelController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, Util.createPackageTranslator(QuestionsController.class, ureq.getLocale()));
-		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		initForm(ureq);
 		//make it invisible, no level to show
 		flc.setVisible(false);
@@ -72,6 +72,8 @@ public class TaxonomyLevelController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("edit");
+		
 		pathEl = uifactory.addStaticTextElement("parentLine", "classification.taxonomy.parents", "", formLayout);
 		fieldEl = uifactory.addStaticTextElement("taxonomylevel", "classification.taxonomy.level", "", formLayout);
 
@@ -170,5 +172,4 @@ public class TaxonomyLevelController extends FormBasicController {
 		cmc.activate();
 		listenTo(cmc);
 	}
-	
 }

@@ -48,7 +48,6 @@ public class BulkAssessment_3_ValidationStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext context, Form form) {
-		ValidationStepForm ctrl = new ValidationStepForm(ureq, wControl, context, form);
-		return ctrl;
+		return new ValidationStepForm(ureq, wControl, context, form);
 	}
 }

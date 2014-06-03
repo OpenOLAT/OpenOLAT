@@ -25,7 +25,7 @@
 		.o_table_buttons {
 			text-align: center;
 			input {
-				margin-right: 1em;		
+				margin-right: 1em;
 				&:last-child {
 					margin-right: 0;		
 				}
@@ -37,6 +37,9 @@
 		}		
 	}
 	
+	.o_row_selected td { 
+		background-color: $o-table-row-selected-color !important; 
+	}
 
 	a.b_sorting {
 		padding: 0 20px 0 0;
@@ -56,6 +59,10 @@
 
 	.o_table {
 		margin-bottom: 0;
+	}
+	
+	.dataTables_info {
+		padding: 5px 10px 5px 0;
 	}
 }
 

@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
@@ -64,6 +63,7 @@ import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.BusinessGroupFormController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -87,13 +87,12 @@ public class GroupSearchController extends StepFormBasicController {
 	private GroupTableDataModel tableDataModel;
 	
 	private String lastSearchValue;
-	
-	private final BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 	// constructor to be used like a normal FormBasicController
 	public GroupSearchController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		Translator pT = Util.createPackageTranslator(BusinessGroupFormController.class, ureq.getLocale(), getTranslator());
 		flc.setTranslator(pT);
 		initForm(ureq);
@@ -102,7 +101,6 @@ public class GroupSearchController extends StepFormBasicController {
 	// constructor for use in steps-wizzard
 	public GroupSearchController(UserRequest ureq, WindowControl wControl, Form form, StepsRunContext stepsRunContext) {
 		super(ureq, wControl, form, stepsRunContext, LAYOUT_VERTICAL, "resulttable");
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		Translator pT = Util.createPackageTranslator(BusinessGroupFormController.class, ureq.getLocale(), getTranslator());
 		flc.setTranslator(pT);
 		initForm(ureq);

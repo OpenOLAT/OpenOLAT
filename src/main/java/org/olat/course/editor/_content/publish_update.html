@@ -1,8 +1,6 @@
 <h4>$r.translate("publish.step.update.title")</h4>
 #if($r.available("updateNotes"))
-	<div class='b_info'>
-		$r.translate("publish.update.description")
-	</div>
+	<div class='o_info'>$r.translate("publish.update.description")</div>
 	$r.render("updateNotes")
 #else
 	$r.translate("publish.update.nothing")

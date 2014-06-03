@@ -19,18 +19,17 @@
  */
 package org.olat.modules.qpool.ui;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionPoolModule;
-import org.olat.modules.qpool.QPoolSPI;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -42,14 +41,14 @@ public class QuestionItemPreviewController extends BasicController {
 
 	private QuestionItem item;
 	private Controller previewCtrl;
-	private final Panel previewPanel;
-	private final QuestionPoolModule poolModule;
+	private final SimpleStackedPanel previewPanel;
+	@Autowired
+	private QuestionPoolModule poolModule;
 	
 	public QuestionItemPreviewController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		poolModule = CoreSpringFactory.getImpl(QuestionPoolModule.class);
-		previewPanel = new Panel("preview.container");
+		previewPanel = new SimpleStackedPanel("preview.container");
 		putInitialPanel(previewPanel);
 	}
 	
@@ -100,8 +99,7 @@ public class QuestionItemPreviewController extends BasicController {
 	}
 	
 	private Component getRawContent() {
-		VelocityContainer content = createVelocityContainer("raw_content");
-		return content;
+		return createVelocityContainer("raw_content");
 	}
 
 	@Override

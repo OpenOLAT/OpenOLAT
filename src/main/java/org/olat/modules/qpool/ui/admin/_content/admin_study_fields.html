@@ -1,32 +1,22 @@
 <fieldset>
 	<legend>$r.translate("menu.admin.studyfields")</legend>
-	<div class="b_info">
+	<div class="o_info">
 		$r.translate("admin.studyfields.intro")
 	</div>
-	<div class="b_clearfix">
-		<div class="b_float_right">
+	<div class="btn-toolbar">
+		<div class="pull-right">
 			$r.render("add")
 		</div>
 	</div>	
 	<br />
-	<div class="b_clearfix">
-		<div class="b_c50l">
-			<div class="b_subcl">
-				<div class="b_master_detail">
-					$r.render("tree")
-				</div>
-			</div>
+	<div class="row">
+		<div class="col-sm-6">
+			$r.render("tree")
 		</div>
-		<div class="b_c50r">
-			<div class="b_subcr">
+		<div class="col-sm-6">
 			#if($r.available("details"))
-				<b>
-					$r.translate("edit")
-				</b>
-				<br />
 				$r.render("details")
 			#end
-			</div>
 		</div>
 	</div>
 </fieldset>

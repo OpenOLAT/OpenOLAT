@@ -19,7 +19,6 @@
  */
 package org.olat.modules.qpool.ui.admin;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -33,6 +32,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.ui.QuestionsController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -46,14 +46,14 @@ public class TaxonomyLevelEditController extends FormBasicController {
 
 	private TaxonomyLevel taxonomyLevel;
 	private final TaxonomyLevel parentLevel;
-	private final QPoolService qpoolService;
+	@Autowired
+	private QPoolService qpoolService;
 	
 	public TaxonomyLevelEditController(UserRequest ureq, WindowControl wControl, TaxonomyLevel parentLevel, TaxonomyLevel taxonomyLevel) {
 		super(ureq, wControl, Util.createPackageTranslator(QuestionsController.class, ureq.getLocale()));
 		
 		this.parentLevel = parentLevel;
 		this.taxonomyLevel = taxonomyLevel;
-		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		
 		initForm(ureq);
 	}

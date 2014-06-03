@@ -145,7 +145,7 @@ class UserBulkChangeStep02 extends BasicStep {
 
 		@Override
 		protected void doDispose() {
-		// TODO Auto-generated method stub
+			//
 		}
 
 		@Override
@@ -158,7 +158,6 @@ class UserBulkChangeStep02 extends BasicStep {
 			return true;
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			FormLayoutContainer formLayoutVertical = FormLayoutContainer.createVerticalFormLayout("vertical", getTranslator());
@@ -173,8 +172,11 @@ class UserBulkChangeStep02 extends BasicStep {
 			textContainer.contextPut("validChange", validChange);
 			if (!validChange) return;
 
+			@SuppressWarnings("unchecked")
 			List<Identity> selectedIdentities = (List<Identity>) getFromRunContext("identitiesToEdit");
+			@SuppressWarnings("unchecked")
 			HashMap<String, String> attributeChangeMap = (HashMap<String, String>) getFromRunContext("attributeChangeMap");
+			@SuppressWarnings("unchecked")
 			HashMap<String, String> roleChangeMap = (HashMap<String, String>) getFromRunContext("roleChangeMap");
 
 			Roles roles = ureq.getUserSession().getRoles();
@@ -201,7 +203,7 @@ class UserBulkChangeStep02 extends BasicStep {
 					if (userLanguage.equals(inputLanguage)) {
 						userDataArray.add(userLanguage);
 					} else {
-						userDataArray.add("<span class=\"b_wizard_table_changedcell\">" + inputLanguage + "</span>");
+						userDataArray.add(decorateChangedCell(inputLanguage));
 					}
 				} else {
 					userDataArray.add(userLanguage);
@@ -227,7 +229,7 @@ class UserBulkChangeStep02 extends BasicStep {
 							userDataArray.add(userValue);
 						} else {
 							// style italic:
-							userDataArray.add("<span class=\"b_wizard_table_changedcell\">" + evaluatedInputFieldValue + "</span>");
+							userDataArray.add(decorateChangedCell(evaluatedInputFieldValue));
 						}
 					} else {
 						// property has not been checked in step00 but should be in
@@ -270,12 +272,14 @@ class UserBulkChangeStep02 extends BasicStep {
 			FlexiTableDataModel<List<String>> tableDataModel = new FlexiTableDataModelImpl<List<String>>(new OverviewModel(mergedDataChanges, colPos), tableColumnModel);
 			uifactory.addTableElement(ureq, getWindowControl(), "newUsers", tableDataModel, formLayoutVertical);
 
-			//fxdiff: 101 add group overview
 			Set<Long> allGroups = new HashSet<Long>(); 
+			@SuppressWarnings("unchecked")
 			List<Long> ownGroups = (List<Long>) getFromRunContext("ownerGroups");
+			@SuppressWarnings("unchecked")
 			List<Long> partGroups = (List<Long>) getFromRunContext("partGroups");
 			allGroups.addAll(ownGroups);
 			allGroups.addAll(partGroups);
+			@SuppressWarnings("unchecked")
 			List<Long> mailGroups = (List<Long>) getFromRunContext("mailGroups");
 			
 			if (allGroups.size() != 0) {
@@ -318,9 +322,12 @@ class UserBulkChangeStep02 extends BasicStep {
 				return isInGroup.toString();
 			} else {
 				isInGroup = !isInGroup; //invert to represent the new state
-				return "<span class=\"b_wizard_table_changedcell\">" + isInGroup.toString() + "</span>";		
+				return decorateChangedCell(isInGroup);		
 			}
 		}
+		
+		private String decorateChangedCell(Object val) {
+			return "<span class='o_userbulk_changedcell'><i class='o_icon o_icon_new'> </i> " + val.toString() + "</span>";
+		}
 	}
-	
 }
