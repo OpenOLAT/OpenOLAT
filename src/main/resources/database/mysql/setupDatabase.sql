@@ -2058,7 +2058,7 @@ create index idx_re_lifecycle_extref_idx on o_repositoryentry (external_ref);
 alter table o_repositoryentry add constraint idx_re_lifecycle_fk foreign key (fk_lifecycle) references o_repositoryentry_cycle(id);
 create index idx_re_lifecycle_soft_idx on o_repositoryentry_cycle (r_softkey);
 
-alter table o_repositoryentry add constraint repoentry_stats_ctx foreign key (fk_stats) references o_repositoryentry_stats (id);
+-- alter table o_repositoryentry add constraint repoentry_stats_ctx foreign key (fk_stats) references o_repositoryentry_stats (id);
 
 -- access control
 create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);

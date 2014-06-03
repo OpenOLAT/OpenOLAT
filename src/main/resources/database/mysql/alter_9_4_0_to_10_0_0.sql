@@ -35,7 +35,7 @@ insert into o_repositoryentry_stats (id, creationdate, lastmodified, r_rating, r
 update o_repositoryentry set fk_stats=repositoryentry_id where fk_stats is null;
 
 alter table o_repositoryentry modify fk_stats bigint not null;
-alter table o_repositoryentry add constraint repoentry_stats_ctx foreign key (fk_stats) references o_repositoryentry_stats (id);
+-- alter table o_repositoryentry add constraint repoentry_stats_ctx foreign key (fk_stats) references o_repositoryentry_stats (id);
 
 -- base group
 create table o_bs_group (
