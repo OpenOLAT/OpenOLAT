@@ -35,7 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.rules.RulesFactory;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
@@ -95,49 +95,61 @@ public class SystemRegistrationAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//always send statistics
-		flc.contextPut("isRegisteredStatistics", Boolean.valueOf(true));
-		//
-		// Add website
-		publishWebSiteSelection = uifactory.addCheckboxesVertical("registration.publishWebSiteSelection", null,  formLayout,
-				new String[] { YES }, new String[] { "" }, 1);
+		
+		FormLayoutContainer settingsCont = FormLayoutContainer.createDefaultFormLayout("settings", getTranslator());
+		formLayout.add("settings", settingsCont);
+		
+		
+		String[] publishKeys = new String[]{ YES };
+		String[] publishValues = new String[]{
+				translate("registration.publishWebSiteSelection",  new String[]{ Settings.getServerContextPathURI() })
+		};
+		publishWebSiteSelection = uifactory.addCheckboxesVertical("registration.publishWebSiteSelection", null,
+				settingsCont, publishKeys, publishValues, 1);
 		publishWebSiteSelection.addActionListener(FormEvent.ONCLICK);
 		boolean publishWebsiteConfig = registrationModule.isPublishWebsite();
 		publishWebSiteSelection.select(YES, publishWebsiteConfig);
-		flc.contextPut("isRegisteredWeb", Boolean.valueOf(publishWebsiteConfig));
 		
 		// Add website description
 		String webSiteDesc = registrationModule.getWebsiteDescription();
-		webSiteDescription = uifactory.addTextAreaElement("registration.webSiteDescription", 5, 60, webSiteDesc, formLayout);
+		webSiteDescription = uifactory.addTextAreaElement("registration.webSiteDescription", 5, 60, webSiteDesc, settingsCont);
+		webSiteDescription.setLabel("registration.webSiteDescription", new String[]{ Settings.getServerContextPathURI() });
 		webSiteDescription.addActionListener(FormEvent.ONCHANGE);
 		flc.contextPut("webSiteURL", Settings.getServerContextPathURI());
-		RulesFactory.createHideRule(publishWebSiteSelection, null, webSiteDescription, formLayout);
-		RulesFactory.createShowRule(publishWebSiteSelection, YES, webSiteDescription, formLayout);
-		// Add location input
+
 		String location = registrationModule.getLocation();
-		locationBox = uifactory.addTextElement("registration.location", "registration.location", -1, location, formLayout);
+		locationBox = uifactory.addTextElement("registration.location", "registration.location", -1, location, settingsCont);
 		locationBox.setExampleKey("registration.location.example", null);
+		locationBox.setVisible(publishWebSiteSelection.isSelected(0));
 		String locationCSV = registrationModule.getLocationCoordinates();
 		if(locationCSV != null){
 			flc.contextPut("locationCoordinates", locationCSV);
 		}
-		//
-		// Add announce list
-		addToAnnounceListSelection = uifactory.addCheckboxesVertical("registration.addToAnnounceListSelection", null, formLayout,
-				new String[] { YES }, new String[] { "" }, 1);
+		
+		String[] annonceKeys = new String[]{ YES };
+		String[] annonceValues = new String[]{
+				translate("registration.addToAnnounceListSelection")	
+		};
+		addToAnnounceListSelection = uifactory.addCheckboxesVertical("registration.addToAnnounceListSelection", null, settingsCont,
+				annonceKeys, annonceValues, 1);
 		addToAnnounceListSelection.addActionListener(FormEvent.ONCLICK);
 		addToAnnounceListSelection.select(YES, registrationModule.isNotifyReleases());
-		//
-		// Add email field
+
 		String emailValue = registrationModule.getEmail();
-		email = uifactory.addTextElement("registration.email", "registration.email", 60, emailValue, formLayout);
-		RulesFactory.createHideRule(addToAnnounceListSelection, null, email, formLayout);
-		RulesFactory.createShowRule(addToAnnounceListSelection, YES, email, formLayout);
+		email = uifactory.addTextElement("registration.email", "registration.email", 60, emailValue, settingsCont);
+		email.setVisible(addToAnnounceListSelection.isSelected(0));
+
+		// Add submit button
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		settingsCont.add(buttonsCont);
+		
+		uifactory.addFormSubmitButton("save", buttonsCont);
+		
 		
 		Set<Map.Entry<String,String>> properties = registrationManager.getRegistrationPropertiesMessage().entrySet();
 		flc.contextPut("properties", properties);
-
-		// Add submit button
-		uifactory.addFormSubmitButton("save", formLayout);
+		flc.contextPut("isRegisteredWeb", Boolean.valueOf(publishWebsiteConfig));
+		flc.contextPut("isRegisteredStatistics", Boolean.valueOf(true));
 	}
 
 	/**
@@ -178,7 +190,12 @@ public class SystemRegistrationAdminController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {				
 		// First check for valid email address
-		if (source == email && addToAnnounceListSelection.isSelected(0)) {
+		if(addToAnnounceListSelection == source) {
+			email.setVisible(addToAnnounceListSelection.isSelected(0));
+		} else if(publishWebSiteSelection == source) {
+			locationBox.setVisible(publishWebSiteSelection.isSelected(0));
+			webSiteDescription.setVisible(publishWebSiteSelection.isSelected(0));
+		} else if (source == email && addToAnnounceListSelection.isSelected(0)) {
 			if (!MailHelper.isValidEmailAddress(email.getValue()) || !StringHelper.containsNonWhitespace(email.getValue())) {
 				email.setErrorKey("registration.email.error", null);
 			}

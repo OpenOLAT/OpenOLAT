@@ -19,19 +19,18 @@
  */
 package org.olat.repository.ui.admin;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -43,46 +42,41 @@ public class CatalogAdminController extends FormBasicController {
 
 	private MultipleSelectionElement enableEl, enableBrowsingEl, siteEl;
 	
-	
-	private final RepositoryModule repositoryModule;
+	@Autowired
+	private RepositoryModule repositoryModule;
 	
 	/**
 	 * @param ureq
 	 * @param wControl
 	 */
 	public CatalogAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "admin");
-		
-		repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
+		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
-
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		//server informations
-		FormLayoutContainer serverCont = FormLayoutContainer.createDefaultFormLayout("functions", getTranslator());
-		serverCont.setFormContextHelp("org.olat.repository", "cat-admin.html", "help.hover.catalog.admin");
-		formLayout.add(serverCont);
-		formLayout.add("functions", serverCont);
+		setFormTitle("admin.catalog.settings");
+		setFormContextHelp("org.olat.repository", "cat-admin.html", "help.hover.catalog.admin");
 
 		boolean enabled = repositoryModule.isCatalogEnabled();
-		enableEl = uifactory.addCheckboxesHorizontal("catalog.enable", "catalog.enable", serverCont, new String[]{"xx"}, new String[]{""});
+		enableEl = uifactory.addCheckboxesHorizontal("catalog.enable", "catalog.enable", formLayout, new String[]{"xx"}, new String[]{""});
 		enableEl.select("xx", enabled);
 		enableEl.addActionListener(FormEvent.ONCLICK);
 		
-		enableBrowsingEl = uifactory.addCheckboxesHorizontal("catalog.browsing", "catalog.browsing", serverCont, new String[]{"xx"}, new String[]{""});
+		enableBrowsingEl = uifactory.addCheckboxesHorizontal("catalog.browsing", "catalog.browsing", formLayout, new String[]{"xx"}, new String[]{""});
 		enableBrowsingEl.select("xx", repositoryModule.isCatalogBrowsingEnabled());
 		enableBrowsingEl.setEnabled(enabled);
 		enableBrowsingEl.addActionListener(FormEvent.ONCLICK);
 
-		siteEl = uifactory.addCheckboxesHorizontal("catalog.site", "catalog.site", serverCont, new String[]{"xx"}, new String[]{""});
+		siteEl = uifactory.addCheckboxesHorizontal("catalog.site", "catalog.site", formLayout, new String[]{"xx"}, new String[]{""});
 		siteEl.select("xx", repositoryModule.isCatalogSiteEnabled());
 		siteEl.setEnabled(enabled);
 		siteEl.addActionListener(FormEvent.ONCLICK);
 	}
-	
+
+	@Override
 	protected void doDispose() {
 		//
 	}

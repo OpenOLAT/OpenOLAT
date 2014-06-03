@@ -84,6 +84,7 @@ public class AllCachesController extends BasicController {
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setDownloadOffered(true);
+		tableConfig.setResultsPerPage(200);
 		
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());		
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("cache.name", 0, null, getLocale()));

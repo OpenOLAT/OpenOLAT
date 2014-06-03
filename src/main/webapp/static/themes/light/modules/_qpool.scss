@@ -4,5 +4,6 @@
 .o_sel_qpool_collection { @extend .o_icon-list; }
 .o_sel_qpool_pool { @extend .o_icon-share-alt-square;}
 .o_sel_qpool_share { @extend .o_icon-group; }
+.o_sel_qpool_pool { @extend .o_sel_qpool_pool }
 .o_icon_private_pool { @extend .o_icon-times; }
 .o_icon_public_pool { @extend .o_icon-check; }

@@ -30,7 +30,7 @@ import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.extensions.Extension;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -60,26 +60,24 @@ public class ExtensionsAdminController extends BasicController {
 		
 
 	private VelocityContainer content;
-	private Panel mainPanel;
+	private SimpleStackedPanel mainPanel;
 	
 	
 	public ExtensionsAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		mainPanel = new Panel("extensionsPanel");
+		mainPanel = new SimpleStackedPanel("extensionsPanel");
 		// use combined translator from system admin main
 		setTranslator(Util.createPackageTranslator(SystemAdminMainController.class, ureq.getLocale(), getTranslator()));
 		content = createVelocityContainer("extensionsAdmin");
 
-		Map<String,Map<String, GenericBeanDefinition>> extensionList = new HashMap<String,Map<String, GenericBeanDefinition>>();
-		extensionList.put("Extension", getBeanDefListFor(Extension.class));
-		extensionList.put("Sites definitiions", getBeanDefListFor(SiteDefinition.class));
-		extensionList.put("Managers", getBeanDefListFor(BasicManager.class));
-		extensionList.put("Portlets", getBeanDefListFor(Portlet.class));
-		extensionList.put("Notification's handlers", getBeanDefListFor(NotificationsHandler.class));
-		extensionList.put("Course node configuration", getBeanDefListFor(CourseNodeConfiguration.class));
-		content.contextPut("extensionList"   ,extensionList);
-
-		//getOverwrittenBeans();
+		Map<ExtensionKey,Map<String, GenericBeanDefinition>> extensionList = new HashMap<>();
+		extensionList.put(new ExtensionKey("Extension", "ext"), getBeanDefListFor(Extension.class));
+		extensionList.put(new ExtensionKey("Sites definitions", "sitesdefs"), getBeanDefListFor(SiteDefinition.class));
+		extensionList.put(new ExtensionKey("Managers", "managers"), getBeanDefListFor(BasicManager.class));
+		extensionList.put(new ExtensionKey("Portlets", "portles"), getBeanDefListFor(Portlet.class));
+		extensionList.put(new ExtensionKey("Notification's handlers", "notifications"), getBeanDefListFor(NotificationsHandler.class));
+		extensionList.put(new ExtensionKey("Course node configuration", "nodeconfig"), getBeanDefListFor(CourseNodeConfiguration.class));
+		content.contextPut("extensionList", extensionList);
 
 		mainPanel.setContent(content);
 		putInitialPanel(mainPanel);
@@ -129,5 +127,41 @@ public class ExtensionsAdminController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
+	}
+	
+	public static class ExtensionKey {
+		
+		private final String name;
+		private final String key;
+		
+		public ExtensionKey(String name, String key) {
+			this.name = name;
+			this.key = key;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public String getKey() {
+			return key;
+		}
+		
+		@Override
+		public int hashCode() {
+			return name.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(obj == this) {
+				return true;
+			}
+			if(obj instanceof ExtensionKey) {
+				ExtensionKey extensionKey = (ExtensionKey)obj;
+				return name != null && name.equals(extensionKey.getName());
+			}
+			return false;
+		}
 	}
 }
