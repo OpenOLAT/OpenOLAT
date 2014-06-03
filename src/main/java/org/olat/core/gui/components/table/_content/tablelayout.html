@@ -1,8 +1,6 @@
 <div class="o_table_layout $!tableConfig.getCustomCssClass() o_scrollbox">
 #if ($hasTableSearch && !$tableEmpty)
-  <div>
-  $r.render("tableSearch")
-  </div>
+  <div>$r.render("tableSearch")</div>
 #end
 
 #if ($hasFilters && $filters.size() > 0)
@@ -25,13 +23,12 @@
 			</select>
 		</form>
 	</div>
-	<div class="clearfix"><br/></div>
 #end
 
 #if ($tableEmpty)
 	<div class="o_table_empty">$tableEmptyMessage</div>
 #else
-	<div class="clearfix">
+	<div class="btn-toolbar">
 		#if ($tableConfig.isDisplayRowCount())
 			<div class="o_table_count">
 			    #if ($isFiltered)
@@ -68,7 +65,6 @@
 		#end
 		</div>
 	</div>
-	<div class="clearfix"></div>
 	$r.render("table", $tableConfig.getCssPrefix())
 #end
 </div>

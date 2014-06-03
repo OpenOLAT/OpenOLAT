@@ -70,6 +70,11 @@
 	margin-left: 0.5em;
 }
 
+.o_table_count {
+	max-width:20em;
+	float:left;
+	padding: 0 $panel-body-padding;
+}
 
 /* bootstrap extensions */
 .o_info, o_note, o_important, o_warning, o_error {
@@ -87,7 +92,6 @@
 	.o_table_count {
 		padding: 0 $panel-body-padding;
 	}
-
 }
 
 	
