@@ -78,7 +78,7 @@ How to add a new job:
     <map>
     	<!-- either true or false -->
     	<!-- TODO:gs make configurable via olat.properties file -->
-    	<entry key="enabled" value="true" />
+    	<entry key="enabled" value="false" />
     	<!-- List of dumping beans, key must end with 'Bean'  -->
     	<entry key="ThreadAndControllerInfoBean" value="org.olat.admin.jmx.datasources:name=ThreadAndControllerInfo" />
     	<entry key="FilesInfoMBean" value="org.olat.core.commons.modules.bc:name=FilesInfoMBean" />

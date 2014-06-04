@@ -65,29 +65,25 @@ public class OlatRootFolderTreeModel extends GenericTreeModel {
 	private final MetaInfoFactory metaInfoFactory;
 
 	public OlatRootFolderTreeModel(OlatRootFolderImpl root) {
+		metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
 		setRootNode(createNode(root));
 		getRootNode().getChildCount();
-		metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
-		// fxdiff: 
-		//makeChildren(getRootNode(), root);
 	}
 
 	public OlatRootFolderTreeModel(OlatRootFolderImpl root, VFSItemFilter filter) {
 		this.filter = filter;
+		metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
 		setRootNode(createNode(root));
 		getRootNode().getChildCount();
-		//makeChildren(getRootNode(), root);
-		metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
 	}
 
 	public OlatRootFolderTreeModel(OlatRootFolderImpl root,
 			VFSItemFilter filter, Comparator<VFSItem> comparator) {
 		this.filter = filter;
 		this.comparator = comparator;
+		metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
 		setRootNode(createNode(root));
 		getRootNode().getChildCount();
-		//makeChildren(getRootNode(), root);
-		metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
 	}
 
 	/**

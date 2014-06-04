@@ -26,16 +26,15 @@
 <script type="text/javascript">
 /* <![CDATA[ */ 
 function gotoSite(event) {
-	var el = $("baks_home_launcher");
-	var dim = Element.getDimensions(el);
-	var pos = Element.positionedOffset(el);
+	var el = jQuery("#baks_home_launcher");
+	var pos = el.position();
 	var offsetLeft = pos.left;
 	var offsetTop = pos.top;
 
 	var i=0;
-	for(var offsetParent = Element.getOffsetParent(el); offsetParent.id != 'o_body'; offsetParent = Element.getOffsetParent(offsetParent)) {
-		var posn = Element.positionedOffset(offsetParent);
-		if(offsetParent.id != "o_main_center" && offsetParent.id != "b_page") {//ie give it an offset which is the same as _content
+	for(var offsetParent = el.offsetParent(); offsetParent.attr('id') != 'b_body'; offsetParent = offsetParent.offsetParent()) {
+		var posn = offsetParent.position();
+		if(offsetParent.attr('id') != "b_col3" && offsetParent.attr('id') != "b_page") {//ie give it an offset which is the same as _content
 			offsetLeft += posn.left;
 			offsetTop += posn.top;
 		}
@@ -43,11 +42,11 @@ function gotoSite(event) {
 	}
 	
 	//inner square is difficult
-	var centerX = dim.width / 2;
-	var centerY = dim.height / 2;
+	var centerX = el.width() / 2;
+	var centerY = el.height() / 2;
 	//shift 0,0 coordinate to center
-	var px = Event.pointerX(event) - offsetLeft - centerX;
-	var py = centerY - (Event.pointerY(event) - offsetTop);
+	var px = event.pageX - offsetLeft - centerX;
+	var py = centerY - (event.pageY - offsetTop);
 	//calculate the x position on the line x = -y + centerY;
 	var theoy = (centerY - 5) - Math.abs(px);
 	if(Math.abs(py) < theoy) {
@@ -68,13 +67,13 @@ function gotoSite(event) {
 }
 
 function launchSite(site) {
-	var siteLinks = $$('li.' + site + ' a');
+	var siteLinks = jQuery('li.' + site + ' a');
 	if (siteLinks && siteLinks.length > 0) {
 		var siteLink = siteLinks[0];
 		if (o2cl()) {
 			var target = siteLink.target;
-			if (target == 'oaa0') {
-				$('oaa0').src=siteLink.href;
+			if (target === 'oaa0') {
+				jQuery('#oaa0').attr('src',siteLink.href);
 			} else {
 				document.location.href=siteLink.href;
 			}

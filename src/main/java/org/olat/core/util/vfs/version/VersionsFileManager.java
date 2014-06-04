@@ -802,7 +802,7 @@ public class VersionsFileManager extends VersionsManager implements Initializabl
 		}
 		return null;
 	}
-
+	
 	public File getCanonicalRootFile() {
 		if(rootFolder == null) {
 			rootFolder = new File(FolderConfig.getCanonicalRoot());

@@ -174,7 +174,7 @@ public class EfficiencyStatementController extends BasicController {
 		}
 
 		if(group != null) {
-			userDataVC.contextPut("groupName", group.getName());
+			userDataVC.contextPut("groupName", StringHelper.escapeHtml(group.getName()));
 			if(links) {
 				groupLink = LinkFactory.createButton("group.link", userDataVC, this);
 				groupLink.setIconLeftCSS("o_icon o_icon_group");

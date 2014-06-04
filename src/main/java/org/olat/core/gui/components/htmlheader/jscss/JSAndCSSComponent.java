@@ -158,7 +158,7 @@ public class JSAndCSSComponent extends AbstractComponent {
 			for (String cssPath : cssPathNames) {
 				Integer index = cssPathNamesIndexes != null ? cssPathNamesIndexes.get(cssPath) : null;
 				if(index == null && baseClass == null) {
-					jsadder.addStaticCSSPath(cssPath);
+					jsadder.addRequiredCSSPath(cssPath, false, 0);
 				} else {
 					jsadder.addRequiredCSSPath(cssPath, true, index);
 				}

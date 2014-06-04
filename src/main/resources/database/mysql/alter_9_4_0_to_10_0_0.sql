@@ -21,6 +21,7 @@ create table o_repositoryentry_stats (
    r_lastusage datetime not null,
    primary key (id)
 );
+alter table  o_repositoryentry_stats ENGINE = InnoDB;
 
 alter table o_repositoryentry add column fk_stats bigint;
 alter table o_repositoryentry add column authors varchar(2048);
@@ -44,6 +45,7 @@ create table o_bs_group (
    g_name varchar(36),
    primary key (id)
 );
+alter table o_bs_group ENGINE = InnoDB;
 
 create table o_bs_group_member (
    id bigint not null,
@@ -54,6 +56,7 @@ create table o_bs_group_member (
    fk_identity_id bigint not null,
    primary key (id)
 );
+alter table o_bs_group_member ENGINE = InnoDB;
 
 create table o_re_to_group (
    id bigint not null,
@@ -63,6 +66,7 @@ create table o_re_to_group (
    fk_entry_id bigint not null,
    primary key (id)
 );
+alter table o_re_to_group ENGINE = InnoDB;
 
 create table o_bs_grant (
    id bigint not null,
@@ -73,6 +77,7 @@ create table o_bs_grant (
    fk_resource_id bigint not null,
    primary key (id)
 );
+alter table o_bs_grant ENGINE = InnoDB;
 
 alter table o_bs_group_member add constraint member_identity_ctx foreign key (fk_identity_id) references o_bs_identity (id);
 alter table o_bs_group_member add constraint member_group_ctx foreign key (fk_group_id) references o_bs_group (id);

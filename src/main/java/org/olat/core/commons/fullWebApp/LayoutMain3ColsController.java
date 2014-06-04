@@ -145,7 +145,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	 *          column width settings
 	 * @param defaultConfiguration The layout width configuration to be used
 	 */
-	private LayoutMain3ColsController(UserRequest ureq, WindowControl wControl, Component col1, Component col2, Component col3,
+	public LayoutMain3ColsController(UserRequest ureq, WindowControl wControl, Component col1, Component col2, Component col3,
 			String layoutConfigKey, LayoutMain3ColsConfig defaultConfiguration) {
 		super(ureq, wControl);
 		layoutMainVC = createVelocityContainer("main_3cols");

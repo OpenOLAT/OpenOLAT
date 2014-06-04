@@ -1847,6 +1847,10 @@ alter table hibernate_unique_key ENGINE = InnoDB;
 alter table o_forum ENGINE = InnoDB;
 alter table o_property ENGINE = InnoDB;
 alter table o_bs_secgroup ENGINE = InnoDB;
+alter table o_bs_group ENGINE = InnoDB;
+alter table o_bs_group_member ENGINE = InnoDB;
+alter table o_re_to_group ENGINE = InnoDB;
+alter table o_bs_grant ENGINE = InnoDB;
 alter table o_repositoryentry_cycle ENGINE = InnoDB;
 alter table o_lti_outcome ENGINE = InnoDB;
 alter table o_user ENGINE = InnoDB;
@@ -1862,6 +1866,7 @@ alter table o_bs_policy ENGINE = InnoDB;
 alter table o_bs_namedgroup ENGINE = InnoDB;
 alter table o_bs_membership ENGINE = InnoDB;
 alter table o_repositoryentry ENGINE = InnoDB;
+alter table o_repositoryentry_stats ENGINE = InnoDB;
 alter table o_references ENGINE = InnoDB;
 alter table o_gp_business ENGINE = InnoDB;
 alter table o_gp_bgarea ENGINE = InnoDB;
@@ -1969,7 +1974,7 @@ create index member_to_grp_role_idx on o_bs_group_member (g_role);
 alter table o_re_to_group add constraint re_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
 alter table o_re_to_group add constraint re_to_group_re_ctx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
 
--- alter table o_gp_business add constraint gp_to_group_business_ctx foreign key (fk_group_id) references o_bs_group (id);
+alter table o_gp_business add constraint gp_to_group_business_ctx foreign key (fk_group_id) references o_bs_group (id);
 
 -- business group
 alter table o_gp_business add constraint idx_bgp_rsrc foreign key (fk_resource) references o_olatresource (resource_id);
@@ -2058,7 +2063,7 @@ create index idx_re_lifecycle_extref_idx on o_repositoryentry (external_ref);
 alter table o_repositoryentry add constraint idx_re_lifecycle_fk foreign key (fk_lifecycle) references o_repositoryentry_cycle(id);
 create index idx_re_lifecycle_soft_idx on o_repositoryentry_cycle (r_softkey);
 
--- alter table o_repositoryentry add constraint repoentry_stats_ctx foreign key (fk_stats) references o_repositoryentry_stats (id);
+alter table o_repositoryentry add constraint repoentry_stats_ctx foreign key (fk_stats) references o_repositoryentry_stats (id);
 
 -- access control
 create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);
