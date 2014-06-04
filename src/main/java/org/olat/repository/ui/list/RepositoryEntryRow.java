@@ -61,7 +61,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	public Date recentLaunch;
 	
 	private Integer myRating;
-	private Float averageRating;
+	private Double averageRating;
 	private long numOfRatings;
 	private long numOfComments;
 	
@@ -196,11 +196,11 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		this.myRating = myRating;
 	}
 
-	public Float getAverageRating() {
+	public Double getAverageRating() {
 		return averageRating;
 	}
 
-	public void setAverageRating(Float averageRating) {
+	public void setAverageRating(Double averageRating) {
 		this.averageRating = averageRating;
 	}
 

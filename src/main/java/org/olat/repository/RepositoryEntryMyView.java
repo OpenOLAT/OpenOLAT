@@ -81,7 +81,7 @@ public interface RepositoryEntryMyView extends OLATResourceable {
 	/**
 	 * @return The average rating of this entry, or null if the entry was never rated
 	 */
-	public Float getAverageRating();
+	public Double getAverageRating();
 	
 	public long getNumOfRatings();
 	
@@ -91,8 +91,4 @@ public interface RepositoryEntryMyView extends OLATResourceable {
 	 * @return True if some offers are currently available
 	 */
 	public boolean isValidOfferAvailable();
-	
-	public boolean isOfferAvailable();
-	
-
 }

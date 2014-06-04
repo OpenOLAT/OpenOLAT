@@ -209,7 +209,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 			
 			Integer myRating = row.getMyRating();
-			Float averageRating = row.getAverageRating();
+			Double averageRating = row.getAverageRating();
 			long numOfRatings = row.getNumOfRatings();
 			float ratingValue = myRating == null ? 0f : myRating.floatValue();
 			float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();

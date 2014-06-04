@@ -112,6 +112,24 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 		}
 	}
 	
+	@Override
+	public List<UserCourseInformations> getUserCourseInformations(List<Long> keys) {
+		if(keys == null || keys.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select infos from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
+		  .append(" inner join fetch infos.resource as resource")
+		  .append(" inner join infos.identity as identity")
+		  .append(" where infos.key in (:keys)");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), UserCourseInformations.class)
+				.setParameter("keys", keys)
+				.getResultList();
+	}
+	
 	/**
 	 * Update (or create if not exists) the course informations for a user
 	 * @param userCourseEnv

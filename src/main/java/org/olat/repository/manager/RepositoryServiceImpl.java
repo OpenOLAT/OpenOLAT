@@ -82,9 +82,9 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Autowired
 	private RepositoryEntryStatisticsDAO repositoryEntryStatisticsDao;
 	@Autowired
-	private RepositoryEntryMyCourseViewQueries myCourseViewQueries;
+	private RepositoryEntryMyCourseQueries myCourseViewQueries;
 	@Autowired
-	private RepositoryEntryAuthorViewQueries authorViewQueries;
+	private RepositoryEntryAuthorQueries authorViewQueries;
 	@Autowired
 	private OLATResourceManager resourceManager;
 

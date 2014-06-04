@@ -19,6 +19,7 @@
  */
 package org.olat.repository.manager;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,6 +30,7 @@ import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -36,8 +38,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.model.RepositoryEntryAuthorImpl;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
+import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.olat.user.UserImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -53,9 +57,9 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class RepositoryEntryAuthorViewQueries {
+public class RepositoryEntryAuthorQueries {
 	
-	private static final OLog log = Tracing.createLoggerFor(RepositoryEntryAuthorViewQueries.class);
+	private static final OLog log = Tracing.createLoggerFor(RepositoryEntryAuthorQueries.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -91,12 +95,22 @@ public class RepositoryEntryAuthorViewQueries {
 			return Collections.emptyList();
 		}
 
-		TypedQuery<RepositoryEntryAuthorView> query = createViewQuery(params, RepositoryEntryAuthorView.class);
+		TypedQuery<Object[]> query = createViewQuery(params, Object[].class);
 		query.setFirstResult(firstResult);
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
-		return query.getResultList();
+		List<Object[]> objects =  query.getResultList();
+		List<RepositoryEntryAuthorView> views = new ArrayList<>(objects.size());
+		for(Object[] object:objects) {
+			RepositoryEntry re = (RepositoryEntry)object[0];
+			Number numOfMarks = (Number)object[1];
+			boolean hasMarks = numOfMarks == null ? false : numOfMarks.longValue() > 0;
+			Number numOffers = (Number)object[2];
+			long offers = numOffers == null ? 0l : numOffers.longValue();
+			views.add(new RepositoryEntryAuthorImpl(re, hasMarks, offers));
+		}
+		return views;
 	}
 
 	protected <T> TypedQuery<T> createViewQuery(SearchAuthorRepositoryEntryViewParams params,
@@ -108,27 +122,36 @@ public class RepositoryEntryAuthorViewQueries {
 		boolean count = Number.class.equals(type);
 		StringBuilder sb = new StringBuilder();
 		if(count) {
-			sb.append("select count(v.key) from repositoryentryauthor as v ")
+			sb.append("select count(v.key) ")
+			  .append(" from repositoryentry as v, ").append(IdentityImpl.class.getName()).append(" as ident ")
 			  .append(" inner join v.olatResource as res")
 			  .append(" left join v.lifecycle as lifecycle");
 		} else {
-			sb.append("select v from repositoryentryauthor as v ")
+			sb.append("select v, ")
+			  .append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
+			  .append("   where mark.creator=ident and mark.resId=v.key and mark.resName='RepositoryEntry'")
+			  .append(" ) as marks,")
+			  .append(" (select count(offer.key) from ").append(OfferImpl.class.getName()).append(" as offer ")
+			  .append("   where offer.resource=res and offer.valid=true")
+			  .append(" ) as offers")
+			  .append(" from repositoryentry as v, ").append(IdentityImpl.class.getName()).append(" as ident ")
 			  .append(" inner join fetch v.olatResource as res")
-			  .append(" left join fetch v.lifecycle as lifecycle");
+			  .append(" inner join fetch v.statistics as stats")
+			  .append(" left join fetch v.lifecycle as lifecycle ");
 		}
 
-		sb.append(" where v.identityKey=:identityKey ");
+		sb.append(" where ident.key=:identityKey ");
 		//only my entries as author
 		if(params.isOwnedResourcesOnly()) {
 			sb.append(" and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
-			  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=v.identityKey")
+			  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=ident.key")
 			  .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
 			  .append(" )");
 		} else {
 			sb.append(" and (v.access>=").append(RepositoryEntry.ACC_OWNERS_AUTHORS)
 			  .append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS)
 			  .append("   and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
-			  .append("     where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=v.identityKey")
+			  .append("     where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=ident.key")
 			  .append("       and membership.role='").append(GroupRoles.owner.name()).append("'")
 			  .append("   )")
 			  .append(" ))");
@@ -141,8 +164,10 @@ public class RepositoryEntryAuthorViewQueries {
 		if (params.isResourceTypesDefined()) {
 			sb.append(" and res.resName in (:resourcetypes)");
 		}
-		if(params.getMarked() != null) {
-			sb.append(" and v.markKey ").append(params.getMarked().booleanValue() ? " is not null " : " is null ");
+		if(params.getMarked() != null && params.getMarked().booleanValue()) {
+			sb.append(" and exists (select mark2.key from ").append(MarkImpl.class.getName()).append(" as mark2 ")
+			  .append("   where mark2.creator=ident and mark2.resId=v.key and mark2.resName='RepositoryEntry'")
+			  .append(" )");
 		}
 		
 		String author = params.getAuthor();
@@ -238,9 +263,9 @@ public class RepositoryEntryAuthorViewQueries {
 					break;
 				case favorit:
 					if(asc) {
-						sb.append(" order by v.markKey nulls last, lower(v.displayname) asc");
+						sb.append(" order by marks asc, lower(v.displayname) asc");
 					} else {
-						sb.append(" order by v.markKey nulls first, lower(v.displayname) desc");
+						sb.append(" order by marks desc, lower(v.displayname) desc");
 					}
 					break;
 				case type:
@@ -261,9 +286,9 @@ public class RepositoryEntryAuthorViewQueries {
 					break;
 				case ac:
 					if(asc) {
-						sb.append(" order by v.offersAvailable nulls last, lower(v.displayname) asc");
+						sb.append(" order by offers asc, lower(v.displayname) asc");
 					} else {
-						sb.append(" order by v.offersAvailable nulls first, lower(v.displayname) desc");
+						sb.append(" order by offers desc, lower(v.displayname) desc");
 					}
 					break;
 				case creationDate:
@@ -271,7 +296,7 @@ public class RepositoryEntryAuthorViewQueries {
 					appendAsc(sb, asc).append(", lower(v.displayname) asc");
 					break;
 				case lastUsage:
-					sb.append(" order by v.lastUsage ");
+					sb.append(" order by v.stats.lastUsage ");
 					appendAsc(sb, asc).append(", lower(v.displayname) asc");
 					break;
 				case lifecycleLabel:

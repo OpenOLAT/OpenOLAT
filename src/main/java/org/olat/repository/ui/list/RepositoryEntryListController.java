@@ -413,7 +413,7 @@ public class RepositoryEntryListController extends FormBasicController
 	@Override
 	public void forgeRatings(RepositoryEntryRow row) {
 		Integer myRating = row.getMyRating();
-		Float averageRating = row.getAverageRating();
+		Double averageRating = row.getAverageRating();
 		long numOfRatings = row.getNumOfRatings();
 
 		float ratingValue = myRating == null ? 0f : myRating.floatValue();

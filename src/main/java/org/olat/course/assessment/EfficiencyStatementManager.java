@@ -463,6 +463,20 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 		}
 	}
 	
+	public List<UserEfficiencyStatementLight> findEfficiencyStatementsLight(List<Long> keys) {
+		if(keys == null || keys.isEmpty()) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select statement from ").append(UserEfficiencyStatementLight.class.getName()).append(" as statement ")
+			.append(" left join fetch statement.resource resource")
+		  .append(" where statement.key in (:keys)");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), UserEfficiencyStatementLight.class)
+				.setParameter("keys", keys)
+				.getResultList();
+	}
+	
 	/**
 	 * Find all identities who have an efficiency statement for this course repository entry
 	 * @param courseRepoEntryKey

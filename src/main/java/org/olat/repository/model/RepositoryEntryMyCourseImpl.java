@@ -21,25 +21,13 @@ package org.olat.repository.model;
 
 import java.util.Date;
 
-import javax.persistence.Cacheable;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-
-import org.hibernate.annotations.GenericGenerator;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
-import org.olat.core.id.Persistable;
+import org.olat.course.assessment.UserCourseInformations;
+import org.olat.course.assessment.model.UserEfficiencyStatementLight;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceImpl;
 
 /**
  * This view is based on a CROSS JOIN, the identityKey must be set
@@ -50,79 +38,81 @@ import org.olat.resource.OLATResourceImpl;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Cacheable(false)
-@Entity(name="repositoryentrymy")
-@Table(name="o_repositoryentry_my_v")
-public class RepositoryEntryMyCourseView implements RepositoryEntryMyView, Persistable, CreateInfo, ModifiedInfo {
+public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, CreateInfo, ModifiedInfo {
 
-	private static final long serialVersionUID = -8484159601386853047L;
-	
-	@Id
-	@GeneratedValue(generator = "system-uuid")
-	@GenericGenerator(name = "system-uuid", strategy = "hilo")
-	@Column(name="re_id", nullable=false, unique=true, insertable=false, updatable=false)
 	private Long key;
-	
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="re_creationdate", nullable=false, insertable=false, updatable=false)
 	private Date creationDate;
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="re_lastmodified", nullable=false, insertable=false, updatable=false)
 	private Date lastModified;
-
-	@Column(name="re_displayname", nullable=false, insertable=false, updatable=false)
 	private String displayname;
-	@Column(name="re_description", nullable=false, insertable=false, updatable=false)
 	private String description;
-	@Column(name="re_authors", nullable=false, insertable=false, updatable=false)
 	private String authors;
-	@Column(name="re_membersonly", nullable=false, insertable=false, updatable=false)
 	private boolean membersOnly;
-	@Column(name="re_accesscode", nullable=false, insertable=false, updatable=false)
 	private int access;
 	
-	@ManyToOne(targetEntity=OLATResourceImpl.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_olatresource", nullable=false, insertable=false, updatable=false)
 	private OLATResource olatResource;
-
-	@ManyToOne(targetEntity=RepositoryEntryLifecycle.class,fetch=FetchType.LAZY,optional=true)
-	@JoinColumn(name="fk_lifecycle", nullable=true, insertable=false, updatable=false)
 	private RepositoryEntryLifecycle lifecycle;
 	
-	@Column(name="eff_score", nullable=true, insertable=false, updatable=false)
 	private Float score;
-	@Column(name="eff_passed", nullable=true, insertable=false, updatable=false)
 	private Boolean passed;
 
-	@Column(name="mark_id", nullable=true, insertable=false, updatable=false)
-	private Long markKey;
+	private boolean marked;
 	
-	@Column(name="rat_rating", nullable=true, insertable=false, updatable=false)
 	private Integer myRating;
-	@Column(name="stats_rating", nullable=true, insertable=false, updatable=false)
-	private Float averageRating;
-	@Column(name="stats_num_of_ratings", nullable=true, insertable=false, updatable=false)
+	
+	private Double averageRating;
 	private long numOfRatings;
-	@Column(name="stats_num_of_comments", nullable=true, insertable=false, updatable=false)
 	private long numOfComments;
 	
-	@Column(name="ci_initiallaunchdate", nullable=true, insertable=false, updatable=false)
 	private Date initialLaunch;
-	@Column(name="ci_recentlaunchdate", nullable=true, insertable=false, updatable=false)
 	private Date recentLaunch;
-	@Column(name="ci_visit", nullable=true, insertable=false, updatable=false)
 	private Integer visit;
-	@Column(name="ci_timespend", nullable=true, insertable=false, updatable=false)
 	private Long timeSpend;
 
-	@Column(name="num_of_valid_offers", nullable=true, insertable=false, updatable=false)
 	private long offersAvailable;
-	@Column(name="num_of_offers", nullable=true, insertable=false, updatable=false)
-	private long offers;
 	
-	@Column(name="member_id", nullable=true, insertable=false, updatable=false)
-	private Long identityKey;
+	public RepositoryEntryMyCourseImpl(RepositoryEntry re,
+			boolean marked, long offersAvailable, Integer myRating) {
+		key = re.getKey();
+		creationDate = re.getCreationDate();
+		lastModified = re.getLastModified();
+		displayname = re.getDisplayname();
+		description = re.getDescription();
+		authors = re.getAuthors();
+		membersOnly = re.isMembersOnly();
+		access = re.getAccess();
+		
+		olatResource = re.getOlatResource();
+		lifecycle = re.getLifecycle();
 	
+
+		this.marked = marked;
+		this.myRating = myRating;
+		
+		RepositoryEntryStatistics stats = re.getStatistics();
+		if(stats != null) {
+			averageRating = stats.getRating();
+			numOfRatings = stats.getNumOfRatings();
+			numOfComments = stats.getNumOfComments();
+		}
+		
+		this.offersAvailable = offersAvailable;
+	}
+	
+	public void setEfficiencyStatement(UserEfficiencyStatementLight efficiencyStatment) {
+		if(efficiencyStatment != null) {
+			score = efficiencyStatment.getScore();
+			passed = efficiencyStatment.getPassed();
+		}
+	}
+	
+	public void setCourseInfos(UserCourseInformations courseInfos) {
+		if(courseInfos != null) {
+			initialLaunch = courseInfos.getInitialLaunch();
+			recentLaunch = courseInfos.getRecentLaunch();
+			visit = courseInfos.getVisit();
+			timeSpend = courseInfos.getTimeSpend();
+		}
+	}
 
 	@Override
 	public Long getKey() {
@@ -244,7 +234,7 @@ public class RepositoryEntryMyCourseView implements RepositoryEntryMyView, Persi
 
 	@Override
 	public boolean isMarked() {
-		return markKey != null;
+		return marked;
 	}
 
 	@Override
@@ -291,11 +281,11 @@ public class RepositoryEntryMyCourseView implements RepositoryEntryMyView, Persi
 		this.myRating = myRating;
 	}
 
-	public Float getAverageRating() {
+	public Double getAverageRating() {
 		return averageRating;
 	}
 
-	public void setAverageRating(Float averageRating) {
+	public void setAverageRating(Double averageRating) {
 		this.averageRating = averageRating;
 	}
 
@@ -319,11 +309,6 @@ public class RepositoryEntryMyCourseView implements RepositoryEntryMyView, Persi
 	public boolean isValidOfferAvailable() {
 		return offersAvailable > 0;
 	}
-
-	@Override
-	public boolean isOfferAvailable() {
-		return offers > 0;
-	}
 	
 
 	@Override
@@ -331,8 +316,8 @@ public class RepositoryEntryMyCourseView implements RepositoryEntryMyView, Persi
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof RepositoryEntryMyCourseView) {
-			RepositoryEntryMyCourseView relc = (RepositoryEntryMyCourseView)obj;
+		if(obj instanceof RepositoryEntryMyCourseImpl) {
+			RepositoryEntryMyCourseImpl relc = (RepositoryEntryMyCourseImpl)obj;
 			return getKey() != null && getKey().equals(relc.getKey());
 		}
 		return false;
@@ -346,10 +331,5 @@ public class RepositoryEntryMyCourseView implements RepositoryEntryMyView, Persi
 	@Override
 	public String toString() {
 		return super.toString();
-	}
-	
-	@Override
-	public boolean equalsByPersistableKey(Persistable persistable) {
-		return equals(persistable);
 	}
 }

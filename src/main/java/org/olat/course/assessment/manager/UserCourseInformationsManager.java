@@ -38,6 +38,8 @@ public interface UserCourseInformationsManager {
 
 	public List<UserCourseInformations> getUserCourseInformations(Identity identity, List<OLATResource> resources);
 	
+	public List<UserCourseInformations> getUserCourseInformations(List<Long> keys);
+	
 	
 	public void updateUserCourseInformations(Long courseResId, Identity identity, boolean strict);
 	

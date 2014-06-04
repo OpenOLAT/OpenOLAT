@@ -100,6 +100,12 @@ public class SearchMyRepositoryEntryViewParams {
 		this.filters = filters;
 	}
 	
+	public boolean isPassedFiltered() {
+		return filters != null && (filters.contains(Filter.notPassed)
+				|| filters.contains(Filter.passed)
+				|| filters.contains(Filter.withoutPassedInfos));
+	}
+	
 	public boolean isLifecycleFilterDefined() {
 		return filters != null && (filters.contains(Filter.upcomingCourses)
 				|| filters.contains(Filter.currentCourses)

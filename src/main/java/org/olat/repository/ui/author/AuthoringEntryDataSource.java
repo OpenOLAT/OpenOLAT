@@ -143,7 +143,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		Set<String> newNames = new HashSet<String>();
 		List<OLATResource> resourcesWithAC = new ArrayList<>(repoEntries.size());
 		for(RepositoryEntryAuthorView entry:repoEntries) {
-			if(entry.isValidOfferAvailable()) {
+			if(entry.isOfferAvailable()) {
 				resourcesWithAC.add(entry.getOlatResource());
 			}
 			final String author = entry.getAuthor();

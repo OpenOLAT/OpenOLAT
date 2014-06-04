@@ -112,8 +112,6 @@
 		<class>org.olat.repository.model.RepositoryEntryLifecycle</class>
 		<class>org.olat.repository.model.RepositoryEntryStatistics</class>
 		<class>org.olat.repository.model.RepositoryEntryLightImpl</class>
-		<class>org.olat.repository.model.RepositoryEntryMyCourseView</class>
-		<class>org.olat.repository.model.RepositoryEntryAuthorViewImpl</class>
 		<class>org.olat.repository.model.RepositoryEntryMembership</class>
 		<class>org.olat.instantMessaging.model.InstantMessageImpl</class>
 		<class>org.olat.instantMessaging.model.ImPreferencesImpl</class>

@@ -60,9 +60,7 @@ public interface RepositoryEntryAuthorView extends OLATResourceable, RepositoryE
 	public Date getLastUsage();
 	
 	/**
-	 * @return True if some offers are currently available
+	 * @return True if some offers are set
 	 */
-	public boolean isValidOfferAvailable();
-	
 	public boolean isOfferAvailable();
 }
