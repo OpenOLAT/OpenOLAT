@@ -126,6 +126,7 @@ public class ImageMagickHelper extends BasicManager implements ImageHelperSPI {
 		List<String> cmds = new ArrayList<String>();
 		cmds.add("convert");
 		cmds.add("-verbose");
+		cmds.add("-auto-orient");
 		cmds.add("-thumbnail");
 		cmds.add(maxWidth + "x" + maxHeight + ">");
 		if(firstOnly) {
