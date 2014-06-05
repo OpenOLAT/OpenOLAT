@@ -34,6 +34,9 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
@@ -44,7 +47,7 @@ import org.olat.core.util.Util;
  *
  */
 public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, BreadcrumbPanel, ComponentEventListener {
-	
+	private static final OLog log = Tracing.createLoggerFor(BreadcrumbedStackedPanel.class);
 	private static final ComponentRenderer RENDERER = new BreadcrumbedStackedPanelRenderer();
 	
 	protected final List<Link> stack = new ArrayList<>(3);
@@ -123,7 +126,10 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		List<Component> cmps = new ArrayList<>(3 + stack.size());
 		cmps.add(backLink);
 		cmps.add(closeLink);
-		cmps.add(getContent());
+		Component content = getContent();
+		if(content != null && content != this) {
+			cmps.add(getContent());
+		}
 		for(Link crumb:stack) {
 			cmps.add(crumb);
 		}
@@ -241,7 +247,12 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 	}
 	
 	private void setContent(Controller ctrl) {
-		super.setContent(ctrl.getInitialComponent());
+		Component cmp = ctrl.getInitialComponent();
+		if(cmp == this) {
+			log.error("Set itself as content is forbidden");
+			throw new AssertException("Set itself as content is forbidden");
+		}
+		super.setContent(cmp);
 	}
 	
 	/**

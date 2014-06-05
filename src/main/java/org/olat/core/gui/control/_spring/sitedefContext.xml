@@ -72,11 +72,6 @@
 	   <property name="enabled" value="${guidemo.enabled}"/>
 	</bean>
 	
-	<bean id="olatsites_home" class="org.olat.home.HomeSiteDef">
-	   <property name="order" value="25" />
-	   <property name="enabled" value="true"/>
-	</bean>
-	
 	<!--  security callback -->
 	<bean id="adminSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.AdminSecurityCallback"/>
 	

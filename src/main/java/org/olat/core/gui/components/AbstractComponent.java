@@ -48,7 +48,7 @@ import org.olat.core.util.CodeHelper;
  */
 public abstract class AbstractComponent implements Component {
 
-	private static final OLog log_ = Tracing.createLoggerFor(Component.class);
+	private static final OLog log_ = Tracing.createLoggerFor(AbstractComponent.class);
 
 	private boolean spanReplaceable = false;
 
