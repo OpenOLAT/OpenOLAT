@@ -1,9 +1,9 @@
 alter table o_gp_business add column fk_group_id int8;
-alter table o_gp_business alter column businessgrouptype set not null;
+alter table o_gp_business alter column businessgrouptype drop not null;
 
 alter table o_repositoryentry alter column softkey type varchar(36);
-alter table o_repositoryentry alter column launchcounter set not null;
-alter table o_repositoryentry alter column downloadcounter set not null;
+alter table o_repositoryentry alter column launchcounter drop not null;
+alter table o_repositoryentry alter column downloadcounter drop not null;
 
 alter table o_ep_struct_el add column fk_group_id int8;
 
