@@ -65,6 +65,7 @@
 	<bean class="org.olat.resource.accesscontrol.ui.HomeOrdersActionExtension" name="accesscontrol.actExt" init-method="initExtensionPoints">
 		<constructor-arg index="0" ref="acModule" />
 		<property name="order" value="109" />
+		<property name="enabled" value="${minimalhome.ext.bookings}"></property>
 		<property name="actionController">	
 			<bean class=" org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
 				<property name="factoryName" value="org.olat.resource.accesscontrol.ACUIFactory"/>

@@ -72,7 +72,7 @@ junit and integration tests in OpenOLAT 8
     mvn -DskipTests=true -Parquillian,tomcat clean package
     
 - Run the tests
-	mvn -Parquillian surefire:test
+	mvn -Parquillian,tomcat surefire:test
 
 You can add "clean-mysql-dbsetup" to the profils to drop / restore the database
 The Selenium tests can be run with different browser but with some limitations:

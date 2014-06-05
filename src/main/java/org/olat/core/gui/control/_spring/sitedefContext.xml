@@ -19,7 +19,7 @@
 	<!-- classes implementing the SiteDefinition interface -->
 	<bean id="olatsites_mycourses" class="org.olat.repository.site.MyCoursesSiteDef">
 	   <property name="order" value="2" />
-	   <property name="enabled" value="${site.catalog.enable}"/>
+	   <property name="enabled" value="${site.mycourses.enable}"/>
 	</bean>
 	
 	<bean id="olatsites_portal" class="org.olat.core.gui.control.generic.portal.PortalSiteDef">
@@ -65,7 +65,7 @@
 	</bean>
 	<bean id="olatsites_catalogadmin" class="org.olat.repository.site.CatalogAdminSiteDef">
 	   <property name="order" value="12" />
-	   <property name="enabled" value="${site.catalog.enable}"/>
+	   <property name="enabled" value="${site.catalogadmin.enable}"/>
 	</bean>
 	<bean id="olatsites_guidemo" class="org.olat.gui.demo.site.GUIDemoSiteDef">
 	   <property name="order" value="14" />

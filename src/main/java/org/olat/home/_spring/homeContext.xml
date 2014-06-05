@@ -136,10 +136,12 @@
 		</property>
 	</bean>
 	
-	<!--  the other users aka Usersearch
+	<!--  the other users aka Usersearch -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="110" />
 		<property name="enabled" value="${minimalhome.ext.otherusers}"/>
+		<property name="navigationKey" value="otherusers" />
+		<property name="iconCssClass" value="o_icon o_icon-fw o_icon_search" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.home.UserSearchAndInfoController"/>
@@ -155,7 +157,6 @@
 			</list>
 		</property>
 	</bean>
-	-->
 	
 	<!--  the info-message for guest-user -->
 	<bean  class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
@@ -178,7 +179,7 @@
 	<!-- Profil -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="109" />
-		<property name="enabled" value="true" />
+		<property name="enabled" value="${minimalhome.ext.myprofile}"></property>
 		<property name="iconCssClass" value="o_icon o_icon-fw o_icon_user" />
 		<property name="navigationKey" value="profil" />
 		<property name="parentTreeNodeIdentifier" value="config" />
@@ -201,7 +202,7 @@
 	<!-- Settings -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="110" />
-		<property name="enabled" value="true" />
+		<property name="enabled" value="${minimalhome.ext.mysettings}"></property>
 		<property name="iconCssClass" value="o_icon o_icon-fw o_icon_settings" />
 		<property name="navigationKey" value="mysettings" />
 		<property name="parentTreeNodeIdentifier" value="config" />
@@ -224,7 +225,7 @@
 	<!-- Password -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="112" />
-		<property name="enabled" value="true" />
+		<property name="enabled" value="${minimalhome.ext.password}"></property>
 		<property name="iconCssClass" value="o_icon o_icon-fw o_icon_password" />
 		<property name="navigationKey" value="mypassword" />
 		<property name="parentTreeNodeIdentifier" value="config" />
