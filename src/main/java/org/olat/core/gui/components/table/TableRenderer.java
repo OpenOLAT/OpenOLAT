@@ -30,11 +30,10 @@ import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -47,7 +46,7 @@ import org.olat.core.logging.Tracing;
  * 
  * @author Felix Jost
  */
-public class TableRenderer implements ComponentRenderer {
+public class TableRenderer extends DefaultComponentRenderer {
 
 	private static final String CLOSE_HTML_BRACE = "\">";
 	private static final String CLOSE_DIV = "</div>";
@@ -61,19 +60,13 @@ public class TableRenderer implements ComponentRenderer {
 	private static final String SINGLE_COMMA_SINGLE = "', '";
 	private static final String A_HREF = "<a href=\"";
 	protected static final String TABLE_MULTISELECT_GROUP = "tb_ms";
-	private OLog log = Tracing.createLoggerFor(this.getClass());
-
-	/**
-	 * Constructor for TableRenderer. There must be an empty contructor for the Class.forName() call
-	 */
-	public TableRenderer() {
-		super();
-	}
+	private static final OLog log = Tracing.createLoggerFor(TableRenderer.class);
 
 	/**
 	 * @see org.olat.core.gui.render.ui.ComponentRenderer#render(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator, org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
+	@Override
 	public void render(final Renderer renderer, final StringOutput target, final Component source, final URLBuilder ubu, final Translator translator, final RenderResult renderResult,
 			final String[] args) {
 		long start = 0;
@@ -206,26 +199,26 @@ public class TableRenderer implements ComponentRenderer {
 
 	private void appendTablePageingNextLink(StringOutput target, String formName, int rows, int resultsPerPage, int pageid) {
 		boolean enabled = ((pageid * resultsPerPage) < rows);
-		target.append("<li").append(" class='disabled'", !enabled).append("><a href='");
+		target.append("<li").append(" class='disabled'", !enabled).append("><a href=\"");
 		if(enabled) {
 			target.append("JavaScript:tableFormInjectCommandAndSubmit('")
 			      .append(formName).append(SINGLE_COMMA_SINGLE).append(Table.COMMAND_PAGEACTION).append(SINGLE_COMMA_SINGLE)
 			      .append(Table.COMMAND_PAGEACTION_FORWARD).append(CLOSE_AND_O2CLICK);
 		} else {
-			target.append("#'>");
+			target.append("#\">");
 		}		
 		target.append("&raquo;").append("</a></li>");
 	}
 
 	private void appendTablePageingBackLink(StringOutput target, String formName, int pageid) {
-		boolean disabled = pageid <= 1;
-		target.append("<li").append(" class='disabled'", disabled).append("><a href='");
-		if(disabled) {
+		boolean enabled = pageid > 1;
+		target.append("<li").append(" class='disabled'", !enabled).append("><a href=\"");
+		if(enabled) {
 			target.append("JavaScript:tableFormInjectCommandAndSubmit('")
 			      .append(formName).append(SINGLE_COMMA_SINGLE).append(Table.COMMAND_PAGEACTION).append(SINGLE_COMMA_SINGLE)
 			      .append(Table.COMMAND_PAGEACTION_BACKWARD).append(CLOSE_AND_O2CLICK);
 		} else {
-			target.append("#'>");
+			target.append("#\">");
 		}
 		target.append("&laquo;").append(CLOSE_HREF);
 	}
@@ -530,21 +523,4 @@ public class TableRenderer implements ComponentRenderer {
 			appendPagenNumberLink(target, formName, pageid, i);
 		}
 	}
-
-	/**
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator)
-	 */
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderingState rstate) {
-		//
-	}
-
-	/**
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component)
-	 */
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-		//
-	}
-
 }
