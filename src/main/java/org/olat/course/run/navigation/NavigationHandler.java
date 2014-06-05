@@ -40,6 +40,7 @@ import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
+import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.translator.Translator;
@@ -63,6 +64,7 @@ import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.nodes.cp.CPRunController;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -78,21 +80,16 @@ import de.bps.course.nodes.CourseNodePasswordManagerImpl;
  * Initial Date: 19.01.2005 <br>
  * @author Felix Jost
  */
-public class NavigationHandler {
+public class NavigationHandler implements Disposable {
 	private static final OLog log = Tracing.createLoggerFor(NavigationHandler.class);
-	
-
 
 	private final UserCourseEnvironment userCourseEnv;
 	private final boolean previewMode;
-
-	// remember so subsequent click to a subtreemodel's node has a handler
-	private ControllerEventListener subtreemodelListener = null;
 	
 	private String selectedCourseNodeId;
 	private Set<String> openCourseNodeIds = new HashSet<String>();
 	private List<String> openTreeNodeIds = new ArrayList<String>();
-	private Map<String,TreeModel> externalTreeModels = new HashMap<String,TreeModel>();
+	private Map<String,SubTree> externalTreeModels = new HashMap<String,SubTree>();
 
 	/**
 	 * @param userCourseEnv
@@ -152,6 +149,19 @@ public class NavigationHandler {
 			NodeRunConstructionResult nrcr = null;
 			CourseNode internCourseNode = null;
 			GenericTreeModel subTreeModel;
+			
+			ControllerEventListener subtreemodelListener = null;
+			if(selTN != null) {
+				TreeNode internNode = getFirstInternParentNode(selTN);
+				NodeEvaluation prevEval = (NodeEvaluation) internNode.getUserObject();
+				CourseNode courseNode = prevEval.getCourseNode();
+				
+				if(externalTreeModels.containsKey(courseNode.getIdent())) {
+					SubTree subTree = externalTreeModels.get(courseNode.getIdent());
+					subtreemodelListener = subTree.getTreeModelListener();
+				}
+			}
+			
 			if (subtreemodelListener == null) {
 				//throw new AssertException("no handler for subtreemodelcall!");
 				//reattach the subtreemodellistener
@@ -166,12 +176,21 @@ public class NavigationHandler {
 				// remember as instance variable for next click
 				subtreemodelListener = nrcr.getSubTreeListener();
 				subTreeModel = (GenericTreeModel)nrcr.getSubTreeModel();
-				externalTreeModels.put(internCourseNode.getIdent(), subTreeModel);
+				externalTreeModels.put(internCourseNode.getIdent(), new SubTree(nrcr.getRunController(), subTreeModel, subtreemodelListener));
 			} else {
 				TreeNode internNode = getFirstInternParentNode(selTN);
 				NodeEvaluation prevEval = (NodeEvaluation) internNode.getUserObject();
 				internCourseNode = prevEval.getCourseNode();
-				subTreeModel = (GenericTreeModel)externalTreeModels.get(internCourseNode.getIdent());
+				SubTree subTree = externalTreeModels.get(internCourseNode.getIdent());
+				subtreemodelListener = subTree.getTreeModelListener();
+				if(subtreemodelListener != currentNodeController) {
+					if(subtreemodelListener instanceof CPRunController) {
+						nrcr =  ((CPRunController)subtreemodelListener).createNodeRunConstructionResult(ureq);
+					} else {
+						nrcr = new NodeRunConstructionResult((Controller)subtreemodelListener);
+					}
+				}
+				subTreeModel = subTree.getTreeModel();
 			}
 			if (log.isDebug()){
 				log.debug("delegating to handler: treeNodeId = " + treeNodeId);
@@ -213,13 +232,13 @@ public class NavigationHandler {
 			// might be used in both controllers with the same ID (e.g. the course folder)
 			if(TreeEvent.COMMAND_TREENODE_OPEN.equals(treeEvent.getSubCommand()) || TreeEvent.COMMAND_TREENODE_CLOSE.equals(treeEvent.getSubCommand())) {
 				if(isInParentLine(calledCourseNode)) {
-					if (currentNodeController != null) {
+					if (currentNodeController != null && !currentNodeController.isDisposed() && !isListening(currentNodeController)) {
 						currentNodeController.dispose();
 					}
 				}
 				ncr = doEvaluateJumpTo(ureq, wControl, calledCourseNode, listeningController, nodecmd, treeEvent.getSubCommand(), currentNodeController);
 			} else {
-				if (currentNodeController != null) {
+				if (currentNodeController != null && !currentNodeController.isDisposed() && !isListening(currentNodeController)) {
 					currentNodeController.dispose();
 				}
 				ncr = doEvaluateJumpTo(ureq, wControl, calledCourseNode, listeningController, nodecmd, treeEvent.getSubCommand(), currentNodeController);
@@ -344,11 +363,12 @@ public class NavigationHandler {
 					ncr = courseNode.createNodeRunConstructionResult(ureq, bwControl, userCourseEnv, nodeEval, nodecmd);
 
 					// remember as instance variable for next click
-					subtreemodelListener = ncr.getSubTreeListener();
+					ControllerEventListener subtreemodelListener = ncr.getSubTreeListener();
 					if (subtreemodelListener != null) {
-						externalTreeModels.put(courseNode.getIdent(), ncr.getSubTreeModel());
+						GenericTreeModel subTreeModel = (GenericTreeModel)ncr.getSubTreeModel();
+						externalTreeModels.put(courseNode.getIdent(), new SubTree(ncr.getRunController(), subTreeModel, subtreemodelListener));
 						if(!newSelectedNodeId.equals(ncr.getSelectedTreeNodeId())) {
-							TreeNode selectedNode = ncr.getSubTreeModel().getNodeById(ncr.getSelectedTreeNodeId());
+							TreeNode selectedNode = subTreeModel.getNodeById(ncr.getSelectedTreeNodeId());
 							openCourseNodeIds.add((String)selectedNode.getUserObject());
 						}
 					}
@@ -399,9 +419,10 @@ public class NavigationHandler {
 	private void reattachExternalTreeModels(TreeEvaluation treeEval) {
 		if(externalTreeModels == null || externalTreeModels.isEmpty()) return;
 		
-		for(Map.Entry<String, TreeModel> entry:externalTreeModels.entrySet()) {
+		for(Map.Entry<String, SubTree> entry:externalTreeModels.entrySet()) {
 			String courseNodeId = entry.getKey();
-			TreeModel treeModel = entry.getValue();
+			SubTree subTree = entry.getValue();
+			TreeModel treeModel = subTree.getTreeModel();
 			
 			CourseNode courseNode = userCourseEnv.getCourseEnvironment().getRunStructure().getNode(courseNodeId);
 			TreeNode treeNode = treeEval.getCorrespondingTreeNode(courseNode);
@@ -447,6 +468,28 @@ public class NavigationHandler {
 			selectedCourseNode = (CourseNode)selectedCourseNode.getParent();
 		}
 		return false;
+	}
+	
+	public boolean isListening(Controller ctrl) {
+		for(SubTree subTree:externalTreeModels.values()) {
+			if(subTree.getTreeModelListener() == ctrl || subTree.getController() == ctrl) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	@Override
+	public void dispose() {
+		for(SubTree subTree:externalTreeModels.values()) {
+			ControllerEventListener listener = subTree.getTreeModelListener();
+			if(listener instanceof Controller) {
+				Controller ctrl = (Controller)listener;
+				if(!ctrl.isDisposed()) {
+					ctrl.dispose();
+				}
+			}
+		}
 	}
 	
 	private List<String> convertToTreeNodeIds(TreeEvaluation treeEval, Collection<String> courseNodeIds) {
@@ -501,5 +544,28 @@ public class NavigationHandler {
 		// top reached or may not access node
 		return mayAccess;
 	}
+	
+	private static class SubTree {
+		private final Controller controller;
+		private final GenericTreeModel treeModel;
+		private final ControllerEventListener treeModelListener;
+		
+		public SubTree(Controller controller, GenericTreeModel treeModel, ControllerEventListener treeModelListener) {
+			this.controller = controller;
+			this.treeModel = treeModel;
+			this.treeModelListener = treeModelListener;
+		}
+		
+		public Controller getController() {
+			return controller;
+		}
 
+		public GenericTreeModel getTreeModel() {
+			return treeModel;
+		}
+		
+		public ControllerEventListener getTreeModelListener() {
+			return treeModelListener;
+		}
+	}
 }

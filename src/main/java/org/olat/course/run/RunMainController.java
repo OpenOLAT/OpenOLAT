@@ -68,7 +68,6 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.control.generic.textmarker.GlossaryMarkupItemController;
 import org.olat.core.gui.control.generic.title.TitledWrapperController;
-import org.olat.core.gui.control.generic.tool.ToolController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -424,14 +423,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		return updateTreeAndContent(ureq, calledCourseNode, nodecmd, null, null);
 	}
 	
-	//fxdiff BAKS-7 Resume function
 	private boolean updateTreeAndContent(UserRequest ureq, CourseNode calledCourseNode, String nodecmd, List<ContextEntry> entries, StateEntry state) {
 		// build menu (treemodel)
 		// dispose old node controller before creating the NodeClickedRef which creates 
 		// the new node controller. It is important that the old node controller is 
 		// disposed before the new one to not get conflicts with cacheable mappers that
 		// might be used in both controllers with the same ID (e.g. the course folder)
-		if (currentNodeController != null) {
+		if (currentNodeController != null && !currentNodeController.isDisposed() && !navHandler.isListening(currentNodeController)) {
 			currentNodeController.dispose();
 		}
 		NodeClickedRef nclr = navHandler.evaluateJumpToCourseNode(ureq, getWindowControl(), calledCourseNode, this, nodecmd);
@@ -691,7 +689,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		if (nclr.isHandledBySubTreeModelListener() || nclr.getSelectedNodeId() == null) {
 			if(nclr.getRunController() != null) {
 				//there is an update to the currentNodeController, apply it
-				if (currentNodeController != null && !currentNodeController.isDisposed()) {
+				if (currentNodeController != null && !currentNodeController.isDisposed() && !navHandler.isListening(currentNodeController)) {
 					currentNodeController.dispose();
 				}
 				currentNodeController = nclr.getRunController();
@@ -712,11 +710,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		currentCourseNode = nclr.getCalledCourseNode();
 
 		// get new run controller. Dispose only if not already disposed in navHandler.evaluateJumpToTreeNode()
-		if (currentNodeController != null && !currentNodeController.isDisposed()) currentNodeController.dispose();
+		if (currentNodeController != null && !currentNodeController.isDisposed() && !navHandler.isListening(currentNodeController)) {
+			currentNodeController.dispose();
+		}
 		currentNodeController = nclr.getRunController();
 		Component nodeComp = currentNodeController.getInitialComponent();
 		contentP.setContent(nodeComp);
-		//fxdiff BAKS-7 Resume function
 		addToHistory(ureq, currentNodeController);
 		
 		// set glossary wrapper dirty after menu click to make it reload the glossary
@@ -1268,7 +1267,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			);
 	}
 	
-	private void addCurrentUserCount(ToolController myTool) {
+	/*private void addCurrentUserCount(ToolController myTool) {
 			VelocityContainer currentUsers = createVelocityContainer("currentUsers");
 			currentUserCountLink = LinkFactory.createCustomLink("currentUsers", "cUsers", "", Link.NONTRANSLATED, currentUsers, this);
 			updateCurrentUserCount();
@@ -1276,7 +1275,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			currentUserCountLink.setTooltip(getTranslator().translate("participants.in.course.desc"));
 			currentUserCountLink.setEnabled(false);
 			myTool.addComponent(currentUserCountLink);
-	}
+	}*/
 
 	/**
 	 * Reads the users learning group rights from a local hash map. use
@@ -1323,10 +1322,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				
 		// currentNodeController must be disposed manually does not work with
 		// general BasicController methods
-		if (currentNodeController != null) {
+		if (currentNodeController != null && !currentNodeController.isDisposed()) {
 			currentNodeController.dispose();
-			currentNodeController = null;
 		}
+		currentNodeController = null;
+		navHandler.dispose();
 
 		// log to Statistical and User log
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_LEAVING, getClass());

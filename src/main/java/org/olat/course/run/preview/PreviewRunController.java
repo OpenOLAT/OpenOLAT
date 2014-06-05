@@ -176,7 +176,7 @@ public class PreviewRunController extends MainLayoutBasicController {
 
 				// get the controller (in this case it is a preview controller). Dispose only if not already disposed in navHandler.evaluateJumpToTreeNode()
 				if(nclr.getRunController() != null) {
-					if (currentNodeController != null && !currentNodeController.isDisposed()){
+					if (currentNodeController != null && !currentNodeController.isDisposed()  && !navHandler.isListening(currentNodeController)){
 						currentNodeController.dispose();
 					}
 					currentNodeController = nclr.getRunController();
@@ -247,23 +247,23 @@ public class PreviewRunController extends MainLayoutBasicController {
 		luTree.setOpenNodeIds(nclr.getOpenNodeIds());
 
 		// dispose old node controller
-		if (currentNodeController != null) {
+		if (currentNodeController != null && !currentNodeController.isDisposed() && !navHandler.isListening(currentNodeController)) {
 			currentNodeController.dispose();
 		}
 		currentNodeController = nclr.getRunController();
 		content.setContent(currentNodeController.getInitialComponent());
-		// enableCustomCourseCSS(ureq);
 		return true;
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		if (currentNodeController != null) {
 			currentNodeController.dispose();
 			currentNodeController = null;
 		}
+		navHandler.dispose();
 	}
-
 }
