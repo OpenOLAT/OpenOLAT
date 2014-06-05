@@ -111,7 +111,7 @@ var BLoader = {
 						}
 					}
 					// add theme position, theme has to move one down
-					if (sh.id == 'b_theme_css') pos = i;
+					if (sh.id == 'o_theme_css') pos = i;
 				}
 				if (cnt > 1 && o_info.debug) o_logwarn("BLoader::loadCSS: apply styles: num of stylesheets found was not 0 or 1:"+cnt);
 				if (loadAfterTheme) {
@@ -132,9 +132,9 @@ var BLoader = {
 					//var newSt = new Element('link', {rel : 'stylesheet', id : linkid, href : 'data:text/css,'+escape(styles) });
 					var newSt = jQuery('<link id="' + linkid + '" rel="stylesheet" type="text/css" href="' + cssURL+ '">');
 					if (loadAfterTheme) {
-						newSt.insertBefore(jQuery('#b_fontSize_css'));
+						newSt.insertBefore(jQuery('#o_fontSize_css'));
 					} else {
-						newSt.insertBefore(jQuery('#b_theme_css'));
+						newSt.insertBefore(jQuery('#o_theme_css'));
 					}
 				}
 			}

@@ -129,7 +129,7 @@ $r.render("jsCssRawHtmlHeader", "pre-theme")
 ## 2) CSS theme inclusion and favicons
 <link rel="icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
 <link rel="shortcut icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
-<link id="b_theme_css" href="${theme.getBaseURI()}theme.css" rel="stylesheet" type="text/css" />
+<link id="o_theme_css" href="${theme.getBaseURI()}theme.css" rel="stylesheet" type="text/css" />
 ## 3) IE specific bugfixes for current theme
 <!--[if lte IE 7]>
 <link href="${theme.getBaseURI()}patches.css" rel="stylesheet" type="text/css" />
@@ -137,15 +137,17 @@ $r.render("jsCssRawHtmlHeader", "pre-theme")
 ## 4) Dynamic overriding of CSS rules
 $r.render("jsCssRawHtmlHeader", "post-theme")
 ## 5) Add user font size
-<style id="b_fontSize_css" type="text/css">#b_page_margins{font-size:${globalSettings.getFontSize()}%}</style>
-## 6) Add special CSS for web2.a screen reader mode
+#if (${globalSettings.getFontSize()} != "100")
+<style id="o_fontSize_css" type="text/css">#o_body{zoom:${globalSettings.getFontSize()}%; -moz-transform: scale(${globalSettings.getFontSize()}%)}</style>
+#end
 
 ## deprecated - include any raw header
 $r.renderHeaderIncludes()
 
 ## Page title taken from org.olat.core package
-<title>$r.translate("page.appname") - $r.translate("page.title")</title></head>
-## TODO:fj pb: Review order
+<title>$r.translate("page.appname") - $r.translate("page.title")</title>
+</head>
+
 <body onload="b_start();" id="o_body" class="#foreach($cssClass in $bodyCssClasses)$cssClass #end b_lang_$r.getLanguageCode()">
 ## if in debug mode, it is a invisible component which is only visible by wrapping debug information around all other
 ## components.
