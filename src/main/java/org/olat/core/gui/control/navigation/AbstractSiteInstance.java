@@ -52,7 +52,7 @@ public abstract class AbstractSiteInstance implements SiteInstance {
 	public final Controller createController(UserRequest ureq, WindowControl wControl) {
 		SiteDefinitions siteDefinitions = CoreSpringFactory.getImpl(SiteDefinitions.class);
 		SiteConfiguration config = siteDefinitions.getConfigurationSite(siteDef);
-		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
+		if(config != null && StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
 			String secCallbackBeanId = config.getSecurityCallbackBeanId();
 			Object siteSecCallback = CoreSpringFactory.getBean(secCallbackBeanId);
 			if (siteSecCallback instanceof SiteSecurityCallback

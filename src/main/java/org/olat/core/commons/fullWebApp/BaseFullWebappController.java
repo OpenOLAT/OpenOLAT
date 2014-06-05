@@ -62,10 +62,10 @@ import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.ScreenMode;
+import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.VetoableCloseController;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
@@ -98,6 +98,7 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.home.HomeSite;
 
 /**
  * Description:<br>
@@ -148,6 +149,8 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	// used as link id which is load url safe (e.g. replayable
 	private int dtabCreateCounter = 0;
 	// the sites list
+	
+	private SiteInstance userTools;
 	private List<SiteInstance> sites;
 	private Map<SiteInstance, BornSiteInstance> siteToBornSite = new HashMap<SiteInstance, BornSiteInstance>();
 	//fxdiff BAKS-7 Resume function
@@ -360,6 +363,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		dtabsControllers = new ArrayList<>();
 
 		// -- sites -- by definition the first site is activated at the beginning
+		userTools = new HomeSite(null);
 		sites = baseFullWebappControllerParts.getSiteInstances(ureq, getWindowControl());
 		if (sites != null && sites.size() == 0) {
 			sites = null;
@@ -1057,12 +1061,16 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	 *      java.lang.String, java.lang.String)
 	 */
 	public void activateStatic(UserRequest ureq, String className, List<ContextEntry> entries) {
-		for (Iterator<SiteInstance> it_sites = sites.iterator(); it_sites.hasNext();) {
-			SiteInstance site = it_sites.next();
-			String cName = site.getClass().getName();
-			if (cName.equals(className)) {
-				activateSite(site, ureq, entries, false);
-				return;
+		if(className != null && className.endsWith("HomeSite")) {
+			activateSite(userTools, ureq, entries, false);
+		} else {
+			for (Iterator<SiteInstance> it_sites = sites.iterator(); it_sites.hasNext();) {
+				SiteInstance site = it_sites.next();
+				String cName = site.getClass().getName();
+				if (cName.equals(className)) {
+					activateSite(site, ureq, entries, false);
+					return;
+				}
 			}
 		}
 	}

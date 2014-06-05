@@ -50,8 +50,7 @@ public class HomeSite extends AbstractSiteInstance {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(HomeSite.class, ureq.getIdentity().getKey());
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
-		MainLayoutController c = new HomeMainController(ureq, bwControl);
-		return c;
+		return new HomeMainController(ureq, bwControl);
 	}
 
 	/**
