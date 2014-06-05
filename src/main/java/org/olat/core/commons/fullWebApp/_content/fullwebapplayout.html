@@ -65,40 +65,43 @@ function b_start(){
 <!--<![endif]-->
 <script type="text/javascript" src='$r.staticLink("js/jquery/ui/jquery-ui-1.10.4.custom.min.js")'></script>
 
-## Are compressed as js/js.plugins.min.js
-<script type="text/javascript" src='$r.staticLink("js/jquery/periodic/jquery.periodic.js")'></script>
-<script type="text/javascript" src='$r.staticLink("js/jshashtable-2.1_src.js")'></script>
-<script type="text/javascript" src='$r.staticLink("js/jquery/openolat/jquery.oolog.js")'></script>
-<script type="text/javascript" src='$r.staticLink("js/jquery/openolat/jquery.translator.js")'></script>
-<script type="text/javascript" src='$r.staticLink("js/tinymce4/tinymce/jquery.tinymce.min.js")'></script>
-<script type="text/javascript" src='$r.staticLink("js/functions.js")'></script>
-<script type="text/javascript" src='$r.staticLink("js/navbar.js")'></script>
-<script type="text/javascript" src='$r.staticLink("js/jquery/dotdotdot/jquery.dotdotdot.js")'></script>
-<script type="text/javascript" src='$r.staticLink("js/jquery/transit/jquery.transit.js")'></script>
-<script type="text/javascript" src='$r.staticLink("js/ellipsis.js")'></script>
-## <script type="text/javascript" src='$r.staticLink("js/js.plugins.min.js")'></script>
-<script type="text/javascript" src='$r.staticLink("movie/player.js")'></script>
 
-## Bootstrap js
-## FIXME:oo10 add to minify routine
-<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+## HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries - required by bootstrap
+<!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+	<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/affix.js")'></script>
-<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/alert.js")'></script>
-<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/button.js")'></script>
-<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/carousel.js")'></script>
-<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/collapse.js")'></script>
-<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/dropdown.js")'></script>
-<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/tab.js")'></script>
-<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/transition.js")'></script>
-<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/scrollspy.js")'></script>
-<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/modal.js")'></script>
-<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/tooltip.js")'></script>
-<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/popover.js")'></script>
+#if ($r.available("guidebug"))
+	## Are compressed as js/js.plugins.min.js in non-debug mode
+	<script type="text/javascript" src='$r.staticLink("js/jquery/periodic/jquery.periodic.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("js/jshashtable-2.1_src.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("js/jquery/openolat/jquery.oolog.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("js/jquery/openolat/jquery.translator.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("js/tinymce4/tinymce/jquery.tinymce.min.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("js/functions.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("js/navbar.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("js/jquery/dotdotdot/jquery.dotdotdot.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("js/jquery/transit/jquery.transit.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("js/ellipsis.js")'></script>
+	## Bootstrap js
+	##<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/affix.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/alert.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/button.js")'></script>
+	##<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/carousel.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/collapse.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/dropdown.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/tab.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/transition.js")'></script>
+	##<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/scrollspy.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/modal.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/tooltip.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/popover.js")'></script>
+#else
+	<script type="text/javascript" src='$r.staticLink("js/js.plugins.min.js")'></script>
+#end
 
+## The OpenOLAT video player. In separate file as it is also used in content iframes
+<script type="text/javascript" src='$r.staticLink("movie/player.js")'></script>
 
 ## Always loaded
 ## <link type="text/css" href='$r.staticLink("js/jquery/tagit/jquery.tagit.css")' rel="stylesheet"/>

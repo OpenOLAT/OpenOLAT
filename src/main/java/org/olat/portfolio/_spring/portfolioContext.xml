@@ -148,6 +148,7 @@
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="personal.tool.ep" init-method="initExtensionPoints" >
 		<property name="order" value="301" />
 		<property name="navigationKey" value="Portfolio" />
+		<property name="enabled" value="${minimalhome.ext.portfolio}"></property>
 		<property name="iconCssClass" value="o_icon o_icon-fw o_ep_icon" />
 		<property name="actionController">
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
