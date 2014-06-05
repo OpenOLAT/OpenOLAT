@@ -28,7 +28,7 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.group.model.ContactKeyView;
+import org.olat.group.BusinessGroupImpl;
 import org.olat.group.model.ContactView;
 import org.olat.group.model.ContactViewExtended;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,9 +55,15 @@ public class ContactDAO {
 	
 	private List<Long> getMembersForCount(Identity me) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select memv.identityKey from ").append(ContactKeyView.class.getName()).append(" memv ")
-		  .append(" where memv.meKey=:identKey");
-		
+		sb.append("select contact.identity.key from ").append(BusinessGroupImpl.class.getName()).append(" bgroup ")
+		  .append(" inner join bgroup.baseGroup baseGroup")
+		  .append(" inner join baseGroup.members contact")
+		  .append(" inner join baseGroup.members me")
+		  .append(" where me.identity.key=:identKey and ")
+		  .append("  ((bgroup.ownersVisibleIntern=true and contact.role='coach')")
+		  .append("  or")
+		  .append("  (bgroup.participantsVisibleIntern=true and contact.role='participant'))");
+
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
 				.setParameter("identKey", me.getKey())
 				.getResultList();

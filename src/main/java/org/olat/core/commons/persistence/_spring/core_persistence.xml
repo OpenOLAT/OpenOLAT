@@ -101,8 +101,7 @@
 		<class>org.olat.course.assessment.model.UserCourseInfosImpl</class>
 		<class>org.olat.course.nodes.cl.model.DBCheckbox</class>
 		<class>org.olat.course.nodes.cl.model.DBCheck</class>
-		<class>org.olat.group.model.ContactView</class>
-		<class>org.olat.group.model.ContactKeyView</class>
+		<class>org.olat.group.model.ContactView</class
 		<class>org.olat.group.model.ContactViewExtended</class>
 		<class>org.olat.group.model.BusinessGroupLazyImpl</class>
 		<class>org.olat.group.model.BusinessGroupMembershipViewImpl</class>

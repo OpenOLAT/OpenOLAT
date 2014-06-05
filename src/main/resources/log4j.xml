@@ -37,6 +37,10 @@
 		<level value="debug" />
 		<appender-ref ref="stdout" />
 	</logger>
+	<logger name="org.hibernate.type.descriptor.sql.BasicBinder">
+		<level value="TRACE" />
+		<appender-ref ref="stdout" />
+	</logger>
 	-->
 
 </log4j:configuration>
