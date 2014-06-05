@@ -6,6 +6,7 @@
     @include border-top-radius($o-tree-border-radius);
     @include border-bottom-radius($o-tree-border-radius);
     overflow: hidden;
+    font-size: $o-tree-font-size;
 
 	a {
 		color : $o-tree-link-color;
@@ -37,8 +38,8 @@
 		@for $i from 0 through 11 {
 			li div a.o_tree_oc_l#{$i}  { 
 				position:absolute;
-				top:$o-tree-padding-opener-top-px;
-				left: $o-tree-padding-opener-left-px + ($i * $o-tree-padding-steps-px); 
+				top: $o-tree-padding-vertical;
+				left: $o-tree-padding-opener-left-px + $o-tree-padding-horizontal_root_visible + (( $i - 1) * $o-tree-padding-steps-px); 
 				z-index:9; 
 			}
 			
@@ -50,7 +51,7 @@
 		@for $i from 0 through 11 {
 			li div a.o_tree_l#{$i}  {
 				display:block;
-				padding: 10px 2px 10px (14px + ($i * $o-tree-padding-steps-px)); 
+				padding: $o-tree-padding-vertical 2px $o-tree-padding-vertical ($o-tree-padding-horizontal_root_visible + ($i * $o-tree-padding-steps-px)); 
 				z-index:9; 
 			}
 		}
@@ -90,6 +91,25 @@
 			font-weight: $o-tree-link-active-parent-font-weight;
 		}
 	}
+	
+	/* fix left padding when root node is not visible, move everything a bit to the right */
+	&.o_tree_root_hidden {
+		ul {
+			@for $i from 0 through 11 {
+				li div a.o_tree_oc_l#{$i}  { 
+					left: $o-tree-padding-opener-left-px + $o-tree-padding-horizontal_root_hidden + (($i - 1) * $o-tree-padding-steps-px); 
+				}
+			}
+	
+			@for $i from 0 through 11 {
+				li div a.o_tree_l#{$i}  {
+					padding: $o-tree-padding-vertical 2px $o-tree-padding-vertical ($o-tree-padding-horizontal_root_hidden + ($i * $o-tree-padding-steps-px)); 
+				}
+			}
+		}
+	}
+	
+	
 	
 	.o_dnd_item { cursor:move; z-index: 100; }
 	.o_dnd_proxy {@include o-opacity(40); background-color: yellow;}
