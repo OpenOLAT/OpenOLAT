@@ -157,7 +157,8 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 		}
 		return convertedList;
 	}
-	
+
+	@Override
 	protected void reloadModel(SortingCriteria sortingCriteria) {
 		if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
 			List<RepositoryEntryLight> items = getAllEntries(sortingCriteria);
@@ -168,7 +169,8 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 			reloadModel(getPersistentManuallySortedItems());
 		}
 	}
-	
+
+	@Override
 	protected void reloadModel(List<PortletEntry<RepositoryEntryLight>> sortedItems) {						
 		repoEntryListModel = new RepositoryPortletTableDataModel(sortedItems, getLocale());
 		tableCtr.setTableDataModel(repoEntryListModel);
@@ -179,10 +181,16 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == showAllLink){
-			String target = studentView ? "search.mycourses.student" : "search.mycourses.teacher";
-			NewControllerFactory.getInstance().launch("[RepositorySite:0][" + target + ":0]", ureq, getWindowControl());
+			String target;
+			if(studentView) {
+				target = "[MyCoursesSite:0][My:0]";
+			} else {
+				target = "[RepositorySite:0][My:0]";
+			}
+			NewControllerFactory.getInstance().launch(target, ureq, getWindowControl());
 		} 
 	}
 
@@ -190,6 +198,7 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	 * @see org.olat.core.gui.control.ControllerEventListener#dispatchEvent(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		super.event(ureq, source, event);
 		if (source == tableCtr) {
@@ -205,6 +214,7 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 		}	
 	}
 
+	@Override
 	public void event(Event event) {
 		//
 	}
@@ -254,7 +264,8 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	 * @param sortingCriteria
 	 * @return a Comparator for the input sortingCriteria
 	 */
-  protected Comparator<RepositoryEntryLight> getComparator(final SortingCriteria sortingCriteria) {
+	@Override
+	protected Comparator<RepositoryEntryLight> getComparator(final SortingCriteria sortingCriteria) {
 		return new Comparator<RepositoryEntryLight>(){			
 			public int compare(final RepositoryEntryLight repoEntry1, final RepositoryEntryLight repoEntry2) {
 				int comparisonResult = 0;
