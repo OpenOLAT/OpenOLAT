@@ -64,6 +64,11 @@ public abstract class DefaultChiefController extends DefaultController implement
 	}
 
 	@Override
+	public boolean wishReload(boolean erase) {
+		return false;
+	}
+
+	@Override
 	public ScreenMode getScreenMode() {
 		return screenMode;
 	}

@@ -45,6 +45,8 @@ public interface ChiefController extends Controller {
 	
 	public ScreenMode getScreenMode();
 	
+	public boolean wishReload(boolean erase);
+	
 	/**
 	 * Set a class to the &lt;body&gt;
 	 * @param cssClass

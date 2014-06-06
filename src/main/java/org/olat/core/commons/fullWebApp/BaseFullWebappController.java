@@ -121,6 +121,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private Controller jsLoggerC;
 	private List<String> bodyCssClasses = new ArrayList<>(3);
 
+	private Boolean reload;
 	private final ScreenMode screenMode = new ScreenMode();
 	private WindowBackOffice wbo;
 	
@@ -783,6 +784,16 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		
 		addCustomThemeJS();
 	}
+	
+	@Override
+	public boolean wishReload(boolean erase) {
+		boolean screen = getScreenMode().wishScreenModeSwitch(erase);
+		boolean r = (reload == null ? false : reload.booleanValue());
+		if(erase && reload != null) {
+			reload = null;
+		}
+		return r || screen;
+	}
 
 	@Override
 	public ScreenMode getScreenMode() {
@@ -1107,11 +1118,14 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			}
 		} else if(event instanceof LanguageChangedEvent){
 			LanguageChangedEvent lce = (LanguageChangedEvent)event;
+			UserRequest ureq = lce.getCurrentUreq();
 			getTranslator().setLocale(lce.getNewLocale());
-			initialize(lce.getCurrentUreq());
-			//TODO
-			//initialPanel.popContent();
-			//initialPanel.pushContent(mainVc);
+			initialize(ureq);
+			WindowManager winman = Windows.getWindows(ureq).getWindowManager();
+			initializeBase(ureq, winman, initialPanel);
+			initialPanel.setContent(mainVc);
+			
+			reload = Boolean.TRUE;
 		} else if (event instanceof ChiefControllerMessageEvent) {
 			// msg can be set to show only on one node or on all nodes
 			String msg = GlobalStickyMessage.getGlobalStickyMessage();//either null, or the global message or the per-node-message

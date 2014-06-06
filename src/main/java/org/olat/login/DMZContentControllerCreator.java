@@ -26,6 +26,8 @@ package org.olat.login;
 
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.Windows;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.AutoCreator;
@@ -42,11 +44,13 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 public class DMZContentControllerCreator implements ControllerCreator {
 
 	@Override
-	public Controller createController(UserRequest lureq, WindowControl lwControl) {
+	public Controller createController(UserRequest ureq, WindowControl lwControl) {
 		DmzBFWCParts dmzSitesAndNav = new DmzBFWCParts();
 		AutoCreator contentControllerCreator = new AutoCreator();
 		contentControllerCreator.setClassName(LoginAuthprovidersController.class.getName());
 		dmzSitesAndNav.setContentControllerCreator(contentControllerCreator);
-		return new BaseFullWebappController(lureq, dmzSitesAndNav);
+		ChiefController cc = new BaseFullWebappController(ureq, dmzSitesAndNav);
+		Windows.getWindows(ureq.getUserSession()).setChiefController(cc);
+		return cc;
 	}
 }

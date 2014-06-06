@@ -39,6 +39,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.GlobalSettings;
@@ -335,12 +336,12 @@ public class Window extends AbstractComponent {
 						// 2.) collect dirty components (top-down, return from sub-path when first dirty node met)
 						// 3.) return to sender...
 						boolean didDispatch = false;
-						boolean switchScreenMode = false;
+						boolean forceReload = false;
 						if (validForDispatching) {
 							DispatchResult dispatchResult = doDispatchToComponent(ureq, null);  // FIXME:fj:c enable time stats for ajax-mode
 							didDispatch = dispatchResult.isDispatch();
 							incTimestamp = dispatchResult.isIncTimestamp();
-							switchScreenMode = dispatchResult.isSwitchScreenMode();
+							forceReload = dispatchResult.isForceReload();
 							if (isDebugLog) {
 								long durationAfterDoDispatchToComponent = System.currentTimeMillis() - debug_start;
 								log.debug("Perf-Test: Window durationAfterDoDispatchToComponent=" + durationAfterDoDispatchToComponent);
@@ -350,7 +351,7 @@ public class Window extends AbstractComponent {
 						MediaResource mmr = null;
 						//REVIEW:PB: this will be the code allowing back forward navigation
 						//-----> if (didDispatch || inlineAfterBackForward) {
-						if (switchScreenMode) {
+						if (forceReload) {
 							//force RELOAD with a redirect to itself
 							String reRenderUri = buildURIFor(this, timestampID, null);
 							Command rmrcom = CommandFactory.createParentRedirectTo(reRenderUri);
@@ -614,9 +615,11 @@ public class Window extends AbstractComponent {
 				debugMsg.append("sync_bdisp:").append(syncIntroDiff).append(LOG_SEPARATOR);
 			}
 			
+			boolean forceReload = false;
 			if (dispatch) {
 				DispatchResult dispatchResult = doDispatchToComponent(ureq, debugMsg);
 				boolean didDispatch = dispatchResult.isDispatch();
+				forceReload = dispatchResult.isForceReload();
 				incTimestamp = dispatchResult.isIncTimestamp();
 				if (isDebugLog) {
 					long dstop = System.currentTimeMillis();
@@ -670,8 +673,13 @@ public class Window extends AbstractComponent {
 					return;
 				}
 			}
-
-			if (inline) {
+			
+			if(forceReload) {
+				//force RELOAD with a redirect to itself (http redirect because we are in non-Ajax mode)
+				String reRenderUri = buildURIFor(this, timestampID, null);
+				String url = reRenderUri;
+				DispatcherModule.redirectTo(response, url);
+			} else if (inline) {
 					// do inline rendering.
 					
 					ComponentCollection top = getContentPane();
@@ -1189,9 +1197,8 @@ public class Window extends AbstractComponent {
 		}
 		
 		ChiefController chief = Windows.getWindows(ureq).getChiefController();
-		boolean switchScreenMode = chief == null ?
-				false : chief.getScreenMode().wishScreenModeSwitch(true);
-		return new DispatchResult(toDispatch, incTimestamp, switchScreenMode);
+		boolean reload = chief == null ? false : chief.wishReload(true);
+		return new DispatchResult(toDispatch, incTimestamp, reload);
 	}
 	
 	private void appendDispatchDebugInfos(Component target, StringBuilder debugMsg) {
@@ -1319,20 +1326,20 @@ public class Window extends AbstractComponent {
 class DispatchResult {
 	private final boolean dispatch;
 	private final boolean incTimestamp;
-	private final boolean switchScreenMode;
+	private final boolean forceReload;
 	
-	public DispatchResult(boolean dispatch, boolean incTimestamp, boolean switchScreenMode) {
+	public DispatchResult(boolean dispatch, boolean incTimestamp, boolean forceReload) {
 		this.dispatch = dispatch;
 		this.incTimestamp = incTimestamp;
-		this.switchScreenMode = switchScreenMode;
+		this.forceReload = forceReload;
 	}
 
 	public boolean isDispatch() {
 		return dispatch;
 	}
 
-	public boolean isSwitchScreenMode() {
-		return switchScreenMode;
+	public boolean isForceReload() {
+		return forceReload;
 	}
 
 	public boolean isIncTimestamp() {
