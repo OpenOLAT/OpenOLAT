@@ -25,8 +25,8 @@
 */ 
 package org.olat.core.util.coordinate.util;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.olat.core.id.OLATResourceable;
 
@@ -51,7 +51,7 @@ public class DerivedStringSyncer {
 	public static DerivedStringSyncer INSTANCE = new DerivedStringSyncer();
 	
 	// keys: OLATResource-Type:ResourceId ;values: Objects
-	private Map<String, Object> synchLockHashmap = new HashMap<String, Object>();
+	private ConcurrentMap<String, Object> synchLockHashmap = new ConcurrentHashMap<String, Object>();
 
 	public static DerivedStringSyncer getInstance() {
 		return INSTANCE;
@@ -66,16 +66,15 @@ public class DerivedStringSyncer {
 	 * @return
 	 */
 	public Object getSynchLockFor(OLATResourceable ores) {
-		Object synchLock;
-		String key = ores.getResourceableTypeName() + ":"
-				+ ores.getResourceableId();
-		synchronized (synchLockHashmap) { //o_clusterOK by:fj, since this class is only used by implementations of Syncer (and those provide correct singlevm/cluster code)
-			synchLock = synchLockHashmap.get(key);
-			if (synchLock == null) {
-				synchLock = new Object();
-				synchLockHashmap.put(key, synchLock);
+		String key = ores.getResourceableTypeName() + ":" + ores.getResourceableId();
+		Object synchLock = synchLockHashmap.get(key);
+		if(synchLock == null) {
+			Object newSynchLock = new Object();
+			synchLock = synchLockHashmap.putIfAbsent(key, newSynchLock);
+			if(synchLock == null) {
+				synchLock = newSynchLock;
 			}
-		} // end of synchronized
+		}
 		return synchLock;
 	}
 }
