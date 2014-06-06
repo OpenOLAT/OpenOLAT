@@ -27,7 +27,6 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
-import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
@@ -37,7 +36,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
-import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.RepositoryEntryAuthorImpl;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
@@ -73,20 +71,6 @@ public class RepositoryEntryAuthorQueries {
 		TypedQuery<Number> query = createViewQuery(params, Number.class);
 		Number count = query.getSingleResult();
 		return count == null ? 0 : count.intValue();
-	}
-	
-	public RepositoryEntryAuthorView loadView(IdentityRef identity, RepositoryEntryRef ref) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select v from repositoryentryauthor as v ")
-		  .append(" inner join v.olatResource as res")
-		  .append(" left join v.lifecycle as lifecycle")
-		  .append(" where v.key=:repoEntryKey and v.identityKey=:identityKey");
-		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), RepositoryEntryAuthorView.class)
-				.setParameter("repoEntryKey", ref.getKey())
-				.setParameter("identityKey", identity.getKey())
-				.getSingleResult();
 	}
 
 	public List<RepositoryEntryAuthorView> searchViews(SearchAuthorRepositoryEntryViewParams params, int firstResult, int maxResults) {

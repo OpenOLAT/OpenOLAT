@@ -30,7 +30,6 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
-import org.olat.basesecurity.IdentityRef;
 import org.olat.catalog.CatalogEntryImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
@@ -45,7 +44,6 @@ import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
-import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.RepositoryEntryMyCourseImpl;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
@@ -76,20 +74,6 @@ public class RepositoryEntryMyCourseQueries {
 	private EfficiencyStatementManager efficiencyStatementManager;
 	@Autowired
 	private UserCourseInformationsManager userCourseInformationsManager;
-
-	public RepositoryEntryMyView loadView(IdentityRef identity, RepositoryEntryRef ref) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select v from repositoryentrymy as v ")
-		  .append(" inner join v.olatResource as res")
-		  .append(" left join v.lifecycle as lifecycle")
-		  .append(" where v.key=:repoEntryKey and v.identityKey=:identityKey");
-		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), RepositoryEntryMyView.class)
-				.setParameter("repoEntryKey", ref.getKey())
-				.setParameter("identityKey", identity.getKey())
-				.getSingleResult();
-	}
 	
 	public int countViews(SearchMyRepositoryEntryViewParams params) {
 		if(params.getIdentity() == null) {

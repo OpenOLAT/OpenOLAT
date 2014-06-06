@@ -75,6 +75,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -85,7 +86,6 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
-import org.olat.repository.ui.list.RepositoryEntryRow;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -159,8 +159,8 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 	private LockResult lockResult;
 	
 	public AuthoringEntryDetailsController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel stackPanel, RepositoryEntryRow row) {
-		super(ureq, wControl, row);
+			TooledStackedPanel stackPanel, RepositoryEntryRef ref) {
+		super(ureq, wControl, ref);
 		this.stackPanel = stackPanel;
 		
 		Identity identity = getIdentity();
@@ -176,7 +176,7 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 		initForm(ureq);
 		
 		if(stackPanel != null) {
-			String displayName = row.getDisplayName();
+			String displayName = entry.getDisplayname();
 			stackPanel.pushController(displayName, this);
 			initToolbar(ureq);
 		}

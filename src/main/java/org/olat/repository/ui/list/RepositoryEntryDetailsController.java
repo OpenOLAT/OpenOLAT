@@ -69,9 +69,11 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.resource.accesscontrol.ACService;
@@ -133,7 +135,22 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 
 		this.row = row;
 		entry = repositoryService.loadByKey(row.getKey());
-		
+		initForm(ureq);
+	}
+	
+	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntryRef ref) {
+		super(ureq, wControl, Util.getPackageVelocityRoot(RepositoryEntryDetailsController.class) + "/details.html");
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+
+		entry = repositoryService.loadByKey(ref.getKey());
+		initForm(ureq);
+	}
+	
+	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+		super(ureq, wControl, Util.getPackageVelocityRoot(RepositoryEntryDetailsController.class) + "/details.html");
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+
+		this.entry = entry;
 		initForm(ureq);
 	}
 	
@@ -208,15 +225,22 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			markLink.setElementCssClass("o_bookmark");
 			markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 			
-			Integer myRating = row.getMyRating();
-			Double averageRating = row.getAverageRating();
-			long numOfRatings = row.getNumOfRatings();
+			Integer myRating;
+			if(row == null) {
+				myRating = userRatingsDao.getRatingValue(getIdentity(), entry, null);
+			} else {
+				myRating = row.getMyRating();
+			}
+			
+			RepositoryEntryStatistics statistics = entry.getStatistics();
+			Double averageRating = statistics.getRating();
+			long numOfRatings = statistics.getNumOfRatings();
 			float ratingValue = myRating == null ? 0f : myRating.floatValue();
 			float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
 			ratingEl = new RatingWithAverageFormItem("rating", ratingValue, averageRatingValue, 5, numOfRatings);
 			layoutCont.add("rating", ratingEl);
 			
-			long numOfComments = row.getNumOfComments();
+			long numOfComments = statistics.getNumOfComments();
 			String title = "(" + numOfComments + ")";
 			commentsLink = uifactory.addFormLink("comments", "comments", title, null, layoutCont, Link.NONTRANSLATED);
 			commentsLink.setCustomEnabledLinkCSS("o_comments");
@@ -224,16 +248,17 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			commentsLink.setIconLeftCSS(css);
 			
 			//load memberships
-			boolean isMember = repositoryService.isMember(getIdentity(), entry);
+			List<String> roles = repositoryService.getRoles(getIdentity(), entry);
+			boolean isMember = roles.contains(GroupRoles.owner.name())
+					|| roles.contains(GroupRoles.coach.name())
+					|| roles.contains(GroupRoles.participant.name());
 			if (isMember) {
-				Boolean isAuthor = Boolean.valueOf(repositoryService.hasRole(getIdentity(), entry, GroupRoles.owner.name()));
+				Boolean isAuthor = Boolean.valueOf(roles.contains(GroupRoles.owner));
 				layoutCont.contextPut("isEntryAuthor", isAuthor);
 			}
 			// push roles to velocity as well
 			layoutCont.contextPut("roles", ureq.getUserSession().getRoles());
-			
-			
-			
+
 			//access control
 			String accessI18n = null;
 			List<PriceMethod> types = new ArrayList<PriceMethod>();
@@ -458,7 +483,8 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 		
 		boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
 		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, anonym);
-		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), row.getRepositoryEntryResourceable(), null, secCallback);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", entry.getKey());
+		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, secCallback);
 		listenTo(commentsCtrl);
 		cmc = new CloseableModalController(getWindowControl(), "close", commentsCtrl.getInitialComponent(), true, translate("comments"));
 		listenTo(cmc);

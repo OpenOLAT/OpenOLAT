@@ -232,6 +232,11 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
+	public List<String> getRoles(Identity identity, RepositoryEntryRef re) {
+		return reToGroupDao.getRoles(identity, re);
+	}
+
+	@Override
 	public boolean hasRole(Identity identity, RepositoryEntryRef re, String... roles) {
 		return reToGroupDao.hasRole(identity, re, roles);
 	}
@@ -283,11 +288,6 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
-	public RepositoryEntryMyView loadMyView(IdentityRef identity, RepositoryEntryRef ref) {
-		return myCourseViewQueries.loadView(identity, ref);
-	}
-
-	@Override
 	public int countAuthorView(SearchAuthorRepositoryEntryViewParams params) {
 		return authorViewQueries.countViews(params);
 	}
@@ -296,10 +296,5 @@ public class RepositoryServiceImpl implements RepositoryService {
 	public List<RepositoryEntryAuthorView> searchAuthorView(SearchAuthorRepositoryEntryViewParams params,
 			int firstResult, int maxResults) {
 		return authorViewQueries.searchViews(params, firstResult, maxResults);
-	}
-
-	@Override
-	public RepositoryEntryAuthorView loadAuthorView(IdentityRef identity, RepositoryEntryRef ref) {
-		return authorViewQueries.loadView(identity, ref);
 	}
 }

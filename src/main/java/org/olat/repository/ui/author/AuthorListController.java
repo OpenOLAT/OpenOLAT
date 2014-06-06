@@ -36,9 +36,9 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -73,8 +73,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryAuthorView;
-import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -85,7 +83,6 @@ import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.model.TransientRepositoryEntryRef;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.AuthoringEntryDataModel.Cols;
-import org.olat.repository.ui.list.RepositoryEntryRow;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -405,29 +402,20 @@ public class AuthorListController extends FormBasicController implements Activat
 		//do not update the 
 	}
 	
-	private AuthoringEntryDetailsController doOpenDetails(UserRequest ureq, RepositoryEntryRef entry) {
-		RepositoryEntryMyView view = repositoryService.loadMyView(getIdentity(), entry);
-		RepositoryEntryRow row = new RepositoryEntryRow(view);
-		return doOpenDetails(ureq, row);
-	}
-	
-	private AuthoringEntryDetailsController doOpenDetails(UserRequest ureq, RepositoryEntryRow row) {
+	private AuthoringEntryDetailsController doOpenDetails(UserRequest ureq, RepositoryEntryRef ref) {
 		stackPanel.popUpToRootController(ureq);
 
 		removeAsListenerAndDispose(detailsCtrl);
 		
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", row.getKey());
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", ref.getKey());
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		detailsCtrl = new AuthoringEntryDetailsController(ureq, getWindowControl(), stackPanel, row);
+		detailsCtrl = new AuthoringEntryDetailsController(ureq, getWindowControl(), stackPanel, ref);
 		listenTo(detailsCtrl);
 		return detailsCtrl;
 	}
 	
 	private AuthoringEntryDetailsController doOpenDetailsSettings(UserRequest ureq, RepositoryEntryRef entry) {
-		RepositoryEntryAuthorView view = repositoryService.loadAuthorView(getIdentity(), entry);
-		String fullnameAuthor = "";
-		AuthoringEntryRow row = new AuthoringEntryRow(view, fullnameAuthor);
-		detailsCtrl = doOpenDetails(ureq, row);
+		detailsCtrl = doOpenDetails(ureq, entry);
 		
 		ContextEntry editEntry = BusinessControlFactory.getInstance().createContextEntry(AuthoringEntryDetailsController.EDIT_SETTINGS_ORES);
 		List<ContextEntry> entries = Collections.singletonList(editEntry);

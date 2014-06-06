@@ -54,6 +54,21 @@ public class RepositoryEntryRelationDAO {
 	private DB dbInstance;
 	@Autowired
 	private GroupDAO groupDao;
+	
+	public List<String> getRoles(IdentityRef identity, RepositoryEntryRef re) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select membership.role from ").append(RepositoryEntry.class.getName()).append(" as v")
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where v.key=:repoKey and membership.identity.key=:identityKey");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("repoKey", re.getKey())
+				.getResultList();
+	}
 
 	public boolean hasRole(IdentityRef identity, RepositoryEntryRef re, String... roles) {
 		List<String> roleList = GroupRoles.toList(roles);

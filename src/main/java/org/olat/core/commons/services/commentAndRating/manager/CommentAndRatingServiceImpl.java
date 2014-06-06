@@ -80,6 +80,11 @@ public class CommentAndRatingServiceImpl implements CommentAndRatingService {
 	}
 
 	@Override
+	public Integer getRatingValue(Identity identity, OLATResourceable ores, String resSubPath) {
+		return userRatingsDao.getRatingValue(identity, ores, resSubPath);
+	}
+
+	@Override
 	public UserRating reloadRating(UserRating rating) {
 		return userRatingsDao.reloadRating(rating);
 	}

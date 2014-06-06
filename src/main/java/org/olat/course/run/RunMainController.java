@@ -135,14 +135,12 @@ import org.olat.modules.cp.TreeNodeEvent;
 import org.olat.note.NoteController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
-import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.ui.author.AuthoringEditEntrySettingsController;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
-import org.olat.repository.ui.list.RepositoryEntryRow;
 import org.olat.resource.OLATResource;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -771,9 +769,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	private void launchDetails(UserRequest ureq) {
-		RepositoryEntryMyView view = repositoryService.loadMyView(getIdentity(), courseRepositoryEntry);
-		RepositoryEntryRow row = new RepositoryEntryRow(view);
-		currentToolCtr = new RepositoryEntryDetailsController(ureq, getWindowControl(), row);
+		currentToolCtr = new RepositoryEntryDetailsController(ureq, getWindowControl(), courseRepositoryEntry);
 		all.pushController(translate("command.courseconfig"), currentToolCtr);
 	}
 	

@@ -74,6 +74,8 @@ public interface RepositoryService {
 	
 	public List<Identity> getMembers(RepositoryEntryRef re, String... roles);
 	
+	public List<String> getRoles(Identity identity, RepositoryEntryRef re);
+	
 	public boolean hasRole(Identity identity, RepositoryEntryRef re, String... roles);
 	
 	public void addRole(Identity identity, RepositoryEntry re, String role);
@@ -92,15 +94,9 @@ public interface RepositoryService {
 	 * @return
 	 */
 	public List<RepositoryEntryMyView> searchMyView(SearchMyRepositoryEntryViewParams params, int firstResult, int maxResults);
-
-	public RepositoryEntryMyView loadMyView(IdentityRef identity, RepositoryEntryRef ref);
-
 	
 	public int countAuthorView(SearchAuthorRepositoryEntryViewParams params);
 	
 	public List<RepositoryEntryAuthorView> searchAuthorView(SearchAuthorRepositoryEntryViewParams params, int firstResult, int maxResults);
-
-	public RepositoryEntryAuthorView loadAuthorView(IdentityRef identity, RepositoryEntryRef ref);
-	
 
 }

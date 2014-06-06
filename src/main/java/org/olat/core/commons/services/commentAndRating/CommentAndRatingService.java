@@ -82,6 +82,16 @@ public interface CommentAndRatingService {
 	 * @return The users rating or NULL
 	 */
 	public UserRating getRating(Identity identity, OLATResourceable ores, String resSubPath);
+	
+	/**
+	 * Get the rating for the user and resource
+	 * @param identity
+	 * @param ores
+	 * @param resSubPath
+	 * @return The value of the rating of null if not rated
+	 */
+	public Integer getRatingValue(Identity identity, OLATResourceable ores, String resSubPath);
+	
 
 	/**
 	 * Reload the given user rating with the most recent version from the

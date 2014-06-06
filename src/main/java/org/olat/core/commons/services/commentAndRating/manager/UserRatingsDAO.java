@@ -174,6 +174,30 @@ public class UserRatingsDAO {
 		return results.get(0);
 	}
 	
+	public Integer getRatingValue(Identity identity, OLATResourceable ores, String resSubPath) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select r.rating from userrating as r where r.creator.key=:creatorKey and r.resName=:resname and r.resId=:resId");
+		TypedQuery<Integer> query;
+		if (resSubPath == null) {
+			sb.append(" and r.resSubPath is NULL");
+			query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Integer.class);
+		} else {
+			sb.append(" and resSubPath=:resSubPath");
+			query = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), Integer.class)
+					.setParameter("resSubPath", resSubPath);
+		}
+		List<Integer> results = query
+			 .setParameter("resname", ores.getResourceableTypeName())
+		     .setParameter("resId", ores.getResourceableId())
+		     .setParameter("creatorKey", identity.getKey())
+		     .setHint("org.hibernate.cacheable", Boolean.TRUE)
+		     .getResultList();
+		if (results.size() == 0) return null;		
+		return results.get(0);
+	}
+	
+	
 	public UserRating updateRating(Identity identity, OLATResourceable ores, String resSubPath, int newRatingValue) {
 		UserRatingImpl rating = getRating(identity, ores, resSubPath);
 		if (rating == null) {

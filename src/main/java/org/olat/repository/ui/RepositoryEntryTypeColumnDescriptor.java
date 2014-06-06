@@ -36,7 +36,6 @@ import org.olat.repository.RepositoryEntry;
  * @author Florian Gnägi, http://www.frentix.com
  */
 public class RepositoryEntryTypeColumnDescriptor extends CustomRenderColumnDescriptor {
-	Locale locale;
 
 	/**
 	 * Constructor for this repo entry type column descriptor.
@@ -73,8 +72,6 @@ public class RepositoryEntryTypeColumnDescriptor extends CustomRenderColumnDescr
 			int res = ba ? (bb ? 0 : -1) : (bb ? 1 : 0);
 			return res;
 		}
-		int com = collator.compare(a.getOlatResource().getResourceableTypeName(), b.getOlatResource().getResourceableTypeName());
-		return com;
+		return collator.compare(a.getOlatResource().getResourceableTypeName(), b.getOlatResource().getResourceableTypeName());
 	}
-
 }
