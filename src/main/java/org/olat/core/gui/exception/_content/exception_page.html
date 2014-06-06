@@ -118,7 +118,7 @@ $r.renderHeaderIncludes()
 
 <body id="o_body">
 
-	<div id="o_beta_logo"></div>
+<div id="o_beta_logo"></div>
 
 ## ---- START #o_header ---
 <div id="o_header_wrapper"> 
@@ -130,6 +130,11 @@ $r.renderHeaderIncludes()
 ## ---- END #o_header ---	
 
 ## ---- START #o_navbar ---
+<div id="o_offcanvas_right" class="o_navbar o_navbar-offcanvas o_navbar-inverse " role="navigation">
+	<a href="#" class="o_offcanvas_close" title="$r.translate("close")"><i class='o_icon o_icon_close o_icon-lg'></i></a>
+	<div id="o_offcanvas_right_container" class="o_navbar-collapse">
+	</div>
+</div>
 <a id='o_top' name="o_top"></a>
 <div id="o_navbar_wrapper" class="o_navbar o_navbar-default" role="navigation">
 	<div id="o_navbar_container" class="o_container_offcanvas container-fluid">
@@ -149,107 +154,72 @@ $r.renderHeaderIncludes()
 	<div id="o_main_container" class="o_container_offcanvas container-fluid">
 	
 		## BEGIN ERROR AREA	
-		<div id="o_main">
+		<div id="o_main" class="o_exception">
 			<div class="jumbotron">
+			
   				<h1>$r.translate("error.header")</h1>
+				<img src="$r.staticLink("images/transparent.gif")" class="o_visual img-rounded pull-right" alt="$r.translateInAttribute("error.header")" />
   				<p>
-	  				$r.translate('error.message1') <a href="mailto:${supportaddress}" class="o_link_mailto">${supportaddress}</a> $r.translate('error.message2'):	
+	  				$r.translate('error.message1') <a href="mailto:${supportaddress}" class="o_link_mailto">${supportaddress}</a> $r.translate('error.message2')	
 	  			</p>
-	  							
-				<div class="o_button_group">		
-					#if ($allowBackButton)
-						<a class="btn btn-default" href="javascript:history.back()">
-							<i class="o_icon o_icon_back"></i> 
-							<span>$r.translate("error.back")</span>
+	  			
+	  			<p>
+					$r.translate('error.report.tell')
+				</p>
+	  			
+				<form method="get" name="reportform" action="$r.relLink('')error/" id="ofo_366191">
+					<div class="o_button_group">		
+						#if ($allowBackButton)
+							<a class="btn btn-default" href="javascript:history.back()">
+								<i class="o_icon o_icon_back"></i> 
+								<span>$r.translate("error.back")</span>
+							</a>
+						#end
+						<button type="submit" name="olat_fosm" value="$r.translateInAttribute('send.report')" class="btn btn-default btn-primary">
+							<i class="o_icon o_icon_mail"></i> 
+							<span>$r.translateInAttribute('send.report')</span>
+						</button>				
+						<a class="btn btn-default" href="$r.relLink('')">
+							<i class="o_icon o_icon_login"></i> 
+							<span>Login</span>
 						</a>
-					#end
-					<a class="btn btn-default btn-primary" href="$r.relLink('')">
-						<i class="o_icon o_icon_login"></i> 
-						<span>Login</span>
-					</a>
+					</div>
+
+					<input type="hidden" name="username" value="$username" />
+					<input type="hidden" name="fx_errnum" value="${errnum}" />
+					<textarea rows="15" name="textarea" class="form-control">
+$r.translate('error.errnum') ${errnum} 
+$r.translate('error.businesspath.previous') #if($!prevbusinesspath) $prevbusinesspath #else $r.translate('error.businesspath.unkown') #{end}
+
+$r.translate('error.businesspath') #if($!lastbusinesspath) $lastbusinesspath #else $r.translate('error.businesspath.unkown') #{end}
+#if($!knownissuelink)
+
+Known Issue: $knownissuelink
+#end
+
+$r.translate('error.time') ${time}
+---------------------------------------------
+					</textarea>	  							
+				</form>
+			</div>
+			
+			<div class="o_box">
+				#o_togglebox_start("o_stacktrace" $r.translate("error.technical"))
+				<div class="o_copy_code">
+					$listenerInfo
+					$stacktrace
 				</div>
+				#o_togglebox_end()
 			</div>
-
-			<div class="panel panel-default">
-			  <div class="panel-heading">
-			    <h3 class="panel-title">$r.translate('error.report')</h3>
-			  </div>
-			  <table class="table">
-				<tbody>
-					<tr>
-						<th>$r.translate('error.errnum')</th>
-						<td>$errnum</td>
-					</tr>
-					<tr>
-						<th>$r.translate('error.time')</th>
-						<td>$time</td>
-					</tr>
-					<tr>
-						<th>$r.translate('error.addinfo')</th>
-						<td>$detailedmessage</td>
-					</tr>
-					<tr>
-						<th>$r.translate('error.businesspath.previous')</th>
-						<td><div class="o_copy_code">#if($!prevbusinesspath) $prevbusinesspath #else $r.translate('error.businesspath.unkown') #end</div></td>
-					</tr>
-					<tr>
-						<th>$r.translate('error.businesspath')</th>
-						<td><div class="o_copy_code">#if($!lastbusinesspath) $lastbusinesspath #else $r.translate('error.businesspath.unkown') #end</div></td>
-					</tr>
-					#if($!knownissuelink)
-					<tr>
-						<th>Known Issue</th>
-						<td><div class="o_copy_code">$knownissuelink</div></td>
-					</tr>
-					#end
-				</tbody>
-				</table>
-			</div>
-
-
-<div class="b_note ">
-	<h5 class="b_with_small_icon_left b_exception_mailform_icon">$r.translate('error.report')</h5>
-	<p class="b_with_small_icon_left">
-		$r.translate('error.report.tell')
-	</p>
-
-	<div class="b_with_small_icon_left">
-		<form method="get" name="reportform" action="$r.relLink('')error/" id="ofo_366191">
-			<input type="hidden" name="username" value="$username" />
-			<input type="hidden" name="fx_errnum" value="${errnum}" />
-			<textarea cols="70" rows="15" name="textarea" >$r.translate('error.errnum') ${errnum}&#10;$r.translate('error.businesspath.previous') #if($!prevbusinesspath) $prevbusinesspath #else $r.translate('error.businesspath.unkown') #{end}&#10;$r.translate('error.businesspath') #if($!lastbusinesspath) $lastbusinesspath #else $r.translate('error.businesspath.unkown') #{end}&#10;$r.translate('error.time') ${time}&#10;---------------------------------------------
-			</textarea>
-			<div class="b_button_group">
-				<input type="submit" name="olat_fosm" value="$r.translateInAttribute('send.report')" class="b_button b_button_preferred" />
-				<input type="reset" value="$r.translateInAttribute('cancel')" class="b_button" />
-			</div>
-		</form>
-	</div>
-</div>
-
-<p />
-<a href="#" onclick="jQuery('#b_stacktrace').slideToggle(300)" class="b_with_small_icon_left b_exception_stacktrace_icon">$r.translate("error.technical")</a>
-<div id="b_stacktrace" #if(!$debug) style="display: none;" #end class="b_floatscrollbox"><div>
-<pre>
-$listenerInfo
-$stacktrace
-</pre>
-</div></div>
-
-
-
-	
-	
+			
 		</div>
 		## END ERROR AREA				
-		
 		
 		<a id="o_toplink" href="#o_top" onclick="o_scrollToElement('#o_top');" title="$r.translateInAttribute("top.alt")">
 			<i class="o_icon o_icon_top"></i> 
 			$r.translate("top")
 		</a>	
 	</div>
-</div>
 ## END #o_main -----
 
 ## ----- START #b_footer ----------

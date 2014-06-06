@@ -246,3 +246,36 @@
 	z-index: 1201; /* modal backdrop set to 1200 */
 	display: none;
 }	
+
+/* error screen */
+.o_exception {
+	.o_visual {
+		position: relative;
+		/* image CC by Nomadic Lass https://www.flickr.com/photos/nomadic_lass/5329061838/ */
+		background-image: url('#{$o-images-path}lion-500x333.jpg');
+		filter: grayscale(50%);
+		-webkit-filter: grayscale(50%);
+		-moz-filter: grayscale(50%);
+		-ms-filter: grayscale(50%); 
+		-o-filter: grayscale(50%);
+		width: 500px;
+		height: 333px;
+		background-repeat:no-repeat;
+		background-position:50% 50%;		
+		background-size: contain;	
+		margin: 0 0 $padding-large-vertical $padding-large-horizontal;
+
+		@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+			width: floor(500px *0.75);
+			height: floor(333px *0.75);		
+		}
+		@media (min-width: 500px) and (max-width: $screen-xs-max) { 
+			width: floor(500px *0.5);
+			height: floor(333px *0.5);		
+		}	
+		@media (max-width: 500px){ 
+			background-size: cover;	
+		}	
+	}
+
+}
