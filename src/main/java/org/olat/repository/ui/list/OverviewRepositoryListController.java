@@ -85,15 +85,11 @@ public class OverviewRepositoryListController extends BasicController implements
 		mainVC = createVelocityContainer("overview");
 		mainPanel.setContent(mainVC);
 		
-		boolean markEmpty = doOpenMark(ureq).isEmpty();
-		if(markEmpty) {
-			doOpenMyCourses(ureq);
-		}
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		favoriteLink = LinkFactory.createLink("search.mark", mainVC, this);
-		segmentView.addSegment(favoriteLink, !markEmpty);
+		segmentView.addSegment(favoriteLink, false);
 		myCourseLink = LinkFactory.createLink("search.mycourses.student", mainVC, this);
-		segmentView.addSegment(myCourseLink, markEmpty);
+		segmentView.addSegment(myCourseLink, false);
 		
 		if(repositoryModule.isCatalogEnabled() && repositoryModule.isCatalogBrowsingEnabled()) {
 			catalogLink = LinkFactory.createLink("search.catalog", mainVC, this);
@@ -105,22 +101,30 @@ public class OverviewRepositoryListController extends BasicController implements
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
-		
-		ContextEntry entry = entries.get(0);
-		String segment = entry.getOLATResourceable().getResourceableTypeName();
-		List<ContextEntry> subEntries = entries.subList(1, entries.size());
-		if("Favorits".equals(segment)) {
-			doOpenMark(ureq).activate(ureq, subEntries, entry.getTransientState());
-			segmentView.select(favoriteLink);
-		} else if("My".equals(segment)) {
-			doOpenMyCourses(ureq).activate(ureq, subEntries, entry.getTransientState());
-			segmentView.select(myCourseLink);
-		} else if("Catalog".equals(segment)) {
-			CatalogNodeController ctrl = doOpenCatalog(ureq);
-			if(ctrl != null) {
-				ctrl.activate(ureq, subEntries, entry.getTransientState());
-				segmentView.select(catalogLink);
+		if(entries == null || entries.isEmpty()) {
+			boolean markEmpty = doOpenMark(ureq).isEmpty();
+			if(markEmpty) {
+				doOpenMyCourses(ureq);
+				segmentView.select(myCourseLink);
+			} else {
+				segmentView.select(favoriteLink);
+			}
+		} else {
+			ContextEntry entry = entries.get(0);
+			String segment = entry.getOLATResourceable().getResourceableTypeName();
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			if("Favorits".equals(segment)) {
+				doOpenMark(ureq).activate(ureq, subEntries, entry.getTransientState());
+				segmentView.select(favoriteLink);
+			} else if("My".equals(segment)) {
+				doOpenMyCourses(ureq).activate(ureq, subEntries, entry.getTransientState());
+				segmentView.select(myCourseLink);
+			} else if("Catalog".equals(segment)) {
+				CatalogNodeController ctrl = doOpenCatalog(ureq);
+				if(ctrl != null) {
+					ctrl.activate(ureq, subEntries, entry.getTransientState());
+					segmentView.select(catalogLink);
+				}
 			}
 		}
 	}

@@ -25,8 +25,6 @@ import java.util.List;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.catalog.CatalogManager;
-import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
-import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
@@ -108,8 +106,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AuthoringEntryDetailsController extends RepositoryEntryDetailsController implements Activateable2 {
 	
 	public static final OLATResourceable EDIT_SETTINGS_ORES = OresHelper.createOLATResourceableInstance("Settings", 0l);
-	
-	private FormLink markLink, startLink;
 	
 	private Link editLink, launchLink,
 		copyLink, deleteLink, closeLink,
@@ -374,7 +370,6 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 		} else {
 			marked = row.isMarked();
 		}
-		markLink = uifactory.addFormLink("mark", "mark", " ", null, layoutCont, Link.NONTRANSLATED);
 		markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 		
 		//load memberships
@@ -543,19 +538,8 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 		if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
-			if("category".equals(cmd)) {
-				Long categoryKey = (Long)link.getUserObject();
-				doOpenCategory(ureq, categoryKey);
-			} else if("mark".equals(cmd)) {
-				boolean marked = doMark();
-				markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
-			} else if("comments".equals(cmd)) {
-				doOpenComments(ureq);
-			} else if("start".equals(cmd)) {
+			if("start".equals(cmd)) {
 				launch(ureq);
-			} else if("group".equals(cmd)) {
-				Long groupKey = (Long)link.getUserObject();
-				doOpenGroup(ureq, groupKey);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -653,37 +637,8 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 	private void doEditSettings(UserRequest ureq) {
 		removeAsListenerAndDispose(editCtrl);
 
-		editCtrl = new AuthoringEditEntrySettingsController(ureq, getWindowControl(), stackPanel, row);
+		editCtrl = new AuthoringEditEntrySettingsController(ureq, getWindowControl(), stackPanel, entry);
 		listenTo(editCtrl);
-	}
-	
-	private void doOpenCategory(UserRequest ureq, Long categoryKey) {
-		String businessPath = "[CatalogEntry:" + categoryKey + "]";
-		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-	}
-	
-	private void doOpenGroup(UserRequest ureq, Long groupKey) {
-		String businessPath = "[BusinessGroup:" + groupKey + "]";
-		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-	}
-	
-	private boolean doMark() {
-		OLATResourceable item = OresHelper.clone(entry);
-		if(markManager.isMarked(item, getIdentity(), null)) {
-			markManager.removeMark(item, getIdentity(), null);
-			return false;
-		} else {
-			String businessPath = "[RepositoryEntry:" + item.getResourceableId() + "]";
-			markManager.setMark(item, getIdentity(), null, businessPath);
-			return true;
-		}
-	}
-	
-	private void doOpenComments(UserRequest ureq) {
-		removeAsListenerAndDispose(commentsCtrl);
-		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, isGuestOnly);
-		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), row.getRepositoryEntryResourceable(), null, secCallback);
-		stackPanel.pushController(translate("comments"), commentsCtrl);
 	}
 	
 	private void doOpenMembers(UserRequest ureq) {

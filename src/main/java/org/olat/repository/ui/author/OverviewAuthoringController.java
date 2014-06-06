@@ -21,7 +21,6 @@ package org.olat.repository.ui.author;
 
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -72,22 +71,16 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		
 		mainPanel = new MainPanel("authoringMainPanel");
 		mainPanel.setDomReplaceable(false);
 		mainVC = createVelocityContainer("overview");
 		mainPanel.setContent(mainVC);
 
-		boolean markEmpty = doOpenMark(ureq).isEmpty();
-		if(markEmpty) {
-			doOpenMyEntries(ureq);
-		}
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		favoriteLink = LinkFactory.createLink("search.mark", mainVC, this);
-		segmentView.addSegment(favoriteLink, !markEmpty);
+		segmentView.addSegment(favoriteLink, false);
 		myEntriesLink = LinkFactory.createLink("search.my", mainVC, this);
-		segmentView.addSegment(myEntriesLink, markEmpty);
+		segmentView.addSegment(myEntriesLink, false);
 		searchLink = LinkFactory.createLink("search.generic", mainVC, this);
 		segmentView.addSegment(searchLink, false);
 
@@ -101,20 +94,28 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
-		
-		ContextEntry entry = entries.get(0);
-		String segment = entry.getOLATResourceable().getResourceableTypeName();
-		List<ContextEntry> subEntries = entries.subList(1, entries.size());
-		if("Favorits".equals(segment)) {
-			doOpenMark(ureq).activate(ureq, subEntries, entry.getTransientState());
-			segmentView.select(favoriteLink);
-		} else if("My".equals(segment)) {
-			doOpenMyEntries(ureq).activate(ureq, subEntries, entry.getTransientState());
-			segmentView.select(myEntriesLink);
-		} else if("Search".equals(segment)) {
-			doSearchEntries(ureq).activate(ureq, subEntries, entry.getTransientState());
-			segmentView.select(searchLink);
+		if(entries == null || entries.isEmpty()) {
+			boolean markEmpty = doOpenMark(ureq).isEmpty();
+			if(markEmpty) {
+				doOpenMyEntries(ureq);
+				segmentView.select(myEntriesLink);
+			} else {
+				segmentView.select(favoriteLink);
+			}
+		} else {
+			ContextEntry entry = entries.get(0);
+			String segment = entry.getOLATResourceable().getResourceableTypeName();
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			if("Favorits".equals(segment)) {
+				doOpenMark(ureq).activate(ureq, subEntries, entry.getTransientState());
+				segmentView.select(favoriteLink);
+			} else if("My".equals(segment)) {
+				doOpenMyEntries(ureq).activate(ureq, subEntries, entry.getTransientState());
+				segmentView.select(myEntriesLink);
+			} else if("Search".equals(segment)) {
+				doSearchEntries(ureq).activate(ureq, subEntries, entry.getTransientState());
+				segmentView.select(searchLink);
+			}
 		}
 	}
 

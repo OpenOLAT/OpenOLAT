@@ -95,7 +95,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RepositoryEntryDetailsController extends FormBasicController {
 	
-	private FormLink markLink, commentsLink, startLink;
+	protected FormLink markLink, commentsLink, startLink;
 	private RatingWithAverageFormItem ratingEl;
 	
 	private CloseableModalController cmc;
@@ -447,22 +447,22 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void doStart(UserRequest ureq) {
+	protected void doStart(UserRequest ureq) {
 		String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
-	private void doOpenCategory(UserRequest ureq, Long categoryKey) {
+	protected void doOpenCategory(UserRequest ureq, Long categoryKey) {
 		String businessPath = "[CatalogEntry:" + categoryKey + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
-	private void doOpenGroup(UserRequest ureq, Long groupKey) {
+	protected void doOpenGroup(UserRequest ureq, Long groupKey) {
 		String businessPath = "[BusinessGroup:" + groupKey + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
-	private boolean doMark() {
+	protected boolean doMark() {
 		OLATResourceable item = OresHelper.clone(entry);
 		if(markManager.isMarked(item, getIdentity(), null)) {
 			markManager.removeMark(item, getIdentity(), null);
@@ -478,7 +478,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 		userRatingsDao.updateRating(getIdentity(), entry, null, Math.round(rating));
 	}
 	
-	private void doOpenComments(UserRequest ureq) {
+	protected void doOpenComments(UserRequest ureq) {
 		if(commentsCtrl != null) return;
 		
 		boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();

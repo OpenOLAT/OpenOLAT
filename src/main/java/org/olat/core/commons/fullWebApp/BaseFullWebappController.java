@@ -160,6 +160,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	//
 	private BaseFullWebappControllerParts baseFullWebappControllerParts;
 	protected Controller contentCtrl;
+	private Controller aftLHookCtr;
 	private StackedPanel initialPanel;
 	private DTabs myDTabsImpl;
 	private static Integer MAX_TAB;
@@ -212,18 +213,21 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		// ------ all the frame preparation is finished ----
 		initializeBase(ureq, winman, initialPanel);
 		
-		if (CoreSpringFactory.containsBean("fullWebApp.AfterLoginInterceptionControllerCreator")){
-        	// present an overlay with configured afterlogin-controllers or nothing if none configured.
-        		// presented only once per session.
-        	Boolean alreadySeen = ((Boolean)ureq.getUserSession().getEntry(PRESENTED_AFTER_LOGIN_WORKFLOW));
-        	if (ureq.getUserSession().isAuthenticated() && alreadySeen == null) {
-        		Controller aftLHookCtr = ((ControllerCreator) CoreSpringFactory.getBean("fullWebApp.AfterLoginInterceptionControllerCreator"))
-        				.createController(ureq, getWindowControl());
-        		listenTo(aftLHookCtr);
-        		aftLHookCtr.getInitialComponent();
-        		ureq.getUserSession().putEntry(PRESENTED_AFTER_LOGIN_WORKFLOW, Boolean.TRUE);
-        	}
-		}
+
+        // present an overlay with configured afterlogin-controllers or nothing if none configured.
+        // presented only once per session.
+    	Boolean alreadySeen = ((Boolean)ureq.getUserSession().getEntry(PRESENTED_AFTER_LOGIN_WORKFLOW));
+    	if (ureq.getUserSession().isAuthenticated() && alreadySeen == null) {
+    		aftLHookCtr = ((ControllerCreator) CoreSpringFactory.getBean("fullWebApp.AfterLoginInterceptionControllerCreator"))
+    				.createController(ureq, getWindowControl());
+    		listenTo(aftLHookCtr);
+    		aftLHookCtr.getInitialComponent();
+    		ureq.getUserSession().putEntry(PRESENTED_AFTER_LOGIN_WORKFLOW, Boolean.TRUE);
+    	}
+		
+    	if(aftLHookCtr == null) {
+    		initializeDefaultSite(ureq);
+    	}
 		
 		Object fullScreen = Windows.getWindows(ureq).getFullScreen();
 		if(Boolean.TRUE.equals(fullScreen)) {
@@ -438,18 +442,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			GuiStack gs = getWindowControl().getWindowBackOffice().createGuiStack(contentCtrl.getInitialComponent());
 			setGuiStack(gs);
 			main.setContent(contentCtrl.getInitialComponent());
-		}
-		if (sites != null) {
-			// ------ activate now main
-			SiteInstance s = sites.get(0);
-			if (contentCtrl == null) {
-				//activate site only if no content was set -> allow content before activation of default site.
-				activateSite(s, ureq, null, false);
-				updateBusinessPath(ureq, s);
-			}
-		}
-		if (sites == null && contentCtrl == null) { 
-		  // fxdiff: FXOLAT-190  RS if no sites displayed... show empty page instead
+		} else {
 			main.setContent(TextFactory.createTextComponentFromString("empty", "", null, false, null));
 			//set a guistack for the after login interceptor
 			GuiStack gs = getWindowControl().getWindowBackOffice().createGuiStack(new Panel("dummy"));
@@ -464,6 +457,17 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		setWindowSettings(getWindowControl().getWindowBackOffice().getWindowSettings());
 		
 		addCustomThemeJS();
+	}
+	
+	private void initializeDefaultSite(UserRequest ureq) {
+		if (sites != null && sites.size() > 0
+				&& curSite == null
+				&& contentCtrl == null) {
+			SiteInstance s = sites.get(0);
+			//activate site only if no content was set -> allow content before activation of default site.
+			activateSite(s, ureq, null, false);
+			updateBusinessPath(ureq, s);
+		}
 	}
 	
 	protected GUIMessage getGUIMessage() {
@@ -617,17 +621,20 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		int tabIndex = dtabsControllers.indexOf(source);
-		if (tabIndex > -1) {
-			// Event comes from a controller in a dtab. Check if the controller is
-			// finished and close the tab. Cancel and failed is interpreted as
-			// finished.
-			if (event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT || event == Event.FAILED_EVENT) {
-				DTab tab = dtabs.get(tabIndex);
-				removeDTab(ureq, tab);//disposes also tab and controllers
+		if(aftLHookCtr == source) {
+			initializeDefaultSite(ureq);
+		} else {
+			int tabIndex = dtabsControllers.indexOf(source);
+			if (tabIndex > -1) {
+				// Event comes from a controller in a dtab. Check if the controller is
+				// finished and close the tab. Cancel and failed is interpreted as
+				// finished.
+				if (event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT || event == Event.FAILED_EVENT) {
+					DTab tab = dtabs.get(tabIndex);
+					removeDTab(ureq, tab);//disposes also tab and controllers
+				}
 			}
-		}
-
+		} 
 	}
 
 	@Override
