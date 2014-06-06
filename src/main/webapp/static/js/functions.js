@@ -914,8 +914,7 @@ function o_scrollToElement(elem) {
 	}, 1000);
 }
 
-function o_QRCodePopup(id, text, loc) {
-	
+function o_QRCodePopup(id, text, loc) {	
 	if(typeof(loc)==='undefined') loc = 'top';
 	jQuery('#' + id).popover({
     	placement : loc,
@@ -925,14 +924,20 @@ function o_QRCodePopup(id, text, loc) {
 	 }).on('shown.bs.popover', function () {
 		 o_info.qr = o_QRCode(id + '_pop', (jQuery.isFunction(text) ? text() : text));
 	 }).on('hidden.bs.popover', function () {
-		 o_info.qr.clear();
-		 delete o_info.qr;
+		 try {
+			 o_info.qr.clear();
+			 delete o_info.qr;			 
+		 } catch(e) {}
 	});
 }
 function o_QRCode(id, text) {
 	// dynamically load qr code library
-	BLoader.loadJS(o_info.o_baseURI + "/js/jquery/qrcodejs/qrcode.min.js", 'utf8', true);
-	return new QRCode(document.getElementById(id), text);
+	try {
+		 BLoader.loadJS(o_info.o_baseURI + "/js/jquery/qrcodejs/qrcode.min.js", 'utf8', true);
+		 return new QRCode(document.getElementById(id), text);
+	} catch(e) {
+		return null;
+	}
 }
 
 function b_resizeIframeToMainMaxHeight(iframeId) {
