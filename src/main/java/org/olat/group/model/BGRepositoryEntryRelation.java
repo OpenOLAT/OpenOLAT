@@ -111,5 +111,24 @@ public class BGRepositoryEntryRelation implements Serializable {
 		public void setRepositoryEntryKey(Long repositoryEntryKey) {
 			this.repositoryEntryKey = repositoryEntryKey;
 		}
+		
+		@Override
+		public int hashCode() {
+			return (groupKey == null ? 478 : groupKey.hashCode())
+				+ (repositoryEntryKey == null ? 765912 : repositoryEntryKey.hashCode());
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof RelationId) {
+				RelationId id = (RelationId)obj;
+				return groupKey != null && groupKey.equals(id.groupKey)
+						&& repositoryEntryKey != null && repositoryEntryKey.equals(id.repositoryEntryKey);
+			}
+			return false;
+		}
 	}
 }

@@ -26,6 +26,7 @@ import java.util.List;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroupImpl;
@@ -48,12 +49,18 @@ public class ContactDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public Collection<Long> getDistinctGroupOwnersParticipants(Identity me) {
-		List<Long> contactList = getMembersForCount(me);
-		return new HashSet<Long>(contactList);
+	public int countContacts(IdentityRef identity) {
+		Collection<Long> contactSet = getDistinctGroupOwnersParticipants(identity);
+		contactSet.remove(identity.getKey());
+		return contactSet.size();
 	}
 	
-	private List<Long> getMembersForCount(Identity me) {
+	public Collection<Long> getDistinctGroupOwnersParticipants(IdentityRef me) {
+		List<Long> contactList = getMembersForCount(me);
+		return new HashSet<>(contactList);
+	}
+	
+	private List<Long> getMembersForCount(IdentityRef me) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select contact.identity.key from ").append(BusinessGroupImpl.class.getName()).append(" bgroup ")
 		  .append(" inner join bgroup.baseGroup baseGroup")
@@ -81,12 +88,10 @@ public class ContactDAO {
 	}
 
 	public List<ContactViewExtended> getGroupOwners(Identity me) {
-		//return getMembers(me, ContactOwnerView.class);
 		return getMembers(me, GroupRoles.coach.name());
 	}
 	
 	public List<ContactViewExtended> getParticipants(Identity me) {
-		//return getMembers(me, ContactParticipantView.class);
 		return getMembers(me, GroupRoles.participant.name());
 	}
 	
@@ -102,41 +107,24 @@ public class ContactDAO {
 				.getResultList();
 	}
 
-	public int countContacts(Identity identity) {
-		List<Long> result = createContactsQuery(identity, Long.class).getResultList();
-		result.remove(identity.getKey());//not always a contact of myself with this query
-		return result.size();
-	}
-
 	public List<Identity> findContacts(Identity identity, int firstResult, int maxResults) {
-		TypedQuery<Identity> query = createContactsQuery(identity, Identity.class);
-		query.setFirstResult(firstResult);
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct identity from ").append(ContactView.class.getName()).append(" as contact ")
+		  .append(" inner join contact.identity as identity ")
+		  .append(" where contact.meKey=:identKey")
+		  .append(" order by identity.name");
+
+		TypedQuery<Identity> db = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("identKey", identity.getKey())
+				.setFirstResult(firstResult);
 		if(maxResults > 0) {
-			query.setMaxResults(maxResults + 1);
+			db.setMaxResults(maxResults + 1);
 		}
-		List<Identity> contacts = query.getResultList();
+		List<Identity> contacts = db.getResultList();
 		if(!contacts.remove(identity) && maxResults > 0 && contacts.size() > maxResults) {
 			contacts.remove(contacts.size() - 1);
 		}
 		return contacts;
-	}
-	
-	private <T> TypedQuery<T> createContactsQuery(Identity identity, Class<T> resultClass) {
-		StringBuilder query = new StringBuilder();
-		if(Identity.class.equals(resultClass)) {
-			query.append("select distinct identity from ").append(ContactView.class.getName()).append(" as contact ");
-		} else {
-			query.append("select distinct identity.key from ").append(ContactView.class.getName()).append(" as contact ");
-			     
-		}
-		query.append(" inner join contact.identity as identity ");
-		query.append(" where contact.meKey=:identKey");
-		if(Identity.class.equals(resultClass)) {
-			query.append(" order by identity.name");
-		}
-
-		TypedQuery<T> db = dbInstance.getCurrentEntityManager().createQuery(query.toString(), resultClass);
-		db.setParameter("identKey", identity.getKey());
-		return db;
 	}
 }

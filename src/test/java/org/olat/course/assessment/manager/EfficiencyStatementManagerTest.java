@@ -22,7 +22,6 @@ package org.olat.course.assessment.manager;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
@@ -55,7 +54,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 	@Autowired
 	private RepositoryManager repositoryManager;
 	
-	@Test @Ignore
+	@Test
 	public void testBigDatas() {
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
 		params.setRoles(new Roles(true, false, false, false, false, false, false));
