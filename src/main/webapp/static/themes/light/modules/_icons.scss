@@ -86,6 +86,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_notification { @extend .o_icon-rss;}
 .o_icon_language {@extend .o_icon-globe; }
 .o_icon_link {@extend .o_icon-link; }
+.o_icon_link_extern {@extend .o_icon-external-link; }
 .o_icon_list {@extend .o_icon-list; }
 .o_icon_list_num  {@extend .o_icon-list-ol; }
 .o_icon_lifecycle {@extend .o_icon-calendar;}
@@ -145,7 +146,9 @@ $fa-css-prefix: "o_icon" !default;
 
 /* do not move link icons */
 a.o_icon {
-	@extend .o_undecorated;
+	&:hover,&:focus {
+		text-decoration: none;
+	}
 }
 
 /* repository type icons */
