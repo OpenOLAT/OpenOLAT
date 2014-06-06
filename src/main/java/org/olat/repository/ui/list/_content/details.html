@@ -197,9 +197,29 @@
 					</tbody></table>
 					<div class="panel-body">
 						<h5>$r.translate("details.extlinkheader")</h5>
-						<div class="o_copy_code">$extlink</div>
+						<div class="o_copy_code">
+							<a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode"></i></a>
+							$extlink
+							<script type="text/javascript">
+							/* <![CDATA[ */
+								jQuery(function() {
+									o_QRCodePopup('o_extlink', '$extlink', 'right');
+								});
+							/* ]]> */
+							</script>
+						</div>
 						#if ($isGuestAllowed)
-						<div class="o_copy_code">${extlink}?guest=true&amp;lang=${userlang}</div>
+						<div class="o_copy_code">
+							<a href="javascript:;" id="o_extlink2"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode"></i></a>
+							${extlink}?guest=true&amp;lang=${userlang}
+							<script type="text/javascript">
+							/* <![CDATA[ */
+								jQuery(function() {
+									o_QRCodePopup('o_extlink2', '${extlink}?guest=true&amp;lang=${userlang}', 'right');
+								});
+							/* ]]> */
+							</script>
+						</div>
 						#end
 					</div>
 				</div>

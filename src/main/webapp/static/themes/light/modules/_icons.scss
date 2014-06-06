@@ -105,6 +105,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_print {@extend .o_icon-print;}
 .o_icon_private {@extend .o_icon-print;}
 .o_icon_publish{ @extend .o_icon-share;}
+.o_icon_qrcode{ @extend .o_icon-qrcode;}
 .o_icon_rating_on { @extend .o_icon-star;}
 .o_icon_rating_off { @extend .o_icon-star-o;}
 .o_icon_read { @extend .o_icon-circle-o; }

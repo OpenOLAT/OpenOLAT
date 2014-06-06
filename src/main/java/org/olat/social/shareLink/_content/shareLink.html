@@ -47,8 +47,11 @@
 			<i class="o_icon o_icon_mailto o_icon-lg"></i>		
 		</a>
 	#elseif ($link == "link")	
-		<a id="o_link" href="#">
+		<a id="o_link" href=javascript:;>
 			<i class="o_icon o_icon_link o_icon-lg"></i>
+		</a>
+		<a id="o_qrcode" href=javascript:;>
+			<i class="o_icon o_icon_qrcode o_icon-lg"></i>
 		</a>
 		<script type="text/javascript">
 		/* <![CDATA[ */
@@ -59,6 +62,9 @@
 				    	trigger: 'click',
 				    	content: o_shareCallout
 				 });
+			});
+			jQuery(function() {
+				o_QRCodePopup('o_qrcode', o_shareSocialUrl);
 			});
 		/* ]]> */
 		</script>
