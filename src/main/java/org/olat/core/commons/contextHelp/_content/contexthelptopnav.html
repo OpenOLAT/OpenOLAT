@@ -1,17 +1,14 @@
-<ul>
+<ul id="o_navbar_tools" class="nav navbar-nav navbar-right">
 	<li id="b_ch_topnav_search">
 		$r.render("search_input")
 	</li>
-	<li>
-		<div class="b_with_small_icon_left b_flag_$lang b_float_right">
-			$r.render("contexthelp.langSelection")
-		</div>
+	<li id="o_navbar_langchooser">
+		$r.render("contexthelp.langSelection")
 	</li>
-	<li id="b_topnav_printview">
+	<li id="o_topnav_printview">
 		<a href="javascript:o_doPrint();" title="$r.translateInAttribute("header.topnav.printview.alt")" >$r.translate("header.topnav.printview")</a>
 	</li>
-	<li id="b_topnav_close">
+	<li id="o_topnav_close">
 		$r.render("header.topnav.close")
 	</li>
-
 </ul>

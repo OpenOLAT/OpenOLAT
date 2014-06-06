@@ -89,7 +89,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		myEntriesLink = LinkFactory.createLink("search.my", mainVC, this);
 		segmentView.addSegment(myEntriesLink, markEmpty);
 		searchLink = LinkFactory.createLink("search.generic", mainVC, this);
-		segmentView.addSegment(searchLink, markEmpty);
+		segmentView.addSegment(searchLink, false);
 
 		putInitialPanel(mainPanel);
 	}

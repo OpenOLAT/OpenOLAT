@@ -12,13 +12,9 @@
 		$r.render("commentsAndRatingCtr")
 	#end
 #else
-	<div class="b_warning">
-		<p>
-		$r.translate("contexthelp.error.page.not.found")
-		</p>
-		<code>
-			$page
-		</code>
+	<div class="o_warning">
+		<p>$r.translate("contexthelp.error.page.not.found")</p>
+		<code>$page</code>
 	</div>
 #end
 </div>

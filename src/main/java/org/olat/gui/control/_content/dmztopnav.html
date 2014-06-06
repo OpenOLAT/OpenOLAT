@@ -8,6 +8,21 @@
 		$r.render("languageChooser")
 	</li>
 #if ($isContextHelpEnabled)
+	<li>
+		<a href="javascript:$r.contextHelpJSCommand("org.olat.login","about.html")" title="$r.translateWithPackage("org.olat.login","chelp.about.title")" class="o_label">
+			<span>$r.translateWithPackage("org.olat.login","chelp.about.title")</span>
+		</a>
+	</li>
+	<li>
+		<a href="javascript:$r.contextHelpJSCommand("org.olat.login","accessibility.html")" title="$r.translateWithPackage("org.olat.login","chelp.accessibility.title")" class="o_label">
+			<span>$r.translateWithPackage("org.olat.login","chelp.accessibility.title")</span>
+		</a>
+	</li>
+	<li>
+		<a href="javascript:$r.contextHelpJSCommand("org.olat.login","browsercheck.html")" title="$r.translateWithPackage("org.olat.login","chelp.browsercheck.title")" class="o_label">
+			<span>$r.translateWithPackage("org.olat.login","chelp.browsercheck.title")</span>
+		</a>
+	</li>
 	<li id="o_navbar_help">
 		<a href="javascript:contextHelpWindow('$r.relLink("help/${r.getLanguageCode()}/org.olat.login/dmz.html")')" title="$r.translateInAttribute("topnav.help.alt")">
 			<i class="o_icon o_icon_help"></i>$r.translate("topnav.help")
