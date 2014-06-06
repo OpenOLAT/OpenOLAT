@@ -20,8 +20,6 @@
  */
 package org.olat.core.commons.controllers.resume;
 
-import java.util.List;
-
 import org.olat.NewControllerFactory;
 import org.olat.admin.landingpages.LandingPagesModule;
 import org.olat.admin.landingpages.model.Rules;
@@ -40,7 +38,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryManager;
 import org.olat.core.id.context.HistoryModule;
 import org.olat.core.id.context.HistoryPoint;
@@ -106,7 +103,7 @@ public class ResumeController extends FormBasicController implements SupportsAft
 		
 		boolean interception = false;
 		if("none".equals(resumePrefs)) {
-			BusinessControl bc = getLandingBC(ureq);
+			String bc = getLandingBC(ureq);
 			launch(ureq, bc);
 		} else if ("auto".equals(resumePrefs)) {
 			HistoryPoint historyEntry = HistoryManager.getInstance().readHistoryPoint(ureq.getIdentity());
@@ -130,7 +127,7 @@ public class ResumeController extends FormBasicController implements SupportsAft
 		} else if(source.equals(landingButton)){
 			savePreferences(ureq, "none");		
 			fireEvent (ureq, Event.DONE_EVENT);
-			BusinessControl bc = getLandingBC(ureq);
+			String bc = getLandingBC(ureq);
 			launch(ureq, bc);
 		}
 	}
@@ -184,17 +181,13 @@ public class ResumeController extends FormBasicController implements SupportsAft
 	 * @param ureq
 	 * @return
 	 */
-	private BusinessControl getLandingBC(UserRequest ureq) {
+	private String getLandingBC(UserRequest ureq) {
 		Preferences prefs =  ureq.getUserSession().getGuiPreferences();
 		String landingPage = (String)prefs.get(WindowManager.class, "landing-page");
 		if(StringHelper.containsNonWhitespace(landingPage)) {
 			String path = Rules.cleanUpLandingPath(landingPage);
 			if(StringHelper.containsNonWhitespace(path)) {
-				String restPath = BusinessControlFactory.getInstance().formatFromURI(path);
-				List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(restPath);
-				if(entries.size() > 0) {
-					return BusinessControlFactory.getInstance().createFromContextEntries(entries);
-				}
+				return BusinessControlFactory.getInstance().formatFromURI(path);
 			}
 		}
 		return lpModule.getRules().match(ureq);
@@ -206,6 +199,16 @@ public class ResumeController extends FormBasicController implements SupportsAft
 		try {
 			//make the resume secure. If something fail, don't generate a red screen
 			NewControllerFactory.getInstance().launch(ureq, bwControl);
+		} catch (Exception e) {
+			logError("Error while resuming", e);
+		}
+	}
+	
+	private void launch(UserRequest ureq, String businessPath) {
+		if(!StringHelper.containsNonWhitespace(businessPath)) return;
+		try {
+			//make the resume secure. If something fail, don't generate a red screen
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		} catch (Exception e) {
 			logError("Error while resuming", e);
 		}

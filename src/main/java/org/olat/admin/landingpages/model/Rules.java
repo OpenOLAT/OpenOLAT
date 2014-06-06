@@ -25,9 +25,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 
@@ -63,17 +61,13 @@ public class Rules {
 		return null;
 	}
 	
-	public BusinessControl match(UserRequest ureq) {
-		BusinessControl bc = null;
+	public String match(UserRequest ureq) {
+		String bc = null;
 		Rule rule = matchRule(ureq);
 		if(rule != null && StringHelper.containsNonWhitespace(rule.getLandingPath())) {
 			String path = cleanUpLandingPath(rule.getLandingPath());
 			if(StringHelper.containsNonWhitespace(path)) {
-				String restPath = BusinessControlFactory.getInstance().formatFromURI(path);
-				List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(restPath);
-				if(entries.size() > 0) {
-					bc = BusinessControlFactory.getInstance().createFromContextEntries(entries);
-				}
+				bc = BusinessControlFactory.getInstance().formatFromURI(path);
 			}
 		}
 		return bc;
