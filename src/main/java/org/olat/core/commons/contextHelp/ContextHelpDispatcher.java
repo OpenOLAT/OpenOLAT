@@ -55,7 +55,6 @@ import org.olat.core.util.WebappHelper;
  */
 
 public class ContextHelpDispatcher extends LogDelegator implements Dispatcher {
-	private static final String CONTEXTHELPCHIEFCONTROLLER = "CONTEXTHELPCHIEFCONTROLLER";
 	private static String PATH_CHELP;
 	
 	public ContextHelpDispatcher(String contextHelpMapperPath) {
@@ -79,7 +78,7 @@ public class ContextHelpDispatcher extends LogDelegator implements Dispatcher {
 				return;
 			}
 
-			ChiefController cc = (ChiefController) Windows.getWindows(ureq.getUserSession()).getAttribute(CONTEXTHELPCHIEFCONTROLLER);	
+			ChiefController cc = Windows.getWindows(ureq.getUserSession()).getContextHelpChiefController();	
 			// reuse existing chief controller for this user
 			if (cc != null) {				
 				Window currentWindow = cc.getWindow();
@@ -111,7 +110,7 @@ public class ContextHelpDispatcher extends LogDelegator implements Dispatcher {
 			ContextHelpLayoutControllerCreator cHelpPopupLayoutCreator = new ContextHelpLayoutControllerCreator(cHelpMainControllerCreator);
 			cc = new BaseFullWebappPopupBrowserWindow(ureq, cHelpPopupLayoutCreator.getFullWebappParts());
 			// add to user session for cleanup on user logout
-			Windows.getWindows(ureq.getUserSession()).setAttribute(CONTEXTHELPCHIEFCONTROLLER, cc);			
+			Windows.getWindows(ureq.getUserSession()).setContextHelpChiefController(cc);			
 			Window currentWindow = cc.getWindow();
 			currentWindow.setUriPrefix(WebappHelper.getServletContextPath() + PATH_CHELP);
 			Windows.getWindows(ureq).registerWindow(currentWindow);

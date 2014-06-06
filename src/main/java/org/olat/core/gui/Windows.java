@@ -27,9 +27,8 @@
 package org.olat.core.gui;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.ChiefController;
@@ -52,9 +51,11 @@ public class Windows implements Disposable, Serializable {
 	private transient FIFOMap<UriPrefixIdPair,Window> windows = new FIFOMap<UriPrefixIdPair,Window>(100); // one user may at most save 100
 	// windows in a session
 	private int windowId = 1;
+	private Boolean fullScreen;
+	private final AtomicInteger assessmentStarted = new AtomicInteger();
 	private transient WindowManager windowManagerImpl;
-	
-	private transient Map<String, Object> attributes = new HashMap<String, Object>();
+	private transient ChiefController chiefController;
+	private transient ChiefController contextHelpChiefController;
 
 	private transient SlowBandWidthSimulator sbws;
 	
@@ -189,12 +190,18 @@ public class Windows implements Disposable, Serializable {
 		return windowManagerImpl;
 	}
 
-	public void setAttribute(String key, Object value) {
-		attributes.put(key, value);
+	public Boolean getFullScreen() {
+		return fullScreen;
 	}
-	
-	private ChiefController chiefController;
-	
+
+	public void setFullScreen(Boolean fullScreen) {
+		this.fullScreen = fullScreen;
+	}
+
+	public AtomicInteger getAssessmentStarted() {
+		return assessmentStarted;
+	}
+
 	public ChiefController getChiefController() {
 		return chiefController;
 	}
@@ -203,8 +210,13 @@ public class Windows implements Disposable, Serializable {
 		this.chiefController = chiefController;
 	}
 
-	public Object getAttribute(String key) {
-		return attributes.get(key);
+	public ChiefController getContextHelpChiefController() {
+		return contextHelpChiefController;
+	}
+
+	public void setContextHelpChiefController(
+			ChiefController contextHelpChiefController) {
+		this.contextHelpChiefController = contextHelpChiefController;
 	}
 
 	/* (non-Javadoc)

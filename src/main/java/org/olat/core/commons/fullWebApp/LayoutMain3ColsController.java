@@ -190,7 +190,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 			thebaseChief = cc;
 			thebaseChief.getScreenMode().setMode(Mode.full);
 		} else {
-			Windows.getWindows(ureq).setAttribute("FULL_SCREEN", Boolean.TRUE);
+			Windows.getWindows(ureq).setFullScreen(Boolean.TRUE);
 		}
 		fullScreen = true;
 	}

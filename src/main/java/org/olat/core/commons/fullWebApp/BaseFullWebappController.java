@@ -225,9 +225,9 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
         	}
 		}
 		
-		Object fullScreen = Windows.getWindows(ureq).getAttribute("FULL_SCREEN");
+		Object fullScreen = Windows.getWindows(ureq).getFullScreen();
 		if(Boolean.TRUE.equals(fullScreen)) {
-			Windows.getWindows(ureq).setAttribute("FULL_SCREEN", null);
+			Windows.getWindows(ureq).setFullScreen(null);
 			screenMode.setMode(Mode.full);
 		}
 

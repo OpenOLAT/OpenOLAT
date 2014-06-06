@@ -53,8 +53,6 @@ public class AssessmentEvent extends MultiUserEvent {
 	
 	private TYPE eventType = TYPE.STARTED;
 	
-	private static final String ASSESSMENT_STARTED_KEY = "asessmentStarted";
-	
 	/**
 	 * Create a new assessment event at start/stop assessment and disable/enable chat. <p>
 	 * The information about assessment started/stopped is stored as windows attribute.
@@ -65,21 +63,13 @@ public class AssessmentEvent extends MultiUserEvent {
 
 		this.eventType = type; 
 		if(TYPE.STARTED.equals(type)) {			
-			Integer assessmentCounter = (Integer)Windows.getWindows(userSession).getAttribute(ASSESSMENT_STARTED_KEY);
-			int counter = assessmentCounter==null ? 0 : assessmentCounter.intValue();						
-			//increment assessmentCounter
-			counter++;		
-		  Windows.getWindows(userSession).setAttribute(ASSESSMENT_STARTED_KEY, counter);
-		  if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()) {
+			Windows.getWindows(userSession).getAssessmentStarted().incrementAndGet();
+			if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()) {
 				CoreSpringFactory.getImpl(InstantMessagingService.class).disableChat(userSession.getIdentity());
-		  }
+			}
 		} else if(TYPE.STOPPED.equals(type)) {
-			Integer assessmentCounter = (Integer)Windows.getWindows(userSession).getAttribute(ASSESSMENT_STARTED_KEY);
-			int counter = assessmentCounter==null ? 0 : assessmentCounter.intValue();
-		  //decrement assessmentCounter
-			counter--;			
-			Windows.getWindows(userSession).setAttribute(ASSESSMENT_STARTED_KEY, counter);
-			if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled() && counter==0) {
+			int counter = Windows.getWindows(userSession).getAssessmentStarted().decrementAndGet();
+			if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled() && counter == 0) {
 				CoreSpringFactory.getImpl(InstantMessagingService.class).enableChat(userSession.getIdentity());
 			}
 		}
@@ -101,11 +91,7 @@ public class AssessmentEvent extends MultiUserEvent {
 	 * @return
 	 */
 	public static boolean isAssessmentStarted(UserSession userSession) {
-		Integer assessmentCounter = (Integer)Windows.getWindows(userSession).getAttribute(AssessmentEvent.ASSESSMENT_STARTED_KEY);
-		if(assessmentCounter!=null && assessmentCounter.intValue()>0) {
-			return true;
-		}
-		return false;
+		int count = Windows.getWindows(userSession).getAssessmentStarted().get();
+		return count > 0;
 	}
-	
 }
