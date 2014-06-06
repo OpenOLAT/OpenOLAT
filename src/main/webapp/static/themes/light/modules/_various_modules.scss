@@ -234,6 +234,12 @@
 	}	
 }
 
+/* QR-Code container */ 
+.o_qrcode {
+	width: 256px; 
+	height: 256px;
+}
+
 /* busy screen */
 #o_ajax_busy { 
 	position: absolute; 
