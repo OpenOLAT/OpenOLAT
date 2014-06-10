@@ -130,7 +130,6 @@ public class FilterForUserController extends BasicController {
 		dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ureq.getLocale());
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setColumnMovingOffered(true);
 		tableConfig.setSortingEnabled(true);
 		
 		userListCtr = new TableController(tableConfig, ureq, wControl, getTranslator());

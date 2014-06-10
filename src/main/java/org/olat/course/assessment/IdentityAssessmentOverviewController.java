@@ -192,7 +192,6 @@ public class IdentityAssessmentOverviewController extends BasicController {
 
 			TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 			tableConfig.setDownloadOffered(false);
-			tableConfig.setColumnMovingOffered(false);
 			//fxdiff VCRP-4: assessment overview with max score
 			tableConfig.setSortingEnabled(true);
 			tableConfig.setDisplayTableHeader(true);

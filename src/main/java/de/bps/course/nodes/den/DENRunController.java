@@ -201,7 +201,7 @@ public class DENRunController extends BasicController implements GenericEventLis
 					if(!status.isEnrolled()) showError();
 				} else if(tableEvent.getActionId().equals(DENRunTableDataModel.CMD_ENROLLED_CANCEL)) {
 					//cancel enrollment
-					status = denManager.cancelEnroll(ureq.getIdentity(), calEvent, ores, courseNode);
+					status = denManager.cancelEnroll(ureq.getIdentity(), calEvent, ores);
 					if(!status.isCancelled()) showError();
 				}
 				createOrUpdateDateTable(ureq, courseNode);

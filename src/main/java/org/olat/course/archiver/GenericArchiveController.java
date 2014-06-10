@@ -140,7 +140,6 @@ public class GenericArchiveController extends BasicController {
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("nodesoverview.nonodes"));
 		tableConfig.setDownloadOffered(false);
-		tableConfig.setColumnMovingOffered(false);
 		tableConfig.setSortingEnabled(false);
 		tableConfig.setDisplayTableHeader(true);
 		tableConfig.setDisplayRowCount(false);

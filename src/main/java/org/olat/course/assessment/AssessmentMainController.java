@@ -891,7 +891,6 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("nodesoverview.nonodes"));
 		tableConfig.setDownloadOffered(false);
-		tableConfig.setColumnMovingOffered(false);
 		//fxdiff VCRP-4: assessment overview with max score
 		tableConfig.setSortingEnabled(true);
 		tableConfig.setDisplayTableHeader(true);

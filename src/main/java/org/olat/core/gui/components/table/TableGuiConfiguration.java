@@ -47,7 +47,6 @@ public class TableGuiConfiguration {
 	
 	private boolean displayTableHeader = true;
 	private boolean sortingEnabled = true;
-	private boolean columnMovingOffered = true;
 	private boolean selectedRowUnselectable = false;
 	private boolean multiSelect = false;
 
@@ -117,18 +116,6 @@ public class TableGuiConfiguration {
 	 */
 	public boolean isDownloadOffered() {
 		return downloadOffered;
-	}
-	/**
-	 * @return boolean true: enable moving of table columns
-	 */
-	public boolean isColumnMovingOffered() {
-		return columnMovingOffered;
-	}
-	/**
-	 * @param columnMovingOffered true: enable moving of table columns
-	 */
-	public void setColumnMovingOffered(final boolean columnMovingOffered) {
-		this.columnMovingOffered = columnMovingOffered;
 	}
 	/**
 	 * @return boolean true: show the table header 

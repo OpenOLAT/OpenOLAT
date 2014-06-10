@@ -310,7 +310,8 @@ public class ReferencableEntriesSearchController extends BasicController {
 					searchCtr.displayAdminSearchForm();
 				}
 			}
-		} else if(source == createRessourceCmp || createRessourceButtons.contains(source)) {
+		} else if(source == createRessourceCmp ||
+				(createRessourceButtons != null && createRessourceButtons.contains(source))) {
 			removeAsListenerAndDispose(createController);
 			RepositoryHandler handler = (RepositoryHandler)((Link)source).getUserObject();
 			createController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);

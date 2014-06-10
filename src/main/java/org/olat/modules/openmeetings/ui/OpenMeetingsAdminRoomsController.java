@@ -72,7 +72,6 @@ public class OpenMeetingsAdminRoomsController extends BasicController {
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("table.empty"));
 		tableConfig.setDownloadOffered(true);
-		tableConfig.setColumnMovingOffered(false);
 		tableConfig.setSortingEnabled(true);
 		tableConfig.setDisplayTableHeader(true);
 		tableConfig.setDisplayRowCount(false);

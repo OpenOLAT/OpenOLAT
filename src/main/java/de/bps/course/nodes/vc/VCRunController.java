@@ -83,7 +83,6 @@ public class VCRunController extends BasicController {
 
     TableGuiConfiguration tableConfig = new TableGuiConfiguration();
     tableConfig.setTableEmptyMessage("<b>"+translate("vc.table.empty")+"</b>");
-    tableConfig.setColumnMovingOffered(true);
     tableConfig.setSortingEnabled(true);
     tableCtr = new TableController(tableConfig, ureq, wControl, getTranslator());
     tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("vc.table.title", 0, null, ureq.getLocale()));

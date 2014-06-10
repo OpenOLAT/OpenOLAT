@@ -41,8 +41,6 @@ public class TableReplayableEvent  {
 	private static final String M_DATA = "mData";
 	private static final String I_MODE = "iMode";
 	static final int SORT = 0;
-	static final int MOVE_R = 1;
-	static final int MOVE_L = 2;
 	static final int PAGE_ACTION = 3;
 	static final int ROW_ACTION = 4;
 	static final int MULTISELECT_ACTION = 5;

@@ -50,7 +50,6 @@ public class TableRenderer extends DefaultComponentRenderer {
 
 	private static final String CLOSE_HTML_BRACE = "\">";
 	private static final String CLOSE_DIV = "</div>";
-	private static final String SINGLEQUOTE_CLOSEBRACE_OPEN_TITLE = "');\" title=\"";
 	private static final String B_LAST_CHILD = " b_last_child";
 	private static final String B_FIRST_CHILD = " b_first_child";
 	private static final String A_CLASS = "<a class=\"";
@@ -82,7 +81,6 @@ public class TableRenderer extends DefaultComponentRenderer {
 
 		int rows = table.getRowCount();
 		int cols = table.getColumnCount();
-		boolean asc = table.isSortAscending();
 		boolean selRowUnSelectable = table.isSelectedRowUnselectable();
 		// the really selected rowid (from the tabledatamodel)
 		int selRowId = table.getSelectedRowId();
@@ -107,10 +105,10 @@ public class TableRenderer extends DefaultComponentRenderer {
 		}
 
 		// starting real table table
-		target.append("<div class=\"o_table_wrapper table-responsive\" id=\"b_overflowscrollbox_").append(table.hashCode()).append("\">");
-
-		target.append("<table id=\"b_table").append(table.hashCode()).append("\" class=\"o_table table table-striped table-condensed table-hover").append(CLOSE_HTML_BRACE);
-		appendHeaderLinks(target, translator, table, formName, cols, asc);
+		target.append("<div class=\"o_table_wrapper table-responsive\" id=\"b_overflowscrollbox_").append(table.hashCode()).append("\">")
+		      .append("<table id=\"b_table").append(table.hashCode()).append("\" class=\"o_table table table-striped table-condensed table-hover").append(CLOSE_HTML_BRACE);
+		
+		appendHeaderLinks(target, translator, table, cols);
 		appendDataRows(renderer, target, ubu, table, iframePostEnabled, cols, selRowUnSelectable, selRowId, startRowId, endRowId);
 		target.append("</table><div class='o_table_footer'>");
 		appendSelectDeselectAllButtons(target, translator, table, formName, rows, resultsPerPage);
@@ -379,11 +377,9 @@ public class TableRenderer extends DefaultComponentRenderer {
 		return cssClass;
 	}
 
-	private void appendHeaderLinks(final StringOutput target, final Translator translator, Table table, String formName, int cols, boolean asc) {
+	private void appendHeaderLinks(final StringOutput target, final Translator translator, Table table, int cols) {
 		if (table.isDisplayTableHeader()) {
 			target.append("<thead><tr>");
-
-			ColumnDescriptor sortedCD = table.getCurrentlySortedColumnDescriptor();
 			for (int i = 0; i < cols; i++) {
 				ColumnDescriptor cd = table.getColumnDescriptor(i);
 				String header;
@@ -401,41 +397,9 @@ public class TableRenderer extends DefaultComponentRenderer {
 				if (i == cols - 1) {
 					target.append(B_LAST_CHILD);
 				}
-				target.append(CLOSE_HTML_BRACE);
-
-				// add 'move column left' link (if we are not at the leftmost position)
-				if (i != 0 && table.isColumnMovingOffered()) {
-					target.append(A_CLASS).append(HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);
-					target.append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_MOVECOLUMN_LEFT + SINGLE_COMMA_SINGLE).append(i).append("');\" class=\"b_table_move_left\" title=\"");
-					target.append(StringEscapeUtils.escapeHtml(translator.translate("row.move.left"))).append("\"> <i class='o_icon o_icon_move_left'></i> </a> ");
-				}
-				// header either a link or not
-				if (table.isSortingEnabled() && cd.isSortingAllowed()) {
-					target.append(A_CLASS).append(HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);
-					target.append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_SORTBYCOLUMN + SINGLE_COMMA_SINGLE).append(i).append(SINGLEQUOTE_CLOSEBRACE_OPEN_TITLE);
-					target.append(StringEscapeUtils.escapeHtml(translator.translate("row.sort"))).append(CLOSE_HTML_BRACE);
-					target.append(header);
-					target.append(CLOSE_HREF);
-				} else {
-					target.append(header);
-				}
-				// mark currently sorted row special
-				if (table.isSortingEnabled() && cd == sortedCD) {
-					target.append(A_CLASS).append(HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);
-					target.append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_SORTBYCOLUMN + SINGLE_COMMA_SINGLE).append(i).append(SINGLEQUOTE_CLOSEBRACE_OPEN_TITLE);
-					target.append(StringEscapeUtils.escapeHtml(translator.translate("row.sort.invert"))).append("\">");
-					target.append((asc ? " <i class='o_icon o_icon_sort_asc'></i> " : " <i class='o_icon o_icon_sort_desc'></i> "));
-					target.append(CLOSE_HREF);
-				}
-
-				// add 'move column right' link (if we are not at the rightmost
-				// position)
-				if (i != cols - 1 && table.isColumnMovingOffered()) {
-					target.append(A_CLASS).append(HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT);
-					target.append(formName).append(SINGLE_COMMA_SINGLE + Table.COMMAND_MOVECOLUMN_RIGHT + SINGLE_COMMA_SINGLE).append(i).append("');\" class=\"b_table_move_right\" title=\"");
-					target.append(StringEscapeUtils.escapeHtml(translator.translate("row.move.right"))).append("\"> <i class='o_icon o_icon_move_right'></i> </a>");
-				}
-				target.append("</th>");
+				target.append(CLOSE_HTML_BRACE)
+				      .append(header)
+				      .append("</th>");
 			}
 			target.append("</tr></thead>");
 		}

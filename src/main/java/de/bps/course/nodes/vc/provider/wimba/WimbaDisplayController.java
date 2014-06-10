@@ -147,7 +147,6 @@ public class WimbaDisplayController extends BasicController {
 
     // show recordings
     TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-    tableConfig.setColumnMovingOffered(false);
     tableConfig.setDisplayRowCount(true);
     tableConfig.setPageingEnabled(true);
     tableConfig.setTableEmptyMessage(translate("table.recordings.empty"));

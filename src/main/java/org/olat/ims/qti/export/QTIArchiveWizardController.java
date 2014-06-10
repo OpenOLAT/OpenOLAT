@@ -146,7 +146,6 @@ public class QTIArchiveWizardController extends BasicController {
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(getTranslator().translate("nodesoverview.nonodes"));
 		tableConfig.setDownloadOffered(false);
-		tableConfig.setColumnMovingOffered(false);
 		tableConfig.setSortingEnabled(false);
 		tableConfig.setDisplayTableHeader(true);
 		tableConfig.setDisplayRowCount(false);

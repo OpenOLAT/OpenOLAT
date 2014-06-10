@@ -58,7 +58,7 @@ public class Table extends AbstractComponent {
 	private static final int NO_ROW_SELECTED = -1;
 	private static final int DEFAULT_RESULTS_PER_PAGE = 20;
 	private static final int INITIAL_COLUMNSIZE = 5;
-	private OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final OLog log = Tracing.createLoggerFor(Table.class);
 	private static final ComponentRenderer RENDERER = new TableRenderer();
 	
 	/**
@@ -87,14 +87,6 @@ public class Table extends AbstractComponent {
 	 * Comment for <code>COMMAND_SORTBYCOLUMN</code>
 	 */
 	protected static final String COMMAND_SORTBYCOLUMN = "cid";
-	/**
-	 * Comment for <code>COMMAND_MOVECOLUMN_LEFT</code>
-	 */
-	protected static final String COMMAND_MOVECOLUMN_LEFT = "cl";
-	/**
-	 * Comment for <code>COMMAND_MOVECOLUMN_RIGHT</code>
-	 */
-	protected static final String COMMAND_MOVECOLUMN_RIGHT = "cr";
 	/**
 	 * Comment for <code>COMMAND_PAGEACTION</code>
 	 */
@@ -134,7 +126,6 @@ public class Table extends AbstractComponent {
 	private boolean multiSelect = false;
 	private boolean selectedRowUnselectable = false;
 	private boolean sortingEnabled = true;
-	private boolean columnMovingOffered = true;
 	private boolean displayTableHeader = true;
 	private boolean pageingEnabled = true;
 	private Integer currentPageId;
@@ -335,10 +326,6 @@ public class Table extends AbstractComponent {
 			// then fetch the internal command to be processed
 			if (formCmd.equals(COMMAND_SORTBYCOLUMN)) {
 				cmd = TableReplayableEvent.SORT;
-			} else if (formCmd.equals(COMMAND_MOVECOLUMN_RIGHT)) {
-				cmd = TableReplayableEvent.MOVE_R;
-			} else if (formCmd.equals(COMMAND_MOVECOLUMN_LEFT)) {
-				cmd = TableReplayableEvent.MOVE_L;
 			} else if (formCmd.equals(COMMAND_PAGEACTION)) {
 				cmd = TableReplayableEvent.PAGE_ACTION;
 			}
@@ -390,39 +377,9 @@ public class Table extends AbstractComponent {
 
 			setDirty(true);
 			resort();
-		} else if (cmd == TableReplayableEvent.MOVE_R) { // move column right
-			int col = Integer.parseInt(value1);
-			int swapCol = (col + 1) % (getColumnCount());
-			ColumnDescriptor cdMove = getColumnDescriptor(col);
-			ColumnDescriptor cdSwap = getColumnDescriptor(swapCol);
-			columnOrder.set(col, cdSwap);
-			columnOrder.set(swapCol, cdMove);
-			if (col == sortColumn) { // if the moved column was sorted, update the
-				// sortedcolumn info
-				sortColumn = swapCol;
-			} else if (swapCol == sortColumn) {
-				sortColumn = col;
-			}
 
-			setDirty(true);
-		} else if (cmd == TableReplayableEvent.MOVE_L) { // move column left
-			int col = Integer.parseInt(value1);
-			int swapCol = (col - 1) % (getColumnCount());
-			ColumnDescriptor cdMove = getColumnDescriptor(col);
-			ColumnDescriptor cdSwap = getColumnDescriptor(swapCol);
-			columnOrder.set(col, cdSwap);
-			columnOrder.set(swapCol, cdMove);
-			if (col == sortColumn) { // if the moved column was sorted, update the
-				// sortedcolumn info
-				sortColumn = swapCol;
-			} else if (swapCol == sortColumn) {
-				sortColumn = col;
-			}
-			
-			setDirty(true);
-
+			fireEvent(ureq, new TableEvent(COMMAND_SORTBYCOLUMN, -1, COMMAND_SORTBYCOLUMN));
 		} else if (cmd == TableReplayableEvent.PAGE_ACTION) {
-
 
 			if (value1.equals(COMMAND_PAGEACTION_SHOWALL)) {
 				//updatePageing(null);	(see OLAT-1340)			
@@ -660,22 +617,6 @@ public class Table extends AbstractComponent {
 	 */
 	protected void setSortingEnabled(final boolean sortingEnabled) {
 		this.sortingEnabled = sortingEnabled;
-	}
-
-	/**
-	 * @return true when columns can be moved left/right
-	 */
-	protected boolean isColumnMovingOffered() {
-		return columnMovingOffered;
-	}
-
-	/**
-	 * Set column moving configuration
-	 * 
-	 * @param columnMovingOffered
-	 */
-	protected void setColumnMovingOffered(final boolean columnMovingOffered) {
-		this.columnMovingOffered = columnMovingOffered;
 	}
 
 	/**

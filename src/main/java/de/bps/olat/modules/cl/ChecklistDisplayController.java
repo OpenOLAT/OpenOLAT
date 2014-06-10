@@ -124,7 +124,6 @@ public class ChecklistDisplayController extends BasicController {
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("cl.table.empty"));
-		tableConfig.setColumnMovingOffered(true);
 		
 		removeAsListenerAndDispose(runChecklistTable);
 		runChecklistTable = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());

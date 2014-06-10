@@ -229,7 +229,7 @@ public class DENManageParticipantsController extends BasicController {
 				//delete single user from event
 				if(tableEvent.getActionId().equals(DENParticipantsTableDataModel.REMOVE_ACTION)) {
 					Identity identity = participantsTableData.getEntryAt(tableEvent.getRowId());
-					status = denManager.cancelEnroll(identity, selectedEvent, ores, courseNode);
+					status = denManager.cancelEnroll(identity, selectedEvent, ores);
 					if(!status.isCancelled()) showError();
 					//send notification mail
 					else {

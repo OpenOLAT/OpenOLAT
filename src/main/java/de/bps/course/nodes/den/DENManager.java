@@ -187,7 +187,7 @@ public class DENManager {
 	 * @param userCourseEnv
 	 * @return status
 	 */
-	public DENStatus cancelEnroll(Identity identity, KalendarEvent event, OLATResourceable ores, DENCourseNode courseNode) {
+	public DENStatus cancelEnroll(Identity identity, KalendarEvent event, OLATResourceable ores) {
 		DENStatus status = new DENStatus();
 		ICourse course = CourseFactory.loadCourse(ores);
 		Kalendar cal = calManager.getCourseCalendar(course).getKalendar();
@@ -540,7 +540,6 @@ public class DENManager {
 	 */
 	protected TableController createManageDatesTable(UserRequest ureq, WindowControl wControl, Translator trans, DENEditTableDataModel tableData) {
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setColumnMovingOffered(true);
 		tableConfig.setResultsPerPage(15);
 		tableConfig.setShowAllLinkEnabled(true);
 		TableController tableCntrl = new TableController(tableConfig, ureq, wControl, trans);
@@ -571,7 +570,6 @@ public class DENManager {
 	protected TableController createRunDatesTable(UserRequest ureq, WindowControl wControl, Translator trans, DENRunTableDataModel tableData) {
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(trans.translate("dates.table.empty"));
-		tableConfig.setColumnMovingOffered(true);
 		TableController tableCntrl = new TableController(tableConfig, ureq, wControl, trans);
 		tableCntrl.addColumnDescriptor(new StrongColumnDescriptor("dates.table.date", 0, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.begin", 1, null, ureq.getLocale()));
@@ -602,7 +600,6 @@ public class DENManager {
 	protected TableController createListParticipantsTable(UserRequest ureq, WindowControl wControl, Translator trans,DENListTableDataModel tableData) {
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(trans.translate("dates.table.empty"));
-		tableConfig.setColumnMovingOffered(true);
 		TableController tableCntrl = new TableController(tableConfig, ureq, wControl, trans);
 		tableCntrl.addColumnDescriptor(new StrongColumnDescriptor("dates.table.date", 0, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.begin", 1, null, ureq.getLocale()));
@@ -643,7 +640,6 @@ public class DENManager {
 	protected TableController createParticipantsTable(UserRequest ureq, WindowControl wControl, Translator trans, DENParticipantsTableDataModel tableData) {
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(trans.translate("dates.table.empty"));
-		tableConfig.setColumnMovingOffered(true);
 		TableController tableCntrl = new TableController(tableConfig, ureq, wControl, trans);
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.participant.firstname", 0, null, ureq.getLocale()));
 		tableCntrl.addColumnDescriptor(new DefaultColumnDescriptor("dates.table.participant.lastname", 1, null, ureq.getLocale()));
