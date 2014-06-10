@@ -65,8 +65,6 @@ class TableSortRenderer extends DefaultComponentRenderer {
 				  .append(StringEscapeUtils.escapeHtml(translator.translate("row.sort"))).append("\">");
 				
 				if(sortedCD == cd) {
-					System.out.println(sortedCD.getHeaderKey() + " :: " + asc);
-					
 					if(asc) {
 						sb.append("<i class='o_icon o_icon_sort_asc'></i> ");
 					} else {

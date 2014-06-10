@@ -58,7 +58,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OverviewRepositoryListController extends BasicController implements Activateable2 {
 
-	private MainPanel mainPanel;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	private final Link favoriteLink, myCourseLink;
@@ -80,7 +79,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 
-		mainPanel = new MainPanel("myCoursesMainPanel");
+		MainPanel mainPanel = new MainPanel("myCoursesMainPanel");
 		mainPanel.setDomReplaceable(false);
 		mainVC = createVelocityContainer("overview");
 		mainPanel.setContent(mainVC);
