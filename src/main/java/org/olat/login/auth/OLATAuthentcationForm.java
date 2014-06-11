@@ -51,7 +51,7 @@ public class OLATAuthentcationForm extends FormBasicController {
 	 * @param name
 	 */
 	public OLATAuthentcationForm(UserRequest ureq, WindowControl wControl, String id, Translator translator) {
-		super(ureq, wControl, id, (String)null);
+		super(ureq, wControl, id, "form_vertical");
 		setTranslator(translator);
 		initForm(ureq);
 	}
