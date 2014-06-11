@@ -428,7 +428,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 					ubu, translator, renderResult, null);
 			}
 		} else {
-			fcm.getCellRenderer().render(target, cellValue, row, ftC, ubu, translator);
+			fcm.getCellRenderer().render(renderer, target, cellValue, row, ftC, ubu, translator);
 		}
 		target.append("</td>");
 	}

@@ -26,6 +26,7 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -37,7 +38,7 @@ import org.olat.core.gui.translator.Translator;
  */
 public interface FlexiCellRenderer{
 
-	public void render(StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-			URLBuilder ubu, Translator translator);
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
+			FlexiTableComponent source, URLBuilder ubu, Translator translator);
 
 }

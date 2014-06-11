@@ -27,12 +27,10 @@ package org.olat.group.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.group.BusinessGroup;
-import org.olat.group.ui.main.BusinessGroupMainController;
 import org.olat.group.ui.run.BusinessGroupMainRunController;
 
 /**
@@ -95,19 +93,4 @@ public class BGControllerFactory {
 		}
 		return new BusinessGroupMainRunController(ureq, bwControl, businessGroup);
 	}
-
-	/**
-	 * Factory method to create a configured buddy group main controller for the
-	 * management of the users own buddygroup
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param initialViewIdentifier
-	 * @return a configured buddy group main controller
-	 */
-	public MainLayoutController createGroupMainController(UserRequest ureq, WindowControl wControl) {
-		return new BusinessGroupMainController(ureq, wControl);
-	}
-
-
 }

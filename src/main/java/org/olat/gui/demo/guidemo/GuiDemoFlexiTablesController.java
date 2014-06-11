@@ -236,8 +236,8 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
 	 */
 	private class ExampleCustomFlexiCellRenderer implements FlexiCellRenderer {
 		@Override
-		public void render(StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-				URLBuilder ubu, Translator translator) {
+		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
+				FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 			if (cellValue instanceof Boolean) {
 				if ( ((Boolean)cellValue).booleanValue() ) {
 					target.append("<img src=\"");

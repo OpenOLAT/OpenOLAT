@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -38,8 +39,8 @@ import org.olat.repository.ui.PriceMethod;
 public class ACRenderer implements FlexiCellRenderer {
 
 	@Override
-	public void render(StringOutput sb, Object val, int row,
-			FlexiTableComponent source, URLBuilder ubu, Translator translator)  {
+	public void render(Renderer renderer, StringOutput sb, Object val,
+			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator)  {
 		sb.append("<div class='o_nowrap o_repoentry_ac'>");
 		if(val instanceof Collection) {
 			Collection<?> accessTypes = (Collection<?>)val;

@@ -43,7 +43,7 @@ public class SortableFlexiTableModelDelegate<T> {
 	
 	private boolean asc;
 	private int columnIndex;
-	protected final Collator collator; 
+	private final Collator collator; 
 	private final SortableFlexiTableDataModel<T> tableModel;
 	
 	public SortableFlexiTableModelDelegate(SortKey orderBy, SortableFlexiTableDataModel<T> tableModel, Locale locale) {
@@ -64,9 +64,14 @@ public class SortableFlexiTableModelDelegate<T> {
 		}
 	}
 	
+	public int getColumnIndex() {
+		return columnIndex;
+	}
+	
 	public List<T> sort() {
-		List<T> rows = new ArrayList<>();
-		for(int i=0; i<tableModel.getRowCount(); i++) {
+		int rowCount = tableModel.getRowCount();
+		List<T> rows = new ArrayList<>(rowCount);
+		for(int i=0; i<rowCount; i++) {
 			rows.add(tableModel.getObject(i));
 		}
 		sort(rows);
@@ -90,6 +95,50 @@ public class SortableFlexiTableModelDelegate<T> {
 			}
 		}
 		return colModel;
+	}
+	
+	protected int compareString(final String a, final String b) {
+		if (a == null || b == null) {
+			return compareNullObjects(a, b);
+		}
+		return collator == null ? a.compareTo(b) : collator.compare(a, b);
+	}
+
+	protected int compareBooleans(final Boolean a, final Boolean b) {
+		if (a == null || b == null) {
+			return compareNullObjects(a, b);
+		}
+		
+		boolean ba = a.booleanValue();
+		boolean bb = b.booleanValue();
+		return ba? (bb? 0: -1):(bb? 1: 0);
+	}
+	
+	protected int compareDateAndTimestamps(Date a, Date b) {
+		if (a == null || b == null) {
+			return compareNullObjects(a, b);
+		}
+		
+		if (a instanceof Timestamp) { // a timestamp (a) cannot compare a date (b), but vice versa is ok.
+			if(b instanceof Timestamp) {
+				return ((Timestamp)a).compareTo((Timestamp)b);
+			} else {
+				Timestamp ta = (Timestamp)a;
+				Date aAsDate = new Date(ta.getTime());
+				return aAsDate.compareTo(b);
+			}
+		} else if (b instanceof Timestamp) {
+			Timestamp tb = (Timestamp)b;
+			Date bAsDate = new Date(tb.getTime());
+			return a.compareTo(bAsDate);
+		}
+		return a.compareTo(b);
+	}
+
+	protected int compareNullObjects(final Object a, final Object b) {
+		boolean ba = (a == null);
+		boolean bb = (b == null);
+		return ba? (bb? 0: -1):(bb? 1: 0);
 	}
 	
 	public class DefaultComparator implements Comparator<T> {
@@ -118,50 +167,6 @@ public class SortableFlexiTableModelDelegate<T> {
 				return s;
 			}
 			return val1.toString().compareTo(val2.toString());
-		}
-		
-		protected int compareString(final String a, final String b) {
-			if (a == null || b == null) {
-				return compareNullObjects(a, b);
-			}
-			return collator == null ? a.compareTo(b) : collator.compare(a, b);
-		}
-	
-		protected int compareBooleans(final Boolean a, final Boolean b) {
-			if (a == null || b == null) {
-				return compareNullObjects(a, b);
-			}
-			
-			boolean ba = a.booleanValue();
-			boolean bb = b.booleanValue();
-			return ba? (bb? 0: -1):(bb? 1: 0);
-		}
-		
-		protected int compareDateAndTimestamps(Date a, Date b) {
-			if (a == null || b == null) {
-				return compareNullObjects(a, b);
-			}
-			
-			if (a instanceof Timestamp) { // a timestamp (a) cannot compare a date (b), but vice versa is ok.
-				if(b instanceof Timestamp) {
-					return ((Timestamp)a).compareTo((Timestamp)b);
-				} else {
-					Timestamp ta = (Timestamp)a;
-					Date aAsDate = new Date(ta.getTime());
-					return aAsDate.compareTo(b);
-				}
-			} else if (b instanceof Timestamp) {
-				Timestamp tb = (Timestamp)b;
-				Date bAsDate = new Date(tb.getTime());
-				return a.compareTo(bAsDate);
-			}
-			return a.compareTo(b);
-		}
-	
-		protected int compareNullObjects(final Object a, final Object b) {
-			boolean ba = (a == null);
-			boolean bb = (b == null);
-			return ba? (bb? 0: -1):(bb? 1: 0);
 		}
 	}
 }

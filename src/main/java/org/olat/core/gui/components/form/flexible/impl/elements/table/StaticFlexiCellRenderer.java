@@ -23,6 +23,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
+import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -59,12 +60,12 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
   /**
    * 
    * @param target
-   * @param cellValue
-   * @param translator
+ * @param cellValue
+ * @param translator
    */	
 	@Override
-	public void render(StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-			URLBuilder ubu, Translator translator) {
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
+			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		
 		String action = getAction();
 		if(StringHelper.containsNonWhitespace(action)) {
@@ -80,13 +81,13 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 			if(labelDelegate == null) {
 				target.append(getLabel());
 			} else {
-				labelDelegate.render(target, cellValue, row, source, ubu, translator);
+				labelDelegate.render(null, target, cellValue, row, source, ubu, translator);
 			}
 			target.append("</a>");
 		}	else if(labelDelegate == null) {
 			target.append(getLabel());
 		} else {
-			labelDelegate.render(target, cellValue, row, source, ubu, translator);
+			labelDelegate.render(null, target, cellValue, row, source, ubu, translator);
 		}
 	}
 	

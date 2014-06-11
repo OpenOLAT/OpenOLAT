@@ -23,18 +23,21 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.table.ColumnDescriptor;
-import org.olat.core.gui.components.table.CustomCellRenderer;
-import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
-import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.components.table.StaticColumnDescriptor;
-import org.olat.core.gui.components.table.Table;
-import org.olat.core.gui.components.table.TableEvent;
-import org.olat.core.gui.components.table.TableMultiSelectEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -48,10 +51,12 @@ import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.AbstractBusinessGroupListController;
 import org.olat.group.ui.main.BGAccessControlledCellRenderer;
+import org.olat.group.ui.main.BGResourcesCellRenderer;
 import org.olat.group.ui.main.BGTableItem;
-import org.olat.group.ui.main.BusinessGroupNameColumnDescriptor;
-import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
+import org.olat.group.ui.main.BusinessGroupFlexiTableModel.Cols;
+import org.olat.group.ui.main.BusinessGroupNameCellRenderer;
 import org.olat.group.ui.main.BusinessGroupViewFilter;
+import org.olat.group.ui.main.SearchEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
 import org.olat.group.ui.main.UnmanagedGroupFilter;
 import org.olat.repository.RepositoryEntry;
@@ -68,8 +73,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	public static String TABLE_ACTION_MULTI_UNLINK = "tblMultiUnlink";
 	
 	private final RepositoryEntry re;
-	private final Link createGroup;
-	private final Link addGroup;
+	private FormLink createGroup, addGroup, removeGroups;
 
 	private DialogBoxController confirmRemoveResource;
 	private DialogBoxController confirmRemoveMultiResource;
@@ -78,73 +82,108 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	public CourseBusinessGroupListController(UserRequest ureq, WindowControl wControl, RepositoryEntry re) {
 		super(ureq, wControl, "group_list", re);
 		this.re = re;
+	}
+
+	@Override
+	protected void initButtons(FormItemContainer formLayout, UserRequest ureq) {
+		initButtons(formLayout, ureq, true, false, false);
 		
+		tableEl.setMultiSelect(true);
+		
+		RepositoryEntry re = (RepositoryEntry)getUserObject();
 		boolean managed = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);
-		createGroup = LinkFactory.createButton("group.create", mainVC, this);
+		if(!managed) {
+			duplicateButton = uifactory.addFormLink("table.duplicate", TABLE_ACTION_DUPLICATE, "table.duplicate", null, formLayout, Link.BUTTON);
+			mergeButton = uifactory.addFormLink("table.merge", TABLE_ACTION_MERGE, "table.merge", null, formLayout, Link.BUTTON);
+		}
+		usersButton = uifactory.addFormLink("table.users.management", TABLE_ACTION_USERS, "table.users.management", null, formLayout, Link.BUTTON);
+		configButton = uifactory.addFormLink("table.config", TABLE_ACTION_CONFIG, "table.config", null, formLayout, Link.BUTTON);
+		emailButton = uifactory.addFormLink("table.email", TABLE_ACTION_EMAIL, "table.email", null, formLayout, Link.BUTTON);
+
+		if(!managed) {
+			removeGroups = uifactory.addFormLink("table.header.remove", TABLE_ACTION_MULTI_UNLINK, "table.header.remove", null, formLayout, Link.BUTTON);
+		}
+
+		createGroup = uifactory.addFormLink("group.create", formLayout, Link.BUTTON);
 		createGroup.setVisible(!managed);
-		mainVC.put("createGroup", createGroup);
-		addGroup = LinkFactory.createButton("group.add", mainVC, this);
+		addGroup = uifactory.addFormLink("group.add", formLayout, Link.BUTTON);
 		addGroup.setVisible(!managed);
-		mainVC.put("addGroup", addGroup);
 	}
 
 	@Override
-	protected void initButtons(UserRequest ureq) {
-		initButtons(ureq, true);
-		groupListCtr.setMultiSelect(true);
-		
-		RepositoryEntry re = (RepositoryEntry)getUserObject();
-		boolean managed = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);
-		if(!managed) {
-			groupListCtr.addMultiSelectAction("table.duplicate", TABLE_ACTION_DUPLICATE);
-			groupListCtr.addMultiSelectAction("table.merge", TABLE_ACTION_MERGE);
-		}
-		groupListCtr.addMultiSelectAction("table.users.management", TABLE_ACTION_USERS);
-		groupListCtr.addMultiSelectAction("table.config", TABLE_ACTION_CONFIG);
-		groupListCtr.addMultiSelectAction("table.email", TABLE_ACTION_EMAIL);
-		if(!managed) {
-			groupListCtr.addMultiSelectAction("table.header.remove", TABLE_ACTION_MULTI_UNLINK);
-		}
-	}
-
-	@Override
-	protected int initColumns() {
+	protected FlexiTableColumnModel initColumnModel() {
 		RepositoryEntry re = (RepositoryEntry)getUserObject();
 		boolean managed = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);
 		
-		groupListCtr.addColumnDescriptor(new BusinessGroupNameColumnDescriptor(TABLE_ACTION_LAUNCH, getLocale()));
-		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.key.i18n(), Cols.key.ordinal(), null, getLocale()));
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		//group name
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(Cols.name.i18n(), Cols.name.ordinal(), TABLE_ACTION_LAUNCH,
+				true, Cols.name.name(), new StaticFlexiCellRenderer(TABLE_ACTION_LAUNCH, new BusinessGroupNameCellRenderer())));
+		//id and reference
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18n(), Cols.key.ordinal(), true, Cols.key.name()));
 		if(groupModule.isManagedBusinessGroups()) {
-			groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.externalId.i18n(), Cols.externalId.ordinal(), null, getLocale()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalId.i18n(), Cols.externalId.ordinal(),
+					true, Cols.externalId.name()));
 		}
-		DefaultColumnDescriptor descCol = new DefaultColumnDescriptor(Cols.description.i18n(), Cols.description.ordinal(), null, getLocale());
-		descCol.setEscapeHtml(EscapeMode.antisamy);
-		groupListCtr.addColumnDescriptor(false, descCol);
-		groupListCtr.addColumnDescriptor(new ResourcesColumnDescriptor(this, mainVC, getTranslator()));
-		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.tutorsCount.i18n(), Cols.tutorsCount.ordinal(), null, getLocale()));
-		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.participantsCount.i18n(), Cols.participantsCount.ordinal(), null, getLocale()));
-		DefaultColumnDescriptor freeplacesCol = new DefaultColumnDescriptor(Cols.freePlaces.i18n(), Cols.freePlaces.ordinal(), TABLE_ACTION_LAUNCH, getLocale());
-		freeplacesCol.setEscapeHtml(EscapeMode.none);
-		groupListCtr.addColumnDescriptor(freeplacesCol);
-		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.waitingListCount.i18n(), Cols.waitingListCount.ordinal(), null, getLocale()));
-		CustomCellRenderer acRenderer = new BGAccessControlledCellRenderer();
-		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, acRenderer));
-		groupListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_EDIT, "table.header.edit", translate("table.header.edit")));
+		//description
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.description.i18n(), Cols.description.ordinal(),
+				false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(EscapeMode.antisamy)));
+		//courses
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.resources.i18n(), Cols.resources.ordinal(),
+				true, Cols.resources.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGResourcesCellRenderer(flc)));
+		//stats
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.tutorsCount.i18n(), Cols.tutorsCount.ordinal(),
+				true, Cols.tutorsCount.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.participantsCount.i18n(), Cols.participantsCount.ordinal(),
+				true, Cols.participantsCount.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.freePlaces.i18n(), Cols.freePlaces.ordinal(),
+				true, Cols.freePlaces.name(), FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(EscapeMode.none)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.waitingListCount.i18n(), Cols.waitingListCount.ordinal(),
+				true, Cols.waitingListCount.name()));
+		//access
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(),
+				true, Cols.accessTypes.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGAccessControlledCellRenderer()));
+
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.edit", translate("table.header.edit"), TABLE_ACTION_EDIT));
+		
 		if(!managed) {
-			groupListCtr.addColumnDescriptor(new RemoveActionColumnDescriptor("table.header.remove", Cols.wrapper.ordinal(), getTranslator()));
+			columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.remove", Cols.unlink.ordinal(), TABLE_ACTION_UNLINK,
+					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.remove"), TABLE_ACTION_UNLINK), null)));
 		}
-		return 11;
+		return columnsModel;
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == createGroup) {
 			doCreate(ureq, getWindowControl(), re);
 		} else if (source == addGroup) {
 			doSelectGroups(ureq);
-		} else {
-			super.event(ureq, source, event);
-		}
+		} else if(source == removeGroups) {
+			List<BGTableItem> selectedItems = getSelectedItems();
+			if(selectedItems.isEmpty()) {
+				showWarning("error.select.one");
+			} else {
+				doConfirmRemove(ureq, selectedItems);
+			}
+		} else if (source == tableEl) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent te = (SelectionEvent) event;
+				String cmd = te.getCommand();
+				if(TABLE_ACTION_UNLINK.equals(cmd)) {
+					Long businessGroupKey = groupTableModel.getObject(te.getIndex()).getBusinessGroupKey();
+					BusinessGroup group = businessGroupService.loadBusinessGroup(businessGroupKey);
+					String text = getTranslator().translate("group.remove", new String[] {
+							StringHelper.escapeHtml(group.getName()),
+							StringHelper.escapeHtml(re.getDisplayname())
+					});
+					confirmRemoveResource = activateYesNoDialog(ureq, null, text, confirmRemoveResource);
+					confirmRemoveResource.setUserObject(group);
+				}
+			}
+		} 
+
+		super.formInnerEvent(ureq, source, event);
 	}
 	
 	@Override
@@ -155,31 +194,6 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 			cmc.deactivate();
 			cleanUpPopups();
 			addGroupsToCourse(selectedGroups);
-		} else if (source == groupListCtr) {
-			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
-				TableEvent te = (TableEvent) event;
-				String actionid = te.getActionId();
-				if(TABLE_ACTION_UNLINK.equals(actionid)) {
-					Long businessGroupKey = groupListModel.getObject(te.getRowId()).getBusinessGroupKey();
-					BusinessGroup group = businessGroupService.loadBusinessGroup(businessGroupKey);
-					String text = getTranslator().translate("group.remove", new String[] {
-							StringHelper.escapeHtml(group.getName()),
-							StringHelper.escapeHtml(re.getDisplayname())
-					});
-					confirmRemoveResource = activateYesNoDialog(ureq, null, text, confirmRemoveResource);
-					confirmRemoveResource.setUserObject(group);
-				}
-			} else if (event instanceof TableMultiSelectEvent) {
-				TableMultiSelectEvent te = (TableMultiSelectEvent)event;
-				if(TABLE_ACTION_MULTI_UNLINK.equals(te.getAction())) {
-					List<BGTableItem> selectedItems = groupListModel.getObjects(te.getSelection());
-					if(selectedItems.isEmpty()) {
-						showWarning("error.select.one");
-					} else {
-						doConfirmRemove(ureq, selectedItems);
-					}
-				}
-			}
 		} else if (source == confirmRemoveResource) {
 			if (DialogBoxUIFactory.isYesEvent(event)) { // yes case
 				BusinessGroup group = (BusinessGroup)confirmRemoveResource.getUserObject();
@@ -251,7 +265,11 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		List<RepositoryEntry> resources = Collections.singletonList(re);
 		businessGroupService.addResourcesTo(groups, resources);
 		reloadModel();
-		mainVC.setDirty(true);
+	}
+	
+	@Override
+	protected SearchBusinessGroupParams getSearchParams(SearchEvent event) {
+		return new SearchBusinessGroupParams();
 	}
 
 	@Override

@@ -62,7 +62,7 @@ public class FlexiTableComponent extends FormBaseComponentImpl implements Compon
 		this.element = element;
 	}
 	
-	FlexiTableElementImpl getFlexiTableElement() {
+	public FlexiTableElementImpl getFlexiTableElement() {
 		return element;
 	}
 

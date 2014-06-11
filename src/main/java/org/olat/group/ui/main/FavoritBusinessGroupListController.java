@@ -20,15 +20,10 @@
 package org.olat.group.ui.main;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.EscapeMode;
-import org.olat.core.gui.components.table.BooleanColumnDescriptor;
-import org.olat.core.gui.components.table.ColumnDescriptor;
-import org.olat.core.gui.components.table.CustomCellRenderer;
-import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
-import org.olat.core.gui.components.table.DefaultColumnDescriptor;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
 
 /**
  * 
@@ -41,30 +36,27 @@ public class FavoritBusinessGroupListController extends AbstractBusinessGroupLis
 	}
 
 	@Override
-	protected void initButtons(UserRequest ureq) {
-		initButtons(ureq, true);
+	protected void initButtons(FormItemContainer formLayout, UserRequest ureq) {
+		initButtons(formLayout, ureq, true, false, false);
 	}
 
 	@Override
-	protected int initColumns() {
-		groupListCtr.addColumnDescriptor(new MarkColumnDescriptor(this, mainVC, getTranslator()));
-		groupListCtr.addColumnDescriptor(new BusinessGroupNameColumnDescriptor(TABLE_ACTION_LAUNCH, getLocale()));
-		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.key.i18n(), Cols.key.ordinal(), null, getLocale()));
-		if(groupModule.isManagedBusinessGroups()) {
-			groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.externalId.i18n(), Cols.externalId.ordinal(), null, getLocale()));
+	protected FlexiTableColumnModel initColumnModel() {
+		return BusinessGroupFlexiTableModel.getStandardColumnModel(false, flc, groupModule, getTranslator());
+	}
+	
+	@Override
+	protected SearchBusinessGroupParams getSearchParams(SearchEvent event) {
+		SearchBusinessGroupParams params = event.convertToSearchBusinessGroupParams(getIdentity());
+		//security
+		if(!params.isAttendee() && !params.isOwner() && !params.isWaiting()) {
+			params.setOwner(true);
+			params.setAttendee(true);
+			params.setWaiting(true);
 		}
-		DefaultColumnDescriptor descCol = new DefaultColumnDescriptor(Cols.description.i18n(), Cols.description.ordinal(), null, getLocale());
-		descCol.setEscapeHtml(EscapeMode.antisamy);
-		groupListCtr.addColumnDescriptor(false, descCol);
-		groupListCtr.addColumnDescriptor(new ResourcesColumnDescriptor(this, mainVC, getTranslator()));
-		CustomCellRenderer acRenderer = new BGAccessControlledCellRenderer();
-		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, acRenderer));
-		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.firstTime.i18n(), Cols.firstTime.ordinal(), null, getLocale()));
-		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.lastTime.i18n(), Cols.lastTime.ordinal(), null, getLocale()));
-		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.lastUsage.i18n(), Cols.lastUsage.ordinal(), null, getLocale()));
-		groupListCtr.addColumnDescriptor(new RoleColumnDescriptor( getLocale()));
-		groupListCtr.addColumnDescriptor(new BooleanColumnDescriptor(Cols.allowLeave.i18n(), Cols.allowLeave.ordinal(), TABLE_ACTION_LEAVE, translate("table.header.leave"), null));
-		return 11;
+		params.setMarked(Boolean.TRUE);
+		params.setIdentity(getIdentity());
+		return params;
 	}
 	
 	protected boolean updateMarkedGroups() {

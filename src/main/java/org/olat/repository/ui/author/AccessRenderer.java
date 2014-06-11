@@ -21,6 +21,7 @@ package org.olat.repository.ui.author;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -43,8 +44,8 @@ public class AccessRenderer implements FlexiCellRenderer {
 	}
 
 	@Override
-	public void render(StringOutput sb, Object val, int row,
-			FlexiTableComponent source, URLBuilder ubu, Translator translator)  {
+	public void render(Renderer renderer, StringOutput sb, Object val,
+			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator)  {
 		if(val instanceof RepositoryEntryLight) {
 			RepositoryEntryLight re = (RepositoryEntryLight)val;
 			if(re.isMembersOnly()) {

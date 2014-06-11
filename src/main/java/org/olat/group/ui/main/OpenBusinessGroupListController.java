@@ -22,18 +22,18 @@ package org.olat.group.ui.main;
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
-import org.olat.core.gui.components.table.ColumnDescriptor;
-import org.olat.core.gui.components.table.CustomCellRenderer;
-import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
-import org.olat.core.gui.components.table.DefaultColumnDescriptor;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
-import org.olat.util.logging.activity.LoggingResourceable;
+import org.olat.group.ui.main.BusinessGroupFlexiTableModel.Cols;
 
 /**
  * 
@@ -42,35 +42,47 @@ import org.olat.util.logging.activity.LoggingResourceable;
 public class OpenBusinessGroupListController extends AbstractBusinessGroupListController {
 	
 	public OpenBusinessGroupListController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "open_group_list");
-
-		updateOpenGroupModel(ureq);
+		super(ureq, wControl, "group_list");
 	}
 	
 	@Override
-	protected void initButtons(UserRequest ureq) {
-		//
+	protected void initButtons(FormItemContainer formLayout, UserRequest ureq) {
+		searchCtrl.enableRoles(false);
 	}
-
+	
 	@Override
-	protected int initColumns() {
-		groupListCtr.addColumnDescriptor(new BusinessGroupNameColumnDescriptor(TABLE_ACTION_LAUNCH, getLocale()));
-		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.key.i18n(), Cols.key.ordinal(), null, getLocale()));
+	protected FlexiTableColumnModel initColumnModel() {
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(Cols.name.i18n(), Cols.name.ordinal(), TABLE_ACTION_LAUNCH,
+				true, Cols.name.name(), new StaticFlexiCellRenderer(TABLE_ACTION_LAUNCH, new BusinessGroupNameCellRenderer())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18n(), Cols.key.ordinal(),
+				true, Cols.key.name()));
 		if(groupModule.isManagedBusinessGroups()) {
-			groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.externalId.i18n(), Cols.externalId.ordinal(), null, getLocale()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalId.i18n(), Cols.externalId.ordinal(),
+					true, Cols.externalId.name()));
 		}
-		DefaultColumnDescriptor descCol = new DefaultColumnDescriptor(Cols.description.i18n(), Cols.description.ordinal(), null, getLocale());
-		descCol.setEscapeHtml(EscapeMode.antisamy);
-		groupListCtr.addColumnDescriptor(descCol);
-		groupListCtr.addColumnDescriptor(new ResourcesColumnDescriptor(this, mainVC, getTranslator()));
-		DefaultColumnDescriptor freePlacesCol = new DefaultColumnDescriptor(Cols.freePlaces.i18n(), Cols.freePlaces.ordinal(), TABLE_ACTION_LAUNCH, getLocale());
-		freePlacesCol.setEscapeHtml(EscapeMode.none);
-		groupListCtr.addColumnDescriptor(freePlacesCol);
-		CustomCellRenderer acRenderer = new BGAccessControlledCellRenderer();
-		groupListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, acRenderer));
-		groupListCtr.addColumnDescriptor(new RoleColumnDescriptor(getLocale()));
-		groupListCtr.addColumnDescriptor(new AccessActionColumnDescriptor(Cols.accessControlLaunch.i18n(), Cols.accessControlLaunch.ordinal(), getTranslator()));
-		return 8;
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.description.i18n(), Cols.description.ordinal(),
+				false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(EscapeMode.antisamy)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.resources.i18n(), Cols.resources.ordinal(),
+				true, Cols.resources.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGResourcesCellRenderer(flc)));
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(Cols.freePlaces.i18n(), Cols.freePlaces.ordinal(), TABLE_ACTION_LAUNCH,
+				true, Cols.freePlaces.name(), new TextFlexiCellRenderer(EscapeMode.none)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(),
+				true, Cols.accessTypes.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGAccessControlledCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.role.i18n(), Cols.role.ordinal(),
+				true, Cols.role.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGRoleCellRenderer(getLocale())));
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.accessControlLaunch.i18n(), Cols.accessControlLaunch.ordinal()));
+		
+		return columnsModel;
+	}
+	
+	public void updateOpenGroups() {
+		//find all accessible business groups
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.setPublicGroups(Boolean.TRUE);
+		updateTableModel(params, false);
 	}
 	
 	@Override
@@ -82,15 +94,11 @@ public class OpenBusinessGroupListController extends AbstractBusinessGroupListCo
 			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		}
 	}
-
-	private void updateOpenGroupModel(UserRequest ureq) {
-		//find all accessible business groups
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+	
+	@Override
+	protected SearchBusinessGroupParams getSearchParams(SearchEvent event) {
+		SearchBusinessGroupParams params = event.convertToSearchBusinessGroupParams(getIdentity());
 		params.setPublicGroups(Boolean.TRUE);
-		updateTableModel(params, false);
-		
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("All", 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		addToHistory(ureq, ores, null);
+		return params;
 	}
 }

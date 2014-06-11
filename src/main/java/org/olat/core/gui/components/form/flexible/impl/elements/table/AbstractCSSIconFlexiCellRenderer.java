@@ -20,6 +20,7 @@
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -45,13 +46,13 @@ public abstract class AbstractCSSIconFlexiCellRenderer implements FlexiCellRende
 	
 	  /**
 	   * Render Date type with Formatter depending on locale. Render all other types with toString. 
-	   * @param target
-	   * @param cellValue
-	   * @param translator
+	 * @param target
+	 * @param cellValue
+	 * @param translator
 	   */	
 	@Override
-	public void render(StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-				URLBuilder ubu, Translator translator) {
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
+				FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		target.append("<span><i class=\"o_icon ")
 		     .append(getCssClass(cellValue));
 		String hoverText = getHoverText(cellValue, translator);
@@ -63,7 +64,7 @@ public abstract class AbstractCSSIconFlexiCellRenderer implements FlexiCellRende
 		if(delegate == null) {
 			target.append(getCellValue(cellValue));
 		} else {
-			delegate.render(target, cellValue, row, source, ubu, translator);
+			delegate.render(null, target, cellValue, row, source, ubu, translator);
 		}
 		target.append("</span>");			
 	}

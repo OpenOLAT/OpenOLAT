@@ -1,4 +1,5 @@
-<div class="o_buttons_box_right">
+<div class="btn-toolbar">
+	<div class="pull-right">
 	#if($r.available("addMembers"))
 		$r.render("addMembers")
 	#end
@@ -8,15 +9,13 @@
 	#if($r.available("dedupMembers"))
 		$r.render("dedupMembers")
 	#end
+	</div>
 </div>
-<h4 class="b_with_small_icon_left b_group_icon">
-	$r.translate("menu.members")
-</h4>
+<h4><i class="o_icon o_icon_group"> </i> $r.translate("menu.members")</h4>
 <div class="b_clearfix">
 	$r.render("segments")
 	
 	#if($r.available("membersCmp"))
 		$r.render("membersCmp")
 	#end
-	
 </div>

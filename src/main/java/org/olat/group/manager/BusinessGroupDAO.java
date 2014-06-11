@@ -482,6 +482,23 @@ public class BusinessGroupDAO {
 			query.append("bgi.externalId=:externalId");
 		}
 		
+		Long id = null;
+		if(StringHelper.containsNonWhitespace(params.getIdRef())) {
+			if(StringHelper.isLong(params.getIdRef())) {
+				try {
+					id = new Long(params.getIdRef());
+				} catch (NumberFormatException e) {
+					//not a real number, can be a very long numerical external id
+				}
+			}
+			where = where(query, where);
+			query.append("(bgi.externalId=:idRefString");
+			if(id != null) {
+				query.append(" or bgi.key=:idRefLong");
+			}
+			query.append(")");
+		}
+		
 		if(params.getManaged() != null) {
 			where = where(query, where);
 			if(params.getManaged().booleanValue()) {
@@ -622,6 +639,13 @@ public class BusinessGroupDAO {
 			dbq.setParameter("externalId", params.getExternalId());
 		}
 		
+		if(StringHelper.containsNonWhitespace(params.getIdRef())) {
+			dbq.setParameter("idRefString", params.getExternalId());
+			if(id != null) {
+				dbq.setParameter("idRefLong", id);
+			}
+		}
+		
 		if (resource != null) {
 			dbq.setParameter("resourceKey", resource.getKey());
 		}
@@ -748,6 +772,23 @@ public class BusinessGroupDAO {
 			query.append(" bgi.numOfRelations").append(params.getResources().booleanValue() ? ">0" : "<=0");
 		}
 		
+		Long id = null;
+		if(StringHelper.containsNonWhitespace(params.getIdRef())) {
+			if(StringHelper.isLong(params.getIdRef())) {
+				try {
+					id = new Long(params.getIdRef());
+				} catch (NumberFormatException e) {
+					//not a real number, can be a very long numerical external id
+				}
+			}
+			where = where(query, where);
+			query.append("(bgi.externalId=:idRefString");
+			if(id != null) {
+				query.append(" or bgi.key=:idRefLong");
+			}
+			query.append(")");
+		}
+		
 		if(StringHelper.containsNonWhitespace(params.getCourseTitle())) {
 			where = where(query, where);
 			query.append(" bgi.key in (")
@@ -860,6 +901,12 @@ public class BusinessGroupDAO {
 		}
 		if(params.getGroupKeys() != null && !params.getGroupKeys().isEmpty()) {
 			dbq.setParameter("groupKeys", params.getGroupKeys());
+		}
+		if(StringHelper.containsNonWhitespace(params.getIdRef())) {
+			dbq.setParameter("idRefString", params.getExternalId());
+			if(id != null) {
+				dbq.setParameter("idRefLong", id);
+			}
 		}
 		if (repoEntry != null) {
 			dbq.setParameter("resourceKey", repoEntry.getKey());

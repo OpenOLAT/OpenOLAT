@@ -19,8 +19,6 @@
  */
 package org.olat.group.ui.main;
 
-import java.util.Collections;
-
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.StateEntry;
@@ -35,9 +33,8 @@ public class SearchEvent extends Event implements StateEntry {
 
 	private static final long serialVersionUID = 6630250536374073143L;
 	
-	private Long id;
+	private String idRef;
 	private String name;
-	private String externalId;
 	private String description;
 	private String ownerName;
 	private String courseTitle;
@@ -52,12 +49,12 @@ public class SearchEvent extends Event implements StateEntry {
 		super("search");
 	}
 
-	public Long getId() {
-		return id;
+	public String getIdRef() {
+		return idRef;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setIdRef(String idRef) {
+		this.idRef = idRef;
 	}
 
 	public String getName() {
@@ -66,14 +63,6 @@ public class SearchEvent extends Event implements StateEntry {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public String getExternalId() {
-		return externalId;
-	}
-
-	public void setExternalId(String externalId) {
-		this.externalId = externalId;
 	}
 
 	public String getDescription() {
@@ -150,9 +139,7 @@ public class SearchEvent extends Event implements StateEntry {
 
 	public SearchBusinessGroupParams convertToSearchBusinessGroupParams(Identity identity) {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		if(id != null) {
-			params.setGroupKeys(Collections.singletonList(id));
-		}
+		params.setIdRef(StringHelper.containsNonWhitespace(idRef) ? idRef : null);
 		params.setName(StringHelper.containsNonWhitespace(name) ? name : null);
 		params.setDescription(StringHelper.containsNonWhitespace(description) ? description : null);
 		params.setOwnerName(StringHelper.containsNonWhitespace(ownerName) ? ownerName : null);
@@ -170,7 +157,7 @@ public class SearchEvent extends Event implements StateEntry {
 	@Override
 	public SearchEvent clone() {
 		SearchEvent clone = new SearchEvent();
-		clone.id = id;
+		clone.idRef = idRef;
 		clone.name = name;
 		clone.description = description;
 		clone.ownerName = ownerName;

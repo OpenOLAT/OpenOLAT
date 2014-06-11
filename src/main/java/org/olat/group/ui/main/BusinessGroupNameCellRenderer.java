@@ -19,7 +19,13 @@
  */
 package org.olat.group.ui.main;
 
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.table.CustomCssCellRenderer;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroupShort;
 
@@ -29,15 +35,25 @@ import org.olat.group.BusinessGroupShort;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class BusinessGroupNameCellRenderer extends CustomCssCellRenderer {
+public class BusinessGroupNameCellRenderer extends CustomCssCellRenderer implements FlexiCellRenderer {
 
 	private static final String cssClass = "o_icon o_icon_group";
 	private static final String managedCssClass = "o_icon o_icon_group o_icon_managed";
 	
-	public BusinessGroupNameCellRenderer() {
-		//
+	@Override
+	public void render(Renderer renderer, StringOutput sb, Object cellValue,
+			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+		
+		if(cellValue instanceof BusinessGroupShort) {
+			BusinessGroupShort group = (BusinessGroupShort)cellValue;
+			String css = group.getManagedFlags().length == 0 ? cssClass : managedCssClass;
+			sb.append("<i class='").append(css).append("'> </i> ")
+			  .append(StringHelper.escapeHtml(group.getName()));
+		}
 	}
-	
+
+
+
 	@Override
 	protected String getCssClass(Object val) {
 		if(val instanceof BusinessGroupShort) {

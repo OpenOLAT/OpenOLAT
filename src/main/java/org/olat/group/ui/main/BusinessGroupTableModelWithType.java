@@ -157,7 +157,6 @@ public class BusinessGroupTableModelWithType extends DefaultTableDataModel<BGTab
 	}
 	
 	@Override
-	//fxdiff VCRP-1,2: access control of resources
 	public Object createCopyWithEmptyList() {
 		return new BusinessGroupTableModelWithType(trans, columnCount);
 	}

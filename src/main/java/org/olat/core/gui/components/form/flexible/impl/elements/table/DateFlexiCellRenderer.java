@@ -22,6 +22,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 import java.util.Date;
 import java.util.Locale;
 
+import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -44,8 +45,8 @@ public class DateFlexiCellRenderer implements FlexiCellRenderer {
 	}
 
 	@Override
-	public void render(StringOutput target, Object cellValue, int row,
-			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+	public void render(Renderer renderer, StringOutput target, Object cellValue,
+			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		if(cellValue instanceof Date) {
 			target.append(format.formatDate((Date)cellValue));
 		}

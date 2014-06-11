@@ -21,9 +21,12 @@ package org.olat.group.ui.main;
 
 import java.util.Locale;
 
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroupMembership;
@@ -33,7 +36,7 @@ import org.olat.group.model.BGMembership;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class BGRoleCellRenderer implements CustomCellRenderer {
+public class BGRoleCellRenderer implements CustomCellRenderer, FlexiCellRenderer {
 	
 	private final Translator translator;
 	
@@ -42,7 +45,17 @@ public class BGRoleCellRenderer implements CustomCellRenderer {
 	}
 
 	@Override
+	public void render(Renderer renderer, StringOutput sb, Object cellValue, int row,
+			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+		render(sb, cellValue);
+	}
+
+	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
+		render(sb, val);
+	}
+	
+	private void render(StringOutput sb, Object val) {
 		if (val instanceof BusinessGroupMembership) {
 			BusinessGroupMembership membership = (BusinessGroupMembership)val;
 			

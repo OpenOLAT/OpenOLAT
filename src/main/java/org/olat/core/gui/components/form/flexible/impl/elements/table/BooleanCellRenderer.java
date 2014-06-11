@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -42,13 +43,13 @@ public class BooleanCellRenderer implements FlexiCellRenderer {
 	}
 
 	@Override
-	public void render(StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		if(cellValue != null && Boolean.TRUE.equals(cellValue)) {
 			if(trueDelegate != null) {
-				trueDelegate.render(target, cellValue, row, source, ubu, translator);
+				trueDelegate.render(null, target, cellValue, row, source, ubu, translator);
 			}
 		} else if(falseDelegate != null) {
-			falseDelegate.render(target, cellValue, row, source, ubu, translator);
+			falseDelegate.render(null, target, cellValue, row, source, ubu, translator);
 		}
 	}
 }

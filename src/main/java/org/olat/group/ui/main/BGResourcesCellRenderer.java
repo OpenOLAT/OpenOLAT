@@ -20,15 +20,14 @@
 package org.olat.group.ui.main;
 
 import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.olat.core.gui.components.form.flexible.FormUIFactory;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.table.CustomCellRenderer;
-import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -45,51 +44,59 @@ import org.olat.repository.RepositoryEntryShort;
  * Initial Date:  7 mars 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class BGResourcesCellRenderer implements CustomCellRenderer {
+public class BGResourcesCellRenderer implements FlexiCellRenderer {
+
+	private final AtomicInteger counter = new AtomicInteger();
 	
-	private final Translator translator;
-	private VelocityContainer container;
-	private final Controller listeningController;
+	private FormLayoutContainer formLayout;
+	private final FormUIFactory uifactory = FormUIFactory.getInstance();
 	
-	public BGResourcesCellRenderer(Controller listeningController, VelocityContainer container, Translator translator) {
-		this.listeningController = listeningController;
-		this.container = container;
-		this.translator = translator;
+	public BGResourcesCellRenderer(FormLayoutContainer formLayout) {
+		this.formLayout = formLayout;
 	}
+	
 
 	@Override
-	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-		if(val instanceof BGTableItem) {
-			BGTableItem item = (BGTableItem)val;
+	public void render(Renderer renderer, StringOutput sb, Object cellValue, int row,
+			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+		
+		if(cellValue instanceof BGTableItem) {
+			BGTableItem item = (BGTableItem)cellValue;
 			if (item.getRelations() != null && !item.getRelations().isEmpty()) {
 				List<RepositoryEntryShort> relations = item.getRelations();
 				int count = 0;
 				for(RepositoryEntryShort relation:relations) {
-					if(renderer == null) {//fxdiff: FXOLAT-267 for XSL export
+					if(renderer == null) {
 						if(sb.length() > 0) {
 							sb.append(", ");
 						}
 						sb.append(StringHelper.escapeHtml(relation.getDisplayname()));
 					} else if(count >= 2) {
 						sb.append(" ");
-						Link link = LinkFactory.createLink("repo_entry_" + UUID.randomUUID().toString(), container, listeningController);
-						link.setCustomDisplayText("...");
-						link.setUserObject(item.getBusinessGroup());
 						
-						URLBuilder ubu = renderer.getUrlBuilder().createCopyFor(link);
-						RenderResult renderResult = new RenderResult();
-						link.getHTMLRendererSingleton().render(renderer, sb, link, ubu, translator, renderResult, null);
+						FormLink allResourcesLink = item.getAllResourcesLink();
+						if(allResourcesLink == null) {
+							allResourcesLink = uifactory.addFormLink("repo_entry_" + counter.incrementAndGet(), "allresources", "...",
+								null, formLayout, Link.NONTRANSLATED);
+						}
+						allResourcesLink.setUserObject(item.getBusinessGroup());
+						allResourcesLink.getComponent().getHTMLRendererSingleton()
+							.render(renderer, sb, allResourcesLink.getComponent(), ubu, translator, null, null);
 						break;
 					} else {
 						if(count > 0) sb.append(" ");
-						Link link = LinkFactory.createLink("repo_entry_" + UUID.randomUUID().toString(), container, listeningController);
-						link.setIconLeftCSS("o_icon o_CourseModule_icon");
-						link.setCustomDisplayText(StringHelper.escapeHtml(relation.getDisplayname()));
-						link.setUserObject(relation);
 						
-						URLBuilder ubu = renderer.getUrlBuilder().createCopyFor(link);
-						RenderResult renderResult = new RenderResult();
-						link.getHTMLRendererSingleton().render(renderer, sb, link, ubu, translator, renderResult, null);
+						String name = "repo_entry_" + item.getBusinessGroupKey() + "_" + relation.getKey();
+						FormLink markLink = (FormLink)formLayout.getFormComponent(name);
+						if(markLink == null) {
+							String resourceName = StringHelper.escapeHtml(relation.getDisplayname());
+							markLink = uifactory.addFormLink("repo_entry_" + relation.getKey(), "resource", resourceName, null, formLayout, Link.NONTRANSLATED);
+							markLink.setIconLeftCSS("o_icon o_CourseModule_icon");
+							markLink.setUserObject(relation);
+							formLayout.add(name, markLink);
+						}
+						markLink.getComponent().getHTMLRendererSingleton()
+							.render(renderer, sb, markLink.getComponent(), ubu, translator, null, null);
 						count++;
 					}
 				}

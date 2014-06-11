@@ -314,7 +314,7 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 				cell.setCellValue(cellValue);
 			} else {
 				StringOutput so = StringOutputPool.allocStringBuilder(1000);
-				cd.getCellRenderer().render(so, value, row, ftC, ubu, translator);
+				cd.getCellRenderer().render(null, so, value, row, ftC, ubu, translator);
 	
 				String cellValue = StringOutputPool.freePop(so);
 				cellValue = StringHelper.stripLineBreaks(cellValue);

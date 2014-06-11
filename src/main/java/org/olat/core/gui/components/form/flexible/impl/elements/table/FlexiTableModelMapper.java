@@ -169,7 +169,7 @@ public class FlexiTableModelMapper implements Mapper {
 			URLBuilder ubu, Translator translator) {
 		
 		StringOutput target = new StringOutput(128);
-		col.getCellRenderer().render(target, cellValue, row, source, ubu, translator);
+		col.getCellRenderer().render(null, target, cellValue, row, source, ubu, translator);
 		return target.toString();
 	}
 	

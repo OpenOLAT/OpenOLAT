@@ -1,15 +1,37 @@
-<div class="o_buttons_box_right">
-	#if($r.available("createGroup"))
-		$r.render("createGroup")
+<div class="btn-toolbar">
+	<div class="pull-right">
+	#if($r.available("group.create"))
+		$r.render("group.create")
 	#end
-	#if($r.available("addGroup"))
-		$r.render("addGroup")
+	#if($r.available("group.add"))
+		$r.render("group.add")
 	#end
+	</div>
 </div>
-<h4 class="b_with_small_icon_left b_group_icon">
-	$r.translate("menu.groups")
-</h4>
+<h4><i class="o_icon o_icon_group"></i> $r.translate("menu.groups")</h4>
 
-<div class="b_clearfix">
-	$r.render("groupList")
+$r.render("table")
+
+<div class="o_table_buttons">
+	#if($r.available("select"))
+		$r.render("select")
+	#end
+	#if($r.available("table.duplicate"))
+		$r.render("table.duplicate")
+	#end
+	#if($r.available("table.merge"))
+		$r.render("table.merge")
+	#end
+	#if($r.available("table.users.management"))
+		$r.render("table.users.management")
+	#end
+	#if($r.available("table.config"))
+		$r.render("table.config")
+	#end
+	#if($r.available("table.email"))
+		$r.render("table.email")
+	#end
+	#if($r.available("table.header.remove"))
+		$r.render("table.header.remove")
+	#end
 </div>

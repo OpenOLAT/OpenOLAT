@@ -21,11 +21,13 @@
 package org.olat.group.ui.main;
 
 import java.util.Collection;
-import java.util.Locale;
 
-import org.olat.core.gui.components.table.CustomCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 import org.olat.resource.accesscontrol.model.Price;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
@@ -39,13 +41,14 @@ import org.olat.resource.accesscontrol.ui.PriceFormat;
  * Initial Date:  18 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-//fxdiff VCRP-1,2: access control of resources
-public class BGAccessControlledCellRenderer implements CustomCellRenderer {
-
+public class BGAccessControlledCellRenderer implements FlexiCellRenderer {
+	
 	@Override
-	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-		if(val instanceof Collection) {
-			Collection<?> accessTypes = (Collection<?>)val;
+	public void render(Renderer renderer, StringOutput sb, Object cellValue, int row,
+			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+		
+		if(cellValue instanceof Collection) {
+			Collection<?> accessTypes = (Collection<?>)cellValue;
 			for(Object accessType:accessTypes) {
 				if(accessType instanceof String) {
 					String type = (String)accessType;
@@ -62,8 +65,8 @@ public class BGAccessControlledCellRenderer implements CustomCellRenderer {
 					}
 				}
 			}
-		} else if(val instanceof Boolean) {
-			boolean acessControlled = ((Boolean)val).booleanValue();
+		} else if(cellValue instanceof Boolean) {
+			boolean acessControlled = ((Boolean)cellValue).booleanValue();
 			if(acessControlled) {
 				sb.append("<i class='o_icon o_ac_group_icon o_icon-lg'></i>");
 			}

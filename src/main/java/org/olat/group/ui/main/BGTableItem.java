@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupMembership;
@@ -44,6 +45,10 @@ import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 public class BGTableItem {
 	private final BusinessGroupMembership member;
 	private boolean marked;
+	private final FormLink markLink;
+	private FormLink allResourcesLink;
+	private FormLink accessLink;
+	
 	private final Boolean allowLeave;
 	private final Boolean allowDelete;
 	private final String businessGroupDescription;
@@ -58,6 +63,7 @@ public class BGTableItem {
 		this.businessGroupDescription = businessGroup.getDescription();
 		this.businessGroupLastUsage = businessGroup.getLastUsage();
 		this.marked = marked;
+		this.markLink = null;
 		this.member = member;
 		this.allowLeave = allowLeave;
 		this.allowDelete = allowDelete;
@@ -69,6 +75,19 @@ public class BGTableItem {
 		this.businessGroupDescription = businessGroup.getDescription();
 		this.businessGroupLastUsage = businessGroup.getLastUsage();
 		this.marked = marked;
+		this.markLink = null;
+		this.member = member;
+		this.allowLeave = allowLeave;
+		this.allowDelete = allowDelete;
+		this.access = access;
+	}
+	
+	public BGTableItem(BusinessGroupView businessGroup, FormLink markLink, boolean marked, BusinessGroupMembership member, Boolean allowLeave, Boolean allowDelete, List<PriceMethodBundle> access) {
+		this.businessGroup = new BGShort(businessGroup);
+		this.businessGroupDescription = businessGroup.getDescription();
+		this.businessGroupLastUsage = businessGroup.getLastUsage();
+		this.marked = marked;
+		this.markLink = markLink;
 		this.member = member;
 		this.allowLeave = allowLeave;
 		this.allowDelete = allowDelete;
@@ -139,6 +158,26 @@ public class BGTableItem {
 
 	public Date getBusinessGroupLastUsage() {
 		return businessGroupLastUsage;
+	}
+
+	public FormLink getMarkLink() {
+		return markLink;
+	}
+
+	public FormLink getAllResourcesLink() {
+		return allResourcesLink;
+	}
+
+	public void setAllResourcesLink(FormLink allResourcesLink) {
+		this.allResourcesLink = allResourcesLink;
+	}
+
+	public FormLink getAccessLink() {
+		return accessLink;
+	}
+
+	public void setAccessLink(FormLink accessLink) {
+		this.accessLink = accessLink;
 	}
 
 	public boolean isMarked() {

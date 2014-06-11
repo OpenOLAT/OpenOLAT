@@ -46,6 +46,7 @@ public class SearchBusinessGroupParams {
 	private String courseTitle;
 	private String externalId;
 	private Boolean managed;
+	private String idRef;
 	
 	private Identity identity;
 	private boolean owner;
@@ -92,6 +93,14 @@ public class SearchBusinessGroupParams {
 
 	public void setGroupKeys(Collection<Long> groupKeys) {
 		this.groupKeys = groupKeys;
+	}
+
+	public String getIdRef() {
+		return idRef;
+	}
+
+	public void setIdRef(String idRef) {
+		this.idRef = idRef;
 	}
 
 	public String getName() {

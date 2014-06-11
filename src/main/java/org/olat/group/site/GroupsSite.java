@@ -29,8 +29,8 @@ import java.util.Locale;
 
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.navigation.AbstractSiteInstance;
 import org.olat.core.gui.control.navigation.DefaultNavElement;
 import org.olat.core.gui.control.navigation.NavElement;
@@ -43,7 +43,7 @@ import org.olat.core.id.context.StateSite;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.group.ui.main.BusinessGroupMainController;
+import org.olat.group.ui.main.OverviewBusinessGroupListController;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -74,12 +74,12 @@ public class GroupsSite extends AbstractSiteInstance {
 	}
 
 	@Override
-	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
+	protected Controller createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(GroupsSite.class, 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
-		MainLayoutController c = new BusinessGroupMainController(ureq, bwControl);
-		return c;
+		//MainLayoutController c = new BusinessGroupMainController(ureq, bwControl);
+		return new OverviewBusinessGroupListController(ureq, bwControl);
 	}
 
 	/**

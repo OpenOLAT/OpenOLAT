@@ -20,12 +20,10 @@
 package org.olat.group.ui.main;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.EscapeMode;
-import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.components.table.StaticColumnDescriptor;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.group.ui.main.BusinessGroupTableModelWithType.Cols;
 
 /**
  * 
@@ -43,33 +41,26 @@ public class SelectOwnedBusinessGroupController extends AbstractBusinessGroupLis
 	}
 
 	@Override
-	protected void initButtons(UserRequest ureq) {
-		groupListCtr.setMultiSelect(true);
-		groupListCtr.addMultiSelectAction("select", TABLE_ACTION_SELECT);
+	protected void initButtons(FormItemContainer formLayout, UserRequest ureq) {
+		initButtons(formLayout, ureq, false, true, false);
+		tableEl.setSearchEnabled(false);
 	}
 
 	@Override
-	protected int initColumns() {
-		groupListCtr.addColumnDescriptor(new MarkColumnDescriptor(this, mainVC, getTranslator()));
-		groupListCtr.addColumnDescriptor(new BusinessGroupNameColumnDescriptor(TABLE_ACTION_LAUNCH, getLocale()));
-		groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.key.i18n(), Cols.key.ordinal(), null, getLocale()));
-		if(groupModule.isManagedBusinessGroups()) {
-			groupListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(Cols.externalId.i18n(), Cols.externalId.ordinal(), null, getLocale()));
-		}
-		DefaultColumnDescriptor descCol = new DefaultColumnDescriptor(Cols.description.i18n(), Cols.description.ordinal(), null, getLocale());
-		descCol.setEscapeHtml(EscapeMode.antisamy);
-		groupListCtr.addColumnDescriptor(false, descCol);
-		groupListCtr.addColumnDescriptor( new ResourcesColumnDescriptor(this, mainVC, getTranslator()));
-		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.tutorsCount.i18n(), Cols.tutorsCount.ordinal(), null, getLocale()));
-		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.participantsCount.i18n(), Cols.participantsCount.ordinal(), null, getLocale()));
-		DefaultColumnDescriptor freeplacesCol = new DefaultColumnDescriptor(Cols.freePlaces.i18n(), Cols.freePlaces.ordinal(), null, getLocale());
-		freeplacesCol.setEscapeHtml(EscapeMode.none);
-		groupListCtr.addColumnDescriptor(freeplacesCol);
-		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor(Cols.waitingListCount.i18n(), Cols.waitingListCount.ordinal(), null, getLocale()));
-		groupListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_SELECT, "select", translate("select")));
-		return 10;
+	protected FlexiTableColumnModel initColumnModel() {
+		return BusinessGroupFlexiTableModel.getSelectColumnModel(flc, groupModule, getTranslator());
 	}
-	
+
+	@Override
+	protected SearchBusinessGroupParams getSearchParams(SearchEvent event) {
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.setIdentity(getIdentity());
+		params.setOwner(true);
+		params.setAttendee(false);
+		params.setWaiting(false);
+		return params;
+	}
+
 	protected void updateOwnedGroups() {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setIdentity(getIdentity());

@@ -21,17 +21,7 @@
 
 	.o_table_footer {
 		.o_table_checkall { }	
-		
-		.o_table_buttons {
-			text-align: center;
-			input {
-				margin-right: 1em;
-				&:last-child {
-					margin-right: 0;		
-				}
-			}
-		}
-		
+
 		.o_table_pagination {
 			text-align: center;
 		}		
@@ -63,6 +53,16 @@
 	
 	.dataTables_info {
 		padding: 5px 10px 5px 0;
+	}
+}
+
+.o_table_buttons {
+	text-align: center;
+	input {
+		margin-right: 1em;
+		&:last-child {
+			margin-right: 0;		
+		}
 	}
 }
 
