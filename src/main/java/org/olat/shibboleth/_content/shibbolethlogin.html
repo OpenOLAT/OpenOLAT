@@ -1,4 +1,4 @@
-<div class="o_login_form">
+<div class="o_login_form o_login_shibboleth">
 	<fieldset>
 		<legend>$r.translate("login.form")</legend>
 		<p>
@@ -189,9 +189,4 @@ function o_overrideShibSubmitButtonStyle() {
 <!-- EMBEDDED-WAYF-END -->
 
 	</fieldset>
-	<ul>
-		#if ($r.available("menu.guest"))
-			<li>$r.render("menu.guest")</li>
-		#end
-	</ul>
 </div>

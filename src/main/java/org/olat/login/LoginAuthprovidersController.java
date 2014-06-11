@@ -40,6 +40,8 @@ import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.MainPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -77,6 +79,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	private VelocityContainer content;
 	private Controller authController;
 	private final List<Controller> authControllers = new ArrayList<Controller>();
+	private Link anoLink;
 	private StackedPanel dmzPanel;
 	
 	public LoginAuthprovidersController(UserRequest ureq, WindowControl wControl) {
@@ -153,6 +156,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		authController = authProvider.createController(ureq, getWindowControl());
 		listenTo(authController);
 		contentBorn.put("loginComp", authController.getInitialComponent());
+		contentBorn.contextPut("currentProvider", authProvider.getName());		
 		Collection<AuthenticationProvider> providers = LoginModule.getAuthenticationProviders();
 		List<AuthenticationProvider> providerSet = new ArrayList<AuthenticationProvider>(providers.size());
 		int count = 0;
@@ -169,7 +173,6 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 				}
 			}
 		}
-		providerSet.remove(authProvider); // remove active authProvider from list of alternate authProviders
 		contentBorn.contextPut("providerSet", providerSet);
 		contentBorn.contextPut("locale", ureq.getLocale());
 
@@ -195,6 +198,15 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		if(AuthHelper.isLoginBlocked()) {
 			contentBorn.contextPut("loginBlocked", Boolean.TRUE);
 		}
+
+		// guest link
+		if (LoginModule.isGuestLoginLinksEnabled()) {
+			anoLink = LinkFactory.createButton("menu.guest", contentBorn, this);
+			anoLink.setIconLeftCSS("o_icon o_icon-2x o_icon_provider_guest");
+			anoLink.setTitle("menu.guest.alt");
+			anoLink.setEnabled(!AuthHelper.isLoginBlocked());
+		}
+
 		
 		return contentBorn;
 	}
@@ -212,7 +224,20 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (event.getCommand().equals(ACTION_LOGIN)) { 
+		 if (source == anoLink) {
+			if (LoginModule.isGuestLoginLinksEnabled()) {				
+				int loginStatus = AuthHelper.doAnonymousLogin(ureq, ureq.getLocale());
+				if (loginStatus == AuthHelper.LOGIN_OK) {
+					return;
+				} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
+					DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
+				} else {
+					getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailSupport")));
+				}	
+			} else {
+				DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
+			}
+		} else if (event.getCommand().equals(ACTION_LOGIN)) { 
 			// show traditional login page
 			dmzPanel.popContent();
 			content = initLoginContent(ureq, ureq.getParameter(ATTR_LOGIN_PROVIDER));

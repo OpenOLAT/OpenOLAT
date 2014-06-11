@@ -82,7 +82,6 @@ public class AuthHelper {
 	/**
 	 * <code>LOGOUT_PAGE</code>
 	 */
-	public static final String LOGOUT_PAGE = "logout.html";
 	public  static final int LOGIN_OK = 0;
 	private static final int LOGIN_FAILED = 1;
 	private static final int LOGIN_DENIED = 2;

@@ -1,10 +1,10 @@
 #if ($ctrlCount > 1)
-<div class="b_clearfix">
+<div class="clearfix">
 	$r.render("wizard")
 </div>
 #end
 #if ($introPkg && $introKey)
-	<div class="b_info">
+	<div class="o_info">
 		$r.translateWithPackage($introPkg, $introKey)
 	</div>
 #end

@@ -28,7 +28,6 @@ package org.olat.login;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -78,7 +77,6 @@ public class OLATAuthenticationController extends AuthenticationController imple
 
 	private Link pwLink;
 	private Link registerLink;
-	private Link anoLink;
 	
 	private final OLATAuthManager olatAuthenticationSpi;
 	
@@ -95,21 +93,15 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		
 		if(UserModule.isPwdchangeallowed(null)) {
 			pwLink = LinkFactory.createLink("_olat_login_change_pwd", "menu.pw", loginComp, this);
-			pwLink.setCustomEnabledLinkCSS("o_login_pwd b_with_small_icon_left");
+			pwLink.setElementCssClass("o_login_pwd");
 		}
 		
 		if (CoreSpringFactory.getImpl(RegistrationModule.class).isSelfRegistrationEnabled()
 				&& CoreSpringFactory.getImpl(RegistrationModule.class).isSelfRegistrationLoginEnabled()) {
 			registerLink = LinkFactory.createLink("_olat_login_register", "menu.register", loginComp, this);
-			registerLink.setCustomEnabledLinkCSS("o_login_register b_with_small_icon_left");
+			registerLink.setElementCssClass("o_login_register");
+			registerLink.setTitle("menu.register.alt");
 		}
-		
-		if (LoginModule.isGuestLoginLinksEnabled()) {
-			anoLink = LinkFactory.createLink("_olat_login_guest", "menu.guest", loginComp, this);
-			anoLink.setCustomEnabledLinkCSS("o_login_guests b_with_small_icon_left");
-			anoLink.setEnabled(!AuthHelper.isLoginBlocked());
-		}
-		
 		
 		// prepare login form
 		loginForm = new OLATAuthentcationForm(ureq, winControl, "olat_login", getTranslator());
@@ -143,16 +135,6 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		} else if (source == pwLink) {
 			//fxdiff FXOLAT-113: business path in DMZ
 			openChangePassword(ureq, null);
-		} else if (source == anoLink){
-			
-			int loginStatus = AuthHelper.doAnonymousLogin(ureq, ureq.getLocale());
-			if (loginStatus == AuthHelper.LOGIN_OK) {
-				return;
-			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
-				showError("login.notavailable", null);
-			} else {
-				showError("login.error", WebappHelper.getMailConfig("mailReplyTo"));
-			}
 		}
 	}
 	//fxdiff FXOLAT-113: business path in DMZ

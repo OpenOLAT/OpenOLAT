@@ -1,0 +1,79 @@
+body.o_dmz {
+	/* image CC by Thomas Leuthard https://www.flickr.com/photos/thomasleuthard/8587724648/ */
+	background: linear-gradient(to right, rgba(255,255,255,0) 0.2%,rgba(255,255,255,0.95) 60%,rgba(255,255,255,1) 100%), url('#{$o-images-path}learn-bg.jpg');
+	background-size: cover, cover;
+
+	#o_main_wrapper, #o_main_wrapper #o_main_container {
+		background: transparent;
+	}
+}
+.o_login {
+	padding-left: 50%;
+	padding-bottom: $padding-large-vertical * 2;
+	
+	h1 {
+		margin-bottom: $padding-large-vertical * 4;
+	}
+
+	.o_infomessage_wrapper {
+		background-color: #fff;
+		border: 1px solid $well-border;
+		border-radius: $border-radius-base;
+		
+		div.o_info, div.o_warning, div.o_note {
+			margin: 0;
+		}
+	}
+
+	.o_login_box {
+	}
+	.o_login_providers {
+		a {
+			span {
+				display: block;
+				font-size: floor($font-size-base * 0.7);
+				padding-top: $padding-base-vertical;
+				@include text-overflow();
+			}
+		}	
+		margin-bottom: $padding-base-vertical;
+	} 
+	.o_login_provider {
+		background-color: $well-bg;
+		border: 1px solid $well-border;
+		border-radius: $border-radius-base;
+	}
+	.o_login_form {
+		position: relative;
+		padding: $padding-large-vertical $padding-base-horizontal;
+		.o_login_pwd {
+			position: absolute;
+			bottom: 2em;
+			right: $padding-base-horizontal;
+		}		
+	}
+	.o_login_register {
+		display: block;
+		line-height: 2em;
+		font-size: floor($font-size-base * 1.3);
+		text-align: center;
+		@extend .btn-info;
+		border-radius: $border-radius-base;
+		margin-top: $padding-large-horizontal;
+		padding: $padding-large-vertical $padding-base-horizontal;
+		@extend .o_undecorated;
+		small {
+			font-size: $font-size-base;
+		}
+	}
+}
+
+@media (max-width: $screen-sm-max) { 
+	body.o_dmz {
+		background: none;
+	}
+	.o_login {
+		padding-left: 0;
+	}
+
+}

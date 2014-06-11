@@ -209,6 +209,14 @@ public abstract class FormBasicController extends BasicController {
 				// init with provided layout
 				ffo_pagename = "ffo_" + pageName.replace("/", "_");
 				flc = FormLayoutContainer.createCustomFormLayout(ffo_pagename, getTranslator(), pageName);
+			} else if(pageName.equals("form_horizontal")) {
+					// init with provided layout
+					ffo_pagename = "ffo_" + pageName.replace("/", "_");					
+					flc = FormLayoutContainer.createHorizontalFormLayout(ffo_pagename, getTranslator());
+			} else if(pageName.equals("form_vertical")) {
+				// init with provided layout
+				ffo_pagename = "ffo_" + pageName.replace("/", "_");
+				flc = FormLayoutContainer.createVerticalFormLayout(ffo_pagename, getTranslator());
 			} else {
 				// init with provided layout
 				String vc_pageName = velocity_root + "/" + pageName + ".html";

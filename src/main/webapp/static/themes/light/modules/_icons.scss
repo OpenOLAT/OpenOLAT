@@ -108,6 +108,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_previous_page{@extend .o_icon-angle-double-left; }
 .o_icon_print {@extend .o_icon-print;}
 .o_icon_private {@extend .o_icon-print;}
+.o_icon_provider_guest{@extend .o_icon-child;}
+.o_icon_provider_ldap{@extend .o_icon-university;}
+.o_icon_provider_olat{@extend .o_icon_openolat;}
+.o_icon_provider_shibboleth{@extend .o_icon-university;}
 .o_icon_publish{ @extend .o_icon-share;}
 .o_icon_qrcode{ @extend .o_icon-qrcode;}
 .o_icon_rating_on { @extend .o_icon-star;}

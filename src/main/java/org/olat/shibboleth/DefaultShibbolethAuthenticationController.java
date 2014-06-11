@@ -26,7 +26,6 @@ package org.olat.shibboleth;
 
 import java.util.Locale;
 
-import org.olat.basesecurity.AuthHelper;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -55,7 +54,6 @@ public class DefaultShibbolethAuthenticationController extends AuthenticationCon
 
 	private VelocityContainer loginComp;	
 	private Link shibLink;
-	private Link guestLink;
 	/**
 	 * @param ureq
 	 * @param wControl
@@ -73,12 +71,9 @@ public class DefaultShibbolethAuthenticationController extends AuthenticationCon
 		if (!ShibbolethModule.isEnableShibbolethLogins()) throw new OLATSecurityException("Shibboleth is not enabled.");
 		
 		loginComp = createVelocityContainer(ShibbolethModule.getLoginTemplateDefault());				
-		shibLink = LinkFactory.createLink("shib.redirect", loginComp, this);	
-		
-		if (LoginModule.isGuestLoginLinksEnabled()) {
-			guestLink = LinkFactory.createLink("menu.guest", loginComp, this);
-			guestLink.setCustomEnabledLinkCSS("o_login_guests b_with_small_icon_left");
-		}
+		shibLink = LinkFactory.createButton("shib.redirect", loginComp, this);	
+		shibLink.setIconRightCSS("o_icon o_icon_start");
+		shibLink.setPrimary(true);
 		
 		putInitialPanel(loginComp);
 	}
@@ -97,16 +92,6 @@ public class DefaultShibbolethAuthenticationController extends AuthenticationCon
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == shibLink) {
 			DispatcherModule.redirectTo(ureq.getHttpResp(), WebappHelper.getServletContextPath() + "/shib/");
-		}	else if (source == guestLink) {
-			int loginStatus = AuthHelper.doAnonymousLogin(ureq, ureq.getLocale());
-			if (loginStatus == AuthHelper.LOGIN_OK) {
-				return;
-			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
-				//getWindowControl().setError(translate("login.notavailable", OLATContext.getSupportaddress()));
-				DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
-			} else {
-				getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailSupport")));
-			}	
 		}
 	}
 	

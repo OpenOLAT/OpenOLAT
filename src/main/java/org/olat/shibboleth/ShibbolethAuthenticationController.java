@@ -32,13 +32,9 @@ import java.util.Locale;
 
 import javax.servlet.http.Cookie;
 
-import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -71,7 +67,6 @@ public class ShibbolethAuthenticationController extends AuthenticationController
 
 	private Translator fallbackTranslator;
 	private VelocityContainer loginComp;		
-	private Link anoLink;
 	
 	private static OLog log = Tracing.createLoggerFor(ShibbolethAuthenticationController.class);
 		
@@ -89,10 +84,6 @@ public class ShibbolethAuthenticationController extends AuthenticationController
 		
 		loginComp = createVelocityContainer(ShibbolethModule.getLoginTemplate());
 		
-		if (LoginModule.isGuestLoginLinksEnabled()) {
-			anoLink = LinkFactory.createLink("menu.guest", loginComp, this);
-			anoLink.setCustomEnabledLinkCSS("o_login_guests b_with_small_icon_left");
-		}
 		SwitchShibbolethAuthenticationConfigurator config = (SwitchShibbolethAuthenticationConfigurator)CoreSpringFactory.getBean(SwitchShibbolethAuthenticationConfigurator.class);
 		loginComp.contextPut("wayfSPEntityID", config.getWayfSPEntityID());
 		loginComp.contextPut("wayfSPHandlerURL", config.getWayfSPHandlerURL());
@@ -148,17 +139,7 @@ public class ShibbolethAuthenticationController extends AuthenticationController
 	 *      org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
-		 if (source == anoLink) {
-			int loginStatus = AuthHelper.doAnonymousLogin(ureq, ureq.getLocale());
-			if (loginStatus == AuthHelper.LOGIN_OK) {
-				return;
-			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
-				//getWindowControl().setError(translate("login.notavailable", OLATContext.getSupportaddress()));
-				DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
-			} else {
-				getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailSupport")));
-			}	
-		} 
+		// nothing to do
 	}
 
 	/**

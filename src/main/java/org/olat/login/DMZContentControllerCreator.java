@@ -50,6 +50,7 @@ public class DMZContentControllerCreator implements ControllerCreator {
 		contentControllerCreator.setClassName(LoginAuthprovidersController.class.getName());
 		dmzSitesAndNav.setContentControllerCreator(contentControllerCreator);
 		ChiefController cc = new BaseFullWebappController(ureq, dmzSitesAndNav);
+		cc.addBodyCssClass("o_dmz");
 		Windows.getWindows(ureq.getUserSession()).setChiefController(cc);
 		return cc;
 	}

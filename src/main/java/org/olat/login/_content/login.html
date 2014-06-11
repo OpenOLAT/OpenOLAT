@@ -24,22 +24,32 @@
 	
 	
 	#if ($logincustommsg)
-	 <div class="o_logincustommsg">$logincustommsg</div>
+	 <div class="lead">$logincustommsg</div>
 	#end
-	
-	$r.render("loginComp")
+
+
+	<div class="o_login_box">
+		#if ($r.available("menu.guest") || $providerSet.size() > 1)
+		<div class="o_login_providers">
+			<div class="btn-group btn-group-lg btn-group-justified">
+			#foreach ($authProvider in $providerSet)
+					<a href="$r.commandURI("login")?lp=$authProvider.getName()" title="$r.escapeHtml("$authProvider.getDescription($locale)")" class="btn btn-default #if ($currentProvider == $authProvider.getName()) btn-primary #end ">
+						<i class="o_icon o_icon-2x $authProvider.getIconCssClass()"></i>
+						<span>$authProvider.getLinktext($locale)</span>
+					</a>
+			#end
+			#if ($r.available("menu.guest"))
+				$r.render("menu.guest")
+			#end
+			</div>
+		</div>
+		#end
+		<div class="o_login_provider">
+			$r.render("loginComp")
+		</div>
+	</div>	
 	
 
-	#if (!$providerSet.isEmpty())
-		<div class="o_login_providers">
-			<h4>$r.translate("login.altprovider")</h4>
-			<ul>
-			#foreach ($authProvider in $providerSet)
-				<li>$authProvider.getDescription($locale) <a href="$r.commandURI("login")?lp=$authProvider.getName()">$authProvider.getLinktext($locale)</a></li>
-			#end
-			</ul>
-		</div>
-	#end
 </div>
 
 
