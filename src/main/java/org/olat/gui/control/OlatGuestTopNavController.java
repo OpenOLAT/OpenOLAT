@@ -65,6 +65,7 @@ public class OlatGuestTopNavController extends BasicController {
 	public OlatGuestTopNavController(UserRequest ureq, WindowControl wControl, boolean impressum) {
 		super(ureq, wControl);
 		topNavVC = createVelocityContainer("guesttopnav");
+		topNavVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 		
 		// impressum
 		if(impressum) {

@@ -9,6 +9,7 @@ $fa-css-prefix: "o_icon" !default;
 @import "../../../font-awesome/scss/font-awesome";
 
 /* OpenOLAT Icons */
+.o_icon_accessibility { @extend .o_icon-wheelchair; }
 .o_icon_actions { @extend .o_icon-gears;}
 .o_icon_archive_tool{ @extend .o_icon-download;}
 .o_icon_assessment_tool{ @extend .o_icon-trophy;}
@@ -21,6 +22,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_booking { @extend .o_icon-dollar; }
 .o_icon_bookmark { @extend .o_icon-bookmark; color: #996633; }
 .o_icon_bookmark_add { @extend .o_icon-bookmark-o; }
+.o_icon_browsercheck { @extend .o_icon-thumbs-up; }
 .o_icon_busy { @extend .o_icon-spinner; }
 .o_icon_calendar { @extend .o_icon-calendar;}
 .o_icon_caret { @extend .o_icon-caret-down;}
@@ -60,13 +62,24 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_filter {@extend .o_icon-filter;}
 .o_icon_group {@extend .o_icon-users; }
 .o_icon_header { @extend .o_icon-header;}
-.o_icon_help { @extend .o_icon-question-circle; @extend .o_icon-lg; cursor: help;}
+.o_icon_help { @extend .o_icon-question-circle; cursor: help;}
 .o_icon_home { @extend .o_icon-home; }
 .o_icon_impress { @extend .o_icon-info-circle; }
 .o_icon_import { @extend .o_icon-upload; }
 .o_icon_info {@extend .o_icon-info-circle; color: $brand-info}
 .o_icon_institution { @extend .o_icon-bank; }
 .o_icon_italic { @extend .o_icon-italic; }
+.o_icon_language {@extend .o_icon-globe; }
+.o_icon_link {@extend .o_icon-link; }
+.o_icon_link_extern {@extend .o_icon-external-link; }
+.o_icon_list {@extend .o_icon-list; }
+.o_icon_list_num  {@extend .o_icon-list-ol; }
+.o_icon_lifecycle {@extend .o_icon-calendar;}
+.o_icon_locked {@extend .o_icon-lock;}
+.o_icon_login {@extend .o_icon-sign-in;}
+.o_icon_logout {@extend .o_icon-sign-out;}
+.o_icon_mandatory {@extend .o_icon-asterisk; color: #f0ad4e;}
+.o_icon_managed{@extend .o_icon-retweet; color: $text-muted}
 .o_icon_mail { @extend .o_icon-envelope-o; }
 .o_icon_math { @extend .o_icon-slack; }
 .o_icon_membersmanagement { @extend .o_icon-users;}
@@ -84,19 +97,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_next_page{@extend .o_icon-angle-double-right; }
 .o_icon_notes{@extend .o_icon-pencil; }
 .o_icon_notification { @extend .o_icon-rss;}
-.o_icon_language {@extend .o_icon-globe; }
-.o_icon_link {@extend .o_icon-link; }
-.o_icon_link_extern {@extend .o_icon-external-link; }
-.o_icon_list {@extend .o_icon-list; }
-.o_icon_list_num  {@extend .o_icon-list-ol; }
-.o_icon_lifecycle {@extend .o_icon-calendar;}
-.o_icon_locked {@extend .o_icon-lock;}
-.o_icon_login {@extend .o_icon-sign-in;}
-.o_icon_logout {@extend .o_icon-sign-out;}
-.o_icon_mandatory {@extend .o_icon-asterisk; color: #f0ad4e;}
-.o_icon_managed{@extend .o_icon-retweet; color: $text-muted}
 .o_icon_open_tree {@extend .o_icon-caret-right;}
 .o_icon_open_togglebox {@extend .o_icon-caret-right;}
+.o_icon_openolat:before {content:"\221E"; font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; font-weight: bold;}
 .o_icon_passed {@extend .o_icon-check-circle;}
 .o_icon_password { @extend .o_icon-key;}
 .o_icon_post { @extend .o_icon-comment-o; }

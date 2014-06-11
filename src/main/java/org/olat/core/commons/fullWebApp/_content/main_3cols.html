@@ -90,6 +90,7 @@ jQuery().ready(function() {
 					// close menu when something happens on the screen
 					jQuery(document).on('click', '.o_tree_link', o_hideMenu);
 					menuState.docked = false;
+					o_hideMenu();
 			});			
 		} 
 	};

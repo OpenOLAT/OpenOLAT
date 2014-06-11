@@ -32,11 +32,12 @@ import org.olat.core.gui.control.WindowControl;
 
 /**
  * Description:<br>
- * TODO: Felix Jost Class Description for SiteDefinition
+ * The site definition is a factory to create a site instance. Sites are the
+ * static main navigation elements.
  * 
  * <P>
- * Initial Date:  12.07.2005 <br>
- *
+ * Initial Date: 12.07.2005 <br>
+ * 
  * @author Felix Jost
  */
 public interface SiteDefinition extends ConfigOnOff {
@@ -44,5 +45,7 @@ public interface SiteDefinition extends ConfigOnOff {
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl);
 	
 	public int getOrder();
+	
+	public String getDefaultSiteSecurityCallbackBeanId();
 }
 

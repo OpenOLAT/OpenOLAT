@@ -26,7 +26,7 @@ import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
-import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.portfolio.PortfolioModule;
 
 /**
@@ -39,14 +39,18 @@ public class EPSiteDef  extends AbstractSiteDefinition implements SiteDefinition
 
 	@Override
 	protected SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		Roles roles = ureq.getUserSession().getRoles();
-		if(roles.isGuestOnly()) {
-			return null;
-		}
-		PortfolioModule module = CoreSpringFactory.getImpl(PortfolioModule.class);
-		if(module.isEnabled()) {
+		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
+			return new EPSite(this, ureq.getLocale());
+		} else if(!ureq.getUserSession().getRoles().isGuestOnly()) {
+			// only for registered users and invitee but not guests
 			return new EPSite(this, ureq.getLocale());
 		}
 		return null;
+	}
+	
+	@Override
+	public boolean isEnabled() {
+		PortfolioModule module = CoreSpringFactory.getImpl(PortfolioModule.class);
+		return module.isEnabled() && super.isEnabled();
 	}
 }

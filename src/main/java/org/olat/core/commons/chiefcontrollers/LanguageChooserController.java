@@ -45,7 +45,7 @@ import org.olat.core.util.resource.OresHelper;
 
 /**
  * Description:<br>
- * TODO: patrickb Class Description for LanguageChooserController
+ * The LanguageChooserController creates a dropdown to choose the language. 
  * <P>
  * Initial Date: 25.01.2007 <br>
  * 
@@ -118,7 +118,7 @@ public class LanguageChooserController extends FormBasicController {
 		String[] langValues = StringHelper.getMapValuesAsStringArray(languages);
 		ArrayHelper.sort(langKeys, langValues, false, true, false);
 		// Build css classes for reference languages
-		String[] langCssClasses = I18nManager.getInstance().createLanguageFlagsCssClasses(langKeys, "b_with_small_icon_left");
+		String[] langCssClasses = I18nManager.getInstance().createLanguageFlagsCssClasses(langKeys, "o_with_flag");
 		langs = uifactory.addDropdownSingleselect(mainForm.getFormId() + "_select", "select.language", "select.language", formLayout, langKeys, langValues, langCssClasses); 
 		langs.addActionListener(FormEvent.ONCHANGE);
 		langs.select(curlang, true);

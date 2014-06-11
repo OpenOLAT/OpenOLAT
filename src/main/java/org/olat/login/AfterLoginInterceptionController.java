@@ -81,6 +81,7 @@ public class AfterLoginInterceptionController extends BasicController {
 		actualPanel = new Panel("actualPanel");
 		AfterLoginInterceptionManager aLIM = AfterLoginInterceptionManager.getInstance();
 		if (!aLIM.containsAnyController()) {
+			dispose();
 			return;		
 		}
 		
@@ -141,6 +142,7 @@ public class AfterLoginInterceptionController extends BasicController {
 		
 		if (aftctrls.isEmpty()) {
 			fireEvent(ureq, Event.DONE_EVENT);
+			dispose();
 			return;
 		}
 

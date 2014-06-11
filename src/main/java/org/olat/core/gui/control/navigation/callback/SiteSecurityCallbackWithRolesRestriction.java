@@ -30,28 +30,39 @@ import org.olat.core.id.Roles;
  *
  */
 public class SiteSecurityCallbackWithRolesRestriction implements SiteSecurityCallback {
-	private String limitToRole;
+	private String[] limitToRole;
 	
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
-		if (limitToRole != null) {
-			String theRole = limitToRole.toLowerCase();
+		if (limitToRole == null) {
+			// no restriction
+			return true;
+		} else {
 			Roles roles = ureq.getUserSession().getRoles();
-			if(roles == null || roles.isInvitee() || roles.isGuestOnly()) {
-				return false;
-			} else if (theRole.equals("administrator") && !roles.isOLATAdmin()) {
-				return false;
-			} else if (theRole.equals("groupmanager") && !roles.isGroupManager()) {
-				return false;
-			} else if (theRole.equals("usermanager") && !roles.isUserManager()) {
-				return false;
-			} else if (theRole.equals("author") && !roles.isAuthor()) {
-				return false;
-			} else if (theRole.equals("pooladmin") && !roles.isPoolAdmin()) {
-				return false;
+			if(roles != null) {
+				for (String limit : limitToRole) {				
+					String theRole = limit.trim().toLowerCase();
+					if (theRole.equals("invitee") && roles.isInvitee()) {
+						return true;
+					} else if (theRole.equals("guest") && roles.isGuestOnly()) {
+						return true;
+					} else if (theRole.equals("administrator") && roles.isOLATAdmin()) {
+						return true;
+					} else if (theRole.equals("groupmanager") && roles.isGroupManager()) {
+						return true;
+					} else if (theRole.equals("usermanager") && roles.isUserManager()) {
+						return true;
+					} else if (theRole.equals("author") && roles.isAuthor()) {
+						return true;
+					} else if (theRole.equals("pooladmin") && roles.isPoolAdmin()) {
+						return true;
+					} else if (theRole.equals("institutionalresourcemanager") && roles.isInstitutionalResourceManager()) {
+						return true;
+					}
+				}
 			}
+			return false;
 		}
-		return true;
 	}
 	
 	/**
@@ -59,6 +70,10 @@ public class SiteSecurityCallbackWithRolesRestriction implements SiteSecurityCal
 	 * @param limitToRoleConfig
 	 */
 	public void setLimitToRole(String limitToRoleConfig) {
-		limitToRole = limitToRoleConfig;
+		if (limitToRoleConfig != null) {
+			limitToRole = limitToRoleConfig.split(",");			
+		} else {
+			limitToRoleConfig = null;
+		}
 	}
 }

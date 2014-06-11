@@ -26,6 +26,7 @@ import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
+import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryModule;
 
 /**
@@ -38,8 +39,10 @@ public class CatalogAdminSiteDef extends AbstractSiteDefinition implements SiteD
 
 	@Override
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		RepositoryModule repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
-		if(repositoryModule.isCatalogEnabled() && repositoryModule.isCatalogSiteEnabled()) {
+		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
+			return new CatalogAdminSite(this, ureq.getLocale());
+		} else if(ureq.getUserSession().getRoles().isInstitutionalResourceManager()) {
+			// only for admins
 			return new CatalogAdminSite(this, ureq.getLocale());
 		}
 		return null;
@@ -48,6 +51,7 @@ public class CatalogAdminSiteDef extends AbstractSiteDefinition implements SiteD
 	@Override
 	public boolean isEnabled() {
 		RepositoryModule repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
-		return repositoryModule.isCatalogEnabled() && repositoryModule.isCatalogSiteEnabled() && super.isEnabled();
+		return repositoryModule.isCatalogEnabled() && super.isEnabled();
 	}
+
 }

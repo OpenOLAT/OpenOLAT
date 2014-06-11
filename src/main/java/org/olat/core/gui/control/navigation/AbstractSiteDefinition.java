@@ -38,7 +38,8 @@ import org.olat.core.util.StringHelper;
 public abstract class AbstractSiteDefinition extends AbstractConfigOnOff implements SiteDefinition {
 	
 	private int order;
-	
+	private String defaultSiteSecurityCallbackBeanId;
+		
 	public void setOrder(int order) {
 		this.order = order;
 	}
@@ -48,6 +49,18 @@ public abstract class AbstractSiteDefinition extends AbstractConfigOnOff impleme
 		return order;
 	}
 
+
+	public void setDefaultSiteSecurityCallbackBeanId(String siteSecurityCallbackId) {
+		this.defaultSiteSecurityCallbackBeanId = siteSecurityCallbackId;
+	}
+	
+	@Override
+	public String getDefaultSiteSecurityCallbackBeanId() {
+		return defaultSiteSecurityCallbackBeanId;
+	}
+
+	
+	
 	@Override
 	public final SiteInstance createSite(UserRequest ureq, WindowControl wControl) {
 		SiteConfiguration config = getSiteConfiguration();

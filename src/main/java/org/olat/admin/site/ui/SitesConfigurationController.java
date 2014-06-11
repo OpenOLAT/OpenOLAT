@@ -48,7 +48,6 @@ import org.olat.core.gui.control.navigation.SiteAlternativeControllerCreator;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteDefinitions;
-import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
 import org.olat.core.gui.control.navigation.SiteViewSecurityCallback;
 import org.olat.core.util.StringHelper;
@@ -203,11 +202,7 @@ public class SitesConfigurationController extends FormBasicController {
 		for(Map.Entry<String, SiteDefinition> entryDef:siteDefs.entrySet()) {
 			String id = entryDef.getKey();
 			SiteDefinition siteDef = entryDef.getValue();
-			SiteInstance site = siteDef.createSite(ureq, getWindowControl());
-			String title = "-";
-			if(site != null && site.getNavElement() != null) {
-				title = site.getNavElement().getTitle();
-			}
+			String title = translate(siteDef.getClass().getSimpleName());
 			SiteConfiguration config = sitesModule.getConfigurationSite(id);
 			SiteDefRow row = new SiteDefRow(siteDef, config, title, formLayout);
 			configs.add(row);

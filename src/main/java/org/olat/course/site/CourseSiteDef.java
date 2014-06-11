@@ -28,6 +28,7 @@ import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
+import org.olat.core.util.StringHelper;
 import org.olat.course.site.model.CourseSiteConfiguration;
 import org.olat.course.site.model.LanguageConfiguration;
 
@@ -67,10 +68,13 @@ public class CourseSiteDef extends AbstractSiteDefinition implements SiteDefinit
 
 	@Override
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		if(ureq.getUserSession().getRoles().isInvitee()) {
-			return null;
+		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
+			return createSite(ureq, getCourseSiteconfiguration(), config);
+		} else if(!ureq.getUserSession().getRoles().isInvitee()) {
+			// only for registered users and guests
+			return createSite(ureq, getCourseSiteconfiguration(), config);
 		}
-		return createSite(ureq, getCourseSiteconfiguration(), config);
+		return null;
 	}
 	
 	protected CourseSiteConfiguration getCourseSiteconfiguration() {

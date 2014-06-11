@@ -49,14 +49,14 @@ public class RepositorySiteDef extends AbstractSiteDefinition implements SiteDef
 	}
 
 	/**
-	 * site is open to both normal users and guest users
+	 * Site is normally only open to authors. Configured via security callback
 	 */
 	@Override
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
 			return new RepositorySite(this, ureq.getLocale());
-		} else if(!ureq.getUserSession().getRoles().isInvitee()) {
-			//for all excepts invitees
+		} else if(ureq.getUserSession().getRoles().isAuthor() || ureq.getUserSession().getRoles().isInstitutionalResourceManager()) {
+			// only for authors and institutional resource managers
 			return new RepositorySite(this, ureq.getLocale());
 		}
 		return null;

@@ -17,59 +17,80 @@
 	</bean>
 	
 	<!-- classes implementing the SiteDefinition interface -->
-	<bean id="olatsites_mycourses" class="org.olat.repository.site.MyCoursesSiteDef">
-	   <property name="order" value="2" />
-	   <property name="enabled" value="${site.mycourses.enable}"/>
+	
+	<bean id="coursesite_infos_1" class="org.olat.course.site.CourseSiteDef">
+	   <property name="order" value="1" />
+	   <property name="defaultSiteSecurityCallbackBeanId" value="defaultSiteSecurityCallback"/>
 	</bean>
 	
+	<bean id="coursesite_infos_2" class="org.olat.course.site.CourseSiteDef2">
+	   <property name="order" value="2" />
+	   <property name="defaultSiteSecurityCallbackBeanId" value="defaultSiteSecurityCallback"/>
+	</bean>
+		
 	<bean id="olatsites_portal" class="org.olat.core.gui.control.generic.portal.PortalSiteDef">
 	   <property name="order" value="3" />
 	   <property name="enabled" value="${site.portal.enable}"/>
+	   <property name="defaultSiteSecurityCallbackBeanId" value="registredOrGuestSiteSecurityCallback"/>
+	</bean>
+
+	<bean id="olatsites_mycourses" class="org.olat.repository.site.MyCoursesSiteDef">
+	   <property name="order" value="4" />
+	   <property name="enabled" value="${site.mycourses.enable}"/>
+	   <property name="defaultSiteSecurityCallbackBeanId" value="registredSiteSecurityCallback"/>
 	</bean>
 	
 	<bean id="olatsites_groups" class="org.olat.group.site.GroupsSiteDef">
-	   <property name="order" value="4" />
+	   <property name="order" value="5" />
 	   <property name="enabled" value="${site.groups.enable}"/>
+	   <property name="defaultSiteSecurityCallbackBeanId" value="registredSiteSecurityCallback"/>
 	</bean>
 	
-	<bean id="coursesite_infos_1" class="org.olat.course.site.CourseSiteDef"/>
-	
-	<bean id="coursesite_infos_2" class="org.olat.course.site.CourseSiteDef2"/>
-	
 	<bean id="olatsites_catalog" class="org.olat.repository.site.CatalogSiteDef">
-	   <property name="order" value="5" />
+	   <property name="order" value="6" />
 	   <property name="enabled" value="${site.catalog.enable}"/>
+	   <property name="defaultSiteSecurityCallbackBeanId" value="restrictToGuestSiteSecurityCallback"/>
+	</bean>
+
+	<bean id="olatsites_portfolio" class="org.olat.portfolio.site.EPSiteDef">
+	   <property name="order" value="7" />
+	   <property name="enabled" value="${site.portfolio.enable}"/>
+	   	<property name="defaultSiteSecurityCallbackBeanId" value="registredSiteSecurityCallback"/>
+	</bean>
+
+	<bean id="olatsites_coaching" class="org.olat.modules.coach.site.CoachSiteDef">
+		<property name="order" value="8" />
+		<property name="enabled" value="${site.coaching.enable}"/>
+	   	<property name="defaultSiteSecurityCallbackBeanId" value="registredSiteSecurityCallback"/>
 	</bean>
 
 	<bean id="olatsites_repository" class="org.olat.repository.site.RepositorySiteDef">
-	   <property name="order" value="6" />
+	   <property name="order" value="9" />
 	   <property name="enabled" value="${site.repository.enable}"/>
-	</bean>
-	<bean id="olatsites_coaching" class="org.olat.modules.coach.site.CoachSiteDef">
-		<property name="order" value="7" />
-		<property name="enabled" value="${site.coaching.enable}"/>
+	   <property name="defaultSiteSecurityCallbackBeanId" value="restrictToInstResourceManagersAndAuthorsSiteSecurityCallback"/>
 	</bean>
 	<bean id="olatsites_qpool" class="org.olat.modules.qpool.site.QuestionPoolSiteDef">
-	   <property name="order" value="8" />
-	   <property name="enabled" value="${site.questionpool.enable}"/>
-	</bean>
-	<bean id="olatsites_useradmin" class="org.olat.admin.site.UserAdminSiteDef">
-	   <property name="order" value="9" />
-	</bean>
-	<bean id="olatsites_admin" class="org.olat.admin.site.AdminSiteDef">
 	   <property name="order" value="10" />
-	</bean>
-	<bean id="olatsites_portfolio" class="org.olat.portfolio.site.EPSiteDef">
-	   <property name="order" value="11" />
-	   <property name="enabled" value="${site.portfolio.enable}"/>
+	   <property name="enabled" value="${site.questionpool.enable}"/>
+	   	<property name="defaultSiteSecurityCallbackBeanId" value="restrictToAuthorSiteSecurityCallback"/>
 	</bean>
 	<bean id="olatsites_catalogadmin" class="org.olat.repository.site.CatalogAdminSiteDef">
-	   <property name="order" value="12" />
+	   <property name="order" value="11" />
 	   <property name="enabled" value="${site.catalogadmin.enable}"/>
+	   	<property name="defaultSiteSecurityCallbackBeanId" value="restrictToInstResourceManagerSiteSecurityCallback"/>
+	</bean>
+	<bean id="olatsites_useradmin" class="org.olat.admin.site.UserAdminSiteDef">
+	   <property name="order" value="12" />
+	   	<property name="defaultSiteSecurityCallbackBeanId" value="restrictToUserManagerSiteSecurityCallback"/>
+	</bean>
+	<bean id="olatsites_admin" class="org.olat.admin.site.AdminSiteDef">
+	   <property name="order" value="13" />
+	   	<property name="defaultSiteSecurityCallbackBeanId" value="adminSiteSecurityCallback"/>
 	</bean>
 	<bean id="olatsites_guidemo" class="org.olat.gui.demo.site.GUIDemoSiteDef">
 	   <property name="order" value="14" />
 	   <property name="enabled" value="${guidemo.enabled}"/>
+	   	<property name="defaultSiteSecurityCallbackBeanId" value="adminSiteSecurityCallback"/>
 	</bean>
 	
 	<!--  security callback -->
@@ -82,11 +103,18 @@
 	<bean id="managersSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.ManagersSecurityCallback"/>
 	
 	<bean id="registredSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.RegistredUserSecurityCallback"/>
+
+	<bean id="registredOrGuestSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.RegistredUserOrGuestSecurityCallback"/>
+
 	
 	<!-- for development purpose
 	<bean id="registredSiteWithTeaserSecurityCallback" class="org.olat.core.gui.control.navigation.callback.RegistredUserGuestTeaserSecurityCallback"/>
 	-->
 	
+	<bean id="restrictToGuestSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
+		<property name="limitToRole" value="guest"/>
+	</bean>
+
 	<bean id="restrictToAuthorSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
 		<property name="limitToRole" value="author"/>
 	</bean>
@@ -101,6 +129,14 @@
 	
 	<bean id="restrictToPoolAdminSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
 		<property name="limitToRole" value="pooladmin"/>
+	</bean>
+
+	<bean id="restrictToInstResourceManagersAndAuthorsSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
+		<property name="limitToRole" value="author,institutionalresourcemanager"/>
+	</bean>
+
+	<bean id="restrictToInstResourceManagerSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
+		<property name="limitToRole" value="institutionalresourcemanager"/>
 	</bean>
 	
 	<!-- Alternative controllers -->

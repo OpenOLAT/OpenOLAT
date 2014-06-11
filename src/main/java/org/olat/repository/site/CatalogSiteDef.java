@@ -37,12 +37,8 @@ public class CatalogSiteDef extends AbstractSiteDefinition implements SiteDefini
 
 	@Override
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		RepositoryModule repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
-		if(repositoryModule.isCatalogEnabled() && repositoryModule.isCatalogSiteEnabled()) {
-			SiteInstance si = new CatalogSite(this, ureq.getLocale());
-			return si;
-		}
-		return null;
+		// default is to show catalog to anybody, even guests and invitee
+		return new CatalogSite(this, ureq.getLocale());
 	}
 
 	@Override

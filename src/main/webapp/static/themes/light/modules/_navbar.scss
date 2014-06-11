@@ -38,7 +38,7 @@
 	#o_navbar_tools_permanent {
 		#o_navbar_langchooser {
 			color: $navbar-default-color;
-			padding: floor($grid-gutter-width / 2);
+			padding: floor($grid-gutter-width / 4) floor($grid-gutter-width / 2);
 			form span + div {
 				display: inline;
 			}

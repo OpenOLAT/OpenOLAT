@@ -1,42 +1,30 @@
 <div class="o_login">
-	<h3>$r.translate("login.header")</h3>
+	<h1>$r.translate("login.header")</h1>
 	#if ($infomsg)
-		<div class="o_infomessage_wrapper">
-			<div class="o_infomessage">
-				<div class="o_infomessage_inner">
-					<div class="b_floatscrollbox">
-						$infomsg
-					</div>
-				</div>
-			</div>
+		<div class="o_infomessage_wrapper o_block_large o_scrollblock">
+			$infomsg
 		</div>
 	#end
 	
 	#if ($infomsgNode)
-		<div class="o_infomessage_wrapper">
-			<div class="o_infomessage">
-				<div class="o_infomessage_inner">
-					<div class="b_floatscrollbox">
-						$infomsgNode
-					</div>
-				</div>
-			</div>
+		<div class="o_infomessage_wrapper o_block_large o_scrollblock">
+			$infomsgNode
 		</div>
 	#end
 	#if($loginBlocked)
-		<div class="b_warning">
+		<div class="o_warning">
 			$r.translate("login.blocked.forAll")
 		</div>
 	#end
 	#if($browserWarningOn)
-		<div class="b_warning">
+		<div class="o_warning">
 			$r.translate("login.browserswitch")
 		</div>
 	#end
 	
 	
 	#if ($logincustommsg)
-	 <div class="b_logincustommsg">$logincustommsg</div>
+	 <div class="o_logincustommsg">$logincustommsg</div>
 	#end
 	
 	$r.render("loginComp")

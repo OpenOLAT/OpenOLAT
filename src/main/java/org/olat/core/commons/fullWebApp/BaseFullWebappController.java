@@ -225,7 +225,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
     		ureq.getUserSession().putEntry(PRESENTED_AFTER_LOGIN_WORKFLOW, Boolean.TRUE);
     	}
 		
-    	if(aftLHookCtr == null) {
+    	if(aftLHookCtr == null || aftLHookCtr.isDisposed()) {
     		initializeDefaultSite(ureq);
     	}
 		
