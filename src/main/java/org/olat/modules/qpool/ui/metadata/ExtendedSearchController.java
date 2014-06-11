@@ -69,6 +69,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 	
 	private final String prefsKey;
 	private ExtendedSearchPrefs prefs;
+	private boolean enabled = true;
 	
 	private final QPoolService qpoolService;
 
@@ -107,10 +108,17 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		formLayout.add(buttonsCont);
 		searchButton = uifactory.addFormLink("search", buttonsCont, Link.BUTTON);
 	}
+	
+	@Override
+	public void setEnabled(boolean enable) {
+		this.enabled = enable;
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doSearch(ureq);
+		if(enabled) {
+			doSearch(ureq);
+		}
 	}
 
 	@Override

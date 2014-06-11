@@ -51,6 +51,7 @@ import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.Submit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.translator.Translator;
@@ -162,7 +163,6 @@ public class Form extends LogDelegator {
 	private boolean hasAlreadyFired;
 	private List<FormBasicController> formListeners;
 	private boolean isValidAndSubmitted=true;
-	private FormItem submitFormItem;
 	private boolean isDirtyMarking=true;
 	private boolean multipartEnabled = false;
 	private long multipartUploadMaxSizeKB = 0;
@@ -238,7 +238,11 @@ public class Form extends LogDelegator {
 			//case if:
 			//enter was pressed in Safari / IE
 			//crawler tries form links
-			if(submitFormItem != null){
+			
+			SubmitFormComponentVisitor efcv = new SubmitFormComponentVisitor();
+			new FormComponentTraverser(efcv, formLayout, false).visitAll(ureq);
+			Submit submitFormItem = efcv.getSubmit();
+			if(submitFormItem != null) {
 				//if we have submit form item
 				//assume a click on this item
 				dispatchUri = FormBaseComponentIdProvider.DISPPREFIX + submitFormItem.getComponent().getDispatchID();
@@ -672,7 +676,23 @@ public class Form extends LogDelegator {
 			fi.evalFormRequest(ureq);
 			return true;// visit further
 		}
+	}
+	
+	private static class SubmitFormComponentVisitor implements FormComponentVisitor {
 
+		private Submit submit;
+
+		public Submit getSubmit() {
+			return submit;
+		}
+
+		public boolean visit(FormItem fi, UserRequest ureq) {
+			if(fi instanceof Submit) {
+				submit = (Submit)fi;
+				return false;
+			}
+			return true;
+		}
 	}
 
 	private class FindParentFormComponentVisitor implements FormComponentVisitor {
@@ -818,10 +838,6 @@ public class Form extends LogDelegator {
 
 	public boolean isSubmittedAndValid(){
 		return isValidAndSubmitted;
-	}
-
-	void registerSubmit(FormItem submFormItem) {
-		this.submitFormItem = submFormItem;
 	}
 
 	/**

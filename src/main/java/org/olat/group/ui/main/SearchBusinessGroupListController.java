@@ -49,10 +49,6 @@ public class SearchBusinessGroupListController extends AbstractBusinessGroupList
 	protected FlexiTableColumnModel initColumnModel() {
 		return BusinessGroupFlexiTableModel.getStandardColumnModel(true, flc, groupModule, getTranslator());
 	}
-	
-	protected void updateSearch(UserRequest ureq) {
-		doSearch(ureq, null);
-	}
 
 	@Override
 	protected SearchBusinessGroupParams getSearchParams(SearchEvent event) {
@@ -66,4 +62,17 @@ public class SearchBusinessGroupListController extends AbstractBusinessGroupList
 		}
 		return params;
 	}
+
+	@Override
+	protected SearchBusinessGroupParams getDefaultSearchParams() {
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		//security
+		if(!isAdmin()) {
+			params.setOwner(true);
+			params.setAttendee(true);
+			params.setWaiting(true);
+		}
+		params.setIdentity(getIdentity());
+		return params;
+	}	
 }

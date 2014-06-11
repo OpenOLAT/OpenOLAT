@@ -153,7 +153,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 			favoritGroupsCtrl = new FavoritBusinessGroupListController(ureq, bwControl);
 			listenTo(favoritGroupsCtrl);
 		}
-		favoritGroupsCtrl.updateMarkedGroups();
+		favoritGroupsCtrl.doDefaultSearch();
 		mainVC.put("groupList", favoritGroupsCtrl.getInitialComponent());
 		addToHistory(ureq, favoritGroupsCtrl);
 		return favoritGroupsCtrl;
@@ -167,7 +167,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 			myGroupsCtrl = new BusinessGroupListController(ureq, bwControl);
 			listenTo(myGroupsCtrl);
 		}
-		myGroupsCtrl.updateAllGroups();
+		myGroupsCtrl.doDefaultSearch();
 		mainVC.put("groupList", myGroupsCtrl.getInitialComponent());
 		addToHistory(ureq, myGroupsCtrl);
 		return myGroupsCtrl;
@@ -181,7 +181,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 			openGroupsCtrl = new OpenBusinessGroupListController(ureq, bwControl);
 			listenTo(openGroupsCtrl);
 		}
-		openGroupsCtrl.updateOpenGroups();
+		openGroupsCtrl.doDefaultSearch();
 		mainVC.put("groupList", openGroupsCtrl.getInitialComponent());
 		addToHistory(ureq, openGroupsCtrl);
 		return openGroupsCtrl;
@@ -195,7 +195,6 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 			searchGroupsCtrl = new SearchBusinessGroupListController(ureq, bwControl);
 			listenTo(searchGroupsCtrl);
 		}
-		searchGroupsCtrl.updateSearch(ureq);
 		mainVC.put("groupList", searchGroupsCtrl.getInitialComponent());
 		addToHistory(ureq, searchGroupsCtrl);
 		return searchGroupsCtrl;

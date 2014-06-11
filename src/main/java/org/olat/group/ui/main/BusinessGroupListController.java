@@ -60,12 +60,13 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		return params;
 	}
 
-	protected void updateAllGroups() {
+	@Override
+	protected SearchBusinessGroupParams getDefaultSearchParams() {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setAttendee(true);
 		params.setOwner(true);
 		params.setWaiting(true);
 		params.setIdentity(getIdentity());
-		updateTableModel(params, false);
+		return params;
 	}
 }

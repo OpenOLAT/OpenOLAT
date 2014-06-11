@@ -582,7 +582,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	public Iterable<FormItem> getFormItems() {
-		return components.values();
+		List<FormItem> items = new ArrayList<>(components.values());
+		if(extendedSearchCtrl != null && !extendedSearchExpanded) {
+			items.remove(extendedSearchCtrl.getInitialFormItem());
+		}
+		return items;
 	}
 
 	@Override
@@ -791,6 +795,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			component.setDirty(true);
 		}
 		extendedSearchExpanded = true;
+		extendedSearchCtrl.setEnabled(true);
 	}
 	
 	@Override
@@ -799,6 +804,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			callout.deactivate();
 		}
 		extendedSearchExpanded = false;
+		extendedSearchCtrl.setEnabled(false);
 	}
 
 	protected void customizeCallout(UserRequest ureq) {
@@ -900,7 +906,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			search = searchFieldEl.getValue();
 		}
 		List<String> condQueries = extendedSearchCtrl.getConditionalQueries();
-		doSearch(search, condQueries);
+		doSearch(ureq, search, condQueries);
 	}
 
 	protected void evalSearchRequest(UserRequest ureq) {
@@ -908,7 +914,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		searchFieldEl.evalFormRequest(ureq);
 		String search = searchFieldEl.getValue();
 		if(StringHelper.containsNonWhitespace(search)) {
-			doSearch(search, null);
+			doSearch(ureq, search, null);
 		} else {
 			doResetSearch();
 		}
@@ -937,7 +943,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	
-	protected void doSearch(String search, List<String> condQueries) {
+	protected void doSearch(UserRequest ureq, String search, List<String> condQueries) {
 		if(condQueries == null || condQueries.isEmpty()) {
 			conditionalQueries = null;
 		} else {
@@ -948,6 +954,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			resetInternComponents();
 			dataSource.clear();
 			dataSource.load(search, conditionalQueries, 0, getPageSize(), orderBy);
+		} else {
+			getRootForm().fireFormEvent(ureq, new FlexiTableSearchEvent(this, search, condQueries, FormEvent.ONCLICK));
 		}
 	}
 	

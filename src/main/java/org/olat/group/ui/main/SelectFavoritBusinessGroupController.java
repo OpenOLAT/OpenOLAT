@@ -64,14 +64,14 @@ public class SelectFavoritBusinessGroupController extends AbstractBusinessGroupL
 		return params;
 	}
 
-
-	protected boolean updateMarkedGroups() {
+	@Override
+	protected SearchBusinessGroupParams getDefaultSearchParams() {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setMarked(Boolean.TRUE);
 		params.setAttendee(true);
 		params.setOwner(true);
 		params.setWaiting(true);
 		params.setIdentity(getIdentity());
-		return !updateTableModel(params, true).isEmpty();
+		return params;
 	}
 }

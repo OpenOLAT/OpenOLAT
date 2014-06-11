@@ -60,9 +60,10 @@ public class SelectBusinessGroupCourseAuthorController extends AbstractBusinessG
 		return params;
 	}
 
-	protected void updateOwnedGroups() {
+	@Override
+	protected SearchBusinessGroupParams getDefaultSearchParams() {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		updateTableModel(params, false);
+		return params;
 	}
 
 	@Override

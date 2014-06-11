@@ -78,13 +78,6 @@ public class OpenBusinessGroupListController extends AbstractBusinessGroupListCo
 		return columnsModel;
 	}
 	
-	public void updateOpenGroups() {
-		//find all accessible business groups
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		params.setPublicGroups(Boolean.TRUE);
-		updateTableModel(params, false);
-	}
-	
 	@Override
 	protected void doLaunch(UserRequest ureq, BusinessGroup group) {	
 		if(businessGroupService.isIdentityInBusinessGroup(getIdentity(), group)) {
@@ -98,6 +91,13 @@ public class OpenBusinessGroupListController extends AbstractBusinessGroupListCo
 	@Override
 	protected SearchBusinessGroupParams getSearchParams(SearchEvent event) {
 		SearchBusinessGroupParams params = event.convertToSearchBusinessGroupParams(getIdentity());
+		params.setPublicGroups(Boolean.TRUE);
+		return params;
+	}
+
+	@Override
+	protected SearchBusinessGroupParams getDefaultSearchParams() {
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		params.setPublicGroups(Boolean.TRUE);
 		return params;
 	}

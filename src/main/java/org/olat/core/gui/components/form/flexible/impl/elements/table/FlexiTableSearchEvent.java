@@ -22,24 +22,33 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 
 /**
  * 
- * Initial date: 03.05.2013<br>
+ * Initial date: 11.06.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface ExtendedFlexiTableSearchController extends Controller {
-	
-	/**
-	 * Enable or disable the extened search controller. If disabled,
-	 * the controller doesn't catch submit event, or do the validation
-	 */
-	public void setEnabled(boolean enable);
-	
-	public List<String> getConditionalQueries();
-	
-	public FormItem getInitialFormItem();
+public class FlexiTableSearchEvent extends FormEvent {
 
+	private static final long serialVersionUID = -1977791683080030187L;
+	public static final String CMD = "ftSearch";
+
+	private final String search;
+	private final List<String> condQueries;
+
+	public FlexiTableSearchEvent(FormItem source, String search, List<String> condQueries, int action) {
+		super("ftSearch", source, action);
+		this.search = search;
+		this.condQueries = condQueries;
+	}
+
+	public String getSearch() {
+		return search;
+	}
+
+	public List<String> getCondQueries() {
+		return condQueries;
+	}
 }

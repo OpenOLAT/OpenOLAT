@@ -47,6 +47,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.table.ColumnDescriptor;
@@ -370,6 +371,8 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 				} else if (TABLE_ACTION_SELECT.equals(cmd)) {
 					doSelect(ureq, businessGroup);
 				}
+			} else if(event instanceof FlexiTableSearchEvent) {
+				doSearch((FlexiTableSearchEvent)event);
 			}
 		} 
 		super.formInnerEvent(ureq, source, event);
@@ -453,7 +456,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			}
 			cmc.deactivate();
 			cleanUpPopups();
-		}else if(source == searchCtrl) {
+		} else if(source == searchCtrl) {
 			if(event instanceof SearchEvent) {
 				doSearch(ureq, (SearchEvent)event);
 			}
@@ -790,8 +793,6 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	}
 	
 	protected void doSearch(UserRequest ureq, SearchEvent event) {
-		long start = isLogDebugEnabled() ? System.currentTimeMillis() : 0;
-
 		search(event);
 		
 		//back button
@@ -800,10 +801,12 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			currentEntry.setTransientState(event);
 		}
 		addToHistory(ureq, this);
-		
-		if(isLogDebugEnabled()) {
-			logDebug("Group search takes (ms): " + (System.currentTimeMillis() - start), null);
-		}
+	}
+	
+	protected void doSearch(FlexiTableSearchEvent event) {
+		SearchBusinessGroupParams params = getDefaultSearchParams();
+		params.setNameOrDesc(event.getSearch());
+		updateTableModel(params, false);
 	}
 
 	private void search(SearchEvent event) {
@@ -816,6 +819,13 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	}
 	
 	protected abstract SearchBusinessGroupParams getSearchParams(SearchEvent event);
+	
+	protected abstract SearchBusinessGroupParams getDefaultSearchParams();
+	
+	protected boolean doDefaultSearch() {
+		SearchBusinessGroupParams params = getDefaultSearchParams();
+		return updateTableModel(params, false).isEmpty();
+	}
 	
 	private void doSelect(UserRequest ureq, List<BGTableItem> items) {
 		List<BusinessGroup> selection = toBusinessGroups(ureq, items, false);

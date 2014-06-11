@@ -41,7 +41,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormItemDependencyRule;
 import org.olat.core.gui.components.form.flexible.FormLayouter;
 import org.olat.core.gui.components.form.flexible.FormMultipartItem;
-import org.olat.core.gui.components.form.flexible.elements.Submit;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
@@ -202,12 +201,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		formLayoutContainer.put(formCompName + FormItem.ERRORC, formComp.getErrorC());
 		formLayoutContainer.put(formCompName + FormItem.EXAMPLEC, formComp.getExampleC());
 		formLayoutContainer.put(formCompName + FormItem.LABELC, formComp.getLabelC());
-		/*
-		 * recognize submits and register it for the IE enter-pressing
-		 */
-		if(formComp instanceof Submit){
-			getRootForm().registerSubmit(formComp);
-		}
+
 		// Check for multipart data, add upload limit to form
 		if (formComp instanceof FormMultipartItem) {
 			FormMultipartItem mpItem = (FormMultipartItem) formComp;
@@ -314,12 +308,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		formLayoutContainer.put(formCompName + FormItem.ERRORC, with.getErrorC());
 		formLayoutContainer.put(formCompName + FormItem.EXAMPLEC, with.getExampleC());
 		formLayoutContainer.put(formCompName + FormItem.LABELC, with.getLabelC());
-		/*
-		 * recognize submits and register it for the IE enter-pressing
-		 */
-		if(with instanceof Submit){
-			getRootForm().registerSubmit(with);
-		}
+
 		// Check for multipart data, add upload limit to form
 		if (with instanceof FormMultipartItem) {
 			FormMultipartItem mpItem = (FormMultipartItem) with;

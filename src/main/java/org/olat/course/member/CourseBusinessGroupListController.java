@@ -273,8 +273,13 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	}
 
 	@Override
+	protected SearchBusinessGroupParams getDefaultSearchParams() {
+		return new SearchBusinessGroupParams();
+	}
+
+	@Override
 	protected void reloadModel() {
-		updateTableModel(new SearchBusinessGroupParams(), false);
+		doDefaultSearch();
 	}
 
 	@Override

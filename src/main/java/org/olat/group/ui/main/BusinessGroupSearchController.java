@@ -77,6 +77,7 @@ public class BusinessGroupSearchController extends FormBasicController implement
 	
 	private final boolean showId;
 	private final boolean managedEnable;
+	private boolean enabled = false;
 
 	/**
 	 * Generic search form.
@@ -182,6 +183,11 @@ public class BusinessGroupSearchController extends FormBasicController implement
 		//
 	}
 	
+	@Override
+	public void setEnabled(boolean enable) {
+		this.enabled = enable;
+	}
+
 	public void enableId(boolean enable) {
 		id.setVisible(enable);
 	}
@@ -213,6 +219,8 @@ public class BusinessGroupSearchController extends FormBasicController implement
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		if(!enabled) return true;
+		
 		boolean allOk = true;
 
 		return allOk & super.validateFormLogic(ureq);
@@ -226,8 +234,10 @@ public class BusinessGroupSearchController extends FormBasicController implement
 	}
 
 	@Override
-	protected void formOK (UserRequest ureq) {
-		fireSearchEvent(ureq);
+	protected void formOK(UserRequest ureq) {
+		if(enabled) {
+			fireSearchEvent(ureq);
+		}
 	}
 	
 	@Override

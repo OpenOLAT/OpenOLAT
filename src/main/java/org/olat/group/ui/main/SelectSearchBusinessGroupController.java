@@ -66,6 +66,19 @@ public class SelectSearchBusinessGroupController extends AbstractBusinessGroupLi
 		return params;
 	}
 
+	@Override
+	protected SearchBusinessGroupParams getDefaultSearchParams() {
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		//security
+		if(restricted) {
+			params.setOwner(true);
+			params.setAttendee(true);
+			params.setWaiting(true);
+		}
+		params.setIdentity(getIdentity());
+		return params;
+	}
+
 	protected void updateSearch(UserRequest ureq) {
 		doSearch(ureq, null);
 	}

@@ -69,13 +69,6 @@ public class FormComponentTraverser {
 			for(FormItem item:co.getFormItems()) {
 				doVisit(item, ureq);
 			}
-			/*
-			Map<String, FormItem> children = co.getFormComponents();
-			Set<FormItem> formItems = new HashSet<FormItem>(children.values());
-			for (Iterator<FormItem> iter = formItems.iterator(); iter.hasNext();) {
-				doVisit(iter.next(), ureq);
-			}
-			*/
 		}
 		if (visitChildrenFirst) {
 			v.visit(node, ureq);

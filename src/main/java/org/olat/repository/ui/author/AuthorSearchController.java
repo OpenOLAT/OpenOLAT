@@ -62,6 +62,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	private String[] limitTypes;
 	private boolean isAdmin;
 	private boolean cancelAllowed;
+	private boolean enabled = true;
 	
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
@@ -171,7 +172,14 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	}
 	
 	@Override
+	public void setEnabled(boolean enable) {
+		this.enabled = enable;
+	}
+	
+	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		if(!enabled) return true;
+		
 		if (displayName.isEmpty() && author.isEmpty() && description.isEmpty() && (id != null && id.isEmpty()))	{
 			showWarning("cif.error.allempty", null);
 			return false;
@@ -181,7 +189,9 @@ public class AuthorSearchController extends FormBasicController implements Exten
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		fireSearchEvent(ureq);
+		if(enabled) {
+			fireSearchEvent(ureq);
+		}
 	}
 	
 	@Override

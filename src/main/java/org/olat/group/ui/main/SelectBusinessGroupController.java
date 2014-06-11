@@ -189,7 +189,7 @@ public class SelectBusinessGroupController extends BasicController {
 			favoritGroupsCtrl.setFilter(filter);
 			listenTo(favoritGroupsCtrl);
 		}
-		boolean markedFound = favoritGroupsCtrl.updateMarkedGroups();
+		boolean markedFound = favoritGroupsCtrl.doDefaultSearch();
 		mainVC.put("groupList", favoritGroupsCtrl.getInitialComponent());
 		return markedFound;
 	}
@@ -200,7 +200,7 @@ public class SelectBusinessGroupController extends BasicController {
 			ownedGroupsCtrl.setFilter(filter);
 			listenTo(ownedGroupsCtrl);
 		}
-		ownedGroupsCtrl.updateOwnedGroups();
+		ownedGroupsCtrl.doDefaultSearch();
 		mainVC.put("groupList", ownedGroupsCtrl.getInitialComponent());
 	}
 	
@@ -210,7 +210,7 @@ public class SelectBusinessGroupController extends BasicController {
 			authorGroupsCtrL.setFilter(filter);
 			listenTo(authorGroupsCtrL);
 		}
-		authorGroupsCtrL.updateOwnedGroups();
+		authorGroupsCtrL.doDefaultSearch();
 		mainVC.put("groupList", authorGroupsCtrL.getInitialComponent());
 	}
 	
