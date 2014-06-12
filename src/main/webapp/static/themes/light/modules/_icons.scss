@@ -22,6 +22,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_booking { @extend .o_icon-dollar; }
 .o_icon_bookmark { @extend .o_icon-bookmark; color: #996633; }
 .o_icon_bookmark_add { @extend .o_icon-bookmark-o; }
+.o_icon_bookmark_header { @extend .o_icon-bookmark; }
 .o_icon_browsercheck { @extend .o_icon-thumbs-up; }
 .o_icon_busy { @extend .o_icon-spinner; }
 .o_icon_calendar { @extend .o_icon-calendar;}
