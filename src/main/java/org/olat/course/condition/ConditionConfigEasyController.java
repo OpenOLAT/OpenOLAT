@@ -49,7 +49,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
-import org.olat.core.gui.components.form.flexible.impl.elements.SingleSelectionImpl;
 import org.olat.core.gui.components.form.flexible.impl.rules.RulesFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -98,7 +97,6 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	private JSDateChooser toDate;
 	private FormItemContainer dateSubContainer, groupSubContainer, assessSubContainer;
 	private FormLayoutContainer areaChooseSubContainer,  groupChooseSubContainer;
-	private FormLayoutContainer assessNodesListContainer;
 	private MultipleSelectionElement dateSwitch;
 	private StaticTextElement easyGroupList;
 	private FormLink chooseGroupsLink;
@@ -540,14 +538,14 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			// foop d fbg,dfbg,f ,gfbirst check two error cases of a selection
 			// no node selected or a deleted node selected
 			if (nodePassed.getSelectedKey().equals(NO_NODE_SELECTED_IDENTIFYER)) {				
-				assessNodesListContainer.setErrorKey("form.easy.error.nodePassed", null);
+				nodePassed.setErrorKey("form.easy.error.nodePassed", null);
 				retVal = false;
 			} else if (nodePassed.getSelectedKey().equals(DELETED_NODE_IDENTIFYER)) {
-				assessNodesListContainer.setErrorKey("form.easy.error.nodeDeleted", null);
+				nodePassed.setErrorKey("form.easy.error.nodeDeleted", null);
 				retVal = false;
 			} else {
 				//clear nodepassed error
-				assessNodesListContainer.clearError();
+				nodePassed.clearError();
 				//retVal stays
 			}
 		}
@@ -1247,17 +1245,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		final String[] nodePassedValues = new String[valuesList.size()];
 		valuesList.toArray(nodePassedValues);
 
-		// list of assessable nodes is wrapped in a layout container for proper rendering
-		assessNodesListContainer = (FormLayoutContainer)FormLayoutContainer.createSelbox("assNodesListContainer", getTranslator());
-		assessNodesListContainer.setLabel("form.easy.nodePassed", null);
-		assessSubContainer.add(assessNodesListContainer);
-		nodePassed = new SingleSelectionImpl(null, "nodePassed", assessNodesListContainer) {
-			{
-				keys = nodePassedKeys;
-				values = nodePassedValues;
-			}
-		};
-		
+		nodePassed = uifactory.addDropdownSingleselect("nodePassed", "form.easy.nodePassed", assessSubContainer, nodePassedKeys, nodePassedValues, null);
 		if (nodePassedInitVal != null) {
 			if (selectedNodeIsInList) {
 				nodePassed.select(nodePassedInitVal, true);
@@ -1267,14 +1255,9 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		} else {
 			nodePassed.select(NO_NODE_SELECTED_IDENTIFYER, true);
 		}
-		assessNodesListContainer.add(nodePassed);
 		
-		assessmentTypeSwitch = new SingleSelectionImpl(null, "assessmentTypeSwitch", SingleSelectionImpl.createVerticalLayout(null, "yingyang")) {
-			{
-				keys = assessmentSwitchKeys;
-				values = assessmentSwitchValues;
-			}
-		};
+		assessmentTypeSwitch = uifactory.addRadiosVertical("assessmentTypeSwitch", null, assessSubContainer,
+				assessmentSwitchKeys, assessmentSwitchValues);
 		assessmentTypeSwitch.setLabel("form.easy.assessmentSwitch.type", null);
 		assessmentTypeSwitch.addActionListener(FormEvent.ONCLICK);
 
@@ -1294,7 +1277,6 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			assessmentTypeSwitch.setVisible(false);
 			assessmentTypeSwitch.select(NODEPASSED_VAL_PASSED, true);
 		}
-		assessSubContainer.add(assessmentTypeSwitch);
 		
 		cutValue = uifactory.addIntegerElement("cutval", "form.easy.cutValue", cutInitValue, assessSubContainer);
 		cutValue.setDisplaySize(3);

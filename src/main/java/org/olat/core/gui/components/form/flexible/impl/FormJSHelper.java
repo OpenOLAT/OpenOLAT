@@ -194,21 +194,16 @@ public class FormJSHelper {
 	
 	public static String getSetFlexiFormDirty(Form form, String id){
 		StringBuilder result = new StringBuilder();
-		result.append("jQuery('#").append(id).append("').on('change keypress',{formId:\"")
-			.append(form.getDispatchFieldId()).append("\"},setFlexiFormDirtyByListener);");
-		return result.toString();
+		return result.append("jQuery('#").append(id).append("').on('change keypress',{formId:\"")
+				.append(form.getDispatchFieldId()).append("\"},setFlexiFormDirtyByListener);")
+				.toString();
 	}
 	
 	public static String getSetFlexiFormDirtyForCheckbox(Form form, String id){
-		String result;
-		String prefix = id + ".on('";
-		// examples:
-		// o_fi400.on({'click',setFormDirty,this,{formId:"ofo_100"}});
-		// o_fi400.on({'change',setFormDirty,this,{formId:"ofo_100"}});
-		String postfix = "',setFlexiFormDirtyByListener,document,{formId:\"" + form.getDispatchFieldId() + "\"});";
-		result = prefix + "change" + postfix;
-		result += prefix + "mouseup" + postfix;
-		return result;
+		StringBuilder result = new StringBuilder();
+		return result.append(id).append(".on('change mouseup',setFlexiFormDirtyByListener,document,{formId:\"")
+				.append(form.getDispatchFieldId()).append("\"});")
+				.toString();
 	}
 
 	public static String getFocusFor(String id){

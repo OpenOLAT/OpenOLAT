@@ -68,7 +68,7 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 	
 	//inline stuff
 	protected String transientValue;//last submitted value, which may be good or wrong
-	OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final OLog log = Tracing.createLoggerFor(TextElementImpl.class);
 	
 	/**
 	 * @param id A fix identifier for state-less behavior, must be unique or null

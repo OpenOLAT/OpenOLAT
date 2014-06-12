@@ -64,7 +64,6 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	private static final String LAYOUT_HORIZONTAL = VELOCITY_ROOT + "/form_horizontal.html";
 	private static final String LAYOUT_VERTICAL = VELOCITY_ROOT + "/form_vertical.html";
 	private static final String LAYOUT_BAREBONE = VELOCITY_ROOT + "/form_barebone.html";
-	private static final String LAYOUT_SELBOX = VELOCITY_ROOT + "/form_selbox.html";
 	private static final String LAYOUT_BUTTONGROUP = VELOCITY_ROOT + "/form_buttongroup.html";
 
 	/**
@@ -555,14 +554,6 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 */
 	public static FormLayoutContainer createButtonLayout(String name, Translator formTranslator) {
 		FormLayoutContainer tmp = new FormLayoutContainer(name, formTranslator, LAYOUT_BUTTONGROUP);
-		return tmp;
-	}
-
-	/**
-	 * workaround FIXME:pb
-     */
-	public static FormLayouter createSelbox(String name, Translator formTranslator) {
-		FormLayouter tmp = new FormLayoutContainer(name, formTranslator, LAYOUT_SELBOX);
 		return tmp;
 	}
 	

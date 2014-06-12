@@ -356,7 +356,7 @@ public class FormUIFactory {
 	 * @return
 	 */
 	public SingleSelection addRadiosHorizontal(final String name, final String i18nLabel, FormItemContainer formLayout, final String[] theKeys, final String[] theValues) {
-		SingleSelection ss = new SingleSelectionImpl(name, name, SingleSelectionImpl.createHorizontalLayout(null, name));
+		SingleSelection ss = new SingleSelectionImpl(name, name, SingleSelection.Layout.horizontal);
 		ss.setKeysAndValues(theKeys, theValues, null);
 		setLabelIfNotNull(i18nLabel, ss);
 		formLayout.add(ss);
@@ -391,7 +391,7 @@ public class FormUIFactory {
 	 * @return
 	 */
 	public SingleSelection addRadiosVertical(final String name, final String i18nLabel, FormItemContainer formLayout, final String[] theKeys, final String[] theValues) {
-		SingleSelection ss = new SingleSelectionImpl(name, name, SingleSelectionImpl.createVerticalLayout(null, name));
+		SingleSelection ss = new SingleSelectionImpl(name, name,  SingleSelection.Layout.vertical);
 		ss.setKeysAndValues(theKeys, theValues, null);
 		setLabelIfNotNull(i18nLabel, ss);
 		formLayout.add(ss);
@@ -441,7 +441,7 @@ public class FormUIFactory {
 	 * @return
 	 */
 	public SingleSelection addDropdownSingleselect(final String id, final String name, final String i18nLabel, FormItemContainer formLayout, final String[] theKeys, final String[] theValues, final String[] theCssClasses) {
-		SingleSelection ss = new SingleSelectionImpl(id, name, SingleSelectionImpl.createSelectboxLayouter(id, name));
+		SingleSelection ss = new SingleSelectionImpl(id, name, SingleSelection.Layout.select);
 		ss.setKeysAndValues(theKeys, theValues, theCssClasses);
 		setLabelIfNotNull(i18nLabel, ss);
 		formLayout.add(ss);

@@ -30,12 +30,10 @@ import java.util.List;
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.FormLayouter;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.SingleSelectionComponent.RadioElementComponent;
 import org.olat.core.logging.AssertException;
-import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.ValidationStatusImpl;
 
@@ -49,28 +47,22 @@ import org.olat.core.util.ValidationStatusImpl;
  */
 public class SingleSelectionImpl extends FormItemImpl implements SingleSelection {
 
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(SingleSelectionImpl.class);
-
-	private final static String HORIZONTAL_DEFAULT_RADIO = VELOCITY_ROOT + "/sel_elems_horizontal.html";
-	private final static String VERTICAL_RADIO = VELOCITY_ROOT + "/sel_elems_vertical.html";
-	private final static String SELECTBOX = VELOCITY_ROOT + "/sel_elems_selbox.html";
-
-	protected String[] values;
-	protected String[] keys;
-	protected String[] cssClasses;
+	private String[] values;
+	private String[] keys;
+	private String[] cssClasses;
 	private String original = null;
 	private boolean originalSelect = false;
 	private int selectedIndex = -1;
 
-	private FormLayouter formLayoutContainer;
+	private final Layout layout;
+	private Component component;
 	
 	/**
 	 * @param name
 	 */
 	public SingleSelectionImpl(String name) {
-		this(null, name, createHorizontalLayout(null, name));
+		this(null, name, Layout.horizontal);
 	}
-
 
 	/**
 	 * set your layout
@@ -78,27 +70,31 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	 * @param name
 	 * @param presentation
 	 */
-	public SingleSelectionImpl(String id, String name, FormLayouter formLayout) {
+	public SingleSelectionImpl(String id, String name, Layout layout) {
 		super(id, name, false);
-		formLayoutContainer = formLayout;
+		this.layout = layout;
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.SingleSelectionContainer#getSelected()
 	 */
+	@Override
 	public int getSelected() {
 		return selectedIndex;
+	}
+	
+	public Layout getLayout() {
+		return layout;
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.SingleSelectionContainer#getSelectedKey()
 	 */
+	@Override
 	public String getSelectedKey() {
 		if (!isOneSelected()) throw new AssertException("no key selected");
 		return keys[selectedIndex];
 	}
-	
-	
 
 	@Override
 	public String getSelectedValue() {
@@ -107,7 +103,6 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		}
 		return null;
 	}
-
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.SingleSelectionContainer#isOneSelected()
@@ -181,7 +176,9 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 			original = key;
 			originalSelect = select;
 		}
-		if (!found) { throw new AssertException("could not set <" + key + "> to " + select + " because key was not found!"); }
+		if (!found) {
+			throw new AssertException("could not set <" + key + "> to " + select + " because key was not found!");
+		}
 	}
 
 	/**
@@ -223,7 +220,6 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		}//endif
 	}//endmethod
 	
-
 	@Override
 	public void validate(List<ValidationStatus> validationResults) {
 		if ( ! isOneSelected()) {
@@ -239,7 +235,6 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		select(original, originalSelect);
 		clearError();
 	}
-	
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormItemImpl#setEnabled(boolean)
@@ -247,33 +242,19 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	@Override
 	public void setEnabled(boolean isEnabled) {
 		super.setEnabled(isEnabled);
-		//set isEnabled for all created components
-		Component sssc = formLayoutContainer.getComponent(getName()+"_SELBOX");
-		sssc.setEnabled(isEnabled);
-		for (int i = 0; i < keys.length; i++) {
-			Component elm = formLayoutContainer.getComponent(getName()+"_"+keys[i]);
-			elm.setEnabled(isEnabled);
-		}
+		component.setEnabled(isEnabled);
 	}
+	
 	@Override
 	public void setVisible(boolean isVisible) {
 		super.setVisible(isVisible);
-		//set isEnabled for all created components
-		Component sssc = formLayoutContainer.getComponent(getName()+"_SELBOX");
-		if(sssc != null){
-			sssc.setVisible(isVisible);
-		}
-		for (int i = 0; i < keys.length; i++) {
-			Component elm = formLayoutContainer.getComponent(getName()+"_"+keys[i]);
-			if(elm != null){
-				elm.setVisible(isVisible);
-			}
-		}
-	};
+		component.setVisible(isVisible);
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider#getFormDispatchId()
 	 */
+	@Override
 	public String getFormDispatchId() {
 		/**
 		 * FIXME:pb dirty hack or not to allow singleselection subcomponents being
@@ -284,9 +265,9 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		 * understand why this is not always the case.
 		 */
 		if(GUIInterna.isLoadPerformanceMode()){
-			return DISPPREFIX+getRootForm().getReplayableDispatchID(formLayoutContainer.getComponent());
+			return DISPPREFIX+getRootForm().getReplayableDispatchID(component);
 		}else{
-			return DISPPREFIX+formLayoutContainer.getComponent().getDispatchID();
+			return DISPPREFIX + component.getDispatchID();
 		}
 	}
 
@@ -300,79 +281,24 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		}
 		// keys,values initialized
 		// create and add radio elements
-		String[] items = new String[keys.length];
-		for (int i = 0; i < keys.length; i++) {
-			RadioElementComponent ssec = new RadioElementComponent(getName()+"_"+keys[i], translator, this, i);
-			formLayoutContainer.put(getName()+"_"+keys[i], ssec);
-			items[i]=getName()+"_"+keys[i];
-			//formComponentsNames.add(keys[i]);
-			//formComponents.put(keys[i], ssec);
-			if (GUIInterna.isLoadPerformanceMode()) {
-				getRootForm().getReplayableDispatchID(ssec);
+		if(layout == Layout.select) {
+			String ssscId = getFormItemId() == null ? null : getFormItemId() + "_SELBOX";
+			component = new SelectboxComponent(ssscId , getName() + "_SELBOX", translator, this, keys, values, cssClasses);
+		} else {
+			RadioElementComponent[] radios = new RadioElementComponent[keys.length];
+			for (int i = 0; i < keys.length; i++) {
+				String radioName = getName() + "_" + keys[i];
+				radios[i] = new RadioElementComponent(radioName, this, i);
 			}
+			String ssscId = getFormItemId() == null ? null : getFormItemId() + "_RADIO";
+			SingleSelectionComponent ssc = new SingleSelectionComponent(ssscId, this);
+			ssc.setRadioComponents(radios);
+			component = ssc;
 		}
-		//create and add selectbox element
-		String ssscId = getFormItemId() == null ? null : getFormItemId() + "_SELBOX";
-		SelectboxComponent sssc = new SelectboxComponent(ssscId , getName() + "_SELBOX", translator, this, keys, values, cssClasses);
-		formLayoutContainer.put(getName()+"_SELBOX", sssc);
-		formLayoutContainer.contextPut("selectbox", getName()+"_SELBOX");
-		//formComponentsNames.add(getName()+"_SELBOX");
-		//formComponents.put(getName()+"_SELBOX", sssc);
-		//
-		formLayoutContainer.contextPut("items", items);
 	}
 
-	/**
-	 * as selectbox
-	 * @param id A fix identification for state-less behavior, must be unique
-	 * @param name
-	 * @return
-	 */
-	public static FormLayoutContainer createSelectboxLayouter(String id, String name) {
-		String contId = (id == null ? null : id + "_SELECTBOX_CONT");
-		return FormLayoutContainer.createCustomFormLayout(contId, name+"SELECTBOX", null, SELECTBOX);
-	}
-
-	/**
-	 * radio buttons horizontal
-	 * @param id A fix identification for state-less behavior, must be unique
-	 * @param name
-	 * @return
-	 */
-	public static FormLayoutContainer createHorizontalLayout(String id, String name) {
-		String contId = (id == null ? null : id + "_HORIZONTAL_DEFAULT_RADIO_CONT");
-		return FormLayoutContainer.createCustomFormLayout(contId, name+"HORIZONTAL_DEFAULT_RADIO", null, HORIZONTAL_DEFAULT_RADIO);
-	}
-
-	/**
-	 * radio buttons vertical
-	 * @param id A fix identification for state-less behavior, must be unique
-	 * @param name
-	 * @return
-	 */
-	public static FormLayoutContainer createVerticalLayout(String id, String name) {
-		String contId = (id == null ? null : id + "_VERTICAL_RADIO_CONT");
-		return FormLayoutContainer.createCustomFormLayout(contId, name+"VERTICAL_RADIO", null, VERTICAL_RADIO);
-	}
-
+	@Override
 	protected Component getFormItemComponent() {
-		/**
-		 * FIXME:pb dirty hack or not? to allow singleselection subcomponents being
-		 * added to surrounding formlayouters -> e.g. language chooser selectbox
-		 * we have to return the formLayoutContainer.Component if it was not a 
-		 * "custom" formlayouter. -> detection via ..endsWith() bad not beautyful
-		 * but functional so far.
-		 */
-		String tmp = formLayoutContainer.getComponent().getComponentName();
-		boolean isDefault = tmp.endsWith("VERTICAL_RADIO") || tmp.endsWith("HORIZONTAL_DEFAULT_RADIO") || tmp.endsWith("SELECTBOX");
-		if(isDefault){
-			return formLayoutContainer.getComponent();
-		}else{
-			//return a dummy, not to break rendering process with a null component.
-			return createSelectboxLayouter(null, "dummy").getComponent();
-		}
+		return component;
 	}
-
-
-	
 }
