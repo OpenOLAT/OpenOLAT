@@ -78,7 +78,7 @@ public class CPEditMainController extends MainLayoutBasicController {
 				displayCP(ureq, wControl, cpContainer);
 			}
 		} else {
-			initErrorView(ureq, wControl, errorString);
+			initErrorView(ureq, wControl);
 			showError("maincontroller.loaderror", errorString);
 		}
 		logAudit("cp editor started. oresId: " + ores.getResourceableId(), null);
@@ -135,7 +135,7 @@ public class CPEditMainController extends MainLayoutBasicController {
 	 * @param wControl
 	 * @param cp
 	 */
-	private void initErrorView(UserRequest ureq, WindowControl wControl, String errorString) {
+	private void initErrorView(UserRequest ureq, WindowControl wControl) {
 		Panel p = new Panel("errorPanel");
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, wControl, null, p, "cptestmain");
 		putInitialPanel(columnLayoutCtr.getInitialComponent());

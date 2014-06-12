@@ -23,73 +23,96 @@
 * under the Apache 2.0 license as the original file.  
 * <p>
 */
-
 package org.olat.ims.cp.ui;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
+import org.olat.ims.cp.objects.CPMetadata;
 
 /**
  * 
  * Description:<br>
- * This controller controls the workflows regarding the edit-process of a
- * cp-page
- * 
+ * This Class represents the Metadata-Form. (used in the page-editor)
  * 
  * <P>
- * Initial Date: 25.07.2008 <br>
+ * Initial Date: 11.09.2008 <br>
  * 
  * @author sergio
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class CPMetadataEditController extends BasicController {
+public class CPMetadataEditController extends FormBasicController {
 
-	private Link closeLink;
-	private CPMDFlexiForm mdCtr; // MetadataController
-	private CPPage page;
+	private TextElement title;
 
-	protected CPMetadataEditController(UserRequest ureq, WindowControl control, CPPage page) {
+	private final CPMetadata metadata;
+	private final CPPage page;
+
+	public CPMetadataEditController(UserRequest ureq, WindowControl control, CPPage page) {
 		super(ureq, control);
 		this.page = page;
-		mdCtr = new CPMDFlexiForm(ureq, getWindowControl(), page);
-		listenTo(mdCtr);
-		putInitialPanel(mdCtr.getInitialComponent());
+		if (page.getMetadata() != null) {
+			metadata = page.getMetadata();
+		} else {
+			metadata = new CPMetadata();
+		}
+		initForm(ureq);
 	}
+	
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		// title-field
+		String titleString = page.getTitle();
+		title = uifactory.addTextElement("title", "cpmd.flexi.title", 256, titleString, formLayout);
+		title.setDisplaySize(32);
+		title.setMandatory(true);
+		title.setNotEmptyCheck("cpmd.flexi.mustbefilled");
 
-	protected void newPageAdded(String newNodeID) {
-		this.page.setIdentifier(newNodeID);
+		FormItemContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
+		formLayout.add(buttonContainer);
+		uifactory.addFormSubmitButton("save", buttonContainer);
+		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 	}
-
+	
+	@Override
+	protected void doDispose() {
+		// nothing to do
+	}
+	
 	/**
-	 * returns the CPPage, which is edited
+	 * Gets the CPPage this Flexiform is editing
 	 * 
-	 * @return
+	 * @return the CPPage
 	 */
-	public CPPage getCurrentPage() {
+	public CPPage getPage() {
 		return page;
 	}
 
+	public CPMetadata getMetadata() {
+		return metadata;
+	}
+	
+	protected void newPageAdded(String newNodeID) {
+		page.setIdentifier(newNodeID);
+	}
+
 	@Override
-	protected void doDispose() {
-	// nothing to do 
+	protected boolean validateFormLogic(UserRequest ureq) {
+		return true;
 	}
 
-	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == closeLink) {
-			fireEvent(ureq, Event.CANCELLED_EVENT);
-		}
+	@Override
+	protected void formOK(UserRequest ureq) {
+		metadata.setTitle(title.getValue());
+
+		page.setTitle(title.getValue());
+		page.setMetadata(metadata);
+		
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
-
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == mdCtr) {
-			page = mdCtr.getPage();
-			fireEvent(ureq, event);
-		}
-
-	}
-
 }

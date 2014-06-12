@@ -1,4 +1,4 @@
-<div class="b_htmleditor_wrapper b_clearfix">
+<div class="o_htmleditor_wrapper">
 
 #if($fileToLargeError)
 	<div class="o_cpeditor_message">
@@ -53,11 +53,11 @@
 			if (top.tinymce.activeEditor.isDirty()) {
 				o2c=1;
 				## add dirty class when dirty
-				jQuery('#b_htmleditor_button_save a').each(function(index,el) {
+				jQuery('#o_htmleditor_button_save a').each(function(index,el) {
 					if(!jQuery(this).hasClass('o_button_dirty')) {
 						jQuery(this).addClass('o_button_dirty');
 						#if($f.isVisible("saveandclosebuttontext"))
-							jQuery('#b_htmleditor_button_saveclose a').each(function(index2, el2) {
+							jQuery('#o_htmleditor_button_saveclose a').each(function(index2, el2) {
 								jQuery(this).addClass('o_button_dirty');
 							});
 						#end
@@ -65,11 +65,11 @@
 				});
 			} else {
 				## when not dirty remove dirty class
-				jQuery('#b_htmleditor_button_save a').each(function(index,el) {
+				jQuery('#o_htmleditor_button_save a').each(function(index,el) {
 					if (jQuery(this).hasClass('o_button_dirty')) {
 						jQuery(this).removeClass('o_button_dirty');
 						#if ($f.isVisible("saveandclosebuttontext"))
-							jQuery('#b_htmleditor_button_saveclose a').each(function(index2, el2) {
+							jQuery('#o_htmleditor_button_saveclose a').each(function(index2, el2) {
 								jQuery(this).removeClass('o_button_dirty');
 							});
 						#end
@@ -82,25 +82,23 @@
 	</script>
 	
 	## script block must be before editor loads
-	<div class="b_htmleditor_editor">
+	<div class="o_htmleditor_editor">
 		#if ($r.available("metadata"))
 			$r.render("metadata")
 		#end
 		$r.render("rtfElement")
 	</div>
-		
-	<div class="b_button_group" id="b_htmleditor_save">
+	<div id="o_htmleditor_save">
 		#if ($f.isVisible("savebuttontext"))
-			<span id="b_htmleditor_button_save">$r.render("savebuttontext")</span>
+			<span id="o_htmleditor_button_save">$r.render("savebuttontext")</span>
 		#end
 		#if ($f.isVisible("saveandclosebuttontext"))
-			<span id="b_htmleditor_button_saveclose">$r.render("saveandclosebuttontext")</span>
+			<span id="o_htmleditor_button_saveclose">$r.render("saveandclosebuttontext")</span>
 		#end
 		#if ($f.isVisible("cancel"))
-			<span id="b_htmleditor_button_close">$r.render("cancel")</span>
+			<span id="o_htmleditor_button_close">$r.render("cancel")</span>
 		#end
 	</div>
-
 #end
 
 #end		

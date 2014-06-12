@@ -50,6 +50,18 @@
 	.o_author {}
 }
 
+/* HTML editor */
+#o_htmleditor_save {
+	margin-top: 10px;
+	text-align: center;
+	input {
+		margin-right: 1em;
+		&:last-child {
+			margin-right: 0;		
+		}
+	}
+}
+
 /* notifications and subscription */
 .o_notifications_news_wrapper {
 	.o_notifications_news_datechooser {}

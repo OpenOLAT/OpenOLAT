@@ -108,29 +108,29 @@ public class CPTreeController extends BasicController {
 	}
 
 	private void setLinks() {
-		importLink = LinkFactory.createCustomLink("cptreecontroller.importlink", "cptreecontroller.importlink", null, Link.NONTRANSLATED,
-				contentVC, this);
-		importLink.setCustomEnabledLinkCSS("o_cpeditor_import");
+		importLink = LinkFactory.createCustomLink("cptreecontroller.importlink", "cptreecontroller.importlink", null,
+				Link.NONTRANSLATED | Link.BUTTON, contentVC, this);
 		importLink.setTooltip(translate("cptreecontroller.importlink_title"));
 		importLink.setTitle(translate("cptreecontroller.importlink_title"));
+		importLink.setIconLeftCSS("o_icon o_icon-lg o_icon_import");
 
-		newLink = LinkFactory.createCustomLink("cptreecontroller.newlink", "cptreecontroller.newlink", null, Link.NONTRANSLATED, contentVC,
-				this);
-		newLink.setCustomEnabledLinkCSS("o_cpeditor_new");
+		newLink = LinkFactory.createCustomLink("cptreecontroller.newlink", "cptreecontroller.newlink", null,
+				Link.NONTRANSLATED | Link.BUTTON, contentVC, this);
 		newLink.setTooltip(translate("cptreecontroller.newlink_title"));
 		newLink.setTitle(translate("cptreecontroller.newlink_title"));
+		newLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 
-		copyLink = LinkFactory.createCustomLink("cptreecontroller.copylink", "cptreecontroller.copylink", null, Link.NONTRANSLATED, contentVC,
-				this);
+		copyLink = LinkFactory.createCustomLink("cptreecontroller.copylink", "cptreecontroller.copylink", null,
+				Link.NONTRANSLATED | Link.BUTTON, contentVC, this);
 		copyLink.setTooltip(translate("cptreecontroller.copylink_title"));
 		copyLink.setTitle(translate("cptreecontroller.copylink_title"));
-		copyLink.setCustomEnabledLinkCSS("o_cpeditor_copy");
+		copyLink.setIconLeftCSS("o_icon o_icon-lg o_icon_copy");
 
-		deleteLink = LinkFactory.createCustomLink("cptreecontroller.deletelink", "cptreecontroller.deletelink", null, Link.NONTRANSLATED,
-				contentVC, this);
+		deleteLink = LinkFactory.createCustomLink("cptreecontroller.deletelink", "cptreecontroller.deletelink", null,
+				Link.NONTRANSLATED | Link.BUTTON, contentVC, this);
 		deleteLink.setTooltip(translate("cptreecontroller.deletelink_title"));
 		deleteLink.setTitle(translate("cptreecontroller.deletelink_title"));
-		deleteLink.setCustomEnabledLinkCSS("o_cpeditor_delete");
+		deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete");
 	}
 
 	/**
@@ -352,7 +352,7 @@ public class CPTreeController extends BasicController {
 				fireEvent(ureq, new TreeEvent(TreeEvent.COMMAND_TREENODE_CLICKED, selectedNodeID));
 			} else if(event instanceof TreeDropEvent) {
 				TreeDropEvent te = (TreeDropEvent)event;
-				doDrop(ureq, te.getDroppedNodeId(), te.getTargetNodeId(), te.isAsChild(), te.isAtTheEnd());
+				doDrop(ureq, te.getDroppedNodeId(), te.getTargetNodeId(), te.isAsChild());
 			}
 		}
 	}
@@ -410,7 +410,7 @@ public class CPTreeController extends BasicController {
 		}
 	}
 	
-	private void doDrop(UserRequest ureq, String droppedNodeId, String targetNodeId, boolean asChild, boolean atTheEnd) {
+	private void doDrop(UserRequest ureq, String droppedNodeId, String targetNodeId, boolean asChild) {
 		TreeNode droppedNode = treeModel.getNodeById(droppedNodeId);
 		TreeNode targetNode = treeModel.getNodeById(targetNodeId);
 
