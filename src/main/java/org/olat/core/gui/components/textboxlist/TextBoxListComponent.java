@@ -286,11 +286,11 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);
 		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
-		//jsa.addRequiredJsFile(TextBoxListComponent.class, "js/multiselect.js");
-		jsa.addRequiredStaticJsFile("js/jquery/tagit/tag-it.min.js");
-
-		if (provider != null)
+		jsa.addRequiredStaticJsFile("js/jquery/tagsinput/bootstrap-tagsinput.min.js");
+		if (provider != null) {
+			jsa.addRequiredStaticJsFile("js/jquery/typeahead/typeahead.bundle.min.js");
 			setMapper(ureq);
+		}
 	}
 
 	/**

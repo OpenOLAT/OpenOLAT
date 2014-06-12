@@ -23,7 +23,7 @@ it minified the 4 olat plugins for tinymce 4
   quotespliter
   
 and minified css:
-  jquery.tagit.min.css
+  bootstrap-tagsinput.css
   layout-default-latest.min.css
   fullcalendar.min.css
   dataTables.css

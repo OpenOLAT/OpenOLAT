@@ -45,11 +45,10 @@ import org.olat.core.util.Util;
  */
 public class TextBoxListElementImpl extends AbstractTextElement implements TextBoxListElement {
 
-
 	/**
 	 * the wrapped textBoxListElementComponent
 	 */
-	private TextBoxListElementComponent component;
+	private final TextBoxListElementComponent component;
 
 	public TextBoxListElementImpl(String name, String inputHint, Map<String, String> initialItems, Translator translator) {
 		super(name,true);// we wan't to be an inline-editing element!

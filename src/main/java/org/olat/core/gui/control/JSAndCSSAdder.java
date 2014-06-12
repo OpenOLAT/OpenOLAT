@@ -48,98 +48,6 @@ public interface JSAndCSSAdder {
 	public void addRequiredStaticJsFile(String jsFileName, String fileEncoding, String preAJAXAddJsCode);
 	
 	/**
-	 * adds a js file to be served in the html header to the list of required
-	 * js-files. e.g. addRequiredJsFile(MyController.class, "js/myscript.js")
-	 * where the file myscript.js must be under
-	 * "location of MyController.class"/_static/js
-	 * <p>
-	 * In full page refresh mode, the library will be included to the page
-	 * header using the standard script tags.
-	 * <p>
-	 * In AJAX mode, the library is will read the file from disk, transfer the
-	 * content via the AJAX channel and then eval() the content in the window.
-	 * <p>
-	 * In case that your script needs some values to be initialized before the
-	 * eval() happens, use the other addRequiredJsFile() for this purpose
-	 * 
-	 * @param baseClass
-	 * @param jsFileName
-	 */
-	//public void addRequiredJsFile(String jsFileName);
-
-	/**
-	 * adds a js file to be served in the html header to the list of required
-	 * js-files. e.g. addRequiredJsFile(MyController.class, "js/myscript.js")
-	 * where the file myscript.js must be under
-	 * "location of MyController.class"/_static/js
-	 * <p>
-	 * In full page refresh mode, the library will be included to the page header
-	 * using the standard script tags.
-	 * <p>
-	 * In AJAX mode, the library is will read the file from disk, transfer the
-	 * content via the AJAX channel and then eval() the content in the window. The
-	 * fileEncoding is used to read the file from disk.
-	 * <p>
-	 * In case that your script needs some values to be initialized before the
-	 * eval() happens, use the other addRequiredJsFile() for this purpose
-	 * 
-	 * @param baseClass
-	 * @param jsFileName
-	 * @param fileEncoding the encoding of the js file or NULL to use the default
-	 *          encoding (utf-8)
-	 */
-	//public void addRequiredJsFile(Class<?> baseClass, String jsFileName, String fileEncoding);
-
-	/**
-	 * adds a js file to be served in the html header to the list of required
-	 * js-files. e.g. addRequiredJsFile(MyController.class, "js/myscript.js")
-	 * where the file myscript.js must be under
-	 * "location of MyController.class"/_static/js
-	 * <p>
-	 * In full page refresh mode, the library will be included to the page header
-	 * using the standard script tags.
-	 * <p>
-	 * In AJAX mode, the library is will first eval() the content of the supplied
-	 * string evalBeforeDomReplacementJsCode, then read the file from disk,
-	 * transfere the content via the AJAX channel and then eval() the content in
-	 * the window.The fileEncoding is used to read the file from disk.
-	 * 
-	 * @param baseClass The class where the script is localted
-	 * @param jsFileName The script path, e.g. js/myscript.js
-	 * @param fileEncoding the encoding of the js file or NULL to use the default
-	 *          encoding (utf-8)
-	 * @param preAJAXAddJsCode A string containing some values to be eval()-ed
-	 *          right before the script itself is eval()-ed
-	 */
-	//public void addRequiredJsFile(Class<?> baseClass, String jsFileName, String fileEncoding, String preAJAXAddJsCode);
-
-	/**
-	 * 
-	 * @param baseClass
-	 * @param cssFileName
-	 * @param forceRemove normally, once added css files will not be removed
-	 *          anymore. However, if your css overrides default settings (e.g.
-	 *          when you have a preview css), this css must be removed as soon as
-	 *          the validate method does not require it anymore. (e.g. when you
-	 *          leave the course edit mode)
-	 * @param cssIndex position of the css in relation of the position of the
-	 *          theme. Use JSAndCSSAdder.CSS_INDEX_* variables to set this
-	 */
-	//public void addRequiredCSSFile(Class<?> baseClass, String cssFileName, boolean forceRemove, Integer cssLoadIndex);
-	
-	/**
-	 * This method will add the CSS file before the theme. use the other method to change this behaviour
-	 * @param baseClass
-	 * @param cssFileName
-	 * @param forceRemove normally, once added css files will not be removed
-	 *          anymore. However, if your css overrides default settings (e.g.
-	 *          when you have a preview css), this css must be removed as soon as
-	 *          the validate method does not require it anymore. (e.g. when you
-	 *          leave the course edit mode)
-	 */
-	//public void addRequiredCSSFile(Class<?> baseClass, String cssFileName, boolean forceRemove);
-
-	/**
 	 * 
 	 * used rather rarely, e.g. when you have a css with content which is dynamic
 	 * (e.g. a custom course css in olat).<br>
@@ -164,8 +72,6 @@ public interface JSAndCSSAdder {
 	
 	public void addStaticCSSPath(String cssPath);
 	
-	
-	
 	/**
 	 * 
 	 * @return true if there has been a new (never been added before) (or a deleted css which has been marked as to-be-removed) required css or js file's base since the previous call to this method, false otherwise (no new js or css libs needed)
@@ -173,7 +79,6 @@ public interface JSAndCSSAdder {
 	 */
 	public boolean finishAndCheckChange();
 	
-
 	/**
 	 * @param baseClass
 	 * @param rawHeader
@@ -201,21 +106,4 @@ public interface JSAndCSSAdder {
 	 */
 	public void requireFullPageRefresh();
 
-	/**
-	 * Get the mapper path for this class and file name, e.g. to use in a
-	 * preAJAXAddJsCode call when adding a JS script that needs to load other
-	 * scripts as well.
-	 * 
-	 * @param baseClass
-	 * @param fileName
-	 *            the name of the file or NULL to get the base path.
-	 * @return A string that represents the path of the JS file as it is used on
-	 *         a full page refresh. If fileName is null, the base path wihout
-	 *         trailing slash is returned.
-	 */
-	//public String getMappedPathFor(Class<?> baseClass, String fileName);
-
-	
-	
-	
 }

@@ -137,19 +137,6 @@
 	border: 1px solid $basecolor;
 }
 
-//overwrite tagit
-ul.tagit {
-	li.tagit-choice.ui-widget-content.ui-state-default {
-		background:#DEE7F8;
-		border: 1px solid #CAD8F3;
-	}
-}
-
-ul.tagit.ui-corner-all {
-	border:none;
-	background: none;
-}
-
 //overwrite uilayout
 .ui-layout-pane {
 	border:none;
