@@ -67,12 +67,10 @@ class SingleSelectionComponent extends FormBaseComponentImpl {
 
 		private SingleSelection selectionWrapper;
 		private int which;
-		private String name;
 
-		RadioElementComponent(String name, SingleSelection selectionWrapper, int which) {
+		RadioElementComponent(SingleSelection selectionWrapper, int which) {
 			this.selectionWrapper = selectionWrapper;
 			this.which = which;
-			this.name = name;
 		}
 
 		String getGroupingName(){
@@ -88,7 +86,7 @@ class SingleSelectionComponent extends FormBaseComponentImpl {
 		}
 		
 		String getFormDispatchId() {
-			return name;
+			return selectionWrapper.getFormDispatchId() + "_R_" + which;
 		}
 
 		public String getValue() {

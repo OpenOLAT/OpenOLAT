@@ -287,8 +287,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		} else {
 			RadioElementComponent[] radios = new RadioElementComponent[keys.length];
 			for (int i = 0; i < keys.length; i++) {
-				String radioName = getName() + "_" + keys[i];
-				radios[i] = new RadioElementComponent(radioName, this, i);
+				radios[i] = new RadioElementComponent(this, i);
 			}
 			String ssscId = getFormItemId() == null ? null : getFormItemId() + "_RADIO";
 			SingleSelectionComponent ssc = new SingleSelectionComponent(ssscId, this);

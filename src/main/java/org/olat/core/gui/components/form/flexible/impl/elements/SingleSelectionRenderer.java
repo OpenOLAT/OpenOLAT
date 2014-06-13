@@ -82,11 +82,12 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 		String key = ssec.getKey();
 		String value = ssec.getValue();
 		boolean selected = ssec.isSelected();
+		String formDispatchId = ssec.getFormDispatchId();
 		
 		// read write view
 		sb.append("<label class='radio").append("-inline", inline)
-		  .append("' for='").append(ssec.getFormDispatchId()).append("'>")
-		  .append("<input id='").append(ssec.getFormDispatchId()).append("' ")
+		  .append("' for='").append(formDispatchId).append("'>")
+		  .append("<input id='").append(formDispatchId).append("' ")
 		  .append("type='radio' ").append(subStrName)
 		  .append(" value='").append(key).append("' ")
 		  .append(" checked='checked' ", selected);
@@ -102,9 +103,9 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 		
 		if(source.isEnabled()){
 			//add set dirty form only if enabled
-			sb.append(FormJSHelper.getJSStartWithVarDeclaration(ssec.getFormDispatchId()));
-			sb.append(FormJSHelper.getSetFlexiFormDirtyForCheckbox(ssec.getRootForm(), ssec.getFormDispatchId()));
-			sb.append(FormJSHelper.getJSEnd());
+			sb.append(FormJSHelper.getJSStartWithVarDeclaration(formDispatchId))
+			  .append(FormJSHelper.getSetFlexiFormDirtyForCheckbox(ssec.getRootForm(), formDispatchId))
+			  .append(FormJSHelper.getJSEnd());
 		}
 	}
 }
