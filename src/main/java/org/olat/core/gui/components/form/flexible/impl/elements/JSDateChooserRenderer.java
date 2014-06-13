@@ -30,11 +30,10 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -48,9 +47,7 @@ import org.olat.core.util.Util;
  * 
  * @author patrickb
  */
-class JSDateChooserRenderer implements ComponentRenderer {
-
-
+class JSDateChooserRenderer extends DefaultComponentRenderer {
 
 	/**
 	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
@@ -60,36 +57,37 @@ class JSDateChooserRenderer implements ComponentRenderer {
 	 *      org.olat.core.gui.translator.Translator,
 	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
+	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		JSDateChooserComponent jsdcc = (JSDateChooserComponent) source;
-
-		String receiverId = jsdcc.getTextElementComponent().getFormDispatchId();
+		TextElementComponent teC = jsdcc.getTextElementComponent();
+		String receiverId = teC.getFormDispatchId();
 
 		String exDate = jsdcc.getExampleDateString();
 		int maxlength = exDate.length() + 4;
 		
-		StringOutput dc = new StringOutput();
-		renderTextElementPart(dc, jsdcc.getTextElementComponent(), maxlength);
-
 		String triggerId = "trigger_" + jsdcc.getFormDispatchId();
 		Translator sourceTranslator = jsdcc.getElementTranslator();
 		Translator dateTranslator = Util.createPackageTranslator(JSDateChooserRenderer.class, translator.getLocale());
 
 		//add pop js for date chooser, if componente is enabled
-		sb.append("<div class='o_date'>");
+		sb.append("<div class='o_date form-inline'>");
 		if (source.isEnabled()) {
 			String format = jsdcc.getDateChooserDateFormat();
-			TextElementComponent teC = jsdcc.getTextElementComponent();
 			TextElementImpl te = teC.getTextElementImpl();
 
+			sb.append("<div class='form-group'><div class='input-group o_date_picker'>");
+			renderTextElement(sb, teC, maxlength);
+
 			//date chooser button
-			dc.append("<div class='o_picker_wrapper'>");
-			dc.append("<i class='o_icon o_icon_calendar' id=\"").append(triggerId).append("\" title=\"").append(StringEscapeUtils.escapeHtml(sourceTranslator.translate("calendar.choose"))).append("\"")
+			sb.append("<span class='input-group-addon'>")
+			  .append("<i class='o_icon o_icon_calendar' id=\"").append(triggerId).append("\" title=\"").append(StringEscapeUtils.escapeHtml(sourceTranslator.translate("calendar.choose"))).append("\"")
 			  .append(" onclick=\"jQuery('#").append(receiverId).append("').datepicker('show');\"")
-			  .append("></i></div>");
+			  .append("></i></span>")
+			  .append("</div></div>");//input-group
 			// date chooser javascript
-			dc.append("<script type=\"text/javascript\">\n /* <![CDATA[ */ \n")
+			sb.append("<script type=\"text/javascript\">\n /* <![CDATA[ */ \n")
 				.append("jQuery(function(){ jQuery('#").append(receiverId).append("').datepicker({\n")
 				.append("  dateFormat:'").append(format).append("',\n")
 				.append("  firstDay:1,\n")
@@ -136,15 +134,14 @@ class JSDateChooserRenderer implements ComponentRenderer {
 					hour = cal.get(Calendar.HOUR_OF_DAY);
 					minute = cal.get(Calendar.MINUTE);
 				}
-
-				renderMS(dc, "o_dch_" + receiverId, hour);
-				dc.append(" : ");
-				renderMS(dc, "o_dcm_" + receiverId, minute);
+				sb.append("<div class='form-group o_date_ms'>");
+				renderMS(sb, "o_dch_" + receiverId, hour);
+				sb.append(" : ");
+				renderMS(sb, "o_dcm_" + receiverId, minute);
+				sb.append("</div>");
 			}
-			sb.append(dc);
 		} else{
-			//readonly view
-			FormJSHelper.appendReadOnly(dc.toString(), sb);
+			renderTextElementReadonly(sb, teC, maxlength);
 		}
 		sb.append("</div>");
 	}
@@ -157,99 +154,55 @@ class JSDateChooserRenderer implements ComponentRenderer {
 		return dc;
 	}
 
-	private void renderTextElementPart(StringOutput sb, Component source, int maxlength) {
-		TextElementComponent teC = (TextElementComponent) source;
+	private void renderTextElementReadonly(StringOutput sb, TextElementComponent teC, int maxlength) {
 		TextElementImpl te = teC.getTextElementImpl();
-
 		//display size cannot be bigger the maxlenght given by dateformat
 		te.displaySize = te.displaySize <= maxlength ? te.displaySize : maxlength;
 		
 		String id = teC.getFormDispatchId();
-		//
-		if (!source.isEnabled()) {
-			//read only view
-			String value = te.getValue();
-			if(value == null){
-				value = "";
-			}
-			value = StringEscapeUtils.escapeHtml(value);
-			sb.append("<span\" id=\"");
-			sb.append(id);
-			sb.append("\" ");
-			sb.append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()));
-			sb.append("title=\"");
-			sb.append(value); //the uncutted value in tooltip
-			sb.append("\">");
-			String shorter;
-			//beautify
-			if(value.length() != te.displaySize && value.length() > te.displaySize - 3){
-				shorter = value.substring(0,te.displaySize-4);
-				shorter += "...";
-			}else{
-				int fill = te.displaySize - value.length();
-				shorter = value;
-				for(int i=0; i <= fill; i++){
-					shorter += "&nbsp;";
-				}
-			}				
-			sb.append("<input disabled=\"disabled\" class=\"b_form_element_disabled\" size=\"");
-			sb.append(te.displaySize);
-			sb.append("\" value=\"");		
-			sb.append(shorter);
-			sb.append("\" />");	
-			sb.append("</span>");
-			
+		//read only view
+		String value = te.getValue();
+		if(value == null){
+			value = "";
+		}
+		value = StringEscapeUtils.escapeHtml(value);
+		sb.append("<span\" id=\"").append(id).append("\" ")
+		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()))
+		  .append("title=\"").append(value).append("\">");
+		String shorter;
+		//beautify
+		if(value.length() != te.displaySize && value.length() > te.displaySize - 3){
+			shorter = value.substring(0,te.displaySize-4);
+			shorter += "...";
 		} else {
-			//read write view
-			sb.append("<input type=\"text\" class='form-control' id=\"");
-			sb.append(id);
-			sb.append("\" name=\"");
-			sb.append(id);
-			sb.append("\" size=\"");
-			sb.append(te.displaySize);
-			sb.append("\" maxlength=\"");
-			sb.append(maxlength);
-			sb.append("\" value=\"");
-			sb.append(StringEscapeUtils.escapeHtml(te.getValue()));
-			sb.append("\" ");
-			sb.append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()));
-			sb.append("/>");
-		}
-
-		if(source.isEnabled()){
-			//add set dirty form only if enabled
-			sb.append(FormJSHelper.getJSStartWithVarDeclaration(teC.getFormDispatchId()));
-			/* deactivated due OLAT-3094 and OLAT-3040
-			if(te.hasFocus()){
-				sb.append(FormJSHelper.getFocusFor(teC.getFormDispatchId()));
+			int fill = te.displaySize - value.length();
+			shorter = value;
+			for(int i=0; i <= fill; i++){
+				shorter += "&nbsp;";
 			}
-			*/
-			sb.append(FormJSHelper.getSetFlexiFormDirty(te.getRootForm(), teC.getFormDispatchId()));
-			sb.append(FormJSHelper.getJSEnd());
-		}
-		
+		}				
+		sb.append("<input disabled=\"disabled\" class=\"b_form_element_disabled\" size=\"")
+		  .append(te.displaySize)
+		  .append("\" value=\"").append(shorter).append("\" /></span>");
 	}
-
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.RenderingState)
-	 */
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-		//
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder,
-	 *      org.olat.core.gui.translator.Translator,
-	 *      org.olat.core.gui.render.RenderingState)
-	 */
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
-			RenderingState rstate) {
-		//
+	
+	private void renderTextElement(StringOutput sb, TextElementComponent teC, int maxlength) {
+		TextElementImpl te = teC.getTextElementImpl();
+		String id = teC.getFormDispatchId();
+		//display size cannot be bigger the maxlenght given by dateformat
+		te.displaySize = te.displaySize <= maxlength ? te.displaySize : maxlength;
+	
+		//read write view
+		sb.append("<input type=\"text\" class='form-control o_date_day' id=\"")
+		  .append(id).append("\" name=\"").append(id)
+		  .append("\" size=\"").append(te.displaySize)
+		  .append("\" maxlength=\"").append(maxlength)
+		  .append("\" value=\"").append(StringEscapeUtils.escapeHtml(te.getValue())).append("\" ")
+		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()))
+		  .append("/>")
+		//add set dirty form only if enabled
+		  .append(FormJSHelper.getJSStartWithVarDeclaration(teC.getFormDispatchId()))
+		  .append(FormJSHelper.getSetFlexiFormDirty(te.getRootForm(), teC.getFormDispatchId()))
+		  .append(FormJSHelper.getJSEnd());
 	}
 }

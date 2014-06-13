@@ -55,8 +55,16 @@
 		padding-right: $input-height-base;
 	}
 	
-	.o_date_ms {
+	input.o_date_ms {
 		width: 3em;
+	}
+	
+	.o_date_ms.form-group {
+		margin-left: 25px;
+	}
+	
+	.input-group.o_date_picker {
+		width: 16em;
 	}
 	
 	/* file chooser */
