@@ -60,7 +60,7 @@ public class LanguageChooserController extends FormBasicController {
 		super(ureq, wControl, id, "langchooser");
 		// init variables
 		curlang = ureq.getLocale().toString();
-		initForm(this.flc, this, ureq);
+		initForm(ureq);
 	}
 
 	/**
@@ -86,7 +86,7 @@ public class LanguageChooserController extends FormBasicController {
 		OLATResourceable wrappedLocale = OresHelper.createOLATResourceableType(Locale.class);
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(mue, wrappedLocale);
 		// Update in velocity for flag
-		this.flc.contextPut("languageCode", loc.toString());
+		flc.contextPut("languageCode", loc.toString());
 	}
 
 	/**
@@ -118,12 +118,12 @@ public class LanguageChooserController extends FormBasicController {
 		String[] langValues = StringHelper.getMapValuesAsStringArray(languages);
 		ArrayHelper.sort(langKeys, langValues, false, true, false);
 		// Build css classes for reference languages
-		String[] langCssClasses = I18nManager.getInstance().createLanguageFlagsCssClasses(langKeys, "o_with_flag");
-		langs = uifactory.addDropdownSingleselect(mainForm.getFormId() + "_select", "select.language", "select.language", formLayout, langKeys, langValues, langCssClasses); 
+		//String[] langCssClasses = I18nManager.getInstance().createLanguageFlagsCssClasses(langKeys, "o_with_flag");
+		langs = uifactory.addDropdownSingleselect(mainForm.getFormId() + "_select", "select.language", "select.language", formLayout, langKeys, langValues, null); 
 		langs.addActionListener(FormEvent.ONCHANGE);
 		langs.select(curlang, true);
 		// Add to velocity for flag
-		this.flc.contextPut("languageCode", curlang.toString());
+		flc.contextPut("languageCode", curlang.toString());
 	}
 
 	/**

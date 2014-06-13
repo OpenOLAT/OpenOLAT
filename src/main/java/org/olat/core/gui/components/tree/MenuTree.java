@@ -38,6 +38,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.JSAndCSSAdder;
+import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeHelper;
@@ -135,6 +137,16 @@ public class MenuTree extends AbstractComponent {
 	public MenuTree(String id, String name, Controller eventListener) {
 		this(id, name);
 		addListener(eventListener);
+	}
+	
+	
+
+	@Override
+	public void validate(UserRequest ureq, ValidationResult vr) {
+		super.validate(ureq, vr);
+		
+		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
+		jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.10.4.custom.dnd.min.js");
 	}
 
 	/**

@@ -28,6 +28,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ChiefController;
@@ -176,6 +177,12 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		panel3 = new Panel("panel3");
 		layoutMainVC.put("col3", panel3);
 		setCol3(col3);
+		
+		if(col1 != null || col2 != null) {
+			//jquery-ui-1.10.4.custom.resize.min.js
+			JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/jquery/ui/jquery-ui-1.10.4.custom.resize.min.js" }, null);
+			layoutMainVC.put("js", js);
+		}
 
 		putInitialPanel(layoutMainVC);
 	}

@@ -27,8 +27,11 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.util.Date;
 
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
+import org.olat.core.gui.control.JSAndCSSAdder;
+import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
 
 /**
@@ -69,7 +72,15 @@ class JSDateChooserComponent extends FormBaseComponentImpl {
 	public String getDispatchID() {
 		return element.getTextElementComponent().getDispatchID();
 	}
-	
+
+	@Override
+	public void validate(UserRequest ureq, ValidationResult vr) {
+		super.validate(ureq, vr);
+		
+		JSAndCSSAdder jsa = vr.getJsAndCSSAdder();
+		jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.10.4.custom.datepicker.min.js");
+	}
+
 	public Date getDate() {
 		return element.getDate();
 	}

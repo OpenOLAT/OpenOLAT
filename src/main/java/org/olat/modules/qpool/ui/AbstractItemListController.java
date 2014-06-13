@@ -211,8 +211,7 @@ public abstract class AbstractItemListController extends FormBasicController
 				} else if("select-item".equals(se.getCommand())) {
 					ItemRow row = getModel().getObject(se.getIndex());
 					if(row != null) {
-						//doSelect(ureq, row);
-						doClick(ureq, row);
+						doSelect(ureq, row);
 					}
 				}
 			}

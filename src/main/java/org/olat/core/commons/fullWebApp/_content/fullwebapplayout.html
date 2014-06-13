@@ -63,8 +63,6 @@ function b_start(){
 <!--[if gte IE 9]><!-->
 <script type="text/javascript" src='$r.staticLink("js/jquery/jquery-2.1.0.min.js")'></script>
 <!--<![endif]-->
-<script type="text/javascript" src='$r.staticLink("js/jquery/ui/jquery-ui-1.10.4.custom.min.js")'></script>
-
 
 ## HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries - required by bootstrap
 <!--[if lt IE 9]>
@@ -103,12 +101,12 @@ function b_start(){
 ## The OpenOLAT video player. In separate file as it is also used in content iframes
 <script type="text/javascript" src='$r.staticLink("movie/player.js")'></script>
 
-## Always loaded
-## <link type="text/css" href='$r.staticLink("js/jquery/uilayout/layout-default-latest.css")' rel="stylesheet"/>
-<link type="text/css" href='$r.staticLink("js/jquery/tagsinput/bootstrap-tagsinput.css")' rel="stylesheet"/>
-<link type="text/css" href='$r.staticLink("js/jquery/fullcalendar/fullcalendar.css")' rel="stylesheet"/>
-## FIXME:oo10 add plugin min
-##<link type="text/css" href='$r.staticLink("js/js.plugins.min.css")' rel="stylesheet"/>
+#if($r.available("guidebug"))
+	<link type="text/css" href='$r.staticLink("js/jquery/tagsinput/bootstrap-tagsinput.css")' rel="stylesheet"/>
+	<link type="text/css" href='$r.staticLink("js/jquery/fullcalendar/fullcalendar.css")' rel="stylesheet"/>
+#else
+	<link type="text/css" href='$r.staticLink("js/js.plugins.min.css")' rel="stylesheet"/>
+#end
 <link type="text/css" href='$r.staticLink("js/jquery/ui/jquery-ui-1.10.4.custom.min.css")' rel="stylesheet"/>
 
 <script type="text/javascript">
