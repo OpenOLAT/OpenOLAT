@@ -130,10 +130,8 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private Panel main, modalPanel;
 	private GUIMessage guiMessage;
 	private OncePanel guimsgPanel;
-	private Panel guimsgHolder, currentMsgHolder;
-	private VelocityContainer guimsgVc;
-
-	private VelocityContainer mainVc, navSitesVc, navTabsVc;
+	private Panel cssHolder, guimsgHolder, currentMsgHolder;
+	private VelocityContainer guimsgVc, mainVc, navSitesVc, navTabsVc;
 
 	// NEW FROM FullChiefController
 	private Controller topnavCtr, footerCtr;
@@ -259,6 +257,8 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		Window w = wbo.getWindow();
 
 		mainVc.put("jsCssRawHtmlHeader", w.getJsCssRawHtmlHeader());
+		cssHolder = new Panel("customCss");
+		mainVc.put("customCssHolder", cssHolder);
 
 		// control part for ajax-communication. returns an empty panel if ajax
 		// is not enabled, so that ajax can be turned on on the fly for
@@ -512,9 +512,10 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		if (currentTheme.hasCustomJS()) {
 			String relPath = currentTheme.getRelPathToCustomJS();
 			CustomJSComponent customJS = new CustomJSComponent("customThemejs", new String[] { relPath });
-			if (isLogDebugEnabled())
+			if (isLogDebugEnabled()) {
 				logDebug("injecting custom javascript from current OLAT-Theme", relPath);
-			mainVc.put(customJS.getComponentName(), customJS);
+			}
+			cssHolder.setContent(customJS);
 		}
 	}
 	
@@ -770,7 +771,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		CustomCSS currentCustomCSS = myWindow.getCustomCSS();
 		if (currentCustomCSS != null) {
 			// remove css and js from view
-			mainVc.remove(currentCustomCSS.getJSAndCSSComponent());
+			cssHolder.setContent(null);
 			myWindow.setCustomCSS(null);
 		}
 	}
@@ -787,7 +788,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		Window myWindow = getWindowControl().getWindowBackOffice().getWindow();
 		myWindow.setCustomCSS(customCSS);
 		// add css component to view
-		mainVc.put("jsAndCss", customCSS.getJSAndCSSComponent());
+		cssHolder.setContent(customCSS.getJSAndCSSComponent());
 		
 		addCustomThemeJS();
 	}

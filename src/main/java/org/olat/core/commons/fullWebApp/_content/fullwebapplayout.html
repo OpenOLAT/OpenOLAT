@@ -133,9 +133,11 @@ $r.render("jsCssRawHtmlHeader", "pre-theme")
 <![endif]-->
 ## 4) Dynamic overriding of CSS rules
 $r.render("jsCssRawHtmlHeader", "post-theme")
-## 5) Add user font size
+## 5) Add user font size (id o_fontSize_css used to place on demand css)
 #if (${globalSettings.getFontSize()} != "100")
 <style id="o_fontSize_css" type="text/css">#o_body{zoom:${globalSettings.getFontSize()}%; -moz-transform: scale(${globalSettings.getFontSize()}%)}</style>
+#else
+<style id="o_fontSize_css" type="text/css"></style>
 #end
 
 ## deprecated - include any raw header

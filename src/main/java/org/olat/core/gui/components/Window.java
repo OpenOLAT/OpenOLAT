@@ -879,9 +879,8 @@ public class Window extends AbstractComponent {
 				public boolean visit(Component comp, UserRequest ureq) {
 					boolean visitChildren = false;
 					if(comp == null) {
-						System.out.println();
-					}
-					if (!comp.isVisible()) {
+						log.warn("Ooops, a component is null");
+					} else if (!comp.isVisible()) {
 						// a component just made -visible- still needs to be collected (detected by checking dirty flag)
 						if (comp.isDirty()) {
 							dirties.add(comp);
