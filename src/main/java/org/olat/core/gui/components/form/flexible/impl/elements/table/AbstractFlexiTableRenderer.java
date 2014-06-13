@@ -53,7 +53,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 
 		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
 		
-		sb.append("<div class=\"o_table_wrapper o_table_flexi")
+		sb.append("<div class='o_table_wrapper o_table_flexi")
 		  .append(" o_table_edit", ftE.isEditMode());
 		String css = ftE.getElementCssClass();
 		if (css != null) {
@@ -62,9 +62,14 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		switch(ftE.getRendererType()) {
 			case custom: sb.append(" o_rendertype_custom"); break;
 			case classic: sb.append(" o_rendertype_classic"); break;
-			case dataTables: sb.append(" o_rendertype_dataTables"); break;
 		}
-		sb.append(" table-responsive\">");
+		sb.append(" table-responsive'");
+		String wrapperSelector = ftE.getWrapperSelector();
+		if (wrapperSelector != null) {
+			sb.append(" id='").append(wrapperSelector).append("'");
+		}
+		sb.append(">");
+		
 		String id = ftC.getFormDispatchId();
 		sb.append("<table id=\"").append(id).append("\" class=\"table table-condensed  table-striped table-hover table-responsive\">");
 		
@@ -74,8 +79,29 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		sb.append("<tbody>");
 		renderBody(renderer, sb, ftC, ubu, translator, renderResult);
 		sb.append("</tbody></table>");
-		
 		renderFooterButtons(sb, ftC, translator);
+		//draggable
+		if(ftE.getColumnIndexForDragAndDropLabel() > 0) {
+		
+			sb.append("<script type='text/javascript'>")
+			  .append("/* <![CDATA[ */ \n")
+			  .append("jQuery(function() {\n")
+			  .append(" console.log(jQuery('.o_table_flexi table tr'));\n")
+			  .append(" jQuery('.o_table_flexi table tr').draggable({\n")
+	          .append("  containment: '#o_main',\n")
+	          .append("	 zIndex: 10000,\n")
+	          .append("	 cursorAt: {left: 0, top: 0},\n")
+	          .append("	 accept: function(event,ui){ return true; },\n")
+	          .append("	 helper: function(event,ui,zt) {\n")
+	          .append("    var helperText = jQuery(this).children('.o_dnd_label').text();\n")
+	          .append("    return jQuery(\"<div class='ui-widget-header b_table_drag'>\" + helperText + \"</div>\").appendTo('body').css('zIndex',5).show();\n")
+	          .append("  }\n")
+	          .append("});\n")
+	          .append("});\n")
+	          .append("/* ]]> */\n")
+			  .append("</script>\n");
+		}
+		
 		sb.append("</div>");
 		
 		//source
@@ -90,7 +116,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			RenderResult renderResult, String[] args) {
 
 		Component searchCmp = ftE.getExtendedSearchComponent();
-		if(searchCmp != null && !ftE.isExtendedSearchCallout() && ftE.isExtendedSearchExpanded()) {
+		if(searchCmp != null && ftE.isExtendedSearchExpanded()) {
 			renderer.render(searchCmp, sb, args);
 			sb.append("<div class='row clearfix'><div class='col-lg-6'></div>");
 		} else {
@@ -240,10 +266,6 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 					renderFormItem(renderer, sb, ftE.getClassicTypeButton(), ubu, translator, renderResult, args);
 					break;
 				}
-				case dataTables: {
-					renderFormItem(renderer, sb, ftE.getDataTablesTypeButton(), ubu, translator, renderResult, args);
-					break;
-				}
 			}
 		}
 	}
@@ -257,7 +279,6 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	}
 	
 	protected void renderFooterButtons(StringOutput sb, FlexiTableComponent ftC, Translator translator) {
-
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		if(ftE.isSelectAllEnable()) {
 			String formName = ftE.getRootForm().getFormName();
@@ -280,7 +301,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append("</div></div>");
 		}
 		
-		if(ftE.getRendererType() != FlexiTableRendererType.dataTables && ftE.getPageSize() > 0) {
+		if(ftE.getPageSize() > 0) {
 			renderPagesLinks(sb, ftC);
 		}
 	}
@@ -348,33 +369,26 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		String rowIdPrefix = "row_" + id + "-";
 		for (int i = firstRow; i < lastRow; i++) {
 			if(dataModel.isRowLoaded(i)) {
-				renderRow(renderer, target, ftC, rowIdPrefix,	i, rows, ubu, translator, renderResult);
+				renderRow(renderer, target, ftC, rowIdPrefix, i, ubu, translator, renderResult);
 			}
 		}				
 		// end of table table
 	}
 	
 	protected void renderRow(Renderer renderer, StringOutput target, FlexiTableComponent ftC, String rowIdPrefix,
-			int row, int rows, URLBuilder ubu, Translator translator, RenderResult renderResult) {
+			int row, URLBuilder ubu, Translator translator, RenderResult renderResult) {
 
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		FlexiTableColumnModel columnsModel = ftE.getTableDataModel().getTableColumnModel();
 		int numOfCols = columnsModel.getColumnCount();
 		
 		// use alternating css class
-		String cssClass;
-		if (row % 2 == 0) cssClass = "";
-		else cssClass = "b_table_odd";
-		// add css class for first and last column to support older browsers
-		if (row == 0) cssClass += " b_first_child";
-		if (row == rows-1) cssClass += " b_last_child";
-
 		target.append("<tr id='").append(rowIdPrefix).append(row)
-				  .append("' class=\"").append(cssClass).append("\">");
+				  .append("'>");
 				
 		int col = 0;
 		if(ftE.isMultiSelect()) {
-			target.append("<td class='b_first_child'>")
+			target.append("<td>")
 			      .append("<input type='checkbox' name='tb_ms' value='").append(rowIdPrefix).append(row).append("'");
 			if(ftE.isAllSelectedIndex() || ftE.isMultiSelectedIndex(row)) {
 				target.append(" checked='checked'");
@@ -386,25 +400,25 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		for (int j = 0; j<numOfCols; j++) {
 			FlexiColumnModel fcm = columnsModel.getColumnModel(j);
 			if(ftE.isColumnModelVisible(fcm)) {
-				renderCell(renderer, target, ftC, fcm, row, col++, numOfCols, ubu, translator, renderResult);
+				renderCell(renderer, target, ftC, fcm, row, col++, ubu, translator, renderResult);
 			}
 		}
 		target.append("</tr>");
 	}
 
 	protected void renderCell(Renderer renderer, StringOutput target, FlexiTableComponent ftC, FlexiColumnModel fcm,
-			int row, int col, int numOfCols, URLBuilder ubu, Translator translator, RenderResult renderResult) {
+			int row, int col, URLBuilder ubu, Translator translator, RenderResult renderResult) {
 
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 
 		int alignment = fcm.getAlignment();
 		String cssClass = (alignment == FlexiColumnModel.ALIGNMENT_LEFT ? "text-left" : (alignment == FlexiColumnModel.ALIGNMENT_RIGHT ? "text-right" : "text-center"));
-		// add css class for first and last column to support older browsers
-		if (col == 0) cssClass += " b_first_child";
-		if (col == numOfCols-1) cssClass += " b_last_child";				
-		target.append("<td class=\"").append(cssClass).append("\">");
-		if (col == 0) target.append("<a name=\"table\"></a>"); //add once for accessabillitykey
+
+		target.append("<td class=\"").append(cssClass).append(" ")
+		  .append("o_dnd_label", ftE.getColumnIndexForDragAndDropLabel() == fcm.getColumnIndex())
+		  .append("\">");
+		if (col == 0) target.append("<a name='table'></a>"); //add once for accessabillitykey
 
 		int columnIndex = fcm.getColumnIndex();
 		Object cellValue = columnIndex >= 0 ? 

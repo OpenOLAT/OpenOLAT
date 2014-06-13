@@ -260,13 +260,13 @@ public class MetadatasController extends BasicController {
 		return item;
 	}
 	
-	private void reloadData(QuestionItem item) {
-		this.item = item;
-		generalCtrl.setItem(item);
-		educationalCtrl.setItem(item);
-		questionCtrl.setItem(item);
-		lifecycleCtrl.setItem(item);
-		rightsCtrl.setItem(item);
-		technicalCtrl.setItem(item);
+	private void reloadData(QuestionItem reloadedItem) {
+		this.item = reloadedItem;
+		generalCtrl.setItem(reloadedItem);
+		educationalCtrl.setItem(reloadedItem);
+		questionCtrl.setItem(reloadedItem);
+		lifecycleCtrl.setItem(reloadedItem);
+		rightsCtrl.setItem(reloadedItem);
+		technicalCtrl.setItem(reloadedItem);
 	}
 }

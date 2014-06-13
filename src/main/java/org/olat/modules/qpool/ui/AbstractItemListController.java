@@ -35,6 +35,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -81,19 +82,19 @@ public abstract class AbstractItemListController extends FormBasicController
 	protected final QPoolService qpoolService;
 	
 	private EventBus eventBus;
-	private QuestionItemsSource source;
+	private QuestionItemsSource itemsSource;
 	
 	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source, String key) {
 		super(ureq, wControl, "item_list");
 
-		this.source = source;
+		this.itemsSource = source;
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
 		eventBus.registerFor(this, getIdentity(), QuestionPoolMainEditorController.QITEM_MARKED);
 		
-		extendedSearchCtrl = new ExtendedSearchController(ureq, getWindowControl(), key);
+		extendedSearchCtrl = new ExtendedSearchController(ureq, getWindowControl(), key, mainForm);
 		listenTo(extendedSearchCtrl);
 		
 		initForm(ureq);
@@ -138,13 +139,15 @@ public abstract class AbstractItemListController extends FormBasicController
 		
 		model = new QuestionItemDataModel(columnsModel, this, getTranslator());
 		itemsTable = uifactory.addTableElement(ureq, getWindowControl(), "items", model, 50, true, getTranslator(), formLayout);
-		itemsTable.setWrapperSelector("#qitems");
+		itemsTable.setWrapperSelector("qitems");
 		itemsTable.setSelectAllEnable(true);
 		itemsTable.setMultiSelect(true);
 		itemsTable.setSearchEnabled(true);
-		itemsTable.setExtendedSearch(extendedSearchCtrl, true);
-		itemsTable.setRendererType(FlexiTableRendererType.dataTables);
-		itemsTable.setColumnLabelForDragAndDrop(Cols.title.ordinal());
+		itemsTable.setSortSettings(new FlexiTableSortOptions(true));
+		itemsTable.setExtendedSearch(extendedSearchCtrl);
+		itemsTable.setAvailableRendererTypes(FlexiTableRendererType.classic, FlexiTableRendererType.custom);
+		itemsTable.setRendererType(FlexiTableRendererType.classic);
+		itemsTable.setColumnIndexForDragAndDropLabel(Cols.title.ordinal());
 
 		initButtons(ureq, formLayout);
 	}
@@ -152,7 +155,7 @@ public abstract class AbstractItemListController extends FormBasicController
 	protected abstract void initButtons(UserRequest ureq, FormItemContainer formLayout);
 
     protected void setSource(QuestionItemsSource source) {
-        this.source = source;
+        this.itemsSource = source;
     }
 	
 	protected FlexiTableElement getItemsTable() {
@@ -172,11 +175,11 @@ public abstract class AbstractItemListController extends FormBasicController
 	}
 	
 	public QuestionItemsSource getSource() {
-		return source;
+		return itemsSource;
 	}
 	
 	public void updateSource(QuestionItemsSource source) {
-		this.source = source;
+		this.itemsSource = source;
 		model.clear();
 		itemsTable.reset();
 	}
@@ -207,7 +210,8 @@ public abstract class AbstractItemListController extends FormBasicController
 				} else if("select-item".equals(se.getCommand())) {
 					ItemRow row = getModel().getObject(se.getIndex());
 					if(row != null) {
-						doSelect(ureq, row);
+						//doSelect(ureq, row);
+						doClick(ureq, row);
 					}
 				}
 			}
@@ -325,7 +329,7 @@ public abstract class AbstractItemListController extends FormBasicController
 
 	@Override
 	public int getRowCount() {
-		return source.getNumOfItems();
+		return itemsSource.getNumOfItems();
 	}
 
 	@Override
@@ -335,7 +339,7 @@ public abstract class AbstractItemListController extends FormBasicController
 			itemToReload.add(row.getKey());
 		}
 
-		List<QuestionItemView> reloadedItems = source.getItems(itemToReload);
+		List<QuestionItemView> reloadedItems = itemsSource.getItems(itemToReload);
 		List<ItemRow> reloadedRows = new ArrayList<ItemRow>(reloadedItems.size());
 		for(QuestionItemView item:reloadedItems) {
 			ItemRow reloadedRow = forgeRow(item);
@@ -346,7 +350,7 @@ public abstract class AbstractItemListController extends FormBasicController
 
 	@Override
 	public ResultInfos<ItemRow> getRows(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
-		ResultInfos<QuestionItemView> items = source.getItems(query, condQueries, firstResult, maxResults, orderBy);
+		ResultInfos<QuestionItemView> items = itemsSource.getItems(query, condQueries, firstResult, maxResults, orderBy);
 		List<ItemRow> rows = new ArrayList<ItemRow>(items.getObjects().size());
 		for(QuestionItemView item:items.getObjects()) {
 			ItemRow row = forgeRow(item);

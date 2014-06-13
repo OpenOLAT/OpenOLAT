@@ -218,7 +218,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "table", model, 20, !startExtendedSearch, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
 		tableEl.setExportEnabled(true);
-		tableEl.setExtendedSearch(searchCtrl, false);
+		tableEl.setExtendedSearch(searchCtrl);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_coursetable");
 		tableEl.setMultiSelect(true);

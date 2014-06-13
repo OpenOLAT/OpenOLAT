@@ -198,7 +198,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		listenTo(searchCtrl);
 		
 		tableEl.setSearchEnabled(true);
-		tableEl.setExtendedSearch(searchCtrl, false);
+		tableEl.setExtendedSearch(searchCtrl);
 		
 		initButtons(formLayout, ureq);
 	}

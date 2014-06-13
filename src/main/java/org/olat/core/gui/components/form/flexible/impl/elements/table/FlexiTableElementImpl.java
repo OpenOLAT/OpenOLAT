@@ -99,14 +99,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private boolean searchEnabled;
 	private boolean selectAllEnabled;
 	private boolean extendedSearchExpanded = false;
-	private boolean extendedSearchCallout;
 	private int columnLabelForDragAndDrop;
 	
 	private VelocityContainer rowRenderer;
 
 	private FormLink customButton, exportButton;
 	private FormLink searchButton, extendedSearchButton;
-	private FormLink classicTypeButton, customTypeButton, dataTablesTypeButton;
+	private FormLink classicTypeButton, customTypeButton;
 	private TextElement searchFieldEl;
 	private ExtendedFlexiTableSearchController extendedSearchCtrl;
 	
@@ -175,12 +174,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	@Override
-	public int getColumnLabelForDragAndDrop() {
+	public int getColumnIndexForDragAndDropLabel() {
 		return columnLabelForDragAndDrop;
 	}
 
 	@Override
-	public void setColumnLabelForDragAndDrop(int columnLabelForDragAndDrop) {
+	public void setColumnIndexForDragAndDropLabel(int columnLabelForDragAndDrop) {
 		this.columnLabelForDragAndDrop = columnLabelForDragAndDrop;
 	}
 
@@ -197,9 +196,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		if(classicTypeButton != null) {
 			classicTypeButton.setActive(FlexiTableRendererType.classic == rendererType);
-		}
-		if(dataTablesTypeButton != null) {
-			dataTablesTypeButton.setActive(FlexiTableRendererType.dataTables == rendererType);
 		}
 		// update render type
 		this.rendererType = rendererType;
@@ -229,17 +225,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			classicTypeButton.setIconLeftCSS("o_icon o_icon_table o_icon-lg");
 			classicTypeButton.setActive(FlexiTableRendererType.classic == rendererType);
 			components.put("rTypeClassic", classicTypeButton);
-			//jquery tables
-			dataTablesTypeButton = new FormLinkImpl(dispatchId + "_dataTablesRTypeButton", "rDataTablesRTypeButton", "", Link.BUTTON + Link.NONTRANSLATED);
-			dataTablesTypeButton.setTranslator(translator);
-			dataTablesTypeButton.setIconLeftCSS("o_icon o_icon_table o_icon-lg");
-			dataTablesTypeButton.setActive(FlexiTableRendererType.dataTables == rendererType);
-			components.put("rTypeDataTables", dataTablesTypeButton);
 			
 			if(getRootForm() != null) {
 				rootFormAvailable(customTypeButton);
 				rootFormAvailable(classicTypeButton);
-				rootFormAvailable(dataTablesTypeButton);
 			}
 		}
 	}
@@ -250,10 +239,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	public FormLink getCustomTypeButton() {
 		return customTypeButton;
-	}
-
-	public FormLink getDataTablesTypeButton() {
-		return dataTablesTypeButton;
 	}
 
 	@Override
@@ -469,18 +454,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		return extendedSearchExpanded;
 	}
 	
-	public boolean isExtendedSearchCallout() {
-		return extendedSearchCallout;
-	}
+
 	
 	public Component getExtendedSearchComponent() {
 		return (extendedSearchCtrl == null) ? null : extendedSearchCtrl.getInitialComponent();
 	}
 	
 	@Override
-	public void setExtendedSearch(ExtendedFlexiTableSearchController controller, boolean callout) {
+	public void setExtendedSearch(ExtendedFlexiTableSearchController controller) {
 		extendedSearchCtrl = controller;
-		extendedSearchCallout = callout;
 		if(extendedSearchCtrl != null) {
 			extendedSearchCtrl.addControllerListener(this);
 			
@@ -490,10 +472,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			extendedSearchButton.setIconLeftCSS("o_icon o_icon_search");
 			components.put("rExtSearchB", extendedSearchButton);
 			rootFormAvailable(extendedSearchButton);
-			
-			if(!callout) {
-				components.put("rExtSearchCmp", controller.getInitialFormItem());
-			}
+
+			components.put("rExtSearchCmp", controller.getInitialFormItem());
 		}
 	}
 	
@@ -668,10 +648,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				&& classicTypeButton.getFormDispatchId().equals(dispatchuri)) {
 			setRendererType(FlexiTableRendererType.classic);
 			saveCustomSettings(ureq);
-		} else if(dataTablesTypeButton != null
-				&& dataTablesTypeButton.getFormDispatchId().equals(dispatchuri)) {
-			setRendererType(FlexiTableRendererType.dataTables);
-			saveCustomSettings(ureq);
 		} else {
 			FlexiTableColumnModel colModel = dataModel.getTableColumnModel();
 			for(int i=colModel.getColumnCount(); i-->0; ) {
@@ -738,10 +714,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				}
 			}
 		}
-		
-		if(rendererType != FlexiTableRendererType.dataTables) {
-			component.setDirty(true);
-		}
+
+		component.setDirty(true);
 	}
 	
 	private void doFilter(String filterKey) {
@@ -766,9 +740,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			currentPage = 0;
 			currentFirstResult = 0;
 
-			List<String> conditionalQueries = Collections.singletonList(filterKey);
+			List<String> addQueries = Collections.singletonList(filterKey);
 			dataSource.clear();
-			dataSource.load(null, conditionalQueries, 0, getPageSize(), orderBy);
+			dataSource.load(null, addQueries, 0, getPageSize(), orderBy);
 		}
 		component.setDirty(true);
 	}
@@ -786,23 +760,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	@Override
 	public void expandExtendedSearch(UserRequest ureq) {
-		if(extendedSearchCallout) {
-			callout = new CloseableCalloutWindowController(ureq, wControl, extendedSearchCtrl.getInitialComponent(),
-				extendedSearchButton, getTranslator().translate("search"), true, "o_sel_flexi_search_callout");
-			callout.activate();
-			callout.addControllerListener(this);
-		} else {
-			component.setDirty(true);
-		}
+		component.setDirty(true);
 		extendedSearchExpanded = true;
 		extendedSearchCtrl.setEnabled(true);
 	}
 	
 	@Override
 	public void collapseExtendedSearch() {
-		if(callout != null) {
-			callout.deactivate();
-		}
 		extendedSearchExpanded = false;
 		extendedSearchCtrl.setEnabled(false);
 	}
@@ -938,8 +902,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		getRootForm().fireFormEvent(ureq, new SelectionEvent(ROM_SELECT_EVENT, index, this, FormEvent.ONCLICK));
 	}
 	
-	protected void doSelect(UserRequest ureq, String action, int index) {
-		getRootForm().fireFormEvent(ureq, new SelectionEvent(action, index, this, FormEvent.ONCLICK));
+	protected void doSelect(UserRequest ureq, String selectAction, int index) {
+		getRootForm().fireFormEvent(ureq, new SelectionEvent(selectAction, index, this, FormEvent.ONCLICK));
 	}
 
 	
@@ -1112,7 +1076,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		rootFormAvailable(extendedSearchButton);
 		rootFormAvailable(customTypeButton);
 		rootFormAvailable(classicTypeButton);
-		rootFormAvailable(dataTablesTypeButton);
 	}
 	
 	private final void rootFormAvailable(FormItem item) {

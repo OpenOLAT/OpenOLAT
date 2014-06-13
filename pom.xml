@@ -248,9 +248,7 @@
 											<removeIncluded>false</removeIncluded>
 											<includes>
 												<include>${basedir}/target/jquery/jquery/tagsinput/bootstrap-tagsinput.min.css</include>
-												<include>${basedir}/target/jquery/jquery/uilayout/layout-default-latest.min.css</include>
 												<include>${basedir}/target/jquery/jquery/fullcalendar/fullcalendar.min.css</include>
-												<include>${basedir}/src/main/webapp/static/js/jquery/datatables/css/jquery.dataTables.css</include>
 											</includes>
 										</aggregation>
 									</aggregations>

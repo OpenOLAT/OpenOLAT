@@ -118,13 +118,15 @@ public interface FlexiTableElement extends FormItem {
 	 * 
 	 * @return
 	 */
-	public int getColumnLabelForDragAndDrop();
+	public int getColumnIndexForDragAndDropLabel();
 
 	/**
+	 * Setting a value enable the drag and drop on this table. Drag and drop
+	 * is only implemented for the classic voew.
 	 * 
 	 * @param columnLabelForDragAndDrop
 	 */
-	public void setColumnLabelForDragAndDrop(int columnLabelForDragAndDrop);
+	public void setColumnIndexForDragAndDropLabel(int columnLabelForDragAndDrop);
 	
 	/**
 	 * @return true if the links select all / unselect all are enabled
@@ -226,7 +228,7 @@ public interface FlexiTableElement extends FormItem {
 	 * 
 	 * @param callout
 	 */
-	public void setExtendedSearch(ExtendedFlexiTableSearchController controller, boolean callout);
+	public void setExtendedSearch(ExtendedFlexiTableSearchController controller);
 	
 	
 	public boolean isExtendedSearchExpanded();

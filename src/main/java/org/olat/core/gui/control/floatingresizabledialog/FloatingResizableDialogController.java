@@ -31,7 +31,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -124,10 +123,6 @@ public class FloatingResizableDialogController extends BasicController {
 		wrapper.put("panelContent", content);
 		if (collabsibleContent != null) {
 			wrapper.put("collapsibleContent", collabsibleContent);
-			
-			String[] js = new String[]{"js/jquery/uilayout/jquery.layout-latest.min.js"};
-			JSAndCSSComponent jsAndCssComp = new JSAndCSSComponent("layouting", js, null);
-			wrapper.put("layout", jsAndCssComp);
 		}
 		
 		String escapedTitle = StringHelper.escapeHtml(title);

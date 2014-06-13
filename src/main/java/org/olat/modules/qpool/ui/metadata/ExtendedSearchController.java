@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -73,8 +74,8 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 	
 	private final QPoolService qpoolService;
 
-	public ExtendedSearchController(UserRequest ureq, WindowControl wControl, String prefsKey) {
-		super(ureq, wControl, "extended_search");
+	public ExtendedSearchController(UserRequest ureq, WindowControl wControl, String prefsKey, Form mainForm) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "extended_search", mainForm);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
@@ -107,6 +108,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
 		searchButton = uifactory.addFormLink("search", buttonsCont, Link.BUTTON);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
 	@Override
@@ -119,6 +121,11 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		if(enabled) {
 			doSearch(ureq);
 		}
+	}
+
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
 	@Override

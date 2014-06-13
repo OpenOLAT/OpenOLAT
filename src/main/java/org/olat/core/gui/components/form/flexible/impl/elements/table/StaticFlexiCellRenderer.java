@@ -67,12 +67,12 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
 			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		
-		String action = getAction();
-		if(StringHelper.containsNonWhitespace(action)) {
+		String cellAction = getAction();
+		if(StringHelper.containsNonWhitespace(cellAction)) {
 			FlexiTableElementImpl ftE = source.getFlexiTableElement();
 			String id = source.getFormDispatchId();
 			Form rootForm = ftE.getRootForm();
-			NameValuePair pair = new NameValuePair(action, Integer.toString(row));
+			NameValuePair pair = new NameValuePair(cellAction, Integer.toString(row));
 			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, pair);
 			target.append("<a href=\"javascript:").append(jsCode).append("\">");
 			if(StringHelper.containsNonWhitespace(iconCSS)) {

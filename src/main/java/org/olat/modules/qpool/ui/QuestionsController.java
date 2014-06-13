@@ -23,10 +23,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -49,6 +47,7 @@ import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -73,14 +72,14 @@ public class QuestionsController extends BasicController implements Activateable
 	private final VelocityContainer mainVC;
 	private DialogBoxController confirmDeleteBox;
 	
-	private final QPoolService qpoolService;
+	@Autowired
+	private QPoolService qpoolService;
 	private QuestionItemsSource dataSource;
 	
 	public QuestionsController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source, String key) {
 		super(ureq, wControl);
 		
 		this.dataSource = source;
-		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 
 		listCtrl = new QuestionListController(ureq, wControl, source, key);
 		listenTo(listCtrl);
@@ -102,10 +101,6 @@ public class QuestionsController extends BasicController implements Activateable
 		}
 		selectItem = LinkFactory.createButton("select.item", mainVC, this);
 		selectItem.setEnabled(false);
-
-		String[] js = new String[]{"js/jquery/uilayout/jquery.layout-latest.min.js"};
-		JSAndCSSComponent jsAndCssComp = new JSAndCSSComponent("layouting", js, null);
-		mainVC.put("layout", jsAndCssComp);
 		
 		Object northHeight = ureq.getUserSession().getGuiPreferences().get(source.getClass(), SPLIT_VIEW_NORTH_HEIGHT);
 		Object westWidth = ureq.getUserSession().getGuiPreferences().get(source.getClass(), SPLIT_VIEW_WEST_WIDTH);
@@ -246,6 +241,8 @@ public class QuestionsController extends BasicController implements Activateable
 		previewCtrl.updateItem(ureq, item);
 		
 		selectItem.setEnabled(true);
+		
+		mainVC.contextPut("details", Boolean.TRUE);
 	}
 	
 	private void doDelete(UserRequest ureq, QuestionItemShort item) {

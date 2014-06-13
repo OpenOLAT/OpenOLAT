@@ -412,11 +412,10 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	
 	private void doSelectPool(UserRequest ureq, Pool pool, TreeNode node, List<ContextEntry> entries, StateEntry state) {
 		ControlledTreeNode cNode = (ControlledTreeNode)node;
-		Roles roles = ureq.getUserSession().getRoles();
 		QuestionsController selectedPoolCtrl = cNode.getController();
 
 		DefaultItemsSource source = new PoolItemsSource(getIdentity(), roles, pool);
-		source.setRemoveEnabled(isShareAdmin(roles, pool));
+		source.setRemoveEnabled(isShareAdmin(pool));
 		if(selectedPoolCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, pool, null);
 			selectedPoolCtrl = new QuestionsController(ureq, swControl, source, "poll-" + pool.getKey());
@@ -436,7 +435,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	 * @param pool
 	 * @return
 	 */
-	private boolean isShareAdmin(Roles roles, Pool pool) {
+	private boolean isShareAdmin(Pool pool) {
 		return roles != null && (roles.isOLATAdmin() || roles.isPoolAdmin() || pool.isPublicPool()
 				|| qpoolService.isOwner(getIdentity(), pool));
 	}
@@ -444,8 +443,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	private void doSelectGroup(UserRequest ureq, BusinessGroup group, TreeNode node, List<ContextEntry> entries, StateEntry state) {
 		ControlledTreeNode cNode = (ControlledTreeNode)node;
 		QuestionsController sharedItemsCtrl = cNode.getController();
-		Roles roles = ureq.getUserSession().getRoles();
-		boolean shareAdmin = isShareAdmin(roles, group);
+		boolean shareAdmin = isShareAdmin(group);
 		SharedItemsSource source = new SharedItemsSource(group, getIdentity(), roles, shareAdmin);
 
 		if(sharedItemsCtrl == null) {
@@ -461,7 +459,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		setContent(ureq, sharedItemsCtrl, entries, state);
 	}
 	
-	private boolean isShareAdmin(Roles roles, BusinessGroup group) {
+	private boolean isShareAdmin(BusinessGroup group) {
 		return roles != null && (roles.isOLATAdmin() || roles.isPoolAdmin()
 				|| businessGroupService.isIdentityInBusinessGroup(getIdentity(), group.getKey(), true, false, null));
 	}

@@ -150,7 +150,6 @@ public class MenuTree extends AbstractComponent {
 			return;
 		}
 		
-		//fxdiff VCRP-9: drag and drop in menu tree
 		String cmd = ureq.getParameter(COMMAND_ID);
 		String nodeId = ureq.getParameter(NODE_IDENT);
 		if(COMMAND_TREENODE_CLICKED.equals(cmd)) {
@@ -192,7 +191,6 @@ public class MenuTree extends AbstractComponent {
 	}
 	
 	// -- recorder methods
-	//fxdiff VCRP-9: drag and drop in menu tree
 	private void handleDropped(UserRequest ureq, String droppedNodeId, String targetNodeId, boolean sibling, boolean atTheEnd) {
 		TreeDropEvent te = new TreeDropEvent(COMMAND_TREENODE_DROP, droppedNodeId, targetNodeId, !sibling, atTheEnd);
 		fireEvent(ureq, te);
