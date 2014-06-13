@@ -269,6 +269,9 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
 					startLink.setElementCssClass("o_start");
+					startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
+					startLink.setPrimary(true);
+
 				}
 				accessI18n = "cif.access.membersonly";
 			} else {

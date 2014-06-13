@@ -43,8 +43,19 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		
+		
 		FlexiTableComponent ftC = (FlexiTableComponent)source;
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		
+		if (ftE.getTableDataModel().getRowCount() == 0) {
+			String emptyMessageKey = ftE.getEmtpyTableMessageKey();
+			if (emptyMessageKey != null) {
+				sb.append("<div class='o_info'>");
+				sb.append(translator.translate(emptyMessageKey));				
+				sb.append("</div>");
+				return;		
+			}
+		}
 		
 		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
 

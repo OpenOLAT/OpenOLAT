@@ -100,6 +100,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private boolean selectAllEnabled;
 	private boolean extendedSearchExpanded = false;
 	private int columnLabelForDragAndDrop;
+	private String emptyTableMessageKey = null;
 	
 	private VelocityContainer rowRenderer;
 
@@ -1114,5 +1115,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	public FlexiTableDataSource<?> getTableDataSource() {
 		return dataSource;
+	}
+
+	@Override
+	public void setEmtpyTableMessageKey(String i18key) {
+		this.emptyTableMessageKey  = i18key;
+	}
+	@Override
+	public String getEmtpyTableMessageKey() {
+		return this.emptyTableMessageKey;
 	}
 }

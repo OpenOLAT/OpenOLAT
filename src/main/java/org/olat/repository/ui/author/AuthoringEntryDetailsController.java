@@ -381,12 +381,18 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 			// members only always show lock icon
 			types.add(new PriceMethod("", "o_ac_membersonly_icon", translate("cif.access.membersonly.short")));
 			if(isMember) {
-				startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.LINK);
+				String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
+				startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
+				startLink.setElementCssClass("o_start");
+				startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
+				startLink.setPrimary(true);
 			}
 		} else {
 			AccessResult acResult = acService.isAccessible(entry, getIdentity(), false);
 			if(acResult.isAccessible()) {
-				startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.LINK);
+				String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
+				startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
+				startLink.setElementCssClass("o_start");
 			} else if (acResult.getAvailableMethods().size() > 0) {
 				for(OfferAccess access:acResult.getAvailableMethods()) {
 					AccessMethod method = access.getMethod();
@@ -397,11 +403,18 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 					String displayName = amh.getMethodName(getLocale());
 					types.add(new PriceMethod(price, type, displayName));
 				}
-				startLink = uifactory.addFormLink("start", "start", "book", null, layoutCont, Link.LINK);
+				String linkText = translate("book.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
+				startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
+				startLink.setCustomEnabledLinkCSS("btn btn-success"); // custom style
+				startLink.setElementCssClass("o_book");
 			} else {
-				startLink = uifactory.addFormLink("start", "start", "start", null, layoutCont, Link.LINK);
+				String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
+				startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
 				startLink.setEnabled(false);
+				startLink.setElementCssClass("o_start");
 			}
+			startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
+			startLink.setPrimary(true);
 		}
 		
 		if(types.isEmpty()) {

@@ -256,4 +256,17 @@ public interface FlexiTableElement extends FormItem {
 	public void sort(String sortKey, boolean asc);
 	
 	public void reloadData();
+
+	/**
+	 * Set the message displayed when the table is empty and the table header
+	 * and table options such as search, sort etc are hidden. If null (default)
+	 * the empty table is shown.
+	 * 
+	 * @param i18key
+	 */
+	public void setEmtpyTableMessageKey(String i18key);
+	/**
+	 * @return The i18n key for the message to be displayed when the table is empty or NULL when no message should be displayed.
+	 */
+	public String getEmtpyTableMessageKey();
 }

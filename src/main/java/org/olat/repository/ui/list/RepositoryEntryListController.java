@@ -176,6 +176,7 @@ public class RepositoryEntryListController extends FormBasicController
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setElementCssClass("o_coursetable");
+		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
 		VelocityContainer row = createVelocityContainer("row_1");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);

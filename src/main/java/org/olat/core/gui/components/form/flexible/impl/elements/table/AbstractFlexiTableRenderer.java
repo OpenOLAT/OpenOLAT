@@ -50,6 +50,16 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		
 		FlexiTableComponent ftC = (FlexiTableComponent) source;
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		
+		if (ftE.getTableDataModel().getRowCount() == 0) {
+			String emptyMessageKey = ftE.getEmtpyTableMessageKey();
+			if (emptyMessageKey != null) {
+				sb.append("<div class='o_info'>");
+				sb.append(translator.translate(emptyMessageKey));				
+				sb.append("</div>");
+				return;		
+			}
+		}
 
 		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
 		
