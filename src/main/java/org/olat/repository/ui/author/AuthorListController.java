@@ -178,6 +178,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//search form
 		searchCtrl = new AuthorSearchController(ureq, getWindowControl(), true, !startExtendedSearch, mainForm);
+		searchCtrl.setEnabled(false);
 		listenTo(searchCtrl);
 		
 		//add the table

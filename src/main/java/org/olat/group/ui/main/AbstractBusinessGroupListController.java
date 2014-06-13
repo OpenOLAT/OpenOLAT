@@ -195,6 +195,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		tableEl.setSortSettings(options);
 		
 		searchCtrl = new BusinessGroupSearchController(ureq, getWindowControl(), isAdmin(), true, false, mainForm);
+		searchCtrl.setEnabled(false);
 		listenTo(searchCtrl);
 		
 		tableEl.setSearchEnabled(true);

@@ -42,7 +42,7 @@ class CheckboxElement {
 	private final String name;
 	private final String cssClass;
 	
-	private boolean enabled;
+	private boolean enabled = true;
 	private boolean visible;
 	private boolean textOnly;
 	private String iconLeftCSS;

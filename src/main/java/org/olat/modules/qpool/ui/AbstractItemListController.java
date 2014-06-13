@@ -95,6 +95,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		eventBus.registerFor(this, getIdentity(), QuestionPoolMainEditorController.QITEM_MARKED);
 		
 		extendedSearchCtrl = new ExtendedSearchController(ureq, getWindowControl(), key, mainForm);
+		extendedSearchCtrl.setEnabled(false);
 		listenTo(extendedSearchCtrl);
 		
 		initForm(ureq);
