@@ -27,6 +27,7 @@ package org.olat.repository.controllers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -246,7 +247,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	protected void doSearch(UserRequest ureq, String limitType, boolean onlyOwner, boolean updateFilters) {
 		searchType = SearchType.searchForm;
 		RepositoryManager rm = RepositoryManager.getInstance();
-		Set<String> s = searchForm.getRestrictedTypes();
+		Collection<String> s = searchForm.getRestrictedTypes();
 		List<String> restrictedTypes;
 		if(limitType != null) {
 			restrictedTypes = Collections.singletonList(limitType);
@@ -288,7 +289,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		if(limitType != null) {
 			restrictedTypes = Collections.singletonList(limitType);
 		} else {
-			Set<String> s = searchForm.getRestrictedTypes();
+			Collection<String> s = searchForm.getRestrictedTypes();
 			restrictedTypes = (s == null) ? null : new ArrayList<String>(s);
 		}
 		Roles roles = ureq.getUserSession().getRoles();

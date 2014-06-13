@@ -21,6 +21,7 @@ package org.olat.core.commons.modules.glossary;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -169,7 +170,7 @@ public class GlossaryFlexionController extends FormBasicController {
 	 */
 	private void saveSelectedFlexions() {
 		if (existingFlexions != null) {
-			Set<String> choosedFlexions = existingFlexions.getSelectedKeys();
+			Collection<String> choosedFlexions = existingFlexions.getSelectedKeys();
 			ArrayList<String> glossItemFlexionsToSave = new ArrayList<String>(choosedFlexions.size());
 			glossItemFlexionsToSave.addAll(choosedFlexions);
 			glossaryItem.setGlossFlexions(glossItemFlexionsToSave);

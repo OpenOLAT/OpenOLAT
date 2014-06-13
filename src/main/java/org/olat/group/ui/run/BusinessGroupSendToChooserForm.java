@@ -27,8 +27,8 @@ package org.olat.group.ui.run;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
@@ -389,7 +389,7 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 		if (multiSelectionElements == null) {
 			return new ArrayList<Long>();
 		}
-		Set<String> selectedKeys = multiSelectionElements.getSelectedKeys();
+		Collection<String> selectedKeys = multiSelectionElements.getSelectedKeys();
 		List<Long> selectedKeysLong = new ArrayList<Long>();
 		for (String key : selectedKeys) {
 			selectedKeysLong.add(Long.parseLong(key.toString()));

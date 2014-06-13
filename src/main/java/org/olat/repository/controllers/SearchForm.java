@@ -27,9 +27,9 @@ package org.olat.repository.controllers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -198,7 +198,7 @@ public class SearchForm extends FormBasicController {
 	/**
 	 * @return Limiting type selections.
 	 */
-	public Set<String> getRestrictedTypes() {
+	public Collection<String> getRestrictedTypes() {
 		
 		if (limitTypes != null && limitTypes.length > 0) {
 			return new HashSet<String>(Arrays.asList(limitTypes));

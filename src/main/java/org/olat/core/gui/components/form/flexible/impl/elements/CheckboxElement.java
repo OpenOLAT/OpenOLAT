@@ -25,11 +25,7 @@
 */ 
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
-import org.olat.core.gui.translator.Translator;
 
 /**
  * Description:<br>
@@ -39,15 +35,19 @@ import org.olat.core.gui.translator.Translator;
  * 
  * @author patrickb
  */
-class CheckboxElementComponent extends FormBaseComponentImpl {
+class CheckboxElement {
 
-	private final SelectionElement selectionWrapper;
+	private final MultipleSelectionElementImpl selectionWrapper;
 	private final int which;
-	private boolean escapeHtml = true;
-	private String iconLeftCSS;
+	private final String name;
 	private final String cssClass;
-	private static final ComponentRenderer RENDERER = new CheckboxRenderer();
-	//public static final String RENDERARG_ESCAPEHTML = "ESC_HTML";
+	
+	private boolean enabled;
+	private boolean visible;
+	private boolean textOnly;
+	private String iconLeftCSS;
+	
+	
 
 	/**
 	 * Constructor for a check box component. Set to private, use the
@@ -56,7 +56,6 @@ class CheckboxElementComponent extends FormBaseComponentImpl {
 	 * FormUIFactory.addCheckboxesHorizontal() methods instead
 	 * 
 	 * @param name
-	 * @param translator
 	 * @param selectionWrapper
 	 *            The seection wrapper element
 	 * @param which
@@ -65,37 +64,50 @@ class CheckboxElementComponent extends FormBaseComponentImpl {
 	 *            Optional css class to be added to the checkbox in a span
 	 *            element. Can be NULL
 	 */
-	CheckboxElementComponent(String name, Translator translator, SelectionElement selectionWrapper, int which,
+	CheckboxElement(String name, MultipleSelectionElementImpl selectionWrapper, int which,
 			String cssClass, String iconLeftCSS) {
-		super(name, translator);
+		//super(name, translator);
+		this.name = name;
 		this.selectionWrapper = selectionWrapper;
 		this.which = which;
 		this.cssClass = cssClass;
 		this.iconLeftCSS = iconLeftCSS;
 	}
-
-	/**
-	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
-	 */
-	@Override
-	public ComponentRenderer getHTMLRendererSingleton() {
-		return RENDERER;
+	
+	String getName() {
+		return name;
 	}
 
 	String getGroupingName(){
 		return selectionWrapper.getName();
 	}
 	
+	boolean isEnabled() {
+		return enabled;
+	}
+
+	void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	boolean isVisible() {
+		return visible;
+	}
+
+	void setVisible(boolean visible) {
+		this.visible = visible;
+	}
+	
+	boolean isTextOnly() {
+		return textOnly;
+	}
+
+	void setTextOnly(boolean textOnly) {
+		this.textOnly = textOnly;
+	}
+
 	int getWhichWeAre(){
 		return which;
-	}
-
-	public boolean isEscapeHtml() {
-		return escapeHtml;
-	}
-
-	public void setEscapeHtml(boolean escapeHtml) {
-		this.escapeHtml = escapeHtml;
 	}
 
 	String getKey() {

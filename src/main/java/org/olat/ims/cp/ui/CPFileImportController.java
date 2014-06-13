@@ -24,8 +24,8 @@
 */
 package org.olat.ims.cp.ui;
 
+import java.util.Collection;
 import java.util.LinkedList;
-import java.util.Set;
 
 import org.olat.core.commons.modules.bc.FileUploadController;
 import org.olat.core.gui.UserRequest;
@@ -222,7 +222,7 @@ public class CPFileImportController extends FormBasicController {
 		// Upload any files in case they are referenced to.
 
 		// Get the file types that should be added as items in the menu tree
-		Set<String> menuItemTypes = checkboxes.getSelectedKeys();
+		Collection<String> menuItemTypes = checkboxes.getSelectedKeys();
 		if (menuItemTypes.contains("htm")) menuItemTypes.add("html");
 
 		// If item is the root node and it doesn't contain any items to be added,
@@ -260,7 +260,7 @@ public class CPFileImportController extends FormBasicController {
 	 * @param menuItemTypes
 	 * @return true if there is a leaf inside container that should be added
 	 */
-	private boolean containsItemsToAdd(VFSContainer container, Set<String> menuItemTypes) {
+	private boolean containsItemsToAdd(VFSContainer container, Collection<String> menuItemTypes) {
 		LinkedList<VFSItem> queue = new LinkedList<VFSItem>();
 		// enqueue root node
 		queue.add(container);
@@ -286,7 +286,7 @@ public class CPFileImportController extends FormBasicController {
 	 * @param menuItemTypes
 	 * @return true if the item is to be added to the tree
 	 */
-	private boolean isToBeAdded(VFSLeaf item, Set<String> menuItemTypes) {
+	private boolean isToBeAdded(VFSLeaf item, Collection<String> menuItemTypes) {
 		String extension = null;
 		if (!menuItemTypes.contains(ALL)) {
 			String name = item.getName();

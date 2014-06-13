@@ -201,7 +201,7 @@ public class PreviewSettingsForm extends FormBasicController {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose (groupChooser);
 			
-			groupChooser = new GroupSelectionController(ureq, getWindowControl(), "group", false, courseGroupManager, getKeys(group));
+			groupChooser = new GroupSelectionController(ureq, getWindowControl(), false, courseGroupManager, getKeys(group));
 			listenTo(groupChooser);	
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), groupChooser.getInitialComponent());
 			listenTo(cmc);

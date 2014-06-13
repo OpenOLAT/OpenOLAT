@@ -19,8 +19,8 @@
  */
 package org.olat.ldap.ui;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.admin.user.UserShortDescription;
 import org.olat.core.gui.UserRequest;
@@ -106,7 +106,7 @@ public class DeletStep00 extends BasicStep{
 
 		@Override
 		protected void formOK(UserRequest ureq) {
-			Set<String> selected = multiSelectTree.getSelectedKeys();
+			Collection<String> selected = multiSelectTree.getSelectedKeys();
 			List<Identity> rem = deleteIdentityTreeModel.getIdentities(selected);
 			hasIdentitesToDelete = (rem.size() == 0 ? false : true);
 			addToRunContext("hasIdentitiesToDelete", hasIdentitesToDelete);

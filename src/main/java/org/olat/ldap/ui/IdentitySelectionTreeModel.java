@@ -20,9 +20,9 @@
 package org.olat.ldap.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
@@ -101,7 +101,7 @@ public class IdentitySelectionTreeModel  extends GenericTreeModel implements INo
 	 * @param selected
 	 * @return
 	 */
-	public List<Identity> getIdentities(Set<String> selected) {
+	public List<Identity> getIdentities(Collection<String> selected) {
 		List<Identity> identities = new ArrayList<Identity>();
 		for (String ident : selected) {
 			Identity identity = (Identity) getNodeById(ident).getUserObject();

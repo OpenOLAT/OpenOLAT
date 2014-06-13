@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -249,7 +250,7 @@ public class GroupSearchController extends StepFormBasicController {
 	}
 	
 	private MultipleSelectionElement createSelection(String name) {
-		MultipleSelectionElement selection = new MultipleSelectionElementImpl(name, MultipleSelectionElementImpl.createVerticalLayout("checkbox",1));
+		MultipleSelectionElement selection = new MultipleSelectionElementImpl(name, Layout.vertical);
 		selection.setKeysAndValues(new String[]{"on"}, new String[]{""});
 		tableCont.add(name, selection);
 		return selection;

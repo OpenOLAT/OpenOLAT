@@ -19,7 +19,7 @@
  */
 package org.olat.group.ui;
 
-import java.util.Set;
+import java.util.Collection;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
@@ -207,14 +207,14 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 			module.setUserAllowedCreate(allowEl.isSelected(0));
 			module.setAuthorAllowedCreate(allowEl.isSelected(1));
 		} else if(source == membershipEl) {
-			Set<String> membershipSelectedKeys = membershipEl.getSelectedKeys();
+			Collection<String> membershipSelectedKeys = membershipEl.getSelectedKeys();
 			module.setAcceptMembershipForUsers(membershipSelectedKeys.contains("users") ? "true" : "false");
 			module.setAcceptMembershipForAuthors(membershipSelectedKeys.contains("authors") ? "true" : "false");
 			module.setAcceptMembershipForUsermanagers(membershipSelectedKeys.contains("usermanagers") ? "true" : "false");
 			module.setAcceptMembershipForGroupmanagers(membershipSelectedKeys.contains("groupmanagers") ? "true" : "false");
 			module.setAcceptMembershipForAdministrators(membershipSelectedKeys.contains("administrators") ? "true" : "false");
 		} else if(source == enrolmentEl) {
-			Set<String> enrolmentSelectedKeys = enrolmentEl.getSelectedKeys();
+			Collection<String> enrolmentSelectedKeys = enrolmentEl.getSelectedKeys();
 			module.setMandatoryEnrolmentEmailForUsers(enrolmentSelectedKeys.contains("users") ? "true" : "false");
 			module.setMandatoryEnrolmentEmailForAuthors(enrolmentSelectedKeys.contains("authors") ? "true" : "false");
 			module.setMandatoryEnrolmentEmailForUsermanagers(enrolmentSelectedKeys.contains("usermanagers") ? "true" : "false");

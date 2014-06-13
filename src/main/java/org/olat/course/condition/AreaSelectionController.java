@@ -25,8 +25,8 @@
 package org.olat.course.condition;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -170,7 +170,7 @@ public class AreaSelectionController extends FormBasicController {
 	}
 	
 	public List<Long> getSelectedKeys() {
-		Set<String> selectedKeys = entrySelector.getSelectedKeys();
+		Collection<String> selectedKeys = entrySelector.getSelectedKeys();
 		List<Long> groupKeys = new ArrayList<Long>();
 		for(String selectedKey:selectedKeys) {
 			groupKeys.add(new Long(selectedKey));

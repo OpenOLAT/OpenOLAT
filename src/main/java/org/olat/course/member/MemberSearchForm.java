@@ -19,10 +19,10 @@
  */
 package org.olat.course.member;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -133,7 +133,7 @@ public class MemberSearchForm extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		SearchMembersParams params = new SearchMembersParams();
 		//roles
-		Set<String> selectedKeys = rolesEl.getSelectedKeys();
+		Collection<String> selectedKeys = rolesEl.getSelectedKeys();
 		params.setRepoOwners(selectedKeys.contains("owner"));
 		params.setRepoTutors(selectedKeys.contains("tutor"));
 		params.setGroupTutors(selectedKeys.contains("tutor"));

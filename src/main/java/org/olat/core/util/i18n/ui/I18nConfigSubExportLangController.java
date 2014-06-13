@@ -25,6 +25,7 @@
 package org.olat.core.util.i18n.ui;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
@@ -118,7 +119,7 @@ class I18nConfigSubExportLangController extends FormBasicController {
 	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
-		Set<String> toExport = exportLangSelection.getSelectedKeys();
+		Collection<String> toExport = exportLangSelection.getSelectedKeys();
 		logDebug("Following languages selected for export::" + toExport.toString(), null);
 		if (toExport.size() == 0) {
 			// should not happen since button disabled

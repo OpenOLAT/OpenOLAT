@@ -22,6 +22,7 @@ package org.olat.core.util.i18n;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -532,7 +533,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	 * 
 	 * @param newEnabledLangKeys
 	 */
-	public static void setEnabledLanguageKeys(Set<String> newEnabledLangKeys) {
+	public static void setEnabledLanguageKeys(Collection<String> newEnabledLangKeys) {
 		if (!newEnabledLangKeys.equals(enabledLanguagesKeys)) {
 			String newEnabledConfig = "";
 			for (String enabledKey : newEnabledLangKeys) {

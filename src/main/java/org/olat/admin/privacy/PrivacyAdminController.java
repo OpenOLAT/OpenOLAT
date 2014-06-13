@@ -19,7 +19,7 @@
  */
 package org.olat.admin.privacy;
 
-import java.util.Set;
+import java.util.Collection;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
@@ -107,21 +107,21 @@ public class PrivacyAdminController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == adminPropsEl) {
-			Set<String> selectedKeys = adminPropsEl.getSelectedKeys();
+			Collection<String> selectedKeys = adminPropsEl.getSelectedKeys();
 			module.setUserSearchAdminPropsForUsers(selectedKeys.contains("users") ? "enabled" : "disabled");
 			module.setUserSearchAdminPropsForAuthors(selectedKeys.contains("authors") ? "enabled" : "disabled");
 			module.setUserSearchAdminPropsForUsermanagers(selectedKeys.contains("usermanagers") ? "enabled" : "disabled");
 			module.setUserSearchAdminPropsForGroupmanagers(selectedKeys.contains("groupmanagers") ? "enabled" : "disabled");
 			module.setUserSearchAdminPropsForAdministrators(selectedKeys.contains("administrators") ? "enabled" : "disabled");
 		} else if(source == lastloginEl) {
-			Set<String> selectedKeys = lastloginEl.getSelectedKeys();
+			Collection<String> selectedKeys = lastloginEl.getSelectedKeys();
 			module.setUserLastLoginVisibleForUsers(selectedKeys.contains("users") ? "enabled" : "disabled");
 			module.setUserLastLoginVisibleForAuthors(selectedKeys.contains("authors") ? "enabled" : "disabled");
 			module.setUserLastLoginVisibleForUsermanagers(selectedKeys.contains("usermanagers") ? "enabled" : "disabled");
 			module.setUserLastLoginVisibleForGroupmanagers(selectedKeys.contains("groupmanagers") ? "enabled" : "disabled");
 			module.setUserLastLoginVisibleForAdministrators(selectedKeys.contains("administrators") ? "enabled" : "disabled");
 		} else if (source == tunnelEl) {
-			Set<String> selectedKeys = tunnelEl.getSelectedKeys();
+			Collection<String> selectedKeys = tunnelEl.getSelectedKeys();
 			module.setUserInfosTunnelCourseBuildingBlock(selectedKeys.contains("on") ? "enabled" : "disabled");
 		}
 	}

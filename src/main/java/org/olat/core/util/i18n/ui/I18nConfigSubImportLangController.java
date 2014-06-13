@@ -21,6 +21,7 @@
 package org.olat.core.util.i18n.ui;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -104,7 +105,7 @@ class I18nConfigSubImportLangController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (importKeys.isVisible() && importKeys.getSelectedKeys().size() > 0) {
-			Set<String> importLangKeys = importKeys.getSelectedKeys();			
+			Collection<String> importLangKeys = importKeys.getSelectedKeys();			
 			Set<String> alreadyInstalledLangs = new HashSet<String>();
 			for (String langKey : importLangKeys) {
 				if (I18nModule.getAvailableLanguageKeys().contains(langKey)) {

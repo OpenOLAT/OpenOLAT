@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.util.tree.INodeFilter;
@@ -48,9 +46,8 @@ import org.olat.core.util.tree.TreeHelper;
  * 
  * @author patrickb
  */
-public class MultiSelectionTree extends MultipleSelectionElementImpl implements MultipleSelectionElement {
+public class MultiSelectionTree extends MultipleSelectionElementImpl {
 	
-	private final SelectionTreeComponent component;
 	private INodeFilter selectableFilter;
 	private TreeModel treemodel;
 	
@@ -70,7 +67,7 @@ public class MultiSelectionTree extends MultipleSelectionElementImpl implements 
 			values[i] = treeNode.getTitle();
 			i++;
 		}
-		component = new SelectionTreeComponent(name, getTranslator(), this, treemodel, selectableFilter);
+		component = new SelectionTreeComponent(name, this, treemodel, selectableFilter);
 	}
 
 	@Override
@@ -84,23 +81,19 @@ public class MultiSelectionTree extends MultipleSelectionElementImpl implements 
 		}
 		// keys,values initialized
 		// create and add radio elements
-		Map<String, Component> checkboxitems = new HashMap<String, Component>(); 
+		Map<String, CheckboxElement> checkboxitems = new HashMap<String, CheckboxElement>(); 
 		for (int i = 0; i < keys.length; i++) {
 			TreeNode tn = treemodel.getNodeById(keys[i]);
 			if(selectableFilter.isVisible(tn)) {
-				if(selectableFilter.isSelectable(tn)){
-					// apply css class of tree node to checkbox label wrapper as well
-					String cssClass = tn.getCssClass(); 
-					CheckboxElementComponent ssec = new CheckboxElementComponent(getName()+"_"+keys[i], translator, this, i, null, cssClass);
-					checkboxitems.put(keys[i], ssec);
-				} else {
-					StaticTextElement ste = new StaticTextElementImpl(keys[i], tn.getTitle());
-					ste.setRootForm(getRootForm());
-					checkboxitems.put(keys[i], new StaticTextElementComponent(ste));
-				}
+				// apply css class of tree node to checkbox label wrapper as well
+				String cssClass = tn.getCssClass();
+				String checkName = getName() + "_" + keys[i];
+				CheckboxElement ssec = new CheckboxElement(checkName, this, i, null, cssClass);
+				ssec.setTextOnly(selectableFilter.isSelectable(tn));
+				checkboxitems.put(keys[i], ssec);
 			}
 		}
-		component.setComponents(checkboxitems);
+		((SelectionTreeComponent)component).setComponents(checkboxitems);
 	}
 
 	@Override
@@ -118,56 +111,56 @@ public class MultiSelectionTree extends MultipleSelectionElementImpl implements 
 	public void reset() {
 		super.reset();
 		// set menu tree dirty to render new values
-		this.component.setDirty(true);
+		component.setDirty(true);
 	}
 
 	@Override
 	public void select(String key, boolean select) {
 		super.select(key, select);
 		// set menu tree dirty to render new values
-		this.component.setDirty(true);
+		component.setDirty(true);
 	}
 
 	@Override
 	public void selectAll() {
 		super.selectAll();
 		// set menu tree dirty to render new values
-		this.component.setDirty(true);
+		component.setDirty(true);
 	}
 
 	@Override
 	public void setEnabled(boolean isEnabled) {
 		super.setEnabled(isEnabled);
 		// set menu tree dirty to render new values
-		this.component.setDirty(true);
+		component.setDirty(true);
 	}
 
 	@Override
 	public void setKeysAndValues(String[] keys, String[] values, String[] cssClasses, String[] iconLeftCSS) {
 		super.setKeysAndValues(keys, values, cssClasses, iconLeftCSS);
 		// set menu tree dirty to render new values
-		this.component.setDirty(true);
+		component.setDirty(true);
 	}
 
 	@Override
 	public void setSelectedValues(String[] values) {
 		super.setSelectedValues(values);
 		// set menu tree dirty to render new values
-		this.component.setDirty(true);
+		component.setDirty(true);
 	}
 
 	@Override
 	public void setVisible(boolean isVisible) {
 		super.setVisible(isVisible);
 		// set menu tree dirty to render new values
-		this.component.setDirty(true);
+		component.setDirty(true);
 	}
 
 	@Override
 	public void uncheckAll() {
 		super.uncheckAll();
 		// set menu tree dirty to render new values
-		this.component.setDirty(true);
+		component.setDirty(true);
 	}
 	
 }

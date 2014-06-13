@@ -20,6 +20,7 @@
 package org.olat.portfolio.ui.filter;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -96,7 +97,7 @@ public class EPArtefactTagSelectionController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (selectedTagsList == null) selectedTagsList = new ArrayList<String>();
-		Set<String> selectedKeys = chkBox.getSelectedKeys();
+		Collection<String> selectedKeys = chkBox.getSelectedKeys();
 		Set<String> allKeys = chkBox.getKeys();
 		for (String actTag : allKeys) {
 			boolean selected = selectedKeys.contains(actTag);

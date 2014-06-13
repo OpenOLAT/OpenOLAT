@@ -27,32 +27,28 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.util.Map;
 
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.components.tree.TreeModel;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.tree.INodeFilter;
 
 /**
  * @author patrickb
  *
  */
-class SelectionTreeComponent extends FormBaseComponentImpl {
+class SelectionTreeComponent extends MultipleSelectionComponent {
 
-	private SelectionElement selectionElement;
+	private final MultiSelectionTree selectionElement;
 	private final TreeModel treeModel;
 	private final INodeFilter selectableFilter;
-	private Map<String, Component> subComponents;
+	private Map<String, CheckboxElement> subComponents;
 	private final static ComponentRenderer RENDERER = new SelectionTreeComponentRenderer(); 
 
 	/**
 	 * @param name
 	 */
-	public SelectionTreeComponent(String name, Translator translator, SelectionElement selectionElement,
+	public SelectionTreeComponent(String name, MultiSelectionTree selectionElement,
 			TreeModel treeModel, INodeFilter selectableFilter) {
-		super(name, translator);
+		super(name, selectionElement);
 		this.selectionElement = selectionElement;
 		this.treeModel = treeModel;
 		this.selectableFilter = selectableFilter;
@@ -66,7 +62,7 @@ class SelectionTreeComponent extends FormBaseComponentImpl {
 		return RENDERER;
 	}
 
-	SelectionElement getSelectionElement() {
+	MultiSelectionTree getSelectionElement() {
 		return selectionElement;
 	}
 
@@ -81,11 +77,11 @@ class SelectionTreeComponent extends FormBaseComponentImpl {
 	/**
 	 * @param checkboxitems
 	 */
-	protected void setComponents(Map<String, Component> checkboxitems) {
+	protected void setComponents(Map<String, CheckboxElement> checkboxitems) {
 		this.subComponents = checkboxitems;
 	}
 
-	protected Map<String, Component> getSubComponents(){
+	protected Map<String, CheckboxElement> getSubComponents(){
 		return this.subComponents;
 	}
 	

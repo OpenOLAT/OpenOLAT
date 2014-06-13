@@ -20,10 +20,10 @@
 package org.olat.group.ui.main;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -32,6 +32,7 @@ import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -201,7 +202,7 @@ public class EditMembershipController extends FormBasicController {
 	
 	private MultipleSelectionElement createSelection(boolean selected, boolean enabled) {
 		String name = "cb" + UUID.randomUUID().toString().replace("-", "");
-		MultipleSelectionElement selection = new MultipleSelectionElementImpl(name, MultipleSelectionElementImpl.createVerticalLayout("checkbox",1));
+		MultipleSelectionElement selection = new MultipleSelectionElementImpl(name, Layout.vertical);
 		selection.setKeysAndValues(keys, values);
 		flc.add(name, selection);
 		selection.select(keys[0], selected);
@@ -290,7 +291,7 @@ public class EditMembershipController extends FormBasicController {
 		
 		RepoPermission repoPermission = PermissionHelper.getPermission(repoEntry, member, memberships);
 
-		Set<String>	selectRepoRights = repoRightsEl.getSelectedKeys();
+		Collection<String>	selectRepoRights = repoRightsEl.getSelectedKeys();
 		boolean repoOwner = selectRepoRights.contains("owner");
 		e.setRepoOwner(repoOwner == repoPermission.isOwner() ? null : new Boolean(repoOwner));
 		boolean repoTutor = selectRepoRights.contains("tutor");

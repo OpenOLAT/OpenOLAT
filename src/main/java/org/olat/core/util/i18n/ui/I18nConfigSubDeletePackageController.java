@@ -25,7 +25,7 @@
 package org.olat.core.util.i18n.ui;
 
 import java.io.File;
-import java.util.Set;
+import java.util.Collection;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -98,7 +98,7 @@ class I18nConfigSubDeletePackageController extends FormBasicController {
 	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
-		Set<String> toDelete = deleteLangPackSelection.getSelectedKeys();
+		Collection<String> toDelete = deleteLangPackSelection.getSelectedKeys();
 		if (toDelete.size() == 0) {
 			// should not happen since button disabled
 			return;

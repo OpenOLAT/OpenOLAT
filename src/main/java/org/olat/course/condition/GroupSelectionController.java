@@ -25,8 +25,8 @@
 package org.olat.course.condition;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -68,8 +68,8 @@ public class GroupSelectionController extends FormBasicController {
 	private String[] groupKeys;
 	private boolean createEnable;
 
-	public GroupSelectionController(UserRequest ureq, WindowControl wControl, String title,
-			boolean allowCreate, CourseGroupManager courseGrpMngr, List<Long> selectionKeys) {
+	public GroupSelectionController(UserRequest ureq, WindowControl wControl, boolean allowCreate,
+			CourseGroupManager courseGrpMngr, List<Long> selectionKeys) {
 		super(ureq, wControl, "group_or_area_selection");
 		this.courseGrpMngr = courseGrpMngr;
 
@@ -169,7 +169,7 @@ public class GroupSelectionController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	public Set<String> getSelectedEntries() {
+	public Collection<String> getSelectedEntries() {
 		return entrySelector.getSelectedKeys();
 	}
 	
@@ -184,7 +184,7 @@ public class GroupSelectionController extends FormBasicController {
 	}
 	
 	public List<Long> getSelectedKeys() {
-		Set<String> selectedKeys = entrySelector.getSelectedKeys();
+		Collection<String> selectedKeys = entrySelector.getSelectedKeys();
 		List<Long> groupKeys = new ArrayList<Long>();
 		for(String selectedKey:selectedKeys) {
 			groupKeys.add(new Long(selectedKey));

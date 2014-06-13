@@ -25,6 +25,7 @@
 */
 package org.olat.core.gui.components.form.flexible.impl.rules;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -50,20 +51,17 @@ class MultiSelectionTriggerdDependencyRule extends FormItemDependencyRuleImpl im
 	 */
 	@Override
 	protected boolean doesTrigger() {
-		MultipleSelectionElement mse = (MultipleSelectionElement)this.triggerElement;
-		Set<String> selectedKeys = mse.getSelectedKeys();
-		//
-		boolean retval = false;
-		if(this.triggerVal==null){
-			//meaning no selection in a multi selection element
-			retval = selectedKeys.size() == 0;
-		}else{
-			//check that value is in selection
-			retval = selectedKeys.contains(this.triggerVal);
-		}
-		//
-		return retval;
-		//
-	}
+		MultipleSelectionElement mse = (MultipleSelectionElement)triggerElement;
+		Collection<String> selectedKeys = mse.getSelectedKeys();
 
+		boolean retval = false;
+		if(triggerVal == null){
+			//meaning no selection in a multi selection element
+			retval = selectedKeys.isEmpty();
+		} else {
+			//check that value is in selection
+			retval = selectedKeys.contains(triggerVal);
+		}
+		return retval;
+	}
 }

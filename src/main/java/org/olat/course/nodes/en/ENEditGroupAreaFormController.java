@@ -395,7 +395,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == chooseGroupsLink) {
 			removeAsListenerAndDispose(groupChooseC);
-			groupChooseC = new GroupSelectionController(ureq, getWindowControl(), "group", true,
+			groupChooseC = new GroupSelectionController(ureq, getWindowControl(), true,
 					cev.getCourseGroupManager(), getKeys(easyGroupList));
 			listenTo(groupChooseC);
 

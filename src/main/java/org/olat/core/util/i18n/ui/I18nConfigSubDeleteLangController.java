@@ -24,6 +24,7 @@
 */
 package org.olat.core.util.i18n.ui;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
@@ -121,7 +122,7 @@ class I18nConfigSubDeleteLangController extends FormBasicController {
 	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
-		Set<String> toDelete = deleteLangSelection.getSelectedKeys();
+		Collection<String> toDelete = deleteLangSelection.getSelectedKeys();
 		if (toDelete.size() == 0) {
 			// should not happen since button disabled
 			return;

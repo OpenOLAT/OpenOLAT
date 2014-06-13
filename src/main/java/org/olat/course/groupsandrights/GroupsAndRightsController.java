@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -147,7 +148,7 @@ public class GroupsAndRightsController extends FormBasicController {
 	
 	private MultipleSelectionElement createSelection(boolean selected) {
 		String name = "cb" + UUID.randomUUID().toString().replace("-", "");
-		MultipleSelectionElement selection = new MultipleSelectionElementImpl(name, MultipleSelectionElementImpl.createVerticalLayout("checkbox",1));
+		MultipleSelectionElement selection = new MultipleSelectionElementImpl(name, Layout.vertical);
 		selection.setKeysAndValues(keys, values);
 		flc.add(name, selection);
 		selection.select(keys[0], selected);

@@ -26,6 +26,7 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,14 +34,10 @@ import java.util.Set;
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.FormLayouter;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 
 /**
@@ -53,54 +50,53 @@ import org.olat.core.util.ValidationStatus;
  */
 public class MultipleSelectionElementImpl extends FormItemImpl implements MultipleSelectionElement {
 	private static final OLog log = Tracing.createLoggerFor(MultipleSelectionElementImpl.class);
-	protected static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(MultipleSelectionElementImpl.class);
- 
-	private final static String HORIZONTAL_DEFAULT_CHCKBX = VELOCITY_ROOT + "/sel_elems_horizontal.html";
-	private final static String VERTICAL_CHCKBX = VELOCITY_ROOT + "/sel_elems_vertical.html";
-	//FIXME:pb Jan 2008 Flexi Form refactoring -> move selbox rendering out
-	private final static String SELECTBOX = VELOCITY_ROOT + "/sel_elems_selbox.html";
 
 	protected String[] keys;
 	protected String[] values;
 	private String[] cssClasses;
 	private String[] iconLeftCSS;
-	private Set<String> selected;
+	private Collection<String> selected;
 	
-	protected FormLayouter formLayoutContainer;
+	private final Layout layout;
+	private final int columns;
+	protected MultipleSelectionComponent component;
 	private String[] original = null;
 	private boolean originalIsDefined = false;
 	private boolean escapeHtml = true;
 
 	public MultipleSelectionElementImpl(String name) {
-		this(name, createHorizontalLayout(name));
+		this(name, Layout.horizontal, 1);
+	}
+	
+	public MultipleSelectionElementImpl(String name, Layout layout) {
+		this(name, layout, 1);
 	}
 
-	public MultipleSelectionElementImpl(String name, FormLayouter formLayout) {
+	public MultipleSelectionElementImpl(String name, Layout layout, int columns) {
 		super(name);
 		selected = new HashSet<String>();
-		formLayoutContainer = formLayout;
+		this.layout = layout;
+		this.columns = columns;
+	}
+	
+	public Layout getLayout() {
+		return layout;
+	}
+	
+	public int getColumns() {
+		return columns;
+	}
+	
+	public boolean isEscapeHtml() {
+		return escapeHtml;
 	}
 	
 	@Override
 	public void setEscapeHtml(boolean escapeHtml) {
-		Component sssc = formLayoutContainer.getComponent(getName() + "_SELBOX");
-		if(sssc instanceof SelectboxComponent) {
-			((SelectboxComponent)sssc).setEscapeHtml(escapeHtml);
-		}
-		
-		if(keys != null) {
-			for (String key:keys) {
-				Component checkCmp = formLayoutContainer.getComponent(getName()+"_"+key);
-				if(checkCmp instanceof CheckboxElementComponent) {
-					((CheckboxElementComponent)checkCmp).setEscapeHtml(escapeHtml);
-				}
-			}
-		}
-		
 		this.escapeHtml = escapeHtml;
 	}
 
-	public Set<String> getSelectedKeys() {
+	public Collection<String> getSelectedKeys() {
 		return selected;
 	}
 
@@ -115,21 +111,6 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		this.values = values;
 		this.cssClasses = cssClasses;
 		this.iconLeftCSS = iconLeftCSS;
-		//
-		// remove all elements
-		// add new elements
-		// 
-		// set isEnabled for all created components
-		Component sssc = formLayoutContainer.getComponent(getName()+"_SELBOX");
-		formLayoutContainer.remove(sssc);
-		
-		for (int i = 0; i < keys.length; i++) {
-			Component elm = formLayoutContainer.getComponent(getName()+"_"+keys[i]);
-			if(elm!=null){
-				//can be null if setKeysAndValues is called as "model" update
-				formLayoutContainer.remove(elm);
-			}
-		}
 		initSelectionElements();
 	}
 	/**
@@ -176,7 +157,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		} else {
 			selected.remove(key);
 		}
-		if(!originalIsDefined){
+		if(!originalIsDefined) {
 			originalIsDefined = true;
 			if(selected != null && selected.size() > 0){
 				original = new String[selected.size()];
@@ -186,7 +167,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 			}
 		}
 		// set container dirty to render new selection
-		this.formLayoutContainer.setDirty(true);
+		component.setDirty(true);
 	}
 
 	/**
@@ -224,7 +205,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 			}
 		}
 		// set container dirty to render new values
-		this.formLayoutContainer.setDirty(true);
+		component.setDirty(true);
 	}
 
 	@Override
@@ -273,32 +254,26 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	@Override
 	public void setEnabled(boolean isEnabled) {
 		super.setEnabled(isEnabled);
-		//set isEnabled for all created components
-		Component sssc = formLayoutContainer.getComponent(getName()+"_SELBOX");
-		sssc.setEnabled(isEnabled);
-		for (int i = 0; i < keys.length; i++) {
-			Component elm = formLayoutContainer.getComponent(getName()+"_"+keys[i]);
-			elm.setEnabled(isEnabled);
-		}
-		// set container dirty to render new values
-		formLayoutContainer.setDirty(true);
+		component.setEnabled(isEnabled);
 	}
 	
 	
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement#setEnabled(java.lang.String, boolean)
 	 */
+	@Override
 	public void setEnabled(String key, boolean isEnabled) {
-		Component checkbox = formLayoutContainer.getComponent(getName() + "_" + key);
-		if (checkbox != null) {
-			checkbox.setEnabled(isEnabled);
+		for(CheckboxElement check : component.getCheckComponents()) {
+			if(check.getKey().equals(key)) {
+				check.setEnabled(isEnabled);
+			}
 		}
 	}
-	
 	
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement#setEnabled(java.util.Set, boolean)
 	 */
+	@Override
 	public void setEnabled(Set<String> keys, boolean isEnabled) {
 		for (String key : keys) {
 			setEnabled(key, isEnabled);
@@ -308,31 +283,26 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	@Override
 	public void setVisible(boolean isVisible) {
 		super.setVisible(isVisible);
-		//set isEnabled for all created components
-		Component sssc = formLayoutContainer.getComponent(getName()+"_SELBOX");
-		sssc.setVisible(isVisible);
-		for (int i = 0; i < keys.length; i++) {
-			Component elm = formLayoutContainer.getComponent(getName()+"_"+keys[i]);
-			elm.setVisible(isVisible);
-		}
 		// set container dirty to render new values
-		formLayoutContainer.setDirty(true);
+		component.setVisible(isVisible);
 	}
-	
 	
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement#setVisible(java.lang.String, boolean)
 	 */
+	@Override
 	public void setVisible(String key, boolean isVisible) {
-		Component checkbox = formLayoutContainer.getComponent(getName() + "_" + key);
-		if (checkbox != null) {
-			checkbox.setVisible(isVisible);
+		for(CheckboxElement check : component.getCheckComponents()) {
+			if(check.getKey().equals(key)) {
+				check.setVisible(isVisible);
+			}
 		}
 	}
 	
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement#setVisible(java.util.Set, boolean)
 	 */
+	@Override
 	public void setVisible(Set<String> keys, boolean isEnabled) {
 		for (String key : keys) {
 			setEnabled(key, isEnabled);
@@ -355,36 +325,22 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 				values[i] = translator.translate(keys[i]);
 			}
 		}
+
 		// keys,values initialized
 		// create and add radio elements
-		String[] items = new String[keys.length];
+		CheckboxElement[] ssecs = new CheckboxElement[keys.length];
 		for (int i = 0; i < keys.length; i++) {
-			CheckboxElementComponent ssec = new CheckboxElementComponent(getName()+"_"+keys[i], translator, this, i,
-					(cssClasses == null ? null : cssClasses[i]), (iconLeftCSS == null ? null : iconLeftCSS[i]));
-			formLayoutContainer.put(getName()+"_"+keys[i], ssec);
-			items[i] = getName()+"_"+keys[i];
-			ssec.setEnabled(isEnabled());
-			ssec.setEscapeHtml(escapeHtml);
-			
-			if (GUIInterna.isLoadPerformanceMode()) {
-				if (getRootForm()!=null) {
-					getRootForm().getReplayableDispatchID(ssec);
-				}
-			}
+			String checkName = getName() + "_" + keys[i];
+			ssecs[i] = new CheckboxElement(checkName, this, i,
+					(cssClasses == null ? null : cssClasses[i]),
+					(iconLeftCSS == null ? null : iconLeftCSS[i]));
+			ssecs[i].setEnabled(isEnabled());
 		}
+		
 		// create and add selectbox element
 		String ssscId = getFormItemId() == null ? null : getFormItemId() + "_SELBOX";
-		SelectboxComponent sssc = new SelectboxComponent(ssscId, getName() + "_SELBOX", translator, this, keys, values, cssClasses);
-		sssc.setEscapeHtml(escapeHtml);
-
-		formLayoutContainer.put(getName() + "_SELBOX", sssc);
-		formLayoutContainer.contextPut("selectbox", getName() + "_SELBOX");
-		// add items and size (used for column calculation)
-		formLayoutContainer.contextPut("items", items);
-		formLayoutContainer.contextPut("size", items.length);
-
-		// set container dirty to render new config
-		formLayoutContainer.setDirty(true);
+		component = new MultipleSelectionComponent(ssscId, this);
+		component.setCheckComponents(ssecs);
 	}
 
 	/**
@@ -393,62 +349,15 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	@Override
 	public String getFormDispatchId() {
 		if(GUIInterna.isLoadPerformanceMode()){
-			return DISPPREFIX+getRootForm().getReplayableDispatchID(formLayoutContainer.getComponent());
+			return DISPPREFIX + getRootForm().getReplayableDispatchID(getComponent());
 		}else{
-			return DISPPREFIX+formLayoutContainer.getComponent().getDispatchID();
+			return DISPPREFIX + getComponent().getDispatchID();
 		}
-	}
-	
-
-	/**
-	 * as selectbox
-	 * @param name
-	 * @return
-	 */
-	public static FormLayouter createSelectboxLayouter(String name) {
-		return FormLayoutContainer.createCustomFormLayout(name+"SELECTBOX", null, SELECTBOX);
-	}
-	
-
-	/**
-	 * radio buttons horizontal
-	 * @param name
-	 * @return
-	 */
-	public static FormLayouter createHorizontalLayout(String name) {
-		return FormLayoutContainer.createCustomFormLayout(name+"HORIZONTAL_DEFAULT_CHCKBX", null, HORIZONTAL_DEFAULT_CHCKBX);
-	}
-
-	/**
-	 * radio buttons vertical
-	 * @param name
-	 * @return
-	 */
-	public static FormLayouter createVerticalLayout(String name, int columns) {
-		FormLayoutContainer layout =  FormLayoutContainer.createCustomFormLayout(name+"VERTICAL_CHCKBX", null, VERTICAL_CHCKBX);
-		if (columns < 1 || columns > 2) 
-			throw new AssertException("Currently only 1 or 2 columns are implemented");
-		layout.contextPut("columns", columns);
-		return layout;
 	}
 
 	@Override
 	protected Component getFormItemComponent() {
-		/**
-		 * FIXME:pb dirty hack or not? to allow singleselection subcomponents being
-		 * added to surrounding formlayouters -> e.g. language chooser selectbox
-		 * we have to return the formLayoutContainer.Component if it was not a 
-		 * "custom" formlayouter. -> detection via ..endsWith() bad not beautyful
-		 * but functional so far.
-		 */
-		String tmp = formLayoutContainer.getComponent().getComponentName();
-		boolean isDefault = tmp.endsWith("VERTICAL_CHCKBX") || tmp.endsWith("HORIZONTAL_DEFAULT_CHCKBX") || tmp.endsWith("SELECTBOX");
-		if(isDefault){
-			return formLayoutContainer.getComponent();
-		}else{
-			//return a dummy, not to break rendering process with a null component.
-			return createSelectboxLayouter("dummy").getComponent();
-		}
+		return component;
 	}
 
 	/**
@@ -460,7 +369,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 			selected.add(keys[i]);
 		}
 		// set container dirty to render new selection
-		this.formLayoutContainer.setDirty(true);
+		component.setDirty(true);
 	}
 
 	/**
@@ -469,7 +378,6 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	public void uncheckAll() {
 		selected = new HashSet<String>(3); 
 		// set container dirty to render new selection
-		this.formLayoutContainer.setDirty(true);
+		component.setDirty(true);
 	}
-
 }

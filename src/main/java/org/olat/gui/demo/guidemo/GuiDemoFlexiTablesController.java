@@ -34,6 +34,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
@@ -46,7 +47,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
-
 import org.olat.core.gui.components.table.BaseTableDataModelWithoutFilter;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -86,7 +86,7 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
     // column 7 : Link
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("guidemo.table.header7", 6));
 
-		tableDataModel = new FlexiTableDataModelImpl<Row>(new SampleFlexiTableModel(this, formLayout), tableColumnModel);
+		tableDataModel = new FlexiTableDataModelImpl<Row>(new SampleFlexiTableModel(formLayout), tableColumnModel);
 		uifactory.addTableElement(ureq, getWindowControl(), "gui-demo", tableDataModel, formLayout);
 		uifactory.addFormSubmitButton("ok", formLayout);
 	}
@@ -131,11 +131,11 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
 		private final int COLUMN_COUNT = 7;
 		private final List<Row> entries;
 
-		public SampleFlexiTableModel(Controller controller, FormItemContainer formContainer) {
+		public SampleFlexiTableModel(FormItemContainer formContainer) {
 			int iEntries = 50;
 			entries = new ArrayList<Row>(iEntries);
 			for (int i=0; i < iEntries; i++) {
-				entries.add(new Row(i, controller, formContainer));
+				entries.add(new Row(i, formContainer));
 			}
 		}
 
@@ -171,20 +171,19 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
 		private final Boolean col6;
 		private final FormLink col7;
 		
-		public Row(int i, Controller controller, FormItemContainer formContainer) {
+		public Row(int i, FormItemContainer formContainer) {
 			// column 1 : string
 			col1 = "Flexi Lorem" + i;
 			// column 2 : string
 			col2 = "Ipsum" + i;
 			// column 3 : checkbox
 			
-			selection3 = new MultipleSelectionElementImpl("checkbox", MultipleSelectionElementImpl.createVerticalLayout("checkbox",1)) {
-				{
-					keys = new String[] { "ison", "isOff" };
-					values = new String[] { "on", "off" };
-					select("ison", true);
-				}
-			};
+			selection3 = new MultipleSelectionElementImpl("checkbox", Layout.vertical);
+			String[] keys = new String[] { "ison", "isOff" };
+			String[] values = new String[] { "on", "off" };
+			selection3.setKeysAndValues(keys, values);
+			selection3.select("ison", true);
+			
 			formContainer.add(UUID.randomUUID().toString(), selection3);
 			
 			// column 4 : Integer

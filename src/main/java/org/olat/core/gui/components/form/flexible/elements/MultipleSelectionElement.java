@@ -25,6 +25,7 @@
 */
 package org.olat.core.gui.components.form.flexible.elements;
 
+import java.util.Collection;
 import java.util.Set;
 
 
@@ -44,7 +45,7 @@ public interface MultipleSelectionElement extends SelectionElement {
 	/**
 	 * @return a Set of Strings
 	 */
-	public Set<String> getSelectedKeys();
+	public Collection<String> getSelectedKeys();
 	
 	public void setKeysAndValues(String[] keys, String values[]);
 
@@ -118,4 +119,9 @@ public interface MultipleSelectionElement extends SelectionElement {
 	 * @param escapeHtml
 	 */
 	public void setEscapeHtml(boolean escapeHtml);
+	
+	public enum Layout {
+		horizontal,
+		vertical
+	}
 }

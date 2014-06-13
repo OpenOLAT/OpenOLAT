@@ -329,7 +329,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			removeAsListenerAndDispose(groupChooseC);
 			
 			List<Long> groupKeys = getKeys(easyGroupList);
-			groupChooseC = new GroupSelectionController(ureq, getWindowControl(), "group", true,
+			groupChooseC = new GroupSelectionController(ureq, getWindowControl(), true,
 					courseEditorEnv.getCourseGroupManager(), groupKeys);
 			listenTo(groupChooseC);
 

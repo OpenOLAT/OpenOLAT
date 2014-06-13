@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
@@ -209,7 +210,7 @@ public class FormUIFactory {
 	 * @return
 	 */
 	public MultipleSelectionElement addCheckboxesHorizontal(String name, String i18nLabel, FormItemContainer formLayout, String[] keys, String values[]) {
-		MultipleSelectionElement mse = new MultipleSelectionElementImpl(name, MultipleSelectionElementImpl.createHorizontalLayout(name));
+		MultipleSelectionElement mse = new MultipleSelectionElementImpl(name);
 		mse.setKeysAndValues(keys, values);
 		setLabelIfNotNull(i18nLabel, mse);
 		formLayout.add(mse);
@@ -265,58 +266,17 @@ public class FormUIFactory {
 	 */
 	public MultipleSelectionElement addCheckboxesVertical(String name, String i18nLabel, FormItemContainer formLayout,
 			String[] keys, String values[], String[] cssClasses, String[] iconLeftCSS, int columns) {
-		MultipleSelectionElement mse = new MultipleSelectionElementImpl(name, MultipleSelectionElementImpl.createVerticalLayout(name, columns));
+		MultipleSelectionElement mse = new MultipleSelectionElementImpl(name, Layout.vertical, columns);
 		mse.setKeysAndValues(keys, values, cssClasses, iconLeftCSS);
 		setLabelIfNotNull(i18nLabel, mse);
 		formLayout.add(mse);
 		return mse;
 	}
-	
-	/**
-	 * Create a multiple selection element as a drop-down
-	 * This method uses the name to set the i18nkey of the label.
-	 * <p>
-	 * If no label is desired use the {@link FormUIFactory#addDropdownMultiselect(String, String, FormItemContainer)} with <code>null</code> as i18nLabel.
-	 * @param name
-	 * @param formLayout
-	 * @return
-	 */
-	public MultipleSelectionElement addDropdownMultiselect(String name, FormItemContainer formLayout) {
-		return addDropdownMultiselect(name, name, formLayout);
-	}
-	
-	/**
-	 * 
-	 * @param name
-	 * @param i18nLabel
-	 * @param formLayout
-	 * @return
-	 */
-	public MultipleSelectionElement addDropdownMultiselect(String name, String i18nLabel, FormItemContainer formLayout) {
-		MultipleSelectionElement mse = new MultipleSelectionElementImpl(name, MultipleSelectionElementImpl.createSelectboxLayouter(name));
-		setLabelIfNotNull(i18nLabel, mse);
-		formLayout.add(mse);
-		return mse;
-	}
-	
-	/**
-	 * Create a multiple selection element as a tree.
-	 * This method uses the name to set the i18nkey of the label.
-	 * <p>
-	 * If no label is desired use the {@link FormUIFactory#addDropdownMultiselect(String, String, FormItemContainer)} with <code>null</code> as i18nLabel.
-	 * @param name
-	 * @param formLayout
-	 * @param treemodel
-	 * @return
-	 */
-	public MultipleSelectionElement addTreeMultiselect(String name, FormItemContainer formLayout, TreeModel treemodel, INodeFilter selectableFilter){
-		return addTreeMultiselect(name, name, formLayout, treemodel, selectableFilter);
-	}
 
 	/**
 	 * Create a multiple selection element as a tree.
 	 * @param name
-	 * @param i18nLabel
+	 * @param i18nLabel Can be null
 	 * @param formLayout
 	 * @param treemodel
 	 * @param selectableFilter

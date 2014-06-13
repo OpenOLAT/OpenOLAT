@@ -25,11 +25,10 @@
 
 package org.olat.ims.qti.export;
 
+import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
-
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -135,7 +134,7 @@ public class OptionsChooseForm extends FormBasicController {
 		// Single Choice
 		if(hasSCQ){
 			QTIExportSCQItemFormatConfig c = (QTIExportSCQItemFormatConfig) mapWithConfigs.get(QTIExportSCQItemFormatConfig.class);
-			Set<String> s = scq.getSelectedKeys();
+			Collection<String> s = scq.getSelectedKeys();
 			c.setResponseCols(s.contains(SCQ_ITEMCOLS));
 			c.setPositionsOfResponsesCol(s.contains(SCQ_POSCOL));
 			c.setPointCol(s.contains(SCQ_POINTCOL));
@@ -145,7 +144,7 @@ public class OptionsChooseForm extends FormBasicController {
 		// Multiple Choice
 		if(hasMCQ){
 			QTIExportMCQItemFormatConfig c = (QTIExportMCQItemFormatConfig) mapWithConfigs.get(QTIExportMCQItemFormatConfig.class);
-			Set<String> s = mcq.getSelectedKeys();
+			Collection<String> s = mcq.getSelectedKeys();
 			c.setResponseCols(s.contains(MCQ_ITEMCOLS));
 			c.setPositionsOfResponsesCol(s.contains(MCQ_POSCOL));
 			c.setPointCol(s.contains(MCQ_POINTCOL));
@@ -155,7 +154,7 @@ public class OptionsChooseForm extends FormBasicController {
 		// KPRIM
 		if(hasKRIM){
 			QTIExportKPRIMItemFormatConfig c = (QTIExportKPRIMItemFormatConfig) mapWithConfigs.get(QTIExportKPRIMItemFormatConfig.class);
-			Set<String> s = kprim.getSelectedKeys();
+			Collection<String> s = kprim.getSelectedKeys();
 			c.setResponseCols(s.contains(KPRIM_ITEMCOLS));
 			c.setPointCol(s.contains(KPRIM_POINTCOL));
 			c.setTimeCols(s.contains(KPRIM_TIMECOLS));
@@ -164,7 +163,7 @@ public class OptionsChooseForm extends FormBasicController {
 		// Fill in the Blank
 		if(hasFIB){
 			QTIExportFIBItemFormatConfig c = (QTIExportFIBItemFormatConfig) mapWithConfigs.get(QTIExportFIBItemFormatConfig.class);
-			Set<String> s = fib.getSelectedKeys();
+			Collection<String> s = fib.getSelectedKeys();
 			c.setResponseCols(s.contains(FIB_ITEMCOLS));
 			c.setPointCol(s.contains(FIB_POINTCOL));
 			c.setTimeCols(s.contains(FIB_TIMECOLS));
@@ -173,7 +172,7 @@ public class OptionsChooseForm extends FormBasicController {
 		// Essay
 		if(hasEssay){
 			QTIExportEssayItemFormatConfig c = (QTIExportEssayItemFormatConfig) mapWithConfigs.get(QTIExportEssayItemFormatConfig.class);
-			Set<String> s = essay.getSelectedKeys();
+			Collection<String> s = essay.getSelectedKeys();
 			c.setResponseCols(s.contains(ESSAY_ITEMCOLS));
 			c.setTimeCols(s.contains(ESSAY_TIMECOLS));
 		}

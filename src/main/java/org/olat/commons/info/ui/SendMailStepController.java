@@ -20,8 +20,8 @@
 
 package org.olat.commons.info.ui;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -77,7 +77,7 @@ public class SendMailStepController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		Set<String> selectedOptions = sendSelection.getSelectedKeys();
+		Collection<String> selectedOptions = sendSelection.getSelectedKeys();
 		addToRunContext(WizardConstants.SEND_MAIL, selectedOptions);
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}

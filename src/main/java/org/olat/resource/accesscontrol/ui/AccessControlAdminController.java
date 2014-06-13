@@ -20,7 +20,7 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
-import java.util.Set;
+import java.util.Collection;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -112,7 +112,7 @@ public class AccessControlAdminController extends FormBasicController {
 	}
 	
 	public void update() {
-		Set<String> selectedMethods = methods.getSelectedKeys();
+		Collection<String> selectedMethods = methods.getSelectedKeys();
 		if(selectedMethods.contains("paypal.method")) {
 			homeEnabled.select(keys[0], true);
 			homeEnabled.setEnabled(false);
@@ -138,7 +138,7 @@ public class AccessControlAdminController extends FormBasicController {
 		boolean on = !enabled.getSelectedKeys().isEmpty();
 		acModule.setEnabled(on);
 		
-		Set<String> selectedMethods = methods.getSelectedKeys();
+		Collection<String> selectedMethods = methods.getSelectedKeys();
 		acModule.setFreeEnabled(selectedMethods.contains("free.method"));
 		acModule.setTokenEnabled(selectedMethods.contains("token.method"));
 		boolean paypalEnabled = selectedMethods.contains("paypal.method");

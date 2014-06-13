@@ -59,24 +59,24 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderVertical(StringOutput sb, SingleSelectionComponent source) {
-		sb.append("<div class='o_form_selection_vertical'>");
 		RadioElementComponent[] radios = source.getRadioComponents();
 		for(RadioElementComponent radio:radios) {
-			renderRadio(sb, source, radio, "radio");
+			sb.append("<div class='radio'>");
+			renderRadio(sb, source, radio, false);
+			sb.append("</div>");
 		}
-		sb.append("</div>");
 	}
 	
 	private void renderHorizontal(StringOutput sb, SingleSelectionComponent source) {
 		sb.append("<div class='form-inline'>");
 		RadioElementComponent[] radios = source.getRadioComponents();
 		for(RadioElementComponent radio:radios) {
-			renderRadio(sb, source, radio, "radio-inline");
+			renderRadio(sb, source, radio, true);
 		}
 		sb.append("</div>");
 	}
 	
-	private void renderRadio(StringOutput sb, SingleSelectionComponent source, RadioElementComponent ssec, String css) {
+	private void renderRadio(StringOutput sb, SingleSelectionComponent source, RadioElementComponent ssec, boolean inline) {
 		String subStrName = "name='" + ssec.getGroupingName() + "'";
 
 		String key = ssec.getKey();
@@ -84,7 +84,8 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 		boolean selected = ssec.isSelected();
 		
 		// read write view
-		sb.append("<label class='").append(css).append("' for='").append(ssec.getFormDispatchId()).append("'>")
+		sb.append("<label class='radio").append("-inline", inline)
+		  .append("' for='").append(ssec.getFormDispatchId()).append("'>")
 		  .append("<input id='").append(ssec.getFormDispatchId()).append("' ")
 		  .append("type='radio' ").append(subStrName)
 		  .append(" value='").append(key).append("' ")
@@ -97,7 +98,7 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 			//mark as disabled and do not add javascript
 			sb.append(" disabled='disabled' ");
 		}
-		sb.append(" />").append(value).append("</label> ");
+		sb.append(" />").append(value).append("</label>");
 		
 		if(source.isEnabled()){
 			//add set dirty form only if enabled
