@@ -50,6 +50,7 @@ import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 
@@ -77,7 +78,7 @@ public class CourseModule extends AbstractOLATModule {
 	private CourseFactory courseFactory;
 	private Map<String, String> logVisibilities;
 	private List<DeployableCourseExport> deployableCourseExports;
-	private RepositoryManager repositoryManager;
+	private RepositoryService repositoryService;
 	private OLATResourceManager olatResourceManager;
 	
 
@@ -85,11 +86,11 @@ public class CourseModule extends AbstractOLATModule {
 	/**
 	 * [used by spring]
 	 */
-	private CourseModule(CoordinatorManager coordinatorManager, PropertyManager propertyManager, CourseFactory courseFactory, RepositoryManager repositoryManager, OLATResourceManager olatResourceManager) {
+	private CourseModule(CoordinatorManager coordinatorManager, PropertyManager propertyManager, CourseFactory courseFactory, RepositoryService repositoryService, OLATResourceManager olatResourceManager) {
 		this.coordinatorManager = coordinatorManager;
 		this.propertyManager = propertyManager;
 		this.courseFactory = courseFactory;
-		this.repositoryManager = repositoryManager;
+		this.repositoryService = repositoryService;
 		this.olatResourceManager = olatResourceManager;
 		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null, FrameworkStartupEventChannel.getStartupEventChannel());
 	}
@@ -277,7 +278,7 @@ public class CourseModule extends AbstractOLATModule {
 	private void deleteCourseAndProperty(Property prop, RepositoryEntry re) {
 		try {
 			propertyManager.deleteProperty(prop);
-			repositoryManager.deleteRepositoryEntryAndBasesecurity(re);
+			repositoryService.deleteRepositoryEntryAndBaseGroups(re);
 			CourseFactory.deleteCourse(re.getOlatResource());
 			OLATResource ores = olatResourceManager.findResourceable(re.getOlatResource());
 			olatResourceManager.deleteOLATResource(ores);

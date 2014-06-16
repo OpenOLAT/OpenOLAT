@@ -39,6 +39,7 @@ import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -53,6 +54,7 @@ import org.olat.ims.qti.process.Resolver;
 import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQPreviewSecurityCallback;
 import org.olat.modules.iq.IQSecurityCallback;
+import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -155,18 +157,18 @@ public abstract class QTIHandler extends FileHandler {
 	}
 
 	@Override
-	public boolean readyToDelete(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+	public boolean readyToDelete(OLATResourceable res, Identity identity, Roles roles, Locale locale, ErrorList errors) {
 		ReferenceManager refM = ReferenceManager.getInstance();
-		String referencesSummary = refM.getReferencesToSummary(res, ureq.getLocale());
+		String referencesSummary = refM.getReferencesToSummary(res, locale);
 		if (referencesSummary != null) {
-			Translator translator = Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale());
-			wControl.setError(translator.translate("details.delete.error.references",
+			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
+			errors.setError(translator.translate("details.delete.error.references",
 					new String[] { referencesSummary }));
 			return false;
 		}
 		if (CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(res, null)) {
-			Translator translator = Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale());
-			wControl.setError(translator.translate("details.delete.error.editor"));
+			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
+			errors.setError(translator.translate("details.delete.error.editor"));
 			return false;
 		}
 		return true;

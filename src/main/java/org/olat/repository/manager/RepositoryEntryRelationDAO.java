@@ -266,12 +266,9 @@ public class RepositoryEntryRelationDAO {
 			.setParameter("repoKey", re.getKey())
 			.setParameter("groupKey", group.getKey())
 			.getResultList();
-		
+
 		for(RepositoryEntryToGroupRelation rel:rels) {
 			em.remove(rel);
-		}
-		if(re instanceof RepositoryEntry) {
-			((RepositoryEntry)re).getGroups().removeAll(rels);
 		}
 		return rels.size();
 	}
@@ -285,12 +282,8 @@ public class RepositoryEntryRelationDAO {
 		List<RepositoryEntryToGroupRelation> rels = em.createQuery(sb.toString(), RepositoryEntryToGroupRelation.class)
 			.setParameter("repoKey", re.getKey())
 			.getResultList();
-		
 		for(RepositoryEntryToGroupRelation rel:rels) {
 			em.remove(rel);
-		}
-		if(re instanceof RepositoryEntry) {
-			((RepositoryEntry)re).getGroups().removeAll(rels);
 		}
 		return rels.size();
 	}

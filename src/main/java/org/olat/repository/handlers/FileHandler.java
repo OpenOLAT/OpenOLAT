@@ -26,6 +26,7 @@
 package org.olat.repository.handlers;
 
 import java.io.File;
+import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -34,12 +35,14 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.references.ReferenceManager;
@@ -80,11 +83,11 @@ public abstract class FileHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public boolean readyToDelete(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
-		String referencesSummary = ReferenceManager.getInstance().getReferencesToSummary(res, ureq.getLocale());
+	public boolean readyToDelete(OLATResourceable res, Identity identity, Roles roles, Locale locale, ErrorList errors) {
+		String referencesSummary = ReferenceManager.getInstance().getReferencesToSummary(res, locale);
 		if (referencesSummary != null) {
-			Translator translator = Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale());
-			wControl.setError(translator.translate("details.delete.error.references",
+			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
+			errors.setError(translator.translate("details.delete.error.references",
 					new String[] { referencesSummary }));
 			return false;
 		}

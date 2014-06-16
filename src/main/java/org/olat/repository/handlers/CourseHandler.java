@@ -53,6 +53,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
@@ -100,6 +101,7 @@ import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
+import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -539,19 +541,19 @@ public class CourseHandler implements RepositoryHandler {
 		//archiving is done within readyToDelete		
 		CourseFactory.deleteCourse(res);
 		// delete resourceable
-		OLATResourceManager rm = OLATResourceManager.getInstance();
-		OLATResource ores = rm.findResourceable(res);
-		rm.deleteOLATResource(ores);
+		//OLATResourceManager rm = OLATResourceManager.getInstance();
+		//OLATResource ores = rm.findResourceable(res);
+		//rm.deleteOLATResource(ores);
 		return true;
 	}
 
 	@Override
-	public boolean readyToDelete(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+	public boolean readyToDelete(OLATResourceable res, Identity identity, Roles roles, Locale locale, ErrorList errors) {
 		ReferenceManager refM = ReferenceManager.getInstance();
-		String referencesSummary = refM.getReferencesToSummary(res, ureq.getLocale());
+		String referencesSummary = refM.getReferencesToSummary(res, locale);
 		if (referencesSummary != null) {
-			Translator translator = Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale());
-			wControl.setError(translator.translate("details.delete.error.references",
+			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
+			errors.setError(translator.translate("details.delete.error.references",
 					new String[] { referencesSummary }));
 			return false;
 		}
@@ -559,9 +561,9 @@ public class CourseHandler implements RepositoryHandler {
 		 * make an archive of the course nodes with valuable data
 		 */
 		UserManager um = UserManager.getInstance();
-		String charset = um.getUserCharset(ureq.getIdentity());
+		String charset = um.getUserCharset(identity);
 		try {
-			CourseFactory.archiveCourse(res,charset, ureq.getLocale(), ureq.getIdentity(), ureq.getUserSession().getRoles());
+			CourseFactory.archiveCourse(res,charset, locale, identity, roles);
 		} catch (CorruptedCourseException e) {
 			log.error("The course is corrupted, cannot archive it: " + res, e);
 		}

@@ -19,10 +19,14 @@
  */
 package org.olat.repository.manager;
 
+import java.util.Locale;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
+import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -86,7 +90,18 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 		Assert.assertEquals(0, re.getAccess());
 	}
 	
-
+	@Test
+	public void deleteCourse() {
+		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("auth-del-1");
+		RepositoryEntry re = JunitTestHelper.deployDemoCourse(initialAuthor);
+		dbInstance.commitAndCloseSession();
+		
+		Roles roles = new Roles(false, false, false, true, false, false, false);
+		ErrorList errors = repositoryService.delete(re, initialAuthor, roles, Locale.ENGLISH);
+		Assert.assertNotNull(errors);
+		Assert.assertFalse(errors.hasErrors());
+	}
+	
 	
 
 }

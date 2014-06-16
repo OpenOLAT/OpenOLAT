@@ -65,6 +65,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsCPFileResource;
+import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -75,7 +76,6 @@ import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.security.RestSecurityHelper;
-import org.olat.restapi.support.ErrorWindowControl;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
@@ -670,8 +670,11 @@ public class RepositoryEntryResource {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		UserRequest ureq = getUserRequest(request);
-		ErrorWindowControl error = new ErrorWindowControl();
-		repositoryManager.deleteRepositoryEntryWithAllData(ureq, error, re);
+		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
+		ErrorList errors = rs.delete(re, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
+		if(errors.hasErrors()) {
+			return Response.serverError().status(500).build();
+		}
 		return Response.ok().build();
 	}
 	

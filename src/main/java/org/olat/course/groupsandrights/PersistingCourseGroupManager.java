@@ -263,6 +263,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#deleteCourseGroupmanagement()
 	 */
+	@Override
 	public void deleteCourseGroupmanagement() {
 		//delete permission group to course
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(getCourseResource(), false);

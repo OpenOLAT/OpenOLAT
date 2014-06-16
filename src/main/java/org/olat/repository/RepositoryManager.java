@@ -41,13 +41,11 @@ import javax.persistence.TypedQuery;
 
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.catalog.CatalogEntry;
-import org.olat.catalog.CatalogManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
@@ -55,10 +53,8 @@ import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
-import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -78,8 +74,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.group.GroupLoggingAction;
-import org.olat.repository.handlers.RepositoryHandler;
-import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryMembership;
@@ -203,72 +197,7 @@ public class RepositoryManager extends BasicManager {
 		Size size = imageHelper.scaleImage(newImageFile, repoImage, PICTUREWIDTH, PICTUREWIDTH, false);
 		return size != null;
 	}
-	
-	/**
-	 * clean up a repo entry with all children and associated data like bookmarks and user references to it
-	 * @param ureq
-	 * @param wControl
-	 * @param entry
-	 * @return
-	 * FIXME: we need a delete method without ureq, wControl for manager use. In general, very bad idea to pass ureq and
-	 * wControl down to the manger layer.
-	 */
-	public boolean deleteRepositoryEntryWithAllData(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
-		// invoke handler delete callback
-		logDebug("deleteRepositoryEntry start entry=" + entry);
-		entry = (RepositoryEntry) dbInstance.loadObject(entry,true);
-		logDebug("deleteRepositoryEntry after load entry=" + entry);
-		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
-		OLATResource resource = entry.getOlatResource();
-		//delete old context
-		if (!handler.readyToDelete(resource, ureq, wControl)) {
-			return false;
-		}
 
-		// start transaction
-		// delete entry picture
-		deleteImage(entry);
-		userCourseInformationsManager.deleteUserCourseInformations(entry);
-		
-		// delete all bookmarks referencing deleted entry
-		CoreSpringFactory.getImpl(MarkManager.class).deleteMarks(entry);
-		// delete all catalog entries referencing deleted entry
-		CatalogManager.getInstance().resourceableDeleted(entry);
-		
-		//delete all policies
-		securityManager.deletePolicies(resource);
-		
-		// inform handler to do any cleanup work... handler must delete the
-		// referenced resourceable a swell.
-		handler.cleanupOnDelete(resource);
-		
-		dbInstance.commit();
-
-		logDebug("deleteRepositoryEntry after reload entry=" + entry);
-		deleteRepositoryEntryAndBasesecurity(entry);
-
-		logDebug("deleteRepositoryEntry Done");
-		return true;
-	}
-	
-	/**
-	 * 
-	 * @param addedEntry
-	 */
-	public void deleteRepositoryEntryAndBasesecurity(RepositoryEntry entry) {
-		RepositoryEntry reloadedEntry = dbInstance.getCurrentEntityManager()
-				.getReference(RepositoryEntry.class, entry.getKey());
-		
-		Group defaultGroup = repositoryEntryRelationDao.getDefaultGroup(reloadedEntry);
-		groupDao.removeMemberships(defaultGroup);
-		repositoryEntryRelationDao.removeRelations(reloadedEntry);
-		groupDao.removeGroup(defaultGroup);
-		dbInstance.getCurrentEntityManager().remove(reloadedEntry);
-
-		dbInstance.commit();
-
-		deleteImage(entry);
-	}
 	
 	/**
 	 * Lookup repo entry by key.

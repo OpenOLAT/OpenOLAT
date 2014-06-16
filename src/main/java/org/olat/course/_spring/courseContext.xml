@@ -24,7 +24,7 @@
 	<constructor-arg index="0" ref="coordinatorManager" />
 	<constructor-arg index="1" ref="propertyManager" />
 	<constructor-arg index="2" ref="courseFactory" />
-	<constructor-arg index="3" ref="repositoryManager" />
+	<constructor-arg index="3" ref="repositoryService" />
 	<constructor-arg index="4" ref="resourceManager" />
 	
 	<property name="persistedProperties">

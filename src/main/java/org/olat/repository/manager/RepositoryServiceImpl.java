@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -30,10 +31,16 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.catalog.CatalogManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -41,6 +48,8 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryMyView;
@@ -68,6 +77,8 @@ import org.springframework.stereotype.Service;
  */
 @Service("repositoryService")
 public class RepositoryServiceImpl implements RepositoryService {
+	
+	private static final OLog log = Tracing.createLoggerFor(RepositoryServiceImpl.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -87,6 +98,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	private RepositoryEntryAuthorQueries authorViewQueries;
 	@Autowired
 	private OLATResourceManager resourceManager;
+	@Autowired
+	private UserCourseInformationsManager userCourseInformationsManager;
 
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
@@ -209,6 +222,66 @@ public class RepositoryServiceImpl implements RepositoryService {
 			}
 		}
 		return null;
+	}
+	
+	public ErrorList delete(RepositoryEntry entry, Identity identity, Roles roles, Locale locale) {
+		ErrorList errors = new ErrorList();
+		
+		boolean debug = log.isDebug();
+
+		// invoke handler delete callback
+		if(debug) log.debug("deleteRepositoryEntry start entry=" + entry);
+		entry = (RepositoryEntry) dbInstance.loadObject(entry,true);
+		if(debug) log.debug("deleteRepositoryEntry after load entry=" + entry);
+		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
+		OLATResource resource = entry.getOlatResource();
+		//delete old context
+		if (!handler.readyToDelete(resource, identity, roles, locale, errors)) {
+			return errors;
+		}
+
+		// start transaction
+		// delete entry picture
+		
+		userCourseInformationsManager.deleteUserCourseInformations(entry);
+		
+		// delete all bookmarks referencing deleted entry
+		CoreSpringFactory.getImpl(MarkManager.class).deleteMarks(entry);
+		// delete all catalog entries referencing deleted entry
+		CatalogManager.getInstance().resourceableDeleted(entry);
+		
+		//delete all policies
+		securityManager.deletePolicies(resource);
+		
+		// inform handler to do any cleanup work... handler must delete the
+		// referenced resourceable a swell.
+		handler.cleanupOnDelete(resource);
+		
+		dbInstance.commit();
+
+		if(debug) log.debug("deleteRepositoryEntry after reload entry=" + entry);
+		deleteRepositoryEntryAndBaseGroups(entry);
+
+		if(debug) log.debug("deleteRepositoryEntry Done");
+		return errors;
+	}
+	
+	/**
+	 * 
+	 * @param entry
+	 */
+	@Override
+	public void deleteRepositoryEntryAndBaseGroups(RepositoryEntry entry) {
+		RepositoryEntry reloadedEntry = dbInstance.getCurrentEntityManager()
+				.getReference(RepositoryEntry.class, entry.getKey());
+		
+		Group defaultGroup = reToGroupDao.getDefaultGroup(reloadedEntry);
+		groupDao.removeMemberships(defaultGroup);
+		reToGroupDao.removeRelations(reloadedEntry);
+		dbInstance.commit();
+		dbInstance.getCurrentEntityManager().remove(reloadedEntry);
+		groupDao.removeGroup(defaultGroup);
+		dbInstance.commit();
 	}
 
 	@Override

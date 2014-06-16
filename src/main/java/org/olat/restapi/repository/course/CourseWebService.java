@@ -71,6 +71,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.cal.CourseCalendars;
+import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -81,7 +82,6 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.restapi.security.RestSecurityHelper;
-import org.olat.restapi.support.ErrorWindowControl;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.restapi.support.vo.CourseVO;
@@ -287,10 +287,14 @@ public class CourseWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		UserRequest ureq = getUserRequest(request);
-		ErrorWindowControl error = new ErrorWindowControl();
 		RepositoryManager rm = RepositoryManager.getInstance();
+		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = rm.lookupRepositoryEntry(course, true);
-		rm.deleteRepositoryEntryWithAllData(ureq, error, re);
+		
+		ErrorList errors = rs.delete(re, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
+		if(errors.hasErrors()) {
+			return Response.serverError().status(500).build();
+		}
 		return Response.ok().build();
 	}
 	

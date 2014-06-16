@@ -71,6 +71,7 @@ import org.olat.course.run.RunMainController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
@@ -96,6 +97,7 @@ import org.olat.resource.accesscontrol.ui.OrdersAdminController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
+
 
 /**
  * 
@@ -483,7 +485,7 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 			}
 		} else if (deleteDialogCtrl == source){
 			if (DialogBoxUIFactory.isYesEvent(event)){
-				deleteRepositoryEntry(ureq, getWindowControl());
+				deleteRepositoryEntry(ureq);
 			}	
 		} else if(copyCtrl == source) {
 			cmc.deactivate();
@@ -688,12 +690,14 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 		listenTo(catalogCtlr);
 	}
 	
-	private void deleteRepositoryEntry(UserRequest ureq, WindowControl wControl) {
-		if (RepositoryManager.getInstance().deleteRepositoryEntryWithAllData( ureq, wControl, entry) ) {
+	private void deleteRepositoryEntry(UserRequest ureq) {
+		Roles roles = ureq.getUserSession().getRoles();
+		ErrorList errors = repositoryService.delete(entry, getIdentity(), roles, getLocale());
+		if (errors.hasErrors()) {
+			showInfo("info.could.not.delete.entry");
+		} else {
 			fireEvent(ureq, new EntryChangedEvent(entry, EntryChangedEvent.DELETED));
 			showInfo("info.entry.deleted");
-		} else {
-			showInfo("info.could.not.delete.entry");
 		}
 	}
 }

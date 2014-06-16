@@ -36,9 +36,11 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.repository.ui.author.AuthoringEditEntrySettingsController;
@@ -200,19 +202,13 @@ public interface RepositoryHandler {
 	 * from the repository. Return status wether to proceed with the delete action. If
 	 * this method returns false, the entry will not be deleted.
 	 * @param res
-	 * @param ureq
-	 * @param wControl
+	 * @param identity
+	 * @param roles TODO
+	 * @param locale TODO
+	 * @param errors
 	 * @return true if ressource is ready to delete, false if not.
 	 */
-	public boolean readyToDelete(OLATResourceable res, UserRequest ureq, WindowControl wControl);
-
-	/**
-	 * Create a copy of the given resourceable.
-	 * @param res
-	 * @param ureq
-	 * @return Copy of given resourceable.
-	 */
-	//public OLATResourceable createCopy(OLATResourceable res, UserRequest ureq);
+	public boolean readyToDelete(OLATResourceable res, Identity identity, Roles roles, Locale locale, ErrorList errors);
 	
 	/**
 	 * If a handler likes to provied any details on a resourceable in the repository's details

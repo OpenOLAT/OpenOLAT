@@ -108,7 +108,8 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	@JoinColumn(name="fk_olatresource", nullable=false, insertable=true, updatable=false)
 	private OLATResource olatResource;
 	
-	@OneToMany(targetEntity=RepositoryEntryToGroupRelation.class, fetch=FetchType.LAZY, cascade={CascadeType.PERSIST, CascadeType.REMOVE})
+	@OneToMany(targetEntity=RepositoryEntryToGroupRelation.class, fetch=FetchType.LAZY,
+			orphanRemoval=true, cascade={CascadeType.PERSIST, CascadeType.REMOVE})
 	@JoinColumn(name="fk_entry_id")
 	private Set<RepositoryEntryToGroupRelation> groups;
 	

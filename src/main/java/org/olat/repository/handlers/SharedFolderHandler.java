@@ -55,6 +55,7 @@ import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.modules.sharedfolder.SharedFolderDisplayController;
 import org.olat.modules.sharedfolder.SharedFolderEditorController;
 import org.olat.modules.sharedfolder.SharedFolderManager;
+import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -228,12 +229,12 @@ public class SharedFolderHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public boolean readyToDelete(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+	public boolean readyToDelete(OLATResourceable res, Identity identity, Roles roles, Locale locale, ErrorList errors) {
 		ReferenceManager refM = ReferenceManager.getInstance();
-		String referencesSummary = refM.getReferencesToSummary(res, ureq.getLocale());
+		String referencesSummary = refM.getReferencesToSummary(res, locale);
 		if (referencesSummary != null) {
-			Translator translator = Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale());
-			wControl.setError(translator.translate("details.delete.error.references", new String[] { referencesSummary }));
+			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
+			errors.setError(translator.translate("details.delete.error.references", new String[] { referencesSummary }));
 			return false;
 		}
 		return true;

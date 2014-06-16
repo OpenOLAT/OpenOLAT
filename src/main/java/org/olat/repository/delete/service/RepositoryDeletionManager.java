@@ -52,6 +52,7 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
+import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -392,7 +393,10 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 			}
 			String archiveFileName = repositoryHandler.archive(ureq.getIdentity(), getArchivFilePath(), repositoryEntry);
 			logAudit("Repository-Deletion: archived repositoryEntry=" + repositoryEntry + " , archive-file-name=" + archiveFileName);
-			RepositoryManager.getInstance().deleteRepositoryEntryWithAllData( ureq, wControl, repositoryEntry );
+			ErrorList errors = repositoryService.delete(repositoryEntry, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
+			if(errors.hasErrors()) {
+				wControl.setError(errors.getFirstError());
+			}
 			LifeCycleManager.createInstanceFor(repositoryEntry).deleteTimestampFor(SEND_DELETE_EMAIL_ACTION);
 			LifeCycleManager.createInstanceFor(repositoryEntry).markTimestampFor(REPOSITORY_DELETED_ACTION, createLifeCycleLogDataFor(repositoryEntry));
 			logAudit("Repository-Deletion: deleted repositoryEntry=" + repositoryEntry);

@@ -20,10 +20,12 @@
 package org.olat.repository;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
@@ -56,6 +58,22 @@ public interface RepositoryService {
 	
 	
 	public RepositoryEntry update(RepositoryEntry re);
+	
+	/**
+	 * Delete the learning resource with all its attached resources.
+	 * @param entry
+	 * @param identity
+	 * @param roles
+	 * @param locale
+	 * @return
+	 */
+	public ErrorList delete(RepositoryEntry entry, Identity identity, Roles roles, Locale locale);
+	
+	/**
+	 * Delete only the database object
+	 * @param entry
+	 */
+	public void deleteRepositoryEntryAndBaseGroups(RepositoryEntry entry);
 	
 
 	public void incrementLaunchCounter(RepositoryEntry re);

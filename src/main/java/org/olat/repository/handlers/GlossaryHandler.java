@@ -46,6 +46,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
@@ -60,6 +61,7 @@ import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.glossary.GlossaryEditSettingsController;
 import org.olat.modules.glossary.GlossaryManager;
 import org.olat.modules.glossary.GlossaryRegisterSettingsController;
+import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -254,12 +256,12 @@ public class GlossaryHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public boolean readyToDelete(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
+	public boolean readyToDelete(OLATResourceable res, Identity identity, Roles roles, Locale locale, ErrorList errors) {
 		ReferenceManager refM = ReferenceManager.getInstance();
-		String referencesSummary = refM.getReferencesToSummary(res, ureq.getLocale());
+		String referencesSummary = refM.getReferencesToSummary(res, locale);
 		if (referencesSummary != null) {
-			Translator translator = Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale());
-			wControl.setError(translator.translate("details.delete.error.references", new String[] { referencesSummary }));
+			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
+			errors.setError(translator.translate("details.delete.error.references", new String[] { referencesSummary }));
 			return false;
 		}
 		return true;
