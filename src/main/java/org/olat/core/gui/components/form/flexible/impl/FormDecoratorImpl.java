@@ -49,6 +49,10 @@ public class FormDecoratorImpl implements FormDecorator {
 	public FormDecoratorImpl(FormItemContainer container) {
 		this.container = container;
 	}
+	
+	public boolean isDomReplacementWrapperRequired() {
+		return container.isDomReplacementWrapperRequired();
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormDecorator#hasError(java.lang.String)

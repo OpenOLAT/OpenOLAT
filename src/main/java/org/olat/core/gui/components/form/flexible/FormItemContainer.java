@@ -47,6 +47,8 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
  * @author patrickb
  */
 public interface FormItemContainer extends FormItem, FormItemCollection {
+	
+	public boolean isDomReplacementWrapperRequired();
 
 	/**
 	 * add a formelement or container by adding subcomponents

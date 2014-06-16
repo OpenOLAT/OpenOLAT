@@ -114,10 +114,10 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 	 		sb.append(" onfocus=\"this.form.fake_").append(id).append(".nextSibling.style.border = '1px dotted black';\"")
 	 		  .append(" onblur=\"this.form.fake_").append(id).append(".nextSibling.style.border = '0';\"");
 	 		// Add select text (hover)
-	 		sb.append(" title=\"").append(StringEscapeUtils.escapeHtml(trans.translate("file.element.select"))).append("\"/>");
+	 		sb.append(" title=\"").append(StringEscapeUtils.escapeHtml(trans.translate("file.element.select"))).append("\" />");
 			// Add the visible but fake input field and a styled faked file chooser button
 			sb.append("<div class='o_fakechooser'>");
-			sb.append("<input class='form-control' name='fake_").append(id).append("' value=\"").append(StringEscapeUtils.escapeHtml(fileName)).append("\"/>")
+			sb.append("<input class='form-control' name='fake_").append(id).append("' value=\"").append(StringEscapeUtils.escapeHtml(fileName)).append("\" />")
 			  .append("<div class='o_picker_wrapper'><i class='o_icon o_icon_upload'></i></div>");	
 			sb.append("</div></div>");	
 			// Add Max upload size

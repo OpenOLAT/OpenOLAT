@@ -109,7 +109,7 @@ public class RatingRenderer extends DefaultComponentRenderer {
 				} else {
 					Form theForm = rating.getForm();
 					String elementId = FormBaseComponentIdProvider.DISPPREFIX + rating.getDispatchID();
-					sb.append("href=\"javascript:")
+					sb.append(" href=\"javascript:")
 					  .append(FormJSHelper.getXHRFnCallFor(theForm, elementId, 1,
 							  new NameValuePair(VelocityContainer.COMMAND_ID, Integer.toString(i+1))))
 					  .append("\" ");

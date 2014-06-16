@@ -35,6 +35,8 @@ import org.olat.core.commons.modules.bc.FileUploadController;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
+import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -42,13 +44,16 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
 import org.olat.core.util.vfs.filters.VFSItemFileTypeFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * enclosing_type Description: <br>
@@ -73,6 +78,8 @@ public class FileLinkChooserController extends BasicController {
 	private final String fileName;
 	private String[] suffixes;
 	private VFSContainer rootDir;
+	@Autowired
+	private MovieService movieService;
 
 	/**
 	 * @param ureq
@@ -155,7 +162,8 @@ public class FileLinkChooserController extends BasicController {
 				uploadLimit = limit.longValue();
 			}
 		}
-		uploadCtr = new FileUploadController(wControl, fileUploadBase, ureq, uploadLimit, remainingSpace, mimeTypes, true);
+		uploadCtr = new FileUploadController(wControl, fileUploadBase, ureq, uploadLimit, remainingSpace, mimeTypes,
+				true, false, true, true, false);
 		
 		listenTo(uploadCtr);
 		// set specific upload path
@@ -202,21 +210,36 @@ public class FileLinkChooserController extends BasicController {
 			}
 		} else if (source == fileChooserController) {
 			if (event instanceof FileChoosenEvent) {
+				FileChoosenEvent fileEvent = (FileChoosenEvent)event;
+				VFSItem item = fileEvent.getSelectedItem();
+				Size size = getSize(item, item.getName());
+				
 				String relPath = FileChooserUIFactory
-						.getSelectedRelativeItemPath((FileChoosenEvent) event,
-								rootDir, fileName);
+						.getSelectedRelativeItemPath(fileEvent, rootDir, fileName);
 				// notify parent controller
-				fireEvent(ureq, new URLChoosenEvent(relPath));
-
+				
+				if(size != null) {
+					fireEvent(ureq, new URLChoosenEvent(relPath, null, null, null, size.getWidth(), size.getHeight()));
+				} else {
+					fireEvent(ureq, new URLChoosenEvent(relPath));
+				}
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 
 			} else if (event == Event.FAILED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}
-
 		}
-
+	}
+	
+	private Size getSize(VFSItem item, String filename) {
+		Size size = null;
+		if(item instanceof VFSLeaf) {
+			VFSLeaf leaf = (VFSLeaf)item;
+			String suffix = FileUtils.getFileSuffix(filename);
+			size = movieService.getSize(leaf, suffix);
+		}
+		return size;
 	}
 
 	private boolean isFileSuffixOk(String fileName) {

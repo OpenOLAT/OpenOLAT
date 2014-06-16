@@ -104,7 +104,8 @@ public class PortraitUploadController extends BasicController {
 		mimeTypes.add("image/jpeg");
 		mimeTypes.add("image/png");
 		VFSContainer uploadContainer = new LocalFolderImpl(uploadDir);
-		uploadCtr = new FileUploadController(getWindowControl(), uploadContainer, ureq, this.limitKB, this.limitKB, mimeTypes, false, false, false, true);
+		uploadCtr = new FileUploadController(getWindowControl(), uploadContainer, ureq, this.limitKB, this.limitKB, mimeTypes,
+				false, false, false, true, false);
 		uploadCtr.hideTitleAndFieldset();
 		listenTo(uploadCtr);
 		folderContainer.put("uploadCtr", uploadCtr.getInitialComponent());

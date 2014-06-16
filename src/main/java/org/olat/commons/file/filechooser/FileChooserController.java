@@ -197,7 +197,8 @@ public class FileChooserController extends BasicController {
 		} else if (source == uploadButton){
 			// Delegate upload process to file upload controller
 			removeAsListenerAndDispose(fileUploadCtr);
-			fileUploadCtr = new FileUploadController(getWindowControl(), uploadContainer, ureq,  uploadLimitKB, Quota.UNLIMITED, null, false);
+			fileUploadCtr = new FileUploadController(getWindowControl(), uploadContainer, ureq,  uploadLimitKB, Quota.UNLIMITED, null,
+					false, false, true, true, false);
 			listenTo(fileUploadCtr);
 			panel.setContent(fileUploadCtr.getInitialComponent());
 			

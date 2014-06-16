@@ -394,6 +394,10 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		return formLayoutContainer.getComponent(name);
 	}
 	
+	public boolean isDomReplacementWrapperRequired() {
+		return formLayoutContainer.isDomReplacementWrapperRequired();
+	}
+	
 	public String getId(String prefix) {
 		return VelocityRenderDecorator.getId(prefix, formLayoutContainer);
 	}

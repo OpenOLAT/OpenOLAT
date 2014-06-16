@@ -1,5 +1,6 @@
-## for odd reason bootstrap calls vertial horizontal
-<fieldset id="$r.getCId()" class="o_form form-horizontal #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()" role="form">
+<div class="container-fluid">
+## for odd reason bootstrap calls vertical horizontal
+<fieldset #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="o_form form-horizontal #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()" role="form">
 #if ($off_title || $off_chelp_package) 
 	<legend>
 		#if ($off_chelp_package) 
@@ -25,11 +26,9 @@
 	</div>
 #end
 
-
 #if ($showMetadata)
 	$r.render("metadata")
 #end
-
 	$r.render("buttons")
 </fieldset>
 
@@ -38,7 +37,7 @@
 <script type="text/javascript">
 /* <![CDATA[ */ 
 jQuery(function() {
-	jQuery('.b_fileinput_realchooser').on("change", function() {
+	jQuery('.o_realchooser').on("change", function() {
 		var re = new RegExp('[.](jpeg)|(jpg)|(png)$');
 		var name = jQuery(this).val();
 		if(name != null && name.toLowerCase().match(re)) {
@@ -51,3 +50,4 @@ jQuery(function() {
 /* ]]> */
 </script>
 #end
+</div>

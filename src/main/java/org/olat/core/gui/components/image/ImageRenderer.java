@@ -35,6 +35,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description: <br>
@@ -125,7 +126,13 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		} else {
 			mapperUrl += "/?" + System.nanoTime();
 		}
-		sb.append(" src='").append(mapperUrl).append("'/>");
+		sb.append(" src='").append(mapperUrl).append("' alt=\"");
+		if(StringHelper.containsNonWhitespace(ic.getAlt())) {
+			sb.append(ic.getAlt());
+		} else {
+			sb.append("*");
+		}
+		sb.append("\" />");
 		
 		if(ic.isCropSelectionEnabled()) {
 			sb.append("<input id='").append(imgId).append("_x' name='").append(imgId).append("_x' type='hidden' value='' />")

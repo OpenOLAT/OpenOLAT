@@ -43,21 +43,25 @@ public class URLChoosenEvent extends Event {
 	private final String displayName;
 	private final String htmlTarget;
 	private final String iconCssClass;
+	private final int width;
+	private final int height;
 
 	/**
 	 * Constructor for this even.
 	 * @param url The URL that has been selected
 	 */
 	public URLChoosenEvent(String url) {
-		this(url, null, null, null);
+		this(url, null, null, null, -1, -1);
 	}
 	
-	public URLChoosenEvent(String url, String displayName, String htmlTarget, String iconCssClass) {
+	public URLChoosenEvent(String url, String displayName, String htmlTarget, String iconCssClass, int width, int height) {
 		super("urlchoosenevent");
 		this.url = url;
 		this.displayName = displayName;
 		this.htmlTarget = htmlTarget;
 		this.iconCssClass = iconCssClass;
+		this.width = width;
+		this.height = height;
 	}
 
 	/**
@@ -86,5 +90,13 @@ public class URLChoosenEvent extends Event {
 	 */
 	public String getIconCssClass() {
 		return iconCssClass;
+	}
+
+	public int getWidth() {
+		return width;
+	}
+
+	public int getHeight() {
+		return height;
 	}
 }

@@ -106,7 +106,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 	private void renderCheckbox(StringOutput sb, CheckboxElement check, MultipleSelectionComponent stC, boolean inline) {
 		MultipleSelectionElementImpl stF = stC.getMultipleSelectionElement();
 
-		String subStrName = "name='" + check.getGroupingName() + "'s";
+		String subStrName = "name='" + check.getGroupingName() + "'";
 			
 		String key = check.getKey();
 		String value = check.getValue();
@@ -116,17 +116,18 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		}
 			
 		boolean selected = check.isSelected();
+		String formDispatchId = stF.getFormDispatchId();
 			
 		//read write view
 		String cssClass = check.getCssClass(); //optional CSS class
 		sb.append("<label class='checkbox").append("-inline", inline)
 		  .append(" ").append(cssClass, cssClass != null)
-		  .append("' for=\"").append(stF.getFormDispatchId()).append("\">");
+		  .append("' for=\"").append(formDispatchId).append("\">");
 		String iconLeftCSS = check.getIconLeftCSS();
 		if (StringHelper.containsNonWhitespace(iconLeftCSS)) {
 			sb.append(" <i class='").append(iconLeftCSS).append("'> </i> ");
 		}
-		sb.append("<input type='checkbox' id='").append(stF.getFormDispatchId()).append("' ")
+		sb.append("<input type='checkbox' id='").append(formDispatchId).append("' ")
 		  .append(subStrName)
 		  .append(" value='").append(key).append("'");
 		if (selected) {
@@ -136,7 +137,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			sb.append(" disabled='disabled' ");
 		} else {
 			//use the selection form dispatch id and not the one of the element!
-			sb.append(FormJSHelper.getRawJSFor(check.getRootForm(),check.getSelectionElementFormDisId(), check.getAction()));
+			sb.append(FormJSHelper.getRawJSFor(check.getRootForm(), check.getSelectionElementFormDisId(), check.getAction()));
 		}
 		sb.append(" />");
 		if (StringHelper.containsNonWhitespace(value)) {

@@ -38,7 +38,7 @@ public class FileChoosenEvent extends Event {
 
 	private static final long serialVersionUID = 6650009491560019373L;
 	public static final String COMMAND = "fileSelected";
-	private VFSItem selectedItem;
+	private final VFSItem selectedItem;
 
 	/**
 	 * Constructor to create a file choosen event
@@ -54,9 +54,7 @@ public class FileChoosenEvent extends Event {
 	 * 
 	 * @return
 	 */
-	VFSItem getSelectedItem() {
-		return this.selectedItem;
+	public VFSItem getSelectedItem() {
+		return selectedItem;
 	}
-
-
 }

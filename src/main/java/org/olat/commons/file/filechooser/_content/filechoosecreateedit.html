@@ -1,6 +1,12 @@
 #if ($fileIsChoosen)
-	<strong>$r.translate("file"):</strong>
-	$r.translate("folder.displayname")$chosenFile
+<fieldset class="form">
+	<div class="form-group">
+		<label class="control-label col-sm-3">$r.translate("file")</label>
+		<div class="col-sm-9">
+			<p class="form-control-static">$chosenFile</p>
+		</div>
+	</div>
+</fieldset>
 #end
 #if (!$!quotaover) 
 <fieldset>

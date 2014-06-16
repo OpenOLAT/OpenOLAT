@@ -125,6 +125,7 @@ public class FileUploadController extends FormBasicController {
 	private MultipleSelectionElement resizeEl;
 	private StaticTextElement pathEl;
 	private boolean showTargetPath = false;
+	private boolean showTitle = true;
 
 	private boolean fileOverwritten = false;
 	private boolean resizeImg;
@@ -156,37 +157,25 @@ public class FileUploadController extends FormBasicController {
 	 * @param showTargetPath true: show the relative path where the file will be
 	 *          uploaded to; false: show no path
 	 */
-	public FileUploadController(WindowControl wControl, VFSContainer curContainer, UserRequest ureq, long upLimitKB, long remainingQuotKB, Set<String> mimeTypesRestriction, boolean showTargetPath) {
-		this(wControl, curContainer, ureq, upLimitKB, remainingQuotKB, mimeTypesRestriction, showTargetPath, false, true, true);
-	}
-	
-	/**
-	 * @param wControl
-	 * @param curContainer
-	 * @param ureq
-	 * @param upLimitKB
-	 * @param remainingQuotKB
-	 * @param mimeTypesRestriction
-	 * @param showTargetPath
-	 * @param showMetadata Display the meta data sub form
-	 */
 	public FileUploadController(WindowControl wControl, VFSContainer curContainer, UserRequest ureq, long upLimitKB, long remainingQuotKB,
-			Set<String> mimeTypesRestriction, boolean showTargetPath, boolean showMetadata) {
-		this(wControl, curContainer, ureq, upLimitKB, remainingQuotKB, mimeTypesRestriction, showTargetPath, showMetadata, true, true);
+			Set<String> mimeTypesRestriction, boolean showTargetPath) {
+		this(wControl, curContainer, ureq, upLimitKB, remainingQuotKB, mimeTypesRestriction, showTargetPath, false, true, true, true);
 	}
 	
 	public FileUploadController(WindowControl wControl, VFSContainer curContainer, UserRequest ureq, long upLimitKB, long remainingQuotKB,
-			Set<String> mimeTypesRestriction, boolean showTargetPath, boolean showMetadata, boolean resizeImg, boolean showCancel) {
+			Set<String> mimeTypesRestriction, boolean showTargetPath, boolean showMetadata, boolean resizeImg, boolean showCancel, boolean showTitle) {
 		super(ureq, wControl, "file_upload");
 		vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
-		setVariables(curContainer, upLimitKB, remainingQuotKB, mimeTypesRestriction, showTargetPath, showMetadata, resizeImg, showCancel);
+		setVariables(curContainer, upLimitKB, remainingQuotKB, mimeTypesRestriction, showTargetPath, showMetadata, resizeImg, showCancel, showTitle);
 		initForm(ureq);
 	}
 	
-	private void setVariables(VFSContainer curContainer, long upLimitKB, long remainingQuotKB,Set<String> mimeTypesRestriction, boolean showTargetPath, boolean showMetadata, boolean resizeImg, boolean showCancel) {
+	private void setVariables(VFSContainer curContainer, long upLimitKB, long remainingQuotKB, Set<String> mimeTypesRestriction, boolean showTargetPath,
+			boolean showMetadata, boolean resizeImg, boolean showCancel, boolean showTitle) {
 		this.currentContainer = curContainer;
 		this.fileInfoMBean = (FilesInfoMBean) CoreSpringFactory.getBean(FilesInfoMBean.class.getCanonicalName());
 		this.mimeTypes = mimeTypesRestriction;
+		this.showTitle = showTitle;
 		this.showTargetPath = showTargetPath;
 		// set remaining quota and max upload size
 		this.uploadLimitKB = upLimitKB;
@@ -200,12 +189,13 @@ public class FileUploadController extends FormBasicController {
 	}
 	
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener,
-			UserRequest ureq) {
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// Trigger fieldset and title
-		setFormTitle("ul.header");
+		if(showTitle) {
+			setFormTitle("ul.header");
+		}
 		
-		this.flc.contextPut("showMetadata", showMetadata);
+		flc.contextPut("showMetadata", showMetadata);
 		// Add file element
 		FormItemContainer fileUpload;
 		// the layout of the file upload depends on the metadata. if they're
@@ -217,7 +207,6 @@ public class FileUploadController extends FormBasicController {
 		}
 		formLayout.add(fileUpload);
 		flc.contextPut("resizeImg", resizeImg);
-		//
 
 		if(resizeImg) {
 			FormLayoutContainer resizeCont;
@@ -247,7 +236,7 @@ public class FileUploadController extends FormBasicController {
 			fileEl.setEnabled(false);
 			getWindowControl().setError(translate("QuotaExceeded"));
 		}
-		//
+		
 		// Add path element
 		if (showTargetPath) {			
 			String path = "/ " + uploadVFSContainer.getName();
@@ -265,7 +254,7 @@ public class FileUploadController extends FormBasicController {
 			formLayout.add("metadata", metaDataCtr.getFormItem());
 			listenTo(metaDataCtr);
 		}
-		//
+		
 		// Add cancel and submit in button group layout
 		FormItemContainer buttons;
 		if (showMetadata) {

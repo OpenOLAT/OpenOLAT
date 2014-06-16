@@ -1,4 +1,4 @@
-<fieldset id="$r.getCId()" class="o_form form #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()" role="form">
+<fieldset #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="o_form form #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()" role="form">
 #if ($off_title || $off_chelp_package) 
 	<legend>
 	#if ($off_chelp_package) 

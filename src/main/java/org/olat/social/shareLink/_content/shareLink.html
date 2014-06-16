@@ -28,15 +28,15 @@
 		</a>
 	#elseif ($link == "facebook")
 		<a id="o_facebook" href="#" target="_blank" title="$r.translateInAttribute("share.facebook")" onclick="window.open('http://www.facebook.com/sharer.php?u='+o_shareSocialUrl()+'&t='+o_shareSocialTitle());return false;">
-			<i class="o_icon o_icon_facebook o_icon-lg"></i>		
+			<i class="o_icon o_icon_facebook o_icon-lg"></i>
 		</a>
 	#elseif ($link == "google")
 		<a id="o_google" href="#" target="_blank" title="$r.translateInAttribute("share.google")" onclick="window.open('https://www.google.com/bookmarks/mark?op=add&bkmk='+o_shareSocialUrl()+'&title='+o_shareSocialTitle());return false;">
-			<i class="o_icon o_icon_google o_icon-lg"></i>		
+			<i class="o_icon o_icon_google o_icon-lg"></i>
 		</a>
 	#elseif ($link == "delicious")
 		<a id="o_delicious" href="#" target="_blank" title="$r.translateInAttribute("share.delicious")" onclick="window.open('http://www.delicious.com/save?url='+o_shareSocialUrl()+'&title='+o_shareSocialTitle());return false;">
-			<i class="o_icon o_icon_delicious o_icon-lg"></i>		
+			<i class="o_icon o_icon_delicious o_icon-lg"></i>
 		</a>
 	#elseif ($link == "digg")
 		<a id="o_digg" href="#" title="$r.translateInAttribute("share.digg")" onclick="window.open('http://digg.com/submit?url='+o_shareSocialUrl()+'&title='+o_shareSocialTitle());return false;">		
@@ -44,13 +44,13 @@
 		</a>
 	#elseif ($link == "mail")	
 		<a id="o_mail" href="mailto:?body=$baseURL" title="$r.translateInAttribute("share.mail")">
-			<i class="o_icon o_icon_mailto o_icon-lg"></i>		
+			<i class="o_icon o_icon_mailto o_icon-lg"></i>
 		</a>
 	#elseif ($link == "link")	
-		<a id="o_link" href=javascript:;>
+		<a id="o_link" href="javascript:;">
 			<i class="o_icon o_icon_link o_icon-lg"></i>
 		</a>
-		<a id="o_qrcode" href=javascript:;>
+		<a id="o_qrcode" href="javascript:;">
 			<i class="o_icon o_icon_qrcode o_icon-lg"></i>
 		</a>
 		<script type="text/javascript">

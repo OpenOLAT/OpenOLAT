@@ -65,6 +65,7 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 	private VFSLeaf media;
 	private String mimeType;
 
+	private String alt;
 	private final String mapperUrl;
 	private final MediaMapper mapper;
 
@@ -92,6 +93,14 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 		posterMapperUrl = CoreSpringFactory.getImpl(MapperService.class).register(usess, mapperId, posterMapper);		
 		// renderer provides own DOM ID
 		setDomReplacementWrapperRequired(false);
+	}
+
+	public String getAlt() {
+		return alt;
+	}
+
+	public void setAlt(String alt) {
+		this.alt = alt;
 	}
 
 	/**

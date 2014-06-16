@@ -124,6 +124,12 @@ public class LinkChooserController extends BasicController {
 				closeVC.contextPut("isJsUrl", Boolean.TRUE);
 			}
 			closeVC.contextPut("imagepath", url);
+			if(urlChoosenEvent.getWidth() > 0) {
+				closeVC.contextPut("width", Integer.toString(urlChoosenEvent.getWidth()));
+			}
+			if(urlChoosenEvent.getHeight() > 0) {
+				closeVC.contextPut("height", Integer.toString(urlChoosenEvent.getHeight()));
+			}
 			mainPanel.setContent(closeVC);
 			
 		} else if (event == Event.CANCELLED_EVENT) {

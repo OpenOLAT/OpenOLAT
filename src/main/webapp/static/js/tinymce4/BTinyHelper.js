@@ -53,14 +53,20 @@ var BTinyHelper = {
 	},
 
 	// Write link from media chooser back to tiny and trigger media preview generation
-	writeLinkSelectionToTiny : function (link) {
+	writeLinkSelectionToTiny : function (link, width, height) {
 		if (link != "") {
 			jQuery('#' + BTinyHelper.currentFieldId).val(link);
-			// update image preview, not used with tiny 4
-			if (BTinyHelper.currentWindow.ImageDialog && BTinyHelper.currentWindow.ImageDialog.showPreviewImage) {
-				BTinyHelper.currentWindow.ImageDialog.showPreviewImage(link);
-			} else if (BTinyHelper.currentWindow.generatePreview) {
-				BTinyHelper.currentWindow.generatePreview(link);
+			try {
+				if(width != null && width > 0) {
+					BTinyHelper.currentWindow.tinymce.activeEditor.windowManager.windows[0].find('#width')[0].value(width);
+					BTinyHelper.currentWindow.tinymce.activeEditor.windowManager.windows[0].find('#width')[0].fire('change');
+				}
+				if(height != null && height > 0) {
+					BTinyHelper.currentWindow.tinymce.activeEditor.windowManager.windows[0].find('#height')[0].value(height);
+					BTinyHelper.currentWindow.tinymce.activeEditor.windowManager.windows[0].find('#height')[0].fire('change');
+				}
+			} catch(e) {
+				if(console) console.log(e);
 			}
 		}
 	},

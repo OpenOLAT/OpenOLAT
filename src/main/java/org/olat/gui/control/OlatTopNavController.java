@@ -216,6 +216,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 			// display only within 600x300 - everything else looks ugly
 			ImageComponent ic = new ImageComponent(ureq.getUserSession(), "image");
 			ic.setSpanAsDomReplaceable(true);
+			ic.setAlt("Me");
 			ic.setMedia(image);
 			topNavVC.put("portrait", ic);
 			return ic;
