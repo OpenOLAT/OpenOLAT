@@ -92,11 +92,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		renderFooterButtons(sb, ftC, translator);
 		//draggable
 		if(ftE.getColumnIndexForDragAndDropLabel() > 0) {
-		
 			sb.append("<script type='text/javascript'>")
 			  .append("/* <![CDATA[ */ \n")
 			  .append("jQuery(function() {\n")
-			  .append(" console.log(jQuery('.o_table_flexi table tr'));\n")
 			  .append(" jQuery('.o_table_flexi table tr').draggable({\n")
 	          .append("  containment: '#o_main',\n")
 	          .append("	 zIndex: 10000,\n")
