@@ -46,7 +46,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
@@ -146,8 +145,6 @@ public abstract class AbstractItemListController extends FormBasicController
 		itemsTable.setSearchEnabled(true);
 		itemsTable.setSortSettings(new FlexiTableSortOptions(true));
 		itemsTable.setExtendedSearch(extendedSearchCtrl);
-		itemsTable.setAvailableRendererTypes(FlexiTableRendererType.classic, FlexiTableRendererType.custom);
-		itemsTable.setRendererType(FlexiTableRendererType.classic);
 		itemsTable.setColumnIndexForDragAndDropLabel(Cols.title.ordinal());
 
 		initButtons(ureq, formLayout);
