@@ -378,6 +378,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public void setSortSettings(FlexiTableSortOptions options) {
 		this.sortOptions = options;
+		if(options.getDefaultOrderBy() != null) {
+			orderBy = new SortKey[]{ options.getDefaultOrderBy() };
+		}
 	}
 
 	@Override
@@ -764,12 +767,18 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		component.setDirty(true);
 		extendedSearchExpanded = true;
 		extendedSearchCtrl.setEnabled(true);
+		if(searchFieldEl != null) {
+			searchFieldEl.setVisible(false);
+		}
 	}
 	
 	@Override
 	public void collapseExtendedSearch() {
 		extendedSearchExpanded = false;
 		extendedSearchCtrl.setEnabled(false);
+		if(searchFieldEl != null) {
+			searchFieldEl.setVisible(true);
+		}
 	}
 
 	protected void customizeCallout(UserRequest ureq) {
@@ -866,7 +875,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	protected void evalExtendedSearch(UserRequest ureq) {
 		String search = null;
-		if(searchFieldEl != null) {
+		if(searchFieldEl != null && searchFieldEl.isEnabled() && searchFieldEl.isVisible()) {
 			searchFieldEl.evalFormRequest(ureq);
 			search = searchFieldEl.getValue();
 		}
@@ -875,7 +884,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	protected void evalSearchRequest(UserRequest ureq) {
-		if(searchFieldEl == null) return;//this a default behavior which can occur without the search configured
+		if(searchFieldEl == null || !searchFieldEl.isEnabled() || !searchFieldEl.isVisible()){
+			return;//this a default behavior which can occur without the search configured
+		}
 		searchFieldEl.evalFormRequest(ureq);
 		String search = searchFieldEl.getValue();
 		if(StringHelper.containsNonWhitespace(search)) {
@@ -1041,7 +1052,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public void reloadData() {
 		if(dataSource != null) {
 			dataSource.clear();
-			dataSource.load(getSearchText(), getConditionalQueries(), 0, getPageSize());//reload needed rows
+			dataSource.load(getSearchText(), getConditionalQueries(), 0, getPageSize(), orderBy);//reload needed rows
 		} else {
 			if(dataModel instanceof FilterableFlexiTableModel) {
 				if(isFilterEnabled()) {

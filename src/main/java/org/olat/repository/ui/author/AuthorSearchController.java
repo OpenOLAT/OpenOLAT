@@ -26,15 +26,14 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -57,7 +56,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	private TextElement author;
 	private TextElement description;
 	private SingleSelection types;
-	private FormLink searchButton;
+	private FormSubmit searchButton;
 	
 	private String[] limitTypes;
 	private boolean isAdmin;
@@ -115,7 +114,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
-		searchButton = uifactory.addFormLink("search", buttonLayout, Link.BUTTON);
+		searchButton = uifactory.addFormSubmitButton("search", buttonLayout);
 		if(cancelAllowed) {
 			uifactory.addFormCancelButton("quick.search", buttonLayout, ureq, getWindowControl());
 		}
@@ -201,8 +200,10 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	
 	@Override
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == searchButton) {
-			fireSearchEvent(ureq);
+		if(enabled) {
+			if (source == searchButton) {
+				fireSearchEvent(ureq);
+			}
 		}
 	}
 	

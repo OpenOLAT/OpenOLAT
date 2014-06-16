@@ -19,6 +19,8 @@
  */
 package org.olat.repository.manager;
 
+import java.util.List;
+
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -45,7 +47,7 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 	
 	@Test
 	public void loadByKey() {
-		RepositoryEntry re = repositoryService.create("Rei Ayanami", "-", "Statistics", "", null);
+		RepositoryEntry re = repositoryService.create("Rei Ayanami", "-", "Repository entry DAO Test 1", "", null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(re);
 		
@@ -53,5 +55,18 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(loadedRe.getStatistics());
 		Assert.assertNotNull(loadedRe.getOlatResource());
+	}
+	
+	@Test
+	public void getAllRepositoryEntries() {
+		RepositoryEntry re = repositoryService.create("Rei Ayanami", "-", "Repository entry DAO Test 1", "", null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(re);
+		
+		List<RepositoryEntry> allRes = repositoryEntryDao.getAllRepositoryEntries(0, 25);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(allRes);
+		Assert.assertFalse(allRes.isEmpty());
+		Assert.assertTrue(allRes.size() < 26);
 	}
 }

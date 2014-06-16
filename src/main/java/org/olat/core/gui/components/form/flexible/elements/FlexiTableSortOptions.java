@@ -22,6 +22,8 @@ package org.olat.core.gui.components.form.flexible.elements;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.core.commons.persistence.SortKey;
+
 /**
  * 
  * Initial date: 27.05.2014<br>
@@ -30,6 +32,7 @@ import java.util.List;
  */
 public class FlexiTableSortOptions {
 	
+	private SortKey defaultOrderBy;
 	private boolean fromColumnModel;
 	private List<FlexiTableSort> sorts;
 	
@@ -43,6 +46,11 @@ public class FlexiTableSortOptions {
 		this.fromColumnModel = fromColumnModel;
 	}
 	
+	public FlexiTableSortOptions(boolean fromColumnModel, SortKey defaultOrderBy) {
+		this(fromColumnModel);
+		this.defaultOrderBy = defaultOrderBy;
+	}
+	
 	public FlexiTableSortOptions(List<FlexiTableSort> sorts) {
 		this.sorts = sorts;
 		fromColumnModel = false;
@@ -50,6 +58,14 @@ public class FlexiTableSortOptions {
 	
 	public boolean isFromColumnModel() {
 		return fromColumnModel;
+	}
+
+	public SortKey getDefaultOrderBy() {
+		return defaultOrderBy;
+	}
+
+	public void setDefaultOrderBy(SortKey defaultOrderBy) {
+		this.defaultOrderBy = defaultOrderBy;
 	}
 
 	public void setFromColumnModel(boolean fromColumnModel) {

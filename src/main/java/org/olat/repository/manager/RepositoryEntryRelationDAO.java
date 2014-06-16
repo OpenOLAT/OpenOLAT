@@ -19,6 +19,7 @@
  */
 package org.olat.repository.manager;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -314,6 +315,12 @@ public class RepositoryEntryRelationDAO {
 		return count;
 	}
 	
+	/**
+	 * Count the number of relation from a group to repository entries
+	 * 
+	 * @param group
+	 * @return The number of relations
+	 */
 	public int countRelations(Group group) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(rel) from repoentrytogroup as rel")
@@ -326,7 +333,17 @@ public class RepositoryEntryRelationDAO {
 		return count == null ? 0 : count.intValue();
 	}
 	
+	/**
+	 * Get the relation from a base group to the repository entries
+	 * 
+	 * @param groups
+	 * @return The list of relations
+	 */
 	public List<RepositoryEntryToGroupRelation> getRelations(List<Group> groups) {
+		if(groups == null || groups.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select rel from repoentrytogroup as rel")
 		  .append(" inner join fetch rel.entry as entry")

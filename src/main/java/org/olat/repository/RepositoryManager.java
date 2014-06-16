@@ -142,18 +142,6 @@ public class RepositoryManager extends BasicManager {
 	}
 	
 	/**
-	 * Delete repo entry.
-	 * @param re
-	 */
-	public void deleteRepositoryEntry(RepositoryEntry re) {
-		re = (RepositoryEntry) dbInstance.loadObject(re,true);
-		dbInstance.getCurrentEntityManager().remove(re);
-		//TODO:pb:b this should be called in a  RepoEntryImageManager.delete
-		//instead of a controller.
-		deleteImage(re);
-	}
-	
-	/**
 	 * Copy the repo entry image from the source to the target repository entry.
 	 * If the source repo entry does not exists, nothing will happen
 	 * 

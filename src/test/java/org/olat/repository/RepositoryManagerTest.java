@@ -1107,6 +1107,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertEquals("Brand new description", reloaded.getDescription());
 		Assert.assertEquals(publicCycle, reloaded.getLifecycle());
 	}
+
 	
 
 	private RepositoryEntry createRepositoryEntry(final String type, Identity owner, long i) {

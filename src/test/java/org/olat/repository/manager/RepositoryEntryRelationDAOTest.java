@@ -20,6 +20,7 @@
 package org.olat.repository.manager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,6 +37,7 @@ import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -238,4 +240,74 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		repositoryEntryRelationDao.filterMembership(id, empyEntries);
 		Assert.assertTrue(empyEntries.isEmpty());
 	}
+	
+	@Test
+	public void countRelations() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
+		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
+
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "count relation 1", "tg", null, null, false, false, re1);
+	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
+	    businessGroupService.addResourceTo(group, re2);
+	    dbInstance.commitAndCloseSession();
+
+	    int numOfRelations = repositoryEntryRelationDao.countRelations(group.getBaseGroup());
+	    Assert.assertEquals(2, numOfRelations);
+	}
+	
+	@Test
+	public void getRelations() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
+		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
+
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "get relations", "tg", null, null, false, false, re1);
+	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
+	    businessGroupService.addResourceTo(group, re2);
+	    dbInstance.commitAndCloseSession();
+	    
+	    //get the relations from the business group's base group to the 2 repository entries
+	    List<Group> groups = Collections.singletonList(group.getBaseGroup());
+	    List<RepositoryEntryToGroupRelation> relations = repositoryEntryRelationDao.getRelations(groups);
+	    Assert.assertNotNull(relations);
+	    Assert.assertEquals(2, relations.size());
+		Assert.assertTrue(relations.get(0).getEntry().equals(re1) || relations.get(0).getEntry().equals(re2));
+		Assert.assertTrue(relations.get(1).getEntry().equals(re1) || relations.get(1).getEntry().equals(re2));
+	}
+	
+	@Test
+	public void removeMembers() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("re-member-rm-1-" + UUID.randomUUID().toString());
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("re-member-rm-2-" + UUID.randomUUID().toString());
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("re-member-rm-3-" + UUID.randomUUID().toString());
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		repositoryEntryRelationDao.addRole(id1, re, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(id2, re, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(id3, re, GroupRoles.owner.name());
+	    dbInstance.commitAndCloseSession();
+	    
+	    List<Identity> membersToRemove = new ArrayList<>(2);
+	    membersToRemove.add(id2);
+	    membersToRemove.add(id3);
+		boolean removed = repositoryEntryRelationDao.removeMembers(re, membersToRemove);
+		Assert.assertTrue(removed);
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> members = repositoryEntryRelationDao.getMembers(re, RepositoryEntryRelationType.defaultGroup);
+		Assert.assertNotNull(members);
+	    Assert.assertEquals(1, members.size());
+	    Assert.assertTrue(members.contains(id1));
+	}
+	
+	@Test
+	public void removeRelations() {
+		
+	}
+	
+	@Test
+	public void removeNotDefaultRelation() {
+		
+	}
+	
 }

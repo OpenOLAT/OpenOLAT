@@ -29,6 +29,7 @@ import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
@@ -216,15 +217,18 @@ public class AuthorListController extends FormBasicController implements Activat
 				new StaticFlexiCellRenderer("" /* translate("edit") */, "edit", "o_icon-lg o_icon_edit")));
 		
 		model = new AuthoringEntryDataModel(dataSource, columnsModel);
-		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "table", model, 20, !startExtendedSearch, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
 		tableEl.setExportEnabled(true);
 		tableEl.setExtendedSearch(searchCtrl);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_coursetable");
 		tableEl.setMultiSelect(true);
-		tableEl.setSortSettings(new FlexiTableSortOptions(true));
+		tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(OrderBy.displayname.name(), true)));
 		tableEl.setAndLoadPersistedPreferences(ureq, "authors-list-" + i18nName);
+		if(!startExtendedSearch) {
+			tableEl.sort(OrderBy.displayname.name(), true);
+		}
 		
 		if(startExtendedSearch) {
 			tableEl.expandExtendedSearch(ureq);
@@ -313,6 +317,15 @@ public class AuthorListController extends FormBasicController implements Activat
 			if(event instanceof SearchEvent) {
 				SearchEvent se = (SearchEvent)event;
 				doSearch(se);
+			} else if(event == Event.CANCELLED_EVENT) {
+				System.out.println();
+				//removeSearchParameters();
+				
+				searchParams.setResourceTypes(null);
+				searchParams.setIdAndRefs(null);
+				searchParams.setAuthor(null);
+				searchParams.setDisplayname(null);
+				searchParams.setDescription(null);
 			}
 		} else if(detailsCtrl == source) {
 			if(event instanceof OpenEvent) {
