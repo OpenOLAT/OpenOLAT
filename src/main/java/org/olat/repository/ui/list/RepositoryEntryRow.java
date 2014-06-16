@@ -45,6 +45,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private boolean selected;
 	
 	private Long key;
+	private String externalRef;
 	private String name;
 	private String authors;
 	private String thumbnailRelPath;
@@ -87,6 +88,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	
 	public RepositoryEntryRow(RepositoryEntryMyView entry) {
 		setKey(entry.getKey());
+		setExternalRef(entry.getExternalRef());
 		setDisplayName(entry.getDisplayname());
 		setShortenedDescription(entry.getDescription());
 		setOLATResourceable(OresHelper.clone(entry.getOlatResource()));
@@ -143,6 +145,15 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		this.key = key;
 	}
 	
+
+	public String getExternalRef() {
+		return externalRef;
+	}
+	
+	public void setExternalRef(String externalRef) {
+		this.externalRef = externalRef;
+	}
+
 	public String getDisplayName() {
 		return name;
 	}

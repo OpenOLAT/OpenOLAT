@@ -43,6 +43,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	private Long key;
 	private Date creationDate;
 	private Date lastModified;
+	private String externalRef;
 	private String displayname;
 	private String description;
 	private String authors;
@@ -73,6 +74,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	public RepositoryEntryMyCourseImpl(RepositoryEntry re,
 			boolean marked, long offersAvailable, Integer myRating) {
 		key = re.getKey();
+		externalRef = re.getExternalRef();
 		creationDate = re.getCreationDate();
 		lastModified = re.getLastModified();
 		displayname = re.getDisplayname();
@@ -121,6 +123,15 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	
 	public void setKey(Long key) {
 		this.key = key;
+	}
+
+	@Override
+	public String getExternalRef() {
+		return externalRef;
+	}
+	
+	public void setExternalRef(String externalRef) {
+		this.externalRef = externalRef;
 	}
 	
 	@Override

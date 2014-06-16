@@ -10,7 +10,11 @@
 		<div class="o_go_xs visible-xs">
 			<i class=" o_icon o_icon_start o_icon-lg"></i>
 		</div>
-		<h4 class="o_title">$r.render($row.getSelectLinkName())</h4>
+		<h4 class="o_title">$r.render($row.getSelectLinkName())
+			#if ($row.getExternalRef())
+				<small>$row.getExternalRef()</small>
+			#end
+		</h4>
 		#if($row.authors)
 			<div class="o_author"><span class="text-muted">$r.translate("course.made.by")</span> $row.authors</div>
 		#end

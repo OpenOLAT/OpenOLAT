@@ -35,6 +35,8 @@ public interface RepositoryEntryMyView extends OLATResourceable {
 	
 	public Long getKey();
 	
+	public String getExternalRef();
+	
 	public String getDisplayname();
 	
 	public String getDescription();

@@ -3,6 +3,9 @@
 		<h1>
 			<i class="o_icon $cssClass o_icon-lg"></i>
 			$r.escapeHtml($v.displayname)
+			#if($v.getExternalRef())
+				<small>$v.getExternalRef()</small>
+			#end
 		</h1>
 		#if($r.available("thumbnail"))
 		<div class="o_media">
