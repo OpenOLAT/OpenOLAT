@@ -26,6 +26,7 @@
 
 package org.olat.ims.cp.ui;
 
+import org.olat.core.commons.contextHelp.ContextHelpComponent;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
@@ -33,6 +34,10 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
+import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -55,7 +60,6 @@ public class CPContentController extends BasicController {
 	private static final String FILE_SUFFIX_HTM = "htm";
 	private IFrameDisplayController iframeCtr;
 	private HTMLEditorController mceCtr; // WYSIWYG
-	private VelocityContainer contentVC;
 	private ContentPackage cp;
 	private CPPage currentPage;
 	private CPMetadataEditController editMetadataCtr;
@@ -63,6 +67,7 @@ public class CPContentController extends BasicController {
 	private LayoutMain3ColsPreviewController previewCtr;
 	private Link editMetadataLink, previewLink;
 	private DeliveryOptions deliveryOptions;
+	private StackedPanel mainPanel;
 
 	protected CPContentController(UserRequest ureq, WindowControl control, ContentPackage cp) {
 		super(ureq, control);
@@ -73,31 +78,37 @@ public class CPContentController extends BasicController {
 		if(packageConfig != null) {
 			deliveryOptions = packageConfig.getDeliveryOptions();
 		}
-
-		contentVC = createVelocityContainer("cpContent");
+		
 		// set initial page to display
-
 		iframeCtr = new IFrameDisplayController(ureq, control, cp.getRootDir());
 		listenTo(iframeCtr);
-
 	}
 
 	protected void init(UserRequest ureq) {
-		editMetadataLink = LinkFactory.createCustomLink("contentcontroller.editlink", "contentcontroller.editlink", null,
-				Link.NONTRANSLATED | Link.BUTTON, contentVC, this);
-		editMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
-		editMetadataLink.setTooltip(translate("contentcontroller.editlink_title"));
-
-		previewLink = LinkFactory.createCustomLink("contentcontroller.previewlink", "contentcontroller.previewlink", null,
-				Link.NONTRANSLATED | Link.BUTTON, contentVC, this);
-		previewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_preview");
-		previewLink.setTooltip(translate("contentcontroller.previewlink_title"));
-
-		putInitialPanel(contentVC);
+		mainPanel = putInitialPanel(new SimpleStackedPanel("cpContent"));
 
 		CPManagerImpl cpMgm = (CPManagerImpl) CPManager.getInstance();
 		currentPage = cpMgm.getFirstPageToDisplay(cp);
 		displayPage(ureq, currentPage.getIdentifier());
+	}
+	
+	void initToolbar(TooledStackedPanel toolbar) {
+		editMetadataLink = LinkFactory.createToolLink("contentcontroller.editlink", "contentcontroller.editlink",
+				translate("contentcontroller.editlink_title"), this);
+		editMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
+		editMetadataLink.setTooltip(translate("contentcontroller.editlink_title"));
+		toolbar.addTool(editMetadataLink, Align.right);
+
+		previewLink = LinkFactory.createToolLink("contentcontroller.previewlink", "contentcontroller.previewlink",
+				translate("contentcontroller.previewlink_title"), this);
+		previewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_preview");
+		previewLink.setTooltip(translate("contentcontroller.previewlink_title"));
+		toolbar.addTool(previewLink, Align.right);
+		
+		ContextHelpComponent contextHelp = new ContextHelpComponent("cpeditorhelp",
+				"org.olat.ims.cp.ui", "cpeditorhelp.html", "chelp.cpeditorhelp.hover", getLocale());
+		
+		toolbar.addTool(contextHelp, Align.right);
 	}
 
 	/**
@@ -146,7 +157,7 @@ public class CPContentController extends BasicController {
 	private void setContent(UserRequest ureq, String filePath) {
 		if (filePath.toLowerCase().lastIndexOf(FILE_SUFFIX_HTM) >= (filePath.length() - 4)) {
 			if (mceCtr != null) mceCtr.dispose();
-			//fxdiff FXOLAT-125: virtual file system for CP
+			
 			VFSContainer rootDir = currentPage.getRootDir();
 			String virtualRootFolderName = translate("cpfileuploadcontroller.virtual.root");
 			VFSContainer pseudoContainer = new VFSRootCPContainer(virtualRootFolderName, cp, rootDir, getTranslator());
@@ -158,10 +169,10 @@ public class CPContentController extends BasicController {
 				mceCtr.setShowMetadataEnabled(false);
 			}
 			listenTo(mceCtr);
-			contentVC.put("content", mceCtr.getInitialComponent());
+			mainPanel.setContent(mceCtr.getInitialComponent());
 		} else {
 			iframeCtr.setCurrentURI(filePath);
-			contentVC.put("content", iframeCtr.getInitialComponent());
+			mainPanel.setContent(iframeCtr.getInitialComponent());
 		}
 	}
 
@@ -175,7 +186,7 @@ public class CPContentController extends BasicController {
 		if (currentPage != null) currentPage.setFile(null);
 		VelocityContainer infoVC = createVelocityContainer("infoPage");
 		infoVC.contextPut("infoChapterpage", translate("contentcontroller.infoChapterpage"));
-		contentVC.put("content", infoVC);
+		mainPanel.setContent(infoVC);
 	}
 
 	/**
@@ -189,7 +200,7 @@ public class CPContentController extends BasicController {
 		VelocityContainer nfVC = createVelocityContainer("notFoundPage");
 		// Don't display the file name. It's too much information.
 		nfVC.contextPut("not_found_message", translate("contentcontroller.page.not.found"));
-		contentVC.put("content", nfVC);
+		mainPanel.setContent(nfVC);
 	}
 
 	/**

@@ -48,7 +48,7 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 		TooledStackedPanel panel = (TooledStackedPanel) source;
 		List<Link> breadCrumbs = panel.getBreadCrumbs();
 		List<Tool> tools = panel.getTools();
-		if(breadCrumbs.size() > 1 || tools.size() > 0) {
+		if(breadCrumbs.size() > panel.getInvisibleCrumb() || tools.size() > 0) {
 			String mainCssClass = panel.getCssClass();
 			sb.append("<div id='o_main_toolbar' class='o_toolbar clearfix ").append(mainCssClass, mainCssClass != null).append("'>")
 			  .append("<div class='container-fluid'>");

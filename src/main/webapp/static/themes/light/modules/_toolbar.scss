@@ -51,6 +51,10 @@
 		}	
 	}
 	
+	.o_chelp {
+		@include button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border);
+	}
+	
 	.o_tools {
 		@extend .list-inline;
 		margin-top: $o-toolbar-margin-top-md;

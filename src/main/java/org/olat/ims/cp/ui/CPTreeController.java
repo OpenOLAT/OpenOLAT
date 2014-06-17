@@ -36,6 +36,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeDropEvent;
 import org.olat.core.gui.components.tree.TreeEvent;
@@ -101,36 +103,35 @@ public class CPTreeController extends BasicController {
 		treeCtr.setExpandSelectedNode(false);
 		treeCtr.addListener(this);
 
-		setLinks();
 		contentVC.put("cptreecontroller.tree", treeCtr);
 		contentVC.contextPut("treeId", treeCtr.getDispatchID());
 		putInitialPanel(contentVC);
 	}
 
-	private void setLinks() {
-		importLink = LinkFactory.createCustomLink("cptreecontroller.importlink", "cptreecontroller.importlink", null,
-				Link.NONTRANSLATED | Link.BUTTON, contentVC, this);
+	void initToolbar(TooledStackedPanel toolbar) {
+		importLink = LinkFactory.createToolLink("cptreecontroller.importlink", "cptreecontroller.importlink",
+				translate("cptreecontroller.importlink_title"), this);
 		importLink.setTooltip(translate("cptreecontroller.importlink_title"));
-		importLink.setTitle(translate("cptreecontroller.importlink_title"));
 		importLink.setIconLeftCSS("o_icon o_icon-lg o_icon_import");
+		toolbar.addTool(importLink, Align.left);
 
-		newLink = LinkFactory.createCustomLink("cptreecontroller.newlink", "cptreecontroller.newlink", null,
-				Link.NONTRANSLATED | Link.BUTTON, contentVC, this);
+		newLink = LinkFactory.createToolLink("cptreecontroller.newlink", "cptreecontroller.newlink",
+				translate("cptreecontroller.newlink_title"), this);
 		newLink.setTooltip(translate("cptreecontroller.newlink_title"));
-		newLink.setTitle(translate("cptreecontroller.newlink_title"));
 		newLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+		toolbar.addTool(newLink, Align.left);
 
-		copyLink = LinkFactory.createCustomLink("cptreecontroller.copylink", "cptreecontroller.copylink", null,
-				Link.NONTRANSLATED | Link.BUTTON, contentVC, this);
+		copyLink = LinkFactory.createToolLink("cptreecontroller.copylink", "cptreecontroller.copylink",
+				translate("cptreecontroller.copylink_title"), this);
 		copyLink.setTooltip(translate("cptreecontroller.copylink_title"));
-		copyLink.setTitle(translate("cptreecontroller.copylink_title"));
 		copyLink.setIconLeftCSS("o_icon o_icon-lg o_icon_copy");
+		toolbar.addTool(copyLink, Align.left);
 
-		deleteLink = LinkFactory.createCustomLink("cptreecontroller.deletelink", "cptreecontroller.deletelink", null,
-				Link.NONTRANSLATED | Link.BUTTON, contentVC, this);
+		deleteLink = LinkFactory.createToolLink("cptreecontroller.deletelink", "cptreecontroller.deletelink",
+				translate("cptreecontroller.deletelink_title"), this);
 		deleteLink.setTooltip(translate("cptreecontroller.deletelink_title"));
-		deleteLink.setTitle(translate("cptreecontroller.deletelink_title"));
 		deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete");
+		toolbar.addTool(deleteLink, Align.left);
 	}
 
 	/**

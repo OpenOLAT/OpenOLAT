@@ -30,6 +30,7 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -56,6 +57,7 @@ public class CPEditMainController extends MainLayoutBasicController {
 	private final ContentPackage cp;
 	private LockResult lock;
 	private DeliveryOptions deliveryOptions;
+	private TooledStackedPanel all;
 
 	public CPEditMainController(UserRequest ureq, WindowControl wControl, VFSContainer cpContainer, OLATResourceable ores) {
 		super(ureq, wControl);
@@ -68,6 +70,10 @@ public class CPEditMainController extends MainLayoutBasicController {
 		if(packageConfig != null) {
 			deliveryOptions = packageConfig.getDeliveryOptions();
 		}
+		// set up the components
+		all = new TooledStackedPanel("courseStackPanel", getTranslator(), this);
+		all.setInvisibleCrumb(-1);
+		putInitialPanel(all);	
 		
 		String errorString = cp.getLastError();
 		if (errorString == null) {
@@ -104,6 +110,7 @@ public class CPEditMainController extends MainLayoutBasicController {
 	 * @param cp
 	 */
 	private void initDefaultView(UserRequest ureq, WindowControl wControl) {
+		
 		treeCtr = new CPTreeController(ureq, wControl, cp);
 		listenTo(treeCtr);
 
@@ -119,8 +126,10 @@ public class CPEditMainController extends MainLayoutBasicController {
 				"cptestmain");
 		columnLayoutCtr.addCssClassToMain("b_menu_toolbar");
 		listenTo(columnLayoutCtr); // auto dispose
-
-		putInitialPanel(columnLayoutCtr.getInitialComponent());
+		all.pushController("Editor", columnLayoutCtr);
+		
+		treeCtr.initToolbar(all);
+		contentCtr.initToolbar(all);
 
 		if (!cp.isOLATContentPackage()) {
 			showWarning("maincontroller.cp.created.with.third.party.editor");
@@ -138,7 +147,7 @@ public class CPEditMainController extends MainLayoutBasicController {
 	private void initErrorView(UserRequest ureq, WindowControl wControl) {
 		Panel p = new Panel("errorPanel");
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, wControl, null, p, "cptestmain");
-		putInitialPanel(columnLayoutCtr.getInitialComponent());
+		all.pushController("Editor", columnLayoutCtr);
 	}
 
 	@Override

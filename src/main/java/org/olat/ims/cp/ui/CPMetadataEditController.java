@@ -109,10 +109,13 @@ public class CPMetadataEditController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		metadata.setTitle(title.getValue());
-
 		page.setTitle(title.getValue());
 		page.setMetadata(metadata);
-		
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 }

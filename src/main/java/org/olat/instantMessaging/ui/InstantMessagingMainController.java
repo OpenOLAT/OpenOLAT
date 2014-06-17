@@ -182,7 +182,7 @@ public class InstantMessagingMainController extends BasicController implements G
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == available || source == dnd || source == unavailable) {			
 			Link link = (Link) source;
-			doChangeStatus(ureq, (String) link.getUserObject());
+			doChangeStatus((String)link.getUserObject());
 		} else if (source == onlineOfflineCount) {
 			doOpenRoster(ureq);
 		} else if (source instanceof Link) {
@@ -281,7 +281,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		onlineOfflineCount.setDirty(false);		
 	}
 	
-	private void doChangeStatus(UserRequest ureq, String status) {
+	private void doChangeStatus(String status) {
 		imService.updateStatus(getIdentity(), status);
 		updateStatusCss(status);
 
