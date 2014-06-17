@@ -234,9 +234,12 @@ public class Feed implements OLATResourceable, Serializable {
 			} else if (identity.getKey() == item.getAuthorKey()) {
 				// scheduled items and drafts of oneself are shown
 				filteredItems.add(item);
-			//fxdiff BAKS-18
-			} else if (item.isDraft() && callback.mayViewAllDrafts()) {
-				filteredItems.add(item);
+			} else if (item.isDraft()) {
+				if(callback.mayViewAllDrafts()) {
+					filteredItems.add(item);
+				} else if (identity.getKey() == item.getModifierKey()) {
+					filteredItems.add(item);
+				}
 			}
 		}
 		return filteredItems;
