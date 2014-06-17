@@ -25,6 +25,7 @@
 
 package org.olat.course.run.userview;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -175,14 +176,23 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	}
 
 	public List<BusinessGroup> getCoachedGroups() {
+		if(coachedGroups == null) {
+			return Collections.emptyList();
+		}
 		return coachedGroups;
 	}
 
 	public List<BusinessGroup> getParticipatingGroups() {
+		if(participatingGroups == null) {
+			return Collections.emptyList();
+		}
 		return participatingGroups;
 	}
 
 	public List<BusinessGroup> getWaitingLists() {
+		if(waitingLists == null) {
+			return Collections.emptyList();
+		}
 		return waitingLists;
 	}
 	
