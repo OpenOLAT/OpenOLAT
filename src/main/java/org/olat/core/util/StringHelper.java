@@ -52,6 +52,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.filter.impl.NekoHTMLFilter;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 
 /**
@@ -263,10 +264,16 @@ public class StringHelper {
 		return !matcher.find();
 	}
 	
+	/**
+	 * Check if the string contains some HTML tags
+	 * @param s
+	 * @return
+	 */
 	public static boolean isHtml(String s) {
 		if (s == null) return false;
-
-		return s.contains("<html") || s.contains("<body") || s.contains("<p") || s.contains("<span");
+		
+		String filtered = new NekoHTMLFilter().filter(s, false);
+		return !filtered.equals(s);
 	}
 
 	/**
