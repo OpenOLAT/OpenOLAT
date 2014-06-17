@@ -33,6 +33,8 @@
 
 		<!--  force non-empty with a '+' at the end instead of '*'
 		-->
+		<regexp name="olatInternalURL"
+			value="javascript:parent\.gotonode\(\d+\)" />
 		<regexp name="onsiteURL"
 			value="([\p{L}\p{N}\p{Zs}/\.\?=&amp;\-~_])+" />
 		<regexp name="offsiteURL"
@@ -116,7 +118,7 @@
 			<regexp-list>
 				<regexp name="onsiteURL" />
 				<regexp name="offsiteURL" />
-
+				<regexp name="olatInternalURL" />
 				<!--
 				-->
 			</regexp-list>
