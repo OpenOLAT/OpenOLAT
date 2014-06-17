@@ -124,11 +124,12 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			RenderResult renderResult, String[] args) {
 
 		Component searchCmp = ftE.getExtendedSearchComponent();
+		sb.append("<div class='row clearfix o_table_toolbar'>");
 		if(searchCmp != null && ftE.isExtendedSearchExpanded()) {
 			renderer.render(searchCmp, sb, args);
-			sb.append("<div class='row clearfix'><div class='col-lg-6'></div>");
+			sb.append("<div class='col-lg-6'></div>");
 		} else {
-			sb.append("<div class='row clearfix'><div class='col-lg-6'>");
+			sb.append("<div class='col-lg-6'>");
 			renderHeaderSearch(renderer, sb, ftE, ubu, translator, renderResult, args);
 			sb.append("</div>");
 		}
@@ -216,7 +217,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		sb.append("<div class='btn-group'>")
 		  .append("<button class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
 		  .append("<i class='o_icon o_icon_filter o_icon-lg'>&nbsp;</i> <b class='caret'></b></button>")
-		  .append("<ul class='dropdown-menu' role='menu'>");
+		  .append("<ul class='dropdown-menu dropdown-menu-right' role='menu'>");
 		
 		for(FlexiTableFilter filter:filters) {
 			if(FlexiTableFilter.SPACER.equals(filter)) {
@@ -238,7 +239,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		sb.append("<div class='btn-group'>")
 		  .append("<button class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
 		  .append("<i class='o_icon o_icon_sort_menu o_icon-lg'>&nbsp;</i> <b class='caret'></b></button>")
-		  .append("<ul class='dropdown-menu' role='menu'>");
+		  .append("<ul class='dropdown-menu dropdown-menu-right' role='menu'>");
 		
 		for(FlexiTableSort sort:sorts) {
 			if(FlexiTableSort.SPACER.equals(sort)) {
@@ -295,13 +296,13 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append("<div class='o_table_footer'><div class='o_table_checkall input-sm'>");
 
 			sb.append("<label class='checkbox-inline'><a id=\"")
-			  .append(dispatchId).append("\" href=\"javascript:b_table_toggleCheck('").append(formName).append("', true);")
+			  .append(dispatchId).append("\" href=\"javascript:o_table_toggleCheck('").append(formName).append("', true);")
 			  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, new NameValuePair("select", "checkall")))
 			  .append("\"><input type='checkbox' checked='checked' disabled='disabled' /><span>").append(translator.translate("form.checkall"))
 			  .append("</span></a></label>");
 
 			sb.append("<label class='checkbox-inline'><a id=\"")
-			  .append(dispatchId).append("\" href=\"javascript:b_table_toggleCheck('").append(formName).append("', false);")
+			  .append(dispatchId).append("\" href=\"javascript:o_table_toggleCheck('").append(formName).append("', false);")
 			  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, new NameValuePair("select", "uncheckall")))
 			  .append("\"><input type='checkbox' disabled='disabled' /><span>").append(translator.translate("form.uncheckall"))
 			  .append("</span></a></label>");

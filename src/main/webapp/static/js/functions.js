@@ -811,7 +811,7 @@ function o_openUriInMainWindow(uri) {
 	}
 }
 
-function b_viewportHeight() {
+function o_viewportHeight() {
 	// based on prototype library
 	var prototypeViewPortHeight = jQuery(document).height()
 	if (prototypeViewPortHeight > 0) {
@@ -865,7 +865,7 @@ OPOL.getMainColumnsMaxHeight =  function(){
 		return mainDomElement;
 	} 
 	// fallback to viewport height	
-	return b_viewportHeight();
+	return o_viewportHeight();
 };
 
 OPOL.adjustHeight = function() {
@@ -882,13 +882,13 @@ OPOL.adjustHeight = function() {
 		contentHeight = Math.max(col1, col2, col3);
 		// Assign new col height
 		if (col1 != null){
-			jQuery('#o_main_left').css({'min-height' : contentHeight});
+			jQuery('#o_main_left').css({'min-height' : contentHeight + "px"});
 		}
 		if (col2 != null){
-			jQuery('#o_main_right').css({'min-height' : contentHeight});
+			jQuery('#o_main_right').css({'min-height' : contentHeight + "px"});
 		}
 		if (col3 != null){
-			jQuery('#o_main_center').css({'min-height' : contentHeight});
+			jQuery('#o_main_center').css({'min-height' : contentHeight + "px"});
 		}
 	} catch (e) {
 		if(console)	console.log(e);			
@@ -946,7 +946,7 @@ function b_resizeIframeToMainMaxHeight(iframeId) {
 	var theIframe = jQuery('#' + iframeId);
 	if (theIframe != 'undefined' && theIframe != null) {
 		var colsHeight = OPOL.getMainColumnsMaxHeight() - 110;
-		var potentialHeight = b_viewportHeight() - 100;// remove some padding etc.
+		var potentialHeight = o_viewportHeight() - 100;// remove some padding etc.
 		potentialHeight = potentialHeight - theIframe.offset().top;
 		var elem = jQuery('#b_footer');
 		if (elem != 'undefined' && elem != null) potentialHeight = potentialHeight - elem.outerHeight(true);
@@ -1185,7 +1185,7 @@ function tableFormInjectCommandAndSubmit(formName, cmd, param) {
 /*
  * For standard tables
  */
-function b_table_toggleCheck(ref, checked) {
+function o_table_toggleCheck(ref, checked) {
 	var tb_checkboxes = document.forms[ref].elements["tb_ms"];
 	len = tb_checkboxes.length;
 	if (typeof(len) == 'undefined') {
