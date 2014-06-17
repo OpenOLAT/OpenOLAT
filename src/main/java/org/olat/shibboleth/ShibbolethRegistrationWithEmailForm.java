@@ -88,13 +88,17 @@ public class ShibbolethRegistrationWithEmailForm extends FormBasicController {
 	/**
 	 * @return Login field.
 	 */
-	protected String getLogin() { return login.getValue(); }
+	protected String getLogin() {
+		return login.getValue();
+	}
 	
 	/**
 	 * 
 	 * @return E-mail field
 	 */
-	protected String getEmail() { return eMail.getValue(); }
+	protected String getEmail() {
+		return eMail.getValue().toLowerCase().trim();
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

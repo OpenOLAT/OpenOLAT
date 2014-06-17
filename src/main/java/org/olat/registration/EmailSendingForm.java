@@ -71,7 +71,7 @@ public class EmailSendingForm extends FormBasicController {
 	}
 
 	protected String getEmailAddress() {
-		return mail.getValue().trim();
+		return mail.getValue().toLowerCase().trim();
 	}
 	
 	@Override
