@@ -48,7 +48,7 @@ class TableSortRenderer extends DefaultComponentRenderer {
 		  .append("<i class='o_icon o_icon-lg o_icon_sort_menu'> </i>")
 		  .append("<b class='caret'></b>")
 		  .append("</button>")
-		  .append("<ul class='dropdown-menu' role='menu'>");
+		  .append("<ul class='dropdown-menu dropdown-menu-right' role='menu'>");
 
 		int cols = table.getColumnCount();
 		boolean asc = table.isSortAscending();

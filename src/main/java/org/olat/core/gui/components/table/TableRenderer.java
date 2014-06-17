@@ -50,8 +50,6 @@ public class TableRenderer extends DefaultComponentRenderer {
 
 	private static final String CLOSE_HTML_BRACE = "\">";
 	private static final String CLOSE_DIV = "</div>";
-	private static final String B_LAST_CHILD = " b_last_child";
-	private static final String B_FIRST_CHILD = " b_first_child";
 	private static final String A_CLASS = "<a class=\"";
 	private static final String HREF_JAVA_SCRIPT_TABLE_FORM_INJECT_COMMAND_AND_SUBMIT = "\" href=\"JavaScript:tableFormInjectCommandAndSubmit('";
 	private static final String CLOSE_HREF = "</a>";
@@ -76,8 +74,6 @@ public class TableRenderer extends DefaultComponentRenderer {
 		Table table = (Table) source;
 
 		boolean iframePostEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
-
-		String formName = renderMultiselectForm(target, source, ubu, iframePostEnabled);
 
 		int rows = table.getRowCount();
 		int cols = table.getColumnCount();
@@ -104,10 +100,10 @@ public class TableRenderer extends DefaultComponentRenderer {
 			usePageing = false;
 		}
 
-		// starting real table table
-		target.append("<div class=\"o_table_wrapper table-responsive\" id=\"b_overflowscrollbox_").append(table.hashCode()).append("\">")
-		      .append("<table id=\"b_table").append(table.hashCode()).append("\" class=\"o_table table table-striped table-condensed table-hover").append(CLOSE_HTML_BRACE);
-		
+		// Render table wrapper and table
+		String formName = renderMultiselectForm(target, source, ubu, iframePostEnabled);
+		target.append("<div class=\"o_table_wrapper table-responsive\" id=\"o_table_wrapper_").append(table.hashCode()).append("\">")
+		      .append("<table id=\"o_table").append(table.hashCode()).append("\" class=\"o_table table table-striped table-condensed table-hover").append(CLOSE_HTML_BRACE);		
 		appendHeaderLinks(target, translator, table, cols);
 		appendDataRows(renderer, target, ubu, table, iframePostEnabled, cols, selRowUnSelectable, selRowId, startRowId, endRowId);
 		target.append("</table><div class='o_table_footer'>");
@@ -115,6 +111,9 @@ public class TableRenderer extends DefaultComponentRenderer {
 		appendTablePageing(target, translator, table, formName, rows, resultsPerPage, currentPageId, usePageing);
 		appendMultiselectFormActions(target, translator, table);
 		target.append("</div></div>");
+		// lastly close multiselect
+	    target.append("</form>");
+
 
 		appendViewportResizeJsFix(target, source, rows, usePageing);
 		
@@ -132,7 +131,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 		// Comment CDATA section to make it work with prototype's stripScripts method !
 		if (!usePageing && rows > 1000) {
 			target.append("<script type=\"text/javascript\">/* <![CDATA[ */\n ");
-			target.append("jQuery(function() { jQuery('#b_overflowscrollbox_").append(source.hashCode()).append("').height(b_viewportHeight()/3*2);});");
+			target.append("jQuery(function() { jQuery('#o_table_wrapper").append(source.hashCode()).append("').height(o_viewportHeight()/3*2);});");
 			target.append("/* ]]> */\n</script>");
 		}
 	}
@@ -163,9 +162,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 		// add hidden action command placeholders to the form. these will be manipulated when
 		// the user clicks on a regular link within the table to e.g. re-sort the columns.
 		target.append("<input type=\"hidden\" name=\"cmd\" value=\"\" />")
-		      .append("<input type=\"hidden\" name=\"param\" value=\"\" />")
-		// close multiselect form
-		      .append("</form>");
+		      .append("<input type=\"hidden\" name=\"param\" value=\"\" />");
 	}
 
 	private void appendTablePageing(final StringOutput target, final Translator translator, final Table table, final String formName, final int rows, int resultsPerPage, final Integer currentPageId,
@@ -225,11 +222,11 @@ public class TableRenderer extends DefaultComponentRenderer {
 		if (table.isMultiSelect()) {
 			target.append("<div class='o_table_checkall input-sm'>");
 			target.append("<label class='checkbox-inline'>");
-			target.append("<a href='#' onclick=\"javascript:b_table_toggleCheck('").append(formName).append("', true)\">");
+			target.append("<a href='#' onclick=\"javascript:o_table_toggleCheck('").append(formName).append("', true)\">");
 			target.append("<input type='checkbox' checked='checked' disabled='disabled' />");
 			target.append(translator.translate("checkall"));
 			target.append("</a></label>");
-			target.append("<label class='checkbox-inline'><a href=\"#\" onclick=\"javascript:b_table_toggleCheck('").append(formName).append("', false)\">");
+			target.append("<label class='checkbox-inline'><a href=\"#\" onclick=\"javascript:o_table_toggleCheck('").append(formName).append("', false)\">");
 			target.append("<input type='checkbox' disabled='disabled' />");
 			target.append(translator.translate("uncheckall"));
 			target.append("</a></label>");
@@ -247,7 +244,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 
 	private void appendDataRows(final Renderer renderer, final StringOutput target, final URLBuilder ubu, Table table, boolean iframePostEnabled, int cols, boolean selRowUnSelectable, int selRowId,
 			int startRowId, int endRowId) {
-		String cssClass;
+		String cssClass = "";
 		target.append("<tbody>");
 		long startRowLoop = 0;
 		if (log.isDebug()) {
@@ -259,7 +256,6 @@ public class TableRenderer extends DefaultComponentRenderer {
 			int currentPosInModel = table.getSortedRow(i);
 			boolean isMark = selRowUnSelectable && (selRowId == currentPosInModel);
 
-			cssClass = defineCssClassDependingOnRow(startRowId, lastVisibleRowId, i);
 			// VCRP-16
 			TableDataModel<?> model = table.getTableDataModel();
 			if (model instanceof TableDataModelWithMarkableRows) {
@@ -289,17 +285,10 @@ public class TableRenderer extends DefaultComponentRenderer {
 		for (int j = 0; j < cols; j++) {
 			ColumnDescriptor cd = table.getColumnDescriptor(j);
 			int alignment = cd.getAlignment();
-			cssClass = (alignment == ColumnDescriptor.ALIGNMENT_LEFT ? "b_align_normal" : (alignment == ColumnDescriptor.ALIGNMENT_RIGHT ? "b_align_inverse" : "b_align_center"));
-			// add css class for first and last column to support older browsers
-			if (j == 0) {
-				cssClass += B_FIRST_CHILD;
-			}
-			if (j == cols - 1) {
-				cssClass += B_LAST_CHILD;
-			}
+			cssClass = (alignment == ColumnDescriptor.ALIGNMENT_LEFT ? "text-left" : (alignment == ColumnDescriptor.ALIGNMENT_RIGHT ? "text-right" : "text-center"));
 			target.append("<td class=\"").append(cssClass);
 			if (isMark) {
-				target.append(" b_table_marked");
+				target.append(" o_table_marked");
 			}
 			target.append(CLOSE_HTML_BRACE);
 			String action = cd.getAction(i);
@@ -356,24 +345,6 @@ public class TableRenderer extends DefaultComponentRenderer {
 		target.append(CLOSE_HREF);
 	}
 
-	private String defineCssClassDependingOnRow(int startRowId, int lastVisibleRowId, int i) {
-		String cssClass;
-		// use alternating css class
-		if (i % 2 == 0) {
-			cssClass = "";
-		} else {
-			cssClass = "b_table_odd";
-		}
-		// add css class for first and last column to support older browsers
-		if (i == startRowId) {
-			cssClass += B_FIRST_CHILD;
-		}
-		if (i == lastVisibleRowId) {
-			cssClass += B_LAST_CHILD;
-		}
-		return cssClass;
-	}
-
 	private void appendHeaderLinks(final StringOutput target, final Translator translator, Table table, int cols) {
 		if (table.isDisplayTableHeader()) {
 			target.append("<thead><tr>");
@@ -386,15 +357,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 					header = cd.getHeaderKey();
 				}
 
-				target.append("<th class=\"");
-				// add css class for first and last column to support older browsers
-				if (i == 0) {
-					target.append(B_FIRST_CHILD);
-				}
-				if (i == cols - 1) {
-					target.append(B_LAST_CHILD);
-				}
-				target.append(CLOSE_HTML_BRACE)
+				target.append("<th>")
 				      .append(header)
 				      .append("</th>");
 			}

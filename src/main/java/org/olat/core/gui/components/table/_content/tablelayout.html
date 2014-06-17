@@ -1,5 +1,5 @@
 <div class="o_table_layout $!tableConfig.getCustomCssClass() o_scrollbox">
-<div class="row clearfix">
+<div class="row clearfix o_table_toolbar">
 	<div class="col-lg-6">
 		#if ($hasTableSearch && !$tableEmpty)
 		  $r.render("tableSearch")
@@ -13,7 +13,7 @@
 				<i class='o_icon o_icon-lg o_icon_filter'> </i>
 				<b class="caret"></b>
 			</button>
-			<ul class="dropdown-menu" role="menu">
+			<ul class="dropdown-menu dropdown-menu-right" role="menu">
 				#if ($useNoFilterOption)
 					<li><a href="$r.commandURI("cmd.filter.nofilter")">$noFilterOption</a></li>
 				#end
