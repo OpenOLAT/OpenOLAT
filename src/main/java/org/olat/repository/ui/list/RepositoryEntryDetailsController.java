@@ -268,7 +268,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				if(isMember) {
 					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
-					startLink.setElementCssClass("o_start");
+					startLink.setElementCssClass("o_start btn-block");
 					startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
 					startLink.setPrimary(true);
 
@@ -279,7 +279,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				if(acResult.isAccessible()) {
 					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
-					startLink.setElementCssClass("o_start");
+					startLink.setElementCssClass("o_start btn-block");
 				} else if (acResult.getAvailableMethods().size() > 0) {
 					for(OfferAccess access:acResult.getAvailableMethods()) {
 						AccessMethod method = access.getMethod();
@@ -293,12 +293,12 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 					String linkText = translate("book.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
 					startLink.setCustomEnabledLinkCSS("btn btn-success"); // custom style
-					startLink.setElementCssClass("o_book");
+					startLink.setElementCssClass("o_book btn-block");
 				} else {
 					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
 					startLink.setEnabled(false);
-					startLink.setElementCssClass("o_start");
+					startLink.setElementCssClass("o_start btn-block");
 				}
 				startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
 				startLink.setPrimary(true);

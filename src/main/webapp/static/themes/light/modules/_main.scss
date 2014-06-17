@@ -7,7 +7,7 @@
 		background: $o-main-inner-bg;
 		
 		#o_main_left {
-			@extend .pull-left;
+			float: left;
 			z-index: 2;
 			position: relative;
 			background: $o-main-left-bg;
@@ -48,7 +48,7 @@
 			}
 		}
 		#o_main_right {
-			@extend .pull-right;
+			float: right;
 			z-index: 2;
 			position: relative;
 			background: $o-main-right-bg;
@@ -88,7 +88,7 @@
 		bottom: 0; right: 10px;
 		text-align: center;
 		z-index: 5;
-		@extend .o_undecorated;
+		@extend %o_undecorated;
 	}
 
 	@media (max-width: $screen-xs-max) { 

@@ -12,8 +12,9 @@ div.o_callout_overlay {
  	text-align: center;
  	
  	.alert {
- 		@extend .modal-dialog;
-		margin:0px auto;
+		position: relative;
+		width: auto;
+		margin:0 auto;
 		text-align: left;
 		@include box-shadow(0px 1px 5px -1px rgba(0,0,0,.15));
 		
@@ -24,5 +25,10 @@ div.o_callout_overlay {
 				color: $gray;			
 			}
 		}
+		@media (min-width: $screen-sm-min) {
+		  // Automatically set modal's width for larger viewports
+		    width: $modal-md;
+		}
  	}
 }
+

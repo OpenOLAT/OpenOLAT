@@ -54,7 +54,7 @@
 				
 				
 				.o_state, .o_score {
-					@extend .small;
+					@extend %o_small;
 					padding: 0 1em;		
 					height: floor($o-coursesite-rowelem-height-md / 6);
 					line-height: floor($o-coursesite-rowelem-height-md / 6);
@@ -66,7 +66,7 @@
 					position: relative; 
 					left: 2px;
 					.o_label {
-						@extend .text-muted;
+						color: $text-muted;
 					}
 				}
 						
@@ -83,7 +83,7 @@
 						}
 					}
 					.o_comments {
-						@extend .o_undecorated;
+						@extend %o_undecorated;
 					}
 				}
 				
@@ -92,8 +92,8 @@
 					@include text-overflow();
 					.o_label {
 						margin-bottom: 1em;		
-						@extend .text-muted;
-						@extend .small;
+						color: $text-muted;
+						@extend %o_small;
 					}
 					.o_methods {
 						color: $brand-info;
@@ -109,17 +109,17 @@
 					height: floor($o-coursesite-rowelem-height-md / 4);
 					line-height: floor($o-coursesite-rowelem-height-md / 4);
 					text-align: center;
-					@extend .o_undecorated;
+					@extend %o_undecorated;
 				}
 				.o_start, .o_book {
 					right: 0;
 				}
-				.o_start { @extend .btn-primary; }
-				.o_book  { @extend .btn-warning; }
+				.o_start { @include button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border); }
+				.o_book  { @include button-variant($btn-warning-color, $btn-warning-bg, $btn-warning-border); }
 
 				.o_details {
 					right: floor($o-coursesite-rowelem-width-md / 2);
-					@extend .btn-success;
+					@include button-variant($btn-success-color, $btn-success-bg, $btn-success-border);
 				}
 				
 				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
@@ -153,11 +153,14 @@
 				.o_title {
 					margin: 0; /* box moves down otherwhise, replaced with padding */
 					position: relative;
-					@extend .text-primary;
 					@include text-overflow();
 					a {
-						@extend .o_undecorated;
+						@extend %o_undecorated;
 						display: block;
+						color: $brand-primary;
+						&:hover {
+						    color: darken($brand-primary, 10%);
+						}				
 					}
 				}
 				.o_author{
@@ -165,7 +168,7 @@
 					line-height: 1em;
 					font-size: 90%;
 					@include text-overflow();
-					@extend .text-success;
+					color: $state-success-text;
 				}
 				.o_lifecycle {
 					position: absolute; 
@@ -173,9 +176,12 @@
 					font-size: 90%;
 					line-height: 1em;
 					@include text-overflow();
-					@extend .text-muted;
+					color: $text-muted;
 					&.o_active {
-						@extend .text-success;
+						color: $state-success-text;
+						&:hover {
+							color: darken($state-success-text, 10%);
+						}
 					}
 				}
 				.o_desc {
@@ -208,7 +214,7 @@
 					padding: 0 1em;
 					height: $o-coursesite-rowelem-height-xs;
 					line-height: $o-coursesite-rowelem-height-xs;
-					@extend .bg-success;
+   					background-color: $state-success-bg;
 				}
 				
 			}
@@ -258,10 +264,14 @@
 
 			.o_title {
 				margin: 0; /* box moves down otherwhise, replaced with padding */
-				@extend .text-primary;
 				a {
-					@extend .o_undecorated;
+					@extend %o_undecorated;
 					display: block;
+					
+					color: $brand-primary;
+					&:hover {
+					    color: darken($brand-primary, 10%);
+					}				
 				}
 			}
 			.o_desc {
@@ -301,11 +311,11 @@
 	.o_sublevels {
 		position: relative;
 		margin-bottom: $o-coursesite-catalog-space;
-		@extend .clearfix;
+		@include clearfix();
 		
 		.o_sublevel {
 			position: relative;
-			@extend .pull-left; 
+			float: left; 
 			margin: 0 $o-coursesite-catalog-space $o-coursesite-catalog-space 0;
 			width: $o-coursesite-rowelem-width-md;	
 
@@ -330,7 +340,6 @@
 				
 				.o_title {
 					margin: 0; /* box moves down otherwhise, replaced with padding */
-					@extend .text-primary;
 					text-align: center;
 					line-height: 2em;
 					height: 2em;
@@ -339,8 +348,12 @@
 					overflow: hidden;
 					/* overflow via JS OPOL.Ellipsis */
 					a {
-						@extend .o_undecorated;
+						@extend %o_undecorated;
 						display: block;
+						color: $brand-primary;
+						&:hover {
+						    color: darken($brand-primary, 10%);
+						}				
 					}
 				}				
 			}

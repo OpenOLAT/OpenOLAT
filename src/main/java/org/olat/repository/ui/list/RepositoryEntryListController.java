@@ -393,7 +393,7 @@ public class RepositoryEntryListController extends FormBasicController
 		}
 		FormLink startLink = uifactory.addFormLink("start_" + row.getKey(), "start", label, null, null, Link.LINK);
 		startLink.setUserObject(row);
-		startLink.setCustomEnabledLinkCSS(isStart ? "o_start" : "o_book");
+		startLink.setCustomEnabledLinkCSS(isStart ? "o_start btn-block" : "o_book btn-block");
 		startLink.setIconRightCSS("o_icon o_icon_start");
 		row.setStartLink(startLink);
 	}	

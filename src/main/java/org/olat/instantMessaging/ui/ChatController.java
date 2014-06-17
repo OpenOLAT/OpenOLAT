@@ -184,7 +184,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		mainVC.put("chatMsgFieldPanel", chatMsgFieldContent);
 		
 		refresh = LinkFactory.createCustomLink("refresh", "cmd.refresh", "", Link.NONTRANSLATED, mainVC, this);
-		refresh.setCustomEnabledLinkCSS("o_icon o_icon-refresh o_icon-lg");
+		refresh.setCustomEnabledLinkCSS("o_icon o_icon_refresh o_icon-lg");
 		refresh.setTitle("im.refresh");
 		
 		todayLink = LinkFactory.createLink("im.today", mainVC, this);

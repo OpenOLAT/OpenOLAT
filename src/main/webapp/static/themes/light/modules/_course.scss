@@ -1,81 +1,87 @@
-.o_sp_icon {@extend .o_icon-file-text-o; }
-.o_st_icon {@extend .o_icon-cubes; }
-.o_tu_icon {@extend .o_icon-external-link; }
-.o_bc_icon {@extend .o_icon-folder-open-o;}
-.o_lti_icon {@extend .o_icon-external-link; }
-.o_cp_icon {@extend .o_icon-archive; }
-.o_cp_item {@extend .o_icon-file-text-o;}
-.o_scorm_icon {@extend .o_icon-archive; }
-.o_en_icon {@extend .o_icon-sign-in; }
-.o_fo_icon {@extend .o_icon-comments-o; }
-.o_co_icon {@extend .o_icon-envelope-o; }
-.o_infomsg_icon {@extend .o_icon-info-circle; }
-.o_cal_icon {@extend .o_icon-calendar; }
-.o_wiki_icon {@extend .o_icon-globe; }
-.o_podcast_icon {@extend .o_icon-video-camera; }
-.o_blog_icon {@extend .o_icon-bullhorn; }
-.o_ep_icon {@extend .o_icon-puzzle-piece; }
-.o_iqtest_icon {@extend .o_icon-pencil-square-o; }
-.o_iqself_icon {@extend .o_icon-pencil-square-o; }
-.o_iqsurv_icon {@extend .o_icon-meh-o; }
-.o_ta_icon {@extend .o_icon-tasks; }
-.o_ms_icon {@extend .o_icon-thumbs-o-up; }
-.o_dialog_icon {@extend .o_icon-files-o; }
-.o_projectbroker_icon {@extend .o_icon-circle-o; }
-.o_ll_icon{@extend .o_icon-link;}
-.o_cmembers_icon{@extend .o_icon-users;}
-.o_cl_icon{@extend .o_icon-check-square-o;}
-.o_vc_icon{@extend .o_icon-desktop;}
-.o_vitero_icon{@extend .o_icon-desktop;}
-.o_openmeetings_icon{@extend .o_icon-desktop;}
+.o_sp_icon:before { content: $fa-var-file-text-o; }
+.o_st_icon:before { content: $fa-var-cubes; }
+.o_tu_icon:before { content: $fa-var-external-link; }
+.o_bc_icon:before { content: $fa-var-folder-open-o;}
+.o_lti_icon:before { content: $fa-var-external-link; }
+.o_cp_icon:before { content: $fa-var-archive; }
+.o_cp_item:before { content: $fa-var-file-text-o;}
+.o_scorm_icon:before { content: $fa-var-archive; }
+.o_en_icon:before { content: $fa-var-sign-in; }
+.o_fo_icon:before { content: $fa-var-comments-o; }
+.o_co_icon:before { content: $fa-var-envelope-o; }
+.o_infomsg_icon:before { content: $fa-var-info-circle; }
+.o_cal_icon:before { content: $fa-var-calendar; }
+.o_wiki_icon:before { content: $fa-var-globe; }
+.o_podcast_icon:before { content: $fa-var-video-camera; }
+.o_blog_icon:before { content: $fa-var-bullhorn; }
+.o_ep_icon:before { content: $fa-var-puzzle-piece; }
+.o_iqtest_icon:before { content: $fa-var-pencil-square-o; }
+.o_iqself_icon:before { content: $fa-var-pencil-square-o; }
+.o_iqsurv_icon:before { content: $fa-var-meh-o; }
+.o_ta_icon:before { content: $fa-var-tasks; }
+.o_ms_icon:before { content: $fa-var-thumbs-o-up; }
+.o_dialog_icon:before { content: $fa-var-files-o; }
+.o_projectbroker_icon:before { content: $fa-var-circle-o; }
+.o_ll_icon:before { content: $fa-var-link;}
+.o_cmembers_icon:before { content: $fa-var-users;}
+.o_cl_icon:before { content: $fa-var-check-square-o;}
+.o_vc_icon:before { content: $fa-var-desktop;}
+.o_vitero_icon:before { content: $fa-var-desktop;}
+.o_openmeetings_icon:before { content: $fa-var-desktop;}
 
-.o_midpub {color: green; @extend .o_icon-check-circle; }
-.o_midwarn {color: orange; @extend .o_icon-warning; }
-.o_midlock {@extend .o_icon-lock;}
-.o_miderr {color: red; @extend .o_icon-warning;}
-.o_middel {@extend .o_icon-eraser;}
+.o_midpub:before { content: $fa-var-check-circle; color: green; }
+.o_midwarn:before { content: $fa-var-warning; color: orange; }
+.o_midlock:before { content: $fa-var-lock;}
+.o_miderr:before { content: $fa-var-warning; color: red;}
+.o_middel:before { content: $fa-var-eraser;}
 
 /* score info status classes */
 .o_passed {
-	@extend .success;
-	@extend .text-success;
+	color: $state-success-text;
 	font-weight: bold;
+	a:hover {
+	    color: darken($state-success-text, 10%);
+	}					
 	th {
 		color: $text-color		
 	}
 }
 .o_failed {
-	@extend .danger;
-	@extend .text-danger;
+	color: $state-danger-text;
 	font-weight: bold;
+	a:hover {
+	    color: darken($state-danger-text, 10%);
+	}				
 	th {
 		color: $text-color		
 	}
 }		
 .o_unknown {
-	@extend .warning;
-	@extend .text-warning;
+	color: $state-warning-text;
 	font-weight: bold;
+	a:hover {
+	    color: darken($state-warning-text, 10%);
+	}				
 	th {
 		color: $text-color		
 	}
 }		
 .o_noinfo {
-	@extend .text-muted;
+	color: $text-muted;
 }		
 
 /* general course run classes */
 .o_course_run {
 	.o_toc {
 		.o_entry {
-			@extend .small;
-			@extend .o_block;
+			@extend %o_small;
+			@extend %o_block;
 			.o_shorttitle {
 				border-bottom: 1px solid $gray-light;
 			}
 			.o_displaytitle {
 				margin-top: $padding-small-vertical;
-				@extend .text-muted;	
+				color: $text-muted;	
 			}
 			.o_objectives {
 				margin-top: $padding-large-vertical;
@@ -84,10 +90,10 @@
 		}
 	}	
 	.o_no_scoreinfo {
-		@extend .o_important;
+		@extend %o_important;
 	}	
 	.o_statusinfo {
-		@extend .o_note;
+		@extend %o_note;
 	}
 }
 
@@ -111,15 +117,15 @@
 
 /* forum course element */
 .o_forum_thread_sticky { font-weight: bold; }
-.o_forum_status_thread_icon { @extend .o_icon-comments-o; }
-.o_forum_status_sticky_closed_icon { @extend .o_icon-ban; }
-.o_forum_status_sticky_icon { @extend .o_icon-comments; }
-.o_forum_status_closed_icon { @extend .o_icon-ban; }
+.o_forum_status_thread_icon:before { content: $fa-var-comments-o; }
+.o_forum_status_sticky_closed_icon:before { content: $fa-var-ban; }
+.o_forum_status_sticky_icon:before { content: $fa-var-comments; }
+.o_forum_status_closed_icon:before { content: $fa-var-ban; }
 
 
 /* statistics */
 .o_course_stats .o_desc {
-	@extend .o_note
+	@extend %o_note
 }
 
 /* member list course element */

@@ -4,7 +4,7 @@
 	.o_lead {
 		@extend .jumbotron;
 		.o_media {
-			@extend .pull-right;
+			float: right;
 			margin-left: 2em;
 			margin-bottom: 2em;			
 		}
@@ -24,16 +24,15 @@
 		
 	.o_start, .o_book {
 		margin: 2em 0;
-		@extend .btn-block;
 	}
 	
 	.o_social {
-		@extend .clearfix;
+		@include clearfix();
 		.o_rating_wrapper {
-			@extend .pull-left;
+			float: left;
 		}
 		.o_comments {
-			@extend .o_undecorated;
+			@extend %o_undecorated;
 			margin-left: 1em;
 		}
 	}	

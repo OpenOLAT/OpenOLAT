@@ -10,7 +10,7 @@
 	
 	.o_breadcrumb {
 		@extend .list-unstyled;
-		@extend .pull-left;	
+		float: left;	
 		margin-top: floor($o-toolbar-margin-top-md / 2);
 		margin-bottom: floor($o-toolbar-margin-bottom-md / 2);
 		padding-right: 5px;
@@ -150,10 +150,10 @@
 	}	
 	
 	.o_tools_left {
-		@extend .pull-left;
+		float: left;
 	}
 	.o_tools_right {
-		@extend .pull-right;
+		float: right;
 	}
 	.o_tools_center {
 		// default

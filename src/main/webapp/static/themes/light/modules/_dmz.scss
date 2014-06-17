@@ -20,6 +20,7 @@ body.o_dmz {
 		background-color: #fff;
 		border: 1px solid $well-border;
 		border-radius: $border-radius-base;
+		padding: $padding-base-vertical $padding-base-horizontal;
 		
 		div.o_info, div.o_warning, div.o_note {
 			margin: 0;
@@ -59,11 +60,11 @@ body.o_dmz {
 		line-height: 2em;
 		font-size: floor($font-size-base * 1.3);
 		text-align: center;
-		@extend .btn-info;
+		@include button-variant($btn-info-color, $btn-info-bg, $btn-info-border);
 		border-radius: $border-radius-base;
 		margin-top: $padding-large-horizontal;
 		padding: $padding-large-vertical $padding-base-horizontal;
-		@extend .o_undecorated;
+		@extend %o_undecorated;
 		small {
 			font-size: $font-size-base;
 		}

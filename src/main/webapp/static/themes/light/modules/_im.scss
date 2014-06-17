@@ -3,7 +3,7 @@
 	#o_im_message, 	
 	#o_im_status,
 	#o_im_summary {
-		@extend .pull-left;
+		float: left;
 		position: relative;
 		padding: floor($grid-gutter-width / 2) floor($grid-gutter-width / 8);
 	}

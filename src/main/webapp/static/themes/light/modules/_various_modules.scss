@@ -37,11 +37,11 @@
 
 /* briefcase (folder) module */
 .o_bc_empty{
-	@extend .o_important;
+	@extend %o_important;
 }
 .o_bc_table{}
 .o_bc_meta {
-	@extend .small;
+	@extend %o_small;
 	.o_comment{}
 	.o_thumbnail{
 		width:200px; 
@@ -71,7 +71,7 @@
 			display: none;
 		}
 		.o_notifications_news_context {
-			@extend .text-muted;	
+			color: $text-muted;	
 		}
 		.o_notifications_news_content {
 			margin-left: 1.5em;
@@ -83,7 +83,7 @@
 				top: 0;
 			}
 			.o_date {
-				@extend .text-muted;
+				color: $text-muted;
 			}
 		}
 		.o_notifications_news_url {
@@ -93,12 +93,12 @@
 }
 .o_noti {
 	margin: $padding-base-vertical 0 $padding-base-vertical $padding-base-horizontal;
-	@extend .pull-right;
-	@extend .text-muted;	
-	@extend .small;
+	float: right;
+	color: $text-muted;	
+	@extend %o_small;
 	.o_label {
-		@extend .o_undecorated;
-		@extend .text-muted;	
+		@extend %o_undecorated;
+		color: $text-muted;	
 		cursor:help;
 	}
 	@media (max-width: $screen-xs-max) { 
@@ -135,7 +135,7 @@
 		height: $line-height-computed; 
 		line-height: $line-height-computed; 
 		font-size: $font-size-small; 
-		@extend .bg-primary;
+		background-color: $brand-primary;
 	}
 	div.o_day {
 		height: floor($line-height-computed * 1.5);
@@ -146,7 +146,7 @@
 	}
 }
 .o_block_with_datecomp {
-	@extend .o_block_large; /* large to have space for year */
+	@extend %o_block_large; /* large to have space for year */
 	.o_head {
 		position: relative;
 		padding-left: $line-height-computed * 2 + $padding-base-horizontal;
@@ -160,11 +160,11 @@
 		margin-top: 0;
 	}
 	.o_meta {
-		@extend .text-muted;
-		@extend .small;
+		color: $text-muted;
+		@extend %o_small;
 	}
 	.o_content {
-		@extend .o_block;
+		@extend %o_block;
 		border-left: 5px solid $blockquote-border-color;
 		padding: 0 $line-height-computed;
 	}
@@ -178,7 +178,7 @@
 .o_cal_toptoolbar {
 	margin-bottom: $padding-base-vertical;
 	.o_cal_toptoolbar_sub, .o_cal_toptoolbar_help {
-		@extend .pull-left;
+		float: left;
 		margin-right: $padding-base-horizontal;
 	}
 }
@@ -194,7 +194,7 @@
 		@extend .img-thumbnail;
 	}
 	.o_date, .o_author {
-		@extend .text-muted;
+		color: $text-muted;
 	}
 	.o_subscription {
 		a {	
@@ -207,7 +207,7 @@
 	.o_blog_posts {
 		.o_ratings_and_comments {
 			.o_rating_wrapper {
-				@extend .pull-left;
+				float: left;
 				.o_rating_title, .o_rating_explanation, .o_legend {
 					display: none;
 				}		
@@ -235,13 +235,13 @@
 	}
 	div.o_togglebox_content {
 		position: relative;
-		@extend .o_info;
+		@extend %o_info;
 		margin: 0;
 		.o_hide {
 			position: absolute;
 			bottom: 0.5em;
 			right: 1em;		
-			@extend .small;
+			@extend %o_small;
 		}
 	}	
 }

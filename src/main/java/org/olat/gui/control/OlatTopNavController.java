@@ -124,7 +124,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 		// the help link
 		if(!isInvitee && CourseModule.isHelpCourseEnabled()) {
 			helpLink = LinkFactory.createLink("topnav.help", topNavVC, this);
-			helpLink.setIconLeftCSS("o_icon o_icon-help o_icon-lg");
+			helpLink.setIconLeftCSS("o_icon o_icon_help o_icon-lg");
 			helpLink.setTooltip("topnav.help.alt");
 			helpLink.setTarget("_help");
 		}

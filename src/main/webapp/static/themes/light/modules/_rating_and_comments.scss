@@ -23,7 +23,7 @@
 	}	
 	.o_rating_explanation {
 		font-size: $font-size-small;
-		@extend .text-muted;
+		color: $text-muted;
 	}
 	
 	@media (max-width: $screen-sm-max) {
@@ -36,17 +36,17 @@
 .o_comments { 
 	.o_comment_wrapper {
 		.o_avatar { 
-			@extend .pull-left;
+			float: left;
 			margin: 0 1em 0 0;
 		}
 		.o_reply, .o_delete {
-			@extend .pull-right;		
+			float: right;		
 		}
 		h5 {
-			@extend .small;
+			@extend %o_small;
 		}
 		.o_comment { 
-			@extend .small;
+			@extend %o_small;
 		}
 	}
 } 

@@ -1,7 +1,7 @@
 /* HELP, context sensitive */
 a.o_chelp {
 	@extend .btn;
-	@extend .btn-primary;
+	@include button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border);
 	padding: 1px 3px;
 	font-size: 10px;
 	line-height: 1.5;
@@ -10,36 +10,41 @@ a.o_chelp {
 
 div.o_chelp_wrapper { 
 	position: relative;
-	@extend .pull-right;
+	float: right;
 }
 
 /* add to links that should not be decorated (system links) */ 
-.o_undecorated {
+.o_undecorated, %o_undecorated {
 	&:hover,&:focus {
 		text-decoration: none;
 	}
 }
 
 /* a block of content that should have margins like a paragraph */
-.o_block_bottom {
+.o_block_bottom, %o_block_bottom {
 	margin-bottom: 1em;
 }
-.o_block_top {
+.o_block_top, %o_block_top {
 	margin-top: 1em;
 }
-.o_block {
-	@extend .o_block_top;
-	@extend .o_block_bottom;
+.o_block, %o_block {
+	@extend %o_block_top;
+	@extend %o_block_bottom;
 }
-.o_block_large_bottom {
+.o_block_large_bottom, %o_block_large_bottom {
 	margin-bottom: 2em;
 }
-.o_block_large_top {
+.o_block_large_top, %o_block_large_top {
 	margin-top: 2em;
 }
-.o_block_large {
-	@extend .o_block_large_top;
-	@extend .o_block_large_bottom;
+.o_block_large, %o_block_large {
+	@extend %o_block_large_top;
+	@extend %o_block_large_bottom;
+}
+
+%o_small {
+	/* same as bootstrap small: 14px base font * 85% = about 12px */
+	font-size: 85%;
 }
 
 /* overflowing content that should have scrollbar */
@@ -62,7 +67,7 @@ div.o_chelp_wrapper {
 
 /* multiple buttons, center aligned */
 .o_button_group {
-	@extend .o_block_large;
+	@extend %o_block_large;
 	text-align: center;
 	a, input, button {
 		margin-right: 1em;		
@@ -129,11 +134,11 @@ div.o_chelp_wrapper {
 /* Styling for overflow text with ellipsis (see js/ellipsis.js) */
 .o_withEllipsis {
 	.o_ellipsis_links {
-		@extend .pull-right;	
+		float: right;	
 	}
 	.o_morelink, .o_lesslink {
 		display: none;
-		@extend .o_undecorated;
+		@extend %o_undecorated;
 	}
 	&.o_hasOverflow {
 		.o_morelink {

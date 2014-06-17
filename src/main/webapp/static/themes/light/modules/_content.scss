@@ -17,7 +17,7 @@
  */
  
 /* content boxes */
-.o_info { 
+.o_info, %o_info { 
 	margin: 20px 0;
 	padding: 20px;
 	background-color: #eee;
@@ -26,40 +26,40 @@
 }
 p.o_info, div.o_info {margin: 20px 0;} /* tiny needs something here */
 
-.o_note {
-	@extend .o_info;
+.o_note, %o_note {
+	@extend %o_info;
 	background-color: #f4f8fa;
 	border-color: #5bc0de;
 	h2, h3, h4, h5 { color: #5bc0de;}
 }
 p.o_note, div.o_note {margin: 20px 0;} /* tiny needs something here */
 
-.o_important {
-	@extend .o_info;
+.o_important, %o_important {
+	@extend %o_info;
 	background-color: #FFF1A4;
 	border-color: #F4D000;
 	h2, h3, h4, h5 { color: #F4D000;}
 }
 p.o_important, div.o_important {margin: 20px 0;} /* tiny needs something here */
 
-.o_success {
-	@extend .o_info;
+.o_success, %o_success {
+	@extend %o_info;
 	background-color: #d6e9c6;
 	border-color: #3c763d;
 	h2, h3, h4, h5 { color: #3c763d;}
 }
 o.o_success, div.o_success {margin: 20px 0;} /* tiny needs something here */
 
-.o_warning {
-	@extend .o_info;
+.o_warning, %o_warning {
+	@extend %o_info;
 	background-color: #FFD5AA;
 	border-color: #FF9E3E;
 	h2, h3, h4, h5 { color: #FF9E3E;}
 }
 o.o_warning, div.o_warning {margin: 20px 0;} /* tiny needs something here */
 
-.o_error {
-	@extend .o_info;
+.o_error, %o_error {
+	@extend %o_info;
 	background-color: #fdf7f7;
 	border-color: #d9534f;
 	h2, h3, h4, h5 { color: #d9534f;}
