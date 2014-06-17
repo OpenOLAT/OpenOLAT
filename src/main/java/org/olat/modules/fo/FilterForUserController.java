@@ -318,8 +318,6 @@ public class FilterForUserController extends BasicController {
 	protected void showMessages(UserRequest ureq, UserInfo selectedInfo) {
 		// for simplicity no reuse of container, always create new one
 		vcThreadView = createVelocityContainer("threadview");
-		// to access the function renderFileIconCssClass(..) which is accessed in threadview.html using $myself.renderFileIconCssClass
-		vcThreadView.contextPut("myself", this);
 		vcThreadView.contextPut("filteredForFirstName", selectedInfo.getFirstName());
 		vcThreadView.contextPut("filteredForLastName", selectedInfo.getLastName());
 

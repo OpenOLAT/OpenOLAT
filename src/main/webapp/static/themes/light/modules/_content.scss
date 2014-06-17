@@ -134,8 +134,8 @@ table {
 .o_blue { color: #12223F; }
 
 /* special links */
-a.o_link_extern { @extend .o_icon; @extend .o_icon_link_extern;}
-a.o_link_mailto { @extend .o_icon; @extend .o_icon_mail;}
+a.o_link_extern { @extend %o_icon; @extend .o_icon_link_extern;}
+a.o_link_mailto { @extend %o_icon; @extend .o_icon_mail;}
 a.o_link_forward { background: transparent url('../../openolat/images/arrow_right.png') no-repeat right center; padding-right:18px;}
 
 /* image styles */

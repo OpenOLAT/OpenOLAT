@@ -9,7 +9,9 @@
 				($formatter.formatDateAndTime($message.getCreationDate()))
 			</small>
 		</h5>
+		<div>
 		$r.formatLatexFormulas($message.getBody())
+		</div>
 	</div>
 #end
 	$r.render("peekview.allItemsLink")

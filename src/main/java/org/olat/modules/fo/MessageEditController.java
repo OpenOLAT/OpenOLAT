@@ -246,7 +246,6 @@ public class MessageEditController extends FormBasicController {
 			tmpLayout = (FormLayoutContainer) attachLayout;
 		}
 		tmpLayout.contextPut("attachments", attachments);
-		tmpLayout.contextPut("myself", this);
 
 		// add delete links for each attachment if user is allowed to see them
 		int attNr = 1;
@@ -261,13 +260,6 @@ public class MessageEditController extends FormBasicController {
 			tmpLink.setI18nKey("attachments.remove.string");
 			attNr++;
 		}
-	}
-
-	// TODO:RH:forum try to use a generic way to get fileIcon for VFSItem
-	public String renderFileIconCssClass(String filename) {
-		String filetype = filename.substring(filename.lastIndexOf(".") + 1);
-		if (filetype == null) return "b_filetype_file"; // default
-		return "b_filetype_" + filetype;
 	}
 
 	/**

@@ -79,13 +79,22 @@
 						$r.formatLatexFormulas($message.get("body"))						
 					</div>
 					#if ($message.get("hasAttachments"))
-						<div class="o_forum_message_attachments">
+						<div class="o_attachments">
 							<strong>$r.translate("attachments"):</strong>
-							<ul>
+							<ul class="list-inline">
 							#foreach( $attachment in $message.get("attachments") )
 								#set($fname = $attachment.getName())
 								#set( $fsize = $attachment.getSize() / 1024 )
-								<li><a href="$r.commandURI("attachment_${velocityCount}_${count}")$fname" target="_blank" class="b_filetype_file $myself.renderFileIconCssClass($fname)">$r.escapeHtml($fname) ($fsize KB)</a></li>
+								<li class="o_attachment">
+									<a href="$r.commandURI("attachment_${velocityCount}_${count}")$fname" target="_blank">
+										<div class="o_filename">
+											$r.escapeHtml($fname) ($fsize KB)
+										</div>
+										#if ($attachment.getMetaInfo() && $attachment.getMetaInfo().isThumbnailAvailable())										
+										<img src="${thumbMapper}/$count/$attachment.getMetaInfo().getUUID()" class="img-thumbnail" title="$r.escapeHtml($r.translate("msg.attachment.preview", "$fname"))" class=""/>
+										#end
+								</a>		
+								</li>
 							#end 
 							</ul>
 						</div>

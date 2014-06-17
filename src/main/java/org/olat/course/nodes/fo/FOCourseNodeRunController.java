@@ -31,8 +31,6 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -64,11 +62,9 @@ public class FOCourseNodeRunController extends BasicController implements Activa
 
 	private DockController dockC;
 	private FOCourseNode courseNode;
-	private Panel main;
 	private CourseEnvironment courseEnv;
 	private Forum forum;
 	private ForumCallback foCallback;
-	private Link showButton;
 
 	/**
 	 * Constructor for a forum course building block runtime controller
@@ -90,19 +86,12 @@ public class FOCourseNodeRunController extends BasicController implements Activa
 		// set logger on this run controller
 		addLoggingResourceable(LoggingResourceable.wrap(foCourseNode));
 
-		main = new Panel("forunmain");
 		doLaunch(ureq);
-		putInitialPanel(main);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
-	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == showButton) {
-			doLaunch(ureq);
-		}
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		// nothing to do
 	}
 
 	private void doLaunch(UserRequest ureq) {
@@ -111,6 +100,7 @@ public class FOCourseNodeRunController extends BasicController implements Activa
 				Controller foCtr = ForumUIFactory.getStandardForumController(lureq, lwControl, forum, foCallback);
 				listenTo(foCtr);
 				Controller titledCtrl = TitledWrapperHelper.getWrapper(lureq, lwControl, foCtr, courseNode, "o_fo_icon");
+				listenTo(titledCtrl);
 				return titledCtrl;
 			}}, 
 			new DockLayoutControllerCreatorCallback() {
@@ -129,7 +119,7 @@ public class FOCourseNodeRunController extends BasicController implements Activa
 				}
 			});
 		listenTo(dockC);
-		main.setContent(dockC.getInitialComponent());
+		putInitialPanel(dockC.getInitialComponent());
 	}
 
 	@Override
@@ -138,7 +128,6 @@ public class FOCourseNodeRunController extends BasicController implements Activa
 	}
 
 	@Override
-	//fxdiff BAKS-7 Resume function
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(dockC != null && dockC.getController() instanceof TitledWrapperController) {
 			TitledWrapperController wrapper2 = (TitledWrapperController)dockC.getController();
@@ -147,4 +136,5 @@ public class FOCourseNodeRunController extends BasicController implements Activa
 			}
 		}
 	}
+
 }

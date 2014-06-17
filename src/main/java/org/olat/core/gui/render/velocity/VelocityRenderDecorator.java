@@ -43,6 +43,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.StringOutputPool;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -708,6 +709,15 @@ public class VelocityRenderDecorator implements Closeable{
 	public static String filterHTMLTags(String source) {
 		Filter htmlTagsFilter = FilterFactory.getHtmlTagsFilter();
 		return htmlTagsFilter.filter(source);
+	}
+	
+	/**
+	 * Get the icon css class that represents the filetype based on the file name
+	 * @param filename 
+	 * @return The css class for the file or a default css class
+	 */
+	public static String getFiletypeIconCss(String filename) {
+		return CSSHelper.createFiletypeIconCssClassFor(filename);
 	}
 	
 	/**

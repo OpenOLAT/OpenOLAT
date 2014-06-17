@@ -34,11 +34,15 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
+import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -49,6 +53,7 @@ import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -76,6 +81,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.Identity;
@@ -806,12 +812,12 @@ public class ForumController extends BasicController implements GenericEventList
 				// load message to form as quotation				
 				StringBuilder quoteSB = new StringBuilder();
 				quoteSB.append(TINYMCE_EMPTYLINE_CODE);
-				quoteSB.append("<div class=\"b_quote_wrapper\"><div class=\"b_quote_author mceNonEditable\">");
+				quoteSB.append("<div class=\"o_quote_wrapper\"><div class=\"o_quote_author mceNonEditable\">");
 				String date = f.formatDateAndTime(currentMsg.getCreationDate());
 				User creator = currentMsg.getCreator().getUser();
 				String creatorName = creator.getProperty(UserConstants.FIRSTNAME, ureq.getLocale()) + " " + creator.getProperty(UserConstants.LASTNAME, ureq.getLocale());
 				quoteSB.append(getTranslator().translate("msg.quote.intro", new String[]{date, creatorName}));
-				quoteSB.append("</div><blockquote class=\"b_quote\">");
+				quoteSB.append("</div><blockquote class=\"o_quote\">");
 				quoteSB.append(currentMsg.getBody());
 				quoteSB.append("</blockquote></div>");
 				quoteSB.append(TINYMCE_EMPTYLINE_CODE);
@@ -919,8 +925,6 @@ public class ForumController extends BasicController implements GenericEventList
 		precalcMessageDeepness(threadMsgs);
 		// for simplicity no reuse of container, always create new one
 		vcThreadView = createVelocityContainer("threadview");
-		// to access the function renderFileIconCssClass(..) which is accessed in threadview.html using $myself.renderFileIconCssClass
-		vcThreadView.contextPut("myself", this);
 		
 		backLinkListTitles = LinkFactory.createCustomLink("backLinkLT", "back", "listalltitles", Link.LINK_BACK, vcThreadView, this);
 		archiveThreadButton = LinkFactory.createButtonSmall("archive.thread", vcThreadView, this);
@@ -1060,6 +1064,33 @@ public class ForumController extends BasicController implements GenericEventList
 			ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_THREAD_READ, getClass(), LoggingResourceable.wrap(m));
 		}
 		vcThreadView.contextPut("messages", currentMessagesMap);
+		// 
+		// show a preview thumbnail if possible
+		String thumbMapper = registerMapper(ureq, new Mapper() {
+			@Override
+			public MediaResource handle(String relPath, HttpServletRequest request) {
+				String[] query = relPath.split("/");
+				if (query.length != 3) return null;
+				int mId = Integer.parseInt(query[1]);
+				Map<String, Object> map = currentMessagesMap.get(mId);
+				if (map == null) return null;
+				ArrayList<VFSItem> attachments = (ArrayList<VFSItem>) map.get("attachments");
+				for (VFSItem vfsItem : attachments) {
+					MetaInfo meta = ((MetaTagged)vfsItem).getMetaInfo();
+					if (meta.getUUID().equals(query[2])) {
+						if (meta.isThumbnailAvailable()) {
+							VFSLeaf thumb = meta.getThumbnail(200, 200, false);
+							if(thumb != null) {
+								return new VFSMediaResource(thumb);
+							}
+						}
+						return null;
+					}
+				}
+				return null;
+			}
+		});					
+		vcThreadView.contextPut("thumbMapper", thumbMapper);
 		// add security callback
 		vcThreadView.contextPut("security", focallback);
 		vcThreadView.contextPut("mode", viewMode);
@@ -1141,7 +1172,7 @@ public class ForumController extends BasicController implements GenericEventList
 		// message attachments
 		OlatRootFolderImpl msgContainer = fm.getMessageContainer(forum.getKey(), m.getKey());
 		map.put("messageContainer", msgContainer);
-		List<VFSItem> attachments = new ArrayList<VFSItem>(msgContainer.getItems(new VFSItemExcludePrefixFilter(MessageEditController.ATTACHMENT_EXCLUDE_PREFIXES)));
+		final List<VFSItem> attachments = new ArrayList<VFSItem>(msgContainer.getItems(new VFSItemExcludePrefixFilter(MessageEditController.ATTACHMENT_EXCLUDE_PREFIXES)));				
 //		List attachments = msgContainer.getItems();
 		map.put("attachments", attachments);
 		if (attachments == null || attachments.size() == 0) map.put("hasAttachments", Boolean.FALSE);
@@ -1406,20 +1437,7 @@ public class ForumController extends BasicController implements GenericEventList
 		  ForumManager.getInstance().markAsRead(s, m);
 		}
 	}
-
 	
-	/** 
-	 * [used by velocity in vcThreadView.contextPut("myself", this);]
-	 * @param filename 
-	 * @return css class that has a background icon for the given filename
-	 */
-	public String renderFileIconCssClass(String filename) {
-		String filetype = filename.substring(filename.lastIndexOf(".")+1);
-		if (filetype == null) return "b_filetype_file"; // default
-		return "b_filetype_" + filetype;
-	}
-
-
 	protected void doDispose() {
 		disposeCurrentMessages();
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, forum);

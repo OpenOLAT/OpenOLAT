@@ -166,6 +166,17 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_warn:before { content: $fa-var-exclamation-triangle; color: $brand-warning;}
 .o_icon_wizard:before { content: $fa-var-magic; }
 
+/* redundant style from font-awesome to support sass extend mechansism */
+%o_icon {
+  display: inline-block;
+  font-family: FontAwesome;
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 /* do not move link icons */
 a.o_icon {
 	&:hover,&:focus {
@@ -201,6 +212,12 @@ a.o_icon {
 .o_forum_message_icon:before { content: $fa-var-comment-o; }
 .o_calendar_icon:before { content: $fa-var-calendar; }
 
+/* forum course element */
+.o_forum_status_thread_icon:before { content: $fa-var-comments-o; }
+.o_forum_status_sticky_closed_icon:before { content: $fa-var-ban; }
+.o_forum_status_sticky_icon:before { content: $fa-var-comments; }
+.o_forum_status_closed_icon:before { content: $fa-var-ban; }
+
 /* tests icons */
 .o_mi_qtisc:before { content: $fa-var-dot-circle-o; }
 .o_mi_qtimc:before { content: $fa-var-check-square-o; }
@@ -223,73 +240,73 @@ a.o_icon {
 
 /* File type icons */
 /* first the default that is used as base class. will be overriden by following classes */
-.o_filetype_file,
-.o_filetype_ico		:before { content: $fa-var-file-o; }
-.o_filetype_folder 	:before { content: $fa-var-folder-o; }
+.o_filetype_file:before,
+.o_filetype_ico:before { content: $fa-var-file-o; }
+.o_filetype_folder:before { content: $fa-var-folder-o; }
 .o_filetype_folder_open:before { content: $fa-var-folder-open-o; }	
 /* filesystem icons, mark important to override ext definitions */
-.o_filetype_zip,
-.o_filetype_gz,
-.o_filetype_tar,
+.o_filetype_zip:before,
+.o_filetype_gz:before,
+.o_filetype_tar:before,
 .o_filetype_tgz:before { content: $fa-var-file-archive-o; }
-.o_filetype_css,
-.o_filetype_js,
-.o_filetype_java,
-.o_filetype_numbers,
-.o_filetype_ods,
-.o_filetype_xml,
+.o_filetype_css:before,
+.o_filetype_js:before,
+.o_filetype_java:before,
+.o_filetype_numbers:before,
+.o_filetype_ods:before,
+.o_filetype_xml:before,
 .o_filetype_xsl:before { content: $fa-var-file-code-o; }
-.o_filetype_bat_icon,
-.o_filetype_bat,
-.o_filetype_exe,
-.o_filetype_app,
+.o_filetype_bat_icon:before,
+.o_filetype_bat:before,
+.o_filetype_exe:before,
+.o_filetype_app:before,
 .o_filetype_sh:before { content: $fa-var-file-code-o; }
-.o_filetype_xls, 
+.o_filetype_xls:before, 
 .o_filetype_xlsx:before { content: $fa-var-file-excel-o; }
-.o_filetype_png,
-.o_filetype_tiff,
-.o_filetype_webp,
-.o_filetype_gif,
-.o_filetype_ico,
-.o_filetype_jpeg, 
-.o_filetype_bmp,
-.o_filetype_odg,
-.o_filetype_eps,
+.o_filetype_png:before,
+.o_filetype_tiff:before,
+.o_filetype_webp:before,
+.o_filetype_gif:before,
+.o_filetype_ico:before,
+.o_filetype_jpeg:before, 
+.o_filetype_bmp:before,
+.o_filetype_odg:before,
+.o_filetype_eps:before,
 .o_filetype_jpg:before { content: $fa-var-file-image-o; }
-.o_filetype_psd,
-.o_filetype_avi,
-.o_filetype_dvi,
-.o_filetype_mp4, 
-.o_filetype_m4v, 
-.o_filetype_webm, 
-.o_filetype_ogg,
-.o_filetype_video, 
-.o_filetype_mov,
-.o_filetype_mpeg,
-.o_filetype_mpg,
-.o_filetype_qt,
-.o_filetype_ra,
-.o_filetype_ram,
-.o_filetype_swf,
+.o_filetype_psd:before,
+.o_filetype_avi:before,
+.o_filetype_dvi:before,
+.o_filetype_mp4:before, 
+.o_filetype_m4v:before, 
+.o_filetype_webm:before, 
+.o_filetype_ogg:before,
+.o_filetype_video:before, 
+.o_filetype_mov:before,
+.o_filetype_mpeg:before,
+.o_filetype_mpg:before,
+.o_filetype_qt:before,
+.o_filetype_ra:before,
+.o_filetype_ram:before,
+.o_filetype_swf:before,
 .o_filetype_flv:before { content: $fa-var-file-video-o; }
-.o_filetype_midi,
-.o_filetype_audio, 
-.o_filetype_mp3,
-.o_filetype_m3u,
+.o_filetype_midi:before,
+.o_filetype_audio:before, 
+.o_filetype_mp3:before,
+.o_filetype_m3u:before,
 .o_filetype_wav:before { content: $fa-var-file-audio-o; }
-.o_filetype_ps,
+.o_filetype_ps:before,
 .o_filetype_pdf:before { content: $fa-var-file-pdf-o; }
-.o_filetype_key,
-.o_filetype_odp,
-.o_filetype_ppt, 
+.o_filetype_key:before,
+.o_filetype_odp:before,
+.o_filetype_ppt:before, 
 .o_filetype_pptx:before { content: $fa-var-file-powerpoint-o; }
-.o_filetype_odf,
-.o_filetype_rtf,
-.o_filetype_readme, 
-.o_filetype_README,
-.o_filetype_log,
-.o_filetype_txt,
-.o_filetype_htm, 
+.o_filetype_odf:before,
+.o_filetype_rtf:before,
+.o_filetype_readme:before, 
+.o_filetype_README:before,
+.o_filetype_log:before,
+.o_filetype_txt:before,
+.o_filetype_htm:before, 
 .o_filetype_html:before { content: $fa-var-file-text-o; }
 .o_filetype_pages,
 .o_filetype_doc, 

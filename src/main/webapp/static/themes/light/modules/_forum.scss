@@ -1,0 +1,57 @@
+$o-forum-quote-author-color : $text-muted !default;
+$o-forum-quote-padding		: $padding-large-vertical;
+$o-forum-quote-color 		: $gray !default;
+$o-forum-quote-font-size	: $font-size-small !default;
+$o-forum-attachment-font-size	: $font-size-small !default;
+
+.o_forum_peekview {
+	.o_quote_wrapper, .b_quote_wrapper {
+		display: none;
+	}
+}
+
+.o_forum_thread_sticky { 
+	font-weight: bold; 
+}
+
+.o_forum {
+	.o_attachments {
+		font-size: $o-forum-attachment-font-size;
+	}
+	.o_attachment {
+		width: 200px;
+		vertical-align: top;
+		padding: $padding-base-vertical 0;
+		img {
+			margin-top: $padding-base-vertical;		
+		}
+	}
+	.o_filename {
+		width: 200px;
+		@include text-overflow();	
+	}
+}
+
+
+
+/* quotes need b_* legacy styling, part of already saved messages */
+.o_quote_wrapper, .b_quote_wrapper { 
+	position: relative;
+	margin: $o-forum-quote-padding 0; 
+}
+.o_quote_author, .b_quote_author { 
+	color: $o-forum-quote-author-color;
+	font-size: $o-forum-quote-font-size; 
+	&:before { 
+		@extend %o_icon;
+		content: $fa-var-quote-right; 
+		font-size: ceil(($font-size-base * 1.5));
+		padding-right: 0.5em;
+	}
+}
+blockquote.o_quote, blockquote.b_quote { 
+	color: $o-forum-quote-color; 
+	font-size: $o-forum-quote-font-size; 
+	margin-top: $padding-base-vertical; 
+	padding: 0 $padding-base-horizontal;
+}
