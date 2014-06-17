@@ -302,9 +302,6 @@ public class TableRenderer extends DefaultComponentRenderer {
 				target.append(" b_table_marked");
 			}
 			target.append(CLOSE_HTML_BRACE);
-			if (j == 0) {
-				target.append("<a name=\"b_table\"></a>"); // add once for accessabillitykey
-			}
 			String action = cd.getAction(i);
 			if (action != null) {
 				StringOutput so = new StringOutput(100);

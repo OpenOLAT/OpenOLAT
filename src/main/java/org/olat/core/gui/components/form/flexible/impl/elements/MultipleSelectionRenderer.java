@@ -116,7 +116,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		}
 			
 		boolean selected = check.isSelected();
-		String formDispatchId = stF.getFormDispatchId();
+		String formDispatchId = check.getFormDispatchId();
 			
 		//read write view
 		String cssClass = check.getCssClass(); //optional CSS class
@@ -137,7 +137,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			sb.append(" disabled='disabled' ");
 		} else {
 			//use the selection form dispatch id and not the one of the element!
-			sb.append(FormJSHelper.getRawJSFor(check.getRootForm(), check.getSelectionElementFormDisId(), check.getAction()));
+			sb.append(FormJSHelper.getRawJSFor(check.getRootForm(), check.getSelectionElementFormDispatchId(), check.getAction()));
 		}
 		sb.append(" />");
 		if (StringHelper.containsNonWhitespace(value)) {

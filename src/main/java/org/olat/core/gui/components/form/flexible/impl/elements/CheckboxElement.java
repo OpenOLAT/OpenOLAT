@@ -113,6 +113,10 @@ class CheckboxElement {
 	String getKey() {
 		return selectionWrapper.getKey(which);
 	}
+	
+	public String getFormDispatchId() {
+		return selectionWrapper.getFormDispatchId() + "_C_" + which;
+	}
 
 	public String getValue() {
 		return selectionWrapper.getValue(which);
@@ -142,7 +146,7 @@ class CheckboxElement {
 		return selectionWrapper.getRootForm();
 	}
 	
-	public String getSelectionElementFormDisId(){
+	public String getSelectionElementFormDispatchId(){
 		return selectionWrapper.getFormDispatchId();
 	}
 	

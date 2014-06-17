@@ -426,8 +426,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		target.append("<td class=\"").append(cssClass).append(" ")
 		  .append("o_dnd_label", ftE.getColumnIndexForDragAndDropLabel() == fcm.getColumnIndex())
 		  .append("\">");
-		if (col == 0) target.append("<a name='table'></a>"); //add once for accessabillitykey
-
+		
 		int columnIndex = fcm.getColumnIndex();
 		Object cellValue = columnIndex >= 0 ? 
 				dataModel.getValueAt(row, columnIndex) : null;

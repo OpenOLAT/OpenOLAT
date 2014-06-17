@@ -64,7 +64,7 @@ public class SpacerElementRenderer implements ComponentRenderer {
 			sb.append(" ");
 			sb.append(customCSS);
 		}
-		sb.append("\"/>");
+		sb.append("\" />");
 
 	}
 

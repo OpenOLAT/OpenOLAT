@@ -172,7 +172,7 @@ class SelectionTreeComponentRenderer extends DefaultComponentRenderer {
 		}
 		if(check.isEnabled()){
 			//use the selection form dispatch id and not the one of the element!
-			sb.append(FormJSHelper.getRawJSFor(stF.getRootForm(), check.getSelectionElementFormDisId(), check.getAction()));
+			sb.append(FormJSHelper.getRawJSFor(stF.getRootForm(), check.getSelectionElementFormDispatchId(), check.getAction()));
 		} else {
 			sb.append(" disabled='disabled' ");
 		}

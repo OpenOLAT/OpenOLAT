@@ -55,6 +55,10 @@
 		padding-right: $input-height-base;
 	}
 	
+	.o_date.form-inline .form-group  {
+		margin-left: 0;
+	}
+	
 	input.o_date_ms {
 		width: 3em;
 	}
