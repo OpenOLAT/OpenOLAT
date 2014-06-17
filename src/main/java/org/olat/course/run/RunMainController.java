@@ -961,7 +961,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					// update tools, maybe efficiency statement link has changed
 					UserEfficiencyStatement es = efficiencyStatementManager
 							.getUserEfficiencyStatementLight(courseRepositoryEntry.getKey(), identity);
-					toolC.setEnabled("command.efficiencystatement", (es != null));
+					
+					if(!isGuest && toolC.hasTool("command.efficiencystatement")) {
+						toolC.setEnabled("command.efficiencystatement", (es != null));
+					}
 				}
 				// raise a flag to indicate refresh
 				needsRebuildAfterRunDone = true;
