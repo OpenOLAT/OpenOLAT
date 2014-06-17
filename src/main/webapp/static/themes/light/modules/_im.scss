@@ -14,3 +14,16 @@
 		right: 0.5em;
 	}
 }
+
+.o_instantmessaging_chat_history {
+	height:170px;
+	font-size: 90%;
+	
+	/* scrollbar */
+	margin: 0 0 1em 0; 
+	overflow: scroll; 
+	overflow-x:auto; 
+	
+}
+
+a.o_instantmessaging_hidegroupswitch { @include o-opacity(60); }

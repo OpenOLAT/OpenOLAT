@@ -38,7 +38,7 @@ public class EfficiencyStatementArtefact extends AbstractArtefact {
 	
 	@Override
 	public String getIcon() {
-		return "o_efficiencystatement_icon";
+		return "o_icon_certificate";
 	}
 
 	@Override

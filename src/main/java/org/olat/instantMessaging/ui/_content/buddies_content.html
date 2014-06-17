@@ -1,9 +1,9 @@
-<ul>
+<ul class="list-unstyled">
 	#if($viewGroups)
 		#foreach ($group in $buddyList.groups)
 			<li class="o_instantmessaging_group">
-				<div class="o_instantmessaging_groupname">$r.escapeHtml($group.groupName)</div>
-				<ul>
+				<div><i class="o_icon o_icon_group"> </i> $r.escapeHtml($group.groupName)</div>
+				<ul class="list-unstyled">
 				#foreach ($buddy in $group.buddy)
 					<li>$r.render("buddy_${group.groupKey}_${buddy.identityKey}")</li>
 				#end

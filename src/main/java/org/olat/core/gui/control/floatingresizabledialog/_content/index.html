@@ -1,12 +1,18 @@
 <div id="${panelName}" class="${panelName} ${cssClass}">
 	#if ($r.available("collapsibleContent"))
-		<div id="${panelName}-east" class="pane ui-layout-east">
-			$r.render("collapsibleContent")
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-sm-8">
+					$r.render("panelContent")
+				</div>
+				<div class="col-sm-4">
+					$r.render("collapsibleContent")
+				</div>
+			</div>
 		</div>
-	#end
-	<div id="${panelName}-center" class="pane ui-layout-center">
+	#else
 		$r.render("panelContent")
-	</div>
+	#end
 </div>
 <script type="text/javascript">
 /* <![CDATA[ */ 
@@ -57,10 +63,7 @@
 					tweak_${panelName}(win);
 				} catch (Exception) { /**/ }
 			}
-		})#if($r.available("collapsibleContent")).layout({
-			center: { size: '66%' },
-			east: { size: '33%' }
-		})#end;
+		});
 		
 		//override the default z-index of jQuery UI dialog
 		jQuery('#${panelName}').dialog("widget").css('z-index', 10000);
