@@ -294,8 +294,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		// Inline translation interceptor. when the translation tool is enabled it
 		// will start the translation tool in translation mode, if the overlay
 		// feature is enabled it will start in customizing mode
-		// fxdiff: allow user-managers to use the inline translation also. TODO:
-		// do this with a proper right-mgmt!
+		// fxdiff: allow user-managers to use the inline translation also.
 		if (ureq.getUserSession().isAuthenticated()
 				&& (ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isUserManager())
 				&& (I18nModule.isTransToolEnabled() || I18nModule.isOverlayEnabled())) {
@@ -461,7 +460,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	
 	private void initializeDefaultSite(UserRequest ureq) {
 		if (sites != null && sites.size() > 0
-				&& curSite == null
+				&& curSite == null && curDTab == null
 				&& contentCtrl == null) {
 			SiteInstance s = sites.get(0);
 			//activate site only if no content was set -> allow content before activation of default site.
@@ -1168,7 +1167,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	 * 
 	 * @return
 	 */
-	public boolean isCanCloseDTab(DTab dtab) {
+	public boolean isCanCloseDTab() {
 		//can close
 		return (sites != null && !sites.isEmpty()) || (dtabs != null && dtabs.size() > 1);
 	}
