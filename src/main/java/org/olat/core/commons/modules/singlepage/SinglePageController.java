@@ -346,7 +346,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == editLink) {
 			if (event.getCommand().equals(COMMAND_EDIT)) {
-				if (g_curURI == null || g_new_rootContainer.resolve(g_curURI) == null) {
+				if (g_curURI == null || g_new_rootContainer == null || g_new_rootContainer.resolve(g_curURI) == null) {
 					showError("error.pagenotfound");
 					return;
 				}
