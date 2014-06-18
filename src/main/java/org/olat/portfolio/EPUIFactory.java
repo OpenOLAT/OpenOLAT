@@ -77,26 +77,6 @@ public class EPUIFactory {
 	public static Controller createPortfolioAdminController(UserRequest ureq, WindowControl wControl) {
 		return new PortfolioAdminController(ureq, wControl);
 	}
-
-	/**
-	 * get a controller with all user maps (without structureds map or templates)
-	 * @param ureq
-	 * @param wControl
-	 * @return
-	 */
-	public static Controller createPortfolioMapsController(UserRequest ureq, WindowControl wControl) {
-		return new EPMapRunController(ureq, wControl, true, EPMapRunViewOption.MY_DEFAULTS_MAPS, null);
-	}
-	
-	/**
-	 * Get a controller with all maps I can see from other users,
-	 * @param ureq
-	 * @param wControl
-	 * @return
-	 */
-	public static Controller createPortfolioMapsFromOthersController(UserRequest ureq, WindowControl wControl) {
-		return new EPMapRunController(ureq, wControl, false, EPMapRunViewOption.OTHERS_MAPS, null);
-	}
 	
 	/**
 	 * Get a controller with all maps I can see from other users,
@@ -106,16 +86,6 @@ public class EPUIFactory {
 	 */
 	public static Controller createPortfolioMapsVisibleToOthersController(UserRequest ureq, WindowControl wControl, Identity choosenOwner) {
 		return new EPMapRunController(ureq, wControl, false, EPMapRunViewOption.OTHER_MAPS, choosenOwner);
-	}
-	
-	/**
-	 * Get a controller with all user structured maps (but not templates)
-	 * @param ureq
-	 * @param wControl
-	 * @return
-	 */
-	public static Controller createPortfolioStructuredMapsController(UserRequest ureq, WindowControl wControl) {
-		return new EPMapRunController(ureq, wControl, false, EPMapRunViewOption.MY_EXERCISES_MAPS, null);
 	}
 	
 	public static Controller createPortfolioStructureMapController(UserRequest ureq, WindowControl wControl, PortfolioStructureMap map,

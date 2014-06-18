@@ -48,6 +48,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.SelectionTree;
 import org.olat.core.gui.components.tree.TreeEvent;
@@ -148,6 +149,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	/*
 	 * Toolbox Commands
 	 */
+	private static final String CMD_TOOLS_CLOSE_EDITOR = "cmd.close";
 	private static final String CMD_TOOLS_PREVIEW = "cmd.preview";
 	private static final String CMD_TOOLS_CHANGE_MOVE = "cmd.move";
 	private static final String CMD_TOOLS_CHANGE_COPY = "cmd.copy";
@@ -1053,20 +1055,21 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private void populateToolC() {
 		//tools
 		Dropdown editTools = new Dropdown("editTools", "tools.tools.header", false, getTranslator());
-		stackedPanel.addTool(editTools);
+		editTools.setIconCSS("o_icon o_icon_tools");
+		stackedPanel.addTool(editTools, Align.left);
 		
-		previewLink = LinkFactory.createToolLink(CMD_TOOLS_PREVIEW, translate("tools.tools.preview"), this, "b_toolbox_preview");
 		editTools.addComponent(previewLink);
 		exportPoolLink = LinkFactory.createToolLink(CMD_TOOLS_EXPORT_QPOOL, translate("tools.export.qpool"), this, "o_mi_qpool_export");
+		exportPoolLink.setIconLeftCSS("o_icon o_icon_download");
 		editTools.addComponent(exportPoolLink);
 		exportDocLink = LinkFactory.createToolLink(CMD_TOOLS_EXPORT_DOCX, translate("tools.export.docx"), this, "o_mi_docx_export");
+		exportDocLink.setIconLeftCSS("o_icon o_icon_download");
 		editTools.addComponent(exportDocLink);
-		closeLink = LinkFactory.createToolLink(CMD_TOOLS_EXPORT_DOCX, translate("tools.tools.closeeditor"), this, "b_toolbox_close");
-		editTools.addComponent(closeLink);
 
 		//add
 		Dropdown addItemTools = new Dropdown("editTools", "tools.add.header", false, getTranslator());
-		stackedPanel.addTool(addItemTools);
+		addItemTools.setIconCSS("o_icon o_icon-fw o_icon_add");
+		stackedPanel.addTool(addItemTools, Align.left);
 
 		addPoolLink = LinkFactory.createToolLink(CMD_TOOLS_ADD_QPOOL, translate("tools.import.qpool"), this, "o_mi_qpool_import");
 		addItemTools.addComponent(addPoolLink);
@@ -1080,20 +1083,32 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			addKPrimLink = LinkFactory.createToolLink(CMD_TOOLS_ADD_KPRIM, translate("tools.add.kprim"), this, "o_mi_qtikprim");
 			addItemTools.addComponent(addKPrimLink);
 		}
-		
 		addFIBLink = LinkFactory.createToolLink(CMD_TOOLS_ADD_FIB, translate("tools.add.cloze"), this, "o_mi_qtifib");
 		addItemTools.addComponent(addFIBLink);
 		addEssayLink = LinkFactory.createToolLink(CMD_TOOLS_ADD_FREETEXT, translate("tools.add.freetext"), this, "o_mi_qtiessay");
 		addItemTools.addComponent(addEssayLink);
 		
-		// change
-		//tc.addHeader(translate("tools.change.header"));
+		// delete / move / copy 
+		Dropdown customizeTools = new Dropdown("customizeTools", "tools.change.header", false, getTranslator());
+		customizeTools.setIconCSS("o_icon o_icon_customize");
+		stackedPanel.addTool(customizeTools, Align.left);
+		
 		deleteLink = LinkFactory.createToolLink(CMD_TOOLS_CHANGE_DELETE, translate("tools.change.delete"), this, "b_toolbox_delete");
-		stackedPanel.addTool(deleteLink);
+		deleteLink.setIconLeftCSS("o_icon o_icon_delete_item");
+		customizeTools.addComponent(deleteLink);
 		moveLink = LinkFactory.createToolLink(CMD_TOOLS_CHANGE_MOVE, translate("tools.change.move"), this, "b_toolbox_move");
-		stackedPanel.addTool(moveLink);
+		moveLink.setIconLeftCSS("o_icon o_icon_move");
+		customizeTools.addComponent(moveLink);
 		copyLink = LinkFactory.createToolLink(CMD_TOOLS_CHANGE_COPY, translate("tools.change.copy"), this, "b_toolbox_copy");
-		stackedPanel.addTool(copyLink);
+		copyLink.setIconLeftCSS("o_icon o_icon_copy");
+		customizeTools.addComponent(copyLink);
+		
+		previewLink = LinkFactory.createToolLink(CMD_TOOLS_PREVIEW, translate("tools.tools.preview"), this, "b_toolbox_preview");
+		previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
+		stackedPanel.addTool(previewLink, Align.right);
+		closeLink = LinkFactory.createToolLink(CMD_TOOLS_CLOSE_EDITOR, translate("tools.tools.closeeditor"), this, "b_toolbox_close");
+		closeLink.setIconLeftCSS("o_icon o_icon_publish");
+		stackedPanel.addTool(closeLink, Align.right);
 	}
 
 	/**
