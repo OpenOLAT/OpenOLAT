@@ -157,4 +157,17 @@ public class StringHelperTest {
 		Assert.assertFalse(StringHelper.isLong("."));
 		Assert.assertFalse(StringHelper.isLong(";"));
 	}
+	
+	@Test
+	public void isHtml() {
+		//simply text
+		Assert.assertFalse(StringHelper.isHtml("Hello world"));
+		Assert.assertFalse(StringHelper.isHtml("Hello > world"));
+		Assert.assertFalse(StringHelper.isHtml("Mathemtics 5<6"));
+		
+		//good and bad html code
+		Assert.assertTrue(StringHelper.isHtml("<html><head></head><body>Hello world</body></html>"));
+		Assert.assertTrue(StringHelper.isHtml("Hello <p>world</p>"));
+		Assert.assertTrue(StringHelper.isHtml("<ul><li>Hello<li>world</ul>"));
+	}
 }

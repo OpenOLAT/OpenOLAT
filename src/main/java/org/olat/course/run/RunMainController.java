@@ -991,10 +991,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					assessmentChangedEventReceived = true;										
 				} else if (assessmentChangeType.equals(AssessmentChangedEvent.TYPE_EFFICIENCY_STATEMENT_CHANGED)) {
 					// update tools, maybe efficiency statement link has changed
-					UserEfficiencyStatement es = efficiencyStatementManager
+					if(!isGuest) {
+						UserEfficiencyStatement es = efficiencyStatementManager
 							.getUserEfficiencyStatementLight(courseRepositoryEntry.getKey(), identity);
-					efficiencyStatementsLink.setEnabled(es != null);
-					efficiencyStatementsLink.setPopup(true);//"750", "800"
+						efficiencyStatementsLink.setEnabled(es != null);
+						efficiencyStatementsLink.setPopup(true);//"750", "800"
+					}
 				}
 				// raise a flag to indicate refresh
 				needsRebuildAfterRunDone = true;

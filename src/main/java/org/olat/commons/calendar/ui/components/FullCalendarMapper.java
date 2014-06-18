@@ -119,9 +119,7 @@ public class FullCalendarMapper implements Mapper {
 		KalendarRenderWrapper cal =  fcC.getKalendarRenderWrapper(calendarId);
 		if(cal != null) {
 			for(KalendarEvent event:cal.getKalendar().getEvents()) {
-				Date end = event.getEnd();
-				Date begin = event.getBegin();
-				if(from.compareTo(begin) <= 0 && to.compareTo(end) >= 0) {
+				if(isInRange(from, to, event)) {
 					JSONObject jsonEvent = getJSONEvent(event, cal);
 					ja.put(jsonEvent);
 				}
@@ -135,6 +133,19 @@ public class FullCalendarMapper implements Mapper {
 				}
 			}
 		}
+	}
+	
+	private boolean isInRange(Date from, Date to, KalendarEvent event) {
+		Date end = event.getEnd();
+		Date begin = event.getBegin();
+		if(from.compareTo(begin) <= 0 && to.compareTo(end) >= 0) {
+			return true;
+		} else if(from.compareTo(begin) <= 0 && to.compareTo(begin) >= 0) {
+			return true;
+		} else if(from.compareTo(end) <= 0 && to.compareTo(end) >= 0) {
+			return true;
+		}
+		return false;
 	}
 	
 	private JSONObject getJSONEvent(KalendarEvent event, KalendarRenderWrapper cal) throws JSONException {

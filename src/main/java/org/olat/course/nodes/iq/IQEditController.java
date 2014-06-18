@@ -492,11 +492,12 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 				} else {//survey
 					types = new String[]{SurveyFileResource.TYPE_NAME};
 				}
-				//look if there are PASSED entries in changelog
-				//if yes create archive of results and all users can be notified about the changed test configuration
-				String repositorySoftKey = (String) courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
-				Long repKey = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true).getKey();
+				
 				RepositoryEntry re = courseNode.getReferencedRepositoryEntry();
+				if(re == null) {
+					showError("error.test.undefined.long", courseNode.getShortTitle());
+					return;
+				}
 				
 				if (moduleConfiguration.get(CONFIG_KEY_TYPE_QTI) == null) {
 					updateQtiType(re);
@@ -511,7 +512,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 							onyxSuccess = surveyDir.listFiles().length;
 						}
 					} else {
-						onyxSuccess = QTIResultManager.getInstance().countResults(course.getResourceableId(), courseNode.getIdent(), repKey);
+						onyxSuccess = QTIResultManager.getInstance().countResults(course.getResourceableId(), courseNode.getIdent(), re.getKey());
 					}
 				}
 				if (moduleConfiguration.get(CONFIG_KEY_TYPE_QTI) != null
@@ -521,7 +522,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 					replaceWizard.addControllerListener(this);
 					cmc = new CloseableModalController(getWindowControl(), translate("close"), replaceWizard.getInitialComponent());
 				} else {
-					List<QTIResult> results = QTIResultManager.getInstance().selectResults(course.getResourceableId(), courseNode.getIdent(), repKey, null, 1);
+					List<QTIResult> results = QTIResultManager.getInstance().selectResults(course.getResourceableId(), courseNode.getIdent(), re.getKey(), null, 1);
 					// test was passed from an user
 					boolean passed = (results != null && results.size() > 0) ? true : false;
 					// test was started and not passed

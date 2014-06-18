@@ -202,14 +202,23 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	}
 
 	public List<BusinessGroup> getCoachedGroups() {
+		if(coachedGroups == null) {
+			return Collections.emptyList();
+		}
 		return coachedGroups;
 	}
 
 	public List<BusinessGroup> getParticipatingGroups() {
+		if(participatingGroups == null) {
+			return Collections.emptyList();
+		}
 		return participatingGroups;
 	}
 
 	public List<BusinessGroup> getWaitingLists() {
+		if(waitingLists == null) {
+			return Collections.emptyList();
+		}
 		return waitingLists;
 	}
 	

@@ -82,7 +82,7 @@ The Selenium tests can be run with different browser but with some limitations:
 * Execute a single selenium functional integration test in Eclipse
 -----------------------------------------
 - First build the application without tests as before
-    mvn -DskipTests=true -Parquillian clean package
+    mvn -DskipTests=true -Parquillian,tomcat clean package
  
 - Run single test as JUnit Test in Eclipse
 

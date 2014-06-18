@@ -30,6 +30,7 @@ import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.CourseNodeConfiguration;
@@ -197,6 +198,8 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 			rootNode.addChild(sectionNode);
 			for (Item item : section.getItems()) {
 				GenericTreeNode itemNode = new ItemNode(item);
+				itemNode.setIdent(Long.toString(CodeHelper.getForeverUniqueID()));
+				
 				if(sectionNode.getDelegate() == null) {
 					sectionNode.setDelegate(itemNode);
 				}

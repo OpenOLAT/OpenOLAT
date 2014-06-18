@@ -132,6 +132,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 		List<String> cmds = new ArrayList<String>();
 		cmds.add("convert");
 		cmds.add("-verbose");
+		cmds.add("-auto-orient");
 		cmds.add("-thumbnail");
 		if(fill) {
 			cmds.add(maxWidth + "x" + maxHeight + "^");
