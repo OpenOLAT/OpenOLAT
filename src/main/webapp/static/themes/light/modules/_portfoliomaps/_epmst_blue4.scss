@@ -1,0 +1,21 @@
+$bg_gradient1 : #DEE7F7;
+$bg_gradient2 : #C1E9FD;
+
+$infotextcolor : #000;
+$bordercolor : #888;
+$titlecolor : #444;
+
+.o_eportfolio_maps .o_map-epmst-blue4 {
+	@include epmst-mapclosed($bg_gradient1, $bg_gradient2, $bordercolor);
+
+	h4 {
+		color: $titlecolor;
+	}
+	.panel-body, td, a {
+		color: $infotextcolor;
+	}
+}
+
+.o_eportfolio_map.o_map-epmst-blue4 {
+	@include epmst-actualpage($bg_gradient1, $bg_gradient2, $bordercolor);
+}

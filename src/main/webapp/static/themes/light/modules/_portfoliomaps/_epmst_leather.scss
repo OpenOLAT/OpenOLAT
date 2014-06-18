@@ -1,0 +1,36 @@
+$bordercolor : #888;
+
+.o_eportfolio_maps .o_map-leather {
+	background: rgb(149, 115, 82) url('#{$o-images-path}portfolio/light-leather-tile.jpg');
+	font-family: Palatino, Georgia, serif;
+
+	border: 1px solid $bordercolor; 
+	border-left: 3px solid transparentize(darken($bordercolor, 20%),0.2);
+	box-shadow: 3px 3px 4px rgba(20,20,20,0.4);
+	
+	h4 {
+		background: rgba(243, 230, 225, 0.5) none;
+	}
+	
+	.panel-body, td {
+		color: #C2A074;
+	}
+	
+	a {
+		color: #fad9a4;
+	}
+}
+
+.o_eportfolio_map.o_map-leather {
+	font-family: Palatino, Georgia, serif;
+	background: rgb(149, 115, 82) url('#{$o-images-path}portfolio/light-leather-tile.jpg');
+	
+	border: 1px solid $bordercolor; 
+	border-left: 3px solid transparentize(darken($bordercolor, 20%),0.2);
+	
+	.o_map_header {
+		h4, p, a, span, label {
+			color: #fff;
+		}
+	}
+}

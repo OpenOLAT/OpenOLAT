@@ -22,7 +22,6 @@ package org.olat.portfolio.ui.structel;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -46,6 +45,7 @@ import org.olat.portfolio.model.structel.EPPage;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.ui.structel.view.EPChangelogController;
 import org.olat.portfolio.ui.structel.view.EPTOCReadOnlyController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -63,10 +63,10 @@ public class EPMultiplePageController extends BasicController implements Activat
 	private Controller currentActivePageCtrl;
 	private EPTOCReadOnlyController tocPageCtrl;
 	private EPChangelogController changelogPageCtrl;
-	private int previousPage;
 	private final VelocityContainer vC;
 	private final EPSecurityCallback secCallback;
-	private final EPFrontendManager ePFMgr;
+	@Autowired
+	private EPFrontendManager ePFMgr;
 
 	private Link tocLink; // the first tab, link to TOC
 	private Link changelogLink; // the last tab, link to Changelog
@@ -79,8 +79,7 @@ public class EPMultiplePageController extends BasicController implements Activat
 		this.pageList = pageList;
 		this.pageListByKeys = new ArrayList<Long>(pageList.size());
 		this.secCallback = secCallback;
-		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
-
+		
 		vC = createVelocityContainer("multiPages");
 
 		init(ureq);
@@ -180,7 +179,6 @@ public class EPMultiplePageController extends BasicController implements Activat
 	private void setCurrentPageAfterInit(int pageNum) {
 		vC.put("pageCtrl", currentActivePageCtrl.getInitialComponent());
 		vC.contextPut("actualPage", pageNum + 1);
-		previousPage = pageNum + 1;
 	}
 
 	/**

@@ -8,31 +8,29 @@
 	</div>
 #end
 </div>
-<div class="b_eportfolio_map $!style">
-	<div class="b_ep_relative"> ## needed for positioning
-		<div class="b_map_header">
-		<div class="b_struct_edit_btn">
+<div class="o_eportfolio_map o_map-$!style">
+	<div class="o_ep_relative"> ## needed for positioning
+		<div class="o_map_header">
+		<div class="o_struct_edit_btn">
 			#if(!$r.available("editor") && $r.available("addButton"))
-				<div class="b_eportfolio_add_link">$r.render("addButton")</div>
+				<div class="o_eportfolio_add_link">$r.render("addButton")</div>
 			#end
 			#if($r.available("map.submit.assess"))
-				<div class="b_struct_submit_assess_btn">$r.render("map.submit.assess")</div>
+				<div class="o_struct_submit_assess_btn">$r.render("map.submit.assess")</div>
 			#end
 			#if($closed) 
-				<div class="b_artefact_closed"><span title=" $r.translate("map.is.closed.hint") ">&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+				<div class="o_artefact_closed"><span title=" $r.translate("map.is.closed.hint") ">&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
 			#end
 			<br/>
 		</div>
 		<h4>$r.escapeHtml($map.title)</h4>
-		<div style="clear: right;"></div>
 	
 		#if(!$r.available("editor"))
-			<div class="b_eportfolio_mapdescr">$map.description</div>
+			<div class="o_eportfolio_mapdescr">$map.description</div>
 			#if($r.available("ownerportrait"))
-				<div class="b_eportfolio_mapowner">$r.translate("map.owners","") $r.render("ownerportrait")</div>
+				<div class="o_eportfolio_mapowner">$r.translate("map.owners","") $r.render("ownerportrait")</div>
 			#end
-			<div class="b_clearfix"></div>
-		
+
 			## show av. artefacts here...
 			#if ($r.available("artefactTable")) $r.render("artefactTable") #end
 		

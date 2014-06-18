@@ -18,3 +18,67 @@
 .b_eportfolio_page .b_eportfolio_structure > h5 {
 	border-bottom: 1px solid #ddd; margin-top: 1.2em;
 }
+
+.o_eportfolio_maps {
+	.panel {
+		font-family: 'Century Gothic', 'Apple Gothic', sans-serif;
+	}
+	.panel-heading {
+		padding: 5px 10px;
+	}
+	h4 {
+		padding: 11px 15px;
+		background: rgba(255, 255, 230, 0.7) none;
+		border-radius: 6px;
+	}
+	
+	.table>tbody>tr>td {
+		border-top:none;
+	}
+	
+	.panel-body {
+		border-top:none;
+	}
+	
+	.panel>.panel-body+.table {
+		border-top:none;
+	}
+}
+
+.o_eportfolio_map {
+	margin-top: 6px;
+	padding: 20px 20px 2px 3px;
+	border-radius: 6px 10px 6px 0;
+	font-family: 'Century Gothic', 'Apple Gothic', sans-serif;
+}
+
+.o_eportfolio_map ul.nav-tabs li:not(.active) a {
+	background-color: rgba(240,240,240,0.7);
+	border-radius: 4px 4px 0 0;
+}
+
+.o_ep_actualpage, .o_eportfolio_edit {
+	padding: floor($grid-gutter-width / 2);
+	background-color: #fff;
+}
+
+@import '_portfoliomaps/mixins';
+
+@import '_portfoliomaps/epmst_default';
+@import '_portfoliomaps/epmst_comic';
+@import '_portfoliomaps/epmst_leather';
+
+@import '_portfoliomaps/epmst_green';
+@import '_portfoliomaps/epmst_green2';
+@import '_portfoliomaps/epmst_green3';
+@import '_portfoliomaps/epmst_green4';
+
+@import '_portfoliomaps/epmst_red';
+@import '_portfoliomaps/epmst_red2';
+@import '_portfoliomaps/epmst_red3';
+@import '_portfoliomaps/epmst_red4';
+
+@import '_portfoliomaps/epmst_blue';
+@import '_portfoliomaps/epmst_blue2';
+@import '_portfoliomaps/epmst_blue3';
+@import '_portfoliomaps/epmst_blue4';

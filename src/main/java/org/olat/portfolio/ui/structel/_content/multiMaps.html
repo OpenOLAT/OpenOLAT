@@ -11,7 +11,7 @@
 	</div>
 #end
 
-<div class="b_eportfolio_maps container-fluid">
+<div class="o_eportfolio_maps container-fluid">
 	#foreach($map in $userMaps)
 	#set($viewLink = "viewLink$velocityCount")
 	#set($delLink = "deleteLink$velocityCount")
@@ -22,11 +22,11 @@
 	#set($index = ($velocityCount - 1))
 	#set($newRow = ($velocityCount % 3))
 	#if($map.getClass().getSimpleName() == "EPStructuredMapTemplate") #set($addTempStamp = "template") #end
-	<div class="col-sm-4 $!mapStyles.get($index) $!addTempStamp">	 
-		<div class="panel panel-default">
+	<div class="col-sm-4 $!addTempStamp">	 
+		<div class="panel o_map-$!mapStyles.get($index)">
 			<div class="panel-heading"><h4>$r.escapeHtml($map.title)</h4></div>
 			<div class="panel-body">$r.xssScan($map.shortenedDescription)</div>
-			<table class="table table-condensed table-striped"><tbody>
+			<table class="table table-condensed"><tbody>
 			#if ($owners.get($index)) <tr><td>$r.translate("map.owners", $r.escapeHtml($owners.get($index)))</td></tr> #end
 			<tr><td>$amounts.get($index)</td></tr>
 			#if ($deadLines.get($index)) <tr><td>$r.translate("map.deadline", "$r.formatDate($deadLines.get($index))")</td></tr> #end
