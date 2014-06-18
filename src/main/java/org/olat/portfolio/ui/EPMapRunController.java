@@ -54,6 +54,7 @@ import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.search.SearchServiceUIFactory;
 import org.olat.search.SearchServiceUIFactory.DisplayOption;
 import org.olat.search.ui.SearchInputController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -78,7 +79,10 @@ public class EPMapRunController extends BasicController implements Activateable2
 	private final boolean create;
 	private final Identity choosenOwner;
 	private final EPMapRunViewOption option;
-	private final EPFrontendManager ePFMgr;
+	@Autowired
+	private EPFrontendManager ePFMgr;
+	@Autowired
+	private PortfolioModule portfolioModule;
 	private Link createMapCalloutLink;
 	private CloseableCalloutWindowController mapCreateCalloutCtrl;
 
@@ -97,20 +101,20 @@ public class EPMapRunController extends BasicController implements Activateable2
 		this.create = create;
 		this.option = option;
 		this.choosenOwner = choosenOwner;
-		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		
-		Component viewComp = new Panel("empty");
-		PortfolioModule portfolioModule = CoreSpringFactory.getImpl(PortfolioModule.class);
+		Component viewComp;
 		if (portfolioModule.isEnabled()){
-			init(ureq);
-			viewComp = vC;
-		} 
+			viewComp = init(ureq);
+		} else {
+			viewComp = new Panel("empty");
+		}
 
 		putInitialPanel(viewComp);
 	}
 
-	private void init(UserRequest ureq) {
+	private VelocityContainer init(UserRequest ureq) {
 		vC = createVelocityContainer("mymapsmain");
+		vC.contextPut("overview", Boolean.TRUE);
 		if(create) {
 			createMapLink = LinkFactory.createButton("create.map", vC, this);	
 			createMapLink.setElementCssClass("o_sel_create_map");
@@ -141,14 +145,15 @@ public class EPMapRunController extends BasicController implements Activateable2
 		}
 		
 		
-		initTitle();
+		initTitle(vC);
 		removeAsListenerAndDispose(multiMapCtrl);
 		multiMapCtrl = new EPMultipleMapController(ureq, getWindowControl(), option, choosenOwner);
 		listenTo(multiMapCtrl);
 		vC.put("mapCtrl", multiMapCtrl.getInitialComponent());
+		return vC;
 	}
 	
-	private void initTitle() {
+	private void initTitle(VelocityContainer vC) {
 		String titleKey;
 		String descriptionKey;
 		switch(option) {
@@ -243,18 +248,20 @@ public class EPMapRunController extends BasicController implements Activateable2
 			if(event instanceof EPMapEvent) {
 				String cmd = event.getCommand();
 				if(EPStructureEvent.SELECT.equals(cmd)) {
-					if(createMapLink != null) {
-						createMapLink.setVisible(false);
-					}
+					toogleHeader(false);
 				} else if(EPStructureEvent.CLOSE.equals(cmd)) {
-					if(createMapLink != null) {
-						createMapLink.setVisible(true);
-					}
+					toogleHeader(true);
 				}
 			}
 		} else if (source == mapCreateCalloutCtrl && event == CloseableCalloutWindowController.CLOSE_WINDOW_EVENT) {
 			removeAsListenerAndDispose(mapCreateCalloutCtrl);
 			mapCreateCalloutCtrl = null;
+		}
+	}
+	
+	private void toogleHeader(boolean enable) {
+		if(vC != null) {
+			vC.contextPut("overview", new Boolean(enable));
 		}
 	}
 	

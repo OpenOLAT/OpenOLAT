@@ -86,13 +86,15 @@ public class EPAddElementsController extends BasicController {
 		super(ureq, wControl);
 		this.portfolioStructure = portStruct;
 		addLinkVC = createVelocityContainer("addLink");
-		addStructLink = LinkFactory.createCustomLink("popupLink", "add", "", Link.NONTRANSLATED, addLinkVC, this);
+		addStructLink = LinkFactory.createCustomLink("popupLink", "add", translate("addPopup.title"),
+				Link.BUTTON | Link.NONTRANSLATED, addLinkVC, this);
 		addStructLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		addStructLink.setVisible(false);
 
-		linkArtefactLink = LinkFactory.createCustomLink("linkArtefact", "link", "", Link.NONTRANSLATED, addLinkVC, this);
+		linkArtefactLink = LinkFactory.createCustomLink("linkArtefact", "link", translate("addArtefact"),
+				Link.BUTTON | Link.NONTRANSLATED, addLinkVC, this);
 		linkArtefactLink.setTooltip(translate("linkArtefact.tooltip"));
-		linkArtefactLink.setCustomEnabledLinkCSS("b_eportfolio_add_link b_eportfolio_link");
+		linkArtefactLink.setCustomEnabledLinkCSS("o_eportfolio_add_link o_eportfolio_link");
 		linkArtefactLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 
 		for (String key : typeSet) {
@@ -183,8 +185,10 @@ public class EPAddElementsController extends BasicController {
 
 	private void prepareAddLink(String type) {
 		addStructLink.setVisible(true);
-		addStructLink.setTooltip(translate("add." + type));
-		addStructLink.setCustomEnabledLinkCSS("b_eportfolio_add_link b_ep_" + type + "_icon");
+		String title = translate("add." + type);
+		addStructLink.setTooltip(title);
+		addStructLink.setCustomDisplayText(title);
+		addStructLink.setCustomEnabledLinkCSS("o_eportfolio_add_link o_ep_" + type + "_icon");
 	}
 
 	private void popUpAddArtefactBox(UserRequest ureq) {

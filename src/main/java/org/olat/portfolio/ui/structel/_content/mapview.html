@@ -1,17 +1,24 @@
-<div class="btn-toolbar" role="toolbar">
-#if($r.available("backLink"))
-	<div class="btn-group">$r.render("backLink")</div>
-#end	
-#if($r.available("map.editButton"))
-	<div class="b_eportfolio_edit_link btn-group pull-right">	
-		$r.render("map.editButton")
+#if($r.available("backLink") || $r.available("map.editButton"))
+<div class="o_toolbar" role="toolbar">
+	<div class="container-fluid">
+	#if($r.available("backLink"))
+		<ul class="o_tools o_tools_left">
+			<li><div class="btn-group">$r.render("backLink")</div></li>
+		</ul>
+	#end	
+	#if($r.available("map.editButton"))
+		<ul class="o_tools o_tools_right">
+			<li>$r.render("map.editButton")</li>
+		</ul>
+	#end
 	</div>
-#end
 </div>
+#end
+
 <div class="o_eportfolio_map o_map-$!style">
 	<div class="o_ep_relative"> ## needed for positioning
 		<div class="o_map_header">
-		<div class="o_struct_edit_btn">
+		<div class="o_struct_edit_btn pull-right">
 			#if(!$r.available("editor") && $r.available("addButton"))
 				<div class="o_eportfolio_add_link">$r.render("addButton")</div>
 			#end
@@ -21,9 +28,8 @@
 			#if($closed) 
 				<div class="o_artefact_closed"><span title=" $r.translate("map.is.closed.hint") ">&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
 			#end
-			<br/>
 		</div>
-		<h4>$r.escapeHtml($map.title)</h4>
+		<h1>$r.escapeHtml($map.title)</h1>
 	
 		#if(!$r.available("editor"))
 			<div class="o_eportfolio_mapdescr">$map.description</div>

@@ -1,7 +1,14 @@
 $bordercolor : #888;
 
 .o_eportfolio_maps .o_map-leather {
-	background: rgb(149, 115, 82) url('#{$o-images-path}portfolio/light-leather-tile.jpg');
+	background-color: rgb(149, 115, 82);
+	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(237,237,237, 0.5)), color-stop(100%, rgba(153,153,153, 0.5))), url('#{$o-images-path}portfolio/light-leather-tile.jpg'),;
+	background-image: -webkit-linear-gradient(top, rgba(237,237,237, 0.5), rgba(153,153,153, 0.5)), url('#{$o-images-path}portfolio/light-leather-tile.jpg');
+	background-image: -moz-linear-gradient(top, rgba(237,237,237, 0.5), rgba(153,153,153, 0.5)), url('#{$o-images-path}portfolio/light-leather-tile.jpg');
+	background-image: -ms-linear-gradient(top, rgba(237,237,237, 0.5), rgba(153,153,153, 0.5)), url('#{$o-images-path}portfolio/light-leather-tile.jpg');
+	background-image: -o-linear-gradient(top, rgba(237,237,237, 0.5), rgba(153,153,153, 0.5)), url('#{$o-images-path}portfolio/light-leather-tile.jpg');
+	background-image: linear-gradient(top, rgba(237,237,237, 0.5), rgba(153,153,153, 0.5)), url('#{$o-images-path}portfolio/light-leather-tile.jpg');
+	
 	font-family: Palatino, Georgia, serif;
 
 	border: 1px solid $bordercolor; 
@@ -13,7 +20,7 @@ $bordercolor : #888;
 	}
 	
 	.panel-body, td {
-		color: #C2A074;
+		color: #333;
 	}
 	
 	a {
@@ -22,11 +29,18 @@ $bordercolor : #888;
 }
 
 .o_eportfolio_map.o_map-leather {
+	background-color: rgb(149, 115, 82);
+	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(137,137,137, 0.5)), color-stop(100%, rgba(53,53,53, 0.5))), url('#{$o-images-path}portfolio/light-leather-tile.jpg'),;
+	background-image: -webkit-linear-gradient(top, rgba(137,137,137, 0.5), rgba(53,53,53, 0.5)), url('#{$o-images-path}portfolio/light-leather-tile.jpg');
+	background-image: -moz-linear-gradient(top, rgba(137,137,137, 0.5), rgba(53,53,53, 0.5)), url('#{$o-images-path}portfolio/light-leather-tile.jpg');
+	background-image: -ms-linear-gradient(top, rgba(137,137,137, 0.5), rgba(53,53,53, 0.5)), url('#{$o-images-path}portfolio/light-leather-tile.jpg');
+	background-image: -o-linear-gradient(top, rgba(137,137,137, 0.5), rgba(53,53,53, 0.5)), url('#{$o-images-path}portfolio/light-leather-tile.jpg');
+	background-image: linear-gradient(top, rgba(137,137,137, 0.5), rgba(53,53,53, 0.5)), url('#{$o-images-path}portfolio/light-leather-tile.jpg');
+
 	font-family: Palatino, Georgia, serif;
-	background: rgb(149, 115, 82) url('#{$o-images-path}portfolio/light-leather-tile.jpg');
 	
 	border: 1px solid $bordercolor; 
-	border-left: 3px solid transparentize(darken($bordercolor, 20%),0.2);
+	border-left: 3px solid transparentize(darken($bordercolor, 30%),0.2);
 	
 	.o_map_header {
 		h4, p, a, span, label {

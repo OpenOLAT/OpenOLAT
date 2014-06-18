@@ -1,13 +1,24 @@
 <div class="b_eportfolio">
+	#if($overview)	
 	<h4>$r.translate($title)</h4>
 	<div class="o_info">$r.translate($description)</div>
-	<div class="btn-toolbar" role="toolbar">
-		#if($r.available("search_input"))
-			<div class="b_eportfolio_fulltextsearch btn-group">$r.render("search_input")</div>
-		#end
+	#if($r.available("search_input") || $r.available("create.map"))
+	<div class="o_toolbar" role="toolbar">
+		<div class="container-fluid">
+			#if($r.available("search_input"))
+			<ul class="o_tools o_tools_left">
+				<li><div class="b_eportfolio_fulltextsearch btn-group">$r.render("search_input")</div></li>
+			</ul>
+			#end
 		#if($r.available("create.map"))
-			<div class="b_ep_add_artefact btn-group pull-right">$r.render("create.map")</div>
+			<ul class="o_tools o_tools_right">
+				<li><div class="b_ep_add_artefact btn-group pull-right">$r.render("create.map")</div></li>
+			</ul>
 		#end
+		</div>
 	</div>
+	#end
+	#end
+	
 	$r.render("mapCtrl") 
 </div>

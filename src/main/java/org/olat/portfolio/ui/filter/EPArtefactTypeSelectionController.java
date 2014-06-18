@@ -27,7 +27,6 @@ package org.olat.portfolio.ui.filter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -40,6 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.portfolio.EPArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -51,15 +51,13 @@ import org.olat.portfolio.PortfolioModule;
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
 public class EPArtefactTypeSelectionController extends FormBasicController {
-
+	@Autowired
 	private PortfolioModule portfolioModule;
 	private List<String> selectedTypeList;
 	private ArrayList<MultipleSelectionElement> typeCmpList;
 
 	public EPArtefactTypeSelectionController(UserRequest ureq, WindowControl wControl, List<String> selectedTypeList) {
 		super(ureq, wControl);
-		
-		portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
 		this.selectedTypeList = selectedTypeList;
 		initForm(ureq);
 	}

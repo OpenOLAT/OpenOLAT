@@ -50,9 +50,9 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
  */
 public class EPTagBrowseController extends BasicController {
 	
-	private String activeCSS = "b_toggle b_small b_on";
-	private String inactiveCSS = "b_toggle b_small";
-	private String disabledCSS = "b_toggle b_small";
+	private String activeCSS = "tag label label-info b_on";
+	private String inactiveCSS = "tag label label-info";
+	private String disabledCSS = "tag label label-info";
 
 	private final VelocityContainer mainVc;
 	private final EPFrontendManager ePFMgr;

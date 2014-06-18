@@ -46,10 +46,13 @@
 }
 
 .o_eportfolio_map {
-	margin-top: 6px;
-	padding: 20px 20px 2px 3px;
+	padding: 0 20px 2px 3px;
 	border-radius: 6px 10px 6px 0;
 	font-family: 'Century Gothic', 'Apple Gothic', sans-serif;
+}
+
+.o_map_header {
+	padding-left: 5px;
 }
 
 .o_eportfolio_map ul.nav-tabs li:not(.active) a {
@@ -57,9 +60,21 @@
 	border-radius: 4px 4px 0 0;
 }
 
+.o_eportfolio_edit {
+	border-radius: 4px 4px 0 0;
+}
+
 .o_ep_actualpage, .o_eportfolio_edit {
 	padding: floor($grid-gutter-width / 2);
 	background-color: #fff;
+}
+
+.o_ep_content {
+	margin-top: floor($grid-gutter-width / 2);
+}
+
+.o_ep_filter .o_date.form-inline .form-group {
+		margin-left: 8px;
 }
 
 @import '_portfoliomaps/mixins';

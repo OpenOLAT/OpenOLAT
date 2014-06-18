@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -52,6 +51,7 @@ import org.olat.portfolio.EPArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.EPFilterSettings;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -77,10 +77,12 @@ public class PortfolioFilterController extends FormBasicController {
 	private FormLayoutContainer tagFlc;
 	private FormLayoutContainer typeFlc;
 	private FormLayoutContainer dateFlc;
+	@Autowired
 	private EPFrontendManager ePFMgr;
+	@Autowired
+	private PortfolioModule portfolioModule;
 	private List<String> selectedTagsList;
 	private ArrayList<FormToggle> tagCmpList;
-	private PortfolioModule portfolioModule;
 	private List<String> selectedTypeList;
 	private ArrayList<FormToggle> typeCmpList;
 	private EPArtefactTypeSelectionController moreTypesCtlr;
@@ -100,8 +102,6 @@ public class PortfolioFilterController extends FormBasicController {
 
 	public PortfolioFilterController(UserRequest ureq, WindowControl wControl, EPFilterSettings filterSettings) {
 		super(ureq, wControl);
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
-		portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
 		if (filterSettings == null){
 			this.filterSettings = new EPFilterSettings();
 		} else {

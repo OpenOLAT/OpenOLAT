@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -38,6 +37,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.portfolio.manager.EPFrontendManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -50,13 +50,12 @@ import org.olat.portfolio.manager.EPFrontendManager;
 public class EPArtefactTagSelectionController extends FormBasicController {
 
 	private List<String> selectedTagsList;
+	@Autowired
 	private EPFrontendManager ePFMgr;
 	private MultipleSelectionElementImpl chkBox;
 
 	public EPArtefactTagSelectionController(UserRequest ureq, WindowControl wControl, List<String> selectedTagsList) {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
-
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		this.selectedTagsList = selectedTagsList;
 		initForm(ureq);		
 	}

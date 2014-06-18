@@ -21,7 +21,6 @@ package org.olat.portfolio.ui.structel;
 
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -62,6 +61,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.DisplayPortraitController;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -73,20 +73,23 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
 public class EPMapViewController extends BasicController implements Activateable2 {
+
+	private Link editButton, backLink, submitAssessLink;
+	private final VelocityContainer mainVc;
 	
-	private PortfolioStructureMap map;
-	private final EPFrontendManager ePFMgr;
 	private EPMultiplePageController pageCtrl;
-	private Link editButton;
-	private Link backLink;
-	private Link submitAssessLink;
 	private EPStructureTreeAndDetailsEditController editCtrl;
 	private DialogBoxController confirmationSubmissionCtr;
 	private final boolean back;
+	
+	private PortfolioStructureMap map;
 	private EPSecurityCallback secCallback;
 	private LockResult lockEntry;
 	
-	private final VelocityContainer mainVc;
+	@Autowired
+	private EPFrontendManager ePFMgr;
+	@Autowired
+	private RepositoryManager repositoryManager;
 
 	public EPMapViewController(UserRequest ureq, WindowControl control, PortfolioStructureMap initialMap, boolean back,
 			boolean preview, EPSecurityCallback secCallback) {
@@ -96,8 +99,6 @@ public class EPMapViewController extends BasicController implements Activateable
 		this.secCallback = secCallback;
 		
 		mainVc = createVelocityContainer("mapview");
-
-		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		
 		// if this is a structured map (assigned from a template) do a sync first
 		if (map instanceof EPStructuredMap && (map.getStatus() == null || !map.getStatus().equals(StructureStatusEnum.CLOSED) )){
@@ -141,6 +142,7 @@ public class EPMapViewController extends BasicController implements Activateable
 		mainVc.remove(mainVc.getComponent("map.editButton"));
 		if(secCallback.canEditStructure()) {
 			editButton = LinkFactory.createButton("map.editButton", mainVc, this);
+			editButton.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 			if(Boolean.FALSE.equals(editMode)) {
 				editButton.setCustomDisplayText(translate("map.editButton.on"));
 			} else {
@@ -158,7 +160,7 @@ public class EPMapViewController extends BasicController implements Activateable
 		
 		if(map instanceof EPStructuredMap) {
 			EPTargetResource resource = ((EPStructuredMap)map).getTargetResource();
-			RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(resource.getOLATResourceable(), false);
+			RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(resource.getOLATResourceable(), false);
 			if(repoEntry != null) {
 				mainVc.contextPut("courseName", StringHelper.escapeHtml(repoEntry.getDisplayname()));
 				String url = Settings.getServerContextPathURI();

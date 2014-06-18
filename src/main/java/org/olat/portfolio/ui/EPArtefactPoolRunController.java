@@ -21,7 +21,6 @@ package org.olat.portfolio.ui;
 
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -57,6 +56,7 @@ import org.olat.portfolio.ui.filter.EPFilterSelectController;
 import org.olat.portfolio.ui.filter.PortfolioFilterChangeEvent;
 import org.olat.portfolio.ui.filter.PortfolioFilterController;
 import org.olat.portfolio.ui.filter.PortfolioFilterEditEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Presents an overview of all artefacts of an user. 
@@ -68,7 +68,10 @@ import org.olat.portfolio.ui.filter.PortfolioFilterEditEvent;
 public class EPArtefactPoolRunController extends BasicController implements Activateable2 {
 
 	private VelocityContainer vC;
+	@Autowired
 	private EPFrontendManager ePFMgr;
+	@Autowired
+	private PortfolioModule portfolioModule;
 	private EPFilterSettings filterSettings = new EPFilterSettings();
 	private EPAddArtefactController addArtefactCtrl;
 	private boolean artefactChooseMode;
@@ -94,8 +97,7 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 		this.artefactChooseMode = artefactChooseMode;
 		Component viewComp = new Panel("empty");
 		Component filterPanel = new Panel("filter");
-		PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+
 		if (portfolioModule.isEnabled()) {
 			init(ureq);
 			viewComp = vC;
