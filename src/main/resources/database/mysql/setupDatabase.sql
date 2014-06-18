@@ -1772,7 +1772,6 @@ alter table o_bs_group_member ENGINE = InnoDB;
 alter table o_re_to_group ENGINE = InnoDB;
 alter table o_bs_grant ENGINE = InnoDB;
 alter table o_repositoryentry_cycle ENGINE = InnoDB;
-alter table o_repositorymetadata ENGINE = InnoDB;
 alter table o_lti_outcome ENGINE = InnoDB;
 alter table o_user ENGINE = InnoDB;
 alter table o_userproperty ENGINE = InnoDB;
