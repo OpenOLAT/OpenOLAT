@@ -250,6 +250,7 @@
 												<include>${basedir}/target/jquery/jquery/tagsinput/bootstrap-tagsinput.min.css</include>
 												<include>${basedir}/target/jquery/jquery/fullcalendar/fullcalendar.min.css</include>
 												<include>${basedir}/target/jquery/jquery/imagecrop/jquery.imagecrop.min.css</include>
+												<include>${basedir}/target/jquery/jquery/ui/jquery-ui-1.10.4.custom.min.css</include>
 											</includes>
 										</aggregation>
 									</aggregations>
