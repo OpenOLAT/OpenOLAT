@@ -1,8 +1,9 @@
-@charset "UTF-8";
-
-//overwrite jquery ui
+/*
+ * Overwrite jquery ui dialog and datepicket
+ */
+ 
 .ui-widget {
-	font-family: $defaultfont;
+	font-family: $font-family-base;
 	font-size: 100%;
 }
 
@@ -17,11 +18,11 @@
 }
 
 .ui-dialog {
-	@include o-box-shadow(0px,0px,6px,rgba(0,0,0,0.3));
+	@include box-shadow(0px 1px 5px -1px rgba(0,0,0,.15));
 	
 	.ui-widget-header {
-		.ui-icon-closethick {
-			background: #fff url('../openolat/images/close.png') no-repeat center center;
+		.ui-icon-closethick:before {
+			content: $fa-var-times;	
 		}
 		
 		.ui-button.ui-corner-all {
@@ -41,11 +42,11 @@
 }
 
 .ui-dialog.ui-corner-all {
-	@include o-border-radius($di_border_radius);
+	border-radius: $alert-border-radius;
 }
 
 .ui-dialog.ui-widget-content {
-	border-color: $basecolor;
+	border: 1px solid transparent;
 }
 
 .ui-dialog.o_modal-ui div.ui-dialog-buttonpane {
@@ -56,19 +57,37 @@
  * datepicker
  */
 .ui-datepicker {
-	@include o-box-shadow(0px,0px,6px,rgba(0,0,0,0.3));
+	@include box-shadow(0px 1px 5px -1px rgba(0,0,0,.15));
 	
 	.ui-widget-header {
-		.ui-datepicker-prev.ui-corner-all, .ui-datepicker-next.ui-corner-all {
+		.ui-corner-all, .ui-datepicker-next.ui-corner-all {
 			border: none !important;
 			background: #fff !important;
 		}
 
-		.ui-icon.ui-icon-circle-triangle-e {
-			background: #fff url('../openolat/images/arrow_right_big.png') no-repeat center center;
+		.ui-icon.ui-icon-circle-triangle-e:before {
+			content: $fa-var-arrow-right;
+			font-weight: normal;
+			color: black;
 		}
-		.ui-icon.ui-icon-circle-triangle-w {
-			background: #fff url('../openolat/images/arrow_left_big.png') no-repeat center center;
+		.ui-icon.ui-icon-circle-triangle-w:before {
+			content: $fa-var-arrow-left;
+			font-weight: normal;
+			color: black;
+		}
+		
+		.ui-icon.ui-icon-circle-triangle-e, .ui-icon.ui-icon-circle-triangle-w {
+			font-family: 'FontAwesome';
+			display:inline-block;
+			background-image:none;
+			background-position:0 0;
+			font-weight: normal;
+			text-indent:0;
+			color: white;
+		}
+		
+		.ui-datepicker .ui-datepicker-prev-hover, .ui-datepicker .ui-datepicker-next-hover {
+			top: 2px;
 		}
 	}
 	
@@ -77,63 +96,16 @@
 	}
 	
 	.ui-state-highlight, .ui-widget-content .ui-state-highlight {
-		border: 1px solid $basecolor_light;
-		background: $basecolor_ultra_light;
+		border: 1px solid $btn-primary-border;
+		background: $btn-primary-bg;
+		color: $btn-primary-color;
 	}
 }
 
 .ui-datepicker.ui-corner-all {
-	@include o-border-radius($di_border_radius);
+	border-radius: $alert-border-radius;
 }
 
 .ui-datepicker.ui-widget-content {
-	border-color: $basecolor;
+	border: 1px solid transparent;
 }
-
-/* calendar */
-.fc-state-highlight {
-	background: $selectcolor_ultra_light;
-}
-
-/* image crop */
-div#image-crop-overlay {
-	background-color : #ffffff;
-	overflow : hidden;
-}
-
-div#image-crop-outline {
-	background : #ffffff url('outline.gif');
-	overflow : hidden;
-}
-
-div#image-crop-size-hint-background {
-	background-color : #000000;
-}
-
-span#image-crop-size-hint-foreground {
-	color : #ffffff;
-	font-family : 'Verdana', 'Geneva', sans-serif;
-	font-size : 12px;
-	text-shadow : 0 -1px 0 #000000;
-}
-
-div#image-crop-preview-holder {
-	-moz-box-shadow : 0 0 5px #000000;
-	-webkit-box-shadow : 0 0 5px #000000;
-	border : 3px #ef2929 solid;
-	box-shadow : 0 0 5px #000000;
-}
-
-img#image-crop-preview {
-	border : none;
-}
-
-div.image-crop-resize-handler {
-	background-color : #000000;
-	border : 1px #ffffff solid;
-	height : 7px;
-	overflow : hidden;
-	width : 7px;
-}
-
-

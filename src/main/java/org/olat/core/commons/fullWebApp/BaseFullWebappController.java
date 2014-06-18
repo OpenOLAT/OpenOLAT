@@ -891,9 +891,13 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	
 	private void popTheTabState(UserRequest ureq) {
 		if(siteAndTabs.isEmpty() && sites != null) {
-			SiteInstance home = sites.get(0);
-			BornSiteInstance bs = siteToBornSite.get(home);
-			doActivateSite(home, bs.getGuiStackHandle());
+			SiteInstance firstSite = sites.get(0);
+			BornSiteInstance bs = siteToBornSite.get(firstSite);
+			if(bs == null) {
+				activateSite(firstSite, ureq, null, false);
+			} else {
+				doActivateSite(firstSite, bs.getGuiStackHandle());
+			}
 		} else if(!siteAndTabs.isEmpty()) {
 			TabState state = siteAndTabs.remove(siteAndTabs.size() - 1);
 			if(state.getSite() != null) {
