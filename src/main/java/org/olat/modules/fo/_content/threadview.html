@@ -1,31 +1,28 @@
 #if($r.available("backLinkLT"))
-<p>
+<div class="o_block">
 	$r.render("backLinkLT")
-</p>
+</div>
 #end
-<div class="o_forum b_floatbox">
-	<div class="b_floatbox">
-		#if($r.available("threadViewSwitch"))
-			$r.render("threadViewSwitch")
-		#end
+<div class="o_forum">
+	<div class="clearfix">
 		#if($filteredForLastName)
-		<h4>$r.translate("filter.results.title") $filteredForFirstName $filteredForLastName</h4>
-		#else
-		<h4>$r.translate("header.msgdetails")</h4>
+		<h3>$r.translate("filter.results.title") $filteredForFirstName $filteredForLastName</h3>
+		#end
+		<div class="pull-right">
+			#if($r.available("threadViewSwitch"))
+				$r.render("threadViewSwitch")
+			#end
+		</div>		
+		#if ($security.mayArchiveForum())
+			$r.render("archive.thread")
 		#end
 	</div>
-	#if ($security.mayArchiveForum())
-		$r.render("archive.thread")
-	#end
-	
 	#if ($messages.isEmpty())
-		<div class="b_table_empty b_clearfix">
-			#if ($mode == "marked")
-			<p>$r.translate("msg.no_marked_message")</p>
-			#elseif ($mode == "new")
-			<p>$r.translate("msg.no_new_message")</p>
-			#end
-		</div>
+		#if ($mode == "marked")
+		<p class="o_important">$r.translate("msg.no_marked_message")</p>
+		#elseif ($mode == "new")
+		<p class="o_important">$r.translate("msg.no_new_message")</p>
+		#end
 	#end
 	
 #foreach ($message in $messages)
@@ -33,116 +30,113 @@
 	#if($threadMode)
 		#set ( $deepnessFromMap = $msgDeepMap.get($message.get("id")) )
 	#end
-	
-
-	#if(!$isClosed && $security.mayEditMessageAsModerator() && $message.get("isThreadtop"))
-		$r.render("close.thread")
-	#elseif($security.mayEditMessageAsModerator() && $message.get("isThreadtop"))
-		$r.render("open.thread")
-	#end
-	
-	#if(!$isHidden && $security.mayEditMessageAsModerator() && $message.get("isThreadtop"))
-		$r.render("hide.thread")
-	#elseif($security.mayEditMessageAsModerator() && $message.get("isThreadtop")) 
-		$r.render("show.thread")
+	#if($security.mayEditMessageAsModerator() && $message.get("isThreadtop"))
+	<div class="o_block">	
+		#if(!$isClosed)
+			$r.render("close.thread")
+		#else
+			$r.render("open.thread")
+		#end
+		
+		#if(!$isHidden)
+			$r.render("hide.thread")
+		#else
+			$r.render("show.thread")
+		#end
+	</div>
 	#end
 	
 	#set( $count = $velocityCount - 1)
-	<div #if($threadMode) style="margin-left: ${deepnessFromMap}em" #end class="o_forum_message #if($message.get("newMessage")) o_forum_message_new #end b_clearfix" id="o_forum_message_${message.get("id")}">
-		<div class="o_forum_message_header_wrapper" >
-			<div class="o_forum_message_header b_clearfix">
-				<div class="o_forum_message_title">
-					#if($r.available($message.get("ePFAddComponentName")))<div class="b_float_right">$r.render($message.get("ePFAddComponentName"))</div>#end
-					#if($r.available("mark_${count}"))<div class="b_float_right b_mark">$r.render("mark_${count}")</div>#end
-					<div class="b_float_right b_small" #if($message.get("newMessage")) title="$r.translateInAttribute("message.unread")" #end>
-						$r.translate("msg.creationdate") $message.get("date")
-					</div>
-					<strong>
-						$r.escapeHtml($message.get("title"))
-					</strong>
-				</div>
-			</div>
-		</div>
-		<div class="o_forum_message_content_wrapper ">
-			<div class="o_forum_message_content b_clearfix ">
-				<div class="o_forum_message_creator">
-					<strong>$r.escapeHtml($message.get("firstname")) $r.escapeHtml($message.get("lastname"))</strong>
-					<br />
-					<br />
-					#if($r.available($message.get("portraitComponentVCName")))
-						$r.render($message.get("portraitComponentVCName"))
+	<div #if($threadMode) style="margin-left: ${deepnessFromMap}em" #end class="o_forum_message o_block_large_bottom #if($message.get("newMessage")) o_forum_message_new #end" id="o_forum_message_${message.get("id")}">
+		<div class="o_forum_message_header clearfix">
+			#if($r.available($message.get("ePFAddComponentName")))<div class="o_ep_collect">$r.render($message.get("ePFAddComponentName"))</div>#end
+			#if($r.available("mark_${count}"))<div class="o_mark">$r.render("mark_${count}")</div>#end
+
+			#if($r.available($message.get("portraitComponentVCName")))
+				$r.render($message.get("portraitComponentVCName"))
+			#end
+				<h4 class="o_forum_message_title">
+					$r.escapeHtml($message.get("title"))
+					 #if(!$message.get("newMessage")) <span class="o_newindicator" title="$r.translateInAttribute("message.unread")"><i class="o_icon o_icon_new" ></i><span class="o_label">$r.translate("new")</span></span>#end
+				</h4>
+				<div class="o_author">
+					#if($r.available("vc_${count}"))
+						$r.render("vc_${count}")
+					#else							
+						$r.escapeHtml($message.get("firstname")) $r.escapeHtml($message.get("lastname"))
 					#end
+				</div>
+				<div class="o_date">
+					$r.translate("msg.creationdate") $message.get("date")
 				</div>
 				
-				<div class="o_forum_message_body">
-					<div class="b_clearfix b_floatscrollbox">
-						$r.formatLatexFormulas($message.get("body"))						
-					</div>
-					#if ($message.get("hasAttachments"))
-						<div class="o_attachments">
-							<strong>$r.translate("attachments"):</strong>
-							<ul class="list-inline">
-							#foreach( $attachment in $message.get("attachments") )
-								#set($fname = $attachment.getName())
-								#set( $fsize = $attachment.getSize() / 1024 )
-								<li class="o_attachment">
-									<a href="$r.commandURI("attachment_${velocityCount}_${count}")$fname" target="_blank">
-										<div class="o_filename">
-											$r.escapeHtml($fname) ($fsize KB)
-										</div>
-										#if ($attachment.getMetaInfo() && $attachment.getMetaInfo().isThumbnailAvailable())										
-										<img src="${thumbMapper}/$count/$attachment.getMetaInfo().getUUID()" class="img-thumbnail" title="$r.escapeHtml($r.translate("msg.attachment.preview", "$fname"))" class=""/>
-										#end
-								</a>		
-								</li>
-							#end 
-							</ul>
-						</div>
-					#end
+				#if(($message.get("isModified")) || ($message.get("isMoved")))
+				<div class="o_modified">
+					#if($message.get("isModified"))
+			   			$r.translate("msg.modified"): $r.escapeHtml($message.get("modfname")) $r.escapeHtml($message.get("modlname")) $message.get("modified")
+			   		#end
+			   		#if($message.get("isMoved"))
+			   			$r.translate("msg.moved")
+		   			#end
+			   	</div>
+				#end
+				
+		</div>
+		<div class="o_forum_message_body">
+			<div class="clearfix o_scrollblock">
+				$r.formatLatexFormulas($message.get("body"))						
+			</div>
+		</div>
+
+		<div class="o_forum_message_actions o_button_group">
+			#if($r.available("open_in_thread_${count}"))
+			$r.render("open_in_thread_${count}")
+			#end
+
+			#if ((($message.get("nOfCh") == 0 && $message.get("uIsMsgC") == true) || ($security.mayDeleteMessageAsModerator())) && !$message.get("isThreadClosed"))
+			$r.render("dl_${count}")
+			#end
+			#if ((($message.get("nOfCh") == 0 && $message.get("uIsMsgC") == true) || ($security.mayEditMessageAsModerator())) && !$message.get("isThreadClosed"))
+			$r.render("ed_${count}")
+			#end
 			
-					#if(($message.get("isModified")) || ($message.get("isMoved")))
-						<div class="o_forum_message_modified">
-							#if($message.get("isModified"))
-					   			$r.translate("msg.modified"): $r.escapeHtml($message.get("modfname")) $r.escapeHtml($message.get("modlname")) $message.get("modified")
-					   		#end
-					   		#if($message.get("isMoved"))
-					   			$r.translate("msg.moved")
-				   			#end
-					   	</div>
-				   	#else
-						<div style="clear:both; height: 1px">&nbsp;</div>	   	
-					#end
-				</div>
-			</div>
+			#if ($security.mayReplyMessage() && !$message.get("isThreadClosed"))
+				$r.render("qt_${count}")
+				$r.render("rp_${count}")
+			#end
+			#if ($security.mayEditMessageAsModerator() && !$message.get("isThreadtop") && !$message.get("isThreadClosed"))
+				$r.render("split_${count}")
+			#end
+			#if ($security.mayEditMessageAsModerator() && !$message.get("isThreadtop") && !$message.get("isThreadClosed"))
+				$r.render("move_${count}")
+			#end
 		</div>
-
-		<div class="o_forum_message_footer_wrapper b_clearfix">
-			<div class="o_forum_message_footer">
-				<div class="o_forum_message_actions">
-					#if($r.available("open_in_thread_${count}"))
-					$r.render("open_in_thread_${count}")
-					#end
-
-					#if ((($message.get("nOfCh") == 0 && $message.get("uIsMsgC") == true) || ($security.mayDeleteMessageAsModerator())) && !$message.get("isThreadClosed"))
-					$r.render("dl_${count}")
-					#end
-					#if ((($message.get("nOfCh") == 0 && $message.get("uIsMsgC") == true) || ($security.mayEditMessageAsModerator())) && !$message.get("isThreadClosed"))
-					$r.render("ed_${count}")
-					#end
-					
-					#if ($security.mayReplyMessage() && !$message.get("isThreadClosed"))
-						$r.render("qt_${count}")
-						$r.render("rp_${count}")
-					#end
-					#if ($security.mayEditMessageAsModerator() && !$message.get("isThreadtop") && !$message.get("isThreadClosed"))
-						$r.render("split_${count}")
-					#end
-					#if ($security.mayEditMessageAsModerator() && !$message.get("isThreadtop") && !$message.get("isThreadClosed"))
-						$r.render("move_${count}")
-					#end
-				</div>
-			</div>
+		
+		#if ($message.get("hasAttachments"))
+		<div class="o_forum_message_attachments">
+			<h5>$r.translate("attachments"):</h5>
+			<ul class="list-inline">
+			#foreach( $attachment in $message.get("attachments") )
+				#set($fname = $attachment.getName())
+				<li class="o_attachment">
+					<a href="$r.commandURI("attachment_${velocityCount}_${count}")$fname" target="_blank">
+						<div class="o_filename">
+							$r.escapeHtml($fname)
+						</div>
+						<div class="o_size">
+							<i class="o_icon o_icon-fw $r.getFiletypeIconCss($fname)"></i>
+							 $r.formatBytes($attachment.getSize())
+						</div>
+						#if ($attachment.getMetaInfo() && $attachment.getMetaInfo().isThumbnailAvailable())										
+						<img src="${thumbMapper}/$message.get("id")/$attachment.getMetaInfo().getUUID()/$fname" class="img-thumbnail" title="$r.escapeHtml("$fname")" class=""/>
+						<i class="o_icon o_icon-lg o_icon_enlarge"></i>
+						#end
+				</a>		
+				</li>
+			#end 
+			</ul>
 		</div>
+		#end
 	</div>
 #end
 	

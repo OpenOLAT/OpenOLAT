@@ -363,7 +363,7 @@ public class ListRenderer {
 		if (!isContainer) {
 			// append filesize
 			sb.append("<span class='text-muted small'>");
-			sb.append(StringHelper.formatMemory(leaf.getSize()));
+			sb.append(Formatter.formatBytes(leaf.getSize()));
 			sb.append("</span>");
 		}
 		sb.append("</td><td>");

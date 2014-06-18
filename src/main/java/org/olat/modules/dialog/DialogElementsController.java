@@ -62,7 +62,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.StringHelper;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.Quota;
@@ -270,7 +270,7 @@ public class DialogElementsController extends BasicController {
 					// get size of file
 					OlatRootFolderImpl forumContainer = getForumContainer(recentDialogElement.getForumKey());
 					VFSLeaf vl = (VFSLeaf) forumContainer.getItems().get(0);
-					String fileSize = StringHelper.formatMemory(vl.getSize());
+					String fileSize = Formatter.formatBytes(vl.getSize());
 
 					// new dialog element
 					filename = ((FolderEvent) event).getFilename();
@@ -316,7 +316,7 @@ public class DialogElementsController extends BasicController {
 					VFSManager.copyContent(vl, copyVl);
 					
 					// get size of file
-					String fileSize = StringHelper.formatMemory(copyVl.getSize());
+					String fileSize = Formatter.formatBytes(copyVl.getSize());
 
 					DialogElement element = new DialogElement();
 					element.setAuthor(recentDialogElement.getAuthor());
@@ -428,7 +428,7 @@ public class DialogElementsController extends BasicController {
 	public static String getFileSize(Long forumKey){
 		OlatRootFolderImpl forumContainer = getForumContainer(forumKey);
 		VFSLeaf vl = (VFSLeaf) forumContainer.getItems().get(0);
-		return StringHelper.formatMemory(vl.getSize());
+		return Formatter.formatBytes(vl.getSize());
 	}
 
 	/**

@@ -176,18 +176,6 @@ public class StringHelper {
 	}
 
 	/**
-	 * @param mem
-	 * @return formatted memory
-	 */
-	public static String formatMemory(long mem) {
-		long kb = mem / 1024;
-		long mb = kb / 1024;
-		if (mb > 0) return mb + " MB";
-		else if (kb > 0) return kb + " KB";
-		else return mem + " B";
-	}
-
-	/**
 	 * @param f
 	 * @param fractionDigits
 	 * @return formatted float

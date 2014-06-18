@@ -60,6 +60,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailBundle;
@@ -319,7 +320,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 			if (StringHelper.containsNonWhitespace(author)) {
 				appendMetadata("mf.author", author, sb);
 			}
-			String size = StringHelper.formatMemory(file.getSize());
+			String size = Formatter.formatBytes(file.getSize());
 			appendMetadata("mf.size", size, sb);
 			long lastModifiedDate = infos.getLastModified();
 			if (lastModifiedDate > 0) {

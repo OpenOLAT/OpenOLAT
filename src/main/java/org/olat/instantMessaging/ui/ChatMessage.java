@@ -33,7 +33,7 @@ public class ChatMessage {
 	private final String from;
 	private final Long fromKey;
 	private final String body;
-	private String avatarKey;
+	private Long avatarKey;
 	
 	public ChatMessage(String creationDate, String from, Long fromKey, String body,
 			boolean first, boolean anonym) {
@@ -78,14 +78,14 @@ public class ChatMessage {
 	}
 
 	/**
-	 * The key to the avatar icon or :NA: if no avatar icon is available
+	 * The key to the avatar icon or -1 if no avatar icon is available
 	 * @return
 	 */
-	public String getAvatarKey() {
+	public Long getAvatarKey() {
 		return avatarKey;
 	}
 
-	public void setAvatarKey(String avatarKey) {
+	public void setAvatarKey(Long avatarKey) {
 		this.avatarKey = avatarKey;
 	}
 

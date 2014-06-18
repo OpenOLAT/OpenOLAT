@@ -61,7 +61,7 @@ public class ForumThreadViewModeController extends FormBasicController {
 	 */
 	public ForumThreadViewModeController(UserRequest ureq, WindowControl control, String startingViewMode) {
 		super(ureq, control);
-		setFormStyle("o_forum_switch b_float_right");
+		setFormStyle("o_forum_switch");
 		this.startingViewMode = startingViewMode;
 		initForm(ureq);
 	}

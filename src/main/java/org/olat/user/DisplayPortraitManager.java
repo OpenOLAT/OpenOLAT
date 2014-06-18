@@ -27,6 +27,7 @@ package org.olat.user;
 
 import java.io.File;
 
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.image.ImageService;
@@ -53,6 +54,8 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	private static final String PORTRAIT_BIG_FILENAME = "portrait_big";
 	private static final String PORTRAIT_SMALL_FILENAME = "portrait_small";
 	// The following class names refer to CSS class names in olat.css 
+	public static final String AVATAR_BIG_CSS_CLASS = "o_portrait_avatar";
+	public static final String AVATAR_SMALL_CSS_CLASS = "o_portrait_avatar_small";
 	public static final String DUMMY_BIG_CSS_CLASS = "o_portrait_dummy";
 	public static final String DUMMY_SMALL_CSS_CLASS = "o_portrait_dummy_small";
 	public static final String DUMMY_FEMALE_BIG_CSS_CLASS = "o_portrait_dummy_female_big";
@@ -83,13 +86,19 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	public MediaResource getSmallPortraitResource(String username) {
 		return getPortraitResource(username, PORTRAIT_SMALL_FILENAME);
 	}
+	public MediaResource getSmallPortraitResource(Long identityKey) {
+		return getPortraitResource(identityKey, PORTRAIT_SMALL_FILENAME);
+	}
 	
-	public MediaResource getBigPortraitResource(String username) {
-		return getPortraitResource(username, PORTRAIT_BIG_FILENAME);
+	public MediaResource getBigPortraitResource(String String) {
+		return getPortraitResource(String, PORTRAIT_BIG_FILENAME);
+	}
+	public MediaResource getBigPortraitResource(Long identityKey) {
+		return getPortraitResource(identityKey, PORTRAIT_BIG_FILENAME);
 	}
 	
 	/**
-	 * 
+	 * Get the portrait media resource by identity name (username)
 	 * @param identity
 	 * @return imageResource portrait
 	 */
@@ -101,6 +110,21 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 		}
 		return imageResource;
 	}
+
+	/**
+	 * Alternate method to get the portrait resource by identity key. 
+	 * @param identityKey
+	 * @param portraitName
+	 * @return
+	 */
+	private MediaResource getPortraitResource(Long identityKey, String portraitName) {
+		Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey);
+		if (identity != null) {			
+			return getPortraitResource(identity.getName(), portraitName);
+		}
+		return null;
+	}
+
 	
 	public File getSmallPortrait(String username) {
 		return getPortraitFile(username, PORTRAIT_SMALL_FILENAME);

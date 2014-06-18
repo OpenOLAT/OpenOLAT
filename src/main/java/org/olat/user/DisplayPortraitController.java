@@ -30,7 +30,6 @@ import java.io.File;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -107,7 +106,6 @@ public class DisplayPortraitController extends BasicController {
 		
 		File portrait = null;
 		if(displayPortraitImage){
-			ImageComponent ic = null;
 			
 			GenderPropertyHandler genderHander = (GenderPropertyHandler) UserManager.getInstance().getUserPropertiesConfig().getPropertyHandler(UserConstants.GENDER);
 			String gender = "-"; // use as default
@@ -117,7 +115,9 @@ public class DisplayPortraitController extends BasicController {
 			
 			if (useLarge){
 				portrait = DisplayPortraitManager.getInstance().getBigPortrait(portraitIdent.getName());
-				if (gender.equals("-")) {
+				if (portrait != null) {
+					myContent.contextPut("portraitCssClass", DisplayPortraitManager.AVATAR_BIG_CSS_CLASS);					
+				} else if (gender.equals("-")) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_BIG_CSS_CLASS);
 				} else if (gender.equals("male")) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_MALE_BIG_CSS_CLASS);
@@ -126,7 +126,9 @@ public class DisplayPortraitController extends BasicController {
 				}
 			} else {
 				portrait = DisplayPortraitManager.getInstance().getSmallPortrait(portraitIdent.getName());
-				if (gender.equals("-")) {
+				if (portrait != null) {
+					myContent.contextPut("portraitCssClass", DisplayPortraitManager.AVATAR_SMALL_CSS_CLASS);					
+				} else if (gender.equals("-")) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_SMALL_CSS_CLASS);
 				} else if (gender.equals("male")) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_MALE_SMALL_CSS_CLASS);
@@ -136,9 +138,9 @@ public class DisplayPortraitController extends BasicController {
 			}
 			
 			if (portrait != null){
-				ic = new ImageComponent(ureq.getUserSession(), "image");
-				ic.setMedia(portrait);
-				myContent.put("image", ic);
+				UserAvatarMapper mapper = new UserAvatarMapper(useLarge);
+				String mapperPath = registerMapper(ureq, mapper);
+				myContent.contextPut("mapperUrl", mapper.createPathFor(mapperPath, portraitIdent));
 			}
 		}
 		
@@ -159,22 +161,30 @@ public class DisplayPortraitController extends BasicController {
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == myContent) {
 			if (event.getCommand().equals("showuserinfo")) {
-				ControllerCreator ctrlCreator = new ControllerCreator() {
-					public Controller createController(UserRequest lureq, WindowControl lwControl) {
-						return new UserInfoMainController(lureq, lwControl, portraitIdent);
-					}					
-				};
-				//wrap the content controller into a full header layout
-				ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, ctrlCreator);
-				//open in new browser window
-				PopupBrowserWindow pbw = getWindowControl().getWindowBackOffice().getWindowManager().createNewPopupBrowserWindowFor(ureq, layoutCtrlr);
-				pbw.open(ureq);
-				//
+				showUserInfo(ureq);
 			}
 		}
 		// nothing to dispatch
 	}
 
+	/**
+	 * Method to open the users visiting card in a new tab. Public to call it also from the patrent controller
+	 * @param ureq
+	 */
+	public void showUserInfo(UserRequest ureq) {
+		ControllerCreator ctrlCreator = new ControllerCreator() {
+			public Controller createController(UserRequest lureq, WindowControl lwControl) {
+				return new UserInfoMainController(lureq, lwControl, portraitIdent);
+			}					
+		};
+		//wrap the content controller into a full header layout
+		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, ctrlCreator);
+		//open in new browser window
+		PopupBrowserWindow pbw = getWindowControl().getWindowBackOffice().getWindowManager().createNewPopupBrowserWindowFor(ureq, layoutCtrlr);
+		pbw.open(ureq);
+	}
+	
+	
 	/**
 	 * 
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)

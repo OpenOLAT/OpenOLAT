@@ -60,6 +60,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -613,7 +614,7 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 	/**
 	 * @return formatted representation of size of file
 	 */
-	public String getFormattedSize() { return StringHelper.formatMemory(getSize()); }
+	public String getFormattedSize() { return Formatter.formatBytes(getSize()); }
 
 	/* ------------------------- Setters ------------------------------ */
 	

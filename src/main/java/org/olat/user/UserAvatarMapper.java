@@ -17,15 +17,14 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.members;
+package org.olat.user;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.user.DisplayPortraitManager;
-import org.olat.user.UserManager;
+import org.olat.core.id.Identity;
 
 /**
  * 
@@ -33,19 +32,23 @@ import org.olat.user.UserManager;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AvatarMapper implements Mapper {
+public class UserAvatarMapper implements Mapper {
+	private static final String POSTFIX_SMALL = "/portrait_small.jpg";
+	private static final String POSTFIX_LARGE = "/portrait.jpg";
 	
 	private final UserManager userManager;
 	private final DisplayPortraitManager portraitManager;
+	private final boolean useLarge;
 	
-	public AvatarMapper() {
+	public UserAvatarMapper(boolean useLargePortrait) {
+		useLarge = useLargePortrait;
 		portraitManager = DisplayPortraitManager.getInstance();
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 	}
 
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
-		if(relPath != null && relPath.endsWith("/portrait_small.jpg")) {
+		if(relPath != null && relPath.endsWith(useLarge ? POSTFIX_LARGE : POSTFIX_SMALL)) {
 			if(relPath.startsWith("/")) {
 				relPath = relPath.substring(1, relPath.length());
 			}
@@ -55,9 +58,17 @@ public class AvatarMapper implements Mapper {
 				String idKey = relPath.substring(0, endKeyIndex);
 				Long key = Long.parseLong(idKey);
 				String username = userManager.getUsername(key);
-				return portraitManager.getSmallPortraitResource(username);
+				if (useLarge) {
+					return portraitManager.getBigPortraitResource(username);					
+				} else {					
+					return portraitManager.getSmallPortraitResource(username);
+				}
 			}
 		}
 		return null;
+	}
+	
+	public String createPathFor(String mapperPath, Identity identity) {
+		return mapperPath + "/" + identity.getKey() + (useLarge ? POSTFIX_LARGE : POSTFIX_SMALL); 
 	}
 }

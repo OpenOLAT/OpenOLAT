@@ -122,7 +122,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			sb.append("</div></div>");	
 			// Add Max upload size
 			if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
-				String maxUpload = Formatter.roundToString((fileElem.getMaxUploadSizeKB()+0f) / 1024, 1);
+				String maxUpload = Formatter.formatBytes(fileElem.getMaxUploadSizeKB() * 1024);
 				sb.append("<div class='help-block o_maxsize'>(")
 				.append(trans.translate("file.element.select.maxsize", new String[]{maxUpload}))
 				.append(")</div>");	

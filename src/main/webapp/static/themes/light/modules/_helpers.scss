@@ -89,21 +89,6 @@ div.o_chelp_wrapper {
 	}
 }
 
-.o_portrait {
-	img {
-		@extend .img-circle;
-		background-color: $gray-lighter;
-		background-position: 50% 50%; background-repeat: no-repeat;
-		&.o_small {
-			width: 30px; height: 30px;
-		}
-		&.o_large {
-			width: 100px; height: 100px;
-		}
-	}
-}
-
-
 /* media classes for video and image component */
 .o_video {
 	display: inline-block;

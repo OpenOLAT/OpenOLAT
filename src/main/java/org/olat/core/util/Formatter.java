@@ -30,6 +30,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -56,6 +57,9 @@ public class Formatter {
 
 	private static final DateFormat formatterDatetimeFilesystem = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss_SSS");
 	private static final DateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	private static final DecimalFormat dataSizeFormat = new DecimalFormat("#,##0.#");
+	private static final String[] dataUnits = new String[] { "B", "KB", "MB", "GB", "TB" };
+
 	
 	private static final Map<Locale,Formatter> localToFormatterMap = new HashMap<Locale,Formatter>();
 	
@@ -240,6 +244,18 @@ public class Formatter {
 		return h + "h " + m + "m " + s + "s";
 	}
 	
+	/**
+	 * Format the given bytes to human readable format
+	 * @param bytes the byte count
+	 * @return human readable formatted bytes
+	 */
+	public static String formatBytes(long bytes) {
+	    int unit = 1000;
+	    if (bytes < unit) return bytes + " B";
+	    int exp = (int) (Math.log(bytes) / Math.log(unit));
+	    String pre = "kMGTPE".charAt(exp-1) + "";
+	    return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+	}	
 	/**
 	 * Escape " with \" in strings
 	 * @param source

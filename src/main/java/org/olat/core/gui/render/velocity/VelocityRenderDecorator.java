@@ -674,6 +674,10 @@ public class VelocityRenderDecorator implements Closeable{
 		return f.formatDateAndTime(date);
 	}
 
+	public String formatBytes(long bytes) {
+		return Formatter.formatBytes(bytes);
+	}
+	
 
 	/**
 	 * Wrapp given html code with a wrapper an add code to transform latex

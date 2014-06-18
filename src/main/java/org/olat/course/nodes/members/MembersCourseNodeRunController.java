@@ -59,6 +59,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
+import org.olat.user.UserAvatarMapper;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
 
@@ -98,7 +99,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		super(ureq, wControl, "members");
 
 		this.userCourseEnv = userCourseEnv;
-		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new AvatarMapper());
+		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new UserAvatarMapper(true));
 		
 		rm = RepositoryManager.getInstance();
 		userManager = CoreSpringFactory.getImpl(UserManager.class);

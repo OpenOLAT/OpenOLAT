@@ -112,6 +112,51 @@
 	margin: 0;
 }
 
+/* Portrait image */
+.o_portrait {
+	display: inline-block;
+	img {
+		border-radius: 50%;
+		background-color: $gray-lighter;
+		background-position: 50% 50%; 
+		background-repeat: no-repeat;
+		background-size: cover;
+		&.o_small {
+			width: 30px; height: 30px;
+		}
+		&.o_large {
+			width: 100px; height: 100px;
+		}
+	}
+}
+.o_portrait_image {}
+.o_portrait_name { 
+	margin-top: $padding-base-vertical;
+}
+
+/* Dummy user portrait (avatar) display - portrait sizes must match with DisplayPortraitManager.WIDTH_PORTRAIT_SMALL  DisplayPortraitManager.WIDTH_PORTRAIT_BIG */
+.o_portrait_avatar,
+.o_portrait_dummy,
+.o_portrait_dummy_female_big,
+.o_portrait_dummy_male_big,
+.o_portrait_anonymous 			 {width: 100px; height: 100px;}
+.o_portrait_dummy                {background-image: url('#{$o-images-path}portrait/dummy.png');}
+.o_portrait_dummy_female_big     {background-image: url('#{$o-images-path}portrait/dummy_female_big.png');}
+.o_portrait_dummy_male_big       {background-image: url('#{$o-images-path}portrait/dummy_male_big.png');}
+.o_portrait_anonymous 			 {background-image: url('#{$o-images-path}portrait/dummy.png'); }
+
+.o_portrait_avatar_small,
+.o_portrait_dummy_small,
+.o_portrait_dummy_female_small,
+.o_portrait_dummy_male_small,
+.o_portrait_anonymous_small 	 {width: 30px; height: 30px;}
+.o_portrait_dummy_small          {background-image: url('#{$o-images-path}portrait/dummy_small.png');}
+.o_portrait_dummy_female_small   {background-image: url('#{$o-images-path}portrait/dummy_female_small.png');}
+.o_portrait_dummy_male_small     {background-image: url('#{$o-images-path}portrait/dummy_male_small.png');}
+.o_portrait_anonymous_small 	 {background-image: url('#{$o-images-path}portrait/dummy_small.png'); } 
+
+
+
 /* Date component, used in info course element, blog etc */
 .o_datecomp {
 	position: relative; 
@@ -136,6 +181,7 @@
 		line-height: $line-height-computed; 
 		font-size: $font-size-small; 
 		background-color: $brand-primary;
+		color: #fff;
 	}
 	div.o_day {
 		height: floor($line-height-computed * 1.5);

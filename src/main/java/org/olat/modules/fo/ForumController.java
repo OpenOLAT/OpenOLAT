@@ -58,6 +58,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
@@ -82,6 +83,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.Identity;
@@ -115,6 +117,7 @@ import org.olat.search.SearchServiceUIFactory.DisplayOption;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description: <br>
@@ -202,8 +205,13 @@ public class ForumController extends BasicController implements GenericEventList
 	private Controller searchController;
 	
 	private final OLATResourceable forumOres;
-	private final BaseSecurityModule securityModule;
-	private final UserManager userManager;
+	
+	private final String thumbMapper;
+
+	@Autowired
+	private BaseSecurityModule securityModule;
+	@Autowired
+	private UserManager userManager;
 
 	/**
 	 * @param forum
@@ -215,10 +223,7 @@ public class ForumController extends BasicController implements GenericEventList
 		super(ureq, wControl);
 		this.forum = forum;
 		this.focallback = focallback;
-		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		addLoggingResourceable(LoggingResourceable.wrap(forum));
-		
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		
 		forumOres = OresHelper.createOLATResourceableInstance(Forum.class,forum.getKey());
 		f = Formatter.getInstance(ureq.getLocale());
@@ -236,12 +241,15 @@ public class ForumController extends BasicController implements GenericEventList
 		vcListTitles = createVelocityContainer("list_titles");
 		
 		msgCreateButton = LinkFactory.createButtonSmall("msg.create", vcListTitles, this);
+		msgCreateButton.setIconLeftCSS("o_icon o_icon-fw o_forum_status_thread_icon");
 		msgCreateButton.setElementCssClass("o_sel_forum_thread_new");
 		archiveForumButton = LinkFactory.createButtonSmall("archive.forum", vcListTitles, this);
+		archiveForumButton.setIconLeftCSS("o_icon o_icon-fw o_icon_archive_tool");
 		archiveForumButton.setElementCssClass("o_sel_forum_archive");
 		
 		if(securityModule.isUserAllowedAutoComplete(ureq.getUserSession().getRoles())) {
 			filterForUserButton = LinkFactory.createButtonSmall("filter", vcListTitles, this);
+			filterForUserButton.setIconLeftCSS("o_icon o_icon-fw o_icon_user");
 			filterForUserButton.setElementCssClass("o_sel_forum_filter");
 		}
 		
@@ -335,6 +343,47 @@ public class ForumController extends BasicController implements GenericEventList
 				if (isLogDebugEnabled()) logDebug("Invalid messageId=" , ores.getResourceableId().toString());
 			}
 		}
+		
+		// Mapper to display thumbnail images of file attachments
+		thumbMapper = registerCacheableMapper(ureq, "fo_att_" + forum.getKey(), new Mapper() {
+			@Override
+			public MediaResource handle(String relPath, HttpServletRequest request) {
+				String[] query = relPath.split("/"); // exptected path looks like this /messageId/attachmentUUID/filename
+				if (query.length == 4) {
+					try {
+						Long mId = Long.valueOf(Long.parseLong(query[1]));
+						Map<String, Object> map = null;
+						for (Map<String, Object> m : currentMessagesMap) {
+							// search for message in current message map
+							if (m.get("id").equals(mId)) {
+								map = m;
+								break;
+							}
+						}
+						if (map != null) {
+							ArrayList<VFSItem> attachments = (ArrayList<VFSItem>) map.get("attachments");
+							for (VFSItem vfsItem : attachments) {
+								MetaInfo meta = ((MetaTagged)vfsItem).getMetaInfo();
+								if (meta.getUUID().equals(query[2])) {
+									if (meta.isThumbnailAvailable()) {
+										VFSLeaf thumb = meta.getThumbnail(200, 200, false);
+										if(thumb != null) {
+											// Positive lookup, send as response
+											return new VFSMediaResource(thumb);
+										}
+									}
+									break;
+								}
+							}
+						}
+					} catch (NumberFormatException e) {
+						logDebug("Could not parse attachment path::" + relPath, null);
+					}
+				}
+				// In any error case, send not found
+				return new NotFoundMediaResource(request.getRequestURI());
+			}
+		});					
 
 		// Register for forum events
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), forum);
@@ -438,6 +487,12 @@ public class ForumController extends BasicController implements GenericEventList
 					showSplitThreadView(ureq);
 				} else if (command.startsWith("move_")) {
 					showMoveMessageView(ureq);
+				} else if (command.startsWith("vc_")) {
+					Map<String, Object> map = currentMessagesMap.get((Integer)link.getUserObject());
+					DisplayPortraitController dpC = (DisplayPortraitController) map.get("portrait");
+					if (dpC != null) {
+						dpC.showUserInfo(ureq);
+					}
 				}
 			} else if (currentMsg != null) {
 				showInfo("header.cannoteditmessage");
@@ -928,20 +983,26 @@ public class ForumController extends BasicController implements GenericEventList
 		
 		backLinkListTitles = LinkFactory.createCustomLink("backLinkLT", "back", "listalltitles", Link.LINK_BACK, vcThreadView, this);
 		archiveThreadButton = LinkFactory.createButtonSmall("archive.thread", vcThreadView, this);
+		archiveThreadButton.setIconLeftCSS("o_icon o_icon-fw o_icon_archive_tool");
+
 				
 		boolean isClosed = Status.getStatus(m.getStatusCode()).isClosed(); 
 		vcThreadView.contextPut("isClosed",isClosed);
 		if(!isClosed) {
 			closeThreadButton = LinkFactory.createButtonSmall("close.thread", vcThreadView, this);
+			closeThreadButton.setIconLeftCSS("o_icon o_icon-fw o_forum_status_closed_icon");
 		} else {
 			openThreadButton = LinkFactory.createButtonSmall("open.thread", vcThreadView, this);
+			openThreadButton.setIconLeftCSS("o_icon o_icon-fw o_forum_status_opened_icon");
 		}	
 		boolean isHidden = Status.getStatus(m.getStatusCode()).isHidden(); 
 		vcThreadView.contextPut("isHidden",isHidden);		
 		if(!isHidden) {
 			hideThreadButton = LinkFactory.createButtonSmall("hide.thread", vcThreadView, this);
+			hideThreadButton.setIconLeftCSS("o_icon o_icon-fw o_forum_status_hidden_icon");
 		} else {
 			showThreadButton = LinkFactory.createButtonSmall("show.thread", vcThreadView, this);
+			showThreadButton.setIconLeftCSS("o_icon o_icon-fw o_forum_status_visible_icon");
 		}	
 
 		//allow to set thread-viewmode prefs and get actual ones
@@ -1064,32 +1125,8 @@ public class ForumController extends BasicController implements GenericEventList
 			ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_THREAD_READ, getClass(), LoggingResourceable.wrap(m));
 		}
 		vcThreadView.contextPut("messages", currentMessagesMap);
-		// 
-		// show a preview thumbnail if possible
-		String thumbMapper = registerMapper(ureq, new Mapper() {
-			@Override
-			public MediaResource handle(String relPath, HttpServletRequest request) {
-				String[] query = relPath.split("/");
-				if (query.length != 3) return null;
-				int mId = Integer.parseInt(query[1]);
-				Map<String, Object> map = currentMessagesMap.get(mId);
-				if (map == null) return null;
-				ArrayList<VFSItem> attachments = (ArrayList<VFSItem>) map.get("attachments");
-				for (VFSItem vfsItem : attachments) {
-					MetaInfo meta = ((MetaTagged)vfsItem).getMetaInfo();
-					if (meta.getUUID().equals(query[2])) {
-						if (meta.isThumbnailAvailable()) {
-							VFSLeaf thumb = meta.getThumbnail(200, 200, false);
-							if(thumb != null) {
-								return new VFSMediaResource(thumb);
-							}
-						}
-						return null;
-					}
-				}
-				return null;
-			}
-		});					
+		
+		// Mapper to display thumbnail images of file attachments
 		vcThreadView.contextPut("thumbMapper", thumbMapper);
 		// add security callback
 		vcThreadView.contextPut("security", focallback);
@@ -1139,8 +1176,6 @@ public class ForumController extends BasicController implements GenericEventList
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("id", m.getKey());
 		
-		
-		
 		if (rms.contains(m.getKey())) {
 			// already read
 			map.put("newMessage", Boolean.FALSE);
@@ -1163,17 +1198,14 @@ public class ForumController extends BasicController implements GenericEventList
 		map.put("body", m.getBody());
 		map.put("date", f.formatDateAndTime(creationDate));
 		Identity creator = m.getCreator();
+		map.put("creator", creator.getKey());
 		map.put("firstname", Formatter.truncate(creator.getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale()),18)); //keeps the first 15 chars
 		map.put("lastname", Formatter.truncate(creator.getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale()),18));
-
-//		map.put("username", Formatter.truncate(creator.getName(),18));
-		
 		map.put("modified", f.formatDateAndTime(m.getLastModified()));
 		// message attachments
 		OlatRootFolderImpl msgContainer = fm.getMessageContainer(forum.getKey(), m.getKey());
 		map.put("messageContainer", msgContainer);
 		final List<VFSItem> attachments = new ArrayList<VFSItem>(msgContainer.getItems(new VFSItemExcludePrefixFilter(MessageEditController.ATTACHMENT_EXCLUDE_PREFIXES)));				
-//		List attachments = msgContainer.getItems();
 		map.put("attachments", attachments);
 		if (attachments == null || attachments.size() == 0) map.put("hasAttachments", Boolean.FALSE);
 		else map.put("hasAttachments", Boolean.TRUE);
@@ -1194,12 +1226,17 @@ public class ForumController extends BasicController implements GenericEventList
 		map.put("isThreadClosed", isThreadClosed);
 		if(!isGuestOnly(ureq)) {
 		  // add portrait to map for later disposal and key for rendering in velocity
-		  DisplayPortraitController portrait = new DisplayPortraitController(ureq, getWindowControl(), m.getCreator(), true, true);
+		  DisplayPortraitController portrait = new DisplayPortraitController(ureq, getWindowControl(), m.getCreator(), true, true, false, true);
 		  // add also to velocity
 		  map.put("portrait", portrait);
 		  String portraitComponentVCName = m.getKey().toString();
 		  map.put("portraitComponentVCName", portraitComponentVCName);
 		  vcContainer.put(portraitComponentVCName, portrait.getInitialComponent());
+		  // Add link with username that is clickable
+		  Link vcLink = LinkFactory.createCustomLink("vc_"+msgCount, "vc_"+msgCount, UserManager.getInstance().getUserDisplayName(creator), Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, vcThreadView, this);
+		  vcLink.setUserObject(msgCount);
+		  LinkPopupSettings settings = new LinkPopupSettings(800, 600, "_blank");
+		  vcLink.setPopup(settings);
 		}
 		allList.add(map);
 		/*

@@ -1,5 +1,25 @@
 <div class="o_portrait">
+	<div class="o_portrait_image">
+#if ($hasPortrait)
+	#if ($canLinkToHomePage)
+		<a href="javascript:void(o_openPopUp('$r.commandURI("showuserinfo")', '${identityKey}', '900', '600', false))">
+			<img src="$r.staticLink("images/transparent.gif")" title="$r.escapeHtml("$displayUserFullName")" class="$portraitCssClass" style="background-image : url('$mapperUrl');"/>
+		</a>
+	#else
+		<img src="$r.staticLink("images/transparent.gif")" title="$r.escapeHtml("$displayUserFullName")" class="$portraitCssClass" style="background-image : url('$mapperUrl');"/>
+	#end
+#else
+	#if ($canLinkToHomePage)
+		<a href="javascript:void(o_openPopUp('$r.commandURI("showuserinfo")', '${identityKey}', '900', '600', false))">
+		    <img src="$r.staticLink("images/transparent.gif")" title="$r.escapeHtml("$displayUserFullName")" class="$portraitCssClass"/>
+		</a>
+	#else
+		<img src="$r.staticLink("images/transparent.gif")" title="$r.escapeHtml("$displayUserFullName")" class="$portraitCssClass"/>
+	#end
+#end
+	</div>
 #if ($displayUserFullName)
+	<div class="o_portrait_name">
 	#if ($canLinkToHomePage)
 		<a href="javascript:void(o_openPopUp('$r.commandURI("showuserinfo")', '${identityKey}', '900', '600', false))">
 			$firstname $lastname
@@ -7,24 +27,8 @@
 	#else
 		$firstname $lastname
 	#end
+	</div>
 #end
 
-#if ($hasPortrait)
-	#if ($canLinkToHomePage)
-		<a href="javascript:void(o_openPopUp('$r.commandURI("showuserinfo")', '${identityKey}', '900', '600', false))">
-			$r.render("image")
-		</a>
-	#else
-		$r.render("image")
-	#end
-#else
-	#if ($canLinkToHomePage)
-		<a href="javascript:void(o_openPopUp('$r.commandURI("showuserinfo")', '${identityKey}', '900', '600', false))">
-		    <img src="$r.staticLink("images/transparent.gif")" alt="user portrait" class="$portraitCssClass"/>
-		</a>
-	#else
-		<img src="$r.staticLink("images/transparent.gif")" alt="user portrait" class="$portraitCssClass"/>
-	#end
-#end
 </div>
  

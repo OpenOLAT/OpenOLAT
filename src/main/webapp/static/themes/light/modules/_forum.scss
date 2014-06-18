@@ -13,24 +13,134 @@ $o-forum-attachment-font-size	: $font-size-small !default;
 .o_forum_thread_sticky { 
 	font-weight: bold; 
 }
+.o_forum_switch {
+	font-size: ceil(($font-size-base * 0.8));
+}
+.o_forum_toolbar {
+	margin-bottom: $padding-base-vertical;
+	float: left;
+}
+.o_forum_fulltextsearch {
+	float: right;
+}
+@media (max-width: $screen-xs-max) { 
+	.o_forum_fulltextsearch {
+		float: left;
+	}
+}
 
 .o_forum {
-	.o_attachments {
+	.o_mark, .o_ep_collect {
+		float: right;
+		position: relative;
+		width: 2em;
+		margin-left: $padding-base-horizontal;
+	}
+	.o_portrait {
+		float: left;
+		margin-right: $padding-large-horizontal;
+	}
+	.o_portrait_avatar {
+		width: 70px;
+		height: 70px;
+	}
+	.o_newindicator {
+		font-size: ceil(($font-size-base * 0.7));
+		color: $brand-success;
+		text-transform: uppercase;
+		padding-left: 1em;
+		vertical-align: text-top;
+		white-space: nowrap;
+	}
+	.o_author, .o_date { 
+		display: inline-block;
+		color: $text-muted;
+	}
+	.o_date {
+		font-size: $font-size-small;
+	}
+	.o_modified {
+		color: $state-warning-text;
+		font-size: $font-size-small;
+		font-style: italic;
+	}
+
+	.o_forum_message {
+	  margin-bottom: $line-height-computed;
+	  background-color: $panel-bg;
+	  border: 1px solid $panel-default-border;
+	  border-radius: $panel-border-radius;
+	  @include box-shadow(0 1px 1px rgba(0,0,0,.05));
+	}
+
+	.o_forum_message_header {
+	  padding: 10px 15px;
+	  border-bottom: 1px solid $panel-default-border; 
+	  background-color: $panel-default-heading-bg;
+	  @include border-top-radius(($panel-border-radius - 1));
+	}
+	.o_forum_message_title {
+		margin-top: 0;
+	}
+	.o_forum_message_body {
+		padding: 10px 15px;
+	}
+	.o_forum_message_attachments {
+	  	border-top: 1px solid $panel-default-border; 
+		padding: 10px 15px;
 		font-size: $o-forum-attachment-font-size;
+		background-color: #f7f7f9;
 	}
 	.o_attachment {
-		width: 200px;
+		position: relative;
+		max-width: 250px;
 		vertical-align: top;
-		padding: $padding-base-vertical 0;
+		margin: $padding-base-vertical $padding-base-horizontal $padding-large-vertical 0;
 		img {
 			margin-top: $padding-base-vertical;		
 		}
 	}
 	.o_filename {
-		width: 200px;
+		max-width: 250px;
 		@include text-overflow();	
 	}
+	.o_icon_enlarge {
+		position: absolute;
+		left: 1em;
+		bottom: 1em;
+		text-shadow: 1px 1px 2px #fff, -1px 1px 2px #fff, 1px -1px 2px #fff, -1px -1px 2px #fff;
+	}
+	@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+		.o_attachments {
+			font-size: floor($o-forum-attachment-font-size * 0.9);
+		}
+		.o_attachment {
+			max-width: 200px;
+			img {
+				max-width: 150px;
+			}
+		}
+		.o_filename {
+			max-width: 200px;
+		}
+	}
+	@media (max-width: $screen-xs-max) { 
+		.o_attachments {
+			font-size: floor($o-forum-attachment-font-size * 0.8);
+		}
+		.o_attachment {
+			max-width: 150px;
+			img {
+				max-width: 100px;
+			}
+		}
+		.o_filename {
+			max-width: 150px;
+		}
+	}	
+
 }
+
 
 
 

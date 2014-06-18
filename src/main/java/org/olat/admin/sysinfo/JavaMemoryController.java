@@ -33,6 +33,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -78,9 +79,9 @@ public class JavaMemoryController extends BasicController {
 		Runtime r = Runtime.getRuntime();
 		StringBuilder sb = new StringBuilder();
 		appendFormattedKeyValue(sb, "Processors", new Integer(r.availableProcessors()));
-		appendFormattedKeyValue(sb, "Total Memory", StringHelper.formatMemory(r.totalMemory()));
-		appendFormattedKeyValue(sb, "Free Memory", StringHelper.formatMemory(r.freeMemory()));
-		appendFormattedKeyValue(sb, "Max Memory", StringHelper.formatMemory(r.maxMemory()));
+		appendFormattedKeyValue(sb, "Total Memory", Formatter.formatBytes(r.totalMemory()));
+		appendFormattedKeyValue(sb, "Free Memory", Formatter.formatBytes(r.freeMemory()));
+		appendFormattedKeyValue(sb, "Max Memory", Formatter.formatBytes(r.maxMemory()));
 		
 		sb.append("<br />Detailed Memory Information (Init/Used/Max)<br/> ");
 		List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
@@ -89,12 +90,12 @@ public class JavaMemoryController extends BasicController {
 		    MemoryType type = item.getType();
 		    appendFormattedKeyValue(sb, name, " Type: " + type);
 		    MemoryUsage usage = item.getUsage();
-		    appendFormattedKeyValue(sb, "Usage", StringHelper.formatMemory(usage.getInit()) + "/" + StringHelper.formatMemory(usage.getUsed()) + "/" + StringHelper.formatMemory(usage.getMax()));
+		    appendFormattedKeyValue(sb, "Usage", Formatter.formatBytes(usage.getInit()) + "/" + Formatter.formatBytes(usage.getUsed()) + "/" + Formatter.formatBytes(usage.getMax()));
 		    MemoryUsage peak = item.getPeakUsage();
-		    appendFormattedKeyValue(sb, "Peak", StringHelper.formatMemory(peak.getInit()) + "/" + StringHelper.formatMemory(peak.getUsed()) + "/" + StringHelper.formatMemory(peak.getMax()));
+		    appendFormattedKeyValue(sb, "Peak", Formatter.formatBytes(peak.getInit()) + "/" + Formatter.formatBytes(peak.getUsed()) + "/" + Formatter.formatBytes(peak.getMax()));
 		    MemoryUsage collections = item.getCollectionUsage();
 		    if (collections!= null){
-		    	appendFormattedKeyValue(sb, "Collections", StringHelper.formatMemory(collections.getInit()) + "/" + StringHelper.formatMemory(collections.getUsed()) + "/" + StringHelper.formatMemory(collections.getMax()));
+		    	appendFormattedKeyValue(sb, "Collections", Formatter.formatBytes(collections.getInit()) + "/" + Formatter.formatBytes(collections.getUsed()) + "/" + Formatter.formatBytes(collections.getMax()));
 		    }
 		    sb.append("<hr/>");
 		}

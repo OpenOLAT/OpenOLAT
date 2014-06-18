@@ -1,11 +1,11 @@
 #if ($r.available("subscription"))
 	$r.render("subscription")
 #end
-<h4>
+<h3>
 	$r.translate("header.overview")
-</h4>
-<div class="b_clearfix">
-	<div class="o_forum_toolbar">
+</h3>
+<div class="clearfix o_block">
+	<div class="o_forum_toolbar btn-group">
 	#if ($security.mayOpenNewThread())
 		$r.render("msg.create")
 	#end
@@ -17,9 +17,10 @@
 	#end
 	</div>
 	#if($r.available("search_input"))
-      <div id="o_forum_fulltextsearch">$r.render("search_input")</div>
+      <div id="o_forum_fulltextsearch" class="o_forum_fulltextsearch">
+      	$r.render("search_input")
+      </div>
 	#end
-	
 </div>
 <div>
 	$r.render("allThreadTable")

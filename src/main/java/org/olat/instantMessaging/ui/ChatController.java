@@ -34,12 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
@@ -51,7 +48,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.floatingresizabledialog.FloatingResizableDialogController;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -63,6 +59,7 @@ import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.user.DisplayPortraitManager;
+import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
 
 /**
@@ -80,7 +77,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	private final VelocityContainer mainVC;
 	private final VelocityContainer chatMsgFieldContent;
 
-	private Map<Long,String> avatarKeyCache = new HashMap<Long,String>();
+	private Map<Long,Long> avatarKeyCache = new HashMap<Long,Long>();
 	private Deque<ChatMessage> messageHistory = new LinkedBlockingDeque<>();
 
 	private Link refresh, todayLink, lastWeek, lastMonth;
@@ -114,7 +111,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		this.vip = vip;
 		setToday();
 
-		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new AvatarMapper());
+		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new UserAvatarMapper(true));
 		
 		//allChats = ureq.getUserSession().getChats();
 		allChats = new ArrayList<String>();
@@ -364,15 +361,16 @@ public class ChatController extends BasicController implements GenericEventListe
 		chatMsgFieldContent.contextPut("focus", new Boolean(focus));
 	}
 	
-	private String getAvatarKey(Long identityKey) {
-		String avatarKey = avatarKeyCache.get(identityKey);
+	private Long getAvatarKey(Long identityKey) {
+		Long avatarKey = avatarKeyCache.get(identityKey);
 		if(avatarKey == null && buddyList != null) {
 			Buddy buddy = buddyList.get(identityKey);
 			if(buddy != null) {
-				avatarKey = buddy.getUsername();
 				// check if avatar image exists at all
-				if (portraitManager.getSmallPortraitResource(avatarKey)  == null) {
-					avatarKey = ":NA:";
+				if (portraitManager.getSmallPortraitResource(buddy.getIdentityKey())  != null) {
+					avatarKey = buddy.getIdentityKey();
+				} else {
+					avatarKey = Long.valueOf(-1);
 				}
 				avatarKeyCache.put(identityKey, avatarKey);
 			}
@@ -380,17 +378,18 @@ public class ChatController extends BasicController implements GenericEventListe
 		if(avatarKey == null) {
 			IdentityShort id = BaseSecurityManager.getInstance().loadIdentityShortByKey(identityKey);
 			if(id != null) {
-				avatarKey = id.getName();
 				// check if avatar image exists at all
-				if (portraitManager.getSmallPortraitResource(avatarKey)  == null) {
-					avatarKey = ":NA:";
+				if (portraitManager.getSmallPortraitResource(id.getKey())  != null) {
+					avatarKey = id.getKey();
+				} else {
+					avatarKey = Long.valueOf(-1);
 				}				
 				avatarKeyCache.put(identityKey, avatarKey);
 			}
 		}
 		if (avatarKey == null) {
 			// use not-available when still not set to something
-			avatarKey = ":NA:";
+			avatarKey = Long.valueOf(-1);
 		}
 		return avatarKey;
 	}
@@ -416,24 +415,6 @@ public class ChatController extends BasicController implements GenericEventListe
 				entry.setName(name);
 			}
 			rosterCtrl.updateModel();
-		}
-	}
-	
-	public class AvatarMapper implements Mapper {
-		@Override
-		public MediaResource handle(String relPath, HttpServletRequest request) {
-			if(relPath != null && relPath.endsWith("/avatar.jpg")) {
-				if(relPath.startsWith("/")) {
-					relPath = relPath.substring(1, relPath.length());
-				}
-				
-				int endKeyIndex = relPath.indexOf('/');
-				if(endKeyIndex > 0) {
-					String username = relPath.substring(0, endKeyIndex);
-					return portraitManager.getSmallPortraitResource(username);
-				}
-			}
-			return null;
 		}
 	}
 }

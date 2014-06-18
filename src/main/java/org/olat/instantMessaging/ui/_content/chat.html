@@ -25,10 +25,10 @@ function focus_${panelName}() {
 /* ]]> */
 </script>
 <div class="o_instantmessaging_chat">
-	<div class="b_clearfix">
+	<div class="clearfix">
 		$r.render("im.today") | $r.render("im.lastweek") | $r.render("im.lastmonth")
 		#if (!$isAjaxMode)
-			<div class="b_float_right">$r.render("refresh")</div>
+			<div class="pull-right">$r.render("refresh")</div>
 		#end
 	</div>
 	$r.render("chatMsgFieldPanel")
