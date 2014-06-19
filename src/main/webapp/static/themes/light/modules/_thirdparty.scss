@@ -18,7 +18,8 @@
 }
 
 .ui-dialog {
-	@include box-shadow(0px 1px 5px -1px rgba(0,0,0,.15));
+	@include box-shadow(0px 1px 5px -1px rgba(0,0,0,.25));
+	background-color: $o-dialog-window-bg;
 	
 	.ui-widget-header {
 		.ui-icon-closethick:before {
@@ -38,6 +39,7 @@
 	
 	.ui-dialog-titlebar {
 		padding: 2px 30px 2px 5px;
+		background-color: $o-dialog-window-bar-bg;
 	}
 }
 

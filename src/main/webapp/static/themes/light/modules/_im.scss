@@ -15,15 +15,56 @@
 	}
 }
 
-.o_instantmessaging_chat_history {
+.o_im_chat_history {
 	height:170px;
 	font-size: 90%;
+	border: 1px solid $o-im-chat-history-border; 
 	
 	/* scrollbar */
 	margin: 0 0 1em 0; 
 	overflow: scroll; 
-	overflow-x:auto; 
+	overflow-x:auto;
+} 
+/* message group for all following messages of a single user. a new message group starts 
+   when someone else replies */
+.o_im_message_group {
+	padding: 3px 3px 3px 40px;
+	min-height: 40px;		
+	position: relative;
+	border-top: 1px solid $o-im-chat-message-border;
+	background: $o-im-chat-message-bg;
+		
+	&.o_odd {
+		background: $o-im-chat-message-bg-alt;
+	}
 	
-}
+	.o_portrait {
+		position: absolute;
+		top: 3px;
+		left: 3px;
+	}
+			
+	.o_im_from { 
+		color: $o-im-chat-from-color; 
+		font-size: $o-im-chat-from-size; 
+		font-weight: bold;
+		@extend %o_undecorated;
+		&:hover {
+			color: darken($o-im-chat-from-color, 10%); 		
+		}
+	}
+	
+	div.o_im_body {
+		padding: 3px 0 3px 0;
+		font-size: $o-im-chat-body-size;
+		.o_date { 
+			float: right;
+			color: $o-im-chat-date-color; 
+			font-size: $o-im-chat-date-size;
+		}
+	}
+}	
 
-a.o_instantmessaging_hidegroupswitch { @include o-opacity(60); }
+a.o_im_hidegroupswitch { @include o-opacity(60); }
+
+

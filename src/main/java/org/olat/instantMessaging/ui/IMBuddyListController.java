@@ -67,7 +67,7 @@ public class IMBuddyListController extends BasicController {
 		if(imModule.isOnlineStatusEnabled()) {
 			toggleOffline = LinkFactory.createCustomLink("toggleOnline", "cmd.online", "", Link.NONTRANSLATED, mainVC, this);
 			toggleOffline.setCustomDisplayText(translate("im.show.offline.buddies"));
-			toggleOffline.setCustomEnabledLinkCSS("o_instantmessaging_showofflineswitch");
+			toggleOffline.setCustomEnabledLinkCSS("o_im_showofflineswitch");
 			toggleOffline.setIconLeftCSS("o_icon o_icon_status_unavailable");
 			viewMode = ViewMode.onlineUsers;
 		} else {
@@ -76,7 +76,7 @@ public class IMBuddyListController extends BasicController {
 		
 		toggleGroup = LinkFactory.createCustomLink("toggleGroups", "cmd.group", "", Link.NONTRANSLATED, mainVC, this);
 		toggleGroup.setCustomDisplayText(translate("im.hide.groups"));
-		toggleGroup.setCustomEnabledLinkCSS("o_instantmessaging_showgroupswitch");
+		toggleGroup.setCustomEnabledLinkCSS("o_im_showgroupswitch");
 		toggleGroup.setIconLeftCSS("o_icon o_icon_group");
 
 		buddyList = new Roster(getIdentity().getKey());
@@ -99,24 +99,24 @@ public class IMBuddyListController extends BasicController {
 		if (source == toggleOffline) {
 			if (viewMode == ViewMode.onlineUsers) {
 				toggleOffline.setCustomDisplayText(translate("im.hide.offline.buddies"));
-				toggleOffline.setCustomEnabledLinkCSS("o_instantmessaging_hideofflineswitch");
+				toggleOffline.setCustomEnabledLinkCSS("o_im_hideofflineswitch");
 				toggleOffline.setIconLeftCSS("o_icon o_icon_status_available");
 				loadRoster(ViewMode.offlineUsers);
 			} else {
 				toggleOffline.setCustomDisplayText(translate("im.show.offline.buddies"));
-				toggleOffline.setCustomEnabledLinkCSS("o_instantmessaging_showofflineswitch");
+				toggleOffline.setCustomEnabledLinkCSS("o_im_showofflineswitch");
 				toggleOffline.setIconLeftCSS("o_icon o_icon_status_unavailable");
 				loadRoster(ViewMode.onlineUsers);
 			}
 		} else if (source == toggleGroup) {
 			if (viewGroups) {
 				toggleGroup.setCustomDisplayText(translate("im.show.groups"));
-				toggleGroup.setCustomEnabledLinkCSS("o_instantmessaging_hidegroupswitch");
+				toggleGroup.setCustomEnabledLinkCSS("o_im_hidegroupswitch");
 				buddiesListContent.contextPut("viewGroups", Boolean.FALSE);
 				viewGroups = false;
 			} else {
 				toggleGroup.setCustomDisplayText(translate("im.hide.groups"));
-				toggleGroup.setCustomEnabledLinkCSS("o_instantmessaging_showgroupswitch");
+				toggleGroup.setCustomEnabledLinkCSS("o_im_showgroupswitch");
 				buddiesListContent.contextPut("viewGroups", Boolean.TRUE);
 				viewGroups = true;
 			}
@@ -171,10 +171,10 @@ public class IMBuddyListController extends BasicController {
 		if(imModule.isOnlineStatusEnabled()) {
 			sb.append("o_icon_status_").append(buddy.getStatus()).append(" ");
 		} else {
-			sb.append("o_instantmessaging_chat_icon ");
+			sb.append("o_im_chat_icon ");
 		}
 		if(buddy.isVip()) {
-			sb.append("o_instantmessaging_vip");
+			sb.append("o_im_vip");
 		}
 		return sb.toString();
 	}

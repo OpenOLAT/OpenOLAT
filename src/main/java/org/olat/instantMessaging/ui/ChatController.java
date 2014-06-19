@@ -111,7 +111,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		this.highlightVip = highlightVip;
 		setToday();
 
-		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new UserAvatarMapper(true));
+		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new UserAvatarMapper(false));
 		
 		//allChats = ureq.getUserSession().getChats();
 		allChats = new ArrayList<String>();
@@ -162,7 +162,7 @@ public class ChatController extends BasicController implements GenericEventListe
 				rosterCtrl == null ? null : rosterCtrl.getInitialComponent(),
 				translate("groupchat.roster"), true, false, true, String.valueOf(hashCode()));
 		listenTo(chatPanelCtr);
-		chatPanelCtr.setElementCSSClass("o_instantmessaging_chat_dialog");
+		chatPanelCtr.setElementCSSClass("o_im_chat_dialog");
 		
 		String pn = chatPanelCtr.getPanelName();
 		

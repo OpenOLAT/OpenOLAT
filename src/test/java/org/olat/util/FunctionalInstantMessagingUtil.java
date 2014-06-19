@@ -38,20 +38,20 @@ public class FunctionalInstantMessagingUtil {
 	public final static String INSTANT_MESSAGING_CLIENT_SUMMARY = "o_topnav_imclient_summary";
 	
 	public final static String INSTANT_MESSAGING_ROSTER_CSS = "o_extjsPanel_im_roster";
-	public final static String INSTANT_MESSAGING_SHOW_OFFLINE_CONTACTS_CSS = "o_instantmessaging_showofflineswitch";
-	public final static String INSTANT_MESSAGING_HIDE_OFFLINE_CONTACTS_CSS = "o_instantmessaging_hideofflineswitch";
-	public final static String INSTANT_MESSAGING_SHOW_GROUPS_CSS = "o_instantmessaging_showgroupswitch";
-	public final static String INSTANT_MESSAGING_HIDE_GROUPS_CSS = "o_instantmessaging_hidegroupswitch";
+	public final static String INSTANT_MESSAGING_SHOW_OFFLINE_CONTACTS_CSS = "o_im_showofflineswitch";
+	public final static String INSTANT_MESSAGING_HIDE_OFFLINE_CONTACTS_CSS = "o_im_hideofflineswitch";
+	public final static String INSTANT_MESSAGING_SHOW_GROUPS_CSS = "o_im_showgroupswitch";
+	public final static String INSTANT_MESSAGING_HIDE_GROUPS_CSS = "o_im_hidegroupswitch";
 	
-	public final static String INSTANT_MESSAGING_GROUP_CSS = "o_instantmessaging_groupname";
-	public final static String INSTANT_MESSAGING_AVAILABLE_CSS = "o_instantmessaging_available_icon";
-	public final static String INSTANT_MESSAGING_UNAVAILABLE_CSS = "o_instantmessaging_unavailable_icon";
+	public final static String INSTANT_MESSAGING_GROUP_CSS = "o_im_groupname";
+	public final static String INSTANT_MESSAGING_AVAILABLE_CSS = "o_im_available_icon";
+	public final static String INSTANT_MESSAGING_UNAVAILABLE_CSS = "o_im_unavailable_icon";
 	
-	public final static String INSTANT_MESSAGING_CHAT_CSS = "o_instantmessaging_chat";
-	public final static String INSTANT_MESSAGING_MESSAGE_GROUP_CSS = "o_instantmessaging_message_group";
-	public final static String INSTANT_MESSAGING_BODY_CSS = "o_instantmessaging_body";
-	public final static String INSTANT_MESSAGING_AVATAR_CSS = "o_instantmessaging_avatar";
-	public final static String INSTANT_MESSAGING_FORM_CSS = "o_instantmessaging_chat_form";
+	public final static String INSTANT_MESSAGING_CHAT_CSS = "o_im_chat";
+	public final static String INSTANT_MESSAGING_MESSAGE_GROUP_CSS = "o_im_message_group";
+	public final static String INSTANT_MESSAGING_BODY_CSS = "o_im_body";
+	public final static String INSTANT_MESSAGING_AVATAR_CSS = "o_im_avatar";
+	public final static String INSTANT_MESSAGING_FORM_CSS = "o_im_chat_form";
 	
 	public enum UserStatus{
 		AVAILABLE,

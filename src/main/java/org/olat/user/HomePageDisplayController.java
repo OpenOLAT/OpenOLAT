@@ -113,7 +113,7 @@ public class HomePageDisplayController extends BasicController {
 				imLink.setCustomDisplayText(translate("im.link", new String[] {fName,lName}));
 				Buddy buddy = imService.getBuddyById(homeIdentity.getKey());
 				
-				String css = (imModule.isOnlineStatusEnabled() ? getStatusCss(buddy) : "o_instantmessaging_chat_icon");
+				String css = (imModule.isOnlineStatusEnabled() ? getStatusCss(buddy) : "o_im_chat_icon");
 				imLink.setCustomEnabledLinkCSS(css);
 				imLink.setUserObject(buddy);
 			}
@@ -122,7 +122,7 @@ public class HomePageDisplayController extends BasicController {
 	
 	private String getStatusCss(Buddy buddy) {
 		StringBuilder sb = new StringBuilder(32);
-		sb.append("o_instantmessaging_").append(buddy.getStatus()).append("_icon ");
+		sb.append("o_im_").append(buddy.getStatus()).append("_icon ");
 		return sb.toString();
 	}
 

@@ -2,7 +2,7 @@
 	/* <![CDATA[ */ 
 function resize_${panelName}() {	
 	var win = jQuery('#${panelName}');
-	jQuery('.o_instantmessaging_chat_history', win).each(function(index, el){
+	jQuery('.o_im_chat_history', win).each(function(index, el){
 		jQuery(el).height(win.height() - 100);
 		jQuery(el).scrollTop(el.scrollHeight);
 	});
@@ -24,7 +24,7 @@ function focus_${panelName}() {
 }
 /* ]]> */
 </script>
-<div class="o_instantmessaging_chat">
+<div class="o_im_chat">
 	<div class="clearfix">
 		$r.render("im.today") | $r.render("im.lastweek") | $r.render("im.lastmonth")
 		#if (!$isAjaxMode)
@@ -32,7 +32,7 @@ function focus_${panelName}() {
 		#end
 	</div>
 	$r.render("chatMsgFieldPanel")
-	<div class="o_instantmessaging_chat_form">
+	<div class="o_im_chat_form">
 		$r.render("sendMessageForm")
 	</div>
 </div>

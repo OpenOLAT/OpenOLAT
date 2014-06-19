@@ -48,7 +48,7 @@ public class UserAvatarMapper implements Mapper {
 
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
-		if(relPath != null && relPath.endsWith(useLarge ? POSTFIX_LARGE : POSTFIX_SMALL)) {
+		if(relPath != null && relPath.endsWith(POSTFIX_LARGE) || relPath.endsWith(POSTFIX_SMALL)) {
 			if(relPath.startsWith("/")) {
 				relPath = relPath.substring(1, relPath.length());
 			}

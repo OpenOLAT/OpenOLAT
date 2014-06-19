@@ -1,27 +1,29 @@
-<div class="o_instantmessaging_chat_history" id="$id">
+<div class="o_im_chat_history" id="$id">
 	#set($messageGroupCount=0)
 	#foreach($message in $chatMessages)
-		## The first message opens a new o_instantmessaging_message_group tag and adds the users
+		## The first message opens a new o_im_message_group tag and adds the users
 		## Name, his avatar icon and a list to his visiting card
 		#if($message.first)
 			#if ($messageGroupCount != 0)
-				## close last o_instantmessaging_message_group tag
+				## close last o_im_message_group tag
 				</div>
 			#end		
-			<div class="o_instantmessaging_message_group #if ($messageGroupCount % 2 == 1) o_odd #end">
+			<div class="o_im_message_group #if ($messageGroupCount % 2 == 1) o_odd #end">
 			
 				## link to visiting card
-				#if(!$message.anonym) <a href="$r.relLink("url/Identity/${message.fromKey}")">#end
-				
-				#if($message.anonym) 
-					<div class="o_instantmessaging_avatar o_portrait_anonymous_small"></div>
-				#elseif ($message.avatarKey != ":NA:") 
-					<div class="o_instantmessaging_avatar" style="background-image : url('${avatarBaseURL}/${message.avatarKey}/portrait_small.jpg')"></div>
-				#else
-					<div class="o_instantmessaging_avatar o_portrait_dummy_small"></div>					 
-				#end 
+				#if(!$message.anonym) <a href="$r.relLink("url/Identity/${message.fromKey}")" class="o_im_from">#end
 								
-				<div class="o_instantmessaging_from">$r.escapeHtml(${message.from})</div>				
+				<div class="o_portrait"><div class="o_portrait_image">
+				#if($message.anonym) 
+					<img src="$r.staticLink("images/transparent.gif")" alt="$altText" title="$altText" class="o_portrait_anonymous_small"/>
+				#elseif ($message.avatarKey != ":NA:") 
+					<img src="$r.staticLink("images/transparent.gif")" alt="$altText" title="$altText" class="o_portrait_avatar_small" style="background-image: url('${avatarBaseURL}/${message.avatarKey}/portrait_small.jpg')" />
+				#else
+					<img src="$r.staticLink("images/transparent.gif")" alt="$altText" title="$altText" class="o_portrait_dummy_small"/>
+				#end 
+				</div></div>
+								
+				<div class="o_im_from_name">$r.escapeHtml(${message.from})</div>				
 
 				## end link to visiting card
 				#if(!$message.anonym) </a> #end
@@ -29,14 +31,14 @@
 			#set($messageGroupCount=$messageGroupCount+1)
 		#end
 		## The real messages start here
-		<div class="o_instantmessaging_body b_clearfix">
-			<span class="o_instantmessaging_date b_float_right">${message.creationDate}</span>
+		<div class="o_im_body clearfix">
+			<span class="o_date">${message.creationDate}</span>
 			${message.body}
 		</div>
 	#end
 	
 	#if ($messageGroupCount > 0)
-		## close last o_instantmessaging_message_group tag
+		## close last o_im_message_group tag
 		</div>
 	#end
 </div>
