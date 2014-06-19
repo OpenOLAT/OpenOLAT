@@ -1,9 +1,15 @@
-$r.contextHelpWithWrapper("org.olat.instantMessaging.ui","instant-messenger.html","help.hover.im")
-<div id='o_instantmessages_buddieslist'>
+<div class='o_im_buddieslist'>
 #if ($r.available("toggleOnline") || $r.available("toggleGroups"))
-	<div id='o_instantmessages_buddieslist_toggler'>
-	#if($r.available("toggleOnline")) $r.render("toggleOnline") #end $r.render("toggleGroups")
+	<div class='o_im_buddieslist_toggler'>
+		<div class="btn-group btn-group-justified btn-group-xs">
+			#if($r.available("toggleOnline")) $r.render("toggleOnline") #end 
+			$r.render("toggleGroups")
+		</div>
 	</div>
 #end
-	$r.render("buddiesListContent")
+
+	<div class="o_block">
+		$r.contextHelpWithWrapper("org.olat.instantMessaging.ui","instant-messenger.html","help.hover.im")
+		$r.render("buddiesListContent")
+	</div>
 </div>

@@ -56,13 +56,10 @@
 			.dropdown-toggle {
 				padding-left: floor($grid-gutter-width / 2) + 30px;
 			}
-			img {
+			.o_portrait {
 				position: absolute;
 				left: floor($grid-gutter-width / 4);
 				top: floor(30px - $line-height-computed);
-				height: 30px;
-				width: 30px;
-				@extend .img-circle;
 			}
 		}
 		.o_logout {

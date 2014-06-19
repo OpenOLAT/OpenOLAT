@@ -19,7 +19,6 @@
  */
 package org.olat.gui.control;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -40,7 +39,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tree.GenericTreeNode;
@@ -69,9 +67,9 @@ import org.olat.instantMessaging.ui.InstantMessagingMainController;
 import org.olat.search.SearchServiceUIFactory;
 import org.olat.search.SearchServiceUIFactory.DisplayOption;
 import org.olat.search.ui.SearchInputController;
+import org.olat.user.DisplayPortraitController;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
-import org.olat.user.propertyhandlers.GenderPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -158,17 +156,11 @@ public class OlatTopNavController extends BasicController implements GenericEven
 			Component menu =  getMenuCmp(ureq);
 			topNavVC.put("myMenu", menu);
 			// the user profile
-			User user = getIdentity().getUser();
 			Component portrait = getPortraitCmp(ureq);
-			if (portrait != null) {
-				topNavVC.put("portrait", portrait);
-			} else {
-				GenderPropertyHandler genderHander = (GenderPropertyHandler) userManager.getUserPropertiesConfig().getPropertyHandler(UserConstants.GENDER);
-				String gender = genderHander.getInternalValue(user);
-				topNavVC.contextPut("gender", (gender == null || gender.equals("-") ? "" : gender + "_"));				
-			}
+			topNavVC.put("portrait", portrait);
 			
 			// the label to open the personal menu
+			User user = getIdentity().getUser();
 			String[] attr = new String[] { user.getProperty(UserConstants.FIRSTNAME, getLocale()), user.getProperty(UserConstants.LASTNAME, getLocale()), getIdentity().getName()};
 			String myMenuText = translate("topnav.my.menu.label", attr);
 			topNavVC.contextPut("myMenuLabel", myMenuText);
@@ -211,17 +203,9 @@ public class OlatTopNavController extends BasicController implements GenericEven
 	}
 	
 	private Component getPortraitCmp(UserRequest ureq) {
-		File image = portraitManager.getSmallPortrait(getIdentity().getName());
-		if (image != null) {
-			// display only within 600x300 - everything else looks ugly
-			ImageComponent ic = new ImageComponent(ureq.getUserSession(), "image");
-			ic.setSpanAsDomReplaceable(true);
-			ic.setAlt("Me");
-			ic.setMedia(image);
-			topNavVC.put("portrait", ic);
-			return ic;
-		}
-		return null;
+		Controller ctr = new DisplayPortraitController(ureq, getWindowControl(), getIdentity(), false, false, false, true);
+		listenTo(ctr);
+		return ctr.getInitialComponent();
 	}
 	
 	private void loadPersonalTools(UserRequest ureq, VelocityContainer container) {

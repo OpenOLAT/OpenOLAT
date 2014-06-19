@@ -6,11 +6,7 @@
 	#if (!$isGuest)
 		<li id="o_navbar_my_menu" class="dropdown o_portrait">
 			<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-				#if($r.available("portrait"))
-					$r.render("portrait") 
-				#else 
-					<img src="$r.staticLink("images/transparent.gif")" class="o_small o_portrait_dummy_${gender}small"/>
-				#end
+				$r.render("portrait") 
 				$myMenuLabel
 				<b class="caret"></b>
 			</a>	

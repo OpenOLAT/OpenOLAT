@@ -126,10 +126,13 @@ $o-im-groupchat-font-size		: floor($font-size-base * 0.9) !default;
 $o-im-groupchat-user-color 		: $text-color !default;
 $o-im-groupchat-vip-color 		: $state-success-text !default;
 $o-im-groupchat-anonymous-color : $state-info-text !default;
+$o-im-buddies-font-size			: floor($font-size-base * 0.9) !default;
+$o-im-buddies-link-color		: $link-color !default;
+$o-im-buddies-link-hover-color	: $link-hover-color !default;
 
 
 $o-dialog-window-bg				: #fefefe !default;
-$o-dialog-window-bar-bg			: #f9f9f9 !default;
+$o-dialog-window-bar-bg			: #eee !default;
 
 /*
 FIXME:oo10 LEGACY VARIABLES

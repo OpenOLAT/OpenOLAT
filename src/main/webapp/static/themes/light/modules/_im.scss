@@ -90,6 +90,23 @@
 
 }
 
-a.o_im_hidegroupswitch { @include o-opacity(60); }
-
+.o_im_buddieslist {
+	.o_im_buddieslist_toggler {
+		.btn {
+			@include text-overflow();
+		}
+	}
+	ul {
+		font-size: 	$o-im-buddies-font-size;
+		ul {
+			padding-left: 1em;		
+		}
+		a {
+			color: $o-im-buddies-link-color;
+			&:hover {
+				color: $o-im-buddies-link-hover-color;
+			}
+		}
+	}	
+}
 

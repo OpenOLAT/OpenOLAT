@@ -3,9 +3,9 @@
 		<div class="clearfix">
 			<div class="o_portrait pull-left">
 				#if($memberLink.getUserObject().isPortraitAvailable())
-					<img src="$r.staticLink("images/transparent.gif")" class="o_small" style="background-image: url('$avatarBaseURL/$memberLink.getUserObject().getKey()/portrait_small.jpg')" alt="$r.escapeHtml("$memberLink.getUserObject().getFullName()")" />
+					<img src="$r.staticLink("images/transparent.gif")" class="o_portrait_avatar" style="background-image: url('$avatarBaseURL/$memberLink.getUserObject().getKey()/portrait_small.jpg')" alt="$r.escapeHtml("$memberLink.getUserObject().getFullName()")" />
 				#else
-					<img src="$r.staticLink("images/transparent.gif")" class="o_small $memberLink.getUserObject().getPortraitCssClass()" alt="$r.escapeHtml("$memberLink.getUserObject().getFullName()")" />
+					<img src="$r.staticLink("images/transparent.gif")" class="$memberLink.getUserObject().getPortraitCssClass()" alt="$r.escapeHtml("$memberLink.getUserObject().getFullName()")" />
 				#end
 	
 			</div>
