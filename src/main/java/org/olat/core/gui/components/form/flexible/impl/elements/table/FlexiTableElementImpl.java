@@ -870,6 +870,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		choice.setCancelKey("cancel");
 		choice.setSubmitKey("save");
 		choice.setResetKey("reset");
+		choice.setElementCssClass("o_table_config");
 		return choice;
 	}
 

@@ -66,9 +66,12 @@ public class ChoiceRenderer extends DefaultComponentRenderer {
 		if (iframePostEnabled) {
 			ubu.appendTarget(target);
 		}
+		if (choice.getElementCssClass() != null) {
+			target.append(" class=\"").append(choice.getElementCssClass()).append("\"");
+		}
 		target.append(">");
 
-		target.append("<table class=\"b_choice\">");
+		target.append("<table class=\"o_choice\">");
 		int rows = model.getRowCount();
 		for (int i = 0; i < rows; i++) {
 			Boolean val = model.isEnabled(i);
@@ -76,14 +79,14 @@ public class ChoiceRenderer extends DefaultComponentRenderer {
 			boolean disabled = model.isDisabled(i);
 			
 			String keyN = "c" + i;
-			target.append("<tr><td class='b_choice_checkrow'><input type='checkbox' class='b_checkbox'")
+			target.append("<tr><td class='o_choice_checkrow'><input type='checkbox' class='o_checkbox'")
 			      .append(" checked='checked'", selected)
 			      .append(" disabled='disabled'", disabled)
 			      .append(" name='").append(keyN).append("' onchange=\"return setFormDirty('").append(id).append("')\"  />")
 			      .append("</td>");
 			
 			String label = model.getLabel(i);
-			target.append("<td class='b_choice_textrow'>");
+			target.append("<td class='o_choice_textrow'>");
 			if(choice.isEscapeHtml()) {
 				target.append(StringEscapeUtils.escapeHtml(label));
 			} else {
@@ -92,18 +95,18 @@ public class ChoiceRenderer extends DefaultComponentRenderer {
 			target.append("</td></tr>");
 		}
 		// Toggle all on/off
-		target.append("<tr><td colspan='2' class=\"b_togglecheck\">")
-		      .append("<div class=\"b_togglecheck\">")
-		      .append("<a href=\"#\" onclick=\"javascript:b_choice_toggleCheck('" + id + "', true)\">")
-		      .append("<input type=\"checkbox\" checked=\"checked\" disabled=\"disabled\" />")
+		target.append("<tr><td colspan='2' class=\"o_togglecheck\">")
+		      .append("<div class=\"o_togglecheck o_block_top\">")
+		      .append("<a href=\"#\" onclick=\"javascript:o_choice_toggleCheck('" + id + "', true)\">")
+		      .append("<i class='o_icon o_icon_fw o_icon_checkbox_checked'></i> ")
 		      .append(translator.translate("checkall"))
-		      .append("</a> <a href=\"#\" onclick=\"javascript:b_choice_toggleCheck('" + id + "', false)\">")
-		      .append("<input type=\"checkbox\" disabled=\"disabled\" />")
+		      .append("</a> <a href=\"#\" onclick=\"javascript:o_choice_toggleCheck('" + id + "', false)\">")
+		      .append("<i class='o_icon o_icon_fw o_icon_checkbox'></i> ")
 		      .append(translator.translate("uncheckall"))
 		      .append("</a></div></td></tr>");
 		
 		//buttons
-		target.append("<tr><td colspan='2'><div class='btn-group'>");
+		target.append("<tr><td colspan='2'><div class='btn-group btn-group-xs o_block_top'>");
 		// Submit button
 		target.append("<input type='submit' name='olat_fosm' value=\"")
 		      .append(StringEscapeUtils.escapeHtml(translator.translate(choice.getSubmitKey())))

@@ -120,7 +120,7 @@ public class Response_label extends GenericQTIElement {
 				// multiple choice
 				
 				buffer.append("<div class='col-sm-1'>")
-				      .append("<input id=\"QTI_").append(ri.get(RenderInstructions.KEY_ITEM_IDENT)).append(getQTIIdent()).append("\" type=\"checkbox\" class=\"b_checkbox\" name=\"");
+				      .append("<input id=\"QTI_").append(ri.get(RenderInstructions.KEY_ITEM_IDENT)).append(getQTIIdent()).append("\" type=\"checkbox\" class=\"o_checkbox\" name=\"");
 				appendParameterIdent(buffer, ri);
 				buffer.append("\" value=\"").append(getQTIIdent());
 				if (iinput != null) {

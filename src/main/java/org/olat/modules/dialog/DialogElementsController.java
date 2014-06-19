@@ -54,6 +54,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
@@ -127,6 +128,7 @@ public class DialogElementsController extends BasicController {
 	private Link uploadButton;
 	private Link copyButton;
 	private Controller forumCtr;
+	private CloseableModalController cmc;
 
 	public DialogElementsController(UserRequest ureq, WindowControl wControl, CourseNode courseNode, UserCourseEnvironment userCourseEnv,
 			NodeEvaluation nodeEvaluation) {
@@ -140,6 +142,7 @@ public class DialogElementsController extends BasicController {
 
 		content = createVelocityContainer("dialog");		
 		uploadButton = LinkFactory.createButton("dialog.upload.file", content, this);
+		uploadButton.setIconLeftCSS("o_icon o_icon-fw o_icon_upload");
 		
 		isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
@@ -201,8 +204,8 @@ public class DialogElementsController extends BasicController {
 		tableModel.addColumnDescriptors(tableCtr);
 		tableCtr.setTableDataModel(tableModel);
 		tableCtr.modelChanged();
-    tableCtr.setSortColumn(3, false);
-    listenTo(tableCtr);
+	    tableCtr.setSortColumn(3, false);
+	    listenTo(tableCtr);
 		content.put("dialogElementsTable", tableCtr.getInitialComponent());
 		dialogPanel.setContent(content);
 	}
@@ -254,17 +257,27 @@ public class DialogElementsController extends BasicController {
 				doFileDelivery(ureq, entry.getForumKey());
 			} else if (command.equals(ACTION_DELETE_ELEMENT)) {
 				selectedElement = entry;
-				confirmDeletionCtr = activateYesNoDialog(ureq, null, translate("element.delete", entry.getFilename()), confirmDeletionCtr);
+				confirmDeletionCtr = activateYesNoDialog(ureq, translate("delete"), translate("element.delete", entry.getFilename()), confirmDeletionCtr);
 				return;
 			}
 			// process file upload events
+		} else if (source == cmc) {
+			// reset recent element
+			recentDialogElement = null;
+			showOverviewTable(ureq, forumCallback);
+			// cleanup
+			removeAsListenerAndDispose(cmc);
+			cmc = null;
+			removeAsListenerAndDispose(fileUplCtr);
+			fileUplCtr = null;
+			
 		} else if (source == fileUplCtr) {
+			// clear dialog
+			cmc.deactivate();
+			removeAsListenerAndDispose(cmc);
+			cmc = null;
 			// event.
-			if (event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
-				// reset recent element
-				recentDialogElement = null;
-				showOverviewTable(ureq, forumCallback);
-			} else if (event.getCommand().equals(FolderEvent.UPLOAD_EVENT)) {
+			if (event.getCommand().equals(FolderEvent.UPLOAD_EVENT)) {
 				String filename = null;
 				try {
 					// get size of file
@@ -296,6 +309,13 @@ public class DialogElementsController extends BasicController {
 					throw new OLATRuntimeException(DialogElementsController.class, "Error while adding new 'file discussion' element with filename: "+filename, e);
 				}
 			}
+			// cleanup file upload controller
+			removeAsListenerAndDispose(fileUplCtr);
+			fileUplCtr = null;
+			// reset recent element
+			recentDialogElement = null;
+			showOverviewTable(ureq, forumCallback);
+
 		} else if (source == fileCopyCtr) {
 			if (event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
 				// reset recent element
@@ -386,13 +406,16 @@ public class DialogElementsController extends BasicController {
 			OlatRootFolderImpl forumContainer = getForumContainer(forum.getKey());
 			
 			removeAsListenerAndDispose(fileUplCtr);
-			fileUplCtr = new FileUploadController(getWindowControl(),forumContainer, ureq, (int)FolderConfig.getLimitULKB(), Quota.UNLIMITED, null, false);
+			fileUplCtr = new FileUploadController(getWindowControl(),forumContainer, ureq, (int)FolderConfig.getLimitULKB(), Quota.UNLIMITED, null, false, false, false, true, false);
 			listenTo(fileUplCtr);
 			
 			recentDialogElement = new DialogElement();
 			recentDialogElement.setForumKey(forum.getKey());
 			recentDialogElement.setAuthor(ureq.getIdentity().getName());
-			dialogPanel.setContent(fileUplCtr.getInitialComponent());
+			removeAsListenerAndDispose(cmc);
+			cmc = new CloseableModalController(getWindowControl(), "close", fileUplCtr.getInitialComponent(), true, translate("dialog.upload.file"));
+			listenTo(cmc);
+			cmc.activate();
 		} else if (source == copyButton) {
 			Forum forum = forumMgr.addAForum();
 			VFSContainer courseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();

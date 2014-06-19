@@ -97,6 +97,19 @@
 	}
 }
 
+/* choice element */
+.o_choice_checkrow,
+.o_choice_textrow {
+	vertical-align: text-top;
+	padding-bottom: 2px;
+}
+.o_choice_textrow {
+	padding-left: 1em;
+}
+.o_togglecheck a {
+	white-space: nowrap;
+}
+
 .o_catalog {
 	.o_catalog_delete_img {
 		position: relative; 

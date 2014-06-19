@@ -44,6 +44,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_certificate:before { content: $fa-var-certificate;}
 .o_icon_chat:before { content: $fa-var-comment-o; }
 .o_icon_check:before { content: $fa-var-check; }
+.o_icon_checkbox:before { content: $fa-var-square-o; }
+.o_icon_checkbox_checked:before { content: $fa-var-check-square;  }
 .o_icon_close:before { content: $fa-var-times;}
 .o_icon_close_resource:before { content: $fa-var-power-off; }
 .o_icon_close_tab:before { content: $fa-var-times;}

@@ -18,12 +18,27 @@ jQuery(function() {
 		var targetOffset = targetEl.offset();
 		if(targetOffset) {
 			var callout = jQuery(el);
-			if(targetOffset.left >= 0 && callout.width() > 50 && targetOffset.left < callout.width()) {
+			var docWidth = jQuery(document).width();
+			if(targetOffset.left >= 0 && callout.width() > 50 && targetOffset.left <= (callout.width() / 2)) {
+				## left edge case: show at left border
 				callout.offset({
 					top: (targetOffset.top + targetEl.height() + 15) ,
-					left: (targetOffset.left)
+					left: 0
 				});
+				var percent = (targetOffset.left + targetEl.width()/2 + 15) / callout.width() * 100; 
+				callout.find('.arrow').css({'left' : percent + '%'});
+				
+			} else if(targetOffset.left >= 0 && callout.width() > 50 && ((targetOffset.left + (callout.width() / 2)) >= docWidth)) {
+				## right edge case: show at right border
+				callout.offset({
+					top: (targetOffset.top + targetEl.height() + 15) ,
+					left: (docWidth - callout.width())
+				});
+				var percent = (1 - ((docWidth - targetOffset.left - targetEl.width()/2 -15) / callout.width() )) * 100; 
+				callout.find('.arrow').css({'left' : percent + '%'});
+
 			} else {
+				## standard case: show centered below element
 				callout.offset({
 					top: (targetOffset.top + targetEl.height() + 15) ,
 					left: (targetOffset.left + targetEl.width()) - callout.width()/2 

@@ -1341,7 +1341,7 @@ function treeNode_isDragNode(elId) {
 /*
  * For checkbox
  */
-function b_choice_toggleCheck(ref, checked) {
+function o_choice_toggleCheck(ref, checked) {
 	var checkboxes = document.forms[ref].elements;
 	len = checkboxes.length;
 	if (typeof(len) == 'undefined') {
@@ -1350,7 +1350,7 @@ function b_choice_toggleCheck(ref, checked) {
 	else {
 		var i;
 		for (i=0; i < len; i++) {
-			if (checkboxes[i].type == 'checkbox' && checkboxes[i].getAttribute('class') == 'b_checkbox') {
+			if (checkboxes[i].type == 'checkbox' && checkboxes[i].getAttribute('class') == 'o_checkbox') {
 				checkboxes[i].checked=checked;
 			}
 		}

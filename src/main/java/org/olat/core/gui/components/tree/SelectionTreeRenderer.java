@@ -128,7 +128,7 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 		if (root.getChildCount() != 0) {
 			renderChildNodes(root, "", tree.hashCode(), tree.isMultiselect(), tree.getGreyOutNonSelectableEntries(), tree.isShowAltTextAsHoverOnTitle(), target, tree);
 			if (tree.isMultiselect() && atLeastOneIsAccessible) {
-				target.append("<div class=\"b_togglecheck\"><a href=\"javascript:checkall(true);setFormDirty('").append(Form.JSFORMID).append(tree.hashCode()).append("');\">");
+				target.append("<div class=\"o_togglecheck\"><a href=\"javascript:checkall(true);setFormDirty('").append(Form.JSFORMID).append(tree.hashCode()).append("');\">");
 				target.append("<input type=\"checkbox\" checked=\"checked\" disabled=\"disabled\" />");
 				target.append(translator.translate("checkall"));
 				target.append("</a>&nbsp;<a href=\"javascript:checkall(false);setFormDirty('").append(Form.JSFORMID).append(tree.hashCode()).append("\');\">");
@@ -204,7 +204,7 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 			// append radio or checkbox if selectable
 			if (child.isAccessible()) {
 				if (multiselect) { // render chekcboxes
-					sb.append("<input type=\"checkbox\" class=\"b_checkbox\" name=\"" + ATTR_SELECTION);
+					sb.append("<input type=\"checkbox\" class=\"o_checkbox\" name=\"" + ATTR_SELECTION);
 					if (GUIInterna.isLoadPerformanceMode()) {
 						String tPath = TreeHelper.buildTreePath(child);
 						sb.append(tPath);

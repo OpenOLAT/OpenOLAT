@@ -397,6 +397,7 @@ public class TableController extends BasicController {
 		choice.setCancelKey("cancel");
 		choice.setResetKey("reset");
 		choice.setSubmitKey("save");
+		choice.setElementCssClass("o_table_config");
 		return choice;
 	}
 

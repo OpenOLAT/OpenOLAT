@@ -1,6 +1,6 @@
-<div class="b_clearfix">
+<div class="clearfix">
     #if ($r.available("subscription"))
-		<div style="b_float_right">$r.render("subscription")</div>	
+		$r.render("subscription")	
     #end
 	#if ($security.mayOpenNewThread())
 		$r.render("dialog.upload.file")
@@ -10,14 +10,19 @@
 	#end
 </div>
 <hr />
-<div>
-	$r.render("dialogElementsTable")	
-</div>
+$r.render("dialogElementsTable")	
 #if($hasSelectedElement && $hasInlineForum)
-	<fieldset>
-		<legend>$r.translate("dialog.selected.element"): <b>$selectedElement.getFilename()</b></legend>
+	<div class="panel panel-default o_block_large_top">
+		<div class="panel-heading">
+			<h3 class="panel-title">$r.translate("dialog.selected.element"): 
+				<i class="o_icon o_icon-fw $r.getFiletypeIconCss($selectedElement.getFilename())"></i> 
+				$selectedElement.getFilename()
+			</h3>
+		</div>
+		<div class="panel-body">
 		#if($hasInlineForum)
 			$r.render("forum")
 		#end
-	</fieldset>
+		</div>
+	</div>
 #end
