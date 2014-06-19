@@ -28,17 +28,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
+import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkResourceStat;
 import org.olat.core.commons.services.mark.MarkingService;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.table.BaseTableDataModelWithoutFilter;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -59,6 +65,8 @@ import org.olat.core.gui.control.generic.ajax.autocompletion.EntriesChosenEvent;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -67,9 +75,12 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.UserInfoMainController;
+import org.olat.user.UserManager;
 
 /**
  * 
@@ -107,7 +118,8 @@ public class FilterForUserController extends BasicController {
 	private final StackedPanel searchPanel;
 	
 	private final OLATResourceable forumOres;
-	
+	private final String thumbMapper;
+
 	public FilterForUserController(UserRequest ureq, WindowControl wControl, Forum forum) {
 		super(ureq, wControl);
 		this.forum = forum;
@@ -155,7 +167,48 @@ public class FilterForUserController extends BasicController {
 		
 		//results
 		vcThreadView = createVelocityContainer("threadview");
-		
+
+		// Mapper to display thumbnail images of file attachments
+		thumbMapper = registerCacheableMapper(ureq, "fo_att_" + forum.getKey(), new Mapper() {
+			@Override
+			public MediaResource handle(String relPath, HttpServletRequest request) {
+				String[] query = relPath.split("/"); // exptected path looks like this /messageId/attachmentUUID/filename
+				if (query.length == 4) {
+					try {
+						Long mId = Long.valueOf(Long.parseLong(query[1]));
+						Map<String, Object> map = null;
+						for (Map<String, Object> m : currentMessagesMap) {
+							// search for message in current message map
+							if (m.get("id").equals(mId)) {
+								map = m;
+								break;
+							}
+						}
+						if (map != null) {
+							ArrayList<VFSItem> attachments = (ArrayList<VFSItem>) map.get("attachments");
+							for (VFSItem vfsItem : attachments) {
+								MetaInfo meta = ((MetaTagged)vfsItem).getMetaInfo();
+								if (meta.getUUID().equals(query[2])) {
+									if (meta.isThumbnailAvailable()) {
+										VFSLeaf thumb = meta.getThumbnail(200, 200, false);
+										if(thumb != null) {
+											// Positive lookup, send as response
+											return new VFSMediaResource(thumb);
+										}
+									}
+									break;
+								}
+							}
+						}
+					} catch (NumberFormatException e) {
+						logDebug("Could not parse attachment path::" + relPath, null);
+					}
+				}
+				// In any error case, send not found
+				return new NotFoundMediaResource(request.getRequestURI());
+			}
+		});					
+
 		searchPanel = putInitialPanel(mainVC);
 	}
 	
@@ -363,6 +416,9 @@ public class FilterForUserController extends BasicController {
 		}
 
 		vcThreadView.contextPut("messages", currentMessagesMap);
+
+		// Mapper to display thumbnail images of file attachments
+		vcThreadView.contextPut("thumbMapper", thumbMapper);
 		// add security callback
 		vcThreadView.contextPut("security", new SearchForumCallback());
 		searchPanel.setContent(vcThreadView);
@@ -395,8 +451,6 @@ public class FilterForUserController extends BasicController {
 		Identity creator = m.getCreator();
 		map.put("firstname", Formatter.truncate(creator.getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale()),18)); //keeps the first 15 chars
 		map.put("lastname", Formatter.truncate(creator.getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale()),18));
-
-//		map.put("username", Formatter.truncate(creator.getName(),18));
 		
 		String subPath = m.getKey().toString();
 		Mark currentMark = marks.get(subPath);
@@ -440,9 +494,15 @@ public class FilterForUserController extends BasicController {
 		String portraitComponentVCName = m.getKey().toString();
 		map.put("portraitComponentVCName", portraitComponentVCName);
 		vcContainer.put(portraitComponentVCName, portrait.getInitialComponent());
+		// Add link with username that is clickable
+		Link vcLink = LinkFactory.createCustomLink("vc_"+msgCount, "vc_"+msgCount, UserManager.getInstance().getUserDisplayName(creator), Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, vcThreadView, this);
+		vcLink.setUserObject(msgCount);
+		LinkPopupSettings settings = new LinkPopupSettings(800, 600, "_blank");
+		vcLink.setPopup(settings);
 		allList.add(map);
 		
-		LinkFactory.createCustomLink("open_in_thread_"+msgCount, "open_in_thread_"+msgCount, "msg.open_in_thread", Link.BUTTON_SMALL, vcThreadView, this);
+		Link link = LinkFactory.createCustomLink("open_in_thread_"+msgCount, "open_in_thread_"+msgCount, "msg.open_in_thread", Link.BUTTON_SMALL, vcThreadView, this);
+		link.setIconRightCSS("o_icon o_icon_start");
 	}
 	
 	private List<Message> getMessages(Identity identity) {

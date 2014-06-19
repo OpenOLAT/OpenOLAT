@@ -69,11 +69,22 @@ div.o_chelp_wrapper {
 .o_button_group {
 	@extend %o_block_large;
 	text-align: center;
-	a, input, button {
+	a, input, button, .btn-group {
 		margin-right: 1em;		
+		margin-bottom: 0.5em;		
 		&:last-child {
 			margin-right: 0;		
 		}
+	}
+	.btn-group {
+		a, input, button {
+			margin-right: 0;		
+			margin-bottom: 0;		
+		}	
+	}
+	
+	.dropdown-menu {
+		text-align: left;	
 	}
 }
 

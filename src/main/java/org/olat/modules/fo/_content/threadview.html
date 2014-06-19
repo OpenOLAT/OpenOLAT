@@ -47,17 +47,21 @@
 	#end
 	
 	#set( $count = $velocityCount - 1)
-	<div #if($threadMode) style="margin-left: ${deepnessFromMap}em" #end class="o_forum_message o_block_large_bottom #if($message.get("newMessage")) o_forum_message_new #end" id="o_forum_message_${message.get("id")}">
+	<div #if($threadMode) style="margin-left: ${deepnessFromMap}em" #end class="o_forum_message o_block_large_bottom #if($message.get("newMessage")) o_forum_message_new #end #if($message.get("id") == $goToMessageId) o_forum_message_highlight #end" id="o_forum_message_${message.get("id")}">
 		<div class="o_forum_message_header clearfix">
-			#if($r.available($message.get("ePFAddComponentName")))<div class="o_ep_collect">$r.render($message.get("ePFAddComponentName"))</div>#end
-			#if($r.available("mark_${count}"))<div class="o_mark">$r.render("mark_${count}")</div>#end
+			#if($r.available($message.get("ePFAddComponentName")))
+				<div class="o_ep_collect">$r.render($message.get("ePFAddComponentName"))</div>
+			#end
+			#if($r.available("mark_${count}"))
+				<div class="o_mark">$r.render("mark_${count}")</div>
+			#end
 
 			#if($r.available($message.get("portraitComponentVCName")))
 				$r.render($message.get("portraitComponentVCName"))
 			#end
 				<h4 class="o_forum_message_title">
 					$r.escapeHtml($message.get("title"))
-					 #if(!$message.get("newMessage")) <span class="o_newindicator" title="$r.translateInAttribute("message.unread")"><i class="o_icon o_icon_new" ></i><span class="o_label">$r.translate("new")</span></span>#end
+					 #if($message.get("newMessage")) <span class="o_newindicator" title="$r.translateInAttribute("message.unread")"><i class="o_icon o_icon_new" ></i><span class="o_label">$r.translate("new")</span></span>#end
 				</h4>
 				<div class="o_author">
 					#if($r.available("vc_${count}"))
@@ -79,9 +83,9 @@
 			   			$r.translate("msg.moved")
 		   			#end
 			   	</div>
-				#end
-				
+				#end	
 		</div>
+		
 		<div class="o_forum_message_body">
 			<div class="clearfix o_scrollblock">
 				$r.formatLatexFormulas($message.get("body"))						
@@ -93,22 +97,38 @@
 			$r.render("open_in_thread_${count}")
 			#end
 
-			#if ((($message.get("nOfCh") == 0 && $message.get("uIsMsgC") == true) || ($security.mayDeleteMessageAsModerator())) && !$message.get("isThreadClosed"))
-			$r.render("dl_${count}")
-			#end
-			#if ((($message.get("nOfCh") == 0 && $message.get("uIsMsgC") == true) || ($security.mayEditMessageAsModerator())) && !$message.get("isThreadClosed"))
-			$r.render("ed_${count}")
+			#if (!$message.get("isThreadClosed"))
+				#set($canDelete = (($message.get("nOfCh") == 0 && $message.get("uIsMsgC") == true) || ($security.mayDeleteMessageAsModerator())) )
+				#set($canEdit = (($message.get("nOfCh") == 0 && $message.get("uIsMsgC") == true) || ($security.mayEditMessageAsModerator())) )
+				
+				#if ($canDelete && $canEdit)<div class="btn-group">#end
+					#if ($canDelete)
+					$r.render("dl_${count}")
+					#end
+					#if ($canEdit)
+					$r.render("ed_${count}")
+					#end
+				#if ($canDelete && $canEdit)</div>#end
 			#end
 			
 			#if ($security.mayReplyMessage() && !$message.get("isThreadClosed"))
+			<div class="btn-group">
 				$r.render("qt_${count}")
 				$r.render("rp_${count}")
+			</div>
 			#end
+			
 			#if ($security.mayEditMessageAsModerator() && !$message.get("isThreadtop") && !$message.get("isThreadClosed"))
-				$r.render("split_${count}")
-			#end
-			#if ($security.mayEditMessageAsModerator() && !$message.get("isThreadtop") && !$message.get("isThreadClosed"))
-				$r.render("move_${count}")
+			<div class="btn-group">
+				<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+					<i class="o_icon o_icon-fw o_icon_actions"></i>
+					<span class="caret"></span>
+				</button>
+				<ul class="dropdown-menu dropdown-menu-right">
+					<li>$r.render("split_${count}")</li>
+					<li>$r.render("move_${count}")</li>
+				</ul>
+			</div>
 			#end
 		</div>
 		
@@ -131,7 +151,7 @@
 						<img src="${thumbMapper}/$message.get("id")/$attachment.getMetaInfo().getUUID()/$fname" class="img-thumbnail" title="$r.escapeHtml("$fname")" class=""/>
 						<i class="o_icon o_icon-lg o_icon_enlarge"></i>
 						#end
-				</a>		
+					</a>		
 				</li>
 			#end 
 			</ul>
@@ -151,7 +171,7 @@
 #if($goToMessage)
 	<script type="text/javascript">
 	/* <![CDATA[ */
-	    o_scrollToElement('#o_forum_message_$goToMessageId");
+	    o_scrollToElement('#o_forum_message_$goToMessageId');
 	/* ]]> */
 	</script> 
 #end

@@ -1243,14 +1243,20 @@ public class ForumController extends BasicController implements GenericEventList
 		 * those Link objects are used! see event method and the instanceof Link part!
 		 * but reference won't be used!
 		 */
-		LinkFactory.createCustomLink("dl_"+msgCount, "dl_"+msgCount, "msg.delete", Link.BUTTON_SMALL, vcThreadView, this);
-		LinkFactory.createCustomLink("ed_"+msgCount, "ed_"+msgCount, "msg.update", Link.BUTTON_SMALL, vcThreadView, this);
-		LinkFactory.createCustomLink("rm_"+msgCount, "rm_"+msgCount, "msg.remove", Link.BUTTON_SMALL, vcThreadView, this);
-		LinkFactory.createCustomLink("up_"+msgCount, "up_"+msgCount, "msg.upload", Link.BUTTON_SMALL, vcThreadView, this);
-		LinkFactory.createCustomLink("qt_"+msgCount, "qt_"+msgCount, "msg.quote", Link.BUTTON_SMALL, vcThreadView, this);
-		LinkFactory.createCustomLink("rp_"+msgCount, "rp_"+msgCount, "msg.reply", Link.BUTTON_SMALL, vcThreadView, this);
-		LinkFactory.createCustomLink("split_"+msgCount, "split_"+msgCount, "msg.split", Link.BUTTON_SMALL, vcThreadView, this);
-		LinkFactory.createCustomLink("move_"+msgCount, "move_"+msgCount, "msg.move", Link.BUTTON_SMALL, vcThreadView, this);
+		Link dlLink = LinkFactory.createCustomLink("dl_"+msgCount, "dl_"+msgCount, "msg.delete", Link.BUTTON_SMALL, vcThreadView, this);
+		dlLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+		Link edLink = LinkFactory.createCustomLink("ed_"+msgCount, "ed_"+msgCount, "msg.update", Link.BUTTON_SMALL, vcThreadView, this);
+		edLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+
+		Link qtLink = LinkFactory.createCustomLink("qt_"+msgCount, "qt_"+msgCount, "msg.quote", Link.BUTTON_SMALL, vcThreadView, this);
+		qtLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reply_with_quote");
+		Link rpLink = LinkFactory.createCustomLink("rp_"+msgCount, "rp_"+msgCount, "msg.reply", Link.BUTTON_SMALL, vcThreadView, this);
+		rpLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reply");
+
+		Link splitLink = LinkFactory.createCustomLink("split_"+msgCount, "split_"+msgCount, "msg.split", Link.LINK, vcThreadView, this);
+		splitLink.setIconLeftCSS("o_icon o_icon-fw o_icon_split");
+		Link moveLink = LinkFactory.createCustomLink("move_"+msgCount, "move_"+msgCount, "msg.move", Link.LINK, vcThreadView, this);
+		moveLink.setIconLeftCSS("o_icon o_icon-fw o_icon_move");
 		
 		String subPath = m.getKey().toString();
 		Mark currentMark = marks.get(subPath);
