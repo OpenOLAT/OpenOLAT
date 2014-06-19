@@ -25,9 +25,11 @@ import java.util.List;
 import org.olat.basesecurity.Invitation;
 import org.olat.basesecurity.Policy;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.portfolio.manager.EPMapPolicy;
 
@@ -47,6 +49,7 @@ public class EPSharePolicyWrapper {
 	private TextElement firstNameEl;
 	private TextElement lastNameEl;
 	private TextElement mailEl;
+	private StaticTextElement errorEl;
 	private boolean invitationSend = false;;
 	
 	public EPSharePolicyWrapper() {
@@ -215,5 +218,17 @@ public class EPSharePolicyWrapper {
 
 	public void setMailEl(TextElement mailEl) {
 		this.mailEl = mailEl;
+	}
+	
+	public boolean isError() {
+		return errorEl != null && StringHelper.containsNonWhitespace(errorEl.getValue());
+	}
+
+	public StaticTextElement getErrorEl() {
+		return errorEl;
+	}
+
+	public void setErrorEl(StaticTextElement errorEl) {
+		this.errorEl = errorEl;
 	}
 }

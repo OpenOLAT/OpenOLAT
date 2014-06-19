@@ -170,6 +170,7 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 
 	private void setSegmentContent(Controller ctrl){
 		vC.put("segmentContent", ctrl.getInitialComponent());
+		vC.setDirty(true);
 	}
 
 	private void initTPAllView(UserRequest ureq) {
@@ -187,6 +188,7 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 		if (previousViewMode != null && !previousViewMode.equals(userPrefsMode)) {
 			removeAsListenerAndDispose(artCtrl);
 		}
+
 		if (userPrefsMode != null && userPrefsMode.equals(EPViewModeController.VIEWMODE_TABLE)){
 			EPSecurityCallback secCallback = new EPSecurityCallbackImpl(true, true);
 			artCtrl = new EPMultipleArtefactsAsTableController(ureq, getWindowControl(), artefacts, null, artefactChooseMode, secCallback);

@@ -19,18 +19,18 @@
  */
 package org.olat.portfolio.ui;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.portfolio.manager.EPFrontendManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -43,59 +43,46 @@ import org.olat.portfolio.manager.EPFrontendManager;
  */
 public class EPViewModeController extends FormBasicController {
 
+	private FormLink tableLink;
+	private FormLink detailsLink;
 	public static final String VIEWMODE_TABLE = "table";
 	public static final String VIEWMODE_DETAILS = "details";
 	public static final String VIEWMODE_CONTEXT_ARTEFACTPOOL = "artefact";
 	public static final String VIEWMODE_CONTEXT_MAP = "map";
 	public static final String VIEWMODE_CHANGED_EVENT_CMD = "viewModeChangedEventCommand";
-	private SingleSelection viewRadio;
+
+	@Autowired
 	private EPFrontendManager ePFMgr;
 	private String userPrefsMode;
 	private String context;
-	 
-
-	public EPViewModeController(UserRequest ureq, WindowControl wControl, Form rootForm, String context) {
-		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT, null, rootForm);
+	
+	public EPViewModeController(UserRequest ureq, WindowControl wControl, String context) {
+		super(ureq, wControl, "view_mode");
 		this.context = context;
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		userPrefsMode = ePFMgr.getUsersPreferedArtefactViewMode(getIdentity(), context);
-		
 		initForm(ureq);
 	}
 	
-	public EPViewModeController(UserRequest ureq, WindowControl wControl, String context){
-		super(ureq, wControl);
-		this.context = context;
-		
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
-		userPrefsMode = ePFMgr.getUsersPreferedArtefactViewMode(getIdentity(), context);
-		
-		initForm(ureq);
-	}
-
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer, org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String[] theKeys = new String[]{VIEWMODE_TABLE, VIEWMODE_DETAILS};
-		String[] theValues = new String[]{translate("view.mode.table"), translate("view.mode.details")};
-		
-		viewRadio = uifactory.addRadiosHorizontal("view.mode", formLayout, theKeys, theValues);
-		viewRadio.addActionListener(FormEvent.ONCLICK);
-		if (userPrefsMode != null) viewRadio.select(userPrefsMode, true);
-		else viewRadio.select(VIEWMODE_DETAILS, true);
+		tableLink = uifactory.addFormLink("view.mode.table", VIEWMODE_TABLE, "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
+		tableLink.setIconLeftCSS("o_icon o_icon_table  o_icon-lg");
+		detailsLink = uifactory.addFormLink("view.mode.details", VIEWMODE_DETAILS, "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
+		detailsLink.setIconLeftCSS("o_icon o_icon_list o_icon-lg");
 	}
 
-	
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest, org.olat.core.gui.components.form.flexible.FormItem, org.olat.core.gui.components.form.flexible.impl.FormEvent)
 	 */
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == viewRadio){
-			if (!viewRadio.getSelectedKey().equals(userPrefsMode)){
-				String newUserPrefsMode = viewRadio.getSelectedKey();
+		if (source == tableLink || source == detailsLink){
+			FormLink link = (FormLink)source;
+			if (!link.getCmd().equals(userPrefsMode)){
+				String newUserPrefsMode = link.getCmd();
 				ePFMgr.setUsersPreferedArtefactViewMode(getIdentity(), newUserPrefsMode, context);
 				userPrefsMode = newUserPrefsMode;
 				fireEvent(ureq, new Event(VIEWMODE_CHANGED_EVENT_CMD));
@@ -118,5 +105,4 @@ public class EPViewModeController extends FormBasicController {
 	protected void doDispose() {
 		// nothing
 	}
-
 }

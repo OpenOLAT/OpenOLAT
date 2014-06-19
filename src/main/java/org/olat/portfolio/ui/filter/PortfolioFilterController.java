@@ -191,12 +191,13 @@ public class PortfolioFilterController extends FormBasicController {
 		initFilterList(formLayout);
 		//filter save
 		if(formLayout.getFormComponent("filterSaveLayout") == null) {
-			filterFlc = FormLayoutContainer.createHorizontalFormLayout("filterSaveLayout", getTranslator());
+			String page = this.velocity_root + "/filter_search.html";
+			filterFlc = FormLayoutContainer.createCustomFormLayout("filterSaveLayout", getTranslator(), page);
 			formLayout.add(filterFlc);
 			filterFlc.setLabel("filter.save", null);
 			filterName = uifactory.addTextElement("filter.save.name", null, 30, filterSettings.getFilterName(), filterFlc);
-			filterSave = uifactory.addFormLink("filter.save.link", "filter.save.new", null, filterFlc, Link.BUTTON_XSMALL);
-			filterDel = uifactory.addFormLink("filter.del.link", "filter.del.link", null, filterFlc, Link.BUTTON_XSMALL);
+			filterSave = uifactory.addFormLink("filter.save.link", "filter.save.new", null, filterFlc, Link.BUTTON);
+			filterDel = uifactory.addFormLink("filter.del.link", "filter.del.link", null, filterFlc, Link.BUTTON);
 		} else {
 			filterName.setValue(filterSettings.getFilterName());
 		}

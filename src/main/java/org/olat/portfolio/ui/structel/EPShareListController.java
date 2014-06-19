@@ -23,14 +23,14 @@ package org.olat.portfolio.ui.structel;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.Invitation;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.Invitation;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
@@ -98,6 +98,7 @@ public class EPShareListController extends FormBasicController {
 	private final MailManager mailManager;
 	private final String[] targetKeys = EPMapPolicy.Type.names();
 	private final String[] targetValues = new String[targetKeys.length];
+	private final AtomicInteger cmpSuffixGenerator = new AtomicInteger(1);
 
 	private CloseableModalController cmc;
 	private UserSearchController selectUserCtrl;
@@ -206,9 +207,7 @@ public class EPShareListController extends FormBasicController {
 				genericError = translate("from.date.behind.to");
 				allOk &= false;
 			}
-			FormLayoutContainer cmp = (FormLayoutContainer) flc.getFormComponent(policyWrapper.getComponentName());
-			String errorCompName = policyWrapper.calc("errorpanel");
-			StaticTextElement errTextEl = (StaticTextElement) cmp.getFormComponent(errorCompName);
+			StaticTextElement errTextEl = policyWrapper.getErrorEl();
 			if (genericError != null && errTextEl != null) {
 				errTextEl.setValue(genericError);
 			}
@@ -489,7 +488,7 @@ public class EPShareListController extends FormBasicController {
 				flc.remove(cmpName);
 			}
 			
-			cmpName = UUID.randomUUID().toString();
+			cmpName = Integer.toString(cmpSuffixGenerator.getAndIncrement());
 			policyWrapper.setComponentName(cmpName);
 			FormLayoutContainer container = FormLayoutContainer.createCustomFormLayout(cmpName, getTranslator(), template);
 			container.contextPut("wrapper", policyWrapper);
@@ -536,17 +535,21 @@ public class EPShareListController extends FormBasicController {
 				toChooser.setValidDateCheck("map.share.date.invalid");
 				policyWrapper.setToChooser(toChooser);
 	
-				FormLink addLink = uifactory.addFormLink("map.share.policy.add." + cmpName, "map.share.policy.add", null, container, Link.BUTTON_SMALL);
+				FormLink addLink = uifactory.addFormLink("map.share.policy.add." + cmpName, "map.share.policy.add", null, container, Link.BUTTON);
+				addLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 				addLink.setUserObject(policyWrapper);
-				FormLink removeLink = uifactory.addFormLink("map.share.policy.delete." + cmpName, "map.share.policy.delete", null, container, Link.BUTTON_SMALL);
+				FormLink removeLink = uifactory.addFormLink("map.share.policy.delete." + cmpName, "map.share.policy.delete", null, container, Link.BUTTON);
+				removeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 				removeLink.setUserObject(policyWrapper);
 				if (!policyWrapper.getType().equals(EPMapPolicy.Type.allusers)){
-					FormLink inviteLink = uifactory.addFormLink("map.share.policy.invite." + cmpName, "map.share.policy.invite", null, container, Link.BUTTON_XSMALL);
+					FormLink inviteLink = uifactory.addFormLink("map.share.policy.invite." + cmpName, "map.share.policy.invite", null, container, Link.BUTTON);
+					inviteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_share");
 					inviteLink.setUserObject(policyWrapper);
 					inviteLink.setEnabled(!policyWrapper.isInvitationSend());
 				}
 				StaticTextElement genErrorPanel = uifactory.addStaticTextElement("errorpanel." + cmpName, "", container);
 				genErrorPanel.setUserObject(policyWrapper);
+				policyWrapper.setErrorEl(genErrorPanel);
 			}
 			
 			policyWrapper.setComponentName(cmpName);
@@ -568,8 +571,8 @@ public class EPShareListController extends FormBasicController {
 		List<Identity> identities = policyWrapper.getIdentities();
 		List<EPShareUserWrapper> groupWrappers = new ArrayList<EPShareUserWrapper>();
 		for(Identity identity: identities) {
-			FormLink rmLink = uifactory.addFormLink("rm-" + identity.getKey(), "&nbsp;", null, userListBox, Link.NONTRANSLATED + Link.LINK);
-			rmLink.setCustomEnabledLinkCSS("b_link_left_icon b_remove_icon");
+			FormLink rmLink = uifactory.addFormLink("rm-" + identity.getKey(), "", null, userListBox, Link.NONTRANSLATED + Link.LINK);
+			rmLink.setIconLeftCSS("o_icon o_icon_remove");
 			EPShareUserWrapper gWrapper = new EPShareUserWrapper(policyWrapper, identity, rmLink);
 			rmLink.setUserObject(gWrapper);	
 			groupWrappers.add(gWrapper);
@@ -577,7 +580,8 @@ public class EPShareListController extends FormBasicController {
 		userListBox.contextPut("identities", groupWrappers);
 		policyWrapper.setUserListBox(userListBox);
 
-		FormLink chooseUsersLink = uifactory.addFormLink("choose.identity", userListBox,"b_form_groupchooser");
+		FormLink chooseUsersLink = uifactory.addFormLink("choose.identity", "choose.identity", null, userListBox, Link.BUTTON);
+		chooseUsersLink.setElementCssClass("b_form_groupchooser");
 		chooseUsersLink.setUserObject(policyWrapper);	
 	}
 	
@@ -591,8 +595,8 @@ public class EPShareListController extends FormBasicController {
 		List<BusinessGroup> groups = policyWrapper.getGroups();
 		List<EPShareGroupWrapper> groupWrappers = new ArrayList<EPShareGroupWrapper>();
 		for(BusinessGroup group: groups) {
-			FormLink rmGroupLink = uifactory.addFormLink("rm-" + group.getKey(), "&nbsp;", null, groupListBox, Link.NONTRANSLATED + Link.LINK);
-			rmGroupLink.setCustomEnabledLinkCSS("b_link_left_icon b_remove_icon");
+			FormLink rmGroupLink = uifactory.addFormLink("rm-" + group.getKey(), "", null, groupListBox, Link.NONTRANSLATED + Link.LINK);
+			rmGroupLink.setCustomEnabledLinkCSS("o_icon o_icon_remove");
 			EPShareGroupWrapper gWrapper = new EPShareGroupWrapper(policyWrapper, group, rmGroupLink);
 			rmGroupLink.setUserObject(gWrapper);	
 			groupWrappers.add(gWrapper);
@@ -600,7 +604,8 @@ public class EPShareListController extends FormBasicController {
 		groupListBox.contextPut("groups", groupWrappers);
 		policyWrapper.setGroupListBox(groupListBox);
 
-		FormLink chooseGroupsLink = uifactory.addFormLink("choose.group", groupListBox,"b_form_groupchooser");
+		FormLink chooseGroupsLink = uifactory.addFormLink("choose.group", "choose.group", null, groupListBox,Link.BUTTON);
+		chooseGroupsLink.setElementCssClass("b_form_groupchooser");
 		chooseGroupsLink.setUserObject(policyWrapper);	
 	}
 	
@@ -610,7 +615,6 @@ public class EPShareListController extends FormBasicController {
 		invitationContainer.contextPut("wrapper", policyWrapper);
 		invitationContainer.setRootForm(mainForm);
 		container.add("map.share.with." + cmpName, invitationContainer);
-		uifactory.addSpacerElement("map.share.with.spacer." + cmpName, invitationContainer, true);
 		
 		TextElement firstNameEl = 
 			uifactory.addTextElement("map.share.with.firstName." + cmpName, "map.share.with.firstName", 64, invitation.getFirstName(), invitationContainer);

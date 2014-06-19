@@ -77,6 +77,22 @@
 		margin-left: 8px;
 }
 
+.o_eportfolio_share_policy_wrapper {
+	border: 1px solid $panel-default-border;
+	border-radius: $panel-border-radius;
+}
+
+.o_eportfolio_share_header {
+	padding: 10px 15px;
+	border-bottom: 1px solid $panel-default-border;
+	background-color: $panel-default-heading-bg;
+}
+
+.o_eportfolio_share_policy {
+	padding: 10px 15px;
+}
+
+
 @import '_portfoliomaps/mixins';
 
 @import '_portfoliomaps/epmst_default';

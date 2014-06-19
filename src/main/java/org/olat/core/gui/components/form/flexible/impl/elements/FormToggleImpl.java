@@ -34,8 +34,8 @@ import org.olat.core.gui.control.Event;
  */
 public class FormToggleImpl extends FormLinkImpl implements FormToggle {
 
-	private String activeCSS = "b_toggle b_small b_on";
-	private String inactiveCSS = "b_toggle b_small";
+	private String activeCSS = "o_button_toggle o_on";
+	private String inactiveCSS = "o_button_toggle";
 	private boolean isOn = false;
 
 	public FormToggleImpl(String name, String cmd, String i18n) {

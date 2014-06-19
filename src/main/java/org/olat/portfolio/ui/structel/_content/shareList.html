@@ -1,13 +1,15 @@
 $r.contextHelpWithWrapper("org.olat.portfolio.ui.structel", "share.html", "chelp.share.hover")
-<h4>$r.translate("map.share")</h4>
-<p>$r.translate("map.share.description")</p>
 
-<div class="b_clearfix">$r.render("map.share.add.policy")</div>
-<div class="b_eportfolio_share_policies">
+<div class="o_info">$r.translate("map.share.description")</div>
+<div class="o_block">
+	<div class="o_buttons_box_right">$r.render("map.share.add.policy")</div>
+</div>
+
+<div class="o_eportfolio_share_policies">
 #foreach($wrapper in $wrappers)
-	<div class="b_clearfix">
+	<div class="clearfix">
 		$r.render($wrapper.componentName)
 	</div>
 #end
 </div>
-<div class="b_clearfix">$r.render("ok_cancel")</div>
+<div class="clearfix">$r.render("ok_cancel")</div>
