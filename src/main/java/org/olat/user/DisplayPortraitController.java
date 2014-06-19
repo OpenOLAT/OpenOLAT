@@ -27,6 +27,7 @@ package org.olat.user;
 
 import java.io.File;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -40,7 +41,6 @@ import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
-import org.olat.core.util.StringHelper;
 import org.olat.user.propertyhandlers.GenderPropertyHandler;
 
 /**
@@ -147,9 +147,10 @@ public class DisplayPortraitController extends BasicController {
 		myContent.contextPut("hasPortrait", (portrait != null) ? Boolean.TRUE : Boolean.FALSE);
 		myContent.contextPut("identityKey", portraitIdent.getKey().toString());
 		myContent.contextPut("displayUserFullName", displayUserFullName);
-		myContent.contextPut("firstname", StringHelper.escapeHtml(portraitIdent.getUser().getProperty(UserConstants.FIRSTNAME, null)));
-		myContent.contextPut("lastname",StringHelper.escapeHtml(portraitIdent.getUser().getProperty(UserConstants.LASTNAME, null)));
-		
+		String fullName = UserManager.getInstance().getUserDisplayName(portraitIdent);
+		myContent.contextPut("fullName", fullName);		
+		String altText = translate("title.homepage") + ": " + fullName;
+		myContent.contextPut("altText", StringEscapeUtils.escapeHtml(altText));
 		
 		putInitialPanel(myContent);
 	}

@@ -148,7 +148,7 @@
 							 $r.formatBytes($attachment.getSize())
 						</div>
 						#if ($attachment.getMetaInfo() && $attachment.getMetaInfo().isThumbnailAvailable())										
-						<img src="${thumbMapper}/$message.get("id")/$attachment.getMetaInfo().getUUID()/$fname" class="img-thumbnail" title="$r.escapeHtml("$fname")" class=""/>
+						<img src="${thumbMapper}/$message.get("id")/$attachment.getMetaInfo().getUUID()/$fname" class="img-thumbnail" alt="$r.escapeHtml("$fname")" title="$r.escapeHtml("$fname")"/>
 						<i class="o_icon o_icon-lg o_icon_enlarge"></i>
 						#end
 					</a>		
