@@ -15,6 +15,15 @@
 	}
 }
 
+.o_im_load_history {
+	.o_label {
+		font-size: $o-im-chat-load-font-size; 
+		padding-right: 0.5em;
+		line-height: 1.5em;
+		color: $text-muted;
+	}
+	margin-bottom: $padding-base-vertical;
+}
 .o_im_chat_history {
 	height:170px;
 	font-size: 90%;
@@ -46,7 +55,7 @@
 			
 	.o_im_from { 
 		color: $o-im-chat-from-color; 
-		font-size: $o-im-chat-from-size; 
+		font-size: $o-im-chat-from-font-size; 
 		font-weight: bold;
 		@extend %o_undecorated;
 		&:hover {
@@ -56,14 +65,30 @@
 	
 	div.o_im_body {
 		padding: 3px 0 3px 0;
-		font-size: $o-im-chat-body-size;
+		font-size: $o-im-chat-body-font-size;
 		.o_date { 
 			float: right;
 			color: $o-im-chat-date-color; 
-			font-size: $o-im-chat-date-size;
+			font-size: $o-im-chat-date-font-size;
 		}
 	}
 }	
+
+.o_groupchat_roster {
+	font-size: $o-im-groupchat-font-size;
+	li {
+		@include text-overflow();
+		color: $o-im-groupchat-user-color;
+		
+		&.o_vip {
+			color: $o-im-groupchat-vip-color ;
+		}	
+		&.o_anonymous {
+			color: $o-im-groupchat-anonymous-color;
+		}	
+	}
+
+}
 
 a.o_im_hidegroupswitch { @include o-opacity(60); }
 

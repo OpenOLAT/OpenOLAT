@@ -180,13 +180,13 @@ public class ChatController extends BasicController implements GenericEventListe
 		chatMsgFieldContent.contextPut("id", hashCode());
 		mainVC.put("chatMsgFieldPanel", chatMsgFieldContent);
 		
-		refresh = LinkFactory.createCustomLink("refresh", "cmd.refresh", "", Link.NONTRANSLATED, mainVC, this);
-		refresh.setCustomEnabledLinkCSS("o_icon o_icon_refresh o_icon-lg");
+		refresh = LinkFactory.createCustomLink("refresh", "cmd.refresh", " ", Link.NONTRANSLATED, mainVC, this);
+		refresh.setIconLeftCSS("o_icon o_icon_refresh o_icon-lg");
 		refresh.setTitle("im.refresh");
 		
-		todayLink = LinkFactory.createLink("im.today", mainVC, this);
-		lastWeek = LinkFactory.createLink("im.lastweek", mainVC, this);
-		lastMonth = LinkFactory.createLink("im.lastmonth", mainVC, this);
+		todayLink = LinkFactory.createButton("im.today", mainVC, this);
+		lastWeek = LinkFactory.createButton("im.lastweek", mainVC, this);
+		lastMonth = LinkFactory.createButton("im.lastmonth", mainVC, this);
 
 		putInitialPanel(chatPanelCtr.getInitialComponent());
 		if(rosterCtrl != null) {

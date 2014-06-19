@@ -26,10 +26,19 @@ function focus_${panelName}() {
 </script>
 <div class="o_im_chat">
 	<div class="clearfix">
-		$r.render("im.today") | $r.render("im.lastweek") | $r.render("im.lastmonth")
 		#if (!$isAjaxMode)
 			<div class="pull-right">$r.render("refresh")</div>
 		#end
+		<div class="o_im_load_history">
+			<span class="o_label">
+				$r.translate("chat.load.history")
+			</span>
+			<div class="btn-group btn-group-xs">
+				$r.render("im.today")
+				$r.render("im.lastweek") 
+				$r.render("im.lastmonth")	
+			</div>
+		</div>
 	</div>
 	$r.render("chatMsgFieldPanel")
 	<div class="o_im_chat_form">

@@ -1,12 +1,19 @@
 <div class="o_groupchat_roster">
 	#if ($offerAnonymMode)
-		<div>$r.render("toggle")</div>
-		$r.render("nickname")
-		<hr />
+		<div class="o_block_bottom">
+		<h5>$r.translate("groupchat.display.name")</h5>
+		$r.translate("toogle.anonymous")
+		$r.render("toggle")
+		<div class="o_block_top">
+			$r.render("nickname")
+		</div>
+		</div>
 	#end
+	<h5>$r.translate("groupchat.roster")</h5>
 	<ul class="list-unstyled">
 	#foreach($entry in $roster.entries)
-		<li class="#if($entry.vip) o_im_vip #end #if($entry.anonym) o_im_anonymous #end">
+		<li class=" #if($entry.anonym) o_anonymous #elseif($entry.vip) o_vip #end ">
+			<i class="o_icon o_icon-fw #if($entry.anonym) o_icon_user_anonymous #elseif($entry.vip) o_icon_user_vip #else o_icon_user #end "></i> 
 			<span>$r.escapeHtml(${entry.name})</span>
 		</li>			
 	#end
