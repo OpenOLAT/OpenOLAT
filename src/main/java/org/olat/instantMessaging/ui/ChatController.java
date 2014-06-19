@@ -88,7 +88,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	private List<String> allChats;
 	private final Formatter formatter;
 
-	private final boolean vip;
+	private final boolean highlightVip;
 	private final OLATResourceable ores;
 	private final Roster buddyList;
 	private final Long privateReceiverKey;
@@ -100,7 +100,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	private final String avatarBaseURL;
 
 	protected ChatController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, String roomName,
-			Long privateReceiverKey, boolean vip, int width, int height, int offsetX, int offsetY) {
+			Long privateReceiverKey, boolean highlightVip, int width, int height, int offsetX, int offsetY) {
 		super(ureq, wControl);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
@@ -108,7 +108,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		formatter = Formatter.getInstance(getLocale());
 		this.ores = ores;
 		this.privateReceiverKey = privateReceiverKey;
-		this.vip = vip;
+		this.highlightVip = highlightVip;
 		setToday();
 
 		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new UserAvatarMapper(true));
@@ -151,10 +151,10 @@ public class ChatController extends BasicController implements GenericEventListe
 			rosterCtrl = new RosterForm(ureq, getWindowControl(), buddyList, defaultAnonym, offerAnonymMode);
 			listenTo(rosterCtrl);
 			String nickName = rosterCtrl.getNickName();
-			imService.listenChat(getIdentity(), getOlatResourceable(), nickName, defaultAnonym, vip, this);
+			imService.listenChat(getIdentity(), getOlatResourceable(), nickName, defaultAnonym, highlightVip, this);
 		} else {
 			buddyList = null;
-			imService.listenChat(getIdentity(), getOlatResourceable(), null, defaultAnonym, vip, this);
+			imService.listenChat(getIdentity(), getOlatResourceable(), null, defaultAnonym, highlightVip, this);
 		}
 
 		chatPanelCtr = new FloatingResizableDialogController(ureq, getWindowControl(), mainVC,
@@ -283,7 +283,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	}
 	
 	private void doSendPresence(String nickName, boolean anonym) {
-		imService.sendPresence(getIdentity(), nickName, anonym, vip, getOlatResourceable());	
+		imService.sendPresence(getIdentity(), nickName, anonym, highlightVip, getOlatResourceable());	
 	}
 	
 	private InstantMessage doSendMessage(String text) {

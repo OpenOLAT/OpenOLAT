@@ -64,7 +64,7 @@ public class UserSessionInformationsController extends BasicController {
 		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
 		
 		myContent = createVelocityContainer("usersession_infos");
-		myContent.contextPut("usersessions", getUsersSessionAsString(ureq));
+		myContent.contextPut("usersessions", getUsersSessionAsString());
 		putInitialPanel(myContent);
 	}
 
@@ -77,7 +77,7 @@ public class UserSessionInformationsController extends BasicController {
 		//
 	}
 	
-	private String getUsersSessionAsString(UserRequest ureq) {
+	private String getUsersSessionAsString() {
 		StringBuilder sb = new StringBuilder(50000);
 		int ucCnt = sessionManager.getUserSessionsCnt();
 		Set<UserSession> usesss = sessionManager.getAuthenticatedUserSessions();

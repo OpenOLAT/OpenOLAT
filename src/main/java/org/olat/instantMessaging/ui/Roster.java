@@ -37,12 +37,12 @@ import org.olat.instantMessaging.model.BuddyGroup;
  */
 public class Roster {
 	
-	private final Long identityKey;
+	private final Long meIdentityKey;
 	private final List<Buddy> entries = new CopyOnWriteArrayList<Buddy>();
 	private final List<BuddyGroup> groups = new CopyOnWriteArrayList<BuddyGroup>();
 	
 	public Roster(Long identityKey) {
-		this.identityKey = identityKey;
+		this.meIdentityKey = identityKey;
 	}
 	
 	public List<BuddyGroup> getGroups() {
@@ -78,7 +78,7 @@ public class Roster {
 	public synchronized void addBuddies(List<Buddy> buddies) {
 		if(buddies != null) {
 			for(Buddy buddy:buddies) {
-				if(identityKey != null && identityKey.equals(buddy.getIdentityKey())) {
+				if(meIdentityKey != null && meIdentityKey.equals(buddy.getIdentityKey())) {
 					//continue
 				} else if(buddy.getIdentityKey() == null) {
 					//do nothing

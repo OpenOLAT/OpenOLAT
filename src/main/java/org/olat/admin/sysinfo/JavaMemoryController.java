@@ -34,7 +34,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
 
 /**
  * 
