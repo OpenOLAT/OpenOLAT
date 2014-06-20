@@ -23,8 +23,8 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.jboss.arquillian.graphene.page.Page;
 import org.jcodec.common.Assert;
-import org.olat.selenium.page.BusyPredicate;
 import org.olat.selenium.page.LoginPage;
+import org.olat.selenium.page.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -74,7 +74,7 @@ public class UserToolsPage {
 	public UserToolsPage openUserToolsMenu() {
 		if(!mySettingsLink.isDisplayed()) {
 			toolbarCaretLink.click();
-			Graphene.waitModel().until().element(mySettingsClassName).is().visible();
+			OOGraphene.waitElement(mySettingsClassName);
 		}
 		return this;
 	}
@@ -87,7 +87,7 @@ public class UserToolsPage {
 	public UserSettingsPage openMySettings() {
 		Assert.assertTrue(mySettingsLink.isDisplayed());
 		mySettingsLink.click();
-		Graphene.waitModel().until(new BusyPredicate());
+		OOGraphene.waitBusy();
 		return userSettings;
 	}
 	
@@ -97,7 +97,7 @@ public class UserToolsPage {
 	public void logout() {
 		openUserToolsMenu();
 		Graphene.guardHttp(logoutLink).click();
-		Graphene.waitModel().until().element(LoginPage.loginFormBy).is().visible();
+		OOGraphene.waitElement(LoginPage.loginFormBy);
 	}
 
 }

@@ -28,7 +28,7 @@
     </extension>
     
 	<extension qualifier="webdriver">
-		<property name="browser">firefox</property>
+		<property name="browser">safari</property>
 	</extension>
 
 	<extension qualifier="student">

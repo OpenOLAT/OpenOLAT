@@ -80,7 +80,7 @@ public class ResumeTest {
 	public void resumeCourseAutomatically(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
 		//create a random user
-		UserVO user = new UserRestClient(deploymentUrl).createTestUser();
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		//deploy a course
 		CourseVO course = new RepositoryRestClient(deploymentUrl).deployDemoCourse();
 
@@ -133,7 +133,7 @@ public class ResumeTest {
 	public void resumeCourseOnDemand(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
 		//create a random user
-		UserVO user = new UserRestClient(deploymentUrl).createTestUser();
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		//deploy a course
 		CourseVO course = new RepositoryRestClient(deploymentUrl).deployDemoCourse();
 

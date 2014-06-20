@@ -94,7 +94,7 @@ public class LoginPage {
 		passwordInput.sendKeys(password);
 
 		Graphene.guardHttp(loginButton).click();
-		Graphene.waitModel().until().element(authOrDisclaimerXPath).is().present();
+		OOGraphene.waitElement(authOrDisclaimerXPath);
 		
 		List<WebElement> disclaimer = browser.findElements(disclaimerXPath);
 		if(disclaimer.size() > 0) {
@@ -103,7 +103,7 @@ public class LoginPage {
 			
 			WebElement acknowledgeButton = browser.findElement(disclaimerButtonXPath);
 			Graphene.guardHttp(acknowledgeButton).click();
-			Graphene.waitModel().until().element(authXPath).is().present();
+			OOGraphene.waitElement(authXPath);
 		}
 	}
 	
@@ -116,6 +116,6 @@ public class LoginPage {
 		Assert.assertTrue(resume.isDisplayed());
 		
 		resume.click();
-		Graphene.waitModel().until(new BusyPredicate());
+		OOGraphene.waitBusy();
 	}
 }

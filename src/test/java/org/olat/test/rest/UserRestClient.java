@@ -35,9 +35,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.olat.restapi.RestConnection;
+import org.olat.user.restapi.RolesVO;
 import org.olat.user.restapi.UserVO;
 
 /**
@@ -78,12 +81,34 @@ public class UserRestClient {
 		return users;
 	}
 	
-	public UserVO createTestUser()
+	public UserVO createRandomUser()
 	throws IOException, URISyntaxException {
 		RestConnection restConnection = new RestConnection(deploymentUrl);
 		assertTrue(restConnection.login(username, password));
 		
 		UserVO user = createUser(restConnection);
+
+		restConnection.shutdown();
+		return user;
+	}
+	
+	public UserVO createAuthor()
+	throws IOException, URISyntaxException {
+		RestConnection restConnection = new RestConnection(deploymentUrl);
+		assertTrue(restConnection.login(username, password));
+		
+		UserVO user = createUser(restConnection);
+		
+		RolesVO roles = new RolesVO();
+		roles.setAuthor(true);
+		
+		//update roles of author
+		URI request = getUsersURIBuilder().path(user.getKey().toString()).path("roles").build();
+		HttpPost method = restConnection.createPost(request, MediaType.APPLICATION_JSON);
+		restConnection.addJsonEntity(method, roles);
+		HttpResponse response = restConnection.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
 
 		restConnection.shutdown();
 		return user;
@@ -107,7 +132,7 @@ public class UserRestClient {
 		vo.putProperty("gender", "Female");//male or female
 		vo.putProperty("birthDay", "12/12/2009");
 
-		URI request = UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("users").build();
+		URI request = getUsersURIBuilder().build();
 		HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
 		restConnection.addJsonEntity(method, vo);
 		method.addHeader("Accept-Language", "en");
@@ -121,6 +146,11 @@ public class UserRestClient {
 		
 		current.setPassword(vo.getPassword());
 		return current;
+	}
+	
+	private UriBuilder getUsersURIBuilder()
+	throws URISyntaxException {
+		return UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("users");
 	}
 
 	

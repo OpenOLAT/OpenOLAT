@@ -17,58 +17,55 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.selenium.page.user;
+package org.olat.selenium.page;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.jcodec.common.Assert;
-import org.olat.selenium.page.OOGraphene;
+import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
 /**
+ * Page fragment which control the navigation bar with the static sites.
  * 
  * Initial date: 20.06.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserSettingsPage {
-
+public class NavigationPage {
+	
 	@Drone
 	private WebDriver browser;
 	
-	@FindBy(className = "o_segments")
-	private WebElement segmentView;
+	@FindBy(css="ul.o_navbar_sites")
+	private WebElement navigationSites;
 	
-	@FindBy(className = "o_sel_user_settings_prefs")
-	private WebElement preferencesSegmentLink;
-	@FindBy(className = "o_sel_user_settings_webdav")
-	private WebElement webdavSegmentLink;
-	@FindBy(className = "o_sel_user_settings_im")
-	private WebElement imSegmentLink;
-	@FindBy(className = "o_sel_user_settings_disclaimer")
-	private WebElement disclaimerSegmentLink;
+	@FindBy(css = "li.o_site_author_env > a")
+	private WebElement authoringEnvTab;
+	
 
-	/**
-	 * Check that the user settings is displayed.
-	 * @return
-	 */
-	public UserSettingsPage assertOnUserSettings() {
-		Assert.assertTrue(segmentView.isDisplayed());
+	@FindBy(css = "li.o_site_repository > a")
+	private WebElement myCourseTab;
+	
+	public NavigationPage assertOnNavigationPage() {
+		Assert.assertTrue(navigationSites.isDisplayed());
 		return this;
 	}
 	
-	/**
-	 * Open the user preferences
-	 * @return
-	 */
-	public UserPreferencesPageFragment openPreferences() {
-		preferencesSegmentLink.click();
+	public AuthoringEnvPage openAuthoringEnvironment() {
+		if(!navigationSites.isDisplayed()) {
+			//too small, open the black panel
+		}
+		//author?
+		Assert.assertTrue(authoringEnvTab.isDisplayed());
+		
+		authoringEnvTab.click();
 		OOGraphene.waitBusy();
-
+		
 		WebElement main = browser.findElement(By.id("o_main"));
-		return Graphene.createPageFragment(UserPreferencesPageFragment.class, main);
+		return Graphene.createPageFragment(AuthoringEnvPage.class, main);
 	}
 }

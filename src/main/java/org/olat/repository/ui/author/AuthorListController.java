@@ -140,6 +140,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		Set<String> types = repositoryHandlerFactory.getSupportedTypes();
 
 		createDropdown = new Dropdown("cmd.create.ressource", "cmd.create.ressource", false, getTranslator());
+		createDropdown.setElementCssClass("o_sel_author_create");
 		createDropdown.setIconCSS("o_icon o_icon_add");
 		for(String type:types) {
 			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
@@ -167,6 +168,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private void addCreateLink(RepositoryHandler handler, Dropdown dropdown) {
 		Link createLink = LinkFactory.createLink(handler.getSupportedType(), getTranslator(), this);
 		createLink.setIconLeftCSS("o_icon o_icon-fw " + RepositoyUIFactory.getIconCssClass(handler.getSupportedType()));
+		createLink.setElementCssClass("o_sel_author_create-" + handler.getSupportedType());
 		createLink.setUserObject(handler);
 		dropdown.addComponent(createLink);
 	}
@@ -463,6 +465,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		String title = translate(handler.getCreateLabelI18nKey());
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), createCtrl.getInitialComponent(),
 				true, title);
+		cmc.setCustomWindowCSS("o_sel_author_create_popup");
 		listenTo(cmc);
 		cmc.activate();
 	}

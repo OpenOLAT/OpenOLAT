@@ -17,42 +17,34 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.selenium.page.core;
+package org.olat.selenium.page;
 
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
-import org.olat.selenium.page.OOGraphene;
+import org.jboss.arquillian.graphene.Graphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
 
 /**
- * Fragment which contains the menu tree. The WebElement to create
- * this fragment must be a parent of the div.o_tree
  * 
  * Initial date: 20.06.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MenuTreePageFragment {
+public class OOGraphene {
 	
-	@FindBy(className="o_tree")
-	private WebElement tree;
+	private static final long poolingDuration = 25;
 	
-	/**
-	 * Click the root link in the tree.
-	 * 
-	 * @return The menu page fragment
-	 */
-	public MenuTreePageFragment selectRoot() {
-		List<WebElement> rootLinks = tree.findElements(By.cssSelector("a.o_tree_link"));
-		Assert.assertNotNull(rootLinks);
-		Assert.assertFalse(rootLinks.isEmpty());
-		
-		rootLinks.get(0).click();
-		OOGraphene.waitBusy();
-		return this;
+	public static void waitBusy() {
+		Graphene.waitModel().pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new BusyPredicate());
+	}
+	
+	public static void waitElement(By element) {
+		Graphene.waitModel().pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
+	}
+	
+	public static void waitElement(WebElement element) {
+		Graphene.waitModel().pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
 	}
 
 }

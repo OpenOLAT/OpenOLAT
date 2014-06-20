@@ -156,6 +156,7 @@ class PublishStep01 extends BasicStep {
 
 			//use the addDropDownSingleselect method with null as label i18n - key, because there is no label to set. OLAT-3682
 			accessSelbox = uifactory.addDropdownSingleselect("accessBox",null, fic, keys, values, null);
+			accessSelbox.setElementCssClass("o_sel_course_publish_access");
 			if(!LoginModule.isGuestLoginLinksEnabled() && "4".equals(selectedAccess)) {//no guest but BARG
 				accessSelbox.select("3", true);//-> set BAR-
 			} else {

@@ -96,7 +96,7 @@ public class LoginTest {
 	throws IOException, URISyntaxException {
 		//create a random user
 		UserRestClient userClient = new UserRestClient(deploymentUrl);
-		UserVO user = userClient.createTestUser();
+		UserVO user = userClient.createRandomUser();
 
 		//load dmz
 		loginPage.assertOnLoginPage();

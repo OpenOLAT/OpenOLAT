@@ -64,6 +64,7 @@ public abstract class MainLayoutBasicController extends BasicController implemen
 	/**
 	 * @see org.olat.core.gui.components.htmlheader.jscss.CustomCSSProvider#getCustomCSS()
 	 */
+	@Override
 	public CustomCSS getCustomCSS() {
 		if (isLogDebugEnabled()) {
 			if (customCSS == null) logDebug("No custom CSS set for this main layout", null);
@@ -72,9 +73,7 @@ public abstract class MainLayoutBasicController extends BasicController implemen
 		return customCSS;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.htmlheader.jscss.CustomCSSProvider#setCustomCSS(org.olat.core.gui.components.htmlheader.jscss.CustomCSS)
-	 */
+	@Override
 	public void setCustomCSS(CustomCSS newCustomCSS) {
 		if (isLogDebugEnabled()) {
 			if (newCustomCSS == null) logDebug("Setting emtpy custom CSS for this main layout", null);

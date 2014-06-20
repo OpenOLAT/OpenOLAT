@@ -334,6 +334,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	
 	private void initToolbar(boolean closeEditor) {
 		createNodeLink = LinkFactory.createToolLink(NLS_HEADER_INSERTNODES, translate(NLS_HEADER_INSERTNODES), this, "o_icon_add");
+		createNodeLink.setElementCssClass("o_sel_course_editor_create_node");
 		createNodeLink.setDomReplacementWrapperRequired(false);
 		stackPanel.addTool(createNodeLink, Align.left);
 
@@ -355,6 +356,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		previewLink = LinkFactory.createToolLink(CMD_COURSEPREVIEW, translate(NLS_COMMAND_COURSEPREVIEW), this, "o_icon_preview");
 		stackPanel.addTool(previewLink, Align.right);
 		publishLink = LinkFactory.createToolLink(CMD_PUBLISH, translate(NLS_COMMAND_PUBLISH), this, "o_icon_publish");
+		publishLink.setElementCssClass("o_sel_course_editor_publish");
 		stackPanel.addTool(publishLink, Align.right);
 		
 		if(closeEditor) {

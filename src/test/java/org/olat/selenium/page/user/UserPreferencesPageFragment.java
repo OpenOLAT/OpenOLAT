@@ -20,9 +20,8 @@
 package org.olat.selenium.page.user;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jboss.arquillian.graphene.Graphene;
 import org.jcodec.common.Assert;
-import org.olat.selenium.page.BusyPredicate;
+import org.olat.selenium.page.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -86,7 +85,7 @@ public class UserPreferencesPageFragment {
 		
 		WebElement saveButton = browser.findElement(saveSystemSettingsButton);
 		saveButton.click();
-		Graphene.waitModel().until(new BusyPredicate());
+		OOGraphene.waitBusy();
 		return this;
 	}
 	

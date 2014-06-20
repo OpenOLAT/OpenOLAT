@@ -17,42 +17,48 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.selenium.page.core;
+package org.olat.selenium.page.repository;
 
-import java.util.List;
-
-import org.junit.Assert;
+import org.jboss.arquillian.drone.api.annotation.Drone;
+import org.jboss.arquillian.graphene.Graphene;
+import org.jcodec.common.Assert;
 import org.olat.selenium.page.OOGraphene;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
 /**
- * Fragment which contains the menu tree. The WebElement to create
- * this fragment must be a parent of the div.o_tree
+ * 
+ * Page to control the different settings of a repository entry.
  * 
  * Initial date: 20.06.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MenuTreePageFragment {
+public class RepositoryEditDescriptionPage {
 	
-	@FindBy(className="o_tree")
-	private WebElement tree;
+	public static final By generaltabBy = By.className("o_sel_edit_repositoryentry");
+	public static final By toolbarBackBy = By.cssSelector("li.o_breadcrumb_back>a");
+
 	
-	/**
-	 * Click the root link in the tree.
-	 * 
-	 * @return The menu page fragment
-	 */
-	public MenuTreePageFragment selectRoot() {
-		List<WebElement> rootLinks = tree.findElements(By.cssSelector("a.o_tree_link"));
-		Assert.assertNotNull(rootLinks);
-		Assert.assertFalse(rootLinks.isEmpty());
-		
-		rootLinks.get(0).click();
-		OOGraphene.waitBusy();
+	@Drone
+	private WebDriver browser;
+	
+	@FindBy(className = "o_sel_edit_repositoryentry")
+	private WebElement generalTab;
+	
+	
+	public RepositoryEditDescriptionPage assertOnGeneralTab() {
+		Assert.assertTrue(generalTab.isDisplayed());
 		return this;
 	}
-
+	
+	public RepositoryDetailsPage clickToolbarBack() {
+		browser.findElement(toolbarBackBy).click();
+		OOGraphene.waitBusy();
+		
+		WebElement main = browser.findElement(By.id("o_main"));
+		return Graphene.createPageFragment(RepositoryDetailsPage.class, main);
+	}
 }

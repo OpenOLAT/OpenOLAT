@@ -212,12 +212,14 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 			/* details page configuration and settings */
 			editSettingsLink = LinkFactory.createToolLink("editdesc", translate("details.chprop"), this, "o_sel_repor_edit_properties");
 			editSettingsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_settings");
+			editSettingsLink.setElementCssClass("o_sel_author_edit_entry_settings");
 			editSettingsLink.setEnabled(!corrupted);
 			stackPanel.addTool(editSettingsLink, Align.left);
 
 			/* resource editor */
 			editLink = LinkFactory.createToolLink("edit", translate("details.openeditor"), this, "o_sel_repo_edit_descritpion");
 			editLink.setIconLeftCSS("o_icon o_icon_edit");
+			editLink.setElementCssClass("o_sel_author_edit_entry");
 			boolean editManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.editcontent);
 			editLink.setEnabled(handler.supportsEdit(entry) && !corrupted && !editManaged);
 			stackPanel.addTool(editLink, Align.left);
@@ -300,6 +302,7 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 		/* open/launch resource */
 		launchLink = LinkFactory.createToolLink("launch", translate("details.launch"), this, "o_sel_repo_launch");
 		launchLink.setIconLeftCSS("o_icon o_icon-fw o_icon_start");
+		launchLink.setElementCssClass("o_sel_author_launch");
 		launchLink.setEnabled(checkIsRepositoryEntryLaunchable(ureq) && !corrupted);
 		stackPanel.addTool(launchLink, Align.right);
 		

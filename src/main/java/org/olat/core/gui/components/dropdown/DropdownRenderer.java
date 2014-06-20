@@ -47,11 +47,14 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		
 		Iterable<Component> components = dropdown.getComponents();
 		if(dropdown.isButton()) {
-			sb.append("<button class='btn btn-default dropdown-toggle'");
+			sb.append("<button class='btn btn-default dropdown-toggle");
 		} else {
-			sb.append("<a href='#' class='dropdown-toggle'");
+			sb.append("<a href='#' class='dropdown-toggle");
 		}
-		sb.append(" data-toggle='dropdown'>");
+		if(StringHelper.containsNonWhitespace(dropdown.getElementCssClass())) {
+			sb.append(" ").append(dropdown.getElementCssClass());
+		}
+		sb.append("' data-toggle='dropdown'>");
 		if(StringHelper.containsNonWhitespace(dropdown.getIconCSS())) {
 			sb.append("<i class='").append(dropdown.getIconCSS()).append("'>&nbsp;</i>");
 		}
@@ -66,7 +69,11 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		} else {
 			sb.append("</a>");
 		}
-		sb.append("<ul class='dropdown-menu' role='menu'>");
+		sb.append("<ul class='dropdown-menu");
+		if(StringHelper.containsNonWhitespace(dropdown.getElementCssClass())) {
+			sb.append(" ").append(dropdown.getElementCssClass());
+		}
+		sb.append("' role='menu'>");
 		for(Component component:components) {
 			if(component instanceof Spacer) {
 				sb.append("<li class='divider'></li>");

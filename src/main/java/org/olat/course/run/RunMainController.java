@@ -580,6 +580,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		
 		// event from the current tool (editor, groupmanagement, archiver)		
@@ -1083,19 +1084,24 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				|| hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
 
 			Dropdown editTools = new Dropdown("editTools", "header.tools", false, getTranslator());
+			editTools.setElementCssClass("o_sel_course_tools");
 			editTools.setIconCSS("o_icon o_icon_tools");
 			if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
 				boolean managed = RepositoryEntryManagedFlag.isManaged(courseRepositoryEntry, RepositoryEntryManagedFlag.editcontent);
 				editLink = LinkFactory.createToolLink("edit.cmd", translate("command.openeditor"), this, "o_icon_courseeditor");
+				editLink.setElementCssClass("o_sel_course_editor");
 				editLink.setEnabled(!managed);
 				editTools.addComponent(editLink);
 				editSettingsLink = LinkFactory.createToolLink("settings.cmd", translate("command.settings"), this, "o_icon_settings");
+				editSettingsLink.setElementCssClass("o_sel_course_settings");
 				editSettingsLink.setEnabled(!managed);
 				editTools.addComponent(editSettingsLink);
 				folderLink = LinkFactory.createToolLink("cfd", translate("command.coursefolder"), this, "o_icon_coursefolder");
+				folderLink.setElementCssClass("o_sel_course_folder");
 				folderLink.setEnabled(!managed);
 				editTools.addComponent(folderLink);
 				areaLink = LinkFactory.createToolLink("careas", translate("command.courseareas"), this, "o_icon_courseareas");
+				areaLink.setElementCssClass("o_sel_course_areas");
 				areaLink.setEnabled(!managed);
 				editTools.addComponent(areaLink);
 			}

@@ -82,6 +82,7 @@ public class ChooseNodeController extends BasicController {
 					linkNames.put(group, typesGroup);
 				}
 				Link l = LinkFactory.createToolLink(courseNodeAlias, cnConfig.getLinkText(getLocale()), this, cnConfig.getIconCSSClass());
+				l.setElementCssClass("o_sel_course_editor_node-" + courseNodeAlias);
 				typesGroup.getNodeTypes().add(l.getComponentName());
 				mainVC.put(l.getComponentName(), l);
 				

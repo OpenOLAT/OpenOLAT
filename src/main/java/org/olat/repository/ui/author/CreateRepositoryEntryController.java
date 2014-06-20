@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -95,16 +96,19 @@ public class CreateRepositoryEntryController extends FormBasicController {
 		uifactory.addStaticExampleText("cif.type", typeName, formLayout);
 
 		displaynameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, "", formLayout);
+		displaynameEl.setElementCssClass("o_sel_author_displayname");
 		displaynameEl.setDisplaySize(30);
 		displaynameEl.setMandatory(true);
 		
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
 		buttonContainer.setElementCssClass("o_sel_repo_save_details");
-		uifactory.addFormSubmitButton("cmd.create.ressource", buttonContainer);
+		FormSubmit submit = uifactory.addFormSubmitButton("cmd.create.ressource", buttonContainer);
+		submit.setElementCssClass("o_sel_author_create_submit");
 		
 		if(handler.isPostCreateWizardAvailable()) {
 			wizardButton = uifactory.addFormLink("csc.startwizard", buttonContainer, Link.BUTTON);
+			wizardButton.setElementCssClass("o_sel_author_create_wizard");
 		}
 
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());

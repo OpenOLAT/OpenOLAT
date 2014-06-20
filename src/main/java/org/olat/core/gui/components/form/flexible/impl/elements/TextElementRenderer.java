@@ -56,12 +56,10 @@ class TextElementRenderer extends DefaultComponentRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
-		//
+
 		TextElementComponent teC = (TextElementComponent) source;
 		TextElementImpl te = teC.getTextElementImpl();
-
 		String id = teC.getFormDispatchId();
-		//
 
 		String value = te.getValue();
 		if(value == null){
@@ -69,56 +67,36 @@ class TextElementRenderer extends DefaultComponentRenderer {
 		}
 		StringBuilder htmlVal = new StringBuilder();
 		htmlVal.append(StringEscapeUtils.escapeHtml(value));
-		if (!source.isEnabled()) {
-			//read only view
-			sb.append("<span id=\"");
-			sb.append(id);
-			sb.append("\" ");
-			sb.append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()));
-			sb.append("title=\"");
-			sb.append(htmlVal); //the uncutted value in tooltip
-			sb.append("\" "); 
-			sb.append(" >");
-			// use the longer from display size or real value length
-			int size = (te.displaySize > value.length() ? te.displaySize : value.length());
-			sb.append("<input type=\"").append(te.getHtmlInputType());
-			sb.append("\" disabled=\"disabled\" class=\"form-control o_disabled\" size=\"");
-			sb.append(size);
-			sb.append("\" value=\"");		
-			sb.append(htmlVal);
-			sb.append("\" />");		
-			sb.append("</span>");
-	
-		} else {
+		if (source.isEnabled()) {
 			//read write view			
-			sb.append("<input type=\"").append(te.getHtmlInputType()).append("\" id=\"");			
-			sb.append(id);
-			sb.append("\" name=\"");
-			sb.append(id);
-			sb.append("\" class=\"form-control\" size=\"");
-			sb.append(te.displaySize);
+			sb.append("<input type=\"").append(te.getHtmlInputType()).append("\" id=\"").append(id)
+			  .append("\" name=\"").append(id)
+			  .append("\" class='form-control' size=\"").append(te.displaySize);
 			if(te.maxlength > -1){
 				sb.append("\" maxlength=\"");
 				sb.append(te.maxlength);
 			}
-			sb.append("\" value=\"");
-			sb.append(htmlVal);
-			sb.append("\" ");
-			sb.append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()));
-			sb.append(" />");
-		}
-		
-
-		if(source.isEnabled()){
+			sb.append("\" value=\"").append(htmlVal).append("\" ")
+			  .append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()))
+			  .append(" />");
+			
 			//add set dirty form only if enabled
-			sb.append(FormJSHelper.getJSStartWithVarDeclaration(teC.getFormDispatchId()));
-			/* deactivated due OLAT-3094 and OLAT-3040
-			if(te.hasFocus()){
-				sb.append(FormJSHelper.getFocusFor(teC.getFormDispatchId()));
-			}
-			*/
-			sb.append(FormJSHelper.getSetFlexiFormDirty(te.getRootForm(), teC.getFormDispatchId()));
-			sb.append(FormJSHelper.getJSEnd());
+			sb.append(FormJSHelper.getJSStartWithVarDeclaration(teC.getFormDispatchId()))
+			  .append(FormJSHelper.getSetFlexiFormDirty(te.getRootForm(), teC.getFormDispatchId()))
+			  .append(FormJSHelper.getJSEnd());
+		} else {
+			//read only view
+			sb.append("<span id=\"").append(id).append("\" ")
+			  .append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()))
+			  .append("title=\"").append(htmlVal) //the uncutted value in tooltip
+			  .append("\" ").append(" >");
+			// use the longer from display size or real value length
+			int size = (te.displaySize > value.length() ? te.displaySize : value.length());
+			sb.append("<input type=\"").append(te.getHtmlInputType())
+			  .append("\" disabled=\"disabled\" class=\"form-control o_disabled\" size=\"")
+			  .append(size)
+			  .append("\" value=\"").append(htmlVal).append("\" />")
+			  .append("</span>");
 		}
 	}
 }

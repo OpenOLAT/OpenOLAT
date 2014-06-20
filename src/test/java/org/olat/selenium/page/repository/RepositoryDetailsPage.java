@@ -17,42 +17,47 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.selenium.page.core;
+package org.olat.selenium.page.repository;
 
 import java.util.List;
 
-import org.junit.Assert;
+import org.jboss.arquillian.drone.api.annotation.Drone;
+import org.jcodec.common.Assert;
 import org.olat.selenium.page.OOGraphene;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
 
 /**
- * Fragment which contains the menu tree. The WebElement to create
- * this fragment must be a parent of the div.o_tree
+ * Fragment to control the details view of a repository entry.
+ * 
  * 
  * Initial date: 20.06.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MenuTreePageFragment {
+public class RepositoryDetailsPage {
 	
-	@FindBy(className="o_tree")
-	private WebElement tree;
+	public static final By launchBy = By.className("o_sel_author_launch");
 	
-	/**
-	 * Click the root link in the tree.
-	 * 
-	 * @return The menu page fragment
-	 */
-	public MenuTreePageFragment selectRoot() {
-		List<WebElement> rootLinks = tree.findElements(By.cssSelector("a.o_tree_link"));
-		Assert.assertNotNull(rootLinks);
-		Assert.assertFalse(rootLinks.isEmpty());
+
+	@Drone
+	private WebDriver browser;
+	
+	public RepositoryDetailsPage assertOnTitle(String displayName) {
+		List<WebElement> titleList = browser.findElements(By.tagName("h1"));
+		Assert.assertNotNull(titleList);
+		Assert.assertEquals(1, titleList.size());
 		
-		rootLinks.get(0).click();
-		OOGraphene.waitBusy();
+		WebElement title = titleList.get(0);
+		Assert.assertTrue(title.isDisplayed());
+		Assert.assertTrue(title.getText().contains(displayName));
 		return this;
+	}
+	
+	public void launch() {
+		browser.findElement(launchBy).click();
+		OOGraphene.waitBusy();
 	}
 
 }
