@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -84,9 +85,12 @@ public class ResumeController extends FormBasicController implements SupportsAft
 		// Button layout
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
-		uifactory.addFormSubmitButton("submit", "resume.button", buttonLayout);
+		FormSubmit okButton = uifactory.addFormSubmitButton("submit", "resume.button", buttonLayout);
+		okButton.setElementCssClass("o_sel_resume_yes");
 		landingButton = uifactory.addFormLink("landing", "resume.button.landing", null, buttonLayout, Link.BUTTON);
+		landingButton.setElementCssClass("o_sel_resume_landing");
 		noButton = uifactory.addFormLink("cancel", "resume.button.cancel", null, buttonLayout, Link.BUTTON);
+		noButton.setElementCssClass("o_sel_resume_cancel");
 	}
 	
 	@Override

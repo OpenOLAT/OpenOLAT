@@ -17,22 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.util.browser;
+package org.olat.selenium.page;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
- 
-import org.jboss.arquillian.drone.api.annotation.Qualifier;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+
+import com.google.common.base.Predicate;
 
 /**
  * 
- * @author jkraehemann, joel.kraehemann@frentix.com, frentix.com
+ * Predicate which test the busy flag used to lock the
+ * OpenOLAT GUI after a link is clicked.
+ * 
+ * Initial date: 20.06.2014<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD, ElementType.PARAMETER })
-@Qualifier
-public @interface Browser2 {
-
+public class BusyPredicate implements Predicate<WebDriver> {
+	
+	@Override
+	public boolean apply(WebDriver driver) {
+        Object busy = ((JavascriptExecutor)driver)
+        		.executeScript("return window.o_info.linkbusy");
+        return Boolean.FALSE.equals(busy);
+    }
 }

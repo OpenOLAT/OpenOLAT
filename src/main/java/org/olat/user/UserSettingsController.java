@@ -74,17 +74,21 @@ public class UserSettingsController extends BasicController implements Activatea
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		preferencesLink = LinkFactory.createLink("tab.prefs", mainVC, this);
+		preferencesLink.setElementCssClass("o_sel_user_settings_prefs");
 		segmentView.addSegment(preferencesLink, true);
 		if(CoreSpringFactory.getImpl(WebDAVModule.class).isEnabled()) {
 			webdavLink = LinkFactory.createLink("tab.pwdav", mainVC, this);
+			webdavLink.setElementCssClass("o_sel_user_settings_webdav");
 			segmentView.addSegment(webdavLink, false);
 		}
 		if(CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()){
 			imLink = LinkFactory.createLink("tab.im", mainVC, this);
+			imLink.setElementCssClass("o_sel_user_settings_im");
 			segmentView.addSegment(imLink, false);
 		}
 		if (CoreSpringFactory.getImpl(RegistrationModule.class).isDisclaimerEnabled()) {
 			disclaimerLink = LinkFactory.createLink("tab.disclaimer", mainVC, this);
+			disclaimerLink.setElementCssClass("o_sel_user_settings_disclaimer");
 			segmentView.addSegment(disclaimerLink, false);
 		}
 		mainVC.put("segments", segmentView);

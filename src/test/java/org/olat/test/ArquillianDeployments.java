@@ -145,8 +145,11 @@ public class ArquillianDeployments {
 						|| filename.endsWith("_zh_TW.properties")) {
 					return false;
 				}
-			} else if (filename.endsWith(".java") || filename.endsWith("instantMessagingTestContext.xml") || filename.endsWith("Mock.xml") ||
-					filename.endsWith(".vsd") || filename.endsWith(".odg") || filename.endsWith(".odt") || filename.endsWith(".pdf")) {
+			} else if (filename.endsWith(".java")
+					|| filename.endsWith(".vsd")
+					|| filename.endsWith(".odg")
+					|| filename.endsWith(".odt")
+					|| filename.endsWith(".pdf")) {
 				return false;
 			}
 			return true;
@@ -163,12 +166,16 @@ public class ArquillianDeployments {
 	private static class StaticFileFilter implements FileFilter {
 		@Override
 		public boolean accept(File pathname) {
-			String filename = pathname.getName();
-			
-			if(filename.endsWith(".scss") || filename.endsWith(".psd") || filename.endsWith(".pxml")) {
-				return false;
-			}
-			return true;
+			String path = pathname.toString();
+			boolean exclude = (path.contains("/static/themes/openolat/")
+					|| path.contains("/static/themes/openolat/openolatexample")
+					|| path.endsWith(".scss")
+					|| path.endsWith(".psd")
+					|| path.endsWith(".pxml")
+					|| path.endsWith(".sh")
+					|| path.endsWith(".scss")
+					|| path.endsWith(".pxm"));
+			return !exclude;
 		}
 	}
 	
@@ -183,16 +190,14 @@ public class ArquillianDeployments {
 		@Override
 		public boolean include(ArchivePath path) {
 			String pathStr = path.toString();
-			if(pathStr.contains("/org/olat/core/test")) {
-				return false;
-			}
-			if(pathStr.contains("/org/olat/test/_spring") || pathStr.contains("/org/olat/test/file_resources")) {
-				return false;
-			}
-			if(pathStr.endsWith("Test.class]") || pathStr.endsWith("TestWithMocking.class]") || pathStr.endsWith("Junit4.class]")) {
-				return false;
-			}
-			return true;
+			boolean exclude = (pathStr.contains("/org/olat/core/test")
+					|| pathStr.contains("/org/olat/selenium")
+					|| pathStr.contains("/org/olat/test/_spring")
+					|| pathStr.contains("/org/olat/test/file_resources")
+					|| pathStr.endsWith("Test.class]")
+					|| pathStr.endsWith("TestWithMocking.class]")
+					|| pathStr.endsWith("Junit4.class]"));
+			return !exclude;
 		}
 	}
 }

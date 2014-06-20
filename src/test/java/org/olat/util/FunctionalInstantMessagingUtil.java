@@ -180,30 +180,6 @@ public class FunctionalInstantMessagingUtil {
 	}
 	
 	/**
-	 * Show offline contacts.
-	 * 
-	 * @param browser
-	 * @return true on success
-	 */
-	private boolean openOfflineContacts(Selenium browser){
-		functionalUtil.idle(browser);
-		
-		/* check if it's already open */
-		StringBuffer locatorBuffer = new StringBuffer();
-		
-		locatorBuffer.append("xpath=//a[contains(@class, '")
-		.append(getInstantMessagingShowOfflineContactsCss())
-		.append("')]");
-		
-		/* click if necessary */
-		if(browser.isElementPresent(locatorBuffer.toString())){
-			browser.click(locatorBuffer.toString());
-		}
-		
-		return(true);
-	}
-	
-	/**
 	 * Show groups.
 	 * 
 	 * @param browser

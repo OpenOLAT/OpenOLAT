@@ -26,6 +26,10 @@
         <property name="browser">*googlechrome</property>
         -->
     </extension>
+    
+	<extension qualifier="webdriver">
+		<property name="browser">firefox</property>
+	</extension>
 
 	<extension qualifier="student">
 		<property name="browserCapabilities">firefox</property>

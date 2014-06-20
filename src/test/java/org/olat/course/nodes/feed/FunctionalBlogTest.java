@@ -168,13 +168,6 @@ public class FunctionalBlogTest {
 		Assert.assertTrue(functionalUtil.logout(browser));
 	}
 	
-	@Ignore
-	@Test
-	@RunAsClient
-	public void checkDelete(){
-		//TODO:JK: implement me
-	}
-	
 	@Test
 	@RunAsClient
 	public void checkConcurrentClearCache(@Drone @Tutor1 DefaultSelenium tutor0, @Drone @Student1 DefaultSelenium student0) throws IOException, URISyntaxException{

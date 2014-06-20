@@ -152,7 +152,7 @@ public class RestConnection {
 	public void shutdown() {
 		IOUtils.closeQuietly(httpclient);
 	}
-	
+
 	public boolean login(String username, String password) throws IOException, URISyntaxException {
 		URI uri = getContextURI().path("auth").path(username).queryParam("password", password).build();
 		

@@ -240,6 +240,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 					link.setCustomDisplayText(label);
 					String iconCssClass = node.getIconCssClass();
 					link.setIconLeftCSS(iconCssClass);
+					link.setElementCssClass("o_sel_user_tools-" + gAe.getNavigationKey());
 					
 					if(!StringHelper.containsNonWhitespace(gAe.getParentTreeNodeIdentifier())) {
 						linksName.add(linkName);
