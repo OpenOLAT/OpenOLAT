@@ -128,7 +128,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_private:before { content: $fa-var-print;}
 .o_icon_provider_guest:before { content: $fa-var-child;}
 .o_icon_provider_ldap:before { content: $fa-var-university;}
-.o_icon_provider_olat{content:"\221E"; font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; font-weight: bold;}
+.o_icon_provider_olat:before {content:"\221E"; font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; font-weight: bold;}
 .o_icon_provider_shibboleth:before { content: $fa-var-university;}
 .o_icon_publish:before { content: $fa-var-share;}
 .o_icon_qrcode:before { content: $fa-var-qrcode;}
@@ -199,7 +199,7 @@ a.o_icon {
 .o_EPStructuredMapTemplate_icon:before { content: $fa-var-puzzle-piece; }
 .o_FileResource-BLOG_icon:before { content: $fa-var-bullhorn; }
 .o_FileResource-IMSCP_icon:before { content: $fa-var-archive; }
-.o_FileResource-PODCAST_icon	:before { content: $fa-var-video-camera; }
+.o_FileResource-PODCAST_icon:before { content: $fa-var-video-camera; }
 .o_FileResource-SHAREDFOLDER:before { content: $fa-var-external-link; }
 .o_FileResource-SCORMCP_icon:before { content: $fa-var-archive; }
 .o_FileResource-SURVEY_icon:before { content: $fa-var-meh-o; }
@@ -321,8 +321,8 @@ a.o_icon {
 .o_filetype_txt:before,
 .o_filetype_htm:before, 
 .o_filetype_html:before { content: $fa-var-file-text-o; }
-.o_filetype_pages,
-.o_filetype_doc, 
+.o_filetype_pages:before,
+.o_filetype_doc:before, 
 .o_filetype_docx:before { content: $fa-var-file-word-o; }
 
 
