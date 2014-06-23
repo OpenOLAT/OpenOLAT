@@ -32,7 +32,7 @@ import org.olat.group.model.SearchBusinessGroupParams;
 public class SearchBusinessGroupListController extends AbstractBusinessGroupListController {
 	
 	public SearchBusinessGroupListController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "group_list");
+		super(ureq, wControl, "group_list", true, null);
 	}
 
 	@Override

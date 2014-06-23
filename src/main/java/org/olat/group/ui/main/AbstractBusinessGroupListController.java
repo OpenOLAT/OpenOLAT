@@ -149,6 +149,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	protected CloseableModalController cmc;
 
 	private final boolean admin;
+	private final boolean showAdminTools;
 	@Autowired
 	protected MarkManager markManager;
 	@Autowired
@@ -170,14 +171,17 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	private Object userObject;
 	
 	public AbstractBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page) {
-		this(ureq, wControl, page, null);
+		this(ureq, wControl, page, false, null);
 	}
 	
-	public AbstractBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page, Object userObject) {
+	public AbstractBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page,
+			boolean showAdminTools, Object userObject) {
 		super(ureq, wControl, page);
 		setTranslator(Util.createPackageTranslator(AbstractBusinessGroupListController.class, ureq.getLocale(), getTranslator()));
 
-		admin = ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager();
+		Roles roles = ureq.getUserSession().getRoles();
+		admin = roles.isOLATAdmin() || roles.isGroupManager();
+		this.showAdminTools = showAdminTools && admin;
 		this.userObject = userObject;
 
 		initForm(ureq);
@@ -194,7 +198,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		options.setFromColumnModel(true);
 		tableEl.setSortSettings(options);
 		
-		searchCtrl = new BusinessGroupSearchController(ureq, getWindowControl(), isAdmin(), true, false, mainForm);
+		searchCtrl = new BusinessGroupSearchController(ureq, getWindowControl(), isAdmin(), true, showAdminTools, mainForm);
 		searchCtrl.setEnabled(false);
 		listenTo(searchCtrl);
 		

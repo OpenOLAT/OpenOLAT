@@ -36,6 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -52,7 +53,8 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class OverviewBusinessGroupListController extends BasicController implements Activateable2 {
 	
-	private final Link markedGroupsLink, myGroupsLink, openGroupsLink, searchOpenLink;
+	private final Link markedGroupsLink, myGroupsLink, openGroupsLink;
+	private Link searchOpenLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 
@@ -81,9 +83,13 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 		openGroupsLink = LinkFactory.createLink("open.groups", mainVC, this);
 		openGroupsLink.setElementCssClass("o_sel_group_open_groups_seg");
 		segmentView.addSegment(openGroupsLink, false);
-		searchOpenLink = LinkFactory.createLink("opengroups.search", mainVC, this);
-		searchOpenLink.setElementCssClass("o_sel_group_search_groups_seg");
-		segmentView.addSegment(searchOpenLink, false);
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		if(roles.isGroupManager() || roles.isOLATAdmin()) {
+			searchOpenLink = LinkFactory.createLink("opengroups.search.admin", mainVC, this);
+			searchOpenLink.setElementCssClass("o_sel_group_search_groups_seg");
+			segmentView.addSegment(searchOpenLink, false);
+		}
 		
 		putInitialPanel(mainPanel);
 	}
@@ -138,7 +144,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 			} else if("OwnedGroups".equals(segment)) {
 				updateOpenGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
 				segmentView.select(openGroupsLink);
-			} else if("Search".equals(segment)) {
+			} else if("Search".equals(segment) && searchOpenLink != null) {
 				updateSearch(ureq).activate(ureq, subEntries, entry.getTransientState());
 				segmentView.select(searchOpenLink);
 			}
