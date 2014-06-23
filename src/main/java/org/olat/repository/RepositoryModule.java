@@ -47,12 +47,14 @@ public class RepositoryModule extends AbstractOLATModule {
 	private static final String CATALOG_SITE_ENABLED = "site.catalog.enable";
 	private static final String CATALOG_ENABLED = "catalog.enable";
 	private static final String CATALOG_BROWSING_ENABLED = "catalog.brwosing.enable";
+	private static final String MYCOURSES_SEARCH_ENABLED = "mycourses.search.enable";
 	
 	private boolean catalogSiteEnabled;
 	private boolean catalogEnabled;
 	private boolean catalogBrowsingEnabled;
 	private boolean listAllResourceTypes;
 	private boolean managedRepositoryEntries;
+	private boolean myCoursesSearchEnabled;
 	
 	private BusinessGroupModule groupModule;
 	
@@ -98,6 +100,8 @@ public class RepositoryModule extends AbstractOLATModule {
 		catalogSiteEnabled = getBooleanConfigParameter(CATALOG_SITE_ENABLED, true);
 		catalogEnabled = getBooleanConfigParameter(CATALOG_ENABLED, true);
 		catalogBrowsingEnabled = getBooleanConfigParameter(CATALOG_BROWSING_ENABLED, true);
+		
+		myCoursesSearchEnabled = getBooleanConfigParameter(MYCOURSES_SEARCH_ENABLED, true);
 	}
 
 	private void updateProperties() {
@@ -119,6 +123,11 @@ public class RepositoryModule extends AbstractOLATModule {
 		String myCourses = getStringPropertyValue(CATALOG_BROWSING_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(myCourses)) {
 			catalogBrowsingEnabled = "true".equals(myCourses);
+		}
+		
+		String myCoursesSearch = getStringPropertyValue(MYCOURSES_SEARCH_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(myCoursesSearch)) {
+			myCoursesSearchEnabled = "true".equals(myCoursesSearch);
 		}
 	}
 
@@ -178,4 +187,14 @@ public class RepositoryModule extends AbstractOLATModule {
 	public void setCatalogBrowsingEnabled(boolean enabled) {
 		setStringProperty(CATALOG_BROWSING_ENABLED, Boolean.toString(enabled), true);
 	}
+
+	public boolean isMyCoursesSearchEnabled() {
+		return myCoursesSearchEnabled;
+	}
+
+	public void setMyCoursesSearchEnabled(boolean enabled) {
+		setStringProperty(MYCOURSES_SEARCH_ENABLED, Boolean.toString(enabled), true);
+	}
+	
+	
 }

@@ -32,11 +32,13 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.catalog.CatalogEntryImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.UserCourseInformations;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
@@ -50,6 +52,7 @@ import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.model.OfferImpl;
+import org.olat.user.UserImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -218,6 +221,55 @@ public class RepositoryEntryMyCourseQueries {
 			  .append(" )");
 		}
 		
+		String author = params.getAuthor();
+		if (StringHelper.containsNonWhitespace(author)) { // fuzzy author search
+			author = PersistenceHelper.makeFuzzyQueryString(author);
+
+			sb.append(" and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership, ")
+			     .append(IdentityImpl.class.getName()).append(" as identity, ").append(UserImpl.class.getName()).append(" as user")
+		         .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity=identity and identity.user=user")
+		         .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
+		         .append("      and (");
+			PersistenceHelper.appendFuzzyLike(sb, "user.userProperties['firstName']", "author", dbInstance.getDbVendor());
+			sb.append(" or ");
+			PersistenceHelper.appendFuzzyLike(sb, "user.userProperties['lastName']", "author", dbInstance.getDbVendor());
+			sb.append(" or ");
+			PersistenceHelper.appendFuzzyLike(sb, "identity.name", "author", dbInstance.getDbVendor());
+			sb.append(" ))");
+		}
+
+		String text = params.getText();
+		if (StringHelper.containsNonWhitespace(text)) {
+			//displayName = '%' + displayName.replace('*', '%') + '%';
+			//query.append(" and v.displayname like :displayname");
+			text = PersistenceHelper.makeFuzzyQueryString(text);
+			sb.append(" and (");
+			PersistenceHelper.appendFuzzyLike(sb, "v.displayname", "displaytext", dbInstance.getDbVendor());
+			sb.append(" or ");
+			PersistenceHelper.appendFuzzyLike(sb, "v.description", "displaytext", dbInstance.getDbVendor());
+			sb.append(" or ");
+			PersistenceHelper.appendFuzzyLike(sb, "v.objectives", "displaytext", dbInstance.getDbVendor());
+			sb.append(")");
+		}
+		
+		Long id = null;
+		String refs = null;
+		if(StringHelper.containsNonWhitespace(params.getIdAndRefs())) {
+			refs = params.getIdAndRefs();
+			if(StringHelper.isLong(refs)) {
+				try {
+					id = Long.parseLong(refs);
+				} catch (NumberFormatException e) {
+					//
+				}
+			}
+			sb.append(" and (v.externalId=:ref or v.externalRef=:ref or v.softkey=:ref");
+			if(id != null) {
+				sb.append(" or v.key=:vKey or res.resId=:vKey)");
+			}
+			sb.append(")");	
+		}
+		
 		if(!count) {
 			appendOrderBy(params.getOrderBy(), params.isOrderByAsc(), sb);
 		}
@@ -235,6 +287,18 @@ public class RepositoryEntryMyCourseQueries {
 		}
 		if(params.isLifecycleFilterDefined()) {
 			dbQuery.setParameter("now", new Date());
+		}
+		if(id != null) {
+			dbQuery.setParameter("vKey", id);
+		}
+		if(refs != null) {
+			dbQuery.setParameter("ref", refs);
+		}
+		if(StringHelper.containsNonWhitespace(text)) {
+			dbQuery.setParameter("displaytext", text);
+		}
+		if (StringHelper.containsNonWhitespace(author)) { // fuzzy author search
+			dbQuery.setParameter("author", author);
 		}
 		dbQuery.setParameter("identityKey", identity.getKey());
 		return dbQuery;

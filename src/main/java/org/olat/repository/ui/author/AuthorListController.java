@@ -180,7 +180,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//search form
-		searchCtrl = new AuthorSearchController(ureq, getWindowControl(), true, !startExtendedSearch, mainForm);
+		searchCtrl = new AuthorSearchController(ureq, getWindowControl(), !startExtendedSearch, mainForm);
 		searchCtrl.setEnabled(false);
 		listenTo(searchCtrl);
 		

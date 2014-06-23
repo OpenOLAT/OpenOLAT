@@ -50,67 +50,62 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		
 		FlexiTableComponent ftC = (FlexiTableComponent) source;
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
-		
-		if (ftE.getTableDataModel().getRowCount() == 0) {
-			String emptyMessageKey = ftE.getEmtpyTableMessageKey();
-			if (emptyMessageKey != null) {
-				sb.append("<div class='o_info'>");
-				sb.append(translator.translate(emptyMessageKey));				
-				sb.append("</div>");
-				return;		
-			}
-		}
+		String id = ftC.getFormDispatchId();
 
 		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
 		
-		sb.append("<div class='o_table_wrapper o_table_flexi")
-		  .append(" o_table_edit", ftE.isEditMode());
-		String css = ftE.getElementCssClass();
-		if (css != null) {
-			sb.append(" ").append(css);
+		if(ftE.getTableDataModel().getRowCount() == 0 && StringHelper.containsNonWhitespace(ftE.getEmtpyTableMessageKey())) {
+			String emptyMessageKey = ftE.getEmtpyTableMessageKey();
+			sb.append("<div class='o_info'>")
+			  .append(translator.translate(emptyMessageKey))
+			  .append("</div>");
+		} else {
+			sb.append("<div class='o_table_wrapper o_table_flexi")
+			  .append(" o_table_edit", ftE.isEditMode());
+			String css = ftE.getElementCssClass();
+			if (css != null) {
+				sb.append(" ").append(css);
+			}
+			switch(ftE.getRendererType()) {
+				case custom: sb.append(" o_rendertype_custom"); break;
+				case classic: sb.append(" o_rendertype_classic"); break;
+			}
+			sb.append(" table-responsive'");
+			String wrapperSelector = ftE.getWrapperSelector();
+			if (wrapperSelector != null) {
+				sb.append(" id='").append(wrapperSelector).append("'");
+			}
+			sb.append("><table id=\"").append(id).append("\" class=\"table table-condensed  table-striped table-hover table-responsive\">");
+			
+			//render headers
+			renderHeaders(sb, ftC, translator);
+			//render body
+			sb.append("<tbody>");
+			renderBody(renderer, sb, ftC, ubu, translator, renderResult);
+			sb.append("</tbody></table>");
+			renderFooterButtons(sb, ftC, translator);
+			//draggable
+			if(ftE.getColumnIndexForDragAndDropLabel() > 0) {
+				sb.append("<script type='text/javascript'>")
+				  .append("/* <![CDATA[ */ \n")
+				  .append("jQuery(function() {\n")
+				  .append(" jQuery('.o_table_flexi table tr').draggable({\n")
+		          .append("  containment: '#o_main',\n")
+		          .append("	 zIndex: 10000,\n")
+		          .append("	 cursorAt: {left: 0, top: 0},\n")
+		          .append("	 accept: function(event,ui){ return true; },\n")
+		          .append("	 helper: function(event,ui,zt) {\n")
+		          .append("    var helperText = jQuery(this).children('.o_dnd_label').text();\n")
+		          .append("    return jQuery(\"<div class='ui-widget-header b_table_drag'>\" + helperText + \"</div>\").appendTo('body').css('zIndex',5).show();\n")
+		          .append("  }\n")
+		          .append("});\n")
+		          .append("});\n")
+		          .append("/* ]]> */\n")
+				  .append("</script>\n");
+			}
+			
+			sb.append("</div>");
 		}
-		switch(ftE.getRendererType()) {
-			case custom: sb.append(" o_rendertype_custom"); break;
-			case classic: sb.append(" o_rendertype_classic"); break;
-		}
-		sb.append(" table-responsive'");
-		String wrapperSelector = ftE.getWrapperSelector();
-		if (wrapperSelector != null) {
-			sb.append(" id='").append(wrapperSelector).append("'");
-		}
-		sb.append(">");
-		
-		String id = ftC.getFormDispatchId();
-		sb.append("<table id=\"").append(id).append("\" class=\"table table-condensed  table-striped table-hover table-responsive\">");
-		
-		//render headers
-		renderHeaders(sb, ftC, translator);
-		//render body
-		sb.append("<tbody>");
-		renderBody(renderer, sb, ftC, ubu, translator, renderResult);
-		sb.append("</tbody></table>");
-		renderFooterButtons(sb, ftC, translator);
-		//draggable
-		if(ftE.getColumnIndexForDragAndDropLabel() > 0) {
-			sb.append("<script type='text/javascript'>")
-			  .append("/* <![CDATA[ */ \n")
-			  .append("jQuery(function() {\n")
-			  .append(" jQuery('.o_table_flexi table tr').draggable({\n")
-	          .append("  containment: '#o_main',\n")
-	          .append("	 zIndex: 10000,\n")
-	          .append("	 cursorAt: {left: 0, top: 0},\n")
-	          .append("	 accept: function(event,ui){ return true; },\n")
-	          .append("	 helper: function(event,ui,zt) {\n")
-	          .append("    var helperText = jQuery(this).children('.o_dnd_label').text();\n")
-	          .append("    return jQuery(\"<div class='ui-widget-header b_table_drag'>\" + helperText + \"</div>\").appendTo('body').css('zIndex',5).show();\n")
-	          .append("  }\n")
-	          .append("});\n")
-	          .append("});\n")
-	          .append("/* ]]> */\n")
-			  .append("</script>\n");
-		}
-		
-		sb.append("</div>");
 		
 		//source
 		if (source.isEnabled()) {
@@ -171,8 +166,10 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		
 		sb.append("<div class='pull-right o_table_tools'>");
 		
+		boolean empty = ftE.getTableDataModel().getRowCount() == 0;
+		
 		//filter
-		if(ftE.isFilterEnabled()) {
+		if(ftE.isFilterEnabled() && !empty) {
 			List<FlexiTableFilter> filters = ftE.getFilters();
 			if(filters != null && filters.size() > 0) {
 				renderFilterDropdown(sb, ftE, filters);
@@ -180,19 +177,19 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 		
 		//sort
-		if(ftE.isSortEnabled()) {
+		if(ftE.isSortEnabled() && !empty) {
 			List<FlexiTableSort> sorts = ftE.getSorts();
 			if(sorts != null && sorts.size() > 0) {
 				renderSortDropdown(sb, ftE, sorts);
 			}
 		}
 		
-		if(ftE.getExportButton() != null && ftE.isExportEnabled()) {
+		if(ftE.getExportButton() != null && ftE.isExportEnabled() && !empty) {
 			sb.append("<div class='btn-group'>");
 			renderFormItem(renderer, sb, ftE.getExportButton(), ubu, translator, renderResult, args);
 			sb.append("</div> ");
 		}
-		if(ftE.getCustomButton() != null && ftE.isCustomizeColumns()) {
+		if(ftE.getCustomButton() != null && ftE.isCustomizeColumns() && !empty) {
 			sb.append("<div class='btn-group'>");
 			renderFormItem(renderer, sb, ftE.getCustomButton(), ubu, translator, renderResult, args);
 			sb.append("</div> ");
@@ -395,7 +392,6 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		target.append("<tr id='").append(rowIdPrefix).append(row)
 				  .append("'>");
 				
-		int col = 0;
 		if(ftE.isMultiSelect()) {
 			target.append("<td>")
 			      .append("<input type='checkbox' name='tb_ms' value='").append(rowIdPrefix).append(row).append("'");
@@ -403,20 +399,19 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				target.append(" checked='checked'");
 			}   
 			target.append("/></td>");
-			col++;
 		}
 				
 		for (int j = 0; j<numOfCols; j++) {
 			FlexiColumnModel fcm = columnsModel.getColumnModel(j);
 			if(ftE.isColumnModelVisible(fcm)) {
-				renderCell(renderer, target, ftC, fcm, row, col++, ubu, translator, renderResult);
+				renderCell(renderer, target, ftC, fcm, row, ubu, translator, renderResult);
 			}
 		}
 		target.append("</tr>");
 	}
 
-	protected void renderCell(Renderer renderer, StringOutput target, FlexiTableComponent ftC, FlexiColumnModel fcm,
-			int row, int col, URLBuilder ubu, Translator translator, RenderResult renderResult) {
+	private void renderCell(Renderer renderer, StringOutput target, FlexiTableComponent ftC, FlexiColumnModel fcm,
+			int row, URLBuilder ubu, Translator translator, RenderResult renderResult) {
 
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();

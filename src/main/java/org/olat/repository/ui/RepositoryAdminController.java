@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.coach.ui;
+package org.olat.repository.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -27,34 +27,39 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.coach.CoachingModule;
+import org.olat.core.util.Util;
+import org.olat.repository.RepositoryModule;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
+ * Initial date: 23.06.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class CoachAdminController extends FormBasicController {
+public class RepositoryAdminController extends FormBasicController {
 	
 	private MultipleSelectionElement enabled;
 	private static final String[] keys = {"on"};
 	
 	@Autowired
-	private CoachingModule coachingModule;
+	private RepositoryModule repositoryModule;
 	
-	public CoachAdminController(UserRequest ureq, WindowControl wControl) {
+	public RepositoryAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("coaching.title");
-		setFormContextHelp(CoachAdminController.class.getPackage().getName(), "coaching.html", "help.hover.coaching");
+		setFormTitle("repository.admin.title");
+		setFormContextHelp(RepositoryService.class.getPackage().getName(), "rep-admin.html", "help.hover.repository.admin");
 
-		boolean restEnabled = coachingModule.isEnabled();
-		String[] values = new String[] { translate("coaching.on") };
-		enabled = uifactory.addCheckboxesHorizontal("coaching.enabled", formLayout, keys, values);
+		boolean restEnabled = repositoryModule.isMyCoursesSearchEnabled();
+		String[] values = new String[] { translate("my.course.search.on") };
+		enabled = uifactory.addCheckboxesHorizontal("my.course.search.enabled", formLayout, keys, values);
 		enabled.addActionListener(FormEvent.ONCLICK);
 		enabled.select(keys[0], restEnabled);
 	}
@@ -68,11 +73,11 @@ public class CoachAdminController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(enabled == source) {
 			boolean on = !enabled.getSelectedKeys().isEmpty();
-			coachingModule.setEnabled(on);
+			repositoryModule.setMyCoursesSearchEnabled(on);
 			getWindowControl().setInfo("saved");
 		}
 	}
-	
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//

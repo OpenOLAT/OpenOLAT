@@ -30,6 +30,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -43,38 +44,33 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		
-		
 		FlexiTableComponent ftC = (FlexiTableComponent)source;
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
-		
-		if (ftE.getTableDataModel().getRowCount() == 0) {
-			String emptyMessageKey = ftE.getEmtpyTableMessageKey();
-			if (emptyMessageKey != null) {
-				sb.append("<div class='o_info'>");
-				sb.append(translator.translate(emptyMessageKey));				
-				sb.append("</div>");
-				return;		
-			}
-		}
-		
-		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
-
 		String id = ftC.getFormDispatchId();
-		sb.append("<div class=\"o_table_wrapper o_table_flexi")
-		  .append(" o_table_edit", ftE.isEditMode());
-		String css = ftE.getElementCssClass();
-		if (css != null) {
-			sb.append(" ").append(css);
-		}
-		sb.append(" o_rendertype_custom\">");
-		
-		//render body
-		sb.append("<div class='o_table_body container-fluid'>");
-		renderBody(renderer, sb, ftC, ubu, translator, renderResult);
-		sb.append("</div>");
 
-		renderFooterButtons(sb, ftC, translator);
-		sb.append("</div>");
+		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
+		
+		if (ftE.getTableDataModel().getRowCount() == 0 && StringHelper.containsNonWhitespace(ftE.getEmtpyTableMessageKey())) {
+			sb.append("<div class='o_info'>")
+			  .append(translator.translate(ftE.getEmtpyTableMessageKey()))
+			  .append("</div>");
+		} else {
+			sb.append("<div class=\"o_table_wrapper o_table_flexi")
+			  .append(" o_table_edit", ftE.isEditMode());
+			String css = ftE.getElementCssClass();
+			if (css != null) {
+				sb.append(" ").append(css);
+			}
+			sb.append(" o_rendertype_custom\">");
+			
+			//render body
+			sb.append("<div class='o_table_body container-fluid'>");
+			renderBody(renderer, sb, ftC, ubu, translator, renderResult);
+			sb.append("</div>");
+	
+			renderFooterButtons(sb, ftC, translator);
+			sb.append("</div>");
+		}
 		
 		//source
 		if (source.isEnabled()) {

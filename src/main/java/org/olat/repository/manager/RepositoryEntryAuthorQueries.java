@@ -202,7 +202,7 @@ public class RepositoryEntryAuthorQueries {
 			}
 			sb.append(" and (v.externalId=:ref or v.externalRef=:ref or v.softkey=:ref");
 			if(id != null) {
-				sb.append(" or v.key=:vKey)");
+				sb.append(" or v.key=:vKey or res.resId=:vKey)");
 			}
 			sb.append(")");	
 		}

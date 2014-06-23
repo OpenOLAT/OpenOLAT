@@ -57,7 +57,6 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 		
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		
-		
 		Boolean asc = null;
 		String sortKey = fcm.getSortKey();
 		SortKey[] orderBy = ftE.getOrderBy();

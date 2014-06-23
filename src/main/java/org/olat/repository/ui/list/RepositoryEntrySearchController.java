@@ -17,16 +17,14 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.repository.ui.author;
+package org.olat.repository.ui.list;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -37,11 +35,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFl
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.handlers.RepositoryHandlerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -49,30 +44,24 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AuthorSearchController extends FormBasicController implements ExtendedFlexiTableSearchController {
+public class RepositoryEntrySearchController extends FormBasicController implements ExtendedFlexiTableSearchController {
 
 	private TextElement id; // only for admins
-	private TextElement displayName;
+	private TextElement text;
 	private TextElement author;
-	private TextElement description;
-	private SingleSelection types;
 	private FormSubmit searchButton;
 	
-	private String[] limitTypes;
 	private boolean cancelAllowed;
 	private boolean enabled = true;
 	
-	@Autowired
-	private RepositoryHandlerFactory repositoryHandlerFactory;
-	
-	public AuthorSearchController(UserRequest ureq, WindowControl wControl, boolean cancelAllowed) {
+	public RepositoryEntrySearchController(UserRequest ureq, WindowControl wControl, boolean cancelAllowed) {
 		super(ureq, wControl, "search");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.cancelAllowed = cancelAllowed;
 		initForm(ureq);
 	}
 
-	public AuthorSearchController(UserRequest ureq, WindowControl wControl, boolean cancelAllowed, Form form) {
+	public RepositoryEntrySearchController(UserRequest ureq, WindowControl wControl, boolean cancelAllowed, Form form) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "search", form);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		this.cancelAllowed = cancelAllowed;
@@ -85,24 +74,16 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		leftContainer.setRootForm(mainForm);
 		formLayout.add(leftContainer);
 
-		displayName = uifactory.addTextElement("cif_displayname", "cif.displayname", 255, "", leftContainer);
-		displayName.setElementCssClass("o_sel_repo_search_displayname");
-		displayName.setFocus(true);
-
-		description = uifactory.addTextElement("cif_description", "cif.description", 255, "", leftContainer);
-		description.setElementCssClass("o_sel_repo_search_description");
-
-		List<String> typeList = getResources();
-		String[] typeKeys = typeList.toArray(new String[typeList.size()]);
-		String[] typeValues = getTranslatedResources(typeList);
-		types = uifactory.addDropdownSingleselect("cif.type", "cif.type", leftContainer, typeKeys, typeValues, null);
+		text = uifactory.addTextElement("cif_displayname", "cif.displayname", 255, "", leftContainer);
+		text.setElementCssClass("o_sel_repo_search_displayname");
+		text.setFocus(true);
+		
+		author = uifactory.addTextElement("cif_author", "cif.author", 255, "", leftContainer);
+		author.setElementCssClass("o_sel_repo_search_author");
 
 		FormLayoutContainer rightContainer = FormLayoutContainer.createDefaultFormLayout("right_1", getTranslator());
 		rightContainer.setRootForm(mainForm);
 		formLayout.add(rightContainer);
-		
-		author = uifactory.addTextElement("cif_author", "cif.author", 255, "", rightContainer);
-		author.setElementCssClass("o_sel_repo_search_author");
 		
 		id = uifactory.addTextElement("cif_id", "cif.id", 128, "", rightContainer);
 		id.setElementCssClass("o_sel_repo_search_id");
@@ -136,7 +117,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	 * @return Display name filed value.
 	 */
 	public String getDisplayName() {
-		return displayName.getValue();
+		return text.getValue();
 	}
 
 	/**
@@ -146,24 +127,6 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		return author.getValue();
 	}
 
-	/**
-	 * @return Descritpion field value.
-	 */
-	public String getDescription() {
-		return description.getValue();
-	}
-
-	/**
-	 * @return Limiting type selections.
-	 */
-	public String getRestrictedType() {
-		if(types.isOneSelected()) {
-			return types.getSelectedKey();
-		} else if (limitTypes != null && limitTypes.length > 0) {
-			return limitTypes[0];
-		}
-		return null;
-	}
 	
 	@Override
 	public void setEnabled(boolean enable) {
@@ -174,7 +137,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	protected boolean validateFormLogic(UserRequest ureq) {
 		if(!enabled) return true;
 		
-		if (displayName.isEmpty() && author.isEmpty() && description.isEmpty() && (id != null && id.isEmpty()))	{
+		if (text.isEmpty() && author.isEmpty() && (id != null && id.isEmpty()))	{
 			showWarning("cif.error.allempty", null);
 			return false;
 		}
@@ -207,29 +170,6 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		e.setId(getId());
 		e.setAuthor(getAuthor());
 		e.setDisplayname(getDisplayName());
-		e.setDescription(getDescription());
-		e.setType(getRestrictedType());
 		fireEvent(ureq, e);
-	}
-
-	private String[] getTranslatedResources(List<String> resources) {
-		List<String> l = new ArrayList<String>();
-		for(String key: resources){
-			if(StringHelper.containsNonWhitespace(key)) {
-				l.add(translate(key));
-			} else {
-				l.add("");
-			}
-		}
-		return l.toArray(new String[0]);
-	}
-	
-	private List<String> getResources() {
-		List<String> resources = new ArrayList<String>();
-		resources.add("");
-		for(String type:repositoryHandlerFactory.getSupportedTypes()) {
-			resources.add(type);
-		}
-		return resources;
 	}
 }

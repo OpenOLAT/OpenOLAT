@@ -45,6 +45,10 @@ public class SearchMyRepositoryEntryViewParams {
 	private CatalogEntry parentEntry;
 	private List<String> resourceTypes;
 	private List<Long> repoEntryKeys;
+
+	private String idAndRefs;
+	private String author;
+	private String text;
 	
 	public SearchMyRepositoryEntryViewParams(Identity identity, Roles roles, String... resourceTypes) {
 		this.identity = identity;
@@ -74,6 +78,30 @@ public class SearchMyRepositoryEntryViewParams {
 
 	public void setRepoEntryKeys(List<Long> repoEntryKeys) {
 		this.repoEntryKeys = repoEntryKeys;
+	}
+
+	public String getIdAndRefs() {
+		return idAndRefs;
+	}
+
+	public void setIdAndRefs(String idAndRefs) {
+		this.idAndRefs = idAndRefs;
+	}
+
+	public String getAuthor() {
+		return author;
+	}
+
+	public void setAuthor(String author) {
+		this.author = author;
+	}
+
+	public String getText() {
+		return text;
+	}
+
+	public void setText(String text) {
+		this.text = text;
 	}
 
 	public OrderBy getOrderBy() {

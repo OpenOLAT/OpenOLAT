@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
@@ -33,10 +34,10 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -81,15 +82,20 @@ public class RepositoryEntryListController extends FormBasicController
 
 	private final List<Link> filters = new ArrayList<>();
 	private final List<Link> orderBy = new ArrayList<>();
+	
+	private boolean startExtendedSearch;
 
 	private final String name;
 	private FlexiTableElement tableEl;
 	private RepositoryEntryDataModel model;
 	private DefaultRepositoryEntryDataSource dataSource;
+	private SearchMyRepositoryEntryViewParams searchParams;
+	
 	private CloseableModalController cmc;
 	private UserCommentsController commentsCtrl;
 	private final BreadcrumbPanel stackPanel;
 	private RepositoryEntryDetailsController detailsCtrl;
+	private RepositoryEntrySearchController searchCtrl;
 	
 	private final String mapperThumbnailUrl;
 	@Autowired
@@ -98,19 +104,24 @@ public class RepositoryEntryListController extends FormBasicController
 	private UserRatingsDAO userRatingsDao;
 	
 	public RepositoryEntryListController(UserRequest ureq, WindowControl wControl,
-			SearchMyRepositoryEntryViewParams searchParams, String name, BreadcrumbPanel stackPanel) {
+			SearchMyRepositoryEntryViewParams searchParams, boolean load, 
+			boolean startExtendedSearch, String name, BreadcrumbPanel stackPanel) {
 		super(ureq, wControl, "repoentry_table");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		mapperThumbnailUrl = registerCacheableMapper(ureq, "repositoryentryImage", new RepositoryEntryImageMapper());
 		this.name = name;
 		this.stackPanel = stackPanel;
+		this.startExtendedSearch = startExtendedSearch;
 		
+		this.searchParams = searchParams;
 		dataSource = new DefaultRepositoryEntryDataSource(searchParams, this);
 		initForm(ureq);
 		initFilters();
 		initSorters();
-		//
-		tableEl.sort(OrderBy.automatic.name(), true);
+		
+		if(load) {
+			tableEl.sort(OrderBy.automatic.name(), true);
+		}
 	}
 	
 	public boolean isEmpty() {
@@ -148,11 +159,18 @@ public class RepositoryEntryListController extends FormBasicController
 		sorters.add(new FlexiTableSort(translate("orderby.creationDate"), OrderBy.creationDate.name()));
 		sorters.add(new FlexiTableSort(translate("orderby.lastModified"), OrderBy.lastModified.name()));
 		sorters.add(new FlexiTableSort(translate("orderby.rating"), OrderBy.rating.name()));
-		tableEl.setSortSettings(new FlexiTableSortOptions(sorters));
+		
+		FlexiTableSortOptions options = new FlexiTableSortOptions(sorters);
+		options.setDefaultOrderBy(new SortKey(OrderBy.automatic.name(), true));
+		tableEl.setSortSettings(options);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		searchCtrl = new RepositoryEntrySearchController(ureq, getWindowControl(), !startExtendedSearch, mainForm);
+		searchCtrl.setEnabled(false);
+		listenTo(searchCtrl);
+
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), false, null));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mark.i18nKey(), Cols.mark.ordinal()));
@@ -174,6 +192,7 @@ public class RepositoryEntryListController extends FormBasicController
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setSearchEnabled(true);
+		tableEl.setExtendedSearch(searchCtrl);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setElementCssClass("o_coursetable");
 		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
@@ -181,6 +200,10 @@ public class RepositoryEntryListController extends FormBasicController
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
 		tableEl.setAndLoadPersistedPreferences(ureq, "re-list-" + name);
+		
+		if(startExtendedSearch) {
+			tableEl.expandExtendedSearch(ureq);
+		}
 	}
 
 	@Override
@@ -294,6 +317,15 @@ public class RepositoryEntryListController extends FormBasicController
 				row.getCommentsLink().getComponent().setDirty(true);
 			}
 			cleanUp();
+		} else if(searchCtrl == source) {
+			if(event instanceof SearchEvent) {
+				SearchEvent se = (SearchEvent)event;
+				doSearch(se);
+			} else if(event == Event.CANCELLED_EVENT) {
+				searchParams.setIdAndRefs(null);
+				searchParams.setAuthor(null);
+				searchParams.setText(null);
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -308,6 +340,13 @@ public class RepositoryEntryListController extends FormBasicController
 		removeAsListenerAndDispose(commentsCtrl);
 		commentsCtrl = null;
 		cmc = null;
+	}
+	
+	private void doSearch(SearchEvent se) {
+		searchParams.setIdAndRefs(se.getId());
+		searchParams.setAuthor(se.getAuthor());
+		searchParams.setText(se.getDisplayname());
+		tableEl.reset();
 	}
 	
 	protected void doFilter(List<Filter> filters) {
