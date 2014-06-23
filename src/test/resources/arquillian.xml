@@ -30,6 +30,15 @@
 	<extension qualifier="webdriver">
 		<property name="browser">safari</property>
 	</extension>
+	
+	<extension qualifier="safari">
+		<property name="browser">safari</property>
+	</extension>
+	
+	<extension qualifier="phantomjs">
+		<property name="browser">phantomjs</property>
+		<property name="dimensions">1000x700</property>
+	</extension>
 
 	<extension qualifier="student">
 		<property name="browserCapabilities">firefox</property>

@@ -119,11 +119,11 @@ public class UserRestClient {
 		String uuid = Integer.toString(counter.incrementAndGet()) + UUID.randomUUID().toString();
 		
 		UserVO vo = new UserVO();
-		String username = ("selenium-" + uuid).substring(0, 24);
+		String username = ("Selena-" + uuid).substring(0, 24);
 		vo.setLogin(username);
 		String password = ("passwd-" + uuid).substring(0, 24);
 		vo.setPassword(password);
-		vo.setFirstName("John-" + uuid);
+		vo.setFirstName("Selena-" + uuid);
 		vo.setLastName("Smith");
 		vo.setEmail(username + "@frentix.com");
 		vo.putProperty("telOffice", "39847592");

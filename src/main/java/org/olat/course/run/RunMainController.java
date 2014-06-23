@@ -75,7 +75,6 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -545,6 +544,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					}
 				}
 			}
+		} else if(source == all) {
+			if(event instanceof PopEvent) {
+				PopEvent pop = (PopEvent)event;
+				if(pop.getController() == currentToolCtr) {
+					eventDone(ureq);
+				}	
+			}
 		}
 	}
 	
@@ -944,32 +950,25 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 */
 	@Override
 	public void event(Event event) {	
-		if (event instanceof MultiUserEvent) {
-			if (event.getCommand().equals(JOINED) || event.getCommand().equals(LEFT)) {
-				updateCurrentUserCount();
-			}
-		} else if (event instanceof PublishEvent) {
+		if (event instanceof PublishEvent) {
 			PublishEvent pe = (PublishEvent) event;
-			if (pe.getState() == PublishEvent.PRE_PUBLISH) {
-				// so far not interested in PRE PUBLISH event, but one could add user
-				// and the currently active BB information. This in turn could be used 
-				// by the publish event issuer to decide whether or not to publish...
-				return;
-			}
-			if (!course.getResourceableId().equals(pe.getPublishedCourseResId())) throw new AssertException("not the same course");
-			// long pts = pe.getLatestPublishTimestamp();
-			// disable this controller and issue a information
-			// FIXME:fj:b - implement the 'there are 5 users using this course at the
-			// moment' warning (in the publishcontroller)
-			if (isInEditor) {
-				needsRebuildAfterPublish = true;				
-				
-				// author went in editor and published the course -> raise a flag to
-				// later prepare the new
-				// course to present him/her a nice view when
-				// he/she closes the editor to return to the run main (this controller)
-			} else {
-				doDisposeAfterEvent();
+			// so far not interested in PRE PUBLISH event, but one could add user
+			// and the currently active BB information. This in turn could be used 
+			// by the publish event issuer to decide whether or not to publish...
+			//check if it's the right course
+			if (pe.getState() != PublishEvent.PRE_PUBLISH
+					&& course.getResourceableId().equals(pe.getPublishedCourseResId())) {
+				// disable this controller and issue a information
+				if (isInEditor) {
+					needsRebuildAfterPublish = true;
+					// author went in editor and published the course -> raise a flag to
+					// later prepare the new
+					// course to present him/her a nice view when
+					// he/she closes the editor to return to the run main (this controller)
+				} else {
+					//TODO
+					//doDisposeAfterEvent();
+				}
 			}
 		} else if (event instanceof OLATResourceableJustBeforeDeletedEvent) {
 			OLATResourceableJustBeforeDeletedEvent ojde = (OLATResourceableJustBeforeDeletedEvent) event;
@@ -988,7 +987,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				if (assessmentChangeType.equals(AssessmentChangedEvent.TYPE_SCORE_EVAL_CHANGED)
 						|| assessmentChangeType.equals(AssessmentChangedEvent.TYPE_ATTEMPTS_CHANGED)) {
 					//LD: do not recalculate the score now, but at the next click, since the event comes before DB commit
-          //uce.getScoreAccounting().evaluateAll(); 
+					//uce.getScoreAccounting().evaluateAll(); 
 					assessmentChangedEventReceived = true;										
 				} else if (assessmentChangeType.equals(AssessmentChangedEvent.TYPE_EFFICIENCY_STATEMENT_CHANGED)) {
 					// update tools, maybe efficiency statement link has changed
@@ -1012,7 +1011,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			if (courseRepositoryEntry.getKey().equals(repoEvent.getChangedEntryKey()) && repoEvent.getChange() == EntryChangedEvent.MODIFIED) {				
 				doDisposeAfterEvent();
 			}
-		}
+		//All events are MultiUserEvent, check with command at the end
+		} else if (event instanceof MultiUserEvent) {
+			if (event.getCommand().equals(JOINED) || event.getCommand().equals(LEFT)) {
+				updateCurrentUserCount();
+			}
+		} 
 	}
 	
 	private void processCourseConfigEvent(CourseConfigEvent event) {
@@ -1070,6 +1074,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 */
 	private void initToolController() {
 		CourseConfig cc = uce.getCourseEnvironment().getCourseConfig();
+		
+		all.removeAllTools();
 		
 		initEditionTools();
 		initGroupTools();
@@ -1315,7 +1321,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, courseRepositoryEntry);
 		// - publish changes
 		// - assessment events
-		// TODO:pb: also here - CourseConfig events are removed
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, course);
 		//remove as listener from course run eventAgency
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, courseRunOres);
@@ -1347,10 +1352,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		String type = firstEntry.getOLATResourceable().getResourceableTypeName();
 		if("CourseNode".equalsIgnoreCase(type)) {
 			CourseNode cn = course.getRunStructure().getNode(firstEntry.getOLATResourceable().getResourceableId().toString());
-			
-			// FIXME:fj:b is this needed in some cases?: currentCourseNode = cn;
-			getWindowControl().makeFlat();
 
+			getWindowControl().makeFlat();
 			// add logging information for case course gets started via jump-in
 			// link/search
 			addLoggingResourceable(LoggingResourceable.wrap(course));

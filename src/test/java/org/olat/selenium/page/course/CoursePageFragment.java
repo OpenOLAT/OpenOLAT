@@ -77,10 +77,10 @@ public class CoursePageFragment {
 	 * Click the first element of the menu tree
 	 * @return
 	 */
-	public CoursePageFragment clickTree() {
+	public MenuTreePageFragment clickTree() {
 		MenuTreePageFragment menuTree = Graphene.createPageFragment(MenuTreePageFragment.class, treeContainer);
 		menuTree.selectRoot();
-		return this;
+		return menuTree;
 	}
 	
 	/**

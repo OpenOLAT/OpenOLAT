@@ -26,6 +26,7 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.jcodec.common.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -50,11 +51,13 @@ public class CourseEditorPageFragment {
 	public static final By navBarNodeConfiguration = By.cssSelector("ul.o_node_config>li>a");
 	
 	public static final By chooseCpButton = By.className("o_sel_cp_choose_repofile");
+	public static final By chooseWikiButton = By.className("o_sel_wiki_choose_repofile");
 	
 	
 	public static final List<By> chooseRepoEntriesButtonList = new ArrayList<>();
 	static {
 		chooseRepoEntriesButtonList.add(chooseCpButton);
+		chooseRepoEntriesButtonList.add(chooseWikiButton);
 	}
 	
 	@Drone
@@ -161,6 +164,15 @@ public class CourseEditorPageFragment {
 	}
 	
 	/**
+	 * @see chooseResource
+	 * @param resourceTitle
+	 * @return
+	 */
+	public CourseEditorPageFragment chooseWiki(String resourceTitle) {
+		return chooseResource(chooseWikiButton, resourceTitle);
+	}
+	
+	/**
 	 * Click the choose button, which open the resource chooser. Select
 	 * the "My entries" segment, search the rows for the resource title,
 	 * and select it.
@@ -201,6 +213,41 @@ public class CourseEditorPageFragment {
 
 		return this;
 	}
+	
+	/**
+	 * Create a wiki from the chooser popup
+	 * @param resourceTitle
+	 * @return
+	 */
+	public CourseEditorPageFragment createWiki(String resourceTitle) {
+		return createResource(chooseWikiButton, resourceTitle);
+	}
+	
+	public CourseEditorPageFragment createResource(By chooseButton, String resourceTitle) {
+		OOGraphene.closeBlueMessageWindow(browser);
+		
+		browser.findElement(chooseButton).click();
+		OOGraphene.waitBusy();
+		//popup
+		WebElement popup = browser.findElement(By.className("o_sel_search_referenceable_entries"));
+		popup.findElement(By.cssSelector("a.o_sel_repo_popup_my_resources")).click();
+		OOGraphene.waitBusy();
+		
+		//click create
+		popup.findElement(By.className("o_sel_repo_popup_create_resource")).click();
+		OOGraphene.waitBusy();
+
+		//fill the create form
+		return fillCreateForm(resourceTitle);
+	}
+	
+	public CourseEditorPageFragment fillCreateForm(String displayName) {
+		WebElement modal = browser.findElement(By.cssSelector("div.modal.o_sel_author_create_popup"));
+		modal.findElement(AuthoringEnvPage.displayNameInput).sendKeys(displayName);
+		modal.findElement(AuthoringEnvPage.createSubmit).click();
+		OOGraphene.waitBusy();
+		return this;
+	}
 
 	/**
 	 * Open the publish process
@@ -225,6 +272,7 @@ public class CourseEditorPageFragment {
 	public CoursePageFragment clickToolbarBack() {
 		browser.findElement(toolbarBackBy).click();
 		OOGraphene.waitBusy();
+		OOGraphene.closeBlueMessageWindow(browser);
 		
 		WebElement main = browser.findElement(By.id("o_main"));
 		return Graphene.createPageFragment(CoursePageFragment.class, main);

@@ -97,6 +97,11 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 			}
 		}
 	}
+	
+	public void removeAllTools() {
+		getCurrentCrumb().getTools().clear();
+		setDirty(true);
+	}
 
 	/**
 	 * If the component is null, it will simply not be added,

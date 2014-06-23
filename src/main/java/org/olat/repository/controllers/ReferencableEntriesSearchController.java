@@ -312,14 +312,16 @@ public class ReferencableEntriesSearchController extends BasicController {
 			}
 		} else if(source == createRessourceCmp ||
 				(createRessourceButtons != null && createRessourceButtons.contains(source))) {
+			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(createController);
 			RepositoryHandler handler = (RepositoryHandler)((Link)source).getUserObject();
 			createController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
 			listenTo(createController);
 			
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), createController.getInitialComponent(),
-					true, "");
+			String title = translate(handler.getCreateLabelI18nKey());
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
+					createController.getInitialComponent(), true, title);
+			cmc.setCustomWindowCSS("o_sel_author_create_popup");
 			listenTo(cmc);
 			
 			cmc.activate();

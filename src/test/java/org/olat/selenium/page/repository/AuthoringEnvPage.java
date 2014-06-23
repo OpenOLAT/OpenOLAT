@@ -52,14 +52,21 @@ public class AuthoringEnvPage {
 	
 	public RepositoryEditDescriptionPage createCP(String title) {
 		return openCreateDropDown()
-			.clickCreateCP()
+			.clickCreate(ResourceType.cp)
+			.fillCreateForm(title)
+			.assertOnGeneralTab();
+	}
+	
+	public RepositoryEditDescriptionPage createWiki(String title) {
+		return openCreateDropDown()
+			.clickCreate(ResourceType.wiki)
 			.fillCreateForm(title)
 			.assertOnGeneralTab();
 	}
 	
 	public RepositoryEditDescriptionPage createCourse(String title) {
 		return openCreateDropDown()
-			.clickCreateCourse()
+			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
 			.assertOnGeneralTab();
 	}
@@ -74,28 +81,15 @@ public class AuthoringEnvPage {
 		OOGraphene.waitElement(createMenu);
 		return this;
 	}
-	
+
 	/**
-	 * Click the link to create a course in the create drop-down
+	 * Click the link to create a learning resource in the create drop-down
+	 * @param type
 	 * @return
 	 */
-	public AuthoringEnvPage clickCreateCourse() {
+	public AuthoringEnvPage clickCreate(ResourceType type) {
 		Assert.assertTrue(createMenu.isDisplayed());
-		return clickCreate("o_sel_author_create-CourseModule");
-	}
-	
-	/**
-	 * Click the link to create a CP in the create drop-down
-	 * @return
-	 */
-	public AuthoringEnvPage clickCreateCP() {
-		Assert.assertTrue(createMenu.isDisplayed());
-		return clickCreate("o_sel_author_create-FileResource.IMSCP");
-	}
-	
-	private AuthoringEnvPage clickCreate(String type) {
-		Assert.assertTrue(createMenu.isDisplayed());
-		WebElement createLink = createMenu.findElement(By.className(type));
+		WebElement createLink = createMenu.findElement(By.className("o_sel_author_create-" + type.type()));
 		Assert.assertTrue(createLink.isDisplayed());
 		createLink.click();
 		OOGraphene.waitBusy();
@@ -118,13 +112,14 @@ public class AuthoringEnvPage {
 		WebElement main = browser.findElement(By.id("o_main"));
 		return Graphene.createPageFragment(RepositoryEditDescriptionPage.class, main);
 	}
+	
 	/**
 	 * Short cut to create quickly a course
 	 * @param title
 	 */
 	public void quickCreateCourse(String title) {
 		RepositoryEditDescriptionPage editDescription = openCreateDropDown()
-			.clickCreateCourse()
+			.clickCreate(ResourceType.course)
 			.fillCreateForm(title)
 			.assertOnGeneralTab();
 			
@@ -133,5 +128,21 @@ public class AuthoringEnvPage {
 			.clickToolbarBack()
 			.assertOnTitle(title)
 			.launch();
+	}
+	
+	public enum ResourceType {
+		course("CourseModule"),
+		cp("FileResource.IMSCP"),
+		wiki("FileResource.WIKI");
+		
+		private final String type;
+		
+		private ResourceType(String type) {
+			this.type = type;
+		}
+		
+		public String type() {
+			return type;
+		}
 	}
 }

@@ -54,5 +54,22 @@ public class MenuTreePageFragment {
 		OOGraphene.waitBusy();
 		return this;
 	}
+	
+	public MenuTreePageFragment selectWithTitle(String title) {
+		boolean found = false;
+		
+		List<WebElement> nodeLinks = tree.findElements(By.cssSelector("li>div>a.o_tree_link"));
+		for(WebElement nodeLink:nodeLinks) {
+			String text = nodeLink.getText();
+			if(text.contains(title)) {
+				nodeLink.click();
+				OOGraphene.waitBusy();
+				found = true;
+			}
+		}
+		
+		Assert.assertTrue("Link not found with title: " + title, found);
+		return this;
+	}
 
 }
