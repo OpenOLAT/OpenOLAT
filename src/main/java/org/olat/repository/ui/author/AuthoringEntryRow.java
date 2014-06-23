@@ -58,6 +58,7 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 	
 	private String externalId;
 	private String externalRef;
+	private boolean managed;
 	
 	private String lifecycleLabel;
 	private String lifecycleSoftKey;
@@ -91,6 +92,7 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 		
 		externalId = view.getExternalId();
 		externalRef = view.getExternalRef();
+		managed = view.getManagedFlags() != null && view.getManagedFlags().length > 0;
 		
 		membersOnly = view.isMembersOnly();
 		access = view.getAccess();
@@ -199,6 +201,10 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 
 	public String getExternalRef() {
 		return externalRef;
+	}
+	
+	public boolean isManaged() {
+		return managed;
 	}
 
 	public String getLifecycleLabel() {

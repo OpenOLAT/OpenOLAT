@@ -21,10 +21,12 @@ package org.olat.repository.ui;
 
 import java.util.Locale;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.NewControllerFactory;
-import org.olat.core.gui.components.table.IconCssCellRenderer;
+import org.olat.core.gui.components.table.CustomCellRenderer;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.i18n.I18nModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryShort;
 
@@ -38,76 +40,38 @@ import org.olat.repository.RepositoryEntryShort;
  * 
  * @author Florian Gnägi, http://www.frentix.com
  */
-public class RepositoryEntryIconRenderer extends IconCssCellRenderer {
-	private Locale locale;
-
-	/**
-	 * Constructor
-	 * 
-	 * @param locale
-	 */
-	public RepositoryEntryIconRenderer(Locale locale) {
-		this.locale = locale;
-	}
+public class RepositoryEntryIconRenderer implements CustomCellRenderer {
 	
-	/**
-	 * Constructor
-	 */
-	public RepositoryEntryIconRenderer() {
-		this.locale = I18nModule.getDefaultLocale();
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.table.CustomCssCellRenderer#getCellValue(java.lang.Object)
-	 */
 	@Override
-	protected String getCellValue(Object val) {
-		return "";
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.table.CustomCssCellRenderer#getCssClass(java.lang.Object)
-	 */
-	@Override
-	protected String getCssClass(Object val) {
-		// use small icon and create icon class for resource:
-		// o_FileResource-SHAREDFOLDER_icon
-		if(val == null) {
-			return "";
+	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
+		if (renderer == null) {
+			// render for export
+		} else {
+			String type = "";
+			String cssClass = "";
+			boolean managed = false;
+			if(val instanceof RepositoryEntryShort) {
+				RepositoryEntryShort re = (RepositoryEntryShort)val;
+				cssClass = RepositoyUIFactory.getIconCssClass(re);
+				String typeName = re.getResourceType();
+				type = NewControllerFactory.translateResourceableTypeName(typeName, locale);
+			} else if (val instanceof RepositoryEntry) {
+				RepositoryEntry re = (RepositoryEntry)val;
+				cssClass = RepositoyUIFactory.getIconCssClass(re);
+				managed = StringHelper.containsNonWhitespace(re.getManagedFlagsString());
+				String typeName = re.getOlatResource().getResourceableTypeName();
+				type = NewControllerFactory.translateResourceableTypeName(typeName, locale);
+			}
+			
+			sb.append("<i class='o_icon ").append(cssClass).append("'");
+			if (StringHelper.containsNonWhitespace(type)) {
+				sb.append(" title=\"");
+				sb.append(StringEscapeUtils.escapeHtml(type));
+			}
+			sb.append("\"> </i>");	
+			if(managed) {
+				sb.append(" <i class='o_icon o_icon_managed'> </i>");
+			}
 		}
-		
-		String cssClass = "";
-		boolean managed = false;
-		if(val instanceof RepositoryEntryShort) {
-			RepositoryEntryShort re = (RepositoryEntryShort)val;
-			cssClass = RepositoyUIFactory.getIconCssClass(re);
-		} else if (val instanceof RepositoryEntry) {
-			RepositoryEntry re = (RepositoryEntry)val;
-			cssClass = RepositoyUIFactory.getIconCssClass(re);
-			managed = StringHelper.containsNonWhitespace(re.getManagedFlagsString());
-		}
-		return (managed ? "o_icon o_managed_icon " : "o_icon ") + cssClass;
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.table.CustomCssCellRenderer#getHoverText(java.lang.Object)
-	 */
-	@Override
-	protected String getHoverText(Object val) {
-		if (val == null) {
-			return "n/a";
-		}
-		
-		if(val instanceof RepositoryEntry) {
-			RepositoryEntry re = (RepositoryEntry) val;
-			String typeName = re.getOlatResource().getResourceableTypeName();
-			return NewControllerFactory.translateResourceableTypeName(typeName, locale);
-		}
-		if(val instanceof RepositoryEntryShort) {
-			RepositoryEntryShort re = (RepositoryEntryShort) val;
-			String typeName = re.getResourceType();
-			return NewControllerFactory.translateResourceableTypeName(typeName, locale);
-		}
-		return "n/a";
 	}
 }

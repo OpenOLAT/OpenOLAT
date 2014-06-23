@@ -269,7 +269,7 @@ public class CatalogController extends BasicController implements Activateable2 
 		myContent.contextPut("canRemoveAllLinks", new Boolean(canRemoveAllLinks));
 		myContent.contextPut("isGuest", new Boolean(isGuest));
 		// add icon renderer
-		myContent.contextPut("iconRenderer", new RepositoryEntryIconRenderer(getLocale()));
+		myContent.contextPut("iconRenderer", new RepositoryEntryIconRenderer());
 		// add this root node as history start
 		historyStack.add(rootce);
 		updateContent(ureq, rootce, 0);

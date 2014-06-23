@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.resource.OLATResource;
 
 /**
@@ -46,6 +47,7 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	private String softkey;
 	private String externalId;
 	private String externalRef;
+	private RepositoryEntryManagedFlag[] managedFlags;
 	
 	private boolean membersOnly;
 	private int access;
@@ -72,6 +74,7 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 		softkey = re.getSoftkey();
 		externalId = re.getExternalId();
 		externalRef = re.getExternalRef();
+		managedFlags = re.getManagedFlags();
 		
 		membersOnly = re.isMembersOnly();
 		access = re.getAccess();
@@ -137,6 +140,11 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	@Override
 	public String getExternalRef() {
 		return externalRef;
+	}
+
+	@Override
+	public RepositoryEntryManagedFlag[] getManagedFlags() {
+		return managedFlags;
 	}
 
 	@Override

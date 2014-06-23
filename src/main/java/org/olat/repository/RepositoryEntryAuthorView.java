@@ -40,6 +40,8 @@ public interface RepositoryEntryAuthorView extends OLATResourceable, RepositoryE
 	public String getExternalId();
 	
 	public String getExternalRef();
+	
+	public RepositoryEntryManagedFlag[] getManagedFlags();
 
 	public String getAuthor();
 	

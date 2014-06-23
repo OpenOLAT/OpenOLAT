@@ -60,7 +60,11 @@ public class TypeRenderer implements FlexiCellRenderer {
 		
 		String cssClass = "";
 		boolean managed = false;
-		if (cellValue instanceof RepositoryEntryShort) {
+		if(cellValue instanceof AuthoringEntryRow) {
+			AuthoringEntryRow re = (AuthoringEntryRow) cellValue;
+			cssClass = RepositoyUIFactory.getIconCssClass(re);
+			managed = re.isManaged();
+		} else if (cellValue instanceof RepositoryEntryShort) {
 			RepositoryEntryShort re = (RepositoryEntryShort) cellValue;
 			cssClass = RepositoyUIFactory.getIconCssClass(re);
 		} else if (cellValue instanceof RepositoryEntry) {
@@ -68,11 +72,11 @@ public class TypeRenderer implements FlexiCellRenderer {
 			cssClass = RepositoyUIFactory.getIconCssClass(re);
 			managed = StringHelper.containsNonWhitespace(re.getManagedFlagsString());
 		}
-		target.append("<div class='o_nowrap o_repoentry_type'>");
+		target.append("<div class='o_nowrap o_repoentry_type'>")
+		      .append("<i class='o_icon o_icon-lg ").append(cssClass).append("' title=\"").append(type).append("\"></i>");
 		if (managed) {
-			target.append("<i class='o_icon o_icon_managed' title=\"").append(translator.translate("cif.managedflags")).append("\"></i> ");
+			target.append(" <i class='o_icon o_icon_managed' title=\"").append(translator.translate("cif.managedflags")).append("\"></i> ");
 		}
-		target.append("<i class='o_icon o_icon-lg ").append(cssClass).append("' title=\"").append(type).append("\"></i>");
 		target.append("</div>");
 	}
 }
