@@ -1,62 +1,74 @@
-<fieldset>
-	<legend>Admin.</legend>
-	<p><i>Message Admin-Token: $!admintoken</i></p>
-</fieldset>
+<div class="o_block_large">
+	<fieldset>
+		<legend>Admin.</legend>
+		<p><i>Message Admin-Token: $!admintoken</i></p>
+	</fieldset>
+</div>
 
-
-<fieldset>
-<legend>$r.translate("infomsg.title")</legend>
-#if ($infomsg)
-     $infomsg
-#else
-	<i>$r.translate("infomsg.nomsg")</i>
-	<br /><br />
-#end
-$r.render("infomsgEdit") $r.render("infomsgClear")
-</fieldset>
+<div class="o_block_large">
+	<fieldset>
+		<legend>$r.translate("infomsg.title")</legend>
+		#if ($infomsg)
+		     $infomsg
+		#else
+			<i>$r.translate("infomsg.nomsg")</i>
+		#end
+		<div class="o_block">
+			$r.render("infomsgEdit") $r.render("infomsgClear")
+		</div>
+	</fieldset>
+</div>
 
 ## cluster has additional node level option
 #if($cluster)
-<fieldset>
-<legend>$r.translate("infomsg.title.cluster")</legend>
-	#if ($infoMsgCluster)
-	     $infoMsgCluster
+<div class="o_block_large">
+	<fieldset>
+		<legend>$r.translate("infomsg.title.cluster")</legend>
+		#if ($infoMsgCluster)
+		     $infoMsgCluster
+		#else
+			<i>$r.translate("infomsg.nomsg")</i>
+		#end
+		<div class="o_block">
+			$r.render("infomsgEditCluster") $r.render("infomsgClearCluster")
+		</div>
+	</fieldset>
+</div>
+#end
+
+<div class="o_block_large">
+	<fieldset>
+		<legend>$r.translate("maintenancemsg.title")</legend>
+	#if ($maintenanceMsgAllNodes)
+	  	<div id="o_msg_sticky_preview">
+			<i class="o_icon o_icon_info_msg"></i> 
+	     	$maintenanceMsgAllNodes
+	  	</div>
 	#else
-		<i>$r.translate("infomsg.nomsg")</i>
-		<br /><br />
+		<i>$r.translate("maintenancemsg.nomsg")</i>
 	#end
-	$r.render("infomsgEditCluster") $r.render("infomsgClearCluster")
-</fieldset>
-#end
-
-
-<fieldset>
-<legend>$r.translate("maintenancemsg.title")</legend>
-#if ($maintenanceMsgAllNodes)
-  <div id="b_msg_sticky_preview">
-     $maintenanceMsgAllNodes
-  </div>
-#else
-	<i>$r.translate("maintenancemsg.nomsg")</i>
-	<br />
-#end
-<br />
-$r.render("maintenancemsgEdit") $r.render("maintenancemsgClear")
-</fieldset>
+		<div class="o_block">
+		$r.render("maintenancemsgEdit") $r.render("maintenancemsgClear")
+		</div>
+	</fieldset>
+</div>
 
 ## cluster has additional node level option
 #if($cluster)
-<fieldset>
-<legend>$r.translate("maintenancemsg.title.cluster")</legend>
-#if ($maintenanceMsgThisNodeOnly)
-  <div id="b_msg_sticky_preview">
-     $maintenanceMsgThisNodeOnly
-  </div>
-#else
-	<i>$r.translate("maintenancemsg.nomsg")</i>
-	<br />
-#end
-<br />
-$r.render("maintenancemsgEditCluster") $r.render("maintenancemsgClearCluster")
-</fieldset>
+<div class="o_block_large">
+	<fieldset>
+		<legend>$r.translate("maintenancemsg.title.cluster")</legend>
+	#if ($maintenanceMsgThisNodeOnly)
+	 	<div id="o_msg_sticky_preview">
+			<i class="o_icon o_icon_info_msg"></i> 
+	    	$maintenanceMsgThisNodeOnly
+	  	</div>
+	#else
+		<i>$r.translate("maintenancemsg.nomsg")</i>
+	#end
+	<div class="o_block">
+		$r.render("maintenancemsgEditCluster") $r.render("maintenancemsgClearCluster")
+	</div>
+	</fieldset>
+</div>
 #end

@@ -131,7 +131,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private GUIMessage guiMessage;
 	private OncePanel guimsgPanel;
 	private Panel cssHolder, guimsgHolder, currentMsgHolder;
-	private VelocityContainer guimsgVc, mainVc, navSitesVc, navTabsVc;
+	private VelocityContainer guimsgVc, stickymsgVc, mainVc, navSitesVc, navTabsVc;
 
 	// NEW FROM FullChiefController
 	private Controller topnavCtr, footerCtr;
@@ -351,16 +351,16 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 
 		// GUI messages
 		guimsgVc = createVelocityContainer("guimsg");
-		// FIXME fg: create controller that uses monolog controller after monolog
-		// controller refactoring. is all the same...
-
 		guimsgVc.contextPut("guiMessage", guiMessage);
 		guimsgHolder = new Panel("guimsgholder");
 		guimsgHolder.setContent(guimsgPanel);
 		currentMsgHolder = guimsgHolder;
-
 		mainVc.put("guimessage", guimsgHolder);
-		
+
+		// sticky maintenance message
+		stickymsgVc = createVelocityContainer("stickymsg");
+		mainVc.put("stickymsg", stickymsgVc);
+		updateStickyMessage();
 		
 		dtabs = new ArrayList<>();
 		dtabsLinkNames = new ArrayList<>();
@@ -448,16 +448,17 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			setGuiStack(gs);
 		}
 
-		// set maintenance message
-		String stickyMessage = GlobalStickyMessage.getGlobalStickyMessage();
-		mainVc.contextPut("hasStickyMessage", (stickyMessage == null ? Boolean.FALSE : Boolean.TRUE));					
-		mainVc.contextPut("stickyMessage", stickyMessage);		
-
 		setWindowSettings(getWindowControl().getWindowBackOffice().getWindowSettings());
 		
 		addCustomThemeJS();
 	}
 	
+	private void updateStickyMessage() {
+		String stickyMessage = GlobalStickyMessage.getGlobalStickyMessage();
+		stickymsgVc.contextPut("hasStickyMessage", (stickyMessage == null ? Boolean.FALSE : Boolean.TRUE));					
+		stickymsgVc.contextPut("stickyMessage", stickyMessage);			
+	}
+
 	private void initializeDefaultSite(UserRequest ureq) {
 		if (sites != null && sites.size() > 0
 				&& curSite == null && curDTab == null
@@ -1139,10 +1140,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			reload = Boolean.TRUE;
 		} else if (event instanceof ChiefControllerMessageEvent) {
 			// msg can be set to show only on one node or on all nodes
-			String msg = GlobalStickyMessage.getGlobalStickyMessage();//either null, or the global message or the per-node-message
-			Boolean hasStickyMessage = Boolean.valueOf(msg != null);
-			mainVc.contextPut("hasStickyMessage", hasStickyMessage);
-			mainVc.contextPut("stickyMessage", msg != null ? msg : "");
+			updateStickyMessage();
 		}
 	}
 
