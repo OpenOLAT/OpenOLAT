@@ -32,3 +32,24 @@ div.o_callout_overlay {
  	}
 }
 
+/* sticky info (admins can create stick-messages that will show for all users) */
+#o_msg_sticky, #o_msg_sticky_preview { 	
+	position: relative;
+	color: $state-danger-text;
+	background-color: $state-danger-bg; 
+	border: 1px solid $state-danger-border;
+	padding: $padding-large-vertical $padding-large-horizontal $padding-large-vertical $line-height-computed * 3;
+	min-height: $line-height-computed * 2;
+	
+	margin: -$navbar-margin-bottom 0 $navbar-margin-bottom 0;
+	
+	.o_icon_info_msg {
+		position: absolute;
+		left: floor($line-height-computed / 2);
+		top: floor($line-height-computed / 4);
+		font-size: $line-height-computed * 2;
+	}
+	
+}
+
+
