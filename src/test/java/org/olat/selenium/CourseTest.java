@@ -168,7 +168,7 @@ public class CourseTest {
 			.nodeTitle("CP-1")
 			.selectTabLearnContent()
 			.chooseCP(cpTitle);
-		
+
 		//publish the course
 		courseEditor
 			.publish()

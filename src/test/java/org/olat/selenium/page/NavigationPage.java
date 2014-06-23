@@ -24,6 +24,7 @@ import java.util.List;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
+import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -68,6 +69,7 @@ public class NavigationPage {
 		OOGraphene.waitBusy();
 		
 		backToTheTop();
+		OOGraphene.closeBlueMessageWindow(browser);
 		
 		WebElement main = browser.findElement(By.id("o_main"));
 		return Graphene.createPageFragment(AuthoringEnvPage.class, main);
@@ -79,6 +81,7 @@ public class NavigationPage {
 		
 		courseLink.click();
 		OOGraphene.waitBusy();
+		OOGraphene.closeBlueMessageWindow(browser);
 	}
 	
 	public NavigationPage backToTheTop() {
@@ -92,7 +95,8 @@ public class NavigationPage {
 			
 			Assert.assertTrue(count++ < 3);
 		}
-		
+
+		OOGraphene.closeBlueMessageWindow(browser);
 		return this;
 	}
 }

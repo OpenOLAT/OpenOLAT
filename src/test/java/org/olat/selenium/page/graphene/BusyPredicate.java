@@ -17,42 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.selenium.page.core;
+package org.olat.selenium.page.graphene;
 
-import java.util.List;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
 
-import org.junit.Assert;
-import org.olat.selenium.page.graphene.OOGraphene;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
+import com.google.common.base.Predicate;
 
 /**
- * Fragment which contains the menu tree. The WebElement to create
- * this fragment must be a parent of the div.o_tree
+ * 
+ * Predicate which test the busy flag used to lock the
+ * OpenOLAT GUI after a link is clicked.
  * 
  * Initial date: 20.06.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MenuTreePageFragment {
+public class BusyPredicate implements Predicate<WebDriver> {
 	
-	@FindBy(className="o_tree")
-	private WebElement tree;
-	
-	/**
-	 * Click the root link in the tree.
-	 * 
-	 * @return The menu page fragment
-	 */
-	public MenuTreePageFragment selectRoot() {
-		List<WebElement> rootLinks = tree.findElements(By.cssSelector("a.o_tree_link"));
-		Assert.assertNotNull(rootLinks);
-		Assert.assertFalse(rootLinks.isEmpty());
-		
-		rootLinks.get(0).click();
-		OOGraphene.waitBusy();
-		return this;
-	}
-
+	@Override
+	public boolean apply(WebDriver driver) {
+        Object busy = ((JavascriptExecutor)driver)
+        		.executeScript("return window.o_info.linkbusy");
+        return Boolean.FALSE.equals(busy);
+    }
 }

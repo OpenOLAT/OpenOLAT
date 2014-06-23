@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jcodec.common.Assert;
-import org.olat.selenium.page.OOGraphene;
+import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -59,11 +59,13 @@ public class RepositoryDetailsPage {
 	public void launch() {
 		browser.findElement(launchBy).click();
 		OOGraphene.waitBusy();
+		OOGraphene.closeBlueMessageWindow(browser);
 	}
 	
 	public void edit() {
 		browser.findElement(editBy).click();
 		OOGraphene.waitBusy();
+		OOGraphene.closeBlueMessageWindow(browser);
 	}
 
 }

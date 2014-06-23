@@ -17,12 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.selenium.page;
+package org.olat.selenium.page.graphene;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.graphene.Graphene;
 import org.openqa.selenium.By;
+import org.openqa.selenium.ElementNotVisibleException;
+import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 /**
@@ -32,7 +36,7 @@ import org.openqa.selenium.WebElement;
  *
  */
 public class OOGraphene {
-	
+
 	private static final long poolingDuration = 25;
 	
 	public static void waitBusy() {
@@ -46,5 +50,34 @@ public class OOGraphene {
 	public static void waitElement(WebElement element) {
 		Graphene.waitModel().pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
 	}
-
+	
+	public static final void closeBlueMessageWindow(WebDriver browser) {
+		By closeButtonBy = By.cssSelector("div.o_alert_info div.o_sel_info_message i.o_icon.o_icon_close");
+		List<WebElement> closeButtons = browser.findElements(closeButtonBy);
+		for(WebElement closeButton:closeButtons) {
+			if(closeButton.isDisplayed()) {
+				try {
+					clickCloseButton(closeButton);
+				} catch (TimeoutException e) {
+					try {
+						clickCloseButton(closeButton);
+					} catch(Exception e2) {
+						//
+					}
+				}
+			}
+		}
+	}
+	
+	private static final void clickCloseButton(WebElement closeButton) {
+		try {
+			closeButton.click();
+			Graphene.waitModel()
+				.withTimeout(1000, TimeUnit.MILLISECONDS)
+				.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
+				.until(new CloseAlertInfoPredicate());
+		} catch (ElementNotVisibleException e) {
+			//e.printStackTrace();
+		}
+	}
 }

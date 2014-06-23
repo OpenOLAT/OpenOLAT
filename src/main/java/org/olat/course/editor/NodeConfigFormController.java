@@ -140,11 +140,13 @@ public class NodeConfigFormController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// add the short title text input element
 		shortTitle = uifactory.addTextElement("nodeConfigForm.menutitle", "nodeConfigForm.menutitle", SHORT_TITLE_MAX_LENGTH, (menuTitle == null ? "": menuTitle), formLayout);
+		shortTitle.setElementCssClass("o_sel_node_editor_shorttitle");
 		shortTitle.setMandatory(true);
 		shortTitle.setCheckVisibleLength(true);
 		
 		// add the title input text element
 		title = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle", 255, (displayTitle==null? "": displayTitle), formLayout);
+		title.setElementCssClass("o_sel_node_editor_title");
 		
 		// add the learning objectives rich text input element
 		objectives = uifactory.addRichTextElementForStringData("nodeConfigForm.learningobjectives", "nodeConfigForm.learningobjectives", (learningObjectives==null?"":learningObjectives), 10, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());

@@ -17,28 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.selenium.page;
+package org.olat.selenium.page.graphene;
 
-import org.openqa.selenium.JavascriptExecutor;
+import java.util.List;
+
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 import com.google.common.base.Predicate;
 
 /**
  * 
- * Predicate which test the busy flag used to lock the
- * OpenOLAT GUI after a link is clicked.
+ * Predicate which test if the alert disappear
  * 
  * Initial date: 20.06.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BusyPredicate implements Predicate<WebDriver> {
+public class CloseAlertInfoPredicate implements Predicate<WebDriver> {
+	
+	private static final By alertBy = By.cssSelector("div.o_alert_info");
 	
 	@Override
 	public boolean apply(WebDriver driver) {
-        Object busy = ((JavascriptExecutor)driver)
-        		.executeScript("return window.o_info.linkbusy");
-        return Boolean.FALSE.equals(busy);
+		List<WebElement> closeButtons = driver.findElements(alertBy);
+        return closeButtons.isEmpty();
     }
 }

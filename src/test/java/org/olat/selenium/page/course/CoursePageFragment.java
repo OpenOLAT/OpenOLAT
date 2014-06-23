@@ -26,8 +26,8 @@ import org.jboss.arquillian.graphene.Graphene;
 import org.jboss.arquillian.graphene.fragment.Root;
 import org.junit.Assert;
 import org.olat.restapi.support.vo.CourseVO;
-import org.olat.selenium.page.OOGraphene;
 import org.olat.selenium.page.core.MenuTreePageFragment;
+import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -55,8 +55,6 @@ public class CoursePageFragment {
 	@FindBy(id="o_main_left_content")
 	private WebElement treeContainer;
 	
-
-	
 	public static CoursePageFragment getCourse(WebDriver browser, URL deploymentUrl, CourseVO course) {
 		browser.navigate().to(deploymentUrl.toExternalForm() + "url/RepositoryEntry/" + course.getRepoEntryKey());
 		OOGraphene.waitElement(courseRun);
@@ -75,27 +73,39 @@ public class CoursePageFragment {
 		return this;
 	}
 	
+	/**
+	 * Click the first element of the menu tree
+	 * @return
+	 */
 	public CoursePageFragment clickTree() {
 		MenuTreePageFragment menuTree = Graphene.createPageFragment(MenuTreePageFragment.class, treeContainer);
 		menuTree.selectRoot();
 		return this;
 	}
 	
+	/**
+	 * Open the tools drop-down
+	 * @return
+	 */
 	public CoursePageFragment openToolsMenu() {
 		browser.findElement(toolsMenuCaret).click();
 		OOGraphene.waitElement(toolsMenu);
 		return this;
 	}
 	
+	/**
+	 * Click the editor link in the tools drop-down
+	 * @return
+	 */
 	public CourseEditorPageFragment edit() {
 		if(!browser.findElement(toolsMenu).isDisplayed()) {
 			openToolsMenu();
 		}
 		browser.findElement(editCourseBy).click();
 		OOGraphene.waitBusy();
+		OOGraphene.closeBlueMessageWindow(browser);
 
 		WebElement main = browser.findElement(By.id("o_main"));
 		return Graphene.createPageFragment(CourseEditorPageFragment.class, main);
 	}
-
 }
