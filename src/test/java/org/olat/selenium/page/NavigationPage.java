@@ -19,9 +19,11 @@
  */
 package org.olat.selenium.page;
 
+import java.util.List;
+
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
-import org.jcodec.common.Assert;
+import org.junit.Assert;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -37,6 +39,8 @@ import org.openqa.selenium.support.FindBy;
  */
 public class NavigationPage {
 	
+	public static final By toolbarBackBy = By.cssSelector("li.o_breadcrumb_back>a");
+
 	@Drone
 	private WebDriver browser;
 	
@@ -45,8 +49,6 @@ public class NavigationPage {
 	
 	@FindBy(css = "li.o_site_author_env > a")
 	private WebElement authoringEnvTab;
-	
-
 	@FindBy(css = "li.o_site_repository > a")
 	private WebElement myCourseTab;
 	
@@ -65,7 +67,32 @@ public class NavigationPage {
 		authoringEnvTab.click();
 		OOGraphene.waitBusy();
 		
+		backToTheTop();
+		
 		WebElement main = browser.findElement(By.id("o_main"));
 		return Graphene.createPageFragment(AuthoringEnvPage.class, main);
+	}
+	
+	public void openCourse(String title) {
+		By courseTab = By.xpath("//li/a[@title='" + title + "']");
+		WebElement courseLink = browser.findElement(courseTab);
+		
+		courseLink.click();
+		OOGraphene.waitBusy();
+	}
+	
+	public NavigationPage backToTheTop() {
+		List<WebElement> backList = browser.findElements(toolbarBackBy);
+		
+		int count = 0;
+		while(backList.size() > 0) {
+			backList.get(0).click();
+			OOGraphene.waitBusy();
+			backList = browser.findElements(toolbarBackBy);
+			
+			Assert.assertTrue(count++ < 3);
+		}
+		
+		return this;
 	}
 }

@@ -114,7 +114,7 @@ public class CourseTest {
 		//create a course element of type info messages
 		PublisherPageFragment publisher = editor
 			.assertOnEditor()
-			.openCreateNode("info")
+			.createNode("info")
 			.publish();
 		
 		//publish
@@ -135,5 +135,50 @@ public class CourseTest {
 		publishedCourse
 			.assertOnCoursePage()
 			.clickTree();
+	}
+	
+	@Test
+	@RunAsClient
+	public void createCourseWithCP(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-With-CP-" + UUID.randomUUID().toString();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack()
+			.edit();
+		
+		//go the authoring environment to create a CP
+		String cpTitle = "CP for a course - " + UUID.randomUUID().toString();
+		navBar
+			.openAuthoringEnvironment()
+			.createCP(cpTitle)
+			.assertOnGeneralTab();
+		
+		navBar.openCourse(courseTitle);
+		
+		//create a course element of type CP with the CP that we create above
+		CourseEditorPageFragment courseEditor = CourseEditorPageFragment.getEditor(browser);
+		courseEditor
+			.createNode("cp")
+			.nodeTitle("CP-1")
+			.selectTabLearnContent()
+			.chooseCP(cpTitle);
+		
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish();
+		
+		//open the course and see the CP
+		CoursePageFragment course = courseEditor
+			.clickToolbarBack();
+		
+		course.clickTree();
+		//need to check the CP
 	}
 }

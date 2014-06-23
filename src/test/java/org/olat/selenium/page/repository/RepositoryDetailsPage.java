@@ -39,6 +39,7 @@ import org.openqa.selenium.WebElement;
 public class RepositoryDetailsPage {
 	
 	public static final By launchBy = By.className("o_sel_author_launch");
+	public static final By editBy = By.className("o_sel_author_edit_entry");
 	
 
 	@Drone
@@ -57,6 +58,11 @@ public class RepositoryDetailsPage {
 	
 	public void launch() {
 		browser.findElement(launchBy).click();
+		OOGraphene.waitBusy();
+	}
+	
+	public void edit() {
+		browser.findElement(editBy).click();
 		OOGraphene.waitBusy();
 	}
 

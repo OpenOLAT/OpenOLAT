@@ -50,7 +50,24 @@ public class AuthoringEnvPage {
 	@FindBy(css="ul.o_sel_author_create")
 	private WebElement createMenu;
 	
+	public RepositoryEditDescriptionPage createCP(String title) {
+		return openCreateDropDown()
+			.clickCreateCP()
+			.fillCreateForm(title)
+			.assertOnGeneralTab();
+	}
 	
+	public RepositoryEditDescriptionPage createCourse(String title) {
+		return openCreateDropDown()
+			.clickCreateCourse()
+			.fillCreateForm(title)
+			.assertOnGeneralTab();
+	}
+	
+	/**
+	 * Open the drop-down to create a new resource.
+	 * @return
+	 */
 	public AuthoringEnvPage openCreateDropDown() {
 		Assert.assertTrue(createMenuCaret.isDisplayed());
 		createMenuCaret.click();
@@ -58,11 +75,22 @@ public class AuthoringEnvPage {
 		return this;
 	}
 	
+	/**
+	 * Click the link to create a course in the create drop-down
+	 * @return
+	 */
 	public AuthoringEnvPage clickCreateCourse() {
 		Assert.assertTrue(createMenu.isDisplayed());
-		
-		
 		return clickCreate("o_sel_author_create-CourseModule");
+	}
+	
+	/**
+	 * Click the link to create a CP in the create drop-down
+	 * @return
+	 */
+	public AuthoringEnvPage clickCreateCP() {
+		Assert.assertTrue(createMenu.isDisplayed());
+		return clickCreate("o_sel_author_create-FileResource.IMSCP");
 	}
 	
 	private AuthoringEnvPage clickCreate(String type) {
@@ -74,6 +102,11 @@ public class AuthoringEnvPage {
 		return this;
 	}
 	
+	/**
+	 * Fil the create form
+	 * @param displayName
+	 * @return
+	 */
 	public RepositoryEditDescriptionPage fillCreateForm(String displayName) {
 		WebElement modal = browser.findElement(createModal);
 		WebElement input = modal.findElement(displayNameInput);
@@ -85,5 +118,20 @@ public class AuthoringEnvPage {
 		WebElement main = browser.findElement(By.id("o_main"));
 		return Graphene.createPageFragment(RepositoryEditDescriptionPage.class, main);
 	}
-
+	/**
+	 * Short cut to create quickly a course
+	 * @param title
+	 */
+	public void quickCreateCourse(String title) {
+		RepositoryEditDescriptionPage editDescription = openCreateDropDown()
+			.clickCreateCourse()
+			.fillCreateForm(title)
+			.assertOnGeneralTab();
+			
+		//from description editor, back to details and launch the course
+		editDescription
+			.clickToolbarBack()
+			.assertOnTitle(title)
+			.launch();
+	}
 }

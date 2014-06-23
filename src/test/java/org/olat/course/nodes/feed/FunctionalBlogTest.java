@@ -35,7 +35,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.CourseVO;
@@ -53,7 +52,6 @@ import org.olat.util.FunctionalVOUtil;
 import org.olat.util.browser.Student1;
 import org.olat.util.browser.Student2;
 import org.olat.util.browser.Tutor1;
-import org.olat.util.browser.Tutor2;
 
 import com.thoughtworks.selenium.DefaultSelenium;
 import com.thoughtworks.selenium.Selenium;
@@ -481,60 +479,5 @@ public class FunctionalBlogTest {
 		Assert.assertFalse(ArrayUtils.contains(success, false));
 
 		Assert.assertTrue(functionalUtil.logout(browser));
-	}
-	
-	@Ignore
-	@Test
-	@RunAsClient
-	public void checkConcurrentTutors(@Drone @Tutor1 DefaultSelenium tutor0, @Drone @Tutor2 DefaultSelenium tutor1) throws IOException, URISyntaxException{
-		/*
-		 * Setup
-		 */
-		/* create author */
-		int tutorCount = 2;
-			
-		final UserVO[] tutors = new UserVO[tutorCount];
-		functionalVOUtil.createTestAuthors(deploymentUrl, tutorCount).toArray(tutors);
-		
-		/* create users */
-		int userCount = 1;
-			
-		final UserVO[] users = new UserVO[userCount];
-		functionalVOUtil.createTestUsers(deploymentUrl, userCount).toArray(users);
-		
-		final CourseVO course = functionalVOUtil.importEmptyCourse(deploymentUrl);
-		
-		/* create blog */
-		Assert.assertTrue(functionalUtil.login(browser, functionalUtil.getUsername(), functionalUtil.getPassword(), true));
-		
-		Assert.assertTrue(functionalRepositorySiteUtil.openCourse(browser, course.getRepoEntryKey()));
-		Assert.assertTrue(functionalCourseUtil.openCourseEditor(browser));
-		
-		Assert.assertTrue(functionalCourseUtil.createCourseNode(browser, CourseNodeAlias.BLOG, BLOG_SHORT_TITLE, BLOG_LONG_TITLE, BLOG_DESCRIPTION, 0));
-		Assert.assertTrue(functionalCourseUtil.createBlog(browser, BLOG_SHORT_TITLE, BLOG_DESCRIPTION));
-		
-		Assert.assertTrue(functionalCourseUtil.publishEntireCourse(browser, null, null));
-		
-		/* give the tutors write permission */
-		
-		
-		/* create first entry */
-		Assert.assertNotNull(functionalCourseUtil.open(tutor0, course.getRepoEntryKey(), 0));
-		Assert.assertTrue(functionalCourseUtil.createBlogEntry(tutor0, course.getRepoEntryKey(), 0,
-				CONCURRENT_TUTORS_BLOG_SHORT_TITLE, CONCURRENT_TUTORS_BLOG_DESCRIPTION, CONCURRENT_TUTORS_BLOG_CONTENT));
-		
-		/* access content */
-		
-		
-		/* generate content */
-		/* tutor creates a new post */
-		Assert.assertTrue(functionalUtil.login(tutor0, tutors[0].getLogin(), tutors[0].getPassword(), true));
-		Assert.assertTrue(functionalRepositorySiteUtil.openCourse(browser, course.getRepoEntryKey()));
-		Assert.assertNotNull(functionalCourseUtil.open(tutor0, 0));
-		Assert.assertTrue(functionalCourseUtil.editBlogEntry(tutor0,
-				CONCURRENT_CLEAR_CACHE_BLOG_POST1_TITLE, CONCURRENT_CLEAR_CACHE_BLOG_POST1_DESCRIPTION, CONCURRENT_CLEAR_CACHE_BLOG_POST1_CONTENT,
-				-1, null));
-		
-		/* clear cache */
 	}
 }

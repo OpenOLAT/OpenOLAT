@@ -22,6 +22,7 @@ package org.olat.selenium.page.repository;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.jcodec.common.Assert;
+import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -39,7 +40,6 @@ import org.openqa.selenium.support.FindBy;
 public class RepositoryEditDescriptionPage {
 	
 	public static final By generaltabBy = By.className("o_sel_edit_repositoryentry");
-	public static final By toolbarBackBy = By.cssSelector("li.o_breadcrumb_back>a");
 
 	
 	@Drone
@@ -55,7 +55,7 @@ public class RepositoryEditDescriptionPage {
 	}
 	
 	public RepositoryDetailsPage clickToolbarBack() {
-		browser.findElement(toolbarBackBy).click();
+		browser.findElement(NavigationPage.toolbarBackBy).click();
 		OOGraphene.waitBusy();
 		
 		WebElement main = browser.findElement(By.id("o_main"));

@@ -162,7 +162,8 @@ public class NodeConfigFormController extends FormBasicController {
 		// Create submit and cancel buttons
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		formLayout.add(buttonLayout);
-		uifactory.addFormSubmitButton("nodeConfigForm.save", buttonLayout);
+		uifactory.addFormSubmitButton("nodeConfigForm.save", buttonLayout)
+			.setElementCssClass("o_sel_node_editor_submit");
 	}
 
 	
