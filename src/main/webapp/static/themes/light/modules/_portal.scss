@@ -1,0 +1,92 @@
+.o_home_main {
+	h1 {
+		text-align: center;
+	}	
+	.o_icon_rss {
+		line-height: $line-height-computed;
+		vertical-align: middle;
+	}
+}
+
+.o_showall {
+	font-size: $font-size-small;
+	text-align: right;
+	margin-bottom: $padding-small-vertical;
+}
+
+.o_portlet {
+	position: relative;
+	@extend %o_block_large;
+	background-color: $o-portlet-bg;
+	border: 1px solid $o-portlet-border;
+	border-radius: $o-portlet-border-radius;
+	@include box-shadow(0 1px 1px rgba(0,0,0,.1));	
+
+	.o_header {
+		@include text-overflow();
+		padding: $padding-base-vertical $padding-base-horizontal;
+	  	border-bottom: 1px solid $o-portlet-border; 
+	  	background-color: $o-portlet-header-bg;
+	  	@include border-top-radius($o-portlet-border-radius);
+	}
+	.o_content {
+		padding: $padding-base-vertical $padding-base-horizontal;
+	}
+	.o_portlet_table {
+		margin: -$padding-base-horizontal;	
+		margin-bottom: -$padding-base-vertical;
+		margin-top: 0;
+	}
+	.o_table_empty.o_info {
+		padding: floor($o-info-padding / 3);
+	}
+	
+	/* tools when in edit mode */
+	.o_toolbox {
+		position: absolute; 
+		top: -1px;
+		right: -1px;
+		z-index: 2;
+		background-color: #fff;
+		border: 1px solid $o-portlet-edit-border; 
+	  	@include border-top-radius($o-portlet-border-radius);
+	  	@include border-bottom-radius($o-portlet-border-radius);
+	  	padding: $padding-base-vertical $padding-base-horizontal;
+	  	div {
+	  		display: inline;
+	  	}
+	}
+	/* a shim that is below the tools and above the portlet content when in edit mode */
+	.o_edit_shim {
+		position: absolute; 
+		height: 100%; 
+		width: 100%; 
+		z-index: 1;
+		background: $o-portlet-edit-bg; 
+		opacity: 0.8; 
+	}	
+
+}
+
+
+.o_inactive .o_header {
+	a {
+		float: right;
+		margin-left:$padding-base-horizontal;
+		margin-top: 10px;
+	}
+}
+
+
+/* portlet specific styles */
+.o_portlet_dyk_q {
+	margin-top: $padding-small-vertical;
+	font-style: italic
+}
+.o_portlet_dyk_a {
+	margin: $padding-small-vertical 0;
+}
+.o_portlet_dyk_next {
+	margin: $padding-small-vertical 0;
+	text-align: right;
+}

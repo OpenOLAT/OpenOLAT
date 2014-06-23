@@ -53,8 +53,13 @@ public class PortalMainController extends BasicController {
 		super(ureq, wControl, Util.createPackageTranslator(InviteeHomeMainController.class, ureq.getLocale()));
 		// start screen
 		welcome = createVelocityContainer("welcome");
-		portalBackButton = LinkFactory.createButtonXSmall("command.portal.back", welcome, this);
-		portalEditButton = LinkFactory.createButtonXSmall("command.portal.edit", welcome, this);
+		portalBackButton = LinkFactory.createButtonSmall("command.portal.back", welcome, this);
+		portalBackButton.setIconLeftCSS("o_icon o_icon_edit");
+		portalBackButton.setElementCssClass("pull-right");
+		portalBackButton.setPrimary(true);
+		portalEditButton = LinkFactory.createButtonSmall("command.portal.edit", welcome, this);
+		portalEditButton.setIconLeftCSS("o_icon o_icon_edit");
+		portalEditButton.setElementCssClass("pull-right");
 		
 		if(CoreSpringFactory.containsBean("baksModule")){
 			welcome.contextPut("isbaks", true);

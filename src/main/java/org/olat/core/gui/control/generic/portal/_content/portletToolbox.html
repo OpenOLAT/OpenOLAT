@@ -1,10 +1,8 @@
-<div class="b_floatbox">
-	$r.render("close")	
-	$r.render("move.down")
-	$r.render("move.up")
-	$r.render("move.right")
-	$r.render("move.left")
-	#if ($hasAdditional)
-		$r.render("additionalTools")
-	#end
-</div>
+$r.render("move.left")
+$r.render("move.right")
+$r.render("move.up")
+$r.render("move.down")
+#if ($hasAdditional)
+	$r.render("additionalTools")
+#end
+$r.render("close")	

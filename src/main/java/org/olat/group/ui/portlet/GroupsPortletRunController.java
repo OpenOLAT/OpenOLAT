@@ -104,11 +104,12 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 		
 		groupsVC = createVelocityContainer("groupsPortlet");
 		showAllLink = LinkFactory.createLink("groupsPortlet.showAll", groupsVC, this);
+		showAllLink.setIconRightCSS("o_icon o_icon_start");
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(trans.translate("groupsPortlet.nogroups"));
 		tableConfig.setDisplayTableHeader(false);
-		tableConfig.setCustomCssClass("b_portlet_table");
+		tableConfig.setCustomCssClass("o_portlet_table");
 		tableConfig.setDisplayRowCount(false);
 		tableConfig.setPageingEnabled(false);
 		tableConfig.setDownloadOffered(false);

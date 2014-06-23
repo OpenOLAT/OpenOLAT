@@ -19,7 +19,7 @@
 /* content boxes */
 .o_info, %o_info { 
 	margin: 20px 0;
-	padding: 20px;
+	padding: $o-info-padding;
 	background-color: #eee;
 	border-left: 3px solid #d4d4d4;
 	h2, h3, h4, h5 { color: #bbbbbb;}

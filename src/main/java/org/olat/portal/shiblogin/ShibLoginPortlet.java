@@ -50,7 +50,7 @@ import org.olat.shibboleth.SwitchShibbolethAuthenticationConfigurator;
  */
 public class ShibLoginPortlet extends AbstractPortlet {
 	
-	private String cssWrapperClass = "b_portlet_iframe";
+	private String cssWrapperClass = "o_portlet_shibboleth";
 	private Controller runCtr;
 	private SwitchShibbolethAuthenticationConfigurator config;
 	

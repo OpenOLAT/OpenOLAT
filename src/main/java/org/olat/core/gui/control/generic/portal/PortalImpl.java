@@ -102,56 +102,7 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 
 		trans = Util.createPackageTranslator(PortalImpl.class, ureq.getLocale());
 		portalVC = new VelocityContainer("portalVC", VELOCITY_ROOT + "/portal.html", trans, this);		// initialize arrays
-
-		// calculate the column css classes based on YAML schema
-		int cols = portalColumns.size();
-		List<String> columnCssClassWrapper = new ArrayList<String>(cols);
-		columnCssClassWrapper.add(0, ""); // empty, in velocity things start with 1...
-		List<String> columnCssClassInner = new ArrayList<String>(cols);
-		columnCssClassInner.add(0, ""); // empty, in velocity things start with 1...
-		switch (cols) {
-		case 0:
-			// do nothing
-			break;
-		case 1:
-			// empty css class
-			columnCssClassWrapper.add(1, ""); 
-			columnCssClassInner.add(1, ""); 
-			break;
-		case 2:
-			// 50% each
-			columnCssClassWrapper.add(1, "col-md-6 o_sel_portal_col_1"); 
-			columnCssClassInner.add(1, "b_subcl"); 
-			columnCssClassWrapper.add(2, "col-md-6 o_sel_portal_col_2"); 
-			columnCssClassInner.add(2, "b_subcr"); 
-			break;
-		case 3:
-			// 33% each
-			columnCssClassWrapper.add(1, "col-md-4 o_sel_portal_col_1"); 
-			columnCssClassInner.add(1, "b_subcl"); 
-			columnCssClassWrapper.add(2, "col-md-4 o_sel_portal_col_2"); 
-			columnCssClassInner.add(2, "b_subcl"); 
-			columnCssClassWrapper.add(3, "col-md-4 o_sel_portal_col_3"); 
-			columnCssClassInner.add(3, "b_subcr"); 
-			break;
-		case 4:
-			// 25% each
-			columnCssClassWrapper.add(1, "col-md-3 o_sel_portal_col_1"); 
-			columnCssClassInner.add(1, "b_subcl"); 
-			columnCssClassWrapper.add(2, "col-md-3 o_sel_portal_col_2"); 
-			columnCssClassInner.add(2, "b_subcl"); 
-			columnCssClassWrapper.add(3, "col-md-3 o_sel_portal_col_3"); 
-			columnCssClassInner.add(3, "b_subcl"); 
-			columnCssClassWrapper.add(4, "col-md-3 o_sel_portal_col_4"); 
-			columnCssClassInner.add(4, "b_subcr"); 
-			break;
-		default:
-			// do log as error but don't make redscreen for user.
-			log.error("only up to 4 portal columns supported but " + cols + " columns available in portal::" + portalName);
-			break;
-		}
-		portalVC.contextPut("columnCssClassWrapper", columnCssClassWrapper);
-		portalVC.contextPut("columnCssClassInner", columnCssClassInner);
+		portalVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 		
 		// init all portlets enabled in the portal columns
 		initPortlets(ureq);
@@ -234,7 +185,8 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 				// remember this portlet container
 				portletContainers.put(portlet.getName(), pc);
 				String addLinkName = "command.add." + portlet.getName();
-				Link tmp = LinkFactory.createCustomLink(addLinkName, addLinkName, "add", Link.BUTTON_XSMALL, portalVC, this);
+				Link tmp = LinkFactory.createCustomLink(addLinkName, addLinkName, "add", Link.BUTTON_SMALL, portalVC, this);
+				tmp.setIconLeftCSS("o_icon o_icon_add");
 				tmp.setUserObject(portlet.getName());
 				// and add to velocity
 				portalVC.put(portlet.getName(), pc.getInitialComponent());

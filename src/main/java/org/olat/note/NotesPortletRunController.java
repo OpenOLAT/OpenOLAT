@@ -99,11 +99,12 @@ public class NotesPortletRunController extends AbstractPortletRunController<Note
 		
 		this.notesVC = this.createVelocityContainer("notesPortlet");
 		showAllLink = LinkFactory.createLink("notesPortlet.showAll", notesVC, this);
+		showAllLink.setIconRightCSS("o_icon o_icon_start");
 			
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(trans.translate("notesPortlet.nonotes"));
 		tableConfig.setDisplayTableHeader(false);
-		tableConfig.setCustomCssClass("b_portlet_table");
+		tableConfig.setCustomCssClass("o_portlet_table");
 		tableConfig.setDisplayRowCount(false);
 		tableConfig.setPageingEnabled(false);
 		tableConfig.setDownloadOffered(false);

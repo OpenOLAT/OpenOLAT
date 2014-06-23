@@ -110,7 +110,7 @@ public class CalendarPortlet extends AbstractPortlet {
 		Calendar cal = Calendar.getInstance();
 		int day = cal.get(Calendar.DAY_OF_MONTH);
 		int month = cal.get(Calendar.MONTH);
-		return "o_portlet_calendar o_day_" + day + " o_month_" + month;
+		return "o_day_" + day + " o_month_" + month + " o_portlet_cal";
 	}
 
 	/**

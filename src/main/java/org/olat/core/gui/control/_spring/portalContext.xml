@@ -38,7 +38,7 @@
 				<!-- absolute path on to the same file on the local filesystem         -->
 				<entry key="editFilePath" value="${portlet.sysinfo.filepath}" />
 				<entry key="height" value="250" />
-				<entry key="cssWrapperClass" value="b_portlet_sysinfo" />
+				<entry key="cssWrapperClass" value="o_portlet_sysinfo" />
 			</map>
 		</property>
 	</bean>

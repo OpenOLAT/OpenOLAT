@@ -103,11 +103,12 @@ public class BookmarksPortletRunController extends AbstractPortletRunController<
 		
 		bookmarksVC = createVelocityContainer("bookmarksPortlet");
 		showAllLink = LinkFactory.createLink("bookmarksPortlet.showAll", bookmarksVC, this);
+		showAllLink.setIconRightCSS("o_icon o_icon_start");
 				
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(trans.translate("bookmarksPortlet.nobookmarks"));
 		tableConfig.setDisplayTableHeader(false);
-		tableConfig.setCustomCssClass("b_portlet_table");
+		tableConfig.setCustomCssClass("o_portlet_table");
 		tableConfig.setDisplayRowCount(false);
 		tableConfig.setPageingEnabled(false);
 		tableConfig.setDownloadOffered(false);

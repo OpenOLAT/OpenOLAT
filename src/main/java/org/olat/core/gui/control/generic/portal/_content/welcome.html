@@ -1,16 +1,28 @@
-<div class="o_home_portaleditlink">
+<div class="o_home_main">
+	<div class="o_chelp_wrapper">
+		<a class="o_link" href="$rssLink" title="$r.translate("welcome.rss")" target="_blank">
+			<i class="o_icon o_icon-fw o_icon_rss"> </i>
+		</a>
+		$r.contextHelp("org.olat.home","home-rss.html","help.hover.rss")
+	</div>
+
+	<h1>$r.translate("welcome.header")</h1>
+	#set ($intro = $r.translate("welcome.intro"))
+	#if ($intro != "")
+	<div class="o_block_large">
+		$intro
+	</div>
+	#end
+</div>
+
+<div class="o_home_portaleditlink clearfix">
 #if ($portalEditMode)
-	$r.render("command.portal.back")
+	<div class="o_block_large_bottom">
+		$r.render("command.portal.back")
+	</div>
 #else
 	$r.render("command.portal.edit")
 #end
-</div>
-<div class="o_home_main">
-	<h4>$r.translate("welcome.header")</h4>
-	#set ($intro = $r.translate("welcome.intro"))
-	#if ($intro != "")
-		$intro <br><br>
-	#end
 </div>
 
 #if($isbaks)
@@ -35,7 +47,7 @@ function gotoSite(event) {
 	var i=0;
 	for(var offsetParent = Element.getOffsetParent(el); offsetParent.id != 'o_body'; offsetParent = Element.getOffsetParent(offsetParent)) {
 		var posn = Element.positionedOffset(offsetParent);
-		if(offsetParent.id != "o_main_center" && offsetParent.id != "b_page") {//ie give it an offset which is the same as _content
+		if(offsetParent.id != "o_main_center" && offsetParent.id != "o_page") {//ie give it an offset which is the same as _content
 			offsetLeft += posn.left;
 			offsetTop += posn.top;
 		}
@@ -89,8 +101,3 @@ function launchSite(site) {
 #end ##end of baks-check
 
 $r.render("myPortal")
-
-<div class="o_home_rsslink">
-	$r.contextHelp("org.olat.home","home-rss.html","help.hover.rss")
-	<a class="o_home_rsslink" href="$rssLink" title="$r.translate("welcome.rss")" target="_blank"></a>
-</div>

@@ -1,32 +1,31 @@
-<div class="b_portal_wrapper">
-
-## The layout is implemented as YAML subcolumns. 
-## See YAML documentation
-	<div class="b_portal b_subcolumns">
+<div id="$r.getCId()" class="o_portal">
+	<div class="o_active row">
 	#foreach( $column in $portalColumns )
-		<div class="$columnCssClassWrapper.get($velocityCount)">
-			<div class="$columnCssClassInner.get($velocityCount)">
-			#foreach( $portlet in $column )
-				$r.render($portlet)
-			#end
-			</div>
+		<div class="col-xs-12 col-sm-6">
+		#foreach( $portlet in $column )
+			$r.render($portlet)
+		#end
 		</div>
 	#end
 	</div>
 
 #if ($editMode && $inactivePortlets.size() > 0)
-	<div class="b_portal_inactive">
-		<h4>$r.translate("inactive.portlets.title")</h4>
-		$r.translate("inactive.portlets.description")
+	<div class="o_inactive">
+		<h3>
+			$r.translate("inactive.portlets.title")
+		</h3>
+		<div class="o_note">
+			$r.translate("inactive.portlets.description")
+		</div>
 		#foreach( $portletName in $inactivePortlets)
 			#set ($portlet = $portletContainers.get($portletName).getPortlet())
-			<div class="b_portlet b_portlet_incactive $portlet.getCssClass()">
-				<div class="b_portlet_header"><strong>$portlet.getTitle()</strong> </div>
-				<div class="b_portlet_content">
-					$portlet.getDescription()
-				</div>
-				<div class="b_portlet_add">
+			<div class="o_portlet o_portlet_incactive $portlet.getCssClass()">
+				<div class="o_header clearfix">
 					$r.render("command.add.${portletName}")
+					<h4>$portlet.getTitle()</h4> 
+				</div>
+				<div class="o_content clearfix">
+					$portlet.getDescription()
 				</div>
 			</div>
 		#end

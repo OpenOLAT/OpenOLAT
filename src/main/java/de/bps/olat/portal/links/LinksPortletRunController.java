@@ -67,6 +67,7 @@ public class LinksPortletRunController extends BasicController {
 		//edit link
 		if (ureq.getUserSession().getRoles().isOLATAdmin()){
 			editButton = LinkFactory.createButtonXSmall("editor.button", portletVC, this);
+			editButton.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		}
 
 		viewPanel = new Panel("view");
@@ -112,7 +113,7 @@ public class LinksPortletRunController extends BasicController {
 		}
 		
 		if (sb.length() > 0) {
-			String portletContent = "<ul>" + sb.toString() + "</ul>";
+			String portletContent = "<ul class='list-unstyled'>" + sb.toString() + "</ul>";
 			portletVC.contextPut("content", portletContent);
 		} else {
 			portletVC.contextPut("content", translate("no.content.found"));
@@ -277,7 +278,10 @@ public class LinksPortletRunController extends BasicController {
 			editorVC.contextPut("allInstWithLinkIds", allInstWithLinkIds);
 		}
 		
-		backLink = LinkFactory.createLinkBack(editorVC, this);		
+		backLink = LinkFactory.createButtonXSmall("back", editorVC, this);		
+		backLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+		backLink.setPrimary(true);
+
 		viewPanel.setContent(editorVC);
 	}
 

@@ -46,7 +46,7 @@ import org.olat.core.util.Util;
  */
 public class IframePortlet extends AbstractPortlet {
 	private IframePortletRunController runCtr;
-	private String cssWrapperClass = "b_portlet_iframe";
+	private String cssWrapperClass = "o_portlet_iframe";
 
 	/**
 	 * @see org.olat.gui.control.generic.portal.Portlet#getTitle()

@@ -1,50 +1,50 @@
 <div class="o_table_layout $!tableConfig.getCustomCssClass() o_scrollbox">
-<div class="row clearfix o_table_toolbar">
-	<div class="col-lg-6">
-		#if ($hasTableSearch && !$tableEmpty)
-		  $r.render("tableSearch")
-		#end
-	</div>
-	<div class="col-lg-2"></div>
-	<div class="col-lg-4"><div class="pull-right o_table_tools">
-		#if ($hasFilters && $filters.size() > 0)
-		<div class="btn-group">	
-			<button class='btn btn-default dropdown-toggle' data-toggle='dropdown'>
-				<i class='o_icon o_icon-lg o_icon_filter'> </i>
-				<b class="caret"></b>
-			</button>
-			<ul class="dropdown-menu dropdown-menu-right" role="menu">
-				#if ($useNoFilterOption)
-					<li><a href="$r.commandURI("cmd.filter.nofilter")">$noFilterOption</a></li>
-				#end
-				#foreach ($filter in $filters)
-					<li>
-						#set ($filterPosition = $velocityCount - 1)
-						<a href="$r.commandURI("cmd.filter.${filterPosition}")">
-						#if ($filter == $selectedFilterValue)
-							
-						<i class="o_icon o_icon_check o_icon-fw"> </i>
-						#end
-						$r.escapeHtml($filter.getShortName())</a>
-					</li>
-				#end
-			</ul>
-		</div>
-		#end
-		#if ($hasSorters)
-			$r.render("tableSort")
-		#end
-		#if ($tableConfig.isPreferencesOffered())
-			$r.render("prefLink")
-		#end
-		#if ($tableConfig.isDownloadOffered())	
-			$r.render("downloadLink")
-		#end
-	</div></div>
-</div>
 #if ($tableEmpty)
 	<div class="o_table_empty o_info">$tableEmptyMessage</div>
 #else
+	<div class="row clearfix o_table_toolbar">
+		<div class="col-lg-6">
+			#if ($hasTableSearch && !$tableEmpty)
+			  $r.render("tableSearch")
+			#end
+		</div>
+		<div class="col-lg-2"></div>
+		<div class="col-lg-4"><div class="pull-right o_table_tools">
+			#if ($hasFilters && $filters.size() > 0)
+			<div class="btn-group">	
+				<button class='btn btn-default dropdown-toggle' data-toggle='dropdown'>
+					<i class='o_icon o_icon-lg o_icon_filter'> </i>
+					<b class="caret"></b>
+				</button>
+				<ul class="dropdown-menu dropdown-menu-right" role="menu">
+					#if ($useNoFilterOption)
+						<li><a href="$r.commandURI("cmd.filter.nofilter")">$noFilterOption</a></li>
+					#end
+					#foreach ($filter in $filters)
+						<li>
+							#set ($filterPosition = $velocityCount - 1)
+							<a href="$r.commandURI("cmd.filter.${filterPosition}")">
+							#if ($filter == $selectedFilterValue)
+								
+							<i class="o_icon o_icon_check o_icon-fw"> </i>
+							#end
+							$r.escapeHtml($filter.getShortName())</a>
+						</li>
+					#end
+				</ul>
+			</div>
+			#end
+			#if ($hasSorters)
+				$r.render("tableSort")
+			#end
+			#if ($tableConfig.isPreferencesOffered())
+				$r.render("prefLink")
+			#end
+			#if ($tableConfig.isDownloadOffered())	
+				$r.render("downloadLink")
+			#end
+		</div></div>
+	</div>
 	$r.render("table", $tableConfig.getCssPrefix())
 #end
 </div>

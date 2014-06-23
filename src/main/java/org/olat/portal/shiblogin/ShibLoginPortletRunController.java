@@ -59,7 +59,7 @@ public class ShibLoginPortletRunController extends BasicController {
 		portletVC.contextPut("wayfReturnUrl", config.getWayfReturnUrl());
 		portletVC.contextPut("additionalIDPs", config.getAdditionalIdentityProviders());
 		
-		setInitialComponent(this.portletVC);
+		putInitialPanel(this.portletVC);
 	}
 	
 	/**
