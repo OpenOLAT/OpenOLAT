@@ -52,12 +52,16 @@ public class CourseEditorPageFragment {
 	
 	public static final By chooseCpButton = By.className("o_sel_cp_choose_repofile");
 	public static final By chooseWikiButton = By.className("o_sel_wiki_choose_repofile");
+	public static final By chooseTestButton = By.className("o_sel_test_choose_repofile");
+	public static final By choosePodcastButton = By.className("o_sel_feed_choose_repofile");
 	
 	
 	public static final List<By> chooseRepoEntriesButtonList = new ArrayList<>();
 	static {
 		chooseRepoEntriesButtonList.add(chooseCpButton);
 		chooseRepoEntriesButtonList.add(chooseWikiButton);
+		chooseRepoEntriesButtonList.add(chooseTestButton);
+		chooseRepoEntriesButtonList.add(choosePodcastButton);
 	}
 	
 	@Drone
@@ -221,6 +225,24 @@ public class CourseEditorPageFragment {
 	 */
 	public CourseEditorPageFragment createWiki(String resourceTitle) {
 		return createResource(chooseWikiButton, resourceTitle);
+	}
+	
+	/**
+	 * Create a QTI 1.2 test from the chooser popup
+	 * @param resourceTitle
+	 * @return
+	 */
+	public CourseEditorPageFragment createQTI12Test(String  resourceTitle) {
+		return createResource(chooseTestButton, resourceTitle);
+	}
+	
+	/**
+	 * Create a podcast
+	 * @param resourceTitle
+	 * @return
+	 */
+	public  CourseEditorPageFragment createPodcast(String  resourceTitle) {
+		return createResource(choosePodcastButton, resourceTitle);
 	}
 	
 	public CourseEditorPageFragment createResource(By chooseButton, String resourceTitle) {

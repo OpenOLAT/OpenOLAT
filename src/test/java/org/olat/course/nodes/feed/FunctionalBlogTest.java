@@ -139,35 +139,6 @@ public class FunctionalBlogTest {
 	
 	@Test
 	@RunAsClient
-	public void checkCreate() throws URISyntaxException, IOException{
-		CourseVO course = functionalVOUtil.importEmptyCourse(deploymentUrl);
-		
-		/* login for test setup */
-		Assert.assertTrue(functionalUtil.login(browser, functionalUtil.getUsername(), functionalUtil.getPassword(), true));
-		
-		/* create a empty blog */
-		Assert.assertTrue(functionalRepositorySiteUtil.openCourse(browser, course.getRepoEntryKey()));
-		Assert.assertTrue(functionalCourseUtil.openCourseEditor(browser));
-		
-		Assert.assertTrue(functionalCourseUtil.createCourseNode(browser, CourseNodeAlias.BLOG, BLOG_SHORT_TITLE, BLOG_LONG_TITLE, BLOG_DESCRIPTION, 0));
-		Assert.assertTrue(functionalCourseUtil.createBlog(browser, BLOG_SHORT_TITLE, BLOG_DESCRIPTION));
-		
-		/* publish */
-		Assert.assertTrue(functionalCourseUtil.publishEntireCourse(browser, null, null));
-		
-		/* import empty feed */
-		Assert.assertNotNull(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
-		Assert.assertTrue(functionalCourseUtil.importBlogFeed(browser, BLOG_FEED));
-		
-		/* blog should be accessible */
-		Assert.assertNotNull(functionalCourseUtil.open(browser, course.getRepoEntryKey(), 0));
-		
-
-		Assert.assertTrue(functionalUtil.logout(browser));
-	}
-	
-	@Test
-	@RunAsClient
 	public void checkConcurrentClearCache(@Drone @Tutor1 DefaultSelenium tutor0, @Drone @Student1 DefaultSelenium student0) throws IOException, URISyntaxException{
 		/*
 		 * Setup

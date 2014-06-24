@@ -43,6 +43,7 @@ import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.PublisherPageFragment;
 import org.olat.selenium.page.course.PublisherPageFragment.Access;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
+import org.olat.selenium.page.repository.FeedPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.test.ArquillianDeployments;
@@ -318,5 +319,158 @@ public class CourseTest {
 		//check that the title of the index article/page is visible
 		WebElement indexArticleTitle = browser.findElement(By.className("o_wikimod_heading"));
 		Assert.assertEquals("Index", indexArticleTitle.getText().trim());
+	}
+	
+	@Test
+	@RunAsClient
+	public void createCourseWithQTITest(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-With-QTI-Test-1.2-" + UUID.randomUUID().toString();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack()
+			.edit();
+		
+		String testNodeTitle = "QTITest-1";
+		String testTitle = "Test - " + UUID.randomUUID().toString();
+		
+		//create a course element of type CP with the CP that we create above
+		CourseEditorPageFragment courseEditor = CourseEditorPageFragment.getEditor(browser);
+		courseEditor
+			.createNode("iqtest")
+			.nodeTitle(testNodeTitle)
+			.selectTabLearnContent()
+			.createQTI12Test(testTitle);
+
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish();
+		
+		//open the course and see the CP
+		CoursePageFragment course = courseEditor
+			.clickToolbarBack();
+		
+		course
+			.clickTree()
+			.selectWithTitle(testNodeTitle);
+		
+		//check that the title of the start page of test is correct
+		WebElement testH2 = browser.findElement(By.cssSelector("div.o_titled_wrapper.o_course_run h2"));
+		Assert.assertEquals(testNodeTitle, testH2.getText().trim());
+	}
+	
+	/**
+	 * Create a course with a course element of type podcast. Create
+	 * a podcast, publish the course, go the the course and configure
+	 * the podcast to read an external feed.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void createCourseWithPodcast_externalFeed(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-With-Podcast-" + UUID.randomUUID().toString();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack()
+			.edit();
+		
+		String podcastNodeTitle = "Podcats-1";
+		String podcastTitle = "Podcast - " + UUID.randomUUID().toString();
+		
+		//create a course element of type CP with the CP that we create above
+		CourseEditorPageFragment courseEditor = CourseEditorPageFragment.getEditor(browser);
+		courseEditor
+			.createNode("podcast")
+			.nodeTitle(podcastNodeTitle)
+			.selectTabLearnContent()
+			.createPodcast(podcastTitle);
+
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish();
+		
+		//open the course and see the CP
+		CoursePageFragment course = courseEditor
+			.clickToolbarBack();
+		course
+			.clickTree()
+			.selectWithTitle(podcastNodeTitle);
+		
+		//check that the title of the podcast is correct
+		WebElement podcastH2 = browser.findElement(By.cssSelector("div.o_podcast_info>h2"));
+		Assert.assertEquals(podcastTitle, podcastH2.getText().trim());
+		
+		FeedPage feed = FeedPage.getFeedPage(browser);
+		feed.newExternalPodcast("http://pod.drs.ch/rock_special_mpx.xml");
+
+		//check only that the "episodes" title is visibel
+		WebElement episodeH4 = browser.findElement(By.cssSelector("div.o_podcast_episodes>h4.o_title"));
+		Assert.assertNotNull(episodeH4);
+	}
+	
+	@Test
+	@RunAsClient
+	public void createCourseWithBlog_externalFeed(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-With-Blog-" + UUID.randomUUID().toString();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack()
+			.edit();
+		
+		String blogNodeTitle = "Blog-1";
+		String blogTitle = "Blog - " + UUID.randomUUID().toString();
+		
+		//create a course element of type CP with the CP that we create above
+		CourseEditorPageFragment courseEditor = CourseEditorPageFragment.getEditor(browser);
+		courseEditor
+			.createNode("blog")
+			.nodeTitle(blogNodeTitle)
+			.selectTabLearnContent()
+			.createPodcast(blogTitle);
+
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish();
+		
+		//open the course and see the CP
+		CoursePageFragment course = courseEditor
+			.clickToolbarBack();
+		course
+			.clickTree()
+			.selectWithTitle(blogNodeTitle);
+		
+		//check that the title of the podcast is correct
+		WebElement podcastH2 = browser.findElement(By.cssSelector("div.o_blog_info>h2"));
+		Assert.assertEquals(blogTitle, podcastH2.getText().trim());
+		
+		FeedPage feed = FeedPage.getFeedPage(browser);
+		feed.newExternalBlog("http://blogs.frentix.com/blogs/frentix/rss.xml");
+
+		//check only that the subscription link is visibel
+		WebElement subscriptionLink = browser.findElement(By.cssSelector("div.o_subscription>a"));
+		Assert.assertTrue(subscriptionLink.isDisplayed());
 	}
 }

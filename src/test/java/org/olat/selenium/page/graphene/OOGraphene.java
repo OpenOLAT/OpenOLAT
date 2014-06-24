@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.arquillian.graphene.Graphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementNotVisibleException;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -49,6 +50,10 @@ public class OOGraphene {
 	
 	public static void waitElement(WebElement element) {
 		Graphene.waitModel().pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
+	}
+	
+	public static final void tinymce(String content, WebDriver browser) {
+		 ((JavascriptExecutor)browser).executeScript("top.tinymce.activeEditor.setContent('" + content + "')");
 	}
 	
 	public static final void closeBlueMessageWindow(WebDriver browser) {
