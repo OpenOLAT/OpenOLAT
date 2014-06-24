@@ -121,6 +121,7 @@ import org.junit.runners.Suite;
 	org.olat.course.config.CourseConfigManagerImplTest.class,//ok
 	org.olat.course.groupsandrights.CourseGroupManagementTest.class,//ok
 	org.olat.course.editor.PublishProcessTest.class,//ok
+	org.olat.course.CourseXStreamAliasesTest.class,//ok
 	org.olat.modules.iq.IQManagerTest.class,//ok
 	org.olat.modules.fo.ForumManagerTest.class,//fail
 	org.olat.modules.wiki.WikiUnitTest.class,//ok

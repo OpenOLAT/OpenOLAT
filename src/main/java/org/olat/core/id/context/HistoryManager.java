@@ -65,6 +65,8 @@ public class HistoryManager extends BasicManager {
 		historyReadStream.omitField(RepositoryEntry.class, "participantGroup");
 		historyReadStream.omitField(RepositoryEntry.class, "tutorGroup");
 		historyReadStream.omitField(RepositoryEntry.class, "metaDataElements");
+		historyReadStream.omitField(RepositoryEntry.class, "version");
+		historyReadStream.omitField(org.olat.core.commons.persistence.PersistentObject.class, "version");
 		
 		historyReadStream.alias("org.olat.core.util.resource.OresHelper$1", Resourceable.class);
 		historyReadStream.alias("org.olat.core.util.resource.OresHelper$2", Resourceable.class);

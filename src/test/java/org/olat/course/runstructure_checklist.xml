@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<org.olat.course.Structure>
+  <rootNode class="org.olat.course.nodes.STCourseNode">
+    <ident>85800134200614</ident>
+    <children>
+      <de.bps.course.nodes.ChecklistCourseNode>
+        <ident>88781256657353</ident>
+        <parent class="org.olat.course.nodes.STCourseNode" reference="../../.."/>
+        <type>cl</type>
+        <shortTitle>Checkliste</shortTitle>
+        <longTitle>Kursbaustein vom Typ Checkliste</longTitle>
+        <moduleConfiguration>
+          <config>
+            <entry>
+              <string>cl_course_node_id</string>
+              <string>88781256657353</string>
+            </entry>
+            <entry>
+              <string>cl_checklist</string>
+              <de.bps.olat.modules.cl.Checklist>
+                <key>144343041</key>
+                <version>0</version>
+                <title>Checkliste</title>
+                <description>Kursbaustein vom Typ Checkliste</description>
+                <lastMofified>2013-12-18 15:32:01.609 UTC</lastMofified>
+                <checkpoints class="org.hibernate.collection.internal.PersistentBag">
+                  <initialized>true</initialized>
+                  <owner class="de.bps.olat.modules.cl.Checklist" reference="../.."/>
+                  <cachedSize>-1</cachedSize>
+                  <role>de.bps.olat.modules.cl.Checklist.checkpoints</role>
+                  <key class="long">144343041</key>
+                  <dirty>false</dirty>
+                  <storedSnapshot class="list">
+                    <de.bps.olat.modules.cl.Checkpoint>
+                      <key>144375808</key>
+                      <version>0</version>
+                      <title>Test1</title>
+                      <description>erster Test</description>
+                      <mode>mode.editable</mode>
+                      <lastModified>2013-12-18 15:31:59.769 UTC</lastModified>
+                      <checklist reference="../../../.."/>
+                      <results class="org.hibernate.collection.internal.PersistentBag">
+                        <initialized>true</initialized>
+                        <owner class="de.bps.olat.modules.cl.Checkpoint" reference="../.."/>
+                        <cachedSize>-1</cachedSize>
+                        <role>de.bps.olat.modules.cl.Checkpoint.results</role>
+                        <key class="long">144375808</key>
+                        <dirty>false</dirty>
+                        <storedSnapshot class="list"/>
+                        <specjLazyLoad>false</specjLazyLoad>
+                        <bag/>
+                      </results>
+                    </de.bps.olat.modules.cl.Checkpoint>
+                    <de.bps.olat.modules.cl.Checkpoint>
+                      <key>144375809</key>
+                      <version>0</version>
+                      <title>Test2</title>
+                      <description>zweiter test</description>
+                      <mode>mode.editable.once</mode>
+                      <lastModified>2013-12-18 15:31:59.769 UTC</lastModified>
+                      <checklist reference="../../../.."/>
+                      <results class="org.hibernate.collection.internal.PersistentBag">
+                        <initialized>true</initialized>
+                        <owner class="de.bps.olat.modules.cl.Checkpoint" reference="../.."/>
+                        <cachedSize>-1</cachedSize>
+                        <role>de.bps.olat.modules.cl.Checkpoint.results</role>
+                        <key class="long">144375809</key>
+                        <dirty>false</dirty>
+                        <storedSnapshot class="list"/>
+                        <specjLazyLoad>false</specjLazyLoad>
+                        <bag/>
+                      </results>
+                    </de.bps.olat.modules.cl.Checkpoint>
+                    <de.bps.olat.modules.cl.Checkpoint>
+                      <key>144375810</key>
+                      <version>0</version>
+                      <title>Test3</title>
+                      <description>dritter test</description>
+                      <mode>mode.visible.lock</mode>
+                      <lastModified>2013-12-18 15:31:59.769 UTC</lastModified>
+                      <checklist reference="../../../.."/>
+                      <results class="org.hibernate.collection.internal.PersistentBag">
+                        <initialized>true</initialized>
+                        <owner class="de.bps.olat.modules.cl.Checkpoint" reference="../.."/>
+                        <cachedSize>-1</cachedSize>
+                        <role>de.bps.olat.modules.cl.Checkpoint.results</role>
+                        <key class="long">144375810</key>
+                        <dirty>false</dirty>
+                        <storedSnapshot class="list"/>
+                        <specjLazyLoad>false</specjLazyLoad>
+                        <bag/>
+                      </results>
+                    </de.bps.olat.modules.cl.Checkpoint>
+                    <de.bps.olat.modules.cl.Checkpoint>
+                      <key>144375811</key>
+                      <version>0</version>
+                      <title>test4</title>
+                      <description>vierter test</description>
+                      <mode>mode.hidden</mode>
+                      <lastModified>2013-12-18 15:31:59.769 UTC</lastModified>
+                      <checklist reference="../../../.."/>
+                      <results class="org.hibernate.collection.internal.PersistentBag">
+                        <initialized>true</initialized>
+                        <owner class="de.bps.olat.modules.cl.Checkpoint" reference="../.."/>
+                        <cachedSize>-1</cachedSize>
+                        <role>de.bps.olat.modules.cl.Checkpoint.results</role>
+                        <key class="long">144375811</key>
+                        <dirty>false</dirty>
+                        <storedSnapshot class="list"/>
+                        <specjLazyLoad>false</specjLazyLoad>
+                        <bag/>
+                      </results>
+                    </de.bps.olat.modules.cl.Checkpoint>
+                  </storedSnapshot>
+                  <specjLazyLoad>false</specjLazyLoad>
+                  <bag>
+                    <de.bps.olat.modules.cl.Checkpoint reference="../../storedSnapshot/de.bps.olat.modules.cl.Checkpoint"/>
+                    <de.bps.olat.modules.cl.Checkpoint reference="../../storedSnapshot/de.bps.olat.modules.cl.Checkpoint[2]"/>
+                    <de.bps.olat.modules.cl.Checkpoint reference="../../storedSnapshot/de.bps.olat.modules.cl.Checkpoint[3]"/>
+                    <de.bps.olat.modules.cl.Checkpoint reference="../../storedSnapshot/de.bps.olat.modules.cl.Checkpoint[4]"/>
+                  </bag>
+                </checkpoints>
+              </de.bps.olat.modules.cl.Checklist>
+            </entry>
+            <entry>
+              <string>cl_course_id</string>
+              <long>86613534759838</long>
+            </entry>
+          </config>
+        </moduleConfiguration>
+        <noAccessExplanation>Dieses Kurselement ist nicht zugänglich.</noAccessExplanation>
+        <preConditionVisibility>
+          <expertMode>false</expertMode>
+          <easyModeCoachesAndAdmins>false</easyModeCoachesAndAdmins>
+          <easyModeAlwaysAllowCoachesAndAdmins>false</easyModeAlwaysAllowCoachesAndAdmins>
+        </preConditionVisibility>
+        <additionalConditions/>
+        <preConditionAccess>
+          <expertMode>false</expertMode>
+          <easyModeCoachesAndAdmins>false</easyModeCoachesAndAdmins>
+          <easyModeAlwaysAllowCoachesAndAdmins>false</easyModeAlwaysAllowCoachesAndAdmins>
+        </preConditionAccess>
+      </de.bps.course.nodes.ChecklistCourseNode>
+    </children>
+    <type>st</type>
+    <shortTitle>All_Elements_Course</shortTitle>
+    <longTitle>Copy of All_Elements_Course</longTitle>
+    <learningObjectives></learningObjectives>
+    <displayOption>title+desc+content</displayOption>
+    <moduleConfiguration>
+      <config>
+        <entry>
+          <string>allowRelativeLinks</string>
+          <string>false</string>
+        </entry>
+        <entry>
+          <string>configversion</string>
+          <int>4</int>
+        </entry>
+        <entry>
+          <string>peekviewChildNodes</string>
+          <string>88781256657353</string>
+        </entry>
+        <entry>
+          <string>columns</string>
+          <int>2</int>
+        </entry>
+        <entry>
+          <string>display</string>
+          <string>peekview</string>
+        </entry>
+        <entry>
+          <string>deliveryOptions</string>
+          <org.olat.core.gui.control.generic.iframe.DeliveryOptions>
+            <standardMode>false</standardMode>
+            <jQueryEnabled>true</jQueryEnabled>
+            <glossaryEnabled>true</glossaryEnabled>
+            <openolatCss>true</openolatCss>
+          </org.olat.core.gui.control.generic.iframe.DeliveryOptions>
+        </entry>
+      </config>
+    </moduleConfiguration>
+    <preConditionVisibility>
+      <expertMode>false</expertMode>
+      <easyModeCoachesAndAdmins>false</easyModeCoachesAndAdmins>
+      <easyModeAlwaysAllowCoachesAndAdmins>false</easyModeAlwaysAllowCoachesAndAdmins>
+    </preConditionVisibility>
+    <additionalConditions>
+      <org.olat.course.condition.additionalconditions.PasswordCondition>
+        <expertMode>false</expertMode>
+        <easyModeCoachesAndAdmins>false</easyModeCoachesAndAdmins>
+        <easyModeAlwaysAllowCoachesAndAdmins>false</easyModeAlwaysAllowCoachesAndAdmins>
+      </org.olat.course.condition.additionalconditions.PasswordCondition>
+    </additionalConditions>
+    <preConditionAccess>
+      <expertMode>false</expertMode>
+      <easyModeCoachesAndAdmins>false</easyModeCoachesAndAdmins>
+      <easyModeAlwaysAllowCoachesAndAdmins>false</easyModeAlwaysAllowCoachesAndAdmins>
+    </preConditionAccess>
+    <scoreCalculator>
+      <scoreExpression>(getScore(&quot;89167719868693&quot;) + getScore(&quot;89167719850739&quot;))</scoreExpression>
+      <passedExpression>(getPassed(&quot;89167719868693&quot;) &amp; getPassed(&quot;89167719850739&quot;))</passedExpression>
+      <expertMode>false</expertMode>
+      <sumOfScoreNodes>
+        <string>89167719868693</string>
+        <string>89167719850739</string>
+      </sumOfScoreNodes>
+      <passedType>inherit</passedType>
+      <passedNodes>
+        <string>89167719868693</string>
+        <string>89167719850739</string>
+      </passedNodes>
+      <passedCutValue>0</passedCutValue>
+    </scoreCalculator>
+  </rootNode>
+  <version>2</version>
+</org.olat.course.Structure>

@@ -28,7 +28,6 @@ import java.net.URL;
 
 import junit.framework.Assert;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,19 +97,4 @@ public class HistoryManagerTest extends OlatTestCase {
 		HistoryPoint history = historyManager.readHistory(resumeXml);
 		Assert.assertNotNull(history);
 	}
-	
-	/**
-	 * Test the compatibility with version 8.3
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 */
-	@Test @Ignore
-	public void testRead_v83_repoMetadaElements() throws IOException, URISyntaxException {
-		URL xmlUrl = HistoryManagerTest.class.getResource("resume_ver83b.xml");
-		assertNotNull(xmlUrl);
-		File resumeXml = new File(xmlUrl.toURI());
-		HistoryPoint history = historyManager.readHistory(resumeXml);
-		Assert.assertNotNull(history);
-	}
-	
 }
