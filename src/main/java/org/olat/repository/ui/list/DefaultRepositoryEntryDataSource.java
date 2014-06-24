@@ -170,6 +170,8 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			if (entry.isMembersOnly()) {
 				// members only always show lock icon
 				types.add(new PriceMethod("", "o_ac_membersonly_icon", uifactory.getTranslator().translate("cif.access.membersonly.short")));
+				//FIXME:SR. membership not set for this case, how to get it?
+				//row.setMember();
 			} else {
 				// collect access control method icons
 				OLATResource resource = entry.getOlatResource();

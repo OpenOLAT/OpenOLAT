@@ -53,6 +53,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	
 	private String score;
 	private Boolean passed;
+	private boolean isMembersOnly = false;
 	
 	private boolean member;
 	
@@ -93,6 +94,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		setShortenedDescription(entry.getDescription());
 		setOLATResourceable(OresHelper.clone(entry.getOlatResource()));
 		setAuthors(entry.getAuthors());
+		setIsMembersOnly(entry.isMembersOnly());
 		
 		//bookmark
 		setMarked(entry.isMarked());
@@ -131,6 +133,14 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 				setLifecycleSoftKey(lifecycle.getSoftKey());
 			}
 		}
+	}
+	
+	private void setIsMembersOnly(boolean membersOnly) {
+		this.isMembersOnly = membersOnly;
+	}
+
+	public boolean isMembersOnly() {
+		return isMembersOnly;
 	}
 	
 	public String getCssClass() {

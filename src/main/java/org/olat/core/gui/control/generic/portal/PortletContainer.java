@@ -70,6 +70,8 @@ public class PortletContainer extends BasicController implements PortletContaine
 		this.portlet = portlet;
 	
 		portletContainerVC = this.createVelocityContainer("portletContainer");
+		portletContainerVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
+
 		this.portletContainerVC.contextPut("title", portlet.getTitle());
 		this.portletContainerVC.contextPut("cssClass", portlet.getCssClass());
 		this.portletContainerVC.contextPut(MODE_EDIT, Boolean.FALSE);
@@ -80,30 +82,31 @@ public class PortletContainer extends BasicController implements PortletContaine
 		moveLeftLink = LinkFactory.createCustomLink("move.left", "move.left", null, Link.NONTRANSLATED, toolboxContainer, this);
 		moveLeftLink.setTooltip(translate("move.left"));
 		moveLeftLink.setTextReasonForDisabling(translate("move.left.impossible"));		
-		moveLeftLink.setCustomEnabledLinkCSS("b_portlet_edit_left");
-		moveLeftLink.setCustomDisabledLinkCSS("b_portlet_edit_left_disabled");
+		moveLeftLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_move_left");
+		moveLeftLink.setElementCssClass("o_portlet_edit_left");
 		
 		moveUpLink = LinkFactory.createCustomLink("move.up", "move.up", null, Link.NONTRANSLATED, toolboxContainer, this);
 		moveUpLink.setTooltip(translate("move.up"));
 		moveUpLink.setTextReasonForDisabling(translate("move.up.impossible"));
-		moveUpLink.setCustomEnabledLinkCSS("b_portlet_edit_up");
-		moveUpLink.setCustomDisabledLinkCSS("b_portlet_edit_up_disabled");
+		moveUpLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_move_up");
+		moveUpLink.setElementCssClass("o_portlet_edit_up");
 		
 		moveDownLink = LinkFactory.createCustomLink("move.down", "move.down", null, Link.NONTRANSLATED, toolboxContainer, this);
 		moveDownLink.setTooltip(translate("move.down"));
 		moveDownLink.setTextReasonForDisabling(translate("move.down.impossible"));
-		moveDownLink.setCustomEnabledLinkCSS("b_portlet_edit_down");
-		moveDownLink.setCustomDisabledLinkCSS("b_portlet_edit_down_disabled");
+		moveDownLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_move_down");
+		moveDownLink.setElementCssClass("o_portlet_edit_down");
 				
 		moveRightLink = LinkFactory.createCustomLink("move.right", "move.right", null, Link.NONTRANSLATED, toolboxContainer, this);
 		moveRightLink.setTooltip(translate("move.right"));
 		moveRightLink.setTextReasonForDisabling(translate("move.right.impossible"));
-		moveRightLink.setCustomEnabledLinkCSS("b_portlet_edit_right");
-		moveRightLink.setCustomDisabledLinkCSS("b_portlet_edit_right_disabled");
+		moveRightLink.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_move_right");
+		moveRightLink.setElementCssClass("o_portlet_edit_right");
 		
 		close = LinkFactory.createCustomLink("close", "close", null, Link.NONTRANSLATED, toolboxContainer, this);
 		close.setTooltip(translate("close"));
-		close.setCustomEnabledLinkCSS("b_portlet_edit_delete");
+		close.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_delete_item");
+		close.setElementCssClass("o_portlet_edit_delete");
 		
 		portletContainerVC.put("toolbox", toolboxContainer);
 	}

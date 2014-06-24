@@ -1,20 +1,19 @@
-#if ($editMode)
-	#set($css = "b_portlet b_portlet_edit $cssClass")
-#else 
-	#set($css = "b_portlet $cssClass")
-#end
-<div class="$css">
+<div id="$r.getCId()" class="o_portlet clearfix $cssClass #if ($editMode) o_edit #end">
 	#if ($editMode)
 	## this div must be on the same level as the header and content wrapper due to brasato
 	## component wrappers that break the layering of the components !
-	<div class="b_portlet_toolbox b_clearfix">
+	<div class="o_toolbox clearfix">
 		$r.render("toolbox")	
 	</div>
+	<div class="o_edit_shim"> </div>
 	#end
-	<div class="b_portlet_header">
-		<strong>$title</strong>
+	<div class="o_header clearfix">
+		<h4>
+			<i class="o_icon o_icon-fw ${cssClass}_icon"></i>
+			$title
+		</h4>
 	</div>
-	<div class="b_portlet_content">
+	<div class="o_content clearfix">
 		$r.render("portlet")
 	</div>
 </div>

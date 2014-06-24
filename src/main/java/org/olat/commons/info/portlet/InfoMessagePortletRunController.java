@@ -86,11 +86,12 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 		
 		portletVC =  createVelocityContainer("infosPortlet");
 		showAllLink = LinkFactory.createLink("portlet.showall", portletVC, this);
+		showAllLink.setIconRightCSS("o_icon o_icon_start");
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("portlet.no_messages"));
 		tableConfig.setDisplayTableHeader(false);
-		tableConfig.setCustomCssClass("b_portlet_table");
+		tableConfig.setCustomCssClass("o_portlet_table");
 		tableConfig.setDisplayRowCount(false);
 		tableConfig.setPageingEnabled(false);
 		tableConfig.setDownloadOffered(false);

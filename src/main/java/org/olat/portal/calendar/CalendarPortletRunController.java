@@ -89,6 +89,8 @@ public class CalendarPortletRunController extends BasicController {
 		
 		calendarVC = createVelocityContainer("calendarPortlet");
 		showAllLink = LinkFactory.createLink("calendar.showAll", calendarVC, this);
+		showAllLink.setIconRightCSS("o_icon o_icon_start");
+
 		ComponentUtil.registerForValidateEvents(calendarVC, this);
 		
 		Date date = new Date();
@@ -98,7 +100,7 @@ public class CalendarPortletRunController extends BasicController {
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("calendar.noEvents"));
 		tableConfig.setDisplayTableHeader(false);
-		tableConfig.setCustomCssClass("b_portlet_table");
+		tableConfig.setCustomCssClass("o_portlet_table");
 		tableConfig.setDisplayRowCount(false);
 		tableConfig.setPageingEnabled(false);
 		tableConfig.setDownloadOffered(false);

@@ -246,9 +246,16 @@ public class RepositoryEntryListController extends FormBasicController
 			} else if ("start".equals(cmd)){
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
 				doOpen(ureq, row);
-			} else if ("select".equals(cmd) || "details".equals(cmd)){
+			} else if ("details".equals(cmd)){
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
 				doOpenDetails(ureq, row);
+			} else if ("select".equals(cmd)) {
+				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
+				if (row.isMember()) {
+					doOpen(ureq, row);					
+				} else {
+					doOpenDetails(ureq, row);
+				}
 			} else if ("comments".equals(cmd)){
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
 				doOpenComments(ureq, row);
@@ -424,7 +431,7 @@ public class RepositoryEntryListController extends FormBasicController
 	public void forgeStartLink(RepositoryEntryRow row) {
 		String label;
 		boolean isStart = true;
-		if(row.getAccessTypes() != null && !row.getAccessTypes().isEmpty() && !row.isMember()) {
+		if(!row.isMembersOnly() && row.getAccessTypes() != null && !row.getAccessTypes().isEmpty() && !row.isMember()) {
 			label = "book";
 			isStart = false;
 		} else {

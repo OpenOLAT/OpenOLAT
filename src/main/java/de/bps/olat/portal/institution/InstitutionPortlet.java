@@ -42,7 +42,7 @@ import com.thoughtworks.xstream.io.xml.XppDriver;
 
 
 public class InstitutionPortlet extends AbstractPortlet {
-	private String cssWrapperClass = "o_pt_w_if";
+	private String cssWrapperClass = "o_portlet_institutions";
 
 	private static final String CONFIG_FILE = "/WEB-INF/olat_portals_institution.xml";
 	private static FastHashMap institutions = null;

@@ -55,7 +55,7 @@ import com.thoughtworks.xstream.XStream;
 */
 public class LinksPortlet extends AbstractPortlet {
 	
-	private String cssWrapperClass = "o_pt_w_if";
+	private String cssWrapperClass = "o_portlet_links";
 	
 	protected static final String LANG_ALL = "*";
 	protected static final String LANG_DE = "de";

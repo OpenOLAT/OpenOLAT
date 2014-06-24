@@ -106,11 +106,12 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 		
 		this.notificationsVC = this.createVelocityContainer("notificationsPortlet");		
 		showAllLink = LinkFactory.createLink("notificationsPortlet.showAll", notificationsVC, this);
+		showAllLink.setIconRightCSS("o_icon o_icon_start");
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(trans.translate("notificationsPortlet.nonotifications"));
 		tableConfig.setDisplayTableHeader(false);
-		tableConfig.setCustomCssClass("b_portlet_table");
+		tableConfig.setCustomCssClass("o_portlet_table");
 		tableConfig.setDisplayRowCount(false);
 		tableConfig.setPageingEnabled(false);
 		tableConfig.setDownloadOffered(false);

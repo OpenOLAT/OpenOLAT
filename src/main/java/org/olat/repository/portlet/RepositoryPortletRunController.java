@@ -88,11 +88,12 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 		sortingTermsList.add(SortingCriteria.ALPHABETICAL_SORTING);				
 		VelocityContainer repoEntriesVC = this.createVelocityContainer("repositoryPortlet");
 		showAllLink = LinkFactory.createLink("repositoryPortlet.showAll", repoEntriesVC, this);
+		showAllLink.setIconRightCSS("o_icon o_icon_start");
 			
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(trans.translate("repositoryPortlet.noentry"));
 		tableConfig.setDisplayTableHeader(false);
-		tableConfig.setCustomCssClass("b_portlet_table");
+		tableConfig.setCustomCssClass("o_portlet_table");
 		tableConfig.setDisplayRowCount(false);
 		tableConfig.setPageingEnabled(false);
 		tableConfig.setDownloadOffered(false);

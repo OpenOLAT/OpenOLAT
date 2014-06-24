@@ -130,9 +130,25 @@ $o-im-buddies-font-size			: floor($font-size-base * 0.9) !default;
 $o-im-buddies-link-color		: $link-color !default;
 $o-im-buddies-link-hover-color	: $link-hover-color !default;
 
+$o-forum-quote-author-color 	: $text-muted !default;
+$o-forum-quote-padding			: $padding-large-vertical;
+$o-forum-quote-color 			: $gray !default;
+$o-forum-quote-font-size		: $font-size-small !default;
+$o-forum-attachment-font-size	: $font-size-small !default;
+
+$o-portlet-border			: $panel-default-border !default;
+$o-portlet-border-radius	: $panel-border-radius !default;
+$o-portlet-bg				: $panel-bg !default;
+$o-portlet-header-bg		: $panel-default-heading-bg !default;;
+$o-portlet-edit-border		: $panel-warning-border !default;
+$o-portlet-edit-bg			: $panel-warning-heading-bg !default;
+
 
 $o-dialog-window-bg				: #fefefe !default;
 $o-dialog-window-bar-bg			: #eee !default;
+
+$o-info-padding		: 20px !default;
+
 
 /*
 FIXME:oo10 LEGACY VARIABLES

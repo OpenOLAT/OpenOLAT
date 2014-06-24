@@ -93,7 +93,7 @@ public class DidYouKnowPortlet extends AbstractPortlet {
 	 * @see org.olat.gui.control.generic.portal.Portlet#getCssClass()
 	 */
 	public String getCssClass() {
-		return "b_portlet_dyk";
+		return "o_portlet_dyk";
 	}
 
 	/**

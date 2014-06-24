@@ -218,6 +218,25 @@ a.o_icon {
 .o_FileResource-MOVIE_icon:before { content: $fa-var-file-video-o; }
 .o_FileResource-FILE_icon:before { content: $fa-var-file-o; }
 
+/* portal icons */
+.o_portlet_infomsg_icon:before {content: $fa-var-info-circle; }
+.o_portlet_quickstart_icon:before {content: $fa-var-paper-plane-o; }
+.o_portlet_bookmark_icon:before {content: $fa-var-bookmark; }	
+.o_portlet_groups_icon:before {content: $fa-var-users; }
+.o_portlet_notes_icon:before {content: $fa-var-pencil; }
+.o_portlet_noti_icon:before {content: $fa-var-rss; }
+.o_portlet_eff_icon:before {content: $fa-var-certificate; }
+.o_portlet_repository_student_icon:before {content: $fa-var-cubes; }
+.o_portlet_repository_teacher_icon:before {content: $fa-var-graduation-cap; }	
+.o_portlet_iframe_icon:before {content: $fa-var-star; }
+.o_portlet_sysinfo_icon:before {content: $fa-var-tachometer; }
+.o_portlet_dyk_icon:before {content: $fa-var-lightbulb-o; }
+.o_portlet_infomessages_icon:before {content: $fa-var-comment-o; }
+.o_portlet_cal_icon:before {content: $fa-var-calendar; }
+.o_portlet_institutions_icon:before {content: $fa-var-institution; }
+.o_portlet_links_icon:before {content: $fa-var-link; }
+.o_portlet_shibboleth_icon:before {content: $fa-var-sign-in; }
+
 
 /* notification icons */
 .o_forum_message_icon:before { content: $fa-var-comment-o; }
