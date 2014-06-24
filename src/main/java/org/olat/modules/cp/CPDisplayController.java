@@ -94,7 +94,6 @@ public class CPDisplayController extends BasicController implements Activateable
 	private SearchInputController searchCtrl;
 	private Link nextLink;
 	private Link previousLink;
-	//fxdiff VCRP-14: print cp
 	private Link printLink;
 	private String mapperBaseURL;
 	private CPPrintMapper printMapper;
@@ -162,7 +161,6 @@ public class CPDisplayController extends BasicController implements Activateable
 			cpTree.addListener(this);
 		}
 		
-		//fxdiff VCRP-14: print cp
 		if(showPrint) {
 			printLink = LinkFactory.createCustomLink("print", "print", null, Link.LINK + Link.NONTRANSLATED, myContent, this);
 			printLink.setCustomDisplayText("");
@@ -176,8 +174,7 @@ public class CPDisplayController extends BasicController implements Activateable
 			printMapper.setBaseUri(mapperBaseURL);
 		}
 		
-		//fxdiff VCRP-13: cp navigation
-		if(showNavigation) {
+		if(showNavigation && ctm.getRootNode().getChildCount() > 0) {
 			nextLink = LinkFactory.createCustomLink("next", "next", null, Link.LINK + Link.NONTRANSLATED, myContent, this);
 			nextLink.setCustomDisplayText("");
 			nextLink.setIconLeftCSS("o_icon o_icon-fw o_icon_next o_icon-lg");
@@ -216,9 +213,7 @@ public class CPDisplayController extends BasicController implements Activateable
 				selNodeId = node.getIdent();
 
 				nodeInfo = LoggingResourceable.wrapCpNode(nodeUri);
-				//fxdiff VCRP-13: cp navigation
 				updateNextPreviousLink(node);
-				//fxdiff BAKS-7 Resume function
 				if(node.getUserObject() != null) {
 					String identifierRes = (String)node.getUserObject();
 					Long id = Long.parseLong(node.getIdent());
@@ -239,9 +234,7 @@ public class CPDisplayController extends BasicController implements Activateable
 				} else {
 					selNodeId = newNode.getIdent();
 				}
-				//fxdiff VCRP-13: cp navigation
 				updateNextPreviousLink(newNode);
-				//fxdiff BAKS-7 Resume function
 				if(newNode.getUserObject() != null) {
 					String identifierRes = (String)newNode.getUserObject();
 					Long id = Long.parseLong(newNode.getIdent());
@@ -268,7 +261,6 @@ public class CPDisplayController extends BasicController implements Activateable
 		if(cpContentCtr != null) {
 			cpContentCtr.setContentEncoding(encoding);
 		}
-		//fxdiff VCRP-14: print cp
 		if(printMapper != null) {
 			printMapper.setContentEncoding(encoding);
 		}
@@ -278,7 +270,6 @@ public class CPDisplayController extends BasicController implements Activateable
 		if(cpContentCtr != null) {
 			cpContentCtr.setJSEncoding(encoding);
 		}
-		//fxdiff VCRP-14: print cp
 		if(printMapper != null) {
 			printMapper.setJSEncoding(encoding);
 		}
@@ -418,7 +409,6 @@ public class CPDisplayController extends BasicController implements Activateable
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.CP_GET_FILE, getClass(), LoggingResourceable.wrapCpNode(newUri));
 	}
 	
-	//fxdiff VCRP-13: cp navigation
 	public void selectTreeNode(UserRequest ureq, TreeNode newNode) {
 		if (newNode != null) { // user clicked on a link which is listed in the
 			// toc
@@ -433,7 +423,6 @@ public class CPDisplayController extends BasicController implements Activateable
 		}
 	}
 	
-	//fxdiff VCRP-13: cp navigation
 	private void updateNextPreviousLink(TreeNode currentNode) {
 		if(nextLink != null) {
 			TreeNode nextNode = ctm.getNextNodeWithContent(currentNode);

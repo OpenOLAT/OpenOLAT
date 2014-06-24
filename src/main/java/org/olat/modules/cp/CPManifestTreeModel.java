@@ -157,8 +157,34 @@ public class CPManifestTreeModel extends GenericTreeModel {
 		gtn.setTitle(title);
 		
 		if (item.getName().equals("organization")) {
+			// Add first level item for organization
 			gtn.setIconCssClass("o_cp_org");
 			gtn.setAccessible(false);
+
+			// Special case check: CP with only one page: hide the page and show it directly under the organization element
+			@SuppressWarnings("unchecked")
+			List<Element> chds = item.elements("item");
+			if (chds.size() == 1) {
+				// check 1: only one child
+				Element childitem = chds.get(0);
+				@SuppressWarnings("unchecked")
+				List<Element> grandChds = childitem.elements("item");
+				if (grandChds.size() == 0) {
+					// check 2: no grand children
+					String identifierref = childitem.attributeValue("identifierref");
+					String href = resources.get(identifierref);
+					if (href != null) {
+						// check 3: a resource is attached to the child
+						// = success, we have a CP with only one page. Use this page and exit
+						XPath meta = rootElement.createXPath("//ns:resource[@identifier='" + identifierref + "']");
+						meta.setNamespaceURIs(nsuris);
+						gtn.setAccessible(true);
+						gtn.setUserObject(href);
+						hrefToTreeNode.put(href, gtn);
+						return gtn;
+					} 
+				}				
+			}
 		} else if (item.getName().equals("item")) {
 			gtn.setIconCssClass("o_cp_item");
 			//set resolved file path directly

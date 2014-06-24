@@ -311,6 +311,9 @@
 	z-index: 1201; /* modal backdrop set to 1200 */
 	display: none;
 }	
+#o_body.o_ajax_busy {
+	cursor: busy;
+}
 
 /* error screen */
 .o_exception {
