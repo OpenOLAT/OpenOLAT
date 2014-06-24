@@ -41,10 +41,11 @@ import org.olat.modules.coach.CoachingService;
  */
 public class CoachSiteDef extends AbstractSiteDefinition implements SiteDefinition {
 
-
 	@Override
 	protected SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId()) || (!ureq.getUserSession().getRoles().isGuestOnly() && !ureq.getUserSession().getRoles().isInvitee())) {
+		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())
+				|| (!ureq.getUserSession().getRoles().isGuestOnly()
+				&& !ureq.getUserSession().getRoles().isInvitee())) {
 			CoachingService coachingService = CoreSpringFactory.getImpl(CoachingService.class);
 			if(coachingService.isCoach(ureq.getIdentity())) {
 				return new CoachSite(this, ureq.getLocale());
@@ -58,5 +59,4 @@ public class CoachSiteDef extends AbstractSiteDefinition implements SiteDefiniti
 		CoachingModule module = CoreSpringFactory.getImpl(CoachingModule.class);
 		return module.isEnabled() && super.isEnabled();
 	}
-
 }

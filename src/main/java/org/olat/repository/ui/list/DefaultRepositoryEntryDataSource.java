@@ -146,16 +146,16 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 	}
 
 	private List<RepositoryEntryRow> processViewModel(List<RepositoryEntryMyView> repoEntries) {
-		List<Long> repoKeyWithAC = new ArrayList<>(repoEntries.size());
+		List<Long> repoKeys = new ArrayList<>(repoEntries.size());
 		List<OLATResource> resourcesWithAC = new ArrayList<>(repoEntries.size());
 		for(RepositoryEntryMyView entry:repoEntries) {
+			repoKeys.add(entry.getKey());
 			if(entry.isValidOfferAvailable()) {
-				repoKeyWithAC.add(entry.getKey());
 				resourcesWithAC.add(entry.getOlatResource());
 			}
 		}
 		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC);
-		repositoryService.filterMembership(searchParams.getIdentity(), repoKeyWithAC);
+		repositoryService.filterMembership(searchParams.getIdentity(), repoKeys);
 
 		List<RepositoryEntryRow> items = new ArrayList<RepositoryEntryRow>();
 		for(RepositoryEntryMyView entry:repoEntries) {
@@ -170,8 +170,6 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			if (entry.isMembersOnly()) {
 				// members only always show lock icon
 				types.add(new PriceMethod("", "o_ac_membersonly_icon", uifactory.getTranslator().translate("cif.access.membersonly.short")));
-				//FIXME:SR. membership not set for this case, how to get it?
-				//row.setMember();
 			} else {
 				// collect access control method icons
 				OLATResource resource = entry.getOlatResource();
@@ -186,9 +184,9 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 						}
 					}
 				}
-				
-				row.setMember(repoKeyWithAC.contains(entry.getKey()));
 			}
+			
+			row.setMember(repoKeys.contains(entry.getKey()));
 			
 			if(!types.isEmpty()) {
 				row.setAccessTypes(types);
