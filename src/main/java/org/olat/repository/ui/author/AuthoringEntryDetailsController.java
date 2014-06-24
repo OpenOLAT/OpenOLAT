@@ -680,7 +680,8 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 			String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
 			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		} catch (CorruptedCourseException e)  {
-			logError("", e);
+			logError("Course corrupted: " + entry.getKey() + " (" + entry.getOlatResource().getResourceableId() + ")", e);
+			showError("cif.error.corrupted");
 		}
 	}
 	

@@ -64,6 +64,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CorruptedCourseException;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
@@ -372,8 +373,13 @@ public class RepositoryEntryListController extends FormBasicController
 	}
 	
 	protected void doOpen(UserRequest ureq, RepositoryEntryRow row) {
-		String businessPath = "[RepositoryEntry:" + row.getKey() + "]";
-		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		try {
+			String businessPath = "[RepositoryEntry:" + row.getKey() + "]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		} catch (CorruptedCourseException e) {
+			logError("Course corrupted: " + row.getKey() + " (" + row.getOLATResourceable().getResourceableId() + ")", e);
+			showError("cif.error.corrupted");
+		}
 	}
 	
 	protected void doOpenDetails(UserRequest ureq, RepositoryEntryRow row) {

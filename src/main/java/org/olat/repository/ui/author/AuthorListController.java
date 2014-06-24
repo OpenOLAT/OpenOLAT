@@ -73,6 +73,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CorruptedCourseException;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
@@ -519,13 +520,23 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void launch(UserRequest ureq, AuthoringEntryRow row) {
-		String businessPath = "[RepositoryEntry:" + row.getKey() + "]";
-		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		try {
+			String businessPath = "[RepositoryEntry:" + row.getKey() + "]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		} catch (CorruptedCourseException e) {
+			logError("Course corrupted: " + row.getKey() + " (" + row.getOLATResourceable().getResourceableId() + ")", e);
+			showError("cif.error.corrupted");
+		}
 	}
 	
 	private void launchResourceEditor(UserRequest ureq, AuthoringEntryRow row) {
-		String businessPath = "[RepositoryEntry:" + row.getKey() + "][Editor:0]";
-		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		try {
+			String businessPath = "[RepositoryEntry:" + row.getKey() + "][Editor:0]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		} catch (CorruptedCourseException e) {
+			logError("Course corrupted: " + row.getKey() + " (" + row.getOLATResourceable().getResourceableId() + ")", e);
+			showError("cif.error.corrupted");
+		}
 	}
 
 	@Override

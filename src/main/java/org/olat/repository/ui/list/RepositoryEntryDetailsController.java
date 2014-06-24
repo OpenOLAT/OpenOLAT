@@ -59,6 +59,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.CorruptedCourseException;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.UserCourseInformations;
@@ -451,8 +452,13 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	}
 	
 	protected void doStart(UserRequest ureq) {
-		String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
-		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		try {
+			String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		} catch (CorruptedCourseException e) {
+			logError("Course corrupted: " + entry.getKey() + " (" + entry.getOlatResource().getResourceableId() + ")", e);
+			showError("cif.error.corrupted");
+		}
 	}
 	
 	protected void doOpenCategory(UserRequest ureq, Long categoryKey) {
