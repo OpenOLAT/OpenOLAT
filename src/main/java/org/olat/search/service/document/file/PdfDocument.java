@@ -32,6 +32,7 @@ import java.io.IOException;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -70,7 +71,7 @@ public class PdfDocument extends FileDocument {
     textDocument.setFilePath(getPdfTextTmpFilePath(leafResourceContext));
     textDocument.init(leafResourceContext,leaf);
     textDocument.setFileType(FILE_TYPE);
-		textDocument.setCssIcon("b_filetype_pdf");
+		textDocument.setCssIcon(CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
 		if (log.isDebug() ) log.debug(textDocument.toString());
 		return textDocument.getLuceneDocument();
 	}

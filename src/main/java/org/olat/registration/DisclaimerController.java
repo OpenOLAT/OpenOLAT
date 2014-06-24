@@ -111,11 +111,11 @@ public class DisclaimerController extends BasicController {
 				this.downloadLink.setTarget("_blank");
 				
 				if (i18nIfiedFilename.toLowerCase().endsWith(".pdf")) {
-					this.downloadLink.setCustomEnabledLinkCSS("b_with_small_icon_left b_filetype_pdf");
+					this.downloadLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_pdf");
 				} else if (i18nIfiedFilename.toLowerCase().endsWith(".html") || i18nIfiedFilename.toLowerCase().endsWith(".htm")) {
-					this.downloadLink.setCustomEnabledLinkCSS("b_with_small_icon_left b_filetype_html");
+					this.downloadLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_html");
 				} else if (i18nIfiedFilename.toLowerCase().endsWith(".doc")) {
-					this.downloadLink.setCustomEnabledLinkCSS("b_with_small_icon_left b_filetype_doc");
+					this.downloadLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_doc");
 				}
 			}
 		}

@@ -39,6 +39,7 @@ import org.apache.poi.poifs.eventfilesystem.POIFSReaderEvent;
 import org.apache.poi.poifs.eventfilesystem.POIFSReaderListener;
 import org.apache.poi.poifs.filesystem.DocumentInputStream;
 import org.apache.poi.util.LittleEndian;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -59,10 +60,10 @@ public class PowerPointDocument extends FileDocument {
 	}
 	
 	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException,DocumentException,DocumentAccessException {
-    PowerPointDocument powerPointDocument = new PowerPointDocument();
-    powerPointDocument.init(leafResourceContext,leaf);
-    powerPointDocument.setFileType(FILE_TYPE);
-		powerPointDocument.setCssIcon("b_filetype_ppt");
+	    PowerPointDocument powerPointDocument = new PowerPointDocument();
+	    powerPointDocument.init(leafResourceContext,leaf);
+	    powerPointDocument.setFileType(FILE_TYPE);
+		powerPointDocument.setCssIcon(CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
 		if (log.isDebug()) log.debug(powerPointDocument.toString());
 		return powerPointDocument.getLuceneDocument();
 	}

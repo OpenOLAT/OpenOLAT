@@ -1,18 +1,17 @@
 <div id="o_search_form">
-	<h4 id="o_search_form_toggler" class="b_with_small_icon_left">$r.translate('search.title')</h4>
 	<div id="o_search_form_content"><div>
 		#if($advancedSearchFlag)
 			$r.contextHelpWithWrapper('org.olat.search.ui','advanced-search.html','help.hover.search')
-			$r.render("switch.simple.search")
 			<div id="o_local_fulltextsearch">
 				$r.render("ext_search_form")
 			</div>
+			$r.render("switch.simple.search")
 		#else
 			$r.contextHelpWithWrapper('org.olat.search.ui','simple-search.html','help.hover.search')
-			$r.render("switch.advanced.search")
 			<div id="o_local_fulltextsearch">
 				$r.render("search_form")
 			</div>
+			$r.render("switch.advanced.search")
 			$r.render("context")
 		#end
 	</div></div>
@@ -30,16 +29,17 @@
 
 <div id="o_search_results">
 	#if ($hasDidYouMean)
-		<div id="o_search_results_header" class="o_search_did_you_mean">
+		<div id="o_search_results_header" class="o_search_did_you_mean o_important">
+			<i class="o_icon o_icon_important"> </i>
 	  		$r.translate("search.did.you.mean")
 	      	#set ($wordCounter = 0)
-	      	<span class="o_search_did_you_mean_words">
+	      	<ul class="list-inline o_search_did_you_mean_words">
 			  	#foreach( $link in $didYouMeanLinks )
 			    	#set ($linkname = "didYouMeanLink-$wordCounter")
-			    	$r.render($linkname)
+			    	<li>$r.render($linkname)</li>
 			    	#set ($wordCounter = $wordCounter + 1)
 			  	#end
-	      	</span>
+	      	</ul>
 		</div>
 	#else
 		$r.render("resultList")

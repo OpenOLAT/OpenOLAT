@@ -82,6 +82,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_help:before { content: $fa-var-question-circle; cursor: help;}
 .o_icon_home:before { content: $fa-var-home; }
 .o_icon_impress:before { content: $fa-var-info-circle; }
+.o_icon_important:before { content: $fa-var-exclamation-triangle; color: $brand-warning;}
 .o_icon_import:before { content: $fa-var-upload; }
 .o_icon_info:before { content: $fa-var-info-circle; color: $brand-info}
 .o_icon_info_msg:before { content: $fa-var-exclamation-circle; color: $brand-danger}
@@ -196,7 +197,7 @@ a.o_icon {
 }
 
 /* repository type icons */
-.o_CourseModule_icon:before { content: $fa-var-cube; }
+.o_CourseModule_icon:before, .o_course_icon:before { content: $fa-var-cube; }
 .o_EPStructuredMapTemplate_icon:before { content: $fa-var-puzzle-piece; }
 .o_FileResource-BLOG_icon:before { content: $fa-var-bullhorn; }
 .o_FileResource-IMSCP_icon:before { content: $fa-var-archive; }
@@ -341,6 +342,7 @@ a.o_icon {
 .o_filetype_txt:before,
 .o_filetype_htm:before, 
 .o_filetype_html:before { content: $fa-var-file-text-o; }
+.o_filetype_odt:before,
 .o_filetype_pages:before,
 .o_filetype_doc:before, 
 .o_filetype_docx:before { content: $fa-var-file-word-o; }

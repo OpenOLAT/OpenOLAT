@@ -368,7 +368,8 @@ public class SearchInputController extends FormBasicController {
 	
 	private void popupResultsSearchController() {
 		String title = translate("search.title");
-		searchDialogBox = new CloseableModalController(getWindowControl(), title, resultCtlr.getInitialComponent());
+		String close = translate("close");
+		searchDialogBox = new CloseableModalController(getWindowControl(), close, resultCtlr.getInitialComponent(), true, title);
 		searchDialogBox.activate();
 		listenTo(searchDialogBox);
 	}

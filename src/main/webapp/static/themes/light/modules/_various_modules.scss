@@ -51,13 +51,18 @@
 }
 
 /* HTML editor */
-#o_htmleditor_save {
-	margin-top: 10px;
-	text-align: center;
-	input {
-		margin-right: 1em;
-		&:last-child {
-			margin-right: 0;		
+.o_htmleditor {
+	.o_lastmodified {
+		color: $text-muted;	
+	}
+	#o_save {
+		margin-top: 10px;
+		text-align: center;
+		input {
+			margin-right: 1em;
+			&:last-child {
+				margin-right: 0;		
+			}
 		}
 	}
 }
@@ -266,6 +271,8 @@
 /* toogle box, based on bootstrap collapse plugin */
 .o_togglebox_wrapper {
 	.o_opener {
+		position: relative;
+		left: -0.5em;
 		i {
 			@extend .o_icon_open_togglebox;
 		}

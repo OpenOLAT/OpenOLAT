@@ -52,7 +52,7 @@ import org.olat.search.model.ResultDocument;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class ResultsController extends FormBasicController {
-	private FormLink previousLink, nextLink;
+	private FormLink previousTopLink, nextTopLink, previousLink, nextLink; 
 	private FormLink highlightLink, dishighlightLink;
 	
 	private int currentPage;
@@ -77,11 +77,10 @@ public class ResultsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		previousLink = uifactory.addFormLink("previous.page", formLayout);
-		previousLink.setCustomEnabledLinkCSS("b_large");
-		previousLink.setCustomDisabledLinkCSS("b_large");
+		previousTopLink = uifactory.addFormLink("previous.top.page", null, "previous.page", formLayout, Link.LINK);
 		nextLink = uifactory.addFormLink("next.page", formLayout);
-		nextLink.setCustomEnabledLinkCSS("b_large");
-		nextLink.setCustomDisabledLinkCSS("b_large");
+		nextTopLink = uifactory.addFormLink("next.top.page", null, "next.page", formLayout, Link.LINK);
+
 		highlightLink = uifactory.addFormLink("highlight.page", "enable.highlighting", "enable.highlighting", formLayout, Link.LINK);
 		dishighlightLink = uifactory.addFormLink("dishighlight.page", "disable.highlighting", "disable.highlighting", formLayout, Link.LINK);
 		flc.contextPut("highlight", true);
@@ -159,7 +158,9 @@ public class ResultsController extends FormBasicController {
 		flc.contextPut("currentPage", currentPage + 1);
 		
 		previousLink.setEnabled(currentPage != 0);
+		previousTopLink.setEnabled(currentPage != 0);
 		nextLink.setEnabled(currentPage != getMaxPage());
+		nextTopLink.setEnabled(currentPage != getMaxPage());
 		
 		String [] args = {Integer.toString(getStartResult()), Integer.toString(getEndResult()), Integer.toString(getNumOfResults())};
 		flc.contextPut("resultTitle", getTranslator().translate("search.result.title",args));
@@ -185,9 +186,9 @@ public class ResultsController extends FormBasicController {
 			highlight = false;
 			flc.contextPut("highlight", highlight);
 			reload(ureq);
-		} else if (source == previousLink) {
+		} else if (source == previousLink || source == previousTopLink) {
 			setSearchResults(ureq, Math.max(0, --currentPage));
-		} else if (source == nextLink) {
+		} else if (source == nextLink || source == nextTopLink) {
 			if(documents.size() <= (currentPage + 1) * RESULT_PER_PAGE) {
 				SearchEvent e = new SearchEvent(getLastLucenePosition() + 1, RESULT_PER_PAGE);
 				fireEvent(ureq, e);

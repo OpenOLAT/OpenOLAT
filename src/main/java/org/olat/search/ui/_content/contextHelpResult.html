@@ -6,10 +6,19 @@
 	  		#set($minone=$contextpath.length() - 1)
 	    	#set($contextpath = $contextpath.substring($lastIndex,$minone) )
 	  	#end
-		<a class="b_with_small_icon_left b_contexthelp_icon" href="$contextpath" target="$target">$result.title</a>
-		<a href="#" class="o_search_result_details_link" id="o_search_result_show_$id">$r.translate("metadata.show")</a>
-		<a href="#" class="o_search_result_details_link" id="o_search_result_hide_$id" style="display:none">$r.translate("metadata.hide")</a>	
+	  	<h4>
+			<a href="$contextpath" target="$target">
+				<i class="o_icon o_icon-fw o_icon_help"> </i>
+				<span>$result.title</span>
+			</a>
+		</h4>
 	</div>
+    #if ($result.parentContextName && $result.parentContextName != "")
+	<div class="o_search_result_context">
+		<strong>$r.translate("label.search.result.parent.context"):</strong>
+		$r.translate("$result.parentContextType") "$r.escapeHtml($result.parentContextName)" 
+	</div> 
+    #end
 	
 	#if ($highlight && !$result.highlightResult.equals("")) 
 		<div class="o_search_result_excerpt">
@@ -17,52 +26,30 @@
 		</div>
 	#end
 	
+	<div class="o_search_result_details">
+		#o_togglebox_start("o_search_result_$id" $r.translate("metadata.show"))
+		<div>
+			#if (!$author.equals("") ) 
+				<div class="o_search_result_author">
+			    	<strong>$r.translate("label.search.author"):</strong> $r.escapeHtml($author).
+				</div>
+			#end
+			#if ($result.lastChange )
+				<div class="o_search_result_lastmod">
+				  	<strong>$r.translate("label.search.result.last.changed"):</strong> $formatter.formatDate($result.lastChange)
+				</div>
+		  	#end		  
+			<div class="o_search_result_type">
+			    <strong>$r.translate("label.search.result.documenttype"):</strong> 
+			    $r.translate($result.documentType)
+		  	</div>
+			#if (!$result.description.equals("")) 
+				<div class="o_search_result_desc">
+				  	<strong>$r.translate("result.description"):</strong> $result.description
+			  	</div>		  
+			#end
+		</div>
+		#o_togglebox_end()
+	</div>
 	
-    #if ($result.parentContextName && $result.parentContextName != "")
-		<div class="o_search_result_context">
-			<strong>$r.translate("label.search.result.parent.context"):</strong>
-			$r.translate("$result.parentContextType") "$result.parentContextName" 
-		</div> 
-    #end
-    
-    <div class="o_search_result_details" style="display: none" id="o_search_result_$id">
-		#if (!$result.author.equals("") ) 
-			<div class="o_search_result_author">
-		    	<strong>$r.translate("label.search.author"):</strong> $result.author.
-			</div>
-		#end
-		#if ($result.lastChange )
-			<div class="o_search_result_lastmod">
-			  	<strong>$r.translate("label.search.result.last.changed"):</strong> $formatter.formatDate($result.lastChange)
-			</div>
-	  	#end		  
-		<div class="o_search_result_type">
-		    <strong>$r.translate("label.search.result.documenttype"):</strong> 
-		    $r.translate($result.documentType)
-	  	</div>
-		#if (!$result.description.equals("")) 
-			<div class="o_search_result_desc">
-			  	<strong>$r.translate("result.description"):</strong> $result.description
-		  	</div>		  
-		#end
-    </div>
-    
-	<script type="text/javascript">
-	/* <![CDATA[ */
-		jQuery(function() {
-			jQuery('#o_search_result_show_$id').click(function() {
-				jQuery('#o_search_result_$id').slideDown(300, function() {
-					jQuery('#o_search_result_show_$id').hide();
-					jQuery('#o_search_result_hide_$id').show();
-				})
-			});
-			jQuery('#o_search_result_hide_$id').click(function() {
-				jQuery('#o_search_result_$id').slideUp(300, function() {
-					jQuery('#o_search_result_hide_$id').hide();
-					jQuery('#o_search_result_show_$id').show();
-				})
-			});
-		});
-	/* ]]> */
-	</script>
 </div>

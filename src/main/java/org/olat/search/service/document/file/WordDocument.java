@@ -34,6 +34,7 @@ import org.apache.poi.hwpf.extractor.WordExtractor;
 import org.apache.poi.poifs.filesystem.DocumentEntry;
 import org.apache.poi.poifs.filesystem.Entry;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -57,7 +58,7 @@ public class WordDocument extends FileDocument {
     WordDocument wordDocument = new WordDocument();
     wordDocument.init(leafResourceContext,leaf);
     wordDocument.setFileType(FILE_TYPE);
-		wordDocument.setCssIcon("b_filetype_doc");
+		wordDocument.setCssIcon(CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
 		if (log.isDebug()) log.debug(wordDocument.toString());
 		return wordDocument.getLuceneDocument();
 	}

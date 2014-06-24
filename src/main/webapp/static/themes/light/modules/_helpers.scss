@@ -47,6 +47,13 @@ div.o_chelp_wrapper {
 	font-size: 85%;
 }
 
+.o_disabled, %o_disabled {
+	color: $text-muted !important;
+	&:hover{
+		color: $text-muted !important;
+	}
+}
+
 /* overflowing content that should have scrollbar */
 .o_scrollblock {
 	/* this must stay on "auto", change to "hidden" and the everything goes to hell */

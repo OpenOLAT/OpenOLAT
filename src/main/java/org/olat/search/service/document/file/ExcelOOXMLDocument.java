@@ -27,6 +27,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.lucene.document.Document;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -62,7 +63,7 @@ public class ExcelOOXMLDocument extends FileDocument {
 		ExcelOOXMLDocument officeDocument = new ExcelOOXMLDocument();
 		officeDocument.init(leafResourceContext, leaf);
 		officeDocument.setFileType(EXCEL_FILE_TYPE);
-		officeDocument.setCssIcon("b_filetype_xls");
+		officeDocument.setCssIcon(CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
 	
 		if (log.isDebug()) {
 			log.debug(officeDocument.toString());

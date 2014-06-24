@@ -26,6 +26,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.lucene.document.Document;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -63,20 +64,17 @@ public class OpenDocument extends FileDocument {
 		openDocument.init(leafResourceContext, leaf);
 		if(leaf.getName().toLowerCase().endsWith(".odt")) {
 			openDocument.setFileType(TEXT_FILE_TYPE);
-			openDocument.setCssIcon("b_filetype_odt");
 		} else if(leaf.getName().toLowerCase().endsWith(".ods")) {
 			openDocument.setFileType(SPEADSHEET_FILE_TYPE);
-			openDocument.setCssIcon("b_filetype_ods");
 		} else if(leaf.getName().toLowerCase().endsWith(".odp")) {
 			openDocument.setFileType(PRESENTATION_FILE_TYPE);
-			openDocument.setCssIcon("b_filetype_odp");
 		} else if(leaf.getName().toLowerCase().endsWith(".odg")) {
 			openDocument.setFileType(GRAPHIC_FILE_TYPE);
-			openDocument.setCssIcon("b_filetype_odg");
 		} else if(leaf.getName().toLowerCase().endsWith(".odf")) {
 			openDocument.setFileType(FORMULA_FILE_TYPE);
-			openDocument.setCssIcon("b_filetype_odf");
 		}
+		openDocument.setCssIcon(CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
+
 		if (log.isDebug()) log.debug(openDocument.toString());
 		return openDocument.getLuceneDocument();
 	}

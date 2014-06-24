@@ -1,22 +1,13 @@
 #if($hasResult)
 	#if ($emptyResult)
-		<div id="o_search_results_header" class="o_search_no_results">
-	  	$r.translate("search.empty.result",$searchResults.getNumberOfIndexDocuments())
+		<div id="o_search_results_header" class="o_search_no_results o_important">
+			<i class="o_icon o_icon_important"> </i>
+	  		$r.translate("search.empty.result",$searchResults.getNumberOfIndexDocuments())
 		</div>
   	#else
-	  	<div id="o_search_results_header" class="b_clearfix">
-			<div class="o_search_results_stats">
-			      $r.translate("search.result.numberofdocuments",$searchResults.getNumberOfIndexDocuments())
-			      $r.translate("search.result.querytime",$searchResults.getQueryTime())
-		    </div>
+	  	<div id="o_search_results_header" class="clearfix o_block">
+	  		<i class="o_icon o_icon-fw o_icon_search"></i>
 		    $resultTitle
-			#if ($numOfPages != 1)
-				<div id="o_search_pageing">
-					<strong>$r.render("previous.page")</strong>
-					$currentPage
-					<strong>$r.render("next.page")</strong>
-				</div>	      
-			#end
 		    <span class="o_search_highlight">
 		    	#if($highlight)
 		    		$r.render("dishighlight.page")
@@ -24,7 +15,19 @@
 		    		$r.render("highlight.page")
 		    	#end
 			</span>
+			<div class="o_search_results_stats">
+			      $r.translate("search.result.numberofdocuments",$searchResults.getNumberOfIndexDocuments())
+			      $r.translate("search.result.querytime",$searchResults.getQueryTime())
+		    </div>
+			#if ($numOfPages != 1)
+			<ul class="pagination pagination-sm">
+			  <li>$r.render("previous.page")</li>
+			  <li class=" active"><span>$currentPage</span></li>
+			  <li>$r.render("next.page")</li>
+			</ul>
+			#end
 		</div>
+		
 	  	#if ($searchResults.hasTooManyResults())
 			<div id="o_search_results_toomany">$r.translate("too.many.results",$searchResults.getMaxHits())</div>
 			#end
@@ -33,11 +36,11 @@
 		#end
 		
 		#if ($numOfPages != 1)
-			<div id="o_search_pageing_bottom">
-				<strong>$r.render("previous.page")</strong>
-				$currentPage
-				<strong>$r.render("next.page")</strong>
-			</div>	      
+		<ul class="pagination pagination-sm">
+		  <li>$r.render("previous.page")</li>
+		  <li class=" active"><span>$currentPage</span></li>
+		  <li>$r.render("next.page")</li>
+		</ul>
 		#end
 		
 	#end

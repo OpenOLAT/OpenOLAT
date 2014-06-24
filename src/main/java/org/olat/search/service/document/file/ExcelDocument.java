@@ -35,6 +35,7 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -60,7 +61,7 @@ public class ExcelDocument extends FileDocument {
 		ExcelDocument excelDocument = new ExcelDocument();
 		excelDocument.init(leafResourceContext, leaf);
 		excelDocument.setFileType(FILE_TYPE);
-		excelDocument.setCssIcon("b_filetype_xls");
+		excelDocument.setCssIcon(CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
 		if (log.isDebug()) log.debug(excelDocument.toString());
 		return excelDocument.getLuceneDocument();
 	}

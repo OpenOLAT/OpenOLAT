@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.lucene.document.Document;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -55,7 +56,7 @@ public class XmlDocument extends FileDocument {
     XmlDocument htmlDocument = new XmlDocument();
     htmlDocument.init(leafResourceContext,leaf);
     htmlDocument.setFileType(FILE_TYPE);
-		htmlDocument.setCssIcon("b_filetype_xml");
+		htmlDocument.setCssIcon(CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
 		if (log.isDebug() ) log.debug(htmlDocument.toString());
 		return htmlDocument.getLuceneDocument();
 	}

@@ -71,7 +71,9 @@ public class ResultsSearchController extends SearchInputController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		extendedSearchLink = uifactory.addFormLink("switch.advanced.search", formLayout);
+		extendedSearchLink.setElementCssClass("o_search_link_extended");
 		simpleSearchLink = uifactory.addFormLink("switch.simple.search", formLayout);
+		simpleSearchLink.setElementCssClass("o_search_link_simple");
 
 		FormLayoutContainer searchLayout = FormLayoutContainer.createHorizontalFormLayout("search_form", getTranslator());
 		formLayout.add(searchLayout);

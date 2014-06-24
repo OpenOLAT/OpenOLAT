@@ -88,7 +88,6 @@ public class StandardResultController extends FormBasicController implements Res
 		if(!StringHelper.containsNonWhitespace(icon)) {
 			icon = "o_sp_icon";
 		}
-		String cssClass = ("b_with_small_icon_left " + icon).intern();
 		
 		String label = document.getTitle();
 		if(label != null) {
@@ -100,16 +99,14 @@ public class StandardResultController extends FormBasicController implements Res
 		}
 		label = StringHelper.escapeHtml(label);
 		docLink = uifactory.addFormLink("open_doc", label, label, formLayout, Link.NONTRANSLATED);
-		((Link)docLink.getComponent()).setCustomEnabledLinkCSS(cssClass);
-		((Link)docLink.getComponent()).setCustomDisabledLinkCSS(cssClass);
+		docLink.setIconLeftCSS("o_icon o_icon-fw " + icon);
 		
 		String highlightLabel = document.getHighlightTitle();
 		if(!StringHelper.containsNonWhitespace(highlightLabel)) {
 			highlightLabel = label;
 		}
 		docHighlightLink = uifactory.addFormLink("open_doc_highlight", highlightLabel, highlightLabel, formLayout, Link.NONTRANSLATED);
-		((Link)docHighlightLink.getComponent()).setCustomEnabledLinkCSS(cssClass);
-		((Link)docHighlightLink.getComponent()).setCustomDisabledLinkCSS(cssClass);
+		docHighlightLink.setIconLeftCSS("o_icon o_icon-fw " + icon);
 	}
 
 	@Override

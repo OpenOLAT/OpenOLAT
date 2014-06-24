@@ -89,15 +89,15 @@ public class RepositoryEntryDocument extends OlatDocument {
 		else if (docType.equals("type.repository.entry.FileResource.SCORMCP"))
 			icon = "o_FileResource-SCORMCP_icon";
 		else if (docType.equals("type.repository.entry.FileResource.XLS"))
-			icon = "b_filetype_xls";
+			icon = "o_filetype_xls";
 		else if (docType.equals("type.repository.entry.FileResource.DOC"))
-			icon = "b_filetype_doc";
+			icon = "o_filetype_doc";
 		else if (docType.equals("type.repository.entry.FileResource.FILE"))
-			icon = "b_filetype_file";
+			icon = "o_filetype_file";
 		else if (docType.equals("type.repository.entry.FileResource.PDF"))
-			icon = "b_filetype_pdf";
+			icon = "o_filetype_pdf";
 		else if (docType.equals("type.repository.entry.FileResource.PPT"))
-			icon = "b_filetype_ppt";
+			icon = "o_filetype_ppt";
 		else if (docType.equals("type.repository.entry.FileResource.PODCAST"))
 			icon = "o_podcast_icon";
 		else if (docType.equals("type.repository.entry.FileResource.BLOG"))
