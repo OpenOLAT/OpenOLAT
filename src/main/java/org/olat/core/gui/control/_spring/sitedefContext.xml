@@ -136,7 +136,7 @@
 	</bean>
 
 	<bean id="restrictToInstResourceManagerSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
-		<property name="limitToRole" value="institutionalresourcemanager"/>
+		<property name="limitToRole" value="institutionalresourcemanager,administrator"/>
 	</bean>
 	
 	<!-- Alternative controllers -->
