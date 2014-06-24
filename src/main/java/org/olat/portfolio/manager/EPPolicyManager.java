@@ -52,10 +52,6 @@ public class EPPolicyManager extends BasicManager {
 	private BaseSecurity securityManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
-
-	public EPPolicyManager() {
-		//
-	}
 	
 	/**
 	 * Return a list of wrapper containing the read policies of the map

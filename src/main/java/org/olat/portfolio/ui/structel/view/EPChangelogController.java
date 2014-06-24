@@ -102,7 +102,7 @@ public class EPChangelogController extends FormBasicController {
 		dateChooser.addActionListener(FormEvent.ONCHANGE);
 
 		/* display the changelog */
-		updateChangelogDisplay(ureq);
+		updateChangelogDisplay();
 	}
 
 	/**
@@ -113,7 +113,7 @@ public class EPChangelogController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == dateChooser && !dateChooser.hasError()) {
-			updateChangelogDisplay(ureq);
+			updateChangelogDisplay();
 		} else if (source instanceof FormLink) {
 			fireEvent(ureq, new EPMapKeyEvent(EPStructureEvent.SELECT, getKeyFromFormLink((FormLink) source)));
 		}
@@ -143,10 +143,10 @@ public class EPChangelogController extends FormBasicController {
 	 * update the changelog-list according to selected date. this method is
 	 * invoked on initForm and again when user changes date in dateChooser
 	 */
-	private void updateChangelogDisplay(UserRequest ureq) {
+	private void updateChangelogDisplay() {
 		// init the helper;
 		String path = getWindowControl().getBusinessControl().getAsString();
-		EPNotificationsHelper helper = new EPNotificationsHelper(path, getLocale(), ureq.getIdentity());
+		EPNotificationsHelper helper = new EPNotificationsHelper(path, getLocale());
 
 		// get the date from the dateChooser component
 		Date compareDate = dateChooser.getDate();
@@ -232,7 +232,7 @@ public class EPChangelogController extends FormBasicController {
 		}
 	}
 
-	public void refreshNewsList(UserRequest ureq) {
-		updateChangelogDisplay(ureq);
+	public void refreshNewsList() {
+		updateChangelogDisplay();
 	}
 }

@@ -111,13 +111,10 @@ public class EPFrontendManager extends BasicManager {
 	private EPSettingsManager settingsManager; 
 	@Autowired
 	private EPPolicyManager policyManager;
+	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private PortfolioModule portfolioModule;
-	
-	public EPFrontendManager() {
-		//
-	}
 	
 	/**
 	 * Create and persist an artefact of the given type

@@ -67,7 +67,7 @@ public class EPNotificationsHandler implements NotificationsHandler {
 
 			// init the helper;
 			String rootBusinessPath = "[EPDefaultMap:" + amap.getKey() + "]";
-			EPNotificationsHelper helper = new EPNotificationsHelper(rootBusinessPath, locale, subscriber.getIdentity());
+			EPNotificationsHelper helper = new EPNotificationsHelper(rootBusinessPath, locale);
 			String resName = amap.getOlatResource().getResourceableTypeName();
 
 			si = new SubscriptionInfo(subscriber.getKey(), publisher.getType(), getTitleItemForMap(amap), null);

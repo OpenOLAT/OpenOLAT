@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
@@ -169,8 +170,6 @@ public class EPStructureManagerTest extends OlatTestCase {
 			}
 		}
 		assertTrue(found);
-				
-		
 	}
 	
 	@Test
@@ -397,6 +396,59 @@ public class EPStructureManagerTest extends OlatTestCase {
 		assertEquals("3894580", retriviedTargetResource.getSubPath());
 		assertEquals("[RepositoryEntry:23647598][CourseNode:934598]", retriviedTargetResource.getBusinessPath());
 	}
+	
+	@Test
+	public void testLoadPortfolioStructuredMap(){
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("EP-tmp-");
+		//create a template
+		PortfolioStructureMap template = epStructureManager.createPortfolioMapTemplate(user, "paged-parent-structure-el", "parent-structure-element");
+		epStructureManager.savePortfolioStructure(template);
+		dbInstance.commitAndCloseSession();
+		//clone the template
+		PortfolioStructureMap map = epFrontendManager.createAndPersistPortfolioStructuredMap(template, user, "cloned-map", "cloned-map-from-template", null, null, null);
+		((EPStructuredMap)map).setReturnDate(new Date());
+		EPTargetResource targetResource = ((EPStructuredMap)map).getTargetResource();
+		targetResource.setResourceableTypeName("CourseModule");
+		targetResource.setResourceableId(234l);
+		targetResource.setSubPath(UUID.randomUUID().toString());
+		targetResource.setBusinessPath("[RepositoryEntry:23647599][CourseNode:934599]");
+		
+		epStructureManager.savePortfolioStructure(map);
+		dbInstance.commitAndCloseSession();
+
+		//load the cloned map another map
+		PortfolioStructureMap myClonedMap = epStructureManager.loadPortfolioStructuredMap(user, template,
+				targetResource.getOLATResourceable(), targetResource.getSubPath(), targetResource.getBusinessPath());
+		Assert.assertNotNull(myClonedMap);
+	}
+	
+	@Test
+	public void testLoadPortfolioStructuredMaps(){
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("EP-tmp-");
+		//a template
+		PortfolioStructureMap template = epStructureManager.createPortfolioMapTemplate(user, "paged-parent-structure-el", "parent-structure-element");
+		epStructureManager.savePortfolioStructure(template);
+		dbInstance.commitAndCloseSession();
+		//clone the template
+		PortfolioStructureMap map = epFrontendManager.createAndPersistPortfolioStructuredMap(template, user, "cloned-map", "cloned-map-from-template", null, null, null);
+		((EPStructuredMap)map).setReturnDate(new Date());
+		EPTargetResource targetResource = ((EPStructuredMap)map).getTargetResource();
+		targetResource.setResourceableTypeName("CourseModule");
+		targetResource.setResourceableId(234l);
+		targetResource.setSubPath(UUID.randomUUID().toString());
+		targetResource.setBusinessPath("[RepositoryEntry:23647600][CourseNode:934600]");
+		
+		epStructureManager.savePortfolioStructure(map);
+		dbInstance.commitAndCloseSession();
+
+		//load the cloned map another map
+		List<PortfolioStructureMap> myCloneAlt = epStructureManager.loadPortfolioStructuredMaps(user,
+				targetResource.getOLATResourceable(), targetResource.getSubPath(), targetResource.getBusinessPath());
+		Assert.assertNotNull(myCloneAlt);
+		Assert.assertEquals(1, myCloneAlt.size());
+		Assert.assertEquals(map, myCloneAlt.get(0));
+	}
+	
 	
 	@Test
 	public void testMoveUp() {

@@ -210,7 +210,7 @@ public class EPMultiplePageController extends BasicController implements Activat
 			changelogPageCtrl = instantiateCLController(ureq);
 			listenTo(changelogPageCtrl);
 		} else {
-			changelogPageCtrl.refreshNewsList(ureq);
+			changelogPageCtrl.refreshNewsList();
 		}
 		currentActivePageCtrl = changelogPageCtrl;
 		disableLink_TOC(false);

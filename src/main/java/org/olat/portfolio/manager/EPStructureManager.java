@@ -109,11 +109,6 @@ public class EPStructureManager extends BasicManager {
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntyRelationDao;
 
-	public EPStructureManager() {
-		//
-	}
-
-
 	/**
 	 * Return the list of artefacts glued to this structure element
 	 * @param structure
@@ -1379,17 +1374,18 @@ public class EPStructureManager extends BasicManager {
 		return count.intValue() > 0;
 	}
 	
-	public PortfolioStructureMap loadPortfolioStructuredMap(Identity identity, PortfolioStructureMap template,
+	public PortfolioStructureMap loadPortfolioStructuredMap(IdentityRef identity, PortfolioStructureMap template,
 			OLATResourceable targetOres, String targetSubPath, String targetBusinessPath) {
 		if (template == null) throw new NullPointerException();
 		if (!(template instanceof EPStructuredMapTemplate)) throw new AssertException("Only template are acceptable");
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("select map from ").append(EPStructuredMap.class.getName()).append(" map")
-			.append(" where map.structuredMapSource=:template");
+		  .append(" inner join fetch map.group as baseGroup")
+		  .append(" where map.structuredMapSource=:template");
 		if (targetOres != null) {
 			sb.append(" and map.targetResource.resourceableId=:resourceId")
-				.append(" and map.targetResource.resourceableTypeName=:resourceType");
+			  .append(" and map.targetResource.resourceableTypeName=:resourceType");
 		}
 		if (targetSubPath != null) {
 			sb.append(" and map.targetResource.subPath=:subPath");
@@ -1397,58 +1393,60 @@ public class EPStructureManager extends BasicManager {
 		if (targetBusinessPath != null) {
 			sb.append(" and map.targetResource.businessPath=:businessPath");
 		}
-		sb.append(" and map.ownerGroup in ( " )
-			.append("select sgi.key from")
-			.append(" org.olat.basesecurity.SecurityGroupImpl as sgi,") 
-			.append(" org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi ")
-			.append(" where sgmsi.securityGroup = sgi and sgmsi.identity =:ident")
-			.append(" )");
+		sb.append(" and exists (select membership from bgroupmember as membership " )
+		  .append("    where baseGroup=membership.group and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.owner.name()).append("'")
+		  .append(" )");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setEntity("template", template);
-		query.setEntity("ident", identity);
+		TypedQuery<PortfolioStructureMap> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PortfolioStructureMap.class)
+				.setParameter("template", template)
+				.setParameter("identityKey", identity.getKey());
 		if (targetOres != null) {
-			query.setLong("resourceId", targetOres.getResourceableId());
-			query.setString("resourceType", targetOres.getResourceableTypeName());
+			query.setParameter("resourceId", targetOres.getResourceableId());
+			query.setParameter("resourceType", targetOres.getResourceableTypeName());
 		}
 		if (targetSubPath != null) {
-			query.setString("subPath", targetSubPath);
+			query.setParameter("subPath", targetSubPath);
 		}
 		if (targetBusinessPath != null) {
-			query.setString("businessPath", targetBusinessPath);
+			query.setParameter("businessPath", targetBusinessPath);
 		}
 		
-		@SuppressWarnings("unchecked")
-		List<PortfolioStructureMap> maps = query.list();
+		List<PortfolioStructureMap> maps = query.getResultList();
 		// if not found, it is an empty list
-		if (maps.isEmpty()) return null;
-		return maps.get(0);
+		return maps.isEmpty() ? null : maps.get(0);
 	}
 	
-	public List<PortfolioStructureMap> loadPortfolioStructuredMaps(Identity identity,
+	/**
+	 * 
+	 * @param identity Mandatory
+	 * @param targetOres Mandatory
+	 * @param targetSubPath Optional
+	 * @param targetBusinessPath Optional
+	 * @return
+	 */
+	public List<PortfolioStructureMap> loadPortfolioStructuredMaps(IdentityRef identity,
 			OLATResourceable targetOres, String targetSubPath, String targetBusinessPath) {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("select map from ").append(EPStructuredMap.class.getName()).append(" map")
-			.append(" where map.targetResource.resourceableId=:resourceId")
-			.append(" and map.targetResource.resourceableTypeName=:resourceType");
+		  .append(" inner join fetch map.group as baseGroup")
+		  .append(" inner join fetch map.targetResource as targetResource")
+		  .append(" where targetResource.resourceableId=:resourceId and targetResource.resourceableTypeName=:resourceType");
 
 		if (targetSubPath != null) {
-			sb.append(" and map.targetResource.subPath=:subPath");
+			sb.append(" and targetResource.subPath=:subPath");
 		}
 		if (targetBusinessPath != null) {
-			sb.append(" and map.targetResource.businessPath=:businessPath");
+			sb.append(" and targetResource.businessPath=:businessPath");
 		}
-		sb.append(" and map.ownerGroup in ( " )
-			.append("select sgi.key from ")
-			.append(SecurityGroupImpl.class.getName()).append(" as sgi,")
-			.append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
-			.append(" where sgmsi.securityGroup = sgi and sgmsi.identity =:ident")
-			.append(" )");
+		sb.append(" and exists (select membership from bgroupmember as membership " )
+		  .append("    where baseGroup=membership.group and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.owner.name()).append("'")
+		  .append(" )");
 		
 		TypedQuery<PortfolioStructureMap> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), PortfolioStructureMap.class)
-				.setParameter("ident", identity)
+				.setParameter("identityKey", identity.getKey())
 				.setParameter("resourceId", targetOres.getResourceableId())
 				.setParameter("resourceType", targetOres.getResourceableTypeName());
 
