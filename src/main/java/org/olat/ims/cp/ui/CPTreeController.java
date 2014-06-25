@@ -130,7 +130,7 @@ public class CPTreeController extends BasicController {
 		deleteLink = LinkFactory.createToolLink("cptreecontroller.deletelink", "cptreecontroller.deletelink",
 				translate("cptreecontroller.deletelink_title"), this);
 		deleteLink.setTooltip(translate("cptreecontroller.deletelink_title"));
-		deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete");
+		deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
 		toolbar.addTool(deleteLink, Align.left);
 	}
 

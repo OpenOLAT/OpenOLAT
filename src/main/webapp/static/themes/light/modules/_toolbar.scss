@@ -50,11 +50,7 @@
 			}
 		}	
 	}
-	
-	.o_chelp {
-		@include button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border);
-	}
-	
+		
 	.o_tools {
 		@extend .list-inline;
 		margin-top: $o-toolbar-margin-top-md;
@@ -107,7 +103,15 @@
 				}
 			}
 		}
+		/* context help button */
+		.o_chelp {
+			position: relative;
+			top: -1em;
+			vertical-align: top;
+		}
 	}
+
+	
 			
 	.o_tool_dropdown {
 		position: relative;
@@ -169,6 +173,10 @@
 			margin-top: $o-toolbar-margin-top-sm;
 			margin-bottom: $o-toolbar-margin-bottom-sm;
 		}
+		.o_tool span {
+			max-width: 10em;
+			@include text-overflow();	
+		}
 	}
 	@media (max-width: $screen-xs-max) { 
 		min-height: $o-toolbar-height-xs;
@@ -176,7 +184,15 @@
 		.o_tools {
 			margin-top: $o-toolbar-margin-top-xs;
 			margin-bottom: $o-toolbar-margin-bottom-xs;
+			.o_chelp {
+				top: 0;
+				vertical-align: top;
+			}
 		}
+		.o_tools_right, .o_tools_center {
+			float: left;
+		}
+		
 	}
 	
 

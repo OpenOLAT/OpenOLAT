@@ -1,11 +1,32 @@
 /* HELP, context sensitive */
 a.o_chelp {
-	@extend .btn;
-	@include button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border);
+	display: inline-block;
 	padding: 1px 3px;
-	font-size: 10px;
-	line-height: 1.5;
-	border-radius: 2px;
+	text-align: center;
+	vertical-align: middle;
+	white-space: nowrap;
+	font-size: $o-chelp-font-size;
+	font-weight: $o-chelp-font-weight;
+	line-height: floor($o-chelp-font-size *1.5);
+	color: $o-chelp-color;
+  	background-color: $o-chelp-bg;
+	border: 1px solid $o-chelp-border;
+	border-radius: $o-chelp-border-radius;
+	cursor: help;
+ 	@include user-select(none);
+
+	&:active,
+	&:hover,
+	&:focus {
+    	text-decoration: none;
+	    color: $o-chelp-color;
+    	background-color: darken($o-chelp-bg, 8%);
+        border-color: darken($o-chelp-border, 12%);
+  	}
+  	
+	i {
+		font-size: $o-chelp-font-size !important;
+	}
 }
 
 div.o_chelp_wrapper { 

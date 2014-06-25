@@ -77,6 +77,14 @@ $o-tree-padding-opener-left-px 		: 1px !default;
 
 $o-table-row-selected-color     : pink;
 
+/* Context help buttons */
+$o-chelp-font-size		: 10px !default;
+$o-chelp-font-weight	: $btn-font-weight !default;
+$o-chelp-bg				: $btn-primary-bg !default;
+$o-chelp-color			: $btn-primary-color !default;
+$o-chelp-border			: $btn-primary-border !default;
+$o-chelp-border-radius	: 2px !default;
+
 
 /* Background color of the main content area. */
 $o-main-outer-bg 	: #fff !default;

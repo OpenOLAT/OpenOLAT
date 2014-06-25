@@ -124,7 +124,6 @@ public class CPEditMainController extends MainLayoutBasicController {
 
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, wControl, treeCtr.getInitialComponent(), contentCtr.getInitialComponent(),
 				"cptestmain");
-		columnLayoutCtr.addCssClassToMain("b_menu_toolbar");
 		listenTo(columnLayoutCtr); // auto dispose
 		all.pushController("Editor", columnLayoutCtr);
 		

@@ -155,7 +155,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 				}
 				cpConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
 				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, cpConfigurationVc, this);
-				previewLink.setCustomEnabledLinkCSS("b_preview");
+				previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 				previewLink.setTitle(getTranslator().translate("command.preview"));
 				
 				CPPackageConfig cpConfig = CPManager.getInstance().getCPPackageConfig(re.getOlatResource());
