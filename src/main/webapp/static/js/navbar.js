@@ -85,7 +85,6 @@
 		// Add application event listeners to trigger offcanvas menu
 		$('#o_navbar_right-toggle').on('click', $.proxy(this.toggleRight,this));
 		$('#o_offcanvas_right .o_offcanvas_close').on('click', $.proxy(this.hideRight,this));
-//		$('#o_offcanvas_right').on('click', $.proxy(this.hideRight,this));
 	}
 	
 	Navbar.prototype.onResizeCallback = function() {
@@ -105,8 +104,6 @@
 			this.state.tabsDirty = false;
 			this.state.personalToolsDirty = false;	
 			this.state.busy = false;
-			// close offcanvas when clicking a link
-			this.hideRight();
 		}
 	}
 	
@@ -275,7 +272,8 @@
 				$('body').addClass('o_offcanvas_right_visible');	    	
 				that.state.rightVisible = true;			
 			} );
-			
+			// hide menu when clicking anywhere in content
+			$('html').on('click', $.proxy(this.hideRight,this));			
 		}
 	}
 	Navbar.prototype.hideRight = function() {
@@ -287,7 +285,8 @@
 				$('body').removeClass('o_offcanvas_right_visible');	    	
 				that.state.rightVisible = false;	    				
 			} );
-
+			// remove listener to hide menu
+			$('html').off('click', $.proxy(this.hideRight,this));			
 		}
 	}
 	Navbar.prototype.toggleRight = function() {

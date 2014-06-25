@@ -59,7 +59,8 @@ jQuery().ready(function() {
 	window.o_showMenu = function() {
 		if (!menuState.open) {
 			jQuery('#o_main_left_content').show();
-			jQuery('#o_main_left').transition({'x': '0'}, function() {
+			var l = jQuery('#o_main_left');
+			l.transition({'x': '0', 'left': '0'}, function() {
 				menuState.open = true;
 			});
 		} 
@@ -68,7 +69,7 @@ jQuery().ready(function() {
 		if (!menuState.docked && menuState.open) {
 			var l = jQuery('#o_main_left');
 			jQuery('#o_main_left_content').hide();
-			l.transition({'x': '-' + l.css('width')}, function() {
+			l.transition({'x': '-' + l.css('width'), 'left': '5px'}, function() {
 				menuState.open = false;
 			});			
 		} 
