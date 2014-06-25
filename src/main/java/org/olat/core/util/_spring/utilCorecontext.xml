@@ -100,6 +100,14 @@
 			Note that this must be an absolute path.
 		 -->
 		<property name="guiCustomThemePath" value="${layout.custom.themes.dir}" />						
+
+		<!-- 
+	 	 	Set the regexp that matches for css class name prefixes that should be
+	 	 	used in the HTML editor to limit css names that are available in the
+	 	 	menus or let empty for no rule.
+	 	-->				
+		<property name="htmlEditorContentCssClassPrefixes" value="${html.editor.css.class.prefix}" />				
+
 		<!-- the versionid is prepended to various dynamically linked sources like css and js lib includes.
 			the prepending guarantees that all browsers are forced to reload the new files, since e.g. css cache invalidation
 			based on lastmodified http headers is broken on some browsers. this here is the only safe way.

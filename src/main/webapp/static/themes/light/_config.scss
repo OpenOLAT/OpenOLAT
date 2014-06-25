@@ -21,6 +21,7 @@
  * or http://getbootstrap.com/css/#less-variables
  */
 
+
 /* The max width the header/navbar/main/footer can possibly have. */
 $o-page-width-max : 1324px !default;
 
@@ -163,7 +164,19 @@ $o-search-excerpt-color			: $gray !default;
 $o-dialog-window-bg				: #fefefe !default;
 $o-dialog-window-bar-bg			: #eee !default;
 
-$o-info-padding		: 20px !default;
+
+/* content styles */
+$o-box-margin				: 20px !default;
+$o-box-padding				: 20px !default;
+$o-box-border-left-size		: 3px !default;
+
+$o-box-info-bg				: #eee !default;
+$o-box-info-color			: #d4d4d4 !default;
+$o-box-info-h-color			: #bbbbbb !default;
+$o-box-note-bg				: #f4f8fa !default;
+$o-box-note-color			: #5bc0de !default;
+$o-box-note-h-color			: #5bc0de !default;
+
 
 
 /*

@@ -45,6 +45,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.event.GenericEventListener;
 import org.springframework.core.io.ClassPathResource;
@@ -65,7 +66,8 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 	private static boolean allowLoadtestMode = false;
 	private static boolean readOnlyDebug = false;
 	private static boolean ajaxGloballyOnBoolean = false;
-	private static String guiThemeIdentifyer = "default";
+	private static String guiThemeIdentifyer = "light";
+	private static String htmlEditorContentCssClassPrefixes;
 	private static List<Pattern> ajaxBlacklistPatterns = new ArrayList<Pattern>();
 	private static boolean jUnitTest;
 	// the persited properties contain user configurable config data (overrides
@@ -375,6 +377,29 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 		Settings.guiThemeIdentifyer = guiThemeIdentifyer;
 	}
 
+	/**
+	 * @return A regexp that matches for css class name prefixes that should be
+	 *         used in the HTML editor to limit css names that are available in
+	 *         the menus.
+	 */
+	public static String getHtmlEditorContentCssClassPrefixes() {
+		return htmlEditorContentCssClassPrefixes;
+	}
+
+	/**
+	 * Set the regexp that matches for css class name prefixes that should be
+	 * used in the HTML editor to limit css names that are available in the
+	 * menus or let empty for no rule.
+	 * 
+	 * @param contentCssClassPrefixes
+	 */
+	public void setHtmlEditorContentCssClassPrefixes(String contentCssClassPrefixes) {
+		if (StringHelper.containsNonWhitespace(contentCssClassPrefixes)) {
+			htmlEditorContentCssClassPrefixes = contentCssClassPrefixes.trim();
+		}
+	}
+
+	
 	/**
 	 * @return the File object pointing to the custom themes folder or null if
 	 *         no custom themes folder configured

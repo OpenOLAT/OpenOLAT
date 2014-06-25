@@ -22,6 +22,5 @@
 @import "../../bootstrap/stylesheets/bootstrap/scaffolding";
 @import "../../bootstrap/stylesheets/bootstrap/print";
 
-@import "modules/mixins"; 
 @import "modules/icons"; /* must be first include - provides classes used as extensions */
 @import "modules/content";

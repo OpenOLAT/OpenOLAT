@@ -17,25 +17,29 @@
  */
  
 /* content boxes */
-.o_info, %o_info { 
-	margin: 20px 0;
-	padding: $o-info-padding;
-	background-color: #eee;
-	border-left: 3px solid #d4d4d4;
-	h2, h3, h4, h5 { color: #bbbbbb;}
+%o_box {
+	margin: $o-box-margin 0;
+	padding: $o-box-padding;
+	border-left: $o-box-border-left-size solid transparent;
 }
-p.o_info, div.o_info {margin: 20px 0;} /* tiny needs something here */
+
+.o_info, %o_info, p.o_info, div.o_info, div.b_info { 
+	@extend %o_box;
+	background-color: $o-box-info-bg;
+	border-color: $o-box-info-color;
+	h2, h3, h4, h5 { color: $o-box-info-h-color;}
+}
 
 .o_note, %o_note {
-	@extend %o_info;
-	background-color: #f4f8fa;
-	border-color: #5bc0de;
-	h2, h3, h4, h5 { color: #5bc0de;}
+	@extend %o_box;
+	background-color: $o-box-note-bg;
+	border-color: $o-box-note-color;
+	h2, h3, h4, h5 { color: $o-box-note-h-color;}
 }
 p.o_note, div.o_note {margin: 20px 0;} /* tiny needs something here */
 
 .o_important, %o_important {
-	@extend %o_info;
+	@extend %o_box;
 	background-color: #FFF1A4;
 	border-color: #F4D000;
 	h2, h3, h4, h5 { color: #F4D000;}
@@ -43,7 +47,7 @@ p.o_note, div.o_note {margin: 20px 0;} /* tiny needs something here */
 p.o_important, div.o_important {margin: 20px 0;} /* tiny needs something here */
 
 .o_success, %o_success {
-	@extend %o_info;
+	@extend %o_box;
 	background-color: #d6e9c6;
 	border-color: #3c763d;
 	h2, h3, h4, h5 { color: #3c763d;}
@@ -51,7 +55,7 @@ p.o_important, div.o_important {margin: 20px 0;} /* tiny needs something here */
 o.o_success, div.o_success {margin: 20px 0;} /* tiny needs something here */
 
 .o_warning, %o_warning {
-	@extend %o_info;
+	@extend %o_box;
 	background-color: #FFD5AA;
 	border-color: #FF9E3E;
 	h2, h3, h4, h5 { color: #FF9E3E;}
@@ -59,7 +63,7 @@ o.o_success, div.o_success {margin: 20px 0;} /* tiny needs something here */
 o.o_warning, div.o_warning {margin: 20px 0;} /* tiny needs something here */
 
 .o_error, %o_error {
-	@extend %o_info;
+	@extend %o_box;
 	background-color: #fdf7f7;
 	border-color: #d9534f;
 	h2, h3, h4, h5 { color: #d9534f;}
@@ -69,7 +73,8 @@ o.o_error, div.o_error {margin: 20px 0;} /* tiny needs something here */
 .o_border_box { 
 	border: 1px solid $gray-light; 
 	padding: 1em;
-	@include o-border-radius(2px); 
+	@include border-top-radius($border-radius-small); 
+	@include border-bottom-radius($border-radius-small); 
 }
 p.o_border_box, div.o_border_box {margin: 1em 0;} /* tiny needs something here */
 
@@ -114,7 +119,7 @@ table {
 
 /* font styles  */
 .b_selected, p.b_selected, div.b_selected { font-weight: bold; }	
-.b_dimmed, p.b_dimmed, div.b_dimmed { @include o-opacity(40); }
+.b_dimmed, p.b_dimmed, div.b_dimmed { @include opacity(.4); }
 .o_disabled, p.o_disabled, div.o_disabled { color: $gray-light; }
 .b_deleted, p.b_deleted, div.b_deleted { text-decoration: line-through; }	
 
