@@ -219,11 +219,17 @@ public class Windows implements Disposable, Serializable {
 		this.contextHelpChiefController = contextHelpChiefController;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.control.Disposable#dispose(boolean)
-	 */
+	@Override
 	public void dispose() {
-		((Disposable)windowManagerImpl).dispose();
+		if(chiefController != null) {
+			chiefController.dispose();
+		}
+		if(contextHelpChiefController != null) {
+			contextHelpChiefController.dispose();
+		}
+		if(windowManagerImpl != null) {
+			windowManagerImpl.dispose();
+		}
 	}
 
 	/**
