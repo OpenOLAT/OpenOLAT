@@ -641,17 +641,27 @@ create table o_ep_struct_artefact_link (
   fk_artefact_id int8 not null,
   primary key (link_id)
 );
+create table o_ep_struct_to_group (
+   id int8 not null,
+   creationdate timestamp not null,
+   r_defgroup boolean not null,
+   r_role varchar(64),
+   r_valid_from timestamp,
+   r_valid_to timestamp,
+   fk_group_id int8,
+   fk_struct_id int8,
+   primary key (id)
+);
 
 -- invitation
 create table o_bs_invitation (
    id int8 not null,
-   version int4 not null,
    creationdate timestamp,
    token varchar(64) not null,
    first_name varchar(64),
    last_name varchar(64),
    mail varchar(128),
-   fk_secgroup int8,
+   fk_group_id int8,
    primary key (id)
 );
 
@@ -1848,8 +1858,6 @@ create index identstatus_idx on o_bs_identity (status);
 create index idx_ident_creationdate_idx on o_bs_identity (creationdate);
 create index idx_id_lastlogin_idx on o_bs_identity (lastlogin);
 
-alter table o_bs_policy add constraint FK9A1C5109F9C3F1D foreign key (oresource_id) references o_olatresource;
-create index idx_policy_rsrc_idx on o_bs_policy (oresource_id);
 alter table o_bs_policy add constraint FK9A1C5101E2E76DB foreign key (group_id) references o_bs_secgroup;
 create index idx_policy_grp_idx on o_bs_policy (group_id);
 create index idx_policy_grp_rsrc_idx on o_bs_policy (oresource_id, group_id);
@@ -1860,8 +1868,8 @@ alter table o_bs_membership add constraint FK7B6288B4B85B522C foreign key (secgr
 create index idx_membership_sec_idx on o_bs_membership (secgroup_id);
 create index idx_membership_sec_ident_idx on o_bs_membership (identity_id, secgroup_id);
 
-alter table o_bs_invitation add constraint FKF26C8375236F27X foreign key (fk_secgroup) references o_bs_secgroup (id);
-create index idx_invitation_grp_idx on o_bs_invitation (fk_secgroup);
+alter table o_bs_invitation add constraint inv_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
+create index idx_inv_to_group_group_ctx on o_bs_invitation (fk_group_id);
 
 create index idx_secgroup_creationdate_idx on o_bs_secgroup (creationdate);
 

@@ -5,9 +5,6 @@ alter table o_repositoryentry alter column softkey type varchar(36);
 alter table o_repositoryentry alter column launchcounter drop not null;
 alter table o_repositoryentry alter column downloadcounter drop not null;
 
-alter table o_ep_struct_el add column fk_group_id int8;
-
-
 -- repository entry statistics table
 create table o_repositoryentry_stats (
    id int8 not null,
@@ -88,6 +85,28 @@ create index re_to_group_re_idx on o_re_to_group (fk_entry_id);
 
 alter table o_gp_business add constraint gp_to_group_business_ctx foreign key (fk_group_id) references o_bs_group (id);
 create index gp_to_group_group_idx on o_gp_business (fk_group_id);
+
+
+-- portfolio
+alter table o_bs_invitation alter column fk_secgroup drop not null;
+alter table o_bs_invitation alter column version drop not null;
+
+alter table o_bs_invitation add column fk_group_id int8;
+alter table o_bs_invitation add constraint inv_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
+
+create table o_ep_struct_to_group (
+   id int8 not null,
+   creationdate timestamp not null,
+   r_defgroup boolean not null,
+   r_role varchar(64),
+   r_valid_from timestamp,
+   r_valid_to timestamp,
+   fk_group_id int8,
+   fk_struct_id int8,
+   primary key (id)
+);
+alter table o_ep_struct_to_group add constraint struct_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
+alter table o_ep_struct_to_group add constraint struct_to_group_re_ctx foreign key (fk_struct_id) references o_ep_struct_el (structure_id);
 
 
 -- managed groups
