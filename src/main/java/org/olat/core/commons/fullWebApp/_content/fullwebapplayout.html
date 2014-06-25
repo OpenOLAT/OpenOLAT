@@ -29,7 +29,6 @@ o_info.lastClickTime = new Date().getTime();
 o_info.drop = true;
 ## olat layout specific
 o_info.o_baseURI = "$r.staticLink("")";
-o_info.b_textMarkingIframeIntervals = new Array();
 o_info.i18n_noresponse_title = "$r.escapeDoubleQuotes($r.translate("server.no.response.title"))";
 o_info.i18n_noresponse = "$r.escapeDoubleQuotes($r.translate("server.no.response"))";
 ## Initialize zindex manager
@@ -37,7 +36,7 @@ o_info.zseed = 0;
 #if($enforceTopFrame)
 if (top!=self){top.location=self.location+"?o_winrndo=1";}
 #end
-function b_start(){
+function o_start(){
 	o_init();
 	## js B
 	$r.renderBodyOnLoadJSFunctionCall()
@@ -143,7 +142,7 @@ $r.renderHeaderIncludes()
 <title>$r.translate("page.appname") - $r.translate("page.title")</title>
 </head>
 
-<body onload="b_start();" id="o_body" class="#foreach($cssClass in $bodyCssClasses)$cssClass #end b_lang_$r.getLanguageCode()">
+<body onload="o_start();" id="o_body" class="#foreach($cssClass in $bodyCssClasses)$cssClass #end o_lang_$r.getLanguageCode()">
 ## if in debug mode, it is a invisible component which is only visible by wrapping debug information around all other
 ## components.
 <!-- START guiDebug -->
@@ -235,7 +234,7 @@ $r.render("stickymsg")
 </div>
 ## END #o_main -----
 
-## ----- START #b_footer ----------
+## ----- START #o_footer_wrapper ----------
 #if($screenMode.standardScreen && $r.available("footerComponent"))
 <div id="o_footer_wrapper">
 	<div id="o_footer_container" class="o_container_offcanvas container-fluid">
@@ -243,14 +242,14 @@ $r.render("stickymsg")
 	</div>
 </div>
 #end
-## ---- END #b_footer ---
+## ---- END #o_footer_wrapper ---
 
-## ---- START #b_modal
+## ---- START #o_modal
 ## Modal dialog is absolute positioned, thus it's ok to have it at the end of the page. 
 ## This prevents an ugly IE bug that appears when the modal dialog is at the top of the page.
 ## IE can't render empty div's properly which results in an ugly white bar.
 $r.render("modalpanel")
-## ---- END #b_nav ---
+## ---- END #o_modal ---
 
 ## the div for the busy-wait animated-gif
 <div id="o_ajax_busy"><i class="o_icon o_icon_busy o_icon-5x o_icon-spin"></i></div>

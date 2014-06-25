@@ -396,13 +396,13 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 			if (columns[column - 1] == null) {
 				return;
 			} else {
-				mainCssClasses.add("b_hidecol" + column);
+				mainCssClasses.add("o_hidecol" + column);
 			}
 		} else {
 			if (columns[column - 1] == null) {
 				return;
 			} else {
-				mainCssClasses.remove("b_hidecol" + column);
+				mainCssClasses.remove("o_hidecol" + column);
 			}
 		}
 		// add new CSS classes for main container
@@ -459,7 +459,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		// remove old component from velocity first
 		if (oldComp == null) {
 			// css class to indicate if a column is hidden or shown
-			mainCssClasses.remove("b_hidecol" + column);
+			mainCssClasses.remove("o_hidecol" + column);
 		} else {
 			layoutMainVC.remove(oldComp);
 		}
@@ -468,7 +468,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		if (newComponent == null) {
 			// tell YAML layout via css class on main container to not display this
 			// column: this will adjust margin of col3 in normal setups
-			mainCssClasses.add("b_hidecol" + column);
+			mainCssClasses.add("o_hidecol" + column);
 			layoutMainVC.contextPut("existsCol" + column, Boolean.FALSE);
 		} else {
 			layoutMainVC.contextPut("existsCol" + column, Boolean.TRUE);

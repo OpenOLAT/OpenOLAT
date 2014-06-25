@@ -26,7 +26,7 @@
 package org.olat.gui.control;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.fullWebApp.DefaultFooterController;
+import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.util.UserLoggedInCounter;
@@ -62,7 +62,7 @@ public class OlatFooterController extends BasicController {
 	public OlatFooterController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(
-				DefaultFooterController.class, getLocale(), Util
+				BaseFullWebappController.class, getLocale(), Util
 						.createPackageTranslator(OlatFooterController.class,
 								getLocale())));
 		

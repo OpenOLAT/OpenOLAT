@@ -107,7 +107,7 @@
 		******************************************
 	-->
 	<bean id="fullWebApp.ContextHelpFooterControllerCreator" class="org.olat.core.gui.control.creator.AutoCreator" >
-		<property name="className" value="org.olat.core.commons.fullWebApp.DefaultFooterController"/>
+		<property name="className" value="org.olat.gui.control.OlatFooterController"/>
 	</bean>
 
 </beans>

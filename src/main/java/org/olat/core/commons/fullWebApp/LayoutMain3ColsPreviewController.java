@@ -72,7 +72,7 @@ public class LayoutMain3ColsPreviewController extends MainLayoutBasicController 
 		
 		// create layout and add it to main view
 		layoutCtr = new LayoutMain3ColsController(ureq, wControl, col1, col3, layoutConfigKey);
-		layoutCtr.addCssClassToMain("b_preview");
+		layoutCtr.addCssClassToMain("o_preview");
 		listenTo(layoutCtr);		
 		previewVC.put("3collayout", layoutCtr.getInitialComponent());
 		
