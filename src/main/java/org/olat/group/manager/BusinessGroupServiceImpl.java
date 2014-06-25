@@ -148,10 +148,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
-	private BusinessGroupImportExport businessGroupImportExport;
-	@Autowired
-	private BusinessGroupArchiver businessGroupArchiver;
-	@Autowired
 	private UserDeletionManager userDeletionManager;
 	@Autowired
 	private NotificationsManager notificationsManager;
@@ -1655,16 +1651,19 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Override
 	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile,
 			BusinessGroupEnvironment env, boolean runtimeDatas, boolean backwardsCompatible) {
-		businessGroupImportExport.exportGroups(groups, areas, fExportFile, env, runtimeDatas, backwardsCompatible);
+		BusinessGroupImportExport exporter = new BusinessGroupImportExport(dbInstance, areaManager, this, groupModule);
+		exporter.exportGroups(groups, areas, fExportFile, env, runtimeDatas, backwardsCompatible);
 	}
 
 	@Override
 	public BusinessGroupEnvironment importGroups(RepositoryEntry re, File fGroupExportXML) {
-		return businessGroupImportExport.importGroups(re, fGroupExportXML);
+		BusinessGroupImportExport importer = new BusinessGroupImportExport(dbInstance, areaManager, this, groupModule);
+		return importer.importGroups(re, fGroupExportXML);
 	}
 
 	@Override
 	public void archiveGroups(List<BusinessGroup> groups, File exportFile) {
-		businessGroupArchiver.archiveGroups(groups, exportFile);
+		BusinessGroupArchiver archiver = new BusinessGroupArchiver(dbInstance);
+		archiver.archiveGroups(groups, exportFile);
 	}
 }

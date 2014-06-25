@@ -25,14 +25,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.Invitation;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.manager.BasicManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.portfolio.model.structel.EPMapShort;
@@ -53,7 +51,7 @@ import org.springframework.stereotype.Service;
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
 @Service("epPolicyManager")
-public class EPPolicyManager extends BasicManager {
+public class EPPolicyManager {
 
 	@Autowired
 	private DB dbInstance;
@@ -61,8 +59,6 @@ public class EPPolicyManager extends BasicManager {
 	private GroupDAO groupDao;
 	@Autowired
 	private InvitationDAO invitationDao;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
 	

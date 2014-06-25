@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.admin.securitygroup.gui.GroupController;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
@@ -42,33 +41,25 @@ import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
-import org.olat.group.BusinessGroupService;
-import org.olat.group.area.BGAreaManager;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * @author Christian Guretzki
  */
-@Service("businessGroupArchiver")
 public class BusinessGroupArchiver {
 
 	private static final String DELIMITER = "\t";
 	private static final String EOL = "\n";
+
+	private final DB dbInstance;
+	private final UserManager userManager;
 	
-	@Autowired
-	private DB dbInstance;
-	@Autowired
-	private BGAreaManager areaManager;
-	@Autowired
-	private UserManager userManager;
-	@Autowired
-	private BaseSecurity securityManager;
-	@Autowired
-	private BusinessGroupService businessGroupService;
+	protected BusinessGroupArchiver(DB dbInstance) {
+		this.dbInstance = dbInstance;
+		this.userManager = UserManager.getInstance();
+	}
 
 	/**
 	 * Retrives a PackageTranslator for the input locale.
