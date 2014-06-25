@@ -77,6 +77,7 @@ public class RichTextConfiguration implements Disposable {
 	private static final String IMPORTCSS_APPEND = "importcss_append";
 	private static final String IMPORT_SELECTOR_CONVERTER = "importcss_selector_converter";
 	private static final String IMPORT_SELECTOR_CONVERTER_VALUE_REMOVE_EMOTICONS ="function(selector) { if (selector.indexOf('img.b_emoticons') != -1) {return false;} else { return this.convertSelectorToFormat(selector); }}";
+	private static final String IMPORTCSS_SELECTOR_FILTER = "importcss_selector_filter";
 	private static final String IMPORTCSS_GROUPS = "importcss_groups";
 	private static final String IMPORTCSS_GROUPS_VALUE_MENU = "[{title: 'Paragraph', filter: /^(p)\\./},{title: 'Div', filter: /^(div|p)\\./},{title: 'Table', filter: /^(table|th|td|tr)\\./},{title: 'Url', filter: /^(a)\\./},{title: 'Style'}]";
 	private static final String HEIGHT = "height";
@@ -723,6 +724,17 @@ public class RichTextConfiguration implements Disposable {
 			copyNonValues.put(IMPORT_SELECTOR_CONVERTER, IMPORT_SELECTOR_CONVERTER_VALUE_REMOVE_EMOTICONS);
 			// group imported css classes to paragraph, div, table and style menu
 			copyNonValues.put(IMPORTCSS_GROUPS, IMPORTCSS_GROUPS_VALUE_MENU);
+			// add css class filters if available to minimise classes the user sees
+			String selectorFilter = Settings.getHtmlEditorContentCssClassPrefixes();
+			if (selectorFilter != null) {
+				if (selectorFilter.startsWith("/") && selectorFilter.endsWith("/")) {
+					// a (multi) prefix filter witten as JS regexp pattern
+					copyNonValues.put(IMPORTCSS_SELECTOR_FILTER, selectorFilter);				
+				} else {
+					// a simple prefix filter without JS regexp syntax
+					copyValues.put(IMPORTCSS_SELECTOR_FILTER, selectorFilter);								
+				}				
+			}
 		}
 
  		//new with menu
