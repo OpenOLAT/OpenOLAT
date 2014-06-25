@@ -85,7 +85,8 @@
 	
 	#o_toplink {
 		position: absolute;
-		bottom: 0; right: 10px;
+		bottom: 0; 
+		right: floor($grid-gutter-width / 2);
 		text-align: center;
 		z-index: 5;
 		@extend %o_undecorated;

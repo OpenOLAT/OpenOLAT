@@ -119,7 +119,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_notification:before { content: $fa-var-rss;}
 .o_icon_open_tree:before { content: $fa-var-caret-right;}
 .o_icon_open_togglebox:before { content: $fa-var-caret-right;}
-.o_icon_openolat:before {content:"\221E"; font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; font-weight: bold;}
+.o_icon_openolat:before, %o_icon_openolat {content:"\221E"; font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; font-weight: bold;}
 .o_icon_passed:before { content: $fa-var-check-circle;}
 .o_icon_password:before { content: $fa-var-key;}
 .o_icon_post:before { content: $fa-var-comment-o; }
@@ -130,7 +130,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_private:before { content: $fa-var-print;}
 .o_icon_provider_guest:before { content: $fa-var-child;}
 .o_icon_provider_ldap:before { content: $fa-var-university;}
-.o_icon_provider_olat:before {content:"\221E"; font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; font-weight: bold;}
+.o_icon_provider_olat:before { @extend %o_icon_openolat; }
 .o_icon_provider_shibboleth:before { content: $fa-var-university;}
 .o_icon_publish:before { content: $fa-var-share;}
 .o_icon_qrcode:before { content: $fa-var-qrcode;}

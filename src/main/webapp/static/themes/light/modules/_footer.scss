@@ -4,10 +4,12 @@
 	}
 	width: 100%;
 	z-index: 2;
-	min-height: $o-footer-height;
+	height: $o-footer-height;
+	overflow: hidden;
 	background-color: $o-footer-outer-bg;
 	color: $o-footer-default-color;
 	line-height: 16px;
+	font-size: $o-footer-font-size;
 	
 	a { 
 		color: $o-footer-default-link-color;
@@ -16,18 +18,26 @@
 
 	#o_footer_container {
 		position: relative;
-		padding-top: 10px;
+		padding-top: $o-footer-padding-top;
 		min-height: $o-footer-height;		
 		background: $o-footer-inner-bg;
 
 		#o_footer_user { 
-			#o_counter { white-space:nowrap; }
-		 	#o_username { white-space:nowrap; margin-right: 1em;}
+			#o_counter { 
+				white-space:nowrap; 
+			}
+		 	#o_username { 
+		 		white-space:nowrap; 
+		 		margin-right: 1em;
+		 	}
 		}
 
 		#o_footer_version { 
+			position: absolute; 
+			right: ($grid-gutter-width / 2);
+			top: $o-footer-padding-top;
 			text-align: right;
-			/* aligh left on mobile, stacked view */
+			/* align left on mobile, stacked view */
 			@media (max-width: $screen-xs-max) { 
 				padding-top: 10px;
 				text-align: left;
@@ -35,15 +45,34 @@
 		}
 
 		#o_footer_powered { 
-			text-align: center; 
+			position: absolute; 
+			top: ($line-height-computed + $o-footer-padding-top);
+			right: ($grid-gutter-width / 2);
 			/* make powerd-by buttons a bit less colorful to not distract user from learning */
 			img {	
 				@include o-opacity(60);
 				&:hover { @include o-opacity(100); }	
 			}		
-			/* hide images on mobile */
-			@media (max-width: $screen-xs-max) { 
+			a {
+				@extend %o_undecorated; 
+			}
+		}
+		/* hide images on mobile */
+		@media (max-width: $screen-xs-max) { 
+			#o_counter, #o_footer_version {
 				display: none;
+			}
+			#o_footer_powered {
+				top: $o-footer-padding-top;
+				a:after { 
+					content:"\221E"; 
+					font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; 
+					font-weight: bold; 
+					font-size: $o-footer-share-font-size;
+				}
+				img { 
+					display: none
+				}
 			}
 		}
 	}
@@ -52,11 +81,11 @@
 /*  social links (FB, twitter, google) from SocialModule.java */
 #o_share { 
 	margin-top: 10px;
-	width:250px; 
+	font-size: $o-footer-share-font-size;
 	a { 
-		margin: 0 5px 0 0; 
-		float: left;
+		margin: 0 3px 0 0; 
 		@include o-opacity(60);
+		@extend %o_undecorated;
 	}
 	a:hover { 
 		@include o-opacity(100); 
