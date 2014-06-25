@@ -111,6 +111,8 @@ public class OlatTopNavController extends BasicController implements GenericEven
 		
 		boolean isGuest = ureq.getUserSession().getRoles().isGuestOnly();
 		boolean isInvitee = ureq.getUserSession().getRoles().isInvitee();
+		topNavVC.contextPut("isGuest", new Boolean(isGuest));
+		topNavVC.contextPut("isInvitee", new Boolean(isInvitee));
 		
 		// instant messaging area, only when enabled and user is not a guest user
 		if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled() && !isGuest && !isInvitee) {
@@ -129,7 +131,6 @@ public class OlatTopNavController extends BasicController implements GenericEven
 		
 		// login link
 		if (ureq.getIdentity() == null) {
-			topNavVC.contextPut("isGuest", Boolean.TRUE);
 			loginLink = LinkFactory.createLink("topnav.login", topNavVC, this);
 			loginLink.setIconLeftCSS("o_icon o_icon_login o_icon-lg");
 			loginLink.setTooltip("topnav.login.alt");

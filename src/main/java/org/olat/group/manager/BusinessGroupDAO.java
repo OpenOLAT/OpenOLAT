@@ -399,6 +399,20 @@ public class BusinessGroupDAO {
 		return query.getResultList();
 	}
 	
+	public BusinessGroup findBusinessGroup(Group baseGroup) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select bgs from ").append(BusinessGroupImpl.class.getName()).append(" as bgs ")
+		  .append(" inner join fetch bgs.resource as bgResource")
+		  .append(" inner join fetch bgs.baseGroup as baseGroup")
+		  .append(" where baseGroup=:group");
+
+		List<BusinessGroup> groups = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BusinessGroup.class)
+				.setParameter("group", baseGroup)
+				.getResultList();
+		return groups.isEmpty() ? null : groups.get(0);
+	}
+	
 	public List<BusinessGroup> findBusinessGroupsWithWaitingListAttendedBy(Identity identity, RepositoryEntryRef repoEntry) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select bgs from ").append(BusinessGroupImpl.class.getName()).append(" as bgs ")

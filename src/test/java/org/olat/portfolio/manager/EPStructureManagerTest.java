@@ -18,7 +18,7 @@
  * <p>
  */
 
-package org.olat.portfolio;
+package org.olat.portfolio.manager;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -103,24 +103,26 @@ public class EPStructureManagerTest extends OlatTestCase {
 	
 	@Test
 	public void testGetStructureElementsForUser(){
-		PortfolioStructure el = epFrontendManager.createAndPersistPortfolioDefaultMap(ident1, "users-test-map", "a-map-to-test-get-afterwards");
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("EP-1-");
+		
+		PortfolioStructure el = epFrontendManager.createAndPersistPortfolioDefaultMap(user, "users-test-map", "a-map-to-test-get-afterwards");
 		assertNotNull(el);
 		dbInstance.commitAndCloseSession();
 		
-		List<SecurityGroup> secGroups = securityManager.getSecurityGroupsForIdentity(ident1);
+		List<SecurityGroup> secGroups = securityManager.getSecurityGroupsForIdentity(user);
 		assertNotNull(secGroups);
 		assertTrue(secGroups.size() >= 1);
 		
-		List<PortfolioStructure> elRes = epFrontendManager.getStructureElementsForUser(ident1);
+		List<PortfolioStructure> elRes = epFrontendManager.getStructureElementsForUser(user);
 		assertNotNull(elRes);
 		assertTrue(elRes.size() == 1);
 		assertEquals( ((EPStructureElement)elRes.get(0)).getTitle(), "users-test-map");
 
 		// get another map
-		PortfolioStructure el2 = epFrontendManager.createAndPersistPortfolioDefaultMap(ident1, "users-test-map-2", "2-a-map-to-test-get-afterwards");
+		PortfolioStructure el2 = epFrontendManager.createAndPersistPortfolioDefaultMap(user, "users-test-map-2", "2-a-map-to-test-get-afterwards");
 		assertNotNull(el2);
 		dbInstance.commitAndCloseSession();
-		List<PortfolioStructure> elRes2 = epFrontendManager.getStructureElementsForUser(ident1);
+		List<PortfolioStructure> elRes2 = epFrontendManager.getStructureElementsForUser(user);
 		assertNotNull(elRes2);
 		assertTrue(elRes2.size() == 2);
 	}
@@ -423,7 +425,7 @@ public class EPStructureManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testLoadPortfolioStructuredMaps(){
+	public void testLoadPortfolioStructuredMaps() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("EP-tmp-");
 		//a template
 		PortfolioStructureMap template = epStructureManager.createPortfolioMapTemplate(user, "paged-parent-structure-el", "parent-structure-element");
@@ -448,6 +450,20 @@ public class EPStructureManagerTest extends OlatTestCase {
 		Assert.assertEquals(1, myCloneAlt.size());
 		Assert.assertEquals(map, myCloneAlt.get(0));
 	}
+	
+	@Test
+	public void testCountStructureElementsFromOthers() {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("EP-tmp-");
+		
+		PortfolioStructureMap map = epStructureManager.createPortfolioDefaultMap("map-el", "map-element");
+		epStructureManager.savePortfolioStructure(map);
+		dbInstance.commitAndCloseSession();
+		
+		//clone the template
+		int count = epStructureManager.countStructureElementsFromOthers(user, null);
+		Assert.assertEquals(0, count);
+	}
+	
 	
 	
 	@Test

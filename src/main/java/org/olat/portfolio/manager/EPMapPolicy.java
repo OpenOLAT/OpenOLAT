@@ -27,10 +27,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.basesecurity.Invitation;
-import org.olat.basesecurity.Policy;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.group.BusinessGroup;
+import org.olat.portfolio.model.structel.EPStructureElementToGroupRelation;
 
 /**
  * 
@@ -49,9 +49,9 @@ public class EPMapPolicy {
 	private Type type = Type.user;
 	
 	private Invitation invitation;
-	private List<Policy> policies;
-	private List<Identity> identities = new ArrayList<Identity>();
-	private List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
+	private List<Identity> identities = new ArrayList<>();
+	private List<BusinessGroup> groups = new ArrayList<>();
+	private final List<EPStructureElementToGroupRelation> relations = new ArrayList<>();
 	
 	public Invitation getInvitation() {
 		return invitation;
@@ -61,22 +61,12 @@ public class EPMapPolicy {
 		this.invitation = invitation;
 	}
 
-	public List<Policy> getPolicies() {
-		if(policies == null) {
-			policies = new ArrayList<Policy>();
-		}
-		return policies;
+	public List<EPStructureElementToGroupRelation> getRelations() {
+		return relations;
 	}
 	
-	public void setPolicies(List<Policy> policies) {
-		this.policies = policies;
-	}
-	
-	public void addPolicy(Policy policy) {
-		if(policies == null) {
-			policies = new ArrayList<Policy>();
-		}
-		policies.add(policy);
+	public void addRelation(EPStructureElementToGroupRelation relation) {
+		relations.add(relation);
 	}
 
 	public Date getTo() {
@@ -150,11 +140,8 @@ public class EPMapPolicy {
 	}
 	
 	public void addGroup(BusinessGroup group) {
-		if(groups == null) {
-			groups = new ArrayList<BusinessGroup>();
-		}
 		for(BusinessGroup g:groups) {
-			if(g.equalsByPersistableKey(group)) {
+			if(g.equals(group)) {
 				return;
 			}
 		}

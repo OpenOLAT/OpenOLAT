@@ -34,7 +34,6 @@
 		<mapping-file>org/olat/resource/accesscontrol/provider/paypal/model/PaypalTransaction.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/AuthenticationImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/PolicyImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/basesecurity/InvitationImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/IdentityImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/NamedGroupImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/basesecurity/SecurityGroupImpl.hbm.xml</mapping-file>
@@ -86,6 +85,8 @@
 		<mapping-file>org/olat/upgrade/model/RepositoryEntryUpgrade.hbm.xml</mapping-file>
 		<mapping-file>org/olat/upgrade/model/EPMapUpgrade.hbm.xml</mapping-file>
 		<class>org.olat.upgrade.model.RepositoryEntryUpgradeToGroupRelation</class>
+		<class>org.olat.upgrade.model.EPMapUpgradeToGroupRelation</class>
+		<class>org.olat.upgrade.model.InvitationUpgrade</class>
 		<!-- End upgraders mapping -->
 		
 		<class>org.olat.basesecurity.model.GroupImpl</class>
@@ -140,6 +141,8 @@
 		<class>org.olat.modules.qpool.model.QItemType</class>
 		<class>org.olat.modules.qpool.model.QLicense</class>
 		<class>org.olat.ims.lti.model.LTIOutcomeImpl</class>
+		<class>org.olat.portfolio.model.InvitationImpl</class>
+		<class>org.olat.portfolio.model.structel.EPStructureElementToGroupRelation</class>
 		<properties>
 			<property name="hibernate.generate_statistics" value="true"/>
 			<property name="hibernate.archive.autodetection" value=""/>

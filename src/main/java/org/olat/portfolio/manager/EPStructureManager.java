@@ -24,17 +24,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.TypedQuery;
 
 import org.hibernate.ObjectNotFoundException;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
-import org.olat.basesecurity.NamedGroupImpl;
 import org.olat.basesecurity.PolicyImpl;
 import org.olat.basesecurity.SecurityGroupImpl;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
@@ -60,6 +60,7 @@ import org.olat.portfolio.model.structel.EPDefaultMap;
 import org.olat.portfolio.model.structel.EPMapShort;
 import org.olat.portfolio.model.structel.EPPage;
 import org.olat.portfolio.model.structel.EPStructureElement;
+import org.olat.portfolio.model.structel.EPStructureElementToGroupRelation;
 import org.olat.portfolio.model.structel.EPStructureToArtefactLink;
 import org.olat.portfolio.model.structel.EPStructureToStructureLink;
 import org.olat.portfolio.model.structel.EPStructuredMap;
@@ -182,7 +183,8 @@ public class EPStructureManager extends BasicManager {
 	protected List<PortfolioStructure> getStructureElementsForUser(IdentityRef ident, ElementType... types){
 		StringBuilder sb = new StringBuilder();
 		sb.append("select stEl from ").append(EPStructureElement.class.getName()).append(" as stEl")
-		  .append(" inner join fetch stEl.group as baseGroup")
+		  .append(" inner join stEl.groups as relGroup on relGroup.defaultGroup=true")
+		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" where exists (select membership from bgroupmember as membership " )
 		  .append("    where baseGroup=membership.group and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.owner.name()).append("'")
 		  .append(" )");
@@ -212,10 +214,12 @@ public class EPStructureManager extends BasicManager {
 	protected boolean isMapOwner(IdentityRef identity, OLATResourceable ores) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(stEl) from ").append(EPStructureElement.class.getName()).append(" stEl ")
+		  .append(" inner join stEl.groups as relGroup on relGroup.defaultGroup=true")
+		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" where stEl.olatResource.resId=:resourceableId")
 		  .append(" and stEl.olatResource.resName=:resourceableTypeName")
 		  .append(" and exists (select membership from bgroupmember as membership " )
-		  .append("   where stEl.group=membership.group and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.owner.name()).append("'")
+		  .append("   where baseGroup=membership.group and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.owner.name()).append("'")
 		  .append(" )");
 		
 		Number count =	dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
@@ -232,34 +236,28 @@ public class EPStructureManager extends BasicManager {
 	 * @param ores
 	 * @return
 	 */
-	protected boolean isMapVisible(Identity identity, OLATResourceable ores) {
+	protected boolean isMapVisible(IdentityRef identity, OLATResourceable ores) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(stEl) from ").append(EPStructureElement.class.getName()).append(" stEl ")
-			.append(" inner join stEl.olatResource as oRes ")
-			.append(" inner join stEl.group as baseGroup ")
+		sb.append("select count(stEl) from ").append(EPStructureElement.class.getName()).append(" stEl")
+			.append(" inner join stEl.olatResource as oRes")
+			.append(" inner join stEl.groups as relGroup")
 			.append(" where oRes.resId=:resourceableId and oRes.resName=:resourceableTypeName")
-			.append(" and ( oRes in ( " )
-			.append("  select policy.olatResource from")
-			.append("  ").append(PolicyImpl.class.getName()).append(" as policy, ")
-			.append("  ").append(SecurityGroupImpl.class.getName()).append(" as sgi,") 
-			.append("  ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
-			.append("  where sgi = policy.securityGroup")//implicit inner join
-			.append("  and (sgmsi.securityGroup = sgi and sgmsi.identity =:identity) ")//member of the security group
-			.append("  and (policy.from is null or policy.from<=:date)")
-			.append("  and (policy.to is null or policy.to>=:date)")
-			.append(" )")
-			.append(" or exists (select membership from bgroupmember as membership " )
-			.append("   where membership.group=baseGroup and membership.identity.key=:identity")
-			.append(" ))");
+			.append(" and (relGroup.validFrom is null or relGroup.validFrom<=:date)")
+			.append(" and (relGroup.validTo is null or relGroup.validTo>=:date)")
+			.append(" and (relGroup.role='").append(EPMapPolicy.Type.allusers.name()).append("'")
+			.append("   or exists (select membership from bgroupmember as membership " )
+			.append("     where membership.group=relGroup.group and membership.identity.key=:identityKey")
+			.append("   )")
+			.append(" )");
 
-		DBQuery query =	dbInstance.createQuery(sb.toString());
-		query.setEntity("identity", identity);
-		query.setLong("resourceableId", ores.getResourceableId());
-		query.setString("resourceableTypeName", ores.getResourceableTypeName());
-		query.setDate("date", new Date());
-	
-		Number count = (Number)query.uniqueResult();
-		return count.intValue() == 1;
+		Number count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("resourceableId", ores.getResourceableId())
+				.setParameter("resourceableTypeName", ores.getResourceableTypeName())
+				.setParameter("date", new Date())
+				.getSingleResult();
+		return count == null ? false : count.intValue() > 0;
 	}
 	
 	/**
@@ -278,9 +276,10 @@ public class EPStructureManager extends BasicManager {
 			  .append(" inner join stEl.olatResource as oRes ");
 		} else {
 			sb.append("select stEl from ").append(EPStructureElement.class.getName()).append(" stEl ")
-			  .append(" inner join fetch stEl.olatResource as oRes ")
-			  .append(" inner join fetch stEl.group as baseGroup ");
+			  .append(" inner join fetch stEl.olatResource as oRes ");
 		}
+		sb.append(" inner join stEl.groups as relGroup on relGroup.defaultGroup=true")
+		  .append(" inner join relGroup.group as baseGroup");
 
 		sb.append(" where oRes in ( ").append("  select policy.olatResource from").append("  ").append(PolicyImpl.class.getName()).append(" as policy, ").append("  ")
 				.append(SecurityGroupImpl.class.getName()).append(" as sgi,").append("  ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
@@ -288,8 +287,8 @@ public class EPStructureManager extends BasicManager {
 				.append("  and (sgmsi.securityGroup = sgi and sgmsi.identity =:ident) ")// member of the security group
 				.append("  and (policy.from is null or policy.from<=:date)").append("  and (policy.to is null or policy.to>=:date)").append(" )");
 		// remove owner
-		sb.append(" and stEl.group not in ( ").append("select sgi2 from bgroup as sgi2, bgroupmember as sgmsi2 ")
-		  .append("   where sgmsi2.group=sgi2 and sgmsi2.identity=:ident")
+		sb.append(" and not exists ( ").append("select sgi2 from bgroup as sgi2, bgroupmember as sgmsi2 ")
+		  .append("   where baseGroup=sgi2 and sgmsi2.group=sgi2 and sgmsi2.identity=:ident")
 		  .append(" )");
 
 		if (choosenOwner != null) {
@@ -342,35 +341,20 @@ public class EPStructureManager extends BasicManager {
 		return query.getResultList();
 	}
 	
-	protected List<PortfolioStructure> getStructureElementsFromOthersWithoutPublic(Identity ident, Identity choosenOwner, ElementType... types){
+	protected List<PortfolioStructure> getStructureElementsFromOthersWithoutPublic(IdentityRef ident, IdentityRef choosenOwner, ElementType... types){
 		StringBuilder sb = new StringBuilder();
-		sb.append("select stEl from ").append(EPStructureElement.class.getName()).append(" stEl ");
-		sb.append(" inner join stEl.olatResource as oRes ");
-		sb.append(" where oRes in ( " )
-			.append("  select policy.olatResource from")
-			.append("  ").append(PolicyImpl.class.getName()).append(" as policy, ")
-			.append("  ").append(SecurityGroupImpl.class.getName()).append(" as sgi,")
-			.append("  ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
-			.append("  where sgi = policy.securityGroup ") //implicit inner join
-			.append("  and sgi = policy.securityGroup ") 
-			.append("  and (sgmsi.securityGroup = sgi and sgmsi.identity =:ident) ") //member of the security group
-			.append("  and (policy.from is null or policy.from<=:date)")
-			.append("  and (policy.to is null or policy.to>=:date)")
-			.append("  and sgi not in (")
-			.append("    select ngroup.securityGroup from ")
-			.append("    ").append(NamedGroupImpl.class.getName()).append(" as ngroup ")
-			.append("    where ngroup.groupName =:usersGroup")
-			.append("   )")			
-			.append(" )");
-		
-		//remove owner
-		sb.append(" and stEl.group not in (select sgi2 from bgroup as sgi2, bgroupmember as sgmsi2 ")
-		  .append("   where sgmsi2.group=sgi2 and sgmsi2.identity=:ident")
-		  .append(" )");
+		sb.append("select stEl from ").append(EPStructureElement.class.getName()).append(" stEl ")
+		  .append(" inner join fetch stEl.olatResource as oRes ")
+		  .append(" inner join stEl.groups as relGroup on relGroup.defaultGroup=false")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as members")
+		  .append(" where members.identity.key=:identityKey")
+		  .append(" and (relGroup.validFrom is null or relGroup.validFrom<=:date)")
+		  .append(" and (relGroup.validTo is null or relGroup.validTo>=:date)");
 		
 		if(choosenOwner != null) {
-			sb.append(" and stEl.group in (select sgi from bgroup  as sgi, bgroupmember as sgmsi ")
-			  .append("   where sgmsi.group=sgi and sgmsi.identity=:owner")
+			sb.append(" and exists (select sgi from bgroupmember as sgmsi ")
+			  .append("   where sgmsi.group=baseGroup and sgmsi.identity.key=:ownerKey")
 			  .append(" )");
 		}
 		if(types != null && types.length > 0) {
@@ -384,19 +368,16 @@ public class EPStructureManager extends BasicManager {
 			sb.append(")");
 		}
 		
-		DBQuery query =	dbInstance.createQuery(sb.toString());
-		query.setEntity("ident", ident);
-		query.setString("usersGroup", Constants.GROUP_OLATUSERS);
-		query.setDate("date", new Date());
+		TypedQuery<PortfolioStructure> query =dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PortfolioStructure.class)
+				.setParameter("identityKey", ident.getKey())
+				.setParameter("date", new Date());
 		if(choosenOwner != null) {
-			query.setEntity("owner", choosenOwner);
+			query.setParameter("ownerKey", choosenOwner.getKey());
 		}
 		
-		@SuppressWarnings("unchecked")
-		List<PortfolioStructure> pStructs = query.list();
-		return pStructs;
+		return query.getResultList();
 	}
-	
 	
 	private Class<?> getImplementation(ElementType type) {
 		switch(type) {
@@ -1035,16 +1016,23 @@ public class EPStructureManager extends BasicManager {
 		struct = (EPStructureElement) dbInstance.loadObject((EPStructureElement)struct);
 		dbInstance.deleteObject(struct);		
 		if (struct instanceof EPAbstractMap){
-			EPAbstractMap esmap = (EPAbstractMap)struct;
-			Group group = esmap.getGroup();
-			if (group != null) {
-				groupDao.removeGroup(group);
-			}
+			removeBaseGroup((EPAbstractMap)struct);
 		}
 		
 		resourceManager.deleteOLATResourceable(struct);
 	}
 	
+	private void removeBaseGroup(EPAbstractMap map) {
+		Set<EPStructureElementToGroupRelation> relations = map.getGroups();
+		if (relations != null) {
+			for(EPStructureElementToGroupRelation relation:relations) {
+				if(relation.isDefaultGroup()) {
+					groupDao.removeGroup(relation.getGroup());
+				}
+				dbInstance.getCurrentEntityManager().remove(relation);
+			}
+		}
+	}
 	
 	/**
 	 * Move a structure element up in the list
@@ -1381,17 +1369,19 @@ public class EPStructureManager extends BasicManager {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("select map from ").append(EPStructuredMap.class.getName()).append(" map")
-		  .append(" inner join fetch map.group as baseGroup")
+		  .append(" left join fetch map.targetResource as targetResource")
+		  .append(" inner join map.groups as relGroup on relGroup.defaultGroup=true")
+		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" where map.structuredMapSource=:template");
 		if (targetOres != null) {
-			sb.append(" and map.targetResource.resourceableId=:resourceId")
-			  .append(" and map.targetResource.resourceableTypeName=:resourceType");
+			sb.append(" and targetResource.resourceableId=:resourceId")
+			  .append(" and targetResource.resourceableTypeName=:resourceType");
 		}
 		if (targetSubPath != null) {
-			sb.append(" and map.targetResource.subPath=:subPath");
+			sb.append(" and targetResource.subPath=:subPath");
 		}
 		if (targetBusinessPath != null) {
-			sb.append(" and map.targetResource.businessPath=:businessPath");
+			sb.append(" and targetResource.businessPath=:businessPath");
 		}
 		sb.append(" and exists (select membership from bgroupmember as membership " )
 		  .append("    where baseGroup=membership.group and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.owner.name()).append("'")
@@ -1430,7 +1420,8 @@ public class EPStructureManager extends BasicManager {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("select map from ").append(EPStructuredMap.class.getName()).append(" map")
-		  .append(" inner join fetch map.group as baseGroup")
+		  .append(" inner join map.groups as relGroup on relGroup.defaultGroup=true")
+		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join fetch map.targetResource as targetResource")
 		  .append(" where targetResource.resourceableId=:resourceId and targetResource.resourceableTypeName=:resourceType");
 
@@ -1539,7 +1530,6 @@ public class EPStructureManager extends BasicManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select element from ").append(EPStructureElement.class.getName()).append(" element")
 		  .append(" left join fetch element.olatResource as oRes")
-		  .append(" left join fetch element.group as baseGroup")
 		  .append(" where element.key=:key");;
 		
 		List<PortfolioStructure> resources = dbInstance.getCurrentEntityManager()
@@ -1641,8 +1631,11 @@ public class EPStructureManager extends BasicManager {
 		fillStructureElement(el, title, description);
 		
 		//create security group
-		Group ownerGroup = createBaseGroup(identity);
-		el.setGroup(ownerGroup);
+		EPStructureElementToGroupRelation ownerGroup = createBaseGroup(el, identity);
+		Set<EPStructureElementToGroupRelation> relations = new HashSet<>();
+		relations.add(ownerGroup);
+		el.setGroups(relations);
+		
 		return el;
 	}
 	
@@ -1652,8 +1645,10 @@ public class EPStructureManager extends BasicManager {
 		fillStructureElement(el, title, description);
 
 		//create security group
-		Group ownerGroup = createBaseGroup(identity);
-		el.setGroup(ownerGroup);
+		EPStructureElementToGroupRelation ownerGroup = createBaseGroup(el, identity);
+		Set<EPStructureElementToGroupRelation> relations = new HashSet<>();
+		relations.add(ownerGroup);
+		el.setGroups(relations);
 		
 		return el;
 	}
@@ -1699,7 +1694,11 @@ public class EPStructureManager extends BasicManager {
 		dbInstance.commit();
 		
 		Group ownerGroup = repositoryService.getDefaultGroup(re);
-		el.setGroup(ownerGroup);
+		
+		EPStructureElementToGroupRelation relation = createBaseRelation(el, ownerGroup);
+		Set<EPStructureElementToGroupRelation> relations = new HashSet<>();
+		relations.add(relation);
+		el.setGroups(relations);
 		return el;
 	}
 	
@@ -1719,8 +1718,12 @@ public class EPStructureManager extends BasicManager {
 		el.setStyle(((EPStructureElement)root).getStyle()); 
 		importEPStructureElementRecursively((EPStructureElement)root, el);
 		
-		//create an empty security group
-		el.setGroup(groupDao.createGroup());
+		//create an empty group
+		Group ownerGroup = groupDao.createGroup();
+		EPStructureElementToGroupRelation relation = createBaseRelation(el, ownerGroup);
+		Set<EPStructureElementToGroupRelation> relations = new HashSet<>();
+		relations.add(relation);
+		el.setGroups(relations);
 		
 		return el;
 	}
@@ -1770,7 +1773,11 @@ public class EPStructureManager extends BasicManager {
 			group = groupDao.createGroup();
 			groupDao.addMembership(group, identity, GroupRoles.owner.name());
 		}
-		el.setGroup(group);
+		
+		EPStructureElementToGroupRelation relation = createBaseRelation(el, group);
+		Set<EPStructureElementToGroupRelation> relations = new HashSet<>();
+		relations.add(relation);
+		el.setGroups(relations);
 		dbInstance.saveObject(el);
 		return el;
 	}
@@ -1812,11 +1819,26 @@ public class EPStructureManager extends BasicManager {
 		return addedEntry;
 	}
 	
-	private Group createBaseGroup(Identity author) {
+	private EPStructureElementToGroupRelation createBaseGroup(EPStructureElement element, Identity author) {
 		//create security group
 		Group ownerGroup = groupDao.createGroup();
+		EPStructureElementToGroupRelation relation = new EPStructureElementToGroupRelation();
+		relation.setDefaultGroup(true);
+		relation.setCreationDate(new Date());
+		relation.setGroup(ownerGroup);
+		relation.setStructureElement(element);
 		groupDao.addMembership(ownerGroup, author, GroupRoles.owner.name());
-		return ownerGroup;
+		return relation;
+	}
+	
+	private EPStructureElementToGroupRelation createBaseRelation(EPStructureElement element, Group ownerGroup) {
+		//create security group
+		EPStructureElementToGroupRelation relation = new EPStructureElementToGroupRelation();
+		relation.setDefaultGroup(true);
+		relation.setCreationDate(new Date());
+		relation.setGroup(ownerGroup);
+		relation.setStructureElement(element);
+		return relation;
 	}
 
 	/**

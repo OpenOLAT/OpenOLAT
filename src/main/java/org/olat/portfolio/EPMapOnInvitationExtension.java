@@ -51,9 +51,11 @@ public class EPMapOnInvitationExtension {
 	
 	private static class MapOnInvitationContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
 
+		private PortfolioStructureMap map;
+		
 		@Override
 		public ContextEntryControllerCreator clone() {
-			return this;
+			return new MapOnInvitationContextEntryControllerCreator();
 		}
 
 		@Override
@@ -74,7 +76,10 @@ public class EPMapOnInvitationExtension {
 		@Override
 		public String getTabName(ContextEntry ce, UserRequest ureq) {
 			PortfolioStructureMap map = getMapFromContext(ce);
-			return map.getTitle();
+			if(map != null) {
+				return map.getTitle();
+			}
+			return null;
 		}
 
 		@Override
@@ -83,9 +88,11 @@ public class EPMapOnInvitationExtension {
 				return false;
 			}
 			
-			final EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+			final EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 			PortfolioStructureMap map = getMapFromContext(ce);
-			if (map == null) return false;
+			if (map == null) {
+				return false;
+			}
 			boolean visible = ePFMgr.isMapVisible(ureq.getIdentity(), map.getOlatResource());
 			return visible;
 		}
@@ -95,11 +102,12 @@ public class EPMapOnInvitationExtension {
 		 * @return the loaded map or null if not found
 		 */
 		private PortfolioStructureMap getMapFromContext(final ContextEntry ce) {
-			final Long mapKey = ce.getOLATResourceable().getResourceableId();
-			final EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
-			final PortfolioStructureMap map = (PortfolioStructureMap) ePFMgr.loadPortfolioStructureByKey(mapKey);
+			if(map == null) {
+				Long mapKey = ce.getOLATResourceable().getResourceableId();
+				EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
+				map = (PortfolioStructureMap)ePFMgr.loadPortfolioStructureByKey(mapKey);
+			}
 			return map;
 		}
-		
 	}
 }

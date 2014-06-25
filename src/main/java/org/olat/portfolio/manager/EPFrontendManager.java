@@ -28,9 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.Policy;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tagging.manager.TaggingManager;
@@ -713,7 +711,8 @@ public class EPFrontendManager extends BasicManager {
 	 * @param type Limit maps to this or these types
 	 * @return
 	 */
-	public List<PortfolioStructure> getStructureElementsFromOthersWithoutPublic(Identity ident, Identity choosenOwner, ElementType... types){
+	public List<PortfolioStructure> getStructureElementsFromOthersWithoutPublic(IdentityRef ident, IdentityRef choosenOwner,
+			ElementType... types){
 		return structureManager.getStructureElementsFromOthersWithoutPublic(ident, choosenOwner, types);
 	}
 	
@@ -1054,23 +1053,16 @@ public class EPFrontendManager extends BasicManager {
 	 * @param ores
 	 * @return
 	 */
-	public boolean isMapVisible(Identity identity, OLATResourceable ores) {
+	public boolean isMapVisible(IdentityRef identity, OLATResourceable ores) {
 		return structureManager.isMapVisible(identity, ores);
 	}
 	
 	public boolean isMapShared(PortfolioStructureMap map) {
-		OLATResource resource = map.getOlatResource();
-		return isMapShared(resource);
+		return isMapShared(map.getOlatResource());
 	}
 		
 	public boolean isMapShared(OLATResource resource) {
-		List<Policy> policies = securityManager.getPoliciesOfResource(resource, null);
-		for(Policy policy:policies) {
-			if(policy.getPermission().contains(Constants.PERMISSION_READ)) {
-				return true;
-			}
-		}
-		return false;
+		return policyManager.isMapShared(resource);
 	}
 	
 	/**
@@ -1086,8 +1078,8 @@ public class EPFrontendManager extends BasicManager {
 	 * @param map
 	 * @param policyWrappers
 	 */
-	public void updateMapPolicies(PortfolioStructureMap map, List<EPMapPolicy> policyWrappers) {
-		policyManager.updateMapPolicies(map, policyWrappers);
+	public PortfolioStructureMap updateMapPolicies(PortfolioStructureMap map, List<EPMapPolicy> policyWrappers) {
+		return policyManager.updateMapPolicies(map, policyWrappers);
 	}
 	
 	/**
@@ -1110,7 +1102,7 @@ public class EPFrontendManager extends BasicManager {
 		AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();
 		CourseNode courseNode = course.getRunStructure().getNode(resource.getSubPath());
 		
-		List<Identity> owners = groupDao.getMembers(submittedMap.getGroup(), GroupRoles.coach.name());
+		List<Identity> owners = policyManager.getOwners(submittedMap);
 		for(Identity owner:owners) {
 			if (courseNode != null) { // courseNode might have been deleted meanwhile
 				IdentityEnvironment ienv = new IdentityEnvironment(); 
@@ -1204,10 +1196,10 @@ public class EPFrontendManager extends BasicManager {
 	 * @return
 	 */
 	public String getAllOwnersAsString(PortfolioStructureMap map){
-		if(map.getGroup() == null) {
+		if(map.getGroups() == null) {
 			return null;
 		}
-		List<Identity> ownerIdents = groupDao.getMembers(map.getGroup(), GroupRoles.coach.name());
+		List<Identity> ownerIdents = policyManager.getOwners(map);
 		List<String> identNames = new ArrayList<String>();
 		for (Identity identity : ownerIdents) {
 			String fullName = userManager.getUserDisplayName(identity);
@@ -1225,10 +1217,10 @@ public class EPFrontendManager extends BasicManager {
 	 * @return
 	 */
 	public String getFirstOwnerAsString(PortfolioStructureMap map){
-		if(map.getGroup() == null) {
+		if(map.getGroups() == null) {
 			return "n/a";
 		}
-		List<Identity> ownerIdents = groupDao.getMembers(map.getGroup(), GroupRoles.coach.name());
+		List<Identity> ownerIdents = policyManager.getOwners(map);
 		if(ownerIdents.size() > 0){
 			Identity id = ownerIdents.get(0);
 			return userManager.getUserDisplayName(id);
@@ -1237,10 +1229,10 @@ public class EPFrontendManager extends BasicManager {
 	}
 	
 	public String getFirstOwnerAsString(EPMapShort map){
-		if(map.getGroup() == null) {
+		if(map.getGroups() == null) {
 			return "n/a";
 		}
-		List<Identity> ownerIdents = groupDao.getMembers(map.getGroup(), GroupRoles.coach.name());
+		List<Identity> ownerIdents = policyManager.getOwners(map);
 		if(ownerIdents.size() > 0){
 			Identity id = ownerIdents.get(0);
 			return userManager.getUserDisplayName(id);
@@ -1255,10 +1247,10 @@ public class EPFrontendManager extends BasicManager {
 	 * @return
 	 */
 	public Identity getFirstOwnerIdentity(PortfolioStructureMap map){
-		if(map.getGroup() == null) {
+		if(map.getGroups() == null) {
 			return null;
 		}
-		List<Identity> ownerIdents = groupDao.getMembers(map.getGroup(), GroupRoles.coach.name());
+		List<Identity> ownerIdents = policyManager.getOwners(map);
 		if (ownerIdents.size() > 0) {
 			Identity id = ownerIdents.get(0);
 			return id;

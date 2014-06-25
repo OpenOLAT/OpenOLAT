@@ -196,11 +196,11 @@ public class FunctionalArtefactTest {
 			String pageName, String pageDescription,
 			String structureName, String structureDescription,
 			Class<?> artefactClass, String artefactName, String artefactDescription, String[] artefactTags, String[] artefactContent){
-		Binder binder = findBinderByName(this.map, binderName);
+		Binder binder = findBinderByName(map, binderName);
 		
 		if(binder == null){
 			binder = new Binder(binderName, binderDescription);
-			this.map.add(binder);
+			map.add(binder);
 		}
 		
 		Binder.Page page = findPageByName(binder.page, pageName);

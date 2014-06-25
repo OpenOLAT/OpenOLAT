@@ -3,7 +3,7 @@
 	#foreach($personalTool in $toolSet)
 		 <li class="o_navbar_tool">$r.render($personalTool)</li>
 	#end
-	#if (!$isGuest)
+	#if (!$isGuest && !$isInvitee)
 		<li id="o_navbar_my_menu" class="dropdown o_portrait">
 			<a id="o_sel_navbar_my_menu_caret" href="#" class="dropdown-toggle" data-toggle="dropdown">
 				$r.render("portrait")
@@ -12,7 +12,7 @@
 			</a>	
 			$r.render("myMenu")
 		</li>
-	#else
+	#elseif(!$isInvitee)
 		<li id="o_navbar_login">
 			$r.render("topnav.login")
 		</li>

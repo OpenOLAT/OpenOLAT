@@ -64,12 +64,11 @@
 		</subclass>
 		
 		<subclass name="org.olat.portfolio.model.structel.EPDefaultMap" discriminator-value="default-map">  
-			<many-to-one name="group"
-                   column="fk_group_id"
-                   class="org.olat.basesecurity.model.GroupImpl" 
-                   outer-join="true"   
-                   unique="true" 
-                   cascade="none"/>
+     
+			<set name="groups" cascade="all,delete-orphan">
+            	<key column="fk_struct_id"/>
+            	<one-to-many class="org.olat.portfolio.model.structel.EPStructureElementToGroupRelation"/>
+        	</set>  
 		
 		</subclass>
 		
@@ -87,12 +86,10 @@
 				<property  name="businessPath" column="target_businesspath" length="2048" type="string" />
 			</component>
                    
-			<many-to-one name="group"
-                   column="fk_group_id"
-                   class="org.olat.basesecurity.model.GroupImpl" 
-                   outer-join="true"   
-                   unique="true" 
-                   cascade="none"/>
+			<set name="groups" cascade="all,delete-orphan">
+            	<key column="fk_struct_id"/>
+            	<one-to-many class="org.olat.portfolio.model.structel.EPStructureElementToGroupRelation"/>
+        	</set> 
 		
 			<many-to-one name="structuredMapSource"
                    column="fk_map_source_id"
@@ -105,12 +102,11 @@
 		
 		<subclass name="org.olat.portfolio.model.structel.EPStructuredMapTemplate" discriminator-value="template-map">
      
-			<many-to-one name="group"
-                   column="fk_group_id"
-                   class="org.olat.basesecurity.model.GroupImpl" 
-                   outer-join="true"   
-                   unique="true" 
-                   cascade="none"/>
+			<set name="groups" cascade="all,delete-orphan">
+            	<key column="fk_struct_id"/>
+            	<one-to-many class="org.olat.portfolio.model.structel.EPStructureElementToGroupRelation"/>
+        	</set> 
+        	
 		</subclass>
 	</class>
 
@@ -154,12 +150,10 @@
 		<property name="sourceMapKey" column="fk_map_source_id" type="long"/>
 		<property name="title" column="title" type="string"/>
 
-		<many-to-one name="group"
-                   column="fk_group_id"
-                   class="org.olat.basesecurity.model.GroupImpl" 
-                   outer-join="true"   
-                   unique="true" 
-                   cascade="none"/>
+		<set name="groups">
+            <key column="fk_struct_id"/>
+            <one-to-many class="org.olat.portfolio.model.structel.EPStructureElementToGroupRelation"/>
+        </set> 
 
 		<many-to-one name="olatResource"
                  column="fk_olatresource"

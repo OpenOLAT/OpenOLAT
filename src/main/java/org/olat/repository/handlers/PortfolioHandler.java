@@ -192,7 +192,7 @@ public class PortfolioHandler implements RepositoryHandler {
 		PortfolioStructure map = ePFMgr.loadPortfolioStructure(res);
 		if(map != null) {
 			//owner group has its constraints shared beetwen the repository entry and the template
-			((EPAbstractMap)map).setGroup(null);
+			((EPAbstractMap)map).setGroups(null);
 		}
 		if(map instanceof EPStructuredMapTemplate) {
 			EPStructuredMapTemplate exercise = (EPStructuredMapTemplate)map;

@@ -574,49 +574,6 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertTrue(policies.contains(policy_1));
 		Assert.assertTrue(policies.contains(policy_2));		
 	}
-	
-	/**
-	 * Test this method
-	 * @see getPoliciesOfSecurityGroup(List<SecurityGroup> secGroups, resource1)
-	 */
-	@Test
-	public void testGetPoliciesOfSecurityGroups() {
-		//create 2 security groups and 2 resources
-		SecurityGroup secGroup_1 = securityManager.createAndPersistSecurityGroup();
-		SecurityGroup secGroup_2 = securityManager.createAndPersistSecurityGroup();
-		OLATResource resource_1 = JunitTestHelper.createRandomResource();
-		OLATResource resource_2 = JunitTestHelper.createRandomResource();
-		Policy policy_1 = securityManager.createAndPersistPolicy(secGroup_1, "test.right1_1", resource_1);
-		Policy policy_2 = securityManager.createAndPersistPolicy(secGroup_1, "test.right1_2", resource_2);
-		Policy policy_3 = securityManager.createAndPersistPolicy(secGroup_2, "test.right2_1", resource_1);
-		Policy policy_4 = securityManager.createAndPersistPolicy(secGroup_2, "test.right2_2", resource_2);
-		dbInstance.commitAndCloseSession();
-	
-		//test group_1 and resource_1
-		List<Policy> policies1_1 =  securityManager.getPoliciesOfSecurityGroup(Collections.singletonList(secGroup_1), resource_1);
-		Assert.assertNotNull(policies1_1);
-		Assert.assertEquals(1, policies1_1.size());
-		Assert.assertEquals(policy_1, policies1_1.get(0));
-
-		//test group_1 + resource_1 and 2
-		List<Policy> policies1 =  securityManager.getPoliciesOfSecurityGroup(Collections.singletonList(secGroup_1), resource_1, resource_2);
-		Assert.assertNotNull(policies1);
-		Assert.assertEquals(2, policies1.size());
-		Assert.assertTrue(policies1.contains(policy_1));
-		Assert.assertTrue(policies1.contains(policy_2));
-		
-		//test group 2
-		List<Policy> policies2 =  securityManager.getPoliciesOfSecurityGroup(Collections.singletonList(secGroup_2));
-		Assert.assertNotNull(policies2);
-		Assert.assertEquals(2, policies2.size());
-		Assert.assertTrue(policies2.contains(policy_3));
-		Assert.assertTrue(policies2.contains(policy_4));
-		
-		//test dummy
-		List<Policy> policiesEmpty =  securityManager.getPoliciesOfSecurityGroup(Collections.<SecurityGroup>emptyList());
-		Assert.assertNotNull(policiesEmpty);
-		Assert.assertTrue(policiesEmpty.isEmpty());
-	}
 		
 	/**
 	 * Test the method
@@ -704,101 +661,6 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		assertTrue("Does not found policy", foundPolicy);
 	}
 	
-	/**
-	 * @see public void deletePolicy(SecurityGroup secGroup, String permission, OLATResource resource);
-	 */
-	@Test
-	public void testDeletePolicy() {
-		//create 3 rights
-		SecurityGroup secGroup1 = securityManager.createAndPersistSecurityGroup();
-		SecurityGroup secGroup2 = securityManager.createAndPersistSecurityGroup();
-		OLATResource resource1 = JunitTestHelper.createRandomResource();
-		OLATResource resource2 = JunitTestHelper.createRandomResource();
-		Policy policy_1_1 = securityManager.createAndPersistPolicy(secGroup1, "test.r1-1_1", resource1);
-		Policy policy_1_1b = securityManager.createAndPersistPolicy(secGroup1, "test.r2-1_1", resource1);
-		Policy policy_1_2 = securityManager.createAndPersistPolicy(secGroup1, "test.r3_1-2", resource2);
-		Policy policy_2_2 = securityManager.createAndPersistPolicy(secGroup2, "test.r3_2-2", resource2);
-		dbInstance.commitAndCloseSession();
-		
-		//delete policy 1_1b
-		securityManager.deletePolicy(secGroup1, "test.r2-1_1", resource1);
-		
-		//test the method
-		List<Policy> policies_1_1 = securityManager.getPoliciesOfResource(resource1, secGroup1);
-		Assert.assertNotNull(policies_1_1);
-		Assert.assertEquals(1, policies_1_1.size());
-		Assert.assertTrue(policies_1_1.contains(policy_1_1));
-		Assert.assertFalse(policies_1_1.contains(policy_1_1b));
-		
-		//too much deleted in resource 1?
-		List<Policy> policies_x_1 = securityManager.getPoliciesOfResource(resource1, null);
-		Assert.assertNotNull(policies_x_1);
-		Assert.assertEquals(1, policies_x_1.size());
-		Assert.assertTrue(policies_x_1.contains(policy_1_1));
-		Assert.assertFalse(policies_x_1.contains(policy_1_1b));
-		
-		//too much deleted in resource 2?
-		List<Policy> policies_x_2 = securityManager.getPoliciesOfResource(resource2, null);
-		Assert.assertNotNull(policies_x_2);
-		Assert.assertEquals(2, policies_x_2.size());
-		Assert.assertTrue(policies_x_2.contains(policy_1_2));
-		Assert.assertTrue(policies_x_2.contains(policy_2_2));
-	}
-	
-	/**
-	 * @see public boolean deletePolicies(Collection<SecurityGroup> secGroups, Collection<OLATResource> resources)
-	 */
-	@Test
-	public void testDeletePolicies() {
-		//prepare enough rights
-		SecurityGroup secGroup1 = securityManager.createAndPersistSecurityGroup();
-		SecurityGroup secGroup2 = securityManager.createAndPersistSecurityGroup();
-		SecurityGroup secGroup3 = securityManager.createAndPersistSecurityGroup();
-		OLATResource resource1 = JunitTestHelper.createRandomResource();
-		OLATResource resource2 = JunitTestHelper.createRandomResource();
-		OLATResource resource3 = JunitTestHelper.createRandomResource();
-		Policy policy_1_1 = securityManager.createAndPersistPolicy(secGroup1, "test.r1-1_1", resource1);
-		Policy policy_1_b = securityManager.createAndPersistPolicy(secGroup1, "test.r2-1_1", resource1);
-		Policy policy_1_2 = securityManager.createAndPersistPolicy(secGroup1, "test.r3_1-2", resource2);
-		Policy policy_1_3 = securityManager.createAndPersistPolicy(secGroup1, "test.r4_1-3", resource3);
-		Policy policy_2_2 = securityManager.createAndPersistPolicy(secGroup2, "test.r5_2-2", resource2);
-		Policy policy_3_1 = securityManager.createAndPersistPolicy(secGroup3, "test.r6_3-1", resource1);
-		Policy policy_3_2 = securityManager.createAndPersistPolicy(secGroup3, "test.r7_3-2", resource2);
-		Policy policy_3_3 = securityManager.createAndPersistPolicy(secGroup3, "test.r8_3-3", resource3);
-		dbInstance.commitAndCloseSession();
-		
-		//delete group 1 and 2, delete resource 1 and 3
-		List<SecurityGroup> secGroups = new ArrayList<SecurityGroup>(2);
-		secGroups.add(secGroup1);
-		secGroups.add(secGroup2);
-		List<OLATResource> resources = new ArrayList<OLATResource>(2);
-		resources.add(resource1);
-		resources.add(resource3);
-		boolean deleted = securityManager.deletePolicies(secGroups, resources);
-		Assert.assertTrue(deleted);
-		
-		//check resource 1 -> only policy_3_1 survives
-		List<Policy> policies_1 = securityManager.getPoliciesOfResource(resource1, null);
-		Assert.assertNotNull(policies_1);
-		Assert.assertEquals(1, policies_1.size());
-		Assert.assertTrue(policies_1.contains(policy_3_1));
-		Assert.assertFalse(policies_1.contains(policy_1_1));
-		Assert.assertFalse(policies_1.contains(policy_1_b));
-		//check resource 2 -> all its policies survive
-		List<Policy> policies_2 = securityManager.getPoliciesOfResource(resource2, null);
-		Assert.assertNotNull(policies_2);
-		Assert.assertEquals(3, policies_2.size());
-		Assert.assertTrue(policies_2.contains(policy_1_2));
-		Assert.assertTrue(policies_2.contains(policy_2_2));
-		Assert.assertTrue(policies_2.contains(policy_3_2));
-		//check resource 3
-		List<Policy> policies_3 = securityManager.getPoliciesOfResource(resource3, null);
-		Assert.assertNotNull(policies_3);
-		Assert.assertEquals(1, policies_3.size());
-		Assert.assertTrue(policies_3.contains(policy_3_3));
-		Assert.assertFalse(policies_3.contains(policy_1_3));
-	}
-	
 	@Test
 	public void isIdentityPermittedOnResourceable_checkType() {
 		//create an identity, a security group, a resource and give the identity some
@@ -863,28 +725,6 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		//check that null doesn't return an exception but false
 		boolean hasIpor = securityManager.isIdentityPermittedOnResourceable(null, "test.ipornc-null", resource, false);
 		Assert.assertFalse(hasIpor);
-
-	}
-	
-	@Test
-	public void getIdentityPermissionsOnResourceable() {
-		//create an identity, a security group, a resource and give the identity some
-		//permissions on the resource
-		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
-		OLATResource resource = JunitTestHelper.createRandomResource();
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("test-gpor-1-" + UUID.randomUUID().toString());
-		securityManager.addIdentityToSecurityGroup(id, secGroup);
-		securityManager.createAndPersistPolicy(secGroup, "test.gpor-1_1", resource);
-		securityManager.createAndPersistPolicy(secGroup, "test.gpor-1_2", resource);
-		dbInstance.commitAndCloseSession();
-		
-		//check
-		List<String> permissions = securityManager.getIdentityPermissionOnresourceable(id, resource);
-		Assert.assertNotNull(permissions);
-		Assert.assertTrue(permissions.size() >= 2);
-		Assert.assertTrue(permissions.contains("test.gpor-1_1"));
-		Assert.assertTrue(permissions.contains("test.gpor-1_2"));
-		Assert.assertFalse(permissions.contains("test.gpor-1_3"));
 	}
 
 	/**

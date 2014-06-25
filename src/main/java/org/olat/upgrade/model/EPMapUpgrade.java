@@ -19,9 +19,11 @@
  */
 package org.olat.upgrade.model;
 
-import org.olat.basesecurity.Group;
+import java.util.Set;
+
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.PersistentObject;
+import org.olat.resource.OLATResource;
 
 /**
  * Needed to upgrade the maps
@@ -33,16 +35,25 @@ import org.olat.core.commons.persistence.PersistentObject;
 public class EPMapUpgrade extends PersistentObject {
 
 	private static final long serialVersionUID = 9041327840189041360L;
-	
-	private Group group;
+
 	private SecurityGroup ownerGroup;
+	private OLATResource olatResource;
+	private Set<EPMapUpgradeToGroupRelation> groups;
 	 
-	public Group getGroup() {
-		return group;
+	public OLATResource getOlatResource() {
+		return olatResource;
 	}
 
-	public void setGroup(Group group) {
-		this.group = group;
+	public void setOlatResource(OLATResource olatResource) {
+		this.olatResource = olatResource;
+	}
+
+	public Set<EPMapUpgradeToGroupRelation> getGroups() {
+		return groups;
+	}
+
+	public void setGroups(Set<EPMapUpgradeToGroupRelation> groups) {
+		this.groups = groups;
 	}
 
 	public SecurityGroup getOwnerGroup() {

@@ -59,6 +59,15 @@ public class GroupDAO {
 		return group;
 	}
 	
+	public Group createGroup(String name) {
+		GroupImpl group = new GroupImpl();
+		group.setCreationDate(new Date());
+		group.setName(name);
+		dbInstance.getCurrentEntityManager().persist(group);
+		return group;
+	}
+	
+	
 	public Group removeGroup(Group group) {
 		EntityManager em = dbInstance.getCurrentEntityManager();
 		GroupImpl reloadedGroup = em.getReference(GroupImpl.class, group.getKey());

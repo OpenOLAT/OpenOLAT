@@ -46,5 +46,5 @@ public interface Invitation {
 	
 	public void setMail(String mail);
 	
-	public SecurityGroup getSecurityGroup();
+	public Group getBaseGroup();
 }

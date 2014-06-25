@@ -27,8 +27,6 @@ package org.olat.basesecurity;
  */
 public interface IdentityNames extends IdentityRef {
 	
-	public Long getKey();
-	
 	public String getName();
 	
 	public String getFirstName();

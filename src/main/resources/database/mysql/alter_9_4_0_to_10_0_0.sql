@@ -5,9 +5,6 @@ alter table o_repositoryentry modify softkey varchar(36) not null unique;
 alter table o_repositoryentry modify launchcounter bigint null default 0;
 alter table o_repositoryentry modify downloadcounter bigint null default 0;
 
-alter table o_ep_struct_el add column fk_group_id bigint;
-
-
 -- repository entry statistics table
 create table o_repositoryentry_stats (
    id bigint not null,
@@ -87,6 +84,29 @@ alter table o_re_to_group add constraint re_to_group_group_ctx foreign key (fk_g
 alter table o_re_to_group add constraint re_to_group_re_ctx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
 
 -- alter table o_gp_business add constraint gp_to_group_business_ctx foreign key (fk_group_id) references o_bs_group (id);
+
+
+-- portfolio
+alter table o_bs_invitation modify fk_secgroup bigint null default null;
+alter table o_bs_invitation modify version bigint null default null;
+
+alter table o_bs_invitation add column fk_group_id bigint;
+alter table o_bs_invitation add constraint inv_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
+
+create table o_ep_struct_to_group (
+   id bigint not null,
+   creationdate datetime not null,
+   r_defgroup boolean not null,
+   r_role varchar(64),
+   r_valid_from datetime,
+   r_valid_to datetime,
+   fk_group_id bigint,
+   fk_struct_id bigint,
+   primary key (id)
+);
+alter table o_ep_struct_to_group ENGINE = InnoDB;
+alter table o_ep_struct_to_group add constraint struct_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
+alter table o_ep_struct_to_group add constraint struct_to_group_re_ctx foreign key (fk_struct_id) references o_ep_struct_el (structure_id);
 
 
 -- managed groups
@@ -313,6 +333,9 @@ alter table o_repositoryentry drop foreign key repo_parti_sec_group_ctx;
 
 alter table o_repositorymetadata drop foreign key FKDB97A6493F14E3EE;
 
+alter table o_bs_policy drop foreign key FK9A1C5109F9C3F1D;
+
+
 alter table o_bookmark drop foreign key FK68C4E30663219E27;
 
 alter table o_gp_business_to_resource drop foreign key idx_bgp_to_rsrc_rsrc;
@@ -325,3 +348,5 @@ alter table o_gp_bgcontextresource_rel drop foreign key FK9903BEACDF6BCD14;
 alter table o_gp_bgarea drop foreign key FK9EFAF698DF6BCD14;
 
 alter table o_ep_struct_el drop foreign key FKF26C8375236F29X;
+
+alter table o_bs_invitation drop foreign key FKF26C8375236F27X;

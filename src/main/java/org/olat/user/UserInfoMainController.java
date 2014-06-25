@@ -31,7 +31,6 @@ package org.olat.user;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.model.KalendarConfig;
@@ -70,6 +69,8 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.modules.co.ContactFormController;
 import org.olat.portfolio.EPUIFactory;
 import org.olat.portfolio.PortfolioModule;
+import org.olat.portfolio.manager.InvitationDAO;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date: July 26, 2005
@@ -109,6 +110,9 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 	
 	private GenericTreeNode folderNode;
 	private GenericTreeNode contactNode;
+	
+	@Autowired
+	private InvitationDAO invitationDao;
 
 	/**
 	 * @param ureq
@@ -209,7 +213,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 		// following user info elements are only shown for undeleted and real
 		// users (not invited
 		// eportfolio users)
-		boolean isInvitee = BaseSecurityManager.getInstance().isIdentityInvited(chosenIdentity);
+		boolean isInvitee = invitationDao.isInvitee(chosenIdentity);
 		boolean isDeleted = chosenIdentity.getStatus().equals(Identity.STATUS_DELETED);
 		
 		if ( !isDeleted && ! isInvitee) {

@@ -71,7 +71,6 @@ public class EPCreateMapController extends FormBasicController {
 				formLayout, getWindowControl());
 		descEl.setNotLongerThanCheck(2047, "map.description.too.long");
 
-		uifactory.addSpacerElement("spacer", formLayout, true);
 		uifactory.addFormSubmitButton("save.and.open.map", formLayout);
 	}
 	

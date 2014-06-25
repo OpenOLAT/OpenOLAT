@@ -236,6 +236,7 @@ public class EPMapRunController extends BasicController implements Activateable2
 			}
 			createMapBox.deactivate();
 			popDownCreateMapBox();
+			toogleHeader(false);
 		} else if (source == searchTemplateCtrl) {
 			if(event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 				RepositoryEntry repoEntry = searchTemplateCtrl.getSelectedEntry();
@@ -279,7 +280,7 @@ public class EPMapRunController extends BasicController implements Activateable2
 		String title = translate("create.map");
 		createMapCtrl = new EPCreateMapController(ureq, getWindowControl());
 		listenTo(createMapCtrl);
-		createMapBox = new CloseableModalController(getWindowControl(), title, createMapCtrl.getInitialComponent());
+		createMapBox = new CloseableModalController(getWindowControl(), title, createMapCtrl.getInitialComponent(), true, title);
 		createMapBox.setCustomWindowCSS("o_sel_add_map_window");
 		listenTo(createMapBox);
 		createMapBox.activate();
@@ -292,7 +293,7 @@ public class EPMapRunController extends BasicController implements Activateable2
 		searchTemplateCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
 				new String[]{EPTemplateMapResource.TYPE_NAME}, commandLabel, false, false, false, false, false);			
 		listenTo(searchTemplateCtrl);
-		createMapBox = new CloseableModalController(getWindowControl(), title, searchTemplateCtrl.getInitialComponent());
+		createMapBox = new CloseableModalController(getWindowControl(), title, searchTemplateCtrl.getInitialComponent(), true, title);
 		createMapBox.setCustomWindowCSS("o_sel_add_map_template_window");
 		listenTo(createMapBox);
 		createMapBox.activate();

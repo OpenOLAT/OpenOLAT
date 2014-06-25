@@ -55,6 +55,6 @@ public class PortfolioMapIndexer extends AbstractPortfolioMapIndexer {
 
 	@Override
 	protected boolean accept(PortfolioStructureMap map) {
-		return map instanceof EPDefaultMap && ((EPDefaultMap)map).getGroup() != null;
+		return map instanceof EPDefaultMap && ((EPDefaultMap)map).getGroups() != null;
 	}
 }

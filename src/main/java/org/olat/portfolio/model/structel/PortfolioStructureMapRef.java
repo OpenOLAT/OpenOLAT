@@ -17,35 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.basesecurity;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+package org.olat.portfolio.model.structel;
 
 /**
  * 
- * Initial date: 26.02.2014<br>
+ * Initial date: 24.06.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum GroupRoles {
+public interface PortfolioStructureMapRef {
 	
-	owner,
-	coach,
-	participant,
-	invitee,
-	waiting;
-	
-	
-	public static List<String> toList(String... roles) {
-		if(roles != null && roles.length > 0 && !(roles.length == 1 && roles[0] == null)) {
-			List<String> roleList = new ArrayList<>(roles.length);
-			for(String role:roles) {
-				roleList.add(role);
-			}
-			return roleList;
-		}
-		return Collections.emptyList();
-	}
+	public Long getKey();
+
 }

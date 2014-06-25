@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.Invitation;
-import org.olat.basesecurity.Policy;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -32,6 +31,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.portfolio.manager.EPMapPolicy;
+import org.olat.portfolio.model.structel.EPStructureElementToGroupRelation;
 
 /**
  * 
@@ -88,16 +88,12 @@ public class EPSharePolicyWrapper {
 		mapPolicy.setInvitation(invitation);
 	}
 	
-	public List<Policy> getPolicies() {
-		return mapPolicy.getPolicies();
+	public List<EPStructureElementToGroupRelation> getRelations() {
+		return mapPolicy.getRelations();
 	}
 	
-	public void setPolicies(List<Policy> policies) {
-		mapPolicy.setPolicies(policies);
-	}
-	
-	public void addPolicy(Policy policy) {
-		mapPolicy.addPolicy(policy);
+	public void addRelation(EPStructureElementToGroupRelation relation) {
+		mapPolicy.addRelation(relation);
 	}
 
 	public Date getTo() {
@@ -123,7 +119,7 @@ public class EPSharePolicyWrapper {
 	public void setType(EPMapPolicy.Type type) {
 		if(!type.equals(mapPolicy.getType())) {
 			mapPolicy.setType(type);
-			mapPolicy.getPolicies().clear();
+			mapPolicy.getRelations().clear();
 		}
 	}
 

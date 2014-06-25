@@ -62,21 +62,6 @@ public interface BaseSecurity {
 	 */
 	public boolean isIdentityPermittedOnResourceable(Identity identity, String permission, OLATResourceable olatResourceable);
 
-	/**
-	 * Return the list of "allowed to..."
-	 * @param identity
-	 * @param olatResourceable
-	 * @return
-	 */
-	public List<String> getIdentityPermissionOnresourceable(Identity identity, OLATResourceable olatResourceable);
-	
-	/**
-	 * 
-	 * @param permission
-	 * @param olatResourceableTypeName
-	 * @return
-	 */
-	public List<Identity> getIdentitiesWithPermissionWithOlatResourceableType(String permission, String olatResourceableTypeName);
 	
 	
 	/**
@@ -463,89 +448,11 @@ public interface BaseSecurity {
 	 * @return the newly created policy
 	 */
 	public Policy createAndPersistPolicy(SecurityGroup secGroup, String permission, OLATResourceable olatResourceable);
-	
-	public Policy createAndPersistPolicy(SecurityGroup secGroup, String permission, Date from, Date to, OLATResourceable olatResourceable);
 
-
-	/**
-	 * Creates and persist a policy for certain OLAT-resource (instead of OLAT-resourceable)
-	 * 
-	 * @param secGroup
-	 * @param permission
-	 * @param olatResource
-	 * @return the newly created policy
-	 */
-	public Policy createAndPersistPolicyWithResource(SecurityGroup secGroup, String permission, OLATResource olatResource);
-
-	
-
-	public Policy findPolicy(SecurityGroup secGroup, String permission, OLATResource olatResource);
-	
-	/**
-	 * Create and persist an invitation with its security group and security token.
-	 * @return
-	 */
-	public Invitation createAndPersistInvitation();
-	
-	/**
-	 * Update the invitation
-	 * @param invitation
-	 */
-	public void updateInvitation(Invitation invitation);
-	
-	/**
-	 * Is the invitation linked to any valid policies
-	 * @param token
-	 * @param atDate
-	 * @return
-	 */
-	public boolean hasInvitationPolicies(String token, Date atDate);
-	
-	/**
-	 * Find an invitation by its security group
-	 * @param secGroup
-	 * @return The invitation or null if not found
-	 */
-	public Invitation findInvitation(SecurityGroup secGroup);
-	
-	/**
-	 * Find an invitation by its security token
-	 * @param token
-	 * @return The invitation or null if not found
-	 */
-	public Invitation findInvitation(String token);
-	
-	/**
-	 * Check if the identity has an invitation, valid or not
-	 * @param identity
-	 * @return
-	 */
-	public boolean isIdentityInvited(Identity identity);
-	
-	/**
-	 * Delete an invitation
-	 * @param invitation
-	 */
-	public void deleteInvitation(Invitation invitation);
-	
-	/**
-	 * Clean up old invitation and set to deleted temporary users
-	 */
-	public void cleanUpInvitations();
-	
-	/**
-	 * @param secGroup
-	 * @param permission
-	 * @param olatResourceable
-	 */
-	public void deletePolicy(SecurityGroup secGroup, String permission, OLATResource olatResourceable);
-	
 	/**
 	 * Delete all policies of a resource
 	 */
 	public void deletePolicies(OLATResource olatResourceable);
-	
-	public boolean deletePolicies(Collection<SecurityGroup> secGroups, Collection<OLATResource> resources);
 
 	// some queries mainly for the group/groupcontext management
 	/**
@@ -554,29 +461,15 @@ public interface BaseSecurity {
 	 */
 	public List<Policy> getPoliciesOfSecurityGroup(SecurityGroup secGroup);
 	
+
 	/**
-	 * 
-	 * @param secGroups
+	 * Return the policies
+	 * @param resource The resource (mandatory)
+	 * @param securityGroup The securityGroup (optional)
 	 * @return
 	 */
-	public List<Policy> getPoliciesOfSecurityGroup(List<SecurityGroup> secGroups, OLATResource... resources);
-
-/**
- * Return the policies
- * @param resource The resource (mandatory)
- * @param securityGroup The securityGroup (optional)
- * @return
- */
 	public List<Policy> getPoliciesOfResource(OLATResource resource, SecurityGroup securityGroup);
 	
-	/**
-	 * Update the policy valid dates
-	 * @param policy
-	 * @param from
-	 * @param to
-	 */
-	public void updatePolicy(Policy policy, Date from, Date to);
-
 	/**
 	 * for debugging and info by the olat admins:
 	 * 

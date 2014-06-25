@@ -19,7 +19,7 @@
  */
 package org.olat.portfolio.model.structel;
 
-import org.olat.basesecurity.Group;
+import java.util.Set;
 
 /**
  * 
@@ -34,14 +34,15 @@ public abstract class EPAbstractMap extends EPStructureElement implements Portfo
 
 	private static final long serialVersionUID = 3295737167134638317L;
 	
-	private Group group;
+	private Set<EPStructureElementToGroupRelation> groups;
 
-	public Group getGroup() {
-		return group;
+	@Override
+	public Set<EPStructureElementToGroupRelation> getGroups() {
+		return groups;
 	}
 
-	public void setGroup(Group group) {
-		this.group = group;
+	public void setGroups(Set<EPStructureElementToGroupRelation> groups) {
+		this.groups = groups;
 	}
 	
 	@Override

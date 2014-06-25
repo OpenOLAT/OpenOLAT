@@ -20,19 +20,26 @@
 package org.olat.portfolio.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.Constants;
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.Invitation;
-import org.olat.basesecurity.Policy;
-import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.manager.BasicManager;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.BusinessGroupDAO;
+import org.olat.portfolio.model.structel.EPMapShort;
+import org.olat.portfolio.model.structel.EPStructureElement;
+import org.olat.portfolio.model.structel.EPStructureElementToGroupRelation;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
+import org.olat.portfolio.model.structel.PortfolioStructureMapRef;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,71 +56,104 @@ import org.springframework.stereotype.Service;
 public class EPPolicyManager extends BasicManager {
 
 	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private GroupDAO groupDao;
+	@Autowired
+	private InvitationDAO invitationDao;
+	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
-	private BusinessGroupService businessGroupService;
+	private BusinessGroupDAO businessGroupDao;
+	
+	public List<Identity> getOwners(PortfolioStructureMapRef map) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(EPMapShort.class.getName()).append(" as map")
+		  .append(" inner join map.groups as relGroup on relGroup.defaultGroup=true")
+		  .append(" inner join relGroup.group as baseGroup ")
+		  .append(" inner join baseGroup.members as members on members.role='").append(GroupRoles.owner.name()).append("'")
+		  .append(" inner join members.identity as ident")
+		  .append(" where map.key=:mapKey");	
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("mapKey", map.getKey()).getResultList();
+	}
+	
+	public boolean isMapShared(OLATResource resource) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(relGroup) from ").append(EPMapShort.class.getName()).append(" as map")
+		  .append(" inner join map.groups as relGroup on relGroup.defaultGroup=false")
+		  .append(" where map.olatResource=:resource");	
+		
+		Number count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("resource", resource)
+				.getSingleResult();
+		return count == null ? false : count.intValue() > 0;
+	}
 	
 	/**
 	 * Return a list of wrapper containing the read policies of the map
 	 * @param map
 	 */
-	public List<EPMapPolicy> getMapPolicies(PortfolioStructureMap map) {
-		OLATResource resource = map.getOlatResource();
-		List<EPMapPolicy> policyWrappers = new ArrayList<EPMapPolicy>();
-		List<Policy> policies = securityManager.getPoliciesOfResource(resource, null);
-		for(Policy policy:policies) {
-			if(!policy.getPermission().contains(Constants.PERMISSION_READ)) {
+	public List<EPMapPolicy> getMapPolicies(PortfolioStructureMapRef mapRef) {
+		EPMapShort map = dbInstance.getCurrentEntityManager().find(EPMapShort.class, mapRef.getKey());
+		
+		List<EPMapPolicy> policies = new ArrayList<EPMapPolicy>();
+		Set<EPStructureElementToGroupRelation> relations = map.getGroups();
+		for(EPStructureElementToGroupRelation relation:relations) {
+			if(relation.isDefaultGroup()) {
 				continue;
 			}
 			
-			EPMapPolicy wrapper = getWrapperWithSamePolicy(policy, policyWrappers);
-			if(wrapper == null) {
-				wrapper = new EPMapPolicy();
-				wrapper.setTo(policy.getTo());
-				wrapper.setFrom(policy.getFrom());
-				policyWrappers.add(wrapper);
+			EPMapPolicy policy = getEquivalentWrapper(relation, policies);
+			if(policy == null) {
+				policy = new EPMapPolicy();
+				policy.setTo(relation.getValidTo());
+				policy.setFrom(relation.getValidFrom());
+				policies.add(policy);
 			}
 
-			String permission = policy.getPermission();
-			SecurityGroup secGroup = policy.getSecurityGroup();
-			if(permission.startsWith(EPMapPolicy.Type.user.name())) {
-				List<Identity> identities = securityManager.getIdentitiesOfSecurityGroup(secGroup);
-				wrapper.addPolicy(policy);
-				wrapper.setType(EPMapPolicy.Type.user);
-				wrapper.addIdentities(identities);
-			} else if (permission.startsWith(EPMapPolicy.Type.group.name())) {
-				wrapper.addPolicy(policy);
-				BusinessGroup group = null;//TODO group businessGroupService.findBusinessGroup(policy.getSecurityGroup());
-				wrapper.addGroup(group);
-				wrapper.setType(EPMapPolicy.Type.group);
-			} else if (permission.startsWith(EPMapPolicy.Type.invitation.name())) {
-				wrapper.addPolicy(policy);
-				Invitation invitation = securityManager.findInvitation(policy.getSecurityGroup());
-				wrapper.setInvitation(invitation);
-				wrapper.setType(EPMapPolicy.Type.invitation);
-			} else if (permission.startsWith(EPMapPolicy.Type.allusers.name())) {
-				wrapper.addPolicy(policy);
-				wrapper.setType(EPMapPolicy.Type.allusers);
+			String role = relation.getRole();
+			if(role.startsWith(EPMapPolicy.Type.user.name())) {
+				List<Identity> identities = groupDao.getMembers(relation.getGroup(), GroupRoles.participant.name());
+
+				policy.addRelation(relation);
+				policy.setType(EPMapPolicy.Type.user);
+				policy.addIdentities(identities);
+			} else if (role.startsWith(EPMapPolicy.Type.group.name())) {
+				policy.addRelation(relation);
+				BusinessGroup group = businessGroupDao.findBusinessGroup(relation.getGroup());
+				policy.addGroup(group);
+				policy.setType(EPMapPolicy.Type.group);
+			} else if (role.startsWith(EPMapPolicy.Type.invitation.name())) {
+				policy.addRelation(relation);
+				Invitation invitation = invitationDao.findInvitation(relation.getGroup());
+				policy.setInvitation(invitation);
+				policy.setType(EPMapPolicy.Type.invitation);
+			} else if (role.startsWith(EPMapPolicy.Type.allusers.name())) {
+				policy.addRelation(relation);
+				policy.setType(EPMapPolicy.Type.allusers);
 			}
 		}
 		
-		return policyWrappers;
+		return policies;
 	}
 	
-	private EPMapPolicy getWrapperWithSamePolicy(Policy policy, List<EPMapPolicy> policyWrappers) {
-		Date to = policy.getTo();
-		Date from = policy.getFrom();
-		String permission = policy.getPermission();
+	private EPMapPolicy getEquivalentWrapper(EPStructureElementToGroupRelation relation, List<EPMapPolicy> policies) {
+		Date to = relation.getValidTo();
+		Date from = relation.getValidFrom();
+		String role = relation.getRole();
 		
 		a_a:
-		for(EPMapPolicy wrapper:policyWrappers) {
-			for(Policy p:wrapper.getPolicies()) {
-				if(!permission.equals(p.getPermission())) {
+		for(EPMapPolicy policy:policies) {
+			for(EPStructureElementToGroupRelation p:policy.getRelations()) {
+				if(!role.equals(p.getRole())) {
 					continue a_a;
 				}
-				if(from == null && p.getFrom() == null || (from != null && p.getFrom() != null && from.equals(p.getFrom()))) {	
-					if(to == null && p.getTo() == null || (to != null && p.getTo() != null && to.equals(p.getTo()))) {
-						return wrapper;
+				if(from == null && p.getValidFrom() == null || (from != null && p.getValidFrom() != null && from.equals(p.getValidFrom()))) {	
+					if(to == null && p.getValidTo() == null || (to != null && p.getValidTo() != null && to.equals(p.getValidTo()))) {
+						return policy;
 					}
 				}
 			}
@@ -124,114 +164,109 @@ public class EPPolicyManager extends BasicManager {
 	/**
 	 * Update the map policies of a map. The missing policies are deleted!
 	 * @param map
-	 * @param policyWrappers
+	 * @param policies
 	 */
-	public void updateMapPolicies(PortfolioStructureMap map, List<EPMapPolicy> policyWrappers) {
-		List<Policy> currentPolicies = securityManager.getPoliciesOfResource(map.getOlatResource(), null);
-		List<Policy> savedPolicies = new ArrayList<Policy>();
-		for(EPMapPolicy wrapper:policyWrappers) {
-			savedPolicies.addAll(applyPolicy(wrapper, map, currentPolicies));
+	public PortfolioStructureMap updateMapPolicies(PortfolioStructureMap map, List<EPMapPolicy> policies) {
+		map = dbInstance.getCurrentEntityManager().merge(map);
+
+		List<EPStructureElementToGroupRelation> savedPolicies = new ArrayList<EPStructureElementToGroupRelation>();
+		for(EPMapPolicy wrapper:policies) {
+			savedPolicies.addAll(applyPolicy(wrapper, map));
 		}
 		
-		for(Policy currentPolicy:currentPolicies) {
-			boolean inUse = false;
-			for(Policy savedPolicy:savedPolicies) {
-				if(currentPolicy.equalsByPersistableKey(savedPolicy)) {
-					inUse = true;
-					break;
-				}
+		Collection<EPStructureElementToGroupRelation> currentRelations = new ArrayList<>(map.getGroups());
+		for(EPStructureElementToGroupRelation currentRelation:currentRelations) {
+			if(currentRelation.isDefaultGroup()) {
+				continue;
 			}
 			
-			if(!inUse && currentPolicy.getPermission().contains(Constants.PERMISSION_READ)) {
-				deletePolicy(currentPolicy);
+			boolean inUse = savedPolicies.contains(currentRelation);
+			if(!inUse) {
+				map.getGroups().remove(currentRelation);
 			}
 		}
+		return dbInstance.getCurrentEntityManager().merge(map);
 	}
 	
-	private void deletePolicy(Policy policy) {
-		if(policy.getPermission().contains(Constants.PERMISSION_READ)) {
-			String permission = policy.getPermission();
-			securityManager.deletePolicy(policy.getSecurityGroup(), permission, policy.getOlatResource());
-			if("invitation_read".equals(permission)) {
-				Invitation invitation = securityManager.findInvitation(policy.getSecurityGroup());
-				securityManager.deleteInvitation(invitation);
-			}
-		}
-	}
-	
-	private List<Policy> applyPolicy(EPMapPolicy wrapper, PortfolioStructureMap map, List<Policy> currentPolicies) {
-		List<Policy> policies = wrapper.getPolicies();
-		List<Policy> savedPolicies = new ArrayList<Policy>();
-		switch(wrapper.getType()) {
+	private List<EPStructureElementToGroupRelation> applyPolicy(EPMapPolicy policy, PortfolioStructureMap map) {
+		List<EPStructureElementToGroupRelation> savedPolicies = new ArrayList<EPStructureElementToGroupRelation>();
+		switch(policy.getType()) {
 			case user:
-				Policy policy = (policies == null || policies.isEmpty()) ? null : policies.get(0);
-				if(policy == null) {
-					SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
-					policy = securityManager.createAndPersistPolicy(secGroup, wrapper.getType() + "_" + Constants.PERMISSION_READ, wrapper.getFrom(), wrapper.getTo(), map.getOlatResource());
-				} else {
-					Policy currentPolicy = reusePolicyInSession(policy, currentPolicies);
-					securityManager.updatePolicy(currentPolicy, wrapper.getFrom(), wrapper.getTo());
-				}
-				SecurityGroup secGroup = policy.getSecurityGroup();
-				List<Object[]> allIdents = securityManager.getIdentitiesAndDateOfSecurityGroup(secGroup);
-				for (Object[] objects : allIdents) {
-					Identity identity = (Identity) objects[0];
-					securityManager.removeIdentityFromSecurityGroup(identity, secGroup);
-				}
-				for(Identity identity:wrapper.getIdentities()) {
-					if(!securityManager.isIdentityInSecurityGroup(identity, secGroup)) {
-						securityManager.addIdentityToSecurityGroup(identity, secGroup);
-					}
-				}
-				savedPolicies.add(policy);
+				savedPolicies.add(applyPolicyToUsers(policy, map));
 				break;
 			case group:
-				for(BusinessGroup group:wrapper.getGroups()) {
-					//TODO group savedPolicies.add(applyPolicyTo(group.getPartipiciantGroup(), wrapper, map));
-					//TODO group savedPolicies.add(applyPolicyTo(group.getOwnerGroup(), wrapper, map));
+				for(BusinessGroup group:policy.getGroups()) {
+					savedPolicies.add(applyPolicyToGroup(group.getBaseGroup(), policy, map));
 				}
 				break;
 			case invitation:
-				Invitation invitation = wrapper.getInvitation();
-				Policy invitationPolicy = applyPolicyTo(invitation, wrapper, map);
+				Invitation invitation = policy.getInvitation();
+				EPStructureElementToGroupRelation invitationPolicy = applyPolicyToInvitation(invitation, policy, map);
 				savedPolicies.add(invitationPolicy);
 				break;
 			case allusers:
-				Policy allUsersPolicy = applyPolicyToAllUsers(wrapper, map);
+				EPStructureElementToGroupRelation allUsersPolicy = applyPolicyToAllUsers(policy, map);
 				savedPolicies.add(allUsersPolicy);
 				break;
 		}
 		return savedPolicies;
 	}
 	
-	private Policy applyPolicyToAllUsers(EPMapPolicy wrapper, PortfolioStructureMap map) {
-		SecurityGroup allUsers = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-		List<Policy> currentPolicies = securityManager.getPoliciesOfResource(map.getOlatResource(), allUsers);
-		if(!currentPolicies.isEmpty()) {
-			Policy currentPolicy = currentPolicies.get(0);
-			securityManager.updatePolicy(currentPolicy, wrapper.getFrom(), wrapper.getTo());
-			return currentPolicy;
+	private EPStructureElementToGroupRelation applyPolicyToAllUsers(EPMapPolicy wrapper, PortfolioStructureMap map) {
+		List<EPStructureElementToGroupRelation> currentRelations = wrapper.getRelations();
+		if(!currentRelations.isEmpty()) {
+			EPStructureElementToGroupRelation currentRelation = currentRelations.get(0);
+			updatePolicy(currentRelation, wrapper.getFrom(), wrapper.getTo());
+			return currentRelation;
 		}
-		
-		Policy policy = securityManager.createAndPersistPolicy(allUsers, wrapper.getType() + "_" + Constants.PERMISSION_READ, wrapper.getFrom(), wrapper.getTo(), map.getOlatResource());
-		return policy;
+		return createBaseRelation(map, null, EPMapPolicy.Type.allusers.name(), wrapper.getFrom(), wrapper.getTo());
 	}
 	
-	private Policy applyPolicyTo(Invitation invitation, EPMapPolicy wrapper, PortfolioStructureMap map) {
-		List<Policy> currentPolicies = securityManager.getPoliciesOfSecurityGroup(invitation.getSecurityGroup());
-		for(Policy currentPolicy:currentPolicies) {
-			if(currentPolicy.getOlatResource().equalsByPersistableKey(map.getOlatResource())) {
-				currentPolicy = reusePolicyInSession(currentPolicy, currentPolicies);
-				securityManager.updatePolicy(currentPolicy, wrapper.getFrom(), wrapper.getTo());
-				securityManager.updateInvitation(invitation);
-				return currentPolicy;
+	private EPStructureElementToGroupRelation applyPolicyToUsers(EPMapPolicy policy, PortfolioStructureMap map) {
+		List<EPStructureElementToGroupRelation> currentRelations = policy.getRelations();
+		EPStructureElementToGroupRelation relation = (currentRelations == null || currentRelations.isEmpty()) ? null : currentRelations.get(0);
+		if(relation == null) {
+			Group secGroup = groupDao.createGroup();
+			relation = createBaseRelation(map, secGroup, EPMapPolicy.Type.user.name(), policy.getFrom(), policy.getTo());
+			for(Identity identity:policy.getIdentities()) {
+				groupDao.addMembership(secGroup, identity, GroupRoles.participant.name());
+			}
+		} else {
+			EPStructureElementToGroupRelation currentPolicy = reusePolicyInSession(relation, map);
+			updatePolicy(currentPolicy, policy.getFrom(), policy.getTo());
+			
+			Group secGroup = relation.getGroup();
+			List<Identity> currentMembers = groupDao.getMembers(secGroup, GroupRoles.participant.name());
+			List<Identity> newMembers = new ArrayList<>(policy.getIdentities());
+			for (Identity newMember:policy.getIdentities()) {
+				if(currentMembers.contains(newMember)) {
+					newMembers.remove(newMember);
+					currentMembers.remove(newMember);
+				}
+			}
+			
+			for(Identity currentMember:currentMembers) {
+				groupDao.removeMembership(secGroup, currentMember);
+			}
+			for(Identity newMember:newMembers) {
+				groupDao.addMembership(secGroup, newMember, GroupRoles.participant.name());
+			}
+		}
+		return relation;
+	}
+
+	private EPStructureElementToGroupRelation applyPolicyToInvitation(Invitation invitation, EPMapPolicy policy, PortfolioStructureMap map) {
+		invitation = dbInstance.getCurrentEntityManager().merge(invitation);
+		Group secGroup = invitation.getBaseGroup();
+		Collection<EPStructureElementToGroupRelation> currentRelations = map.getGroups();
+		for(EPStructureElementToGroupRelation currentRelation:currentRelations) {
+			if(secGroup.equals(currentRelation.getGroup())) {
+				updatePolicy(currentRelation, policy.getFrom(), policy.getTo());
+				return currentRelation;
 			}
 		}
 		
-		SecurityGroup secGroup = invitation.getSecurityGroup();
-		Policy policy = securityManager.createAndPersistPolicy(secGroup, wrapper.getType() + "_" + Constants.PERMISSION_READ, wrapper.getFrom(), wrapper.getTo(), map.getOlatResource());
-		securityManager.updateInvitation(invitation);
-		return policy;
+		return createBaseRelation(map, secGroup, EPMapPolicy.Type.invitation.name(), policy.getFrom(), policy.getTo());
 	}
 	
 	/**
@@ -241,27 +276,43 @@ public class EPPolicyManager extends BasicManager {
 	 * @param currentPolicies
 	 * @return
 	 */
-	private Policy reusePolicyInSession(Policy policy, List<Policy> currentPolicies) {
-		for(Policy currentPolicy:currentPolicies) {
-			if(policy.equalsByPersistableKey(currentPolicy)) {
-				return currentPolicy;
+	private EPStructureElementToGroupRelation reusePolicyInSession(EPStructureElementToGroupRelation relation, PortfolioStructureMap map) {
+		Collection<EPStructureElementToGroupRelation> currentRelations = map.getGroups();
+		for(EPStructureElementToGroupRelation currentRelation:currentRelations) {
+			if(relation.equalsByPersistableKey(currentRelation)) {
+				return currentRelation;
 			}
 		}
-		return policy;
+		return relation;
 	}
 	
-	private Policy applyPolicyTo(SecurityGroup secGroup, EPMapPolicy wrapper, PortfolioStructureMap map) {
-		List<Policy> currentPolicies = securityManager.getPoliciesOfSecurityGroup(secGroup);
-		for(Policy currentPolicy:currentPolicies) {
-			if(currentPolicy.getOlatResource().equalsByPersistableKey(map.getOlatResource())) {
-				currentPolicy = reusePolicyInSession(currentPolicy, currentPolicies);
-				securityManager.updatePolicy(currentPolicy, wrapper.getFrom(), wrapper.getTo());
-				return currentPolicy;
+	private EPStructureElementToGroupRelation applyPolicyToGroup(Group group, EPMapPolicy policy, PortfolioStructureMap map) {
+		Collection<EPStructureElementToGroupRelation> currentRelations = map.getGroups();
+		for(EPStructureElementToGroupRelation currentRelation:currentRelations) {
+			if(currentRelation.getGroup().equals(group)) {
+				updatePolicy(currentRelation, policy.getFrom(), policy.getTo());
+				return currentRelation;
 			}
 		}
-		
-		Policy policy = securityManager.createAndPersistPolicy(secGroup, wrapper.getType() + "_read", wrapper.getFrom(), wrapper.getTo(), map.getOlatResource());
-		return policy;
+		return createBaseRelation(map, group, EPMapPolicy.Type.group.name(), policy.getFrom(), policy.getTo());
 	}
 	
+	private void updatePolicy(EPStructureElementToGroupRelation relation, Date from, Date to) {
+		relation.setValidFrom(from);
+		relation.setValidTo(to);
+	}
+	
+	private EPStructureElementToGroupRelation createBaseRelation(PortfolioStructureMap map, Group group, String role, Date from, Date to) {
+		//create security group
+		EPStructureElementToGroupRelation relation = new EPStructureElementToGroupRelation();
+		relation.setDefaultGroup(false);
+		relation.setCreationDate(new Date());
+		relation.setGroup(group);
+		relation.setStructureElement((EPStructureElement)map);
+		relation.setRole(role);
+		relation.setValidFrom(from);
+		relation.setValidTo(to);
+		map.getGroups().add(relation);
+		return relation;
+	}
 }

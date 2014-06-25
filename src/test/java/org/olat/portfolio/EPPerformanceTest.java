@@ -177,21 +177,9 @@ public class EPPerformanceTest extends OlatTestCase {
 		return epFrontendManager.updateArtefact(artefact);
 	}
 	
-	
-	
 	@Test
-	public void testMaps300(){
-		internalTestCreateManyMaps(300);
-	}
-	
-	@Test
-	public void testMaps1000(){
-		internalTestCreateManyMaps(1000);
-	}
-	
-	@Test
-	public void testMaps3000(){
-		internalTestCreateManyMaps(3000);
+	public void testMaps500(){
+		internalTestCreateManyMaps(500);
 	}
 	
 	private void deleteMaps(){

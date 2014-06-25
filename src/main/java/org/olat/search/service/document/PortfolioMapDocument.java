@@ -23,8 +23,6 @@ package org.olat.search.service.document;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
-import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -39,6 +37,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.portfolio.EPArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.manager.EPFrontendManager;
+import org.olat.portfolio.manager.EPPolicyManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.EPAbstractMap;
 import org.olat.portfolio.model.structel.PortfolioStructure;
@@ -59,14 +58,14 @@ public class PortfolioMapDocument extends OlatDocument {
 	private static final long serialVersionUID = -7960651550499734346L;
 	private static final OLog log = Tracing.createLoggerFor(PortfolioMapDocument.class);
 	
-	private static GroupDAO groupDao;
 	private static EPFrontendManager ePFMgr; 
+	private static EPPolicyManager policyManager;
 	private static PortfolioModule portfolioModule;
 
 	public PortfolioMapDocument() {
 		super();
-		groupDao = CoreSpringFactory.getImpl(GroupDAO.class);
 		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
+		policyManager = CoreSpringFactory.getImpl(EPPolicyManager.class);
 		portfolioModule = CoreSpringFactory.getImpl(PortfolioModule.class);
 	}
 
@@ -74,8 +73,8 @@ public class PortfolioMapDocument extends OlatDocument {
 		PortfolioMapDocument document = new PortfolioMapDocument();
 		if(map instanceof EPAbstractMap) {
 			EPAbstractMap abstractMap = (EPAbstractMap)map;
-  		if(abstractMap.getGroup() != null) {
-  			List<Identity> identities = groupDao.getMembers(abstractMap.getGroup(), GroupRoles.owner.name());
+  		if(abstractMap.getGroups() != null) {
+  			List<Identity> identities = policyManager.getOwners(abstractMap);
   			StringBuilder authors = new StringBuilder();
   			for(Identity identity:identities) {
   				if(authors.length() > 0) {

@@ -89,7 +89,7 @@ public class OlatFooterController extends BasicController {
 		if (!isGuest && ureq.getUserSession().isAuthenticated()) {
 			olatFootervc.contextPut("loggedIn", Boolean.TRUE);
 			if(isInvitee) {
-				olatFootervc.contextPut("username", translate("invitee"));
+				olatFootervc.contextPut("username", translate("logged.in.invitee"));
 			} else {
 				String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(ureq.getIdentity());
 				olatFootervc.contextPut("username", StringHelper.escapeHtml(fullName));

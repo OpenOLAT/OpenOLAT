@@ -712,13 +712,12 @@ create table if not exists o_tag (
 
 create table if not exists o_bs_invitation (
    id bigint not null,
-   version mediumint unsigned not null,
    creationdate datetime,
    token varchar(64) not null,
    first_name varchar(64),
    last_name varchar(64),
    mail varchar(128),
-   fk_secgroup bigint,
+   fk_group_id bigint,
    primary key (id)
 );
 
@@ -798,6 +797,17 @@ create table if not exists o_ep_struct_artefact_link (
   fk_struct_id bigint not null,
   fk_artefact_id bigint not null,
   primary key (link_id)
+);
+create table o_ep_struct_to_group (
+   id bigint not null,
+   creationdate datetime not null,
+   r_defgroup boolean not null,
+   r_role varchar(64),
+   r_valid_from datetime,
+   r_valid_to datetime,
+   fk_group_id bigint,
+   fk_struct_id bigint,
+   primary key (id)
 );
 
 -- mail system
@@ -1815,6 +1825,7 @@ alter table o_ep_collect_restriction ENGINE = InnoDB;
 alter table o_ep_struct_el ENGINE = InnoDB;
 alter table o_ep_struct_struct_link ENGINE = InnoDB;
 alter table o_ep_struct_artefact_link ENGINE = InnoDB;
+alter table o_ep_struct_to_group ENGINE = InnoDB;
 alter table o_co_db_entry ENGINE = InnoDB;
 alter table o_mail ENGINE = InnoDB;
 alter table o_mail_to_recipient ENGINE = InnoDB;
@@ -1924,14 +1935,13 @@ create index identstatus_idx on o_bs_identity (status);
 create index idx_ident_creationdate_idx on o_bs_identity (creationdate);
 create index idx_id_lastlogin_idx on o_bs_identity (lastlogin);
 
-alter table o_bs_policy add constraint FK9A1C5109F9C3F1D foreign key (oresource_id) references o_olatresource (resource_id);
 alter table o_bs_policy add constraint FK9A1C5101E2E76DB foreign key (group_id) references o_bs_secgroup (id);
 create index idx_policy_grp_rsrc_idx on o_bs_policy (oresource_id, group_id);
 
 alter table o_bs_membership add constraint FK7B6288B45259603C foreign key (identity_id) references o_bs_identity (id);
 alter table o_bs_membership add constraint FK7B6288B4B85B522C foreign key (secgroup_id) references o_bs_secgroup (id);
 
-alter table o_bs_invitation add constraint FKF26C8375236F27X foreign key (fk_secgroup) references o_bs_secgroup (id);
+alter table o_bs_invitation add constraint inv_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
 
 -- user
 create index usr_notification_interval_idx on o_user (notification_interval);
@@ -2090,6 +2100,9 @@ alter table o_ep_struct_struct_link add constraint FKF26C8375236F23X foreign key
 alter table o_ep_struct_artefact_link add constraint FKF26C8375236F24X foreign key (fk_struct_id) references o_ep_struct_el (structure_id);
 alter table o_ep_struct_artefact_link add constraint FKF26C8375236F25X foreign key (fk_artefact_id) references o_ep_artefact (artefact_id);
 alter table o_ep_struct_artefact_link add constraint FKF26C8375236F26Y foreign key (fk_auth_id) references o_bs_identity (id);
+
+alter table o_ep_struct_to_group add constraint struct_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
+alter table o_ep_struct_to_group add constraint struct_to_group_re_ctx foreign key (fk_struct_id) references o_ep_struct_el (structure_id);
 
 -- tag
 alter table o_tag add constraint FK6491FCA5A4FA5DC foreign key (fk_author_id) references o_bs_identity (id);

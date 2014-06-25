@@ -13,13 +13,19 @@
                   outer-join="true"   
                   unique="true" not-found="ignore"
                   cascade="none"/>
+        
+		<many-to-one name="olatResource"
+                 column="fk_olatresource"
+                 class="org.olat.resource.OLATResourceImpl" 
+                 outer-join="true"   
+                 unique="true" 
+                 cascade="none"/>
+
+		<set name="groups" cascade="all,delete-orphan">
+            <key column="fk_struct_id"/>
+            <one-to-many class="org.olat.upgrade.model.EPMapUpgradeToGroupRelation"/>
+        </set> 
                   
-		<many-to-one name="group"
-                  column="fk_group_id"
-                  class="org.olat.basesecurity.model.GroupImpl" 
-                  outer-join="true"   
-                  unique="true" not-found="ignore"
-                  cascade="none"/>
 	</class>
   
 </hibernate-mapping>

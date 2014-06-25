@@ -39,6 +39,7 @@ import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.manager.EPMapPolicy;
 import org.olat.portfolio.manager.EPMapPolicy.Type;
 import org.olat.portfolio.manager.EPStructureManager;
+import org.olat.portfolio.manager.InvitationDAO;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.EPDefaultMap;
 import org.olat.portfolio.model.structel.EPPage;
@@ -89,6 +90,8 @@ public class EPFrontendManagerTest extends OlatTestCase {
 	
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private InvitationDAO invitationDao;
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -593,7 +596,7 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		policies.add(userPolicy);
 		
 		//invitation
-		Invitation invitation = securityManager.createAndPersistInvitation();
+		Invitation invitation = invitationDao.createAndPersistInvitation();
 		invitation.setFirstName("John");
 		invitation.setLastName("Doe");
 		invitation.setMail("john@doe.ch");
@@ -628,7 +631,7 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		//save a list of policies
 		List<EPMapPolicy> policies = new ArrayList<EPMapPolicy>();
 		//invitation
-		Invitation invitation = securityManager.createAndPersistInvitation();
+		Invitation invitation = invitationDao.createAndPersistInvitation();
 		invitation.setFirstName("John");
 		invitation.setLastName("Doe");
 		invitation.setMail("john2@doe.ch");
@@ -636,7 +639,7 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		invitationPolicy.setType(Type.invitation);
 		invitationPolicy.setInvitation(invitation);
 		policies.add(invitationPolicy);
-		epFrontendManager.updateMapPolicies(map, policies);
+		map = epFrontendManager.updateMapPolicies(map, policies);
 		dbInstance.commitAndCloseSession();
 		
 		//remove the policy

@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.basesecurity;
+package org.olat.portfolio.manager;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
@@ -39,8 +39,8 @@ public class InvitationCleanupJob extends JobWithDB {
 	public void executeWithDB(JobExecutionContext context) {
 		try {
 			log.info("Starting invitation clean up job");
-			BaseSecurity securityManager = (BaseSecurity)CoreSpringFactory.getBean("baseSecurityManager");
-			securityManager.cleanUpInvitations();
+			InvitationDAO invitationDao = CoreSpringFactory.getImpl(InvitationDAO.class);
+			invitationDao.cleanUpInvitations();
 		} catch (Exception e) {
 			// ups, something went completely wrong! We log this but continue next time
 			log.error("Error while cleaning up invitation", e);

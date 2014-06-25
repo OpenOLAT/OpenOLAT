@@ -32,11 +32,11 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpSession;
 
+import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.commons.rss.RSSUtil;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
@@ -70,6 +70,7 @@ import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.login.AuthBFWCParts;
 import org.olat.login.GuestBFWCParts;
+import org.olat.portfolio.manager.InvitationDAO;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -221,14 +222,16 @@ public class AuthHelper {
 	}
 	
 	public static int doInvitationLogin(String invitationToken, UserRequest ureq, Locale locale) {
-		boolean hasPolicies = BaseSecurityManager.getInstance().hasInvitationPolicies(invitationToken, new Date());
+		InvitationDAO invitationDao = CoreSpringFactory.getImpl(InvitationDAO.class);
+		boolean hasPolicies = invitationDao.hasInvitations(invitationToken, new Date());
 		if(!hasPolicies) {
 			return LOGIN_DENIED;
 		}
 		
 		UserManager um = UserManager.getInstance();
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		Invitation invitation = securityManager.findInvitation(invitationToken);
+		GroupDAO groupDao = CoreSpringFactory.getImpl(GroupDAO.class);
+		Invitation invitation = invitationDao.findInvitation(invitationToken);
 		if(invitation == null) {
 			return LOGIN_DENIED;
 		}
@@ -242,8 +245,8 @@ public class AuthHelper {
 				return LOGIN_DENIED;
 			} else {
 				//fxdiff FXOLAT-151: add eventually the identity to the security group
-				if(!securityManager.isIdentityInSecurityGroup(identity, invitation.getSecurityGroup())) {
-					securityManager.addIdentityToSecurityGroup(identity, invitation.getSecurityGroup());
+				if(!groupDao.hasRole(invitation.getBaseGroup(), identity, GroupRoles.invitee.name())) {
+					groupDao.addMembership(invitation.getBaseGroup(), identity, GroupRoles.invitee.name());
 					DBFactory.getInstance().commit();
 				}
 
@@ -262,13 +265,8 @@ public class AuthHelper {
 		} 
 		
 		//invitation ok -> create a temporary user
-		//TODO make an username beautifier???
-		String tempUsername = UUID.randomUUID().toString();
-		User user = UserManager.getInstance().createAndPersistUser(invitation.getFirstName(), invitation.getLastName(), invitation.getMail());
-		user.getPreferences().setLanguage(locale.toString());
-		Identity invited = securityManager.createAndPersistIdentity(tempUsername, user, null, null, null);
-		securityManager.addIdentityToSecurityGroup(invited, invitation.getSecurityGroup());
-		return doLogin(invited, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
+		Identity invitee = invitationDao.createIdentityFrom(invitation, locale);
+		return doLogin(invitee, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
 	}
 
 	/**
