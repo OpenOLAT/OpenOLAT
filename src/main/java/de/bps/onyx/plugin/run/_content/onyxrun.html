@@ -1,164 +1,134 @@
-<h3>$!menuTitle</h3>
-<i>$!displayTitle</i>
-
 #if( $viewmode == 0 || $viewmode == -1 ) 
-	<p>
-
-##<OLATCE-1281>
-#if($showResultsOnHomePage)
-	#if($showResultsVisible)
-##</OLATCE-1281>
-	<div class="o_course_run_scoreinfo">
-	<p>
-	<table>
-	<tr>
-			<td>			
-				$r.translate("attempts"): 
-			</td>
-			<td>
-			#if ($attemptsConfig)
-				$attemptsConfig
-			#else
-				$r.translate("attempts.noLimit")
-			#end
-			</td>
-	</tr>
-	#if($attempts)
-		<tr>
-			<td>$r.translate("attempts.yourattempts"):</td>
-			<td>$attempts</td>
-		</tr>
-	#end
-	#if ($attempts && $attempts >0 || $self)
-		<tr>
-			<td colspan="2"><b>$r.translate("attempts.result")</b></td>
-		</tr>
-		#foreach ($var in $qtivars)
-		<tr>
-			<td>${var.getIdentifier()}:</td>
-			<td>${var.getValue()}</td>
-		</tr>
-    #end
-    #if ($hasResult == true)
-    <tr>
-			<td>$r.translate("score.yourscore"):</td>
-			<td>$score</td>
-		</tr>
-		##<OLATCE-1014> hide status - line if there is no passed value set
-		#if($passed != "")
-		##</OLATCE-1014>
-		<tr>
-			<td>$r.translate("assessment.state"): </td>
-			<td>
-			#if($passed == true)		
-				<span class="o_state o_passed"><i class\="o_icon o_icon_passed"> </i> $r.translate("passed.yes")</span>
-			#elseif($passed == false)
-				<span class="o_state o_failed"><i class="o_icon o_icon_failed"> </i> $r.translate("passed.no")</span>
-			#end
-			</td>
-		</tr>
-		##<OLATCE-1014>
-		#end
-		##</OLATCE-1014>
-	#else
-		<tr>
-			<td colspan="2">$r.translate("no.testresults")</td>
-		</tr>
-	#end
-		<tr>
-			<td>
-			#if($showResultsOnHomePage && $attempts && $attempts >0)
-			<h4>$r.translate("showResults.title")</h4>
-			$r.render("cmd.showOnyxReporter")
-			#end
-			</td>
-		</tr>
-		#if ($comment)
-			<tr>
-				<td>			
-					$r.translate("comment.yourcomment"): 
-				</td>
-				<td>
-					$comment
-				</td>
-			</tr>
-		#end
-	#end
-	</table>
-	</p>
-	</div>
-##<OLATCE-1281> else-block of showResultsVisible
-	#end
-	#end
-##<OLATCE-1281> end of $showResultsOnHomePage
-	</p>
-	#if($viewmode == -1) 
-		<b> $r.translate("onyx.onlyonetime") </b>
-	#else
-		<br><br>
-		<div class="o_course_run_statusinfo">
-			#if ($self)
-			$r.translate("intro.self")
-			<div class="o_qti_typeinfo">$r.translate("info.selfassessment")</div>
-			#else
-			$r.translate("intro")
-			<div class="o_qti_typeinfo">$r.translate("info.assessment")</div>
-			#end
-			<p/>
-		</div>
-		<center>
-			$r.render("startapplet")
-		</center>
-	#end
-	#if ($hasDisc && $viewmode != -1)	
-		<p>
-			<table width="90%" class="o_learningObjectives_content">
-				<tr><td>
-				$r.render("disc")
-				</td></tr>
+	#if($showResultsOnHomePage)
+		#if($showResultsVisible)
+		<div class="panel panel-default o_personal">
+		  	<div class="panel-heading">
+	  			<h4 class="panel-title">$r.translate("personal.title")</h4>
+	  		</div>
+			<table class="table">
+			<tbody>
+				<tr>
+					<th>$r.translate("attempts")</th>
+					<td>
+					#if ($attemptsConfig)
+						$attemptsConfig
+					#else
+						$r.translate("attempts.noLimit")
+					#end
+					</td>
+				</tr>
+				#if($attempts)
+				<tr>
+					<th>$r.translate("attempts.yourattempts")</th>
+					<td>$attempts</td>
+				</tr>
+				#end
+				#if ($attempts && $attempts >0 || $self)
+					<tr>
+						<th colspan="2">$r.translate("attempts.result")</th>
+					</tr>
+					#foreach ($var in $qtivars)
+					<tr>
+						<th>${var.getIdentifier()}:</th>
+						<td>${var.getValue()}</td>
+					</tr>
+			    	#end 
+			    	#if ($hasResult == true)
+			   		<tr>
+						<th>$r.translate("score.yourscore")</th>
+						<td>$score</td>
+					</tr>
+						## hide status - line if there is no passed value set
+						#if($passed != "")
+						<tr>
+							<th>$r.translate("assessment.state")</th>
+							<td>
+							#if($passed == true)		
+								<span class="o_state o_passed"><i class="o_icon o_icon_passed"> </i> $r.translate("passed.yes")</span>
+							#elseif($passed == false)
+								<span class="o_state o_failed"><i class="o_icon o_icon_failed"> </i> $r.translate("passed.no")</span>
+							#end
+							</td>
+						</tr>
+						#end
+					#else
+					<tr>
+						<td colspan="2">$r.translate("no.testresults")</td>
+					</tr>
+					#end
+					#if($showResultsOnHomePage && $attempts && $attempts >0)
+					<tr>
+						<th>$r.translate("showResults.title")</th>
+						<td>$r.render("cmd.showOnyxReporter")</td>
+					</tr>
+					#end
+					#if ($comment)
+					<tr>
+						<th>$r.translate("comment.yourcomment")</th>
+						<td>$comment</td>
+					</tr>
+					#end
+				#end
+			</tbody>
 			</table>
-		</p>
+		</div>
+		#end ##showResultsVisible
+	#end ##showResultsOnHomePage
+
+	#if($viewmode == -1) 
+	<div class="o_important">$r.translate("onyx.onlyonetime")</div>
+	#else
+	<div class="o_statusinfo">
+		#if ($self)
+			<p>$r.translate("intro.self")</p>
+			<p>$r.translate("info.selfassessment")</p>
+		#else
+			<p>$r.translate("intro")</p>
+			<p>$r.translate("info.assessment")</p>
+		#end
+	</div>
+	<div class="o_button_group">
+		$r.render("startapplet")
+	</div>
+	#end
+
+	#if ($hasDisc && $viewmode != -1)	
+	<div class="o_block">
+		<table width="90%" class="o_learningObjectives_content">
+			<tr><td>$r.render("disc")</td></tr>
+		</table>
+	</div>
 	#end
 #elseif( $viewmode ==  2 ) ## show endtest
-		
-		#if ($errorcode == 0) ## without errors
-			<h4> $r.translate("onyx.end") </h4>
-		#else ##with errors
-			<h1><font color="red"> $r.translate("onyx.end.errors") </font> </h1>
-		#end 
-		
+	#if ($errorcode == 0) ## without errors
+		<div class="o_important">$r.translate("onyx.end")</h4>
+	#else ##with errors
+		<div class="o_error">$r.translate("onyx.end.errors")</div>
+	#end
 #elseif ($viewmode == 1) ##show survey
-
-<div class="o_course_run">
+	<div class="o_course_run">
 	#if ($attempts && $attempts == 0)
-		<div class="o_course_run_statusinfo">
-			<p>
-				$r.translate("Intro.surv")	
-			</p>
-			<p>	
-				$r.translate("info.survey")
-			</p>
+		<div class="o_statusinfo">
+			<p>$r.translate("Intro.surv")</p>
+			<p>$r.translate("info.survey")</p>
 		</div>
-		<div class="b_button_group">
+		<div class="o_button_group">
 			$r.render("startapplet")
 		</div>	
 	#else
-		<div class="o_course_run_statusinfo">
+		<div class="o_statusinfo">
 			$r.translate("info.survey.alreadydone")
 		</div>
 	#end
 	#if($showReporter)
-		<div class="b_button_group">
+		<div class="o_button_group">
 		$r.render("cmd.showOnyxReporter")
 		</div>		
 	#end	
 	#if ($hasDisc)
-		<div class="o_course_run_disclaimer">
+		<div class="o_block">
 			$r.render("disc")
 		</div>
 	#end
 </div>
-
 #end
-##
-	

@@ -86,7 +86,11 @@ public class QTISurveyHandler extends QTIHandler {
 
 	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
-		return SurveyFileResource.evaluate(file, filename);
+		ResourceEvaluation eval = SurveyFileResource.evaluate(file, filename);
+		if(!eval.isValid() && CoreSpringFactory.getImpl(OnyxModule.class).isEnabled()) {
+			eval = OnyxModule.isOnyxTest(file, filename);
+		}
+		return eval;
 	}
 
 	@Override

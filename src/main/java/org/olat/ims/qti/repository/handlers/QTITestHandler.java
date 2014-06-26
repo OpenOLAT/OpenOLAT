@@ -86,7 +86,11 @@ public class QTITestHandler extends QTIHandler {
 
 	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
-		return TestFileResource.evaluate(file, filename);
+		ResourceEvaluation eval = TestFileResource.evaluate(file, filename);
+		if(!eval.isValid() && CoreSpringFactory.getImpl(OnyxModule.class).isEnabled()) {
+			eval = OnyxModule.isOnyxTest(file, filename);
+		}
+		return eval;
 	}
 
 	@Override

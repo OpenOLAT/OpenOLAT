@@ -20,6 +20,8 @@
 package org.olat.repository.ui.author;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
@@ -27,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -59,10 +62,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ImportRepositoryEntryController extends FormBasicController {
 	
 	private RepositoryEntry importedEntry;
-	private RepositoryHandler handlerForUploadedResource;
+	private List<ResourceHandler> handlerForUploadedResources;
 	
 	private SpacerElement spacerEl;
 	private FormSubmit importButton;
+	private SingleSelection selectType;
 	private FileElement uploadFileEl;
 	private StaticTextElement typeEl;
 	private TextElement displaynameEl;
@@ -91,11 +95,14 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		typeEl = uifactory.addStaticTextElement("cif.type", "cif.type", "", formLayout);
 		typeEl.setVisible(false);
 		
+		selectType = uifactory.addDropdownSingleselect("cif.types", "cif.type", formLayout, new String[0], new String[0], null);
+		selectType.setVisible(false);
+		
 		displaynameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, "", formLayout);
 		displaynameEl.setDisplaySize(30);
 		displaynameEl.setMandatory(true);
 		displaynameEl.setVisible(false);
-		
+
 		String[] refValues = new String[]{ "" };
 		referencesEl = uifactory.addCheckboxesHorizontal("references", "references", formLayout, refKeys, refValues);
 		referencesEl.setVisible(false);
@@ -118,10 +125,6 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		return importedEntry;
 	}
 
-	public RepositoryHandler getHandler() {
-		return handlerForUploadedResource;
-	}
-	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(uploadFileEl == source) {
@@ -132,7 +135,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(handlerForUploadedResource != null) {
+		if(handlerForUploadedResources != null) {
 			doImport();
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
@@ -156,53 +159,114 @@ public class ImportRepositoryEntryController extends FormBasicController {
 			displaynameEl.clearError();
 		}
 
-		return allOk & handlerForUploadedResource != null & super.validateFormLogic(ureq);
+		return allOk & handlerForUploadedResources != null
+				& handlerForUploadedResources.size() > 0
+				& super.validateFormLogic(ureq);
 	}
 	
 	private void doImport() {
-		if(handlerForUploadedResource == null) return;
+		RepositoryHandler handler;
+		if(handlerForUploadedResources == null || handlerForUploadedResources.isEmpty()) {
+			handler = null;
+		} else if(handlerForUploadedResources.size() == 1) {
+			handler = handlerForUploadedResources.get(0).getHandler();
+		} else if(selectType.isOneSelected()){
+			String type = selectType.getSelectedKey();
+			handler = repositoryHandlerFactory.getRepositoryHandler(type);
+		} else {
+			handler = null;
+		}
 		
-		String displayname = displaynameEl.getValue();
-		File uploadedFile = uploadFileEl.getUploadFile();
-		String uploadedFilename = uploadFileEl.getUploadFileName();
-		boolean withReferences = referencesEl.isAtLeastSelected(1);
-		
-		importedEntry = handlerForUploadedResource.importResource(getIdentity(), null, displayname,
-				"", withReferences, getLocale(), uploadedFile, uploadedFilename);
-
-		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
-				LoggingResourceable.wrap(importedEntry, OlatResourceableType.genRepoEntry));
+		if(handler != null) {
+			String displayname = displaynameEl.getValue();
+			File uploadedFile = uploadFileEl.getUploadFile();
+			String uploadedFilename = uploadFileEl.getUploadFileName();
+			boolean withReferences = referencesEl.isAtLeastSelected(1);
+			
+			importedEntry = handler.importResource(getIdentity(), null, displayname,
+					"", withReferences, getLocale(), uploadedFile, uploadedFilename);
+	
+			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
+					LoggingResourceable.wrap(importedEntry, OlatResourceableType.genRepoEntry));
+		}
 	}
 
 	private void doAnalyseUpload() {
 		File uploadedFile = uploadFileEl.getUploadFile();
 		String uploadedFilename = uploadFileEl.getUploadFileName();
 		
+		List<ResourceHandler> handlers = new ArrayList<>(3);
 		for(String type:repositoryHandlerFactory.getSupportedTypes()) {
 			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
 			ResourceEvaluation eval = handler.acceptImport(uploadedFile, uploadedFilename);
 			if(eval != null && eval.isValid()) {
-				updateResourceInfos(eval, handler);
-				break;
+				handlers.add(new ResourceHandler(handler, eval));
 			}
 		}
+
+		updateResourceInfos(handlers);
 	}
 	
-	private void updateResourceInfos(ResourceEvaluation eval, RepositoryHandler handler) {
-		handlerForUploadedResource = handler;
-		typeEl.setVisible(true);
-		if (handler != null) { // add image and typename code
-			String tName = NewControllerFactory.translateResourceableTypeName(handler.getSupportedType(), getLocale());
-			typeEl.setValue(tName);
+	private void updateResourceInfos(List<ResourceHandler> handlers) {
+		handlerForUploadedResources = handlers;
+
+		String displayName = "";
+		boolean references = false;
+		if (handlers != null && handlers.size() > 0) { // add image and typename code
+			ResourceHandler handler = handlers.get(0);
+			displayName = handler.getEval().getDisplayname();
+			references = handler.getEval().isReferences();
+			
+			if(handlers.size() == 1) {
+				String resourceType = handler.getHandler().getSupportedType();
+				String tName = NewControllerFactory.translateResourceableTypeName(resourceType, getLocale());
+				typeEl.setValue(tName);
+				typeEl.setVisible(true);
+				selectType.setVisible(false);
+			} else {
+				int numOfHandlers = handlers.size();
+				String[] keys = new String[numOfHandlers];
+				String[] values = new String[numOfHandlers];
+				for(int i=0; i<numOfHandlers; i++) {
+					String type = handlers.get(i).getHandler().getSupportedType();
+					keys[i] = type;
+					values[i] = NewControllerFactory.translateResourceableTypeName(type, getLocale());
+				}
+				selectType.setKeysAndValues(keys, values, null);
+				selectType.select(keys[0], true);
+				selectType.setVisible(true);
+				typeEl.setVisible(false);
+			}
 		} else {
 			typeEl.setValue(translate("cif.type.na"));
+			typeEl.setVisible(true);
+			selectType.setVisible(false);
 		}
 		displaynameEl.setVisible(true);
-		displaynameEl.setValue(eval.getDisplayname());
-		referencesEl.setVisible(eval.isReferences());
-		if(eval.isReferences()) {
+		displaynameEl.setValue(displayName);
+		referencesEl.setVisible(references);
+		if(references) {
 			referencesEl.select(refKeys[0], true);
 		}
-		importButton.setEnabled(handler != null);
+		importButton.setEnabled(handlers.size() > 0);
+	}
+	
+	private class ResourceHandler {
+		
+		private final RepositoryHandler handler;
+		private final ResourceEvaluation eval;
+		
+		public ResourceHandler(RepositoryHandler handler, ResourceEvaluation eval) {
+			this.handler = handler;
+			this.eval = eval;
+		}
+
+		public RepositoryHandler getHandler() {
+			return handler;
+		}
+
+		public ResourceEvaluation getEval() {
+			return eval;
+		}	
 	}
 }

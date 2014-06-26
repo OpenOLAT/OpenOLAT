@@ -23,19 +23,31 @@ package de.bps.onyx.plugin;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.io.IOUtils;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.PathUtils;
 import org.olat.core.util.ZipUtil;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.QTIResultSet;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
@@ -47,6 +59,8 @@ import org.olat.ims.qti.process.Resolver;
  * @author Ingmar Kroll
  */
 public class OnyxModule extends AbstractOLATModule implements ConfigOnOff {
+	
+	private static final OLog log = Tracing.createLoggerFor(OnyxModule.class);
 
 	private static String onyxPluginWSLocation;
 	public static ArrayList<PlayerTemplate> PLAYERTEMPLATES;
@@ -195,6 +209,52 @@ public class OnyxModule extends AbstractOLATModule implements ConfigOnOff {
 			return false;
 		}
 	}
+	
+	public static ResourceEvaluation isOnyxTest(File file, String filename) {
+		ResourceEvaluation eval = new ResourceEvaluation();
+		BufferedReader reader = null;
+		try {
+			ImsManifestFileFilter visitor = new ImsManifestFileFilter();
+			Path fPath = PathUtils.visit(file, filename, visitor);
+			if(visitor.isValid()) {
+				Path qtiPath = fPath.resolve("imsmanifest.xml");
+				reader = Files.newBufferedReader(qtiPath, StandardCharsets.UTF_8);
+				while (reader.ready()) {
+					String l = reader.readLine();
+					if (l.indexOf("imsqti_xmlv2p1") != -1 || l.indexOf("imsqti_test_xmlv2p1") != -1 || l.indexOf("imsqti_assessment_xmlv2p1") != -1) {
+						eval.setValid(true);
+						break;
+					}
+				}
+			} else {
+				eval.setValid(false);
+			}
+		} catch (IOException e) {
+			log.error("", e);
+			eval.setValid(false);
+		} finally {
+			IOUtils.closeQuietly(reader);
+		}
+		return eval;
+	}
+	
+	private static class ImsManifestFileFilter extends SimpleFileVisitor<Path> {
+		private boolean imsManifestFile;
+
+		@Override
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+		throws IOException {
+			String filename = file.getFileName().toString();
+			if("imsmanifest.xml".equals(filename)) {
+				imsManifestFile = true;
+			}
+			return imsManifestFile ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
+		}
+		
+		public boolean isValid() {
+			return imsManifestFile;
+		}
+	}
 
 	public static boolean isOnyxTest(File zipfile) {
 		// <OLTACE-72>
@@ -226,11 +286,7 @@ public class OnyxModule extends AbstractOLATModule implements ConfigOnOff {
 			}
 			br.close();
 		} catch (Exception e) {
-			try {
-				br.close();
-			} catch (Exception e1) {
-				// TODO Auto-generated catch block
-			}
+			IOUtils.closeQuietly(br);
 		}
 		// <OLTACE-72>
 		if (unzippedDir != null) {

@@ -68,8 +68,7 @@ public class ImsCPFileResource extends FileResource {
 	 * @param unzippedDir
 	 * @return True if is of type.
 	 */
-	public static boolean validate(File unzippedDir)
-	throws AddingResourceException {
+	public static boolean validate(File unzippedDir) {
 		File fManifest = new File(unzippedDir, IMS_MANIFEST);
 		Document doc = IMSLoader.loadIMSDocument(fManifest);
 		//do not throw exception already here, as it might be only a generic zip file
@@ -96,63 +95,77 @@ public class ImsCPFileResource extends FileResource {
 			} else {
 				eval.setValid(false);
 			}
-		} catch (IOException | AddingResourceException e) {
+		} catch (IOException e) {
 			log.error("", e);
 			eval.setValid(false);
 		}
 		return eval;
 	}
 	
-	private static boolean validateImsManifest(Document doc)
-	throws AddingResourceException {
-		//do not throw exception already here, as it might be only a generic zip file
-		if (doc == null) return false;
+	private static boolean validateImsManifest(Document doc) {
+		try {
+			//do not throw exception already here, as it might be only a generic zip file
+			if (doc == null) return false;
 
-		// get all organization elements. need to set namespace
-		Element rootElement = doc.getRootElement();
-		String nsuri = rootElement.getNamespace().getURI();
-		Map<String,String> nsuris = new HashMap<>(1);
-		nsuris.put("ns", nsuri);
+			// get all organization elements. need to set namespace
+			Element rootElement = doc.getRootElement();
+			String nsuri = rootElement.getNamespace().getURI();
+			Map<String,String> nsuris = new HashMap<>(1);
+			nsuris.put("ns", nsuri);
 
-		// Check for organiztaion element. Must provide at least one... title gets ectracted from either
-		// the (optional) <title> element or the mandatory identifier attribute.
-		// This makes sure, at least a root node gets created in CPManifestTreeModel.
-		XPath meta = rootElement.createXPath("//ns:organization");
-		meta.setNamespaceURIs(nsuris);
-		Element orgaEl = (Element) meta.selectSingleNode(rootElement); // TODO: accept several organizations?
-		if (orgaEl == null) {
-			throw new AddingResourceException("resource.no.organisation");
-		}
+			// Check for organiztaion element. Must provide at least one... title gets ectracted from either
+			// the (optional) <title> element or the mandatory identifier attribute.
+			// This makes sure, at least a root node gets created in CPManifestTreeModel.
+			XPath meta = rootElement.createXPath("//ns:organization");
+			meta.setNamespaceURIs(nsuris);
+			Element orgaEl = (Element) meta.selectSingleNode(rootElement); // TODO: accept several organizations?
+			if (orgaEl == null) {
+				return false;
+			}
 
-		// Check for at least one <item> element referencing a <resource>, which will serve as an entry point.
-		// This is mandatory, as we need an entry point as the user has the option of setting
-		// CPDisplayController to not display a menu at all, in which case the first <item>/<resource>
-		// element pair gets displayed.
-		XPath resourcesXPath = rootElement.createXPath("//ns:resources");
-		resourcesXPath.setNamespaceURIs(nsuris);
-		Element elResources = (Element)resourcesXPath.selectSingleNode(rootElement);
-		if (elResources == null) {
-			throw new AddingResourceException("resource.no.resource"); // no <resources> element.
-		}
-		XPath itemsXPath = rootElement.createXPath("//ns:item");
-		itemsXPath.setNamespaceURIs(nsuris);
-		List items = itemsXPath.selectNodes(rootElement);
-		if (items.size() == 0) throw new AddingResourceException("resource.no.item"); // no <item> element.
-		for (Iterator iter = items.iterator(); iter.hasNext();) {
-			Element item = (Element) iter.next();
-			String identifierref = item.attributeValue("identifierref");
-			if (identifierref == null) continue;
-			XPath resourceXPath = rootElement.createXPath("//ns:resource[@identifier='" + identifierref + "']");
-			resourceXPath.setNamespaceURIs(nsuris);
-			Element elResource = (Element)resourceXPath.selectSingleNode(elResources);
-			if (elResource == null) throw new AddingResourceException("resource.no.matching.resource");
-			if (elResource.attribute("scormtype") != null) return false;
-			if (elResource.attribute("scormType") != null) return false;
-			if (elResource.attribute("SCORMTYPE") != null) return false;
-			if (elResource.attributeValue("href") != null) return true; // success.
+			// Check for at least one <item> element referencing a <resource>, which will serve as an entry point.
+			// This is mandatory, as we need an entry point as the user has the option of setting
+			// CPDisplayController to not display a menu at all, in which case the first <item>/<resource>
+			// element pair gets displayed.
+			XPath resourcesXPath = rootElement.createXPath("//ns:resources");
+			resourcesXPath.setNamespaceURIs(nsuris);
+			Element elResources = (Element)resourcesXPath.selectSingleNode(rootElement);
+			if (elResources == null) {
+				return false; // no <resources> element.
+			}
+			XPath itemsXPath = rootElement.createXPath("//ns:item");
+			itemsXPath.setNamespaceURIs(nsuris);
+			List items = itemsXPath.selectNodes(rootElement);
+			if (items.size() == 0) {
+				return false; // no <item> element.
+			}
+			for (Iterator iter = items.iterator(); iter.hasNext();) {
+				Element item = (Element) iter.next();
+				String identifierref = item.attributeValue("identifierref");
+				if (identifierref == null) continue;
+				XPath resourceXPath = rootElement.createXPath("//ns:resource[@identifier='" + identifierref + "']");
+				resourceXPath.setNamespaceURIs(nsuris);
+				Element elResource = (Element)resourceXPath.selectSingleNode(elResources);
+				if (elResource == null) {
+					return false;
+				}
+				if (elResource.attribute("scormtype") != null) {
+					return false;
+				}
+				if (elResource.attribute("scormType") != null) {
+					return false;
+				}
+				if (elResource.attribute("SCORMTYPE") != null) {
+					return false;
+				}
+				if (elResource.attributeValue("href") != null) {
+					return true; // success.
+				}
+			}
+		} catch (Exception e) {
+			log.warn("", e);
 		}
 		return false;
-		//throw new AddingResourceException("resource.general.error");
 	}
 	
 	private static class ImsManifestFileFilter extends SimpleFileVisitor<Path> {

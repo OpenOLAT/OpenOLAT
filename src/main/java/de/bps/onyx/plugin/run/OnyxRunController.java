@@ -55,6 +55,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -71,7 +72,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti.QTIResultSet;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 
 import de.bps.onyx.plugin.OnyxModule;
@@ -150,9 +150,9 @@ public class OnyxRunController extends BasicController {
 	 * @param wControl
 	 * @param testCourseNode
 	 */
-	public OnyxRunController(UserCourseEnvironment userCourseEnv, ModuleConfiguration moduleConfiguration, IQSecurityCallback secCallback, UserRequest ureq,
-			WindowControl wControl, QTICourseNode courseNode) {
-		super(ureq, wControl);
+	public OnyxRunController(UserCourseEnvironment userCourseEnv, ModuleConfiguration moduleConfiguration,
+			UserRequest ureq, WindowControl wControl, QTICourseNode courseNode) {
+		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 
 		this.modConfig = moduleConfiguration;
 		this.userCourseEnv = userCourseEnv;
@@ -799,7 +799,7 @@ public class OnyxRunController extends BasicController {
 		private final static String RESUME_LABEL = "resume";
 
 		public StartButtonForm(UserRequest ureq, WindowControl wControl, boolean resumeSuspended) {
-			super(ureq, wControl);
+			super(ureq, wControl, LAYOUT_BAREBONE);
 			this.resumeSuspended = resumeSuspended;
 			initForm(ureq);
 		}
@@ -812,6 +812,7 @@ public class OnyxRunController extends BasicController {
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			startButton = FormUIFactory.getInstance().addFormLink(START_LABEL, resumeSuspended ? RESUME_LABEL : START_LABEL, null, flc, Link.BUTTON);
+			startButton.setPrimary(true);
 			startButton.addActionListener(FormEvent.ONCLICK);
 		}
 

@@ -132,9 +132,7 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 			ModuleConfiguration config = courseNode.getModuleConfiguration();
 			boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI));
 			if (onyx) {
-				final AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-				final IQSecurityCallback sec = new CourseIQSecurityCallback(courseNode, am, ureq.getIdentity());
-				controller = new OnyxRunController(userCourseEnv, config, sec, ureq, wControl, courseNode);
+				controller = new OnyxRunController(userCourseEnv, config, ureq, wControl, courseNode);
 			} else {
 				AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 				IQSecurityCallback sec = new CourseIQSecurityCallback(courseNode, am, ureq.getIdentity());
@@ -174,11 +172,11 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 		Controller controller;
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		IQSecurityCallback sec = new CourseIQSecurityCallback(courseNode, am, ureq.getIdentity());
 		boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI));
 		if (onyx) {
-			controller = new OnyxRunController(userCourseEnv, config, sec, ureq, wControl, courseNode);
+			controller = new OnyxRunController(userCourseEnv, config, ureq, wControl, courseNode);
 		} else {
+			IQSecurityCallback sec = new CourseIQSecurityCallback(courseNode, am, ureq.getIdentity());
 			controller = new IQRunController(userCourseEnv, courseNode.getModuleConfiguration(), sec, ureq, wControl, courseNode);
 		}
 		return controller;
@@ -199,9 +197,7 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 			ModuleConfiguration config = courseNode.getModuleConfiguration();
 			boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI));
 			if (onyx) {
-				AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-				IQSecurityCallback sec = new CourseIQSecurityCallback(courseNode, am, ureq.getIdentity());
-				controller = new OnyxRunController(userCourseEnv, config, sec, ureq, wControl, courseNode);
+				controller = new OnyxRunController(userCourseEnv, config, ureq, wControl, courseNode);
 			} else {
 				RepositoryEntry repositoryEntry = ne.getCourseNode().getReferencedRepositoryEntry();
 				OLATResourceable ores = repositoryEntry.getOlatResource();

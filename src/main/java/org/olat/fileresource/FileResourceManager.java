@@ -99,7 +99,7 @@ public class FileResourceManager extends BasicManager {
 	 * @param knownResource maybe null, FileResource type will be calculated
 	 * @return True upon success, false otherwise.
 	 */
-	private FileResource addFileResource(File fResource, String newName, FileResource knownResource) throws AddingResourceException {
+	private FileResource addFileResource(File fResource, String newName, FileResource knownResource) {
 
 		// ZIPDIR is a reserved name... check
 		if (fResource.getName().equals(ZIPDIR)) throw new AssertException("Trying to add FileResource with reserved name '" + ZIPDIR + "'.");
@@ -125,62 +125,56 @@ public class FileResourceManager extends BasicManager {
 			// save resourceableID
 			Long resourceableId = tempFr.getResourceableId();
 			// extract type
-			try {
-				if (DocFileResource.validate(fResource)) tempFr = new DocFileResource();
-				else if (XlsFileResource.validate(fResource)) tempFr = new XlsFileResource();
-				else if (PowerpointFileResource.validate(fResource)) tempFr = new PowerpointFileResource();
-				else if (PdfFileResource.validate(fResource)) tempFr = new PdfFileResource();
-				else if (ImageFileResource.validate(fResource)) tempFr = new ImageFileResource();
-				else if (MovieFileResource.validate(fResource)) tempFr = new MovieFileResource();
-				else if (SoundFileResource.validate(fResource)) tempFr = new SoundFileResource();
-				else if (AnimationFileResource.validate(fResource)) tempFr = new AnimationFileResource();
-				else if (SharedFolderFileResource.validate(fResource)) tempFr = new SharedFolderFileResource();
-				// add a wiki copy
-				else if (WikiResource.validate(fResource, null).isValid()) tempFr = new WikiResource();
-				// add a podcast copy
-				else if (PodcastFileResource.validate(fResource)) tempFr = new PodcastFileResource(fResourceFileroot, fResource);
-				// add a blog copy
-				else if (BlogFileResource.validate(fResource)) tempFr = new BlogFileResource(fResourceFileroot, fResource);
-				// add a glossary copy
-				else if (GlossaryResource.validate(fResource)) tempFr = new GlossaryResource();
-				//add portfolio copy
-				else if (EPTemplateMapResource.validate(fResource)) tempFr = new EPTemplateMapResource();
-				// the following types need unzippedDir
-				else if (fResource.getName().toLowerCase().endsWith(".zip")) {
-					File fUnzippedDir = unzipFileResource(tempFr);
-					if (fUnzippedDir == null) {
-						// in case of failure we forward the error message
-						throw new AddingResourceException("resource.error.zip");
-					}
-					if (TestFileResource.validate(fUnzippedDir)) tempFr = new TestFileResource();
-					else if (WikiResource.validate(fUnzippedDir, null).isValid()) tempFr = new WikiResource();
-					else if (PodcastFileResource.validate(fUnzippedDir)) tempFr = new PodcastFileResource(fResourceFileroot, fUnzippedDir);
-					else if (BlogFileResource.validate(fUnzippedDir)) tempFr = new BlogFileResource(fResourceFileroot, fUnzippedDir);
-					else if (SurveyFileResource.validate(fUnzippedDir)) tempFr = new SurveyFileResource();
-					// CP must be later entry... Test- and SurveyFileResource may contain
-					// imsmanifest.xml as well
-					else if (ImsCPFileResource.validate(fUnzippedDir)) tempFr = new ImsCPFileResource();
-					// scorm and cp now can throw an exception which helps to show a
-					// better error message in case
-					// of a failure in adding a new resource
-					else if (ScormCPFileResource.validate(fUnzippedDir)) tempFr = new ScormCPFileResource();
-					// glossary resources are packaged within zip for import/export
-					else if (GlossaryResource.validate(fUnzippedDir)) tempFr = new GlossaryResource();
-					// portfolio template are packaged within zip for import/export
-					else if (EPTemplateMapResource.validate(fUnzippedDir)) {
-						tempFr = new EPTemplateMapResource();
-					}
-					else {
-						// just a generic ZIP file... we can delete the temporary unziped
-						// dir...
-						throw new AddingResourceException("doesn't matter what error key is declared");
-					}
+
+			if (DocFileResource.validate(fResource)) tempFr = new DocFileResource();
+			else if (XlsFileResource.validate(fResource)) tempFr = new XlsFileResource();
+			else if (PowerpointFileResource.validate(fResource)) tempFr = new PowerpointFileResource();
+			else if (PdfFileResource.validate(fResource)) tempFr = new PdfFileResource();
+			else if (ImageFileResource.validate(fResource)) tempFr = new ImageFileResource();
+			else if (MovieFileResource.validate(fResource)) tempFr = new MovieFileResource();
+			else if (SoundFileResource.validate(fResource)) tempFr = new SoundFileResource();
+			else if (AnimationFileResource.validate(fResource)) tempFr = new AnimationFileResource();
+			else if (SharedFolderFileResource.validate(fResource)) tempFr = new SharedFolderFileResource();
+			// add a wiki copy
+			else if (WikiResource.validate(fResource, null).isValid()) tempFr = new WikiResource();
+			// add a podcast copy
+			else if (PodcastFileResource.validate(fResource)) tempFr = new PodcastFileResource(fResourceFileroot, fResource);
+			// add a blog copy
+			else if (BlogFileResource.validate(fResource)) tempFr = new BlogFileResource(fResourceFileroot, fResource);
+			// add a glossary copy
+			else if (GlossaryResource.validate(fResource)) tempFr = new GlossaryResource();
+			//add portfolio copy
+			else if (EPTemplateMapResource.validate(fResource)) tempFr = new EPTemplateMapResource();
+			// the following types need unzippedDir
+			else if (fResource.getName().toLowerCase().endsWith(".zip")) {
+				File fUnzippedDir = unzipFileResource(tempFr);
+				if (fUnzippedDir == null) {
+					// in case of failure we forward the error message
+					return null;
 				}
-			} catch (AddingResourceException exception) {
-				// in case of failure we delete the resource and forward the error
-				// message
-				deleteFileResource(tempFr);
-				throw exception;
+				if (TestFileResource.validate(fUnzippedDir)) tempFr = new TestFileResource();
+				else if (WikiResource.validate(fUnzippedDir, null).isValid()) tempFr = new WikiResource();
+				else if (PodcastFileResource.validate(fUnzippedDir)) tempFr = new PodcastFileResource(fResourceFileroot, fUnzippedDir);
+				else if (BlogFileResource.validate(fUnzippedDir)) tempFr = new BlogFileResource(fResourceFileroot, fUnzippedDir);
+				else if (SurveyFileResource.validate(fUnzippedDir)) tempFr = new SurveyFileResource();
+				// CP must be later entry... Test- and SurveyFileResource may contain
+				// imsmanifest.xml as well
+				else if (ImsCPFileResource.validate(fUnzippedDir)) tempFr = new ImsCPFileResource();
+				// scorm and cp now can throw an exception which helps to show a
+				// better error message in case
+				// of a failure in adding a new resource
+				else if (ScormCPFileResource.validate(fUnzippedDir)) tempFr = new ScormCPFileResource();
+				// glossary resources are packaged within zip for import/export
+				else if (GlossaryResource.validate(fUnzippedDir)) tempFr = new GlossaryResource();
+				// portfolio template are packaged within zip for import/export
+				else if (EPTemplateMapResource.validate(fUnzippedDir)) {
+					tempFr = new EPTemplateMapResource();
+				}
+				else {
+					// just a generic ZIP file... we can delete the temporary unziped
+					// dir...
+					return null;
+				}
 			}
 
 			tempFr.overrideResourceableId(resourceableId);
