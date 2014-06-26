@@ -34,6 +34,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -56,19 +57,18 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.fileresource.FileResourceManager;
-import org.olat.fileresource.types.FileResource;
+import org.olat.core.util.i18n.I18nModule;
+import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
-import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.MultipartReader;
@@ -324,38 +324,47 @@ public class RepositoryEntriesResource {
 		return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 	}
 	
-	private RepositoryEntry importFileResource(Identity identity, File fResource, String resourcename, String displayname,
-			String softkey, int access) {
+	private RepositoryEntry importFileResource(Identity identity, File fResource, String resourcename,
+			String displayname, String softkey, int access) {
+
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		RepositoryHandlerFactory handlerFactory = CoreSpringFactory.getImpl(RepositoryHandlerFactory.class);
+		
 		try {
-			FileResourceManager frm = FileResourceManager.getInstance();
-			FileResource newResource = frm.addFileResource(fResource, fResource.getName());
-			return importResource(identity, newResource, resourcename, displayname, softkey, access);
+			RepositoryHandler handler = null;
+			for(String type:handlerFactory.getSupportedTypes()) {
+				RepositoryHandler h = handlerFactory.getRepositoryHandler(type);
+				ResourceEvaluation eval = h.acceptImport(fResource, fResource.getName());
+				if(eval != null && eval.isValid()) {
+					handler = h;
+					break;
+				}
+			}
+			RepositoryEntry addedEntry = null;
+			if(handler != null) {
+				Locale locale = I18nModule.getDefaultLocale();
+				
+				addedEntry = handler.importResource(identity, null, displayname,
+						"", true, locale, fResource, fResource.getName());
+				
+				if(StringHelper.containsNonWhitespace(resourcename)) {
+					addedEntry.setResourcename(resourcename);
+				}
+				if(StringHelper.containsNonWhitespace(softkey)) {
+					addedEntry.setSoftkey(softkey);
+				}
+				if(access < RepositoryEntry.ACC_OWNERS || access > RepositoryEntry.ACC_USERS_GUESTS) {
+					addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
+				} else {
+					addedEntry.setAccess(access);
+				}
+				addedEntry = repositoryService.update(addedEntry);
+			}
+			return addedEntry;
 		} catch(Exception e) {
 			log.error("Fail to import a resource", e);
 			throw new WebApplicationException(e);
 		}
-	}
-		
-	public static RepositoryEntry importResource(Identity identity, OLATResourceable newResource, String resourcename, String displayname,
-			String softkey, int access) {
-		
-		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(newResource);
-		RepositoryEntry addedEntry = repositoryService.create(identity, null, resourcename, displayname, null, ores, 0);
-		if(StringHelper.containsNonWhitespace(softkey)) {
-			addedEntry.setSoftkey(softkey);
-		}
-		//TODO repository
-
-		// Do set access for owner at the end, because unfinished course should be invisible
-		if(access < RepositoryEntry.ACC_OWNERS || access > RepositoryEntry.ACC_USERS_GUESTS) {
-			addedEntry.setAccess(RepositoryEntry.ACC_OWNERS);
-		} else {
-			addedEntry.setAccess(access);
-		}
-		
-		repositoryService.update(addedEntry);
-		return addedEntry;
 	}
 	
 	@Path("{repoEntryKey}")

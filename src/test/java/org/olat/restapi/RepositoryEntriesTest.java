@@ -137,7 +137,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetEntry() throws IOException, URISyntaxException {
-		RepositoryEntry re = createRepository("Rei Ayanami", "Test GET repo entry");
+		RepositoryEntry re = createRepository("Test GET repo entry");
 
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
@@ -154,7 +154,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetEntry_managed() throws IOException, URISyntaxException {
-		RepositoryEntry re = createRepository("Rei Ayanami", "Test GET repo entry");
+		RepositoryEntry re = createRepository("Test GET repo entry");
 		re.setManagedFlagsString("all");
 		re = dbInstance.getCurrentEntityManager().merge(re);
 		dbInstance.commitAndCloseSession();
@@ -737,7 +737,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		}
 	}
 	
-	private RepositoryEntry createRepository(String owner, String name) {
+	private RepositoryEntry createRepository(String name) {
 		OLATResourceManager rm = OLATResourceManager.getInstance();
 		// create course and persist as OLATResourceImpl
 		
