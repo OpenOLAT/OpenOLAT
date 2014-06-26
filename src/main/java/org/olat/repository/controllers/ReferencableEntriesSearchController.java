@@ -309,6 +309,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 				} else if (clickedLink == adminEntriesLink) {
 					searchCtr.displayAdminSearchForm();
 				}
+				mainVC.setDirty(true);
 			}
 		} else if(source == createRessourceCmp ||
 				(createRessourceButtons != null && createRessourceButtons.contains(source))) {
