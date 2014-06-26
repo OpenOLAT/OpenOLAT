@@ -1,143 +1,12 @@
-/*
-*  =================================================
-*  
-*   sass mixins for OpenOLAT 8
-*   
-*   @author strentini, sergio.trentini@frentix.com,  www.frentix.com
-*   @date Nov. 2011
-*
-*   also read themes.README!
-*   
-*   this file is included in layout.scss
-*   it is not compiled to a separate css-file...  
-*
-*  =================================================
-*/
 
-// will produce a shiny-glassy gradient (ie9 will produce linear gradient with only 2 colors) */
-@mixin o-gradient-glassy($col1,$col2,$col3,$col4){
-	background: $col1;
-	background: -moz-linear-gradient(top, $col1 0%, $col2 50%, $col3 51%, $col4 100%);
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,$col1), color-stop(50%,$col2), color-stop(51%,$col3), color-stop(100%,$col4));
-	background: -webkit-linear-gradient(top, $col1 0%,$col2 50%,$col3 51%,$col4 100%);
-	background: -o-linear-gradient(top, $col1 0%,$col2 50%,$col3 51%,$col4 100%);
-	background: -ms-linear-gradient(top, $col1 0%,$col2 50%,$col3 51%,$col4 100%);
-	background: linear-gradient(top, $col1 0%,$col2 50%,$col3 51%,$col4 100%);
+@mixin o-make-message-box($bgcolor, $titlecolor){
+	margin: $o-box-margin 0;
+	padding: $o-box-padding;
+	border-left: $o-box-border-left-size solid $titlecolor;
+	background-color: $bgcolor;
+	h2, h3, h4, h5 { color: $titlecolor;}
 }
 
-// will produce a shiny-glassy gradient (ie9 will produce linear gradient with only 2 colors) */
-@mixin o-gradient-glassysimple($color){
-	$col1: desaturate(lighten($color,20%),50%);
-	$col2: lighten($color,40%);
-	$col3: $color;
-	$col4: lighten($color,50%);
-	
-	background: $col1;
-	background: -moz-linear-gradient(top, $col1 0%, $col2 50%, $col3 51%, $col4 100%);
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,$col1), color-stop(50%,$col2), color-stop(51%,$col3), color-stop(100%,$col4));
-	background: -webkit-linear-gradient(top, $col1 0%,$col2 50%,$col3 51%,$col4 100%);
-	background: -o-linear-gradient(top, $col1 0%,$col2 50%,$col3 51%,$col4 100%);
-	background: -ms-linear-gradient(top, $col1 0%,$col2 50%,$col3 51%,$col4 100%);
-	background: linear-gradient(top, $col1 0%,$col2 50%,$col3 51%,$col4 100%);
-}
-
-@mixin o-gradient2($col1,$col2){
-	background: $col1;
-	background: -moz-linear-gradient(top, $col1 0%, $col2 100%);
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,$col1), color-stop(100%,$col2));
-	background: -webkit-linear-gradient(top, $col1 0%,$col2 100%);
-	background: -o-linear-gradient(top, $col1 0%,$col2 100%);
-	background: -ms-linear-gradient(top, $col1 0%,$col2 100%);
-	background: linear-gradient(top, $col1 0%,$col2 100%);
-}
-
-/* also gradient with two colors but with custom color-stops */
-@mixin o-gradient2stops($col1,$stop1,$col2,$stop2){
-	background: $col1;
-	background: -moz-linear-gradient(top, $col1 $stop1, $col2 $stop2);
-	background: -webkit-gradient(linear, left top, left bottom, color-stop($stop1,$col1), color-stop($stop2,$col2));
-	background: -webkit-linear-gradient(top, $col1 $stop1,$col2 $stop2);
-	background: -o-linear-gradient(top, $col1 $stop1,$col2 $stop2);
-	background: -ms-linear-gradient(top, $col1 $stop1,$col2 $stop2);
-	background: linear-gradient(top, $col1 $stop1,$col2 $stop2);
-}
-
-@mixin o-gradient-white(){
-	$col1 : #fff;
-	$col2 : #f8f8f8;
-	background: $col1;
-	background: -moz-linear-gradient(top, $col1 80%, $col2 100%);
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(80%,$col1), color-stop(100%,$col2));
-	background: -webkit-linear-gradient(top, $col1 80%,$col2 100%);
-	background: -o-linear-gradient(top, $col1 80%,$col2 100%);
-	background: -ms-linear-gradient(top, $col1 80%,$col2 100%);
-	background: linear-gradient(top, $col1 80%,$col2 100%);
-}
-
-@mixin o-gradient4($col1,$col2,$col3,$col4){
-	background: $col1;
-	background: -moz-linear-gradient(top, $col1 0%, $col2 33%, $col3 66%, $col4 100%);
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,$col1), color-stop(33%,$col2), color-stop(66%,$col3), color-stop(100%,$col4));
-	background: -webkit-linear-gradient(top, $col1 0%,$col2 33%,$col3 66%,$col4 100%);
-	background: -o-linear-gradient(top, $col1 0%,$col2 33%,$col3 66%,$col4 100%);
-	background: -ms-linear-gradient(top, $col1 0%,$col2 33%,$col3 66%,$col4 100%);
-	background: linear-gradient(top, $col1 0%,$col2 33%,$col3 66%,$col4 100%);
-}
-
-@mixin o-border-radius($rad){
-	border-radius:$rad;
-	-webkit-border-radius:$rad;
-	-moz-border-radius:$rad;
-	-o-border-radius:$rad;
-}
-@mixin o-border-radius-all($tl,$tr,$br,$bl){
-	-webkit-border-top-left-radius: $tl;
-	-webkit-border-top-right-radius: $tr;
-	-webkit-border-bottom-right-radius: $br;
-	-webkit-border-bottom-left-radius: $bl;
-	-moz-border-radius-topleft: $tl;
-	-moz-border-radius-topright: $tr;
-	-moz-border-radius-bottomright: $br;
-	-moz-border-radius-bottomleft: $bl;
-	border-top-left-radius: $tl;
-	border-top-right-radius: $tr;
-	border-bottom-right-radius: $br;
-	border-bottom-left-radius: $bl;
-}
-
-@mixin o-box-shadow($a,$b,$c,$color){
-	moz-box-shadow: $a $b $c $color;
-	-ms-box-shadow: $a $b $c $color;
-	-o-box-shadow: $a $b $c $color;
-	-webkit-box-shadow: $a $b $c $color;
-	box-shadow: $a $b $c $color;
-}
-@mixin o-box-shadow-inset($a,$b,$c,$color){
-	moz-box-shadow: inset $a $b $c $color;
-	-ms-box-shadow: inset  $a $b $c $color;
-	-o-box-shadow: inset  $a $b $c $color;
-	-webkit-box-shadow: inset  $a $b $c $color;
-	box-shadow: inset $a $b $c $color;
-}
-@mixin o-box-shadow-none(){
-	moz-box-shadow: none;
-	-ms-box-shadow: none;
-	-o-box-shadow: none;
-	-webkit-box-shadow: none;
-	box-shadow: none;
-}
-
-@mixin o-text-shadow($a,$b,$c,$color){
-	text-shadow: $a $b $c $color;
-	-moz-text-shadow: $a $b $c $color;
-}
-
-@mixin o-transition($what, $dur,$eff){
-	-moz-transition: $what  $dur $eff;
- 	-webkit-transition: $what  $dur $eff;
- 	-o-transition: $what  $dur $eff;
- 	transition: $what  $dur $eff;
-}
 
 
 /**
@@ -170,32 +39,5 @@
         /* Firefox 0.9+, Safari 2?, Chrome any?
         /* Opera 9+, IE 9+ */
         opacity: $op;
-}
-
-// the OpenOLAT button style 
-@mixin btt-outer {
-		@include o-border-radius(2px);
-		white-space: nowrap; 
-		cursor:pointer; 
-		margin: 0.25em 0.5em 0.25em 0; 
-		padding: 0; 
-		color: #444; 
-		background: transparent; 
-		display: inline-block; 
-		line-height: 2.2em; 
-		vertical-align: middle; 
-		//left-align for IE
-		text-align: left;
-		border: 1px solid #ccc; // wee need that for IE8 , no rgba 
-		border: 1px solid rgba(0,0,0,0.1); 
-		@include o-gradient2( #f5f5f5,#f1f1f1);
-		@include o-transition(all,0.22s, "");
-}
-
-@mixin btt-inner { 
-		color: #444; 
-		font-size:100%;
-		display: inline-block; padding: 0 0.8em; width: auto; 
-		line-height: 1.9em; text-align: center;
 }
 

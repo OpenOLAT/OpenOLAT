@@ -1,7 +1,30 @@
+/* Info and other dialog boxes, displayed inline in content */
+.o_info, %o_info { 
+	@include o-make-message-box($o-box-info-bg, $o-box-info-color);
+}
+.o_note, %o_note { 
+	@include o-make-message-box($o-box-note-bg, $o-box-note-color);
+}
+.o_important, %o_important { 
+	@include o-make-message-box($o-box-important-bg, $o-box-important-color);
+}
+.o_success, %o_success { 
+	@include o-make-message-box($o-box-success-bg, $o-box-success-color);
+}
+.o_warning, %o_warning { 
+	@include o-make-message-box($o-box-warning-bg, $o-box-warning-color);
+}
+.o_error, %o_error { 
+	@include o-make-message-box($o-box-error-bg, $o-box-error-color);
+}
+
+
+/* Callout window (implemented with bootstrap popover, see CloseableCalloutWindowController for JS part */
 div.o_callout_overlay { 
 	position: fixed; top: 0; left: 0; width:100%; height:100%; zoom:1;  background: #000; @include o-opacity(1);
 }
 
+/* Info messages appear on top of page and auto-disapear, alerts are modal and must be accepted manually */
 .o_alert_info {
 	position: fixed;
 	top: -100%;	
@@ -32,7 +55,7 @@ div.o_callout_overlay {
  	}
 }
 
-/* sticky info (admins can create stick-messages that will show for all users) */
+/* Sticky info (admins can create stick-messages that will show for all users) */
 #o_msg_sticky, #o_msg_sticky_preview { 	
 	position: relative;
 	color: $state-danger-text;

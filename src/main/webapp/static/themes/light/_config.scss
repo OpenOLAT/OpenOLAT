@@ -164,20 +164,26 @@ $o-search-excerpt-color			: $gray !default;
 $o-dialog-window-bg				: #fefefe !default;
 $o-dialog-window-bar-bg			: #eee !default;
 
-
-/* content styles */
+/* message boxes */
 $o-box-margin				: 20px !default;
 $o-box-padding				: 20px !default;
 $o-box-border-left-size		: 3px !default;
-
 $o-box-info-bg				: #eee !default;
 $o-box-info-color			: #d4d4d4 !default;
-$o-box-info-h-color			: #bbbbbb !default;
 $o-box-note-bg				: #f4f8fa !default;
 $o-box-note-color			: #5bc0de !default;
-$o-box-note-h-color			: #5bc0de !default;
+$o-box-important-bg			: #FFF1A4 !default;
+$o-box-important-color		: #F4D000 !default;
+$o-box-success-bg			: #d6e9c6 !default;
+$o-box-success-color		: #3c763d !default;
+$o-box-warning-bg			: #FFD5AA !default;
+$o-box-warning-color		: #FF9E3E !default;
+$o-box-error-bg				: #fdf7f7 !default;
+$o-box-error-color			: #d9534f !default;
 
-
+/* Content styles */
+$o-content-table-border		: $gray-light !default;
+$o-content-table-header		: $gray-light !default;
 
 /*
 FIXME:oo10 LEGACY VARIABLES

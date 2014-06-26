@@ -28,6 +28,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_assessment_tool:before { content: $fa-var-trophy;}
 .o_icon_attempt_limit:before { content: $fa-var-refresh; }
 .o_icon_add:before { content: $fa-var-plus-circle; }
+.o_icon_add_search:before { content: $fa-var-search-plus;}
 .o_icon_audio:before { content: $fa-var-volume-up; }
 .o_icon_back:before { content: $fa-var-chevron-left; }
 .o_icon_back_history:before { content: $fa-var-history;}
@@ -46,6 +47,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_check:before { content: $fa-var-check; }
 .o_icon_checkbox:before { content: $fa-var-square-o; }
 .o_icon_checkbox_checked:before { content: $fa-var-check-square;  }
+.o_icon_cleanup:before { content: $fa-var-ambulance;}
 .o_icon_close:before { content: $fa-var-times;}
 .o_icon_close_resource:before { content: $fa-var-power-off; }
 .o_icon_close_tab:before { content: $fa-var-times;}

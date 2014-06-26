@@ -23,4 +23,7 @@
 @import "../../bootstrap/stylesheets/bootstrap/print";
 
 @import "modules/icons"; /* must be first include - provides classes used as extensions */
+@import "modules/mixins";
+@import "modules/helpers";
+@import "modules/dialog";
 @import "modules/content";
