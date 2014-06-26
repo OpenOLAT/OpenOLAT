@@ -50,6 +50,7 @@ public class UserToolsPage {
 	
 	@FindBy(className = "o_sel_user_tools-mysettings")
 	private WebElement mySettingsLink;
+	
 	@FindBy(className = "o_logout")
 	private WebElement logoutLink;
 	
@@ -87,6 +88,14 @@ public class UserToolsPage {
 	public UserSettingsPage openMySettings() {
 		Assert.assertTrue(mySettingsLink.isDisplayed());
 		mySettingsLink.click();
+		OOGraphene.waitBusy();
+		return userSettings;
+	}
+	
+	public UserSettingsPage openPassword() {
+		WebElement passwordLink = browser.findElement(By.className("o_sel_user_tools-mypassword"));
+		Assert.assertTrue(passwordLink.isDisplayed());
+		passwordLink.click();
 		OOGraphene.waitBusy();
 		return userSettings;
 	}

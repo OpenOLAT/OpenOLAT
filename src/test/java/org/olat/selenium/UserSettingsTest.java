@@ -22,21 +22,26 @@ package org.olat.selenium;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
+import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.page.InitialPage;
 import org.jboss.arquillian.graphene.page.Page;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jcodec.common.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.user.UserPreferencesPageFragment.ResumeOption;
+import org.olat.selenium.page.user.UserPasswordPage;
+import org.olat.selenium.page.user.UserPreferencesPageFragment;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.rest.RepositoryRestClient;
@@ -53,7 +58,7 @@ import org.openqa.selenium.WebElement;
  *
  */
 @RunWith(Arquillian.class)
-public class ResumeTest {
+public class UserSettingsTest {
 	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
@@ -77,7 +82,7 @@ public class ResumeTest {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void resumeCourseAutomatically(@InitialPage LoginPage loginPage)
+	public void resume_resumeCourseAutomatically(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
 		//create a random user
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
@@ -130,7 +135,7 @@ public class ResumeTest {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void resumeCourseOnDemand(@InitialPage LoginPage loginPage)
+	public void resume_resumeCourseOnDemand(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
 		//create a random user
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
@@ -165,5 +170,163 @@ public class ResumeTest {
 		Assert.assertNotNull(courseTitle);
 		Assert.assertTrue(courseTitle.isDisplayed());
 		Assert.assertTrue(courseTitle.getText().contains(course.getTitle()));
+	}
+	
+	/**
+	 * Disable the resume function and check that the resume
+	 * popup don't stay in our way after login.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void resume_disabled(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
+		loginPage
+			.loginAs(user.getLogin(), user.getPassword())
+			.resume();
+		
+		//set the preferences to resume automatically
+		userTools
+			.openUserToolsMenu()
+			.openMySettings()
+			.openPreferences()
+			.setResume(ResumeOption.none);
+	
+		//logout
+		userTools.logout();
+		
+		//login again
+		loginPage
+			.assertOnLoginPage()
+			.loginAs(user.getLogin(), user.getPassword());
+		
+		//check that we don't see the resume button
+		List<WebElement> resumeButtons = browser.findElements(LoginPage.resumeButton);
+		Assert.assertTrue(resumeButtons.isEmpty());
+		//double check that we are really logged in
+		loginPage.assertLoggedIn(user);
+	}
+	
+	/**
+	 * Switch the language to german and after logout login to english
+	 * and check every time.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void language_switch(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
+		loginPage
+			.loginAs(user.getLogin(), user.getPassword())
+			.resume();
+		
+		//set the languages preferences to german
+		userTools
+			.assertOnUserTools()
+			.openUserToolsMenu()
+			.openMySettings()
+			.assertOnUserSettings()
+			.openPreferences()
+			.assertOnUserPreferences()
+			.setLanguage("de");
+		
+		userTools.logout();
+		
+		loginPage
+			.loginAs(user.getLogin(), user.getPassword())
+			.resume();
+		
+		WebElement usernameDE = browser.findElement(LoginPage.usernameFooterBy);
+		boolean de = usernameDE.getText().contains("Eingeloggt als");
+		Assert.assertTrue(de);
+		List<WebElement> deMarker = browser.findElements(By.className("o_lang_de"));
+		Assert.assertFalse(deMarker.isEmpty());
+		
+		
+		//set the languages preferences to english
+		userTools
+			.openUserToolsMenu()
+			.openMySettings()
+			.openPreferences()
+			.setLanguage("en");
+		
+		userTools.logout();
+				
+		loginPage
+			.loginAs(user.getLogin(), user.getPassword())
+			.resume();
+		
+		WebElement usernameEN = browser.findElement(LoginPage.usernameFooterBy);
+		boolean en = usernameEN.getText().contains("Logged in as");
+		Assert.assertTrue(en);
+		List<WebElement> enMarker = browser.findElements(By.className("o_lang_en"));
+		Assert.assertFalse(enMarker.isEmpty());
+	}
+	
+	/**
+	 * Change the password, log out and try to log in again
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void password_change(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
+		loginPage
+			.loginAs(user.getLogin(), user.getPassword())
+			.resume();
+		
+		userTools
+			.assertOnUserTools()
+			.openUserToolsMenu()
+			.openPassword();
+		
+		String newPassword = UUID.randomUUID().toString();
+		UserPasswordPage password = UserPasswordPage.getUserPasswordPage(browser);
+		password.setNewPassword(user.getPassword(), newPassword);
+		
+		userTools.logout();
+		
+		loginPage
+			.loginAs(user.getLogin(), newPassword)
+			.resume()
+			.assertLoggedIn(user);
+	}
+	
+	/**
+	 * Reset the preferences and check that a log out happens
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void resetPreferences(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
+		loginPage
+			.loginAs(user.getLogin(), user.getPassword())
+			.resume();
+		
+		UserPreferencesPageFragment prefs = userTools
+			.openUserToolsMenu()
+			.openMySettings()
+			.openPreferences();
+		//reset the preferences
+		prefs.resetPreferences();
+		//check the user is log out
+		loginPage.assertOnLoginPage();
 	}
 }

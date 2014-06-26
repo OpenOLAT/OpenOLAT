@@ -27,6 +27,7 @@ import org.jboss.arquillian.graphene.Graphene;
 import org.jboss.arquillian.graphene.page.Location;
 import org.jcodec.common.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -59,6 +60,8 @@ public class LoginPage {
 	public static final By disclaimerButtonXPath = By.xpath("//div[contains(@class,'o_sel_disclaimer_buttons')]/button"); 
 	
 	public static final By resumeButton = By.className("o_sel_resume_yes");
+	
+	public static final By usernameFooterBy = By.id("o_username");
 
 	@FindBy(className = loginFormClassName)
 	private WebElement loginDiv;
@@ -84,19 +87,28 @@ public class LoginPage {
 		return this;
 	}
 	
+	public void assertLoggedIn(UserVO user) {
+		WebElement username = browser.findElement(usernameFooterBy);
+		Assert.assertNotNull(username);
+		Assert.assertTrue(username.isDisplayed());
+		String name = username.getText();
+		Assert.assertTrue(name.contains(user.getLastName()));
+	}
+	
 	/**
 	 * Login and accept the disclaimer if there is one.
 	 * 
 	 * @param username
 	 * @param password
 	 */
-	public void loginAs(String username, String password) {
+	public LoginPage loginAs(String username, String password) {
 		usernameInput.sendKeys(username);
 		passwordInput.sendKeys(password);
 
 		Graphene.guardHttp(loginButton).click();
 		OOGraphene.waitElement(authOrDisclaimerXPath);
 		
+		//wipe out disclaimer
 		List<WebElement> disclaimer = browser.findElements(disclaimerXPath);
 		if(disclaimer.size() > 0) {
 			//click the disclaimer
@@ -106,17 +118,29 @@ public class LoginPage {
 			Graphene.guardHttp(acknowledgeButton).click();
 			OOGraphene.waitElement(authXPath);
 		}
+		return this;
 	}
 	
 	/**
 	 * Resume the session, and assert that the resume panel has popped
 	 */
-	public void resumeWithAssert() {
+	public LoginPage resumeWithAssert() {
 		WebElement resume = browser.findElement(resumeButton);
 		Assert.assertNotNull(resume);
 		Assert.assertTrue(resume.isDisplayed());
 		
 		resume.click();
 		OOGraphene.waitBusy();
+		return this;
+	}
+	
+	public LoginPage resume() {
+		List<WebElement> resumes = browser.findElements(resumeButton);
+		if(resumes.size() > 0 && resumes.get(0).isDisplayed()) {
+			WebElement resume = resumes.get(0);
+			resume.click();
+			OOGraphene.waitBusy();
+		}
+		return this;
 	}
 }

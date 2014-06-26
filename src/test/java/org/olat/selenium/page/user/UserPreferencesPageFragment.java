@@ -19,13 +19,17 @@
  */
 package org.olat.selenium.page.user;
 
+import java.util.List;
+
 import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jcodec.common.Assert;
+import org.junit.Assert;
+import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.Select;
 
 /**
  * The user system preferences.
@@ -42,6 +46,10 @@ public class UserPreferencesPageFragment {
 	public static final By ondemandRadio = By.xpath("//div[contains(@class,'o_sel_home_settings_resume')]//input[@type='radio' and @value='ondemand']");
 	
 	public static final By saveSystemSettingsButton = By.xpath("//div[contains(@class,'o_sel_home_settings_gui_buttons')]//button[@type='button']");
+	public static final By saveSystemPrefsButton = By.xpath("//div[contains(@class,'o_sel_home_settings_prefs_buttons')]//button[@type='button']");
+	public static final By resetPrefsButton = By.xpath("//div[contains(@class,'o_sel_home_settings_reset_sysprefs_buttons')]//button[@type='button']");
+	
+	
 	
 	@Drone
 	private WebDriver browser;
@@ -86,6 +94,32 @@ public class UserPreferencesPageFragment {
 		WebElement saveButton = browser.findElement(saveSystemSettingsButton);
 		saveButton.click();
 		OOGraphene.waitBusy();
+		return this;
+	}
+	
+	public UserPreferencesPageFragment setLanguage(String language) {
+		By selectLangBy = By.cssSelector("div.o_sel_home_settings_language select");
+		WebElement selectLang = browser.findElement(selectLangBy);
+		new Select(selectLang).selectByValue(language);
+		
+		WebElement saveButton = browser.findElement(saveSystemPrefsButton);
+		saveButton.click();
+		OOGraphene.waitBusy();
+		return this;
+	}
+	
+	public UserPreferencesPageFragment resetPreferences() {
+		By checksBy = By.cssSelector("div.o_sel_home_settings_reset_sysprefs div.checkbox input");
+		List<WebElement> checks = browser.findElements(checksBy);
+		Assert.assertEquals(3, checks.size());
+		
+		for(WebElement check:checks) {
+			check.click();
+		}
+		
+		WebElement saveButton = browser.findElement(resetPrefsButton);
+		saveButton.click();
+		OOGraphene.waitElement(LoginPage.loginFormBy);
 		return this;
 	}
 	

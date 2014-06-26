@@ -82,36 +82,6 @@ public class FunctionalSettingsTest {
 	
 	@Test
 	@RunAsClient
-	public void checkResetSettings(){
-		/* login for test setup */
-		Assert.assertTrue(functionalUtil.login(browser));
-		
-		/* reset settings */
-		Assert.assertTrue(functionalHomeSiteUtil.resetSettings(browser));
-	}
-	
-	@Test
-	@RunAsClient
-	public void checkLanguageSettings(){
-		/* login for test setup */
-		Assert.assertTrue(functionalUtil.login(browser));
-
-		/* set language */
-		functionalHomeSiteUtil.selectLanguage(browser, FunctionalHomeSiteUtil.GERMAN_LANGUAGE_VALUE);
-	}
-	
-	@Test
-	@RunAsClient
-	public void checkDisableResume(){
-		/* login for test setup */
-		Assert.assertTrue(functionalUtil.login(browser));
-
-		/* resume off */
-		functionalHomeSiteUtil.disableResume(browser);
-	}
-	
-	@Test
-	@RunAsClient
 	public void checkActivatePortlet(){
 		/* login for test setup */
 		Assert.assertTrue(functionalUtil.login(browser));
@@ -236,38 +206,6 @@ public class FunctionalSettingsTest {
 			
 			Assert.assertTrue(browser.isElementPresent(values[i]));
 		}
-	}
-	
-	@Test
-	@RunAsClient
-	public void checkResetPassword() throws IOException, URISyntaxException{
-		/* create test user via REST */
-		List<UserVO> userVO = functionalVOUtil.createTestUsers(deploymentUrl, 1);
-		
-		/* login for test setup */
-		Assert.assertTrue(functionalUtil.login(browser));
-		
-		/* password test */
-		UserVO current = userVO.get(0);
-		
-		Assert.assertTrue(functionalUtil.logout(browser));
-		Assert.assertTrue(functionalUtil.login(browser, current.getLogin(), current.getPassword(), true));
-		
-		functionalUtil.openSite(browser, FunctionalUtil.OlatSite.HOME);
-		functionalHomeSiteUtil.openActionByMenuTree(browser, FunctionalHomeSiteUtil.HomeSiteAction.SETTINGS);
-		
-		String newPassword = ("passwd_" + 0 + "_" + UUID.randomUUID().toString()).substring(0, 24);
-		
-		functionalUtil.openContentTab(browser, SettingsTab.PASSWORD.ordinal());
-		
-		functionalUtil.typePassword(browser, functionalHomeSiteUtil.getOldPasswordCss(), current.getPassword());
-		functionalUtil.typePassword(browser, functionalHomeSiteUtil.getNewPasswordCss(), newPassword);
-		functionalUtil.typePassword(browser, functionalHomeSiteUtil.getConfirmPasswordCss(), newPassword);
-		
-		functionalUtil.saveForm(browser, 0);
-		
-		Assert.assertTrue(functionalUtil.logout(browser));
-		Assert.assertTrue(functionalUtil.login(browser, current.getLogin(), newPassword, true));
 	}
 	
 	
