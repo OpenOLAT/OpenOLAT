@@ -52,6 +52,14 @@
 		text-align: left;	
 	}
 }
+/* use together with o_button_group to have buttons left or right aligned */
+.o_button_group_left {
+	text-align: left;
+}
+.o_button_group_right {
+	text-align: right;
+}
+/* use as wrapper when buttons should be right aligned next to a title */
 .o_header_with_buttons {
 	@include clearfix();
 	@extend %o_block_bottom;
