@@ -69,7 +69,6 @@ public interface SingleSelection extends SelectionElement {
 	public void setKeysAndValues(String[] keys, String[] values,String[] cssClasses);
 	
 	public enum Layout {
-		select,
 		vertical,
 		horizontal
 	}

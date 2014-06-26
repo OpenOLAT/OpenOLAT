@@ -26,24 +26,21 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.translator.Translator;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for SingleSelectionSelectboxComponent
  * 
- * <P>
- * Initial Date:  02.01.2007 <br>
- * @author patrickb
+ * Initial date: 26.06.2014<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
 class SelectboxComponent extends FormBaseComponentImpl {
 
 
 	private static final ComponentRenderer RENDERER = new SelectboxRenderer();
-	private SelectionElement selectionWrapper;
+	private SelectboxSelectionImpl selectionWrapper;
 	private String[] values;
 	private String[] options;
 	private String[] cssClasses;
@@ -52,12 +49,9 @@ class SelectboxComponent extends FormBaseComponentImpl {
 	/**
 	 * @param id A fix identifier for state-less behavior, must be unique or null
 	 */
-	public SelectboxComponent(String id, String name, Translator translator, SelectionElement selectionWrapper, String[] options, String[] values, String[] cssClasses) {
+	public SelectboxComponent(String id, String name, Translator translator, SelectboxSelectionImpl selectionWrapper) {
 		super(id, name, translator);
 		this.selectionWrapper = selectionWrapper;
-		this.options = options;
-		this.values = values;
-		this.cssClasses = cssClasses;
 	}
 
 	/**
@@ -82,6 +76,12 @@ class SelectboxComponent extends FormBaseComponentImpl {
 
 	public String[] getCssClasses() {
 		return cssClasses;
+	}
+	
+	public void setOptionsAndValues(String[] options, String[] values, String[] cssClasses) {
+		this.options = options;
+		this.values = values;
+		this.cssClasses = cssClasses;
 	}
 	
 	public boolean isEscapeHtml() {

@@ -31,7 +31,6 @@ import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.olat.core.gui.components.form.flexible.impl.elements.SingleSelectionComponent.RadioElementComponent;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.ValidationStatusImpl;
@@ -44,7 +43,7 @@ import org.olat.core.util.ValidationStatusImpl;
  * 
  * @author patrickb
  */
-public class SingleSelectionImpl extends FormItemImpl implements SingleSelection {
+public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelection {
 
 	private String[] values;
 	private String[] keys;
@@ -52,14 +51,13 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	private boolean originalSelect = false;
 	private int selectedIndex = -1;
 
-	private final Layout layout;
-	private SingleSelectionComponent component;
+	private final SelectboxComponent component;
 	
 	/**
 	 * @param name
 	 */
-	public SingleSelectionImpl(String name) {
-		this(null, name, Layout.horizontal);
+	public SelectboxSelectionImpl(String name) {
+		this(null, name);
 	}
 
 	/**
@@ -68,10 +66,12 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	 * @param name
 	 * @param presentation
 	 */
-	public SingleSelectionImpl(String id, String name, Layout layout) {
+	public SelectboxSelectionImpl(String id, String name) {
 		super(id, name, false);
-		this.layout = layout;
-		component = new SingleSelectionComponent(id, this);
+		
+		String ssscId = getFormItemId() == null ? null : getFormItemId() + "_SELBOX";
+		component = new SelectboxComponent(ssscId , getName() + "_SELBOX", translator, this);
+		
 	}
 
 	/**
@@ -80,10 +80,6 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	@Override
 	public int getSelected() {
 		return selectedIndex;
-	}
-	
-	public Layout getLayout() {
-		return layout;
 	}
 
 	/**
@@ -126,7 +122,14 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		this.original = null;
 		this.originalSelect = false;
 		// initialize everything
-		initSelectionElements();
+		boolean createValues = (values == null) || (values.length == 0);
+		if (createValues) {
+			values = new String[keys.length];
+			for (int i = 0; i < keys.length; i++) {
+				values[i] = translator.translate(keys[i]);
+			}
+		}
+		component.setOptionsAndValues(keys, values, cssClasses);
 	}
 	
 	/**
@@ -191,8 +194,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 
 	@Override
 	protected void rootFormAvailable() {
-		// create components and add them to the velocity container
-		initSelectionElements();
+		//
 	}
 
 	@Override
@@ -204,7 +206,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		// selection change?
 		// mark corresponding comps as dirty
 		
-		String[] reqVals = getRootForm().getRequestParameterValues(getName());		
+		String[] reqVals = getRootForm().getRequestParameterValues(getName()+"_SELBOX");
 		// -> single selection reqVals.lenght == 0 | 1
 		if (reqVals != null && reqVals.length == 1) {
 			for (int i = 0; i < keys.length; i++) {
@@ -265,26 +267,9 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 			return DISPPREFIX + component.getDispatchID();
 		}
 	}
-
-	private void initSelectionElements() {
-		boolean createValues = (values == null) || (values.length == 0);
-		if (createValues) {
-			values = new String[keys.length];
-			for (int i = 0; i < keys.length; i++) {
-				values[i] = translator.translate(keys[i]);
-			}
-		}
-		// keys,values initialized
-		// create and add radio elements
-		RadioElementComponent[] radios = new RadioElementComponent[keys.length];
-		for (int i = 0; i < keys.length; i++) {
-			radios[i] = new RadioElementComponent(this, i);
-		}
-		component.setRadioComponents(radios);
-	}
-
+	
 	@Override
-	protected SingleSelectionComponent getFormItemComponent() {
+	protected SelectboxComponent getFormItemComponent() {
 		return component;
 	}
 }

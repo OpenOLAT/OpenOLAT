@@ -29,13 +29,9 @@ package org.olat.core.gui.control.generic.portal;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
-import org.olat.core.gui.components.form.flexible.elements.Reset;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.Submit;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormReset;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -54,8 +50,6 @@ public class PortletAutoSortingConfigurator extends FormBasicController{
 	private IntegerElement entriesNum;
 	private SingleSelection sortingCriteriaSelection;
 	private SingleSelection sortingDirectionSelection;
-	private Submit submit;
-	private Reset reset;
 		
 	private SortingCriteria sortingCriteria;
 	private static final String ASCENDING = "ascending";
@@ -69,8 +63,8 @@ public class PortletAutoSortingConfigurator extends FormBasicController{
 	 * @param sortingTerms
 	 */
 	public PortletAutoSortingConfigurator(UserRequest ureq, WindowControl wControl, SortingCriteria sortingCriteria) {
-		super(ureq, wControl, "configAutoSorting");
-	  this.sortingCriteria = sortingCriteria;			
+		super(ureq, wControl);
+		this.sortingCriteria = sortingCriteria;			
 				
 		initForm(ureq);
 		setSortingCriteria(sortingCriteria);
@@ -95,7 +89,7 @@ public class PortletAutoSortingConfigurator extends FormBasicController{
 		sortingCriteria.setSortingTerm(Integer.valueOf(selectedSortingTermKey).intValue());
 		sortingCriteria.setAscending(sortingDirectionSelection.getSelectedKey().equals(ASCENDING));
 		
-	  fireEvent(ureq, Event.DONE_EVENT);		
+		fireEvent(ureq, Event.DONE_EVENT);		
 	}
 	
 	@Override
@@ -106,14 +100,11 @@ public class PortletAutoSortingConfigurator extends FormBasicController{
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// sorting form main layout container using default layout
-		FormLayoutContainer sortingFormContainer = FormLayoutContainer.createDefaultFormLayout("sortingFormContainer", getTranslator());
-		formLayout.add(sortingFormContainer);
-		
 		setFormTitle("portlet.auto.sorting.form.title");
 		
 		final int defaultDisplaySize = 2;
 		//creates and adds the integer element
-		entriesNum = uifactory.addIntegerElement("entriesNumTextField", "portlet.auto.sorting.num_entries", 6, sortingFormContainer);
+		entriesNum = uifactory.addIntegerElement("entriesNumTextField", "portlet.auto.sorting.num_entries", 6, formLayout);
 		//configure the integer element
 		entriesNum.setDisplaySize(defaultDisplaySize);
 		entriesNum.setMaxValueCheck(99, "portlet.sorting.auto.notgreaterthan");
@@ -122,56 +113,47 @@ public class PortletAutoSortingConfigurator extends FormBasicController{
 		entriesNum.setMandatory(true);
 		entriesNum.setEnabled(true);
 
-		// layout container to layout the criterias sorting type and sorting order horizontally
-		FormLayoutContainer criteriasContainer = FormLayoutContainer.createHorizontalFormLayout("criteriasContainer", getTranslator());
-		criteriasContainer.setLabel("portlet.auto.sorting.term", null);
-		sortingFormContainer.add(criteriasContainer);
-		
 		String[] selectionKeys = null;
 		String[] selectionValues = null;		
 		if(sortingCriteria.getSortingTermsList().contains(SortingCriteria.TYPE_SORTING) 
 				&& sortingCriteria.getSortingTermsList().contains(SortingCriteria.ALPHABETICAL_SORTING)
 				&& sortingCriteria.getSortingTermsList().contains(SortingCriteria.DATE_SORTING)) {
-			selectionKeys = new String[]{String.valueOf(SortingCriteria.TYPE_SORTING), String.valueOf(SortingCriteria.ALPHABETICAL_SORTING), String.valueOf(SortingCriteria.DATE_SORTING)};
-			selectionValues = new String [] {getTranslator().translate("portlet.auto.sorting.type"),getTranslator().translate("portlet.auto.sorting.alphabetical"),getTranslator().translate("portlet.auto.sorting.date")};
+			selectionKeys = new String[]{ String.valueOf(SortingCriteria.TYPE_SORTING), String.valueOf(SortingCriteria.ALPHABETICAL_SORTING), String.valueOf(SortingCriteria.DATE_SORTING) };
+			selectionValues = new String [] { translate("portlet.auto.sorting.type"),translate("portlet.auto.sorting.alphabetical"), translate("portlet.auto.sorting.date")};
 		} else if(sortingCriteria.getSortingTermsList().contains(SortingCriteria.ALPHABETICAL_SORTING)
 				&& sortingCriteria.getSortingTermsList().contains(SortingCriteria.DATE_SORTING)) {
 			selectionKeys = new String[]{String.valueOf(SortingCriteria.ALPHABETICAL_SORTING), String.valueOf(SortingCriteria.DATE_SORTING)};
-			selectionValues = new String [] {getTranslator().translate("portlet.auto.sorting.alphabetical"),getTranslator().translate("portlet.auto.sorting.date")};
+			selectionValues = new String [] { translate("portlet.auto.sorting.alphabetical"), translate("portlet.auto.sorting.date")};
 		} else if (sortingCriteria.getSortingTermsList().contains(SortingCriteria.ALPHABETICAL_SORTING))	{
 			selectionKeys = new String[]{String.valueOf(SortingCriteria.ALPHABETICAL_SORTING)};
-			selectionValues = new String [] {getTranslator().translate("portlet.auto.sorting.alphabetical")};
+			selectionValues = new String [] { translate("portlet.auto.sorting.alphabetical")};
 		} else if (sortingCriteria.getSortingTermsList().contains(SortingCriteria.DATE_SORTING))	{
 			selectionKeys = new String[]{String.valueOf(SortingCriteria.DATE_SORTING)};
-			selectionValues = new String [] {getTranslator().translate("portlet.auto.sorting.date")};
+			selectionValues = new String [] { translate("portlet.auto.sorting.date")};
 		}
 				
 		final String[] keysIn = selectionKeys;		
 		final String[] translatedKeys = selectionValues;
-		sortingCriteriaSelection = uifactory.addRadiosVertical("criteriaSelection", null, formLayout, keysIn, translatedKeys);		
+		sortingCriteriaSelection = uifactory.addRadiosVertical("criteriaSelection", "portlet.auto.sorting.term", formLayout, keysIn, translatedKeys);		
 		if (sortingCriteria.getSortingTermsList().contains(SortingCriteria.ALPHABETICAL_SORTING)) {
 			sortingCriteriaSelection.select(String.valueOf(SortingCriteria.ALPHABETICAL_SORTING), true);
 		} else if (sortingCriteria.getSortingTermsList().contains(SortingCriteria.DATE_SORTING)) {
 			sortingCriteriaSelection.select(String.valueOf(SortingCriteria.DATE_SORTING), true);
-		}
-		criteriasContainer.add(sortingCriteriaSelection);		
+		}		
 		
 		//add sortingDirectionSelection
-		final String[] sortingDirectionKeys = new String[]{ASCENDING, DESCENDING};
-		final String[] sortingDirectionTranslatedKeys = new String [] {getTranslator().translate("portlet.auto.sorting.ascending"),getTranslator().translate("portlet.auto.sorting.descending")};
+		final String[] sortingDirectionKeys = new String[]{ ASCENDING, DESCENDING };
+		final String[] sortingDirectionTranslatedKeys = new String [] {
+				translate("portlet.auto.sorting.ascending"), translate("portlet.auto.sorting.descending")
+		};
 		sortingDirectionSelection = uifactory.addRadiosVertical("sortingDirectionSelection", null, formLayout, sortingDirectionKeys, sortingDirectionTranslatedKeys);
-		//sortingDirectionSelection.setLabel("portlet.auto.sorting.direction", null);
-		sortingDirectionSelection.select(ASCENDING, true);
-		criteriasContainer.add(sortingDirectionSelection);		
+		sortingDirectionSelection.select(ASCENDING, true);	
 		
 		// button layout container horizontally. add this one to form layout to not have the indent
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add(buttonContainer);
-		submit = new FormSubmit("submit","submit");
-		buttonContainer.add(submit);
-		reset = new FormReset("reset","reset");
-		buttonContainer.add(reset);
-		
+		uifactory.addFormSubmitButton("submit", buttonContainer);
+		uifactory.addFormResetButton("reset", "reset", buttonContainer);
 	}
 	
 	public SortingCriteria getSortingCriteria() {
@@ -186,6 +168,4 @@ public class PortletAutoSortingConfigurator extends FormBasicController{
 		  sortingDirectionSelection.select(sortingCriteria.isAscending() ? ASCENDING : DESCENDING, true);
 		}
 	}
-	
-
 }

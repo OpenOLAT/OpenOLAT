@@ -83,7 +83,8 @@ public class PortletToolSortingControllerImpl<T> extends BasicController
 		
 		this.sortedItems = sortedItems;
 		//this.callerTranslator = callerTranslator;
-		mainVC = this.createVelocityContainer("portletTools");
+		mainVC = createVelocityContainer("portletTools");
+		mainVC.setDomReplacementWrapperRequired(false);
 						
 		manualSorting = LinkFactory.createCustomLink("manual.sorting.config", "manual.sorting.config", null, Link.NONTRANSLATED, mainVC, this);
 		manualSorting.setTooltip(translate("manual.sorting.config"));

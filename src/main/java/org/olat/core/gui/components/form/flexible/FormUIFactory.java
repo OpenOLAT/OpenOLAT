@@ -39,13 +39,13 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
@@ -54,12 +54,14 @@ import org.olat.core.gui.components.form.flexible.impl.components.SimpleFormErro
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormReset;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormToggleImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.IntegerElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultiSelectionTree;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelectionImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.SingleSelectionImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.SpacerElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.StaticTextElementImpl;
@@ -401,7 +403,7 @@ public class FormUIFactory {
 	 * @return
 	 */
 	public SingleSelection addDropdownSingleselect(final String id, final String name, final String i18nLabel, FormItemContainer formLayout, final String[] theKeys, final String[] theValues, final String[] theCssClasses) {
-		SingleSelection ss = new SingleSelectionImpl(id, name, SingleSelection.Layout.select);
+		SingleSelection ss = new SelectboxSelectionImpl(id, name);
 		ss.setKeysAndValues(theKeys, theValues, theCssClasses);
 		setLabelIfNotNull(i18nLabel, ss);
 		formLayout.add(ss);
@@ -1034,6 +1036,12 @@ public class FormUIFactory {
 	 */
 	public FormSubmit addFormSubmitButton(String id, String name, String i18nKey, FormItemContainer formLayout) {
 		FormSubmit subm = new FormSubmit(id, name, i18nKey);
+		formLayout.add(subm);
+		return subm;
+	}
+	
+	public FormReset addFormResetButton(String name, String i18nKey, FormItemContainer formLayout) {
+		FormReset subm = new FormReset(name, i18nKey);
 		formLayout.add(subm);
 		return subm;
 	}
