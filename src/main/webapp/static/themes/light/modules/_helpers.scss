@@ -1,45 +1,6 @@
-/* HELP, context sensitive */
-a.o_chelp {
-	display: inline-block;
-	padding: 1px 3px;
-	text-align: center;
-	vertical-align: middle;
-	white-space: nowrap;
-	font-size: $o-chelp-font-size;
-	font-weight: $o-chelp-font-weight;
-	line-height: floor($o-chelp-font-size *1.5);
-	color: $o-chelp-color;
-  	background-color: $o-chelp-bg;
-	border: 1px solid $o-chelp-border;
-	border-radius: $o-chelp-border-radius;
-	cursor: help;
- 	@include user-select(none);
-
-	&:active,
-	&:hover,
-	&:focus {
-    	text-decoration: none;
-	    color: $o-chelp-color;
-    	background-color: darken($o-chelp-bg, 8%);
-        border-color: darken($o-chelp-border, 12%);
-  	}
-  	
-	i {
-		font-size: $o-chelp-font-size !important;
-	}
-}
-
-div.o_chelp_wrapper { 
-	position: relative;
-	float: right;
-}
-
-/* add to links that should not be decorated (system links) */ 
-.o_undecorated, %o_undecorated {
-	&:hover,&:focus {
-		text-decoration: none;
-	}
-}
+/* ------------------------------------------------------------- */
+/* block and wrapper styles mainling for spacing and positioning */
+/* ------------------------------------------------------------- */
 
 /* a block of content that should have margins like a paragraph */
 .o_block_bottom, %o_block_bottom {
@@ -63,11 +24,62 @@ div.o_chelp_wrapper {
 	@extend %o_block_large_bottom;
 }
 
-%o_small {
-	/* same as bootstrap small: 14px base font * 85% = about 12px */
-	font-size: 85%;
+/* overflowing content that should have scrollbar */
+.o_scrollblock {
+	/* this must stay on "auto", change to "hidden" and the everything goes to hell */
+	overflow-x: auto;  
+	overflow-y: hidden;
 }
 
+/* block for multiple buttons, center aligned (default) and right aligned when in header wrapper */
+.o_button_group {
+	@extend %o_block_large;
+	text-align: center;
+	a, input, button, .btn-group {
+		margin-right: 5px;		
+		margin-bottom: 0.5em;		
+		&:last-child {
+			margin-right: 0;		
+		}
+	}
+	.btn-group {
+		a, input, button {
+			margin-right: 0;		
+			margin-bottom: 0;		
+		}	
+	}	
+	.dropdown-menu {
+		text-align: left;	
+	}
+}
+.o_header_with_buttons {
+	@include clearfix();
+	@extend %o_block_bottom;
+	h3, h4 {
+		display: inline-block;
+	}
+	.o_button_group {
+		/* same as h3 and h4 */
+		margin-top: ($line-height-computed / 2);
+		margin-bottom: 0;
+		float: right;
+	}
+}
+
+/* ---------------------------------------------------------- */
+/* general content styles for fonts, links and other elements */
+/* ---------------------------------------------------------- */
+
+
+/* font sizes */
+.o_small, %o_small {
+	font-size: $font-size-small;
+}
+.o_large, %o_large {
+	font-size: $font-size-large;
+}
+
+/* disabled elements */
 .o_disabled, %o_disabled {
 	color: $text-muted !important;
 	&:hover{
@@ -75,14 +87,15 @@ div.o_chelp_wrapper {
 	}
 	cursor: default;
 }
-
-/* overflowing content that should have scrollbar */
-.o_scrollblock {
-	/* this must stay on "auto", change to "hidden" and the everything goes to hell */
-	overflow-x: auto;  
-	overflow-y: hidden;
+/* add to links that should not be decorated (system links) */ 
+.o_undecorated, %o_undecorated {
+	&:hover,&:focus {
+		text-decoration: none;
+	}
 }
-.o_copy_code {
+
+/* link or other copy&paste code blocks that might be to long for the screen (creates a scrollbar) */
+.o_copy_code, %o_copy_code {
 	overflow-x: auto;  
 	overflow-y: auto;
   	font-family: $font-family-monospace;
@@ -94,31 +107,8 @@ div.o_chelp_wrapper {
   	border-radius: $border-radius-base;
 }
 
-/* multiple buttons, center aligned */
-.o_button_group {
-	@extend %o_block_large;
-	text-align: center;
-	a, input, button, .btn-group {
-		margin-right: 1em;		
-		margin-bottom: 0.5em;		
-		&:last-child {
-			margin-right: 0;		
-		}
-	}
-	.btn-group {
-		a, input, button {
-			margin-right: 0;		
-			margin-bottom: 0;		
-		}	
-	}
-	
-	.dropdown-menu {
-		text-align: left;	
-	}
-}
-
 /* text that should be on one line, e.g. in tables */
-.o_nowrap {
+.o_nowrap, %o_nowrap {
 	white-space: nowrap;
 }	
 
@@ -130,29 +120,11 @@ div.o_chelp_wrapper {
 }
 
 /* media classes for video and image component */
-.o_video {
-	display: inline-block;
+.o_video, %o_video {
+	@include img-responsive();
 }
-
-.o_image {
-	display: inline-block;
-	max-width: 100%;
-}
-
-
-.o_rotate_90 {
-	-webkit-transform: rotate(-90deg);
-	-moz-transform: rotate(-90deg);
-	-ms-transform: rotate(-90deg);
-	-o-transform: rotate(-90deg);
-	transform: rotate(-90deg);
-	filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
-}
-
-.o_segments {
-}
-.o_segments_content {
-	margin-top: $line-height-computed;
+.o_image, %o_image {
+	@include img-responsive();
 }
 
 /* Styling for overflow text with ellipsis (see js/ellipsis.js) */

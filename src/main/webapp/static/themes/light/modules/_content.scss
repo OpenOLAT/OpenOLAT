@@ -17,97 +17,63 @@
  */
  
 /* content boxes */
-%o_box {
-	margin: $o-box-margin 0;
-	padding: $o-box-padding;
-	border-left: $o-box-border-left-size solid transparent;
+.b_info, p.b_info, div.b_info, span.b_info { 
+	@extend %o_info;
 }
 
-.o_info, %o_info, p.o_info, div.o_info, div.b_info { 
-	@extend %o_box;
-	background-color: $o-box-info-bg;
-	border-color: $o-box-info-color;
-	h2, h3, h4, h5 { color: $o-box-info-h-color;}
+.b_note, p.b_note, div.b_note, span.b_note { 
+	@extend %o_note;
 }
 
-.o_note, %o_note {
-	@extend %o_box;
-	background-color: $o-box-note-bg;
-	border-color: $o-box-note-color;
-	h2, h3, h4, h5 { color: $o-box-note-h-color;}
+.b_important, p.b_important, div.b_important, span.b_important { 
+	@extend %o_important;
 }
-p.o_note, div.o_note {margin: 20px 0;} /* tiny needs something here */
 
-.o_important, %o_important {
-	@extend %o_box;
-	background-color: #FFF1A4;
-	border-color: #F4D000;
-	h2, h3, h4, h5 { color: #F4D000;}
+.b_success, p.b_success, div.b_success, span.b_success { 
+	@extend %o_success;
 }
-p.o_important, div.o_important {margin: 20px 0;} /* tiny needs something here */
 
-.o_success, %o_success {
-	@extend %o_box;
-	background-color: #d6e9c6;
-	border-color: #3c763d;
-	h2, h3, h4, h5 { color: #3c763d;}
+.b_warning, p.b_warning, div.b_warning, span.b_warning { 
+	@extend %o_warning;
 }
-o.o_success, div.o_success {margin: 20px 0;} /* tiny needs something here */
 
-.o_warning, %o_warning {
-	@extend %o_box;
-	background-color: #FFD5AA;
-	border-color: #FF9E3E;
-	h2, h3, h4, h5 { color: #FF9E3E;}
+.b_error, p.b_error, div.b_error, span.b_error { 
+	@extend %o_error;
 }
-o.o_warning, div.o_warning {margin: 20px 0;} /* tiny needs something here */
 
-.o_error, %o_error {
-	@extend %o_box;
-	background-color: #fdf7f7;
-	border-color: #d9534f;
-	h2, h3, h4, h5 { color: #d9534f;}
-}
-o.o_error, div.o_error {margin: 20px 0;} /* tiny needs something here */
-
-.o_border_box { 
+.b_border_box, p.b_border_box, div.b_border_box, span.b_border_box { 
 	border: 1px solid $gray-light; 
 	padding: 1em;
 	@include border-top-radius($border-radius-small); 
 	@include border-bottom-radius($border-radius-small); 
 }
-p.o_border_box, div.o_border_box {margin: 1em 0;} /* tiny needs something here */
-
 
 /* nice table formatting */
 table {
+	td {
+		vertical-align: top;	
+	}
 	&.b_grid {
 		background: transparent;
 		border-collapse: separate;
 		td, th { 
-			padding: 2px 5px;
-			border: 1px solid #888;
+			padding: $padding-xs-vertical $padding-xs-horizontal;
+			border: 1px solid $o-content-table-border;
 		}
-		thead th {
-			background: #ccc;
+		th {
+			background: $gray-lighter;
 		}	
-		tbody th {
-			background: #eee;
-		}
 	}
 	&.b_border {
 		background: transparent;
 		border-collapse: collapse;
 		td, th { 
-			padding: 2px 5px;
-			border: 1px solid #888;
+			padding: $padding-xs-vertical $padding-xs-horizontal;
+			border: 1px solid $o-content-table-border;
 		}	
 	}
 	&.b_full { 
 		width: 99.5%; 
-	}
-	td {
-		vertical-align: top;	
 	}
 	&.b_middle {
 		background: transparent;
@@ -173,14 +139,3 @@ img.o_emoticons_down   	  {background : url(#{$o-images-path}emoticons/thumb.png
 
 /* responsive fixes */
 img {max-width: 100%;} 
-
-/*
-FIXME:oo10
-replaced styles: search/replace in content files on disk:
-
-b_emoticons_ -> o_emoticons_
-b_error -> o_error
-b_link_mailto
-b_link_extern
-b_link_forward
-*/
