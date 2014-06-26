@@ -180,24 +180,6 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_warn:before { content: $fa-var-exclamation-triangle; color: $brand-warning;}
 .o_icon_wizard:before { content: $fa-var-magic; }
 
-/* redundant style from font-awesome to support sass extend mechansism */
-%o_icon {
-  display: inline-block;
-  font-family: FontAwesome;
-  font-style: normal;
-  font-weight: normal;
-  line-height: 1;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* do not move link icons */
-a.o_icon {
-	&:hover,&:focus {
-		text-decoration: none;
-	}
-}
-
 /* repository type icons */
 .o_CourseModule_icon:before, .o_course_icon:before { content: $fa-var-cube; }
 .o_EPStructuredMapTemplate_icon:before { content: $fa-var-puzzle-piece; }
@@ -349,7 +331,6 @@ a.o_icon {
 .o_filetype_doc:before, 
 .o_filetype_docx:before { content: $fa-var-file-word-o; }
 
-
 /* social share icons */
 .o_icon_apple:before { content: $fa-var-apple;}
 .o_icon_facebook:before { content: $fa-var-facebook-square;}
@@ -360,4 +341,11 @@ a.o_icon {
 .o_icon_mailto:before { content: $fa-var-envelope-square;}
 .o_icon_link:before { content: $fa-var-link;}
 .o_icon_yahoo:before { content: $fa-var-yahoo;}
+
+/* do not move link icons */
+a.o_icon {
+	&:hover,&:focus {
+		text-decoration: none;
+	}
+}
 	

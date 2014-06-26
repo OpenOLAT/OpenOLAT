@@ -1,6 +1,6 @@
-<p class="b_clearfix b_large">
+<p class="clearfix o_large">
 	<a href="http://www.openolat.org" target="_blank">
-		<img border="0" class="b_float_left"  src="$r.staticLink("images/openolat/openolat_logo_495x115_with_claim_transparent.png")" alt="$r.translate("about.title")" />
+		<img border="0" class="pull-left"  src="$r.staticLink("images/openolat/openolat_logo_495x115_with_claim_transparent.png")" alt="$r.translate("about.title")" />
 	</a>
 </p>
 <a href="http://blogs.frentix.com/blogs/frentix/2012/08/14/1344960660000.html" target="_blank" title="The OpenOLAT LMS got a high score in the e-learning journal ranking" style="float: right; padding-left: 2em;">
@@ -11,7 +11,7 @@
 <p>
 	$r.translate("about.elearningjournal.test.2012")
 	<br />
-	<a href="http://www.openolat.org/fileadmin/documents/openolat/TH_LMS_TEST_frentix_OpenOLAT_v1.0.pdf" target="_blank" class="b_link_extern">OpenOLAT 8.1 im Test, eLearning Journal Testbericht</a>
+	<a href="http://www.openolat.org/fileadmin/documents/openolat/TH_LMS_TEST_frentix_OpenOLAT_v1.0.pdf" target="_blank" class="o_link_extern">OpenOLAT 8.1 im Test, eLearning Journal Testbericht</a>
 </p>
 
 <h5>$r.translate("about.financing")</h5>
@@ -31,7 +31,7 @@
 	<br />
 	$r.translate("about.linktext") 
 </p>
-<p class="b_align_inverse">
+<p class="text-right">
 	<br />
 	Zürich, 15.08.2013
 </p>
@@ -231,7 +231,7 @@ This product uses software based on specific License
 	<h5>$r.translate("about.translate")</h5>
 	<ul style="list-style: none;">
 	#foreach ($lang in $enabledKeys) 
-		<li class="b_with_small_icon_left b_flag_${lang}">$langNames.get("$lang") : $langTranslators.get("$lang")</li>
+		<li><i class="o_flag o_flag_${lang}"> </i>$langNames.get("$lang") : $langTranslators.get("$lang")</li>
 	#end
 	</ul>
 </p>

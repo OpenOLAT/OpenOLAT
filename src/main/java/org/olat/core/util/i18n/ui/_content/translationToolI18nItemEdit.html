@@ -36,8 +36,8 @@
 			</div>
 			#end
 			<div class="b_clearfix">
-				<div class="b_float_left #if (!$compareSwitchEnabled) b_dimmed #end"><h5 class="b_with_small_icon_left b_flag_$compareLanguageKey">$r.translate("generic.lang.compare"): </h5></div>
-				<div class="b_float_left #if (!$compareSwitchEnabled) b_dimmed #end">$r.render("compareLangSelection") </div>
+				<div class="b_float_left #if (!$compareSwitchEnabled) text-muted #end"><h5 class="b_with_small_icon_left b_flag_$compareLanguageKey">$r.translate("generic.lang.compare"): </h5></div>
+				<div class="b_float_left #if (!$compareSwitchEnabled) text-muted #end">$r.render("compareLangSelection") </div>
 				<div class="b_float_left" style="margin-right: 0;">$r.render("compareSwitch")</div>
 				$r.translate("generic.enable")
 			</div>

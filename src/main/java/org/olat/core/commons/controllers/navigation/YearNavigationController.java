@@ -80,7 +80,7 @@ public class YearNavigationController extends BasicController {
 		Year year = model.getCurrentYear();
 		if (year != null) {
 			yearLink = LinkFactory.createLink("yearLink", mainVC, this);
-			yearLink.setCustomEnabledLinkCSS("b_year");
+			yearLink.setCustomEnabledLinkCSS("o_year");
 			yearLink.setCustomDisplayText(year.getName());
 			yearLink.setUserObject(year);
 			mainVC.contextPut("year", year);
@@ -88,7 +88,7 @@ public class YearNavigationController extends BasicController {
 			monthLinks = new ArrayList<Link>();
 			for (Month month : year.getMonths()) {
 				Link monthLink = LinkFactory.createLink("month_" + month.getName(), mainVC, this);
-				monthLink.setCustomEnabledLinkCSS("b_month");
+				monthLink.setCustomEnabledLinkCSS("o_month");
 				monthLink.setCustomDisplayText(model.getMonthName(month));
 				monthLink.setUserObject(month);
 				monthLinks.add(monthLink);
@@ -119,7 +119,7 @@ public class YearNavigationController extends BasicController {
 			Year year = (Year) yearLink.getUserObject();
 			Event navEvent = new NavigationEvent(year.getItems());
 			fireEvent(ureq, navEvent);
-			yearLink.setCustomEnabledLinkCSS("b_year b_selected");
+			yearLink.setCustomEnabledLinkCSS("o_year o_selected");
 
 		} else if (source == previous) {
 			model.previous();
@@ -127,7 +127,7 @@ public class YearNavigationController extends BasicController {
 			Year year = (Year) yearLink.getUserObject();
 			Event navEvent = new NavigationEvent(year.getItems());
 			fireEvent(ureq, navEvent);
-			yearLink.setCustomEnabledLinkCSS("b_year b_selected");
+			yearLink.setCustomEnabledLinkCSS("o_year o_selected");
 
 		} else if (source == yearLink) {
 			// Click on year toggles between year filter and show all filter
@@ -136,16 +136,16 @@ public class YearNavigationController extends BasicController {
 				Event navEvent = new NavigationEvent(year.getItems());
 				fireEvent(ureq, navEvent);
 				// update GUI
-				yearLink.setCustomEnabledLinkCSS("b_year b_selected");
+				yearLink.setCustomEnabledLinkCSS("o_year o_selected");
 				for (Link monthLink : monthLinks) {
-					monthLink.setCustomEnabledLinkCSS("b_month");
+					monthLink.setCustomEnabledLinkCSS("o_month");
 				}
 				showAll = false;				
 			} else {
 				Event navEvent = new NavigationEvent(allObjects);
 				fireEvent(ureq, navEvent);
 				// update GUI
-				yearLink.setCustomEnabledLinkCSS("b_year");
+				yearLink.setCustomEnabledLinkCSS("o_year");
 				showAll = true;
 			}
 
@@ -155,11 +155,11 @@ public class YearNavigationController extends BasicController {
 			Event navEvent = new NavigationEvent(month.getItems());
 			fireEvent(ureq, navEvent);
 			// update GUI
-			yearLink.setCustomEnabledLinkCSS("b_year");
+			yearLink.setCustomEnabledLinkCSS("o_year");
 			for (Link link : monthLinks) {
-				link.setCustomEnabledLinkCSS("b_month");
+				link.setCustomEnabledLinkCSS("o_month");
 			}
-			monthLink.setCustomEnabledLinkCSS("b_month b_selected");
+			monthLink.setCustomEnabledLinkCSS("o_month o_selected");
 		}
 	}
 

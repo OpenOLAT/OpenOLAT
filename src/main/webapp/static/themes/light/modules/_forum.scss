@@ -153,7 +153,7 @@
 	color: $o-forum-quote-author-color;
 	font-size: $o-forum-quote-font-size; 
 	&:before { 
-		@extend %o_icon;
+		@include o-make-icon(); 
 		content: $fa-var-quote-right; 
 		font-size: ceil(($font-size-base * 1.5));
 		padding-right: 0.5em;

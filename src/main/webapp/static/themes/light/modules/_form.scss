@@ -92,7 +92,7 @@
 			position: absolute; 
 			top: 0; left: 0;
 			z-index: 2; 
-			@include o-opacity(0); /* this is the magic: visually don't show the input element, but nevertheless catch click events */
+			@include opacity(0); /* this is the magic: visually don't show the input element, but nevertheless catch click events */
 		}	
 	}
 }

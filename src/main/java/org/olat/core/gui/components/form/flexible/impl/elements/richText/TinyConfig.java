@@ -27,18 +27,6 @@ package org.olat.core.gui.components.form.flexible.impl.elements.richText;
  *
  */
 public class TinyConfig {
-	/*
-	sb.append("menu:{\n")
-	.append("    file: {title: 'File', items: 'newdocument print'},\n")
-	.append("    edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'},\n")
-	.append("    insert: {title: 'Insert', items: 'media image link | olatmovieviewer olatmatheditor olatsmileys | hr charmap insertdatetime'},\n")
-	.append("    view: {title: 'View', items: 'visualblocks visualchars visualaid | preview fullscreen'},\n")
-	.append("    format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | formats | removeformat'},\n")
-	.append("    table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'},\n")
-	.append("    tools: {title: 'Tools', items: 'code'}\n")
-	.append("},\n");
-	*/
-
 	protected static final TinyConfig editorConfig;
 	protected static final TinyConfig editorFullConfig;
 	protected static final TinyConfig fileEditorConfig;

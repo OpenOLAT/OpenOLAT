@@ -21,20 +21,24 @@ jQuery(function() {
 			var docWidth = jQuery(document).width();
 			if(targetOffset.left >= 0 && callout.width() > 50 && targetOffset.left <= (callout.width() / 2)) {
 				## left edge case: show at left border
+				## add 15px for button size
+				## add 10px for a bit space at left side
 				callout.offset({
 					top: (targetOffset.top + targetEl.height() + 15) ,
-					left: 0
+					left: '10px'
 				});
-				var percent = (targetOffset.left + targetEl.width()/2 + 15) / callout.width() * 100; 
+				var percent = (targetOffset.left + targetEl.width()/2 + 15 + 10/2) / callout.width() * 100; 
 				callout.find('.arrow').css({'left' : percent + '%'});
 				
 			} else if(targetOffset.left >= 0 && callout.width() > 50 && ((targetOffset.left + (callout.width() / 2)) >= docWidth)) {
 				## right edge case: show at right border
+				## add 15px for button size
+				## add 10px for a bit space at right side
 				callout.offset({
 					top: (targetOffset.top + targetEl.height() + 15) ,
-					left: (docWidth - callout.width())
+					left: (docWidth - callout.width() - 10)
 				});
-				var percent = (1 - ((docWidth - targetOffset.left - targetEl.width()/2 -15) / callout.width() )) * 100; 
+				var percent = (1 - ((docWidth - targetOffset.left - targetEl.width()/2 - 15 - 10/2 ) / callout.width() )) * 100; 
 				callout.find('.arrow').css({'left' : percent + '%'});
 
 			} else {

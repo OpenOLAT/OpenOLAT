@@ -74,15 +74,12 @@ a.o_chelp {
 .o_bc_empty{
 	@extend %o_important;
 }
-.o_bc_table{}
 .o_bc_meta {
 	@extend %o_small;
-	.o_comment{}
 	.o_thumbnail{
 		width:200px; 
 		height:200px;
 	}
-	.o_author {}
 }
 
 /* HTML editor */
@@ -104,7 +101,6 @@ a.o_chelp {
 
 /* notifications and subscription */
 .o_notifications_news_wrapper {
-	.o_notifications_news_datechooser {}
 	.o_notifications_news_subscription {
 		margin: $padding-large-vertical 0;
 		h4 i {
@@ -156,14 +152,14 @@ a.o_chelp {
 .o_portrait {
 	display: inline-block;
 	img {
-		border-radius: 50%;
+		border-radius: $o-portrait-radius;
+		border: $o-portrait-border;
 		background-color: $gray-lighter;
 		background-position: 50% 50%; 
 		background-repeat: no-repeat;
 		background-size: cover;
 	}
 }
-.o_portrait_image {}
 .o_portrait_name { 
 	margin-top: $padding-base-vertical;
 }
@@ -190,13 +186,12 @@ a.o_chelp {
 .o_portrait_anonymous_small 	 {background-image: url('#{$o-images-path}portrait/dummy_small.png'); } 
 
 
-
 /* Date component, used in info course element, blog etc */
 .o_datecomp {
 	position: relative; 
 	width: $line-height-computed * 2; 
 	height: $line-height-computed + floor($line-height-computed * 1.5) + 2px; 
-	border: 1px solid $gray; 
+	border: 1px solid $o-datecomp-border; 
 	margin-right: $padding-base-horizontal; 
 	text-align: center; 
 	vertical-align: middle; 
@@ -214,15 +209,16 @@ a.o_chelp {
 		height: $line-height-computed; 
 		line-height: $line-height-computed; 
 		font-size: $font-size-small; 
-		background-color: $brand-primary;
-		color: #fff;
+		background-color: $o-datecomp-month-bg;
+		color: $o-datecomp-month-color;
 	}
 	div.o_day {
 		height: floor($line-height-computed * 1.5);
 		line-height: floor($line-height-computed * 1.5);
 		font-size: $font-size-large;
-		border-top: 1px solid $gray;  
-		background-color: $body-bg;
+		border-top: 1px solid $o-datecomp-border;  
+		background-color: $o-datecomp-day-bg;
+		color: $o-datecomp-day-color;
 	}
 }
 .o_block_with_datecomp {

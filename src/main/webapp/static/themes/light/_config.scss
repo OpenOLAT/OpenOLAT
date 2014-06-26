@@ -20,23 +20,82 @@
  * or http://getbootstrap.com/customize/#less-variables
  * or http://getbootstrap.com/css/#less-variables
  */
+ 
+/* ---- Bootstrap specific configurations ----
+	Add your custom font sizes and other bootstrap overrides here. 
+	Full spec here: http://getbootstrap.com/customize/
+*/
+
+/* 	Add standard bootstrap variables to the mix */
+@import "../../bootstrap/stylesheets/bootstrap/variables";
+
+/* ---- OpenOLAT specific configurations ---- */
+
+/* Content styles used in iFrame e-learning content and in HTML editor */
+$o-content-font-family-base		: $font-family-base !default;
+$o-content-font-size-base		: $font-size-base !default;
+$o-content-line-height-base		: $line-height-base !default;
+$o-content-line-height-computed	: floor(($o-content-font-size-base * $o-content-line-height-base)) !default;
+$o-content-text-color			: $text-color !default;
+$o-content-body-bg				: $body-bg !default;
+$o-content-link-color			: $link-color !default;
+$o-content-link-hover-color		: $link-hover-color !default;
+$o-content-link-decoration		: underline !default;
+$o-content-h1-color				: $brand-primary !default;
+$o-content-h2-color				: $brand-primary !default;
+$o-content-h3-color				: $brand-primary !default;
+$o-content-h4-color				: $brand-primary !default;
+$o-content-h5-color				: $o-content-text-color !default;
+$o-content-hr-color				: $hr-border !default;
+$o-content-table-border			: $gray-light !default;
+$o-content-table-header			: $gray-light !default;
+$o-content-dimmed-color			: $text-muted !default;
+$o-content-disabled-color		: $text-muted !default;
+$o-content-border-box-border	: $gray-light !default;
+$o-content-border-box-radius	: $border-radius-small !default;
+$o-content-border-box-padding	: 1em !default;
+$o-content-border-img-border	: $thumbnail-border !default;
+$o-content-border-img-radius	: $thumbnail-border-radius !default;
+$o-content-border-img-padding	: 3px !default;
+
+$o-font-size-xsmall				: ceil(($font-size-base * 1.7)) !default;  // ~24px
+$o-font-size-xlage				: ceil(($font-size-base * 0.71)) !default; // ~10px
+$o-table-row-selected-color     : pink !default;
 
 
 /* The max width the header/navbar/main/footer can possibly have. */
 $o-page-width-max : 1324px !default;
 
-$navbar-margin-bottom : 0 !default; /* no space between nav and content */
-$navbar-collapse-max-height: 100% !default;
+/* Main content area. The outer area is left and right outside the content area (only visible in large screen).  */
+$o-main-outer-bg 	: #fff !default;
+$o-main-inner-bg 	: #fff !default;
+$o-main-left-bg		: #fff !default;
+$o-main-center-bg	: inherit !default;
+$o-main-right-bg	: inherit !default;
 
-$o-offcanvas-width : 250px !default;
-$o-offcanvas-padding-horizontal: $navbar-padding-horizontal !default;
-$o-offcanvas-padding-vertical: $navbar-padding-vertical !default;
-$o-offcanvas-border :  $navbar-inverse-border !default;
-$o-offcanvas-bg : $navbar-inverse-bg !default;
-$o-offcanvas-link-hover-bg : $navbar-inverse-link-hover-bg;
-$o-offcanvas-color: $navbar-inverse-color;
-$o-offcanvas-link-hover-color : $navbar-inverse-link-hover-color;
+/* Page footer */
+$o-footer-font-size					: $font-size-small !default;
+$o-footer-share-font-size			: $font-size-base !default;
+$o-footer-padding-top				: 10px !default;
+$o-footer-height 					: 70px !default;
+$o-footer-outer-bg 					: #f5f5f5 !default;
+$o-footer-inner-bg 					: #f5f5f5 !default;
+$o-footer-default-color 			: #999 !default;
+$o-footer-default-link-color 		: #999 !default;
+$o-footer-default-link-hover-color 	: #000 !default;
+$o-footer-position-absolute 		: true !default; 
 
+/* Right off-canvas menu */
+$o-offcanvas-width 				: 250px !default;
+$o-offcanvas-padding-horizontal	: $navbar-padding-horizontal !default;
+$o-offcanvas-padding-vertical	: $navbar-padding-vertical !default;
+$o-offcanvas-border 			: $navbar-inverse-border !default;
+$o-offcanvas-bg 				: $navbar-inverse-bg !default;
+$o-offcanvas-link-hover-bg 		: $navbar-inverse-link-hover-bg;
+$o-offcanvas-color				: $navbar-inverse-color;
+$o-offcanvas-link-hover-color 	: $navbar-inverse-link-hover-color;
+
+/* Toolbar in course, editor etc */
 $o-toolbar-size-icon-md 		: ceil($font-size-base * 1.25) !default;
 $o-toolbar-size-text-md 		: ceil($font-size-base * 0.85) !default;
 $o-toolbar-size-caret-md 		: $font-size-base !default;
@@ -54,6 +113,7 @@ $o-toolbar-margin-bottom-sm		: 4px !default;
 $o-toolbar-margin-top-xs		: 6px !default;
 $o-toolbar-margin-bottom-xs		: 4px !default;
 
+/* Left side menu tree */
 $o-tree-bg						: none !default;
 $o-tree-border-color			: $list-group-border !default;
 $o-tree-border-radius			: $list-group-border-radius !default;
@@ -69,47 +129,14 @@ $o-tree-link-active-font-weight	: bold !default;
 $o-tree-link-active-parent-color 			: $o-tree-link-color !default;
 $o-tree-link-active-parent-hover-color 		: $o-tree-link-hover-color !default;
 $o-tree-link-active-parent-font-weight		: $o-tree-link-active-font-weight !default;
-$o-tree-font-size					: $font-size-base !default;
-$o-tree-padding-vertical			: 10px !default;
+$o-tree-font-size				: $font-size-base !default;
+$o-tree-padding-vertical		: 10px !default;
 $o-tree-padding-horizontal_root_visible	: 10px !default;
 $o-tree-padding-horizontal_root_hidden	: 20px !default;
-$o-tree-padding-steps-px 			: 15px !default;
-$o-tree-padding-opener-left-px 		: 1px !default;
+$o-tree-padding-steps-px 		: 15px !default;
+$o-tree-padding-opener-left-px 	: 1px !default;
 
-$o-table-row-selected-color     : pink;
-
-/* Context help buttons */
-$o-chelp-font-size		: 10px !default;
-$o-chelp-font-weight	: $btn-font-weight !default;
-$o-chelp-bg				: $btn-primary-bg !default;
-$o-chelp-color			: $btn-primary-color !default;
-$o-chelp-border			: $btn-primary-border !default;
-$o-chelp-border-radius	: 2px !default;
-
-
-/* Background color of the main content area. */
-$o-main-outer-bg 	: #fff !default;
-$o-main-inner-bg 	: #fff !default;
-$o-main-left-bg		: #fff !default;
-$o-main-center-bg	: inherit !default;
-$o-main-right-bg	: inherit !default;
-
-
-$o-footer-font-size					: $font-size-small !default;
-$o-footer-share-font-size			: $font-size-base !default;
-$o-footer-padding-top				: 10px !default;
-$o-footer-height 					: 70px !default;
-$o-footer-outer-bg 					: #f5f5f5 !default;
-$o-footer-inner-bg 					: #f5f5f5 !default;
-$o-footer-default-color 			: #999 !default;
-$o-footer-default-link-color 		: #999 !default;
-$o-footer-default-link-hover-color 	: #000 !default;
-$o-footer-position-absolute 		: true !default; 
-
-$o-images-path : "../light/images/" !default;
-
-
-
+/* Course and catalog site */
 $o-coursesite-rowelem-width-md : 180px;
 $o-coursesite-rowelem-height-md : 120px;
 $o-coursesite-rowelem-width-sm : 120px;
@@ -117,13 +144,16 @@ $o-coursesite-rowelem-height-sm : 80px;
 $o-coursesite-rowelem-width-xs : 75px;
 $o-coursesite-rowelem-height-xs : 50px;
 $o-coursesite-rowelem-border : $brand-primary;
-
 $o-coursesite-catalog-space : $padding-large-vertical * 2;
 $o-coursesite-catalog-space-sm : $padding-large-vertical;
 $o-coursesite-catalog-space-xs : $padding-xs-vertical;
 $o-coursesite-catalog-border : $brand-primary;
 
+/* Chat and other floating window */
+$o-dialog-window-bg				: #fefefe !default;
+$o-dialog-window-bar-bg			: #eee !default;
 
+/* Instant messaging and chat */
 $o-im-chat-load-font-size		: $font-size-small !default;
 $o-im-chat-history-border		: $gray-lighter !default;
 $o-im-chat-message-bg			: #fff !default;
@@ -142,48 +172,65 @@ $o-im-buddies-font-size			: floor($font-size-base * 0.9) !default;
 $o-im-buddies-link-color		: $link-color !default;
 $o-im-buddies-link-hover-color	: $link-hover-color !default;
 
+/* Forum module */
 $o-forum-quote-author-color 	: $text-muted !default;
 $o-forum-quote-padding			: $padding-large-vertical;
 $o-forum-quote-color 			: $gray !default;
 $o-forum-quote-font-size		: $font-size-small !default;
 $o-forum-attachment-font-size	: $font-size-small !default;
 
-$o-portlet-border			: $panel-default-border !default;
-$o-portlet-border-radius	: $panel-border-radius !default;
-$o-portlet-bg				: $panel-bg !default;
-$o-portlet-header-bg		: $panel-default-heading-bg !default;;
-$o-portlet-edit-border		: $panel-warning-border !default;
-$o-portlet-edit-bg			: $panel-warning-heading-bg !default;
+/* Portlets site */
+$o-portlet-border				: $panel-default-border !default;
+$o-portlet-border-radius		: $panel-border-radius !default;
+$o-portlet-bg					: $panel-bg !default;
+$o-portlet-header-bg			: $panel-default-heading-bg !default;;
+$o-portlet-edit-border			: $panel-warning-border !default;
+$o-portlet-edit-bg				: $panel-warning-heading-bg !default;
 
+/* Full text search results */
 $o-search-context-color			: $state-success-text !default;
 $o-search-details-color			: $text-muted !default;
 $o-search-details-font-size		: $font-size-small !default;
 $o-search-details-bg			: #fff !default;
 $o-search-excerpt-color			: $gray !default;
 
-$o-dialog-window-bg				: #fefefe !default;
-$o-dialog-window-bar-bg			: #eee !default;
+/* Message boxes */
+$o-box-margin					: 20px !default;
+$o-box-padding					: 20px !default;
+$o-box-border-left-size			: 3px !default;
+$o-box-info-bg					: #eee !default;
+$o-box-info-color				: #d4d4d4 !default;
+$o-box-note-bg					: #f4f8fa !default;
+$o-box-note-color				: #5bc0de !default;
+$o-box-important-bg				: #FFF1A4 !default;
+$o-box-important-color			: #F4D000 !default;
+$o-box-success-bg				: #d6e9c6 !default;
+$o-box-success-color			: #3c763d !default;
+$o-box-warning-bg				: #FFD5AA !default;
+$o-box-warning-color			: #FF9E3E !default;
+$o-box-error-bg					: #fdf7f7 !default;
+$o-box-error-color				: #d9534f !default;
 
-/* message boxes */
-$o-box-margin				: 20px !default;
-$o-box-padding				: 20px !default;
-$o-box-border-left-size		: 3px !default;
-$o-box-info-bg				: #eee !default;
-$o-box-info-color			: #d4d4d4 !default;
-$o-box-note-bg				: #f4f8fa !default;
-$o-box-note-color			: #5bc0de !default;
-$o-box-important-bg			: #FFF1A4 !default;
-$o-box-important-color		: #F4D000 !default;
-$o-box-success-bg			: #d6e9c6 !default;
-$o-box-success-color		: #3c763d !default;
-$o-box-warning-bg			: #FFD5AA !default;
-$o-box-warning-color		: #FF9E3E !default;
-$o-box-error-bg				: #fdf7f7 !default;
-$o-box-error-color			: #d9534f !default;
+/* Context help buttons */
+$o-chelp-font-size				: 10px !default;
+$o-chelp-font-weight			: $btn-font-weight !default;
+$o-chelp-bg						: $btn-primary-bg !default;
+$o-chelp-color					: $btn-primary-color !default;
+$o-chelp-border					: $btn-primary-border !default;
+$o-chelp-border-radius			: 2px !default;
 
-/* Content styles */
-$o-content-table-border		: $gray-light !default;
-$o-content-table-header		: $gray-light !default;
+/* Date component */
+$o-datecomp-border				: $gray !default;
+$o-datecomp-month-bg			: $brand-primary !default;
+$o-datecomp-month-color			: #fff !default;
+$o-datecomp-day-bg				: $body-bg !default;
+$o-datecomp-day-color			: $text-color !default;
+
+/* other configurations */
+$o-portrait-radius				: 50% !default;
+$o-portrait-border				: none !default;
+$o-images-path : "../light/images/" !default;
+
 
 /*
 FIXME:oo10 LEGACY VARIABLES

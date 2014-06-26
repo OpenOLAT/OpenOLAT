@@ -747,8 +747,21 @@ public class RichTextConfiguration implements Disposable {
  		tinyMenuSb.append("image_class_list: [\n")
  		  .append("  {title: 'Left', value: 'b_float_left'},\n")
  		  .append("  {title: 'Center', value: 'b_centered'},\n")
- 		  .append("  {title: 'Right', value: 'b_float_right'}\n")
+ 		  .append("  {title: 'Right', value: 'b_float_right'},\n")
+ 		  .append("  {title: 'Circle', value: 'b_circle'},\n")
+ 		  .append("  {title: 'Border', value: 'b_with_border'}\n")
  		  .append("],\n");
+ 		tinyMenuSb.append("link_class_list: [\n")
+		  .append("  {title: 'Extern', value: 'b_link_extern'},\n")
+		  .append("  {title: 'Mail', value: 'b_link_mailto'},\n")
+		  .append("  {title: 'Forward', value: 'b_link_forward'}\n")
+		  .append("],\n");
+ 		tinyMenuSb.append("table_class_list: [\n")
+		  .append("  {title: 'Grid', value: 'b_grid'},\n")
+		  .append("  {title: 'Border', value: 'b_border'},\n")
+		  .append("  {title: 'Full', value: 'b_full'},\n")
+		  .append("  {title: 'Middle', value: 'b_middle'}\n")
+		  .append("],\n");
  		
 		if (tinyConfig.getTool1() != null) {
 			tinyMenuSb.append("toolbar1: '").append(tinyConfig.getTool1()).append("',\n");

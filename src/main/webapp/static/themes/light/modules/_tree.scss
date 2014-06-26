@@ -112,7 +112,7 @@
 	
 	
 	.o_dnd_item { cursor:move; z-index: 100; }
-	.o_dnd_proxy {@include o-opacity(40); background-color: yellow;}
+	.o_dnd_proxy {@include opacity(.4); background-color: yellow;}
 	.o_dnd_item.o_dnd_over { background-color: #ffff60; }
 	.o_dnd_sibling {
 		height:3px;

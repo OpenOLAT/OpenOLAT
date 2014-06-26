@@ -50,8 +50,8 @@
 			right: ($grid-gutter-width / 2);
 			/* make powerd-by buttons a bit less colorful to not distract user from learning */
 			img {	
-				@include o-opacity(60);
-				&:hover { @include o-opacity(100); }	
+				@include opacity(.6);
+				&:hover { @include opacity(1); }	
 			}		
 			a {
 				@extend %o_undecorated; 
@@ -84,10 +84,10 @@
 	font-size: $o-footer-share-font-size;
 	a { 
 		margin: 0 3px 0 0; 
-		@include o-opacity(60);
+		@include opacity(.6);
 		@extend %o_undecorated;
 	}
 	a:hover { 
-		@include o-opacity(100); 
+		@include opacity(1); 
 	}
 }

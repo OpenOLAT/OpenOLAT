@@ -78,23 +78,46 @@
 /* general content styles for fonts, links and other elements */
 /* ---------------------------------------------------------- */
 
-
 /* font sizes */
+.o_xsmall, %o_xsmall {
+	font-size: $font-size-small;
+}
 .o_small, %o_small {
 	font-size: $font-size-small;
 }
 .o_large, %o_large {
 	font-size: $font-size-large;
 }
+.o_xlarge, %o_xlarge {
+	font-size: $font-size-large;
+}
 
 /* disabled elements */
 .o_disabled, %o_disabled {
-	color: $text-muted !important;
+	color: $o-content-disabled-color !important;
 	&:hover{
-		color: $text-muted !important;
+		color: $o-content-disabled-color !important;
 	}
 	cursor: default;
 }
+/* dimmed text */
+.o_dimmed, %o_dimmed { 
+	@include opacity(.4);
+}
+/* selected text */
+.o_selected, %o_selected { 
+	font-weight: bold; 
+}	
+/* deleted text */
+.o_deleted, %o_deleted { 
+	text-decoration: line-through;
+}	
+
+/* colors (used in repo and else where) //FIXME: FG refactor to something meaningfull*/
+.o_ochre { color: #c8a959; }
+.o_blue { color: #12223F; }
+
+
 /* add to links that should not be decorated (system links) */ 
 .o_undecorated, %o_undecorated {
 	&:hover,&:focus {
