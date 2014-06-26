@@ -99,6 +99,9 @@ h5 {
 .b_copy_code, p.b_copy_code, div.b_copy_code, code, pre { 
 	@extend %o_copy_code;
 }
+div.b_scrollblock { 
+	@extend %o_scrollblock;
+}
 
 /* nice table formatting */
 table {

@@ -24,11 +24,14 @@
 	@extend %o_block_large_bottom;
 }
 
-/* overflowing content that should have scrollbar */
-.o_scrollblock {
+/* overflowing content that should have scrollbar when content overflows available space */
+.o_scrollblock, %o_scrollblock {
 	/* this must stay on "auto", change to "hidden" and the everything goes to hell */
 	overflow-x: auto;  
 	overflow-y: hidden;
+	/* allow scrolling of wrapped iframe on mobile devices */
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+    -webkit-overflow-scrolling: touch;	
 }
 
 /* block for multiple buttons, center aligned (default) and right aligned when in header wrapper */

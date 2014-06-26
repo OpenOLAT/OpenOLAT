@@ -47,6 +47,12 @@
 			/* help icon */
 			margin-right: 0.4em;
 		}
+		@media (max-width: $screen-xs-max) { 
+			/* on small viewport show only icons */
+			#o_navbar_impress a span {
+				display: none;
+			}
+		}	
 	}
 	#o_navbar_tools_personal {
 		.o_navbar_tool a {
