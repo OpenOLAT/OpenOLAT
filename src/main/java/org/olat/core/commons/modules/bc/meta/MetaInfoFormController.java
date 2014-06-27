@@ -183,7 +183,9 @@ public class MetaInfoFormController extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("mf.metadata.title");
+		if(isSubform) {
+			setFormTitle("mf.metadata.title");
+		}
 		setFormContextHelp(MetaInfoFormController.class.getPackage().getName(), "bc-metainfo.html", "chelp.bc-metainfo.hover");
 
 		// filename

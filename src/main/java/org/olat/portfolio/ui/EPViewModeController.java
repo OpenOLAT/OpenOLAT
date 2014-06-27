@@ -69,9 +69,19 @@ public class EPViewModeController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		tableLink = uifactory.addFormLink("view.mode.table", VIEWMODE_TABLE, "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-		tableLink.setIconLeftCSS("o_icon o_icon_table  o_icon-lg");
+		tableLink.setIconRightCSS("o_icon o_icon_table o_icon-lg");
 		detailsLink = uifactory.addFormLink("view.mode.details", VIEWMODE_DETAILS, "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-		detailsLink.setIconLeftCSS("o_icon o_icon_list o_icon-lg");
+		detailsLink.setIconRightCSS("o_icon o_icon_table_large o_icon-lg");
+	}
+	
+	public void selectDetails() {
+		tableLink.setIconLeftCSS(null);
+		detailsLink.setIconLeftCSS("o_icon o_icon_check o_icon-lg");
+	}
+	
+	public void selectTable() {
+		tableLink.setIconLeftCSS("o_icon o_icon_check o_icon-lg");
+		detailsLink.setIconLeftCSS(null);
 	}
 
 	/**

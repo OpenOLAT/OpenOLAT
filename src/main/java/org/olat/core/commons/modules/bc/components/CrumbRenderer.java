@@ -47,39 +47,35 @@ public class CrumbRenderer {
 	 * @param iframePostEnabled
 	 * @return	HTML fragment of briefcase path
 	 */
-	public final void render(FolderComponent fc, StringOutput sb, URLBuilder ubu, boolean renderLinks, boolean iframePostEnabled) {
+	public final void render(FolderComponent fc, StringOutput sb, URLBuilder ubu, boolean iframePostEnabled) {
 		StringOutput pathLink = new StringOutput();
 		ubu.buildURI(pathLink, null, null, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 
-		// append toplevel node
-		sb.append("<ol class='breadcrumb'>");
-		if (renderLinks) {
-			sb.append("<li><a href='").append(pathLink).append("'");
-			if (iframePostEnabled) { // add ajax iframe target
-				StringOutput so = new StringOutput();
-				ubu.appendTarget(so);
-				sb.append(so.toString());
-			}
-			sb.append(">");
-		}
-		sb.append(fc.getRootContainer().getName());
-		if (renderLinks)
-			sb.append("</a></li>");
+		StringOutput so = new StringOutput();
+		ubu.appendTarget(so);
 		
-		StringTokenizer st = new StringTokenizer(fc.getCurrentContainerPath(), "/", false);
+		// append toplevel node
+		sb.append("<ol class='breadcrumb'>")
+		  .append("<li><a href='").append(pathLink).append("'");
+		if (iframePostEnabled) { // add ajax iframe target
+			sb.append(so.toString());
+		}
+		sb.append(">")
+		  .append(fc.getRootContainer().getName()).append("</a></li>");
+		
+		String path = fc.getCurrentContainerPath();
+		StringTokenizer st = new StringTokenizer(path, "/", false);
 		while (st.hasMoreElements()) {
 			String token = st.nextToken();
 			pathLink.append(ubu.encodeUrl(token));
-			if (st.hasMoreElements() && renderLinks) {
+			if (st.hasMoreElements()) {
 				sb.append("<li><a href='").append(pathLink).append("'");
 				if (iframePostEnabled) { // add ajax iframe target
-					StringOutput so = new StringOutput();
-					ubu.appendTarget(so);
 					sb.append(so.toString());
 				}
 				sb.append(">").append(token).append("</a></li>");
 			} else {
-				sb.append("<li><a href='#'>").append(token).append("</a></li>");
+				sb.append("<li class='active'>").append(token).append("</li>");
 			}
 		}
 		sb.append("</ol>");

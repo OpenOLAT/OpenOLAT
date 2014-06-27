@@ -90,7 +90,7 @@ public class CmdEditContent extends BasicController implements FolderCommand {
 		status = FolderCommandHelper.sanityCheck(wControl, folderComponent);
 		if(status == FolderCommandStatus.STATUS_SUCCESS) {
 			currentItem = folderComponent.getCurrentContainerChildren().get(Integer.parseInt(pos));
-			status = FolderCommandHelper.sanityCheck2(wControl, folderComponent, ureq, currentItem);
+			status = FolderCommandHelper.sanityCheck2(wControl, folderComponent, currentItem);
 		}
 		if(status == FolderCommandStatus.STATUS_FAILED) {
 			return null;
@@ -157,10 +157,21 @@ public class CmdEditContent extends BasicController implements FolderCommand {
 		return this;
 	}
 
+	@Override
 	public int getStatus() {
 		return status;
 	}
+
+	@Override
+	public boolean runsModal() {
+		return false;
+	}
 	
+	@Override
+	public String getModalTitle() {
+		return null;
+	}
+
 	public String getFileName() {
 		return currentItem.getName();
 	}
@@ -235,9 +246,4 @@ public class CmdEditContent extends BasicController implements FolderCommand {
 	protected void doDispose() {
 		// auto dispose by basic controller
 	}
-
-	public boolean runsModal() {
-		return false;
-	}
-
 }

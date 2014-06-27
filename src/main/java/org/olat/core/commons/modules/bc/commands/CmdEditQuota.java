@@ -51,8 +51,8 @@ public class CmdEditQuota extends DefaultController implements FolderCommand, Co
 		super(wControl);
 	}
 
+	@Override
 	public Controller execute(FolderComponent folderComponent, UserRequest ureq, WindowControl wControl, Translator translator) {
-
 		VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(folderComponent.getCurrentContainer());
 		if (inheritingContainer == null || inheritingContainer.getLocalSecurityCallback().getQuota() == null) {
 			getWindowControl().setWarning(translator.translate("editQuota.nop"));
@@ -74,11 +74,25 @@ public class CmdEditQuota extends DefaultController implements FolderCommand, Co
 		}
 	}
 
-	public int getStatus() { return status; }
+	@Override
+	public int getStatus() {
+		return status;
+	}
+
+	@Override
+	public boolean runsModal() {
+		return false;
+	}
 	
+	@Override
+	public String getModalTitle() {
+		return null;
+	}
+
 	/**
 	 * @see org.olat.core.gui.control.ControllerEventListener#dispatchEvent(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == quotaEditController) {
 			if (event == Event.CHANGED_EVENT) {
@@ -92,20 +106,16 @@ public class CmdEditQuota extends DefaultController implements FolderCommand, Co
 		}
 	}
 
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		// TODO Auto-generated method stub
-		
+		//
 	}
 
+	@Override
 	protected void doDispose() {
 		if (quotaEditController != null) {
 			quotaEditController.dispose();
 			quotaEditController = null;
 		}
 	}
-
-	public boolean runsModal() {
-		return false;
-	}
-
 }

@@ -183,7 +183,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	@Override
 	public void setIconLeftCSS(String iconCSS) {
 		this.iconLeftCSS = iconCSS;
-		if(iconCSS != null && component != null){
+		if(component != null){
 			component.setIconLeftCSS(iconCSS);
 		}
 	}
@@ -191,7 +191,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	@Override
 	public void setIconRightCSS(String iconCSS) {
 		this.iconRightCSS = iconCSS;
-		if(iconCSS != null && component != null){
+		if(component != null){
 			component.setIconRightCSS(iconCSS);
 		}
 	}

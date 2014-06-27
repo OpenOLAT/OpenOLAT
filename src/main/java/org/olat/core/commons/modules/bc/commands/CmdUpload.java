@@ -190,12 +190,20 @@ public class CmdUpload extends BasicController implements FolderCommand {
 		}
 	}
 
+	@Override
+	public int getStatus() {
+		return status;
+	}
+	@Override
+	public boolean runsModal() {
+		return false;
+	}
 	
-	/**
-	 * @return
-	 */
-	public int getStatus() { return status; }
-	
+	@Override
+	public String getModalTitle() {
+		return translate("ul.quote");
+	}
+
 	public void event(UserRequest ureq, Component source, Event event) {
 		// no events to catch
 	}
@@ -243,19 +251,14 @@ public class CmdUpload extends BasicController implements FolderCommand {
 	 * @return
 	 */
 	public String getFileName(){
-			return this.uploadFileName;
+		return uploadFileName;
 	}
 	
 	public Boolean fileWasOverwritten(){
-		return this.overwritten;
+		return overwritten;
 	}
 	
 	protected void doDispose() {
 		// nothing to dispose
 	}
-
-	public boolean runsModal() {
-		return false;
-	}
-
 }

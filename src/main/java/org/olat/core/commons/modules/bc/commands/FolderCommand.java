@@ -63,4 +63,6 @@ public interface FolderCommand {
 	 *         the parent controller
 	 */
 	public boolean runsModal();
+	
+	public String getModalTitle();
 }

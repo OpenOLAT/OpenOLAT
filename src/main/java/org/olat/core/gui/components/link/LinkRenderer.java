@@ -140,15 +140,17 @@ public class LinkRenderer extends DefaultComponentRenderer {
 		extJsSb.append(" = jQuery('#").append(elementId).append("');");
 
 		boolean hasExtJsSb = false;
+		boolean inForm = isInForm(args);
 
 		String i18n = link.getI18n();
 		String title = link.getTitle();
 		String customDisplayText = link.getCustomDisplayText();
+		
 
 		// a form link can not have tooltips at the moment
 		// tooltip sets its own id into the <a> tag.
 		if (link.isEnabled()) {
-			sb.append("<a ");
+			sb.append("<p class='form-control-static'>", inForm).append("<a ");
 			// add layouting
 			sb.append(cssSb);
 			
@@ -258,7 +260,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			if(link.getBadge() != null) {
 				renderer.render(link.getBadge(), sb, args);
 			}
-			sb.append("</a>");
+			sb.append("</a>").append("</p>", inForm);
 			
 			//on click() is part of prototype.js
 			if(link.isRegisterForMousePositionEvent()) {
@@ -338,5 +340,17 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			extJsSb.append("\n/* ]]> */\n</script>");
 			sb.append(extJsSb);
 		}
+	}
+	
+	private boolean isInForm(String[] args) {
+		boolean embedded = false;
+		if(args != null && args.length > 0) {
+			for(String arg:args) {
+				if("form".equals(arg)) {
+					embedded = true;
+				}
+			}
+		}
+		return embedded;
 	}
 }

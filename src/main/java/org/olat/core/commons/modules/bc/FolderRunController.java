@@ -398,7 +398,9 @@ public class FolderRunController extends BasicController implements Activateable
 					// activate command's controller
 					listenTo(folderCommandController);
 					if (!folderCommand.runsModal()) {
-						cmc = new CloseableModalController(getWindowControl(), translate("close"), folderCommandController.getInitialComponent());
+						String title = folderCommand.getModalTitle();
+						cmc = new CloseableModalController(getWindowControl(), translate("close"),
+								folderCommandController.getInitialComponent(), true, title);
 						cmc.activate();						
 						listenTo(cmc);
 					}

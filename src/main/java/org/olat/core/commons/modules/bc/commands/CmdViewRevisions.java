@@ -25,7 +25,6 @@ import org.olat.core.commons.modules.bc.components.ListRenderer;
 import org.olat.core.commons.modules.bc.version.RevisionListController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -54,7 +53,6 @@ public class CmdViewRevisions extends BasicController implements FolderCommand {
 
 	private int status = FolderCommandStatus.STATUS_SUCCESS;
 	private RevisionListController revisionListCtr;
-	private VelocityContainer mainVC;
 	private VFSItem currentItem;
 	
 	private final VFSLockManager vfsLockManager;
@@ -80,7 +78,7 @@ public class CmdViewRevisions extends BasicController implements FolderCommand {
 		status = FolderCommandHelper.sanityCheck(wControl, folderComponent);
 		if(status == FolderCommandStatus.STATUS_SUCCESS) {
 			currentItem = folderComponent.getCurrentContainerChildren().get(Integer.parseInt(pos));
-			status = FolderCommandHelper.sanityCheck2(wControl, folderComponent, ureq, currentItem);
+			status = FolderCommandHelper.sanityCheck2(wControl, folderComponent, currentItem);
 		}
 		if(status == FolderCommandStatus.STATUS_FAILED) {
 			return null;
@@ -92,23 +90,27 @@ public class CmdViewRevisions extends BasicController implements FolderCommand {
 		}
 
 		setTranslator(translator);
-		mainVC = createVelocityContainer("revisions");
 		
 		boolean locked = vfsLockManager.isLockedForMe(currentItem, ureq.getIdentity(), ureq.getUserSession().getRoles());
 		revisionListCtr = new RevisionListController(ureq, wControl, (Versionable)currentItem, locked);
 		listenTo(revisionListCtr);
-		mainVC.put("revisionList", revisionListCtr.getInitialComponent());
-
-		putInitialPanel(mainVC);
+		putInitialPanel(revisionListCtr.getInitialComponent());
 		return this;
 	}
 
+	@Override
 	public int getStatus() {
 		return status;
 	}
 
+	@Override
 	public boolean runsModal() {
 		return false;
+	}
+	
+	@Override
+	public String getModalTitle() {
+		return translate("versions.revisions");
 	}
 
 	@Override

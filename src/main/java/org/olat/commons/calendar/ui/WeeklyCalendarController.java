@@ -111,7 +111,6 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	private FormLink subscribeButton, unsubscribeButton;
 
 	private CloseableModalController cmc;
-	private GotoDateCalendarsForm gotoDateForm;
 	private SubscriptionContext subsContext;
 	private ContextualSubscriptionController csc;
 	
@@ -482,10 +481,6 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			cmc.deactivate();
 		} else if (source == subscriptionController) {
 			// nothing to do here
-			//TODO jquery mainPanel.setContent(vcMain);
-		//TODO jquery vcMain.contextPut("isSubscribed", new Boolean(calendarSubscription.isSubscribed()));
-		} else if (source == gotoDateForm) {
-			weeklyCalendar.setFocusDate(gotoDateForm.getGotoDate());
 		} else if (source == dbcSequence) {
 			if(event != Event.CANCELLED_EVENT) {
 				int pos = DialogBoxUIFactory.getButtonPos(event);

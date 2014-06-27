@@ -43,6 +43,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -63,7 +64,7 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 	private final VFSLockManager vfsLockManager;
 
 	protected CmdEditMeta(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale()));
 		vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
 	}
 
@@ -110,8 +111,14 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 		return this;
 	}
 
+	@Override
 	public int getStatus() {
 		return status;
+	}
+
+	@Override
+	public String getModalTitle() {
+		return translate("mf.metadata.title");
 	}
 
 	/**
@@ -119,6 +126,7 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 	 *      org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// nothing to do here
 	}

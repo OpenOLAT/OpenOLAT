@@ -68,23 +68,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class EPArtefactPoolRunController extends BasicController implements Activateable2 {
 
 	private VelocityContainer vC;
-	@Autowired
-	private EPFrontendManager ePFMgr;
-	@Autowired
-	private PortfolioModule portfolioModule;
 	private EPFilterSettings filterSettings = new EPFilterSettings();
 	private EPAddArtefactController addArtefactCtrl;
 	private boolean artefactChooseMode;
 	private SegmentViewComponent segmentView;
-	private Link artefactsLink;
-	private Link browseLink;
-	private Link searchLink;
+	private Link artefactsLink, browseLink, searchLink;
 	private Controller filterSelectCtrl;
 	private Filter previousFilterMode;
 	private EPViewModeController viewModeCtrl;
 	private EPMultiArtefactsController artCtrl;
 	private String previousViewMode;
 	private List<AbstractArtefact> previousArtefactsList;
+	
+	@Autowired
+	private EPFrontendManager ePFMgr;
+	@Autowired
+	private PortfolioModule portfolioModule;
 	
 	private PortfolioStructure preSelectedStruct;
 
@@ -100,6 +99,7 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 
 		if (portfolioModule.isEnabled()) {
 			init(ureq);
+			initViewModeController(ureq);
 			viewComp = vC;
 			vC.put("filterPanel", filterPanel);
 			
@@ -109,7 +109,6 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 				initTPFilterView(ureq);
 			}
 
-			initViewModeController(ureq);
 			putInitialPanel(viewComp);
 		} else {
 			putInitialPanel(new Panel("empty"));
@@ -192,8 +191,10 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 		if (userPrefsMode != null && userPrefsMode.equals(EPViewModeController.VIEWMODE_TABLE)){
 			EPSecurityCallback secCallback = new EPSecurityCallbackImpl(true, true);
 			artCtrl = new EPMultipleArtefactsAsTableController(ureq, getWindowControl(), artefacts, null, artefactChooseMode, secCallback);
+			viewModeCtrl.selectTable();
 		} else {
-			artCtrl = new EPMultipleArtefactPreviewController(ureq, getWindowControl(), artefacts, artefactChooseMode);			
+			artCtrl = new EPMultipleArtefactPreviewController(ureq, getWindowControl(), artefacts, artefactChooseMode);
+			viewModeCtrl.selectDetails();
 		}
 		previousViewMode = userPrefsMode;
 		listenTo(artCtrl);

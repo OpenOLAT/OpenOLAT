@@ -111,8 +111,7 @@ public class FolderCommandHelper {
 	 * @param currentItem
 	 * @return
 	 */
-	public static final int sanityCheck2(WindowControl wControl, FolderComponent fc,
-			UserRequest ureq, VFSItem currentItem) {
+	public static final int sanityCheck2(WindowControl wControl, FolderComponent fc, VFSItem currentItem) {
 		if(!VFSManager.exists(currentItem)) {
 			wControl.setError(fc.getTranslator().translate("FileDoesNotExist"));
 			return FolderCommandStatus.STATUS_FAILED;

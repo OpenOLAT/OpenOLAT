@@ -39,14 +39,14 @@ public class FormToggleImpl extends FormLinkImpl implements FormToggle {
 	private boolean isOn = false;
 
 	public FormToggleImpl(String name, String cmd, String i18n) {
-		super(name, cmd, i18n, 0);
-		setCustomEnabledLinkCSS(inactiveCSS);
+		this(name, cmd, i18n, 0);
 	}
 
 	public FormToggleImpl(String name, String cmd, String toggleText,
 			int nontranslated) {
 		super(name, cmd, toggleText, nontranslated);
 		setCustomEnabledLinkCSS(inactiveCSS);
+		setIconLeftCSS("o_icon o_icon_toggle");
 	}
 
 	@Override
@@ -74,12 +74,16 @@ public class FormToggleImpl extends FormLinkImpl implements FormToggle {
 	public void toggleOn() {
 		isOn = true;
 		setCustomEnabledLinkCSS(activeCSS);
+		setIconLeftCSS(null);
+		setIconRightCSS("o_icon o_icon_toggle");
 	}
 
 	@Override
 	public void toggleOff() {
 		isOn = false;
 		setCustomEnabledLinkCSS(inactiveCSS);
+		setIconLeftCSS("o_icon o_icon_toggle");
+		setIconRightCSS(null);
 	}
 
 	@Override

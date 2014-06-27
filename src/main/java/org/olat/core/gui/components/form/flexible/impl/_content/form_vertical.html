@@ -18,7 +18,7 @@
 		#if ($f.hasLabel($item))
 			$r.render("${item}_LABEL", "$f.getItemId($item)")
 		#end
-			$r.render(${item})
+			$r.render(${item}, "form")
 			#if($f.hasError($item))
 				<span class="o_icon o_icon_error form-control-feedback"></span>
 			#end

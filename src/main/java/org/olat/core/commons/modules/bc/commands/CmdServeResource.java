@@ -167,10 +167,18 @@ public class CmdServeResource implements FolderCommand {
 		return null;
 	}
 
-	public int getStatus() { return status; }
+	@Override
+	public int getStatus() {
+		return status;
+	}
 
+	@Override
 	public boolean runsModal() {
 		return false;
 	}
 
+	@Override
+	public String getModalTitle() {
+		return null;
+	}
 }

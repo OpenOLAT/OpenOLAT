@@ -71,9 +71,9 @@ public class AccessMethodRenderer implements CustomCellRenderer {
 		uniqueType.add(type);
 		
 		AccessMethodHandler handler = acModule.getAccessMethodHandler(type);
-		sb.append("<span class='o_nowrap'><a class='o_icon ");
+		sb.append("<span class='o_nowrap'><i class='o_icon ");
 		sb.append(transaction.getMethod().getMethodCssClass());
-		sb.append("_icon o_icon-lg'>");
+		sb.append("_icon o_icon-lg'> </i> ");
 		sb.append(handler.getMethodName(locale));
 		sb.append("</span>");
 	}

@@ -73,8 +73,10 @@
 	margin-top: floor($grid-gutter-width / 2);
 }
 
-.o_ep_filter .o_date.form-inline .form-group {
+.o_ep_filter {
+	.o_date.form-inline .form-group {
 		margin-left: 8px;
+	}
 }
 
 .o_eportfolio_share_policy_wrapper {

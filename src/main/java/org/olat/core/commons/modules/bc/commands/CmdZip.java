@@ -35,16 +35,14 @@ import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormReset;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.FileUtils;
@@ -64,22 +62,22 @@ import org.olat.core.util.vfs.VFSLeaf;
  * Initial Date:  30.01.2008 <br>
  * @author Lavinia Dumitrescu
  */
-public class CmdZip extends BasicController implements FolderCommand {
+public class CmdZip extends FormBasicController implements FolderCommand {
 	
 	private int status = FolderCommandStatus.STATUS_SUCCESS;	
 	
 	private VelocityContainer mainVC;
-	private CreateItemForm createItemForm;
 	private VFSContainer currentContainer;
 	private FileSelection selection;
-	 
+	private TextElement textElement;
 	
 	protected CmdZip(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 	}
 	
+	@Override
 	public Controller execute(FolderComponent folderComponent, UserRequest ureq, WindowControl wControl, Translator trans) {
-		this.setTranslator(trans);
+		setTranslator(trans);
 		currentContainer = folderComponent.getCurrentContainer();
 		if (currentContainer.canWrite() != VFSConstants.YES) {
 			throw new AssertException("Cannot write to current folder.");
@@ -96,43 +94,25 @@ public class CmdZip extends BasicController implements FolderCommand {
 			return null;
 		}
 		
+		initForm(ureq);
 		mainVC = createVelocityContainer("createZipPanel");
 		mainVC.contextPut("fileselection", selection);
-		
-		createItemForm = new CreateItemForm(ureq, wControl, trans);
-		listenTo(createItemForm);		
-		mainVC.put("createItemForm", createItemForm.getInitialComponent());
-		putInitialPanel(mainVC);
 		return this;
 	}
-
-	public int getStatus() {
-		return status;
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
-	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		//empty
-	}
 	
-	public void event(UserRequest ureq, Controller source, Event event) {
-		if(source == createItemForm) {
-			if(event == Event.CANCELLED_EVENT){
-				status = FolderCommandStatus.STATUS_CANCELED;
-				fireEvent(ureq, FolderCommand.FOLDERCOMMAND_FINISHED);
-			} else if (event == Event.FAILED_EVENT) {
-        //abort
-				status = FolderCommandStatus.STATUS_FAILED;
-				fireEvent(ureq, FOLDERCOMMAND_FINISHED);
-			} else if (event == Event.DONE_EVENT) {
-        //we're done, notify listerers				
-				fireEvent(ureq, new FolderEvent(FolderEvent.ZIP_EVENT, selection.renderAsHtml()));				
-				fireEvent(ureq, FolderCommand.FOLDERCOMMAND_FINISHED);
-			}
-		}
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		String files = selection.renderAsHtml();
+		uifactory.addStaticExampleText("zip.confirm", files, formLayout);
+		
+		textElement = uifactory.addTextElement("fileName", "zip.name", 20, "", formLayout);
+		textElement.setMandatory(true);			
+		uifactory.addStaticTextElement("extension", null, translate("zip.extension"), formLayout);
+		
+		FormLayoutContainer formButtons = FormLayoutContainer.createButtonLayout("formButton", getTranslator());
+		formLayout.add(formButtons);
+		uifactory.addFormSubmitButton("submit","zip.button", formButtons);
+		uifactory.addFormCancelButton("cancel", formButtons, ureq, getWindowControl());	
 	}
 
 	/**
@@ -141,115 +121,102 @@ public class CmdZip extends BasicController implements FolderCommand {
 	protected void doDispose() {
 		// nothing to do
 	}
-	
-	/**
-	 * 
-	 * Description:<br>
-	 * Implementation of AbstractCreateItemForm.
-	 * 
-	 * <P>
-	 * Initial Date:  30.01.2008 <br>
-	 * @author Lavinia Dumitrescu
-	 */
-	private class CreateItemForm extends AbstractCreateItemForm {
-		
-		public CreateItemForm(UserRequest ureq, WindowControl wControl, Translator translator) {
-			super(ureq, wControl, translator);
-		}
-		
-		@Override
-		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {				
-			
-			FormLayoutContainer horizontalLayout = FormLayoutContainer.createHorizontalFormLayout("itemLayout", getTranslator());
-			formLayout.add(horizontalLayout);
-			textElement = uifactory.addTextElement("fileName", "zip.name", 20, "", horizontalLayout);
-			textElement.setMandatory(true);			
-			uifactory.addStaticTextElement("extension", null, translate("zip.extension"), horizontalLayout);
-			
-			FormLayoutContainer formButtons = FormLayoutContainer.createHorizontalFormLayout("formButton", getTranslator());
-			formLayout.add(formButtons);
-			createFile = new FormSubmit("submit","zip.button");
-			formButtons.add(createFile);
-			reset = new FormReset("reset","cancel");
-			formButtons.add(reset);			
-		}	
 
-		/**
-		 * Creates a zipFile by using ZipUtil and fires Event.DONE_EVENT if successful.
-		 * 
-		 * @see org.olat.core.commons.modules.bc.commands.AbstractCreateItemForm#formOK(org.olat.core.gui.UserRequest)
-		 */
-		protected void formOK(UserRequest ureq) {		
-			VFSItem zipFile = currentContainer.createChildLeaf(getItemName());
-			if (zipFile == null) {
-				this.fireEvent(ureq, Event.FAILED_EVENT);
-				return;				
-			}
-			
-			List<VFSItem> vfsFiles = new ArrayList<VFSItem>();
-			for (String fileName : selection.getFiles()) {
-				VFSItem item = currentContainer.resolve(fileName);
-				if (item != null)	vfsFiles.add(item);
-			}
-			if (!ZipUtil.zip(vfsFiles, (VFSLeaf)zipFile, true)) {
-				// cleanup zip file
-				zipFile.delete();				
-				this.fireEvent(ureq, Event.FAILED_EVENT);
-			} else {
-				if(zipFile instanceof MetaTagged) {
-					MetaInfo info = ((MetaTagged)zipFile).getMetaInfo();
-					if(info != null) {
-						info.setAuthor(ureq.getIdentity());
-						info.write();
-					}
-				}
-				
-				fireEvent(ureq, Event.DONE_EVENT);								
-			}
-		}
-		
-		/**
-		 * Checks if input valid.
-		 * @see org.olat.core.commons.modules.bc.commands.AbstractCreateItemForm#validateFormLogic(org.olat.core.gui.UserRequest)
-		 */
-		protected boolean validateFormLogic(UserRequest ureq) {
-			boolean isInputValid = true;
-			String name = textElement.getValue();		
-			if(name==null || name.trim().equals("")) {
-				textElement.setErrorKey("zip.name.empty", new String[0]);
-				isInputValid = false;
-			} else {				
-				if (!validateFileName(name)) {
-					textElement.setErrorKey("zip.name.notvalid", new String[0]);
-					isInputValid = false;
-					return isInputValid;
-				} 
-        //Note: use java.io.File and not VFS to create a leaf. File must not exist upon ZipUtil.zip()
-				name = name + ".zip";
-				VFSItem zipFile = currentContainer.resolve(name);
-				if (zipFile != null) {					
-					textElement.setErrorKey("zip.alreadyexists", new String[] {name});
-					isInputValid = false;					
-				} else {
-					isInputValid = true;					
-					setItemName(name);
-				}
-			}			
-			return isInputValid;			
-		}
-		
-		/**
-		 * Checks if filename contains any prohibited chars.
-		 * @param name
-		 * @return true if file name valid.
-		 */
-		private boolean validateFileName(String name) {
-			return FileUtils.validateFilename(name);
-		}			
+	public int getStatus() {
+		return status;
 	}
 
+	@Override
 	public boolean runsModal() {
 		return false;
 	}
 
+	@Override
+	public String getModalTitle() {
+		return translate("zip.header");
+	}
+
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		status = FolderCommandStatus.STATUS_CANCELED;
+		fireEvent(ureq, FolderCommand.FOLDERCOMMAND_FINISHED);
+	}
+
+	/**
+	 * Creates a zipFile by using ZipUtil and fires Event.DONE_EVENT if successful.
+	 * 
+	 * @see org.olat.core.commons.modules.bc.commands.AbstractCreateItemForm#formOK(org.olat.core.gui.UserRequest)
+	 */
+	protected void formOK(UserRequest ureq) {
+		String name = textElement.getValue();
+		VFSItem zipFile = currentContainer.createChildLeaf(name);
+		if (zipFile == null) {
+			fireEvent(ureq, Event.FAILED_EVENT);
+			return;				
+		}
+		
+		List<VFSItem> vfsFiles = new ArrayList<VFSItem>();
+		for (String fileName : selection.getFiles()) {
+			VFSItem item = currentContainer.resolve(fileName);
+			if (item != null) {
+				vfsFiles.add(item);
+			}
+		}
+		if (!ZipUtil.zip(vfsFiles, (VFSLeaf)zipFile, true)) {
+			// cleanup zip file
+			zipFile.delete();				
+			status = FolderCommandStatus.STATUS_FAILED;
+			fireEvent(ureq, FOLDERCOMMAND_FINISHED);
+		} else {
+			if(zipFile instanceof MetaTagged) {
+				MetaInfo info = ((MetaTagged)zipFile).getMetaInfo();
+				if(info != null) {
+					info.setAuthor(ureq.getIdentity());
+					info.write();
+				}
+			}
+			
+			fireEvent(ureq, new FolderEvent(FolderEvent.ZIP_EVENT, selection.renderAsHtml()));				
+			fireEvent(ureq, FolderCommand.FOLDERCOMMAND_FINISHED);								
+		}
+	}
+		
+	/**
+	 * Checks if input valid.
+	 * @see org.olat.core.commons.modules.bc.commands.AbstractCreateItemForm#validateFormLogic(org.olat.core.gui.UserRequest)
+	 */
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean isInputValid = true;
+		String name = textElement.getValue();		
+		if(name==null || name.trim().equals("")) {
+			textElement.setErrorKey("zip.name.empty", new String[0]);
+			isInputValid = false;
+		} else {				
+			if (!validateFileName(name)) {
+				textElement.setErrorKey("zip.name.notvalid", new String[0]);
+				isInputValid = false;
+				return isInputValid;
+			} 
+    //Note: use java.io.File and not VFS to create a leaf. File must not exist upon ZipUtil.zip()
+			name = name + ".zip";
+			VFSItem zipFile = currentContainer.resolve(name);
+			if (zipFile != null) {					
+				textElement.setErrorKey("zip.alreadyexists", new String[] {name});
+				isInputValid = false;
+			} else {
+				isInputValid = true;
+			}
+		}			
+		return isInputValid;			
+	}
+
+	/**
+	 * Checks if filename contains any prohibited chars.
+	 * @param name
+	 * @return true if file name valid.
+	 */
+	private boolean validateFileName(String name) {
+		return FileUtils.validateFilename(name);
+	}
 }

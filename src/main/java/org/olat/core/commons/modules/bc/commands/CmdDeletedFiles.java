@@ -87,4 +87,9 @@ public class CmdDeletedFiles extends BasicController implements FolderCommand {
 	public boolean runsModal() {
 		return false;
 	}
+
+	@Override
+	public String getModalTitle() {
+		return null;
+	}
 }

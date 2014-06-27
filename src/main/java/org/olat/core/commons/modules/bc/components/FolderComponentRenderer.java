@@ -68,6 +68,7 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 	/**
 	 * @see org.olat.core.gui.render.ui.ComponentRenderer#render(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator, org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
+	@Override
 	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 		FolderComponent fc = (FolderComponent) source;
 		// is called for the current inline html
@@ -75,15 +76,12 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 		if (args != null && args.length > 0) {
 			if (args[0].equals("list")) renderType = 0;
 			if (args[0].equals("crumb")) renderType = 1;
-			if (args[0].equals("crumbNoLinks")) renderType = 2;
 		}
 		// get ajax flag for link rendering
 		boolean iframePostEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
 		
 		if (renderType == 1) {
-			crumbRenderer.render(fc, target, ubu, true, iframePostEnabled);
-		} else if (renderType == 2) {
-			crumbRenderer.render(fc, target, ubu, false, iframePostEnabled);
+			crumbRenderer.render(fc, target, ubu, iframePostEnabled);
 		} else {
 			renderList(target, fc, ubu, translator, iframePostEnabled);
 		}
@@ -205,7 +203,7 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 		target.append("</ul></div>");
 		
 		// add current file bread crumb path
-		crumbRenderer.render(fc, target, ubu, true, iframePostEnabled);			
+		crumbRenderer.render(fc, target, ubu, iframePostEnabled);			
 
 		// add file listing for current folder
 		target.append("<div class='o_table_wrapper'>");

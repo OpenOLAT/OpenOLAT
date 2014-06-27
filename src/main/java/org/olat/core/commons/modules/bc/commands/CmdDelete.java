@@ -101,8 +101,22 @@ public class CmdDelete extends BasicController implements FolderCommand {
 		return lockedFiles;
 	}
 
-	public int getStatus() { return status; }
+	@Override
+	public int getStatus() {
+		return status;
+	}
+
+	@Override
+	public boolean runsModal() {
+		// this controller has its own modal dialog box
+		return true;
+	}
 	
+	@Override
+	public String getModalTitle() {
+		return null;
+	}
+
 	public FileSelection getFileSelection() {
 		return fileSelection;
 	}
@@ -156,11 +170,4 @@ public class CmdDelete extends BasicController implements FolderCommand {
 	protected void doDispose() {
 		// autodisposed by basic controller
 	}
-
-	public boolean runsModal() {
-		// this controller has its own modal dialog box
-		return true;
-	}
-
-
 }

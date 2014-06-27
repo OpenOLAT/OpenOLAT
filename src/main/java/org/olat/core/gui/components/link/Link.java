@@ -598,7 +598,8 @@ public class Link extends AbstractComponent {
 	 * @param iconCSS The CSS classes used as icons in the i element on the left hand side of the link text
 	 */
 	public void setIconLeftCSS(String iconCSS) {
-		this.iconLeftCSS = iconCSS;		
+		this.iconLeftCSS = iconCSS;
+		setDirty(true);
 	}
 	
 	/**
@@ -612,7 +613,8 @@ public class Link extends AbstractComponent {
 	 * @param iconCSS The CSS classes used as icons in the i element on the right hand side of the link text
 	 */
 	public void setIconRightCSS(String iconCSS) {
-		this.iconRightCSS = iconCSS;		
+		this.iconRightCSS = iconCSS;
+		setDirty(true);
 	}
 	
 	/**

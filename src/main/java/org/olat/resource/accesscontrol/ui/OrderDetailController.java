@@ -129,6 +129,7 @@ public class OrderDetailController extends FormBasicController {
 				String linkName = StringHelper.escapeHtml(wrapper.getDisplayName());
 				selectResourceLink = uifactory.addFormLink("resource", linkName, translate("order.item"), mainLayout, Link.NONTRANSLATED);
 				selectResourceLink.setUserObject(wrapper);
+				selectResourceLink.setCustomEnabledLinkCSS("form-control-static");
 			}
 		}
 		

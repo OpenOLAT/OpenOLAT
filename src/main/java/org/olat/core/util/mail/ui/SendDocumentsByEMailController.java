@@ -120,7 +120,6 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("send.mail.title");
 		setFormDescription("send.mail.description");
 		setFormStyle("b_send_documents");
 
@@ -158,12 +157,19 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		//
 	}
 
+	@Override
 	public int getStatus() {
 		return status;
 	}
 
+	@Override
 	public boolean runsModal() {
 		return false;
+	}
+
+	@Override
+	public String getModalTitle() {
+		return translate("send.mail.title");
 	}
 
 	public Controller execute(FolderComponent folderComponent, UserRequest ureq, WindowControl wControl, Translator translator) {

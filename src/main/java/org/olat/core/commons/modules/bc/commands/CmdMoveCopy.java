@@ -119,8 +119,21 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 		return fileSelection;
 	}
 
-	public int getStatus() { return status; }
+	@Override
+	public int getStatus() {
+		return status;
+	}
+
+	@Override
+	public boolean runsModal() {
+		return false;
+	}
 	
+	@Override
+	public String getModalTitle() {
+		return null;
+	}
+
 	public String getTarget() {
 		FolderTreeModel ftm = (FolderTreeModel) selTree.getTreeModel();
 		String selectedPath = ftm.getSelectedPath(selTree.getSelectedNode());
@@ -270,9 +283,5 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 	
 	protected void doDispose() {
 		main = null;
-	}
-
-	public boolean runsModal() {
-		return false;
 	}
 }

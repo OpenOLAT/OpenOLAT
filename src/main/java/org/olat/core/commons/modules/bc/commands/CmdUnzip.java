@@ -68,7 +68,6 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 		super(ureq, wControl);
 	}
 	
-	
 	public Controller execute(FolderComponent folderComponent, UserRequest ureq, WindowControl wContr, Translator trans) {
 		this.translator = trans;
 		FileSelection selection = new FileSelection(ureq, folderComponent.getCurrentContainerPath());
@@ -213,14 +212,22 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 		}
 		return true;
 	}
-	
+
+	@Override
 	public int getStatus() {
 		return status;
 	}
 
+	@Override
 	public boolean runsModal() {
 		return false;
 	}
+	
+	@Override
+	public String getModalTitle() {
+		return null;
+	}
+
 
 	@Override
 	protected void doDispose() {

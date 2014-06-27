@@ -82,7 +82,7 @@ public class CmdAddToEPortfolioImpl extends BasicController implements CmdAddToE
 		status = FolderCommandHelper.sanityCheck(wControl, folderComponent);
 		if (status == FolderCommandStatus.STATUS_SUCCESS) {
 			currentItem = folderComponent.getCurrentContainerChildren().get(Integer.parseInt(pos));
-			status = FolderCommandHelper.sanityCheck2(wControl, folderComponent, ureq, currentItem);
+			status = FolderCommandHelper.sanityCheck2(wControl, folderComponent, currentItem);
 		}
 		if (status == FolderCommandStatus.STATUS_FAILED) { return null; }
 
@@ -110,6 +110,11 @@ public class CmdAddToEPortfolioImpl extends BasicController implements CmdAddToE
 	@Override
 	public boolean runsModal() {
 		return true;
+	}
+
+	@Override
+	public String getModalTitle() {
+		return null;
 	}
 
 	/**

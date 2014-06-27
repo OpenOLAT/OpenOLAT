@@ -1,0 +1,37 @@
+/* calender colors for events: must be the last thing in the file !! */
+.o_cal_orange { background: #ffc266; border-color: #ff9900; color: #5D5D5D; }
+.o_cal_orange .o_cal_wv_event_header {background: #ff9900;}
+.o_cal_orange a { color: #5D5D5D ! important; } 
+
+.o_cal_green { background: #66c266; border-color: #009900; color: #FFF; }
+.o_cal_green .o_cal_wv_event_header {background: #009900;}
+.o_cal_green a { color: #FFF ! important; } 
+
+.o_cal_blue { background: #4d6e9f; border-color: #2e5894; color: #FFF;}
+.o_cal_blue .o_cal_wv_event_header {background: #2e5894;}
+.o_cal_blue a { color: #FFF ! important; } 
+
+.o_cal_yellow { background: #ffe066; border-color: #ffcc00; color: #5D5D5D; }
+.o_cal_yellow .o_cal_wv_event_header {background: #ffcc00;}
+.o_cal_yellow a { color: #5D5D5D! important; } 
+
+.o_cal_red { background: #c26666; border-color: #990000; color: #FFF; }
+.o_cal_red .o_cal_wv_event_header {background: #990000;}
+.o_cal_red a { color: #FFF ! important; } 
+
+.o_cal_grey { background: #DDDAAA; border-color: #5D5D5D; color: #FFF; }
+.o_cal_grey .o_cal_wv_event_header {background: #5D5D5D;}
+.o_cal_grey a { color: #FFF ! important; }
+
+.o_cal_config_enabled, .o_cal_config_disabled {
+	position: relative;
+	float: left; display: inline;
+}
+
+.o_cal_config_calendar {
+	margin: 0 5px; 
+	padding: 1px 6px 1px 4px;
+	position: relative; 
+	width: 200px; overflow: hidden;
+	float: left; display: inline;
+}
