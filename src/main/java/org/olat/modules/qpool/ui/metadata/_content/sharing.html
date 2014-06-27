@@ -2,20 +2,18 @@
 	<fieldset><legend>$r.translate("sharing")</legend>
 	#if ($off_chelp_package) $r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end
 	#if($showPoolInfos) 
-		<h5 class="b_with_small_icon_left o_sel_qpool_pool">$r.translate("menu.pools")</h5>
+		<h5 class="o_icon o_sel_qpool_pool">$r.translate("menu.pools")</h5>
 		$r.render("pools")
 	#end
 	
 	#if($showAuthors)
-		<h5 class="b_with_small_icon_left b_group_icon b_managed_icon">$r.translate("sharing.authors")</h5>
+		<h5 class="o_icon o_icon_group">$r.translate("sharing.authors")</h5>
 		$r.render("authors")
 	#end
 	
 	#if($showShares)
-		<h5 class="b_with_small_icon_left o_sel_qpool_share">$r.translate("sharing.shares")</h5>
+		<h5 class="o_icon o_sel_qpool_share">$r.translate("sharing.shares")</h5>
 		$r.render("shares")
 	#end
-	
-	
 	</fieldset>
 </div>

@@ -26,31 +26,28 @@
 package org.olat.course.run.preview;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
-import org.olat.course.condition.AreaSelectionController;
-import org.olat.course.condition.GroupSelectionController;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.group.BusinessGroup;
+import org.olat.group.area.BGArea;
 
 /**
  * Description:<br>
@@ -70,21 +67,15 @@ public class PreviewSettingsForm extends FormBasicController {
 	static final String ROLE_STUDENT = "role.student";
 	
 	private DateChooser sdate;
-	
-	private StaticTextElement group, area;
-	private FormLink groupChooserLink, areaChooserLink;
-
 	private final int NUMATTR = 5;
-	private List <TextElement> attrNames  = new ArrayList<TextElement>(NUMATTR);
-	private List <TextElement> attrValues = new ArrayList<TextElement>(NUMATTR);
+	private List<TextElement> attrNames  = new ArrayList<>(NUMATTR);
+	private List<TextElement> attrValues = new ArrayList<>(NUMATTR);
 	
 	private SingleSelection roles;
-	
+	private MultipleSelectionElement groupSelector;
+	private MultipleSelectionElement areaSelector;
+
 	private final CourseGroupManager courseGroupManager;
-	private AreaSelectionController areaChooser;
-	private GroupSelectionController groupChooser;
-	
-	private CloseableModalController cmc;
 	
 	public PreviewSettingsForm(UserRequest ureq, WindowControl wControl, ICourse course) {
 		super(ureq, wControl);
@@ -92,19 +83,18 @@ public class PreviewSettingsForm extends FormBasicController {
 		initForm(ureq);	
 	}
 
-
 	/**
 	 * @return group
 	 */
 	public List<Long> getGroupKeys() { 
-		return getKeys(group);
+		return getKeys(groupSelector);
 	}
 
 	/**
 	 * @return area
 	 */
 	public List<Long> getAreaKeys() { 
-		return getKeys(area);
+		return getKeys(areaSelector);
 	}
 	
 	/**
@@ -148,20 +138,26 @@ public class PreviewSettingsForm extends FormBasicController {
 		//setDate must be called after the DataChooser was configured
 		sdate.setDate(new Date());
 		
-		FormLayoutContainer groupLayout = FormLayoutContainer.createHorizontalFormLayout("groupChooser", getTranslator());
-		groupLayout.setLabel("form.group", null);
-		formLayout.add(groupLayout);
-		group = uifactory.addStaticTextElement("group", null, "", groupLayout);
-		groupChooserLink = uifactory.addFormLink("choose", groupLayout,"b_form_genericchooser");
-	
+		List<BusinessGroup> groups = courseGroupManager.getAllBusinessGroups();
+		String[] groupNames = new String[groups.size()];
+		String[] groupKeys = new String[groups.size()];
+		for(int i=groups.size(); i-->0; ) {
+			groupNames[i] = groups.get(i).getName();
+			groupKeys[i] = groups.get(i).getKey().toString();
+		}
+		groupSelector = uifactory.addCheckboxesVertical("details.groups", formLayout, groupKeys, groupNames, 1);
+		groupSelector.setVisible(groups.size() > 0);
 		
-		FormLayoutContainer areaLayout = FormLayoutContainer.createHorizontalFormLayout("areaChooser", getTranslator());
-		areaLayout.setLabel("form.area", null);
-		formLayout.add(areaLayout);
-		area = uifactory.addStaticTextElement("area", null, "", areaLayout);
-		areaChooserLink = uifactory.addFormLink("choose", areaLayout,"b_form_genericchooser");
-		
-		
+		List<BGArea> areas = courseGroupManager.getAllAreas();
+		String[] areaNames = new String[areas.size()];
+		String[] areaKeys = new String[areas.size()];
+		for(int i=areas.size(); i-->0; ) {
+			areaNames[i] = areas.get(i).getName();
+			areaKeys[i] = areas.get(i).getKey().toString();
+		}
+		areaSelector = uifactory.addCheckboxesVertical("details.areas", formLayout, areaKeys, areaNames, 1);
+		areaSelector.setVisible(areas.size() > 0);
+
 		String[] keys = {
 				ROLE_STUDENT,
 				ROLE_GUEST,
@@ -176,76 +172,23 @@ public class PreviewSettingsForm extends FormBasicController {
 		roles = uifactory.addRadiosVertical("roles", "form.roles", formLayout, keys, values);
 		roles.select(ROLE_STUDENT, true);
 		
-		FormLayoutContainer attrlayout = FormLayoutContainer.createVerticalFormLayout("attributes", getTranslator());
+		String page = velocity_root + "/attributes.html";
+		FormLayoutContainer attrlayout = FormLayoutContainer.createCustomFormLayout("attributes", getTranslator(), page);
 		formLayout.add(attrlayout);
 		attrlayout.setLabel("form.attributes", null);
 				
 		for (int i=0; i<NUMATTR; i++) {
-			FormLayoutContainer attrgrp = FormLayoutContainer.createHorizontalFormLayout("attrgrp"+i, getTranslator());
-			attrlayout.add(attrgrp);
-
-			TextElement name = uifactory.addTextElement("attrname"+i, null, 255, "", attrgrp);
+			TextElement name = uifactory.addTextElement("attrname"+i, null, 255, "", attrlayout);
+			((AbstractComponent)name.getComponent()).setDomReplacementWrapperRequired(false);
 			name.setDisplaySize(12);
-			TextElement value = uifactory.addTextElement("attrvalue"+i, "form.equals", 255, "", attrgrp);
+			TextElement value = uifactory.addTextElement("attrvalue"+i, "form.equals", 255, "", attrlayout);
+			((AbstractComponent)value.getComponent()).setDomReplacementWrapperRequired(false);
 			value.setDisplaySize(12);
 			attrNames.add(name);
 			attrValues.add(value);		
 		}
 		
 		uifactory.addFormSubmitButton("submit", "command.preview", formLayout);
-	}
-	
-	@Override
-	protected void  formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == groupChooserLink) {
-			removeAsListenerAndDispose(cmc);
-			removeAsListenerAndDispose (groupChooser);
-			
-			groupChooser = new GroupSelectionController(ureq, getWindowControl(), false, courseGroupManager, getKeys(group));
-			listenTo(groupChooser);	
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), groupChooser.getInitialComponent());
-			listenTo(cmc);
-			cmc.activate();
-		} else if (source == areaChooserLink) {
-			removeAsListenerAndDispose(cmc);
-			removeAsListenerAndDispose (areaChooser);
-			
-			areaChooser = new AreaSelectionController(ureq, getWindowControl(), "area", false, courseGroupManager, getKeys(area));
-			listenTo(areaChooser);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), areaChooser.getInitialComponent());
-			listenTo(cmc);
-			cmc.activate();
-		}
-	}
-	
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == groupChooser) {
-			if(Event.DONE_EVENT == event) {
-				group.setValue(StringHelper.formatAsCSVString(groupChooser.getSelectedNames()));
-				group.setUserObject(groupChooser.getSelectedKeys());
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if (source == areaChooser) {
-			if(Event.DONE_EVENT == event) {
-				area.setValue(StringHelper.formatAsCSVString(areaChooser.getSelectedNames()));
-				area.setUserObject(areaChooser.getSelectedKeys());
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if(source == cmc) {
-			cleanUp();
-		}
-	}
-	
-	private void cleanUp() {
-		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(groupChooser);
-		removeAsListenerAndDispose(areaChooser);
-		cmc = null;
-		groupChooser = null;
-		areaChooser = null;
 	}
 	
 	@Override
@@ -257,12 +200,13 @@ public class PreviewSettingsForm extends FormBasicController {
 		return sdate.getDate()!=null;
 	}
 	
-	private List<Long> getKeys(StaticTextElement element) {
-		@SuppressWarnings("unchecked")
-		List<Long> keys = (List<Long>)element.getUserObject();
-		if(keys == null) {
-			keys = new ArrayList<Long>();
-			element.setUserObject(keys);
+	private List<Long> getKeys(MultipleSelectionElement element) {
+		List<Long> keys = new ArrayList<>();
+		if(element.isAtLeastSelected(1)) {
+			Collection<String> selectedKeys = element.getSelectedKeys();
+			for(String selectedKey:selectedKeys) {
+				keys.add(Long.parseLong(selectedKey));
+			}
 		}
 		return keys;
 	}

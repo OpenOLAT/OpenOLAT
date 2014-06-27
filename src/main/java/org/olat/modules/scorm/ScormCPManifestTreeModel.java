@@ -162,9 +162,10 @@ public class ScormCPManifestTreeModel extends GenericTreeModel {
 			//set node images according to scorm sco status
 			String itemStatusDesc = itemStatus.get(Integer.toString(nodeId));
 			treeNode.setIconCssClass("o_scorm_item");
-			if(itemStatusDesc != null){
+			if(itemStatusDesc != null && !"not_attempted".equals(itemStatusDesc)) {
 				// add icon decorator for current status
-				treeNode.setIconDecorator1CssClass("o_scorm_"+itemStatusDesc);
+				String decorator = "o_scorm_" + itemStatusDesc;
+				treeNode.setIconDecorator1CssClass(decorator);
 			}
 			
 			nodeId++;

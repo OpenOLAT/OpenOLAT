@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -87,24 +88,29 @@ public class EducationalMetadataEditController extends FormBasicController {
 		
 		String page = velocity_root + "/learning_time.html";
 		learningTimeContainer = FormLayoutContainer.createCustomFormLayout("learningTime", getTranslator(), page);
+		((AbstractComponent)learningTimeContainer.getComponent()).setDomReplacementWrapperRequired(false);
 		learningTimeContainer.setRootForm(mainForm);
 		learningTimeContainer.setLabel("educational.learningTime", null);
 		formLayout.add(learningTimeContainer);
 		
 		LOMDuration duration = MetadataConverterHelper.convertDuration(item.getEducationalLearningTime());
 		learningTimeDayElement = uifactory.addIntegerElement("learningTime.day", "", duration.getDay(), learningTimeContainer);
+		((AbstractComponent)learningTimeDayElement.getComponent()).setDomReplacementWrapperRequired(false);
 		learningTimeDayElement.setDisplaySize(3);
 		learningTimeDayElement.setMandatory(true);
 		
 		learningTimeHourElement = uifactory.addIntegerElement("learningTime.hour", "", duration.getHour(), learningTimeContainer);
+		((AbstractComponent)learningTimeHourElement.getComponent()).setDomReplacementWrapperRequired(false);
 		learningTimeHourElement.setDisplaySize(3);
 		learningTimeHourElement.setMandatory(true);
 		
 		learningTimeMinuteElement = uifactory.addIntegerElement("learningTime.minute", "", duration.getMinute(), learningTimeContainer);
+		((AbstractComponent)learningTimeMinuteElement.getComponent()).setDomReplacementWrapperRequired(false);
 		learningTimeMinuteElement.setDisplaySize(3);
 		learningTimeMinuteElement.setMandatory(true);
 		
 		learningTimeSecondElement = uifactory.addIntegerElement("learningTime.second", "", duration.getSeconds(), learningTimeContainer);
+		((AbstractComponent)learningTimeSecondElement.getComponent()).setDomReplacementWrapperRequired(false);
 		learningTimeSecondElement.setDisplaySize(3);
 		learningTimeSecondElement.setMandatory(true);
 

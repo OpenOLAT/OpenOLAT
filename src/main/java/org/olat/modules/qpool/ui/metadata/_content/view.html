@@ -1,12 +1,10 @@
-<div class="b_clearfix">
-	<fieldset>
-		<legend>$off_title</legend>
-		#if ($off_chelp_package) $r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end
-		#if($r.available("edit"))
-			<div class="o_buttons_box_right" style="margin-right:15px">
-				$r.render("edit")
-			</div>
-		#end
-		$r.render("metadatas")
-	</fieldset>
-</div>
+<fieldset>
+	<legend>#if($off_chelp_package) $r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end
+	$off_title</legend>
+	#if($r.available("edit"))
+		<div class="o_button_group o_button_group_right">
+			$r.render("edit")
+		</div>
+	#end
+	$r.render("metadatas")
+</fieldset>

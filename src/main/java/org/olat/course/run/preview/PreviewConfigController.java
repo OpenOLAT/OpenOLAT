@@ -30,7 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -57,6 +56,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description: <br>
@@ -82,8 +82,10 @@ public class PreviewConfigController extends MainLayoutBasicController {
 	private LayoutMain3ColsController previewLayoutCtr;
 	private final OLATResourceable ores;
 	
-	private final BGAreaManager areaManager;
-	private final BusinessGroupService businessGroupService;
+	@Autowired
+	private BGAreaManager areaManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 	/**
 	 * Constructor for the run main controller
@@ -96,8 +98,6 @@ public class PreviewConfigController extends MainLayoutBasicController {
 	public PreviewConfigController(UserRequest ureq, WindowControl wControl, ICourse course) { 
 		super(ureq, wControl);
 		this.ores = course;
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
 		
 		psf = new PreviewSettingsForm(ureq, wControl, course);
 		listenTo(psf);
@@ -107,7 +107,7 @@ public class PreviewConfigController extends MainLayoutBasicController {
 		configVc.put("previewsettingsform", psf.getInitialComponent());
 		// Use layout wrapper for proper display. Use col3 as main column
 		previewLayoutCtr = new LayoutMain3ColsController(ureq, wControl, null, configVc, null);
-		previewLayoutCtr.addCssClassToMain("b_preview");
+		previewLayoutCtr.addCssClassToMain("o_preview");
 		listenTo(previewLayoutCtr); // for later auto disposal
 		putInitialPanel(previewLayoutCtr.getInitialComponent());
 	}

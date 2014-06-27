@@ -114,9 +114,11 @@ public class CourseConfigGlossaryController extends FormBasicController {
 				log.warn("Course with ID::" + courseOres + " had a config for a glossary softkey::"
 						+ courseConfig.getGlossarySoftKey() + " but no such glossary was found");				
 			} else if(editable) {
-				removeCommand.setEnabled(true);
+				reNameEl.setValue(StringHelper.escapeHtml(repoEntry.getDisplayname()));
+				removeCommand.setVisible(true);
 			}
 		} else if(editable) {
+			removeCommand.setVisible(false);
 			addCommand.setVisible(true);
 		}
 		
@@ -190,7 +192,7 @@ public class CourseConfigGlossaryController extends FormBasicController {
 	 */
 	private void doSelectGlossary(RepositoryEntry repoEntry, UserRequest ureq) {
 		reNameEl.setValue(StringHelper.escapeHtml(repoEntry.getDisplayname()));
-		removeCommand.setEnabled(true);
+		removeCommand.setVisible(true);
 		saveConfig(ureq, repoEntry.getSoftkey());
 	}
 
@@ -201,7 +203,7 @@ public class CourseConfigGlossaryController extends FormBasicController {
 	 */
 	private void doRemoveGlossary(UserRequest ureq) {			
 		reNameEl.setValue(translate("glossary.no.glossary"));
-		removeCommand.setEnabled(false);
+		removeCommand.setVisible(false);
 		saveConfig(ureq, null);
 	}
 	

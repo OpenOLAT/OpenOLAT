@@ -8,13 +8,15 @@
 	<legend>
 		$r.contextHelpWithWrapper("org.olat.group.ui.edit","grp-memberOwner.html","help.hover.bgGrpMngmntOwner")
 		$r.translate("group.edit.tab.members")</legend>
-	<div class="pull-right">
+	<div class="o_button_group o_button_group_right">
+		#if($r.available("addMembers") && $r.available("importMembers"))<div class="btn-group">#end
 		#if($r.available("addMembers"))
 			$r.render("addMembers")
 		#end
 		#if($r.available("importMembers"))
 			$r.render("importMembers")
 		#end
+		#if($r.available("addMembers") && $r.available("importMembers"))</div>#end
 	</div>
 	$r.render("members")
 </fieldset>

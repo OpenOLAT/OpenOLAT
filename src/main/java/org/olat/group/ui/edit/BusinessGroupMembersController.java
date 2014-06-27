@@ -98,10 +98,12 @@ public class BusinessGroupMembersController extends BasicController {
 		mainVC.put("members", membersController.getInitialComponent());
 		
 		addMemberLink = LinkFactory.createButton("add.member", mainVC, this);
+		addMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		addMemberLink.setElementCssClass("o_sel_group_add_member");
 		addMemberLink.setVisible(!managed);
 		mainVC.put("addMembers", addMemberLink);
 		importMemberLink = LinkFactory.createButton("import.member", mainVC, this);
+		importMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
 		importMemberLink.setElementCssClass("o_sel_group_import_members");
 		importMemberLink.setVisible(!managed);
 		mainVC.put("importMembers", importMemberLink);

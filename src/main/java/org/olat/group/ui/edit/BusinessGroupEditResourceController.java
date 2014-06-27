@@ -122,6 +122,7 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 		
 		mainVC = createVelocityContainer("tab_bgResources");
 		addTabResourcesButton = LinkFactory.createButtonSmall("cmd.addresource", mainVC, this);
+		addTabResourcesButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		addTabResourcesButton.setVisible(!managed);
 		mainVC.put("resources", resourcesCtr.getInitialComponent());
 		putInitialPanel(mainVC);

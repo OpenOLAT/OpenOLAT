@@ -136,3 +136,12 @@
 		}
 	}
 }
+
+/* scorm */
+.o_scorm_org:before { content: $fa-var-archive; }
+.o_scorm_item:before { content: $fa-var-file-o; }
+.o_scorm_completed:before, .o_scorm_passed:before { content: $fa-var-check-circle; color: green; }
+.o_scorm_failed:before { content: $fa-var-warning; color: red; }
+.o_scorm_incomplete:before { content: $fa-var-warning; color: orange; }
+.o_scorm_not_attempted:before { background: none; }
+
