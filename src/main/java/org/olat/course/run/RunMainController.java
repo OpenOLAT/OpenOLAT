@@ -179,7 +179,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 	private Controller currentToolCtr;
 	private Controller currentNodeController; // the currently open node config
-	private TooledStackedPanel all;
+	private TooledStackedPanel toolbarPanel;
 
 	private boolean isInEditor = false;
 
@@ -252,7 +252,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		logAudit("Entering course: [[["+courseTitle+"]]]", course.getResourceableId().toString());
 		
 		// set up the components
-		all = new TooledStackedPanel("courseStackPanel", getTranslator(), this);
+		toolbarPanel = new TooledStackedPanel("courseStackPanel", getTranslator(), this);
 				
 		//StackedControllerImpl(getWindowControl(), getTranslator(), "o_course_breadcumbs");
 		luTree = new MenuTree(null, "luTreeRun", this);
@@ -320,7 +320,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 		// activate the custom course css if any
 		setCustomCSS(CourseFactory.getCustomCourseCss(ureq.getUserSession(), uce.getCourseEnvironment()));
-		all.pushController(courseTitle, columnLayoutCtr);
+		toolbarPanel.pushController(courseTitle, columnLayoutCtr);
 		
 		// init the menu and tool controller
 		initToolController();
@@ -330,9 +330,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// see function gotonode in functions.js to see why we need the repositoryentry-key here:
 		// it is to correctly apply external links using course-internal links via javascript
 		coursemain.contextPut("courserepokey", courseRepositoryEntry.getKey());
-		//coursemain.put("coursemain", all.getInitialComponent());
-
-		putInitialPanel(all);
+		coursemain.put("coursemain", toolbarPanel);
+		putInitialPanel(coursemain);
 
 		// disposed message controller must be created beforehand
 		Controller courseCloser = CourseFactory.createDisposedCourseRestartController(ureq, wControl, courseRepositoryEntry);
@@ -477,37 +476,37 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(editLink == source) {
-			all.popUpToRootController(ureq);
+			toolbarPanel.popUpToRootController(ureq);
 			doEdit(ureq);
 		} else if(editSettingsLink == source) {
-			all.popUpToRootController(ureq);
+			toolbarPanel.popUpToRootController(ureq);
 			doEditSettings(ureq);
 		} else if(userMgmtLink == source) {
-			all.popUpToRootController(ureq);
+			toolbarPanel.popUpToRootController(ureq);
 			launchMembersManagement(ureq);
 		} else if(archiverLink == source) {
-			all.popUpToRootController(ureq);
+			toolbarPanel.popUpToRootController(ureq);
 			launchArchive(ureq);
 		} else if(assessmentLink == source) {
-			all.popUpToRootController(ureq);
+			toolbarPanel.popUpToRootController(ureq);
 			launchAssessmentTool(ureq);
 		} else if(testStatisticLink == source) {
-			all.popUpToRootController(ureq);
+			toolbarPanel.popUpToRootController(ureq);
 			launchAssessmentStatistics(ureq, "command.openteststatistic", "TestStatistics", QTIType.test, QTIType.onyx);
 		} else if (surveyStatisticLink == source) {
-			all.popUpToRootController(ureq);
+			toolbarPanel.popUpToRootController(ureq);
 			launchAssessmentStatistics(ureq, "command.opensurveystatistic", "SurveyStatistics", QTIType.survey);
 		} else if(courseStatisticLink == source) {
-			all.popUpToRootController(ureq);
+			toolbarPanel.popUpToRootController(ureq);
 			launchStatistics(ureq);
 		} else if(dbLink == source) {
-			all.popUpToRootController(ureq);
+			toolbarPanel.popUpToRootController(ureq);
 			launchDbs(ureq);
 		} else if(folderLink == source) {
-			all.popUpToRootController(ureq);
+			toolbarPanel.popUpToRootController(ureq);
 			launchCourseFolder(ureq);
 		} else if(areaLink == source) {
-			all.popUpToRootController(ureq);
+			toolbarPanel.popUpToRootController(ureq);
 			launchCourseAreas(ureq);
 		} else if(efficiencyStatementsLink == source) {
 			launchEfficiencyStatements(ureq);
@@ -544,7 +543,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					}
 				}
 			}
-		} else if(source == all) {
+		} else if(source == toolbarPanel) {
 			if(event instanceof PopEvent) {
 				PopEvent pop = (PopEvent)event;
 				if(pop.getController() == currentToolCtr) {
@@ -595,7 +594,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				// special check for editor
 				eventDone(ureq);
 			}
-		} else if (source == all) {
+		} else if (source == toolbarPanel) {
 			if(event instanceof PopEvent) {
 				PopEvent pop = (PopEvent)event;
 				if(pop.getController() == currentToolCtr) {
@@ -655,7 +654,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	private void doEdit(UserRequest ureq) {
 		if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
-			Controller ec = CourseFactory.createEditorController(ureq, getWindowControl(), all, course, currentCourseNode);
+			Controller ec = CourseFactory.createEditorController(ureq, getWindowControl(), toolbarPanel, course, currentCourseNode);
 			//user activity logger which was initialized with course run
 			if(ec != null){
 				//we are in editing mode
@@ -668,7 +667,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	private void doEditSettings(UserRequest ureq) {
 		if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
-			currentToolCtr = new AuthoringEditEntrySettingsController(ureq, getWindowControl(), all, courseRepositoryEntry);
+			currentToolCtr = new AuthoringEditEntrySettingsController(ureq, getWindowControl(), toolbarPanel, courseRepositoryEntry);
 			listenTo(currentToolCtr);
 		} else throw new OLATSecurityException("wanted to activate editor, but no according right");
 	}
@@ -745,7 +744,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		if (hasCourseRight(CourseRights.RIGHT_ARCHIVING) || isCourseAdmin) {
 			currentToolCtr = new ArchiverMainController(ureq, getWindowControl(), course, new FullAccessArchiverCallback());
 			listenTo(currentToolCtr);
-			all.pushController(translate("command.openarchiver"), currentToolCtr);
+			toolbarPanel.pushController(translate("command.openarchiver"), currentToolCtr);
 		} else throw new OLATSecurityException("clicked archiver, but no according right");
 	}
 	
@@ -777,7 +776,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	private void launchDetails(UserRequest ureq) {
 		currentToolCtr = new RepositoryEntryDetailsController(ureq, getWindowControl(), courseRepositoryEntry);
-		all.pushController(translate("command.courseconfig"), currentToolCtr);
+		toolbarPanel.pushController(translate("command.courseconfig"), currentToolCtr);
 	}
 	
 	private void launchCourseFolder(UserRequest ureq) {
@@ -788,7 +787,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		FolderRunController folderMainCtl = new FolderRunController(namedCourseFolder, true, true, true, ureq, getWindowControl(), null, customLinkTreeModel);
 		folderMainCtl.addLoggingResourceable(LoggingResourceable.wrap(course));
 		currentToolCtr = new LayoutMain3ColsController(ureq, getWindowControl(), folderMainCtl);
-		all.pushController(translate("command.coursefolder"), currentToolCtr);
+		toolbarPanel.pushController(translate("command.coursefolder"), currentToolCtr);
 	}
 	
 	private void launchCourseAreas(UserRequest ureq) {
@@ -796,14 +795,14 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		CourseAreasController areasMainCtl = new CourseAreasController(ureq, getWindowControl(), courseRes);
 		areasMainCtl.addLoggingResourceable(LoggingResourceable.wrap(course));
 		currentToolCtr = new LayoutMain3ColsController(ureq, getWindowControl(), areasMainCtl);
-		all.pushController(translate("command.courseareas"), currentToolCtr);
+		toolbarPanel.pushController(translate("command.courseareas"), currentToolCtr);
 	}
 	
 	private void launchDbs(UserRequest ureq) {
 		if (hasCourseRight(CourseRights.RIGHT_DB) || isCourseAdmin) {
 			currentToolCtr = new CustomDBMainController(ureq, getWindowControl(), course);
 			listenTo(currentToolCtr);
-			all.pushController(translate("command.opendb"), currentToolCtr);
+			toolbarPanel.pushController(translate("command.opendb"), currentToolCtr);
 		} else throw new OLATSecurityException("clicked dbs, but no according right");
 	}
 	
@@ -866,7 +865,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
 			currentToolCtr = new StatisticMainController(ureq, getWindowControl(), course);
 			listenTo(currentToolCtr);
-			all.pushController(translate("command.openstatistic"), currentToolCtr);
+			toolbarPanel.pushController(translate("command.openstatistic"), currentToolCtr);
 		} else throw new OLATSecurityException("clicked statistic, but no according right");
 	}
 	
@@ -879,8 +878,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				currentToolCtr = new MembersManagementMainController(ureq, addToHistory(ureq, bwControl), courseRepositoryEntry);
 				listenTo(currentToolCtr);
 				
-				all.popUpToRootController(ureq);
-				all.pushController(translate("command.opensimplegroupmngt"), currentToolCtr);
+				toolbarPanel.popUpToRootController(ureq);
+				toolbarPanel.pushController(translate("command.opensimplegroupmngt"), currentToolCtr);
 			}
 			return (MembersManagementMainController)currentToolCtr;
 		} else throw new OLATSecurityException("clicked groupmanagement, but no according right");
@@ -891,10 +890,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl swControl = addToHistory(ureq, ores, null);
 		if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin || isCourseCoach) {
-			StatisticCourseNodesController statsToolCtr = new StatisticCourseNodesController(ureq, swControl, all, uce, types);
+			StatisticCourseNodesController statsToolCtr = new StatisticCourseNodesController(ureq, swControl, toolbarPanel, uce, types);
 			currentToolCtr = statsToolCtr;
 			listenTo(statsToolCtr);
-			all.pushController(translate(i18nCrumbKey), statsToolCtr);
+			toolbarPanel.pushController(translate(i18nCrumbKey), statsToolCtr);
 			return statsToolCtr;
 		}
 		return null;
@@ -907,22 +906,22 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		
 		// 1) course admins and users with tool right: full access
 		if (hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseAdmin) {
-			AssessmentMainController assessmentToolCtr = new AssessmentMainController(ureq, swControl, all, course,
+			AssessmentMainController assessmentToolCtr = new AssessmentMainController(ureq, swControl, toolbarPanel, course,
 					new FullAccessAssessmentCallback(isCourseAdmin));
 			assessmentToolCtr.activate(ureq, null, null);
 			currentToolCtr = assessmentToolCtr;
 			listenTo(currentToolCtr);
-			all.pushController(translate("command.openassessment"), currentToolCtr);
+			toolbarPanel.pushController(translate("command.openassessment"), currentToolCtr);
 			return assessmentToolCtr;
 		}
 		// 2) users with coach right: limited access to coached groups
 		else if (isCourseCoach) {
-			AssessmentMainController assessmentToolCtr =  new AssessmentMainController(ureq, swControl, all, course,
+			AssessmentMainController assessmentToolCtr =  new AssessmentMainController(ureq, swControl, toolbarPanel, course,
 					new CoachingGroupAccessAssessmentCallback());
 			assessmentToolCtr.activate(ureq, null, null);
 			currentToolCtr = assessmentToolCtr;
 			listenTo(currentToolCtr);
-			all.pushController(translate("command.openassessment"), currentToolCtr);
+			toolbarPanel.pushController(translate("command.openassessment"), currentToolCtr);
 			return assessmentToolCtr;
 		} else throw new OLATSecurityException("clicked assessment tool in course::" + course.getResourceableId()
 				+ ", but no right to launch it. Username::" + ureq.getIdentity().getName());
@@ -1075,7 +1074,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private void initToolController() {
 		CourseConfig cc = uce.getCourseEnvironment().getCourseConfig();
 		
-		all.removeAllTools();
+		toolbarPanel.removeAllTools();
 		
 		initEditionTools();
 		initGroupTools();
@@ -1155,7 +1154,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				editTools.addComponent(dbLink);
 			}
 			
-			all.addTool(editTools, Align.left, true);
+			toolbarPanel.addTool(editTools, Align.left, true);
 		}
 	}
 	
@@ -1191,7 +1190,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 		
 		if(groupTools.size() > 0) {
-			all.addTool(groupTools, Align.left);
+			toolbarPanel.addTool(groupTools, Align.left);
 		}
 	}
 	
@@ -1199,15 +1198,15 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// new toolbox 'general'
 		if (showCourseConfigLink) {
 			detailsLink = LinkFactory.createToolLink("courseconfig",translate("command.courseconfig"), this, "o_icon_details");
-			all.addTool(detailsLink);
+			toolbarPanel.addTool(detailsLink);
 		}		
 		if (cc.isCalendarEnabled() && !isGuest) {
 			calendarLink = LinkFactory.createToolLink("calendar",translate("command.calendar"), this, "o_icon_calendar");
 			calendarLink.setPopup(true);//"950", "750"
-			all.addTool(calendarLink);
+			toolbarPanel.addTool(calendarLink);
 		}
 		if (cc.hasGlossary()) {
-			all.addTool(glossaryToolCtr.getInitialComponent(), null, false, "o_tool_dropdown dropdown");
+			toolbarPanel.addTool(glossaryToolCtr.getInitialComponent(), null, false, "o_tool_dropdown dropdown");
 		}
 		//add group chat to toolbox
 		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
@@ -1215,7 +1214,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				&& CourseModule.isCourseChatEnabled() && cc.isChatEnabled();
 		if(chatIsEnabled) {
 			chatLink = LinkFactory.createToolLink("chat",translate("command.coursechat"), this, "o_icon_chat");
-			all.addTool(chatLink);
+			toolbarPanel.addTool(chatLink);
 		}
 		
 		if (CourseModule.displayParticipantsCount() && !isGuest) {
@@ -1235,7 +1234,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			// data exists for user
 			efficiencyStatementsLink = LinkFactory.createToolLink("efficiencystatement",translate("command.efficiencystatement"), this, "o_icon_certificate");
 			efficiencyStatementsLink.setPopup(true);//"750", "800"
-			all.addTool(efficiencyStatementsLink, Align.right);
+			toolbarPanel.addTool(efficiencyStatementsLink, Align.right);
 			
 			UserEfficiencyStatement es = efficiencyStatementManager
 					.getUserEfficiencyStatementLight(courseRepositoryEntry.getKey(), getIdentity());
@@ -1245,13 +1244,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			if (!isGuest) {
 				noteLink = LinkFactory.createToolLink("personalnote",translate("command.personalnote"), this, "o_icon_notes");
 				noteLink.setPopup(true);//"750", "550"
-				all.addTool(noteLink, Align.right);
+				toolbarPanel.addTool(noteLink, Align.right);
 			}
 			if (offerBookmark && !isGuest) {
 				boolean marked = markManager.isMarked(courseRepositoryEntry, getIdentity(), null);
 				String css = marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON;
 				bookmarkLink = LinkFactory.createToolLink("bookmark",translate("command.bookmark"), this, css);
-				all.addTool(bookmarkLink, Align.right);
+				toolbarPanel.addTool(bookmarkLink, Align.right);
 			}
 		}
 
