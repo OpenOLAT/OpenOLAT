@@ -98,7 +98,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 
 	private FileElement fileUpload, movieUpload;
 	private SingleSelection language;
-	private TextElement displayName, authors, expenditureOfWork;
+	private TextElement externalRef, displayName, authors, expenditureOfWork;
 	private RichTextElement description, objectives, requirements, credits;
 	private SingleSelection dateTypesEl, publicDatesEl;
 	private DateChooser startDateEl, endDateEl;
@@ -147,6 +147,21 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 
 		String id = repositoryEntry.getResourceableId() == null ? "-" : repositoryEntry.getResourceableId().toString();
 		uifactory.addStaticTextElement("cif.id", id, descCont);
+		
+		String externalId = repositoryEntry.getExternalId();
+		if(StringHelper.containsNonWhitespace(externalId)) {
+			uifactory.addStaticTextElement("cif.externalid", externalId, descCont);
+		}
+		
+		String extRef = repositoryEntry.getExternalRef();
+		if(StringHelper.containsNonWhitespace(repositoryEntry.getManagedFlagsString())) {
+			if(StringHelper.containsNonWhitespace(extRef)) {
+				uifactory.addStaticTextElement("cif.externalref", extRef, descCont);
+			}
+		} else {
+			externalRef = uifactory.addTextElement("cif.externalref", "cif.externalref", 100, extRef, descCont);
+			externalRef.setDisplaySize(30);
+		}
 
 		String initalAuthor = repositoryEntry.getInitialAuthor() == null ? "-" : repositoryEntry.getInitialAuthor();
 		if(repositoryEntry.getInitialAuthor() != null) {
@@ -167,7 +182,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		} else {
 			typeDisplay = translate("cif.type.na");
 		}
-		uifactory.addStaticExampleText("cif.type", typeDisplay, descCont);
+		uifactory.addStaticTextElement("cif.type", typeDisplay, descCont);
 		
 		uifactory.addSpacerElement("spacer1", descCont, false);
 
@@ -202,7 +217,6 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 				desc, 10, -1, false, mediaContainer, null, descCont, ureq.getUserSession(), getWindowControl());
 		description.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.description));
 		description.getEditorConfiguration().setFileBrowserUploadRelPath("media");
-		description.setMandatory(true);
 
 		uifactory.addSpacerElement("spacer2", descCont, false);
 
@@ -359,17 +373,9 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		} else {
 			displayName.clearError();
 		}
-		
-		// Check for empty description
-		if (!StringHelper.containsNonWhitespace(description.getValue())) {
-			description.setErrorKey("cif.error.description.empty", new String[] {});
-			allOk = false;
-		} else {
-			description.clearError();
-		}
-		
+
 		// Ok, passed all checks
-		return allOk && super.validateFormLogic(ureq);
+		return allOk & super.validateFormLogic(ureq);
 	}
 
 	@Override
