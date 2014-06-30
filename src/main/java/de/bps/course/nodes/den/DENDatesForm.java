@@ -61,7 +61,7 @@ public class DENDatesForm extends FormBasicController {
 	 * @param layout (CREATE_DATES_LAYOUT, EDIT_SINGLE_DATE_LAYOUT, EDIT_MULTIPLE_DATES_LAYOUT)
 	 */
 	public DENDatesForm(UserRequest ureq, WindowControl wControl, Translator translator, int layout) {
-		super(ureq, wControl, "dateform");
+		super(ureq, wControl);
 		this.setTranslator(translator);
 		this.layout = layout;
 		
@@ -77,14 +77,14 @@ public class DENDatesForm extends FormBasicController {
 			showDurationTE = true;
 			showPauseTE = true;
 			showRetakeTE = true;
-			this.flc.contextPut("chelp", "ced-den-dates-creat.html");
+			setFormContextHelp("de.bps.course.nodes.den","ced-den-dates-creat.html","help.hover.den");
 		} else if(layout == EDIT_SINGLE_DATE_LAYOUT) {
 			showBeginDateChooser = true;
 			showDurationTE = true;
-			this.flc.contextPut("chelp", "ced-den-dates-singl.html");
+			setFormContextHelp("de.bps.course.nodes.den","ced-den-dates-singl.html","help.hover.den");
 		} else if(layout == EDIT_MULTIPLE_DATES_LAYOUT) {
 			showMoveTE = true;
-			this.flc.contextPut("chelp", "ced-den-dates-multi.html");
+			setFormContextHelp("de.bps.course.nodes.den","ced-den-dates-multi.html","help.hover.den");
 		}
 		
 		initForm(this.flc, this, ureq);

@@ -244,23 +244,21 @@ public class TableRenderer extends DefaultComponentRenderer {
 
 	private void appendDataRows(final Renderer renderer, final StringOutput target, final URLBuilder ubu, Table table, boolean iframePostEnabled, int cols, boolean selRowUnSelectable, int selRowId,
 			int startRowId, int endRowId) {
-		String cssClass = "";
 		target.append("<tbody>");
 		long startRowLoop = 0;
 		if (log.isDebug()) {
 			startRowLoop = System.currentTimeMillis();
 		}
-		int lastVisibleRowId = endRowId - 1;
 		for (int i = startRowId; i < endRowId; i++) {
+			String cssClass = "";
 			// the position of the selected row in the tabledatamodel
 			int currentPosInModel = table.getSortedRow(i);
 			boolean isMark = selRowUnSelectable && (selRowId == currentPosInModel);
 
-			// VCRP-16
 			TableDataModel<?> model = table.getTableDataModel();
 			if (model instanceof TableDataModelWithMarkableRows) {
 				TableDataModelWithMarkableRows markableModel = (TableDataModelWithMarkableRows) model;
-				String rowCss = markableModel.getRowCssClass(i);
+				String rowCss = markableModel.getRowCssClass(currentPosInModel);
 				if (rowCss != null) {
 					cssClass += " " + rowCss;
 				}

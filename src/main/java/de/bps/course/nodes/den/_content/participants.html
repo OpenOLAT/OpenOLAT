@@ -1,11 +1,24 @@
-<div>
-$r.render("dateTitle")
-$r.render("dateTimeframe")
+<div class="o_block">
+	<table class="table-condensed">
+		<tr>
+			<th>
+				$r.translate("dates.table.subject")
+			</th>
+			<td>
+				$dateTitle			
+			</td>
+		</tr>
+		<tr>
+			<th>
+				$r.translate("dates.table.date") 
+			</th>
+			<td>
+				$dateTimeframe
+			</td>
+		</tr>
+	</table>
 </div>
-<br>
-<div>
-    $r.render("participantsTable")
-</div>
-<div>
-    $r.render("addParticipants")
+$r.render("participantsTable")
+<div class="o_button_group">
+    $r.render("participants.add")
 </div>
