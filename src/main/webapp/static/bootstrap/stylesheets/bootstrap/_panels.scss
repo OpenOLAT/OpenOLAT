@@ -95,7 +95,7 @@
 // Place a non-bordered `.table` within a panel (not within a `.panel-body`) and
 // watch it go full width.
 
-.panel {
+.panel, .panel-collapse {
   > .table,
   > .table-responsive > .table,
   > .panel-collapse > .table {
