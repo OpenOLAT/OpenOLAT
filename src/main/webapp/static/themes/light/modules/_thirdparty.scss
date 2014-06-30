@@ -59,7 +59,9 @@
 /*
  * datepicker
  */
+ 
 .ui-datepicker {
+	z-index: 2000 ! important;
 	@include box-shadow(0px 1px 5px -1px rgba(0,0,0,.15));
 	
 	.ui-widget-header {

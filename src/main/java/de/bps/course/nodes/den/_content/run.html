@@ -1,7 +1,14 @@
 #if ($r.available("subscription"))
+<div class="clearfix">
 	$r.render("subscription")
+</div> 
 #end
 #if($showAuthorBtns)
-	$r.render("authorOptions")
+	<div class="o_button_group o_button_group_right">
+		<div class="btn-group">
+			$r.render("config.dates")
+			$r.render("run.enrollment.list")
+		</div>
+	</div>
 #end
 $r.render("datesTable")

@@ -28,13 +28,8 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
@@ -71,7 +66,10 @@ public class DENRunController extends BasicController implements GenericEventLis
 	private DENRunTableDataModel runTableData;
 	private List<KalendarEvent> runTableDataList;
 	private TableController runDENTable;
-	private FormBasicController authorOptions;
+	private Link manageDatesBtn;
+	private Link enrollmentListBtn;
+
+	
 	private CloseableModalController manageDatesModalCntrll, listParticipantsModalCntrll;
 
 	private DENManager denManager;
@@ -119,10 +117,11 @@ public class DENRunController extends BasicController implements GenericEventLis
 				runVC.put("subscription", csc.getInitialComponent());
 			}
 			
-			authorOptions = new AuthorOptionsForm(ureq, getWindowControl());
-			authorOptions.addControllerListener(this);
+			manageDatesBtn = LinkFactory.createButton("config.dates", runVC, this);
+			manageDatesBtn.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
+			enrollmentListBtn = LinkFactory.createButton("run.enrollment.list", runVC, this);
+			enrollmentListBtn.setIconLeftCSS("o_icon o_icon-fw o_icon_user");
 			runVC.contextPut("showAuthorBtns", Boolean.TRUE);
-			runVC.put("authorOptions", authorOptions.getInitialComponent());
 		} else {
 			runVC.contextPut("showAuthorBtns", Boolean.FALSE);
 		}
@@ -161,10 +160,6 @@ public class DENRunController extends BasicController implements GenericEventLis
 			removeAsListenerAndDispose(csc);
 			csc = null;
 		}
-		if(authorOptions != null) {
-			removeAsListenerAndDispose(authorOptions);
-			authorOptions = null;
-		}
 		if(runDENTable != null) {
 			removeAsListenerAndDispose(runDENTable);
 			runDENTable = null;
@@ -185,7 +180,24 @@ public class DENRunController extends BasicController implements GenericEventLis
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		//nothing to do
+		if(source == manageDatesBtn) {
+			//management of dates
+			removeAsListenerAndDispose(manageDatesModalCntrll);
+			DENManageDatesController datesCtr = new DENManageDatesController(ureq, getWindowControl(), ores, courseNode);
+			listenTo(datesCtr);
+			manageDatesModalCntrll = new CloseableModalController(getWindowControl(), "close", datesCtr.getInitialComponent(), true, translate("config.dates"));
+			manageDatesModalCntrll.activate();
+			listenTo(manageDatesModalCntrll);
+			
+		} else if(source == enrollmentListBtn) {
+			//list of participants
+			removeAsListenerAndDispose(listParticipantsModalCntrll);
+			DENManageParticipantsController partsCtr = new DENManageParticipantsController(ureq, getWindowControl(), ores, courseNode);
+			listenTo(partsCtr);
+			listParticipantsModalCntrll = new CloseableModalController(getWindowControl(), "close", partsCtr.getInitialComponent(), true, translate("dates.table.list"));
+			listParticipantsModalCntrll.activate();
+			listenTo(listParticipantsModalCntrll);
+		}
 	}
 
 	@Override
@@ -211,21 +223,7 @@ public class DENRunController extends BasicController implements GenericEventLis
 				NotificationsManager.getInstance().markPublisherNews(subsContext, ureq.getIdentity(), true);
 				// </OPAL-122>
 			}
-		} else if(authorOptions == source) {
-			if(event == AuthorOptionsForm.MANAGE_EVENT) {
-				//management of dates
-				DENManageDatesController datesCtr = new DENManageDatesController(ureq, getWindowControl(), ores, courseNode);
-				manageDatesModalCntrll = new CloseableModalController(getWindowControl(), "close", datesCtr.getInitialComponent(), true, translate("config.dates"));
-				manageDatesModalCntrll.addControllerListener(this);
-				manageDatesModalCntrll.activate();
-			} else if(event == AuthorOptionsForm.LIST_EVENT) {
-				//list of participants
-				DENManageParticipantsController partsCtr = new DENManageParticipantsController(ureq, getWindowControl(), ores, courseNode);
-				listParticipantsModalCntrll = new CloseableModalController(getWindowControl(), "close", partsCtr.getInitialComponent(), true, translate("dates.table.list"));
-				listParticipantsModalCntrll.addControllerListener(this);
-				listParticipantsModalCntrll.activate();
-			}
-		}
+		} 
 	}
 
 	private void showError() {
@@ -241,49 +239,6 @@ public class DENRunController extends BasicController implements GenericEventLis
 		} else if(DENStatus.ERROR_FULL.equals(message)) {
 			getWindowControl().setError(translate("enrollment.error.full"));
 		}
-	}
-
-}
-
-class AuthorOptionsForm extends FormBasicController {
-
-	public static final Event MANAGE_EVENT = new Event("manage");
-	public static final Event LIST_EVENT = new Event("list");
-
-	private FormLinkImpl manageDatesBtn, enrollmentListBtn;
-
-	public AuthorOptionsForm(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-		initForm(this.flc, this, ureq);
-	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer horLayout = FormLayoutContainer.createHorizontalFormLayout("", getTranslator());
-		formLayout.add(horLayout);
-		manageDatesBtn = new FormLinkImpl("preferencesButton", MANAGE_EVENT.getCommand(), "config.dates", Link.BUTTON);
-		enrollmentListBtn = new FormLinkImpl("enrollmentListButton", LIST_EVENT.getCommand(), "run.enrollment.list", Link.BUTTON);
-		horLayout.add(manageDatesBtn);
-		horLayout.add(enrollmentListBtn);
-	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == manageDatesBtn) {
-			fireEvent(ureq, AuthorOptionsForm.MANAGE_EVENT);
-		} else if(source == enrollmentListBtn) {
-			fireEvent(ureq, AuthorOptionsForm.LIST_EVENT);
-		}
-	}
-
-	@Override
-	protected void doDispose() {
-		//nothing to do
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//nothing to do
 	}
 
 }

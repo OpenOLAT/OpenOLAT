@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
+import org.olat.core.gui.components.table.TableDataModelWithMarkableRows;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 
@@ -34,7 +35,7 @@ import de.bps.course.nodes.DENCourseNode;
  * TableDataModel for run view of date enrollment
  * @author skoeber
  */
-public class DENRunTableDataModel extends DefaultTableDataModel<KalendarEvent> {
+public class DENRunTableDataModel extends DefaultTableDataModel<KalendarEvent> implements TableDataModelWithMarkableRows<KalendarEvent> {
 	
 	public static final String CMD_ENROLL_IN_DATE = "cmd.enroll.in.date";
 	public static final String CMD_ENROLLED_CANCEL = "cmd.enrolled.cancel";
@@ -67,6 +68,8 @@ public class DENRunTableDataModel extends DefaultTableDataModel<KalendarEvent> {
 	public int getColumnCount() {
 		return COLUMN_COUNT;
 	}
+	
+	
 
 	@Override
 	public Object getValueAt(int row, int col) {
@@ -99,7 +102,7 @@ public class DENRunTableDataModel extends DefaultTableDataModel<KalendarEvent> {
 			return numStrBuf.toString();
 		case 6:
 			//status
-			Boolean isEnrolled = denManager.isEnrolledInDate(identity, event);
+			boolean isEnrolled = denManager.isEnrolledInDate(identity, event);
 			if(isEnrolled)
 				return translator.translate("dates.table.run.enrolled");
 			else if(denManager.isDateFull(event))
@@ -123,5 +126,12 @@ public class DENRunTableDataModel extends DefaultTableDataModel<KalendarEvent> {
 
 		default: return "error";
 		}
+	}
+
+	@Override
+	public String getRowCssClass(int rowId) {
+		KalendarEvent event = getObject(rowId);
+		boolean isEnrolled = denManager.isEnrolledInDate(identity, event);
+		return (isEnrolled ? "o_row_selected" : "");
 	}
 }
