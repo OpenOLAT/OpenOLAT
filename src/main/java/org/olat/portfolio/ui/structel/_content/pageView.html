@@ -5,7 +5,7 @@
 		<div class="pull-right">$r.render("addButton")</div>
 	#end
 	<p>$page.description</p>
-	<div class="b_clearfix">
+	<div class="clearfix">
 		#if($r.available("checkResults"))
 			$r.render("checkResults")
 		#end
@@ -25,7 +25,7 @@
 		#end
 	</div>
 	#if($r.available("commentCtrl"))
-		<div class="b_clearfix">
+		<div class="clearfix">
 			$r.render("commentCtrl")
 		</div>
 	#end

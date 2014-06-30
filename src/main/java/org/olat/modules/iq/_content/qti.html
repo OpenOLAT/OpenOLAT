@@ -189,13 +189,13 @@ function o_qtiFormatItemCounter() {
 				## set message that time is now finished
 				o_itemremain.html('<b>$r.translate("timelimit.finished")</b>');			
 				## mark container with time message as warning
-				var container = jQuery('#o_qti_run_content_inner div.b_note');
+				var container = jQuery('#o_qti_run_content_inner div.o_note');
 				if (container.length > 0) {
-					container.toggleClass('b_note');
-					container.toggleClass('b_warning');
+					container.toggleClass('o_note');
+					container.toggleClass('o_warning');
 					## fallback in case not container was found
 				} else {
-					jQuery('#o_qti_run_content_inner').prepend("<div class='b_warning'>$r.translate("timelimit.finished")</div>");
+					jQuery('#o_qti_run_content_inner').prepend("<div class='o_warning'>$r.translate("timelimit.finished")</div>");
 				}
 			}
 		}
@@ -239,10 +239,10 @@ function o_qtiFormatAssessmentCounter() {
 				## mark container with time message as warning
 				var container = jQuery('#o_qti_run_status div.o_qti_timelimit_icon');
 				if (container.length == 1) {
-					container.toggleClass('b_warning');
+					container.toggleClass('o_warning');
 				} else {
 					## fallback in case not container was found
-					jQuery('#o_qti_run_status').prepend("<div class='b_warning'>$r.translate("timelimit.finished")</div>");
+					jQuery('#o_qti_run_status').prepend("<div class='o_warning'>$r.translate("timelimit.finished")</div>");
 				}
 				jQuery('#o_qti_info_timelimit').html('');
 			}

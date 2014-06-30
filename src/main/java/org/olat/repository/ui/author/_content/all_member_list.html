@@ -1,5 +1,5 @@
 #if($r.available("addMembers") || $r.available("importMembers"))
-<div class="o_buttons_box_right">
+<div class="o_button_group o_button_group_right">
 	#if($r.available("addMembers"))
 		$r.render("addMembers")
 	#end
@@ -10,12 +10,11 @@
 #end
 
 #if($infos)
-	<br/>
-	<div class="b_clearfix">
-		<p class="b_info">$infos</p>
+	<div class="o_block clearfix">
+		<p class="o_info">$infos</p>
 	</div>
 #end
 
-<div class="b_clearfix">
+<div class="clearfix">
 	$r.render("memberList")
 </div>

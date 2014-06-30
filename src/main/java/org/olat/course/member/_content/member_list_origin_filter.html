@@ -1,12 +1,10 @@
 #if($infos)
-	<br/>
-	<div class="b_clearfix">
-		<p class="b_info">$infos</p>
+	<div class="o_block clearfix">
+		<p class="o_info">$infos</p>
 	</div>
 #end
-<br/>
-<div class="b_clearfix" style="position:relative;">
-	<div class="o_buttons_box_right">
+<div class="clearfix" style="position:relative;">
+	<div class="o_button_group o_button_group_right">
 		$r.render("originFilter")
 	</div>
 	$r.render("memberList")

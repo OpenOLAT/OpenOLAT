@@ -1,5 +1,5 @@
 #if($editQuota)
-	<fieldset class="b_clearfix">
+	<fieldset class="clearfix">
 		<legend>$r.translate("qf.edit")</legend>
 		#if(!$isEmptyQuota)
 		<div class="o_button_group o_button_group_right">$r.render("qf.del")</div>
@@ -7,7 +7,7 @@
 		$r.render("quotaform")
 	</fieldset>
 #else
-	<fieldset class="b_clearfix">
+	<fieldset class="clearfix">
 		<legend>$r.translate("qf.new")</legend>
 		#if($r.available("qf.new"))
 			<div class="o_button_group o_button_group_right">$r.render("qf.new")</div>

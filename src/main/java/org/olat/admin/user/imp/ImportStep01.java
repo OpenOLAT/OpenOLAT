@@ -197,12 +197,12 @@ class UserNewOldCustomFlexiCellRenderer extends AbstractCSSIconFlexiCellRenderer
 	protected String getCssClass(Object cellValue) {
 		if (cellValue instanceof Boolean) {
 			if (((Boolean) cellValue).booleanValue()) {
-				return "b_new_icon";
+				return "o_icon_new";
 			} else {
-				return "b_warn_icon";
+				return "o_icon_warn";
 			}
 		}
-		return "b_error_icon";
+		return "o_icon_error";
 	}
 
 	@Override

@@ -278,7 +278,7 @@ public class EPMapViewController extends BasicController implements Activateable
 			String[] stats = ePFMgr.getRestrictionStatisticsOfMap(map);
 			String text = translate("map.submit.assess.restriction.error.description") + "<br/>" +  translate("map.submit.assess.restriction.error.hint", stats);
 			confirmationSubmissionCtr = activateYesNoDialog(ureq, title, text, confirmationSubmissionCtr);
-			confirmationSubmissionCtr.setCssClass("b_warning_icon");
+			confirmationSubmissionCtr.setCssClass("o_icon_warn");
 		}
 	}
 

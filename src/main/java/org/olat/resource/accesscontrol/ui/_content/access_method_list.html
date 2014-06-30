@@ -1,10 +1,13 @@
 <div class="b_access_method_list">
-	<h3 class="b_with_small_icon_left b_order_icon">$r.translate("access.title")</h3>
-	<p class="b_info">
+	<h3>
+		<i class="o_icon o_icon-fw o_icon_booking">$r.translate("access.title")
+	</h3>
+	<p class="o_info">
 		$r.translate("access.desc")
 	</p>
 	#foreach($link in $links)
-		<div class="b_clearfix b_access_method $link.getMethod().getMethodCssClass()">
+		<div class="clearfix">
+			<i class="o_icon o_icon-fw $link.getMethod().getMethodCssClass()"> </i>
 			$r.render("ac_$link.key")
 		</div>
 	#end

@@ -1,20 +1,23 @@
-<div class="b_translation_edit b_form">
-	<div  class="b_translation_edit_head">
+<div class="o_translation_edit b_form">
+	<div  class="o_translation_edit_head">
 		<table class="b_table b_table_nohover b_full">
-			<tr><td><span class="b_with_small_icon_left b_translation_package_icon"><b>$r.translate("generic.bundle"): </b></span></td><td id="bundlesSelectionContainer">$r.render("bundlesSelection")</td><td width="50%">$r.render("progressBarBundle")</td></tr>
-			<tr><td><span class="b_with_small_icon_left b_translation_item_icon"><b>$r.translate("generic.key"): </b></span></td><td>$r.render("keysSelection")</td><td>$r.render("progressBarKey")</td></tr>
+			<tr><td><span class="b_with_small_icon_left o_translation_package_icon"><b>$r.translate("generic.bundle"): </b></span></td><td id="bundlesSelectionContainer">$r.render("bundlesSelection")</td><td width="50%">$r.render("progressBarBundle")</td></tr>
+			<tr><td><span class="b_with_small_icon_left o_translation_item_icon"><b>$r.translate("generic.key"): </b></span></td><td>$r.render("keysSelection")</td><td>$r.render("progressBarKey")</td></tr>
 		</table>
 	</div>
-	<div  class="b_translation_edit_body">
-		<p class="b_info">
+	<div  class="o_translation_edit_body">
+		<p class="o_info">
 			$r.translate("edit.${customizingPrefix}intro")
 		</p>	
 		
-		<div class="b_translation_edit_reference b_form_element">
-			<div class="b_translation_refKey b_float_right b_with_small_icon_left" style="display: none" onclick="this.style.display='none'">
+		<div class="o_translation_edit_reference b_form_element">
+			<div class="o_translation_refKey b_float_right b_with_small_icon_left" style="display: none" onclick="this.style.display='none'">
 				<code></code> = <span></span>
 			</div>
-			<h5 class="b_with_small_icon_left b_flag_$referenceLanguageKey">$r.translate("generic.${customizingPrefix}lang.reference"): $referenceLanguage</h5>
+			<h5>
+				<i class="o_flag o_flag_$referenceLanguageKey"> </i>
+				 $r.translate("generic.${customizingPrefix}lang.reference"): $referenceLanguage
+			</h5>
 			$r.render("referenceArea")
 		</div>
 		#if ($r.available("annotationAddLink"))
@@ -24,31 +27,37 @@
 			</div>
 			#end
 		#else
-		<div class="b_translation_edit_annotation b_form_element" title="$r.translateInAttribute("edit.annotation.hover")" >
-			<h5 class="b_with_small_icon_left b_info_icon">$r.translate("generic.annotation")</h5>
+		<div class="o_translation_edit_annotation b_form_element" title="$r.translateInAttribute("edit.annotation.hover")" >
+			<h5>
+				<i class="o_icon o_icon_info"> </i>
+				$r.translate("generic.annotation")
+			</h5>
 			$r.render("annotationArea")
 		</div>
 		#end
-		<div class="b_translation_edit_compare b_form_element">			
+		<div class="o_translation_edit_compare b_form_element">			
 			#if ($compareSwitchEnabled)
-			<div class="b_translation_refKey b_float_right b_with_small_icon_left" style="display: none" onclick="this.style.display='none'">
+			<div class="o_translation_refKey pull-right b_with_small_icon_left" style="display: none" onclick="this.style.display='none'">
 				<code></code> = <span></span>
 			</div>
 			#end
-			<div class="b_clearfix">
-				<div class="b_float_left #if (!$compareSwitchEnabled) text-muted #end"><h5 class="b_with_small_icon_left b_flag_$compareLanguageKey">$r.translate("generic.lang.compare"): </h5></div>
-				<div class="b_float_left #if (!$compareSwitchEnabled) text-muted #end">$r.render("compareLangSelection") </div>
-				<div class="b_float_left" style="margin-right: 0;">$r.render("compareSwitch")</div>
+			<div class="clearfix">
+				<div class="pull-left #if (!$compareSwitchEnabled) text-muted #end"><h5><i class="o_flag o_flag_$compareLanguageKey">$r.translate("generic.lang.compare"): </h5></div>
+				<div class="pull-left #if (!$compareSwitchEnabled) text-muted #end">$r.render("compareLangSelection") </div>
+				<div class="pull-left" style="margin-right: 0;">$r.render("compareSwitch")</div>
 				$r.translate("generic.enable")
 			</div>
 			$r.render("compareArea")
 		</div>
-		<div class="b_translation_edit_target b_form_element" title="$r.translateInAttribute("edit.${customizingPrefix}target.hover")">
-			<div class="b_translation_refKey b_float_right b_with_small_icon_left" style="display: none" onclick="this.style.display='none'">
+		<div class="o_translation_edit_target b_form_element" title="$r.translateInAttribute("edit.${customizingPrefix}target.hover")">
+			<div class="o_translation_refKey b_float_right b_with_small_icon_left" style="display: none" onclick="this.style.display='none'">
 				<code></code> = <span></span>
 			</div>
-			<a href="#top" onclick="copyFromReference();" class="b_button b_xsmall b_float_right"><span>$r.translate('copy')</span></a>
-			<h5 class="b_with_small_icon_left b_flag_$targetLanguageKey">$r.translate("generic.${customizingPrefix}lang.target"): $targetLanguage</h5>
+			<a href="#top" onclick="copyFromReference();" class="btn btn-small pull-right"><span>$r.translate('copy')</span></a>
+			<h5>
+				<i class="o_flag o_flag_$targetLanguageKey"> </i>
+				 $r.translate("generic.${customizingPrefix}lang.target"): $targetLanguage
+			</h5>
 			$r.render("targetArea")
 		</div>		
 		<div class="b_button_group">
@@ -68,7 +77,7 @@
 /* <![CDATA[ */ 
 
 //FIXME:FG:6.2: Implement Java way of setting flexi form link buttons dirty on change
-function b_SetTranslationSaveLinksDirty() {
+function o_SetTranslationSaveLinksDirty() {
 	var save=jQuery("#$f.getItemId("saveLink")"); 
 	if (!save.hasClass('o_button_dirty')) {
 		save.addClass('o_button_dirty'); 
@@ -78,7 +87,7 @@ function b_SetTranslationSaveLinksDirty() {
 	}
 	
 }
-jQuery("#$f.getItemId("targetArea")").on("keyup", b_SetTranslationSaveLinksDirty);    
+jQuery("#$f.getItemId("targetArea")").on("keyup", o_SetTranslationSaveLinksDirty);    
 
 ## Code to check for user click on key references within the textarea fields
 
@@ -120,9 +129,9 @@ function checkClick(wrapperName, langCode) {
 				var translated = trans.translate(key);
 				if (translated != reference) {
 					## set new key and value, make element visible
-					jQuery('div.' + wrapperName + ' div.b_translation_refKey code').html(reference);
-					jQuery('div.' + wrapperName + ' div.b_translation_refKey span').html(translated);
-					jQuery('div.' + wrapperName + ' div.b_translation_refKey').css('display: inline');
+					jQuery('div.' + wrapperName + ' div.o_translation_refKey code').html(reference);
+					jQuery('div.' + wrapperName + ' div.o_translation_refKey span').html(translated);
+					jQuery('div.' + wrapperName + ' div.o_translation_refKey').css('display: inline');
 				}
 			}
 			break;
@@ -137,28 +146,28 @@ function checkClick(wrapperName, langCode) {
 	
 ## Method to copy the text from the reference language to the target language
 function copyFromReference() {
-	var refVal = jQuery('.b_translation_edit_reference textarea').val();
-	jQuery('.b_translation_edit_target textarea').val(refVal);	
+	var refVal = jQuery('.o_translation_edit_reference textarea').val();
+	jQuery('.o_translation_edit_target textarea').val(refVal);	
 }
 	
 ## Initialize observers
 jQuery(function() {
-	jQuery('div.b_translation_edit_reference textarea').each(function(index, el) {
+	jQuery('div.o_translation_edit_reference textarea').each(function(index, el) {
 		jQuery(el).on('click', function() {
-			checkClick('b_translation_edit_reference','${referenceLanguageKey}');
+			checkClick('o_translation_edit_reference','${referenceLanguageKey}');
 		});
 	});
 
 #if ($compareSwitchEnabled)
-	jQuery('div.b_translation_edit_compare textarea').each(function(index, el) {
+	jQuery('div.o_translation_edit_compare textarea').each(function(index, el) {
 		jQuery(el).on('click', function() {
-			checkClick('b_translation_edit_compare','${compareLanguageKey}');
+			checkClick('o_translation_edit_compare','${compareLanguageKey}');
 		});
 	});
 #end
-	jQuery('div.b_translation_edit_target textarea').each(function(index, el) { 
+	jQuery('div.o_translation_edit_target textarea').each(function(index, el) { 
 		jQuery(el).on('click', function(){
-			checkClick('b_translation_edit_target','${targetLanguageKey}');
+			checkClick('o_translation_edit_target','${targetLanguageKey}');
 		});
 		jQuery(el).focus();
 	});

@@ -60,7 +60,7 @@ public class SolutionMaterial extends GenericQTIElement {
 	public void render(StringBuilder buffer, RenderInstructions ri) {
 		buffer.append("<div id=\"o_qti_solutions\"><a href=\"#\" onclick=\"void(jQuery('#o_qti_solutions_inner').slideToggle(300))\" onkeypress=\"void(jQuery('#o_qti_solutions_inner').slideToggle(300))\">");
 		buffer.append(getSolutionTitle(ri));
-		buffer.append("</a><div id=\"o_qti_solutions_inner\" style=\"display:none\"><div class=\"b_important\">");
+		buffer.append("</a><div id=\"o_qti_solutions_inner\" style=\"display:none\"><div class=\"o_important\">");
 		super.render(buffer, ri);
 		buffer.append("</div></div></div>");
 	}
