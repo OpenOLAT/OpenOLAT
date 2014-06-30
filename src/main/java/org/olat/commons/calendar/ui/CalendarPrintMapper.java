@@ -155,7 +155,7 @@ public class CalendarPrintMapper implements Mapper {
 			</ul>
 		</li>
 	</ul>
-	<div class="b_clearfix">&nbsp;</div>
+	<div class="clearfix">&nbsp;</div>
 </div>
 	*/
 	
@@ -183,7 +183,7 @@ public class CalendarPrintMapper implements Mapper {
 		}
 		renderDay(sb, currentDate, eventByDayList);
 
-		sb.append("</ul></fieldset><div class='b_clearfix'>&nbsp;</div></div>");
+		sb.append("</ul></fieldset><div class='clearfix'>&nbsp;</div></div>");
 	}
 	
 	private void renderDay(StringBuilder sb, Date date, List<KalendarEventRenderWrapper> eventList) {

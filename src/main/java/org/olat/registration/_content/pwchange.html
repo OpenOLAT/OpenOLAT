@@ -1,4 +1,4 @@
-<div class="b_clearfix">
+<div class="clearfix">
 	$r.render("pwwizard")
 	<h4>$r.translate("step1.pw.title")</h4>
 </div>
@@ -14,6 +14,7 @@
 	$r.render("pwarea")
 </p>
 #if ($r.available("pwchange.homelink"))
-	<br/><br/>
-	$r.render("pwchange.homelink")
+	<div class="b_block">
+		$r.render("pwchange.homelink")
+	</div>
 #end

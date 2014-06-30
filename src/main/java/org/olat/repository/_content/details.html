@@ -27,7 +27,7 @@ $r.render("backLink")
 	#if($lfStart || $lfEnd)
 	<div class="b_form">
 		#if($lfLabel)			
-		<div class="b_form_element_wrapper b_clearfix">
+		<div class="b_form_element_wrapper clearfix">
 			<div class="b_form_element_label"><label>$r.translate("cif.dates.public")</label></div>
 			<div class="b_form_element b_dates_public">
 				<span>$lfLabel</span>
@@ -38,7 +38,7 @@ $r.render("backLink")
 		</div>
 		#end
 		#if($lfStart)
-		<div class="b_form_element_wrapper b_clearfix">
+		<div class="b_form_element_wrapper clearfix">
 			<div class="b_form_element_label"><label>$r.translate("cif.date.start")</label></div>
 			<div class="b_form_element o_date_start">
 				$lfStart
@@ -46,7 +46,7 @@ $r.render("backLink")
 		</div>
 		#end
 		#if($lfStart)
-		<div class="b_form_element_wrapper b_clearfix">
+		<div class="b_form_element_wrapper clearfix">
 			<div class="b_form_element_label"><label>$r.translate("cif.date.end")</label></div>
 			<div class="b_form_element o_date_end">
 				$lfEnd
@@ -60,7 +60,7 @@ $r.render("backLink")
 </fieldset>
 #end
 
-<fieldset class="b_clearfix">
+<fieldset class="clearfix">
 	<legend>$r.translate("details.description")</legend>
 	#if ($hasImage)
 	<div class="o_repository_resource_image">
@@ -86,7 +86,7 @@ $r.render("backLink")
 	
 	## simulate form view to match styling of fieldset above
 	<div class="b_form">
-		<div class="b_form_element_wrapper b_clearfix">
+		<div class="b_form_element_wrapper clearfix">
 			<div class="b_form_element_label"><label>$r.translate("cif.owners")</label></div>
 			<div class="b_form_element">
 				<ul class="o_sel_repository_owners">
@@ -96,7 +96,7 @@ $r.render("backLink")
 				</ul>
 			</div>
 		</div>
-		<div class="b_form_element_wrapper b_clearfix">
+		<div class="b_form_element_wrapper clearfix">
 			<div class="b_form_element_label"><label>$r.translate("cif.initialAuthor")</label></div>
 			<div class="b_form_element">
 				#if($r.available($initialauthorlinkename))
@@ -105,39 +105,39 @@ $r.render("backLink")
 			</div>
 		</div>
 		
-		<div class="b_form_element_wrapper b_clearfix">
+		<div class="b_form_element_wrapper clearfix">
 			<div class="b_form_element_label"><label>$r.translate("cif.type")</label></div>
 			<div class="b_form_element">$type</div>
 		</div>
-		<div class="b_form_element_wrapper b_clearfix">
+		<div class="b_form_element_wrapper clearfix">
 			<div class="b_form_element_label"><label>$r.translate("cif.id")</label></div>
 			<div class="b_form_element">$id</div>
 		</div>
 		#if ($isOlatAdmin)		
-		<div class="b_form_element_wrapper b_clearfix">
+		<div class="b_form_element_wrapper clearfix">
 			<div class="b_form_element_label"><label>$r.translate("cif.ores_id")</label></div>
 			<div class="b_form_element">$ores_id</div>
 		</div>
-		<div class="b_form_element_wrapper b_clearfix">
+		<div class="b_form_element_wrapper clearfix">
 			<div class="b_form_element_label"><label>$r.translate("cif.softkey")</label></div>
 			<div class="b_form_element">$softkey</div>
 		</div>
 		#end
 		#if($externalId)		
-		<div class="b_form_element_wrapper b_clearfix">
+		<div class="b_form_element_wrapper clearfix">
 			<div class="b_form_element_label"><label>$r.translate("cif.externalid")</label></div>
 			<div class="b_form_element">$externalId</div>
 		</div>
 		#end
 		#if($externalRef)
-		<div class="b_form_element_wrapper b_clearfix">
+		<div class="b_form_element_wrapper clearfix">
 			<div class="b_form_element_label"><label>$r.translate("cif.externalref")</label></div>
 			<div class="b_form_element">$externalRef</div>
 		</div>
 		#end
 					
 		#if ($launchableTyp)		
-		<div class="b_form_element_wrapper b_clearfix">
+		<div class="b_form_element_wrapper clearfix">
 			<div class="b_form_element_label"><label>$r.translate("details.extlinkheader")</label></div>
 		</div>
 		<pre>$extlink</pre>

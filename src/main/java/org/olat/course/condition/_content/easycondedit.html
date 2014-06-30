@@ -1,6 +1,6 @@
-<div class="b_form b_clearfix">
+<div class="b_form clearfix">
 ## block this node from learner
-	<div class="b_form_element_wrapper b_form_element_switch b_clearfix">
+	<div class="b_form_element_wrapper b_form_element_switch clearfix">
         <div class="b_form_element">$r.render("coachExclusive")</div>
         <div class="b_form_element_label">$r.render("coachExclusive_LABEL")</div>        
 	</div>
@@ -9,7 +9,7 @@
       <!-- generates -->
       <!-- Date dependent?:| | [.] | | from | |[.....][chooser] |
                            | |     | | to   | |[.....][chooser] |-->	
-	<div class="b_form_element_wrapper b_form_element_switch b_clearfix">
+	<div class="b_form_element_wrapper b_form_element_switch clearfix">
         <div class="b_form_element">$r.render("dateSwitch")</div>
 		<div class="b_form_element_label">$r.render("dateSwitch_LABEL")</div>
 	</div>
@@ -24,7 +24,7 @@
       <!-- generates -->
       <!-- Group dependent?:| | [.] | | Groups | |[.....][chooser] |
         	                | |     | | Areas  | |[.....][chooser] | -->
-	<div class="b_form_element_wrapper b_form_element_switch b_clearfix">
+	<div class="b_form_element_wrapper b_form_element_switch clearfix">
         <div class="b_form_element">$r.render("groupSwitch")</div>
 		<div class="b_form_element_label">$r.render("groupSwitch_LABEL")</div>
 	</div>
@@ -41,7 +41,7 @@
                              | |     | |               | X SCORE  | |
         	                 | |     | | Kursbaustein  | [.....V] | |
         	                 | |     | | Cut value     | [...]    | |-->
-	<div class="b_form_element_wrapper b_form_element_switch b_clearfix">
+	<div class="b_form_element_wrapper b_form_element_switch clearfix">
         <div class="b_form_element">$r.render("assessmentSwitch")</div>
 		<div class="b_form_element_label">$r.render("assessmentSwitch_LABEL")</div>
 	</div>
@@ -53,13 +53,13 @@
 
 ## attribute switch, shibboleth attribute choosers
 #if ($shibbolethEnabled)
-	<div class="b_form_element_wrapper b_form_element_switch b_clearfix">
+	<div class="b_form_element_wrapper b_form_element_switch clearfix">
         <div class="b_form_element">$r.render("attributeSwitch")</div>
 		<div class="b_form_element_label">$r.render("attributeSwitch_LABEL")</div>
 	</div>
 	#if ($f.isVisible("attributeBconnector"))
 	<div class="b_form_subform">
-		<div class="b_form_element_wrapper b_form_vertical b_clearfix">
+		<div class="b_form_element_wrapper b_form_vertical clearfix">
 	       	<div class="b_form_element_label b_form_vertical">	$r.render("attributeBconnector_LABEL")</div>
 			<div class="b_form_element b_form_vertical b_small">$r.render("attributeBconnector")</div>
 		</div>
@@ -69,7 +69,7 @@
 #end
 
 ## apply rules also for coach
-	<div class="b_form_element_wrapper b_form_element_switch b_clearfix">
+	<div class="b_form_element_wrapper b_form_element_switch clearfix">
         <div class="b_form_element">$r.render("applyRulesForCoach")</div>
         <div class="b_form_element_label">$r.render("applyRulesForCoach_LABEL")</div>        
 	</div>

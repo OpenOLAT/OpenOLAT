@@ -41,7 +41,7 @@ public class MainPanelRenderer extends PanelRenderer {
 		
 		sb.append("<div id='o_main' class='row ").append(cssClass, cssClass != null).append("'>\n")
 		  .append("<div id='o_main_center' class='split-pane'>\n")
-		  .append("<div id='o_main_center_content' class='b_clearfix'>\n")
+		  .append("<div id='o_main_center_content' class='clearfix'>\n")
 		  .append("<a id='o_content' name='content'></a>\n")
 		  .append("<div id='o_main_center_content_inner' class='b_floatscrollbox'>\n")
 		  .append("<a name='o_main_center'></a>\n");
