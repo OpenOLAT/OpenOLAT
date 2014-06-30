@@ -141,6 +141,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.ui.author.AuthoringEditEntrySettingsController;
+import org.olat.repository.ui.author.AuthoringEntryDetailsController;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.resource.OLATResource;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -667,10 +668,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
 			if(!(currentToolCtr instanceof AuthoringEditEntrySettingsController)) {
 				toolbarPanel.popUpToRootController(ureq);
-				
+				//push happen in the init method of the controller
 				currentToolCtr = new AuthoringEditEntrySettingsController(ureq, getWindowControl(), toolbarPanel, courseRepositoryEntry);
 				listenTo(currentToolCtr);
-				toolbarPanel.pushController(translate("command.settings"), currentToolCtr);
 			}
 		} else {
 			throw new OLATSecurityException("wanted to activate editor, but no according right");
@@ -784,8 +784,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	private void launchDetails(UserRequest ureq) {
-		currentToolCtr = new RepositoryEntryDetailsController(ureq, getWindowControl(), courseRepositoryEntry);
-		toolbarPanel.pushController(translate("command.courseconfig"), currentToolCtr);
+		if(isCourseAdmin) {
+			currentToolCtr = new AuthoringEntryDetailsController(ureq, getWindowControl(), toolbarPanel, courseRepositoryEntry);
+		} else {
+			currentToolCtr = new RepositoryEntryDetailsController(ureq, getWindowControl(), courseRepositoryEntry);
+			toolbarPanel.pushController(translate("command.courseconfig"), currentToolCtr);
+		}
 	}
 	
 	private void launchCourseFolder(UserRequest ureq) {

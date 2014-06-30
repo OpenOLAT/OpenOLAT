@@ -265,7 +265,7 @@ public class RepositoryEntryAuthorQueries {
 					appendAsc(sb, asc).append(", lower(v.displayname) asc");
 					break;
 				case author:
-					sb.append(" order by lower(v.author)");
+					sb.append(" order by lower(v.initialAuthor)");
 					appendAsc(sb, asc).append(", lower(v.displayname) asc");	
 					break;
 				case ac:

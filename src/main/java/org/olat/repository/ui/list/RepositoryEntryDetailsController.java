@@ -71,6 +71,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -106,27 +107,29 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	protected RepositoryEntryRow row;
 
 	@Autowired
-	private UserRatingsDAO userRatingsDao;
+	protected UserRatingsDAO userRatingsDao;
 	@Autowired
-	private ACService acService;
+	protected ACService acService;
 	@Autowired
-	private AccessControlModule acModule;
+	protected AccessControlModule acModule;
 	@Autowired
-	private MarkManager markManager;
+	protected MarkManager markManager;
 	@Autowired
-	private CatalogManager catalogManager;
+	protected CatalogManager catalogManager;
 	@Autowired
-	private RepositoryService repositoryService;
+	protected RepositoryModule repositoryModule;
 	@Autowired
-	private BusinessGroupService businessGroupService;
+	protected RepositoryService repositoryService;
 	@Autowired
-	private EfficiencyStatementManager effManager;
+	protected BusinessGroupService businessGroupService;
 	@Autowired
-	private UserCourseInformationsManager userCourseInfosManager;
+	protected EfficiencyStatementManager effManager;
 	@Autowired
-	private CoordinatorManager coordinatorManager;
+	protected UserCourseInformationsManager userCourseInfosManager;
 	@Autowired
-	private ReferenceManager referenceManager;
+	protected CoordinatorManager coordinatorManager;
+	@Autowired
+	protected ReferenceManager referenceManager;
 	
 	private String baseUrl;
 	
@@ -205,16 +208,18 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			}
 			
 			//categories
-			List<CatalogEntry> categories = catalogManager.getCatalogEntriesReferencing(entry);
-			List<String> categoriesLink = new ArrayList<>(categories.size());
-			for(CatalogEntry category:categories) {
-				String id = "cat_" + ++cmpcount;
-				String title = category.getParent().getName();
-				FormLink catLink = uifactory.addFormLink(id, "category", title, null, layoutCont, Link.LINK | Link.NONTRANSLATED);
-				catLink.setUserObject(category.getKey());
-				categoriesLink.add(id);
+			if(repositoryModule.isCatalogEnabled()) {
+				List<CatalogEntry> categories = catalogManager.getCatalogEntriesReferencing(entry);
+				List<String> categoriesLink = new ArrayList<>(categories.size());
+				for(CatalogEntry category:categories) {
+					String id = "cat_" + ++cmpcount;
+					String title = category.getParent().getName();
+					FormLink catLink = uifactory.addFormLink(id, "category", title, null, layoutCont, Link.LINK | Link.NONTRANSLATED);
+					catLink.setUserObject(category.getKey());
+					categoriesLink.add(id);
+				}
+				layoutCont.contextPut("categories", categoriesLink);
 			}
-			layoutCont.contextPut("categories", categoriesLink);
 			
 			boolean marked;
 			if(row == null) {

@@ -24,10 +24,8 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.catalog.CatalogManager;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
 import org.olat.core.commons.services.mark.Mark;
-import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -69,15 +67,12 @@ import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseModule;
 import org.olat.course.run.RunMainController;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryModule;
-import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -86,8 +81,6 @@ import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.resource.OLATResource;
-import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
@@ -129,23 +122,9 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 	private boolean corrupted;
 
 	@Autowired
-	private ACService acService;
-	@Autowired
-	private AccessControlModule acModule;
-	@Autowired
-	private MarkManager markManager;
-	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private CatalogManager catalogManager;
-	@Autowired
 	private RepositoryManager repositoryManager;
-	@Autowired
-	private RepositoryModule repositoryModule;
-	@Autowired
-	private RepositoryService repositoryService;
-	@Autowired
-	private BusinessGroupService businessGroupService;
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
@@ -223,7 +202,6 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 			boolean editManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.editcontent);
 			editLink.setEnabled(handler.supportsEdit(entry) && !corrupted && !editManaged);
 			stackPanel.addTool(editLink, Align.left);
-
 		}
 
 		if (isAuthor || isOwner) {

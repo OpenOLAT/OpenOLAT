@@ -54,4 +54,9 @@ public class CatalogAdminSiteDef extends AbstractSiteDefinition implements SiteD
 		return repositoryModule.isCatalogEnabled() && super.isEnabled();
 	}
 
+	@Override
+	public boolean isFeatureEnabled() {
+		RepositoryModule repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
+		return repositoryModule.isCatalogEnabled();
+	}
 }

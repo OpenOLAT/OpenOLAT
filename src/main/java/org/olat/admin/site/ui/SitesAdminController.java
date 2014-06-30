@@ -123,7 +123,7 @@ public class SitesAdminController  extends BasicController  {
 			orderCtrl = new SitesConfigurationController(ureq, getWindowControl());
 			listenTo(orderCtrl);
 		} else {
-			orderCtrl.reload(ureq);
+			orderCtrl.reload();
 		}
 		mainVC.put("segmentCmp", orderCtrl.getInitialComponent());
 	}

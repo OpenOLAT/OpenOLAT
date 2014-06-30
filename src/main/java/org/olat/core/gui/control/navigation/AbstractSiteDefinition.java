@@ -58,8 +58,6 @@ public abstract class AbstractSiteDefinition extends AbstractConfigOnOff impleme
 	public String getDefaultSiteSecurityCallbackBeanId() {
 		return defaultSiteSecurityCallbackBeanId;
 	}
-
-	
 	
 	@Override
 	public final SiteInstance createSite(UserRequest ureq, WindowControl wControl) {
@@ -86,5 +84,9 @@ public abstract class AbstractSiteDefinition extends AbstractConfigOnOff impleme
 		SiteConfiguration config = siteModule.getConfigurationSite(this);
 		return config;
 	}
-}
 
+	@Override
+	public boolean isFeatureEnabled() {
+		return true;
+	}
+}

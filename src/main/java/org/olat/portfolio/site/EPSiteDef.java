@@ -53,4 +53,10 @@ public class EPSiteDef  extends AbstractSiteDefinition implements SiteDefinition
 		PortfolioModule module = CoreSpringFactory.getImpl(PortfolioModule.class);
 		return module.isEnabled() && super.isEnabled();
 	}
+
+	@Override
+	public boolean isFeatureEnabled() {
+		PortfolioModule module = CoreSpringFactory.getImpl(PortfolioModule.class);
+		return module.isEnabled();
+	}
 }

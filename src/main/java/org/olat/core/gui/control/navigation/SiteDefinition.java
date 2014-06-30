@@ -47,5 +47,7 @@ public interface SiteDefinition extends ConfigOnOff {
 	public int getOrder();
 	
 	public String getDefaultSiteSecurityCallbackBeanId();
+	
+	public boolean isFeatureEnabled();
 }
 

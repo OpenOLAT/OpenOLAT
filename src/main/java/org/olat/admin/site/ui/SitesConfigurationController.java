@@ -148,7 +148,7 @@ public class SitesConfigurationController extends FormBasicController {
 		tableEl.setCustomizeColumns(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "sites-admin");
 		
-		reload(ureq);
+		reload();
 	}
 	
 	@Override
@@ -197,7 +197,7 @@ public class SitesConfigurationController extends FormBasicController {
 		//
 	}
 	
-	protected void reload(UserRequest ureq) {
+	protected void reload() {
 		List<SiteDefRow> configs = new ArrayList<SiteDefRow>();
 		for(Map.Entry<String, SiteDefinition> entryDef:siteDefs.entrySet()) {
 			String id = entryDef.getKey();
@@ -290,7 +290,11 @@ public class SitesConfigurationController extends FormBasicController {
 			String id = config.getId();
 			
 			secCallbackEl = uifactory.addDropdownSingleselect("site.security." + id, "site.security", formLayout, secKeys, secValues, null);
-			secCallbackEl.addActionListener(FormEvent.ONCHANGE);
+			if(siteDef.isFeatureEnabled()) {
+				secCallbackEl.addActionListener(FormEvent.ONCHANGE);
+			} else {
+				secCallbackEl.setEnabled(false);
+			}
 			secCallbackEl.setUserObject(this);
 			
 			boolean needAlt = false;
@@ -305,7 +309,11 @@ public class SitesConfigurationController extends FormBasicController {
 			}
 			
 			enableSiteEl = uifactory.addCheckboxesHorizontal("site.enable." + id, null, formLayout, new String[]{ "x" }, new String[]{ "" });
-			enableSiteEl.addActionListener(FormEvent.ONCHANGE);
+			if(siteDef.isFeatureEnabled()) {
+				enableSiteEl.addActionListener(FormEvent.ONCHANGE);
+			} else {
+				enableSiteEl.setEnabled(false);
+			}
 			
 			altControllerEl = uifactory.addDropdownSingleselect("site.alternative." + id, "site.alternative", formLayout, altKeys, altValues, null);
 			altControllerEl.addActionListener(FormEvent.ONCHANGE);
@@ -405,7 +413,9 @@ public class SitesConfigurationController extends FormBasicController {
 					return enableSiteEl;
 				}
 				case title: return def.getTitle();
-				case secCallback: return def.getSecurityCallbackEl();
+				case secCallback: {
+					return def.getSecurityCallbackEl();
+				}
 				case altController: return def.getAlternativeControllerEl();
 				case type: {
 					String type = def.getSiteDef().getClass().getSimpleName();

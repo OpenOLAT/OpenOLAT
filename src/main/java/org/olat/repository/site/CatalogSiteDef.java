@@ -46,4 +46,10 @@ public class CatalogSiteDef extends AbstractSiteDefinition implements SiteDefini
 		RepositoryModule repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
 		return repositoryModule.isCatalogEnabled() && repositoryModule.isCatalogSiteEnabled() && super.isEnabled();
 	}
+
+	@Override
+	public boolean isFeatureEnabled() {
+		RepositoryModule repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
+		return repositoryModule.isCatalogEnabled() && repositoryModule.isCatalogSiteEnabled();
+	}
 }

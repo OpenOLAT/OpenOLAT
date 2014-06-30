@@ -249,13 +249,15 @@ public class SiteDefinitions extends AbstractOLATModule {
 		for(Map.Entry<String,SiteDefinition> siteDefEntry:allDefList.entrySet()) {
 			String id = siteDefEntry.getKey();
 			SiteDefinition siteDef = siteDefEntry.getValue();
-			if(siteConfigMap.containsKey(id)) {
-				SiteConfiguration config = siteConfigMap.get(id);
-				if(config.isEnabled()) {
-					enabledOrderedSites.add(new SiteDefinitionOrder(siteDef, config));
+			if(siteDef.isFeatureEnabled()) {
+				if(siteConfigMap.containsKey(id)) {
+					SiteConfiguration config = siteConfigMap.get(id);
+					if(config.isEnabled()) {
+						enabledOrderedSites.add(new SiteDefinitionOrder(siteDef, config));
+					}
+				} else if(siteDef.isEnabled()) {
+					enabledOrderedSites.add(new SiteDefinitionOrder(siteDef));
 				}
-			} else if(siteDef.isEnabled()) {
-				enabledOrderedSites.add(new SiteDefinitionOrder(siteDef));
 			}
 		}
 		Collections.sort(enabledOrderedSites, new SiteDefinitionOrderComparator());
