@@ -652,18 +652,25 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				&& classicTypeButton.getFormDispatchId().equals(dispatchuri)) {
 			setRendererType(FlexiTableRendererType.classic);
 			saveCustomSettings(ureq);
-		} else {
-			FlexiTableColumnModel colModel = dataModel.getTableColumnModel();
-			for(int i=colModel.getColumnCount(); i-->0; ) {
-				FlexiColumnModel col = colModel.getColumnModel(i);
-				if(col.getAction() != null) {
-					String selectedRowIndex = getRootForm().getRequestParameter(col.getAction());
-					if(StringHelper.containsNonWhitespace(selectedRowIndex)) {
-						doSelect(ureq, col.getAction(), Integer.parseInt(selectedRowIndex));
-					}
+		} else if(doSelect(ureq)) {
+			//do select
+		}
+	}
+	
+	private boolean doSelect(UserRequest ureq) {
+		boolean select = false;
+		FlexiTableColumnModel colModel = dataModel.getTableColumnModel();
+		for(int i=colModel.getColumnCount(); i-->0; ) {
+			FlexiColumnModel col = colModel.getColumnModel(i);
+			if(col.getAction() != null) {
+				String selectedRowIndex = getRootForm().getRequestParameter(col.getAction());
+				if(StringHelper.containsNonWhitespace(selectedRowIndex)) {
+					doSelect(ureq, col.getAction(), Integer.parseInt(selectedRowIndex));
+					select = true;
 				}
 			}
 		}
+		return select;
 	}
 	
 	@Override
@@ -723,13 +730,24 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	private void doFilter(String filterKey) {
+		String selectedFilterKey = null;
 		if(filterKey == null) {
 			for(FlexiTableFilter filter:filters) {
 				filter.setSelected(false);
 			}
 		} else {
 			for(FlexiTableFilter filter:filters) {
-				filter.setSelected(filter.getFilter().equals(filterKey));
+				boolean selected = filter.getFilter().equals(filterKey);
+				if(selected) {
+					if(filter.isSelected()) {
+						filter.setSelected(false);
+					} else {
+						filter.setSelected(true);
+						selectedFilterKey = filterKey;
+					}
+				} else {
+					filter.setSelected(false);
+				}
 			}
 		}
 		
@@ -737,14 +755,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			rowCount = -1;
 			currentPage = 0;
 			currentFirstResult = 0;
-			
-			((FilterableFlexiTableModel)dataModel).filter(filterKey);
+			((FilterableFlexiTableModel)dataModel).filter(selectedFilterKey);
 		} else if(dataSource != null) {
 			rowCount = -1;
 			currentPage = 0;
 			currentFirstResult = 0;
 
-			List<String> addQueries = Collections.singletonList(filterKey);
+			List<String> addQueries = Collections.singletonList(selectedFilterKey);
 			dataSource.clear();
 			dataSource.load(null, addQueries, 0, getPageSize(), orderBy);
 		}

@@ -214,6 +214,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		return null;
 	}
 
+	@Override
 	public void popUpToRootController(UserRequest ureq) {
 		if(stack.size() > 1) {
 			for(int i=stack.size(); i-->1; ) {

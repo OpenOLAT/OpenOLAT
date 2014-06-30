@@ -169,7 +169,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		boolean empty = ftE.getTableDataModel().getRowCount() == 0;
 		
 		//filter
-		if(ftE.isFilterEnabled() && !empty) {
+		if(ftE.isFilterEnabled()) {
 			List<FlexiTableFilter> filters = ftE.getFilters();
 			if(filters != null && filters.size() > 0) {
 				renderFilterDropdown(sb, ftE, filters);
@@ -177,19 +177,20 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 		
 		//sort
-		if(ftE.isSortEnabled() && !empty) {
+		if(ftE.isSortEnabled()) {
 			List<FlexiTableSort> sorts = ftE.getSorts();
 			if(sorts != null && sorts.size() > 0) {
 				renderSortDropdown(sb, ftE, sorts);
 			}
 		}
 		
-		if(ftE.getExportButton() != null && ftE.isExportEnabled() && !empty) {
+		if(ftE.getExportButton() != null && ftE.isExportEnabled()) {
 			sb.append("<div class='btn-group'>");
+			ftE.getExportButton().setEnabled(!empty);
 			renderFormItem(renderer, sb, ftE.getExportButton(), ubu, translator, renderResult, args);
 			sb.append("</div> ");
 		}
-		if(ftE.getCustomButton() != null && ftE.isCustomizeColumns() && !empty) {
+		if(ftE.getCustomButton() != null && ftE.isCustomizeColumns()) {
 			sb.append("<div class='btn-group'>");
 			renderFormItem(renderer, sb, ftE.getCustomButton(), ubu, translator, renderResult, args);
 			sb.append("</div> ");

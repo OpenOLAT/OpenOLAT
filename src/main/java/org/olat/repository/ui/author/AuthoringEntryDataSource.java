@@ -124,6 +124,10 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		if(StringHelper.containsNonWhitespace(query)) {
 			try {
 				List<Long> fullTextResults = searchClient.doSearch(query, null, searchParams.getIdentity(), searchParams.getRoles(), 0, 100);
+				if(fullTextResults.isEmpty()) {
+					count = new Integer(0);
+					return new DefaultResultInfos<AuthoringEntryRow>();
+				}
 				searchParams.setRepoEntryKeys(fullTextResults);
 			} catch (ServiceNotAvailableException | ParseException | QueryException e) {
 				log.error("", e);
