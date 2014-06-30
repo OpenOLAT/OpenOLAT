@@ -129,8 +129,8 @@ public class NoteController extends FormBasicController implements GenericEventL
 		noteField.setEnabled(false);
 		noteField.setMaxLength(4000);
 
-		this.submitButton = uifactory.addFormSubmitButton("submit", formLayout);
-		this.submitButton.setVisible(false);
+		submitButton = uifactory.addFormSubmitButton("submit", formLayout);
+		submitButton.setVisible(false);
 	}
 
 	private void createOrUpdateNote(String content) {

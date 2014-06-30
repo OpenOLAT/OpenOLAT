@@ -46,6 +46,7 @@ import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -1233,7 +1234,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			// - appear as link when configured, assessable node exist and assessment
 			// data exists for user
 			efficiencyStatementsLink = LinkFactory.createToolLink("efficiencystatement",translate("command.efficiencystatement"), this, "o_icon_certificate");
-			efficiencyStatementsLink.setPopup(true);//"750", "800"
+			efficiencyStatementsLink.setPopup(new LinkPopupSettings(750, 800, "eff"));
 			toolbarPanel.addTool(efficiencyStatementsLink, Align.right);
 			
 			UserEfficiencyStatement es = efficiencyStatementManager
@@ -1241,19 +1242,20 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			if (es == null) {
 				efficiencyStatementsLink.setEnabled(false);
 			}
-			if (!isGuest) {
-				noteLink = LinkFactory.createToolLink("personalnote",translate("command.personalnote"), this, "o_icon_notes");
-				noteLink.setPopup(true);//"750", "550"
-				toolbarPanel.addTool(noteLink, Align.right);
-			}
-			if (offerBookmark && !isGuest) {
-				boolean marked = markManager.isMarked(courseRepositoryEntry, getIdentity(), null);
-				String css = marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON;
-				bookmarkLink = LinkFactory.createToolLink("bookmark",translate("command.bookmark"), this, css);
-				toolbarPanel.addTool(bookmarkLink, Align.right);
-			}
 		}
-
+		
+		if (!isGuest) {
+			noteLink = LinkFactory.createToolLink("personalnote",translate("command.personalnote"), this, "o_icon_notes");
+			noteLink.setPopup(new LinkPopupSettings(750, 550, "notes"));
+			toolbarPanel.addTool(noteLink, Align.right);
+		}
+		
+		if (offerBookmark && !isGuest) {
+			boolean marked = markManager.isMarked(courseRepositoryEntry, getIdentity(), null);
+			String css = marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON;
+			bookmarkLink = LinkFactory.createToolLink("bookmark",translate("command.bookmark"), this, css);
+			toolbarPanel.addTool(bookmarkLink, Align.right);
+		}
 	}
 
 	private void updateCurrentUserCount() {
