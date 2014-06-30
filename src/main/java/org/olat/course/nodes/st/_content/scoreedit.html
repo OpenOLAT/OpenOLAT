@@ -1,10 +1,11 @@
 <fieldset class="b_clearfix">
-	<legend>$r.translate("score.fieldset.title")</legend>
-	$r.contextHelpWithWrapper("org.olat.course.nodes.st","ced-st-score.html","help.st")
+	<legend>$r.contextHelpWithWrapper("org.olat.course.nodes.st","ced-st-score.html","help.st")
+	$r.translate("score.fieldset.title")</legend>
+	
   	#if ($isExpertMode)
-	    <div class="b_float_right">$r.render("cmd.activate.easyMode")</div>
+	    <div class="o_button_group o_button_group_right">$r.render("cmd.activate.easyMode")</div>
 	    #else
-	    <div class="b_float_right">$r.render("cmd.activate.expertMode")</div>
+	    <div class="o_button_group o_button_group_right">$r.render("cmd.activate.expertMode")</div>
     #end
     <br />
     #if ($noAssessableChildren && !$isExpertMode)

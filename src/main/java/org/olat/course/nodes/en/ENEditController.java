@@ -89,7 +89,7 @@ public class ENEditController extends ActivateableTabbableDefaultController impl
 		this.courseNode = enCourseNode;
 		this.euce = euceP;
 		
-		myContent = this.createVelocityContainer("edit");
+		myContent = createVelocityContainer("edit");
 		doFormInit(ureq);
 
 		// Accessibility precondition

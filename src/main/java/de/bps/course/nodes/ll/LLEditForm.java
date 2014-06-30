@@ -37,7 +37,6 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.ItemValidatorProvider;
@@ -78,7 +77,6 @@ public class LLEditForm extends FormBasicController {
 	private List<FormLink> lCustomMediaButtonList;
 	private List<LLModel> linkList;
 	private List<FormLink> lAddButtonList;
-	private FormLayoutContainer titleContainer;
 	private long counter = 0;
 	private MediaChooserController mediaChooserController;
 	private CloseableModalController mediaDialogBox;
@@ -86,28 +84,28 @@ public class LLEditForm extends FormBasicController {
 	private final CourseEnvironment courseEnv;
 
 	public LLEditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration moduleConfig, CourseEnvironment courseEnv) {
-		super(ureq, wControl);
+		super(ureq, wControl, "editForm");
 		this.moduleConfig = moduleConfig;
 		// read existing links from config
 		linkList = new ArrayList<LLModel>((List<LLModel>) moduleConfig.get(LLCourseNode.CONF_LINKLIST));
 		// list of all link target text fields
-		this.lTargetInputList = new ArrayList<TextElement>(linkList.size());
+		lTargetInputList = new ArrayList<TextElement>(linkList.size());
 		// list of all link html target text fields
-		this.lHtmlTargetInputList = new ArrayList<MultipleSelectionElement>(linkList.size());
+		lHtmlTargetInputList = new ArrayList<MultipleSelectionElement>(linkList.size());
 		// list of all link description text fields
-		this.lDescriptionInputList = new ArrayList<TextElement>(linkList.size());
+		lDescriptionInputList = new ArrayList<TextElement>(linkList.size());
 		// list of all link comment text fields
-		this.lCommentInputList = new ArrayList<TextElement>(linkList.size());
-	// list of all link add action buttons
-		this.lAddButtonList = new ArrayList<FormLink>(linkList.size());
+		lCommentInputList = new ArrayList<TextElement>(linkList.size());
+		// list of all link add action buttons
+		lAddButtonList = new ArrayList<FormLink>(linkList.size());
 		// list of all link deletion action buttons
-		this.lDelButtonList = new ArrayList<FormLink>(linkList.size());
+		lDelButtonList = new ArrayList<FormLink>(linkList.size());
 		//list of all custom media buttons
-		this.lCustomMediaButtonList = new ArrayList<FormLink>(linkList.size());
+		lCustomMediaButtonList = new ArrayList<FormLink>(linkList.size());
 		
 		this.courseEnv = courseEnv;
 
-		initForm(this.flc, this, ureq);
+		initForm(ureq);
 	}
 
 	/**
@@ -261,28 +259,23 @@ public class LLEditForm extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-
-		titleContainer = FormLayoutContainer.createCustomFormLayout("titleLayout", getTranslator(), velocity_root + "/editForm.html");
-		formLayout.add(titleContainer);
 		// create gui elements for all links
 		for (int i = 0; i < linkList.size(); i++) {
 			LLModel link = linkList.get(i);
 			addNewFormLink(i, link);
 		}
 
-		titleContainer.contextPut("linkList", linkList);
-		titleContainer.contextPut("lTargetInputList", lTargetInputList);
-		titleContainer.contextPut("lHtmlTargetInputList", lHtmlTargetInputList);
-		titleContainer.contextPut("lDescriptionInputList", lDescriptionInputList);
-		titleContainer.contextPut("lCommentInputList", lCommentInputList);
-		titleContainer.contextPut("lAddButtonList", lAddButtonList);
-		titleContainer.contextPut("lDelButtonList", lDelButtonList);
-		titleContainer.contextPut("lCustomMediaButtonList", lCustomMediaButtonList);
-
-		subm = new FormSubmit("subm", "submit");
-
+		flc.contextPut("linkList", linkList);
+		flc.contextPut("lTargetInputList", lTargetInputList);
+		flc.contextPut("lHtmlTargetInputList", lHtmlTargetInputList);
+		flc.contextPut("lDescriptionInputList", lDescriptionInputList);
+		flc.contextPut("lCommentInputList", lCommentInputList);
+		flc.contextPut("lAddButtonList", lAddButtonList);
+		flc.contextPut("lDelButtonList", lDelButtonList);
+		flc.contextPut("lCustomMediaButtonList", lCustomMediaButtonList);
+		
+		subm = uifactory.addFormSubmitButton("submit", formLayout);
 		formLayout.add(subm);
-
 	}
 
 	/**
@@ -302,7 +295,7 @@ public class LLEditForm extends FormBasicController {
 	 */
 	private void addNewFormLink(int index, final LLModel link) {
 		// add link target
-		TextElement lTarget = uifactory.addTextElement("target" + counter, null, -1, link.getTarget(), titleContainer);
+		TextElement lTarget = uifactory.addTextElement("target" + counter, null, -1, link.getTarget(), flc);
 		lTarget.clearError();
 		lTarget.setEnabled(!link.isIntern());
 		lTarget.setDisplaySize(40);
@@ -326,13 +319,13 @@ public class LLEditForm extends FormBasicController {
 		lTarget.setUserObject(link);
 		lTargetInputList.add(index, lTarget);
 		//add html target
-		MultipleSelectionElement htmlTargetSelection = uifactory.addCheckboxesHorizontal("html_target" + counter, titleContainer, new String[]{BLANK_KEY}, new String[]{""});
+		MultipleSelectionElement htmlTargetSelection = uifactory.addCheckboxesHorizontal("html_target" + counter, flc, new String[]{BLANK_KEY}, new String[]{""});
 		htmlTargetSelection.setUserObject(link);
 		htmlTargetSelection.select(BLANK_KEY, "_blank".equals(link.getHtmlTarget()));
 		lHtmlTargetInputList.add(index, htmlTargetSelection);
 		
 		// add link description
-		TextElement lDescription = uifactory.addTextElement("description" + counter, null, -1, link.getDescription(), titleContainer);
+		TextElement lDescription = uifactory.addTextElement("description" + counter, null, -1, link.getDescription(), flc);
 		lDescription.clearError();
 		lDescription.setDisplaySize(20);
 		lDescription.setNotEmptyCheck("ll.table.description.error");
@@ -341,7 +334,7 @@ public class LLEditForm extends FormBasicController {
 		lDescriptionInputList.add(index, lDescription);
 		
 		// add link comment
-		TextElement lComment =uifactory.addTextElement("comment" + counter, null, -1, link.getComment(), titleContainer);
+		TextElement lComment =uifactory.addTextElement("comment" + counter, null, -1, link.getComment(), flc);
 		lComment.setDisplaySize(20);
 		lComment.setUserObject(link);
 		lCommentInputList.add(index, lComment);
@@ -349,18 +342,18 @@ public class LLEditForm extends FormBasicController {
 		// add link add action button
 		FormLink addButton = new FormLinkImpl("add" + counter, "add" + counter, "ll.table.add", Link.BUTTON_SMALL);
 		addButton.setUserObject(link);
-		titleContainer.add(addButton);
+		flc.add(addButton);
 		lAddButtonList.add(index, addButton);
 		// add link deletion action button
 		FormLink delButton = new FormLinkImpl("delete" + counter, "delete" + counter, "ll.table.delete", Link.BUTTON_SMALL);
 		delButton.setUserObject(link);
-		titleContainer.add(delButton);
+		flc.add(delButton);
 		lDelButtonList.add(index, delButton);
 		// custom media action button
 		FormLink mediaButton = new FormLinkImpl("media" + counter, "media" + counter, "  ", Link.NONTRANSLATED);
-		mediaButton.setCustomEnabledLinkCSS("b_small o_ll_browse");
+		mediaButton.setIconLeftCSS("o_icon o_icon_browse o_icon-lg");
 		mediaButton.setUserObject(link);
-		titleContainer.add(mediaButton);
+		flc.add(mediaButton);
 		lCustomMediaButtonList.add(index, mediaButton);
 		
 		// increase the counter to enable unique component names
@@ -377,42 +370,42 @@ public class LLEditForm extends FormBasicController {
 				break;
 			}
 		}
-		titleContainer.remove(lTargetInputList.remove(i));
+		flc.remove(lTargetInputList.remove(i));
 		for (i = 0; i < lHtmlTargetInputList.size(); i++) {
 			if (lHtmlTargetInputList.get(i).getUserObject().equals(link)) {
 				break;
 			}
 		}
-		titleContainer.remove(lHtmlTargetInputList.remove(i));
+		flc.remove(lHtmlTargetInputList.remove(i));
 		for (i = 0; i < lDescriptionInputList.size(); i++) {
 			if (lDescriptionInputList.get(i).getUserObject().equals(link)) {
 				break;
 			}
 		}
-		titleContainer.remove(lDescriptionInputList.remove(i));
+		flc.remove(lDescriptionInputList.remove(i));
 		for (i = 0; i < lCommentInputList.size(); i++) {
 			if (lCommentInputList.get(i).getUserObject().equals(link)) {
 				break;
 			}
 		}
-		titleContainer.remove(lCommentInputList.remove(i));
+		flc.remove(lCommentInputList.remove(i));
 		for (i = 0; i < lAddButtonList.size(); i++) {
 			if (lAddButtonList.get(i).getUserObject().equals(link)) {
 				break;
 			}
 		}
-		titleContainer.remove(lAddButtonList.remove(i));
+		flc.remove(lAddButtonList.remove(i));
 		for (i = 0; i < lDelButtonList.size(); i++) {
 			if (lDelButtonList.get(i).getUserObject().equals(link)) {
 				break;
 			}
 		}
-		titleContainer.remove(lDelButtonList.remove(i));
+		flc.remove(lDelButtonList.remove(i));
 		for (i = 0; i < lCustomMediaButtonList.size(); i++) {
 			if (lCustomMediaButtonList.get(i).getUserObject().equals(link)) {
 				break;
 			}
 		}
-		titleContainer.remove(lCustomMediaButtonList.remove(i));
+		flc.remove(lCustomMediaButtonList.remove(i));
 	}
 }

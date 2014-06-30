@@ -1,12 +1,12 @@
-##
-<table>
+<table class="o_table table">
 	<thead>
 		<tr>
-			<td>$r.translate("ll.table.target")</td>
-			#if($lCustomMediaButtonList) <td></td> #end
-			<td>$r.translate("ll.table.html_target")</td>
-			<td>$r.translate("ll.table.description")</td>
-			<td colspan="2">$r.translate("ll.table.comment")</td>
+			<th>$r.translate("ll.table.target")</th>
+			#if($lCustomMediaButtonList) <th></th> #end
+			<th>$r.translate("ll.table.html_target")</th>
+			<th>$r.translate("ll.table.description")</th>
+			<th>$r.translate("ll.table.comment")</th>
+			<th></th>
 		</tr>
 	</thead>
 	#foreach($link in $linkList)
@@ -15,18 +15,6 @@
 		#set( $targetErr =	$target + "_ERROR" )
 		#set( $descr =	$lDescriptionInputList.get($iter).getName() )
 		#set( $descrErr = $descr + "_ERROR" )
-		#set( $hasError = "false" )
-
-		<tr>
-			<td>
-				<div class="b_small">$r.render($targetErr)</div>
-			</td>
-			<td>
-				<div class="b_small">$r.render($descrErr)</div>
-			</td>
-			<td>&nbsp;</td>
-		</tr>
-
 		<tr>
 			<td>$r.render($lTargetInputList.get($iter).getName())</td>
 			#if($lCustomMediaButtonList) <td>$r.render($lCustomMediaButtonList.get($iter).getName())</td> #end
@@ -38,5 +26,16 @@
 				$r.render($lDelButtonList.get($iter).getName())
 			</td>
 		</tr>
+		#if($f.hasError($target) || $f.hasError($descr))
+		<tr>
+			<td>$r.render($targetErr)</td>
+			#if($lCustomMediaButtonList) <td></td> #end
+			<td></td>
+			<td>$r.render($descrErr)</td>
+			<td></td>
+			<td></td>
+		</tr>
+		#end
 	#end
 </table>
+<div class="o_button_group">$r.render("submit")</div>

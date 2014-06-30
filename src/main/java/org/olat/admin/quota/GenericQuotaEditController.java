@@ -91,7 +91,7 @@ public class GenericQuotaEditController extends BasicController {
 		} else {
 			initQuotaForm(ureq, currentQuota);			
 		}
-	  putInitialPanel(myContent);
+		putInitialPanel(myContent);
 	}
 
 	/**

@@ -106,7 +106,7 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 		this.listenTo(downloaderCondContr);
 		accessabiliryContent.put("downloadCondition", downloaderCondContr.getInitialComponent());
 		
-		folderContent = this.createVelocityContainer("folder");
+		folderContent = createVelocityContainer("folder");
 		vfButton = LinkFactory.createButton("folder.view", folderContent, this);
 		
 		if ((ureq.getUserSession().getRoles().isOLATAdmin()) | ((ureq.getUserSession().getRoles().isInstitutionalResourceManager()))) {

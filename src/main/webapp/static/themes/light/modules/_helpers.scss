@@ -36,7 +36,7 @@
 
 /* block for multiple buttons, center aligned (default) and right aligned when in header wrapper */
 .o_button_group {
-	@extend %o_block_large;
+	@extend %o_block;
 	text-align: center;
 	a, input, button, .btn-group {
 		margin-right: 5px;		

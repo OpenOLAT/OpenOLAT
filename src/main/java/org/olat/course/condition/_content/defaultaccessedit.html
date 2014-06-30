@@ -1,17 +1,12 @@
-<fieldset class="b_clearfix">
-	<legend>$title</legend>
-	$r.contextHelpWithWrapper("org.olat.course.editor","ced-acc.html","help.hover.acc")	
-	<div class="b_floatscrollbox">
-		$r.render("defaultAccessConditionView")
-	</div>
+<fieldset>
+	<legend>$r.contextHelpWithWrapper("org.olat.course.editor","ced-acc.html","help.hover.acc")
+	$title</legend>
+	$r.render("defaultAccessConditionView")
 </fieldset>
-
 #if($renderPW)
 	<fieldset>
-		<legend>$r.translate("password.field")</legend>
-		$r.contextHelpWithWrapper("org.olat.course.condition.additionalconditions","ced-password.html","help.hover.password")	
-		<div class="b_clearfix">
-			$r.render("pwcond")
-		</div>
+		<legend>$r.contextHelpWithWrapper("org.olat.course.condition.additionalconditions","ced-password.html","help.hover.password")
+		$r.translate("password.field")</legend>
+		$r.render("pwcond")
 	</fieldset>
 #end

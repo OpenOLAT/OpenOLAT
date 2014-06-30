@@ -38,7 +38,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -86,10 +85,7 @@ public class COConfigForm extends FormBasicController {
 	private SelectionElement coaches;
 	private SelectionElement partips;
 	private FormLayoutContainer coachesAndPartips;
-	
-	private SpacerElement s1, s2, s3;
-	
-	
+
 	private StaticTextElement easyGroupList;
 	private FormLink chooseGroupsLink;
 	private FormLink createGroupsLink;
@@ -103,8 +99,6 @@ public class COConfigForm extends FormBasicController {
 	private AreaSelectionController areaChooseC;
 	private GroupSelectionController groupChooseC;
 	
-	
-	private FormLayoutContainer areaChooseSubContainer, groupChooseSubContainer ;
 	private FormItemContainer groupsAndAreasSubContainer;
 	private FormItemContainer recipentsContainer;
 	
@@ -154,14 +148,12 @@ public class COConfigForm extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		if (!wantGroup.isSelected(0) && !wantEmail.isSelected(0)) {
-			s3.setVisible(true);
 			recipentsContainer.setErrorKey("no.recipents.specified", null);
 			return false;
 		}
-		s3.setVisible(false);
 		recipentsContainer.clearError();
 		
-		
+
 		coachesAndPartips.clearError();
 		if (wantGroup.isSelected(0)) {
 			if (!coaches.isSelected(0) && !partips.isSelected(0)) {
@@ -235,7 +227,7 @@ public class COConfigForm extends FormBasicController {
 				FormLayoutContainer errorGroupItemLayout = FormLayoutContainer.createCustomFormLayout(
 						"errorgroupitem", getTranslator(), vc_errorPage);
 
-				groupChooseSubContainer.setErrorComponent(errorGroupItemLayout, this.flc);
+				easyGroupList.setErrorComponent(errorGroupItemLayout, this.flc);
 				// FIXING LINK ONLY IF A DEFAULTCONTEXT EXISTS
 				fixGroupError = new FormLinkImpl("error.fix", "create");
 				// link
@@ -256,10 +248,10 @@ public class COConfigForm extends FormBasicController {
 					fixGroupError.setUserObject(new String[] { csvMissGrps });
 				}
 
-				groupChooseSubContainer.showError(true);
+				easyGroupList.showError(true);
 			} else {
 				// no more errors
-				groupChooseSubContainer.clearError();
+				easyGroupList.clearError();
 			}
 		}
 		if (!isEmpty(easyAreaList)) {
@@ -290,7 +282,7 @@ public class COConfigForm extends FormBasicController {
 						"errorareaitem", getTranslator(), vc_errorPage
 				);
 				
-				areaChooseSubContainer.setErrorComponent(errorAreaItemLayout, this.flc);
+				easyAreaList.setErrorComponent(errorAreaItemLayout, this.flc);
 				// FXINGIN LINK ONLY IF DEFAULT CONTEXT EXISTS
 				fixAreaError = new FormLinkImpl("error.fix", "create");// erstellen
 				// link
@@ -312,9 +304,9 @@ public class COConfigForm extends FormBasicController {
 					fixAreaError.setUserObject(new String[] { csvMissAreas });
 				}
 			
-				areaChooseSubContainer.showError(true);
+				easyAreaList.showError(true);
 			} else {
-				areaChooseSubContainer.clearError();
+				easyAreaList.clearError();
 			}	
 		}
 
@@ -338,8 +330,8 @@ public class COConfigForm extends FormBasicController {
 		}
 			
 		if (retVal) {
-			areaChooseSubContainer.clearError();
-			groupChooseSubContainer.clearError();
+			easyAreaList.clearError();
+			easyGroupList.clearError();
 			groupsAndAreasSubContainer.clearError();
 		}
 		
@@ -436,16 +428,8 @@ public class COConfigForm extends FormBasicController {
 				"coachesAndPartips", getTranslator()
 		);
 		formLayout.add(coachesAndPartips);
-		s1 = uifactory.addSpacerElement("s1", formLayout, true);
-		
-		// groups
-		groupChooseSubContainer = FormLayoutContainer.createHorizontalFormLayout(
-				"groupChooseSubContainer", getTranslator()
-		);
-		groupChooseSubContainer.setLabel("form.message.group", null);
-		
-		formLayout.add(groupChooseSubContainer);
-		
+
+		//groups
 		String groupInitVal;
 		@SuppressWarnings("unchecked")
 		List<Long> groupKeys = (List<Long>)config.get(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS);
@@ -455,20 +439,14 @@ public class COConfigForm extends FormBasicController {
 		}
 		groupInitVal = getGroupNames(groupKeys);
 
-		easyGroupList = uifactory.addStaticTextElement("group", null, groupInitVal, groupChooseSubContainer);
+		easyGroupList = uifactory.addStaticTextElement("group", "form.message.group", groupInitVal, formLayout);
 		easyGroupList.setUserObject(groupKeys);
 		
-		chooseGroupsLink = uifactory.addFormLink("choose", groupChooseSubContainer,"b_form_groupchooser");
-		createGroupsLink = uifactory.addFormLink("create", groupChooseSubContainer,"b_form_groupchooser");	
+		chooseGroupsLink = uifactory.addFormLink("choose", formLayout, "b_form_groupchooser");
+		createGroupsLink = uifactory.addFormLink("create", formLayout, "b_form_groupchooser");	
 
 		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseEntry()) > 0;
-		
-		// areas
-		areaChooseSubContainer = FormLayoutContainer.createHorizontalFormLayout(
-				"areaChooseSubContainer", getTranslator()
-		);
-		areaChooseSubContainer.setLabel("form.message.area", null);
-		formLayout.add(areaChooseSubContainer);		
+	
 		
 		groupsAndAreasSubContainer = FormLayoutContainer.createHorizontalFormLayout("groupSubContainer", getTranslator());
 		formLayout.add(groupsAndAreasSubContainer);
@@ -482,15 +460,13 @@ public class COConfigForm extends FormBasicController {
 		}
 		areaInitVal = getAreaNames(areaKeys);
 
-		easyAreaList = uifactory.addStaticTextElement("area", null, areaInitVal, areaChooseSubContainer);
+		easyAreaList = uifactory.addStaticTextElement("area", "form.message.area", areaInitVal, formLayout);
 		easyAreaList.setUserObject(areaKeys);
 		
-		chooseAreasLink = uifactory.addFormLink("choose", areaChooseSubContainer,"b_form_groupchooser");
-		createAreasLink = uifactory.addFormLink("create", areaChooseSubContainer,"b_form_groupchooser");
+		chooseAreasLink = uifactory.addFormLink("choose", formLayout, "b_form_groupchooser");
+		createAreasLink = uifactory.addFormLink("create", formLayout, "b_form_groupchooser");
 		
 		hasAreas = areaManager.countBGAreasInContext(cev.getCourseGroupManager().getCourseResource()) > 0;
-		
-		s2 = uifactory.addSpacerElement("s2", formLayout, false);
 		
 		wantEmail = uifactory.addCheckboxesVertical("wantEmail", "message.want.email", formLayout, new String[]{"xx"},new String[]{null}, 1);
 		wantEmail.addActionListener(FormEvent.ONCLICK);
@@ -504,8 +480,6 @@ public class COConfigForm extends FormBasicController {
 		}
 		teArElEmailToAdresses = uifactory.addTextAreaElement("email", "message.emailtoadresses", -1, 3, 60, true, emailToAdresses, formLayout);
 		teArElEmailToAdresses.setMandatory(true);
-		
-		s3 =uifactory.addSpacerElement("s3", formLayout, true);
 		
 		//for displaying error message in case neither group stuff nor email is selected
 		recipentsContainer = FormLayoutContainer.createHorizontalFormLayout(
@@ -537,11 +511,8 @@ public class COConfigForm extends FormBasicController {
 		partips.setVisible(wg);
 		coachesAndPartips.setVisible(wg);
 		
-		groupChooseSubContainer.setVisible(wg);
-		areaChooseSubContainer.setVisible(wg);
-		
-		s1.setVisible(wg);
-		s2.setVisible(wg);
+		easyGroupList.setVisible(wg);
+		easyAreaList.setVisible(wg);
 		
 		if (!wg) {
 			coaches.select("xx", false);

@@ -2,7 +2,7 @@
 	<fieldset class="b_clearfix">
 		<legend>$r.translate("qf.edit")</legend>
 		#if(!$isEmptyQuota)
-		<div class="b_float_right">$r.render("qf.del")</div>
+		<div class="o_button_group o_button_group_right">$r.render("qf.del")</div>
 		#end
 		$r.render("quotaform")
 	</fieldset>
@@ -10,19 +10,18 @@
 	<fieldset class="b_clearfix">
 		<legend>$r.translate("qf.new")</legend>
 		#if($r.available("qf.new"))
-			<div class="b_float_right">$r.render("qf.new")</div>
+			<div class="o_button_group o_button_group_right">$r.render("qf.new")</div>
 		#end
-		$r.translate("qf.noquota")
+		<div class="o_info">$r.translate("qf.noquota")</div>
 		#if ($modalMode)
 			&nbsp;
 			$r.render("cancel")
 		#end
 	</fieldset>	
 #end
-
-<fieldset>
-	<legend>$r.translate("qd.title")</legend>
-	<table class="b_table b_grid">
+<div class="panel panel-default">
+	<div class="panel-heading">$r.translate("qd.title")</div>
+	<table class="o_table table">
 		<thead>
 			<tr><th>$r.translate("qd.title")</th><th>$r.translate("qf.quota")</th><th>$r.translate("qf.limit")</th></tr>
 		</thead>
@@ -36,4 +35,4 @@
 			<tr><td>$r.translate("qd.feeds")</td><td>$feeds.getQuotaKB()</td><td>$feeds.getUlLimitKB()</td></tr>
 		</tbody>
 	</table>
-</fieldset>
+</div>
