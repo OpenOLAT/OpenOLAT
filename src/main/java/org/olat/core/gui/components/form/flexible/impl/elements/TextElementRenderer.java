@@ -34,6 +34,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -77,8 +78,12 @@ class TextElementRenderer extends DefaultComponentRenderer {
 				sb.append(te.maxlength);
 			}
 			sb.append("\" value=\"").append(htmlVal).append("\" ")
-			  .append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()))
-			  .append(" />");
+			  .append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()));
+			
+			if (te.hasExample()) {
+				sb.append(" placeholder=\"").append(StringEscapeUtils.escapeHtml(te.getExampleText())).append("\"");
+			}
+			sb.append(" />");
 			
 			//add set dirty form only if enabled
 			sb.append(FormJSHelper.getJSStartWithVarDeclaration(teC.getFormDispatchId()))

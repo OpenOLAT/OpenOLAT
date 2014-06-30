@@ -33,10 +33,11 @@ import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.ItemValidatorProvider;
@@ -66,11 +67,12 @@ import de.bps.course.nodes.LLCourseNode;
 public class LLEditForm extends FormBasicController {
 	
 	private static final String BLANK_KEY  = "_blank";
+	private static final String SELF_KEY  = "_self";
 
 	private ModuleConfiguration moduleConfig;
 	private FormSubmit subm;
 	private List<TextElement> lTargetInputList;
-	private List<MultipleSelectionElement> lHtmlTargetInputList;
+	private List<SingleSelection> lHtmlTargetInputList;
 	private List<TextElement> lDescriptionInputList;
 	private List<TextElement> lCommentInputList;
 	private List<FormLink> lDelButtonList;
@@ -91,7 +93,7 @@ public class LLEditForm extends FormBasicController {
 		// list of all link target text fields
 		lTargetInputList = new ArrayList<TextElement>(linkList.size());
 		// list of all link html target text fields
-		lHtmlTargetInputList = new ArrayList<MultipleSelectionElement>(linkList.size());
+		lHtmlTargetInputList = new ArrayList<SingleSelection>(linkList.size());
 		// list of all link description text fields
 		lDescriptionInputList = new ArrayList<TextElement>(linkList.size());
 		// list of all link comment text fields
@@ -135,12 +137,13 @@ public class LLEditForm extends FormBasicController {
 				lTargetInputList.get(i).setValue(linkValue);
 			}
 			link.setTarget(linkValue);
-			boolean selected = lHtmlTargetInputList.get(i).isSelected(0);
+			boolean blank = lHtmlTargetInputList.get(i).isSelected(0);
 			if(linkValue.startsWith(Settings.getServerContextPathURI())) {
-				selected = false;
-				lHtmlTargetInputList.get(i).select(BLANK_KEY, selected);
+				// links to OO pages open in same window
+				blank = false;
+				lHtmlTargetInputList.get(i).select(SELF_KEY, true);
 			}
-			link.setHtmlTarget(selected ? "_blank" : "_self");
+			link.setHtmlTarget(blank ? BLANK_KEY : SELF_KEY);
 			link.setDescription(lDescriptionInputList.get(i).getValue());
 			link.setComment(lCommentInputList.get(i).getValue());
 		}
@@ -227,7 +230,7 @@ public class LLEditForm extends FormBasicController {
 				}
 				currentLink.setTarget(url);
 				currentLink.setIntern(true);
-				currentLink.setHtmlTarget("_blank");
+				currentLink.setHtmlTarget(SELF_KEY);
 				if(StringHelper.containsNonWhitespace(choosenEvent.getDisplayName())) {
 					currentLink.setDescription(choosenEvent.getDisplayName());
 				}
@@ -238,7 +241,7 @@ public class LLEditForm extends FormBasicController {
 						targetEl.setValue(url);
 						targetEl.setEnabled(false);
 						lDescriptionInputList.get(index).setValue(currentLink.getDescription());
-						lHtmlTargetInputList.get(index).select(BLANK_KEY, true);
+						lHtmlTargetInputList.get(index).select(SELF_KEY, true);
 						break;
 					}
 					index++;
@@ -300,6 +303,7 @@ public class LLEditForm extends FormBasicController {
 		lTarget.setEnabled(!link.isIntern());
 		lTarget.setDisplaySize(40);
 		lTarget.setMandatory(true);
+		lTarget.setExampleKey("target.example", null);
 		lTarget.setNotEmptyCheck("ll.table.target.error");
 		lTarget.setItemValidatorProvider(new ItemValidatorProvider() {
 			public boolean isValidValue(String value, ValidationError validationError, Locale locale) {
@@ -319,9 +323,9 @@ public class LLEditForm extends FormBasicController {
 		lTarget.setUserObject(link);
 		lTargetInputList.add(index, lTarget);
 		//add html target
-		MultipleSelectionElement htmlTargetSelection = uifactory.addCheckboxesHorizontal("html_target" + counter, flc, new String[]{BLANK_KEY}, new String[]{""});
+		SingleSelection htmlTargetSelection = uifactory.addDropdownSingleselect("html_target" + counter, flc, new String[]{BLANK_KEY, SELF_KEY}, new String[]{translate("ll.table.html_target"), translate("ll.table.html_target.self")}, null);
 		htmlTargetSelection.setUserObject(link);
-		htmlTargetSelection.select(BLANK_KEY, "_blank".equals(link.getHtmlTarget()));
+		htmlTargetSelection.select((SELF_KEY.equals(link.getHtmlTarget()) ? SELF_KEY : BLANK_KEY), true);
 		lHtmlTargetInputList.add(index, htmlTargetSelection);
 		
 		// add link description
@@ -330,23 +334,27 @@ public class LLEditForm extends FormBasicController {
 		lDescription.setDisplaySize(20);
 		lDescription.setNotEmptyCheck("ll.table.description.error");
 		lDescription.setMandatory(true);
+		lDescription.setExampleKey("ll.table.description", null);
 		lDescription.setUserObject(link);
 		lDescriptionInputList.add(index, lDescription);
 		
 		// add link comment
-		TextElement lComment =uifactory.addTextElement("comment" + counter, null, -1, link.getComment(), flc);
+		TextElement lComment =uifactory.addTextAreaElement("comment" + counter, null, -1, 2, 50, true, link.getComment(), flc);
 		lComment.setDisplaySize(20);
+		lComment.setExampleKey("ll.table.comment", null);
 		lComment.setUserObject(link);
 		lCommentInputList.add(index, lComment);
 		
 		// add link add action button
-		FormLink addButton = new FormLinkImpl("add" + counter, "add" + counter, "ll.table.add", Link.BUTTON_SMALL);
+		FormLink addButton = new FormLinkImpl("add" + counter, "add" + counter, "", Link.BUTTON_SMALL + Link.NONTRANSLATED);
 		addButton.setUserObject(link);
+		addButton.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_add");
 		flc.add(addButton);
 		lAddButtonList.add(index, addButton);
 		// add link deletion action button
-		FormLink delButton = new FormLinkImpl("delete" + counter, "delete" + counter, "ll.table.delete", Link.BUTTON_SMALL);
+		FormLink delButton = new FormLinkImpl("delete" + counter, "delete" + counter, "", Link.BUTTON_SMALL + Link.NONTRANSLATED);
 		delButton.setUserObject(link);
+		delButton.setIconLeftCSS("o_icon o_icon-lg o_icon-fw o_icon_delete_item");
 		flc.add(delButton);
 		lDelButtonList.add(index, delButton);
 		// custom media action button

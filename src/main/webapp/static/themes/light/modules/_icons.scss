@@ -37,7 +37,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_bookmark:before { content: $fa-var-bookmark; color: #996633; }
 .o_icon_bookmark_add:before { content: $fa-var-bookmark-o; }
 .o_icon_bookmark_header:before { content: $fa-var-bookmark; }
-.o_icon_browse:before { content: $fa-var-bank; }
+.o_icon_browse:before { content: $fa-var-search-plus; } 
 .o_icon_browsercheck:before { content: $fa-var-thumbs-up; }
 .o_icon_busy:before { content: $fa-var-spinner; }
 .o_icon_calendar:before { content: $fa-var-calendar;}

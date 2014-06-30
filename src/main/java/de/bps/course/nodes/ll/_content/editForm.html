@@ -1,41 +1,64 @@
-<table class="o_table table">
-	<thead>
-		<tr>
-			<th>$r.translate("ll.table.target")</th>
-			#if($lCustomMediaButtonList) <th></th> #end
-			<th>$r.translate("ll.table.html_target")</th>
-			<th>$r.translate("ll.table.description")</th>
-			<th>$r.translate("ll.table.comment")</th>
-			<th></th>
-		</tr>
-	</thead>
-	#foreach($link in $linkList)
-		#set( $iter = $velocityCount - 1)
-		#set( $target = $lTargetInputList.get($iter).getName() )
-		#set( $targetErr =	$target + "_ERROR" )
-		#set( $descr =	$lDescriptionInputList.get($iter).getName() )
-		#set( $descrErr = $descr + "_ERROR" )
-		<tr>
-			<td>$r.render($lTargetInputList.get($iter).getName())</td>
-			#if($lCustomMediaButtonList) <td>$r.render($lCustomMediaButtonList.get($iter).getName())</td> #end
-			<td>$r.render($lHtmlTargetInputList.get($iter).getName())</td>
-			<td>$r.render($lDescriptionInputList.get($iter).getName())</td>
-			<td>$r.render($lCommentInputList.get($iter).getName())</td>
-			<td style="white-space: nowrap; text-align: right;">
-				$r.render($lAddButtonList.get($iter).getName())
-				$r.render($lDelButtonList.get($iter).getName())
-			</td>
-		</tr>
-		#if($f.hasError($target) || $f.hasError($descr))
-		<tr>
-			<td>$r.render($targetErr)</td>
-			#if($lCustomMediaButtonList) <td></td> #end
-			<td></td>
-			<td>$r.render($descrErr)</td>
-			<td></td>
-			<td></td>
-		</tr>
-		#end
-	#end
-</table>
-<div class="o_button_group">$r.render("submit")</div>
+<div class="o_form form">
+#foreach($link in $linkList)
+	#set( $iter = $velocityCount - 1)
+	#set( $target = $lTargetInputList.get($iter).getName() )
+	#set( $targetErr =	$target + "_ERROR" )
+	#set( $descr =	$lDescriptionInputList.get($iter).getName() )
+	#set( $descrErr = $descr + "_ERROR" )
+	#set( $hasError = "false" )
+
+
+	<div class="o_block_large_bottom row">
+		<div class="col-xs-12 col-md-10">
+			#if ($f.hasError($target))
+				$r.render($targetErr)	
+			#end
+			#if ($f.hasError($descr))
+				$r.render($descrErr)	
+			#end
+		
+			<div class="form-group">
+				<label class="sr-only" for="$f.getItemId($lTargetInputList.get($iter).getName())">$r.translate("ll.table.target")</label>
+			  	#if($lCustomMediaButtonList)
+		  		<div class="input-group">
+				 	$r.render($lTargetInputList.get($iter).getName())
+			  		<div class='input-group-addon'>
+						$r.render($lCustomMediaButtonList.get($iter).getName())
+					</div>	
+		  		</div>
+		  		#else 
+				 	$r.render($lTargetInputList.get($iter).getName())
+				#end
+			</div>
+			<div class="form-group">
+			  	<label class="sr-only" for="$f.getItemId($lHtmlTargetInputList.get($iter).getName())">$r.translate("ll.table.html_target")</label>
+			  	$r.render($lHtmlTargetInputList.get($iter).getName())
+			</div>
+			<div class="form-group">
+			  	<label class="sr-only" for="$f.getItemId($lDescriptionInputList.get($iter).getName())">$r.translate("ll.table.description")</label>
+			  	$r.render($lDescriptionInputList.get($iter).getName())
+			</div>
+			<div class="form-group">
+			  	<label class="sr-only" for="$f.getItemId($lCommentInputList.get($iter).getName())">$r.translate("ll.table.comment")</label>
+			  	$r.render($lCommentInputList.get($iter).getName())
+			</div>
+		</div>
+		<div class="col-xs-12 col-md-2">
+			<div class="o_button_group o_button_group_top">
+				<div class="btn-group">
+					$r.render($lDelButtonList.get($iter).getName())
+					$r.render($lAddButtonList.get($iter).getName())
+			 	</div>
+			</div>
+		</div>
+	</div>
+#end  
+
+	<div class="o_block_large_bottom row">
+		<div class="col-xs-12 col-md-10">
+			<div class="o_button_group">
+				$r.render("submit")
+			</div>
+		</div>
+	</div>
+</div>
