@@ -221,7 +221,7 @@ public class CourseFactory extends BasicManager {
 	 * @return editor controller for the given course resourceable; if the editor
 	 *         is already locked, it returns a controller with a lock message
 	 */
-	public static Controller createEditorController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stack,
+	public static EditorMainController createEditorController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stack,
 			OLATResourceable olatResource, CourseNode selectedNode) {
 		ICourse course = loadCourse(olatResource);
 		EditorMainController emc = new EditorMainController(ureq, wControl, course, stack, selectedNode);

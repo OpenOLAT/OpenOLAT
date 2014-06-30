@@ -110,6 +110,7 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.db.CourseDBManager;
 import org.olat.course.db.CustomDBMainController;
+import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.PublishEvent;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
@@ -167,7 +168,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	private MenuTree luTree;
 	//tools
-	private Link editLink, editSettingsLink, areaLink, folderLink,
+	private Link runLink, editLink, editSettingsLink, areaLink, folderLink,
 			surveyStatisticLink, testStatisticLink, courseStatisticLink,
 			userMgmtLink, archiverLink, assessmentLink, dbLink,
 			efficiencyStatementsLink, bookmarkLink, calendarLink, detailsLink, noteLink, chatLink;
@@ -476,38 +477,30 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if(editLink == source) {
+		if(runLink == source) {
 			toolbarPanel.popUpToRootController(ureq);
-			doEdit(ureq);
+			currentToolCtr = null;
+		} else if(editLink == source) {
+			launchEdit(ureq);
 		} else if(editSettingsLink == source) {
-			toolbarPanel.popUpToRootController(ureq);
-			doEditSettings(ureq);
+			launchEditSettings(ureq);
 		} else if(userMgmtLink == source) {
-			toolbarPanel.popUpToRootController(ureq);
 			launchMembersManagement(ureq);
 		} else if(archiverLink == source) {
-			toolbarPanel.popUpToRootController(ureq);
 			launchArchive(ureq);
 		} else if(assessmentLink == source) {
-			toolbarPanel.popUpToRootController(ureq);
 			launchAssessmentTool(ureq);
 		} else if(testStatisticLink == source) {
-			toolbarPanel.popUpToRootController(ureq);
 			launchAssessmentStatistics(ureq, "command.openteststatistic", "TestStatistics", QTIType.test, QTIType.onyx);
 		} else if (surveyStatisticLink == source) {
-			toolbarPanel.popUpToRootController(ureq);
 			launchAssessmentStatistics(ureq, "command.opensurveystatistic", "SurveyStatistics", QTIType.survey);
 		} else if(courseStatisticLink == source) {
-			toolbarPanel.popUpToRootController(ureq);
 			launchStatistics(ureq);
 		} else if(dbLink == source) {
-			toolbarPanel.popUpToRootController(ureq);
 			launchDbs(ureq);
 		} else if(folderLink == source) {
-			toolbarPanel.popUpToRootController(ureq);
 			launchCourseFolder(ureq);
 		} else if(areaLink == source) {
-			toolbarPanel.popUpToRootController(ureq);
 			launchCourseAreas(ureq);
 		} else if(efficiencyStatementsLink == source) {
 			launchEfficiencyStatements(ureq);
@@ -653,24 +646,35 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 	}
 	
-	private void doEdit(UserRequest ureq) {
+	private void launchEdit(UserRequest ureq) {
 		if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
-			Controller ec = CourseFactory.createEditorController(ureq, getWindowControl(), toolbarPanel, course, currentCourseNode);
-			//user activity logger which was initialized with course run
-			if(ec != null){
-				//we are in editing mode
-				currentToolCtr = ec;
-				listenTo(currentToolCtr);
-				isInEditor = true;
+			if(!(currentToolCtr instanceof EditorMainController)) {
+				//pop and push happens in this method
+				EditorMainController ec = CourseFactory.createEditorController(ureq, getWindowControl(), toolbarPanel, course, currentCourseNode);
+				//user activity logger which was initialized with course run
+				if(ec != null){
+					currentToolCtr = ec;
+					listenTo(currentToolCtr);
+					isInEditor = true;
+				}
 			}
-		} else throw new OLATSecurityException("wanted to activate editor, but no according right");
+		} else {
+			throw new OLATSecurityException("wanted to activate editor, but no according right");
+		}
 	}
 	
-	private void doEditSettings(UserRequest ureq) {
+	private void launchEditSettings(UserRequest ureq) {
 		if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
-			currentToolCtr = new AuthoringEditEntrySettingsController(ureq, getWindowControl(), toolbarPanel, courseRepositoryEntry);
-			listenTo(currentToolCtr);
-		} else throw new OLATSecurityException("wanted to activate editor, but no according right");
+			if(!(currentToolCtr instanceof AuthoringEditEntrySettingsController)) {
+				toolbarPanel.popUpToRootController(ureq);
+				
+				currentToolCtr = new AuthoringEditEntrySettingsController(ureq, getWindowControl(), toolbarPanel, courseRepositoryEntry);
+				listenTo(currentToolCtr);
+				toolbarPanel.pushController(translate("command.settings"), currentToolCtr);
+			}
+		} else {
+			throw new OLATSecurityException("wanted to activate editor, but no according right");
+		}
 	}
 	
 	private void doNodeClick(UserRequest ureq, TreeEvent tev) {
@@ -743,10 +747,14 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	private void launchArchive(UserRequest ureq) {
 		if (hasCourseRight(CourseRights.RIGHT_ARCHIVING) || isCourseAdmin) {
+			toolbarPanel.popUpToRootController(ureq);
+			
 			currentToolCtr = new ArchiverMainController(ureq, getWindowControl(), course, new FullAccessArchiverCallback());
 			listenTo(currentToolCtr);
 			toolbarPanel.pushController(translate("command.openarchiver"), currentToolCtr);
-		} else throw new OLATSecurityException("clicked archiver, but no according right");
+		} else {
+			throw new OLATSecurityException("clicked archiver, but no according right");
+		}
 	}
 	
 	private void launchCalendar(UserRequest ureq) {
@@ -781,6 +789,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	private void launchCourseFolder(UserRequest ureq) {
+		toolbarPanel.popUpToRootController(ureq);
+		
 		// Folder for course with custom link model to jump to course nodes
 		VFSContainer namedCourseFolder = new NamedContainerImpl(translate("command.coursefolder"), course.getCourseFolderContainer());
 		CustomLinkTreeModel customLinkTreeModel = new CourseInternalLinkTreeModel(course.getEditorTreeModel());
@@ -792,6 +802,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	private void launchCourseAreas(UserRequest ureq) {
+		toolbarPanel.popUpToRootController(ureq);
+		
 		OLATResource courseRes = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
 		CourseAreasController areasMainCtl = new CourseAreasController(ureq, getWindowControl(), courseRes);
 		areasMainCtl.addLoggingResourceable(LoggingResourceable.wrap(course));
@@ -801,10 +813,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	private void launchDbs(UserRequest ureq) {
 		if (hasCourseRight(CourseRights.RIGHT_DB) || isCourseAdmin) {
+			toolbarPanel.popUpToRootController(ureq);
 			currentToolCtr = new CustomDBMainController(ureq, getWindowControl(), course);
 			listenTo(currentToolCtr);
 			toolbarPanel.pushController(translate("command.opendb"), currentToolCtr);
-		} else throw new OLATSecurityException("clicked dbs, but no according right");
+		} else {
+			throw new OLATSecurityException("clicked dbs, but no according right");
+		}
 	}
 	
 	private void launchEfficiencyStatements(UserRequest ureq) {
@@ -864,6 +879,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	private void launchStatistics(UserRequest ureq) {
 		if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
+			toolbarPanel.popUpToRootController(ureq);
+			
 			currentToolCtr = new StatisticMainController(ureq, getWindowControl(), course);
 			listenTo(currentToolCtr);
 			toolbarPanel.pushController(translate("command.openstatistic"), currentToolCtr);
@@ -873,6 +890,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private MembersManagementMainController launchMembersManagement(UserRequest ureq) {
 		if (hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || isCourseAdmin) {
 			if(!(currentToolCtr instanceof MembersManagementMainController)) {
+				removeAsListenerAndDispose(currentToolCtr);
+				
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("MembersMgmt", 0l);
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
@@ -891,6 +910,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl swControl = addToHistory(ureq, ores, null);
 		if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin || isCourseCoach) {
+			toolbarPanel.popUpToRootController(ureq);
+			
 			StatisticCourseNodesController statsToolCtr = new StatisticCourseNodesController(ureq, swControl, toolbarPanel, uce, types);
 			currentToolCtr = statsToolCtr;
 			listenTo(statsToolCtr);
@@ -907,6 +928,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		
 		// 1) course admins and users with tool right: full access
 		if (hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseAdmin) {
+			toolbarPanel.popUpToRootController(ureq);
+			
 			AssessmentMainController assessmentToolCtr = new AssessmentMainController(ureq, swControl, toolbarPanel, course,
 					new FullAccessAssessmentCallback(isCourseAdmin));
 			assessmentToolCtr.activate(ureq, null, null);
@@ -917,6 +940,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 		// 2) users with coach right: limited access to coached groups
 		else if (isCourseCoach) {
+			toolbarPanel.popUpToRootController(ureq);
+			
 			AssessmentMainController assessmentToolCtr =  new AssessmentMainController(ureq, swControl, toolbarPanel, course,
 					new CoachingGroupAccessAssessmentCallback());
 			assessmentToolCtr.activate(ureq, null, null);
@@ -1092,6 +1117,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			Dropdown editTools = new Dropdown("editTools", "header.tools", false, getTranslator());
 			editTools.setElementCssClass("o_sel_course_tools");
 			editTools.setIconCSS("o_icon o_icon_tools");
+			
+			runLink = LinkFactory.createToolLink("run.cmd", translate("command.run"), this, "o_icon_courserun");
+			runLink.setElementCssClass("o_sel_course_run");
+			editTools.addComponent(runLink);
+
 			if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
 				boolean managed = RepositoryEntryManagedFlag.isManaged(courseRepositoryEntry, RepositoryEntryManagedFlag.editcontent);
 				editLink = LinkFactory.createToolLink("edit.cmd", translate("command.openeditor"), this, "o_icon_courseeditor");
@@ -1416,13 +1446,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			// Nothing to do if already in editor. Can happen when editor is
 			// triggered externally, e.g. from the details page while user has
 			// the editor already open
-			if (!isInEditor) {
-				boolean managed = RepositoryEntryManagedFlag.isManaged(courseRepositoryEntry, RepositoryEntryManagedFlag.editcontent);
-				if(!managed) {
-					doEdit(ureq);
-				}
-			} else {
-				logDebug("Activate called for editor but editor for course::" + courseRepositoryEntry.getResourceableId() + " is already opened. Reuse current editor instance.",  null);
+			if (!isInEditor && !RepositoryEntryManagedFlag.isManaged(courseRepositoryEntry, RepositoryEntryManagedFlag.editcontent)) {
+				launchEdit(ureq);
 			}
 		}
 	}
