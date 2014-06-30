@@ -135,12 +135,12 @@ public class EPNotificationManager {
 			if(comment.getPageKey() == null) {
 				String[] title = new String[] { comment.getMapTitle(), userManager.getUserDisplayName(comment.getAuthor()) };
 				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
-				item = new SubscriptionListItem(translator.translate("li.newcomment", title), linkUrl, rootBusinessPath, comment.getCreationDate(), "b_info_icon");
+				item = new SubscriptionListItem(translator.translate("li.newcomment", title), linkUrl, rootBusinessPath, comment.getCreationDate(), "o_info_icon");
 			} else {
 				String bPath = rootBusinessPath + "[EPPage:" + comment.getPageKey() + "]";
 				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
 				String[] title = new String[] { comment.getTitle(), userManager.getUserDisplayName(comment.getAuthor()) };
-				item = new SubscriptionListItem(translator.translate("li.newcomment", title), linkUrl, bPath, comment.getCreationDate(), "b_info_icon");
+				item = new SubscriptionListItem(translator.translate("li.newcomment", title), linkUrl, bPath, comment.getCreationDate(), "o_info_icon");
 				item.setUserObject(comment.getPageKey());
 			}
 			items.add(item);

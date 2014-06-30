@@ -130,7 +130,7 @@ public class GuiDemoCalloutWindowController extends BasicController {
 							.createTextComponentFromString(
 									"blu",
 									"Cras dictum. Maecenas ut turpis. In vitae erat ac orci dignissim eleifend. Nunc quis justo. Sed vel ipsum in purus tincidunt pharetra. Sed pulvinar, felis id consectetuer malesuada, enim nisl mattis elit, a facilisis tortor nibh quis leo. Sed augue lacus, pretium vitae, molestie eget, rhoncus quis, elit. Donec in augue. Fusce orci wisi, ornare id, mollis vel, lacinia vel, massa. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.",
-									"b_error", false, null);
+									"o_error", false, null);
 					calloutCtr3 = new CloseableCalloutWindowController(ureq, getWindowControl(), calloutPanel, "myspecialdomid", null, true, "trigger3");
 					calloutCtr3.activate();
 					listenTo(calloutCtr3);

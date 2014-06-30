@@ -5,7 +5,7 @@ $r.render("backLink")
 		$r.render("details.launch")	
 	</p>
 	#if ($isGuest)
-		<p class="b_warning">
+		<p class="o_warning">
 		${r.translate("restr.access.first")}${r.render("repo.login")}${r.translate("restr.access.second")}
 		</p>
 	#end
@@ -15,13 +15,14 @@ $r.render("backLink")
 	</p>
 #end
 #if($corrupted)
-	<div class="b_error">
-		<div class="b_error_icon">$r.translate("cif.error.corrupted")</div>
+	<div class="o_error">
+		<i class="o_icon o_icon-fw o_icon_error"> </i>
+		$r.translate("cif.error.corrupted")
 	</div>
 #end
 
 #if($showLf)
-<fieldset class="b_clearfix">
+<fieldset class="clearfix">
 	<legend>$r.translate("cif.dates")</legend>
 	#if($lfStart || $lfEnd)
 	<div class="b_form">

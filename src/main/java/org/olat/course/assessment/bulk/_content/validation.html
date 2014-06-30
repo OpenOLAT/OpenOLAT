@@ -1,5 +1,5 @@
 #if ($hasNoItems) 
-	<p class="b_warning">
+	<p class="o_warning">
 		$r.translate("validation.error")
 	</p>
 #else 
@@ -44,7 +44,7 @@
 	#if ($hasInvalidItems) 
 	<fieldset>
 		<legend>$r.translate("validation.nok.title")</legend>
-		<p class="b_warning">
+		<p class="o_warning">
 			$r.translate("validation.nok.desc")
 		</p>
 		$r.render("notFoundList")

@@ -540,7 +540,7 @@ public class IQComponentRenderer implements ComponentRenderer {
 	 */
 	private void displayItemClosed(StringOutput sb, Renderer renderer) {
 		StringBuilder buffer = new StringBuilder(100);		
-		buffer.append("<div class=\"b_warning\"><strong>").append(renderer.getTranslator().translate("couldNotDisplayItem")).append("</strong></div>");
+		buffer.append("<div class=\"o_warning\"><strong>").append(renderer.getTranslator().translate("couldNotDisplayItem")).append("</strong></div>");
 		sb.append(buffer);
 	}
 	

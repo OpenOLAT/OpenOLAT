@@ -3,11 +3,11 @@
 	<p>
 		$r.translate("list.found.entries", ["$keysCount","$bundlesCount"])
 	</p>
-	<p class="b_info">
+	<p class="o_info">
 		$r.translate("list.${customizingPrefix}intro")
 	</p>
 #if ($i18nItems.size() > 0)
-	<div class="b_button_group">
+	<div class="o_button_group">
 		$r.render("allTranslateButtonTop")
 	</div>	
 	#set($currentBundle="")
@@ -19,8 +19,8 @@
 	<div class="b_translation_list_package">
 			#set ($currentBundle=$item.getBundleName())
 			
-			<div class="b_clearfix">
-				<div class="b_float_right">
+			<div class="clearfix">
+				<div class="pull-right">
 					$r.render("translateBundle_$currentBundle")
 				</div>
 				<div class="o_tooglebox_wrapper">

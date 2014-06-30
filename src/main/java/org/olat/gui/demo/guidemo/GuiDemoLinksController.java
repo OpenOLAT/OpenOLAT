@@ -117,8 +117,8 @@ public class GuiDemoLinksController extends BasicController {
 		TextFactory.createTextComponentFromI18nKey("text.translated", "text.translated", getTranslator(), null, true, mainVC);
 		counterText = TextFactory.createTextComponentFromString("text.simple.counter", "I'm counting events fron this controller: 0", null, true, mainVC);
 		TextFactory.createTextComponentFromString("text.span", "I'm a text in a SPAN", null, true, mainVC);
-		TextFactory.createTextComponentFromString("text.div", "I'm a text in a DIV (with optional CSS class <b>b_warning b_border_box</b>)", "b_warning b_border_box", false, mainVC);
-		TextFactory.createTextComponentFromString("text.div.note", "I'm a text in a DIV (with optional CSS class <b>b_note </b>)", "b_note", false, mainVC);
+		TextFactory.createTextComponentFromString("text.div", "I'm a text in a DIV (with optional CSS class <b>o_warning b_border_box</b>)", "o_warning b_border_box", false, mainVC);
+		TextFactory.createTextComponentFromString("text.div.note", "I'm a text in a DIV (with optional CSS class <b>o_note </b>)", "o_note", false, mainVC);
 		TextFactory.createTextComponentFromString("text.div.dimmed", "I'm a text in a DIV (with optional CSS class <b>b_dimmed b_border_box</b>)", "b_dimmed b_border_box", false, mainVC);
 		
 		//add sourceview control

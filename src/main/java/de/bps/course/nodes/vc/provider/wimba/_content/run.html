@@ -1,7 +1,7 @@
 <!-- <OLATCE-103> -->
 #if($exists)
 	#if($closed)
-		<p class="b_warning">$r.translate("meeting.status")</p>
+		<p class="o_warning">$r.translate("meeting.status")</p>
 	#end
 
 	#if($isModerator)
@@ -12,7 +12,7 @@
 		$r.render("cmd.join.moderator")&nbsp;
 		</p>
 		$r.render("recordingsTable")
-		<div class="b_info">
+		<div class="o_info">
 			<p><strong>$r.translate("title.options")</strong></p>
 			#if($showGuestLink)
 				<p>$r.translate("description.guestlink")
@@ -20,7 +20,7 @@
 				<br/>
 			#end
 			#if($closed)
-				##<p class="b_warning">$r.translate("meeting.status")</p>
+				##<p class="o_warning">$r.translate("meeting.status")</p>
 				$r.render("cmd.unclose.meeting")&nbsp;
 			#else
 				$r.render("cmd.close.meeting")&nbsp;
@@ -51,7 +51,7 @@
 		<p>$r.translate("cmd.join.learner.wait")</p>
 	#end
 #end
-<div class="b_info">
+<div class="o_info">
 <p>$r.translate("cmd.open.wizard.intro")</p>
 $r.render("cmd.open.wizard")
 </div>

@@ -262,7 +262,7 @@ public class BusinessGroupFormController extends FormBasicController {
 					// use translator from REST admin package to import managed flags context help strings
 					Translator managedTrans = Util.createPackageTranslator(RestapiAdminController.class, ureq.getLocale());
 					StringBuffer flagList = new StringBuffer();
-					flagList.append("<p class=\"b_important\">");
+					flagList.append("<p class=\"o_important\">");
 					flagList.append(translate("create.form.managedflags.intro"));
 					flagList.append("</div>");
 					flagList.append("<ul>");

@@ -13,13 +13,13 @@
 			$r.translate("inline.intro")
 		</p>
 		#if	($logoutRequired)
-		<p class="b_warning">
+		<p class="o_warning">
 			$r.translate("inline.require.logout")
 		</p>
 		#end
 		#if ($r.available("inline.enable"))
 			<p>
-				<span class="b_with_small_icon_right b_status_disabled_icon">$r.translate("inline.state"): $r.translate("inline.state.disabled")</span>
+				<i class="b_with_small_icon_right b_status_disabled_icon">$r.translate("inline.state"): $r.translate("inline.state.disabled")</span>
 			</p>
 			$r.render("inline.enable")
 		#elseif ($r.available("inline.disable"))
@@ -46,7 +46,7 @@
 			$r.translate("inline.customize.intro")
 		</p>
 		#if	($logoutRequired)
-		<p class="b_warning">
+		<p class="o_warning">
 			$r.translate("inline.customize.require.logout")
 		</p>
 		#end
@@ -72,7 +72,7 @@
 	</p>
 	$r.render("cache.flush")
 #else
-	<p class="b_warning">
+	<p class="o_warning">
 		$r.translate("cache.disabled")
 	</p>
 #end
