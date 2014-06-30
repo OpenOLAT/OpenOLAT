@@ -31,6 +31,7 @@ import java.util.List;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
+import org.olat.core.gui.components.table.TableDataModelWithMarkableRows;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
@@ -49,7 +50,7 @@ import org.olat.group.BusinessGroupService;
  * 
  * @author gnaegi
  */
-public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<BusinessGroup> {
+public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<BusinessGroup> implements TableDataModelWithMarkableRows<BusinessGroup>  {
 	private static final OLog log = Tracing.createLoggerFor(BusinessGroupTableModelWithMaxSize.class);
 	
 	private static final int COLUMN_COUNT = 7;
@@ -197,11 +198,12 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 		return false;
 	}
 	
-/**
- * Check if an identity is in any security-group.
- * @param identity
- * @return true: Found identity in any security-group of this table model.
- */	private boolean isEnrolledInAnyGroup(Identity identity) {
+	/**
+	 * Check if an identity is in any security-group.
+	 * @param identity
+	 * @return true: Found identity in any security-group of this table model.
+	 */		
+	private boolean isEnrolledInAnyGroup(Identity identity) {
 		// loop over all business-groups
 		for (BusinessGroup businessGroup:objects) {
 			if (isEnrolledIn(businessGroup, identity) ) {
@@ -211,4 +213,12 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 		return false;
 	}
 
+	@Override
+	public String getRowCssClass(int rowId) {
+		BusinessGroup businessGroup = objects.get(rowId);
+		boolean isEnrolled = isEnrolledIn(businessGroup, identity);
+		return (isEnrolled ? "o_row_selected" : "");
+	}
+
+ 
 }
