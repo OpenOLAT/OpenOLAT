@@ -104,6 +104,7 @@
 	&:hover{
 		color: $o-content-disabled-color !important;
 	}
+	@extend %o_undecorated;
 	cursor: default;
 }
 /* dimmed text */

@@ -50,14 +50,14 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 		List<Tool> tools = panel.getTools();
 		if(breadCrumbs.size() > panel.getInvisibleCrumb() || tools.size() > 0) {
 			String mainCssClass = panel.getCssClass();
-			sb.append("<div id='o_main_toolbar' class='o_toolbar clearfix ").append(mainCssClass, mainCssClass != null).append("'>")
+			sb.append("<div id='o_main_toolbar' class='o_toolbar clearfix list-unstyled").append(mainCssClass, mainCssClass != null).append("'>")
 			  .append("<div class='container-fluid'>");
 
 			Link backLink = panel.getBackLink();
 			int numOfCrumbs = breadCrumbs.size();
 			if(backLink.isVisible() && numOfCrumbs > 1) {
 				// breadcrum back link
-				sb.append("<ul class='o_breadcrumb'>")
+				sb.append("<ul class='o_breadcrumb list-unstyled'>")
 				.append("<li class='o_breadcrumb_back'>");
 				backLink.getHTMLRendererSingleton().render(renderer, sb, backLink, ubu, translator, renderResult, args);
 				sb.append("</li>");
@@ -73,24 +73,31 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 				}
 				sb.append("</ul></li></ul>");
 			}
+			Link closeLink = panel.getCloseLink();
+			if (closeLink.isVisible()) {
+				sb.append("<ul class='o_tools_close list-unstyled'><li>");
+				closeLink.getHTMLRendererSingleton().render(renderer, sb, closeLink, ubu, translator, renderResult, args);
+				sb.append("</li></ul>");				
+			}
+
 			
 			List<Tool> leftTools = getTools(tools, Align.left);
 			if(leftTools.size() > 0) {
-				sb.append("<ul class='o_tools o_tools_left'>");
+				sb.append("<ul class='o_tools o_tools_left list-inline'>");
 				renderTools(leftTools, renderer, sb, args);
 				sb.append("</ul>");
 			}
 			
 			List<Tool> rightTools = getTools(tools, Align.right);
 			if(rightTools.size() > 0) {
-				sb.append("<ul class='o_tools o_tools_right'>");
+				sb.append("<ul class='o_tools o_tools_right list-inline'>");
 				renderTools(rightTools, renderer, sb, args);
 				sb.append("</ul>");
 			}
 
 			List<Tool> notAlignedTools = getTools(tools, null);
 			if(notAlignedTools.size() > 0) {
-				sb.append("<ul class='o_tools o_tools_center'>");
+				sb.append("<ul class='o_tools o_tools_center list-inline'>");
 				renderTools(notAlignedTools, renderer, sb, args);
 				sb.append("</ul>");
 			}

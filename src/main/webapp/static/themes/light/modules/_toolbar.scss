@@ -1,15 +1,32 @@
 .o_toolbar {
-	@extend .navbar;
-	@extend .navbar-default;
+	// Following rules copied from .navbar;
+	position: relative;
+  	min-height: $o-toolbar-height-md; // Ensure a navbar always shows (e.g., without a .navbar-brand in collapsed mode)
+  	margin-bottom: $navbar-margin-bottom;
+  	border: 1px solid transparent;
+  	@include clearfix();
+ 	@media (min-width: $grid-float-breakpoint) {
+    	border-radius: $navbar-border-radius;
+  	}
+	
+	// Following rules copied from .navbar-default;
+  	background-color: $navbar-default-bg;
+  	border-color: $navbar-default-border;
+
 	text-align: center;
 	min-height: $o-toolbar-height-md;
 	
 	a {
-		@extend .navbar-link;
+		// Following rules copied from .navbar-link;
+   	 	color: $navbar-default-link-color;
+    	&:hover {
+      		color: $navbar-default-link-hover-color;
+    	}
+    	@extend %o_undecorated;
+    	display: inline-block;
 	}
 	
 	.o_breadcrumb {
-		@extend .list-unstyled;
 		float: left;	
 		margin-top: floor($o-toolbar-margin-top-md / 2);
 		margin-bottom: floor($o-toolbar-margin-bottom-md / 2);
@@ -51,8 +68,52 @@
 		}	
 	}
 		
+	.o_tools_close {
+		float: right;
+		position: relative;
+		margin: $o-toolbar-margin-top-md -15px $o-toolbar-margin-bottom-md 15px;
+		border-left: 1px solid $navbar-default-border;
+		padding-right: 5px;
+		padding-left: 5px;
+		vertical-align: middle;
+		a {
+			line-height: $o-toolbar-height-md;
+			color: $o-toolbar-close-color;
+			&:hover {
+				color: darken($o-toolbar-close-color, 15%);
+			}
+			i {
+				font-size: $o-toolbar-size-icon-md;
+			}
+			span {
+				display: none;
+			}
+		}
+		@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
+			margin-top: $o-toolbar-margin-top-sm;
+			margin-bottom: $o-toolbar-margin-bottom-sm;
+			a {
+				line-height: $o-toolbar-height-sm;
+				i {
+					font-size: $o-toolbar-size-icon-sm;
+				}
+			}
+		}
+		@media (max-width: $screen-xs-max) { 
+			min-height: $o-toolbar-height-xs;
+			margin-top: $o-toolbar-margin-top-xs;
+			margin-bottom: $o-toolbar-margin-bottom-xs;
+			a {
+				line-height: $o-toolbar-height-xs;
+				i {
+					font-size: $o-toolbar-size-icon-xs;
+				}
+			}
+		}
+	}
+		
+		
 	.o_tools {
-		@extend .list-inline;
 		margin-top: $o-toolbar-margin-top-md;
 		margin-bottom: $o-toolbar-margin-bottom-md;
 	}
@@ -110,9 +171,7 @@
 			vertical-align: top;
 		}
 	}
-
-	
-			
+				
 	.o_tool_dropdown {
 		position: relative;
 		a.dropdown-toggle {

@@ -74,13 +74,12 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		backLink = LinkFactory.createCustomLink("back", "back", null, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, null, this);
 		backLink.setCustomEnabledLinkCSS("b_breadcumb_back");
 		backLink.setIconLeftCSS("o_icon o_icon_back");
-		//backLink.setCustomDisplayText("&#x25C4;"); // unicode back arrow (black left pointer symbol)
 		backLink.setTitle(translator.translate("back"));
 		backLink.setAccessKey("b"); // allow navigation using keyboard
 
 		// Add back link before the bread crumbs, when pressed delegates click to current bread-crumb - 1
 		closeLink = LinkFactory.createCustomLink("close", "close", null, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, null, this);
-		closeLink.setIconLeftCSS("o_icon o_icon_close_tab");
+		closeLink.setIconLeftCSS("o_icon o_icon_close_tool");
 		closeLink.setCustomDisplayText(translator.translate("close"));
 		closeLink.setAccessKey("x"); // allow navigation using keyboard
 	}
@@ -265,7 +264,9 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 			closeLink.setVisible(false);								
 		} else {
 			Link link = stack.get(stack.size()-1);
-			closeLink.setCustomDisplayText(getTranslator().translate("doclose", new String[] { link.getCustomDisplayText() }));	
+			String closeText = getTranslator().translate("doclose", new String[] { link.getCustomDisplayText() });
+			closeLink.setCustomDisplayText(closeText);
+			closeLink.setTitle(closeText);
 			closeLink.setVisible(true);								
 		}
 	}
