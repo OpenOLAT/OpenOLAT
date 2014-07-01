@@ -116,9 +116,10 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 	 		// Add select text (hover)
 	 		sb.append(" title=\"").append(StringEscapeUtils.escapeHtml(trans.translate("file.element.select"))).append("\" />");
 			// Add the visible but fake input field and a styled faked file chooser button
-			sb.append("<div class='o_fakechooser'>");
-			sb.append("<input class='form-control' name='fake_").append(id).append("' value=\"").append(StringEscapeUtils.escapeHtml(fileName)).append("\" />")
-			  .append("<div class='o_picker_wrapper'><i class='o_icon o_icon_upload'></i></div>");	
+			sb.append("<div class='o_fakechooser input-group'>");
+			sb.append("<input class='form-control' name='fake_").append(id).append("' value=\"").append(StringEscapeUtils.escapeHtml(fileName))
+			  .append("\" placeholder=\"").append(StringEscapeUtils.escapeHtml(trans.translate("file.element.select"))).append("\" />")
+			  .append("<span class='input-group-addon'><a href='javascript:;'><i class='o_icon o_icon_upload'> </i></a></span>");	
 			sb.append("</div></div>");	
 			// Add Max upload size
 			if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {

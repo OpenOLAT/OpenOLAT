@@ -1,0 +1,22 @@
+<div #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="input-group $f.getContainerCssClass()">
+#if($leftAddOn)
+	<span class="input-group-addon">$leftAddOn</span>
+#elseif ($formitemnames.size() > 1 && $formitemnames.get(1) == "leftAddOn")
+	<span class="input-group-addon">
+		$r.render("$formitemnames.get(1)")
+	</span>
+#end
+
+## first item is form control
+#if ($formitemnames.size() > 0)
+	$r.render("$formitemnames.get(0)")
+#end
+
+#if($rightAddOn)
+	<span class="input-group-addon">$rightAddOn</span>
+#elseif ($formitemnames.size() > 1 && $formitemnames.get(1) == "rightAddOn")
+	<span class="input-group-addon">
+		$r.render("$formitemnames.get(1)")
+	</span>
+#end
+</div>

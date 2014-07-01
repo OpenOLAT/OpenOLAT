@@ -43,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -175,22 +176,27 @@ public class SearchInputController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		searchClient = (SearchClient)CoreSpringFactory.getBean("searchClient");
+
+		FormItemContainer searchLayout = formLayout;
 		
 		if (displayOption.equals(DisplayOption.STANDARD) || displayOption.equals(DisplayOption.STANDARD_TEXT)) {
-			searchInput = uifactory.addTextElement("search_input", "search.title", 255, "", formLayout);
+			searchLayout = FormLayoutContainer.createInputGroupLayout("searchWrapper", getTranslator(), null, null);
+			formLayout.add(searchLayout);
+			searchInput = uifactory.addTextElement("search_input", "search.title", 255, "", searchLayout);
 			searchInput.setLabel(null, null);
+			searchInput.setExampleKey("search", null);
 		}
 		
 		if (displayOption.equals(DisplayOption.STANDARD) || displayOption.equals(DisplayOption.BUTTON)) {
-			searchButton = uifactory.addFormLink("search", "", "", formLayout, Link.NONTRANSLATED);
+			searchButton = uifactory.addFormLink("rightAddOn", "", "", searchLayout, Link.NONTRANSLATED);
 			searchButton.setIconLeftCSS("o_icon o_icon-fw o_icon_search o_icon-lg");
 			String searchLabel = getTranslator().translate("search");
 			searchButton.setLinkTitle(searchLabel);
 		} else if (displayOption.equals(DisplayOption.BUTTON_WITH_LABEL)) {
-			searchButton = uifactory.addFormLink("search", formLayout, Link.BUTTON_SMALL);
+			searchButton = uifactory.addFormLink("rightAddOn", searchLayout, Link.BUTTON_SMALL);
 		} else if (displayOption.equals(DisplayOption.STANDARD_TEXT)) {
 			String searchLabel = getTranslator().translate("search");
-			searchButton = uifactory.addFormLink("search", searchLabel, "", formLayout, Link.NONTRANSLATED + Link.BUTTON_SMALL);
+			searchButton = uifactory.addFormLink("rightAddOn", searchLabel, "", searchLayout, Link.NONTRANSLATED + Link.BUTTON_SMALL);
 			searchButton.setIconLeftCSS("o_icon o_icon-fw o_icon_search o_icon-lg");
 		}
 		searchButton.setCustomEnabledLinkCSS("o_search");

@@ -46,6 +46,7 @@ import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 
@@ -65,6 +66,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	private static final String LAYOUT_VERTICAL = VELOCITY_ROOT + "/form_vertical.html";
 	private static final String LAYOUT_BAREBONE = VELOCITY_ROOT + "/form_barebone.html";
 	private static final String LAYOUT_BUTTONGROUP = VELOCITY_ROOT + "/form_buttongroup.html";
+	private static final String LAYOUT_INPUTGROUP = VELOCITY_ROOT + "/form_inputgroup.html";
 
 	/**
 	 * manage the form components of this form container
@@ -112,7 +114,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	private FormLayoutContainer(String id, String name, Translator formTranslator, String page) {
 		super(id, name, false);
 		formLayoutContainer = new VelocityContainer(id == null ? null : id + "_VC", name, page, formTranslator, null);
-		if (page.equals(LAYOUT_DEFAULT) || page.equals(LAYOUT_VERTICAL) || page.equals(LAYOUT_HORIZONTAL) || page.equals(LAYOUT_BUTTONGROUP)) {
+		if (page.equals(LAYOUT_DEFAULT) || page.equals(LAYOUT_VERTICAL) || page.equals(LAYOUT_HORIZONTAL) || page.equals(LAYOUT_BUTTONGROUP) || page.equals(LAYOUT_INPUTGROUP)) {
 			// optimize for lower DOM element count - provides its own DOM ID in velocity template
 			formLayoutContainer.setDomReplacementWrapperRequired(false);
 		}
@@ -560,6 +562,31 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		FormLayoutContainer tmp = new FormLayoutContainer(name, formTranslator, LAYOUT_BUTTONGROUP);
 		return tmp;
 	}
+
+	/**
+	 * Create a layout container that should be only used to render input groups. Input groups are 
+	 * form items that are decorated with some left or right sided add-on. The add-on can be either
+	 * a text (e.g. "@" to indicate an email address field) or an html i-tag with some OpenOLAT image
+	 * classes. Alternatively, a second component can be added to the layout container with the name
+	 * "leftAddOn" or "rightAddOn" to use the component as add-on (e.g. to implement a chooser link)
+	 * 
+	 * @param name The name of the form layout container
+	 * @param formTranslator the form translator
+	 * @param leftTextAddOn the left side add-on text or NULL if not used
+	 * @param rightTextAddOn the right side add-on text or NULL if not used
+	 * @return the form layout container
+	 */
+	public static FormLayoutContainer createInputGroupLayout(String name, Translator formTranslator, String leftTextAddOn, String rightTextAddOn) {
+		FormLayoutContainer tmp = new FormLayoutContainer(name, formTranslator, LAYOUT_INPUTGROUP);
+		if (StringHelper.containsNonWhitespace(leftTextAddOn)) {
+			tmp.contextPut("leftAddOn", leftTextAddOn);
+		}
+		if (StringHelper.containsNonWhitespace(rightTextAddOn)) {
+			tmp.contextPut("rightAddOn", rightTextAddOn);
+		}
+		return tmp;
+	}
+
 	
 	/**
 	 * 

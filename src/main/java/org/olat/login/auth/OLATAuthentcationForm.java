@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -102,8 +103,14 @@ public class OLATAuthentcationForm extends FormBasicController {
 			setFormWarning("loadtest.warn");
 		}
 	
-		login = uifactory.addTextElement(mainForm.getFormId() + "_name", "lf_login", "lf.login", 128, "", formLayout);
-		pass  = uifactory.addPasswordElement(mainForm.getFormId() + "_pass", "lf_pass",  "lf.pass", 128, "", formLayout);
+		FormLayoutContainer loginWrapper = FormLayoutContainer.createInputGroupLayout("loginWrapper", getTranslator(), "<i class='o_icon o_icon-fw o_icon_user'> </i>", null);
+		formLayout.add(loginWrapper);
+		login = uifactory.addTextElement(mainForm.getFormId() + "_name", "lf_login", "lf.login", 128, "", loginWrapper);
+		login.setExampleKey("lf.login", null);
+		FormLayoutContainer passWrapper = FormLayoutContainer.createInputGroupLayout("passWrapper", getTranslator(), "<i class='o_icon o_icon-fw o_icon_password'> </i>", null);
+		formLayout.add(passWrapper);
+		pass  = uifactory.addPasswordElement(mainForm.getFormId() + "_pass", "lf_pass",  "lf.pass", 128, "", passWrapper);
+		pass.setExampleKey("lf.pass", null);
 
 		login.setDisplaySize(20);
 		pass.setDisplaySize(20);

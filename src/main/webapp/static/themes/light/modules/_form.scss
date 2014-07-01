@@ -33,22 +33,6 @@
 	
 	hr.o_spacer {}
 	
-	.o_picker_wrapper {
-		position: absolute;
-		top: 0;
-		right: 0;
-		height: $input-height-base;
-		width: $input-height-base;
-		text-align: right;
-		vertical-align: middle;
-		line-height: $input-height-base;
-		font-size: floor($input-height-base / 3 * 2 );
-		color: $link-color;
-		&:hover {
-			color: $link-hover-color;
-		}
-	}		
-	
 	/* date chooser */
 	.o_date  {
 		position: relative;
@@ -84,7 +68,6 @@
 		/* the fake chooser is what the user sees. this is on layer 1, only for display */
 		.o_fakechooser {
 			position: relative;
-			padding-right: $input-height-base;
 			z-index: 1; 		
 		}
 		/* real file chooser is transparent but on layer 2, click events trigger realchooser, not fakechooser */
