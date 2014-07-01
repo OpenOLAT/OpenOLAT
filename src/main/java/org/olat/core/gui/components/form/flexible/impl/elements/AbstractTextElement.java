@@ -29,6 +29,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -82,6 +83,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	private String otherValueErrorKey;
 	private String checkRegexp;
 	private String checkRegexpErrorKey;
+	private String placeholder;
 	private ItemValidatorProvider itemValidatorProvider;
 	protected boolean originalInitialised=false;
 	
@@ -322,6 +324,36 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 		return false;
 	}
 
+	@Override
+	public void setPlaceholderText(String placeholderText) {
+		if (StringHelper.containsNonWhitespace(placeholderText)) {
+			placeholder = StringEscapeUtils.escapeHtml(placeholderText);
+		} else {
+			placeholder = null;
+		}
+	}
+	
+	@Override
+	public void setPlaceholderKey(String i18nKey, String[] args) {
+		if (StringHelper.containsNonWhitespace(i18nKey) && translator != null) {
+			setPlaceholderText(translator.translate(i18nKey, args));
+		} else {
+			placeholder = null;
+		}
+	}
+
+	@Override
+	public String getPlaceholder() {
+		return placeholder;
+	}
+
+	@Override
+	public boolean hasPlaceholder() {
+		return (placeholder != null);
+	}
+	
+
+	
 	/**
 	 * @param regExp
 	 * @param errorKey

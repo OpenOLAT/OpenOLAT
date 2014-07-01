@@ -79,8 +79,8 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			sb.append("\" value=\"").append(htmlVal).append("\" ")
 			  .append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()));
 			
-			if (te.hasExample()) {
-				sb.append(" placeholder=\"").append(StringEscapeUtils.escapeHtml(te.getExampleText())).append("\"");
+			if (te.hasPlaceholder()) {
+				sb.append(" placeholder=\"").append(te.getPlaceholder()).append("\"");
 			}
 			sb.append(" />");
 			

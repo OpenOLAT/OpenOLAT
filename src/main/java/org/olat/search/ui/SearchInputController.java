@@ -184,7 +184,7 @@ public class SearchInputController extends FormBasicController {
 			formLayout.add(searchLayout);
 			searchInput = uifactory.addTextElement("search_input", "search.title", 255, "", searchLayout);
 			searchInput.setLabel(null, null);
-			searchInput.setExampleKey("search", null);
+			searchInput.setPlaceholderKey("search", null);
 		}
 		
 		if (displayOption.equals(DisplayOption.STANDARD) || displayOption.equals(DisplayOption.BUTTON)) {

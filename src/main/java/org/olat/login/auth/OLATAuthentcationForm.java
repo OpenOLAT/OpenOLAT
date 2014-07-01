@@ -52,7 +52,7 @@ public class OLATAuthentcationForm extends FormBasicController {
 	 * @param name
 	 */
 	public OLATAuthentcationForm(UserRequest ureq, WindowControl wControl, String id, Translator translator) {
-		super(ureq, wControl, id, "form_vertical");
+		super(ureq, wControl, id, FormBasicController.LAYOUT_VERTICAL);
 		setTranslator(translator);
 		initForm(ureq);
 	}
@@ -106,11 +106,13 @@ public class OLATAuthentcationForm extends FormBasicController {
 		FormLayoutContainer loginWrapper = FormLayoutContainer.createInputGroupLayout("loginWrapper", getTranslator(), "<i class='o_icon o_icon-fw o_icon_user'> </i>", null);
 		formLayout.add(loginWrapper);
 		login = uifactory.addTextElement(mainForm.getFormId() + "_name", "lf_login", "lf.login", 128, "", loginWrapper);
-		login.setExampleKey("lf.login", null);
+		login.setLabel(null, null);
+		login.setPlaceholderKey("lf.login", null);
 		FormLayoutContainer passWrapper = FormLayoutContainer.createInputGroupLayout("passWrapper", getTranslator(), "<i class='o_icon o_icon-fw o_icon_password'> </i>", null);
 		formLayout.add(passWrapper);
 		pass  = uifactory.addPasswordElement(mainForm.getFormId() + "_pass", "lf_pass",  "lf.pass", 128, "", passWrapper);
-		pass.setExampleKey("lf.pass", null);
+		pass.setLabel(null, null);
+		pass.setPlaceholderKey("lf.pass", null);
 
 		login.setDisplaySize(20);
 		pass.setDisplaySize(20);

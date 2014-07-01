@@ -78,3 +78,11 @@ body .progress {
 .panel-body:nth-child(n+2) {
 	border-top: 1px solid $panel-default-border;
 }
+
+/* fix misplaced error icon */
+.form-control-feedback {
+  	top: 10px;
+}
+.form-horizontal .has-feedback .form-control-feedback {
+	top: 10px;
+}

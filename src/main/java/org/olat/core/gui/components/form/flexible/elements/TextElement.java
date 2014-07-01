@@ -154,4 +154,33 @@ public interface TextElement extends FormItem{
 	 */
 	public void setCheckVisibleLength(boolean checkVisibleLength);
 	
+
+	/**
+	 * Set the placeholder to be displayed inline in the input field. Text is
+	 * displayed without translator
+	 * 
+	 * @param placeholderText placeholder text or NULL to reset placeholder
+	 */
+	public void setPlaceholderText(String placeholderText);	
+
+	/**
+	 * Set the placeholder to be displayed inline in the input field. Text is
+	 * translated with the current translator
+	 * @param i18nKey placeholder i18n key or NULL to reset placeholder
+	 * @param args the translator arguments
+	 */
+	public void setPlaceholderKey(String i18nKey, String[] args);
+
+	/**
+	 * @return The placehodler text, escaped and translated ready to use
+	 */
+	public String getPlaceholder();
+
+	/**
+	 * @return true: has a placeholder text ; false: has no placeholder
+	 */
+	public boolean hasPlaceholder();
+
+
+	
 }

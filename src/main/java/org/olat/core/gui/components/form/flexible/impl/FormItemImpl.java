@@ -235,10 +235,7 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 	}
 	
 	public void setLabel(String label, String[] params, boolean translate) {
-		if (label == null) {
-			hasLabel = false;
-		}
-		hasLabel = true;
+		hasLabel = (label != null);
 		translateLabel = translate;
 		labelKey = label;
 		labelParams = params;
