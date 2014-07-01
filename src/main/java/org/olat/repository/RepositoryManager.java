@@ -600,8 +600,23 @@ public class RepositoryManager extends BasicManager {
 		return updatedRe;
 	}
 	
+	/**
+	 * The method doesn't update empty or null values!
+	 * @param re
+	 * @param displayName
+	 * @param externalRef
+	 * @param authors
+	 * @param description
+	 * @param objectives
+	 * @param requirements
+	 * @param credits
+	 * @param mainLanguage
+	 * @param expenditureOfWork
+	 * @param cycle
+	 * @return
+	 */
 	public RepositoryEntry setDescriptionAndName(final RepositoryEntry re,
-			String displayName, String authors, String description,
+			String displayName, String externalRef, String authors, String description,
 			String objectives, String requirements, String credits,
 			String mainLanguage, String expenditureOfWork, RepositoryEntryLifecycle cycle) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
@@ -613,6 +628,9 @@ public class RepositoryManager extends BasicManager {
 		}
 		if(StringHelper.containsNonWhitespace(description)) {
 			reloadedRe.setDescription(description);
+		}
+		if(StringHelper.containsNonWhitespace(externalRef)) {
+			reloadedRe.setExternalRef(externalRef);
 		}
 		if(StringHelper.containsNonWhitespace(objectives)) {
 			reloadedRe.setObjectives(objectives);

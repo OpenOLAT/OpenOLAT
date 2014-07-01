@@ -491,6 +491,11 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			}
 		}
 		
+		if(externalRef != null && externalRef.isEnabled()) {
+			String ref = externalRef.getValue().trim();
+			repositoryEntry.setExternalRef(ref);
+		}
+		
 		String desc = description.getValue().trim();
 		repositoryEntry.setDescription(desc);
 		if(authors != null) {
@@ -514,10 +519,11 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			repositoryEntry.setExpenditureOfWork(exp);
 		}
 		
-		repositoryEntry = RepositoryManager.getInstance().setDescriptionAndName(repositoryEntry,
-				repositoryEntry.getDisplayname(), repositoryEntry.getAuthors(), repositoryEntry.getDescription(),
-				repositoryEntry.getObjectives(), repositoryEntry.getRequirements(), repositoryEntry.getCredits(),
-				repositoryEntry.getMainLanguage(), repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle());
+		repositoryEntry = repositoryManager.setDescriptionAndName(repositoryEntry,
+				repositoryEntry.getDisplayname(), repositoryEntry.getExternalRef(), repositoryEntry.getAuthors(),
+				repositoryEntry.getDescription(), repositoryEntry.getObjectives(), repositoryEntry.getRequirements(),
+				repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(), repositoryEntry.getExpenditureOfWork(),
+				repositoryEntry.getLifecycle());
 		
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
