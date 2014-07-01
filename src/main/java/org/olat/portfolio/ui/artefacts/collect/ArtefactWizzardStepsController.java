@@ -134,7 +134,7 @@ public class ArtefactWizzardStepsController extends BasicController {
 	private void initCollectLinkVelocity() {
 		addLink = LinkFactory.createCustomLink("add.to.eportfolio", "add.to.eportfolio", "", Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED,
 				null, this);
-		addLink.setCustomEnabledLinkCSS("b_eportfolio_add");
+		addLink.setCustomEnabledLinkCSS("o_eportfolio_add");
 		addLink.setIconLeftCSS("o_icon o_icon-lg o_icon_eportfolio_add");
 		addLink.setTooltip(translate("add.to.eportfolio"));
 		addLink.setTranslator(getTranslator());
@@ -143,7 +143,7 @@ public class ArtefactWizzardStepsController extends BasicController {
 		if (existingArtefacts!=null){
 			int amount = existingArtefacts.size();
 			addLink.setIconLeftCSS("o_icon o_icon-lg o_icon_eportfolio_add");
-			addLink.setCustomEnabledLinkCSS("b_eportfolio_add_again");
+			addLink.setCustomEnabledLinkCSS("o_eportfolio_add_again");
 			addLink.setTooltip(translate("add.to.eportfolio.again", String.valueOf(amount)));	
 		}
 		putInitialPanel(addLink);

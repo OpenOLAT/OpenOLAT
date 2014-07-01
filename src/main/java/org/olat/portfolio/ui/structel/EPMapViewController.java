@@ -142,6 +142,7 @@ public class EPMapViewController extends BasicController implements Activateable
 		mainVc.remove(mainVc.getComponent("map.editButton"));
 		if(secCallback.canEditStructure()) {
 			editButton = LinkFactory.createButton("map.editButton", mainVc, this);
+			editButton.setElementCssClass("o_sel_ep_edit_map");
 			editButton.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 			if(Boolean.FALSE.equals(editMode)) {
 				editButton.setCustomDisplayText(translate("map.editButton.on"));

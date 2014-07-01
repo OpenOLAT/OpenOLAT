@@ -84,6 +84,7 @@ public class EPCollectStepForm01 extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
 		tagListElement = uifactory.addTextBoxListElement("artefact.tags", null, "tag.input.hint", getTagMapToDisplay(), formLayout, getTranslator());
+		tagListElement.setElementCssClass("o_sel_ep_tagsinput");
 		Map<String, String> allUsersTags = ePFMgr.getUsersMostUsedTags(getIdentity(), 50);
 		tagListElement.setAutoCompleteContent(allUsersTags);
 		tagListElement.setAllowDuplicates(false);

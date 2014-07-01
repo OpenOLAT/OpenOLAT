@@ -56,12 +56,16 @@ public class EPOverviewController extends BasicController {
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		myArtefactLink = LinkFactory.createLink("myartefacts.menu.title", mainVC, this);
+		myArtefactLink.setElementCssClass("o_sel_ep_my_artfeacts");
 		segmentView.addSegment(myArtefactLink, true);
 		myMapLink = LinkFactory.createLink("mymaps.menu.title", mainVC, this);
+		myMapLink.setElementCssClass("o_sel_ep_my_maps");
 		segmentView.addSegment(myMapLink, false);
 		myTaskLink = LinkFactory.createLink("mystructuredmaps.menu.title", mainVC, this);
+		myTaskLink.setElementCssClass("o_sel_ep_my_tasks");
 		segmentView.addSegment(myTaskLink, false);
 		publicMapLink = LinkFactory.createLink("othermaps.menu.title", mainVC, this);
+		publicMapLink.setElementCssClass("o_sel_ep_public_maps");
 		segmentView.addSegment(publicMapLink, false);
 		
 		doOpenMyArtefacts(ureq);

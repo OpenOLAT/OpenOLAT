@@ -25,6 +25,7 @@ import org.jboss.arquillian.graphene.page.Page;
 import org.jcodec.common.Assert;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.portfolio.PortfolioPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -98,6 +99,17 @@ public class UserToolsPage {
 		passwordLink.click();
 		OOGraphene.waitBusy();
 		return userSettings;
+	}
+	
+	public PortfolioPage openPortfolio() {
+		By linkBy = By.className("o_sel_user_tools-Portfolio");
+		WebElement passwordLink = browser.findElement(linkBy);
+		Assert.assertTrue(passwordLink.isDisplayed());
+		passwordLink.click();
+		OOGraphene.waitBusy();
+		
+		WebElement main = browser.findElement(By.id("o_main"));
+		return Graphene.createPageFragment(PortfolioPage.class, main);
 	}
 	
 	/**
