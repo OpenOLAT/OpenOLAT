@@ -72,6 +72,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	public TabbedPane(String name, Locale locale) {
 		super(name);
 		compTrans = Util.createPackageTranslator(this.getClass(), locale);		
+		setDomReplacementWrapperRequired(false);// we provide our own DOM replacement ID
 	}
 
 	/**

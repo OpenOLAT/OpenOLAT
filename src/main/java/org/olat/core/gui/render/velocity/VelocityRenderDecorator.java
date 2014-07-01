@@ -301,9 +301,9 @@ public class VelocityRenderDecorator implements Closeable{
 	public StringOutput contextHelpWithWrapper(String packageName, String pageName, String hoverTextKey) {
 		StringOutput sb = new StringOutput(100);
 		if (ContextHelpModule.isContextHelpEnabled()) {
-			sb.append("<div class=\"o_chelp_wrapper\">");
+			sb.append("<span class=\"o_chelp_wrapper\">");
 			sb.append(contextHelp(packageName, pageName, hoverTextKey));
-			sb.append("</div>");
+			sb.append("</span>");
 		}
 		return sb;
 	}

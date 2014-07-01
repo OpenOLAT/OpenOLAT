@@ -31,6 +31,8 @@ a.o_chelp {
 .o_chelp_wrapper { 
 	position: relative;
 	float: right;
+	display: inline-block;
+	line-height: 1em;
 }
 
 /* iframe display controller - used to deliver all course contents */
@@ -301,6 +303,14 @@ a.o_chelp {
 .o_segments_content {
 	margin-top: $line-height-computed;
 }
+
+/* Tabbed pane component */
+.o_tabbed_pane { 
+	.o_tabbed_pane_content {
+		padding: $o-tabbed-pane-padding;
+	}
+}
+
 
 
 /* toogle box, based on bootstrap collapse plugin */

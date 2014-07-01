@@ -56,7 +56,8 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 		int selPane = tb.getSelectedPane();
 		boolean iframePostEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
 		 		
-		sb.append("<ul class='o_tabbed_pane nav nav-tabs");
+		sb.append("<div id=\"o_c").append(tb.getDispatchID()).append("\" class='o_tabbed_pane'>");
+		sb.append("<ul class='nav nav-tabs");
 		String css = tb.getElementCssClass();
 		if (StringHelper.containsNonWhitespace(css)) {
 			sb.append(" ").append(css);
@@ -78,11 +79,11 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 										
 				} else {
 					// disabled panels can not be clicked, but for layout reason needs still a a href
-					sb.append("><a href='#' title='").append(StringEscapeUtils.escapeHtml(translator.translate("disabled"))).append("'>").append(tabName).append("</a></li>");
+					sb.append("><a href='javascript:;' title='").append(StringEscapeUtils.escapeHtml(translator.translate("disabled"))).append("'>").append(tabName).append("</a></li>");
 				}
 			}
 			else {
-				sb.append(" class='active'><a href='#'>").append(tabName).append("</a></li>");
+				sb.append(" class='active'><a href='javascript:;'>").append(tabName).append("</a></li>");
 			}
 		}
 		sb.append("</ul>");
@@ -90,7 +91,9 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 		// now let the selected component render itself
 		Component paneToRender = tb.getTabAt(selPane);
 		if (paneToRender == null) throw new RuntimeException("a tabbed pane must not be null, but a component");
+		sb.append("<div class='o_tabbed_pane_content'>");
 		renderer.render(sb, paneToRender, null);
+		sb.append("</div></div>");
 	}
 	
 	/**

@@ -179,6 +179,8 @@ public class PropPupForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("rentry.prop");
+		setFormContextHelp("org.olat.repository","rep-meta-olatauthorEd.html", "help.hover.rep.detail");
 		
 		final boolean managedSettings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.settings);
 		

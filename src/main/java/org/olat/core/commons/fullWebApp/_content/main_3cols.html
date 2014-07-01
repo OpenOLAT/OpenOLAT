@@ -1,7 +1,6 @@
 <div id="o_main" class="$mainCssClasses row">
 #if($existsCol1 && $r.visible("col1"))
 	<div id="o_main_left" style="$!col1CustomCSSStyles">
-		<a name="o_main_left"></a>
 		<div id="o_main_left_content" class="clearfix"> 
 			$r.render("col1")	
 		</div>
@@ -13,7 +12,6 @@
 #end
 #if($existsCol2 && $r.visible("col2"))	
 	<div id="o_main_right" style="$!col2CustomCSSStyles">
-		<a name="o_main_right"></a>
 		<div id="o_main_right_content" class="clearfix"> 
 			$r.render("col2")
 		</div>
@@ -21,10 +19,9 @@
 #end
 #if($existsCol3 && $r.visible("col3"))	
 	<div id="o_main_center"> ## style="$!col3CustomCSSStyles1 $!col3CustomCSSStyles2">
-		<a id="o_content" name="content"></a> 
+		<a id="o_content"></a> 
 		<div id="o_main_center_content" class="clearfix o_scrollblock">			          
 	       	<div id="o_main_center_content_inner">
-				<a name="o_main_center"></a>
 				$r.render("col3")		
 			</div>
 		</div>

@@ -137,6 +137,9 @@ $o-tree-padding-horizontal_root_hidden	: 20px !default;
 $o-tree-padding-steps-px 		: 15px !default;
 $o-tree-padding-opener-left-px 	: 1px !default;
 
+/* Tabbed pane component */
+$o-tabbed-pane-padding			: ($padding-large-vertical * 2) 0 $padding-base-vertical 0;
+
 /* Course and catalog site */
 $o-coursesite-rowelem-width-md : 180px;
 $o-coursesite-rowelem-height-md : 120px;

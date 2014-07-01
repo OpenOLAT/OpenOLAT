@@ -42,8 +42,8 @@ public class MainPanelRenderer extends PanelRenderer {
 		sb.append("<div id='o_main' class='row ").append(cssClass, cssClass != null).append("'>\n")
 		  .append("<div id='o_main_center' class='split-pane'>\n")
 		  .append("<div id='o_main_center_content' class='clearfix'>\n")
-		  .append("<a id='o_content' name='content'></a>\n")
-		  .append("<div id='o_main_center_content_inner' class='b_floatscrollbox'>\n")
+		  .append("<a id='o_content'></a>\n")
+		  .append("<div id='o_main_center_content_inner'>\n")
 		  .append("<a name='o_main_center'></a>\n");
 		
 		super.render(renderer, sb, source, ubu, translator, renderResult, args);
