@@ -70,7 +70,6 @@ import org.olat.portfolio.manager.InvitationDAO;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.user.ChangePasswordController;
-import org.olat.user.PersonalSettingsController;
 import org.olat.user.UserManager;
 
 /**
@@ -205,7 +204,6 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		createAndPersistPolicyIfNotExists(olatuserGroup, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_USERS);
 
 		createAndPersistPolicyIfNotExists(olatuserGroup, Constants.PERMISSION_ACCESS, OresHelper.lookupType(ChangePasswordController.class));
-		createAndPersistPolicyIfNotExists(olatuserGroup, Constants.PERMISSION_ACCESS, OresHelper.lookupType(PersonalSettingsController.class));
 	}
 
 	/**

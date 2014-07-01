@@ -201,7 +201,7 @@ public class UserAdminController extends BasicController implements Activateable
 				//reload profile data on top
 				myIdentity = (Identity) DBFactory.getInstance().loadObject(myIdentity);
 				exposeUserDataToVC(ureq, myIdentity);
-				userProfileCtr.resetForm(ureq, getWindowControl());
+				userProfileCtr.resetForm(ureq);
 			}
 		}
 	}

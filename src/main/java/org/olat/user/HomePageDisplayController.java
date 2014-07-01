@@ -49,6 +49,7 @@ import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  Jul 25, 2005
@@ -62,6 +63,10 @@ public class HomePageDisplayController extends BasicController {
 	
 	private Link imLink;
 	
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private InstantMessagingModule imModule;
 
 	/**
 	 * @param ureq
@@ -71,11 +76,8 @@ public class HomePageDisplayController extends BasicController {
 	public HomePageDisplayController(UserRequest ureq, WindowControl wControl, Identity homeIdentity, HomePageConfig hpc) {
 		super(ureq, wControl);
 
-		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
-		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
-
 		// use property handler translator for translating of user fields
-		setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		VelocityContainer mainVC = createVelocityContainer("homepagedisplay");
 		
 		String fullname = StringHelper.escapeHtml(userManager.getUserDisplayName(homeIdentity));

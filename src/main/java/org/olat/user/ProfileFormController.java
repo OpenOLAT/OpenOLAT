@@ -20,31 +20,58 @@
 
 package org.olat.user;
 
+import java.io.File;
+import java.text.DateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.SyncerExecutor;
+import org.olat.core.util.event.MultiUserEvent;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.registration.RegistrationManager;
+import org.olat.registration.TemporaryKey;
 import org.olat.registration.TemporaryKeyImpl;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.thoughtworks.xstream.XStream;
+
+import de.bps.olat.user.ChangeEMailController;
 
 /**
  * Provides a controller which lets the user edit their user profile and choose
@@ -55,24 +82,36 @@ import com.thoughtworks.xstream.XStream;
  */
 public class ProfileFormController extends FormBasicController {
 
-	private HomePageConfig conf;
+	private static final String usageIdentifier= ProfileFormController.class.getCanonicalName();
+	private static final String SEPARATOR = "\n____________________________________________________________________\n";
 
-	private List<UserPropertyHandler> userPropertyHandlers;
-
-	private Map<String, FormItem> formItems;
-
-	private Map<String, String> formContext;
-
+	private final Map<String, FormItem> formItems = new HashMap<String, FormItem>();
+	private final Map<String, String> formContext = new HashMap<String, String>();
 	private RichTextElement textAboutMe;
 
-	private String usageIdentifier;
-
-	private Map<String, MultipleSelectionElement> publishCheckboxes;
-
-	private Identity identity;
-
-	private boolean isAdministrativeUser;
-
+	private Identity identityToModify;
+	private DialogBoxController dialogCtr;
+	
+	private FormLink deletePortrait;
+	private FileElement portraitUpload;
+	
+	private final boolean isAdministrativeUser;
+	private final List<UserPropertyHandler> userPropertyHandlers;
+	
+	private boolean emailChanged = false;
+	private String changedEmail;
+	private String currentEmail;
+	
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private RegistrationManager rm;
+	@Autowired
+	private MailManager mailManager;
+	@Autowired
+	private HomePageConfigManager hpcm;
+	@Autowired
+	private DisplayPortraitManager dps;
 
 	/**
 	 * Creates this controller.
@@ -85,20 +124,20 @@ public class ProfileFormController extends FormBasicController {
 	 * @param isAdministrativeUser true: user is editing another users profile as
 	 *          user manager; false: use is editing his own profile
 	 */
-	public ProfileFormController(UserRequest ureq, WindowControl wControl, HomePageConfig conf, Identity identity,
-			boolean isAdministrativeUser) {
-		super(ureq, wControl, "combinedform");
-		UserManager um = UserManager.getInstance();
-		setTranslator(um.getPropertyHandlerTranslator(getTranslator()));		
-		this.publishCheckboxes = new HashMap<String, MultipleSelectionElement>();
-		this.conf = conf;
-		this.usageIdentifier = ProfileFormController.class.getCanonicalName();
-		this.userPropertyHandlers = um.getUserPropertyHandlersFor(this.usageIdentifier, isAdministrativeUser);
-		this.identity = identity;
-		this.formItems = new HashMap<String, FormItem>();
-		this.formContext = new HashMap<String, String>();
+	public ProfileFormController(UserRequest ureq, WindowControl wControl,
+			Identity identityToModify, boolean isAdministrativeUser) {
+		super(ureq, wControl, LAYOUT_BAREBONE);
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		
+		this.identityToModify = identityToModify;
 		this.isAdministrativeUser = isAdministrativeUser;
+		
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifier, isAdministrativeUser);
 		initForm(ureq);
+	}
+	
+	public Identity getIdentityToModify() {
+		return identityToModify;
 	}
 
 	/**
@@ -106,50 +145,18 @@ public class ProfileFormController extends FormBasicController {
 	 */
 	@Override
 	protected void doDispose() {
-	// nothing to dispose.
-
+		// nothing to dispose.
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
-	@Override
-	protected void formOK(UserRequest ureq) {
-		fireEvent(ureq, Event.DONE_EVENT);
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formNOK(org.olat.core.gui.UserRequest)
-	 */
-	@Override
-	protected void formNOK(UserRequest ureq) {
-		fireEvent(ureq, Event.FAILED_EVENT);
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formCancelled(org.olat.core.gui.UserRequest)
-	 */
-	@Override
-	protected void formCancelled(UserRequest ureq) {
-		fireEvent(ureq, Event.CANCELLED_EVENT);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm
-	 * (org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 * org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formContext.put("username", identity.getName());
-		
+
 		String currentGroup = null;
+		User user = identityToModify.getUser();
+
 		// show a form element for each property handler 
 		FormLayoutContainer groupContainer = null;
-		for (UserPropertyHandler userPropertyHandler : this.userPropertyHandlers) {
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) {
 				continue;
 			}
@@ -159,45 +166,27 @@ public class ProfileFormController extends FormBasicController {
 			if (!group.equals(currentGroup)) {
 				groupContainer = FormLayoutContainer.createDefaultFormLayout("group." + group, getTranslator());
 				groupContainer.setFormTitle(translate("form.group." + group));
-				this.formItems.put("group." + group, groupContainer);
+				formItems.put("group." + group, groupContainer);
 				formLayout.add(groupContainer);
+				if(currentGroup == null) {
+					groupContainer.setFormContextHelp("org.olat.user","home-vcard.html","help.hover.vcard");
+				}
 				currentGroup = group;
 			}
 			
-//			if (homepagePropertyHanders.contains(userPropertyHandler)) {
-//				// add checkbox to container if configured for homepage usage identifier
-//				String checkboxName = "checkbox_" + userPropertyHandler.getName();
-//				MultipleSelectionElement publishCheckbox = uifactory.addCheckboxesHorizontal(checkboxName, null, groupContainer, new String[] {userPropertyHandler.i18nFormElementLabelKey()}, new String[] {""}, null);
-//				this.publishCheckboxes.put(checkboxName, publishCheckbox);
-//				boolean isEnabled = this.conf.isEnabled(userPropertyHandler.getName());
-//				if (isEnabled) {
-//					publishCheckbox.select(userPropertyHandler.i18nFormElementLabelKey(), true);
-//				} else {
-//					publishCheckbox.select(userPropertyHandler.i18nFormElementLabelKey(), false);
-//				}				
-//				// Mandatory homepage properties can not be changed by user
-//				UserManager um = UserManager.getInstance();
-//				if (um.isMandatoryUserProperty(HomePageConfig.class.getCanonicalName(), userPropertyHandler)) {
-//					publishCheckbox.select(userPropertyHandler.i18nFormElementLabelKey(), true);
-//					publishCheckbox.setEnabled(false);
-//				}
-//			} else {
-//				uifactory.addSpacerElement("spacer_" + userPropertyHandler.getName(), groupContainer, true);
-//			}
-			
 			// add input field to container
-			FormItem formItem = userPropertyHandler.addFormItem(getLocale(), identity.getUser(), this.usageIdentifier, this.isAdministrativeUser, groupContainer);
+			FormItem formItem = userPropertyHandler.addFormItem(getLocale(), user, usageIdentifier, isAdministrativeUser, groupContainer);
 			String propertyName = userPropertyHandler.getName();
-			this.formItems.put(propertyName, formItem);
+			formItems.put(propertyName, formItem);
 			
 			if (formItem instanceof TextElement) {
 				// it's a text field, so get the value of this property into the text field
 				TextElement textElement = (TextElement)formItem;
-				textElement.setValue(this.identity.getUser().getProperty(propertyName, getLocale()));
+				textElement.setValue(user.getProperty(propertyName, getLocale()));
 			} else if (formItem instanceof MultipleSelectionElement) {
 				// it's a checkbox, so set the box to checked if the corresponding property is set to "true"
 				MultipleSelectionElement checkbox = (MultipleSelectionElement)formItem;
-				String value = this.identity.getUser().getProperty(propertyName, getLocale());
+				String value = user.getProperty(propertyName, getLocale());
 				if (value != null) {
 					checkbox.select(propertyName, value.equals("true"));
 				} else {
@@ -209,7 +198,7 @@ public class ProfileFormController extends FormBasicController {
 			// special case for email field
 			if (userPropertyHandler.getName().equals("email")) {
 				RegistrationManager rm = RegistrationManager.getInstance();
-				String key = this.identity.getUser().getProperty("emchangeKey", null);
+				String key = user.getProperty("emchangeKey", null);
 				TemporaryKeyImpl tempKey = rm.loadTemporaryKeyByRegistrationKey(key);
 				if (tempKey != null) {
 					XStream xml = XStreamHelper.createXStreamInstance();
@@ -223,12 +212,38 @@ public class ProfileFormController extends FormBasicController {
 		// add the "about me" text field.
 		groupContainer = FormLayoutContainer.createDefaultFormLayout("group.about", getTranslator());
 		groupContainer.setFormTitle(translate("form.group.about"));
-		this.formItems.put("group.about", groupContainer);
+		formLayout.add(groupContainer);
+		
+		HomePageConfig conf = hpcm.loadConfigFor(identityToModify.getName());
+		textAboutMe = uifactory.addRichTextElementForStringData("form.text", "form.text",
+				conf.getTextAboutMe(), 10, -1, false, null, null, groupContainer,
+				ureq.getUserSession(), getWindowControl());
+		textAboutMe.setMaxLength(10000);
+		
+		//upload image
+		groupContainer = FormLayoutContainer.createDefaultFormLayout("portraitupload", getTranslator());
+		groupContainer.setFormTitle(translate("ul.header"));
+		groupContainer.setFormContextHelp("org.olat.user","home-picture.html","chelp.home-picture.hover");
 		formLayout.add(groupContainer);
 
-		textAboutMe = uifactory.addRichTextElementForStringData("form.text", "form.text", this.conf.getTextAboutMe(), 10, -1, false, null, null, groupContainer, ureq.getUserSession(), getWindowControl());
-		textAboutMe.setMaxLength(10000);
-		formItems.put("form.text", this.textAboutMe);
+		deletePortrait = uifactory.addFormLink("command.delete", groupContainer, Link.BUTTON);
+
+		File portraitFile = dps.getBigPortrait(identityToModify.getName());
+		// Init upload controller
+		Set<String> mimeTypes = new HashSet<String>();
+		mimeTypes.add("image/gif");
+		mimeTypes.add("image/jpg");
+		mimeTypes.add("image/jpeg");
+		mimeTypes.add("image/png");
+
+		portraitUpload = uifactory.addFileElement("ul.select", "ul.select", groupContainer);
+		portraitUpload.setMaxUploadSizeKB(10000, null, null);
+		portraitUpload.setPreview(ureq.getUserSession(), true);
+		portraitUpload.addActionListener(FormEvent.ONCHANGE);
+		if(portraitFile != null) {
+			portraitUpload.setInitialFile(portraitFile);
+		}
+		portraitUpload.limitToMimeType(mimeTypes, null, null);
 		
 		// Create submit and cancel buttons
 		FormLayoutContainer buttonLayoutWrappper = FormLayoutContainer.createDefaultFormLayout("buttonLayoutWrappper", getTranslator());
@@ -237,10 +252,6 @@ public class ProfileFormController extends FormBasicController {
 		buttonLayoutWrappper.add(buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
-		formItems.put("buttonLayout", buttonLayout);
-		
-		Set<String> userPropertyNames = formItems.keySet();
-		((VelocityContainer)this.flc.getComponent()).contextPut("userPropertyNames", userPropertyNames);
 	}
 
 	/**
@@ -251,69 +262,46 @@ public class ProfileFormController extends FormBasicController {
 	 *          visible fields).
 	 * @param identity The user's identity
 	 */
-	public void updateFromFormData(final HomePageConfig config, final Identity identity) {
-		User user = identity.getUser();
+	public void updateFromFormData() {
+		User user = identityToModify.getUser();
 		// For each user property...
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-
 			// ...get the value from the form field and store it into the user
 			// property...
 			FormItem formItem = formItems.get(userPropertyHandler.getName());
 			if(formItem.isEnabled()) {
 				userPropertyHandler.updateUserFromFormItem(user, formItem);
 			}
-
-			// ...and store the "publish" flag for each property.
-			MultipleSelectionElement checkbox = publishCheckboxes.get("checkbox_" + userPropertyHandler.getName());
-			if (checkbox != null) {
-				// null when not enabled for the org.olat.user.HomePageConfig usage
-				// identifier key
-				if (checkbox.getSelectedKeys().size() == 0) {
-					config.setEnabled(userPropertyHandler.getName(), false);
-				} else {
-					config.setEnabled(userPropertyHandler.getName(), true);
-				}
-			}
 		}
 		// Store the "about me" text.
+		HomePageConfig conf = hpcm.loadConfigFor(identityToModify.getName());
 		conf.setTextAboutMe(textAboutMe.getValue());
+		hpcm.saveConfigTo(identityToModify.getName(), conf);
 	}
-
-	/**
-	 * Take form data and set it in the user fields for the current subject
-	 * 
-	 * @param id The identity to be updated (transient, does not do any db calls)
-	 * @return the updated identity object
-	 */
-	public Identity updateIdentityFromFormData(Identity id) {
-		identity = id;
-		User user = identity.getUser();
-		// update each user field
+	
+	public Identity updateIdentityFromFormData(Identity identity) {
+		identityToModify = identity;
+		User user = identityToModify.getUser();
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			FormItem formItem = formItems.get(userPropertyHandler.getName());
 			if(formItem.isEnabled()) {
 				userPropertyHandler.updateUserFromFormItem(user, formItem);
 			}
 		}
-		return identity;
+		return identityToModify;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @seeorg.olat.core.gui.components.form.flexible.impl.FormBasicController#
-	 * validateFormLogic(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean formOK = true;
-		User user = identity.getUser();
-		for (UserPropertyHandler userPropertyHandler : this.userPropertyHandlers) {
+		boolean allOk = true;
+		formContext.put("username", identityToModify.getName());
+		
+		User user = identityToModify.getUser();
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			FormItem formItem = formItems.get(userPropertyHandler.getName());
-			if (!userPropertyHandler.isValid(user, formItem, formContext)) {
-				formOK = false;
-			} else {
+			if(formItem.isEnabled()) {
 				formItem.clearError();
+				allOk &= userPropertyHandler.isValid(user, formItem, formContext);
 			}
 		}
 		
@@ -321,15 +309,247 @@ public class ProfileFormController extends FormBasicController {
 			String aboutMe = textAboutMe.getValue();
 			if(aboutMe.length() > 10000) {
 				textAboutMe.setErrorKey("input.toolong", new String[] {"10000"});
-				formOK = false;
+				allOk = false;
 			} else {
 				textAboutMe.clearError();
 			}
 		} catch (Exception e) {
 			textAboutMe.setErrorKey("input.toolong", new String[] {"10000"});
-			formOK = false;
+			allOk = false;
 		}
-		return formOK && super.validateFormLogic(ureq);
+		return allOk & super.validateFormLogic(ureq);
+	}
+
+	@Override
+	protected void formNOK(UserRequest ureq) {
+		fireEvent(ureq, Event.FAILED_EVENT);
+	}
+
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == dialogCtr) {
+			dialogCtr.dispose();
+			dialogCtr = null;
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				if (changedEmail != null) {
+					createChangeEmailWorkflow(ureq);
+				}
+			}
+			fireEvent(ureq, Event.FAILED_EVENT);
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		 if (source == portraitUpload) {
+			if (portraitUpload.isUploadSuccess()) {
+				deletePortrait.setVisible(true);
+					flc.setDirty(true);
+			}
+		} else if (source == deletePortrait) {
+			File img = dps.getBigPortrait(identityToModify.getName());
+			if(portraitUpload.getUploadFile() != null) {
+				portraitUpload.reset();
+				if(img == null) {
+					deletePortrait.setVisible(false);
+				} else {
+					deletePortrait.setVisible(true);
+				}
+			} else if(img != null) {
+				dps.deletePortrait(identityToModify);
+				deletePortrait.setVisible(false);
+				portraitUpload.setInitialFile(null);
+			}
+			flc.setDirty(true);
+		}
+
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void formOK(final UserRequest ureq) {
+		User user = identityToModify.getUser();
+		// update each user field
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			FormItem formItem = formItems.get(userPropertyHandler.getName());
+			if(formItem.isEnabled()) {
+				userPropertyHandler.updateUserFromFormItem(user, formItem);
+			}
+		}
+		
+		File uploadedImage = portraitUpload.getUploadFile();
+		if(uploadedImage != null) {
+			dps.setPortrait(uploadedImage, identityToModify.getName());
+		}
+
+		// fire the appropriate event
+		fireEvent(ureq, Event.DONE_EVENT);
+
+		// update the user profile data
+		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(
+			OresHelper.createOLATResourceableInstance(Identity.class, identityToModify.getKey()), new SyncerExecutor() {
+			@Override
+			public void execute() {
+				UserManager um = UserManager.getInstance();
+				identityToModify = (Identity) DBFactory.getInstance().loadObject(identityToModify);
+				currentEmail = identityToModify.getUser().getProperty("email", null);
+
+				identityToModify = updateIdentityFromFormData(identityToModify);
+				changedEmail = identityToModify.getUser().getProperty("email", null);
+				if (!currentEmail.equals(changedEmail)) {
+					// allow an admin to change email without verification workflow. usermanager is only permitted to do so, if set by config.
+					if ( !(ureq.getUserSession().getRoles().isOLATAdmin()
+							|| (BaseSecurityModule.USERMANAGER_CAN_BYPASS_EMAILVERIFICATION && ureq.getUserSession().getRoles().isUserManager() ))) {
+						emailChanged = true;
+						// change email address to old address until it is verified
+						identityToModify.getUser().setProperty("email", currentEmail);
+					} else {
+						String key = identityToModify.getUser().getProperty("emchangeKey", null);
+						TemporaryKeyImpl tempKey = rm.loadTemporaryKeyByRegistrationKey(key);
+						if (tempKey != null) {
+							rm.deleteTemporaryKey(tempKey);
+						}		
+					}
+				}
+				if (!um.updateUserFromIdentity(identityToModify)) {
+					getWindowControl().setInfo(translate("profile.unsuccessful"));
+					// reload user data from db
+					identityToModify = BaseSecurityManager.getInstance().loadIdentityByKey(identityToModify.getKey());
+				}
+				
+				OLATResourceable modRes = OresHelper.createOLATResourceableInstance(Identity.class, identityToModify.getKey());
+				CoordinatorManager.getInstance().getCoordinator().getEventBus()
+					.fireEventToListenersOf(new MultiUserEvent("changed"), modRes);
+				
+				if (!emailChanged) {
+					fireEvent(ureq, Event.FAILED_EVENT);
+				}
+			}
+		});
+		
+		if (emailChanged) {
+			removeAsListenerAndDispose(dialogCtr);
+
+			String changerEMail = ureq.getIdentity().getUser().getProperty("email", ureq.getLocale());
+			String dialogText = "";
+			if(changerEMail != null && changerEMail.length() > 0 && changerEMail.equals(currentEmail)) {
+				dialogText = translate("email.change.dialog.text");
+			} else {
+				dialogText = translate("email.change.dialog.text.usermanager");
+			}
+			dialogCtr = DialogBoxUIFactory.createYesNoDialog(ureq, getWindowControl(), translate("email.change.dialog.title"), dialogText);
+			listenTo(dialogCtr);
+			dialogCtr.activate();
+		}
+	}
+	
+	private void createChangeEmailWorkflow(UserRequest ureq) {
+		// send email
+		changedEmail = changedEmail.trim();
+		String body = null;
+		String subject = null;
+		// get remote address
+		String ip = ureq.getHttpReq().getRemoteAddr();
+		String today = DateFormat.getDateInstance(DateFormat.LONG, ureq.getLocale()).format(new Date());
+		// mailer configuration
+		String serverpath = Settings.getServerContextPathURI();
+		String servername = ureq.getHttpReq().getServerName();
+
+		logDebug("this servername is " + servername + " and serverpath is " + serverpath, null);
+		// load or create temporary key
+		Map<String, String> mailMap = new HashMap<String, String>();
+		mailMap.put("currentEMail", currentEmail);
+		mailMap.put("changedEMail", changedEmail);
+		
+		XStream xml = new XStream();
+		String serMailMap = xml.toXML(mailMap);
+		
+		TemporaryKey tk = loadCleanTemporaryKey(serMailMap);				
+		if (tk == null) {
+			tk = rm.createTemporaryKeyByEmail(serMailMap, ip, RegistrationManager.EMAIL_CHANGE);
+		} else {
+			rm.deleteTemporaryKeyWithId(tk.getRegistrationKey());
+			tk = rm.createTemporaryKeyByEmail(serMailMap, ip, RegistrationManager.EMAIL_CHANGE);
+		}
+		
+		// create date, time string
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(tk.getCreationDate());
+		cal.add(Calendar.DAY_OF_WEEK, ChangeEMailController.TIME_OUT);
+		String time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ureq.getLocale()).format(cal.getTime());
+		// create body and subject for email
+		body = translate("email.change.body", new String[] { serverpath + "/dmz/emchange/index.html?key=" + tk.getRegistrationKey() + "&lang=" + ureq.getLocale().getLanguage(), time, currentEmail, changedEmail })
+				+ SEPARATOR + translate("email.change.wherefrom", new String[] { serverpath, today, ip });
+		subject = translate("email.change.subject");
+		// send email
+		try {
+			
+			MailBundle bundle = new MailBundle();
+			bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
+			bundle.setTo(changedEmail);
+			bundle.setContent(subject, body);
+
+			MailerResult result = mailManager.sendMessage(bundle);
+			boolean isMailSent = result.isSuccessful();
+			if (isMailSent) {
+				tk.setMailSent(true);
+				// set key
+				User user = this.identityToModify.getUser();
+				user.setProperty("emchangeKey", tk.getRegistrationKey());
+				UserManager.getInstance().updateUser(user);
+				getWindowControl().setInfo(translate("email.sent"));
+			} else {
+				tk.setMailSent(false);
+				rm.deleteTemporaryKeyWithId(tk.getRegistrationKey());
+				getWindowControl().setError(translate("email.notsent"));
+			}
+		} catch (Exception e) {
+			rm.deleteTemporaryKeyWithId(tk.getRegistrationKey());
+			getWindowControl().setError(translate("email.notsent"));
+		}
+	}
+
+	/**
+	 * Load and clean temporary keys with action "EMAIL_CHANGE".
+	 * @param serMailMap
+	 * @return
+	 */
+	private TemporaryKey loadCleanTemporaryKey(String serMailMap) {
+		TemporaryKey tk = rm.loadTemporaryKeyByEmail(serMailMap);
+		if (tk == null) {
+			XStream xml = new XStream();
+			@SuppressWarnings("unchecked")
+			Map<String, String> mails = (Map<String, String>) xml.fromXML(serMailMap);
+			String currentEMail = mails.get("currentEMail");
+			List<TemporaryKey> tks = rm.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
+			if (tks != null) {
+				synchronized (tks) {
+					tks = rm.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
+					int countCurrentEMail = 0;
+					for (TemporaryKey temporaryKey : tks) {
+						@SuppressWarnings("unchecked")
+						Map<String, String> tkMails = (Map<String, String>) xml.fromXML(temporaryKey.getEmailAddress());
+						if (tkMails.get("currentEMail").equals(currentEMail)) {
+							if (countCurrentEMail > 0) {
+								// clean
+								rm.deleteTemporaryKeyWithId(temporaryKey.getRegistrationKey());
+							} else {
+								// load
+								tk = temporaryKey;
+							}
+							countCurrentEMail++;
+						}
+					}
+				}
+			}
+		}
+		return tk;
 	}
 
 	/**

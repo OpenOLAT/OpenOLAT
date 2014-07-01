@@ -1,0 +1,10 @@
+<fieldset>
+	<legend>$!off_title</legend>
+#foreach ($item in $formitemnames)
+	#if ($f.isVisible($item))
+		$r.render(${item})
+	#end
+#end
+</fieldset>
+
+
