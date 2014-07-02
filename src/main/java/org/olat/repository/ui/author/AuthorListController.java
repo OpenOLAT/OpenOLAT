@@ -55,6 +55,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
@@ -117,6 +118,8 @@ public class AuthorListController extends FormBasicController implements Activat
 	private Link importLink;
 	private Dropdown createDropdown;
 	private FormLink addOwnersButton;
+	//only used as marker for dirty, model cannot load specific rows
+	private final List<Integer> dirtyRows = new ArrayList<>();
 	
 	@Autowired
 	private MarkManager markManager;
@@ -283,6 +286,11 @@ public class AuthorListController extends FormBasicController implements Activat
 			if(handler != null) {
 				doCreate(ureq, handler);
 			}
+		} else if(event instanceof PopEvent) {
+			PopEvent pop = (PopEvent)event;
+			if(pop.getController() == detailsCtrl) {
+				reloadDirtyRows();
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -321,9 +329,6 @@ public class AuthorListController extends FormBasicController implements Activat
 				SearchEvent se = (SearchEvent)event;
 				doSearch(se);
 			} else if(event == Event.CANCELLED_EVENT) {
-				System.out.println();
-				//removeSearchParameters();
-				
 				searchParams.setResourceTypes(null);
 				searchParams.setIdAndRefs(null);
 				searchParams.setAuthor(null);
@@ -335,6 +340,11 @@ public class AuthorListController extends FormBasicController implements Activat
 				OpenEvent oe = (OpenEvent)event;
 				RepositoryEntryRef repoEntryKey = oe.getRepositoryEntry();
 				doOpenDetails(ureq, repoEntryKey);
+			} else if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				dirtyRows.add(new Integer(-1));
+				/*
+				System.out.println("Mark as dirty");
+				*/
 			}
 		} else if(userSearchCtr == source) {
 			@SuppressWarnings("unchecked")
@@ -417,6 +427,13 @@ public class AuthorListController extends FormBasicController implements Activat
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc) {
 		//do not update the 
+	}
+	
+	protected void reloadDirtyRows() {
+		if(dirtyRows.size() > 0) {
+			tableEl.reloadData();
+			dirtyRows.clear();
+		}
 	}
 	
 	private AuthoringEntryDetailsController doOpenDetails(UserRequest ureq, RepositoryEntryRef ref) {

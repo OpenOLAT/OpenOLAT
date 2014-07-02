@@ -159,6 +159,10 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 		}
 	}
 	
+	public RepositoryEntryRef getRef() {
+		return entry;
+	}
+	
 	
 	private void initToolbar(UserRequest ureq) {
 		// init handler details
@@ -462,7 +466,9 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 			if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				// RepositoryEntry changed
 				entry = repositoryService.loadByKey(entry.getKey());
+				flc.contextPut("v", entry);
 				updateView(ureq, flc);
+				fireEvent(ureq, event);
 			}
 		} else if (deleteDialogCtrl == source){
 			if (DialogBoxUIFactory.isYesEvent(event)){

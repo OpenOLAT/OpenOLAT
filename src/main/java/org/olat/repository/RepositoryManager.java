@@ -1684,7 +1684,7 @@ public class RepositoryManager extends BasicManager {
 	
 	public List<RepositoryEntryLight> getParticipantRepositoryEntry(IdentityRef identity, int maxResults, RepositoryEntryOrder... orderby) {
 		StringBuilder sb = new StringBuilder(200);
-		sb.append("select v from repoentrylight as v ")
+		sb.append("select distinct v from repoentrylight as v ")
 		  .append(" inner join fetch v.olatResource as res ")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
@@ -1699,8 +1699,7 @@ public class RepositoryManager extends BasicManager {
 			query.setMaxResults(maxResults);
 		}
 
-		List<RepositoryEntryLight> repoEntries = query.getResultList();
-		return repoEntries;
+		return query.getResultList();
 	}
 	
 	public List<RepositoryEntryLight> getTutorRepositoryEntry(IdentityRef identity, int maxResults, RepositoryEntryOrder... orderby) {

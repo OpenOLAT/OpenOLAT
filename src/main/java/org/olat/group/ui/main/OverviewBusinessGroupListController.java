@@ -120,6 +120,17 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 			}
 		}
 	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(favoritGroupsCtrl);
+		removeAsListenerAndDispose(myGroupsCtrl);
+		removeAsListenerAndDispose(openGroupsCtrl);
+		removeAsListenerAndDispose(searchGroupsCtrl);
+		favoritGroupsCtrl = null;
+		myGroupsCtrl = null;
+		openGroupsCtrl = null;
+		searchGroupsCtrl = null;
+	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
@@ -152,13 +163,14 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 	}
 
 	private FavoritBusinessGroupListController updateMarkedGroups(UserRequest ureq) {
-		if(favoritGroupsCtrl == null) {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Favorits", 0l);
-			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			favoritGroupsCtrl = new FavoritBusinessGroupListController(ureq, bwControl);
-			listenTo(favoritGroupsCtrl);
-		}
+		cleanUp();
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Favorits", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		favoritGroupsCtrl = new FavoritBusinessGroupListController(ureq, bwControl);
+		listenTo(favoritGroupsCtrl);
+		
 		favoritGroupsCtrl.doDefaultSearch();
 		mainVC.put("groupList", favoritGroupsCtrl.getInitialComponent());
 		addToHistory(ureq, favoritGroupsCtrl);
@@ -166,13 +178,14 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 	}
 	
 	private BusinessGroupListController updateMyGroups(UserRequest ureq) {
-		if(myGroupsCtrl == null) {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("AllGroups", 0l);
-			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			myGroupsCtrl = new BusinessGroupListController(ureq, bwControl);
-			listenTo(myGroupsCtrl);
-		}
+		cleanUp();
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("AllGroups", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		myGroupsCtrl = new BusinessGroupListController(ureq, bwControl);
+		listenTo(myGroupsCtrl);
+
 		myGroupsCtrl.doDefaultSearch();
 		mainVC.put("groupList", myGroupsCtrl.getInitialComponent());
 		addToHistory(ureq, myGroupsCtrl);
@@ -180,13 +193,14 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 	}
 	
 	private OpenBusinessGroupListController updateOpenGroups(UserRequest ureq) {
-		if(openGroupsCtrl == null) {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("OwnedGroups", 0l);
-			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			openGroupsCtrl = new OpenBusinessGroupListController(ureq, bwControl);
-			listenTo(openGroupsCtrl);
-		}
+		cleanUp();
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("OwnedGroups", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		openGroupsCtrl = new OpenBusinessGroupListController(ureq, bwControl);
+		listenTo(openGroupsCtrl);
+
 		openGroupsCtrl.doDefaultSearch();
 		mainVC.put("groupList", openGroupsCtrl.getInitialComponent());
 		addToHistory(ureq, openGroupsCtrl);
@@ -194,13 +208,14 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 	}
 	
 	private SearchBusinessGroupListController updateSearch(UserRequest ureq) {
-		if(searchGroupsCtrl == null) {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
-			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			searchGroupsCtrl = new SearchBusinessGroupListController(ureq, bwControl);
-			listenTo(searchGroupsCtrl);
-		}
+		cleanUp();
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		searchGroupsCtrl = new SearchBusinessGroupListController(ureq, bwControl);
+		listenTo(searchGroupsCtrl);
+
 		mainVC.put("groupList", searchGroupsCtrl.getInitialComponent());
 		addToHistory(ureq, searchGroupsCtrl);
 		return searchGroupsCtrl;

@@ -105,6 +105,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	
 	protected RepositoryEntry entry;
 	protected RepositoryEntryRow row;
+	private Integer index;
 
 	@Autowired
 	protected UserRatingsDAO userRatingsDao;
@@ -158,6 +159,14 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 		initForm(ureq);
 	}
 	
+	public Integer getIndex() {
+		return index;
+	}
+
+	public void setIndex(Integer index) {
+		this.index = index;
+	}
+
 	private void setText(String text, String key, FormLayoutContainer layoutCont) {
 		if(!StringHelper.containsNonWhitespace(text)) return;
 		text = StringHelper.xssScan(text);

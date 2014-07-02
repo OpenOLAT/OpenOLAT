@@ -90,6 +90,8 @@ public class ProfileAndHomePageEditController extends BasicController implements
 		segmentView.addSegment(homePageLink, false);
 
 		putInitialPanel(myContent);
+		
+		doOpenProfile(ureq);
 	}
 
 	@Override
@@ -150,7 +152,9 @@ public class ProfileAndHomePageEditController extends BasicController implements
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
-			doOpenProfile(ureq);
+			if(profileFormController == null) {
+				doOpenProfile(ureq);
+			}
 		}
 	}
 

@@ -179,19 +179,19 @@ public class OverviewRepositoryListController extends BasicController implements
 	}
 	
 	private RepositoryEntryListController doOpenMark(UserRequest ureq) {
-		if(markedCtrl == null) {
-			SearchMyRepositoryEntryViewParams searchParams
-				= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles(), "CourseModule");
-			searchParams.setMarked(Boolean.TRUE);
+		cleanUp();
+		
+		SearchMyRepositoryEntryViewParams searchParams
+			= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles(), "CourseModule");
+		searchParams.setMarked(Boolean.TRUE);
 
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Favorits", 0l);
-			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			markedStackPanel = new BreadcrumbedStackedPanel("mrkstack", getTranslator(), this);
-			markedCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, true, false, "marked", markedStackPanel);
-			markedStackPanel.pushController(translate("search.mark"), markedCtrl);
-			listenTo(markedCtrl);
-		}
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Favorits", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		markedStackPanel = new BreadcrumbedStackedPanel("mrkstack", getTranslator(), this);
+		markedCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, true, false, "marked", markedStackPanel);
+		markedStackPanel.pushController(translate("search.mark"), markedCtrl);
+		listenTo(markedCtrl);
 
 		addToHistory(ureq, markedCtrl);
 		mainVC.put("segmentCmp", markedStackPanel);
@@ -199,43 +199,44 @@ public class OverviewRepositoryListController extends BasicController implements
 	}
 	
 	private RepositoryEntryListController doOpenMyCourses(UserRequest ureq) {
-		if(myCoursesCtrl == null) {
-			SearchMyRepositoryEntryViewParams searchParams
-				= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles(), "CourseModule");
-			searchParams.setMembershipMandatory(true);
+		cleanUp();
+	
+		SearchMyRepositoryEntryViewParams searchParams
+			= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles(), "CourseModule");
+		searchParams.setMembershipMandatory(true);
 
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("My", 0l);
-			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			myCoursesStackPanel = new BreadcrumbedStackedPanel("mystack", getTranslator(), this);
-			myCoursesCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, true, false, "my", myCoursesStackPanel);
-			myCoursesStackPanel.pushController(translate("search.mycourses.student"), myCoursesCtrl);
-			listenTo(myCoursesCtrl);
-		}
-		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("My", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		myCoursesStackPanel = new BreadcrumbedStackedPanel("mystack", getTranslator(), this);
+		myCoursesCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, true, false, "my", myCoursesStackPanel);
+		myCoursesStackPanel.pushController(translate("search.mycourses.student"), myCoursesCtrl);
+		listenTo(myCoursesCtrl);
+
 		addToHistory(ureq, myCoursesCtrl);
 		mainVC.put("segmentCmp", myCoursesStackPanel);
 		return myCoursesCtrl;
 	}
 	
 	private CatalogNodeController doOpenCatalog(UserRequest ureq) {
-		if(!repositoryModule.isCatalogEnabled() || !repositoryModule.isCatalogBrowsingEnabled()) return null;
-		
-		if(catalogCtrl == null) {
-			List<CatalogEntry> entries = catalogManager.getRootCatalogEntries();
-			CatalogEntry rootEntry = null;
-			if(entries.size() > 0) {
-				rootEntry = entries.get(0);
-			}
-			
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Catalog", 0l);
-			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			catalogStackPanel = new BreadcrumbedStackedPanel("catstack", getTranslator(), this);
-			catalogCtrl = new CatalogNodeController(ureq, bwControl, rootEntry, catalogStackPanel, false);
-			catalogStackPanel.pushController(translate("search.catalog"), catalogCtrl);
-			listenTo(catalogCtrl);
+		if(!repositoryModule.isCatalogEnabled() || !repositoryModule.isCatalogBrowsingEnabled()) {
+			return null;
 		}
+		cleanUp();
+
+		List<CatalogEntry> entries = catalogManager.getRootCatalogEntries();
+		CatalogEntry rootEntry = null;
+		if(entries.size() > 0) {
+			rootEntry = entries.get(0);
+		}
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Catalog", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		catalogStackPanel = new BreadcrumbedStackedPanel("catstack", getTranslator(), this);
+		catalogCtrl = new CatalogNodeController(ureq, bwControl, rootEntry, catalogStackPanel, false);
+		catalogStackPanel.pushController(translate("search.catalog"), catalogCtrl);
+		listenTo(catalogCtrl);
 
 		addToHistory(ureq, catalogCtrl);
 		mainVC.put("segmentCmp", catalogStackPanel);
@@ -243,19 +244,19 @@ public class OverviewRepositoryListController extends BasicController implements
 	}
 	
 	private RepositoryEntryListController doOpenSearchCourses(UserRequest ureq) {
-		if(searchCoursesCtrl == null) {
-			SearchMyRepositoryEntryViewParams searchParams
-				= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles(), "CourseModule");
-			searchParams.setMembershipMandatory(false);
+		cleanUp();
 
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
-			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			searchCoursesStackPanel = new BreadcrumbedStackedPanel("search", getTranslator(), this);
-			searchCoursesCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, false, true, "my-search", searchCoursesStackPanel);
-			searchCoursesStackPanel.pushController(translate("search.mycourses.student"), searchCoursesCtrl);
-			listenTo(searchCoursesCtrl);
-		}
+		SearchMyRepositoryEntryViewParams searchParams
+			= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles(), "CourseModule");
+		searchParams.setMembershipMandatory(false);
+
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		searchCoursesStackPanel = new BreadcrumbedStackedPanel("search", getTranslator(), this);
+		searchCoursesCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, false, true, "my-search", searchCoursesStackPanel);
+		searchCoursesStackPanel.pushController(translate("search.mycourses.student"), searchCoursesCtrl);
+		listenTo(searchCoursesCtrl);
 		
 		addToHistory(ureq, searchCoursesCtrl);
 		mainVC.put("segmentCmp", searchCoursesStackPanel);
