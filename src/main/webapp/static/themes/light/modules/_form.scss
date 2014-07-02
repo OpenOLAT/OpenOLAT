@@ -32,6 +32,9 @@
 	.o_disabled {}
 	
 	hr.o_spacer {}
+	hr.o_spacer_noline {
+		border-top: 1px solid transparent;
+	}
 	
 	/* date chooser */
 	.o_date  {

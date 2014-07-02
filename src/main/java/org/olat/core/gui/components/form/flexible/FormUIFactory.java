@@ -468,7 +468,7 @@ public class FormUIFactory {
 	public SpacerElement addSpacerElement(String name, FormItemContainer formLayout, boolean onlySpaceAndNoLine) {
 		SpacerElement spacer = new SpacerElementImpl(name);
 		if (onlySpaceAndNoLine) {
-			spacer.setSpacerCssClass("b_form_spacer_noline");
+			spacer.setSpacerCssClass("o_spacer_noline");
 		}
 		formLayout.add(spacer);
 		return spacer;

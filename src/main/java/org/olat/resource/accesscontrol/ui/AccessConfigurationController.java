@@ -280,9 +280,9 @@ public class AccessConfigurationController extends FormBasicController {
 		confControllerContainer.add(dateTo.getName(), dateTo);
 		
 		if(editable) {
-			FormLink delLink = uifactory.addFormLink("del_" + link.getKey(), "delete", null, confControllerContainer, Link.LINK);
+			FormLink delLink = uifactory.addFormLink("del_" + link.getKey(), "delete", null, confControllerContainer, Link.BUTTON_SMALL);
 			delLink.setUserObject(infos);
-			delLink.setCustomEnabledLinkCSS("b_with_small_icon_left b_delete_icon");
+			delLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 			confControllerContainer.add(delLink.getName(), delLink);
 		}
 	}

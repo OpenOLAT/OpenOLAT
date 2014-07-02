@@ -522,13 +522,8 @@ public class RepositoryManager extends BasicManager {
 
 	public RepositoryEntry setAccess(final RepositoryEntry re, int access, boolean membersOnly ) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
-		if(membersOnly) {
-			reloadedRe.setAccess(RepositoryEntry.ACC_OWNERS);
-			reloadedRe.setMembersOnly(membersOnly);
-		} else {
-			reloadedRe.setAccess(access);
-			reloadedRe.setMembersOnly(membersOnly);
-		}
+		reloadedRe.setAccess(access);
+		reloadedRe.setMembersOnly(membersOnly);
 		reloadedRe.setLastModified(new Date());
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();

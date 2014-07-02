@@ -48,7 +48,7 @@ public class AuthoringEditAccessController extends BasicController {
 	
 	private VelocityContainer editproptabpubVC;
 	
-	private PropPupForm propPupForm;
+	private AuthoringEntryPublishController propPupForm;
 	private AccessConfigurationController acCtr;
 	
 	private RepositoryEntry entry;
@@ -60,7 +60,7 @@ public class AuthoringEditAccessController extends BasicController {
 		this.entry = entry;
 		
 		editproptabpubVC = createVelocityContainer("editproptabpub");
-		propPupForm = new PropPupForm(ureq, wControl, entry);
+		propPupForm = new AuthoringEntryPublishController(ureq, wControl, entry);
 		listenTo(propPupForm);
 		editproptabpubVC.put("proppupform", propPupForm.getInitialComponent());
 
