@@ -42,8 +42,10 @@ import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.portfolio.ArtefactWizardPage;
 import org.olat.selenium.page.portfolio.PortfolioPage;
+import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.user.UserToolsPage;
+import org.olat.selenium.page.wiki.WikiPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
@@ -80,7 +82,7 @@ public class PortfolioTest {
 	 */
 	@Test
 	@RunAsClient
-	public void collectForumArtfect(@InitialPage LoginPage loginPage)
+	public void collectForumArtefactInCourse(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		loginPage
@@ -156,6 +158,88 @@ public class PortfolioTest {
 			.selectStructureInTOC(structureElementTitle);
 		
 		portfolio.assertArtefact(threadTitle);
+	}
+	
+	/**
+	 * Create a wiki, create a new page.
+	 * Create a map.
+	 * Collect the artefact, bind it to the map.
+	 * Check the map and the artefact.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void collectWikiArtefactInWikiResource(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		//open the portfolio
+		PortfolioPage portfolio = userTools
+			.openUserToolsMenu()
+			.openPortfolio();
+				
+		//create a map
+		String mapTitle = "Map-Wiki-" + UUID.randomUUID();
+		String pageTitle = "Page-Wiki-" + UUID.randomUUID();
+		String structureElementTitle = "Struct-Wiki-" + UUID.randomUUID();
+		portfolio
+			.openMyMaps()
+			.createMap(mapTitle, "Hello wiki")
+			.openEditor()
+			.selectMapInEditor(mapTitle)
+			.selectFirstPageInEditor()
+			.setPage(pageTitle, "With a little description about wiki and such tools")
+			.createStructureElement(structureElementTitle, "Structure description");
+
+		//go to authoring
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+				
+		String title = "EP-Wiki-" + UUID.randomUUID();
+		//create a wiki and launch it
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.wiki)
+			.fillCreateForm(title).assertOnGeneralTab()
+			.clickToolbarBack()
+			.assertOnTitle(title)
+			.launch();
+		
+		//create a page in the wiki
+		String page = "LMS-" + UUID.randomUUID();
+		String content = "Learning Management System";
+		WikiPage wiki = WikiPage.getWiki(browser);
+
+		//create page and add it as artefact to portfolio
+		ArtefactWizardPage artefactWizard = wiki
+				.createPage(page, content)
+				.addAsArtfeact();
+			
+		artefactWizard
+			.next()
+			.tags("Wiki", "Thread", "Miscellanous")
+			.next()
+			.selectMap(mapTitle, pageTitle, structureElementTitle)
+			.finish();
+
+		OOGraphene.closeBlueMessageWindow(browser);
+		
+		//open the portfolio
+		portfolio = userTools
+			.openUserToolsMenu()
+			.openPortfolio()
+			.openMyMaps()
+			.openMap(mapTitle)
+			.selectStructureInTOC(structureElementTitle);
+		
+		portfolio.assertArtefact(page);
 	}
 
 }

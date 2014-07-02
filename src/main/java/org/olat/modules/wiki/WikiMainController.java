@@ -259,6 +259,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 		
 		createLink = LinkFactory.createLink("navigation.create.article", navigationContent, this);
 		createLink.setIconLeftCSS("o_icon o_icon_create");
+		createLink.setElementCssClass("o_sel_wiki_create_page");
 		createLink.setDomReplacementWrapperRequired(false);
 
 		content.put("navigation", navigationContent);

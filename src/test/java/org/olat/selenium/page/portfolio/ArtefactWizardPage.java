@@ -51,6 +51,10 @@ public class ArtefactWizardPage {
 		return Graphene.createPageFragment(ArtefactWizardPage.class, modal);
 	}
 	
+	/**
+	 * Next
+	 * @return this
+	 */
 	public ArtefactWizardPage next() {
 		WebElement next = browser.findElement(nextBy);
 		Assert.assertTrue(next.isDisplayed());
@@ -61,6 +65,10 @@ public class ArtefactWizardPage {
 		return this;
 	}
 	
+	/**
+	 * Finish the wizard
+	 * @return this
+	 */
 	public ArtefactWizardPage finish() {
 		WebElement finish = browser.findElement(finishBy);
 		Assert.assertTrue(finish.isDisplayed());
@@ -71,6 +79,11 @@ public class ArtefactWizardPage {
 		return this;
 	}
 	
+	/**
+	 * !! Doesn't work
+	 * @param tags
+	 * @return this
+	 */
 	public ArtefactWizardPage tags(String... tags) {
 		By tagBy = By.cssSelector("div.o_sel_artefact_add_wizard div.bootstrap-tagsinput>input");
 		WebElement tagEl = browser.findElement(tagBy);
@@ -82,6 +95,13 @@ public class ArtefactWizardPage {
 		return this;
 	}
 	
+	/**
+	 * Select the map > page > structure by their respective title
+	 * @param mapTitle
+	 * @param pageTitle
+	 * @param structureTitle
+	 * @return this
+	 */
 	public ArtefactWizardPage selectMap(String mapTitle, String pageTitle, String structureTitle) {
 		select(mapTitle, By.cssSelector("a.o_tree_l1"));
 		select(pageTitle, By.cssSelector("a.o_tree_l2"));
@@ -101,5 +121,4 @@ public class ArtefactWizardPage {
 		linkToClick.click();
 		OOGraphene.waitBusy();
 	}
-
 }

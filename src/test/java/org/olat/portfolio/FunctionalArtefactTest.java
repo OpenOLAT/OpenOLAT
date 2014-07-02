@@ -45,7 +45,6 @@ import org.olat.portfolio.FunctionalArtefactTest.Binder.Page.JournalArtefact;
 import org.olat.portfolio.FunctionalArtefactTest.Binder.Page.TextArtefact;
 import org.olat.portfolio.model.artefacts.FileArtefact;
 import org.olat.restapi.support.vo.CourseVO;
-import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.ArquillianDeployments;
 import org.olat.user.restapi.UserVO;
 import org.olat.util.FunctionalCourseUtil;
@@ -462,125 +461,6 @@ public class FunctionalArtefactTest {
 		}
 		
 		return(true);
-	}
-
-	@Test
-	@RunAsClient
-	public void checkCollectForumPost() throws IOException, URISyntaxException{
-		/*
-		 * Prepare for verification
-		 */		
-		Object[] retval = prepareVerification(FORUM_BINDER, null,
-				FORUM_PAGE, null,
-				FORUM_STRUCTURE, null,
-				ForumArtefact.class, FORUM_ARTEFACT_TITLE, FORUM_ARTEFACT_DESCRIPTION, FORUM_TAGS, null);
-		
-		Binder binder = (Binder) retval[0];
-		Binder.Page page = (Binder.Page) retval[1];
-		Binder.Page.Structure structure = (Binder.Page.Structure) retval[2];
-		Binder.Page.Artefact artefact = (Binder.Page.Artefact) retval[3];
-		((Binder.Page.ForumArtefact) artefact).postTitle = FORUM_POST_TITLE;
-		((Binder.Page.ForumArtefact) artefact).postContent = FORUM_POST_MESSAGE;
-		
-		/*
-		 * test case
-		 */
-		/* deploy course with REST */
-		CourseVO course = functionalVOUtil.importCourseIncludingForum(deploymentUrl);
-
-		/* login for test setup */
-		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
-
-		/* create binder, page or structure if necessary */
-		Assert.assertTrue(functionalEportfolioUtil.createElements(browser, FORUM_BINDER, FORUM_PAGE, FORUM_STRUCTURE));
-
-		/* post message to forum */
-		Assert.assertTrue(functionalCourseUtil.postForumMessage(browser, course.getRepoEntryKey(), 0, FORUM_POST_TITLE, FORUM_POST_MESSAGE));
-		artefact.businessPath = functionalUtil.currentBusinessPath(browser);
-		
-		/* add artefact */
-		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser, FORUM_BINDER, FORUM_PAGE, FORUM_STRUCTURE,
-				FORUM_ARTEFACT_TITLE, FORUM_ARTEFACT_DESCRIPTION, FORUM_TAGS,
-				functionalEportfolioUtil));
-		
-		functionalCourseUtil.closeActiveTab(browser);
-		
-		/*
-		 * Test for content and make assumptions if the changes were applied.
-		 * Keep it simple use quick access with business paths.
-		 */
-		binder.ignore = false;
-		
-		page.ignore = false;
-		
-		structure.ignore = false;
-
-		artefact.ignore = false;
-		
-		/* verify */
-		Assert.assertTrue(checkArtefact(artefact));
-		Assert.assertTrue(checkMap(binder));
-		
-		functionalUtil.logout(browser);
-	}
-
-	@Test
-	@RunAsClient
-	public void checkCollectWikiArticle() throws URISyntaxException, IOException{
-		/*
-		 * Prepare for verification
-		 */		
-		Object[] retval = prepareVerification(WIKI_BINDER, null,
-				WIKI_PAGE, null,
-				WIKI_STRUCTURE, null,
-				WikiArtefact.class, WIKI_ARTEFACT_TITLE, WIKI_ARTEFACT_DESCRIPTION, WIKI_TAGS, null);
-		
-		Binder binder = (Binder) retval[0];
-		Binder.Page page = (Binder.Page) retval[1];
-		Binder.Page.Structure structure = (Binder.Page.Structure) retval[2];
-		Binder.Page.Artefact artefact = (Binder.Page.Artefact) retval[3];
-		((Binder.Page.WikiArtefact) artefact).article = WIKI_ARTICLE_CONTENT;
-		
-		/*
-		 * Test case
-		 */
-		/* import wiki via rest */
-		RepositoryEntryVO vo = functionalVOUtil.importWiki(deploymentUrl);
-
-		/* login for test setup */
-		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
-
-		/* create binder, page or structure if necessary */
-		Assert.assertTrue(functionalEportfolioUtil.createElements(browser, WIKI_BINDER, WIKI_PAGE, WIKI_STRUCTURE));
-
-		/* create an article for the wiki */
-		Assert.assertTrue(functionalCourseUtil.createWikiArticle(browser, vo.getKey(), WIKI_ARTICLE_PAGENAME, WIKI_ARTICLE_CONTENT));
-		artefact.businessPath = functionalUtil.currentBusinessPath(browser);
-
-		/* add artefact */
-		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser, WIKI_BINDER, WIKI_PAGE, WIKI_STRUCTURE,
-				WIKI_ARTEFACT_TITLE, WIKI_ARTEFACT_DESCRIPTION, WIKI_TAGS,
-				functionalEportfolioUtil));
-		
-		functionalCourseUtil.closeActiveTab(browser);
-		
-		/*
-		 * Test for content and make assumptions if the changes were applied.
-		 * Keep it simple use quick access with business paths.
-		 */
-		binder.ignore = false;
-		
-		page.ignore = false;
-		
-		structure.ignore = false;
-
-		artefact.ignore = false;
-		
-		/* verify */
-		Assert.assertTrue(checkArtefact(artefact));
-		Assert.assertTrue(checkMap(binder));
-		
-		functionalUtil.logout(browser);
 	}
 
 	@Test
