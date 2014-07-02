@@ -459,11 +459,16 @@ public class RepositorySearchController extends BasicController implements Activ
 		displaySearchResults(ureq);
 	}
 
-	private void doSearchById(Long id) {
+	private void doSearchById(Long id, Set<String> restrictedTypes) {
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry entry = rm.lookupRepositoryEntry(id);
 		List<RepositoryEntry> entries = new ArrayList<RepositoryEntry>(1);
-		if (entry != null) entries.add(entry);
+		if (entry != null) {
+			if(restrictedTypes == null || restrictedTypes.isEmpty()
+				|| restrictedTypes.contains(entry.getOlatResource().getResourceableTypeName())) {
+				entries.add(entry);
+			}
+		}
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		tableCtr.modelChanged();
@@ -651,7 +656,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		}	else if (source == searchForm) { // process search form events
 			if (event == Event.DONE_EVENT) {
 				if (searchForm.hasId())	{
-					doSearchById(searchForm.getId());
+					doSearchById(searchForm.getId(), searchForm.getRestrictedTypes());
 				} else if (enableSearchforAllInSearchForm != null) {
 					doSearchAllReferencables(urequest, null, true);
 				} else {

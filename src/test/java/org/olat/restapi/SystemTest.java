@@ -157,6 +157,7 @@ public class SystemTest extends OlatJerseyTestCase {
 		assertNotNull(userStats);
 		assertTrue(userStats.getTotalUserCount() > 0);
 		assertTrue(userStats.getTotalGroupCount() >= 0);
+		assertTrue(userStats.getActiveUserCount() >= 0);
 		
 		conn.shutdown();	
 	}

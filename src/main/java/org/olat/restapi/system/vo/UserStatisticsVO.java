@@ -34,6 +34,8 @@ public class UserStatisticsVO {
 
 	@XmlAttribute(name="totalUserCount", required=true)
 	private long totalUserCount;
+	@XmlAttribute(name="activeUserCount", required=true)
+	private long activeUserCount;
 	@XmlAttribute(name="totalGroupCount", required=true)
 	private long totalGroupCount;
 	
@@ -44,6 +46,14 @@ public class UserStatisticsVO {
 	
 	public void setTotalUserCount(long totalUserCount) {
 		this.totalUserCount = totalUserCount;
+	}
+	
+	public long getActiveUserCount() {
+		return activeUserCount;
+	}
+	
+	public void setActiveUserCount(long activeUserCount) {
+		this.activeUserCount = activeUserCount;
 	}
 	
 	public long getTotalGroupCount() {

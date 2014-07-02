@@ -31,6 +31,7 @@ import javax.ws.rs.core.Response;
 import org.olat.admin.sysinfo.manager.SessionStatsManager;
 import org.olat.admin.sysinfo.model.SessionsStats;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.Constants;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
@@ -168,6 +169,8 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		long countUsers = securityManager.countIdentitiesByPowerSearch(null, null, false, null, null, null, null, null, null, null, null);
 		stats.setTotalUserCount(countUsers);
+		long countActiveUsers = securityManager.countIdentitiesByPowerSearch(null, null, false, null, null, null, null, null, null, null, Constants.USERSTATUS_ACTIVE);
+		stats.setActiveUserCount(countActiveUsers);
 		
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		long countGroups = bgs.countBusinessGroups(null, null);

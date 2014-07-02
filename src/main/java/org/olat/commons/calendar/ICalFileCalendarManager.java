@@ -484,7 +484,7 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 		Date end = null;
 		if (dur != null) {
 			end = dur.getDuration().getTime(event.getStartDate().getDate());
-		} else { 
+		} else if(event.getEndDate() != null) { 
 			end = event.getEndDate().getDate();
 		}
 
