@@ -43,6 +43,7 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.portfolio.ArtefactWizardPage;
 import org.olat.selenium.page.portfolio.PortfolioPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
+import org.olat.selenium.page.repository.FeedPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.selenium.page.wiki.WikiPage;
@@ -241,5 +242,170 @@ public class PortfolioTest {
 		
 		portfolio.assertArtefact(page);
 	}
+	
+	/**
+	 * Create a map.
+	 * Create a course with a blog course element.
+	 * Post a new entry in the blog.
+	 * Collect the artefact, bind it to the map.
+	 * Check the map and the artefact.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void collectBlogPostInCourse(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		//open the portfolio
+		PortfolioPage portfolio = userTools
+				.openUserToolsMenu()
+				.openPortfolio();
+		
+		//create a map
+		String mapTitle = "Map-Blog-" + UUID.randomUUID();
+		String pageTitle = "Page-Blog-" + UUID.randomUUID();
+		String structureElementTitle = "Struct-Blog-" + UUID.randomUUID();
+		portfolio
+			.openMyMaps()
+			.createMap(mapTitle, "Hello blog post")
+			.openEditor()
+			.selectMapInEditor(mapTitle)
+			.selectFirstPageInEditor()
+			.setPage(pageTitle, "With a little description")
+			.createStructureElement(structureElementTitle, "Structure description");
+		
+		
+		//create a course
+		String courseTitle = "Course-With-Blog-" + UUID.randomUUID().toString();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack()
+			.edit();
+		
+		String blogNodeTitle = "Blog-EP-1";
+		String blogTitle = "Blog - EP - " + UUID.randomUUID().toString();
+		
+		//create a course element of type CP with the CP that we create above
+		CourseEditorPageFragment courseEditor = CourseEditorPageFragment.getEditor(browser);
+		courseEditor
+			.createNode("blog")
+			.nodeTitle(blogNodeTitle)
+			.selectTabLearnContent()
+			.createFeed(blogTitle);
 
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish();
+		
+		//open the course and see the CP
+		CoursePageFragment course = courseEditor
+			.clickToolbarBack();
+		course
+			.clickTree()
+			.selectWithTitle(blogNodeTitle);
+		
+		String postTitle = "Post-EP-" + UUID.randomUUID();
+		String postSummary = "Some explantations as teaser";
+		String postContent = "Content of the post";
+		FeedPage feed = FeedPage.getFeedPage(browser);
+		ArtefactWizardPage artefactWizard = feed
+			.newBlog()
+			.newBlogPost(postTitle, postSummary, postContent)
+			.publishPost()
+			.addAsArtfeact();
+
+		artefactWizard
+			.next()
+			.tags("Forum", "Thread", "Miscellanous")
+			.next()
+			.selectMap(mapTitle, pageTitle, structureElementTitle)
+			.finish();
+
+		OOGraphene.closeBlueMessageWindow(browser);	
+		
+		//open the portfolio
+		portfolio = userTools
+			.openUserToolsMenu()
+			.openPortfolio()
+			.openMyMaps()
+			.openMap(mapTitle)
+			.selectStructureInTOC(structureElementTitle);
+		
+		portfolio.assertArtefact(postTitle);	
+	}
+
+	/**
+	 * Create a map.
+	 * In the artefacts view, create a new text artefact and
+	 * bind it to the map.
+	 * Check the map and the artefact.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void addTextArtefact(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		//open the portfolio
+		PortfolioPage portfolio = userTools
+				.openUserToolsMenu()
+				.openPortfolio();
+		
+		//create a map
+		String mapTitle = "Map-Text-1-" + UUID.randomUUID();
+		String pageTitle = "Page-Text-1-" + UUID.randomUUID();
+		String structureElementTitle = "Struct-Text-1-" + UUID.randomUUID();
+		portfolio
+			.openMyMaps()
+			.createMap(mapTitle, "Need to place a text artefact")
+			.openEditor()
+			.selectMapInEditor(mapTitle)
+			.selectFirstPageInEditor()
+			.setPage(pageTitle, "With a little description")
+			.createStructureElement(structureElementTitle, "Structure description");
+		
+		//go to my artefacts
+		portfolio = userTools
+				.openUserToolsMenu()
+				.openPortfolio()
+				.openMyArtefacts();
+		
+		String textTitle = "Text-1-" + UUID.randomUUID();
+		//create a text artefact
+		portfolio
+			.createTextArtefact()
+			.fillTextArtefactContent("Content of the text artefact")
+			.next()
+			.fillArtefactMetadatas(textTitle, "Description")
+			.next()
+			.tags("Forum", "Thread", "Miscellanous")
+			.next()
+			.selectMap(mapTitle, pageTitle, structureElementTitle)
+			.finish();
+
+		OOGraphene.closeBlueMessageWindow(browser);
+		
+		//open the portfolio
+		portfolio = userTools
+			.openUserToolsMenu()
+			.openPortfolio()
+			.openMyMaps()
+			.openMap(mapTitle)
+			.selectStructureInTOC(structureElementTitle);
+	}
 }

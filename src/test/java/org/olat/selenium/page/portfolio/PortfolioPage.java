@@ -56,6 +56,55 @@ public class PortfolioPage {
 	}
 	
 	/**
+	 * Open the "My artefacts" segment
+	 * @return
+	 */
+	public PortfolioPage openMyArtefacts() {
+		By myMapsBy = By.className("o_sel_ep_my_artfeacts");
+		WebElement myMapsLink = browser.findElement(myMapsBy);
+		Assert.assertTrue(myMapsLink.isDisplayed());
+		myMapsLink.click();
+		OOGraphene.waitBusy();
+		return this;
+	}
+	
+	/**
+	 * Start the wizard to create a text artefact.
+	 * 
+	 * @return
+	 */
+	public ArtefactWizardPage createTextArtefact() {
+		By createButtonBy = By.className("o_sel_add_artfeact");
+		WebElement createButton = browser.findElement(createButtonBy);
+		createButton.click();
+		OOGraphene.waitBusy();
+		
+		By addTextArtefactBy = By.className("o_sel_add_text_artfeact");
+		OOGraphene.waitElement(addTextArtefactBy);
+		WebElement addTextArtefactLink = browser.findElement(addTextArtefactBy);
+		addTextArtefactLink.click();
+		OOGraphene.waitBusy();
+		
+		return ArtefactWizardPage.getWizard(browser);
+	}
+	
+	public PortfolioPage linkArtefact() {
+		By linkArtefactBy = By.cssSelector("a.o_eportfolio_add_link.o_eportfolio_link");
+		WebElement linkArtefactLink = browser.findElement(linkArtefactBy);
+		linkArtefactLink.click();
+		OOGraphene.waitBusy();
+		return this;
+	}
+	
+	public PortfolioPage addArtefact() {
+		By addAsArtefactBy = By.className("o_sel_add_artfeact");
+		WebElement addAsArtefactButton = browser.findElement(addAsArtefactBy);
+		addAsArtefactButton.click();
+		OOGraphene.waitBusy();
+		return this;
+	}
+	
+	/**
 	 * Create a map (type default) with the specified title.
 	 * @param title
 	 * @param description

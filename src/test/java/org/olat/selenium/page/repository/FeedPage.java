@@ -22,6 +22,7 @@ package org.olat.selenium.page.repository;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.portfolio.ArtefactWizardPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -79,5 +80,43 @@ public class FeedPage {
 		browser.findElement(saveButton).click();
 		OOGraphene.waitBusy();
 		return this;
+	}
+	
+	public FeedPage newBlog() {
+		//click the button to create a feed
+		By feedButton = By.xpath("//div[contains(@class,'o_blog_no_posts')]//a[contains(@href,'feed.make.internal')]");
+		browser.findElement(feedButton).click();
+		OOGraphene.waitBusy();
+		return this;
+	}
+	
+	public FeedPage newBlogPost(String title, String summary, String content) {
+		By titleBy = By.cssSelector("div.o_sel_blog_title input[type='text']");
+		browser.findElement(titleBy).sendKeys(title);
+		
+		OOGraphene.tinymce(summary, browser);
+		
+		OOGraphene.tinymce(content, browser);
+		
+		return this;
+	}
+	
+	public FeedPage publishPost() {
+		By publishButton = By.cssSelector(".o_sel_blog_form button.btn-primary");
+		browser.findElement(publishButton).click();
+		OOGraphene.waitBusy();
+		return this;
+	}
+	
+	/**
+	 * Add the thread to my artefacts
+	 * 
+	 */
+	public ArtefactWizardPage addAsArtfeact() {
+		By addAsArtefactBy = By.className("o_eportfolio_add");
+		WebElement addAsArtefactButton = browser.findElement(addAsArtefactBy);
+		addAsArtefactButton.click();
+		OOGraphene.waitBusy();
+		return ArtefactWizardPage.getWizard(browser);
 	}
 }

@@ -79,6 +79,20 @@ public class ArtefactWizardPage {
 		return this;
 	}
 	
+	public ArtefactWizardPage fillTextArtefactContent(String content) {
+		OOGraphene.tinymce(content, browser);
+		return this;
+	}
+	
+	public ArtefactWizardPage fillArtefactMetadatas(String title, String description) {
+		By titleBy = By.cssSelector(".o_sel_ep_artefact_metadata_title input");
+		WebElement titleEl = browser.findElement(titleBy);
+		titleEl.sendKeys(title);
+		
+		OOGraphene.tinymce(description, browser);		
+		return this;
+	}
+	
 	/**
 	 * !! Doesn't work
 	 * @param tags

@@ -44,7 +44,6 @@ import org.olat.portfolio.FunctionalArtefactTest.Binder.Page.BlogArtefact;
 import org.olat.portfolio.FunctionalArtefactTest.Binder.Page.JournalArtefact;
 import org.olat.portfolio.FunctionalArtefactTest.Binder.Page.TextArtefact;
 import org.olat.portfolio.model.artefacts.FileArtefact;
-import org.olat.restapi.support.vo.CourseVO;
 import org.olat.test.ArquillianDeployments;
 import org.olat.user.restapi.UserVO;
 import org.olat.util.FunctionalCourseUtil;
@@ -461,67 +460,6 @@ public class FunctionalArtefactTest {
 		}
 		
 		return(true);
-	}
-
-	@Test
-	@RunAsClient
-	public void checkCollectBlogPost() throws URISyntaxException, IOException{
-		/*
-		 * Prepare for verification
-		 */		
-		Object[] retval = prepareVerification(BLOG_BINDER, null,
-				BLOG_PAGE, null,
-				BLOG_STRUCTURE, null,
-				BlogArtefact.class, BLOG_ARTEFACT_TITLE, BLOG_ARTEFACT_DESCRIPTION, BLOG_TAGS, null);
-		
-		Binder binder = (Binder) retval[0];
-		Binder.Page page = (Binder.Page) retval[1];
-		Binder.Page.Structure structure = (Binder.Page.Structure) retval[2];
-		Binder.Page.Artefact artefact = (Binder.Page.Artefact) retval[3];
-		((Binder.Page.BlogArtefact) artefact).postTitle = BLOG_POST_TITLE;
-		((Binder.Page.BlogArtefact) artefact).postContent = BLOG_POST_CONTENT;
-		
-		/*
-		 * Test case
-		 */
-		/* deploy course with REST */
-		CourseVO course = functionalVOUtil.importCourseIncludingBlog(deploymentUrl);	
-
-		/* login for test setup */
-		Assert.assertTrue(functionalUtil.login(browser, user.getLogin(), user.getPassword(), true));
-
-		/* create binder, page or structure if necessary */
-		Assert.assertTrue(functionalEportfolioUtil.createElements(browser, BLOG_BINDER, BLOG_PAGE, BLOG_STRUCTURE));
-
-		/* blog */
-		Assert.assertTrue(functionalCourseUtil.createBlogEntry(browser, course.getRepoEntryKey(), 0,
-				BLOG_POST_TITLE, BLOG_POST_DESCRIPTION, BLOG_POST_CONTENT));
-		artefact.businessPath = functionalUtil.currentBusinessPath(browser);
-
-		/* add artefact */
-		Assert.assertTrue(functionalCourseUtil.addToEportfolio(browser, BLOG_BINDER, BLOG_PAGE, BLOG_STRUCTURE,
-				BLOG_ARTEFACT_TITLE, BLOG_ARTEFACT_DESCRIPTION, BLOG_TAGS,
-				functionalEportfolioUtil));
-		
-		functionalCourseUtil.closeActiveTab(browser);
-		
-		/*
-		 * Test for content and make assumptions if the changes were applied.
-		 * Keep it simple use quick access with business paths.
-		 */
-		binder.ignore = false;
-		
-		page.ignore = false;
-		
-		structure.ignore = false;
-
-		artefact.ignore = false;
-		
-		/* verify */
-		Assert.assertTrue(checkArtefact(artefact));
-		Assert.assertTrue(checkMap(binder));
-		
-		functionalUtil.logout(browser);
 	}
 
 	@Test

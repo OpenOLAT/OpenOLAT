@@ -154,7 +154,8 @@ public class BlogPostFormController extends FormBasicController {
 		setFormContextHelp(this.getClass().getPackage().getName(), "post_form_help.html", "chelp.hover.form");
 		formLayout.setElementCssClass("o_sel_blog_form");
 
-		title = uifactory.addTextElement("title", "feed.title.label", 256, post.getTitle(), this.flc);
+		title = uifactory.addTextElement("title", "feed.title.label", 256, post.getTitle(), flc);
+		title.setElementCssClass("o_sel_blog_title");
 		title.setMandatory(true);
 		title.setNotEmptyCheck("feed.form.field.is_mandatory");
 

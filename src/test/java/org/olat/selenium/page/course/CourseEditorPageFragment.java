@@ -53,7 +53,7 @@ public class CourseEditorPageFragment {
 	public static final By chooseCpButton = By.className("o_sel_cp_choose_repofile");
 	public static final By chooseWikiButton = By.className("o_sel_wiki_choose_repofile");
 	public static final By chooseTestButton = By.className("o_sel_test_choose_repofile");
-	public static final By choosePodcastButton = By.className("o_sel_feed_choose_repofile");
+	public static final By chooseFeedButton = By.className("o_sel_feed_choose_repofile");
 	
 	
 	public static final List<By> chooseRepoEntriesButtonList = new ArrayList<>();
@@ -61,7 +61,7 @@ public class CourseEditorPageFragment {
 		chooseRepoEntriesButtonList.add(chooseCpButton);
 		chooseRepoEntriesButtonList.add(chooseWikiButton);
 		chooseRepoEntriesButtonList.add(chooseTestButton);
-		chooseRepoEntriesButtonList.add(choosePodcastButton);
+		chooseRepoEntriesButtonList.add(chooseFeedButton);
 	}
 	
 	@Drone
@@ -237,12 +237,12 @@ public class CourseEditorPageFragment {
 	}
 	
 	/**
-	 * Create a podcast
+	 * Create a podcast or a blog
 	 * @param resourceTitle
 	 * @return
 	 */
-	public  CourseEditorPageFragment createPodcast(String  resourceTitle) {
-		return createResource(choosePodcastButton, resourceTitle);
+	public  CourseEditorPageFragment createFeed(String  resourceTitle) {
+		return createResource(chooseFeedButton, resourceTitle);
 	}
 	
 	public CourseEditorPageFragment createResource(By chooseButton, String resourceTitle) {

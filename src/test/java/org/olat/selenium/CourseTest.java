@@ -398,7 +398,7 @@ public class CourseTest {
 			.createNode("podcast")
 			.nodeTitle(podcastNodeTitle)
 			.selectTabLearnContent()
-			.createPodcast(podcastTitle);
+			.createFeed(podcastTitle);
 
 		//publish the course
 		courseEditor
@@ -448,7 +448,7 @@ public class CourseTest {
 			.createNode("blog")
 			.nodeTitle(blogNodeTitle)
 			.selectTabLearnContent()
-			.createPodcast(blogTitle);
+			.createFeed(blogTitle);
 
 		//publish the course
 		courseEditor

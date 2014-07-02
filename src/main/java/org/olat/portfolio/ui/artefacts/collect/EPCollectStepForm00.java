@@ -83,6 +83,7 @@ public class EPCollectStepForm00 extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		title = uifactory.addTextElement("title", "artefact.title", 500, artefact.getTitle(), formLayout);
+		title.setElementCssClass("o_sel_ep_artefact_metadata_title");
 		title.setMandatory(true);
 		title.setNotEmptyCheck("artefact.title.not.empty");
 		title.setNotLongerThanCheck(512, "artefact.title.too.long");
