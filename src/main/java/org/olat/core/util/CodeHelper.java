@@ -103,5 +103,10 @@ public class CodeHelper {
 	public static String getUniqueID() {
 		return UUID.randomUUID().toString();
 	}
-
+	
+	public static void printNanoTime(long start, String action) {
+		long end = System.nanoTime();
+		long takes = (end - start) / 1000000;
+		System.out.println(action + " takes (ms): " + takes);
+	}
 }

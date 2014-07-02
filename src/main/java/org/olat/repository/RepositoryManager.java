@@ -1684,12 +1684,35 @@ public class RepositoryManager extends BasicManager {
 	
 	public List<RepositoryEntryLight> getParticipantRepositoryEntry(IdentityRef identity, int maxResults, RepositoryEntryOrder... orderby) {
 		StringBuilder sb = new StringBuilder(200);
-		sb.append("select distinct v from repoentrylight as v ")
+		sb.append("select v from repoentrylight as v ")
 		  .append(" inner join fetch v.olatResource as res ")
-		  .append(" inner join v.groups as relGroup")
-		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as membership on membership.role='").append(GroupRoles.participant.name()).append("'")
-		  .append(" where membership.identity.key=:identityKey and (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))");
+		  .append(" where exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership  ")
+			     .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey ")
+			     .append("      and membership.role='").append(GroupRoles.participant.name()).append("')")
+			     .append("  )")
+			     .append(" )")
+		  .append(" and (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))");
+		appendOrderBy(sb, "v", orderby);
+		
+		TypedQuery<RepositoryEntryLight> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntryLight.class)
+				.setParameter("identityKey", identity.getKey());
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		return query.getResultList();
+	}
+	
+	public List<RepositoryEntryLight> getTutorRepositoryEntry(IdentityRef identity, int maxResults, RepositoryEntryOrder... orderby) {
+		StringBuilder sb = new StringBuilder(200);
+		sb.append("select v from repoentrylight as v ")
+		  .append(" inner join fetch v.olatResource as res ")
+		  .append(" where exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership  ")
+		  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey ")
+		  .append("      and membership.role='").append(GroupRoles.coach.name()).append("')")
+		  .append("  )")
+		  .append(" )")
+		  .append("  and (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))");
 		appendOrderBy(sb, "v", orderby);
 		
 		TypedQuery<RepositoryEntryLight> query = dbInstance.getCurrentEntityManager()
@@ -1700,27 +1723,6 @@ public class RepositoryManager extends BasicManager {
 		}
 
 		return query.getResultList();
-	}
-	
-	public List<RepositoryEntryLight> getTutorRepositoryEntry(IdentityRef identity, int maxResults, RepositoryEntryOrder... orderby) {
-		StringBuilder sb = new StringBuilder(200);
-		sb.append("select v from repoentrylight as v ")
-		  .append(" inner join fetch v.olatResource as res ")
-		  .append(" inner join v.groups as relGroup")
-		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as membership on membership.role='").append(GroupRoles.coach.name()).append("'")
-		  .append(" where membership.identity.key=:identityKey and (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))");
-		appendOrderBy(sb, "v", orderby);
-		
-		TypedQuery<RepositoryEntryLight> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), RepositoryEntryLight.class)
-				.setParameter("identityKey", identity.getKey());
-		if(maxResults > 0) {
-			query.setMaxResults(maxResults);
-		}
-
-		List<RepositoryEntryLight> repoEntries = query.getResultList();
-		return repoEntries;
 	}
 	
 	public int countLearningResourcesAsOwner(IdentityRef identity) {
@@ -1791,13 +1793,6 @@ public class RepositoryManager extends BasicManager {
 		  .append(" inner join baseGroup.members as membership on membership.role ='").append(GroupRoles.coach.name()).append("'")
 		  .append(" where (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
 		  .append(" and membership.identity.key=:identityKey");
-		  
-		  /*
-	  	  .append(" and (exists (from ").append(PolicyImpl.class.getName()).append(" as poi,")
-	  	  .append("   ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi")
-	  	  .append("   where sgmsi.identity.key=:identityKey and sgmsi.securityGroup=poi.securityGroup")
-	  	  .append("   and poi.permission='bgr.editor' and poi.olatResource=res");
-	  	  */
 	}
 	
 	public int countFavoritLearningResourcesAsTeacher(Identity identity, List<String> types) {
