@@ -434,6 +434,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 				String businessPath = "[BusinessGroup:" + group.getKey() + "]";
 				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 			}
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if (source == businessGroupWizard) { 
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				getWindowControl().pop();

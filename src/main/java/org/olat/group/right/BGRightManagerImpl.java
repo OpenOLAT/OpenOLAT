@@ -122,6 +122,11 @@ public class BGRightManagerImpl extends BasicManager implements BGRightManager {
 	public boolean hasBGRight(String bgRight, IdentityRef identity, OLATResource resource) {
 		return groupDao.hasGrant(identity, bgRight, resource);
 	}
+	
+	@Override
+	public List<String> getBGRights(IdentityRef identity, OLATResource resource) {
+		return groupDao.getPermissions(identity, resource);
+	}
 
 	/**
 	 * @see org.olat.group.right.BGRightManager#findBGRights(org.olat.group.BusinessGroup)

@@ -194,6 +194,20 @@ public class GroupDAO {
 		return count == null ? false: count.intValue() > 0;
 	}
 	
+	public List<String> getPermissions(IdentityRef identity, OLATResource resource) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select grant.permission from bgrant as grant")
+		  .append(" inner join grant.group as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where membership.identity.key=:identityKey and grant.resource.key=:resourceKey")
+		  .append("   and membership.role=grant.role");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("resourceKey", resource.getKey())
+				.getResultList();
+	}
+	
 	public List<Grant> getGrants(Group group, String role) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select grant from bgrant as grant")

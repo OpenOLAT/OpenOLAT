@@ -21,7 +21,6 @@ package org.olat.course.member;
 
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -52,6 +51,7 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.ui.OrdersAdminController;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -73,16 +73,18 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 	private MembersOverviewController membersOverviewCtrl;
 	private GroupsAndRightsController rightsController;
 	
-	private final ACService acService;
-	private final RepositoryEntry repoEntry;
-	private final AccessControlModule acModule;
+	private boolean membersDirty;
+	private RepositoryEntry repoEntry;
+	
+	@Autowired
+	private ACService acService;
+	@Autowired
+	private AccessControlModule acModule;
 
 	public MembersManagementMainController(UserRequest ureq, WindowControl wControl, RepositoryEntry re) {
 		super(ureq, wControl);
 		this.repoEntry = re;
-		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
-		acService = CoreSpringFactory.getImpl(ACService.class);
-		
+
 		//logging
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
 		ICourse course = CourseFactory.loadCourse(re.getOlatResource());
@@ -151,6 +153,16 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 	}
 	
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(groupsCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				membersDirty = true;
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
@@ -174,6 +186,8 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 			if(membersOverviewCtrl == null) {
 				membersOverviewCtrl = new MembersOverviewController(ureq, bwControl, repoEntry);
 				listenTo(membersOverviewCtrl);
+			} else if(membersDirty) {
+				membersOverviewCtrl.reloadMembers();
 			}
 			mainVC.put("content", membersOverviewCtrl.getInitialComponent());
 			selectedCtrl = membersOverviewCtrl;

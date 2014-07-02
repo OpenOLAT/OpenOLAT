@@ -123,15 +123,14 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#hasRight(org.olat.core.id.Identity,
 	 *      java.lang.String)
 	 */
+	@Override
 	public boolean hasRight(Identity identity, String courseRight) {
-		boolean hasRight = rightManager.hasBGRight(courseRight, identity, getCourseResource());
-		return hasRight;
+		return rightManager.hasBGRight(courseRight, identity, getCourseResource());
 	}
-	
+
+	@Override
 	public List<String> getRights(Identity identity) {
-		return Collections.emptyList();
-				
-				//TODO groups securityManager.getIdentityPermissionOnresourceable(identity, getCourseResource());
+		return rightManager.getBGRights(identity, getCourseResource());
 	}
 
 	@Override

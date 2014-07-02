@@ -196,10 +196,12 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 			cmc.deactivate();
 			cleanUpPopups();
 			addGroupsToCourse(selectedGroups);
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if (source == confirmRemoveResource) {
 			if (DialogBoxUIFactory.isYesEvent(event)) { // yes case
 				BusinessGroup group = (BusinessGroup)confirmRemoveResource.getUserObject();
 				doRemoveBusinessGroups(Collections.singletonList(group));
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if (source == confirmRemoveMultiResource) {
 			if (DialogBoxUIFactory.isYesEvent(event)) { // yes case

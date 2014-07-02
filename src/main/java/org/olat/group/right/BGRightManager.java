@@ -97,6 +97,14 @@ public interface BGRightManager {
 	 *         right in the given resource
 	 */
 	public boolean hasBGRight(String bgRight, IdentityRef identity, OLATResource resource);
+	
+	/**
+	 * 
+	 * @param identity
+	 * @param resource
+	 * @return
+	 */
+	public List<String> getBGRights(IdentityRef identity, OLATResource resource);
 
 	/**
 	 * @param rightGroup

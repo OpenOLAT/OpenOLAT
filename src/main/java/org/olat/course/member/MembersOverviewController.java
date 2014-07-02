@@ -236,6 +236,30 @@ public class MembersOverviewController extends BasicController implements Activa
 		dedupCtrl = null;
 		cmc = null;
 	}
+	
+	protected void reloadMembers() {
+		if(allMemberListCtrl != null) {
+			allMemberListCtrl.reloadModel();
+		}
+		if(ownersCtrl != null) {
+			ownersCtrl.reloadModel();
+		}
+		if(tutorsCtrl != null) {
+			tutorsCtrl.reloadModel();
+		}
+		if(participantsCtrl != null) {
+			participantsCtrl.reloadModel();
+		}
+		if(waitingCtrl != null) {
+			waitingCtrl.reloadModel();
+		}
+		if(selectedCtrl != null) {
+			selectedCtrl.reloadModel();
+		}
+		if(searchCtrl != null) {
+			searchCtrl.reloadModel();
+		}
+	}
 
 	private void doChooseMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
