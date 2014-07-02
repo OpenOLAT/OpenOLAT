@@ -73,6 +73,8 @@ import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.QuotaManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupMembership;
@@ -599,6 +601,16 @@ public abstract class AbstractBusinessGroupListController extends BasicControlle
 							tools.setToolEnabled(enabledTool, true);
 							if(CollaborationTools.TOOL_FOLDER.equals(enabledTool)) {
 								tools.saveFolderAccess(new Long(configuration.getFolderAccess()));
+								
+								Quota quota = configuration.getQuota();
+								if(quota != null) {
+									String path = tools.getFolderRelPath();
+									Quota fQuota = QuotaManager.getInstance()
+										.createQuota(path, quota.getQuotaKB(), quota.getUlLimitKB());
+									QuotaManager.getInstance()
+										.setCustomQuotaKB(fQuota);
+								}
+								
 							} else if (CollaborationTools.TOOL_CALENDAR.equals(enabledTool)) {
 								tools.saveCalendarAccess(new Long(configuration.getCalendarAccess()));
 							}

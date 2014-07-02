@@ -30,6 +30,7 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -55,6 +56,13 @@ public class BGConfigQuotaController extends FormBasicController {
 	 */
 	public BGConfigQuotaController(UserRequest ureq, WindowControl wControl, Quota quota) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(QuotaForm.class, getLocale(), getTranslator()));
+		this.quota = quota;
+		initForm(ureq);
+	}
+	
+	public BGConfigQuotaController(UserRequest ureq, WindowControl wControl, Quota quota, Form rootForm) {
+		super(ureq, wControl, -1, null, rootForm);
 		setTranslator(Util.createPackageTranslator(QuotaForm.class, getLocale(), getTranslator()));
 		this.quota = quota;
 		initForm(ureq);
