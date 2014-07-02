@@ -1,21 +1,19 @@
 $bg_gradient1 : #D7DBB5;
-$bg_gradient2 : #D7DBB5;
-
 $infotextcolor : #000;
 $bordercolor : #bbb;
 $titlecolor : #555;
 
-.o_eportfolio_maps .o_map-epmst-green4 {
-	@include epmst-mapclosed($bg_gradient1, $bg_gradient2, $bordercolor);
+.o_map-epmst-green4 {
+	background-color: $bg_gradient1;
+	border: 1px solid $bordercolor; 
+	border-left: 3px solid transparentize(darken($bordercolor, 20%),0.2);
+}
 
+.o_eportfolio_maps .o_map-epmst-green4 {
 	h4 {
 		color: $titlecolor;
 	}
 	.panel-body, td, a {
 		color: $infotextcolor;
 	}
-}
-
-.o_eportfolio_map.o_map-epmst-green4 {
-	@include epmst-actualpage($bg_gradient1, $bg_gradient2, $bordercolor);
 }

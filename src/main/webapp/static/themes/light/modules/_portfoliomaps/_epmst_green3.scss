@@ -5,17 +5,15 @@ $infotextcolor : #000;
 $bordercolor : #bbb;
 $titlecolor : #555;
 
-.o_eportfolio_maps .o_map-epmst-green3 {
-	@include epmst-mapclosed($bg_gradient1, $bg_gradient2, $bordercolor);
+.o_map-epmst-green3 {
+	@include epmst-map($bg_gradient1, $bg_gradient2, $bordercolor);
+}
 
+.o_eportfolio_maps .o_map-epmst-green3 {
 	h4 {
 		color: $titlecolor;
 	}
 	.panel-body, td, a {
 		color: $infotextcolor;
 	}
-}
-
-.o_eportfolio_map.o_map-epmst-green3 {
-	@include epmst-actualpage($bg_gradient1, $bg_gradient2, $bordercolor);
 }

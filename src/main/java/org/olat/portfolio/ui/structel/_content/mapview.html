@@ -2,12 +2,12 @@
 <div class="o_toolbar" role="toolbar">
 	<div class="container-fluid">
 	#if($r.available("backLink"))
-		<ul class="o_tools o_tools_left">
+		<ul class="o_tools o_tools_left list-unstyled">
 			<li><div class="btn-group">$r.render("backLink")</div></li>
 		</ul>
 	#end	
 	#if($r.available("map.editButton"))
-		<ul class="o_tools o_tools_right">
+		<ul class="o_tools o_tools_right list-unstyled">
 			<li>$r.render("map.editButton")</li>
 		</ul>
 	#end

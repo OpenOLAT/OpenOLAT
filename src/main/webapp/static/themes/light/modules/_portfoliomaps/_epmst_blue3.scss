@@ -5,8 +5,14 @@ $infotextcolor : #000;
 $bordercolor : #888;
 $titlecolor : #444;
 
+.o_map-epmst-blue3 {
+	background-color: $bg_gradient1;
+	border: 1px solid $bordercolor; 
+	border-left: 3px solid transparentize(darken($bordercolor, 20%),0.2);
+}
+
 .o_eportfolio_maps .o_map-epmst-blue3 {
-	@include epmst-mapclosed($bg_gradient1, $bg_gradient2, $bordercolor);
+	box-shadow: 3px 3px 4px rgba(20,20,20,0.4);
 
 	h4 {
 		color: $titlecolor;
@@ -14,8 +20,4 @@ $titlecolor : #444;
 	.panel-body, td, a {
 		color: $infotextcolor;
 	}
-}
-
-.o_eportfolio_map.o_map-epmst-blue3 {
-	@include epmst-actualpage($bg_gradient1, $bg_gradient2, $bordercolor);
 }

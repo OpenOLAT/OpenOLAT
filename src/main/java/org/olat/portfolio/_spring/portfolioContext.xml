@@ -175,7 +175,7 @@
 	</bean>
 	
 	<!--  hook to the personal menu -->
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="personal.tool.ep" init-method="initExtensionPoints" >
+	<bean class="org.olat.portfolio.EPUserToolExtension" name="personal.tool.ep" init-method="initExtensionPoints" >
 		<property name="order" value="301" />
 		<property name="navigationKey" value="Portfolio" />
 		<property name="enabled" value="${minimalhome.ext.portfolio}"></property>
