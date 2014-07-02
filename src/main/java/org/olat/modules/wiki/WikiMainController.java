@@ -191,6 +191,8 @@ public class WikiMainController extends BasicController implements CloneableCont
 		this.ores = ores;
 		this.securityCallback = securityCallback;
 		this.subsContext = securityCallback.getSubscriptionContext();
+		boolean guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
+		
 		WikiPage page = null;
 		Wiki wiki = getWiki();
 		if(wiki == null) {
@@ -257,15 +259,17 @@ public class WikiMainController extends BasicController implements CloneableCont
 		archiveLink.setDomReplacementWrapperRequired(false);
 		archiveLink.setTitle("archive.wiki.title");
 		
-		createLink = LinkFactory.createLink("navigation.create.article", navigationContent, this);
-		createLink.setIconLeftCSS("o_icon o_icon_create");
-		createLink.setElementCssClass("o_sel_wiki_create_page");
-		createLink.setDomReplacementWrapperRequired(false);
+		if(!guestOnly) {
+			createLink = LinkFactory.createLink("navigation.create.article", navigationContent, this);
+			createLink.setIconLeftCSS("o_icon o_icon_create");
+			createLink.setElementCssClass("o_sel_wiki_create_page");
+			createLink.setDomReplacementWrapperRequired(false);
+		}
 
 		content.put("navigation", navigationContent);
 		
 		//search
-		if(!ureq.getUserSession().getRoles().isGuestOnly()) {
+		if(!guestOnly) {
 		  SearchServiceUIFactory searchServiceUIFactory = (SearchServiceUIFactory)CoreSpringFactory.getBean(SearchServiceUIFactory.class);
 		  searchCtrl = searchServiceUIFactory.createInputController(ureq, wControl, DisplayOption.STANDARD, null);
 		  listenTo(searchCtrl);

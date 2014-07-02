@@ -45,9 +45,10 @@
 					</div>
 					#end
 				</div>
+				
 				<div class="o_social o_block">
 					<h4>$r.translate("ratings")</h4>
-					$r.render("rating")
+					#if($r.available("rating")) $r.render("rating") #end
 					$r.render("comments")
 				</div>
 				#if($v.authors)
@@ -85,7 +86,8 @@
 	
 				$r.render("start")			
 			</div>
-			
+
+			#if(!$guestOnly)
 			<div class="col-xs-6 col-sm-12 o_subcolumn">
 				<div class="o_personal">
 					<h3>$r.translate("details.personal")</h3>
@@ -118,13 +120,13 @@
 							<td>$r.formatDateAndTime($recentLaunch)
 						<tr>
 						#end
-		
+						#if($r.available("mark"))
 						<tr class="o_bookmark">					
 							<th>$r.translate("details.bookmark.label"):</th>
 							<td>$r.render("mark")</td>
 						<tr>
-	
-					#if($groups && $groups.size() > 0)
+						#end
+						#if($groups && $groups.size() > 0)
 						<tr class="o_groups">					
 							<th>$r.translate("cif.groups")</th>
 							<td>
@@ -135,14 +137,12 @@
 								</ul>
 							</td>
 						</tr>
-					#end
-	
+						#end
 					</tbody>
-					</table>				
-					
+					</table>
 				</div>
 			</div>
-			
+			#end
 		</div></div>		
 
 		## START LEFT COLUMN		

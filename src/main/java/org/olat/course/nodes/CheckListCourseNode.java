@@ -35,10 +35,13 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -129,14 +132,21 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			final UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		updateModuleConfigDefaults(false);
-		
+
 		Controller ctrl;
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("CourseModule", userCourseEnv.getCourseEnvironment().getCourseResourceableId());
-		if(userCourseEnv.isCoach() || userCourseEnv.isAdmin()) {
+		Roles roles = ureq.getUserSession().getRoles();
+		if (roles.isGuestOnly()) {
+			Translator trans = Util.createPackageTranslator(CheckListCourseNode.class, ureq.getLocale());
+			String title = trans.translate("guestnoaccess.title");
+			String message = trans.translate("guestnoaccess.message");
+			ctrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+		} else if(userCourseEnv.isCoach() || userCourseEnv.isAdmin()) {
 			ctrl = new CheckListRunForCoachController(ureq, wControl, userCourseEnv, ores, this);
 		} else {
 			ctrl = new CheckListRunController(ureq, wControl, userCourseEnv, ores, this);
 		}
+
 		Controller cont = TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, this, ICON_CSS_CLASS);
 		return new NodeRunConstructionResult(cont);
 	}

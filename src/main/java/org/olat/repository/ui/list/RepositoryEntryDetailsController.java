@@ -133,6 +133,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	protected ReferenceManager referenceManager;
 	
 	private String baseUrl;
+	private final boolean guestOnly;
 	
 	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntryRow row) {
 		super(ureq, wControl, Util.getPackageVelocityRoot(RepositoryEntryDetailsController.class) + "/details.html");
@@ -140,6 +141,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 
 		this.row = row;
 		entry = repositoryService.loadByKey(row.getKey());
+		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		initForm(ureq);
 	}
 	
@@ -148,6 +150,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 
 		entry = repositoryService.loadByKey(ref.getKey());
+		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		initForm(ureq);
 	}
 	
@@ -156,6 +159,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 
 		this.entry = entry;
+		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		initForm(ureq);
 	}
 	
@@ -183,6 +187,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("v", entry);
+			layoutCont.contextPut("guestOnly", new Boolean(guestOnly));
 			String cssClass = RepositoyUIFactory.getIconCssClass(entry);
 			layoutCont.contextPut("cssClass", cssClass);
 			
@@ -230,15 +235,17 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				layoutCont.contextPut("categories", categoriesLink);
 			}
 			
-			boolean marked;
-			if(row == null) {
-				marked = markManager.isMarked(entry, getIdentity(), null);
-			} else {
-				marked = row.isMarked();
+			if(!guestOnly) {
+				boolean marked;
+				if(row == null) {
+					marked = markManager.isMarked(entry, getIdentity(), null);
+				} else {
+					marked = row.isMarked();
+				}
+				markLink = uifactory.addFormLink("mark", "mark", marked ? "details.bookmark.remove" : "details.bookmark", null, layoutCont, Link.LINK);
+				markLink.setElementCssClass("o_bookmark");
+				markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 			}
-			markLink = uifactory.addFormLink("mark", "mark", marked ? "details.bookmark.remove" : "details.bookmark", null, layoutCont, Link.LINK);
-			markLink.setElementCssClass("o_bookmark");
-			markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 			
 			Integer myRating;
 			if(row == null) {
@@ -253,6 +260,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			float ratingValue = myRating == null ? 0f : myRating.floatValue();
 			float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
 			ratingEl = new RatingWithAverageFormItem("rating", ratingValue, averageRatingValue, 5, numOfRatings);
+			ratingEl.setEnabled(!guestOnly);
 			layoutCont.add("rating", ratingEl);
 			
 			long numOfComments = statistics.getNumOfComments();

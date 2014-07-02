@@ -104,6 +104,8 @@ public class RepositoryEntryListController extends FormBasicController
 	@Autowired
 	private UserRatingsDAO userRatingsDao;
 	
+	private final boolean guestOnly;
+	
 	public RepositoryEntryListController(UserRequest ureq, WindowControl wControl,
 			SearchMyRepositoryEntryViewParams searchParams, boolean load, 
 			boolean startExtendedSearch, String name, BreadcrumbPanel stackPanel) {
@@ -113,6 +115,7 @@ public class RepositoryEntryListController extends FormBasicController
 		this.name = name;
 		this.stackPanel = stackPanel;
 		this.startExtendedSearch = startExtendedSearch;
+		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		
 		this.searchParams = searchParams;
 		dataSource = new DefaultRepositoryEntryDataSource(searchParams, this);
@@ -174,7 +177,9 @@ public class RepositoryEntryListController extends FormBasicController
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), false, null));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mark.i18nKey(), Cols.mark.ordinal()));
+		if(!guestOnly) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mark.i18nKey(), Cols.mark.ordinal()));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName.i18nKey(), Cols.displayName.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lifecycleLabel.i18nKey(), Cols.lifecycleLabel.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lifecycleSoftkey.i18nKey(), Cols.lifecycleSoftkey.ordinal()));
@@ -419,10 +424,12 @@ public class RepositoryEntryListController extends FormBasicController
 
 	@Override
 	public void forgeMarkLink(RepositoryEntryRow row) {
-		FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "", null, null, Link.NONTRANSLATED);
-		markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
-		markLink.setUserObject(row);
-		row.setMarkLink(markLink);
+		if(!guestOnly) {
+			FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "", null, null, Link.NONTRANSLATED);
+			markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+			markLink.setUserObject(row);
+			row.setMarkLink(markLink);
+		}
 	}
 	
 	@Override
@@ -473,6 +480,7 @@ public class RepositoryEntryListController extends FormBasicController
 		float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
 		RatingWithAverageFormItem ratingCmp
 			= new RatingWithAverageFormItem("rat_" + row.getKey(), ratingValue, averageRatingValue, 5, numOfRatings);
+		ratingCmp.setEnabled(!guestOnly);
 		row.setRatingFormItem(ratingCmp);
 		ratingCmp.setUserObject(row);
 	}

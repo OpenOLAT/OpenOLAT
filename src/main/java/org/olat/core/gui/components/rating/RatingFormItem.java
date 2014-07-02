@@ -66,6 +66,7 @@ public class RatingFormItem extends FormItemImpl {
 	protected void rootFormAvailable() {
 		if(component == null) {
 			component = new RatingComponent(null, getName(), intialRating, maxRating, allowUserInput, getRootForm());
+			component.setEnabled(isEnabled());
 		}
 	}
 

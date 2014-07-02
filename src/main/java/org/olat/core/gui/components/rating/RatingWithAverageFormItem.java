@@ -44,7 +44,7 @@ public class RatingWithAverageFormItem extends FormItemImpl implements FormItemC
 	
 	private RatingFormItem userComponent;
 	private RatingFormItem averageComponent;
-	private RatingWithAverageComponent component;
+	private final RatingWithAverageComponent component;
 	
 	public RatingWithAverageFormItem(String name, float userRating, float averageRating, int maxRating, long numOfRatings) {
 		super(name);
@@ -71,6 +71,17 @@ public class RatingWithAverageFormItem extends FormItemImpl implements FormItemC
 	}
 
 	@Override
+	public void setEnabled(boolean isEnabled) {
+		super.setEnabled(isEnabled);
+		if(userComponent != null) {
+			userComponent.setEnabled(isEnabled);
+		}
+		if(averageComponent != null) {
+			averageComponent.setEnabled(isEnabled);
+		}
+	}
+
+	@Override
 	public Iterable<FormItem> getFormItems() {
 		List<FormItem> items = new ArrayList<FormItem>();
 		items.add(userComponent);
@@ -94,6 +105,7 @@ public class RatingWithAverageFormItem extends FormItemImpl implements FormItemC
 			userComponent = new RatingFormItem("rusr_" + getName(), initialUserRating, maxRating, true);
 			userComponent.setRootForm(getRootForm());
 			userComponent.rootFormAvailable();
+			userComponent.setEnabled(isEnabled());
 			userComponent.getComponent().addListener(component);
 
 			userComponent.getFormItemComponent().setTranslateExplanation(true);
@@ -102,6 +114,7 @@ public class RatingWithAverageFormItem extends FormItemImpl implements FormItemC
 			averageComponent = new RatingFormItem("ravg_" + getName(), averageRating, maxRating, false);
 			averageComponent.setRootForm(getRootForm());
 			averageComponent.rootFormAvailable();
+			averageComponent.setEnabled(isEnabled());
 
 			String[] args = new String[]{ Long.toString(numOfRatings)};
 			String explanation = translator.translate("rating.average.explanation", args);

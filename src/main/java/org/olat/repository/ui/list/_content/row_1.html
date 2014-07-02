@@ -30,7 +30,9 @@
 		<div class="o_desc">
 			$row.shortenedDescription
 		</div>
+		#if($row.markLinkName)
 		<div class="o_bookmark">$r.render($row.markLinkName)</div>
+		#end
 	</div>
 	<div class="o_access container">
 		#if($r.get("ac_$row.key"))

@@ -39,13 +39,13 @@ public class EPSiteDef  extends AbstractSiteDefinition implements SiteDefinition
 
 	@Override
 	protected SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
-			return new EPSite(this, ureq.getLocale());
-		} else if(!ureq.getUserSession().getRoles().isGuestOnly()) {
-			// only for registered users and invitee but not guests
+		if(ureq.getUserSession().getRoles().isGuestOnly()) {
+			return null;
+		} else if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId())) {
 			return new EPSite(this, ureq.getLocale());
 		}
-		return null;
+		// only for registered users and invitee but not guests
+		return new EPSite(this, ureq.getLocale());
 	}
 	
 	@Override

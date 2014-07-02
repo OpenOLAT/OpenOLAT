@@ -93,7 +93,7 @@ public class RatingRenderer extends DefaultComponentRenderer {
 			}								
 			sb.append("'");
 			// Add action
-			if (rating.isAllowUserInput()) {
+			if (rating.isAllowUserInput() && rating.isEnabled()) {
 				if(rating.getForm() == null) {
 					// Add link
 					sb.append(" href=\"");
@@ -117,7 +117,7 @@ public class RatingRenderer extends DefaultComponentRenderer {
 
 			} else {
 				// Disabled link
-				sb.append(" href='#' onclick='return false;'");
+				sb.append(" href='javascript:;' onclick='return false;'");
 			}
 			// Add item label
 			String label = rating.getRatingLabel(i); 

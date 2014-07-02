@@ -150,8 +150,6 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 		isAuthor = isOlatAdmin || roles.isAuthor() | isInstitutionalResourceManager;
 		isGuestOnly = roles.isGuestOnly();
 
-		initForm(ureq);
-		
 		if(stackPanel != null) {
 			String displayName = entry.getDisplayname();
 			stackPanel.pushController(displayName, this);
