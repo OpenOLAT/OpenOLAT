@@ -211,4 +211,27 @@ public class Constants {
 	 */
 	public static final OLATResourceable ORESOURCE_GUESTONLY = OresHelper.lookupType(BaseSecurityModule.class, "RGuestOnly");
 
+	/**
+	 * status of a user
+	 * <code>USERSTATUS_ACTIVE</code> is an active user
+	 */
+	public static final Integer USERSTATUS_ACTIVE = 2;
+
+	/**
+	 * status of a user
+	 * <code>USERSTATUS_NOT_DELETEABLE</code> is a not deleteable user
+	 */
+	public static final Integer USERSTATUS_NOT_DELETEABLE = 1;
+
+	/**
+	 * status of a user
+	 * <code>USERSTATUS_LOGIN_DENIED</code> is a user, whose login is denied
+	 */
+	public static final Integer USERSTATUS_LOGIN_DENIED = 101;
+
+	/**
+	 * status of a user
+	 * <code>USERSTATUS_DELETED</code> is a deleted user
+	 */
+	public static final Integer USERSTATUS_DELETED = 199;
 }
