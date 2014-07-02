@@ -287,11 +287,13 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 			if(relationsToRepo.size() > 0) {
 				Group refGroup = businessGroup.getBaseGroup();
 				for(BGResourceRelation relationToRepo:relationsToRepo) {
-					
 					RepositoryEntryUpgrade entry = lookupRepositoryEntry(relationToRepo.getResource());
-					Set<RepositoryEntryUpgradeToGroupRelation> groupRelations = entry.getGroups();
+					if(entry == null) {
+						continue;
+					}
 					
 					boolean found = false;
+					Set<RepositoryEntryUpgradeToGroupRelation> groupRelations = entry.getGroups();
 					for(RepositoryEntryUpgradeToGroupRelation groupRelation:groupRelations) {
 						if(groupRelation.getGroup().equals(refGroup)) {
 							found = true;
