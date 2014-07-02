@@ -459,7 +459,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		displaySearchResults(ureq);
 	}
 
-	private void doSearchById(Long id, Set<String> restrictedTypes) {
+	private void doSearchById(Long id, Collection<String> restrictedTypes) {
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry entry = rm.lookupRepositoryEntry(id);
 		List<RepositoryEntry> entries = new ArrayList<RepositoryEntry>(1);
