@@ -159,6 +159,7 @@ public class ProjectListController extends BasicController implements GenericEve
 				|| ureq.getUserSession().getRoles().isOLATAdmin()) {
 			contentVC.contextPut("isAccountManager", true);
 			createNewProjectButton = LinkFactory.createButtonSmall("create.new.project.button", contentVC, this);
+			createNewProjectButton.setIconLeftCSS("o_icon o_icon_add");
 		} else {
 			contentVC.contextPut("isAccountManager", false);
 		}

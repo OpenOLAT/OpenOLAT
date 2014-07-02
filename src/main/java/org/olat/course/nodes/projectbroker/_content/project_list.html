@@ -1,9 +1,7 @@
-$infoProjectBrokerRunMode
-<br />
-<br />
+<div class="o_info">$infoProjectBrokerRunMode</div>
 #if ($isAccountManager == true)
-	$r.render("create.new.project.button")
-	<br />
-	<br />
+	<div class="o_button_group o_button_group_right">
+		$r.render("create.new.project.button")
+	</div>
 #end
 $r.render("projectList")

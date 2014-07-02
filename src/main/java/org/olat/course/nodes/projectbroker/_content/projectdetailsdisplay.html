@@ -1,81 +1,79 @@
 <fieldset>
-	<legend>$r.translate("detailsform.description.fieldset")</legend>
+	<legend>
 	#if ($isProjectManager == true)
 		$r.contextHelpWithWrapper("org.olat.course.nodes.projectbroker","projectbroker-descriptionProjectManager.html","help.hover.projectbroker-descriptionProjectManager")
 	#else
 		$r.contextHelpWithWrapper("org.olat.course.nodes.projectbroker","projectbroker-descriptionProject.html","help.hover.projectbroker-descriptionProject")	
 	#end
-<div class="o_xxx"><div class="b_floatscrollbox">
-	<div class="o_projectbroker_details_content">		
-		<table>
-			<tr>
-				<td valign="top"><label>$r.translate("detailsform.title.label")</label></td>
-				<td><strong>$title</strong></td>
-			</tr>
-			<tr>
-				<td valign="top"><label>$r.translate("detailsform.projectleaders.label")</label></td>
-				<td>
-                        #set ($notFirst = false)
-						#foreach($projectLeaderLinkName in $projectLeaderLinkNameList)
-                            #if ($notFirst)
-                                , 
-                            #end
-                            #set ($notFirst = true)
-							$r.render("${projectLeaderLinkName}")
-						#end
-				</td>
-			</tr>
-			<tr>
-				<td valign="top"><label>$r.translate("detailsform.description.label")</label></td>
-				<td>$description</td>
-				
-			</tr>
-			<tr>
-				<td valign="top"><label>$r.translate("detailsform.state.label")</label></td>
-				<td>$state</td>
-			</tr>
-			<tr>
-				<td valign="top"><label>$r.translate($keyMaxLabel)</label></td>
-				<td>$projectPlaces</td>
-			</tr>
-			#foreach($customField in $customFieldList)
-			<tr>
-				<td valign="top"><label>$customField.name</label></td>
-				<td>$customField.value</td>
-			</tr>
+	$r.translate("detailsform.description.fieldset")</legend>
+	
+<div class="panel panel-default">
+	<div class="panel-heading"><h4>$title</h4></div>
+	<table class="table table-condensed"><tbody>
+		<tr>
+			<th>$r.translate("detailsform.projectleaders.label")</th>
+			<td>
+            #set ($notFirst = false)
+			#foreach($projectLeaderLinkName in $projectLeaderLinkNameList)
+                         #if ($notFirst)
+                             , 
+                         #end
+                         #set ($notFirst = true)
+				$r.render("${projectLeaderLinkName}")
 			#end
-			#foreach($event in $eventList)
-			<tr>
-				<td valign="top"><label>$r.translate("$event.eventType")</label></td>
-				<td>#if ($event.startDate)
-				      $r.translate("event.start.text")
-				      $event.formattedStartDate 
-				    #end
-				    #if ($event.endDate)
-				      $r.translate("event.to.text") 
-				      $event.formattedEndDate
-				    #end
-				</td>
-			</tr>
-			#end
-			<tr>
-				<td valign="top"><label>$r.translate("detailsform.attachmentfilename.label")</label></td>
-				<td>$r.render("attachedFileLink")</td>
-			</tr>
-		</table>
-		#if ($isProjectManager == true)
-		    <br/>
-			$r.render("edit.project.button")
-			$r.render("delete.project.button")
-			#if ($r.available("change.project.state.not_assign.button"))
-				$r.render("change.project.state.not_assign.button")
-			#end
-			#if ($r.available("change.project.state.assign.button"))
-				$r.render("change.project.state.assign.button")
-			#end
+			</td>
+		</tr>
+		<tr>
+			<th>$r.translate("detailsform.description.label")</th>
+			<td>$description</td>
+			
+		</tr>
+		<tr>
+			<th>$r.translate("detailsform.state.label")</th>
+			<td>$state</td>
+		</tr>
+		<tr>
+			<th>$r.translate($keyMaxLabel)</th>
+			<td>$projectPlaces</td>
+		</tr>
+		#foreach($customField in $customFieldList)
+		<tr>
+			<th>$customField.name</th>
+			<td>$customField.value</td>
+		</tr>
 		#end
-	</div>
+		#foreach($event in $eventList)
+		<tr>
+			<th>$r.translate("$event.eventType")</th>
+			<td>#if ($event.startDate)
+			      $r.translate("event.start.text")
+			      $event.formattedStartDate 
+			    #end
+			    #if ($event.endDate)
+			      $r.translate("event.to.text") 
+			      $event.formattedEndDate
+			    #end
+			</td>
+		</tr>
+		#end
+		<tr>
+			<th>$r.translate("detailsform.attachmentfilename.label")</th>
+			<td>$r.render("attachedFileLink")</td>
+		</tr>
+	</tbody></table>
 </div>
+#if ($isProjectManager == true)
+	<div class="o_button_group">
+	$r.render("edit.project.button")
+	$r.render("delete.project.button")
+	#if ($r.available("change.project.state.not_assign.button"))
+		$r.render("change.project.state.not_assign.button")
+	#end
+	#if ($r.available("change.project.state.assign.button"))
+		$r.render("change.project.state.assign.button")
+	#end
+	</div>
+#end
 </fieldset>
 #if ($r.available("autoDownloadComp"))
 	$r.render("autoDownloadComp")

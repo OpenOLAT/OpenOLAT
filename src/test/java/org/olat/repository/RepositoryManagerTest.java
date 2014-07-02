@@ -39,8 +39,6 @@ import java.util.UUID;
 
 import junit.framework.Assert;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
@@ -67,7 +65,6 @@ import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.test.JMSCodePointServerJunitHelper;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
@@ -81,7 +78,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RepositoryManagerTest extends OlatTestCase {
 	
 	private static final OLog log = Tracing.createLoggerFor(RepositoryManagerTest.class);
-	private static String CODEPOINT_SERVER_ID = "RepositoryManagerTest";
 
 	@Autowired
 	private DB dbInstance;
@@ -105,24 +101,6 @@ public class RepositoryManagerTest extends OlatTestCase {
 	private MarkManager markManager;
 	@Autowired
 	private RepositoryEntryLifecycleDAO lifecycleDao;
-	
-	@Before
-	public void setup() {
-		try {
-			// Setup for code-points
-			JMSCodePointServerJunitHelper.startServer(CODEPOINT_SERVER_ID);
-		} catch (Exception e) {
-			log.error("Error while setting up activeMq or Codepointserver", e);
-		}
-	}
-
-	@After public void tearDown() {
-		try {
-			JMSCodePointServerJunitHelper.stopServer();
-		} catch (Exception e) {
-			log.error("tearDown failed", e);
-		}
-	}
 
 	/**
 	 * Test creation of a repository entry.
