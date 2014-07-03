@@ -76,7 +76,7 @@ a.o_chelp {
 .o_bc_empty{
 	@extend %o_important;
 }
-.o_bc_meta {
+.o_bc_meta, .tooltip {
 	@extend %o_small;
 	.o_thumbnail{
 		width:200px; 

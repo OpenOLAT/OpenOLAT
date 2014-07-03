@@ -174,13 +174,12 @@ public class EPArtefactViewController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(detailsLinkEnabled && !artefactChooseMode) {
-			detailsLink = uifactory.addFormLink("details.link", formLayout, Link.LINK);
+			detailsLink = uifactory.addFormLink("details.link", formLayout, Link.BUTTON);
 			detailsLink.setElementCssClass("o_sel_artefact_details");
 		}
 
 		title = uifactory.addInlineTextElement("title", artefact.getTitle(), formLayout, this);
 		
-		System.out.println("Closed: " + artefactInClosedMap);
 		flc.contextPut("cssClosed", artefactInClosedMap ? "o_artefact_closed" : "");
 		flc.contextPut("viewOnly", viewOnlyMode);
 		
@@ -223,7 +222,8 @@ public class EPArtefactViewController extends FormBasicController {
 		}
 		
 		// create a delete button
-		deleteBtn = uifactory.addFormLink("delete.artefact", formLayout, "b_with_small_icon_left b_delete_icon");
+		deleteBtn = uifactory.addFormLink("delete.artefact", formLayout, Link.BUTTON);
+		deleteBtn.setIconLeftCSS("o_icon o_icon_delete");
 		deleteBtn.addActionListener(FormEvent.ONCLICK);
 		if (viewOnlyMode || artefactChooseMode || artefactInClosedMap) deleteBtn.setVisible(false);
 		
@@ -259,7 +259,7 @@ public class EPArtefactViewController extends FormBasicController {
 		
 		// if in artefactChooseMode, add an "choose this" button
 		if(artefactChooseMode) {
-			chooseBtn = uifactory.addFormLink("choose.artefact", formLayout);
+			chooseBtn = uifactory.addFormLink("choose.artefact", formLayout, Link.BUTTON);
 			chooseBtn.addActionListener(FormEvent.ONCLICK);
 		}
 		

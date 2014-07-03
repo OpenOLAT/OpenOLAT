@@ -48,7 +48,8 @@ jQuery(function() {
 					left: (targetOffset.left + targetEl.width()) - callout.width()/2 
 				});
 			}
-			callout.css('display','block').css('zindex', o_info.zseed + 5);
+			callout.css('display','block').css('z-index', o_info.zseed + 105);
+			jQuery('#callout_overlay_$r.getCId()').css('z-index', o_info.zseed + 103);
 		}
 	});
 });

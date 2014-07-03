@@ -21,7 +21,6 @@ package org.olat.portfolio.ui.artefacts.collect;
 
 import java.util.Date;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -45,6 +44,7 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.artefacts.EPTextArtefact;
 import org.olat.portfolio.model.artefacts.FileArtefact;
 import org.olat.portfolio.model.structel.PortfolioStructure;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -59,24 +59,24 @@ import org.olat.portfolio.model.structel.PortfolioStructure;
  */
 public class EPAddArtefactController extends BasicController {
 
-	private Link uploadBtn;
-	private Link liveBlogBtn;
-	private EPFrontendManager ePFMgr;
-	private VelocityContainer addPage = null;
-	private Link textBtn;
-	private Link addBtn;
+	private Link uploadBtn, liveBlogBtn;
+	private VelocityContainer addPage;
+	private Link textBtn, addBtn;
 	private StepsMainRunController collectStepsCtrl;
-	private PortfolioModule portfolioModule;
+	
 	private VFSContainer vfsTemp;
 	private VelocityContainer addLinkVC;
 	private CloseableCalloutWindowController calloutCtr;
+	
+	@Autowired
+	private EPFrontendManager ePFMgr;
+	@Autowired
+	private PortfolioModule portfolioModule;
 	
 	private PortfolioStructure preSelectedStruct;
 
 	public EPAddArtefactController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
-		portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
 		addLinkVC = createVelocityContainer("addLink");
 		addBtn = LinkFactory.createButton("add.artefact", addLinkVC, this);
 		addBtn.setElementCssClass("o_sel_add_artfeact");

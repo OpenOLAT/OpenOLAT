@@ -333,31 +333,18 @@ public class ListRenderer {
 				  .append("	   container: 'body',\n")
 				  .append("    title: function(){ return jQuery('#o_sel_doc_tooltip_").append(pos).append("').html(); }\n")
 				  .append("  });\n")
+				  .append("  jQuery('#o_sel_doc_").append(pos).append("').on('show.bs.tooltip', function(){\n")
+				  .append("	   setTimeout(function() {\n")
+				  .append("	    jQuery('#o_sel_doc_").append(pos).append("').tooltip('hide');\n")
+				  .append("	   }, 30000);\n")
+				  .append("  });\n")
 				  .append("});")
 				  .append("/* ]]> */")
 				  .append("</script>");
-
-				/*
-				sb.append("<script type='text/javascript'>")
-			    .append("/* <![CDATA[ *//*")
-				  .append("jQuery(function() {")
-					.append("  jQuery('#o_sel_doc_").append(pos).append("').tooltip({")
-					.append("	  items: 'a', tooltipClass: 'b_briefcase_meta ")
-					.append(isContainer ? "b_briefcase_folder " : "b_briefcase_file ")
-					.append(hasMetaAuthor ? "b_briefcase_with_meta_author " : "b_briefcase_with_uploader_author ")
-					.append(hasThumbnail ? "b_briefcase_with_thumbnail " : "b_briefcase_without_thumbnail ")
-					.append("', ")
-					.append("     content: function(){ return jQuery('#o_sel_doc_tooltip_").append(pos).append("').html(); }")
-					.append("  });")
-					.append("});")
-					.append("/* ]]> *//*")
-					.append("</script>");
-				
-				*/
 			}
 		}
-		sb.append("</span>");
-		sb.append("</td><td>");
+		sb.append("</span>")
+		  .append("</td><td>");
 		
 		// filesize
 		if (!isContainer) {

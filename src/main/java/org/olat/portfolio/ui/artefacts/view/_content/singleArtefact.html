@@ -62,9 +62,17 @@
 			<td>#if ($r.available("detailsController")) $r.render("detailsController") #end </td></tr>
 		#end
 	</tbody></table>
-	<div class="panel-body">
-		#if ($r.available("details.link")) <div class="b_float_right"> $r.render("details.link") </div> #end
-		#if ($r.available("delete.artefact")) <div class="b_float_left">$r.render("delete.artefact")</div> #end
-		#if ($r.available("choose.artefact")) <p style="text-align: center">$r.render("choose.artefact")</p> #end
+	#if ($r.visible("details.link") || $r.visible("delete.artefact") || $r.visible("choose.artefact"))
+	<div class="panel-body ">
+		#set($count = 0)
+		#if ($r.visible("details.link")) #set($count = $count + 1) #end
+		#if ($r.visible("delete.artefact")) #set($count = $count + 1) #end
+		#if ($r.visible("choose.artefact")) #set($count = $count + 1) #end
+		#if($count > 1) <div class="btn-group"> #end
+		#if ($r.available("details.link")) $r.render("details.link") #end
+		#if ($r.available("delete.artefact")) $r.render("delete.artefact") #end
+		#if ($r.available("choose.artefact")) $r.render("choose.artefact") #end
+		#if($count > 1) </div> #end
 	</div>
+	#end
 </div>
