@@ -61,26 +61,26 @@ public class PaypalTransactionStatusRenderer  implements CustomCellRenderer {
 				
 				if(trxStatus == null) {
 					if(status == PaypalTransactionStatus.SUCCESS) {
-						sb.append("<span class='b_with_small_icon_left b_transaction_status_success_icon'></span>");
+						sb.append("<i class='o_icon o_icon-fw o_ac_status_success_icon'></i>");
 					}	else if(status == PaypalTransactionStatus.PENDING) {
-						sb.append("<span class='b_with_small_icon_left b_transaction_status_waiting_icon'></span>");
+						sb.append("<i class='o_icon o_icon-fw o_ac_status_waiting_icon'></i>");
 					} else if(status == PaypalTransactionStatus.NEW || status == PaypalTransactionStatus.PREPAYMENT) {
-						sb.append("<span class='b_with_small_icon_left b_transaction_status_new_icon'></span>");
+						sb.append("<i class='o_icon o_icon-fw o_ac_status_new_icon'></i>");
 					} else if(status == PaypalTransactionStatus.CANCELED) {
-						sb.append("<span class='b_with_small_icon_left b_transaction_status_canceled_icon'></span>");
+						sb.append("<i class='o_icon o_icon-fw o_ac_status_canceled_icon'></i>");
 					}	else {
-						sb.append("<span class='b_with_small_icon_left b_transaction_status_error_icon'></span>");
+						sb.append("<i class='o_icon o_icon-fw o_ac_status_error_icon'></i>");
 					}
 				} else if("SUCCESS".equalsIgnoreCase(trxStatus) || "CREATED".equalsIgnoreCase(trxStatus)
 						|| "PARTIALLY_REFUNDED".equalsIgnoreCase(trxStatus) || "Completed".equalsIgnoreCase(trxStatus)) {
-					sb.append("<span class='b_with_small_icon_left b_transaction_status_success_icon'></span>");
+					sb.append("<i class='o_icon o_icon-fw o_ac_status_success_icon'></i>");
 				} else if("PROCESSING".equalsIgnoreCase(trxStatus) || "PENDING".equalsIgnoreCase(trxStatus)) {
-					sb.append("<span class='b_with_small_icon_left b_transaction_status_waiting_icon'></span>");
+					sb.append("<i class='o_icon o_icon-fw o_ac_status_waiting_icon'></i>");
 				} else {
-					sb.append("<span class='b_with_small_icon_left b_transaction_status_error_icon'></span>");
+					sb.append("<i class='o_icon o_icon-fw o_ac_status_error_icon'></i>");
 				}
 			} else {
-				sb.append("<span class='b_with_small_icon_left b_transaction_status_error_icon'></span>");
+				sb.append("<i class='o_icon o_icon-fw o_ac_status_error_icon'></i>");
 			}
 		}
 	}

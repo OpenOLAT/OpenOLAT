@@ -35,6 +35,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.model.OfferAccess;
 import org.olat.resource.accesscontrol.model.Price;
+import org.olat.resource.accesscontrol.provider.paypal.PaypalAccessHandler;
 import org.olat.resource.accesscontrol.provider.paypal.manager.PaypalManager;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransaction;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransactionStatus;
@@ -90,6 +91,7 @@ public class PaypalAccessController extends FormBasicController implements FormC
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("access.paypal.title");
 		setFormDescription("access.paypal.desc");
+		setFormTitleIconCss("o_icon o_icon-fw " + PaypalAccessHandler.METHOD_CSS_CLASS + "_icon");
 		
 		String uuid = (String)ureq.getUserSession().getEntry("paypal-uuid");
 		if(StringHelper.containsNonWhitespace(uuid)) {

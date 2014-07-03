@@ -263,6 +263,18 @@ $fa-css-prefix: "o_icon" !default;
 .o_ac_group_icon:before { content: $fa-var-group;}
 .o_ac_membersonly_icon:before { content: $fa-var-lock;}
 .o_ac_paypal_icon:before { content: $fa-var-credit-card;}
+.o_ac_status_canceled_icon:before { content: $fa-var-minus; color: $brand-warning;}
+.o_ac_status_error_icon:before { content: $fa-var-times; color: $brand-danger;}
+.o_ac_status_new_icon:before { content: $fa-var-asterisk; color: $brand-primary;}
+.o_ac_status_succes_icon:before { content: $fa-var-check; color: $brand-success;}
+.o_ac_status_waiting_icon:before { content: $fa-var-clock-o; color: $brand-primary;}
+.o_ac_order_status_new_icon:before { content: $fa-var-asterisk; color: $brand-primary;}
+.o_ac_order_status_prepayment_icon:before { content: $fa-var-money; color: $brand-info;}
+.o_ac_order_status_payed_icon:before { content: $fa-var-check; color: $brand-success;}
+.o_ac_order_status_canceled_icon:before { content: $fa-var-minus; color: $brand-warning;}
+.o_ac_order_status_error_icon:before { content: $fa-var-times; color: $brand-danger;}
+.o_ac_order_status_warning_icon:before { content: $fa-var-exclamation; color: $brand-warning;}
+
 
 /* File type icons */
 /* first the default that is used as base class. will be overriden by following classes */

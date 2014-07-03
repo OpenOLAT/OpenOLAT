@@ -34,6 +34,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.model.OfferAccess;
+import org.olat.resource.accesscontrol.provider.token.TokenAccessHandler;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.resource.accesscontrol.ui.FormController;
 
@@ -75,6 +76,7 @@ public class TokenAccessController extends FormBasicController implements FormCo
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("access.token.title");
 		setFormDescription("access.token.desc");
+		setFormTitleIconCss("o_icon o_icon-fw " + TokenAccessHandler.METHOD_CSS_CLASS + "_icon");
 		
 		String description = link.getOffer().getDescription();
 		if(StringHelper.containsNonWhitespace(description)) {

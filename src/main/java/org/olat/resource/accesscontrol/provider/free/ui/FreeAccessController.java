@@ -33,6 +33,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.model.OfferAccess;
+import org.olat.resource.accesscontrol.provider.free.FreeAccessHandler;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.resource.accesscontrol.ui.FormController;
 
@@ -73,6 +74,7 @@ public class FreeAccessController extends FormBasicController implements FormCon
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("access.free.title");
 		setFormDescription("access.free.desc");
+		setFormTitleIconCss("o_icon o_icon-fw " + FreeAccessHandler.METHOD_CSS_CLASS + "_icon");
 		
 		String description = link.getOffer().getDescription();
 		if(StringHelper.containsNonWhitespace(description)) {

@@ -1,4 +1,4 @@
-<div class="b_access_method_list">
+<div class="o_access_method_list">
 	<h3>
 		<i class="o_icon o_icon-fw o_icon_booking"></i> $r.translate("access.title")
 	</h3>
@@ -7,7 +7,6 @@
 	</p>
 	#foreach($link in $links)
 		<div class="clearfix">
-			<i class="o_icon o_icon-fw $link.getMethod().getMethodCssClass()"> </i>
 			$r.render("ac_$link.key")
 		</div>
 	#end

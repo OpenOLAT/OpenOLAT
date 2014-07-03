@@ -46,16 +46,16 @@ public class OrderStatusRenderer implements CustomCellRenderer {
 		if(val instanceof OrderStatus) {
 			OrderStatus status = (OrderStatus)val;
 			String name = status.name().toLowerCase();
-			sb.append("<span class='b_with_small_icon_left b_order_status_");
+			sb.append("<i class='o_icon o_icon-fw o_ac_order_status_");
 			sb.append(name);
-			sb.append("_icon'></span>");
+			sb.append("_icon'> </i>");
 		} else if (val instanceof OrderTableItem) {
 			OrderTableItem item = (OrderTableItem)val;
 			switch(item.getStatus()) {
-				case ERROR: sb.append("<span class='b_with_small_icon_left b_order_status_error_icon'></span>"); break;
-				case WARNING: sb.append("<span class='b_with_small_icon_left b_order_status_warning_icon'></span>"); break;
-				case CANCELED: sb.append("<span class='b_with_small_icon_left b_order_status_canceled_icon'></span>"); break;
-				default: sb.append("<span class='b_with_small_icon_left b_order_status_payed_icon'></span>");
+				case ERROR: sb.append("<i class='o_icon o_icon-fw o_ac_order_status_error_icon'></i>"); break;
+				case WARNING: sb.append("<i class='o_icon o_icon-fw o_ac_order_status_warning_icon'></i>"); break;
+				case CANCELED: sb.append("<i class='o_icon o_icon-fw o_ac_order_status_canceled_icon'></i>"); break;
+				default: sb.append("<i class='o_icon o_icon-fw o_ac_order_status_payed_icon'></i>");
 			}
 		}
 	}

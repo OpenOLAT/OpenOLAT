@@ -426,6 +426,18 @@ public abstract class FormBasicController extends BasicController {
 			flc.contextPut("off_title", getTranslator().translate(i18nKey, args));
 		}
 	}
+	
+	/**
+	 * Set an optional icon by giving the necessary css classes
+	 * @param iconCss 
+	 */
+	protected void setFormTitleIconCss(String iconCss) {
+		if (iconCss == null) {
+			flc.contextRemove("off_icon");
+		} else {
+			flc.contextPut("off_icon", iconCss);
+		}
+	}
 
 	/**
 	 * Set an optional description. This will appear above the form. If you use a
