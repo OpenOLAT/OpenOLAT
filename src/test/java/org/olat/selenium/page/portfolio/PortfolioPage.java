@@ -74,10 +74,7 @@ public class PortfolioPage {
 	 * @return
 	 */
 	public ArtefactWizardPage createTextArtefact() {
-		By createButtonBy = By.className("o_sel_add_artfeact");
-		WebElement createButton = browser.findElement(createButtonBy);
-		createButton.click();
-		OOGraphene.waitBusy();
+		addArtefact();
 		
 		By addTextArtefactBy = By.className("o_sel_add_text_artfeact");
 		OOGraphene.waitElement(addTextArtefactBy);
@@ -93,12 +90,21 @@ public class PortfolioPage {
 	 * @return
 	 */
 	public ArtefactWizardPage createLearningJournal() {
-		By createButtonBy = By.className("o_sel_add_artfeact");
-		WebElement createButton = browser.findElement(createButtonBy);
-		createButton.click();
-		OOGraphene.waitBusy();
+		addArtefact();
 		
 		By addJournalArtefactBy = By.className("o_sel_add_liveblog_artfeact");
+		OOGraphene.waitElement(addJournalArtefactBy);
+		WebElement addJournalArtefactLink = browser.findElement(addJournalArtefactBy);
+		addJournalArtefactLink.click();
+		OOGraphene.waitBusy();
+		
+		return ArtefactWizardPage.getWizard(browser);
+	}
+	
+	public ArtefactWizardPage createFileArtefact() {
+		addArtefact();
+		
+		By addJournalArtefactBy = By.className("o_sel_add_upload_artfeact");
 		OOGraphene.waitElement(addJournalArtefactBy);
 		WebElement addJournalArtefactLink = browser.findElement(addJournalArtefactBy);
 		addJournalArtefactLink.click();

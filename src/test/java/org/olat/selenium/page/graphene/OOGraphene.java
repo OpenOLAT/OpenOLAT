@@ -19,6 +19,7 @@
  */
 package org.olat.selenium.page.graphene;
 
+import java.io.File;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -55,6 +56,11 @@ public class OOGraphene {
 	public static final void tinymce(String content, WebDriver browser) {
 		//TODO selenium hardened the method
 		((JavascriptExecutor)browser).executeScript("top.tinymce.activeEditor.setContent('" + content + "')");
+	}
+	
+	public static final void uploadFile(By inputBy, File file, WebDriver browser) {
+		WebElement input = browser.findElement(inputBy);
+		input.sendKeys(file.getAbsolutePath());
 	}
 	
 	public static final void closeBlueMessageWindow(WebDriver browser) {

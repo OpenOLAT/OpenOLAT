@@ -19,6 +19,7 @@
  */
 package org.olat.selenium;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -34,6 +35,7 @@ import org.jboss.arquillian.graphene.page.Page;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.selenium.page.LoginPage;
@@ -50,11 +52,13 @@ import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.selenium.page.wiki.WikiPage;
 import org.olat.test.ArquillianDeployments;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
 
 
 @RunWith(Arquillian.class)
@@ -634,6 +638,156 @@ public class PortfolioTest {
 		By postTitleBy = By.cssSelector("h3.o_title>a>span");
 		WebElement postTitleEl = browser.findElement(postTitleBy);
 		Assert.assertTrue(postTitleEl.getText().contains(postTitle));
+	}
+	
+	/**
+	 * Create a map.
+	 * Go the "My artefacts" and create an artefact of type file. Bind it
+	 * to the map. Check the map.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void addFileArtefact(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		//File upload only work with Firefox
+		Assume.assumeTrue(browser instanceof FirefoxDriver);
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		//open the portfolio
+		PortfolioPage portfolio = userTools
+				.openUserToolsMenu()
+				.openPortfolio();
+		
+		//create a map
+		String mapTitle = "Map-File-1-" + UUID.randomUUID();
+		String pageTitle = "Page-File-1-" + UUID.randomUUID();
+		String structureElementTitle = "Struct-File-1-" + UUID.randomUUID();
+		portfolio
+			.openMyMaps()
+			.createMap(mapTitle, "Need to upload some file")
+			.openEditor()
+			.selectMapInEditor(mapTitle)
+			.selectFirstPageInEditor()
+			.setPage(pageTitle, "With a little description")
+			.createStructureElement(structureElementTitle, "Structure description");
+		
+		//go to my artefacts
+		portfolio = userTools
+				.openUserToolsMenu()
+				.openPortfolio()
+				.openMyArtefacts();
+		
+		String textTitle = "File-1-" + UUID.randomUUID();
+		URL courseUrl = JunitTestHelper.class.getResource("file_resources/handInTopic1.pdf");
+		File file = new File(courseUrl.toURI());
+		//create the artefact
+		portfolio
+			.createFileArtefact()
+			.uploadFile(file)
+			.next()
+			.fillArtefactMetadatas(textTitle, "Description")
+			.next()
+			.tags("File", "PDF", "Learning")
+			.next()
+			.selectMap(mapTitle, pageTitle, structureElementTitle)
+			.finish();
+
+		OOGraphene.closeBlueMessageWindow(browser);
+		
+		//open the portfolio
+		portfolio = userTools
+			.openUserToolsMenu()
+			.openPortfolio()
+			.openMyMaps()
+			.openMap(mapTitle)
+			.selectStructureInTOC(structureElementTitle);
+		
+		//check that we see the post
+		By artefactTitleBy = By.cssSelector("div.panel-heading>h3");
+		WebElement artefactTitle = browser.findElement(artefactTitleBy);
+		Assert.assertTrue(artefactTitle.getText().contains(textTitle));
+	}
+	
+	/**
+	 * Create a map, create a new file artefact.
+	 * Check the map and the artefact.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void addFileArtefact_withinMap(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		//File upload only work with Firefox
+		Assume.assumeTrue(browser instanceof FirefoxDriver);
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		//open the portfolio
+		PortfolioPage portfolio = userTools
+				.openUserToolsMenu()
+				.openPortfolio();
+		
+		//create a map
+		String mapTitle = "Map-File-2-" + UUID.randomUUID();
+		String pageTitle = "Page-File-2-" + UUID.randomUUID();
+		String structureElementTitle = "Struct-File-2-" + UUID.randomUUID();
+		portfolio
+			.openMyMaps()
+			.createMap(mapTitle, "Need a map to upload some files quckly")
+			.openEditor()
+			.selectMapInEditor(mapTitle)
+			.selectFirstPageInEditor()
+			.setPage(pageTitle, "With a little description")
+			.createStructureElement(structureElementTitle, "Structure description");
+		
+		//create the file artefact
+		ArtefactWizardPage artefactWizard = portfolio
+				.linkArtefact()
+				.addArtefact()
+				.createFileArtefact();
+		
+		String textTitle = "File-2-" + UUID.randomUUID();
+		URL courseUrl = JunitTestHelper.class.getResource("file_resources/handInTopic1.pdf");
+		File file = new File(courseUrl.toURI());
+		//foolow the wizard
+		artefactWizard
+			.uploadFile(file)
+			.next()
+			.fillArtefactMetadatas(textTitle, "Description")
+			.next()
+			.tags("File", "Data", "Learning")
+			.next()
+			.selectMap(mapTitle, pageTitle, structureElementTitle)
+			.finish();
+
+		OOGraphene.closeBlueMessageWindow(browser);
+		
+		//open the portfolio
+		portfolio = userTools
+			.openUserToolsMenu()
+			.openPortfolio()
+			.openMyMaps()
+			.openMap(mapTitle)
+			.selectStructureInTOC(structureElementTitle);
+
+		//check that we see the post
+		By artefactTitleBy = By.cssSelector("div.panel-heading>h3");
+		WebElement artefactTitle = browser.findElement(artefactTitleBy);
+		Assert.assertTrue(artefactTitle.getText().contains(textTitle));
 	}
 	
 	/**

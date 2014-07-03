@@ -16,17 +16,7 @@
 			<!-- debugging arguments for javaVm: -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y -->
         </configuration>
     </container>
-    
-	<extension qualifier="selenium">
-		<property name="browserCapabilities">firefox</property>
-		<!-- Path for Firefox if needed
-		<property name="capabilityWebdriverFirefoxBin">/Applications/Firefox.app/Contents/MacOS/firefox-bin</property>
-        -->
-        <!-- Not all tests pass with Chrome (issue with file upload)
-        <property name="browser">*googlechrome</property>
-        -->
-    </extension>
-    
+   
 	<extension qualifier="webdriver">
 		<property name="browser">safari</property>
 	</extension>
@@ -35,13 +25,14 @@
 		<property name="browser">safari</property>
 	</extension>
 	
+	<extension qualifier="graphene-firefox">
+		<property name="browser">firefox</property>
+		<property name="remoteReusable">true</property>
+	</extension>
+	
 	<extension qualifier="phantomjs">
 		<property name="browser">phantomjs</property>
 		<property name="dimensions">1000x700</property>
 	</extension>
 
-	<extension qualifier="student">
-		<property name="browserCapabilities">firefox</property>
-		<property name="count">100</property>
-	</extension>
 </arquillian>

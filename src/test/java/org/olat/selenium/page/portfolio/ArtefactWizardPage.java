@@ -19,6 +19,7 @@
  */
 package org.olat.selenium.page.portfolio;
 
+import java.io.File;
 import java.util.List;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
@@ -81,6 +82,12 @@ public class ArtefactWizardPage {
 	
 	public ArtefactWizardPage fillTextArtefactContent(String content) {
 		OOGraphene.tinymce(content, browser);
+		return this;
+	}
+	
+	public ArtefactWizardPage uploadFile(File file) {
+		By inputBy = By.cssSelector(".o_fileinput input[type='file']");
+		OOGraphene.uploadFile(inputBy, file, browser);
 		return this;
 	}
 	
