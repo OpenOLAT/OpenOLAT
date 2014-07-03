@@ -24,6 +24,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.UUID;
 
+import junit.framework.Assert;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
@@ -50,7 +52,9 @@ import org.olat.selenium.page.wiki.WikiPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 
 @RunWith(Arquillian.class)
@@ -407,5 +411,298 @@ public class PortfolioTest {
 			.openMyMaps()
 			.openMap(mapTitle)
 			.selectStructureInTOC(structureElementTitle);
+	}
+	
+	/**
+	 * Create a map with a structure element and
+	 * create a text artefact.
+	 * Check the map and the artefact.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void addTextArtefact_withinMap(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		//open the portfolio
+		PortfolioPage portfolio = userTools
+				.openUserToolsMenu()
+				.openPortfolio();
+		
+		//create a map
+		String mapTitle = "Map-Text-1-" + UUID.randomUUID();
+		String pageTitle = "Page-Text-1-" + UUID.randomUUID();
+		String structureElementTitle = "Struct-Text-1-" + UUID.randomUUID();
+		portfolio
+			.openMyMaps()
+			.createMap(mapTitle, "Need to place a text artefact")
+			.openEditor()
+			.selectMapInEditor(mapTitle)
+			.selectFirstPageInEditor()
+			.setPage(pageTitle, "With a little description")
+			.createStructureElement(structureElementTitle, "Structure description");
+		
+		//create the text artefact
+		ArtefactWizardPage artefactWizard = portfolio
+				.linkArtefact()
+				.addArtefact()
+				.createTextArtefact();
+		
+		String textTitle = "Text-2-" + UUID.randomUUID();
+		//create a text artefact
+		artefactWizard
+			.fillTextArtefactContent("Content of the text artefact")
+			.next()
+			.fillArtefactMetadatas(textTitle, "Description")
+			.next()
+			.tags("LateX", "Thread", "Miscellanous")
+			.next()
+			.selectMap(mapTitle, pageTitle, structureElementTitle)
+			.finish();
+
+		OOGraphene.closeBlueMessageWindow(browser);
+		
+		//reopen the portfolio
+		portfolio = userTools
+			.openUserToolsMenu()
+			.openPortfolio()
+			.openMyMaps()
+			.openMap(mapTitle)
+			.selectStructureInTOC(structureElementTitle);
+	}
+	
+	/**
+	 * Create a map.
+	 * In the artefacts view, create a new live blog
+	 * (or learning journal) and bind it to the map.
+	 * Check the map and post an entry in the blog.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void addLearningJournal(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		//open the portfolio
+		PortfolioPage portfolio = userTools
+				.openUserToolsMenu()
+				.openPortfolio();
+		
+		//create a map
+		String mapTitle = "Learning-Journal-1-" + UUID.randomUUID();
+		String pageTitle = "Learning-Journal-Page-1-" + UUID.randomUUID();
+		String structureElementTitle = "Learning-Journal-Struct-1-" + UUID.randomUUID();
+		portfolio
+			.openMyMaps()
+			.createMap(mapTitle, "Need to journal my learning feelings")
+			.openEditor()
+			.selectMapInEditor(mapTitle)
+			.selectFirstPageInEditor()
+			.setPage(pageTitle, "With a little description")
+			.createStructureElement(structureElementTitle, "Structure description");
+		
+		//go to my artefacts
+		portfolio = userTools
+				.openUserToolsMenu()
+				.openPortfolio()
+				.openMyArtefacts();
+		
+		String textTitle = "Journal-1-" + UUID.randomUUID();
+		//create a live blog or learning journal
+		portfolio
+			.createLearningJournal()
+			.fillArtefactMetadatas(textTitle, "Description")
+			.next()
+			.tags("Journal", "Live", "Learning")
+			.next()
+			.selectMap(mapTitle, pageTitle, structureElementTitle)
+			.finish();
+
+		OOGraphene.closeBlueMessageWindow(browser);
+		
+		//open the portfolio
+		portfolio = userTools
+			.openUserToolsMenu()
+			.openPortfolio()
+			.openMyMaps()
+			.openMap(mapTitle)
+			.selectStructureInTOC(structureElementTitle);
+		
+		//play with the blog
+		String postTitle = "Journal-EP-" + UUID.randomUUID();
+		String postSummary = "Some explantations of the journal";
+		String postContent = "First impression in my live blog";
+		FeedPage feed = FeedPage.getFeedPage(browser);
+		feed
+			.newBlog()
+			.newBlogPost(postTitle, postSummary, postContent)
+			.publishPost();
+		
+		//check that we see the post
+		By postTitleBy = By.cssSelector("h3.o_title>a>span");
+		WebElement postTitleEl = browser.findElement(postTitleBy);
+		Assert.assertTrue(postTitleEl.getText().contains(postTitle));
+	}
+	
+	/**
+	 * Create a map, create a new live blog
+	 * (or learning journal), add a post.
+	 * Check the map and the artefact.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void addLearningJournal_withinMap(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		//open the portfolio
+		PortfolioPage portfolio = userTools
+				.openUserToolsMenu()
+				.openPortfolio();
+		
+		//create a map
+		String mapTitle = "Learning-Journal-2-" + UUID.randomUUID();
+		String pageTitle = "Learning-Journal-Page-2-" + UUID.randomUUID();
+		String structureElementTitle = "Learning-Journal-Struct-2-" + UUID.randomUUID();
+		portfolio
+			.openMyMaps()
+			.createMap(mapTitle, "Need quickly a journal to share my learning feelings")
+			.openEditor()
+			.selectMapInEditor(mapTitle)
+			.selectFirstPageInEditor()
+			.setPage(pageTitle, "With a little description")
+			.createStructureElement(structureElementTitle, "Structure description");
+		
+		//create the live blog
+		ArtefactWizardPage artefactWizard = portfolio
+				.linkArtefact()
+				.addArtefact()
+				.createLearningJournal();
+		
+		String textTitle = "Journal-2-" + UUID.randomUUID();
+		//create a live blog or learning journal
+		artefactWizard
+			.fillArtefactMetadatas(textTitle, "Description")
+			.next()
+			.tags("Journal", "Live", "Learning")
+			.next()
+			.selectMap(mapTitle, pageTitle, structureElementTitle)
+			.finish();
+
+		OOGraphene.closeBlueMessageWindow(browser);
+		
+		//open the portfolio
+		portfolio = userTools
+			.openUserToolsMenu()
+			.openPortfolio()
+			.openMyMaps()
+			.openMap(mapTitle)
+			.selectStructureInTOC(structureElementTitle);
+		
+		//play with the blog
+		String postTitle = "Journal-EP-" + UUID.randomUUID();
+		String postSummary = "Some explantations of the journal";
+		String postContent = "First impression in my live blog created in few clicks";
+		FeedPage feed = FeedPage.getFeedPage(browser);
+		feed
+			.newBlog()
+			.newBlogPost(postTitle, postSummary, postContent)
+			.publishPost();
+		
+		//check that we see the post
+		By postTitleBy = By.cssSelector("h3.o_title>a>span");
+		WebElement postTitleEl = browser.findElement(postTitleBy);
+		Assert.assertTrue(postTitleEl.getText().contains(postTitle));
+	}
+	
+	/**
+	 * Create a course with a portfolio course element.
+	 * Create a template from within the portfolio course
+	 * element and edit it. Rename a page, add a structure
+	 * element. Publish the course, go to the course
+	 * and check if the link to take the map is there.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void createPortfolioTemplate_inCourse(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		String courseTitle = "Course-With-Portfolio-" + UUID.randomUUID().toString();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack()
+			.edit();
+		
+		String portfolioNodeTitle = "Template-EP-1";
+		String portfolioTitle = "Template - EP - " + UUID.randomUUID().toString();
+		
+		//create a course element of type CP with the CP that we create above
+		CourseEditorPageFragment courseEditor = CourseEditorPageFragment.getEditor(browser);
+		PortfolioPage template = courseEditor
+			.createNode("ep")
+			.nodeTitle(portfolioNodeTitle)
+			.selectTabLearnContent()
+			.createPortfolio(portfolioTitle)
+			.editPortfolio();
+
+		String pageTitle = "Page-Template-" + UUID.randomUUID();
+		String structureElementTitle = "Struct-Template-" + UUID.randomUUID();
+		template
+			.openEditor()
+			.selectMapInEditor(portfolioTitle)
+			.selectFirstPageInEditor()
+			.setPage(pageTitle, "With a little description")
+			.createStructureElement(structureElementTitle, "Structure description");
+		
+		//open course
+		navBar.openCourse(courseTitle);
+		
+		//reload editor
+		courseEditor = CourseEditorPageFragment.getEditor(browser);
+		courseEditor
+			.publish()
+			.quickPublish();
+		
+		//back to the course
+		CoursePageFragment course = courseEditor
+			.clickToolbarBack();
+		
+		//select the portfolio course element
+		course
+			.clickTree()
+			.selectWithTitle(portfolioNodeTitle);
+		
+		By newMapBy = By.className("o_sel_ep_new_map_template");
+		WebElement newMapButton = browser.findElement(newMapBy);
+		Assert.assertTrue(newMapButton.isDisplayed());
 	}
 }

@@ -179,10 +179,12 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			infosContainer.add(buttonGroupLayout);
 			if(newMapLink == null) {
 				newMapLink = uifactory.addFormLink("map.new", buttonGroupLayout, Link.BUTTON);
+				newMapLink.setElementCssClass("o_sel_ep_new_map_template");
 			}
 		} else {
 			if(selectMapLink == null) {
 				selectMapLink = uifactory.addFormLink("select", "select.mymap", "select.mymap", infosContainer, Link.LINK);
+				selectMapLink.setElementCssClass("o_sel_ep_select_map");
 			} else {
 				selectMapLink.setVisible(true);
 			}

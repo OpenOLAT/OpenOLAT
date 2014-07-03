@@ -26,6 +26,7 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.jcodec.common.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.portfolio.PortfolioPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -54,6 +55,7 @@ public class CourseEditorPageFragment {
 	public static final By chooseWikiButton = By.className("o_sel_wiki_choose_repofile");
 	public static final By chooseTestButton = By.className("o_sel_test_choose_repofile");
 	public static final By chooseFeedButton = By.className("o_sel_feed_choose_repofile");
+	public static final By choosePortfolioButton = By.className("o_sel_map_choose_repofile");
 	
 	
 	public static final List<By> chooseRepoEntriesButtonList = new ArrayList<>();
@@ -62,6 +64,7 @@ public class CourseEditorPageFragment {
 		chooseRepoEntriesButtonList.add(chooseWikiButton);
 		chooseRepoEntriesButtonList.add(chooseTestButton);
 		chooseRepoEntriesButtonList.add(chooseFeedButton);
+		chooseRepoEntriesButtonList.add(choosePortfolioButton);
 	}
 	
 	@Drone
@@ -241,11 +244,34 @@ public class CourseEditorPageFragment {
 	 * @param resourceTitle
 	 * @return
 	 */
-	public  CourseEditorPageFragment createFeed(String  resourceTitle) {
+	public CourseEditorPageFragment createFeed(String resourceTitle) {
 		return createResource(chooseFeedButton, resourceTitle);
 	}
 	
-	public CourseEditorPageFragment createResource(By chooseButton, String resourceTitle) {
+	/**
+	 * Create a portfolio template
+	 * @param resourceTitle
+	 * @return
+	 */
+	public CourseEditorPageFragment createPortfolio(String resourceTitle) {
+		return createResource(choosePortfolioButton, resourceTitle);
+	}
+	
+	/**
+	 * Edit the map in the course element learn content tab.
+	 * @return
+	 */
+	public PortfolioPage editPortfolio() {
+		By editBy = By.className("o_sel_edit_map");
+		WebElement editLink = browser.findElement(editBy);
+		editLink.click();
+		OOGraphene.waitBusy();
+		
+		WebElement main = browser.findElement(By.id("o_main"));
+		return Graphene.createPageFragment(PortfolioPage.class, main);
+	}
+	
+	private CourseEditorPageFragment createResource(By chooseButton, String resourceTitle) {
 		OOGraphene.closeBlueMessageWindow(browser);
 		
 		browser.findElement(chooseButton).click();
@@ -263,13 +289,14 @@ public class CourseEditorPageFragment {
 		return fillCreateForm(resourceTitle);
 	}
 	
-	public CourseEditorPageFragment fillCreateForm(String displayName) {
+	private CourseEditorPageFragment fillCreateForm(String displayName) {
 		WebElement modal = browser.findElement(By.cssSelector("div.modal.o_sel_author_create_popup"));
 		modal.findElement(AuthoringEnvPage.displayNameInput).sendKeys(displayName);
 		modal.findElement(AuthoringEnvPage.createSubmit).click();
 		OOGraphene.waitBusy();
 		return this;
 	}
+	
 
 	/**
 	 * Open the publish process

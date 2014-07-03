@@ -88,6 +88,30 @@ public class PortfolioPage {
 		return ArtefactWizardPage.getWizard(browser);
 	}
 	
+	/**
+	 * Create a learning journal or live blog
+	 * @return
+	 */
+	public ArtefactWizardPage createLearningJournal() {
+		By createButtonBy = By.className("o_sel_add_artfeact");
+		WebElement createButton = browser.findElement(createButtonBy);
+		createButton.click();
+		OOGraphene.waitBusy();
+		
+		By addJournalArtefactBy = By.className("o_sel_add_liveblog_artfeact");
+		OOGraphene.waitElement(addJournalArtefactBy);
+		WebElement addJournalArtefactLink = browser.findElement(addJournalArtefactBy);
+		addJournalArtefactLink.click();
+		OOGraphene.waitBusy();
+		
+		return ArtefactWizardPage.getWizard(browser);
+	}
+	
+	/**
+	 * Click the link to add an artefact to the map
+	 * 
+	 * @return
+	 */
 	public PortfolioPage linkArtefact() {
 		By linkArtefactBy = By.cssSelector("a.o_eportfolio_add_link.o_eportfolio_link");
 		WebElement linkArtefactLink = browser.findElement(linkArtefactBy);
@@ -96,6 +120,10 @@ public class PortfolioPage {
 		return this;
 	}
 	
+	/**
+	 * The button to create an artefact
+	 * @return
+	 */
 	public PortfolioPage addArtefact() {
 		By addAsArtefactBy = By.className("o_sel_add_artfeact");
 		WebElement addAsArtefactButton = browser.findElement(addAsArtefactBy);

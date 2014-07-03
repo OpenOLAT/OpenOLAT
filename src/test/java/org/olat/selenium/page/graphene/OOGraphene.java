@@ -53,7 +53,8 @@ public class OOGraphene {
 	}
 	
 	public static final void tinymce(String content, WebDriver browser) {
-		 ((JavascriptExecutor)browser).executeScript("top.tinymce.activeEditor.setContent('" + content + "')");
+		//TODO selenium hardened the method
+		((JavascriptExecutor)browser).executeScript("top.tinymce.activeEditor.setContent('" + content + "')");
 	}
 	
 	public static final void closeBlueMessageWindow(WebDriver browser) {
