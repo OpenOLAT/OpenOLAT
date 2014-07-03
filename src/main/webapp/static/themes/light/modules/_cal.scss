@@ -13,11 +13,15 @@
 
 .o_cal_yellow { background: #ffe066; border-color: #ffcc00; color: #5D5D5D; }
 .o_cal_yellow .o_cal_wv_event_header {background: #ffcc00;}
-.o_cal_yellow a { color: #5D5D5D! important; } 
+.o_cal_yellow a { color: #5D5D5D! important; }
 
 .o_cal_red { background: #c26666; border-color: #990000; color: #FFF; }
 .o_cal_red .o_cal_wv_event_header {background: #990000;}
-.o_cal_red a { color: #FFF ! important; } 
+.o_cal_red a { color: #FFF ! important; }
+
+.o_cal_rebeccapurple { background: #663399; border-color: #663399; color: #FFF; }
+.o_cal_rebeccapurple .o_cal_wv_event_header {background: #663399;}
+.o_cal_rebeccapurple a { color: #FFF ! important; }
 
 .o_cal_grey { background: #DDDAAA; border-color: #5D5D5D; color: #FFF; }
 .o_cal_grey .o_cal_wv_event_header {background: #5D5D5D;}
@@ -32,6 +36,30 @@
 	margin: 0 5px; 
 	padding: 1px 6px 1px 4px;
 	position: relative; 
-	width: 200px; overflow: hidden;
-	float: left; display: inline;
+	width: 200px;
+	overflow: hidden;
+	float: left;
+	display: inline;
+}
+
+.o_cal_colorchooser_selected:before {
+	content: $fa-var-check;
+}
+
+#o_cal_colorchooser {
+	div {
+		border: 1px solid $brand-primary; 
+		margin: 5px;
+		display: inline-block;
+	}
+	
+	div:hover {
+		border: 1px solid #333; 
+	}
+	
+	a {
+		width: 20px;
+		height: 20px;
+		display: inline-block;
+	}
 }

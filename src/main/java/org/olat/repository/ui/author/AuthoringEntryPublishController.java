@@ -78,10 +78,6 @@ public class AuthoringEntryPublishController extends FormBasicController {
 	private static final String MEMBERSONLY_KEY = "m";
 	private String[] publishedKeys;
 
-	private static final String OPENED_KEY = "o";
-	private static final String CLOSED_KEY = "c";
-	private static final String[] statusKeys = new String[]{OPENED_KEY, CLOSED_KEY};
-
 	
 	/**
 	 * The details form is initialized with data collected from entry and

@@ -83,15 +83,13 @@ public class KalendarEntryDetailsController extends BasicController {
 		this.availableCalendars = availableCalendars;
 		this.kalendarEvent = kalendarEvent;
 		this.isNew = isNew;
-		//setTranslator(new PackageTranslator(CalendarManager.class.getPackage().getName(), getLocale()));
-		//mainVC = new VelocityContainer("calEditMain", VELOCITY_ROOT + "/calEditMain.html", getTranslator(), this);
+		
 		mainVC = createVelocityContainer ("calEditMain");
 		mainVC.contextPut("caller", caller);
 		pane = new TabbedPane("pane", getLocale());
 		pane.addListener(this);
 		mainVC.put("pane", pane);
 		
-		//eventVC = new VelocityContainer("calEditDetails", VELOCITY_ROOT + "/calEditDetails.html", getTranslator(), this);
 		eventVC = createVelocityContainer("calEditDetails");
 		deleteButton = LinkFactory.createButton("cal.edit.delete", eventVC, this);
 		eventVC.contextPut("caller", caller);

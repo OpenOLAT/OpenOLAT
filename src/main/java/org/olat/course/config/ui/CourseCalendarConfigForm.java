@@ -103,6 +103,6 @@ public class CourseCalendarConfigForm extends FormBasicController {
         CoordinatorManager.getInstance().getCoordinator().getEventBus()
         	.fireEventToListenersOf(new KalendarModifiedEvent(), OresHelper.lookupType(CalendarManager.class));
 				
-		fireEvent (ureq, Event.DONE_EVENT);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 }

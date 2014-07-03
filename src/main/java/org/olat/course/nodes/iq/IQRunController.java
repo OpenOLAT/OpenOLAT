@@ -695,7 +695,7 @@ public class IQRunController extends BasicController implements GenericEventList
 		if("test".equals(ce.getOLATResourceable().getResourceableTypeName())) {
 			Long resourceId = ce.getOLATResourceable().getResourceableId();
 			if(resourceId != null && resourceId.longValue() >= 0) {
-				event(ureq, startButton, Event.CHANGED_EVENT);
+				//event(ureq, startButton, Event.CHANGED_EVENT);
 			}
 		}
 	}

@@ -25,91 +25,51 @@
 
 package org.olat.commons.calendar.ui;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-
-import org.olat.commons.calendar.CalendarManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
+import org.olat.core.gui.control.controller.BasicController;
 
 
-public class CalendarColorChooserController extends DefaultController {
+public class CalendarColorChooserController extends BasicController {
 
-	private static final String SELECTED_COLOR_CSS = "o_cal_colorchooser_selected";
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(CalendarManager.class);
-
-	private Translator translator;
 	private VelocityContainer colorVC;
 	private String choosenColor;
-	private Map<Link, String> colorLinks;
-	private Link cancelButton;
 
-	public CalendarColorChooserController(Locale locale, WindowControl wControl, String currentCssSelection) {
-		super(wControl);
-		translator = Util.createPackageTranslator(CalendarManager.class, locale);
-		
-		colorVC = new VelocityContainer("calEdit", VELOCITY_ROOT + "/calColor.html", translator, this);
-		cancelButton = LinkFactory.createButton("cancel", colorVC, this);
-		
-		colorLinks = new HashMap<Link, String>();
-		Link greenLink = LinkFactory.createCustomLink("greenLink", "selc", "", Link.NONTRANSLATED, colorVC, this);
-		if (currentCssSelection.equals("o_cal_green")){
-			greenLink.setCustomEnabledLinkCSS(SELECTED_COLOR_CSS);
-			greenLink.setCustomDisabledLinkCSS(SELECTED_COLOR_CSS);
-		}
-		Link blueLink = LinkFactory.createCustomLink("blueLink", "selc", "", Link.NONTRANSLATED, colorVC, this);
-		if (currentCssSelection.equals("o_cal_blue")){
-			blueLink.setCustomEnabledLinkCSS(SELECTED_COLOR_CSS);
-			blueLink.setCustomDisabledLinkCSS(SELECTED_COLOR_CSS);
-		}
-		Link orangeLink = LinkFactory.createCustomLink("orangeLink", "selc", "", Link.NONTRANSLATED, colorVC, this);
-		if (currentCssSelection.equals("o_cal_orange")){
-			orangeLink.setCustomEnabledLinkCSS(SELECTED_COLOR_CSS);
-			orangeLink.setCustomDisabledLinkCSS(SELECTED_COLOR_CSS);
-		}
-		Link yellowLink = LinkFactory.createCustomLink("yellowLink", "selc", "", Link.NONTRANSLATED, colorVC, this);
-		if (currentCssSelection.equals("o_cal_yellow")){
-			yellowLink.setCustomEnabledLinkCSS(SELECTED_COLOR_CSS);
-			yellowLink.setCustomDisabledLinkCSS(SELECTED_COLOR_CSS);
-		}
-		Link redLink = LinkFactory.createCustomLink("redLink", "selc", "", Link.NONTRANSLATED, colorVC, this);
-		if (currentCssSelection.equals("o_cal_red")){
-			redLink.setCustomEnabledLinkCSS(SELECTED_COLOR_CSS);
-			redLink.setCustomDisabledLinkCSS(SELECTED_COLOR_CSS);
-		}
-		Link greyLink = LinkFactory.createCustomLink("greyLink", "selc", "", Link.NONTRANSLATED, colorVC, this);
-		if (currentCssSelection.equals("o_cal_grey")){
-			greyLink.setCustomEnabledLinkCSS(SELECTED_COLOR_CSS);
-			greyLink.setCustomDisabledLinkCSS(SELECTED_COLOR_CSS);
-		}
-		
-		colorLinks.put(greenLink, "o_cal_green");
-		colorLinks.put(blueLink, "o_cal_blue");
-		colorLinks.put(orangeLink,"o_cal_orange");
-		colorLinks.put(yellowLink,"o_cal_yellow");
-		colorLinks.put(redLink,"o_cal_red");
-		colorLinks.put(greyLink,"o_cal_grey");
+	private static final String[] colors = new String[]{
+		"o_cal_green", "o_cal_blue", "o_cal_orange",
+		"o_cal_yellow", "o_cal_red", "o_cal_rebeccapurple", "o_cal_grey"
+	};
 
-		setInitialComponent(colorVC);
+	public CalendarColorChooserController(UserRequest ureq, WindowControl wControl, String currentCssSelection) {
+		super(ureq, wControl);
+		colorVC = createVelocityContainer("calEdit", "calColor");
+		
+		for(String color:colors) {
+			addColor(color, currentCssSelection);
+		}
+		putInitialPanel(colorVC);
 	}
 	
+	private void addColor(String css, String currentCssSelection) {
+		Link colorLink = LinkFactory.createCustomLink(css, "selc", "", Link.NONTRANSLATED, colorVC, this);
+		if (currentCssSelection.equals(css)){
+			colorLink.setIconLeftCSS("o_icon o_cal_colorchooser_selected");
+		} else {
+			colorLink.setIconLeftCSS("o_icon");
+		}
+		colorLink.setUserObject(css);
+	}
+	
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == cancelButton) {
-			fireEvent(ureq, Event.CANCELLED_EVENT);
-		} else if (colorLinks.containsKey(source)){
-			choosenColor = colorLinks.get(source);
+		if (source instanceof Link){
 			Link colorLink = (Link) source;
-			colorLink.setCustomEnabledLinkCSS(choosenColor);
-			colorLink.setCustomDisabledLinkCSS(choosenColor);
+			choosenColor = (String)colorLink.getUserObject();
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}
@@ -121,5 +81,4 @@ public class CalendarColorChooserController extends DefaultController {
 	protected void doDispose() {
 		// nothing to dispose
 	}
-
 }

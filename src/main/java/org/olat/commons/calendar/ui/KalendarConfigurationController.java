@@ -128,7 +128,7 @@ public class KalendarConfigurationController extends BasicController {
 				String calendarID = ureq.getParameter(PARAM_ID);
 				lastCalendarWrapper = findKalendarRenderWrapper(calendarID);
 				removeAsListenerAndDispose(colorChooser);
-				colorChooser = new CalendarColorChooserController(getLocale(), getWindowControl(), lastCalendarWrapper.getKalendarConfig().getCss());
+				colorChooser = new CalendarColorChooserController(ureq, getWindowControl(), lastCalendarWrapper.getKalendarConfig().getCss());
 				listenTo(colorChooser);
 				removeAsListenerAndDispose(cmc);
 				cmc = new CloseableModalController(getWindowControl(), translate("close"),  colorChooser.getInitialComponent(), false, translate("cal.color.title"));

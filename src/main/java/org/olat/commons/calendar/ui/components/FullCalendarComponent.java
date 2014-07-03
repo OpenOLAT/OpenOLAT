@@ -99,6 +99,7 @@ public class FullCalendarComponent extends AbstractComponent {
 	/**
 	 * @see org.olat.core.gui.components.Component#doDispatchRequest(org.olat.core.gui.UserRequest)
 	 */
+	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		//
 	}
@@ -106,6 +107,7 @@ public class FullCalendarComponent extends AbstractComponent {
 	/**
 	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
 	 */
+	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}
@@ -113,9 +115,11 @@ public class FullCalendarComponent extends AbstractComponent {
 	/**
 	 * @see org.olat.core.gui.components.Component#validate(org.olat.core.gui.UserRequest, org.olat.core.gui.render.ValidationResult)
 	 */
+	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);
 		vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/fullcalendar/fullcalendar.min.js");
+		vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.10.4.custom.dnd.min.js");
 	}
 
 	/**

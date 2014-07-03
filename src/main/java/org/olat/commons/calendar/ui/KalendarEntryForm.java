@@ -47,6 +47,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -364,7 +365,7 @@ public class KalendarEntryForm extends FormBasicController {
 		formLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton(SUBMIT_SINGLE, "cal.form.submitSingle", buttonLayout);
 		if (writeableCalendars.size() > 1) {
-			multi = uifactory.addFormLink("cal.form.submitMulti", buttonLayout, "b_button");
+			multi = uifactory.addFormLink("cal.form.submitMulti", buttonLayout, Link.BUTTON);
 		}
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		
