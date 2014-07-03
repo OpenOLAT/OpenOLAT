@@ -4,23 +4,25 @@ var BPlayer = {
 	},
 	
 	playSound : function(soundUrl, domId) {
-		if(!jwplayer.utils.isIE()) {
-			var playerUrl = BPlayer.playerUrl();
-			var args = {
-				file:soundUrl,
-				start:0,
-				autostart:true,
-				repeat:'none',
-				controlbar:'none',
-				controls: false,
-				width: '1px',
-				height: '1px',
-				icons:false,
-				showicons:false,
-				flashplayer:playerUrl
-			};
-			jwplayer(domId).setup(args);
-		}
+		jQuery.getScript(BPlayer.playerJsUrl(), function() {
+			if(!jwplayer.utils.isIE()) {
+				var playerUrl = BPlayer.playerUrl();
+				var args = {
+					file:soundUrl,
+					start:0,
+					autostart:true,
+					repeat:'none',
+					controlbar:'none',
+					controls: false,
+					width: '1px',
+					height: '1px',
+					icons:false,
+					showicons:false,
+					flashplayer:playerUrl
+				};
+				jwplayer(domId).setup(args);
+			}
+		});
 	},
 
 	insertHTML5Player : function (address,domId,width,height,start,duration,provider,streamer,autostart,repeat,controlbar,poster) {
