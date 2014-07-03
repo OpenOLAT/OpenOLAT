@@ -1,11 +1,11 @@
 <div id="o_qti_run" class="#if($qtistatus.isSurvey())o_qti_survey #else o_qti_test #end clearfix">
-	<div id="o_qti_run_title">
+	<div id="o_qti_run_title" class="o_header_with_buttons">
+		<h3>$qtistatus.getTitle()</h3>
 		#if(!$qtistatus.isPreview())
-		<div class="pull-right">
+		<div class="o_button_group o_button_group_right">
 			$r.render("close")
 		</div>
   		#end
-		<h3>$qtistatus.getTitle()</h3>
   	</div>
   
 	#if (!$qtistatus.isSurvey() && $displayScoreProgress)

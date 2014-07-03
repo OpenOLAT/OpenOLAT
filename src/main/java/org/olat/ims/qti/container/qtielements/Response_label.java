@@ -114,13 +114,13 @@ public class Response_label extends GenericQTIElement {
 				
 			} else {
 				// render as input string
-				buffer.append("&nbsp;<input id=\"QTI_").append(getQTIIdent()).append("\" name=\"");
+				buffer.append("<span> </span><input id=\"QTI_").append(getQTIIdent()).append("\" name=\"");
 				appendParameterIdent(buffer, ri);
 				buffer.append("\" type=\"text\" size=\"").append(columns).append("\" maxlength=\"").append(maxlength);
 				if (iinput != null && !iinput.isEmpty() && iinput.getSingle(responseIdent) != null) {
 					buffer.append("\" value=\"").append(iinput.getSingle(getQTIIdent())); //TODO: LD: must this value be escapeHtml?					
 				}
-				buffer.append("\" onchange=\"return setFormDirty('ofo_iq_item')\" onclick=\"return setFormDirty('ofo_iq_item')\" />&nbsp;");
+				buffer.append("\" onchange=\"return setFormDirty('ofo_iq_item')\" onclick=\"return setFormDirty('ofo_iq_item')\" /><span> </span>");
 			}
 			addBr(ri, buffer);
 		}

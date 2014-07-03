@@ -28,8 +28,9 @@ function confirmSuspend() {
 </script>
 
 <div id="o_qti_run" class="#if($qtistatus.isSurvey())o_qti_survey #else o_qti_test #end clearfix">
-	<div id="o_qti_run_title">
-		<div class="pull-right">
+	<div id="o_qti_run_title" class="o_header_with_buttons">
+		<h3>$qtistatus.getTitle()</h3>
+		<div class="o_button_group o_button_group_right">
   	#if ($qtistatus.isOpen())
 		#if ($qtistatus.isSurvey())
 			<a class="btn btn-default #if($allQuestionsAnswered) o_button_dirty #end" href="$r.commandURI("sas")" onclick="{if (o2cl()) return confirmSubmit(); else return false;}"><span>$r.translate("submitSurvey")</span></a>
@@ -52,7 +53,6 @@ function confirmSuspend() {
 		$r.render("close")
  	#end
  		</div>
-		<h3>$qtistatus.getTitle()</h3>
   	</div>
 
 	<div id="o_qti_run_score">

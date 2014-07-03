@@ -220,7 +220,7 @@ public class IQComponentRenderer implements ComponentRenderer {
 			}
 			
 			sb.append("<div class=\"row\">");
-			sb.append("<div class='col-sm-offset-1 col-sm-3'>");
+			sb.append("<div class='o_button_group'>");
 			
 			sb.append("<input class=\"btn btn-primary\" type=\"submit\" name=\"olat_fosm\" value=\"");
 			if (ai.isSectionPage())
