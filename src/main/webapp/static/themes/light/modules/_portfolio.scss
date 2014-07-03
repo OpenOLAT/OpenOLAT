@@ -2,6 +2,7 @@
 .o_ep_icon_page:before { content: $fa-var-file-o; };
 .o_ep_icon_struct:before { content: $fa-var-cubes; }
 .o_ep_icon_liveblog:before { content: $fa-var-bullhorn;}
+.o_artefact_closed:before { content: $fa-var-lock;}
 
 .o_portfolio_toc {
 	.o_ep_link { float: right; margin-right: 0px;  }

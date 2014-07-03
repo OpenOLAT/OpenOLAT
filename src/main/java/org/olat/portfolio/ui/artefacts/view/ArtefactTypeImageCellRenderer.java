@@ -41,6 +41,14 @@ import org.olat.portfolio.ui.filter.PortfolioFilterController;
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
 public class ArtefactTypeImageCellRenderer implements CustomCellRenderer {
+	
+	private final PortfolioModule portfolioModule;
+	private final Translator translator;
+	
+	public ArtefactTypeImageCellRenderer(Locale locale) {
+		portfolioModule = CoreSpringFactory.getImpl(PortfolioModule.class);
+		translator = Util.createPackageTranslator(ArtefactTypeImageCellRenderer.class, locale);
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.table.CustomCellRenderer#render(org.olat.core.gui.render.StringOutput, org.olat.core.gui.render.Renderer, java.lang.Object, java.util.Locale, int, java.lang.String)
@@ -49,20 +57,16 @@ public class ArtefactTypeImageCellRenderer implements CustomCellRenderer {
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 		if (val instanceof AbstractArtefact){
 			AbstractArtefact artefact = (AbstractArtefact) val;
-			PortfolioModule portfolioModule = (PortfolioModule)CoreSpringFactory.getBean("portfolioModule");
 			EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(artefact.getResourceableTypeName());
-			Translator pT = Util.createPackageTranslator(this.getClass(), locale);
-			Translator handlerTrans = artHandler.getHandlerTranslator(pT);
+			
+			Translator handlerTrans = artHandler.getHandlerTranslator(translator);
 			String handlerClass = PortfolioFilterController.HANDLER_PREFIX + artHandler.getClass().getSimpleName() + PortfolioFilterController.HANDLER_TITLE_SUFFIX;
 			String artType = handlerTrans.translate(handlerClass);
 			String artIcon = artefact.getIcon();
 			
-			sb.append("<span class=\"");
-			sb.append(artIcon);
-			sb.append("\" title=\"");
-			sb.append(artType);
-			sb.append("\" style=\"background-repeat: no-repeat; background-position: center center; padding: 2px 8px;\">&nbsp;</span>");
+			sb.append("<i class='o_icon o_icon-lg ").append(artIcon)
+			  .append("' title=\"").append(artType)
+			  .append("\"> </i>");
 		}
 	}
-
 }

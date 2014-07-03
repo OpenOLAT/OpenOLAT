@@ -180,7 +180,8 @@ public class EPArtefactViewController extends FormBasicController {
 
 		title = uifactory.addInlineTextElement("title", artefact.getTitle(), formLayout, this);
 		
-		flc.contextPut("cssClosed", artefactInClosedMap ? "b_artefact_closed" : "");
+		System.out.println("Closed: " + artefactInClosedMap);
+		flc.contextPut("cssClosed", artefactInClosedMap ? "o_artefact_closed" : "");
 		flc.contextPut("viewOnly", viewOnlyMode);
 		
 		if (viewOnlyMode || artefactInClosedMap) title.setEnabled(false);

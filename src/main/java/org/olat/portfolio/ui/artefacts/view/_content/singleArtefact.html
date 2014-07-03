@@ -1,9 +1,7 @@
 <div class="panel panel-default b_artefact">
 	<div class="panel-heading">
-		#if ($cssClosed != "") 
-			<div class="$!cssClosed">&nbsp;&nbsp;&nbsp;&nbsp;</div>
-		#end
-		<h4><i class="o_icon $artefact.getIcon()"> </i> $r.escapeHtml($!artefact.getTitle())</h4>
+		<h4><i class="o_icon $artefact.getIcon()"> </i> $r.escapeHtml($!artefact.getTitle())
+		#if ($cssClosed != "") <i class="o_icon pull-right $cssClosed"> </i> #end</h4>
 	</div>
 	<table class="table table-condensed table-striped"><tbody>
 		#if ($artAttribConfig.get("artefact.title"))
@@ -64,9 +62,9 @@
 			<td>#if ($r.available("detailsController")) $r.render("detailsController") #end </td></tr>
 		#end
 	</tbody></table>
-</div>
-<div class="o_actions clearfix">
-	#if ($r.available("details.link")) <div class="b_float_right"> $r.render("details.link") </div> #end
-	#if ($r.available("delete.artefact")) <div class="b_float_left">$r.render("delete.artefact")</div> #end
-	#if ($r.available("choose.artefact")) <p style="text-align: center">$r.render("choose.artefact")</p> #end
+	<div class="panel-body">
+		#if ($r.available("details.link")) <div class="b_float_right"> $r.render("details.link") </div> #end
+		#if ($r.available("delete.artefact")) <div class="b_float_left">$r.render("delete.artefact")</div> #end
+		#if ($r.available("choose.artefact")) <p style="text-align: center">$r.render("choose.artefact")</p> #end
+	</div>
 </div>

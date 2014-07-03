@@ -32,7 +32,6 @@ import java.util.List;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.ui.GroupController;
@@ -208,11 +207,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 	// not null indicates tool is enabled
 	private GenericTreeNode nodeFolder, nodeForum, nodeWiki, nodeCal, nodePortfolio, nodeOpenMeetings;
-	//fxdiff BAKS-7 Resume function
 	private GenericTreeNode nodeContact, nodeGroupOwners, nodeResources, nodeInformation, nodeAdmin;
 	private boolean groupRunDisabled;
 	private OLATResourceable assessmentEventOres;
-	//fxdiff VCRP-1,2: access control of resources
 	private Controller accessController;
 	
 	private boolean needActivation;
@@ -261,7 +258,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		chatAvailable = isChatAvailable();
 		isAdmin = ureq.getUserSession().getRoles().isOLATAdmin()
 				|| ureq.getUserSession().getRoles().isGroupManager()
-				|| securityManager.isIdentityPermittedOnResourceable(getIdentity(), Constants.PERMISSION_ACCESS, businessGroup);
+				|| businessGroupService.isIdentityInBusinessGroup(getIdentity(), businessGroup.getKey(), true, false, null);
 
 		// Initialize translator:
 		// package translator with default group fallback translators and type

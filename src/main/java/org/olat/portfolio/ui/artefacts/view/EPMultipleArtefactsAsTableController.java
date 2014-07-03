@@ -141,7 +141,7 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 		descr = new DefaultColumnDescriptor("artefact.tags", 4, null, getLocale());
 		artefactListTblCtrl.addColumnDescriptor(false, descr);
 
-		descr = new CustomRenderColumnDescriptor("table.header.type", 5, null, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_CENTER, new ArtefactTypeImageCellRenderer()){
+		descr = new CustomRenderColumnDescriptor("table.header.type", 5, null, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_CENTER, new ArtefactTypeImageCellRenderer(getLocale())){
 			/**
 			 * @see org.olat.core.gui.components.table.DefaultColumnDescriptor#compareTo(int, int)
 			 */

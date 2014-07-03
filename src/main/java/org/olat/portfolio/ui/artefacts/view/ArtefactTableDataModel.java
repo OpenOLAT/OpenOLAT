@@ -45,7 +45,7 @@ public class ArtefactTableDataModel extends DefaultTableDataModel<AbstractArtefa
 	public ArtefactTableDataModel(List<AbstractArtefact> artefacts) {
 		super(artefacts);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 	}
 
 	/**
