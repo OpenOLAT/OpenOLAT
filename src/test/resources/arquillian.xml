@@ -21,6 +21,10 @@
 		<property name="browser">safari</property>
 	</extension>
 	
+	<extension qualifier="graphene-participant">
+		<property name="browser">firefox</property>
+	</extension>
+	
 	<extension qualifier="safari">
 		<property name="browser">safari</property>
 	</extension>

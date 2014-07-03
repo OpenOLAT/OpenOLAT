@@ -162,6 +162,7 @@ public class BusinessGroupFormController extends FormBasicController {
 			businessGroupName.setNotLongerThanCheck(BusinessGroup.MAX_GROUP_NAME_LENGTH, "create.form.error.nameTooLong");
 			businessGroupName.setRegexMatchCheck(BusinessGroup.VALID_GROUPNAME_REGEXP, "create.form.error.illegalName");
 		}
+		businessGroupName.setElementCssClass("o_sel_group_edit_title");
 		businessGroupName.setMandatory(true);
 		businessGroupName.setEnabled(!BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.title));
 		
@@ -193,10 +194,12 @@ public class BusinessGroupFormController extends FormBasicController {
 		businessGroupMinimumMembers = uifactory.addTextElement("create.form.title.min", "create.form.title.min", 5, "", formLayout);
 		businessGroupMinimumMembers.setDisplaySize(6);
 		businessGroupMinimumMembers.setVisible(false); // currently the minimum feature is not enabled
+		businessGroupMinimumMembers.setElementCssClass("o_sel_group_edit_min_members");
 
 		// Maximum members input
 		businessGroupMaximumMembers = uifactory.addTextElement("create.form.title.max", "create.form.title.max", 5, "", formLayout);
 		businessGroupMaximumMembers.setDisplaySize(6);
+		businessGroupMaximumMembers.setElementCssClass("o_sel_group_edit_max_members");
 
 		// Checkboxes
 		enableWaitingList = uifactory.addCheckboxesHorizontal("create.form.enableWaitinglist", null, formLayout, waitingListKeys,

@@ -26,8 +26,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -68,25 +66,13 @@ public class UserRestClient {
 		this.username = username;
 		this.password = password;
 	}
-
-	public List<UserVO> createTestUsers(int count)
-	throws IOException, URISyntaxException {
-		RestConnection restConnection = new RestConnection(deploymentUrl);
-		assertTrue(restConnection.login(username, password));
-
-		List<UserVO> users = new ArrayList<UserVO>(count);
-		for(int i = 0; i < count; i++){
-			users.add(createUser(restConnection));
-		}
-		return users;
-	}
 	
 	public UserVO createRandomUser()
 	throws IOException, URISyntaxException {
 		RestConnection restConnection = new RestConnection(deploymentUrl);
 		assertTrue(restConnection.login(username, password));
 		
-		UserVO user = createUser(restConnection);
+		UserVO user = createUser(restConnection, "Rnd");
 
 		restConnection.shutdown();
 		return user;
@@ -97,7 +83,7 @@ public class UserRestClient {
 		RestConnection restConnection = new RestConnection(deploymentUrl);
 		assertTrue(restConnection.login(username, password));
 		
-		UserVO user = createUser(restConnection);
+		UserVO user = createUser(restConnection, "Auth");
 		
 		RolesVO roles = new RolesVO();
 		roles.setAuthor(true);
@@ -114,7 +100,7 @@ public class UserRestClient {
 		return user;
 	}
 	
-	private UserVO createUser(RestConnection restConnection)
+	private UserVO createUser(RestConnection restConnection, String role)
 	throws URISyntaxException, IOException {
 		String uuid = Integer.toString(counter.incrementAndGet()) + UUID.randomUUID().toString();
 		
@@ -123,7 +109,7 @@ public class UserRestClient {
 		vo.setLogin(username);
 		String password = ("passwd-" + uuid).substring(0, 24);
 		vo.setPassword(password);
-		vo.setFirstName("Selena-" + uuid);
+		vo.setFirstName("Selena-"+ role + "-" + uuid);
 		vo.setLastName("Smith");
 		vo.setEmail(username + "@frentix.com");
 		vo.putProperty("telOffice", "39847592");

@@ -20,6 +20,7 @@
 package org.olat.selenium.page;
 
 
+import java.net.URL;
 import java.util.List;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
@@ -31,7 +32,6 @@ import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
 
 /**
  * The login page, annoted to be used as @InitialPage
@@ -44,46 +44,30 @@ import org.openqa.selenium.support.FindBy;
 @Location("dmz")
 public class LoginPage {
 	
-	public static final String loginFormClassName = "o_login_form";
-	public static final String loginFormXPath = "//div[contains(@class,'o_login_form')]";
-
-	public static final String usernameId = "o_fiooolat_login_name";
-	public static final String passwordId = "o_fiooolat_login_pass";
-	public static final String loginButtonId = "o_fiooolat_login_button";
-	public static final String footerUserDivXPath = "//div[@id='o_footer_user']";
-	public static final String acknowledgeCheckboxXPath = "//input[@name='acknowledge_checkbox']";
+	private static final String footerUserDivXPath = "//div[@id='o_footer_user']";
+	private static final String acknowledgeCheckboxXPath = "//input[@name='acknowledge_checkbox']";
 	
-	public static final By authXPath = By.xpath(footerUserDivXPath);
-	public static final By loginFormBy = By.xpath(loginFormXPath);
-	public static final By authOrDisclaimerXPath = By.xpath(footerUserDivXPath + "|" + acknowledgeCheckboxXPath);
-	public static final By disclaimerXPath = By.xpath(acknowledgeCheckboxXPath);
-	public static final By disclaimerButtonXPath = By.xpath("//div[contains(@class,'o_sel_disclaimer_buttons')]/button"); 
+	private static final By authXPath = By.xpath(footerUserDivXPath);
+	public static final By loginFormBy = By.cssSelector("div.o_login_form");
+	private static final By authOrDisclaimerXPath = By.xpath(footerUserDivXPath + "|" + acknowledgeCheckboxXPath);
+	private static final By disclaimerXPath = By.xpath(acknowledgeCheckboxXPath);
+	private static final By disclaimerButtonXPath = By.xpath("//div[contains(@class,'o_sel_disclaimer_buttons')]/button"); 
 	
-	public static final By resumeButton = By.className("o_sel_resume_yes");
-	
+	public static final By resumeButton = By.className("o_sel_resume_yes");	
 	public static final By usernameFooterBy = By.id("o_username");
-
-	@FindBy(className = loginFormClassName)
-	private WebElement loginDiv;
-	@FindBy(xpath = loginFormXPath)
-	private WebElement loginDivXPath;
-	
-	@FindBy(id = usernameId)
-	private WebElement usernameInput;
-	@FindBy(id = passwordId)
-	private WebElement passwordInput;
-	@FindBy(id = loginButtonId)
-	private WebElement loginButton;
 	
 	@Drone
 	private WebDriver browser;
+	
+	public static LoginPage getLoginPage(WebDriver browser, URL deployementUrl) {
+		LoginPage page = new LoginPage();
+		page.browser = browser;
+		page.browser.navigate().to(deployementUrl);
+		return page;
+	}
 
 	public LoginPage assertOnLoginPage() {
-		Assert.assertNotNull(loginDiv);
-		Assert.assertNotNull(loginDivXPath);
-
-		Assert.assertTrue(loginDiv.isDisplayed());
-		Assert.assertTrue(loginDivXPath.isDisplayed());
+		Assert.assertTrue(browser.findElement(loginFormBy).isDisplayed());
 		return this;
 	}
 	
@@ -102,9 +86,16 @@ public class LoginPage {
 	 * @param password
 	 */
 	public LoginPage loginAs(String username, String password) {
+		//fill login form
+		By usernameId = By.id("o_fiooolat_login_name");
+		WebElement usernameInput = browser.findElement(usernameId);
 		usernameInput.sendKeys(username);
+		By passwordId = By.id("o_fiooolat_login_pass");
+		WebElement passwordInput = browser.findElement(passwordId);
 		passwordInput.sendKeys(password);
-
+		
+		By loginBy = By.id("o_fiooolat_login_button");
+		WebElement loginButton = browser.findElement(loginBy);
 		Graphene.guardHttp(loginButton).click();
 		OOGraphene.waitElement(authOrDisclaimerXPath);
 		

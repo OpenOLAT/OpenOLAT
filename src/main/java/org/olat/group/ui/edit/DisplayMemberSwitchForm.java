@@ -100,7 +100,9 @@ public class DisplayMemberSwitchForm extends FormBasicController {
 	
 	public void setDisplayMembers(BusinessGroup group) {
 		showOwners.select("show_owners", group.isOwnersVisibleIntern());
+		showOwners.setElementCssClass("o_sel_group_show_owners");
 		showPartips.select("show_participants", group.isParticipantsVisibleIntern());
+		showPartips.setElementCssClass("o_sel_group_show_participants");
 		showWaitingList.select("show_waiting_list", group.isWaitingListVisibleIntern());
 		openOwners.select("open_owners", group.isOwnersVisiblePublic());
 		openPartips.select("open_participants", group.isParticipantsVisiblePublic());

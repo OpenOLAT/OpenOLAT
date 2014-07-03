@@ -25,11 +25,11 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.group.GroupsPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
 
 /**
  * Page fragment which control the navigation bar with the static sites.
@@ -45,24 +45,19 @@ public class NavigationPage {
 	@Drone
 	private WebDriver browser;
 	
-	@FindBy(css="ul.o_navbar_sites")
-	private WebElement navigationSites;
-	
-	@FindBy(css = "li.o_site_author_env > a")
-	private WebElement authoringEnvTab;
-	@FindBy(css = "li.o_site_repository > a")
-	private WebElement myCourseTab;
+	private By navigationSitesBy = By.cssSelector("ul.o_navbar_sites");
+	private By authoringEnvTabBy = By.cssSelector("li.o_site_author_env > a");
 	
 	public NavigationPage assertOnNavigationPage() {
+		WebElement navigationSites = browser.findElement(navigationSitesBy);
 		Assert.assertTrue(navigationSites.isDisplayed());
 		return this;
 	}
 	
 	public AuthoringEnvPage openAuthoringEnvironment() {
-		if(!navigationSites.isDisplayed()) {
-			//too small, open the black panel
-		}
+		openNavigationSites();
 		//author?
+		WebElement authoringEnvTab = browser.findElement(authoringEnvTabBy);
 		Assert.assertTrue(authoringEnvTab.isDisplayed());
 		
 		authoringEnvTab.click();
@@ -73,6 +68,23 @@ public class NavigationPage {
 		
 		WebElement main = browser.findElement(By.id("o_main"));
 		return Graphene.createPageFragment(AuthoringEnvPage.class, main);
+	}
+	
+	public GroupsPage openGroups(WebDriver browser) {
+		By groupsBy = By.cssSelector("li.o_site_groups > a");
+		WebElement groups = browser.findElement(groupsBy);
+		Assert.assertTrue(groups.isDisplayed());
+		groups.click();
+		OOGraphene.waitBusy();
+		
+		return new GroupsPage(browser);
+	}
+	
+	private void openNavigationSites() {
+		List<WebElement> navigationSites = browser.findElements(navigationSitesBy);
+		if(navigationSites.isEmpty()) {
+			//too small, open the black panel
+		}
 	}
 	
 	public void openCourse(String title) {

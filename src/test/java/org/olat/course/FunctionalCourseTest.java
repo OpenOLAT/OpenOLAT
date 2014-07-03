@@ -21,7 +21,6 @@ package org.olat.course;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -50,7 +49,6 @@ import org.olat.restapi.support.vo.GroupVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.ArquillianDeployments;
 import org.olat.util.FunctionalCourseUtil;
-import org.olat.util.FunctionalCourseUtil.CourseEditorCourseTab;
 import org.olat.util.FunctionalCourseUtil.CourseNodeAlias;
 import org.olat.util.FunctionalHtmlUtil;
 import org.olat.util.FunctionalRepositorySiteUtil;
@@ -150,84 +148,6 @@ public class FunctionalCourseTest {
 		for(int i = 0; i < elementArray.length; i++){
 			functionalCourseUtil.open(browser, i);
 		}
-		
-		functionalUtil.logout(browser);
-	}
-
-	@Test
-	@RunAsClient
-	public void checkCreateUsingEditor() throws FileNotFoundException, IOException, URISyntaxException{
-		/* login */
-		Assert.assertTrue(functionalUtil.login(browser, functionalUtil.getUsername(), functionalUtil.getPassword(), true));
-		
-		/* open repository site */
-		Assert.assertTrue(functionalUtil.openSite(browser, OlatSite.LEARNING_RESOURCES));
-		
-		/* create course */
-		Assert.assertTrue(functionalRepositorySiteUtil.createCourseUsingEditor(browser, EDITOR_COURSE_TITLE, EDITOR_COURSE_DESCRIPTION));
-		
-		/* set single page as overview */
-		Assert.assertTrue(functionalCourseUtil.uploadOverviewPage(browser, FunctionalCourseTest.class.getResource(EDITOR_COURSE_OVERVIEW_FILE).toURI()));
-		
-		/* publish entire course */
-		Assert.assertTrue(functionalCourseUtil.publishEntireCourse(browser, null, null));
-		
-		/* change short title and save */
-		Assert.assertTrue(functionalCourseUtil.openCourseEditorCourseTab(browser, CourseEditorCourseTab.TITLE_AND_DESCRIPTION));
-		
-		StringBuffer selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=(//div[contains(@class, 'o_editor')]//form//input[@type='text'])[1]");
-		
-		browser.type(selectorBuffer.toString(), EDITOR_COURSE_CHANGED_TITLE);
-		
-		selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=(//div[contains(@class, 'o_editor')]//form//button[contains(@class, '")
-		.append(functionalUtil.getButtonDirtyCss())
-		.append("')])[last()]");
-		
-		functionalUtil.waitForPageToLoadElement(browser, selectorBuffer.toString());
-		browser.click(selectorBuffer.toString());
-		functionalUtil.waitForPageToUnloadElement(browser, selectorBuffer.toString());
-		
-		/* publish entire course */
-		Assert.assertTrue(functionalCourseUtil.publishEntireCourse(browser, null, null));
-		
-		/*
-		 * Test for content i.e. approve if changes were applied.
-		 */
-		String courseLink = null;
-		
-		Assert.assertNotNull(courseLink = functionalCourseUtil.readExternalLink(browser));
-		Assert.assertTrue(functionalCourseUtil.closeActiveTab(browser));
-		
-		browser.open(courseLink);
-		functionalUtil.waitForPageToLoad(browser);
-
-		String originalText = functionalHtmlUtil.stripTags(IOUtils.toString(FunctionalCourseTest.class.getResourceAsStream(EDITOR_COURSE_OVERVIEW_FILE)), true);
-
-		//TODO:JK: probably you want to replace the following code with functionalUtil.waitForPageToLoadContent
-		String spIFrameSelector = "dom=document.getElementsByClassName('b_module_singlepage_wrapper')[0].getElementsByTagName('iframe')[0]";
-		functionalUtil.waitForPageToLoadElement(browser, spIFrameSelector);
-		browser.selectFrame(spIFrameSelector);
-		String source = browser.getHtmlSource();
-		String currentText = functionalHtmlUtil.stripTags(source, true);
-		browser.selectFrame("relative=up");
-		
-		
-		Assert.assertTrue(originalText.equals(currentText));
-		
-		selectorBuffer = new StringBuffer();
-		
-		selectorBuffer.append("xpath=//a[contains(@class, '")
-		.append(functionalCourseUtil.getStructureIconCss())
-		.append("')]")
-		.append("//span[contains(text(), '")
-		.append(EDITOR_COURSE_CHANGED_TITLE)
-		.append("')]");
-		
-		Assert.assertTrue(browser.isElementPresent(selectorBuffer.toString()));
 		
 		functionalUtil.logout(browser);
 	}
