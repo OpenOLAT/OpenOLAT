@@ -107,6 +107,16 @@ public class InvitationDAOTest extends OlatTestCase {
 		Assert.assertEquals("kanu.unchou@frentix.com", reloadedInvitation.getMail());
 	}
 	
+	@Test
+	public void countInvitations() {
+		Invitation invitation = invitationDao.createAndPersistInvitation();
+		dbInstance.commit();
+		Assert.assertNotNull(invitation);
+		
+		long numOfInvitations = invitationDao.countInvitations();
+		Assert.assertTrue(numOfInvitations > 0l);
+	}
+	
 	/**
 	 * Check the HQL code of the the method, and that it doesn't delete to much invitations
 	 */

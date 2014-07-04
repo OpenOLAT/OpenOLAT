@@ -158,6 +158,19 @@ public class InvitationDAO {
 	    return invitations.isEmpty() ? null : invitations.get(0);
 	}
 	
+	
+	/**
+	 * the number of invitations
+	 * @return
+	 */
+	public long countInvitations() {
+		String sb = "select count(invitation) from binvitation as invitation";
+		Number invitations = dbInstance.getCurrentEntityManager()
+				.createQuery(sb, Number.class)
+				.getSingleResult();		
+		return invitations == null ? 0l : invitations.longValue();
+	}
+	
 	/**
 	 * Check if the identity has an invitation, valid or not
 	 * @param identity
