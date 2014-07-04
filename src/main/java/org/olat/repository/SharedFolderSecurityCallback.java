@@ -92,7 +92,7 @@ public class SharedFolderSecurityCallback implements VFSSecurityCallback {
 	 * @see org.olat.core.util.vfs.callbacks.VFSSecurityCallback#canDeleteRevisionsPermanently()
 	 */
 	public boolean canDeleteRevisionsPermanently() {
-		return false;
+		return true;
 	}
 
 	/**
