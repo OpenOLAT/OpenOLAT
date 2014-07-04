@@ -128,6 +128,7 @@ public class FolderRunController extends BasicController implements Activateable
 	 * Constructor for a folder controller without filter and custom link model for editor
 	 * @param rootContainer
 	 * @param displayWebDAVLink
+	 *            true: show the webDAV link; false: hide the webDAV link
 	 * @param ureq
 	 * @param wControl
 	 */
@@ -139,6 +140,13 @@ public class FolderRunController extends BasicController implements Activateable
 	 * Constructor for a folder controller without filter and custom link model for editor.
 	 * @param rootContainer
 	 * @param displayWebDAVLink
+	 *            true: show the webDAV link; false: hide the webDAV link
+	 * @param displaySearch
+	 *            true: display the search field; false: omit the search field.
+	 *            Note: for guest users the search is always omitted.
+	 * @param canMail
+	 * 			  true: allow sending document / link to document via email to other users
+	 *            false: don't use mail feature
 	 * @param ureq
 	 * @param wControl
 	 */
@@ -159,6 +167,9 @@ public class FolderRunController extends BasicController implements Activateable
 	 * @param displaySearch
 	 *            true: display the search field; false: omit the search field.
 	 *            Note: for guest users the search is always omitted.
+	 * @param canMail
+	 * 			  true: allow sending document / link to document via email to other users
+	 *            false: don't use mail feature
 	 * @param ureq
 	 *            The user request object
 	 * @param wControl
@@ -189,6 +200,9 @@ public class FolderRunController extends BasicController implements Activateable
 	 * @param displaySearch
 	 *            true: display the search field; false: omit the search field.
 	 *            Note: for guest users the search is always omitted.
+	 * @param canMail
+	 * 			  true: allow sending document / link to document via email to other users
+	 *            false: don't use mail feature
 	 * @param ureq
 	 *            The user request object
 	 * @param wControl
