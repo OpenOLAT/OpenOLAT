@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -36,7 +37,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -44,8 +44,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -98,12 +99,11 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 
 	private static final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 	
-	private FormLink backLink, searchButton, selectAll, deselectAll;
+	private FormLink backLink, searchButton;
 	private TextElement loginEl;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private Map <String,FormItem>propFormItems;
 	private FlexiTableElement tableEl;
-	private VelocityContainer tableVC;
 	private UserSearchFlexiTableModel userTableModel;
 	private FormLayoutContainer autoCompleterContainer;
 	private FormLayoutContainer searchFormContainer;
@@ -156,8 +156,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 
 			// user search form
 			backLink = uifactory.addFormLink("btn.back", formLayout);
-			
-			//searchform = new UserSearchForm(ureq, getWindowControl(), isAdministrativeUser, false, mainForm);
+			backLink.setIconLeftCSS("o_icon o_icon_back");
 
 			searchFormContainer = FormLayoutContainer.createDefaultFormLayout("usersearchPanel", getTranslator());
 			searchFormContainer.setRootForm(mainForm);
@@ -198,14 +197,9 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 			layoutCont.contextPut("noList","false");			
 			layoutCont.contextPut("showButton","false");
 
-			tableVC = createVelocityContainer("userflexisearch");
-			
-			layoutCont.put("userTable", tableVC);
-
 			//add the table
 			FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 			int colPos = 0;
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.select", colPos++));
 			if(isAdministrativeUser) {
 				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.login", colPos++));
 			}
@@ -220,19 +214,16 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 					tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos++));
 				}
 			}
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", colPos++));
+			tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("select", translate("select"), "select"));
 			
 			Translator myTrans = userManager.getPropertyHandlerTranslator(getTranslator());
-			userTableModel = new UserSearchFlexiTableModel(Collections.<UserResultWrapper>emptyList(), resultingPropertyHandlers, isAdministrativeUser, getLocale(), tableColumnModel);
+			userTableModel = new UserSearchFlexiTableModel(Collections.<Identity>emptyList(), resultingPropertyHandlers, isAdministrativeUser, getLocale(), tableColumnModel);
 			tableEl = uifactory.addTableElement(ureq, getWindowControl(), "users", userTableModel, myTrans, formLayout);
 			tableEl.setCustomizeColumns(false);
-
-			selectAll = uifactory.addFormLink("selectall", formLayout);
-			deselectAll = uifactory.addFormLink("deselectall", formLayout);
+			tableEl.setMultiSelect(true);
+			tableEl.setSelectAllEnable(true);
 			
-			tableVC.put("table", tableEl.getComponent());
-			tableVC.put("selectAll", selectAll.getComponent());
-			tableVC.put("deselectAll", deselectAll.getComponent());
+			layoutCont.put("userTable", tableEl.getComponent());
 		}
 	}
 	
@@ -342,17 +333,16 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		if(source == backLink) {
 			flc.contextPut("noList","false");			
 			flc.contextPut("showButton","false");
-		} else if(selectAll == source) {
-			checkAll(true);
-		} else if(deselectAll == source) {
-			checkAll(false);
 		} else if(searchButton == source) {
 			if(validateForm(ureq)) {
 				doSearch();
 			}
-		} else if (source instanceof FormLink && source.getName().startsWith("sel_lin")) {
-			Identity chosenIdent = (Identity)source.getUserObject();
-			fireEvent(ureq, new SingleIdentityChosenEvent(chosenIdent));
+		} else if (tableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				Identity chosenIdent = userTableModel.getObject(se.getIndex());
+				fireEvent(ureq, new SingleIdentityChosenEvent(chosenIdent));
+			}
 		} else {
 			super.formInnerEvent(ureq, source, event);
 		}
@@ -386,7 +376,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 					fireEvent(ureq, new SingleIdentityChosenEvent(chosenIdent));
 				} else if (res.size() > 1){
 					tableEl.reset();
-					userTableModel.setObjects(wrapIdentities(res));
+					userTableModel.setObjects(res);
 				}
 			}
 		} else {
@@ -396,21 +386,14 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		}
 	}
 	
-	private void checkAll(boolean select) {
-		for(UserResultWrapper wrapper : userTableModel.getObjects()) {
-			wrapper.getSelectEl().select("on", select);
-		}
-		tableVC.setDirty(true);
-	}
-	
 	public List<Identity> getSelectedIdentities() {
-		List<Identity> identities = new ArrayList<Identity>();
-		for(UserResultWrapper wrapper : userTableModel.getObjects()) {
-			if(wrapper.getSelectEl().isSelected(0)) {
-				identities.add(wrapper.getIdentity());
-			}
+		Set<Integer> index = tableEl.getMultiSelectedIndex();		
+		List<Identity> selectedIdentities =	new ArrayList<Identity>();
+		for(Integer i : index) {
+			Identity selectedIdentity = userTableModel.getObject(i.intValue());
+			selectedIdentities.add(selectedIdentity);
 		}
-		return identities;
+		return selectedIdentities;
 	}
 	
 	private void doSearch() {
@@ -433,25 +416,13 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		tableEl.reset();
 		List<Identity> users = searchUsers(login,	userPropertiesSearch, true);
 		if (!users.isEmpty()) {
-			userTableModel.setObjects(wrapIdentities(users));
+			userTableModel.setObjects(users);
 			flc.contextPut("showButton","true");
 		} else {
 			getWindowControl().setInfo(translate("error.no.user.found"));
 		}
 	}
-	
-	private List<UserResultWrapper> wrapIdentities(List<Identity> identities) {
-		List<UserResultWrapper> wrappers = new ArrayList<UserResultWrapper>(identities.size());
-		for(Identity identity:identities) {
-			MultipleSelectionElement selectEl = uifactory.addCheckboxesHorizontal("sel_" + identity.getKey(), null, flc, new String[]{"on"}, new String[]{""});
-			FormLink selectLink = uifactory.addFormLink("sel_lin_" + identity.getKey(), "select", null, flc, Link.LINK);
-			selectLink.setUserObject(identity);
-			wrappers.add(new UserResultWrapper(identity, selectLink, selectEl));
-		}
-		return wrappers;
-	}
 
-	
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */

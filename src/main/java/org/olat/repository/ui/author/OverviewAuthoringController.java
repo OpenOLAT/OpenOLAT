@@ -194,6 +194,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		searchEntriesCtrl = new AuthorListController(ureq, bwControl, "search.generic", searchParams, true);
+		listenTo(searchEntriesCtrl);
 		
 		addToHistory(ureq, searchEntriesCtrl);
 		mainVC.put("segmentCmp", searchEntriesCtrl.getStackPanel());
