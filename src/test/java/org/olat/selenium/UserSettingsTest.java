@@ -34,14 +34,18 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.selenium.page.LoginPage;
+import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.course.CoursePageFragment;
-import org.olat.selenium.page.user.UserPreferencesPageFragment.ResumeOption;
+import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.user.PortalPage;
 import org.olat.selenium.page.user.UserPasswordPage;
 import org.olat.selenium.page.user.UserPreferencesPageFragment;
+import org.olat.selenium.page.user.UserPreferencesPageFragment.ResumeOption;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.rest.RepositoryRestClient;
@@ -50,6 +54,7 @@ import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
 
 /**
  * 
@@ -72,6 +77,8 @@ public class UserSettingsTest {
 	
 	@Page
 	private UserToolsPage userTools;
+	@Page
+	private NavigationPage navBar;
 	
 	/**
 	 * Set the resume preferences to automatically resume the session,
@@ -328,5 +335,113 @@ public class UserSettingsTest {
 		prefs.resetPreferences();
 		//check the user is log out
 		loginPage.assertOnLoginPage();
+	}
+	
+	/**
+	 * Go in portal, edit it, deactivate the quick start portlet,
+	 * finish editing, check that the quick start portlet disappears,
+	 * re-edit, reactivate the quick start portlet and check it is
+	 * again in the non-edit view. 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void portletDeactivateActivate(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
+		loginPage
+			.loginAs(user.getLogin(), user.getPassword());
+		
+		PortalPage portal = navBar.openPortal()
+			.assertPortlet(PortalPage.quickStartBy)
+			.edit()
+			.disable(PortalPage.quickStartBy)
+			.finishEditing()
+			.assertNotPortlet(PortalPage.quickStartBy);
+		
+		//re-enable quickstart
+		portal.edit()
+			.enable(PortalPage.quickStartBy)
+			.finishEditing()
+			.assertPortlet(PortalPage.quickStartBy);
+		
+		List<WebElement> portalInactive = browser.findElements(PortalPage.inactiveBy);
+		Assert.assertTrue(portalInactive.isEmpty());
+	}
+	
+	/**
+	 * Go to the portal, edit it, move the notes to the
+	 * top, quit editing, check the notes are the first
+	 * portlet in the view mode.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void movePortletToTheTop(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
+		loginPage
+			.loginAs(user.getLogin(), user.getPassword());
+		
+		PortalPage portal = navBar.openPortal()
+			.assertPortlet(PortalPage.notesBy)
+			.edit()
+			.moveLeft(PortalPage.notesBy)
+			.moveUp(PortalPage.notesBy)
+			.moveUp(PortalPage.notesBy)
+			.moveUp(PortalPage.notesBy)
+			.moveRight(PortalPage.quickStartBy)
+			.moveDown(PortalPage.quickStartBy);
+		//finish editing
+		portal.finishEditing();
+		
+		//no inactive panel -> we are in view mode
+		List<WebElement> portalInactive = browser.findElements(PortalPage.inactiveBy);
+		Assert.assertTrue(portalInactive.isEmpty());
+
+		//notes must be first
+		List<WebElement> portlets = browser.findElements(By.className("o_portlet"));
+		Assert.assertFalse(portlets.isEmpty());	
+		WebElement notesPortlet = portlets.get(0);
+		String cssClass = notesPortlet.getAttribute("class");
+		Assert.assertNotNull(cssClass);
+		Assert.assertTrue(cssClass.contains("o_portlet_notes"));
+	}
+	
+	/**
+	 * Browse some tabs, two times back and check where I am.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void browserBack(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		Assume.assumeTrue(browser instanceof FirefoxDriver);
+		
+		loginPage.loginAs("administrator", "openolat");
+		
+		navBar
+			.openPortal()
+			.assertPortlet(PortalPage.quickStartBy);
+		navBar.openAuthoringEnvironment();
+		navBar.openGroups(browser);
+		navBar.openMyCourses();
+		navBar.openUserManagement();
+		navBar.openAdministration();
+		
+		//we are in administration
+		browser.navigate().back();
+		//we are in user management
+		browser.navigate().back();
+		//we are in "My courses", check
+		OOGraphene.waitElement(NavigationPage.myCoursesAssertBy);
 	}
 }

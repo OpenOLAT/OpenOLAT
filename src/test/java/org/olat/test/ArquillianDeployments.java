@@ -168,7 +168,7 @@ public class ArquillianDeployments {
 		public boolean accept(File pathname) {
 			String path = pathname.toString();
 			boolean exclude = (path.contains("/static/themes/openolat/")
-					|| path.contains("/static/themes/openolat/openolatexample")
+					|| path.contains("/static/themes/openolatexample")
 					|| path.endsWith(".scss")
 					|| path.endsWith(".psd")
 					|| path.endsWith(".pxml")

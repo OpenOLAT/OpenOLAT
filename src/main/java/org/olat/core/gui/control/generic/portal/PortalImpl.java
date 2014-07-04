@@ -187,6 +187,7 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 				String addLinkName = "command.add." + portlet.getName();
 				Link tmp = LinkFactory.createCustomLink(addLinkName, addLinkName, "add", Link.BUTTON_SMALL, portalVC, this);
 				tmp.setIconLeftCSS("o_icon o_icon_add");
+				tmp.setElementCssClass("o_portlet_edit_add");
 				tmp.setUserObject(portlet.getName());
 				// and add to velocity
 				portalVC.put(portlet.getName(), pc.getInitialComponent());

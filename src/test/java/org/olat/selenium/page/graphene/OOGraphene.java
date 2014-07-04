@@ -58,6 +58,17 @@ public class OOGraphene {
 		((JavascriptExecutor)browser).executeScript("top.tinymce.activeEditor.setContent('" + content + "')");
 	}
 	
+	public static final void waitingTransition() {
+		Graphene.waitModel().pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new TransitionPredicate());
+		
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public static final void uploadFile(By inputBy, File file, WebDriver browser) {
 		WebElement input = browser.findElement(inputBy);
 		input.sendKeys(file.getAbsolutePath());
