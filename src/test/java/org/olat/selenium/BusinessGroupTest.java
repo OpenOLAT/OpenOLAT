@@ -39,6 +39,7 @@ import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
 import org.olat.selenium.page.group.GroupPage;
+import org.olat.selenium.page.group.MembersWizardPage;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.rest.UserRestClient;
@@ -105,11 +106,17 @@ public class BusinessGroupTest {
 			.openGroups(browser)
 			.createGroup(groupName, "A very little group");
 		
-		group
+		MembersWizardPage members = group
 			.openAdministration()
 			.openAdminMembers()
 			.setVisibility(true, true)
-			.addMember(participant);
+			.addMember();
+		
+		members.searchMember(participant)
+			.next()
+			.next()
+			.next()
+			.finish();
 		
 		LoginPage participantLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
 		//tools

@@ -22,7 +22,7 @@ package org.olat.selenium.page.repository;
 import java.util.List;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jcodec.common.Assert;
+import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;

@@ -21,7 +21,7 @@ package org.olat.course;
 
 import java.io.InputStream;
 
-import org.jcodec.common.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.thoughtworks.xstream.XStream;

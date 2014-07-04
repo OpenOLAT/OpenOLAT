@@ -21,7 +21,7 @@ package org.olat.selenium.page.repository;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
-import org.jcodec.common.Assert;
+import org.junit.Assert;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -48,6 +48,10 @@ public class RepositoryEditDescriptionPage {
 	@FindBy(className = "o_sel_edit_repositoryentry")
 	private WebElement generalTab;
 	
+	public static RepositoryEditDescriptionPage getPage(WebDriver browser) {
+		WebElement main = browser.findElement(By.id("o_main"));
+		return Graphene.createPageFragment(RepositoryEditDescriptionPage.class, main);
+	}
 	
 	public RepositoryEditDescriptionPage assertOnGeneralTab() {
 		Assert.assertTrue(generalTab.isDisplayed());

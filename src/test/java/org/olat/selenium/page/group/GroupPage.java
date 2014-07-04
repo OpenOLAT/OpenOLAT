@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
-import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -82,20 +81,12 @@ public class GroupPage {
 		return this;
 	}
 	
-	public GroupPage addMember(UserVO user) {
+	public MembersWizardPage addMember() {
 		By addMemberBy = By.className("o_sel_group_add_member");
 		WebElement addMemberButton = browser.findElement(addMemberBy);
 		addMemberButton.click();
 		OOGraphene.waitBusy();
-		
-		new MembersWizardPage(browser)
-			.searchMember(user)
-			.next()
-			.next()
-			.next()
-			.finish();
-		
-		return this;
+		return new MembersWizardPage(browser);
 	}
 	
 	private void openAdminTab(By marker) {

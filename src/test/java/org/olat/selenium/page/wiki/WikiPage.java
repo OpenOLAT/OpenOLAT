@@ -21,7 +21,7 @@ package org.olat.selenium.page.wiki;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
-import org.jcodec.common.Assert;
+import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.portfolio.ArtefactWizardPage;
 import org.openqa.selenium.By;

@@ -22,7 +22,7 @@ package org.olat.selenium.page.user;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.jboss.arquillian.graphene.page.Page;
-import org.jcodec.common.Assert;
+import org.junit.Assert;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.portfolio.PortfolioPage;

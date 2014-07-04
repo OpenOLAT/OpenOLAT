@@ -21,7 +21,8 @@ package org.olat.selenium.page.repository;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
-import org.jcodec.common.Assert;
+import org.junit.Assert;
+import org.olat.selenium.page.course.CourseWizardPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -41,6 +42,7 @@ public class AuthoringEnvPage {
 	public static final By createModal = By.cssSelector("div.modal.o_sel_author_create_popup");
 	public static final By displayNameInput = By.cssSelector("div.o_sel_author_displayname input");
 	public static final By createSubmit = By.className("o_sel_author_create_submit");
+	public static final By createWizard = By.className("o_sel_author_create_wizard");
 	
 	@Drone
 	private WebDriver browser;
@@ -97,7 +99,7 @@ public class AuthoringEnvPage {
 	}
 	
 	/**
-	 * Fil the create form
+	 * Fill the create form and submit
 	 * @param displayName
 	 * @return
 	 */
@@ -111,6 +113,21 @@ public class AuthoringEnvPage {
 		
 		WebElement main = browser.findElement(By.id("o_main"));
 		return Graphene.createPageFragment(RepositoryEditDescriptionPage.class, main);
+	}
+	
+	/**
+	 * Fill the create form and start the wizard
+	 * @param displayName
+	 * @return
+	 */
+	public CourseWizardPage fillCreateFormAndStartWizard(String displayName) {
+		WebElement modal = browser.findElement(createModal);
+		WebElement input = modal.findElement(displayNameInput);
+		input.sendKeys(displayName);
+		modal.findElement(createWizard).click();
+		OOGraphene.waitBusy();
+		
+		return CourseWizardPage.getWizard(browser);
 	}
 	
 	/**

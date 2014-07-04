@@ -19,53 +19,43 @@
  */
 package org.olat.selenium.page.course;
 
+import java.util.List;
+
 import org.jboss.arquillian.drone.api.annotation.Drone;
+import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
-import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
- * Page fragment to control the publish process.
+ * Drive the wizard to create a course.
  * 
- * 
- * Initial date: 20.06.2014<br>
+ * Initial date: 04.07.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PublisherPageFragment {
+public class CourseWizardPage {
 	
 	public static final By nextBy = By.className("o_wizard_button_next");
 	public static final By finishBy = By.className("o_wizard_button_finish");
-	public static final By selectAccessBy = By.cssSelector("div.o_sel_course_publish_wizard select");
-	public static final By selectCatalogYesNoBy = By.cssSelector("div.o_sel_course_publish_wizard select");
 	
 	@Drone
 	private WebDriver browser;
 	
-	@FindBy(className="o_sel_course_publish_wizard")
-	private WebElement publishBody;
-	
-	public PublisherPageFragment assertOnPublisher() {
-		Assert.assertTrue(publishBody.isDisplayed());
-		return this;
+	public static CourseWizardPage getWizard(WebDriver browser) {
+		By modalBy = By.className("modal-content");
+		WebElement modal = browser.findElement(modalBy);
+		return Graphene.createPageFragment(CourseWizardPage.class, modal);
 	}
 	
-	public void quickPublish() {
-		assertOnPublisher()
-			.next()
-			.selectAccess(Access.guests)
-			.next()
-			.selectCatalog(false)
-			.next() // -> no problem found
-			.finish();
-	}
-	
-	public PublisherPageFragment next() {
+	/**
+	 * Next
+	 * @return this
+	 */
+	public CourseWizardPage next() {
 		WebElement next = browser.findElement(nextBy);
 		Assert.assertTrue(next.isDisplayed());
 		Assert.assertTrue(next.isEnabled());
@@ -75,7 +65,11 @@ public class PublisherPageFragment {
 		return this;
 	}
 	
-	public PublisherPageFragment finish() {
+	/**
+	 * Finish the wizard
+	 * @return this
+	 */
+	public CourseWizardPage finish() {
 		WebElement finish = browser.findElement(finishBy);
 		Assert.assertTrue(finish.isDisplayed());
 		Assert.assertTrue(finish.isEnabled());
@@ -85,33 +79,17 @@ public class PublisherPageFragment {
 		return this;
 	}
 	
-	public PublisherPageFragment selectAccess(Access access) {
-		WebElement select = browser.findElement(selectAccessBy);
-		new Select(select).selectByValue(access.getValue());
+	public CourseWizardPage selectAllCourseElements() {
+		By checkAllBy = By.cssSelector("div.modal div.form-group input[type='checkbox']");
+		List<WebElement> checkAll = browser.findElements(checkAllBy);
+		Assert.assertFalse(checkAll.isEmpty());
+		for(WebElement check:checkAll) {
+			check.click();
+		}
+		
 		return this;
 	}
 	
-	public PublisherPageFragment selectCatalog(boolean access) {
-		WebElement select = browser.findElement(selectCatalogYesNoBy);
-		new Select(select).selectByValue(access ? "yes" : "no");
-		return this;
-	}
 	
-	public enum Access {
-		owner("1"),
-		authors("2"),
-		users("3"),
-		guests("4"),
-		membersOnly("membersonly");
 
-		private final String value;
-		
-		private Access(String value) {
-			this.value = value;
-		}
-		
-		public String getValue() {
-			return value;
-		}
-	}
 }

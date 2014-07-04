@@ -26,7 +26,7 @@ import java.util.List;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.jboss.arquillian.graphene.page.Location;
-import org.jcodec.common.Assert;
+import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;

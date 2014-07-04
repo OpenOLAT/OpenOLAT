@@ -21,7 +21,7 @@ package org.olat.repository.manager;
 
 import java.util.List;
 
-import org.jcodec.common.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;

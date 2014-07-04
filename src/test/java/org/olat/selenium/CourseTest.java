@@ -22,6 +22,7 @@ package org.olat.selenium;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.UUID;
 
 import junit.framework.Assert;
@@ -40,8 +41,10 @@ import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
+import org.olat.selenium.page.course.CourseWizardPage;
 import org.olat.selenium.page.course.PublisherPageFragment;
 import org.olat.selenium.page.course.PublisherPageFragment.Access;
+import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.FeedPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
@@ -141,6 +144,65 @@ public class CourseTest {
 		publishedCourse
 			.assertOnCoursePage()
 			.clickTree();
+	}
+	
+	/**
+	 * Create a course, use the course wizard, select all course
+	 * elements and go further with the standard settings.
+	 * 
+	 * Go from the description editor to the course, check
+	 * that the course is automatically published and that
+	 * the five course elements are there.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void createCourse_withWizard(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//go to authoring
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		String title = "Create-Course-Wizard-" + UUID.randomUUID().toString();
+		//create course
+		CourseWizardPage courseWizard = authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateFormAndStartWizard(title);
+		
+		courseWizard
+			.selectAllCourseElements()
+			.next()
+			.next()
+			.finish();
+		
+		RepositoryEditDescriptionPage editDescription = RepositoryEditDescriptionPage.getPage(browser);
+		//from description editor, back to details and launch the course
+		editDescription
+			.clickToolbarBack()
+			.assertOnTitle(title)
+			.launch();
+		
+		//open course editor
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		course
+			.assertOnCoursePage();
+		
+		//assert the 5 nodes are there and click them
+		By nodeBy = By.cssSelector("a.o_tree_link.o_tree_l1.o_tree_level_label_leaf");
+		List<WebElement> nodes = browser.findElements(nodeBy);
+		Assert.assertEquals(5, nodes.size());
+		for(WebElement node:nodes) {
+			node.click();
+			OOGraphene.waitBusy();
+		}
 	}
 	
 	/**
