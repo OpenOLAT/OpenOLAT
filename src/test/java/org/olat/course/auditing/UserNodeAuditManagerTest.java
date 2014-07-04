@@ -30,11 +30,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
@@ -45,44 +42,18 @@ import org.olat.test.OlatTestCase;
  * @author Christian Guretzki
  */
 public class UserNodeAuditManagerTest extends OlatTestCase  {
-	
-	private static OLog log = Tracing.createLoggerFor(UserNodeAuditManagerTest.class);
-	
-	private ICourse course;
 
-	
-	@Before
-	public void setUp() throws Exception {		
-		try {
-			log.info("setUp start ------------------------");
-			
-      //import "Demo course" into the bcroot_junittest
-			RepositoryEntry repositoryEntry = JunitTestHelper.deployDemoCourse();
-			Long resourceableId = repositoryEntry.getOlatResource().getResourceableId();
-			System.out.println("Demo course imported - resourceableId: " + resourceableId);
-					
-			course = CourseFactory.loadCourse(resourceableId);
-			DBFactory.getInstance().closeSession();
-						
-			log.info("setUp done ------------------------");					
-		} catch (RuntimeException e) {
-			log.error("Exception in setUp(): " + e);
-			e.printStackTrace();
-		}
-	}
 
-	//@After
-	public void tearDown() throws Exception {			
-		//remove demo course on file system
-		//FIXME: this does not remove all data from the database, see repositoryManger
-		CourseFactory.deleteCourse(course);
-	}
-	
-	/**
-	 * 
-	 *
-	 */
-	@Test public void testCreateLimitedLogContent() {
+	@Test
+	public void testCreateLimitedLogContent() {
+		//import a course
+		RepositoryEntry repositoryEntry = JunitTestHelper.deployDemoCourse();
+		Long resourceableId = repositoryEntry.getOlatResource().getResourceableId();
+		System.out.println("Demo course imported - resourceableId: " + resourceableId);	
+		ICourse course = CourseFactory.loadCourse(resourceableId);
+		DBFactory.getInstance().commitAndCloseSession();
+
+		
 		System.out.println("Start testCreateLimitedLogContent");
 		assertNotNull(course);
 		UserNodeAuditManagerImpl userNodeAuditManagerImpl = new UserNodeAuditManagerImpl(course);

@@ -368,7 +368,7 @@ public class CourseFactory extends BasicManager {
 	 * 
 	 * @param res
 	 */
-	public static void deleteCourse(OLATResourceable res) {
+	public static void deleteCourse(OLATResource res) {
 		final long start = System.currentTimeMillis();
 		log.info("deleteCourse: starting to delete course. res="+res);
 
@@ -406,10 +406,8 @@ public class CourseFactory extends BasicManager {
 			CourseConfigManagerImpl.getInstance().deleteConfigOf(course);
 		}
 		
-		//clean up tasks
-		OLATResource resource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-		CoreSpringFactory.getImpl(TaskExecutorManager.class).delete(resource);
-		
+		CoreSpringFactory.getImpl(TaskExecutorManager.class).delete(res);
+
 		// delete course group- and rightmanagement
 		CourseGroupManager courseGroupManager = PersistingCourseGroupManager.getInstance(res);
 		courseGroupManager.deleteCourseGroupmanagement();
