@@ -137,6 +137,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = rs.create("administrator", "-", "rest-re", null, course);
 		DBFactory.getInstance().commit();
+		assertNotNull(re);
 		
 		//create learn group
 		// 1) context one: learning groups

@@ -34,18 +34,11 @@ public void testPlainText() {...
 2: You like to test code which includes managers/modules that are spring beans you can use this setup:
 
 -----------------------------------
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {
-	"/org/olat/core/test/_spring/yourSpringContext.xml"})
-
-public class YourTestClass {...
+public class YourTestClass extends OlatTestCase {...
 
 -------------------------------------
 
 The Springcontext gets loaded and you can use @Autowire or access directly the "applicationContext" var and do you testing
 
-3: If you need more stuff from the framework like Coordinator or database access in your code you can use the OlatcoreTestCaseWithMocking which
-already has some mocked stuff inside (Coordinator.getEventBus() calls) or create your own mocks based on the example. The library we use for mocking is 
-Mockito (http://mockito.org/)
-When you run all tests in a suite, the spring context gets cached and only loaded once for better performance. But if you load the same spring beans twice,
+3: When you run all tests in a suite, the spring context gets cached and only loaded once for better performance. But if you load the same spring beans twice,
 the beans will not get overwritten and instead they get created again and a new instance gets assigned for e.g. a singleton.

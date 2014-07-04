@@ -35,6 +35,7 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.ldap.LdapContext;
 
+import org.junit.Assume;
 import org.junit.Test;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurity;
@@ -61,18 +62,19 @@ import org.olat.user.UserManager;
 public class LDAPLoginTest extends OlatTestCase {
 	
 	
-	@Test public void testSystemBind() {
-		if (!LDAPLoginModule.isLDAPEnabled()) return;
+	@Test
+	public void testSystemBind() {
+		Assume.assumeTrue(LDAPLoginModule.isLDAPEnabled());
 
 		//edit olatextconfig.xml for testing
 		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
 		LdapContext ctx = ldapManager.bindSystem();
 		assertEquals(true, (ctx != null));
 	}
-
 	
-	@Test public void testCreateUser() {
-		if (!LDAPLoginModule.isLDAPEnabled()) return;
+	@Test
+	public void testCreateUser() {
+		Assume.assumeTrue(LDAPLoginModule.isLDAPEnabled());
 
 		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
@@ -94,10 +96,10 @@ public class LDAPLoginTest extends OlatTestCase {
 		ldapManager.createAndPersistUser(attrs);
 		assertEquals(true, (securityManager.findIdentityByName(uid) != null));
 	}
-
 	
-	@Test public void testUserBind() throws NamingException {
-		if (!LDAPLoginModule.isLDAPEnabled()) return;
+	@Test
+	public void testUserBind() throws NamingException {
+		Assume.assumeTrue(LDAPLoginModule.isLDAPEnabled());
 
 		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
 		LDAPError errors = new LDAPError();
@@ -127,8 +129,9 @@ public class LDAPLoginTest extends OlatTestCase {
 	}
 	
 	
-	@Test public void testCheckUser() {
-		if (!LDAPLoginModule.isLDAPEnabled()) return;
+	@Test
+	public void testCheckUser() {
+		Assume.assumeTrue(LDAPLoginModule.isLDAPEnabled());
 
 		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
 		LDAPError errors = new LDAPError();
@@ -151,9 +154,9 @@ public class LDAPLoginTest extends OlatTestCase {
 		assertEquals(true, errors.isEmpty());
 	}
 	
-	
-	@Test public void testCreateChangedAttrMap() {
-		if (!LDAPLoginModule.isLDAPEnabled()) return;
+	@Test
+	public void testCreateChangedAttrMap() {
+		Assume.assumeTrue(LDAPLoginModule.isLDAPEnabled());
 
 		// simulate closed session (user adding from startup job)
 		DBFactory.getInstance().intermediateCommit();
@@ -210,8 +213,9 @@ public class LDAPLoginTest extends OlatTestCase {
 		assertEquals(true, (changedAttrMap==null));
 	}
 	
-	@Test public void testSyncUser(){
-		if (!LDAPLoginModule.isLDAPEnabled()) return;
+	@Test
+	public void testSyncUser(){
+		Assume.assumeTrue(LDAPLoginModule.isLDAPEnabled());
 
 		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
@@ -233,8 +237,9 @@ public class LDAPLoginTest extends OlatTestCase {
 		assertEquals(true, (changedMap==null));
 	}
 
-	@Test public void testIdentityDeletedInLDAP(){
-		if (!LDAPLoginModule.isLDAPEnabled()) return;
+	@Test
+	public void testIdentityDeletedInLDAP(){
+		Assume.assumeTrue(LDAPLoginModule.isLDAPEnabled());
 
 		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
@@ -279,10 +284,9 @@ public class LDAPLoginTest extends OlatTestCase {
 		assertEquals(2, (deletList.size()));
 	}
 	
-	
-	
-	@Test public void testCronSync() throws Exception {
-		if (!LDAPLoginModule.isLDAPEnabled()) return;
+	@Test
+	public void testCronSync() throws Exception {
+		Assume.assumeTrue(LDAPLoginModule.isLDAPEnabled());
 
 		LdapContext ctx;
 		List<Attributes> ldapUserList;

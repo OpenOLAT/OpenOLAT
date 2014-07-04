@@ -174,6 +174,7 @@ public class ArquillianDeployments {
 					|| path.endsWith(".pxml")
 					|| path.endsWith(".sh")
 					|| path.endsWith(".scss")
+					|| path.endsWith(".zip")
 					|| path.endsWith(".pxm"));
 			return !exclude;
 		}
@@ -192,11 +193,8 @@ public class ArquillianDeployments {
 			String pathStr = path.toString();
 			boolean exclude = (pathStr.contains("/org/olat/core/test")
 					|| pathStr.contains("/org/olat/selenium")
-					|| pathStr.contains("/org/olat/test/_spring")
-					|| pathStr.contains("/org/olat/test/file_resources")
-					|| pathStr.endsWith("Test.class]")
-					|| pathStr.endsWith("TestWithMocking.class]")
-					|| pathStr.endsWith("Junit4.class]"));
+					|| pathStr.contains("/org/olat/test/")
+					|| pathStr.endsWith("Test.class]"));
 			return !exclude;
 		}
 	}
