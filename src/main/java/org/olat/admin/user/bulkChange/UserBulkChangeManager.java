@@ -291,7 +291,7 @@ public class UserBulkChangeManager extends BasicManager {
 				UserManager.getInstance().getUserDisplayName(identity.getUser()),// 2: Name (first and last name) of user who changed the password
 				WebappHelper.getMailConfig("mailSupport"), //3: configured support email address
 				identity.getUser().getProperty(UserConstants.LASTNAME, null), //4 last name
-				Settings.getSecureServerContextPathURI(), //5 url system
+				getServerURI(), //5 url system
 				gender //6 Mr. Mrs.
 		};
 		
@@ -300,6 +300,14 @@ public class UserBulkChangeManager extends BasicManager {
 		bundle.setContent(translator.translate("mailtemplate.login.denied.subject", args),
 			translator.translate("mailtemplate.login.denied.body", args));
 		CoreSpringFactory.getImpl(MailManager.class).sendExternMessage(bundle, null);
+	}
+	
+	private String getServerURI() {
+		String uri = Settings.getSecureServerContextPathURI();
+		if(StringHelper.containsNonWhitespace(uri)) {
+			return uri;
+		}
+		return Settings.getInsecureServerContextPathURI();
 	}
 
 	public String evaluateValueWithUserContext(String valToEval, Context vcContext) {
