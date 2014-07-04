@@ -920,6 +920,7 @@ function o_QRCodePopup(id, text, loc) {
     	placement : loc,
     	html: true,
     	trigger: 'click',
+    	container: 'body',
     	content: '<div id="' + id + '_pop" class="o_qrcode"></div>'
 	 }).on('shown.bs.popover', function () {
 		 o_info.qr = o_QRCode(id + '_pop', (jQuery.isFunction(text) ? text() : text));
