@@ -1,9 +1,8 @@
-<table>
+<ul class="list-unstyled">
 	#foreach ($attachment in $attachments)
-	<tr>
-		<td><span class="b_with_small_icon_left ${attachmentCss.get($attachment.getName())}">${attachmentNames.get($attachment.getName())}</span></td>
-		<td> $r.render(${attachment.getName()})</td>
-	</tr>
+	<li>
+		<i class="o_icon o_icon-fw $r.getFiletypeIconCss($attachment.getName())"> </i>${attachmentNames.get($attachment.getName())}
+	</li>
 	#end
-</table>
+</ul>
 
