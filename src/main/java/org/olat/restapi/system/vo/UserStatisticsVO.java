@@ -34,12 +34,25 @@ public class UserStatisticsVO {
 
 	@XmlAttribute(name="totalUserCount", required=true)
 	private long totalUserCount;
-	@XmlAttribute(name="activeUserCount", required=true)
+	@XmlAttribute(name="activeUserCount", required=false)
 	private long activeUserCount;
+	@XmlAttribute(name="activeUserCountLastDay", required=false)
+	private long activeUserCountLastDay;
+	@XmlAttribute(name="activeUserCountLastWeek", required=false)
+	private long activeUserCountLastWeek;
+	@XmlAttribute(name="activeUserCountLastMonth", required=false)
+	private long activeUserCountLastMonth;
+	@XmlAttribute(name="activeUserCountLast6Month", required=false)
+	private long activeUserCountLast6Month;
+	@XmlAttribute(name="externalUserCount", required=false)
+	private long externalUserCount;
+	@XmlAttribute(name="blockedUserCount", required=false)
+	private long blockedUserCount;
+	@XmlAttribute(name="deletedUserCount", required=false)
+	private long deletedUserCount;
 	@XmlAttribute(name="totalGroupCount", required=true)
 	private long totalGroupCount;
-	
-	
+
 	public long getTotalUserCount() {
 		return totalUserCount;
 	}
@@ -55,7 +68,63 @@ public class UserStatisticsVO {
 	public void setActiveUserCount(long activeUserCount) {
 		this.activeUserCount = activeUserCount;
 	}
-	
+
+	public long getActiveUserCountLastDay() {
+		return activeUserCountLastDay;
+	}
+
+	public void setActiveUserCountLastDay(long activeUserCountLastDay) {
+		this.activeUserCountLastDay = activeUserCountLastDay;
+	}
+
+	public long getActiveUserCountLastWeek() {
+		return activeUserCountLastWeek;
+	}
+
+	public void setActiveUserCountLastWeek(long activeUserCountLastWeek) {
+		this.activeUserCountLastWeek = activeUserCountLastWeek;
+	}
+
+	public long getActiveUserCountLastMonth() {
+		return activeUserCountLastMonth;
+	}
+
+	public void setActiveUserCountLastMonth(long activeUserCountLastMonth) {
+		this.activeUserCountLastMonth = activeUserCountLastMonth;
+	}
+
+	public long getActiveUserCountLast6Month() {
+		return activeUserCountLast6Month;
+	}
+
+	public void setActiveUserCountLast6Month(long activeUserCountLast6Month) {
+		this.activeUserCountLast6Month = activeUserCountLast6Month;
+	}
+
+	public long getExternalUserCount() {
+		return externalUserCount;
+	}
+
+	public void setExternalUserCount(long externalUserCount) {
+		this.externalUserCount = externalUserCount;
+	}
+
+	public long getBlockedUserCount() {
+		return blockedUserCount;
+	}
+
+	public void setBlockedUserCount(long blockedUserCount) {
+		this.blockedUserCount = blockedUserCount;
+	}
+
+	public long getDeletedUserCount() {
+		return deletedUserCount;
+	}
+
+	public void setDeletedUserCount(long deletedUserCount) {
+		this.deletedUserCount = deletedUserCount;
+	}
+
 	public long getTotalGroupCount() {
 		return totalGroupCount;
 	}

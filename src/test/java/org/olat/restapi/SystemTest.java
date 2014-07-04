@@ -153,11 +153,36 @@ public class SystemTest extends OlatJerseyTestCase {
 		
 		URI systemUri = conn.getContextURI().path("system").path("monitoring").path("openolat").path("users").build();
 		UserStatisticsVO userStats = conn.get(systemUri, UserStatisticsVO.class);
-
 		assertNotNull(userStats);
-		assertTrue(userStats.getTotalUserCount() > 0);
-		assertTrue(userStats.getTotalGroupCount() >= 0);
-		assertTrue(userStats.getActiveUserCount() >= 0);
+		
+		long totalUserCount = userStats.getTotalUserCount();
+		assertTrue(totalUserCount > 0);
+		long activeUserCount = userStats.getActiveUserCount();
+		assertTrue(activeUserCount >= 0);
+		
+		long activeUserCountLastDay = userStats.getActiveUserCountLastDay();
+		assertTrue(activeUserCountLastDay >= 0);
+		
+		long activeUserCountLastWeek = userStats.getActiveUserCountLastWeek();
+		assertTrue(activeUserCountLastWeek >= 0);
+		
+		long activeUserCountLastMonth = userStats.getActiveUserCountLastMonth();
+		assertTrue(activeUserCountLastMonth >= 0);
+		
+		long activeUserCountLast6Month = userStats.getActiveUserCountLast6Month();
+		assertTrue(activeUserCountLast6Month >= 0);
+		
+		long blockedUserCount = userStats.getBlockedUserCount();
+		assertTrue(blockedUserCount >= 0);
+		
+		long deletedUserCount = userStats.getDeletedUserCount();
+		assertTrue(deletedUserCount >= 0);
+		
+		long externalUserCount = userStats.getExternalUserCount();
+		assertTrue(externalUserCount >= 0);
+		
+		long totalGroupCount = userStats.getTotalGroupCount();
+		assertTrue(totalGroupCount >= 0);
 		
 		conn.shutdown();	
 	}

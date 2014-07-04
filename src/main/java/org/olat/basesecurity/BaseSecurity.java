@@ -523,6 +523,8 @@ public interface BaseSecurity {
 	 */
 	public boolean isIdentityInvited(Identity identity);
 	
+	public long countInvitations();
+	
 	/**
 	 * Delete an invitation
 	 * @param invitation

@@ -19,6 +19,7 @@
  */
 package org.olat.restapi.system;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
 
@@ -35,6 +36,7 @@ import org.olat.admin.sysinfo.model.SessionsStats;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WorkThreadInformations;
@@ -167,13 +169,51 @@ public class OpenOLATStatisticsWebService implements Sampler {
 	
 	private UserStatisticsVO getUserStatistics() {
 		UserStatisticsVO stats = new UserStatisticsVO();
-		
 		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
-		long countUsers = securityManager.countIdentitiesByPowerSearch(null, null, false, null, null, null, null, null, null, null, null);
-		stats.setTotalUserCount(countUsers);
+
+		// activeUserCount="88" // registered and activated identities, same as in GUI
 		long countActiveUsers = securityManager.countIdentitiesByPowerSearch(null, null, false, null, null, null, null, null, null, null, Constants.USERSTATUS_ACTIVE);
 		stats.setActiveUserCount(countActiveUsers);
 		
+		// active last week
+		Calendar lastDay = Calendar.getInstance();
+		lastDay.add(Calendar.DATE, -1);
+		long activeUserCountDay = securityManager.countUniqueUserLoginsSince(lastDay.getTime());
+		stats.setActiveUserCountLastDay(activeUserCountDay);
+		
+		// active last week
+		Calendar lastWeek = Calendar.getInstance();
+		lastWeek.add(Calendar.DATE, -7);
+		long activeUserCountWeek = securityManager.countUniqueUserLoginsSince(lastWeek.getTime());
+		stats.setActiveUserCountLastWeek(activeUserCountWeek);
+		
+		// active last month
+		Calendar lastMonth = Calendar.getInstance();
+		lastMonth.add(Calendar.MONTH, -1);
+		long activeUserCountMonth = securityManager.countUniqueUserLoginsSince(lastMonth.getTime());
+		stats.setActiveUserCountLastMonth(activeUserCountMonth);
+		
+		// active last 6 month
+		Calendar last6Month = Calendar.getInstance();
+		last6Month.add(Calendar.MONTH, -6);
+		long activeUserCount6Month = securityManager.countUniqueUserLoginsSince(last6Month.getTime());
+		stats.setActiveUserCountLast6Month(activeUserCount6Month);
+
+		// externalUserCount="12" // EP invite identities, later maybe also used in courses for MOOCS, external experts etc)
+		long invitationsCount = securityManager.countInvitations();
+		stats.setExternalUserCount(invitationsCount);
+		
+		// blockedUserCount="0" // identities in login blocked state
+		long blockedUserCount = securityManager.countIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_LOGIN_DENIED);	
+		stats.setBlockedUserCount(blockedUserCount);
+		// deletedUserCount="943" // deleted identities
+		long deletedUserCount = securityManager.countIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, Identity.STATUS_DELETED);	
+		stats.setDeletedUserCount(deletedUserCount);
+		
+		// totalUserCount="1043" // Sum of all above
+		long countUsers = securityManager.countIdentitiesByPowerSearch(null, null, false, null, null, null, null, null, null, null, null);
+		stats.setTotalUserCount(countUsers);
+
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		long countGroups = bgs.countBusinessGroups(null, null);
 		stats.setTotalGroupCount(countGroups);

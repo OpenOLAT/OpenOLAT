@@ -891,6 +891,18 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	}
 	
 	/**
+	 * @see org.olat.basesecurity.BaseSecurity#isIdentityInvited(org.olat.core.id.Identity)
+	 */
+	@Override
+	public long countInvitations() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(invitation) from ").append(InvitationImpl.class.getName()).append(" as invitation");
+	  
+		Number invitations = (Number)DBFactory.getInstance().createQuery(sb.toString()).uniqueResult();
+		return invitations.longValue();
+	}
+	
+	/**
 	 * @see org.olat.basesecurity.BaseSecurity#deleteInvitation(org.olat.basesecurity.Invitation)
 	 */
 	@Override
