@@ -539,11 +539,9 @@ public class CourseHandler implements RepositoryHandler {
 		// notify all current users of this resource (course) that it will be deleted now.
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new OLATResourceableJustBeforeDeletedEvent(res), res);
 		//archiving is done within readyToDelete		
-		CourseFactory.deleteCourse(res);
-		// delete resourceable
-		//OLATResourceManager rm = OLATResourceManager.getInstance();
-		//OLATResource ores = rm.findResourceable(res);
-		//rm.deleteOLATResource(ores);
+		OLATResourceManager rm = OLATResourceManager.getInstance();
+		OLATResource resource = rm.findResourceable(res);
+		CourseFactory.deleteCourse(resource);
 		return true;
 	}
 
