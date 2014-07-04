@@ -112,9 +112,4 @@ public class EPPolicyManagerTest extends OlatTestCase {
 		boolean visible = epFrontendManager.isMapVisible(invitee, map.getOlatResource());
 		Assert.assertTrue(visible);
 	}
-	
-	
-	
-	
-
 }

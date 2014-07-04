@@ -19,13 +19,18 @@
  */
 package org.olat.portfolio.manager;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.Locale;
 import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Invitation;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
+import org.olat.portfolio.model.structel.PortfolioStructureMap;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -43,6 +48,8 @@ public class InvitationDAOTest extends OlatTestCase {
 	private InvitationDAO invitationDao;
 	@Autowired
 	private EPPolicyManager policyManager;
+	@Autowired
+	private EPFrontendManager epFrontendManager;
 	
 	
 	@Test
@@ -98,6 +105,41 @@ public class InvitationDAOTest extends OlatTestCase {
 		Assert.assertEquals("Kanu", reloadedInvitation.getFirstName());
 		Assert.assertEquals("Unchou", reloadedInvitation.getLastName());
 		Assert.assertEquals("kanu.unchou@frentix.com", reloadedInvitation.getMail());
+	}
+	
+	/**
+	 * Check the HQL code of the the method, and that it doesn't delete to much invitations
+	 */
+	@Test
+	public void cleanUpInvitation() {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("Policy-User-2-");
+		PortfolioStructureMap map = epFrontendManager.createAndPersistPortfolioDefaultMap(user, "Title", "Description");
+		Invitation invitation = invitationDao.createAndPersistInvitation();
+		dbInstance.commit();
+		
+		invitation.setFirstName("John");
+		invitation.setLastName("Smith Portfolio");
+		EPMapPolicy policy = new EPMapPolicy();
+		policy.setType(EPMapPolicy.Type.invitation);
+		policy.setInvitation(invitation);
+		
+		policyManager.updateMapPolicies(map, Collections.singletonList(policy));
+		dbInstance.commitAndCloseSession();
+		
+		//convert invitation to identity
+		Identity invitee = invitationDao.createIdentityFrom(invitation, Locale.ENGLISH);
+		dbInstance.commitAndCloseSession();
+
+		//and check 
+		boolean visible = epFrontendManager.isMapVisible(invitee, map.getOlatResource());
+		Assert.assertTrue(visible);
+		
+		//clean the invitations
+		invitationDao.cleanUpInvitations();
+		
+		//check that the invitation not was not deleted
+		boolean afterVisible = epFrontendManager.isMapVisible(invitee, map.getOlatResource());
+		Assert.assertTrue(afterVisible);
 	}
 	
 	

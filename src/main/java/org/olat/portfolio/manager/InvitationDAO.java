@@ -34,7 +34,6 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.Invitation;
-import org.olat.basesecurity.PolicyImpl;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
@@ -201,14 +200,15 @@ public class InvitationDAO {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("select invitation from ").append(InvitationImpl.class.getName()).append(" as invitation ")
-		  .append(" inner join invitation.securityGroup secGroup ")
+		  .append(" inner join invitation.baseGroup baseGroup ")
 		  .append(" where invitation.creationDate<:dateLimit")//someone can create an invitation but not add it to a policy within millisecond
-		  .append(" and secGroup not in (")
-      //select all valid policies from this security group
-		  .append("  select policy.securityGroup from ").append(PolicyImpl.class.getName()).append(" as policy ")
-		  .append("   where (policy.from is null or policy.from<=:currentDate)")
-		  .append("   and (policy.to is null or policy.to>=:currentDate)")
-		  .append("  )");
+		  .append(" and not exists (")
+		  //select all valid policies from this security group
+		  .append("  select policy.group from structuretogroup as policy ")
+		  .append("   where policy.group=baseGroup ")
+		  .append("   and (policy.validFrom is null or policy.validFrom<=:currentDate)")
+		  .append("   and (policy.validTo is null or policy.validTo>=:currentDate)")
+		  .append(" )");
 
 		List<Invitation> oldInvitations = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Invitation.class)
