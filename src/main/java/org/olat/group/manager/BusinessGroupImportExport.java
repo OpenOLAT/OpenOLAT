@@ -304,8 +304,9 @@ public class BusinessGroupImportExport {
 
 				// get memberships
 				List<String> memberships = group.areaRelations;
-				if(memberships != null) {
-					for (String membership : memberships) {
+				if(memberships != null && memberships.size() > 0) {
+					Set<String> uniqueMemberships = new HashSet<>(memberships);
+					for (String membership : uniqueMemberships) {
 						BGArea area = areaManager.findBGArea(membership, re.getOlatResource());
 						if (area == null) {
 							throw new AssertException("Group-Area-Relationship in export, but area was not created during import.");
