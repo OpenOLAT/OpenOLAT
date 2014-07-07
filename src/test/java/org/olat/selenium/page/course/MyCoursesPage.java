@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.selenium.page.core;
+package org.olat.selenium.page.course;
 
 import java.util.List;
 
@@ -29,59 +29,65 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 /**
- * Fragment which contains the menu tree. The WebElement to create
- * this fragment must be a parent of the div.o_tree
+ * Drive the "My courses" site
  * 
- * Initial date: 20.06.2014<br>
+ * Initial date: 07.07.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MenuTreePageFragment {
-	
-	private static final By treeBy = By.className("o_tree");
+public class MyCoursesPage {
 	
 	@Drone
 	private WebDriver browser;
 	
-	public MenuTreePageFragment() {
+	public MyCoursesPage() {
 		//
 	}
 	
-	public MenuTreePageFragment(WebDriver browser) {
+	public MyCoursesPage(WebDriver browser) {
 		this.browser = browser;
 	}
 	
-	/**
-	 * Click the root link in the tree.
-	 * 
-	 * @return The menu page fragment
-	 */
-	public MenuTreePageFragment selectRoot() {
-		WebElement tree = browser.findElement(treeBy);
-		List<WebElement> rootLinks = tree.findElements(By.cssSelector("a.o_tree_link"));
-		Assert.assertNotNull(rootLinks);
-		Assert.assertFalse(rootLinks.isEmpty());
-		
-		rootLinks.get(0).click();
+	public MyCoursesPage openSearch() {
+		By searchBy = By.className("o_sel_mycourses_search");
+		WebElement searchLink = browser.findElement(searchBy);
+		searchLink.click();
 		OOGraphene.waitBusy();
 		return this;
 	}
 	
-	public MenuTreePageFragment selectWithTitle(String title) {
-		boolean found = false;
-		WebElement tree = browser.findElement(treeBy);
-		List<WebElement> nodeLinks = tree.findElements(By.cssSelector("li>div>a.o_tree_link"));
-		for(WebElement nodeLink:nodeLinks) {
-			String text = nodeLink.getText();
-			if(text.contains(title)) {
-				nodeLink.click();
-				OOGraphene.waitBusy();
-				found = true;
+	public MyCoursesPage search(String title) {
+		By titleBy = By.cssSelector(".o_sel_repo_search_displayname input[type='text']");
+		WebElement titleEl = browser.findElement(titleBy);
+		titleEl.sendKeys(title);
+		
+		By searchButton = By.className("o_sel_repo_search_button");
+		WebElement searchEl = browser.findElement(searchButton);
+		searchEl.click();
+		OOGraphene.waitBusy();
+		return this;
+	}
+	
+	public MyCoursesPage select(String title) {
+		By titleLinkBy = By.cssSelector("h4.o_title a");
+		WebElement linkToSelect = null;
+		List<WebElement> titleLinks = browser.findElements(titleLinkBy);
+		for(WebElement link :titleLinks) {
+			if(link.getText().contains(title)) {
+				linkToSelect = link;
 			}
 		}
-		
-		Assert.assertTrue("Link not found with title: " + title, found);
+		Assert.assertNotNull(linkToSelect);
+		linkToSelect.click();
+		OOGraphene.waitBusy();
 		return this;
+	}
+	
+	public void start() {
+		By startBy = By.className("o_start");
+		WebElement startLink = browser.findElement(startBy);
+		startLink.click();
+		OOGraphene.waitBusy();
 	}
 
 }

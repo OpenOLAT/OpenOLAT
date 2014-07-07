@@ -24,6 +24,8 @@ import java.util.List;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
+import org.olat.selenium.page.core.AdministrationPage;
+import org.olat.selenium.page.course.MyCoursesPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.group.GroupsPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
@@ -57,6 +59,14 @@ public class NavigationPage {
 	public static final By myCoursesAssertBy = By.xpath("//div[contains(@class,'o_segments')]//a[contains(@href,'search.mycourses.student')]");
 	public static final By portalAssertBy = By.className("o_portal");
 	
+	public NavigationPage() {
+		//
+	}
+	
+	public NavigationPage(WebDriver browser) {
+		this.browser = browser;
+	}
+	
 	public NavigationPage assertOnNavigationPage() {
 		WebElement navigationSites = browser.findElement(navigationSitesBy);
 		Assert.assertTrue(navigationSites.isDisplayed());
@@ -79,17 +89,19 @@ public class NavigationPage {
 		return Graphene.createPageFragment(PortalPage.class, main);
 	}
 	
-	public void openMyCourses() {
+	public MyCoursesPage openMyCourses() {
 		navigate(myCoursesBy);
 		OOGraphene.waitElement(myCoursesAssertBy);
+		return new MyCoursesPage(browser);
 	}
 	
 	public void openUserManagement() {
 		navigate(userManagementBy);
 	}
 	
-	public void openAdministration() {
+	public AdministrationPage openAdministration() {
 		navigate(administrationBy);
+		return new AdministrationPage(browser);
 	}
 	
 	public GroupsPage openGroups(WebDriver browser) {

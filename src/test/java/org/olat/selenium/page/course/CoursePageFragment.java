@@ -23,7 +23,6 @@ import java.net.URL;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
-import org.jboss.arquillian.graphene.fragment.Root;
 import org.junit.Assert;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.selenium.page.core.MenuTreePageFragment;
@@ -31,7 +30,6 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
 
 /**
  * 
@@ -45,30 +43,33 @@ public class CoursePageFragment {
 	public static final By toolsMenu = By.cssSelector("ul.o_sel_course_tools");
 	public static final By toolsMenuCaret = By.cssSelector("a.o_sel_course_tools");
 	public static final By editCourseBy = By.className("o_sel_course_editor");
+	public static final By treeContainerBy = By.id("o_main_left_content");
 	
 	@Drone
 	private WebDriver browser;
 	
-	@Root
-	private WebElement main;
+	public CoursePageFragment() {
+		//
+	}
 	
-	@FindBy(id="o_main_left_content")
-	private WebElement treeContainer;
+	public CoursePageFragment(WebDriver browser) {
+		this.browser = browser;
+	}
+	
 	
 	public static CoursePageFragment getCourse(WebDriver browser, URL deploymentUrl, CourseVO course) {
 		browser.navigate().to(deploymentUrl.toExternalForm() + "url/RepositoryEntry/" + course.getRepoEntryKey());
 		OOGraphene.waitElement(courseRun);
-		WebElement main = browser.findElement(By.id("o_main"));
-		return Graphene.createPageFragment(CoursePageFragment.class, main);
+		return new CoursePageFragment(browser);
 	}
 	
 	public static CoursePageFragment getCourse(WebDriver browser) {
 		OOGraphene.waitElement(courseRun);
-		WebElement main = browser.findElement(By.id("o_main"));
-		return Graphene.createPageFragment(CoursePageFragment.class, main);
+		return new CoursePageFragment(browser);
 	}
 	
 	public CoursePageFragment assertOnCoursePage() {
+		WebElement treeContainer = browser.findElement(treeContainerBy);
 		Assert.assertTrue(treeContainer.isDisplayed());
 		return this;
 	}
@@ -78,7 +79,7 @@ public class CoursePageFragment {
 	 * @return
 	 */
 	public MenuTreePageFragment clickTree() {
-		MenuTreePageFragment menuTree = Graphene.createPageFragment(MenuTreePageFragment.class, treeContainer);
+		MenuTreePageFragment menuTree = new MenuTreePageFragment(browser);
 		menuTree.selectRoot();
 		return menuTree;
 	}

@@ -37,8 +37,10 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.selenium.page.Administrator;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
+import org.olat.selenium.page.Participant;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseWizardPage;
@@ -534,5 +536,108 @@ public class CourseTest {
 		//check only that the subscription link is visibel
 		WebElement subscriptionLink = browser.findElement(By.cssSelector("div.o_subscription>a"));
 		Assert.assertTrue(subscriptionLink.isDisplayed());
+	}
+
+	/**
+	 * An author create a course with a blog, open it, add a post.
+	 * A student open the course, see the blog post. An administrator
+	 * clears the feed cache. The author add a new post, the student
+	 * must see it.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void blogWithClearCache(@InitialPage LoginPage loginPage,
+			@Drone @Participant WebDriver participantDrone,
+			@Drone @Administrator WebDriver administratorDrone)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser();
+		
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course with a blog
+		String courseTitle = "Course-Blog-1-" + UUID.randomUUID().toString();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack()
+			.edit();
+				
+		String blogNodeTitle = "Blog-RW-1";
+		String blogTitle = "Blog - RW - " + UUID.randomUUID().toString();
+				
+		//create a course element of type blog with a blog
+		CourseEditorPageFragment courseEditor = CourseEditorPageFragment.getEditor(browser);
+		courseEditor
+			.createNode("blog")
+			.nodeTitle(blogNodeTitle)
+			.selectTabLearnContent()
+			.createFeed(blogTitle);
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish();
+		
+		//open the course and see the blog
+		CoursePageFragment course = courseEditor
+			.clickToolbarBack();
+		course
+			.clickTree()
+			.selectWithTitle(blogNodeTitle);
+		
+		String postTitle = "Blog-RW-1-" + UUID.randomUUID();
+		String postSummary = "Some explantations as teaser";
+		String postContent = "Content of the post";
+		FeedPage feed = FeedPage.getFeedPage(browser);
+		feed
+			.newBlog()
+			.fillPostForm(postTitle, postSummary, postContent)
+			.publishPost();
+
+		//participant go to the blog
+		participantDrone.navigate().to(deploymentUrl);
+		LoginPage participantLogin = LoginPage.getLoginPage(participantDrone, deploymentUrl);
+		participantLogin.loginAs(participant.getLogin(), participant.getPassword());
+		//search the course in "My courses"
+		NavigationPage participantNavigation = new NavigationPage(participantDrone);
+		participantNavigation
+			.openMyCourses()
+			.openSearch()
+			.search(courseTitle)
+			.select(courseTitle)
+			.start();
+		//Navigate the course to the blog
+		CoursePageFragment participantCourse = new CoursePageFragment(participantDrone);
+		participantCourse
+			.clickTree()
+			.selectWithTitle(blogNodeTitle);
+		FeedPage participantFeed = FeedPage.getFeedPage(participantDrone);
+		participantFeed.assertOnBlogPost(postTitle);
+		
+		//administrator clears the cache
+		administratorDrone.navigate().to(deploymentUrl);
+		LoginPage.getLoginPage(administratorDrone, deploymentUrl)
+			.loginAs("administrator", "openolat");
+		new NavigationPage(administratorDrone)
+			.openAdministration()
+			.clearCache("FeedManager@feed");
+		
+		//the author publish a second post in its blog
+		String post2Title = "Blog-RW-2-" + UUID.randomUUID();
+		String post2Summary = "Some explantations as teaser";
+		String post2Content = "Content of the post";
+		feed.addPost()
+			.fillPostForm(post2Title, post2Summary, post2Content)
+			.publishPost();
+		
+		//the participant must see the new post after some click
+		participantFeed
+			.clickFirstMonthOfPager()
+			.assertOnBlogPost(post2Title);
 	}
 }

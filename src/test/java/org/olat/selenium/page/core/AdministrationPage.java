@@ -29,59 +29,52 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 /**
- * Fragment which contains the menu tree. The WebElement to create
- * this fragment must be a parent of the div.o_tree
+ * Drive the administration site
  * 
- * Initial date: 20.06.2014<br>
+ * Initial date: 07.07.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MenuTreePageFragment {
+public class AdministrationPage {
 	
-	private static final By treeBy = By.className("o_tree");
+	//private static final By 
 	
 	@Drone
 	private WebDriver browser;
 	
-	public MenuTreePageFragment() {
+	public AdministrationPage() {
 		//
 	}
-	
-	public MenuTreePageFragment(WebDriver browser) {
+
+	public AdministrationPage(WebDriver browser) {
 		this.browser = browser;
 	}
 	
-	/**
-	 * Click the root link in the tree.
-	 * 
-	 * @return The menu page fragment
-	 */
-	public MenuTreePageFragment selectRoot() {
-		WebElement tree = browser.findElement(treeBy);
-		List<WebElement> rootLinks = tree.findElements(By.cssSelector("a.o_tree_link"));
-		Assert.assertNotNull(rootLinks);
-		Assert.assertFalse(rootLinks.isEmpty());
-		
-		rootLinks.get(0).click();
+	public AdministrationPage clearCache(String cacheName) {
+		//system tree node
+		WebElement systemLink = browser.findElement(By.xpath("//div[contains(@class,'o_tree')]//a[contains(@href,'systemParent/')]"));
+		systemLink.click();
+		OOGraphene.waitBusy();
+		//cache tree node
+		WebElement cacheLink = browser.findElement(By.cssSelector(".o_sel_caches a.o_tree_level_label_leaf"));
+		cacheLink.click();
+		OOGraphene.waitBusy();
+		//table
+		WebElement emptyLink = null;
+		List<WebElement> rows = browser.findElements(By.cssSelector(".o_table_wrapper table>tbody>tr"));
+		for(WebElement row:rows) {
+			if(row.getText().contains(cacheName)) {
+				emptyLink = row.findElement(By.tagName("a"));
+			}
+		}
+		Assert.assertNotNull(emptyLink);
+		//click to empty
+		emptyLink.click();
+		OOGraphene.waitBusy();
+		//confirm
+		WebElement yesLink = browser.findElement(By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@href,'link_0')]"));
+		yesLink.click();
 		OOGraphene.waitBusy();
 		return this;
 	}
-	
-	public MenuTreePageFragment selectWithTitle(String title) {
-		boolean found = false;
-		WebElement tree = browser.findElement(treeBy);
-		List<WebElement> nodeLinks = tree.findElements(By.cssSelector("li>div>a.o_tree_link"));
-		for(WebElement nodeLink:nodeLinks) {
-			String text = nodeLink.getText();
-			if(text.contains(title)) {
-				nodeLink.click();
-				OOGraphene.waitBusy();
-				found = true;
-			}
-		}
-		
-		Assert.assertTrue("Link not found with title: " + title, found);
-		return this;
-	}
-
 }

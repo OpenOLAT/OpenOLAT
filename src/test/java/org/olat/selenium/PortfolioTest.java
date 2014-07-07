@@ -300,7 +300,7 @@ public class PortfolioTest {
 		String blogNodeTitle = "Blog-EP-1";
 		String blogTitle = "Blog - EP - " + UUID.randomUUID().toString();
 		
-		//create a course element of type CP with the CP that we create above
+		//create a course element of type blog with a blog
 		CourseEditorPageFragment courseEditor = CourseEditorPageFragment.getEditor(browser);
 		courseEditor
 			.createNode("blog")
@@ -326,7 +326,7 @@ public class PortfolioTest {
 		FeedPage feed = FeedPage.getFeedPage(browser);
 		ArtefactWizardPage artefactWizard = feed
 			.newBlog()
-			.newBlogPost(postTitle, postSummary, postContent)
+			.fillPostForm(postTitle, postSummary, postContent)
 			.publishPost()
 			.addAsArtfeact();
 
@@ -553,7 +553,7 @@ public class PortfolioTest {
 		FeedPage feed = FeedPage.getFeedPage(browser);
 		feed
 			.newBlog()
-			.newBlogPost(postTitle, postSummary, postContent)
+			.fillPostForm(postTitle, postSummary, postContent)
 			.publishPost();
 		
 		//check that we see the post
@@ -631,7 +631,7 @@ public class PortfolioTest {
 		FeedPage feed = FeedPage.getFeedPage(browser);
 		feed
 			.newBlog()
-			.newBlogPost(postTitle, postSummary, postContent)
+			.fillPostForm(postTitle, postSummary, postContent)
 			.publishPost();
 		
 		//check that we see the post

@@ -88,16 +88,20 @@ public class OverviewRepositoryListController extends BasicController implements
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		favoriteLink = LinkFactory.createLink("search.mark", mainVC, this);
+		favoriteLink.setElementCssClass("o_sel_mycourses_fav");
 		segmentView.addSegment(favoriteLink, false);
 		myCourseLink = LinkFactory.createLink("search.mycourses.student", mainVC, this);
+		myCourseLink.setElementCssClass("o_sel_mycourses_my");
 		segmentView.addSegment(myCourseLink, false);
 		
 		if(repositoryModule.isCatalogEnabled() && repositoryModule.isCatalogBrowsingEnabled()) {
 			catalogLink = LinkFactory.createLink("search.catalog", mainVC, this);
+			catalogLink.setElementCssClass("o_sel_mycourses_catlog");
 			segmentView.addSegment(catalogLink, false);
 		}
 		if(repositoryModule.isMyCoursesSearchEnabled()) {
 			searchCourseLink = LinkFactory.createLink("search.courses.student", mainVC, this);
+			searchCourseLink.setElementCssClass("o_sel_mycourses_search");
 			segmentView.addSegment(searchCourseLink, false);
 		}
 		

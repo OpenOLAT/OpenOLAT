@@ -19,8 +19,9 @@
  */
 package org.olat.selenium.page.repository;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jboss.arquillian.graphene.Graphene;
+import java.util.List;
+
+import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.portfolio.ArtefactWizardPage;
 import org.openqa.selenium.By;
@@ -40,13 +41,36 @@ public class FeedPage {
 
 	public static final By newExternalFeedBy = By.className("o_feed");
 	
-	@Drone
+
 	private WebDriver browser;
+	
+	public FeedPage(WebDriver browser) {
+		this.browser = browser;
+	}
+	
 	
 	public static FeedPage getFeedPage(WebDriver browser) {
 		OOGraphene.waitElement(feedBy);
-		WebElement main = browser.findElement(feedBy);
-		return Graphene.createPageFragment(FeedPage.class, main);
+		return new FeedPage(browser);
+	}
+	
+	/**
+	 * Check that the post is visible
+	 * @param title
+	 * @return
+	 */
+	public FeedPage assertOnBlogPost(String title) {
+		//assert on post
+		boolean found = false;
+		By postTitleBy = By.cssSelector(".o_post h3.o_title>a>span");
+		List<WebElement> postTitleEls = browser.findElements(postTitleBy);
+		for(WebElement postTitleEl:postTitleEls) {
+			if(postTitleEl.getText().contains(title)) {
+				found = true;
+			}
+		}
+		Assert.assertTrue(found);
+		return this;
 	}
 	
 	/**
@@ -60,6 +84,11 @@ public class FeedPage {
 		return newExternalFeed(lastButton, url);
 	}
 	
+	/**
+	 * Create a new external blog.
+	 * @param url
+	 * @return
+	 */
 	public FeedPage newExternalBlog(String url) {
 		//click the button to create an external feed
 		By lastButton = By.xpath("//div[contains(@class,'o_blog_no_posts')]//a[contains(@href,'feed.make.external')]");
@@ -90,7 +119,14 @@ public class FeedPage {
 		return this;
 	}
 	
-	public FeedPage newBlogPost(String title, String summary, String content) {
+	public FeedPage addPost() {
+		By newItemButton = By.className("o_sel_feed_item_new");
+		browser.findElement(newItemButton).click();
+		OOGraphene.waitBusy();
+		return this;
+	}
+	
+	public FeedPage fillPostForm(String title, String summary, String content) {
 		By titleBy = By.cssSelector("div.o_sel_blog_title input[type='text']");
 		browser.findElement(titleBy).sendKeys(title);
 		
@@ -118,5 +154,19 @@ public class FeedPage {
 		addAsArtefactButton.click();
 		OOGraphene.waitBusy();
 		return ArtefactWizardPage.getWizard(browser);
+	}
+	
+	/**
+	 * Click the first month in the pager
+	 * @return
+	 */
+	public FeedPage clickFirstMonthOfPager() {
+		By monthBy = By.cssSelector("div.o_year_navigation ul.o_month>li.o_month>a.o_month");
+		List<WebElement> monthLinks = browser.findElements(monthBy);
+		System.out.println(monthLinks.size());
+		Assert.assertFalse(monthLinks.isEmpty());
+		monthLinks.get(0).click();
+		OOGraphene.waitBusy();
+		return this;
 	}
 }

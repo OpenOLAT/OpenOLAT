@@ -91,6 +91,7 @@ public class RepositoryEntrySearchController extends FormBasicController impleme
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
 		searchButton = uifactory.addFormSubmitButton("search", buttonLayout);
+		searchButton.setElementCssClass("o_sel_repo_search_button");
 		if(cancelAllowed) {
 			uifactory.addFormCancelButton("quick.search", buttonLayout, ureq, getWindowControl());
 		}
