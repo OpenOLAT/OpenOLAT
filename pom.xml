@@ -182,12 +182,11 @@
 												<include>${basedir}/target/jquery/jshashtable-2.1_src.min.js</include>
 												<include>${basedir}/target/jquery/jquery/openolat/jquery.oolog.min.js</include>
 												<include>${basedir}/target/jquery/jquery/openolat/jquery.translator.min.js</include>
+												<include>${basedir}/target/jquery/jquery/openolat/jquery.navbar.min.js</include>
 												<include>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/jquery.tinymce.min.js</include>
 												<include>${basedir}/target/jquery/functions.min.js</include>
-												<include>${basedir}/target/jquery/navbar.min.js</include>
-												<include>${basedir}/src/main/webapp/static/js/jquery/dotdotdot/jquery.dotdotdot.min.js</include>
+												<include>${basedir}/target/jquery/jquery/openolat/jquery.ellipsis.min.js</include>
 												<include>${basedir}/target/jquery/jquery/transit/jquery.transit.min.js</include>
-												<include>${basedir}/target/jquery/ellipsis.min.js</include>
 												<include>${basedir}/target/bootstrap/bootstrap-openolat.min.js</include>
 											</includes>
 										</aggregation>

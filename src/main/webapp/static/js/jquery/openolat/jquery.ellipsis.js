@@ -38,21 +38,7 @@
 		
 	Ellipsis.prototype.initEllipsisElement = function(query) {
 		$(query).each(function(index, elem) {
-			return;
-			// initialize dotdotdot plugin on element
-			$(elem).dotdotdot({
-				callback : function(isTruncated){
-					if (isTruncated) {
-						// add marker class
-						$(this).addClass('o_hasOverflow');
-					} else {
-						// remove marker class
-						$(this).removeClass('o_hasOverflow');    			
-					}
-				},
-				watch		: true, 				// listen to window resize 
-				after: "div.o_ellipsis_links"		// add the more link when truncating
-			});				
+			return;		
 		});
 	}	
 	

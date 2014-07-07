@@ -118,7 +118,6 @@ This produce uses softeare based on the MIT License
 * Script.aculo.us javascript framework (MIT License) [http://script.aculo.us]
 * jQuery JavaScript DOM library (MIT License) [http://jquery.com]
 * jQuery-UI JavaScript UI library (MIT License) [http://jqueryui.com]
-* jQuery.dotdotdot library (MIT License) [http://dotdotdot.frebsite.nl]
 * jQuery transit library (MIT License) [http://ricostacruz.com/jquery.transit]
 
 
@@ -130,7 +129,6 @@ This product uses software based on the BSD License
 * Mail	(CDDL-1.0, BSD, GPL-2.0, GNU-Classpath) [http://kenai.com/projects/javamail]
 * Antlr (BSD license) [http://www.antlr.org]
 * PostgreSQL JDBC Driver(BSD License) [http://jdbc.postgresql.org]
-* Modernizr JS Library (BSD License) [http://modernizr.com]
 
 -----------------------------------------------------------------------
 This product uses software based on the Common Public License Version
