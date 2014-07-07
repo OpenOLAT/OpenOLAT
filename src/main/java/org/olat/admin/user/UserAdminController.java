@@ -27,7 +27,6 @@ package org.olat.admin.user;
 
 import java.util.List;
 
-import org.olat.admin.policy.PolicyController;
 import org.olat.admin.user.course.CourseOverviewController;
 import org.olat.admin.user.groups.GroupOverviewController;
 import org.olat.basesecurity.Authentication;
@@ -79,17 +78,14 @@ import org.olat.user.UserPropertiesController;
  */
 public class UserAdminController extends BasicController implements Activateable2 {
 
-		
 	// NLS support
-	
 	private static final String NLS_ERROR_NOACCESS_TO_USER = "error.noaccess.to.user";
 	private static final String NLS_FOUND_PROPERTY	= "found.property";
-	private static final String NLS_EDIT_UPROFILE		= "edit.uprofile";
+	private static final String NLS_EDIT_UPROFILE = "edit.uprofile";
 	private static final String NLS_EDIT_UPREFS			= "edit.uprefs";
 	private static final String NLS_EDIT_UPWD 			= "edit.upwd";
 	private static final String NLS_EDIT_UAUTH 			= "edit.uauth";
 	private static final String NLS_EDIT_UPROP			= "edit.uprop";
-	private static final String NLS_EDIT_UPOLICIES	= "edit.upolicies";
 	private static final String NLS_EDIT_UROLES			= "edit.uroles";
 	private static final String NLS_EDIT_UQUOTA			= "edit.uquota";
 	private static final String NLS_VIEW_GROUPS 		= "view.groups";
@@ -301,12 +297,6 @@ public class UserAdminController extends BasicController implements Activateable
 			propertiesCtr = new UserPropertiesController(ureq, getWindowControl(), identity);			
 			this.listenTo(propertiesCtr);
 			userTabP.addTab(translate(NLS_EDIT_UPROP), propertiesCtr.getInitialComponent());
-		}
-		
-		Boolean canPolicies = BaseSecurityModule.USERMANAGER_ACCESS_TO_POLICIES;
-		if (canPolicies.booleanValue() || isOlatAdmin) {
-			policiesCtr = new PolicyController(ureq, getWindowControl(), identity);
-			userTabP.addTab(translate(NLS_EDIT_UPOLICIES), policiesCtr.getInitialComponent());
 		}
 		
 		Boolean canStartGroups = BaseSecurityModule.USERMANAGER_CAN_START_GROUPS;

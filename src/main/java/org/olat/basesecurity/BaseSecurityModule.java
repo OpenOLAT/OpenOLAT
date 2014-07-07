@@ -49,7 +49,6 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	private static final String CONFIG_USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS = "sysGroupUsermanager.canModifySubscriptions";
 	private static final String CONFIG_USERMANAGER_ACCESS_TO_QUOTA = "sysGroupUsermanager.accessToQuota";
 	private static final String CONFIG_USERMANAGER_ACCESS_TO_PROP = "sysGroupUsermanager.accessToProperties";
-	private static final String CONFIG_USERMANAGER_ACCESS_TO_POLICIES = "sysGroupUsermanager.accessToPolicies";
 	private static final String CONFIG_USERMANAGER_ACCESS_TO_AUTH = "sysGroupUsermanager.accessToAuthentications";
 	private static final String CONFIG_USERMANAGER_CAN_MANAGE_POOLMANAGERS = "sysGroupUsermanager.canManagePoolmanagers";
 	private static final String CONFIG_USERMANAGER_CAN_MANAGE_GROUPMANAGERS = "sysGroupUsermanager.canManageGroupmanagers";
@@ -95,7 +94,6 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	public static Boolean USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS = true;
 	public static Boolean USERMANAGER_ACCESS_TO_QUOTA = true;
 	public static Boolean USERMANAGER_ACCESS_TO_PROP = false;
-	public static Boolean USERMANAGER_ACCESS_TO_POLICIES = false;
 	public static Boolean USERMANAGER_ACCESS_TO_AUTH = false;
 	public static Boolean USERMANAGER_CAN_MANAGE_POOLMANAGERS = true;
 	public static Boolean USERMANAGER_CAN_MANAGE_GROUPMANAGERS = true;
@@ -162,7 +160,6 @@ public class BaseSecurityModule extends AbstractOLATModule {
 		
 		USERMANAGER_ACCESS_TO_QUOTA = getBooleanConfigParameter(CONFIG_USERMANAGER_ACCESS_TO_QUOTA, USERMANAGER_ACCESS_TO_QUOTA);
 		USERMANAGER_ACCESS_TO_PROP = getBooleanConfigParameter(CONFIG_USERMANAGER_ACCESS_TO_PROP, USERMANAGER_ACCESS_TO_PROP);
-		USERMANAGER_ACCESS_TO_POLICIES = getBooleanConfigParameter(CONFIG_USERMANAGER_ACCESS_TO_POLICIES, USERMANAGER_ACCESS_TO_POLICIES);
 		USERMANAGER_ACCESS_TO_AUTH = getBooleanConfigParameter(CONFIG_USERMANAGER_ACCESS_TO_AUTH, USERMANAGER_ACCESS_TO_AUTH);
 		
 		USERMANAGER_CAN_MANAGE_GROUPMANAGERS = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_MANAGE_GROUPMANAGERS, USERMANAGER_CAN_MANAGE_GROUPMANAGERS);

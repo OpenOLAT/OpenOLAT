@@ -31,9 +31,6 @@
 				<entry key="/mshib/">
 					<ref bean="shibmobilebean" />
 				</entry>
-				<entry key="/stats.html">
-					<ref bean="statisticbean" />
-				</entry>
 				<entry key="/admin.html">
 					<ref bean="adminbean" />
 				</entry>
@@ -172,13 +169,6 @@
 		</constructor-arg>
 	</bean>
 	
-	
-	<bean id="statisticbean"
-		class="org.olat.admin.sysinfo.MRTGStatsDispatcher">
-		<constructor-arg ref="coordinatorManager" />
-		<property name="monitoringHost" value="127.0.0.1" />
-		<property name="instanceId" value="${instance.id}"/>
-	</bean>
 	<bean id="secstaticlegacybean"
 		class="org.olat.commons.servlets.StaticsLegacyDispatcher">
 		<property name="inputBufferSize" value="32768" />
