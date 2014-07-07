@@ -44,17 +44,18 @@ import org.olat.repository.ui.list.CatalogNodeController;
 public class CatalogSiteMainController extends BasicController implements Activateable2 {
 
 	private CatalogNodeController nodeController;
+	private final BreadcrumbedStackedPanel stackPanel;
 	
 	public CatalogSiteMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 
-		BreadcrumbedStackedPanel stackPanel = new BreadcrumbedStackedPanel("catstack", getTranslator(), this);
+		stackPanel = new BreadcrumbedStackedPanel("catstack", getTranslator(), this);
 		putInitialPanel(stackPanel);
 
 		CatalogManager catalogManager = CoreSpringFactory.getImpl(CatalogManager.class);
 		List<CatalogEntry> rootNodes = catalogManager.getRootCatalogEntries();
 		if(rootNodes.size() == 1) {
-			nodeController = new CatalogNodeController(ureq, getWindowControl(), rootNodes.get(0), stackPanel, true);
+			nodeController = new CatalogNodeController(ureq, getWindowControl(), getWindowControl(), rootNodes.get(0), stackPanel, true);
 		}
 		stackPanel.pushController("Katalog", nodeController);
 	}
@@ -71,6 +72,11 @@ public class CatalogSiteMainController extends BasicController implements Activa
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries == null || entries.isEmpty()) {
+			return;
+		}
+		
+		stackPanel.popUpToRootController(ureq);
+		nodeController.activate(ureq, entries, state);
 	}
 }

@@ -21,7 +21,6 @@ package org.olat.repository.site;
 
 import java.util.Locale;
 
-import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.ui.CatalogSiteMainController;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
@@ -69,7 +68,7 @@ public class CatalogSite extends AbstractSiteInstance {
 	@Override
 	protected Controller createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		// for existing controller which are part of the main olat -> use the controllerfactory
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CatalogEntry.class, 0l);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Catalog", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
 		return new CatalogSiteMainController(ureq, bwControl);

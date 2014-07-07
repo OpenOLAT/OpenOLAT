@@ -88,7 +88,7 @@
 		bottom: 0; 
 		right: floor($grid-gutter-width / 2);
 		text-align: center;
-		z-index: 5;
+		z-index: 3;
 		@extend %o_undecorated;
 	}
 

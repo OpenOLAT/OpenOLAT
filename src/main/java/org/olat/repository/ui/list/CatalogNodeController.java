@@ -37,14 +37,20 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.ui.CatalogEntryImageMapper;
+import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -58,17 +64,20 @@ public class CatalogNodeController extends BasicController implements Activateab
 	private BreadcrumbedStackedPanel stackPanel;
 	private RepositoryEntryListController entryListController;
 
-	private final CatalogManager cm;
 	private final boolean wrapInMainPanel;
 	private final String mapperThumbnailUrl;
+	private final WindowControl rootwControl;
 	
-	public CatalogNodeController(UserRequest ureq, WindowControl wControl, CatalogEntry catalogEntry,
-			BreadcrumbedStackedPanel stackPanel, boolean wrapInMainPanel) {
+	@Autowired
+	private CatalogManager catalogManager;
+	
+	public CatalogNodeController(UserRequest ureq, WindowControl wControl, WindowControl rootwControl,
+			CatalogEntry catalogEntry, BreadcrumbedStackedPanel stackPanel, boolean wrapInMainPanel) {
 		// fallback translator to repository package to reduce redundant translations
 		super(ureq, wControl, Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale()));
 
-		cm = CatalogManager.getInstance();
 		this.stackPanel = stackPanel;
+		this.rootwControl = rootwControl;
 		this.wrapInMainPanel = wrapInMainPanel;
 
 		VelocityContainer mainVC = createVelocityContainer("node");
@@ -89,12 +98,12 @@ public class CatalogNodeController extends BasicController implements Activateab
 		if(StringHelper.containsNonWhitespace(catalogEntry.getDescription())) {
 			mainVC.contextPut("catalogEntryDesc", catalogEntry.getDescription());
 		}
-		VFSLeaf image = cm.getImage(catalogEntry);
+		VFSLeaf image = catalogManager.getImage(catalogEntry);
 		if(image != null) {
 			mainVC.contextPut("catThumbnail", catalogEntry.getKey());
 		}
 		
-		List<CatalogEntry> childCe = cm.getNodesChildrenOf(catalogEntry);
+		List<CatalogEntry> childCe = catalogManager.getNodesChildrenOf(catalogEntry);
 		Collections.sort(childCe, new CatalogEntryComparator(getLocale()));
 		List<String> subCategories = new ArrayList<>();
 		int count = 0;
@@ -102,7 +111,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 			if(entry.getType() == CatalogEntry.TYPE_NODE) {
 				String cmpId = "cat_" + (++count);
 				
-				VFSLeaf img = cm.getImage(entry);
+				VFSLeaf img = catalogManager.getImage(entry);
 				if(img != null) {
 					String imgId = "image_" + count;
 					mainVC.contextPut(imgId, entry.getKey());
@@ -142,15 +151,27 @@ public class CatalogNodeController extends BasicController implements Activateab
 			Link link = (Link)source;
 			if("select_node".equals(link.getCommand())) {
 				Long categoryNodeKey = (Long)link.getUserObject();
-				CatalogEntry entry = cm.getCatalogNodeByKey(categoryNodeKey);
-				if(entry != null && entry.getType() == CatalogEntry.TYPE_NODE) {
-					removeAsListenerAndDispose(childNodeController);
-					childNodeController = new CatalogNodeController(ureq, getWindowControl(), entry, stackPanel, wrapInMainPanel);
-					listenTo(childNodeController);
-					stackPanel.pushController(entry.getName(), childNodeController);	
-				}
+				CatalogEntry entry = catalogManager.getCatalogNodeByKey(categoryNodeKey);
+				selectCatalogEntry(ureq, entry);
 			}
 		}
+	}
+	
+	private CatalogNodeController selectCatalogEntry(UserRequest ureq, CatalogEntry entry) {
+		if(entry != null && entry.getType() == CatalogEntry.TYPE_NODE) {
+			removeAsListenerAndDispose(childNodeController);
+			
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("CatalogEntry", entry.getKey());
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, rootwControl);
+			
+			childNodeController = new CatalogNodeController(ureq, bwControl, rootwControl, entry, stackPanel, wrapInMainPanel);
+			listenTo(childNodeController);
+			stackPanel.pushController(entry.getName(), childNodeController);
+			
+			addToHistory(ureq, childNodeController);
+		}
+		return childNodeController;
 	}
 	
 	@Override
@@ -160,7 +181,64 @@ public class CatalogNodeController extends BasicController implements Activateab
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
+		if(entries == null || entries.isEmpty()) {
+			return;
+		}
 		
+		ContextEntry entry = entries.get(0);
+		String type = entry.getOLATResourceable().getResourceableTypeName();
+		if("CatalogEntry".equalsIgnoreCase(type)) {
+			Long entryKey = entry.getOLATResourceable().getResourceableId();
+			if(entryKey != null && entryKey.longValue() > 0) {
+				activateRoot(ureq, entryKey); 
+			}
+		} else if("Node".equalsIgnoreCase(type)) {
+			//the "Node" is only for internal usage
+			StateEntry stateEntry = entry.getTransientState();
+			if(stateEntry instanceof CatalogStateEntry) {
+				CatalogEntry catalogEntry = ((CatalogStateEntry)stateEntry).entry;
+				CatalogNodeController nextCtrl = selectCatalogEntry(ureq, catalogEntry);
+				if(nextCtrl != null && entries.size() > 1) {
+					nextCtrl.activate(ureq, entries.subList(1, entries.size()), null);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Build an internal business path made of "Node" with the category
+	 * as state entry to prevent loading several times the same entries.
+	 * 
+	 * @param ureq
+	 * @param entryKey
+	 */
+	private void activateRoot(UserRequest ureq, Long entryKey) {
+		List<ContextEntry> parentLine = new ArrayList<>();
+		for(CatalogEntry node = catalogManager.getCatalogEntryByKey(entryKey); node.getParent() != null; node=node.getParent()) {
+			OLATResourceable nodeRes = OresHelper.createOLATResourceableInstance("Node", node.getKey());
+			ContextEntry ctxEntry = BusinessControlFactory.getInstance().createContextEntry(nodeRes);
+			ctxEntry.setTransientState(new CatalogStateEntry(node));
+			parentLine.add(ctxEntry);
+		}
+		Collections.reverse(parentLine);
+		activate(ureq, parentLine, null);
+	}
+	
+	//only for internal usage
+	public static class CatalogStateEntry implements StateEntry {
+
+		private static final long serialVersionUID = -5592837683379007704L;
+		
+		private CatalogEntry entry;
+		
+		public CatalogStateEntry(CatalogEntry entry) {
+			this.entry = entry;
+		}
+
+		@Override
+		public CatalogStateEntry clone() {
+			CatalogStateEntry clone = new CatalogStateEntry(entry);
+			return clone;
+		}
 	}
 }

@@ -122,19 +122,20 @@ public class OverviewRepositoryListController extends BasicController implements
 			ContextEntry entry = entries.get(0);
 			String segment = entry.getOLATResourceable().getResourceableTypeName();
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
-			if("Favorits".equals(segment)) {
+			if("Favorits".equalsIgnoreCase(segment)) {
 				doOpenMark(ureq).activate(ureq, subEntries, entry.getTransientState());
 				segmentView.select(favoriteLink);
-			} else if("My".equals(segment)) {
+			} else if("My".equalsIgnoreCase(segment)) {
 				doOpenMyCourses(ureq).activate(ureq, subEntries, entry.getTransientState());
 				segmentView.select(myCourseLink);
-			} else if("Catalog".equals(segment) && catalogLink != null) {
+			} else if(("Catalog".equalsIgnoreCase(segment) || "CatalogEntry".equalsIgnoreCase(segment))
+					&& catalogLink != null) {
 				CatalogNodeController ctrl = doOpenCatalog(ureq);
 				if(ctrl != null) {
-					ctrl.activate(ureq, subEntries, entry.getTransientState());
+					ctrl.activate(ureq, entries, entry.getTransientState());
 					segmentView.select(catalogLink);
 				}
-			} else if("Search".equals(segment) && searchCourseLink != null) {
+			} else if("Search".equalsIgnoreCase(segment) && searchCourseLink != null) {
 				doOpenSearchCourses(ureq);
 				segmentView.select(searchCourseLink);
 			} else {
@@ -238,7 +239,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		catalogStackPanel = new BreadcrumbedStackedPanel("catstack", getTranslator(), this);
-		catalogCtrl = new CatalogNodeController(ureq, bwControl, rootEntry, catalogStackPanel, false);
+		catalogCtrl = new CatalogNodeController(ureq, bwControl, getWindowControl(), rootEntry, catalogStackPanel, false);
 		catalogStackPanel.pushController(translate("search.catalog"), catalogCtrl);
 		listenTo(catalogCtrl);
 
