@@ -60,13 +60,15 @@ import org.olat.core.gui.control.VetoableCloseController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.dialog.DialogController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
@@ -145,7 +147,7 @@ import org.olat.user.UserManager;
  * 
  * @author mike
  */
-public class QTIEditorMainController extends MainLayoutBasicController implements VetoableCloseController {
+public class QTIEditorMainController extends MainLayoutBasicController implements Activateable2, VetoableCloseController {
 	/*
 	 * Toolbox Commands
 	 */
@@ -211,7 +213,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 
 	private QTIEditorPackageImpl qtiPackage;
 
-	private VelocityContainer main, exitVC, chngMsgFormVC, restrictedEditWarningVC;
+	private VelocityContainer main, exitVC, chngMsgFormVC;
 	private MenuTree menuTree;
 	private Panel mainPanel;
 	private TooledStackedPanel stackedPanel;
@@ -233,7 +235,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private String startedWithTitle;
 	private List<ReferenceImpl> referencees;
 	private ChangeMessageForm chngMsgFrom;
-	private DialogController proceedRestricedEditDialog;
+	private DialogBoxController proceedRestricedEditDialog;
 	private ContactMessage changeEmail;
 	private ContactFormController cfc;
 	private String changeLog = null;
@@ -377,19 +379,18 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		putInitialPanel(stackedPanel);
 		
 		if (restrictedEdit) {
-			restrictedEditWarningVC = createVelocityContainer("restrictedEditDialog");
-			proceedRestricedEditDialog = new DialogController(getWindowControl(), getLocale(),
-					translate("yes"), translate("no"),
-					translate("qti.restricted.edit.warning") + "<br/><br/>"+createReferenceesMsg(ureq), null, true, null);
-			listenTo(proceedRestricedEditDialog);
-			restrictedEditWarningVC.put("dialog", proceedRestricedEditDialog.getInitialComponent());
 			// we would like to us a modal dialog here, but this does not work! we
 			// can't push to stack because the outher workflows pushes us after the
 			// controller to the stack. Thus, if we used a modal dialog here the
 			// dialog would never show up. 
-			columnLayoutCtr.setCol3(restrictedEditWarningVC);
+			columnLayoutCtr.setCol3(new Panel("empty"));
 			columnLayoutCtr.hideCol1(true);
 			columnLayoutCtr.hideCol2(true);
+			
+			String text = translate("qti.restricted.edit.warning") + "<br/><br/>" + createReferenceesMsg(ureq);
+			proceedRestricedEditDialog = DialogBoxUIFactory.createYesNoDialog(ureq, getWindowControl(), null, text);
+			listenTo(proceedRestricedEditDialog);
+			//activate is done by the activate method of the editor.
 		}
 	}
 	
@@ -410,6 +411,12 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		main.contextPut("warningEssay", new Boolean(warningEssay));
 	}
 
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(proceedRestricedEditDialog != null) {
+			proceedRestricedEditDialog.activate();
+		}
+	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
@@ -738,7 +745,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			}
 		} else if (source == proceedRestricedEditDialog) {
 			// restricted edit warning
-			if (event == DialogController.EVENT_FIRSTBUTTON) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
 				// remove dialog and continue with real content
 				columnLayoutCtr.setCol3(mainPanel);
 				columnLayoutCtr.hideCol1(false);

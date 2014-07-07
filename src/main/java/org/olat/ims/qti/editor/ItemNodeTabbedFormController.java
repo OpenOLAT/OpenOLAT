@@ -44,9 +44,10 @@ import org.olat.ims.qti.editor.beecom.objects.Question;
  */
 public class ItemNodeTabbedFormController extends TabbableDefaultController {
 	
-	//private static final String VC_ROOT = Util.getPackageVelocityRoot(QTIEditorMainController.class);	
 	private Item item;
 	private QTIEditorPackage qtiPackage;
+	
+	private Controller itemCtrl;
 	private ItemMetadataFormController metadataCtr;
 	private FeedbackFormController feedbackCtr;
 	private Panel feedbackPanel = new Panel("feedbackPanel");
@@ -64,15 +65,35 @@ public class ItemNodeTabbedFormController extends TabbableDefaultController {
 		super(ureq, wControl);
 		this.restrictedEdit = restrictedEdit;
 		metadataCtr = new ItemMetadataFormController(ureq, getWindowControl(), item, qtiPackage, restrictedEdit);
-		this.listenTo(metadataCtr);
+		listenTo(metadataCtr);
 		this.item = item;
 		this.qtiPackage = qtiPackage;
+		
+		int questionType = item.getQuestion().getType();
+		switch (questionType) {
+			case Question.TYPE_SC:
+				itemCtrl = new ChoiceItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(),  restrictedEdit);
+				break;
+			case Question.TYPE_MC:
+				itemCtrl = new ChoiceItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(),  restrictedEdit);
+				break;
+			case Question.TYPE_KPRIM:
+				itemCtrl = new ChoiceItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(),  restrictedEdit);
+				break;
+			case Question.TYPE_FIB:
+				itemCtrl = new FIBItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(), restrictedEdit);
+				break;
+			case Question.TYPE_ESSAY:
+				itemCtrl = new EssayItemController(item, qtiPackage, getTranslator(), getWindowControl(), restrictedEdit);
+				break;
+		}
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == metadataCtr && event.equals(Event.DONE_EVENT)) {
 			qtiPackage.serializeQTIDocument();
@@ -87,6 +108,7 @@ public class ItemNodeTabbedFormController extends TabbableDefaultController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (event instanceof TabbedPaneChangedEvent) {
 			TabbedPaneChangedEvent tabbedPaneEvent = (TabbedPaneChangedEvent) event;
@@ -94,7 +116,7 @@ public class ItemNodeTabbedFormController extends TabbableDefaultController {
 				if (feedbackCtr != null) removeAsListenerAndDispose(feedbackCtr);
 				feedbackCtr = new FeedbackFormController(ureq, getWindowControl(), qtiPackage, item, restrictedEdit);
 				// feedback controller sends out NodeBeforeChangeEvents which must be propagated				
-				this.listenTo(feedbackCtr);
+				listenTo(feedbackCtr);
 				feedbackPanel.setContent(feedbackCtr.getInitialComponent());
 			}
 		}
@@ -103,6 +125,7 @@ public class ItemNodeTabbedFormController extends TabbableDefaultController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 	// metadataCtr and feedbackCtr are registered as child controllers
 	}
@@ -110,6 +133,7 @@ public class ItemNodeTabbedFormController extends TabbableDefaultController {
 	/**
 	 * @see org.olat.core.gui.control.generic.tabbable.TabbableController#addTabs(org.olat.core.gui.components.TabbedPane)
 	 */
+	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		// add as listener to get tab activation events
 		tabbedPane.addListener(this);
@@ -120,33 +144,14 @@ public class ItemNodeTabbedFormController extends TabbableDefaultController {
 			return;
 		}
 
-		boolean isSurvey = qtiPackage.getQTIDocument().isSurvey();
-		int questionType = item.getQuestion().getType();
-		
 		tabbedPane.addTab(translate("tab.metadata"), metadataCtr.getInitialComponent());
-
-		Controller ctrl = null;
 		
-		switch (questionType) {
-			case Question.TYPE_SC:
-				ctrl = new ChoiceItemController(item, qtiPackage, getTranslator(), getWindowControl(), restrictedEdit);
-				break;
-			case Question.TYPE_MC:
-				ctrl = new ChoiceItemController(item, qtiPackage, getTranslator(), getWindowControl(), restrictedEdit);
-				break;
-			case Question.TYPE_KPRIM:
-				ctrl = new ChoiceItemController(item, qtiPackage, getTranslator(), getWindowControl(), restrictedEdit);
-				break;
-			case Question.TYPE_FIB:
-				ctrl = new FIBItemController(item, qtiPackage, getTranslator(), getWindowControl(), restrictedEdit);
-				break;
-			case Question.TYPE_ESSAY:
-				ctrl = new EssayItemController(item, qtiPackage, getTranslator(), getWindowControl(), restrictedEdit);
-				break;
-		}
-		if (ctrl != null) { // if item was identified
-			tabbedPane.addTab(translate("tab.question"), ctrl.getInitialComponent());			
-			listenTo(ctrl);
+		if (itemCtrl != null) { // if item was identified
+			boolean isSurvey = qtiPackage.getQTIDocument().isSurvey();
+			int questionType = item.getQuestion().getType();
+			
+			tabbedPane.addTab(translate("tab.question"), itemCtrl.getInitialComponent());			
+			listenTo(itemCtrl);
 			if (!isSurvey && questionType != Question.TYPE_ESSAY) {
 				tabbedPane.addTab(translate("tab.feedback"), feedbackPanel);
 			}

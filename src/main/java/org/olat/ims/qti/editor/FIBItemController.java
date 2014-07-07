@@ -32,14 +32,14 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
-import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.dialog.DialogController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
-import org.olat.core.util.Util;
 import org.olat.ims.qti.editor.beecom.objects.FIBQuestion;
 import org.olat.ims.qti.editor.beecom.objects.FIBResponse;
 import org.olat.ims.qti.editor.beecom.objects.Item;
@@ -52,20 +52,16 @@ import org.olat.ims.qti.editor.beecom.objects.Response;
  * 
  * @author mike
  */
-public class FIBItemController extends DefaultController implements ControllerEventListener {
-	/*
-	 * Logging, Velocity
-	 */
-	private static final String PACKAGE = Util.getPackageName(FIBItemController.class);
-	private static final String VC_ROOT = Util.getPackageVelocityRoot(PACKAGE);
+public class FIBItemController extends BasicController implements ControllerEventListener {
+
 
 	private VelocityContainer main;
-	private Translator trnsltr;
+
 
 	private Item item;
 	private QTIEditorPackage qtiPackage;
 	private boolean surveyMode = false;
-	private DialogController delYesNoCtrl;
+	private DialogBoxController delYesNoCtrl;
 	private boolean restrictedEdit;
 	private Material editQuestion;
 	private Response editResponse;
@@ -78,14 +74,14 @@ public class FIBItemController extends DefaultController implements ControllerEv
 	 * @param trnsltr
 	 * @param wControl
 	 */
-	public FIBItemController(Item item, QTIEditorPackage qtiPackage, Translator trnsltr, WindowControl wControl, boolean restrictedEdit) {
-		super(wControl);
+	public FIBItemController(UserRequest ureq, WindowControl wControl,
+			Item item, QTIEditorPackage qtiPackage, Translator trnsltr,  boolean restrictedEdit) {
+		super(ureq, wControl, trnsltr);
 
 		this.restrictedEdit = restrictedEdit;
 		this.item = item;
 		this.qtiPackage = qtiPackage;
-		this.trnsltr = trnsltr;
-		main = new VelocityContainer("fibitem", VC_ROOT + "/tab_fibItem.html", trnsltr, this);
+		main = createVelocityContainer("fibitem", "tab_fibItem");
 		main.contextPut("question", item.getQuestion());
 		surveyMode = qtiPackage.getQTIDocument().isSurvey();
 		main.contextPut("isSurveyMode", surveyMode ? "true" : "false");
@@ -96,13 +92,14 @@ public class FIBItemController extends DefaultController implements ControllerEv
 			mediaBaseUrl = Settings.getServerContextPathURI() + mediaBaseUrl;
 		}
 		main.contextPut("mediaBaseURL", mediaBaseUrl);
-		setInitialComponent(main);
+		putInitialPanel(main);
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == main) {
 			// olat::: as: improve easy fix since almost all operations change the main vc.
@@ -137,7 +134,7 @@ public class FIBItemController extends DefaultController implements ControllerEv
 				FIBResponse response = new FIBResponse();
 				response.setType(FIBResponse.TYPE_CONTENT);
 				Material mat = new Material();
-				mat.add(new Mattext(trnsltr.translate("newtextelement")));
+				mat.add(new Mattext(translate("newtextelement")));
 				response.setContent(mat);
 				fib.getResponses().add(response);
 			} else if (cmd.equals("addblank")) {
@@ -148,9 +145,10 @@ public class FIBItemController extends DefaultController implements ControllerEv
 				response.setPoints(1f); // default value
 				fib.getResponses().add(response);
 			} else if (cmd.equals("del")) {
-				delYesNoCtrl = DialogController.createYesNoDialogController(getWindowControl(), ureq.getLocale(), trnsltr.translate("confirm.delete.element"), this,
-						new Integer(posid));
-				getWindowControl().pushAsModalDialog( delYesNoCtrl.getInitialComponent());
+				delYesNoCtrl = DialogBoxUIFactory.createYesNoDialog(ureq, getWindowControl(), null, translate("confirm.delete.element"));
+				listenTo(delYesNoCtrl);
+				delYesNoCtrl.setUserObject(new Integer(posid));
+				delYesNoCtrl.activate();
 			} else if (cmd.equals("sfib")) { // submit fib
 				FIBQuestion question = (FIBQuestion) item.getQuestion();
 				// Survey specific variables
@@ -229,6 +227,7 @@ public class FIBItemController extends DefaultController implements ControllerEv
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller controller, Event event) {
 		if (controller == matFormCtr) {
 			if (event instanceof QTIObjectBeforeChangeEvent) {
@@ -272,15 +271,12 @@ public class FIBItemController extends DefaultController implements ControllerEv
 				matFormCtr = null;
 			}
 		} else if (controller == delYesNoCtrl) {
-			getWindowControl().pop();
-			if (event == DialogController.EVENT_FIRSTBUTTON) {
-				Object position = delYesNoCtrl.getUserObject();
-				if(position instanceof Integer) {
-					int pos = ((Integer)position).intValue();
-					List<Response> responses = item.getQuestion().getResponses();
-					if(!responses.isEmpty() && pos < responses.size()) {
-						responses.remove(pos);
-					}
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				Integer posId = (Integer)delYesNoCtrl.getUserObject();
+				int pos = posId.intValue();
+				List<Response> responses = item.getQuestion().getResponses();
+				if(!responses.isEmpty() && pos < responses.size()) {
+					responses.remove(pos);
 				}
 				main.setDirty(true);//repaint
 			}
@@ -298,7 +294,7 @@ public class FIBItemController extends DefaultController implements ControllerEv
 		matFormCtr = new MaterialFormController(ureq, getWindowControl(), mat, qtiPackage, isRestrictedEditMode);
 		matFormCtr.addControllerListener(this);
 		dialogCtr = new CloseableModalController(getWindowControl(), "close",
-				matFormCtr.getInitialComponent(), true, trnsltr.translate("questionform_answer"));
+				matFormCtr.getInitialComponent(), true, translate("questionform_answer"));
 		matFormCtr.addControllerListener(dialogCtr);
 		dialogCtr.activate();
 	}	
@@ -306,10 +302,10 @@ public class FIBItemController extends DefaultController implements ControllerEv
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		main = null;
 		item = null;
-		trnsltr = null;
 		if (dialogCtr != null) {
 			dialogCtr.dispose();
 			dialogCtr = null;
@@ -319,5 +315,4 @@ public class FIBItemController extends DefaultController implements ControllerEv
 			matFormCtr = null;
 		}
 	}
-
 }

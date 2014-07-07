@@ -32,14 +32,14 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
-import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.dialog.DialogController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
-import org.olat.core.util.Util;
 import org.olat.ims.qti.editor.beecom.objects.ChoiceQuestion;
 import org.olat.ims.qti.editor.beecom.objects.ChoiceResponse;
 import org.olat.ims.qti.editor.beecom.objects.Item;
@@ -53,19 +53,13 @@ import org.olat.ims.qti.editor.beecom.objects.Response;
  * 
  * @author mike
  */
-public class ChoiceItemController extends DefaultController implements ControllerEventListener {
-	/*
-	 * Logging, Velocity
-	 */
-	private static final String PACKAGE = Util.getPackageName(ChoiceItemController.class);
-	private static final String VC_ROOT = Util.getPackageVelocityRoot(PACKAGE);
+public class ChoiceItemController extends BasicController implements ControllerEventListener {
 
-	private VelocityContainer main;
-	private Translator trnsltr;
+	private final VelocityContainer main;
 
 	private Item item;
 	private QTIEditorPackage qtiPackage;
-	private DialogController delYesNoCtrl;
+	private DialogBoxController delYesNoCtrl;
 	private boolean restrictedEdit;
 	private Material editQuestion;
 	private Response editResponse;
@@ -78,14 +72,21 @@ public class ChoiceItemController extends DefaultController implements Controlle
 	 * @param trnsltr
 	 * @param wControl
 	 */
-	public ChoiceItemController(Item item, QTIEditorPackage qtiPackage, Translator trnsltr, WindowControl wControl, boolean restrictedEdit) {
-		super(wControl);
+	public ChoiceItemController(UserRequest ureq, WindowControl wControl,
+			Item item, QTIEditorPackage qtiPackage, Translator trnsltr, boolean restrictedEdit) {
+		super(ureq, wControl, trnsltr);
 
 		this.restrictedEdit = restrictedEdit;
 		this.item = item;
 		this.qtiPackage = qtiPackage;
-		this.trnsltr = trnsltr;
-		main = new VelocityContainer("scitem", VC_ROOT + "/tab_scItem.html", trnsltr, this);
+		
+		if (item.getQuestion().getType() == Question.TYPE_MC) {
+			main = createVelocityContainer("mcitem", "tab_mcItem");
+		} else if (item.getQuestion().getType() == Question.TYPE_KPRIM) {
+			main = createVelocityContainer("kprimitem", "tab_kprimItem");
+		} else {
+			main = createVelocityContainer("scitem", "tab_scItem");
+		}
 		main.contextPut("question", item.getQuestion());
 		main.contextPut("isSurveyMode", qtiPackage.getQTIDocument().isSurvey() ? "true" : "false");
 		main.contextPut("isRestrictedEdit", restrictedEdit ? Boolean.TRUE : Boolean.FALSE);
@@ -95,9 +96,8 @@ public class ChoiceItemController extends DefaultController implements Controlle
 			mediaBaseUrl = Settings.getServerContextPathURI() + mediaBaseUrl;
 		}
 		main.contextPut("mediaBaseURL", mediaBaseUrl);
-		if (item.getQuestion().getType() == Question.TYPE_MC) main.setPage(VC_ROOT + "/tab_mcItem.html");
-		else if (item.getQuestion().getType() == Question.TYPE_KPRIM) main.setPage(VC_ROOT + "/tab_kprimItem.html");
-		setInitialComponent(main);
+		
+		putInitialPanel(main);
 	}
 
 	/**
@@ -127,25 +127,26 @@ public class ChoiceItemController extends DefaultController implements Controlle
 			} else if (cmd.equals("editq")) {
 				editQuestion = item.getQuestion().getQuestion();
 				displayMaterialFormController(ureq, editQuestion, restrictedEdit,
-						trnsltr.translate("fieldset.legend.question"));
+						translate("fieldset.legend.question"));
 			} else if (cmd.equals("editr")) {
 				editResponse = item.getQuestion().getResponses().get(posid);
 				Material responseMat = editResponse.getContent();
 				displayMaterialFormController(ureq, responseMat, restrictedEdit,
-						trnsltr.translate("fieldset.legend.answers"));
+						translate("fieldset.legend.answers"));
 			} else if (cmd.equals("addchoice")) {
 				ChoiceQuestion question = (ChoiceQuestion) item.getQuestion();
 				List<Response> choices = question.getResponses();
 				ChoiceResponse newChoice = new ChoiceResponse();
-				newChoice.getContent().add(new Mattext(trnsltr.translate("newresponsetext")));
+				newChoice.getContent().add(new Mattext(translate("newresponsetext")));
 				newChoice.setCorrect(false);
 				newChoice.setPoints(-1f); // default value is negative to make sure
 				// people understand the meaning of this value
 				choices.add(newChoice);
 			} else if (cmd.equals("del")) {
-				delYesNoCtrl = DialogController.createYesNoDialogController(getWindowControl(), ureq.getLocale(), trnsltr.translate("confirm.delete.element"), this,
-						new Integer(posid));
-				getWindowControl().pushAsModalDialog( delYesNoCtrl.getInitialComponent());
+				delYesNoCtrl = DialogBoxUIFactory.createYesNoDialog(ureq, getWindowControl(), null, translate("confirm.delete.element"));
+				listenTo(delYesNoCtrl);
+				delYesNoCtrl.setUserObject(new Integer(posid));
+				delYesNoCtrl.activate();
 			} else if (cmd.equals("ssc")) { // submit sc
 				ChoiceQuestion question = (ChoiceQuestion) item.getQuestion();
 				List<Response> q_choices = question.getResponses();
@@ -165,10 +166,10 @@ public class ChoiceItemController extends DefaultController implements Controlle
 				try {
 					sc = Float.parseFloat(score);
 					if(sc <= 0.0001f) {
-						getWindowControl().setWarning(trnsltr.translate("editor.info.mc.zero.points"));
+						getWindowControl().setWarning(translate("editor.info.mc.zero.points"));
 					}
 				} catch(Exception e) {
-					getWindowControl().setWarning(trnsltr.translate("editor.info.mc.zero.points"));
+					getWindowControl().setWarning(translate("editor.info.mc.zero.points"));
 					sc = 1.0f;
 				}
 				question.setSingleCorrectScore(sc);
@@ -188,7 +189,7 @@ public class ChoiceItemController extends DefaultController implements Controlle
 					if (choice.getPoints() == 0) hasZeroPointChoice = true;
 				}
 				if (hasZeroPointChoice && !question.isSingleCorrect()) {
-					getWindowControl().setInfo(trnsltr.translate("editor.info.mc.zero.points"));
+					getWindowControl().setInfo(translate("editor.info.mc.zero.points"));
 				}
 
 				// set min/max before single_correct score
@@ -228,6 +229,7 @@ public class ChoiceItemController extends DefaultController implements Controlle
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller controller, Event event) {
 		if (controller == matFormCtr) {
 			if (event instanceof QTIObjectBeforeChangeEvent) {
@@ -270,9 +272,9 @@ public class ChoiceItemController extends DefaultController implements Controlle
 				matFormCtr = null;
 			}
 		} else if (controller == delYesNoCtrl) {
-			getWindowControl().pop();
-			if (event == DialogController.EVENT_FIRSTBUTTON) {
-				item.getQuestion().getResponses().remove(((Integer) delYesNoCtrl.getUserObject()).intValue());
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				Integer posId = (Integer)delYesNoCtrl.getUserObject();
+				item.getQuestion().getResponses().remove(posId.intValue());
 				main.setDirty(true);//repaint
 			}
 		}  
@@ -297,10 +299,9 @@ public class ChoiceItemController extends DefaultController implements Controlle
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
-		main = null;
 		item = null;
-		trnsltr = null;
 		if (dialogCtr != null) {
 			dialogCtr.dispose();
 			dialogCtr = null;
@@ -310,5 +311,4 @@ public class ChoiceItemController extends DefaultController implements Controlle
 			matFormCtr = null;
 		}
 	}
-
 }
