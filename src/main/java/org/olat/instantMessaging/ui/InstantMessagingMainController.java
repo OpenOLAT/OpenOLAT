@@ -113,7 +113,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		
 		Theme guiTheme = getWindowControl().getWindowBackOffice().getWindow().getGuiTheme();
 		String newMessageSoundURL = guiTheme.getBaseURI() + "/sounds/new_message.wav";
-		newMessageSoundURL = newMessageSoundURL.replace("/themes/" + guiTheme.getIdentifyer(), "/themes/openolat");
+		newMessageSoundURL = newMessageSoundURL.replace("/themes/" + guiTheme.getIdentifyer(), "/themes/light");
 		newMsgIcon.contextPut("newMessageSoundURL", newMessageSoundURL);
 		loadNotifications();
 

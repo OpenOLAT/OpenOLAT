@@ -1,1 +1,0 @@
-these are the steps-images (numbers) for the legacy wizard

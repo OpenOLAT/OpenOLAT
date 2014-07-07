@@ -31,22 +31,6 @@
 		background-color: $o-table-row-selected-color !important; 
 	}
 
-	a.b_sorting {
-		padding: 0 20px 0 0;
-		text-decoration: none;
-		background:url("../openolat/images/arrow-resize-090.png") no-repeat center right;
-	}
-	a.b_sorting_asc {
-		padding: 0 20px 0 0;
-		text-decoration: none;
-		background:url("../openolat/images/arrow_up.png") no-repeat center right;
-	}
-	a.b_sorting_desc {
-		padding: 0 20px 0 0;
-		text-decoration: none;
-		background:url("../openolat/images/arrow_down.png") no-repeat center right;
-	}
-
 	.o_table {
 		margin-bottom: 0;
 	}
