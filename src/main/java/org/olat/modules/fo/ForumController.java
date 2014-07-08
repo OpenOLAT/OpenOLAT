@@ -196,6 +196,7 @@ public class ForumController extends BasicController implements GenericEventList
 	private ContextualSubscriptionController csc;
 
 	private MessageEditController msgEditCtr;
+	private CloseableModalController msgEditCmc;
 	private ForumThreadViewModeController viewSwitchCtr;
 	private Map<Long, Integer> msgDeepMap;
 	
@@ -567,8 +568,12 @@ public class ForumController extends BasicController implements GenericEventList
 			TableEvent te = (TableEvent)event;
 			Message topMsg = threadList.get(te.getRowId());
 			moveMessage(ureq, topMsg);
+		} else if(source == msgEditCmc) {
+			removeAsListenerAndDispose(msgEditCmc);
+			removeAsListenerAndDispose(msgEditCtr);
+			msgEditCtr = null;
+			msgEditCmc = null;
 		}
-		
 		// events from messageEditor
 		else if (source == msgEditCtr){
 			//persist changed or new message
@@ -608,8 +613,10 @@ public class ForumController extends BasicController implements GenericEventList
 					showThreadView(ureq, currentMsg, null);
 				}
 			}
-			removeAsListenerAndDispose(msgEditCtr);
-			msgEditCtr = null;
+			if(msgEditCmc != null) {
+				msgEditCmc.deactivate();
+			}
+			cleanUp();
 		} else if (source == viewSwitchCtr){
 			if (event == Event.CHANGED_EVENT){
 				//viewmode has been switched, so change view:
@@ -624,6 +631,13 @@ public class ForumController extends BasicController implements GenericEventList
 				scrollToCurrentMessage();
 			}
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(msgEditCtr);
+		removeAsListenerAndDispose(msgEditCmc);
+		msgEditCmc = null;
+		msgEditCtr = null;
 	}
 	
 	/**
@@ -788,16 +802,18 @@ public class ForumController extends BasicController implements GenericEventList
 	}	
 	
 	private void showNewThreadView(UserRequest ureq) {
+		cleanUp();
 		// user has clicked on button 'open new thread'.
 		Message m = fm.createMessage();
-		
-		removeAsListenerAndDispose(msgEditCtr);
 		msgEditCtr = new MessageEditController(ureq, getWindowControl(), focallback, m, null);
 		listenTo(msgEditCtr);
-
-		forumPanel.setContent(msgEditCtr.getInitialComponent());
+		
+		String title = translate("msg.create");
+		msgEditCmc = new CloseableModalController(getWindowControl(), "close",
+				msgEditCtr.getInitialComponent(), true, title);
+		listenTo(msgEditCmc);
+		msgEditCmc.activate();
 	}
-	
 	
 	private void showEditMessageView(UserRequest ureq) {
 		// user has clicked on button 'edit'
@@ -807,11 +823,16 @@ public class ForumController extends BasicController implements GenericEventList
 			// user is forum-moderator -> may edit every message on every level
 			// or user is author of the current message and it has still no
 			// children
-			removeAsListenerAndDispose(msgEditCtr);
+			cleanUp();
+			
 			msgEditCtr = new MessageEditController(ureq, getWindowControl(), focallback, currentMsg, null);
 			listenTo(msgEditCtr);
-
-			forumPanel.setContent(msgEditCtr.getInitialComponent());
+			
+			String title = translate("msg.update");
+			msgEditCmc = new CloseableModalController(getWindowControl(), "close",
+					msgEditCtr.getInitialComponent(), true, title);
+			listenTo(msgEditCmc);
+			msgEditCmc.activate();
 		} else if ((userIsMsgCreator) && (children == true)) {
 			// user is author of the current message but it has already at least
 			// one child
@@ -879,11 +900,16 @@ public class ForumController extends BasicController implements GenericEventList
 				quotedMessage.setBody(quoteSB.toString());
 			}
 			
-			removeAsListenerAndDispose(msgEditCtr);
+			cleanUp();
+			
 			msgEditCtr = new MessageEditController(ureq, getWindowControl(), focallback, currentMsg, quotedMessage);
-			listenTo(msgEditCtr);			
-
-			forumPanel.setContent(msgEditCtr.getInitialComponent());
+			listenTo(msgEditCtr);
+			
+			String title = quote ? translate("msg.quote") : translate("msg.reply");
+			msgEditCmc = new CloseableModalController(getWindowControl(), "close",
+					msgEditCtr.getInitialComponent(), true, title);
+			listenTo(msgEditCmc);
+			msgEditCmc.activate();
 		} else {
 			showInfo("may.not.reply.msg");
 		}

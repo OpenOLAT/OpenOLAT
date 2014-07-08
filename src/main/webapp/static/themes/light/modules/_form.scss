@@ -13,11 +13,6 @@
 	}
 
 	.o_icon_mandatory {
-		position: absolute;
-		right: -0.25em;
-		line-height: 1.5em;
-	}
-	&.form-horizontal .o_icon_mandatory {
 		position: relative;
 		right: 0;
 		line-height: inherit;
