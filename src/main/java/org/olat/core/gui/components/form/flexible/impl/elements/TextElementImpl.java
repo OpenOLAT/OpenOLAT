@@ -175,21 +175,12 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 			}
 			//the html safe value
 			htmlVal.append(StringEscapeUtils.escapeHtml(tmpVal));
-			
-			
-			
-			
+
 			if (!itei.isEnabled()) {
 				// RO view and not clickable
 				String id = aiec.getFormDispatchId();
-
-				sb.append("<span id=\"");
-				sb.append(id);
-				sb.append("\" ");
-				sb.append(" >");
-				sb.append(htmlVal); //
-				sb.append("</span>");
-
+				sb.append("<span id=\"").append(id).append("\" ")
+				  .append(" >").append(htmlVal).append("</span>");
 			} else {
 				//
 				// Editable view
@@ -224,14 +215,10 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 				} else {
 					// RO<->RW view which can be clicked 
 					String id = aiec.getFormDispatchId();
-
-					sb.append("<span id=\"");
-					sb.append(id);
-					sb.append("\" class=\"b_inline_editable\" ");
-					sb.append(FormJSHelper.getRawJSFor(itei.getRootForm(), id, itei.getAction()));
-					sb.append(" >");
-					sb.append(htmlVal); //
-					sb.append("</span>");
+					sb.append(htmlVal)
+					  .append(" <i id='").append(id).append("' class='o_icon o_icon_inline_editable' ")
+					  .append(FormJSHelper.getRawJSFor(itei.getRootForm(), id, itei.getAction()))
+					  .append(" > </i>");
 				}
 				
 			}//endif 

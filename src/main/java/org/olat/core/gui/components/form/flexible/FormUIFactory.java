@@ -449,15 +449,6 @@ public class FormUIFactory {
 		return ie;
 	}
 	
-	public IntegerElement addInlineIntegerElement(String name, int initVal, FormItemContainer formLayout, FormBasicController listener){
-		IntegerElement iie = new IntegerElementImpl(name, initVal, true);
-		iie.addActionListener(FormEvent.ONCLICK);
-		if(listener != null){
-			formLayout.add(iie);
-		}
-		return iie;
-	}
-	
 	/**
 	 * Inserts an HTML horizontal bar (&lt;HR&gt;) element.
 	 * 

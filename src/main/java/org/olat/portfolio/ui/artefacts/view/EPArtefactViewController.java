@@ -244,7 +244,7 @@ public class EPArtefactViewController extends FormBasicController {
 				reflexion = "&nbsp; "; // show a link even if empty
 			}
 			reflexionBtn = uifactory.addFormLink("reflexionBtn", reflexion, null, formLayout, Link.NONTRANSLATED);
-			reflexionBtn.setCustomEnabledLinkCSS("b_inline_editable b_ep_nolink");
+			reflexionBtn.setIconLeftCSS("o_icon o_icon_inline_editable");
 			
 			String description = artefact.getDescription();
 			description = FilterFactory.getHtmlTagAndDescapingFilter().filter(description);
@@ -254,7 +254,7 @@ public class EPArtefactViewController extends FormBasicController {
 				description = "&nbsp; "; // show a link even if empty
 			}
 			descriptionBtn = uifactory.addFormLink("descriptionBtn", description, null, formLayout, Link.NONTRANSLATED);
-			descriptionBtn.setCustomEnabledLinkCSS("b_inline_editable b_ep_nolink");
+			descriptionBtn.setIconLeftCSS("o_icon o_icon_inline_editable");
 		}
 		
 		// if in artefactChooseMode, add an "choose this" button

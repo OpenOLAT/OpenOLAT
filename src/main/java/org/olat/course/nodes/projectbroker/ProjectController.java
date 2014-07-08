@@ -93,8 +93,6 @@ public class ProjectController extends BasicController {
 			projectGroupController = new ProjectGroupController(ureq, wControl, project, projectBrokerModuleConfiguration);
 			myTabbedPane.addTab(translate("tab.project.members"), projectGroupController.getInitialComponent());
 		}
-//		inlineEditDetailsFormController = new InlineEditDetailsFormController(ureq, wControl, project, newCreatedProject, userCourseEnv.getCourseEnvironment(), ne.getCourseNode(), projectBrokerModuleConfiguration);
-//		myTabbedPane.addTab(translate("tab.project.details.inline"), inlineEditDetailsFormController.getInitialComponent());
 		contentVC.put("projectTabbedPane", myTabbedPane);
 		putInitialPanel(contentVC);
 	}

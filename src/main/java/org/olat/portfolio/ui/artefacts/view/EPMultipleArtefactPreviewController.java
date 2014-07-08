@@ -80,10 +80,10 @@ public class EPMultipleArtefactPreviewController extends BasicController impleme
 		this.artefactChooseMode = artefactChooseMode;
 		vC = createVelocityContainer("multiArtefact");
 		if (!artefactChooseMode) {
-			artAttribBtn = LinkFactory.createCustomLink("detail.options", "detail.options", "", Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, vC, this);
+			artAttribBtn = LinkFactory.createCustomLink("detail.options", "detail.options", "", Link.BUTTON + Link.NONTRANSLATED, vC, this);
 			artAttribBtn.setTooltip(translate("detail.options"));
 			artAttribBtn.setTitle(translate("detail.options"));
-			artAttribBtn.setCustomEnabledLinkCSS("b_ep_artAttribLink b_small_icon");
+			artAttribBtn.setIconLeftCSS("o_icon o_icon_customize");
 		}
 
 		setNewArtefactsList(ureq, artefacts);
