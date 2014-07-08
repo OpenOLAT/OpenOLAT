@@ -147,6 +147,9 @@
 					olat works only with level 2; the database must support level 2
 				-->
 				<prop key="hibernate.connection.isolation">2</prop>
+				<!-- The 2 options below are automatically reduced if not enough memory is available -->
+				<prop key="hibernate.query.plan_cache_max_size">2048</prop>
+				<prop key="hibernate.query.plan_parameter_metadata_max_size">128</prop>
 				<prop key="javax.persistence.lock.timeout">30000</prop>
 	        </props>
 		</constructor-arg> 

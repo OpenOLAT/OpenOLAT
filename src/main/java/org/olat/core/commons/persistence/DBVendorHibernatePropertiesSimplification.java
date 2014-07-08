@@ -24,6 +24,11 @@
 */
 package org.olat.core.commons.persistence;
 
+import static org.hibernate.cfg.AvailableSettings.QUERY_PLAN_CACHE_MAX_SIZE;
+import static org.hibernate.cfg.AvailableSettings.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -38,26 +43,15 @@ import java.util.Properties;
  */
 public class DBVendorHibernatePropertiesSimplification extends Properties {
 
-	
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2191563335029326588L;
 
 	/**
-	 * 
-	 */
-	public DBVendorHibernatePropertiesSimplification() {
-		super();
-	}
-
-	/**
-	 * First added key valu pairs, which are eventually overwritten by values added during a {@link #setMoreProperties(Map)} call.
+	 * First added key value pairs, which are eventually overwritten by values added during a {@link #setMoreProperties(Map)} call.
 	 * @param firstKeyValues
 	 */
 	public DBVendorHibernatePropertiesSimplification(Properties firstKeyValues) {
 		super();
+		optimizeForEnvironment(firstKeyValues);
 		putAll(firstKeyValues);
 	}
 	
@@ -65,8 +59,50 @@ public class DBVendorHibernatePropertiesSimplification extends Properties {
 	 * add more key value pairs
 	 * @param more
 	 */
-	public void setAddMoreProperties(Map<String,String> more){
+	public void setAddMoreProperties(Properties more) {
+		optimizeForEnvironment(more);
 		putAll(more);
 	}
+	
+	private void optimizeForEnvironment(Properties more) {
+		List<Object> keys = new ArrayList<>(more.keySet());
+		for(Object key:keys) {
+			optimizeForEnvironment(key, more);
+		}
+	}
+	
+	private void optimizeForEnvironment(Object key, Properties properties) {
+		if(QUERY_PLAN_CACHE_MAX_SIZE.equals(key)) {
+			MemorySize mem = getMaxMemoryAvailable();
+			if(mem == MemorySize.small) {
+				properties.put(QUERY_PLAN_CACHE_MAX_SIZE, "512");
+			} else if(mem == MemorySize.medium) {
+				properties.put(QUERY_PLAN_CACHE_MAX_SIZE, "1024");
+			}
+		} else if(QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE.equals(key)) {
+			MemorySize mem = getMaxMemoryAvailable();
+			if(mem == MemorySize.small) {
+				properties.put(QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE, "32");
+			} else if(mem == MemorySize.medium) {
+				properties.put(QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE, "64");
+			}
+		}
+	}
+	
+	private MemorySize getMaxMemoryAvailable() {
+		long maxMem = Runtime.getRuntime().maxMemory();
+		if(maxMem < 550000000l) {
+			return MemorySize.small;
+		} else if(maxMem < 1048000000l) {
+			return MemorySize.medium;
+		}
+		return MemorySize.large;
+	}
+	
+	private enum MemorySize {
+		small,
+		medium,
+		large
 
+	}
 }
