@@ -1231,6 +1231,12 @@
 					<exclude>log4j.xml</exclude>
 				</excludes>
 			</resource>
+			<resource>
+				<directory></directory>
+				<includes>
+					<include>NOTICE.TXT</include>
+				</includes>
+			</resource>
 		</resources>
 		<testResources>
 			<!-- Same comment as for src/main/java also applies to src/test/java -->

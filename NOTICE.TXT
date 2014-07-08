@@ -82,20 +82,20 @@ This product uses software based on the Apache Software License like
 * Bouncycastle (Bouncy Castle Licence) [http://www.bouncycastle.org]
 * Jackson	(Apache Software License, Version 2.0) [http://jackson.codehaus.org]
 * Batik-css	(Apache Software License, Version 2.0) [http://xmlgraphics.apache.org/batik]
-* Apache Web Services™ Project (axiom, woden, neethi...)	(Apache Software License, Version 2.0) [http://ws.apache.org]
-* Axis2 (Apache Software License, Version 2.0) [http://axis.apache.org/axis]
 * Woodstox (LGPL 2.1 and Apache License 2.0) [http://woodstox.codehaus.org]
 * XMLBeans (Apache Software License, Version 2.0) [http://xmlbeans.apache.org]
 * ActiveMQ (Apache Software License, Version 2.0) [http://activemq.apache.org]
 * POI (Apache Software License, Version 2.0) [http://poi.apache.org]
 * JDOM (Apache like) Project [http://www.jdom.org/]
 * Apache Commons libraries (commons-codec, commons-collections, commons-fileupload, commons-httpclient, commons-io,
-  commons-lang,commons-logging,commons-net) (Apache Software License, Version 2.0) [http://commons.apache.org]
+  commons-lang,commons-net) (Apache Software License, Version 2.0) [http://commons.apache.org]
+* HttpClient (Apache Software License, Version 2.0) [http://hc.apache.org]
 * Lucene (Apache Software License, Version 2.0) [http://lucene.apache.org]
 * PDFbox (Apache Software License, Version 2.0) [http://pdfbox.apache.org]
 * JavaAssist (Apache Software License or LGPL, MPL) [http://www.jboss.org/javassist]
 * Testng (Apache License, Version 2.0) [http://testng.org]
 * SeleniumHQ (Apache License, Version 2.0) [http://seleniumhq.org]
+* Arquillian (Apache License, Version 2.0) [http://arquillian.org]
 * OpenSAML (Apache License, Version 2.0) [https://wiki.shibboleth.net/confluence/display/OpenSAML/Home]
 * Jaxen (Apache style) [http://jaxen.codehaus.org]
 * Rome (Apache License, Version 2.0) [http://java.net/projects/rome]
@@ -103,23 +103,27 @@ This product uses software based on the Apache Software License like
 * SakaiProject basic LTI (Educational Community License, version 2.0,
   see src/main/webapp/WEB-INF/lib/licenses/ECL.license.txt) [http://sakaiproject.org/projects/lti-portlet]
 * Geronimo Specs (Apache Software License, Version 2.0) [http://geronimo.apache.org]
-* JCommander (Apache Software License, Version 2.0) [http://jcommander.org]
 * jsr107-cache (Apache Software License, Version 2.0) [http://sourceforge.net/projects/jsr107cache]
 * Apache Ant (Apache Software License, Version 2.0) [http://ant.apache.org]
 * JSMATH latex rendering (Apache Software License, Version 2.0) [http://www.math.union.edu/~dpvc/jsMath]
 * JBoss Infinispan (Apache Software License, Version 2.0) [http://www.jboss.org/infinispan/]
+* Woodstox (Apache Software License, Version 2.0) [http://woodstox.codehaus.org]
+* fmath (Apache Software License, Version 2.0) [http://www.fmath.info]
+* undertow (Apache Software License, Version 2.0) [http://undertow.io]
+* jshashtable (Apache Software License, Version 2.0) [http://www.timdown.co.uk/jshashtable]
 
 -----------------------------------------------------------------------
 This produce uses softeare based on the MIT License
 * Bootstrap (MIT License) [http://http://getbootstrap.com]
-* Mockito (MIT License) [http://mockito.org]
 * Prototype javascript framework (MIT License) [http://www.prototypejs.org]
 * SCORM player project: reload (MIT License) [http://www.reload.ac.uk]
-* Script.aculo.us javascript framework (MIT License) [http://script.aculo.us]
 * jQuery JavaScript DOM library (MIT License) [http://jquery.com]
 * jQuery-UI JavaScript UI library (MIT License) [http://jqueryui.com]
 * jQuery transit library (MIT License) [http://ricostacruz.com/jquery.transit]
-
+* slf4j (MIT License) [http://www.slf4j.org]
+* fullcalendar (MIT License) [http://arshaw.com/fullcalendar/]
+* qrcode.js (MIT License) [http://davidshimjs.github.io/qrcodejs/]
+* bootstrap-tagsinput (MIT License) [https://github.com/timschlechter/bootstrap-tagsinput]
 
 -----------------------------------------------------------------------
 This product uses software based on the BSD License
@@ -129,17 +133,17 @@ This product uses software based on the BSD License
 * Mail	(CDDL-1.0, BSD, GPL-2.0, GNU-Classpath) [http://kenai.com/projects/javamail]
 * Antlr (BSD license) [http://www.antlr.org]
 * PostgreSQL JDBC Driver(BSD License) [http://jdbc.postgresql.org]
+* d3js (BSD License) [http://d3js.org]
 
 -----------------------------------------------------------------------
 This product uses software based on the Common Public License Version
-* wsdl4j	(Common Public License Version 1.0) [http://sourceforge.net/projects/wsdl4j]
 * junit	(Common Public License Version 1.0) [http://junit.sourceforge.net]
 * java2html (GPL or CPL1.0) [http://www.java2html.de]
 
 -----------------------------------------------------------------------
 This product uses software based on the Lesser General Public License (LGPL)
 * JGraphT (GNU Lesser General Public License Version 2.1) [http://www.jgrapht.org]
-* Hibernate (GNU Lesser General Public License) [http://www.hibernate.org]
+* Hibernate (GNU Lesser General Public License Version 2.1) [http://www.hibernate.org]
 * c3p0 (GNU Lesser General Public License) [http://sourceforge.net/projects/c3p0]
 * BeanShell (GNU LESSER GENERAL PUBLIC LICENSE) [http://www.beanshell.org]
 * Jmep (GNU Lesser Public License) [http://jmep.tigris.org]
@@ -163,11 +167,14 @@ This product uses software based on the CDDL
 * Jersey (CDDL 1.1 and GPL 2 with CPE) [http://jersey.java.net]
 * jsr311-api (CDDL License) [http://jsr311.java.net]
 * Grizzly (CDDL) [http://grizzly.java.net]
+* jaxws (CDDL) [https://jax-ws.java.net]
 
 -----------------------------------------------------------------------
 This product uses software based on Creative Commons License
-* Fugue Icons (Creative Commons Attribution 3.0 License, http://creativecommons.org/licenses/by/3.0/) [http://p.yusukekamiyamane.com]
-* File Type Icons (Creative Commons Attribution-ShareAlike 3.0, Hong Kong) [http://filetypeicons.com]
+
+-----------------------------------------------------------------------
+This product uses software based on SIL Open Font License (OFL)
+* Font-Awesome (SIL OFL 1.1) [http://fortawesome.github.io/Font-Awesome/]
 
 -----------------------------------------------------------------------
 This product uses software based on specific License
@@ -181,20 +188,6 @@ This product uses software based on specific License
 * xpp3 (see src/main/webapp/WEB-INF/lib/licenses/xpp3-license.txt) [http://www.extreme.indiana.edu/xgws/xsoap/xpp]
 * asm (see src/main/webapp/WEB-INF/lib/licenses/asm-license.txt) [http://asm.ow2.org]
 * JTA (see src/main/webapp/WEB-INF/lib/licenses/jta.licence.txt) [http://www.oracle.com/technetwork/java/javaee/jta]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+* jcodec (see http://jcodec.org/lic.html) [http://jcodec.org]
+* periodic (none) [https://github.com/tra/periodic]
+* typeahead.js (see src/main/webapp/WEB-INF/lib/licenses/typeahead.licence.txt) [https://github.com/twitter/typeahead.js/blob/master/LICENSE]
