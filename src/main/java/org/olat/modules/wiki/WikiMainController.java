@@ -910,14 +910,10 @@ public class WikiMainController extends BasicController implements CloneableCont
 			}
 		} else if (source == archiveWikiDialogCtr) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
-				//convert wiki into IMS content package and copy to users home folder
-				WikiToCPExport utils = new WikiToCPExport(ores, getIdentity(), getTranslator());
-				utils.archiveWikiToCP();
-				showInfo("wiki.exported.done.infomessage");
+				WikiToCPResource rsrc = new WikiToCPResource(ores, getIdentity(), getTranslator());
+				ureq.getDispatchResult().setResultingMediaResource(rsrc);
 			}
-		}
-
-		else if (source == createArticleForm) {
+		} else if (source == createArticleForm) {
 			calloutCtrl.deactivate();
 			
 			String query = createArticleForm.getQuery();

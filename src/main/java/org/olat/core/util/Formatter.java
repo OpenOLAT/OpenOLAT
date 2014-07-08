@@ -30,7 +30,6 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -57,10 +56,7 @@ public class Formatter {
 
 	private static final DateFormat formatterDatetimeFilesystem = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss_SSS");
 	private static final DateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-	private static final DecimalFormat dataSizeFormat = new DecimalFormat("#,##0.#");
-	private static final String[] dataUnits = new String[] { "B", "KB", "MB", "GB", "TB" };
 
-	
 	private static final Map<Locale,Formatter> localToFormatterMap = new HashMap<Locale,Formatter>();
 	
 	private final Locale locale;

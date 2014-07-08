@@ -903,7 +903,7 @@ public class FileUtils {
 	 * @param out BufferedOutputStream
 	 * @param wt What this I/O is about
 	 */
-	public static long cpio (BufferedInputStream in, BufferedOutputStream out, String wt) throws IOException {
+	public static long cpio (InputStream in, OutputStream out, String wt) throws IOException {
 		
 		byte[] buffer = new byte[BSIZE];
 

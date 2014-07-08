@@ -2,35 +2,23 @@
 <html>
 <head>
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
-	<link rel="icon" href="$cpoff	/favicon.ico" type="image/x-icon" / >
+	<link rel="icon" href="${cpoff}/favicon.ico" type="image/x-icon" / >
 	<!-- http://mattkruse.com/  -->
-	<link rel="stylesheet" href="$cpoff/mktree.css" />
-	<script src="$cpoff/mktree.js" type="text/javascript"></script>
-	
+	<link rel="stylesheet" href="${cpoff}/mktree.css" />
+	<script src="${cpoff}/mktree.js" type="text/javascript"></script>
 	<title>$rootTitle</title>
 </head>
-
 <body>
-	<div id="page_margins">
-	<div id="main">
+	<div id="page_margins"><div id="main">
 		<div id="menu">
 			<!--  here goes the menu -->
-			
-					<a href="#" onclick="expandTree('tree1'); return false;">Expand All</a>&nbsp;&nbsp;
-					<a href="#" onclick="collapseTree('tree1'); return false;">Collapse All</a>
-					
-					
-					<ul class="mktree" id="tree1">
-						$menutree
-					</ul>
+			<a href="#" onclick="expandTree('tree1'); return false;">Expand All</a>&nbsp;&nbsp;
+			<a href="#" onclick="collapseTree('tree1'); return false;">Collapse All</a>		
+			<ul class="mktree" id="tree1">$menutree</ul>
 		</div>
 		<div id="content">
-			<iframe  src="" name="content" ></iframe>
+			<iframe #if($index) src="$index" #else src="" #end name="content" ></iframe>
 		</div>	
-	</div>
-	<div id="footer"><a href="http://www.openolat.org"><img src="$cpoff/openolat_powerd_by_120x30.png" alt="openolat.org" /> </a></div>
-	</div>
+	</div></div>
 </body>
-
-
 </html>

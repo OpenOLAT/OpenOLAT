@@ -1,66 +1,52 @@
 @charset "UTF-8";
 
 /* base layout rules */
-    html {height:100%;}
-	html * { font-size: 100.01%; margin:0; padding:0; } 
-	/* (en) reset monospaced elements to font size 16px in Gecko browsers */
-  	textarea, pre, tt, code { font-family:"Courier New", Courier, monospace;  }	
-	/* Base layout gets standard font size 12px */
-	body { 
-		font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif; font-size: 75.00%; color: #444;
-		background: #ECECEC url('sky.png') repeat-x 0 88px; 
-		height:100%;
-	}
+   html {height:100%;}
+html * { font-size: 100.01%; margin:0; padding:0; } 
+/* (en) reset monospaced elements to font size 16px in Gecko browsers */
+ 	textarea, pre, tt, code { font-family:"Courier New", Courier, monospace;  }	
+/* Base layout gets standard font size 12px */
+body { 
+	font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif; font-size: 75.00%; color: #444;
+	height:100%;
+}
 
-	#page_margins {
-		width:1200px; 
-		margin:0 auto; 
-		height:100%;
-		box-sizing:border-box;
-	}
-	#main {
-		background:#fff;
-		/* some css3 juice */
-		moz-box-shadow: 0 0 14px #d3d3d3;
-		-ms-box-shadow: 0 0 14px #d3d3d3;
-		-o-box-shadow: 0 0 14px #d3d3d3;
-		-webkit-box-shadow: 0 0 14px #d3d3d3;
-		box-shadow: 0 0 14px #d3d3d3;
-		min-height:500px;
-		height:90%;
-		border-left:1px solid #ccc; 
-		border-right:1px solid #ccc;
-		padding:20px; 
-	}
-	#menu { 
-		width:250px; float:left;
-	}
-	#content {margin-left:250px; position:relative;}
-	#content iframe {width:100%; height:100%; border:none; border: 1px solid #ccc;}
+#page_margins {
+	width:1200px; 
+	margin:0 auto; 
+	height:100%;
+	box-sizing:border-box;
+}
+#main {
+	background:#fff;
+	min-height:500px;
+	height:90%;
+	padding:20px; 
+}
+#menu { width:250px; float:left; }
+#content {margin-left:250px; position:relative;}
+#content iframe { width:100%; min-height:100%; border:none; }
 
-	#footer { padding:20px; text-align:center; }
+/* Turn off list bullets */
+ul.mktree  li { list-style: none; padding-left: 0px; }
+/* Control how "spaced out" the tree is */
+ul.mktree { margin-top: 12px;}
+ul.mktree ul , ul.mktree li { margin-left:4px; padding-left: 0px; }
+/* Provide space for our own "bullet" inside the LI */
+ul.mktree  li           .bullet { padding-left: 15px; }
+/* Show "bullets" in the links, depending on the class of the LI that the link's in */
+ul.mktree  li.liOpen    .bullet { cursor: pointer; background: url(minus.gif)  center left no-repeat; }
+ul.mktree  li.liClosed  .bullet { cursor: pointer; background: url(plus.gif)   center left no-repeat; }
+ul.mktree  li.liBullet  .bullet { cursor: default; background: url(bullet.gif) center left no-repeat; }
+/* Sublists are visible or not based on class of parent LI */
+ul.mktree  li.liOpen    ul { display: block; }
+ul.mktree  li.liClosed  ul { display: none; }
 
-	/* Turn off list bullets */
-	ul.mktree  li { list-style: none; padding-left: 0px; }
-	/* Control how "spaced out" the tree is */
-	ul.mktree { margin-top: 12px;}
-	ul.mktree ul , ul.mktree li { margin-left:4px; padding-left: 0px; }
-	/* Provide space for our own "bullet" inside the LI */
-	ul.mktree  li           .bullet { padding-left: 15px; }
-	/* Show "bullets" in the links, depending on the class of the LI that the link's in */
-	ul.mktree  li.liOpen    .bullet { cursor: pointer; background: url(minus.gif)  center left no-repeat; }
-	ul.mktree  li.liClosed  .bullet { cursor: pointer; background: url(plus.gif)   center left no-repeat; }
-	ul.mktree  li.liBullet  .bullet { cursor: default; background: url(bullet.gif) center left no-repeat; }
-	/* Sublists are visible or not based on class of parent LI */
-	ul.mktree  li.liOpen    ul { display: block; }
-	ul.mktree  li.liClosed  ul { display: none; }
-
-
-	a:link,a:visited  {
-		color: #025D8C;
-		text-decoration: none;
-		font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif;
-	}
-	a:hover, a:active, a:focus {
-		text-decoration: underline;
-	}
+a:link,a:visited  {
+	color: #025D8C;
+	text-decoration: none;
+	font-family: Verdana, Tahoma, Arial, Geneva, Helvetica, sans-serif;
+}
+a:hover, a:active, a:focus {
+	text-decoration: underline;
+}

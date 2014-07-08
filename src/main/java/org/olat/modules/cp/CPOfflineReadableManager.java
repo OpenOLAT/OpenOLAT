@@ -26,12 +26,17 @@
 package org.olat.modules.cp;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -123,6 +128,27 @@ public class CPOfflineReadableManager {
 			log.error("", e);
 		}
 	}
+	
+	public void makeCPOfflineReadable(String manifest, String indexSrc, ZipOutputStream exportStream) {
+		try {
+			//start page
+			String startPage = getOfflineCPStartHTMLFile(manifest, indexSrc);
+			exportStream.putNextEntry(new ZipEntry("_START_.html"));
+			IOUtils.write(startPage, exportStream);
+			exportStream.closeEntry();
+			
+			File cpOfflineMat = new File(WebappHelper.getContextRealPath("/static/"), DIRNAME_CPOFFLINEMENUMAT);
+			for(File content:cpOfflineMat.listFiles()) {
+				exportStream.putNextEntry(new ZipEntry(DIRNAME_CPOFFLINEMENUMAT + "/" + content.getName()));
+				InputStream in = new FileInputStream(content);
+				FileUtils.cpio(in, exportStream, "");
+				exportStream.closeEntry();
+				in.close();
+			}
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
 
 	/**
 	 * "exports" the the given CP (specified by its OLATResourceable) to a
@@ -196,6 +222,36 @@ public class CPOfflineReadableManager {
 			FileUtils.deleteDirsAndFiles(f, false, true);
 		}
 		ExportUtil.writeContentToFile(FILENAME_START, sw.toString(), unzippedDir, "utf-8");
+	}
+	
+	public String getOfflineCPStartHTMLFile(String manifest, String indexSrc)
+	throws IOException {
+
+		CPManifestTreeModel ctm = new CPManifestTreeModel(manifest);
+		TreeNode root = ctm.getRootNode();
+		// let's take the rootnode title as  page title
+		String rootTitle = root.getTitle(); 
+
+		StringBuilder menuTreeSB = new StringBuilder();
+		renderMenuTreeNodeRecursively(root, menuTreeSB, 0);
+		
+		// now put values to velocityContext
+		VelocityContext ctx = new VelocityContext();
+		ctx.put("menutree", menuTreeSB.toString());
+		ctx.put("rootTitle", rootTitle);
+		ctx.put("cpoff",DIRNAME_CPOFFLINEMENUMAT);
+		ctx.put("index", indexSrc);
+		
+		StringWriter sw = new StringWriter();
+		try {
+			String template = FileUtils.load(CPOfflineReadableManager.class.getResourceAsStream("_content/cpofflinereadable.html"), "utf-8");
+			boolean evalResult = velocityEngine.evaluate(ctx, sw, "cpexport", template);
+			if (!evalResult)
+				log.error("Could not evaluate velocity template for CP Export");
+		} catch (Exception e) {
+			log.error("Error while evaluating velovity template for CP Export",e);
+		}
+		return sw.toString();
 	}
 
 

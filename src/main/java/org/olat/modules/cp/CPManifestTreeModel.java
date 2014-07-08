@@ -25,6 +25,7 @@
 
 package org.olat.modules.cp;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -66,6 +67,15 @@ public class CPManifestTreeModel extends GenericTreeModel {
 	 */
 	CPManifestTreeModel(VFSLeaf manifest) throws IOException {
 		Document doc = loadDocument(manifest);
+		initDocument(doc);
+	}
+	
+	CPManifestTreeModel(String manifest) throws IOException {
+		Document doc = loadDocument(manifest);
+		initDocument(doc);
+	}
+	
+	private void initDocument(Document doc) {
 		// get all organization elements. need to set namespace
 		rootElement = doc.getRootElement();
 		String nsuri = rootElement.getNamespace().getURI();
@@ -223,6 +233,25 @@ public class CPManifestTreeModel extends GenericTreeModel {
 			throw e;
 		} catch(Exception e) {
 			throw new IOException("could not read and parse from file " + documentF, e);
+		}
+		finally {
+			IOUtils.closeQuietly(in);
+		}
+		return doc;
+	}
+	
+	private Document loadDocument(String documentStr) throws IOException {
+		InputStream in = null;
+		Document doc = null;
+		try {
+			in = new ByteArrayInputStream(documentStr.getBytes());
+			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
+			doc = xmlParser.parse(in, false);
+			in.close();
+		} catch (IOException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new IOException("could not read and parse from string " + documentStr, e);
 		}
 		finally {
 			IOUtils.closeQuietly(in);

@@ -231,6 +231,15 @@ $fa-css-prefix: "o_icon" !default;
 .o_portlet_links_icon:before {content: $fa-var-link; }
 .o_portlet_shibboleth_icon:before {content: $fa-var-sign-in; }
 
+/* question pool */
+.o_icon_qpool:before { content: $fa-var-bank; }
+.o_icon_pool_private:before { content: $fa-var-times; }
+.o_icon_pool_public:before { content: $fa-var-check; }
+.o_icon_pool_my_items:before { content: $fa-var-user; }
+.o_icon_pool_favorits:before { content: $fa-var-bookmark; }
+.o_icon_pool_collection:before { content: $fa-var-list; }
+.o_icon_pool_pool:before { content: $fa-var-share-alt-square;}
+.o_icon_pool_share:before { content: $fa-var-group; }
 
 /* notification icons */
 .o_forum_message_icon:before { content: $fa-var-comment-o; }

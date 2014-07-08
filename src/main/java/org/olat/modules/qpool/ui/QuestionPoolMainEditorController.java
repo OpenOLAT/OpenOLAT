@@ -518,14 +518,14 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		List<Pool> pools = qpoolService.getPools(getIdentity(), roles);
 		for(Pool pool:pools) {
 			GenericTreeNode node = new ControlledTreeNode(pool.getName(), pool);
-			node.setIconCssClass("o_sel_qpool_pool");
+			node.setIconCssClass("o_icon_pool_pool o_sel_qpool_pool");
 			parentNode.addChild(node);
 		}
 
 		List<BusinessGroup> groups = qpoolService.getResourcesWithSharedItems(getIdentity());
 		for(BusinessGroup group:groups) {
 			GenericTreeNode node = new ControlledTreeNode(group.getName(), group);
-			node.setIconCssClass("o_sel_qpool_share");
+			node.setIconCssClass("o_icon_pool_share o_sel_qpool_share");
 			parentNode.addChild(node);
 		}
 	}
@@ -560,17 +560,17 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		parentNode.removeAllChildren();
 		
 		myOwnNode = new GenericTreeNode(translate("menu.database.my"), "My");
-		myOwnNode.setIconCssClass("o_sel_qpool_my_items");
+		myOwnNode.setIconCssClass("o_icon_pool_my_items o_sel_qpool_my_items");
 		parentNode.addChild(myOwnNode);
 		
 		GenericTreeNode node = new GenericTreeNode(translate("menu.database.favorit"), "Marked");
-		node.setIconCssClass("o_sel_qpool_favorits");
+		node.setIconCssClass("o_icon_pool_favorits o_sel_qpool_favorits");
 		parentNode.addChild(node);
 		
 		List<QuestionItemCollection> collections = qpoolService.getCollections(getIdentity());
 		for(QuestionItemCollection coll: collections) {
 			node = new ControlledTreeNode(coll.getName(), coll);
-			node.setIconCssClass("o_sel_qpool_collection");
+			node.setIconCssClass("o_icon_pool_collection o_sel_qpool_collection");
 			parentNode.addChild(node);
 		}
 	}
