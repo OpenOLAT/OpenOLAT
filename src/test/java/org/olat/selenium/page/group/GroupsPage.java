@@ -82,9 +82,10 @@ public class GroupsPage {
 		
 		Assert.assertNotNull(groupLink);
 		groupLink.click();
-		OOGraphene.waitBusy();
+		
+		By rootTreeNodeBy = By.xpath("//div[contains(@class,'o_tree')]//a/span[contains(text(),'" + name+ "')]");
+		OOGraphene.waitElement(rootTreeNodeBy);
 		
 		return new GroupPage(browser);
 	}
-
 }

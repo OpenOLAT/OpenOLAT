@@ -38,6 +38,8 @@ import org.junit.runner.RunWith;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
+import org.olat.selenium.page.User;
+import org.olat.selenium.page.core.IMPage;
 import org.olat.selenium.page.group.GroupPage;
 import org.olat.selenium.page.group.MembersWizardPage;
 import org.olat.selenium.page.user.UserToolsPage;
@@ -64,8 +66,6 @@ public class BusinessGroupTest {
 
 	@Drone
 	private WebDriver browser;
-	@Drone @Participant
-	private WebDriver participantBrowser;
 	@ArquillianResource
 	private URL deploymentUrl;	
 
@@ -73,10 +73,6 @@ public class BusinessGroupTest {
 	private UserToolsPage userTools;
 	@Page
 	private NavigationPage navBar;
-	
-
-	@Page @Participant
-	private NavigationPage participantNavBar;
 
 	/**
 	 * An author create a group, set the visibility to
@@ -91,8 +87,10 @@ public class BusinessGroupTest {
 	 */
 	@Test
 	@RunAsClient
-	public void groupMembers(@InitialPage LoginPage loginPage)
+	public void groupMembers(@InitialPage LoginPage loginPage,
+			@Drone @Participant WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser();
 		
@@ -124,6 +122,7 @@ public class BusinessGroupTest {
 			.loginAs(participant.getLogin(), participant.getPassword())
 			.resume();
 		
+		NavigationPage participantNavBar = new NavigationPage(participantBrowser);
 		participantNavBar
 				.openGroups(participantBrowser)
 				.selectGroup(groupName);
@@ -131,5 +130,109 @@ public class BusinessGroupTest {
 		WebElement contentEl = participantBrowser.findElement(By.id("o_main_center_content_inner"));
 		String content = contentEl.getText();
 		Assert.assertTrue(content.contains(groupName));
+	}
+	
+	/**
+	 * An author create a group, set the visibility to true for owners
+	 * and participants, enable the tools and add 2 users to it. The 2
+	 * users joins the chat. All three send some messages and read them.
+	 * 
+	 * @param loginPage
+	 * @param kanuBrowser
+	 * @param ryomouBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void groupChat(@InitialPage LoginPage loginPage,
+			@Drone @Participant WebDriver kanuBrowser,
+			@Drone @User WebDriver ryomouBrowser)
+	throws IOException, URISyntaxException {
+
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		//go to groups
+		String groupName = "Group-Chat-1-" + UUID.randomUUID();
+		GroupPage group = navBar
+			.openGroups(browser)
+			.createGroup(groupName, "A very little group to chat");
+		
+		group
+			.openAdministration()
+			.openAdminTools()
+			.enableTools()
+			.openAdminMembers()
+			.setVisibility(true, true);
+		//add Kanu to the group
+		group
+			.openAdminMembers()
+			.addMember()
+			.searchMember(kanu)
+			.next().next().next().finish();
+		//add Ryomou
+		group.addMember()
+			.searchMember(ryomou)
+			.next().next().next().finish();
+		
+		//Kanu open the group
+		LoginPage kanuLoginPage = LoginPage.getLoginPage(kanuBrowser, deploymentUrl);
+		kanuLoginPage
+			.loginAs(kanu.getLogin(), kanu.getPassword())
+			.resume();
+		
+		NavigationPage kanuNavBar = new NavigationPage(kanuBrowser);
+		GroupPage kanuGroup = kanuNavBar
+			.openGroups(kanuBrowser)
+			.selectGroup(groupName);
+		
+		//Ryomou open the group
+		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		ryomouLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		
+		NavigationPage ryomouNavBar = new NavigationPage(ryomouBrowser);
+		IMPage ryomouIM = ryomouNavBar
+			.openGroups(ryomouBrowser)
+			.selectGroup(groupName)
+			.openChat()
+			.openGroupChat();
+		
+		//Author send a message to Kanu
+		String msg1 = "Hello Kanu " + UUID.randomUUID();
+		IMPage authorIM = group
+			.openChat()
+			.openGroupChat()
+			.sendMessage(msg1)
+			.assertOnMessage(msg1);
+		
+		String msg2 = "Hello dear author " + UUID.randomUUID();
+		//Kanu opens her chat window
+		IMPage kanuIM = kanuGroup
+			.openChat()
+			.openGroupChat()
+			.assertOnMessage(msg1)
+			.sendMessage(msg2);
+		
+		String msg3 = "Hello Kanu and author " + UUID.randomUUID();
+		//Ryomou reads her messages
+		ryomouIM
+			.sendMessage(msg3)
+			.assertOnMessage(msg1)
+			.assertOnMessage(msg2);
+		//Kanu reads her message
+		kanuIM
+			.assertOnMessage(msg3);
+		//Author reads too
+		authorIM
+			.assertOnMessage(msg2)
+			.assertOnMessage(msg3);
 	}
 }

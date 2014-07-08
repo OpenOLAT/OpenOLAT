@@ -67,12 +67,19 @@ public class UserRestClient {
 		this.password = password;
 	}
 	
+
+	
 	public UserVO createRandomUser()
+	throws IOException, URISyntaxException {
+		return createRandomUser("Selena");
+	}
+	
+	public UserVO createRandomUser(String name)
 	throws IOException, URISyntaxException {
 		RestConnection restConnection = new RestConnection(deploymentUrl);
 		assertTrue(restConnection.login(username, password));
 		
-		UserVO user = createUser(restConnection, "Rnd");
+		UserVO user = createUser(restConnection, name, "Rnd");
 
 		restConnection.shutdown();
 		return user;
@@ -83,7 +90,7 @@ public class UserRestClient {
 		RestConnection restConnection = new RestConnection(deploymentUrl);
 		assertTrue(restConnection.login(username, password));
 		
-		UserVO user = createUser(restConnection, "Auth");
+		UserVO user = createUser(restConnection, "Selena", "Auth");
 		
 		RolesVO roles = new RolesVO();
 		roles.setAuthor(true);
@@ -100,16 +107,16 @@ public class UserRestClient {
 		return user;
 	}
 	
-	private UserVO createUser(RestConnection restConnection, String role)
+	private UserVO createUser(RestConnection restConnection, String name, String role)
 	throws URISyntaxException, IOException {
 		String uuid = Integer.toString(counter.incrementAndGet()) + UUID.randomUUID().toString();
 		
 		UserVO vo = new UserVO();
-		String username = ("Selena-" + uuid).substring(0, 24);
+		String username = (name + "-" + uuid).substring(0, 24);
 		vo.setLogin(username);
 		String password = ("passwd-" + uuid).substring(0, 24);
 		vo.setPassword(password);
-		vo.setFirstName("Selena-"+ role + "-" + uuid);
+		vo.setFirstName(name + "-"+ role + "-" + uuid);
 		vo.setLastName("Smith");
 		vo.setEmail(username + "@frentix.com");
 		vo.putProperty("telOffice", "39847592");

@@ -54,7 +54,7 @@ public class OOGraphene {
 	}
 	
 	public static final void tinymce(String content, WebDriver browser) {
-		//TODO selenium hardened the method
+		Graphene.waitModel().until(new TinyMCELoadedPredicate());
 		((JavascriptExecutor)browser).executeScript("top.tinymce.activeEditor.setContent('" + content + "')");
 	}
 	
@@ -64,7 +64,6 @@ public class OOGraphene {
 		try {
 			Thread.sleep(100);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

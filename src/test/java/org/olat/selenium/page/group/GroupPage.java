@@ -22,6 +22,7 @@ package org.olat.selenium.page.group;
 import java.util.List;
 
 import org.junit.Assert;
+import org.olat.selenium.page.core.IMPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -35,6 +36,10 @@ import org.openqa.selenium.WebElement;
  *
  */
 public class GroupPage {
+	
+
+	private static final By showOwners = By.className("o_sel_group_show_owners");
+	private static final By toolsBy = By.className("o_sel_collab_tools");
 	
 	private WebDriver browser;
 	
@@ -58,11 +63,22 @@ public class GroupPage {
 		return this;
 	}
 	
-	private static final By showOwners = By.className("o_sel_group_show_owners");
-	
 	public GroupPage openAdminMembers() {
 		openAdminTab(showOwners);
 		return this;
+	}
+	
+	public GroupPage openAdminTools() {
+		openAdminTab(toolsBy);
+		return this;
+	}
+	
+	public IMPage openChat() {
+		By chatBy = By.cssSelector("li.o_sel_group_chat a");
+		WebElement chatNode = browser.findElement(chatBy);
+		chatNode.click();
+		OOGraphene.waitBusy();
+		return new IMPage(browser);
 	}
 	
 	public GroupPage setVisibility(boolean owners, boolean participants) {
@@ -71,6 +87,7 @@ public class GroupPage {
 		if(owners) {
 			showOwnersEl.click();
 		}
+		OOGraphene.waitBusy();
 		
 		By showParticipants = By.cssSelector(".o_sel_group_show_participants input[type='checkbox']");
 		WebElement showParticipantsEl = browser.findElement(showParticipants);
@@ -78,6 +95,18 @@ public class GroupPage {
 			showParticipantsEl.click();
 		}
 		
+		OOGraphene.waitBusy();
+		return this;
+	}
+	
+	public GroupPage enableTools() {
+		By checkToolsBy = By.cssSelector(".o_sel_collab_tools input[type='checkbox']");
+		List<WebElement> checkTools = browser.findElements(checkToolsBy);
+		Assert.assertFalse(checkTools.isEmpty());
+		for(WebElement checkTool:checkTools) {
+			checkTool.click();
+			OOGraphene.waitBusy();
+		}
 		return this;
 	}
 	

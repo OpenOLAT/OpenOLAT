@@ -55,6 +55,7 @@ public class ChatToolController extends BasicController {
 		mainVC = createVelocityContainer("summary");
 		mainVC.contextPut("isInAssessment", Boolean.FALSE);
 		openChatLink = LinkFactory.createButton("openChat", mainVC, this);
+		openChatLink.setElementCssClass("o_sel_im_open_tool_chat");
 		if(isAdmin) {
 			logLink = LinkFactory.createButton("logChat", mainVC, this);
 		}

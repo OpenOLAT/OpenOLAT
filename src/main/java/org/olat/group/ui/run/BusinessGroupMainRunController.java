@@ -1069,6 +1069,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_CHAT);
 			gtnChild.setAltText(translate("menutree.chat.alt"));
 			gtnChild.setIconCssClass("o_icon_chat");
+			gtnChild.setCssClass("o_sel_group_chat");
 			root.addChild(gtnChild);
 		}
 
