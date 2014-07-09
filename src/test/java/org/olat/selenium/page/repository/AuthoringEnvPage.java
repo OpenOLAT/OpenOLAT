@@ -109,6 +109,7 @@ public class AuthoringEnvPage {
 		input.sendKeys(displayName);
 		WebElement submit = modal.findElement(createSubmit);
 		submit.click();
+		OOGraphene.waitBusy();
 		OOGraphene.waitElement(RepositoryEditDescriptionPage.generaltabBy);
 		
 		WebElement main = browser.findElement(By.id("o_main"));

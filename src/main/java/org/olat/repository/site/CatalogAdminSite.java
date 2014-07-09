@@ -53,7 +53,7 @@ public class CatalogAdminSite extends AbstractSiteInstance {
 	public CatalogAdminSite(SiteDefinition siteDef, Locale loc) {
 		super(siteDef);
 		Translator trans = Util.createPackageTranslator(BaseChiefController.class, loc);
-		origNavElem = new DefaultNavElement(trans.translate("topnav.catalog.admin"), trans.translate("topnav.catalog.admin.alt"), "o_site_catalog");		
+		origNavElem = new DefaultNavElement(trans.translate("topnav.catalog.admin"), trans.translate("topnav.catalog.admin.alt"), "o_site_catalog_admin");		
 		origNavElem.setAccessKey("c".charAt(0));
 		curNavElem = new DefaultNavElement(origNavElem);
 	}

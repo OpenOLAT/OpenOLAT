@@ -59,10 +59,10 @@ public class LoginPage {
 	@Drone
 	private WebDriver browser;
 	
-	public static LoginPage getLoginPage(WebDriver browser, URL deployementUrl) {
+	public static LoginPage getLoginPage(WebDriver browser, URL deployemntUrl) {
 		LoginPage page = new LoginPage();
 		page.browser = browser;
-		page.browser.navigate().to(deployementUrl);
+		page.browser.navigate().to(deployemntUrl);
 		return page;
 	}
 

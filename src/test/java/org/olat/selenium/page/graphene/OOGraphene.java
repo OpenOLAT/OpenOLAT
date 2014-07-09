@@ -60,7 +60,10 @@ public class OOGraphene {
 	
 	public static final void waitingTransition() {
 		Graphene.waitModel().pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new TransitionPredicate());
-		
+		waitingALittleBit();
+	}
+	
+	public static final void waitingALittleBit() {
 		try {
 			Thread.sleep(100);
 		} catch (InterruptedException e) {

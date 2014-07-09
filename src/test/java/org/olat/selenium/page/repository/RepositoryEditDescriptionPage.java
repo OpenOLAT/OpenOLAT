@@ -19,6 +19,8 @@
  */
 package org.olat.selenium.page.repository;
 
+import java.util.List;
+
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
@@ -27,7 +29,6 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
 
 /**
  * 
@@ -41,12 +42,8 @@ public class RepositoryEditDescriptionPage {
 	
 	public static final By generaltabBy = By.className("o_sel_edit_repositoryentry");
 
-	
 	@Drone
 	private WebDriver browser;
-	
-	@FindBy(className = "o_sel_edit_repositoryentry")
-	private WebElement generalTab;
 	
 	public static RepositoryEditDescriptionPage getPage(WebDriver browser) {
 		WebElement main = browser.findElement(By.id("o_main"));
@@ -54,7 +51,9 @@ public class RepositoryEditDescriptionPage {
 	}
 	
 	public RepositoryEditDescriptionPage assertOnGeneralTab() {
-		Assert.assertTrue(generalTab.isDisplayed());
+		List<WebElement> generalTabs = browser.findElements(generaltabBy);
+		Assert.assertFalse(generalTabs.isEmpty());
+		Assert.assertTrue(generalTabs.get(0).isDisplayed());
 		return this;
 	}
 	

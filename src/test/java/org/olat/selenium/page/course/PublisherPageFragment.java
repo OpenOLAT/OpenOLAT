@@ -19,6 +19,8 @@
  */
 package org.olat.selenium.page.course;
 
+import java.util.List;
+
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
@@ -95,6 +97,39 @@ public class PublisherPageFragment {
 		WebElement select = browser.findElement(selectCatalogYesNoBy);
 		new Select(select).selectByValue(access ? "yes" : "no");
 		return this;
+	}
+	
+	public PublisherPageFragment selectCategory(String parentNode, String title) {
+		By addToCatalogBy = By.className("o_sel_publish_add_to_catalog");
+		WebElement addToCatalogButton = browser.findElement(addToCatalogBy);
+		addToCatalogButton.click();
+		OOGraphene.waitBusy();
+		
+		if(parentNode != null) {
+			selectCatalogNode(parentNode);
+		}
+		selectCatalogNode(title);
+		
+		By selectBy = By.cssSelector(".o_sel_catalog_chooser_tree a.o_sel_catalog_add_select");
+		WebElement selectButton = browser.findElement(selectBy);
+		selectButton.click();
+		OOGraphene.waitBusy();
+		return this;
+	}
+	
+	private void selectCatalogNode(String name) {
+		By nodeBy = By.cssSelector("a.o_tree_link");
+		
+		WebElement namedNode = null;
+		List<WebElement> nodes = browser.findElements(nodeBy);
+		for(WebElement node:nodes) {
+			if(node.getText().contains(name)) {
+				namedNode = node;
+			}
+		}
+		Assert.assertNotNull(namedNode);
+		namedNode.click();
+		OOGraphene.waitBusy();
 	}
 	
 	public enum Access {

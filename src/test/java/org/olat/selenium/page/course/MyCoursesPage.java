@@ -56,6 +56,14 @@ public class MyCoursesPage {
 		return this;
 	}
 	
+	public MyCoursesPage openCatalog() {
+		By catalogBy = By.className("o_sel_mycourses_catlog");
+		WebElement catalogLink = browser.findElement(catalogBy);
+		catalogLink.click();
+		OOGraphene.waitBusy();
+		return this;
+	}
+	
 	public MyCoursesPage search(String title) {
 		By titleBy = By.cssSelector(".o_sel_repo_search_displayname input[type='text']");
 		WebElement titleEl = browser.findElement(titleBy);
@@ -79,6 +87,22 @@ public class MyCoursesPage {
 		}
 		Assert.assertNotNull(linkToSelect);
 		linkToSelect.click();
+		OOGraphene.waitBusy();
+		return this;
+	}
+	
+	public MyCoursesPage selectCatalogEntry(String title) {
+		By titleBy = By.cssSelector(".o_sublevel .o_meta h4.o_title a");
+		List<WebElement> titleLinks = browser.findElements(titleBy);
+		Assert.assertFalse(titleLinks.isEmpty());
+		WebElement selectCategory = null;
+		for(WebElement titleLink:titleLinks) {
+			if(titleLink.getText().contains(title)) {
+				selectCategory = titleLink;
+			}
+		}
+		Assert.assertNotNull(selectCategory);
+		selectCategory.click();
 		OOGraphene.waitBusy();
 		return this;
 	}

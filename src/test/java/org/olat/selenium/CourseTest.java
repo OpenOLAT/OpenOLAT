@@ -41,6 +41,7 @@ import org.olat.selenium.page.Administrator;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
+import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseWizardPage;
@@ -533,7 +534,7 @@ public class CourseTest {
 		FeedPage feed = FeedPage.getFeedPage(browser);
 		feed.newExternalBlog("http://blogs.frentix.com/blogs/frentix/rss.xml");
 
-		//check only that the subscription link is visibel
+		//check only that the subscription link is visible
 		WebElement subscriptionLink = browser.findElement(By.cssSelector("div.o_subscription>a"));
 		Assert.assertTrue(subscriptionLink.isDisplayed());
 	}
@@ -639,5 +640,87 @@ public class CourseTest {
 		participantFeed
 			.clickFirstMonthOfPager()
 			.assertOnBlogPost(post2Title);
+	}
+	
+	/**
+	 * 
+	 * Create a catalog, create a course, while publishing add the
+	 * course to the catalog. Go to the catalog, find the course and
+	 * open it.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void catalogRoundTrip(@Drone @Administrator WebDriver adminBrowser,
+			@Drone @User WebDriver userBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
+		
+		//administrator create the categories in the catalog
+		LoginPage adminLogin = LoginPage.getLoginPage(adminBrowser, deploymentUrl);
+		adminLogin
+			.loginAs("administrator", "openolat")
+			.resume();
+		NavigationPage adminNavBar = new NavigationPage(adminBrowser);
+		
+		String node1 = "First level " + UUID.randomUUID();
+		String node2_1 = "Second level first element " + UUID.randomUUID();
+		String node2_2 = "Second level second element " + UUID.randomUUID();
+		adminNavBar
+				.openCatalogAdministration()
+				.addCatalogNode(node1, "First level of the catalog")
+				.selectNode(node1)
+				.addCatalogNode(node2_1, "First element of the second level")
+				.addCatalogNode(node2_2, "Second element of the second level");
+		
+		//An author create a course and publish it under a category
+		//created above
+		LoginPage login = LoginPage.getLoginPage(browser, deploymentUrl);
+		login
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		String courseTitle = "Catalog-Course-" + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack()
+			.edit();
+	
+		CourseEditorPageFragment courseEditor = CourseEditorPageFragment.getEditor(browser);
+		courseEditor
+			.publish()
+			.next()
+			.selectAccess(Access.guests)
+			.next()
+			.selectCatalog(true)
+			.selectCategory(node1, node2_2)
+			.next() // -> no problem found
+			.finish();
+		
+		OOGraphene.closeBlueMessageWindow(browser);
+		
+		//User logs in, go to "My courses", navigate the catalog and start
+		//the course
+		LoginPage userLogin = LoginPage.getLoginPage(userBrowser, deploymentUrl);
+		userLogin
+			.loginAs(user.getLogin(), user.getPassword())
+			.resume();
+
+		NavigationPage userNavBar = new NavigationPage(userBrowser);
+		userNavBar
+			.openMyCourses()
+			.openCatalog()
+			.selectCatalogEntry(node1)
+			.selectCatalogEntry(node2_2)
+			.select(courseTitle)//go to the details page
+			.start();
+		
+		By courseTitleBy = By.cssSelector(".o_course_run h2");
+		WebElement courseTitleEl = userBrowser.findElement(courseTitleBy);
+		Assert.assertTrue(courseTitleEl.getText().contains(courseTitle));
 	}
 }

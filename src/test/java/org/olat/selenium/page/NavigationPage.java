@@ -29,6 +29,7 @@ import org.olat.selenium.page.course.MyCoursesPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.group.GroupsPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
+import org.olat.selenium.page.repository.CatalogAdminPage;
 import org.olat.selenium.page.user.PortalPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -54,6 +55,7 @@ public class NavigationPage {
 	private By myCoursesBy = By.cssSelector("li.o_site_repository > a");
 	private By userManagementBy = By.cssSelector("li.o_site_useradmin > a");
 	private By administrationBy = By.cssSelector("li.o_site_admin > a");
+	private By catalogAdministrationBy = By.cssSelector("li.o_site_catalog_admin > a");
 	private	By groupsBy = By.cssSelector("li.o_site_groups > a");
 	
 	public static final By myCoursesAssertBy = By.xpath("//div[contains(@class,'o_segments')]//a[contains(@href,'search.mycourses.student')]");
@@ -102,6 +104,11 @@ public class NavigationPage {
 	public AdministrationPage openAdministration() {
 		navigate(administrationBy);
 		return new AdministrationPage(browser);
+	}
+	
+	public CatalogAdminPage openCatalogAdministration() {
+		navigate(catalogAdministrationBy);
+		return new CatalogAdminPage(browser);
 	}
 	
 	public GroupsPage openGroups(WebDriver browser) {
