@@ -71,7 +71,11 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 		
 		String ssscId = getFormItemId() == null ? null : getFormItemId() + "_SELBOX";
 		component = new SelectboxComponent(ssscId , getName() + "_SELBOX", translator, this);
-		
+	}
+
+	@Override
+	public void setDomReplacementWrapperRequired(boolean required) {
+		component.setDomReplacementWrapperRequired(required);
 	}
 
 	/**

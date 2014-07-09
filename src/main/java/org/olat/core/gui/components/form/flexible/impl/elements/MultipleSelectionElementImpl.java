@@ -33,7 +33,6 @@ import java.util.Set;
 
 import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.logging.OLog;
@@ -63,6 +62,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	private String[] original = null;
 	private boolean originalIsDefined = false;
 	private boolean escapeHtml = true;
+	private boolean domReplacementWrapperRequired = true;
 
 	public MultipleSelectionElementImpl(String name) {
 		this(name, Layout.horizontal, 1);
@@ -79,6 +79,16 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		this.columns = columns;
 	}
 	
+	
+	
+	@Override
+	public void setDomReplacementWrapperRequired(boolean required) {
+		domReplacementWrapperRequired = required;
+		if(component != null) {
+			component.setDomReplacementWrapperRequired(required);
+		}
+	}
+
 	public Layout getLayout() {
 		return layout;
 	}
@@ -340,6 +350,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		// create and add selectbox element
 		String ssscId = getFormItemId() == null ? null : getFormItemId() + "_SELBOX";
 		component = new MultipleSelectionComponent(ssscId, this);
+		component.setDomReplacementWrapperRequired(domReplacementWrapperRequired);
 		component.setCheckComponents(ssecs);
 	}
 
@@ -356,7 +367,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	}
 
 	@Override
-	protected Component getFormItemComponent() {
+	protected MultipleSelectionComponent getFormItemComponent() {
 		return component;
 	}
 

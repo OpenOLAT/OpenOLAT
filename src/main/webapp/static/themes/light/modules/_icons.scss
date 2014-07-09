@@ -74,10 +74,12 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_delete:before { content: $fa-var-minus-circle; color: #A87E7E;}
 .o_icon_details:before { content: $fa-var-lightbulb-o; }
 .o_icon_dev:before { content: $fa-var-bug;}
+.o_icon_disabled:before { content: $fa-var-circle-o;}
 .o_icon_download:before { content: $fa-var-download;}
 .o_icon_edit:before { content: $fa-var-edit;}
 .o_icon_edit_file:before { content: $fa-var-edit;}
 .o_icon_edit_metadata:before { content: $fa-var-gear;}
+.o_icon_enabled:before { content: $fa-var-circle; } 
 .o_icon_enlarge:before { content: $fa-var-search-plus;}
 .o_icon_eportfolio_add:before { content: $fa-var-puzzle-piece;}
 .o_icon_error:before { content: $fa-var-exclamation-circle; color: $brand-danger;}
@@ -180,6 +182,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_tool:before { content: $fa-var-gear; }
 .o_icon_tools:before { content: $fa-var-wrench; }
 .o_icon_top:before { content: $fa-var-chevron-up; }
+.o_icon_translation_item:before { content: $fa-var-file-code-o; }
+.o_icon_translation_package:before { content: $fa-var-folder-open-o; }
 .o_icon_user:before { content: $fa-var-user; }
 .o_icon_user_vip:before { content: $fa-var-graduation-cap; }
 .o_icon_user_anonymous:before { content: $fa-var-question; }

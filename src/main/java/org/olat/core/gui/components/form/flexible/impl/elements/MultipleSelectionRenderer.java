@@ -57,13 +57,21 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		}
 	}
 	
+	private StringOutput appendIdIfRequired(StringOutput sb, MultipleSelectionComponent stC) {
+		if(!stC.isDomReplacementWrapperRequired()) {
+			sb.append(" id='").append(stC.getDispatchID()).append("'");
+		}
+		return sb;
+	}
+	
 	private void renderVertical(StringOutput sb, MultipleSelectionComponent stC) {
 		for(CheckboxElement check:stC.getCheckComponents()) {
-			sb.append("<div class='checkbox'>");
+			sb.append("<div ");
+			appendIdIfRequired(sb, stC).append(" class='checkbox'>");
 			renderCheckbox(sb, check, stC, false);
 			sb.append("</div>");
 		}
-	} 	
+	}
 
 	private void renderMultiColumnsVertical(StringOutput sb, MultipleSelectionComponent stC, int columns) {
 		String columnCss;
@@ -76,7 +84,8 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			columnCss = "col-sm-3";
 		}
 
-		sb.append("<div class='container-fluid'>");
+		sb.append("<div ");
+		appendIdIfRequired(sb, stC).append(" class='container-fluid'>");
 		CheckboxElement[] checks = stC.getCheckComponents();
 		for(int i=0; i<checks.length; ) {
 			sb.append("<div class='row'>");
@@ -96,7 +105,8 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderHorizontal(StringOutput sb, MultipleSelectionComponent stC) {
-		sb.append("<div class='form-inline'>");
+		sb.append("<div ");
+		appendIdIfRequired(sb, stC).append(" class='form-inline'>");
 		for(CheckboxElement check:stC.getCheckComponents()) {
 			renderCheckbox(sb, check, stC, true);
 		}
@@ -141,12 +151,12 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		}
 		sb.append(" />");
 		if (StringHelper.containsNonWhitespace(value)) {
-			sb.append(value);		
+			sb.append(" ").append(value);		
 		}
 		sb.append("</label>");
 			
 		if(stC.isEnabled()){
-				//add set dirty form only if enabled
+			//add set dirty form only if enabled
 			sb.append(FormJSHelper.getJSStartWithVarDeclaration(stF.getFormDispatchId()))
 			  .append(FormJSHelper.getSetFlexiFormDirtyForCheckbox(stF.getRootForm(), stF.getFormDispatchId()))
 			  .append(FormJSHelper.getJSEnd());

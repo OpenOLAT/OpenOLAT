@@ -82,31 +82,20 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 		//
 		if (!source.isEnabled()) {
 			//read only view
-			sb.append("<span id=\"");
-			sb.append(id);
-			sb.append("\" ");
-			sb.append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()));
-			sb.append("title=\"");
-			sb.append(value); //the uncutted value in tooltip
-			sb.append("\" "); 
-			sb.append(" >");
-			sb.append("<textarea id=\"");
-			sb.append(id);
-			sb.append("_disabled\" readonly class=\"b_form_element_disabled\"");
+			sb.append("<span id=\"").append(id).append("\" ")
+			  .append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()))
+			  .append(" ><textarea id=\"")
+			  .append(id)
+			  .append("_disabled\" readonly='readonly' class='form-control o_form_element_disabled'");
 			if (teC.getCols() != -1) {
-				sb.append(" cols=\"");
-				sb.append(teC.getCols());
-				sb.append("\"");
+				sb.append(" cols='").append(teC.getCols()).append("'");
 			}
 			if (rows != -1) {
-				sb.append(" rows=\"");		
-				sb.append(rows);
-				sb.append("\"");
+				sb.append(" rows='").append(rows).append("'");
 			}
-			sb.append(">");
-			sb.append(value);
-			sb.append("</textarea>");
-			sb.append("</span>");
+			sb.append(">")
+			  .append(value)
+			  .append("</textarea></span>");
 	
 		} else {
 			//read write view
@@ -142,17 +131,11 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 			sb.append("');while (obj.scrollHeight>obj.offsetHeight && iter < 99){ iter++; obj.rows = obj.rows + 1}} catch(e){}});</script>");
 		}
 		
-
 		if(source.isEnabled()){
 			//add set dirty form only if enabled
-			sb.append(FormJSHelper.getJSStartWithVarDeclaration(teC.getFormDispatchId()));
-			/* deactivated due OLAT-3094 and OLAT-3040
-			if(te.hasFocus()){
-				sb.append(FormJSHelper.getFocusFor(teC.getFormDispatchId()));
-			}
-			*/
-			sb.append(FormJSHelper.getSetFlexiFormDirty(te.getRootForm(), teC.getFormDispatchId()));
-			sb.append(FormJSHelper.getJSEnd());
+			sb.append(FormJSHelper.getJSStartWithVarDeclaration(teC.getFormDispatchId()))
+			  .append(FormJSHelper.getSetFlexiFormDirty(te.getRootForm(), teC.getFormDispatchId()))
+			  .append(FormJSHelper.getJSEnd());
 		}
 	}
 }

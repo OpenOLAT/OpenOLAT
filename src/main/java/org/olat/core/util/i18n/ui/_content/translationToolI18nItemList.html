@@ -1,11 +1,7 @@
-<div class="b_translation_list">
+<div class="o_translation_list">
 ##	<h2>$r.translate("list.title")</h2>
-	<p>
-		$r.translate("list.found.entries", ["$keysCount","$bundlesCount"])
-	</p>
-	<p class="o_info">
-		$r.translate("list.${customizingPrefix}intro")
-	</p>
+	<p>$r.translate("list.found.entries", ["$keysCount","$bundlesCount"])</p>
+	<p class="o_info">$r.translate("list.${customizingPrefix}intro")</p>
 #if ($i18nItems.size() > 0)
 	<div class="o_button_group">
 		$r.render("allTranslateButtonTop")
@@ -20,9 +16,7 @@
 			#set ($currentBundle=$item.getBundleName())
 			
 			<div class="clearfix">
-				<div class="pull-right">
-					$r.render("translateBundle_$currentBundle")
-				</div>
+				<div class="pull-right">$r.render("translateBundle_$currentBundle")</div>
 				<div class="o_tooglebox_wrapper">
 					<a href="#" data-toggle="collapse" data-target="#$b_translation_item_$velocityCount"  class="o_opener" onclick="jQuery(this).toggleClass('o_in')">
 						<b class="b_with_small_icon_left b_translation_package_icon">$r.translate("generic.bundle"): $currentBundle </b> 
@@ -31,7 +25,7 @@
 			</div>
 			<div id="$b_translation_item_$velocityCount" class="collapse"><div class="o_togglebox_content">
 		#end
-		<div class="b_translation_list_item b_with_small_icon_left b_translation_item_icon">$item.getKey()</div>
+		<div class="o_icon o_icon_translation_item">$item.getKey()</div>
 	#end
 	</div></div></div>	
 	<div class="o_button_group">

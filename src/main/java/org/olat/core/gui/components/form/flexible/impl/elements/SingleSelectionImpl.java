@@ -53,7 +53,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	private int selectedIndex = -1;
 
 	private final Layout layout;
-	private SingleSelectionComponent component;
+	private final SingleSelectionComponent component;
 	
 	/**
 	 * @param name
@@ -72,6 +72,11 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		super(id, name, false);
 		this.layout = layout;
 		component = new SingleSelectionComponent(id, this);
+	}
+
+	@Override
+	public void setDomReplacementWrapperRequired(boolean required) {
+		component.setDomReplacementWrapperRequired(required);
 	}
 
 	/**

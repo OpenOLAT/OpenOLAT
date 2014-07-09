@@ -1,69 +1,65 @@
-<div class="o_translation_edit b_form">
-	<div  class="o_translation_edit_head">
-		<table class="b_table b_table_nohover b_full">
-			<tr><td><span class="b_with_small_icon_left o_translation_package_icon"><b>$r.translate("generic.bundle"): </b></span></td><td id="bundlesSelectionContainer">$r.render("bundlesSelection")</td><td width="50%">$r.render("progressBarBundle")</td></tr>
-			<tr><td><span class="b_with_small_icon_left o_translation_item_icon"><b>$r.translate("generic.key"): </b></span></td><td>$r.render("keysSelection")</td><td>$r.render("progressBarKey")</td></tr>
-		</table>
+<div class="o_translation_edit">
+	<div class="o_form form-horizontal">
+		<div class="form-group clearfix">
+			<div class="col-sm-2"><label class="control-label"><i class="o_icon o_icon_translation_package"> </i> $r.translate("generic.bundle")</label></div>
+			<div class="col-sm-5">$r.render("bundlesSelection")</div>
+			<div class="col-sm-3">$r.render("progressBarBundle")</div>
+		</div>
+		<div class="form-group clearfix">
+			<div class="col-sm-2"><label class="control-label"><i class="o_icon o_icon_translation_item"> </i> $r.translate("generic.key")</label></div>
+			<div class="col-sm-5">$r.render("keysSelection")</div>
+			<div class="col-sm-3">$r.render("progressBarKey")</div>
+		</div>
 	</div>
-	<div  class="o_translation_edit_body">
-		<p class="o_info">
-			$r.translate("edit.${customizingPrefix}intro")
-		</p>	
+	<div class="o_translation_edit_body">
+		<p class="o_info">$r.translate("edit.${customizingPrefix}intro")</p>	
 		
-		<div class="o_translation_edit_reference b_form_element">
-			<div class="o_translation_refKey b_float_right b_with_small_icon_left" style="display: none" onclick="this.style.display='none'">
+		<div class="o_translation_edit_reference">
+			<div class="o_translation_refKey pull-right" style="display: none" onclick="this.style.display='none'">
 				<code></code> = <span></span>
 			</div>
-			<h5>
-				<i class="o_flag o_flag_$referenceLanguageKey"> </i>
-				 $r.translate("generic.${customizingPrefix}lang.reference"): $referenceLanguage
-			</h5>
+			<h5><i class="o_flag o_flag_$referenceLanguageKey"> </i> $r.translate("generic.${customizingPrefix}lang.reference"): $referenceLanguage</h5>
 			$r.render("referenceArea")
 		</div>
 		#if ($r.available("annotationAddLink"))
 			#if (!$customizingMode)
-			<div class="b_button_group">
+			<div class="o_button_group">
 				$r.render("annotationAddLink")
 			</div>
 			#end
 		#else
-		<div class="o_translation_edit_annotation b_form_element" title="$r.translateInAttribute("edit.annotation.hover")" >
-			<h5>
-				<i class="o_icon o_icon_info"> </i>
-				$r.translate("generic.annotation")
-			</h5>
+		<div class="o_translation_edit_annotation" title="$r.translateInAttribute("edit.annotation.hover")" >
+			<h5><i class="o_icon o_icon_info"> </i> $r.translate("generic.annotation")</h5>
 			$r.render("annotationArea")
 		</div>
 		#end
-		<div class="o_translation_edit_compare b_form_element">			
+		<div class="o_translation_edit_compare">			
 			#if ($compareSwitchEnabled)
-			<div class="o_translation_refKey pull-right b_with_small_icon_left" style="display: none" onclick="this.style.display='none'">
+			<div class="o_translation_refKey pull-right o_icon" style="display: none" onclick="this.style.display='none'">
 				<code></code> = <span></span>
 			</div>
 			#end
-			<div class="clearfix">
-				<div class="pull-left #if (!$compareSwitchEnabled) text-muted #end"><h5><i class="o_flag o_flag_$compareLanguageKey">$r.translate("generic.lang.compare"): </h5></div>
-				<div class="pull-left #if (!$compareSwitchEnabled) text-muted #end">$r.render("compareLangSelection") </div>
-				<div class="pull-left" style="margin-right: 0;">$r.render("compareSwitch")</div>
-				$r.translate("generic.enable")
+			<div class="form-inline">
+				<div class="form-group">
+					<label><i class="o_flag o_flag_$compareLanguageKey"> </i> $r.translate("generic.lang.compare"):</label>
+				</div>
+				$r.render("compareLangSelection")
+				$r.render("compareSwitch")
 			</div>
 			$r.render("compareArea")
 		</div>
-		<div class="o_translation_edit_target b_form_element" title="$r.translateInAttribute("edit.${customizingPrefix}target.hover")">
+		<div class="o_translation_edit_target" title="$r.translateInAttribute("edit.${customizingPrefix}target.hover")">
 			<div class="o_translation_refKey b_float_right b_with_small_icon_left" style="display: none" onclick="this.style.display='none'">
 				<code></code> = <span></span>
 			</div>
-			<a href="#top" onclick="copyFromReference();" class="btn btn-small pull-right"><span>$r.translate('copy')</span></a>
-			<h5>
-				<i class="o_flag o_flag_$targetLanguageKey"> </i>
-				 $r.translate("generic.${customizingPrefix}lang.target"): $targetLanguage
-			</h5>
+			<h5><i class="o_flag o_flag_$targetLanguageKey"> </i> $r.translate("generic.${customizingPrefix}lang.target"): $targetLanguage</h5>
 			$r.render("targetArea")
 		</div>		
-		<div class="b_button_group">
+		<div class="o_button_group">
 		#if ($hasPrevious) 
 			$r.render("previousLink") 
 		#end
+			<a href="#top" onclick="copyFromReference();" class="btn btn-default"><i class="o_icon o_icon_copy"> </i> $r.translate('copy')</a>
 			$r.render("saveLink")
 		#if ($hasNext) 
 			$r.render("saveNextLink")

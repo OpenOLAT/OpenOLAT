@@ -31,7 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.util.tree.INodeFilter;
@@ -94,11 +93,6 @@ public class MultiSelectionTree extends MultipleSelectionElementImpl {
 			}
 		}
 		((SelectionTreeComponent)component).setComponents(checkboxitems);
-	}
-
-	@Override
-	protected Component getFormItemComponent() {
-		return component;
 	}
 
 	/*

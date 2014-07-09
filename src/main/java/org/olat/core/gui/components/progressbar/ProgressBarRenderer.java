@@ -48,9 +48,10 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 	 *      org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator,
 	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
+	@Override
 	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder urlBuilder, Translator translator,
 			RenderResult renderResult, String[] args) {
-		// Get the model object
+
 		ProgressBar ubar = (ProgressBar) source;
 		boolean renderLabels = (args == null) ? true : false;
 		float percent = 100;
@@ -62,10 +63,9 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 			.append("px;\"><div class='progress-bar' style=\"width:")
 			.append(Math.round(percent * ubar.getWidth() / 100))
 			.append("px\" title=\"")
-			.append(Math.round(percent * ubar.getWidth() / 100))
-			.append("%\"></div>");
+			.append(Math.round(percent))
+			.append("%\">");
 		if (renderLabels) {
-			target.append("<div class=\"b_progress_label\">");
 			if (ubar.isPercentagesEnabled()) {
 				target.append(Math.round(percent));
 				target.append("% (");
@@ -78,15 +78,12 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 			target.append(ubar.getUnitLabel());
 			if (ubar.isPercentagesEnabled()) {
 				target.append(")");				
-			}
-			target.append("</div>");				
+			}				
 		}
 		String info = ubar.getInfo();
 		if(StringHelper.containsNonWhitespace(info)) {
-			target.append("<div class=\"b_progress_label\">")
-				.append(info)
-				.append("</div>");
+			target.append(info);
 		}
-		target.append("</div>");
+		target.append("</div></div>");
 	}
 }

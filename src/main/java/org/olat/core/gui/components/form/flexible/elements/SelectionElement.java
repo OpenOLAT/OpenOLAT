@@ -70,4 +70,7 @@ public interface SelectionElement extends FormItem, FormBaseComponentIdProvider{
 	 */
 	public boolean isMultiselect();
 	
+	
+	public void setDomReplacementWrapperRequired(boolean required);
+	
 }
