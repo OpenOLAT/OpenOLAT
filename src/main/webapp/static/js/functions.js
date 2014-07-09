@@ -1436,16 +1436,16 @@ function o_doPrint() {
  */ 
 function b_attach_i18n_inline_editing() {
 	// Add hover handler to display inline edit links
-	jQuery('span.b_translation_i18nitem').hover(function() {
+	jQuery('span.o_translation_i18nitem').hover(function() {
 		jQuery(this.firstChild).show();
 		if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Entered i18nitem::" + this.firstChild, "functions.js:b_attach_i18n_inline_editing()");
 	},function(){
-		jQuery('a.b_translation_i18nitem_launcher').hide();
+		jQuery('a.o_translation_i18nitem_launcher').hide();
 		if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug',"Leaving i18nitem::" + this, "functions.js:b_attach_i18n_inline_editing()");
 	});
 	// Add highlight effect on link to show which element is affected by this link
-	jQuery('a.b_translation_i18nitem_launcher').hover(function() {	
-		var parent = jQuery(this).parent('span.b_translation_i18nitem')
+	jQuery('a.o_translation_i18nitem_launcher').hover(function() {	
+		var parent = jQuery(this).parent('span.o_translation_i18nitem')
 		parent.effect("highlight");
 	});
 	// Add to on ajax ready callback for next execution

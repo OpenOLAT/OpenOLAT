@@ -1,14 +1,18 @@
 <div class="o_translation_edit">
-	<div class="o_form form-horizontal">
-		<div class="form-group clearfix">
-			<div class="col-sm-2"><label class="control-label"><i class="o_icon o_icon_translation_package"> </i> $r.translate("generic.bundle")</label></div>
-			<div class="col-sm-5">$r.render("bundlesSelection")</div>
-			<div class="col-sm-3">$r.render("progressBarBundle")</div>
+	<div class="o_form form-horizontal container-fluid">
+		<div class="form-group clearfix row">
+			<div class="col-sm-3"><label class="control-label"><i class="o_icon o_icon_translation_package"> </i> $r.translate("generic.bundle")</label></div>
+			<div class="col-sm-9">$r.render("bundlesSelection")</div>
 		</div>
-		<div class="form-group clearfix">
-			<div class="col-sm-2"><label class="control-label"><i class="o_icon o_icon_translation_item"> </i> $r.translate("generic.key")</label></div>
-			<div class="col-sm-5">$r.render("keysSelection")</div>
-			<div class="col-sm-3">$r.render("progressBarKey")</div>
+		<div class="form-group clearfix row">
+			<div class="col-sm-9 col-sm-offset-3">$r.render("progressBarBundle")</div>
+		</div>
+		<div class="form-group clearfix row">
+			<div class="col-sm-3"><label class="control-label"><i class="o_icon o_icon_translation_item"> </i> $r.translate("generic.key")</label></div>
+			<div class="col-sm-9">$r.render("keysSelection")</div>
+		</div>
+		<div class="form-group clearfix row">
+			<div class="col-sm-3 col-sm-offset-3">$r.render("progressBarKey")</div>
 		</div>
 	</div>
 	<div class="o_translation_edit_body">

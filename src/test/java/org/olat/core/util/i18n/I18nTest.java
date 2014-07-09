@@ -699,11 +699,11 @@ public class I18nTest extends OlatTestCase {
 		InlineTranslationInterceptHandlerController.buildInlineTranslationLink(args, inlineTransLink, inlineTrans, inlineTranslationURLBuilder);
 		// Plain vanilla text
 		String convertedToHTMLMarkup = InlineTranslationInterceptHandlerController.replaceLocalizationMarkupWithHTML(plainVanillaWrapped, inlineTranslationURLBuilder, inlineTrans);
-		assertEquals("<span class=\"b_translation_i18nitem\">" + inlineTransLink.toString() + plainVanillaPlain + "</span>", convertedToHTMLMarkup);
+		assertEquals("<span class=\"o_translation_i18nitem\">" + inlineTransLink.toString() + plainVanillaPlain + "</span>", convertedToHTMLMarkup);
 		// Simple link		
 		String linkOPEN = "<a href=\"http://www.olat.org/bla/blu:bli#bla\" title='funny title' class=\"b_css b_anothercss\">";
 		String linkCLOSE = "</a>";
-		String inlineSpanOPEN = "<span class=\"b_translation_i18nitem\">";
+		String inlineSpanOPEN = "<span class=\"o_translation_i18nitem\">";
 		String inlineSpanCLOSE = "</span>";
 		String translatedWithinLink =  linkOPEN + plainVanillaWrapped + linkCLOSE + rawtext1;
 		convertedToHTMLMarkup = InlineTranslationInterceptHandlerController.replaceLocalizationMarkupWithHTML(translatedWithinLink, inlineTranslationURLBuilder, inlineTrans);

@@ -65,7 +65,7 @@ import org.olat.core.util.prefs.Preferences;
  * @author gnaegi
  */
 public class InlineTranslationInterceptHandlerController extends BasicController implements InterceptHandlerInstance, InterceptHandler {
-	private static final String SPAN_TRANSLATION_I18NITEM_OPEN = "<span class=\"b_translation_i18nitem\">";
+	private static final String SPAN_TRANSLATION_I18NITEM_OPEN = "<span class=\"o_translation_i18nitem\">";
 	private static final String SPAN_CLOSE = "</span>";
 	private static final String BODY_TAG = "<body";
 	private static final String ARG_BUNDLE = "bundle";
@@ -452,7 +452,7 @@ public class InlineTranslationInterceptHandlerController extends BasicController
 	 */
 	public static void buildInlineTranslationLink(String[] arguments, StringOutput link, Translator inlineTrans,
 			URLBuilder inlineTranslationURLBuilder) {
-			link.append("<a class=\"b_translation_i18nitem_launcher\" style=\"display:none\" href=\"");
+			link.append("<a class='o_translation_i18nitem_launcher' style='display:none' href=\"");
 			inlineTranslationURLBuilder.buildURI(link, new String[] { ARG_BUNDLE, ARG_KEY, ARG_IDENT }, arguments);
 			link.append("\" title=\"");
 			String combinedKey = arguments[0] + ":" + arguments[1];
@@ -461,7 +461,7 @@ public class InlineTranslationInterceptHandlerController extends BasicController
 			} else {
 				link.append(StringEscapeUtils.escapeHtml(inlineTrans.translate("inline.customize.translate", new String[] { combinedKey })));			
 			}
-			link.append("\"></a>");			
+			link.append("\"><i class='o_icon o_icon_translation_item'> </i></a>");			
 	}
 
 }
