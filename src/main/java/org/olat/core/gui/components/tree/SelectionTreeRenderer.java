@@ -47,10 +47,10 @@ import org.olat.core.util.tree.TreeHelper;
  */
 public class SelectionTreeRenderer extends DefaultComponentRenderer {
 
-	private static String imgDots = "<div class=\"b_selectiontree_line\"></div>";
-	private static String imgDots_spacer = "<div class=\"b_selectiontree_space\"></div>";
-	private static String imgDots_nt = "<div class=\"b_selectiontree_junction\"></div>";
-	private static String imgDots_nl = "<div class=\"b_selectiontree_end\"></div>";
+	private static String imgDots = "<div class=\"o_selectiontree_line\"></div>";
+	private static String imgDots_spacer = "<div class=\"o_selectiontree_space\"></div>";
+	private static String imgDots_nt = "<div class=\"o_selectiontree_junction\"></div>";
+	private static String imgDots_nl = "<div class=\"o_selectiontree_end\"></div>";
 	/**
 	 * <code>ATTR_SELECTION</code>
 	 */
@@ -108,7 +108,7 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 		target.append(tree.isMultiselect() ? SCRIPT_MULTI_PRE : SCRIPT_SINGLE_PRE);
 		target.append(translator.translate("alert"));
 		target.append(SCRIPT_POST);
-		target.append("<div class=\"b_selectiontree");
+		target.append("<div class=\"o_selection_tree");
 		if(StringHelper.containsNonWhitespace(tree.getElementCssClass())) {
 			target.append(" ").append(tree.getElementCssClass());
 		}
@@ -168,9 +168,9 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 	}
 
 	private void renderRootNode(TreeNode root, StringOutput target) {
-		target.append("\n<div class=\"b_selectiontree_item\">");
+		target.append("\n<div class=\"o_selectiontree_item\">");
 		renderNodeIcon(target, root);
-		target.append("<div class=\"b_selectiontree_content\">");
+		target.append("<div class=\"o_selectiontree_content\">");
 		// text using css if available
 		String cssClass = root.getCssClass();
 		if (cssClass != null) target.append("<span class=\"").append(cssClass).append("\">");
@@ -188,7 +188,7 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 		for (int i = 0; i < childcnt; i++) {
 			TreeNode child = (TreeNode) root.getChildAt(i);
 			// BEGIN  of choice div
-			sb.append("\n<div class=\"b_selectiontree_item\">");
+			sb.append("\n<div class=\"o_selectiontree_item\">");
 			// render all icons first
 			// indent and dots-images
 			sb.append(indent);
@@ -198,8 +198,8 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 				sb.append(imgDots_nl);
 			}
 			// custom icon if available
-			renderNodeIcon(sb, child);
-			sb.append("\n<div class=\"b_selectiontree_content\">");
+			
+			sb.append("<div class='o_selectiontree_content'>");
 			
 			// append radio or checkbox if selectable
 			if (child.isAccessible()) {
@@ -231,6 +231,7 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 			if (cssClass != null) sb.append("<span class=\"").append(cssClass).append("\">");
 			if (!child.isAccessible() && greyOutNonSelectable) {
 				sb.append("<span class=\"o_disabled\">");
+				renderNodeIcon(sb, child);
 				if(tree.isEscapeHtml()) {					
 				  sb.append(StringEscapeUtils.escapeHtml(child.getTitle()));
 				} else {					
@@ -239,10 +240,9 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 				sb.append("</span>");
 			} else {
 				if (child.getAltText() != null && showAltTextAsHoverOnTitle) {
-					sb.append("<span ");
-					sb.append(" onmouseover=\"o_showEventDetails(' ', '");
-					sb.append(child.getAltText());
-					sb.append("');\" onmouseout=\"return nd();\" onclick=\"return nd();\">");
+					sb.append("<span onmouseover=\"o_showEventDetails(' ', '")
+					  .append(child.getAltText())
+					  .append("');\" onmouseout=\"return nd();\" onclick=\"return nd();\">");
 					if(tree.isEscapeHtml()) {					
 					  sb.append(StringEscapeUtils.escapeHtml(child.getTitle()));
 					} else {				

@@ -46,7 +46,6 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tree.MenuTree;
-import org.olat.core.gui.components.tree.SelectionTree;
 import org.olat.core.gui.components.tree.TreeDropEvent;
 import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeNode;
@@ -157,7 +156,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private VelocityContainer main;
 
 	private TabbedPane tabbedNodeConfig;
-	private SelectionTree selTree;
 
 	private CourseEditorTreeModel cetm;
 	private TabbableController nodeEditCntrllr;
@@ -278,12 +276,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			menuTree.setTreeModel(cetm);
 			menuTree.setOpenNodeIds(Collections.singleton(cetm.getRootNode().getIdent()));
 			menuTree.addListener(this);
-
-			selTree = new SelectionTree("selection", getTranslator());
-			selTree.setTreeModel(cetm);
-			selTree.setActionCommand("processpublish");
-			selTree.setFormButtonKey("publizieren");
-			selTree.addListener(this);
 
 			tabbedNodeConfig = new TabbedPane("tabbedNodeConfig", ureq.getLocale());
 			tabbedNodeConfig.setElementCssClass("o_node_config");

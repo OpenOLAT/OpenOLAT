@@ -133,10 +133,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		sb.append("<label class='checkbox").append("-inline", inline)
 		  .append(" ").append(cssClass, cssClass != null)
 		  .append("' for=\"").append(formDispatchId).append("\">");
-		String iconLeftCSS = check.getIconLeftCSS();
-		if (StringHelper.containsNonWhitespace(iconLeftCSS)) {
-			sb.append(" <i class='").append(iconLeftCSS).append("'> </i> ");
-		}
+		
 		sb.append("<input type='checkbox' id='").append(formDispatchId).append("' ")
 		  .append(subStrName)
 		  .append(" value='").append(key).append("'");
@@ -150,6 +147,10 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			sb.append(FormJSHelper.getRawJSFor(check.getRootForm(), check.getSelectionElementFormDispatchId(), check.getAction()));
 		}
 		sb.append(" />");
+		String iconLeftCSS = check.getIconLeftCSS();
+		if (StringHelper.containsNonWhitespace(iconLeftCSS)) {
+			sb.append(" <i class='").append(iconLeftCSS).append("'> </i> ");
+		}
 		if (StringHelper.containsNonWhitespace(value)) {
 			sb.append(" ").append(value);		
 		}

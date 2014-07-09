@@ -1,6 +1,7 @@
-
 /* inline translation tool */	
-span.o_translation_i18nitem { position: relative ! important; }
+span.o_translation_i18nitem {
+	position: relative ! important;
+}
 span.o_translation_i18nitem a.o_translation_i18nitem_launcher {
 	position: absolute ! important;
 	z-index: 100 ! important;

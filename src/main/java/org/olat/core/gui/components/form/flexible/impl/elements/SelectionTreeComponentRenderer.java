@@ -46,15 +46,7 @@ import org.olat.core.util.tree.INodeFilter;
  *
  */
 class SelectionTreeComponentRenderer extends DefaultComponentRenderer {
-
-	private static final String imgDots = "<div class=\"b_selectiontree_line\"></div>";
-	private static final String imgDots_spacer = "<div class=\"b_selectiontree_space\"></div>";
-	private static final String imgDots_nt = "<div class=\"b_selectiontree_junction\"></div>";
-	private static final String imgDots_nl = "<div class=\"b_selectiontree_end\"></div>";
-
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator, org.olat.core.gui.render.RenderResult, java.lang.String[])
-	 */
+	
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source,
 			URLBuilder ubu, Translator translator, RenderResult renderResult,
@@ -64,82 +56,60 @@ class SelectionTreeComponentRenderer extends DefaultComponentRenderer {
 		Map<String,CheckboxElement> checkboxes = stc.getSubComponents();
 		
 		TreeModel tm = stc.getTreeModel();
-		TreeNode rootNode = tm.getRootNode();
+		TreeNode rootNode = (TreeNode)tm.getRootNode().getChildAt(0);
 		INodeFilter selectableFilter = stc.getSelectableFilter();
-		
-		sb.append("<div class=\"form b_selectiontree\">");		
-		renderRootNode(rootNode, sb);
-		renderChildNodes(rootNode, "", stc.hashCode(), sb, renderer, stc, checkboxes, selectableFilter, args);		
-		sb.append("</div>");
+
+		sb.append("<div class='o_selection_tree'><ul class='o_selection_tree_l0'>");
+		renderNode(rootNode, rootNode, 0, stc.hashCode(), sb, renderer, stc, checkboxes, selectableFilter, args);		
+		sb.append("</ul></div>");
 	}
+	
+	private void renderNode(TreeNode currentNode, TreeNode root, int level, int treeID, StringOutput sb, Renderer renderer,
+			SelectionTreeComponent stc, Map<String,CheckboxElement> checkboxes,
+			INodeFilter selectableFilter, String[] args) {
 
-	private void renderRootNode(TreeNode root, StringOutput target) {
-		target.append("\n<div class=\"b_selectiontree_item\">");
-		renderNodeIcon(target, root);
-		target.append("<div class=\"b_selectiontree_content\">");
-		// text using css if available
-		String cssClass = root.getCssClass();
-		if (cssClass != null) target.append("<span class=\"").append(cssClass).append("\">");
-		target.append(StringEscapeUtils.escapeHtml(root.getTitle()));
-		if (cssClass != null) target.append("</span>");
-		target.append("</div></div>");
-	}
-
-	private void renderChildNodes(TreeNode root, String indent, int treeID, StringOutput sb, Renderer renderer,
-			SelectionTreeComponent stc, Map<String,CheckboxElement> checkboxes, INodeFilter selectableFilter, String[] args) {
-		String newIndent = indent + imgDots;
-
-		// extract directories
-		int childcnt = root.getChildCount();
-		for (int i = 0; i < childcnt; i++) {
-			TreeNode child = (TreeNode) root.getChildAt(i);
-			if(selectableFilter != null && !selectableFilter.isVisible(child)) {
-				continue;
-			}
-			
-			// BEGIN  of choice div
-			sb.append("\n<div class=\"form-group b_selectiontree_item\">");
-			// render all icons first
-			// indent and dots-images
-			sb.append(indent);
-			if (i < childcnt - 1) {
-				sb.append(imgDots_nt);
-			} else {
-				sb.append(imgDots_nl);
-			}
-			// custom icon if available
-			sb.append("<div class=\"b_selectiontree_content\">");
-			
+		if(selectableFilter == null || selectableFilter.isVisible(currentNode)) {
+			sb.append("<li><div>");
 			// append radio or checkbox if selectable
-			if (child.isAccessible()) {
-				renderCheckbox(sb, child, checkboxes.get(child.getIdent()), stc);
+			if(currentNode == root) {
+				String cssClass = root.getCssClass();
+				sb.append("<span class='o_tree_l").append(level).append(" ")
+				  .append(cssClass, cssClass != null).append("'>");
+				renderNodeIcon(sb, currentNode);
+				sb.append(StringEscapeUtils.escapeHtml(root.getTitle()))
+				  .append("</span>");
+			} else if (currentNode.isAccessible()) {
+				renderCheckbox(sb, currentNode, level, checkboxes.get(currentNode.getIdent()), stc);
 			} else {
 				// node title (using css if available)
-				String cssClass = child.getCssClass();
-				sb.append("<span ").append("class='o_disabled'", child.isAccessible()).append(">");
-				renderNodeIcon(sb, child);
+				String cssClass = currentNode.getCssClass();
+				sb.append("<span class='o_tree_l").append(level).append(" ")
+				  .append(" o_disabled", currentNode.isAccessible()).append("'>");
+				renderNodeIcon(sb, currentNode);
 				if(cssClass != null) {
 					sb.append("<i class='").append(cssClass).append("'> </i> ");
-					
 				}
-				sb.append(StringEscapeUtils.escapeHtml(child.getTitle()));
-				renderNodeDecorator(sb, child);
+				sb.append(StringEscapeUtils.escapeHtml(currentNode.getTitle()));
+				renderNodeDecorator(sb, currentNode);
 				sb.append("</span>");
 			}
-			// END of choice div
-			sb.append("</div></div>"); 
+			sb.append("</div>");
 
 			// do the same for all children
-			if (i < childcnt - 1) {
-				renderChildNodes(child, newIndent, treeID, sb, renderer, stc, checkboxes, selectableFilter, args);
-			} else {
-				renderChildNodes(child, indent + imgDots_spacer, treeID, sb, renderer, stc, checkboxes, selectableFilter, args);
+			int childcnt = currentNode.getChildCount();
+			if(childcnt > 0) {
+				int childLevel = level + 1;
+				sb.append("<ul class='o_tree_l").append(childLevel).append("'>");
+				for (int i = 0; i < childcnt; i++) {
+					renderNode((TreeNode)currentNode.getChildAt(i), root, childLevel, treeID, sb, renderer, stc, checkboxes, selectableFilter, args);
+				}
+				sb.append("</ul>");
 			}
-
-		} // for recursion
-	} // buildTargets
+			sb.append("</li>");
+		}
+	}
 	
-	private void renderCheckbox(StringOutput sb, TreeNode node, CheckboxElement check, SelectionTreeComponent stc) {
+	private void renderCheckbox(StringOutput sb, TreeNode node, int level, CheckboxElement check, SelectionTreeComponent stc) {
 		MultiSelectionTree stF = stc.getSelectionElement();
 		
 		String subStrName = "name=\"" + check.getGroupingName() + "\"";
@@ -153,16 +123,11 @@ class SelectionTreeComponentRenderer extends DefaultComponentRenderer {
 		
 		boolean selected = check.isSelected();
 		//read write view
-		sb.append("<div class='checkbox'>")
+		sb.append("<div class='checkbox o_tree_l").append(level).append("'>")
 		  .append(" <label for=\"").append(stc.getFormDispatchId()).append("\">");
 		
 		String cssClass = check.getCssClass(); //optional CSS class
 		String iconLeftCSS = check.getIconLeftCSS();
-		renderNodeIcon(sb, node);
-		if (StringHelper.containsNonWhitespace(iconLeftCSS) || StringHelper.containsNonWhitespace(cssClass)) {
-			sb.append(" <i class='").append(iconLeftCSS, iconLeftCSS != null)
-			  .append(" ").append(cssClass, cssClass != null).append("'> </i> ");
-		}
 		
 		sb.append("<input type='checkbox' id='").append(stc.getFormDispatchId()).append("' ")
 		  .append(subStrName)
@@ -177,6 +142,11 @@ class SelectionTreeComponentRenderer extends DefaultComponentRenderer {
 			sb.append(" disabled='disabled' ");
 		}
 		sb.append(" />");
+		renderNodeIcon(sb, node);
+		if (StringHelper.containsNonWhitespace(iconLeftCSS) || StringHelper.containsNonWhitespace(cssClass)) {
+			sb.append(" <i class='").append(iconLeftCSS, iconLeftCSS != null)
+			  .append(" ").append(cssClass, cssClass != null).append("'> </i> ");
+		}
 		if (StringHelper.containsNonWhitespace(value)) {
 			sb.append(value);		
 		}

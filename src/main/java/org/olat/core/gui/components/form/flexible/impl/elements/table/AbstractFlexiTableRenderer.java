@@ -214,7 +214,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		
 		sb.append("<div class='btn-group'>")
 		  .append("<button class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
-		  .append("<i class='o_icon o_icon_filter o_icon-lg'>&nbsp;</i> <b class='caret'></b></button>")
+		  .append("<i class='o_icon o_icon_filter o_icon-lg'> </i> <b class='caret'></b></button>")
 		  .append("<ul class='dropdown-menu dropdown-menu-right' role='menu'>");
 		
 		for(FlexiTableFilter filter:filters) {
@@ -223,7 +223,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			} else {
 				sb.append("<li><a href=\"javascript:")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, new NameValuePair("filter", filter.getFilter())))
-				  .append("\">").append("<i class='o_icon o_icon_check o_icon-fw'>&nbsp;</i> ", filter.isSelected())
+				  .append("\">").append("<i class='o_icon o_icon_check o_icon-fw'> </i> ", filter.isSelected())
 				  .append(filter.getLabel()).append("</a></li>");
 			}
 		}
@@ -236,7 +236,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		
 		sb.append("<div class='btn-group'>")
 		  .append("<button class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
-		  .append("<i class='o_icon o_icon_sort_menu o_icon-lg'>&nbsp;</i> <b class='caret'></b></button>")
+		  .append("<i class='o_icon o_icon_sort_menu o_icon-lg'> </i> <b class='caret'></b></button>")
 		  .append("<ul class='dropdown-menu dropdown-menu-right' role='menu'>");
 		
 		for(FlexiTableSort sort:sorts) {
@@ -250,9 +250,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				  .append("\">");
 				if(sort.isSelected()) {
 					if(sort.getSortKey().isAsc()) {
-						sb.append("<i class='o_icon o_icon_sort_desc o_icon-fw'>&nbsp;</i> ");
+						sb.append("<i class='o_icon o_icon_sort_desc o_icon-fw'> </i> ");
 					} else {
-						sb.append("<i class='o_icon o_icon_sort_asc o_icon-fw'>&nbsp;</i> ");
+						sb.append("<i class='o_icon o_icon_sort_asc o_icon-fw'> </i> ");
 					}
 				}
 				sb.append(sort.getLabel()).append("</a></li>");

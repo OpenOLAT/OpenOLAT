@@ -52,7 +52,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DisplayOrDownloadComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.tree.SelectionTree;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -101,7 +100,6 @@ public class FolderRunController extends BasicController implements Activateable
 
 	private VelocityContainer folderContainer;
 
-	private SelectionTree selTree;	
 	private SubscriptionContext subsContext;
 	private ContextualSubscriptionController csController;
 	
@@ -259,10 +257,6 @@ public class FolderRunController extends BasicController implements Activateable
 				folderContainer.contextPut("webdavhttps", FolderManager.getWebDAVHttps());
 			}
 		}
-
-		selTree = new SelectionTree("seltree", getTranslator());
-		selTree.addListener(this);
-		folderContainer.put("seltree", selTree);
 
 		// jump to either the forum or the folder if the business-launch-path says so.
 		ContextEntry ce = bc.popLauncherContextEntry();

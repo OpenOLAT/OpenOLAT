@@ -138,3 +138,40 @@
 		border: 0;
 	}
 }
+
+.o_selection_tree {
+	position: relative;
+	display: block;
+	background-color: $o-tree-bg;
+	border: 1px solid $o-tree-border-color;
+    @include border-top-radius($o-tree-border-radius);
+    @include border-bottom-radius($o-tree-border-radius);
+    overflow: hidden;
+    font-size: $o-tree-font-size;
+
+	ul {
+		margin: 0;
+		padding: 0;
+		list-style-type: none;
+	}
+	
+	li {
+		margin: 0;
+		padding: 0;
+		white-space: nowrap;
+	}
+		
+	li div {
+		position: relative;
+		margin-bottom: -1px;
+		border-bottom: 1px solid $o-tree-border-color;
+	}
+	
+	@for $i from 0 through 11 {
+		li>div>span.o_tree_l#{$i}, li>div>div.checkbox.o_tree_l#{$i} {
+			display:block;
+			padding: $o-tree-padding-vertical 2px $o-tree-padding-vertical ($o-tree-padding-horizontal_root_visible + ($i * $o-tree-padding-steps-px)); 
+			z-index:9; 
+		}
+	}
+}
