@@ -1232,7 +1232,7 @@
 				</excludes>
 			</resource>
 			<resource>
-				<directory></directory>
+				<directory>src/../</directory>
 				<includes>
 					<include>NOTICE.TXT</include>
 				</includes>
