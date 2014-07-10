@@ -8,8 +8,15 @@
 			  $r.render("tableSearch")
 			#end
 		</div>
-		<div class="col-lg-2"></div>
-		<div class="col-lg-4"><div class="pull-right o_table_tools">
+		<div class="col-lg-3">
+			$numberOfElements
+			#if ($numberOfElements == "1")
+				$r.translate("table.entry")
+			#else
+				$r.translate("table.entries")
+			#end
+		</div>
+		<div class="col-lg-3"><div class="pull-right o_table_tools">
 			#if ($hasFilters && $filters.size() > 0)
 			<div class="btn-group">	
 				<button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>

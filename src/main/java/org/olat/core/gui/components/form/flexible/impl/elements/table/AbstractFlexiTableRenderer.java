@@ -128,8 +128,16 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			renderHeaderSearch(renderer, sb, ftE, ubu, translator, renderResult, args);
 			sb.append("</div>");
 		}
-
-		sb.append("<div class='col-lg-2'></div><div class='col-lg-4'>");
+		
+		
+		sb.append("<div class='col-lg-3'>");
+		int rowCount = ftE.getTableDataModel().getRowCount();
+		if(rowCount == 1) {
+			sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entry"));
+		} else if(rowCount > 1) {
+			sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entries"));
+		}
+		sb.append("</div><div class='col-lg-3'>");
 		renderHeaderTools(renderer, sb, ftE, ubu, translator, renderResult,  args);
 		sb.append("</div></div>");
 	}

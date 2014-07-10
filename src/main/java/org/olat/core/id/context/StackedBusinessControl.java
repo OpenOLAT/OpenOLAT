@@ -52,9 +52,6 @@ public class StackedBusinessControl implements BusinessControl {
 	private ContextEntry currentCe;
 	private List<ContextEntry> businessControls;
 
-	
-	
-	
 	public List<ContextEntry> getBusinessControls() {
 		return businessControls;
 	}
@@ -89,13 +86,16 @@ public class StackedBusinessControl implements BusinessControl {
 		}
 	}
 
-
+	@Override
 	public String toString() {
 		return getAsString(); 
 	}
 	
+	@Override
 	public String getAsString() {
-		if(contextEntry == null) return "";
+		if(contextEntry == null || contextEntry.getOLATResourceable() == null) {
+			return "";
+		}
 		Long key = contextEntry.getOLATResourceable().getResourceableId();
 		String postfix = BusinessControl.START_TAG +contextEntry.getOLATResourceable().getResourceableTypeName() + 
 		(key == null? "":BusinessControl.DELIMITER_TAG+key)+BusinessControl.END_TAG;
@@ -103,7 +103,6 @@ public class StackedBusinessControl implements BusinessControl {
 	}
 
 	@Override
-	//fxdiff BAKS-7 Resume function
 	public List<ContextEntry> getEntries() {
 		if(contextEntry == null) new ArrayList<ContextEntry>();
 		List<ContextEntry> entries = new ArrayList<ContextEntry>();
@@ -116,6 +115,7 @@ public class StackedBusinessControl implements BusinessControl {
 		return entries;
 	}
 
+	@Override
 	public ContextEntry popLauncherContextEntry() {
 		ContextEntry currentToSpawn = popInternalLaucherContextEntry();
 		
@@ -139,12 +139,12 @@ public class StackedBusinessControl implements BusinessControl {
 		}
 	}
 	
-	
+	@Override
 	public void dropLauncherEntries() {
 		origBusinessControl.dropLauncherEntries();
 	}
 
-
+	@Override
 	public boolean hasContextEntry() {
 		return origBusinessControl.hasContextEntry();
 	}
@@ -181,5 +181,4 @@ public class StackedBusinessControl implements BusinessControl {
 			}
 		}
 	}
-
 }

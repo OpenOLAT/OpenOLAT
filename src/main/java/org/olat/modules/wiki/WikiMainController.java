@@ -657,8 +657,9 @@ public class WikiMainController extends BasicController implements CloneableCont
 				forum = ForumManager.getInstance().addAForum();
 				page.setForumKey(forum.getKey().longValue());
 				WikiManager.getInstance().updateWikiPageProperties(ores, page);
+			} else {
+				forum = ForumManager.getInstance().loadForum(Long.valueOf(page.getForumKey()));
 			}
-			forum = ForumManager.getInstance().loadForum(Long.valueOf(page.getForumKey()));
 			// TODO enhance forum callback with subscription stuff								
 			boolean isModerator = securityCallback.mayModerateForum();				
 			ForumCallback forumCallback = new WikiForumCallback(ureq.getUserSession().getRoles().isGuestOnly(), isModerator);
