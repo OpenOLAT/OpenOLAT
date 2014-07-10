@@ -102,6 +102,8 @@ public interface RepositoryService {
 	
 	public void removeMembers(RepositoryEntry re);
 	
+	public List<RepositoryEntry> searchByIdAndRefs(String id);
+	
 	public int countMyView(SearchMyRepositoryEntryViewParams params);
 	
 	/**

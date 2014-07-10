@@ -44,7 +44,7 @@ class TableSortRenderer extends DefaultComponentRenderer {
 		String id = sorter.getDispatchID();
 		
 		sb.append("<div id='o_c").append(id).append("' class='btn-group'>")
-		  .append("<button class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
+		  .append("<button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
 		  .append("<i class='o_icon o_icon-lg o_icon_sort_menu'> </i>")
 		  .append("<b class='caret'></b>")
 		  .append("</button>")

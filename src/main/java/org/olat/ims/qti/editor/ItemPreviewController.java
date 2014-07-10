@@ -29,7 +29,7 @@ import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ControllerEventListener;
@@ -56,8 +56,9 @@ public class ItemPreviewController extends DefaultController implements Controll
 	private static final OLog log = Tracing.createLoggerFor(ItemPreviewController.class);
 	private static final String VC_ROOT = Util.getPackageVelocityRoot(ItemPreviewController.class);
 
-	private Panel mainPanel;
 	private VelocityContainer main;
+	private SimpleStackedPanel mainPanel;
+	
 	private final Item item;
 	private final String mediaBaseUrl;
 	private RenderInstructions renderInstructions;
@@ -85,7 +86,7 @@ public class ItemPreviewController extends DefaultController implements Controll
 		
 		main = new VelocityContainer("vcItemPreview", VC_ROOT + "/tab_itemPreview.html", translator, this);
 		main.contextPut("itemPreview", getQuestionPreview(item));
-		mainPanel = new Panel("itemPreviewPanel");
+		mainPanel = new SimpleStackedPanel("itemPreviewPanel");
 		mainPanel.setContent(main);
 		setInitialComponent(mainPanel);
 	}
@@ -94,10 +95,13 @@ public class ItemPreviewController extends DefaultController implements Controll
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (event instanceof TabbedPaneChangedEvent) {
 			TabbedPaneChangedEvent tpcEvent = (TabbedPaneChangedEvent) event;
-			if (tpcEvent.getNewComponent() == mainPanel) main.contextPut("itemPreview", getQuestionPreview(item));
+			if (tpcEvent.getNewComponent() == mainPanel) {
+				main.contextPut("itemPreview", getQuestionPreview(item));
+			}
 		}
 	}
 

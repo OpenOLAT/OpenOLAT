@@ -213,7 +213,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		String dispatchId = ftE.getFormDispatchId();
 		
 		sb.append("<div class='btn-group'>")
-		  .append("<button class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
+		  .append("<button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
 		  .append("<i class='o_icon o_icon_filter o_icon-lg'> </i> <b class='caret'></b></button>")
 		  .append("<ul class='dropdown-menu dropdown-menu-right' role='menu'>");
 		
@@ -235,7 +235,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		String dispatchId = ftE.getFormDispatchId();
 		
 		sb.append("<div class='btn-group'>")
-		  .append("<button class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
+		  .append("<button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
 		  .append("<i class='o_icon o_icon_sort_menu o_icon-lg'> </i> <b class='caret'></b></button>")
 		  .append("<ul class='dropdown-menu dropdown-menu-right' role='menu'>");
 		

@@ -422,7 +422,7 @@ public class CatalogController extends BasicController implements Activateable2 
 			 */
 			else if (event.getCommand().equals(ACTION_ADD_CTLGLINK)) {
 				removeAsListenerAndDispose(rsc);
-				rsc = new RepositorySearchController(translate(NLS_CHOOSE), ureq, getWindowControl(), true, false, false);
+				rsc = new RepositorySearchController(translate(NLS_CHOOSE), ureq, getWindowControl(), true, false, false, new String[0], null);
 				listenTo(rsc);
 				// OLAT-Admin has search form
 				if (isOLATAdmin) {

@@ -47,7 +47,7 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		
 		Iterable<Component> components = dropdown.getComponents();
 		if(dropdown.isButton()) {
-			sb.append("<button class='btn btn-default dropdown-toggle");
+			sb.append("<button type='button' class='btn btn-default dropdown-toggle");
 		} else {
 			sb.append("<a href='#' class='dropdown-toggle");
 		}

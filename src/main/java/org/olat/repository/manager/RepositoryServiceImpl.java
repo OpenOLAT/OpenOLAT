@@ -350,6 +350,11 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
+	public List<RepositoryEntry> searchByIdAndRefs(String idAndRefs) {
+		return repositoryEntryDAO.searchByIdAndRefs(idAndRefs);
+	}
+
+	@Override
 	public int countMyView(SearchMyRepositoryEntryViewParams params) {
 		return myCourseViewQueries.countViews(params);
 	}

@@ -21,7 +21,10 @@ package org.olat.repository.manager;
 
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,6 +58,34 @@ public class RepositoryEntryDAO {
 		}
 		return entries.get(0);
 		
+	}
+	
+	public List<RepositoryEntry> searchByIdAndRefs(String idAndRefs) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		  .append(" inner join fetch v.olatResource as res")
+		  .append(" inner join fetch v.statistics as statistics")
+		  .append(" left join fetch v.lifecycle as lifecycle");
+		
+		Long id = null;
+		if(StringHelper.isLong(idAndRefs)) {
+			try {
+				id = Long.parseLong(idAndRefs);
+			} catch (NumberFormatException e) {
+				//
+			}
+		}
+		sb.append(" where v.externalId=:ref or v.externalRef=:ref or v.softkey=:ref");
+		if(id != null) {
+			sb.append(" or v.key=:vKey or res.resId=:vKey");
+		}	
+		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("ref", idAndRefs);
+		if(id != null) {
+			query.setParameter("vKey", id);
+		}
+		return query.getResultList();
 	}
 	
 	public List<RepositoryEntry> getAllRepositoryEntries(int firstResult, int maxResults) {
