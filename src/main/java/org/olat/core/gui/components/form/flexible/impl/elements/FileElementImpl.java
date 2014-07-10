@@ -84,6 +84,7 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 
 	private boolean checkForMaxFileSize = false;
 	private boolean checkForMimeTypes = false;
+	private boolean cropSelectionEnabled = false;
 	// error keys
 	private String i18nErrMandatory;
 	private String i18nErrMaxSize;
@@ -145,6 +146,7 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 					&& (uploadMimeType.startsWith("image/") || uploadMimeType.startsWith("video/"))) {
 				VFSLeaf media = new LocalFileImpl(tempUploadFile);
 				previewEl.setMedia(media, uploadMimeType);
+				previewEl.setCropSelectionEnabled(cropSelectionEnabled);
 				previewEl.setMaxWithAndHeightToFitWithin(300, 200);
 				previewEl.setVisible(true);
 			}
@@ -293,14 +295,11 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 			previewEl = null;
 		}
 	}
+	
 
 	@Override
 	public void setCropSelectionEnabled(boolean enable) {
-		if(enable) {
-			previewEl.setCropSelectionEnabled(true);
-		} else if(previewEl != null) {
-			previewEl.setCropSelectionEnabled(false);
-		}
+		this.cropSelectionEnabled = enable;
 	}
 
 	/**
