@@ -174,6 +174,7 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 		this.media = media;
 		this.mimeType = null;
 		mapper.setMediaFile(media);
+		realSize = null;
 	}
 	
 	public void setMedia(VFSLeaf media, String mimeType) {
@@ -181,6 +182,7 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 		this.media = media;
 		this.mimeType = mimeType;
 		mapper.setMediaFile(media);
+		realSize = null;
 	}
 	
 	public void setMedia(File mediaFile) {
@@ -223,7 +225,7 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);
 		if(isCropSelectionEnabled()) {
-			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/imagecrop/jquery.imagecrop.js");
+			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/cropper/cropper.min.js");
 		}
 	}
 

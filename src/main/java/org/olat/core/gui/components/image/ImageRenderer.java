@@ -109,14 +109,23 @@ public class ImageRenderer extends DefaultComponentRenderer {
 	private void renderImage(StringOutput sb, ImageComponent ic) {
 		// Provide own component dispatch ID and wrap in div
 		String compId = "o_c" + ic.getDispatchID();
+		Size scaledSize = ic.getScaledSize();
+		boolean cropEnabled = ic.isCropSelectionEnabled();
+		if(cropEnabled) {//wrapper for cropper.js
+			sb.append("<div style='");
+			if(scaledSize != null) {
+				sb.append("width:").append(scaledSize.getWidth()).append("px;");
+				sb.append("height:").append(scaledSize.getHeight()).append("px;");
+			}
+			sb.append("'>");
+		}
 		sb.append("<div id='").append(compId).append("' class='o_image'>"); // START component
 		// The inner component 
 		String imgId = "o_img" + ic.getDispatchID();
 		sb.append("<img").append(" id='").append(imgId).append("'");
-		Size size = ic.getScaledSize();
-		if (size != null) {
-			sb.append(" width=\"").append(size.getWidth()).append("\"");
-			sb.append(" height=\"").append(size.getHeight()).append("\"");
+		if (scaledSize != null) {
+			sb.append(" width=\"").append(scaledSize.getWidth()).append("\"");
+			sb.append(" height=\"").append(scaledSize.getHeight()).append("\"");
 		}
 
 		String mapperUrl = ic.getMapperUrl();
@@ -134,7 +143,7 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("\" />");
 		
-		if(ic.isCropSelectionEnabled()) {
+		if(cropEnabled) {
 			sb.append("<input id='").append(imgId).append("_x' name='").append(imgId).append("_x' type='hidden' value='' />")
 			  .append("<input id='").append(imgId).append("_y' name='").append(imgId).append("_y' type='hidden' value='' />")
 			  .append("<input id='").append(imgId).append("_w' name='").append(imgId).append("_w' type='hidden' value='' />")
@@ -143,16 +152,14 @@ public class ImageRenderer extends DefaultComponentRenderer {
 			sb.append("<script type='text/javascript'>\n")
 			  .append("/* <![CDATA[ */ \n")
 			  .append("jQuery(function() {\n")
-			  .append("  jQuery('#").append(imgId).append("').imageCrop({\n")
-			  .append("    displayPreview:false,\n")
-			  .append("    displaySize:true,\n")
-			  .append("    overlayOpacity:0.25,\n")
+			  .append("  jQuery('#").append(imgId).append("').cropper({\n")
 			  .append("    aspectRatio:1,\n")
-			  .append("    onSelect: function(crop) {\n")
-			  .append("      jQuery('input#").append(imgId).append("_x').val(crop.selectionX);\n")
-			  .append("    	 jQuery('input#").append(imgId).append("_y').val(crop.selectionY);\n")
-			  .append("    	 jQuery('input#").append(imgId).append("_w').val(crop.selectionWidth);\n")
-			  .append("    	 jQuery('input#").append(imgId).append("_h').val(crop.selectionHeight);\n")
+			  .append("    done: function(crop) {\n")
+			  .append("      console.log(crop);\n")
+			  .append("      jQuery('input#").append(imgId).append("_x').val(crop.x1);\n")
+			  .append("    	 jQuery('input#").append(imgId).append("_y').val(crop.y1);\n")
+			  .append("    	 jQuery('input#").append(imgId).append("_w').val(crop.width);\n")
+			  .append("    	 jQuery('input#").append(imgId).append("_h').val(crop.height);\n")
 			  .append("    }")
 			  .append("  });")
 			  .append("});")
@@ -160,6 +167,7 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		      .append("</script>");
 		}
 		sb.append("</div>"); // ENDcomponent
+		sb.append("</div>", cropEnabled);
 
 	}
 }

@@ -98,7 +98,7 @@ public class ImageFormItem extends FormItemImpl {
 
 	@Override
 	public void evalFormRequest(UserRequest ureq) {	
-		String imgId = "img_" + imageComponent.getDispatchID();
+		String imgId = "o_img" + imageComponent.getDispatchID();
 		String x = getRootForm().getRequestParameter(imgId + "_x");
 		String y = getRootForm().getRequestParameter(imgId + "_y");
 		String w = getRootForm().getRequestParameter(imgId + "_w");
@@ -120,8 +120,6 @@ public class ImageFormItem extends FormItemImpl {
 			cropSelection = null;
 		}
 	}
-	
-	
 
 	@Override
 	public void reset() {

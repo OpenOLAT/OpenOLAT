@@ -124,6 +124,7 @@ This produce uses softeare based on the MIT License
 * fullcalendar (MIT License) [http://arshaw.com/fullcalendar/]
 * qrcode.js (MIT License) [http://davidshimjs.github.io/qrcodejs/]
 * bootstrap-tagsinput (MIT License) [https://github.com/timschlechter/bootstrap-tagsinput]
+* cropper.js (MIT License) [https://github.com/fengyuanchen/cropper]
 
 -----------------------------------------------------------------------
 This product uses software based on the BSD License
