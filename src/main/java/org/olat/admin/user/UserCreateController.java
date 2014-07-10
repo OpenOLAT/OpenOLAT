@@ -193,12 +193,9 @@ class NewUserForm extends FormBasicController {
 		String[] langValues = StringHelper.getMapValuesAsStringArray(languages);
 		ArrayHelper.sort(langKeys, langValues, false, true, false);
 		// Build css classes for reference languages
-		String[] langCssClasses = I18nManager.getInstance().createLanguageFlagsCssClasses(langKeys, "b_with_small_icon_left");
-		languageSingleSelection = uifactory.addDropdownSingleselect("new.form.language", formLayout, langKeys, langValues, langCssClasses); 
-    // select default language in form
+		languageSingleSelection = uifactory.addDropdownSingleselect("new.form.language", formLayout, langKeys, langValues, null); 
+		// select default language in form
 		languageSingleSelection.select(I18nModule.getDefaultLocale().toString(), true);
-		
-    
 		
 		//add password fields!!!
 		if (showPasswordFields) {
