@@ -1,8 +1,9 @@
 #if($f.isVisible("create"))
-$r.render("create") ##<!-- the create button either for group or area -->
-<hr/>
+<div class="o_button_group o_button_group_right">
+	$r.render("create")
+</div>
 #end
-$r.render("entries") ##<!-- all the checkboxes vertically aligned -->
-<div class="b_button_group">
-	$r.render("subm") $r.render("reset")
+$r.render("entries")
+<div class="o_button_group">
+	$r.render("subm") $r.render("cancel")
 </div>

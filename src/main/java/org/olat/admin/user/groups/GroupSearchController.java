@@ -141,7 +141,7 @@ public class GroupSearchController extends StepFormBasicController {
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.participant.i18n(), Cols.participant.ordinal()));
 		
 		tableDataModel = new GroupTableDataModel(Collections.<GroupWrapper>emptyList(), tableColumnModel);
-		table = uifactory.addTableElement(ureq, getWindowControl(), "groupList", tableDataModel, tableCont);
+		table = uifactory.addTableElement(getWindowControl(), "groupList", tableDataModel, tableCont);
 		table.setCustomizeColumns(false);
 		tableCont.add("groupList", table);
 		

@@ -124,10 +124,10 @@ public class PendingEnrollmentController extends FormBasicController implements 
 		for(ReservationWrapper reservation:reservations) {
 			FormLink acceptLink = uifactory.addFormLink("accept_" + reservation.getKey(), "accept", null, formLayout, Link.BUTTON);
 			acceptLink.setUserObject(reservation);
-			acceptLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_ok");
+			acceptLink.setIconLeftCSS("o_icon o_icon_accept");
 			FormLink rejectLink = uifactory.addFormLink("reject_" + reservation.getKey(), "reject", null, formLayout, Link.BUTTON);
 			rejectLink.setUserObject(reservation);
-			rejectLink.setCustomEnabledLinkCSS("b_link_left_icon b_link_nok");
+			rejectLink.setIconLeftCSS("o_icon o_icon_reject");
 			formLayout.add(acceptLink.getName(), acceptLink);
 			formLayout.add(rejectLink.getName(), rejectLink);
 		}

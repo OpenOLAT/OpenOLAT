@@ -218,7 +218,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 			
 			Translator myTrans = userManager.getPropertyHandlerTranslator(getTranslator());
 			userTableModel = new UserSearchFlexiTableModel(Collections.<Identity>emptyList(), resultingPropertyHandlers, isAdministrativeUser, getLocale(), tableColumnModel);
-			tableEl = uifactory.addTableElement(ureq, getWindowControl(), "users", userTableModel, myTrans, formLayout);
+			tableEl = uifactory.addTableElement(getWindowControl(), "users", userTableModel, myTrans, formLayout);
 			tableEl.setCustomizeColumns(false);
 			tableEl.setMultiSelect(true);
 			tableEl.setSelectAllEnable(true);

@@ -105,7 +105,7 @@ public class QItemTypesAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("delete", Cols.deletable.ordinal(), "delete-type", delRenderer));
 
 		model = new QItemTypeDataModel(columnsModel);
-		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "types", model, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "types", model, getTranslator(), formLayout);
 		tableEl.setRendererType(FlexiTableRendererType.classic);
 		tableEl.setCustomizeColumns(false);
 		

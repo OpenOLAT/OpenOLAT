@@ -223,7 +223,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				new StaticFlexiCellRenderer("" /* translate("edit") */, "edit", "o_icon-lg o_icon_edit")));
 		
 		model = new AuthoringEntryDataModel(dataSource, columnsModel);
-		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
 		tableEl.setExportEnabled(true);
 		tableEl.setExtendedSearch(searchCtrl);

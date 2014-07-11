@@ -96,7 +96,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		          .append("	 accept: function(event,ui){ return true; },\n")
 		          .append("	 helper: function(event,ui,zt) {\n")
 		          .append("    var helperText = jQuery(this).children('.o_dnd_label').text();\n")
-		          .append("    return jQuery(\"<div class='ui-widget-header b_table_drag'>\" + helperText + \"</div>\").appendTo('body').css('zIndex',5).show();\n")
+		          .append("    return jQuery(\"<div class='ui-widget-header o_table_drag'>\" + helperText + \"</div>\").appendTo('body').css('zIndex',5).show();\n")
 		          .append("  }\n")
 		          .append("});\n")
 		          .append("});\n")
@@ -331,7 +331,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		int col = 0;
 		if(ftE.isMultiSelect()) {
 			String choice = translator.translate("table.header.choice");
-			target.append("<th class='b_first_child'>").append(choice).append("</th>");
+			target.append("<th>").append(choice).append("</th>");
 			col++;
 		}
 		
@@ -403,7 +403,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				
 		if(ftE.isMultiSelect()) {
 			target.append("<td>")
-			      .append("<input type='checkbox' name='tb_ms' value='").append(rowIdPrefix).append(row).append("'");
+			      .append("<input type='checkbox' name='to_ms' value='").append(rowIdPrefix).append(row).append("'");
 			if(ftE.isAllSelectedIndex() || ftE.isMultiSelectedIndex(row)) {
 				target.append(" checked='checked'");
 			}   

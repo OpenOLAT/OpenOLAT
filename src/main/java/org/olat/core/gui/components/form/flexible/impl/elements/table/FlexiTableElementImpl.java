@@ -34,10 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
@@ -116,7 +114,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private FlexiTableComponentDelegate componentDelegate;
 	private CloseableCalloutWindowController callout;
 	private final WindowControl wControl;
-	private final String mapperUrl;
 	
 	private String wrapperSelector;
 
@@ -131,15 +128,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	private Map<String,FormItem> components = new HashMap<String,FormItem>();
 	
-	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, FlexiTableDataModel<?> tableModel) {
-		this(ureq, wControl, name, null, tableModel, -1, true);
+	public FlexiTableElementImpl(WindowControl wControl, String name, FlexiTableDataModel<?> tableModel) {
+		this(wControl, name, null, tableModel, -1, true);
 	}
 	
-	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, Translator translator, FlexiTableDataModel<?> tableModel) {
-		this(ureq, wControl, name, translator, tableModel, -1, true);
+	public FlexiTableElementImpl(WindowControl wControl, String name, Translator translator, FlexiTableDataModel<?> tableModel) {
+		this(wControl, name, translator, tableModel, -1, true);
 	}
 	
-	public FlexiTableElementImpl(UserRequest ureq, WindowControl wControl, String name, Translator translator,
+	public FlexiTableElementImpl(WindowControl wControl, String name, Translator translator,
 			FlexiTableDataModel<?> tableModel, int pageSize, boolean loadOnStart) {
 		super(name);
 		this.wControl = wControl;
@@ -153,9 +150,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				enabledColumnIndex.add(new Integer(col.getColumnIndex()));
 			}
 		}
-
-		MapperService mapper = CoreSpringFactory.getImpl(MapperService.class);
-		mapperUrl = mapper.register(ureq.getUserSession(), new FlexiTableModelMapper(component));
 
 		String dispatchId = component.getDispatchID();
 		customButton = new FormLinkImpl(dispatchId + "_customButton", "rCustomButton", "", Link.BUTTON + Link.NONTRANSLATED);
@@ -560,10 +554,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		this.currentFirstResult = currentFirstResult;
 	}
 
-	public String getMapperUrl() {
-		return mapperUrl;
-	}
-
 	@Override
 	public Iterable<FormItem> getFormItems() {
 		List<FormItem> items = new ArrayList<>(components.values());
@@ -597,7 +587,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	 */
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
-		String[] selectedIndexArr = getRootForm().getRequestParameterValues("tb_ms");
+		String[] selectedIndexArr = getRootForm().getRequestParameterValues("to_ms");
 		if(selectedIndexArr != null) {
 			setMultiSelectIndex(selectedIndexArr);
 		}

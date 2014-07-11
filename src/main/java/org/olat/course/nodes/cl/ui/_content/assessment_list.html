@@ -1,6 +1,6 @@
-<div class="b_form clearfix">
+<div class="o_form clearfix">
 	$r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover")
-	<div class="b_form_desc">$off_desc</div>
+	<div class="o_desc">$off_desc</div>
 	#if($dueDate)
 	<div class="o_course_run_deadline">
 		<p>$r.translate("coach.due.date.desc")</p>
@@ -8,8 +8,7 @@
 	</div>
 	#end
 	$r.render("checkbox-list")
-
-	<div class="o_buttons_box_center clearfix">
+	<div class="o_button_group clearfix">
 		$r.render("pdf.export")
 		$r.render("pdf.export.checked")
 		$r.render("box.assessment")

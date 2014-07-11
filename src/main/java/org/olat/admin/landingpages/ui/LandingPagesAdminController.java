@@ -151,7 +151,7 @@ public class LandingPagesAdminController extends FormBasicController {
 			layoutCont.contextPut("rules", wrappers);
 		}
 		model = new RulesDataModel(columnsModel, wrappers);
-		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "rules", model, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "rules", model, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setRendererType(FlexiTableRendererType.classic);
 		

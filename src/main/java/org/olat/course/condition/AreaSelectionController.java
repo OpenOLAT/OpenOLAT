@@ -31,14 +31,11 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.Reset;
-import org.olat.core.gui.components.form.flexible.elements.Submit;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormReset;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -58,7 +55,7 @@ import org.olat.group.ui.NewAreaController;
 public class AreaSelectionController extends FormBasicController {
 
 	private MultipleSelectionElement entrySelector;
-	private FormLinkImpl createNew;
+	private FormLink createNew;
 	private final CourseGroupManager courseGrpMngr;
 	private NewAreaController areaCreateCntrllr;
 	private CloseableModalController cmc;
@@ -67,7 +64,7 @@ public class AreaSelectionController extends FormBasicController {
 	private String[] areaNames;
 	private String[] areaKeys;
 
-	public AreaSelectionController(UserRequest ureq, WindowControl wControl, String title,
+	public AreaSelectionController(UserRequest ureq, WindowControl wControl,
 			boolean allowCreate, CourseGroupManager courseGrpMngr, List<Long> selectionKeys) {
 		super(ureq, wControl, "group_or_area_selection");
 		this.courseGrpMngr = courseGrpMngr;
@@ -128,25 +125,15 @@ public class AreaSelectionController extends FormBasicController {
 	}
 
 	@Override
-	protected void initForm(FormItemContainer boundTo, Controller listener, UserRequest ureq) {
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(createEnable) {
 			// easy creation only possible if a default group context available
-			createNew = new FormLinkImpl("create");
-			//is a button
-			createNew.setCustomEnabledLinkCSS("b_button");
-			createNew.setCustomDisabledLinkCSS("b_button o_disabled");
-			// create new group/area on the right side
-			boundTo.add(createNew);
+			createNew = uifactory.addFormLink("create", formLayout, Link.BUTTON);
 		}
 
-		
-		entrySelector = uifactory.addCheckboxesVertical("entries",  null, boundTo, areaKeys, areaNames, 1);
-		// submitCancel after checkboxes
-		//
-		Submit subm = new FormSubmit("subm", "apply");
-		Reset reset = new FormReset("reset", "cancel");
-		boundTo.add(subm);
-		boundTo.add(reset);
+		entrySelector = uifactory.addCheckboxesVertical("entries",  null, formLayout, areaKeys, areaNames, 1);
+		uifactory.addFormSubmitButton("subm", "apply", formLayout);
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 
 	@Override
@@ -155,10 +142,10 @@ public class AreaSelectionController extends FormBasicController {
 	}
 
 	@Override
-	protected void formResetted(UserRequest ureq) {
+	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
-	
+
 	public List<String> getSelectedNames() {
 		List<String> selectedNames = new ArrayList<String>();
 		for(int i=0; i<areaKeys.length; i++) {

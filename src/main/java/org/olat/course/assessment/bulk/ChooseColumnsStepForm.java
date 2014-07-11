@@ -140,7 +140,7 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 		}
 		
 		overviewDataModel.setTableColumnModel(tableColumnModel);
-		FlexiTableElement tableEl = uifactory.addTableElement(ureq, getWindowControl(), "overviewList", overviewDataModel, formLayout);
+		FlexiTableElement tableEl = uifactory.addTableElement(getWindowControl(), "overviewList", overviewDataModel, formLayout);
 		tableEl.setCustomizeColumns(false);
 	}
 	

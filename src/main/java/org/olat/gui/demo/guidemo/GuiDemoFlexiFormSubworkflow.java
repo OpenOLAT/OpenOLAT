@@ -192,7 +192,7 @@ public class GuiDemoFlexiFormSubworkflow extends FormBasicController {
 		institution = uifactory.addTextElement("institution", null, 256, personData.getInstitution(), horizontalLayout);
 		institution.setEnabled(false);
 		
-		choose = uifactory.addFormLink("choose", horizontalLayout,"b_form_genericchooser");
+		choose = uifactory.addFormLink("choose", horizontalLayout);
 		
 		if (inputMode) {
 			// submit only if in input mode

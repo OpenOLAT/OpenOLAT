@@ -205,7 +205,8 @@ public class CheckboxAssessmentController extends FormBasicController {
 			TextElement pointEl = uifactory.addTextElement(name + "point", null, 5, pointVal, formLayout);
 			pointEl.setDisplaySize(5);
 			
-			MultipleSelectionElement checkEl = uifactory.addCheckboxesHorizontal(name + "check", formLayout, onKeys, onValues);
+			MultipleSelectionElement checkEl = uifactory.addCheckboxesVertical(name + "check", formLayout, onKeys, onValues, 1);
+			checkEl.setDomReplacementWrapperRequired(false);
 			checkEl.addActionListener(FormEvent.ONCHANGE);
 			checkEl.setUserObject(row);
 			if(checked != null && checked.length > currentCheckboxIndex
@@ -220,7 +221,7 @@ public class CheckboxAssessmentController extends FormBasicController {
 		}
 
 		model = new CheckboxAssessmentDataModel(boxRows, columnsModel);
-		table = uifactory.addTableElement(ureq, getWindowControl(), "checkbox-list", model, getTranslator(), formLayout);
+		table = uifactory.addTableElement(getWindowControl(), "checkbox-list", model, getTranslator(), formLayout);
 		table.setCustomizeColumns(true);
 		table.setEditMode(true);
 		table.setAndLoadPersistedPreferences(ureq, "checkbox-assessment");

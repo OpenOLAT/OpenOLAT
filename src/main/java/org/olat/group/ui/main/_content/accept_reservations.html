@@ -1,9 +1,10 @@
 #foreach($reservation in $reservations)
 	#set($id = $reservation.key)
 	<div>
-		<div class="o_reservation clearfix">
+		<div class="o_reservation o_block clearfix">
 			<div>
-				<span class="o_reservation_name b_with_small_icon_left #if($reservation.isGroupReservation()) b_group_icon #elseif($reservation.isRepositoryEntryReservation()) o_course_icon  #end">
+				<span class="o_reservation_name">
+					<i class="o_icon #if($reservation.isGroupReservation()) o_icon_group #elseif($reservation.isRepositoryEntryReservation()) o_CourseModule_icon #end"> </i>
 					$r.escapeHtml(${reservation.name})
 				</span>
 				#if($reservation.coach)
@@ -36,7 +37,7 @@
 						<strong>$r.translate("group.used.in.course")</strong>
 						<ul>
 						#foreach($course in $reservation.courses)
-							<li class=""><span class="b_with_small_icon_left o_CourseModule_icon">$course</span></li>
+							<li class=""><span><i class="o_icon o_CourseModule_icon"> </i> $course</span></li>
 						#end
 						</ul>
 					#end

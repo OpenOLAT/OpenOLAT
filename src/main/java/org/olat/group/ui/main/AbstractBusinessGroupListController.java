@@ -194,7 +194,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		FlexiTableColumnModel columnModel = initColumnModel();
 		
 		groupTableModel = new BusinessGroupFlexiTableModel(getTranslator(), columnModel);
-		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "table", groupTableModel, 20, false, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", groupTableModel, 20, false, getTranslator(), formLayout);
 
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setFromColumnModel(true);

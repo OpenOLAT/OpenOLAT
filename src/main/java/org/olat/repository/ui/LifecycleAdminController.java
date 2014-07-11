@@ -93,7 +93,7 @@ public class LifecycleAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", translate(LCCols.edit.i18nKey()), "edit-lifecycle"));
 
 		model = new LifecycleDataModel(columnsModel);
-		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "cycles", model, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "cycles", model, getTranslator(), formLayout);
 		tableEl.setRendererType(FlexiTableRendererType.classic);
 		tableEl.setCustomizeColumns(false);
 		

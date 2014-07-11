@@ -27,6 +27,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_archive_tool:before { content: $fa-var-download;}
 .o_icon_assessment_tool:before { content: $fa-var-trophy;}
 .o_icon_attempt_limit:before { content: $fa-var-refresh; }
+.o_icon_accept:before { content: $fa-var-check; color: $brand-success; }
 .o_icon_add:before { content: $fa-var-plus-circle; }
 .o_icon_add_search:before { content: $fa-var-search-plus;}
 .o_icon_audio:before { content: $fa-var-volume-up; }
@@ -152,6 +153,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_readwrite:before { content: $fa-var-edit; }
 .o_icon_recycle:before { content: $fa-var-recycle; }
 .o_icon_refresh:before { content: $fa-var-refresh; }
+.o_icon_reject:before { content: $fa-var-times; color:$brand-danger; }
 .o_icon_remove:before { content: $fa-var-times; }
 .o_icon_reply:before { content: $fa-var-reply; }
 .o_icon_reply_with_quote:before { content: $fa-var-reply-all; }

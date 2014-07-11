@@ -241,7 +241,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 
 		List<CheckListAssessmentRow> datas = loadDatas();
 		model = new CheckListAssessmentDataModel(checkboxList, datas, columnsModel);
-		table = uifactory.addTableElement(ureq, getWindowControl(), "checkbox-list", model, getTranslator(), formLayout);
+		table = uifactory.addTableElement(getWindowControl(), "checkbox-list", model, getTranslator(), formLayout);
 		if(userCourseEnv instanceof UserCourseEnvironmentImpl) {
 			UserCourseEnvironmentImpl env = (UserCourseEnvironmentImpl)userCourseEnv;
 			List<BusinessGroup> coachedGroups = env.getCoachedGroups();

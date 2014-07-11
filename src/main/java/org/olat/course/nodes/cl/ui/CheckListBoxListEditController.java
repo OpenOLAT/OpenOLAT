@@ -131,7 +131,7 @@ public class CheckListBoxListEditController extends FormBasicController {
 			boxList = new ArrayList<Checkbox>();
 		}
 		model = new CheckboxConfigDataModel(boxList, getTranslator(), columnsModel);
-		boxTable = uifactory.addTableElement(ureq, getWindowControl(), "checkbox-list", model, getTranslator(), tableCont);
+		boxTable = uifactory.addTableElement(getWindowControl(), "checkbox-list", model, getTranslator(), tableCont);
 		boxTable.setCustomizeColumns(false);
 	}
 	

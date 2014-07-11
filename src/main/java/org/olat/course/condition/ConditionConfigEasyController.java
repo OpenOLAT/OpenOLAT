@@ -353,7 +353,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(areaChooseC);
 			
-			areaChooseC = new AreaSelectionController(ureq, getWindowControl(), "area", true,
+			areaChooseC = new AreaSelectionController(ureq, getWindowControl(), true,
 					courseEditorEnv.getCourseGroupManager(), getKeys(easyAreaList));
 			listenTo(areaChooseC);
 			

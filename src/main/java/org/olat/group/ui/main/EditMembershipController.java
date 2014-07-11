@@ -248,7 +248,7 @@ public class EditMembershipController extends FormBasicController {
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.waitingList", 6));
 		
 		tableDataModel = new EditMemberTableDataModel(Collections.<MemberOption>emptyList(), tableColumnModel);
-		FlexiTableElement tableEl = uifactory.addTableElement(ureq, getWindowControl(), "groupList", tableDataModel, formLayout);
+		FlexiTableElement tableEl = uifactory.addTableElement(getWindowControl(), "groupList", tableDataModel, formLayout);
 		tableEl.setCustomizeColumns(false);
 		
 		if(withButtons) {

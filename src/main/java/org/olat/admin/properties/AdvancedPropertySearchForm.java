@@ -138,7 +138,7 @@ public class AdvancedPropertySearchForm extends FormBasicController {
 		
 		horizontalLayout.setLabel("searchform.username", null);
 		userName = uifactory.addTextElement("userName", null, 60, "", horizontalLayout);	
-		userChooser = uifactory.addFormLink("choose", horizontalLayout,"b_form_genericchooser");
+		userChooser = uifactory.addFormLink("choose", horizontalLayout);
 		
 		resourceTypeName = uifactory.addDropdownSingleselect("resourceTypeName", "searchform.resoursetypename", formLayout, theKeys, theValues, null);
 		resourceTypeId = uifactory.addTextElement("resourceTypeId", "searchform.resourcetypeid", 60, "", formLayout);

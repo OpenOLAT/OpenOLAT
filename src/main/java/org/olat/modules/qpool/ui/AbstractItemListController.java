@@ -138,7 +138,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("details", translate("details"), "select-item"));
 		
 		model = new QuestionItemDataModel(columnsModel, this, getTranslator());
-		itemsTable = uifactory.addTableElement(ureq, getWindowControl(), "items", model, 50, true, getTranslator(), formLayout);
+		itemsTable = uifactory.addTableElement(getWindowControl(), "items", model, 50, true, getTranslator(), formLayout);
 		itemsTable.setWrapperSelector("qitems");
 		itemsTable.setSelectAllEnable(true);
 		itemsTable.setMultiSelect(true);

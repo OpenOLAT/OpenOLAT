@@ -141,7 +141,7 @@ public class CourseSiteAdminController extends FormBasicController {
 
 		model.setObjects(configs);
 		
-		tableEl = uifactory.addTableElement(ureq, getWindowControl(), "languageTable", model, getTranslator(), tableLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "languageTable", model, getTranslator(), tableLayout);
 		tableEl.setRendererType(FlexiTableRendererType.classic);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "course-site-admin");

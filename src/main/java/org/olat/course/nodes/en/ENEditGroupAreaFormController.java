@@ -406,7 +406,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			removeAsListenerAndDispose(areaChooseC);
 
 			// already areas -> choose areas
-			areaChooseC = new AreaSelectionController (ureq, getWindowControl() , "area", true,
+			areaChooseC = new AreaSelectionController (ureq, getWindowControl(), true,
 					cev.getCourseGroupManager(), getKeys(easyAreaList));
 			listenTo(areaChooseC);
 
