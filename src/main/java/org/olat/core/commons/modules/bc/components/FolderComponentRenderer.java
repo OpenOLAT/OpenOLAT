@@ -229,7 +229,7 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_MAIL);
 					target.append("\" value=\"");
 					target.append(StringHelper.escapeHtml(translator.translate("send")));
-					target.append("\"/>");
+					target.append("\" />");
 				}
 				
 				if (canDelete) {
@@ -238,7 +238,7 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_DEL);
 					target.append("\" value=\"");
 					target.append(StringHelper.escapeHtml(translator.translate("del")));
-					target.append("\"/>");
+					target.append("\" />");
 				}
 
 				if (canWrite) {
@@ -248,11 +248,11 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 					target.append("\" value=\"");
 					target.append(StringHelper.escapeHtml(translator.translate("move")));
 					// copy
-					target.append("\"/><input type=\"submit\" class='btn btn-default' name=\"");
+					target.append("\" /><input type=\"submit\" class='btn btn-default' name=\"");
 					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_COPY);
 					target.append("\" value=\"");
 					target.append(StringHelper.escapeHtml(translator.translate("copy")));
-					target.append("\"/>");
+					target.append("\" />");
 				}
 									
 				if (canWrite) {
@@ -262,11 +262,11 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 					target.append("\" value=\"");
 					target.append(StringHelper.escapeHtml(translator.translate("zip")));
 					//unzip
-					target.append("\"/><input type=\"submit\" class='btn btn-default' name=\"");
+					target.append("\" /><input type=\"submit\" class='btn btn-default' name=\"");
 					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_UNZIP);
 					target.append("\" value=\"");
 					target.append(StringHelper.escapeHtml(translator.translate("unzip")));
-					target.append("\"/>");				
+					target.append("\" />");				
 				}
 				target.append("</div>");
 			}

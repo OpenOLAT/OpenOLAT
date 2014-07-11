@@ -341,8 +341,7 @@ public class ListRenderer {
 				  .append("</script>");
 			}
 		}
-		sb.append("</span>")
-		  .append("</td><td>");
+		sb.append("</td><td>");
 		
 		// filesize
 		if (!isContainer) {

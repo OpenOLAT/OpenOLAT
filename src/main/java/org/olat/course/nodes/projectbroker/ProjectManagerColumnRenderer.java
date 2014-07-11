@@ -63,11 +63,12 @@ public class ProjectManagerColumnRenderer implements CustomCellRenderer {
 			
 			StringBuilder buf = new StringBuilder();
 			
-			if (renderer!=null && row!=null) {
+			if (renderer!=null && row != null) {
 				// if no renderer is set, then we assume it's a table export - in which case we don't want the htmls (<b>)
 				// no row might occur during table-search
-				sb.append("<span class=\"projmgrrowcontent\"");
-				sb.append("id=\"" + PROJECTMANAGER_COLUMN_ROW_IDENT + row + "\">");
+				sb.append("<span class='projmgrrowcontent' id='")
+				  .append(PROJECTMANAGER_COLUMN_ROW_IDENT).append(row)
+				  .append("'>");
 			}
 			
 			for (Identity identity : allIdents) {
@@ -77,7 +78,7 @@ public class ProjectManagerColumnRenderer implements CustomCellRenderer {
 			}
 			sb.append(buf.substring(0, buf.length() - 2));
 			
-			if (renderer!=null && row!=null) {
+			if (renderer!=null && row != null) {
 				sb.append("</span>");
 			}			
 		}

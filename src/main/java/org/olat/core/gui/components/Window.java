@@ -565,7 +565,6 @@ public class Window extends AbstractComponent {
 				// [POST: !renderOnly && timestampID != null]
 				// if we had a inline rendering at least once (latestTimestamp is
 				// set), then check for an old timestamp
-				//System.out.println("dispatch normal: compid:"+ureq.getComponentID()+" win-ts:"+ureq.getTimestampID()+" comp-ts:"+ureq.getComponentTimestamp());
 				if (latestTimestamp != null && !timestampID.equals(latestTimestamp)) {
 					// this is not a link from the latest rendering, but from a previous
 					// one, since it has a wrong timestamp parameter -> check for
@@ -762,9 +761,9 @@ public class Window extends AbstractComponent {
 						}
 						
 						//to check HTML by reload
-						//System.out.println("****************************************************");
-						//System.out.println(result.toString());
-						//System.out.println("****************************************************");
+						System.out.println();
+						System.out.println(result.toString());
+						System.out.println();
 		
 						// after rendering we know if some component awaits further async
 						// calls
