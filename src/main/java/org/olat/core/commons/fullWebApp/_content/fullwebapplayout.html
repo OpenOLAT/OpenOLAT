@@ -50,17 +50,14 @@ function o_start(){
 <script type="text/javascript" src='$r.staticLink("js/jsMath/easy/load.js")'></script>
 ## jQuery libraries
 <!--[if lt IE 9]>
-<script type="text/javascript" src='$r.staticLink("js/jquery/jquery-1.9.1.min.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("js/jquery/jquery-1.9.1.min.js")'></script>
+## HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries - required by bootstrap
+	<script type="text/javascript" src='$r.staticLink("js/html5shiv/html5shiv.min.js")'></script>
+	<script type="text/javascript" src='$r.staticLink("js/respond/respond.min.js")'></script>
 <![endif]-->
 <!--[if gte IE 9]><!-->
 <script type="text/javascript" src='$r.staticLink("js/jquery/jquery-2.1.0.min.js")'></script>
 <!--<![endif]-->
-
-## HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries - required by bootstrap
-<!--[if lt IE 9]>
-	<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-	<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-<![endif]-->
 #if ($r.available("guidebug"))
 	## Are compressed as js/js.plugins.min.js in non-debug mode
 	<script type="text/javascript" src='$r.staticLink("js/jquery/periodic/jquery.periodic.js")'></script>
@@ -95,7 +92,6 @@ function o_start(){
 #if($r.available("guidebug"))
 	<link type="text/css" href='$r.staticLink("js/jquery/tagsinput/bootstrap-tagsinput.css")' rel="stylesheet" />
 	<link type="text/css" href='$r.staticLink("js/jquery/fullcalendar/fullcalendar.css")' rel="stylesheet" />
-	<link type="text/css" href='$r.staticLink("js/jquery/imagecrop/jquery.imagecrop.css")' rel="stylesheet" />
 	<link type="text/css" href='$r.staticLink("js/jquery/cropper/cropper.css")' rel="stylesheet" />
 	<link type="text/css" href='$r.staticLink("js/jquery/ui/jquery-ui-1.10.4.custom.min.css")' rel="stylesheet" />
 #else

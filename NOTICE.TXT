@@ -113,7 +113,7 @@ This product uses software based on the Apache Software License like
 * jshashtable (Apache Software License, Version 2.0) [http://www.timdown.co.uk/jshashtable]
 
 -----------------------------------------------------------------------
-This produce uses softeare based on the MIT License
+This produce uses software based on the MIT License
 * Bootstrap (MIT License) [http://http://getbootstrap.com]
 * Prototype javascript framework (MIT License) [http://www.prototypejs.org]
 * SCORM player project: reload (MIT License) [http://www.reload.ac.uk]
@@ -125,6 +125,8 @@ This produce uses softeare based on the MIT License
 * qrcode.js (MIT License) [http://davidshimjs.github.io/qrcodejs/]
 * bootstrap-tagsinput (MIT License) [https://github.com/timschlechter/bootstrap-tagsinput]
 * cropper.js (MIT License) [https://github.com/fengyuanchen/cropper]
+* html5shiv (MIT License / GPL2) [https://github.com/aFarkas/html5shiv]
+* respond.js (MIT License) [https://github.com/scottjehl/Respond]
 
 -----------------------------------------------------------------------
 This product uses software based on the BSD License
