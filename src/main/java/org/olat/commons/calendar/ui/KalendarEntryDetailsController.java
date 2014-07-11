@@ -151,7 +151,7 @@ public class KalendarEntryDetailsController extends BasicController {
 						if (activeLinkProvider != null) {
 							activeLinkProvider.addControllerListener(this);
 							activeLinkProvider.setKalendarEvent(kalendarEvent);
-							activeLinkProvider.setDisplayOnly(isReadOnly);
+							activeLinkProvider.setDisplayOnly(true);
 							linkVC.put("linkprovider", activeLinkProvider.getControler().getInitialComponent());
 							linkVC.contextPut("hasLinkProvider", Boolean.TRUE);
 						} else {
@@ -218,7 +218,7 @@ public class KalendarEntryDetailsController extends BasicController {
 				if (eventForm.isMulti()) {
 					// offer to copy event to multiple calendars.
 					removeAsListenerAndDispose(copyEventToCalendarController);
-					copyEventToCalendarController = new CopyEventToCalendarController(kalendarEvent, availableCalendars, getTranslator(), getWindowControl());
+					copyEventToCalendarController = new CopyEventToCalendarController(ureq, getWindowControl(), kalendarEvent, availableCalendars);
 					listenTo(copyEventToCalendarController);
 					//copyEventToCalendarController.addControllerListener(this);
 					mainPanel.setContent(copyEventToCalendarController.getInitialComponent());

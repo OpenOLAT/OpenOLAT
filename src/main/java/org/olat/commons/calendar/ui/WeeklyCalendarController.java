@@ -35,7 +35,6 @@ import java.util.List;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.CalendarUtils;
-import org.olat.commons.calendar.GotoDateEvent;
 import org.olat.commons.calendar.ImportCalendarManager;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarComparator;
@@ -101,13 +100,11 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	private KalendarConfigurationController calendarConfig;
 	private ImportedCalendarConfigurationController importedCalendarConfig;
 	private KalendarEntryDetailsController editController;
-	private SearchAllCalendarsController searchController;
 	private ImportCalendarController importCalendarController;
 	private CalendarSubscription calendarSubscription;
 	private Controller subscriptionController;
 	private String caller;
 	private boolean dirty = false;
-	private Link searchLink;
 	private FormLink subscribeButton, unsubscribeButton;
 
 	private CloseableModalController cmc;
@@ -409,20 +406,6 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		} else if (event == ComponentUtil.VALIDATE_EVENT && weeklyCalendar.getComponent().isDirty() && modifiedCalenderDirty  ) {
 			KalendarRenderWrapper kalendarRenderWrapper = weeklyCalendar.getKalendarRenderWrapper(modifiedCalendarId);
 			kalendarRenderWrapper.reloadKalendar();	
-		} else if (source == searchLink) {
-			
-			List<KalendarRenderWrapper> allCalendarWrappers = new ArrayList<KalendarRenderWrapper>(calendarWrappers);
-			allCalendarWrappers.addAll(importedCalendarWrappers);
-			
-			removeAsListenerAndDispose(searchController);
-			searchController = new SearchAllCalendarsController(ureq, getWindowControl(), allCalendarWrappers);
-			listenTo(searchController);
-			
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent());
-			listenTo(cmc);
-			
-			cmc.activate();
 		}
 		super.event(ureq, source, event);
 	}
@@ -473,12 +456,6 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				setCalendars(calendarWrappers, importedCalendarWrappers);
 				weeklyCalendar.getComponent().setDirty(true);
 			}
-		} else if (source == searchController) {
-			if (event instanceof GotoDateEvent) {
-				Date gotoDate = ((GotoDateEvent)event).getGotoDate();
-			  weeklyCalendar.setFocusDate(gotoDate);
-			}
-			cmc.deactivate();
 		} else if (source == subscriptionController) {
 			// nothing to do here
 		} else if (source == dbcSequence) {

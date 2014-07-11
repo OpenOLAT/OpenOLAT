@@ -26,6 +26,7 @@
 package org.olat.course.run.calendar;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -35,94 +36,94 @@ import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.ui.LinkProvider;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
-import org.olat.core.gui.components.tree.SelectionTree;
-import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeNode;
-import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.ControllerEventListener;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.tree.INodeFilter;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
-public class CourseLinkProviderController extends BasicController implements LinkProvider {
+public class CourseLinkProviderController extends FormBasicController implements LinkProvider {
 
 	private static final String COURSE_LINK_PROVIDER = "COURSE";
-	private static final String CAL_LINKS_SUBMIT = "cal.links.submit";
-	private VelocityContainer clpVC;
 	private KalendarEvent kalendarEvent;
-	private SelectionTree selectionTree;
+
+	private FormSubmit saveButton;
 	private final OLATResourceable ores;
 	private final List<ICourse> availableCourses;
+	private MultipleSelectionElement multiSelectTree;
+	private final CourseNodeSelectionTreeModel courseNodeTreeModel;
 
 	public CourseLinkProviderController(ICourse course, List<ICourse> courses, UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, Util.createPackageTranslator(CalendarManager.class, ureq.getLocale()));
+		super(ureq, wControl, LAYOUT_BAREBONE);
+		setTranslator(Util.createPackageTranslator(CalendarManager.class, ureq.getLocale(), getTranslator()));
 
 		this.ores = course;
-		this.availableCourses = new ArrayList<ICourse>(courses);
+		availableCourses = new ArrayList<ICourse>(courses);
+		courseNodeTreeModel = new CourseNodeSelectionTreeModel(courses);
+
+		initForm(ureq);
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		multiSelectTree = uifactory.addTreeMultiselect("seltree", null, formLayout, courseNodeTreeModel, courseNodeTreeModel);
+
+		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonsContainer.setRootForm(mainForm);
+		formLayout.add(buttonsContainer);
+		saveButton = uifactory.addFormSubmitButton("ok", "cal.links.submit", buttonsContainer);
+	}
+
+	@Override
+	protected void doDispose() {
+		//
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		List<KalendarEventLink> kalendarEventLinks = kalendarEvent.getKalendarEventLinks();
+		TreeNode rootNode = courseNodeTreeModel.getRootNode();
+		for(Iterator<KalendarEventLink> linkIt = kalendarEventLinks.iterator(); linkIt.hasNext(); ) {
+			KalendarEventLink link = linkIt.next();
+			if(COURSE_LINK_PROVIDER.equals(link.getProvider())) {
+				linkIt.remove();
+			}
+		}
 		
-		setVelocityRoot(Util.getPackageVelocityRoot(CalendarManager.class));	
-		clpVC = createVelocityContainer("calCLP");	
-		selectionTree = new SelectionTree("clpTree", getTranslator());
-		selectionTree.addListener(this);
-		selectionTree.setMultiselect(true);
-		selectionTree.setAllowEmptySelection(true);
-		selectionTree.setShowCancelButton(true);
-		selectionTree.setFormButtonKey(CAL_LINKS_SUBMIT);
-		selectionTree.setTreeModel(new CourseNodeSelectionTreeModel(courses));
-		clpVC.put("tree", selectionTree);
-		putInitialPanel(clpVC);
+		clearSelection(rootNode);
+		Collection<String> nodeIds = multiSelectTree.getSelectedKeys();
+		rebuildKalendarEventLinks(rootNode, nodeIds, kalendarEventLinks);
+		// if the calendarevent is already associated with a calendar, save the modifications.
+		// otherwise, the modifications will be saver, when the user saves
+		// the calendar event.
+		if (kalendarEvent.getCalendar() != null) {
+			CalendarManagerFactory.getInstance().getCalendarManager().addEventTo(kalendarEvent.getCalendar(), kalendarEvent);
+		}
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 	public Long getCourseId() {
 		return ores.getResourceableId();
 	}
 
-	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == selectionTree) {
-			TreeEvent te = (TreeEvent)event;
-			if (event.getCommand().equals(TreeEvent.COMMAND_TREENODES_SELECTED)) {
-				// rebuild kalendar event links
-				// we do not use the tree event's getSelectedNodeIDs, instead
-				// we walk through the model and fetch the children in order
-				// to keep the sorting.
-				//fxdiff
-				List<KalendarEventLink> kalendarEventLinks = kalendarEvent.getKalendarEventLinks();
-				TreeNode rootNode = selectionTree.getTreeModel().getRootNode();
-				for(Iterator<KalendarEventLink> linkIt = kalendarEventLinks.iterator(); linkIt.hasNext(); ) {
-					KalendarEventLink link = linkIt.next();
-					if(COURSE_LINK_PROVIDER.equals(link.getProvider())) {
-						linkIt.remove();
-					}
-				}
-				
-				clearSelection(rootNode);
-				rebuildKalendarEventLinks(rootNode, te.getNodeIds(), kalendarEventLinks);
-				// if the calendarevent is already associated with a calendar, save the modifications.
-				// otherwise, the modifications will be saver, when the user saves
-				// the calendar event.
-				if (kalendarEvent.getCalendar() != null)
-					CalendarManagerFactory.getInstance().getCalendarManager().addEventTo(kalendarEvent.getCalendar(), kalendarEvent);
-				fireEvent(ureq, Event.DONE_EVENT);
-			} else if (event.getCommand().equals(TreeEvent.CANCELLED_TREEEVENT.getCommand())) {
-				fireEvent(ureq, Event.CANCELLED_EVENT);
-			}
-		}
-	}
-
-	private void rebuildKalendarEventLinks(INode node, List<String> selectedNodeIDs, List<KalendarEventLink> kalendarEventLinks) {
+	private void rebuildKalendarEventLinks(INode node, Collection<String> selectedNodeIDs, List<KalendarEventLink> kalendarEventLinks) {
 		if (selectedNodeIDs.contains(node.getIdent()) && node instanceof LinkTreeNode) {
 			// assemble link
 			LinkTreeNode treeNode = (LinkTreeNode)node;
@@ -147,41 +148,36 @@ public class CourseLinkProviderController extends BasicController implements Lin
 		}
 	}
 	
-	protected void doDispose() {
-		//
-	}
-
+	@Override
 	public CourseLinkProviderController getControler() {
 		return this;
 	}
 
+	@Override
 	public void setKalendarEvent(KalendarEvent kalendarEvent) {
 		this.kalendarEvent = kalendarEvent;
-		clearSelection(selectionTree.getTreeModel().getRootNode());
+		clearSelection(courseNodeTreeModel.getRootNode());
 		for (KalendarEventLink link: kalendarEvent.getKalendarEventLinks()) {
-			if (!link.getProvider().equals(COURSE_LINK_PROVIDER)) continue;
-			String nodeId = link.getId();
-			TreeNode node = selectionTree.getTreeModel().getNodeById(nodeId);
-			if(node == null) {
-				nodeId = availableCourses.get(0).getResourceableId() + "_" + nodeId;
-				node = selectionTree.getTreeModel().getNodeById(nodeId);
-			}
-			if (node != null) {
-				node.setSelected(true);
+			if (link.getProvider().equals(COURSE_LINK_PROVIDER)) {
+				String nodeId = link.getId();
+				TreeNode node = courseNodeTreeModel.getNodeById(nodeId);
+				if(node == null) {
+					nodeId = availableCourses.get(0).getResourceableId() + "_" + nodeId;
+					node = courseNodeTreeModel.getNodeById(nodeId);
+				}
+				if (node != null) {
+					node.setSelected(true);
+					multiSelectTree.select(node.getIdent(), true);
+				}
 			}
 		}
 	}
 	
+	@Override
 	public void setDisplayOnly(boolean displayOnly) {
-		if (displayOnly) {
-			clpVC.contextPut("displayOnly", Boolean.TRUE);
-			selectionTree.setVisible(false);
-			clpVC.contextPut("links", kalendarEvent.getKalendarEventLinks());
-		} else {
-			clpVC.contextPut("displayOnly", Boolean.FALSE);
-			selectionTree.setVisible(true);
-			clpVC.contextRemove("links");
-		}
+		courseNodeTreeModel.setReadOnly(displayOnly);
+		multiSelectTree.reset();
+		saveButton.setVisible(!displayOnly);
 	}
 	
 	private void clearSelection(TreeNode node) {
@@ -191,45 +187,63 @@ public class CourseLinkProviderController extends BasicController implements Lin
 			clearSelection(childNode);
 		}
 	}
-
-	public void addControllerListener(ControllerEventListener controller) {
-		super.addControllerListener(controller);
-	}
 	
-	private static class CourseNodeSelectionTreeModel extends GenericTreeModel {
+	private static class CourseNodeSelectionTreeModel extends GenericTreeModel implements INodeFilter {
 		private static final long serialVersionUID = -7863033366847344767L;
+		
+		private boolean readOnly;
+		
+
 
 		public CourseNodeSelectionTreeModel(List<ICourse> courses) {
 			if(courses.size() == 1) {
 				ICourse course = courses.get(0);
-				setRootNode(buildTree(course, course.getRunStructure().getRootNode()));
+				setRootNode(buildCourseTree(course));
 			} else {
 				LinkTreeNode rootNode = new LinkTreeNode("", null, null);
 				for(ICourse course:courses) {
-					LinkTreeNode node = new LinkTreeNode(course.getCourseTitle(), course, null);
-					node.setAltText(course.getCourseTitle());
-					node.setIdent(course.getResourceableId().toString());
-					node.setIconCssClass("o_CourseModule_icon");
-
-					LinkTreeNode childNode = buildTree(course, course.getRunStructure().getRootNode());
-					node.addChild(childNode);
-					rootNode.addChild(node);
+					rootNode.addChild(buildCourseTree(course));
 				}
 				setRootNode(rootNode);
 			}
+		}
+		
+		private LinkTreeNode buildCourseTree(ICourse course) {
+			LinkTreeNode node = new LinkTreeNode(course.getCourseTitle(), course, null);
+			node.setAltText(course.getCourseTitle());
+			node.setIdent(course.getResourceableId().toString());
+			node.setIconCssClass("o_CourseModule_icon");
+
+			LinkTreeNode childNode = buildTree(course, course.getRunStructure().getRootNode());
+			node.addChild(childNode);
+			return node;
 		}
 
 		private LinkTreeNode buildTree(ICourse course, CourseNode courseNode) {
 			LinkTreeNode node = new LinkTreeNode(courseNode.getShortTitle(), course, courseNode);
 			node.setAltText(courseNode.getLongTitle());
 			node.setIdent(course.getResourceableId() + "_" + courseNode.getIdent());
-			node.setIconCssClass(("o_" + courseNode.getType() + "_icon").intern());
+			node.setIconCssClass(("o_icon o_" + courseNode.getType() + "_icon").intern());
 			node.setUserObject(course);
 			for (int i = 0; i < courseNode.getChildCount(); i++) {
 				CourseNode childNode = (CourseNode)courseNode.getChildAt(i);
 				node.addChild(buildTree(course, childNode));
 			}
 			return node;
+		}
+		
+		public void setReadOnly(boolean readOnly) {
+			this.readOnly = readOnly;
+		}
+
+		@Override
+		public boolean isSelectable(INode node) {
+			return !readOnly;
+		}
+
+		@Override
+		public boolean isVisible(INode node) {
+			return true;
 		}
 	}
 	

@@ -46,11 +46,6 @@ import org.olat.core.util.tree.TreeHelper;
  * @author Felix Jost
  */
 public class SelectionTreeRenderer extends DefaultComponentRenderer {
-
-	private static String imgDots = "<div class=\"o_selectiontree_line\"></div>";
-	private static String imgDots_spacer = "<div class=\"o_selectiontree_space\"></div>";
-	private static String imgDots_nt = "<div class=\"o_selectiontree_junction\"></div>";
-	private static String imgDots_nl = "<div class=\"o_selectiontree_end\"></div>";
 	/**
 	 * <code>ATTR_SELECTION</code>
 	 */
@@ -61,11 +56,6 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 			+ "	if (document.seltree.elements[i].type == \"radio\" &&\n" + "		document.seltree.elements[i].name == \"" + ATTR_SELECTION
 			+ "\" &&\n" + "		document.seltree.elements[i].checked) {\n" + "		numselected++;\n" + "	}\n" + "}\n"
 			+ "if (numselected < 1) {\n	alert(\"";
-
-	private static final String SCRIPT_MULTI_PRE = "<script type=\"text/javascript\">\n function seltree_check() {\n"
-			+ "var i;\n" + "var numselected = 0;\n" + "for (i=0; document.seltree.elements[i]; i++) {\n"
-			+ "	if (document.seltree.elements[i].type == \"checkbox\" &&\n" + "		document.seltree.elements[i].checked) {\n"
-			+ "		numselected++;\n" + "	}\n" + "}\n" + "if (numselected < 1) {\n	alert(\"";
 
 	private static final String SCRIPT_POST = "\");\n return false;\n" +
 		"}\n" + "return true;\n}\n" +
@@ -80,15 +70,6 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 		"}\n" +
 		"</script>";
 	
-
-	/**
-	 * Constructor for TableRenderer. Singleton and must be reentrant There must
-	 * be an empty contructor for the Class.forName() call
-	 */
-	public SelectionTreeRenderer() {
-		super();
-	}
-
 	/**
 	 * @param renderer
 	 * @param target
@@ -98,6 +79,7 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 	 * @param renderResult
 	 * @param args
 	 */
+	@Override
 	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 
@@ -105,10 +87,10 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 		Translator internalTranslator = tree.getTranslator();
 		TreeNode root = tree.getTreeModel().getRootNode();
 
-		target.append(tree.isMultiselect() ? SCRIPT_MULTI_PRE : SCRIPT_SINGLE_PRE);
+		target.append(SCRIPT_SINGLE_PRE);
 		target.append(translator.translate("alert"));
 		target.append(SCRIPT_POST);
-		target.append("<div class=\"o_selection_tree");
+		target.append("<div class=\"");
 		if(StringHelper.containsNonWhitespace(tree.getElementCssClass())) {
 			target.append(" ").append(tree.getElementCssClass());
 		}
@@ -120,25 +102,16 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 		if (iframePostEnabled) {
 			ubu.appendTarget(target);
 		}
-		target.append(" id=\"").append(Form.JSFORMID).append(tree.hashCode()).append("\"");
-		target.append(">");
-		// append root node
-		renderRootNode(root, target);
+		target.append(" id=\"").append(Form.JSFORMID).append(tree.hashCode()).append("\"")
+		  .append(">")
+		  .append("<div class='o_selection_tree'><ul class='o_selection_tree_l0'>");
 		boolean atLeastOneIsAccessible = atLeastOneIsAccessible(root);
 		if (root.getChildCount() != 0) {
-			renderChildNodes(root, "", tree.hashCode(), tree.isMultiselect(), tree.getGreyOutNonSelectableEntries(), tree.isShowAltTextAsHoverOnTitle(), target, tree);
-			if (tree.isMultiselect() && atLeastOneIsAccessible) {
-				target.append("<div class=\"o_togglecheck\"><a href=\"javascript:checkall(true);setFormDirty('").append(Form.JSFORMID).append(tree.hashCode()).append("');\">");
-				target.append("<input type=\"checkbox\" checked=\"checked\" disabled=\"disabled\" />");
-				target.append(translator.translate("checkall"));
-				target.append("</a>&nbsp;<a href=\"javascript:checkall(false);setFormDirty('").append(Form.JSFORMID).append(tree.hashCode()).append("\');\">");
-				target.append("<input type=\"checkbox\" disabled=\"disabled\" />");
-				target.append(translator.translate("uncheckall"));
-				target.append("</a></div>");
-			}
+			renderNode(root, root, tree.hashCode(), 1, target, tree);
+		} else {
+			target.append(internalTranslator.translate("selectiontree.noentries"));
 		}
-		else target.append(internalTranslator.translate("selectiontree.noentries"));
-		target.append("<br /><br />");
+		target.append("</ul></div><div class='o_button_group'>");
 		if (atLeastOneIsAccessible && tree.getFormButtonKey() != null) {
 			target.append("<button type=\"submit\" class=\"btn btn-primary o_sel_submit_selection\" name=\"" + Form.SUBMIT_IDENTIFICATION + "\" value=\"");
 			target.append(StringEscapeUtils.escapeHtml(translator.translate(tree.getFormButtonKey())));
@@ -148,14 +121,13 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 				target.append("\">");
 			}
 			target.append(translator.translate(tree.getFormButtonKey())).append("</button>");
-			
 		}
 		if(tree.isShowCancelButton()){
 			target.append(" <button type=\"submit\" class=\"btn btn-default o_sel_cancel_selection\" name=\"" + Form.CANCEL_IDENTIFICATION + "\" value=\"");
 			target.append(StringEscapeUtils.escapeHtml(translator.translate("cancel"))).append("\">");
 			target.append(translator.translate("cancel")).append("</button>");
 		}
-		target.append("</form></div>");
+		target.append("</div></form></div>");
 	}
 
 	private boolean atLeastOneIsAccessible(TreeNode node) {
@@ -166,112 +138,66 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 		}
 		return false;
 	}
+	
+	private void renderNode(TreeNode root, TreeNode child, int treeID, 
+			int level, StringOutput sb, SelectionTree tree) {
 
-	private void renderRootNode(TreeNode root, StringOutput target) {
-		target.append("\n<div class=\"o_selectiontree_item\">");
-		renderNodeIcon(target, root);
-		target.append("<div class=\"o_selectiontree_content\">");
-		// text using css if available
-		String cssClass = root.getCssClass();
-		if (cssClass != null) target.append("<span class=\"").append(cssClass).append("\">");
-		target.append(StringHelper.escapeHtml(root.getTitle()));
-		if (cssClass != null) target.append("</span>");
-		target.append("</div></div>");
-	}
+		sb.append("<li><div>");
 
-	private void renderChildNodes(TreeNode root, String indent, int treeID, boolean multiselect, boolean greyOutNonSelectable, 
-			boolean showAltTextAsHoverOnTitle, StringOutput sb, SelectionTree tree) {
-		String newIndent = indent + imgDots;
-
-		// extract directories
-		int childcnt = root.getChildCount();
-		for (int i = 0; i < childcnt; i++) {
-			TreeNode child = (TreeNode) root.getChildAt(i);
-			// BEGIN  of choice div
-			sb.append("\n<div class=\"o_selectiontree_item\">");
-			// render all icons first
-			// indent and dots-images
-			sb.append(indent);
-			if (i < childcnt - 1) {
-				sb.append(imgDots_nt);
-			} else {
-				sb.append(imgDots_nl);
-			}
-			// custom icon if available
+		// node title (using css if available)
+		String cssClass = child.getCssClass();
+		
+		// append radio or checkbox if selectable
+		if (child.isAccessible()) {
 			
-			sb.append("<div class='o_selectiontree_content'>");
+			sb.append("<div class='radio o_tree_l").append(level).append("'>")
+			  .append("<label class='").append(cssClass, cssClass != null).append("'>");
 			
-			// append radio or checkbox if selectable
-			if (child.isAccessible()) {
-				if (multiselect) { // render chekcboxes
-					sb.append("<input type=\"checkbox\" class=\"o_checkbox\" name=\"" + ATTR_SELECTION);
-					if (GUIInterna.isLoadPerformanceMode()) {
-						String tPath = TreeHelper.buildTreePath(child);
-						sb.append(tPath);
-					} else {
-						sb.append(child.getIdent());
-					}
-					sb.append("\" ");
-					if (child.isSelected())
-						sb.append("checked ");
-					sb.append("value=\"");
-				} else { // render radioboxes
-					sb.append("<input type=\"radio\" class=\"b_radio\" name=\"" + ATTR_SELECTION + "\" value=\"");
-				}
-				if (GUIInterna.isLoadPerformanceMode()) {
-					sb.append(TreeHelper.buildTreePath(child));
-				} else {
-					sb.append(child.getIdent());
-				}
-				sb.append("\" onchange=\"return setFormDirty('").append(Form.JSFORMID).append(treeID).append("')\" ");
-				sb.append(" onclick=\"return setFormDirty('").append(Form.JSFORMID).append(treeID).append("')\" />");
-			}
-			// node title (using css if available)
-			String cssClass = child.getCssClass();
-			if (cssClass != null) sb.append("<span class=\"").append(cssClass).append("\">");
-			if (!child.isAccessible() && greyOutNonSelectable) {
-				sb.append("<span class=\"o_disabled\">");
-				renderNodeIcon(sb, child);
-				if(tree.isEscapeHtml()) {					
-				  sb.append(StringEscapeUtils.escapeHtml(child.getTitle()));
-				} else {					
-				  sb.append(child.getTitle());
-				}
-				sb.append("</span>");
+			sb.append("<input type='radio' name=\"" + ATTR_SELECTION + "\" value=\"");
+			if (GUIInterna.isLoadPerformanceMode()) {
+				sb.append(TreeHelper.buildTreePath(child));
 			} else {
-				if (child.getAltText() != null && showAltTextAsHoverOnTitle) {
-					sb.append("<span onmouseover=\"o_showEventDetails(' ', '")
-					  .append(child.getAltText())
-					  .append("');\" onmouseout=\"return nd();\" onclick=\"return nd();\">");
-					if(tree.isEscapeHtml()) {					
-					  sb.append(StringEscapeUtils.escapeHtml(child.getTitle()));
-					} else {				
-					  sb.append(child.getTitle());
-					}
-					sb.append("</span>");
-				} else {					
-					if(tree.isEscapeHtml()) {						
-					  sb.append(StringEscapeUtils.escapeHtml(child.getTitle()));
-					} else {						
-					  sb.append(child.getTitle());
-					}					
-				}
+				sb.append(child.getIdent());
 			}
-			if (cssClass != null) sb.append("</span>");
+			sb.append("\" onchange=\"return setFormDirty('").append(Form.JSFORMID).append(treeID).append("')\" ")
+			  .append(" onclick=\"return setFormDirty('").append(Form.JSFORMID).append(treeID).append("')\" />");
+			
+			renderNodeIcon(sb, child);				
+			if(tree.isEscapeHtml()) {						
+			  sb.append(StringEscapeUtils.escapeHtml(child.getTitle()));
+			} else {						
+			  sb.append(child.getTitle());
+			}
+			if(!StringHelper.containsNonWhitespace(child.getTitle())) {
+				sb.append("&nbsp;&nbsp;");
+			}
 			renderNodeDecorators(sb, child);
-			// END of choice div
-			sb.append("</div></div>"); 
+			sb.append("</label></div>");
+		} else {
+			sb.append("<span class='o_tree_l").append(level).append("'>");
+			renderNodeIcon(sb, child);				
+			if(tree.isEscapeHtml()) {						
+			  sb.append(StringEscapeUtils.escapeHtml(child.getTitle()));
+			} else {						
+			  sb.append(child.getTitle());
+			}					
+			renderNodeDecorators(sb, child);
+			sb.append("</span>");
+		}
+		sb.append("</div>");
 
-			// do the same for all children
-			if (i < childcnt - 1) {
-				renderChildNodes(child, newIndent, treeID, multiselect, greyOutNonSelectable, showAltTextAsHoverOnTitle, sb, tree);
-			} else {
-				renderChildNodes(child, indent + imgDots_spacer, treeID, multiselect, greyOutNonSelectable, showAltTextAsHoverOnTitle, sb, tree);
+		int numOfChildren = child.getChildCount();
+		if(numOfChildren > 0) {
+			int childLevel = level + 1;
+			sb.append("<ul class='o_tree_l").append(childLevel).append("'>");
+			for (int i = 0; i < numOfChildren; i++) {
+				renderNode(root, (TreeNode)child.getChildAt(i), treeID, childLevel, sb, tree);
 			}
-
-		} // for recursion
-	} // buildTargets
-
+			sb.append("</ul>");
+		}
+		
+		sb.append("</li>");
+	}
 	
 	/**
 	 * Renders the node icons if available

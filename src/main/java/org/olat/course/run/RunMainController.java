@@ -1237,7 +1237,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}		
 		if (cc.isCalendarEnabled() && !isGuest) {
 			calendarLink = LinkFactory.createToolLink("calendar",translate("command.calendar"), this, "o_icon_calendar");
-			calendarLink.setPopup(true);//"950", "750"
+			calendarLink.setPopup(new LinkPopupSettings(950, 750, "cal"));
 			toolbarPanel.addTool(calendarLink);
 		}
 		if (cc.hasGlossary()) {

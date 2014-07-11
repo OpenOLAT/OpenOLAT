@@ -56,7 +56,10 @@ class SelectionTreeComponentRenderer extends DefaultComponentRenderer {
 		Map<String,CheckboxElement> checkboxes = stc.getSubComponents();
 		
 		TreeModel tm = stc.getTreeModel();
-		TreeNode rootNode = (TreeNode)tm.getRootNode().getChildAt(0);
+		TreeNode rootNode = tm.getRootNode();
+		if(rootNode.getChildCount() == 1) {
+			rootNode = (TreeNode)rootNode.getChildAt(0);
+		}
 		INodeFilter selectableFilter = stc.getSelectableFilter();
 
 		sb.append("<div class='o_selection_tree'><ul class='o_selection_tree_l0'>");
@@ -110,7 +113,7 @@ class SelectionTreeComponentRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderCheckbox(StringOutput sb, TreeNode node, int level, CheckboxElement check, SelectionTreeComponent stc) {
-		MultiSelectionTree stF = stc.getSelectionElement();
+		MultiSelectionTreeImpl stF = stc.getSelectionElement();
 		
 		String subStrName = "name=\"" + check.getGroupingName() + "\"";
 		
@@ -129,19 +132,21 @@ class SelectionTreeComponentRenderer extends DefaultComponentRenderer {
 		String cssClass = check.getCssClass(); //optional CSS class
 		String iconLeftCSS = check.getIconLeftCSS();
 		
-		sb.append("<input type='checkbox' id='").append(stc.getFormDispatchId()).append("' ")
-		  .append(subStrName)
-		  .append(" value='").append(key).append("'");
-		if (selected) {
-			sb.append(" checked='checked' ");
+		if(!check.isTextOnly()) {
+			sb.append("<input type='checkbox' id='").append(stc.getFormDispatchId()).append("' ")
+			  .append(subStrName)
+			  .append(" value='").append(key).append("'");
+			if (selected) {
+				sb.append(" checked='checked' ");
+			}
+			if(check.isEnabled()){
+				//use the selection form dispatch id and not the one of the element!
+				sb.append(FormJSHelper.getRawJSFor(stF.getRootForm(), check.getSelectionElementFormDispatchId(), check.getAction()));
+			} else {
+				sb.append(" disabled='disabled' ");
+			}
+			sb.append(" />");
 		}
-		if(check.isEnabled()){
-			//use the selection form dispatch id and not the one of the element!
-			sb.append(FormJSHelper.getRawJSFor(stF.getRootForm(), check.getSelectionElementFormDispatchId(), check.getAction()));
-		} else {
-			sb.append(" disabled='disabled' ");
-		}
-		sb.append(" />");
 		renderNodeIcon(sb, node);
 		if (StringHelper.containsNonWhitespace(iconLeftCSS) || StringHelper.containsNonWhitespace(cssClass)) {
 			sb.append(" <i class='").append(iconLeftCSS, iconLeftCSS != null)

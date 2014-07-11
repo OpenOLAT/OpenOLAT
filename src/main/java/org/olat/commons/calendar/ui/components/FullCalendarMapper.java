@@ -138,7 +138,6 @@ public class FullCalendarMapper implements Mapper {
 	private boolean isInRange(Date from, Date to, KalendarEvent event) {
 		Date end = event.getEnd();
 		Date begin = event.getBegin();
-		System.out.println(begin + " -> " + end);
 		if(begin != null && end != null) {
 			if(from.compareTo(begin) <= 0 && to.compareTo(end) >= 0) {
 				return true;

@@ -349,7 +349,6 @@ public class MetadataBulkChangeController extends FormBasicController {
 	private void doOpenSelection() {
 		selectPathCmp = new SelectionTree("taxPathSelection", getTranslator());
 		selectPathCmp.addListener(this);
-		selectPathCmp.setMultiselect(false);
 		selectPathCmp.setFormButtonKey("select");
 		selectPathCmp.setShowCancelButton(true);
 		TaxonomyTreeModel treeModel = new TaxonomyTreeModel("");

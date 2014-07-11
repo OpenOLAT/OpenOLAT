@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.gui.components.form.flexible.elements.MultiSelectionTree;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.util.tree.INodeFilter;
@@ -45,12 +46,12 @@ import org.olat.core.util.tree.TreeHelper;
  * 
  * @author patrickb
  */
-public class MultiSelectionTree extends MultipleSelectionElementImpl {
+public class MultiSelectionTreeImpl extends MultipleSelectionElementImpl implements MultiSelectionTree {
 	
 	private INodeFilter selectableFilter;
 	private TreeModel treemodel;
 	
-	public MultiSelectionTree(String name, TreeModel treemodel, INodeFilter selectableFilter) {
+	public MultiSelectionTreeImpl(String name, TreeModel treemodel, INodeFilter selectableFilter) {
 		super(name);
 		this.selectableFilter = selectableFilter;
 		this.treemodel = treemodel;
@@ -88,7 +89,7 @@ public class MultiSelectionTree extends MultipleSelectionElementImpl {
 				String cssClass = tn.getCssClass();
 				String checkName = getName() + "_" + keys[i];
 				CheckboxElement ssec = new CheckboxElement(checkName, this, i, null, cssClass);
-				ssec.setTextOnly(selectableFilter.isSelectable(tn));
+				ssec.setEnabled(selectableFilter.isSelectable(tn));
 				checkboxitems.put(keys[i], ssec);
 			}
 		}
@@ -104,7 +105,7 @@ public class MultiSelectionTree extends MultipleSelectionElementImpl {
 	@Override
 	public void reset() {
 		super.reset();
-		// set menu tree dirty to render new values
+		initSelectionElements();
 		component.setDirty(true);
 	}
 

@@ -73,7 +73,6 @@ public class CatalogEntryMoveController extends BasicController implements Catal
 		mainVC = createVelocityContainer("catMove");
 		selectionTree = new SelectionTree("catSelection", trans);
 		selectionTree.addListener(this);
-		selectionTree.setMultiselect(false);
 		selectionTree.setFormButtonKey("cat.move.submit");
 		selectionTree.setShowCancelButton(true);
 		selectionTree.setTreeModel(new CatalogTreeModel(catEntryList, moveMe, ownedEntries));

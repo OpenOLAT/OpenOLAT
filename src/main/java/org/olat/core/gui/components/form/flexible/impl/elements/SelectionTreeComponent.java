@@ -37,7 +37,7 @@ import org.olat.core.util.tree.INodeFilter;
  */
 class SelectionTreeComponent extends MultipleSelectionComponent {
 
-	private final MultiSelectionTree selectionElement;
+	private final MultiSelectionTreeImpl selectionElement;
 	private final TreeModel treeModel;
 	private final INodeFilter selectableFilter;
 	private Map<String, CheckboxElement> subComponents;
@@ -46,7 +46,7 @@ class SelectionTreeComponent extends MultipleSelectionComponent {
 	/**
 	 * @param name
 	 */
-	public SelectionTreeComponent(String name, MultiSelectionTree selectionElement,
+	public SelectionTreeComponent(String name, MultiSelectionTreeImpl selectionElement,
 			TreeModel treeModel, INodeFilter selectableFilter) {
 		super(name, selectionElement);
 		this.selectionElement = selectionElement;
@@ -62,7 +62,7 @@ class SelectionTreeComponent extends MultipleSelectionComponent {
 		return RENDERER;
 	}
 
-	MultiSelectionTree getSelectionElement() {
+	MultiSelectionTreeImpl getSelectionElement() {
 		return selectionElement;
 	}
 
