@@ -32,16 +32,12 @@ import org.olat.core.gui.render.StringOutput;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class BGUserStatusCellRenderer implements CustomCellRenderer {
-	
-	public BGUserStatusCellRenderer() {
-		//
-	}
 
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 		if(val instanceof BGUserManagementGroupTableDataModel.Status) {
 			BGUserManagementGroupTableDataModel.Status status = (BGUserManagementGroupTableDataModel.Status)val;
-			sb.append("<div class='b_status'><span>");
+			sb.append("<div class='o_status'><span>");
 			switch(status) {
 				case newOwner: {
 					sb.append("+O"); break;

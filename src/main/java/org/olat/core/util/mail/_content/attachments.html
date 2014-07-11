@@ -1,5 +1,5 @@
-<ul class="b_mail_attachments"">
+<p class="from-static-control"><ul class="list-unstyled"">
 	#foreach ($attachment in $attachments)
-		<li><a href="$mapperBaseURI/attachments/$attachment.key/$attachment.name" class="b_with_small_icon_left $attachment.cssClass" target="_blank"><span>$attachment.name</span></a></li>
+		<li><a href="$mapperBaseURI/attachments/$attachment.key/$attachment.name" target="_blank"><i class="o_icon o_icon-fw $attachment.cssClass"> </i> $attachment.name</a></li>
 	#end
-</ul>
+</ul></p>
