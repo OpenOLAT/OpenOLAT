@@ -32,7 +32,9 @@
 		<h1>$r.escapeHtml($map.title)</h1>
 	
 		#if(!$r.available("editor"))
+			#if($map.description)
 			<div class="o_eportfolio_mapdescr">$map.description</div>
+			#end
 			#if($r.available("ownerportrait"))
 				<div class="o_eportfolio_mapowner">$r.translate("map.owners","") $r.render("ownerportrait")</div>
 			#end

@@ -158,6 +158,7 @@ public class RepositoryEntryMyCourseQueries {
 		List<String> resourceTypes = params.getResourceTypes();
 
 		boolean count = Number.class.equals(type);
+		boolean oracle = "oracle".equals(dbInstance.getDbVendor());
 		StringBuilder sb = new StringBuilder();
 		
 		if(count) {
@@ -188,7 +189,7 @@ public class RepositoryEntryMyCourseQueries {
 			  .append(" ) as effKey");
 			appendOrderByInSelect(params, sb);
 			sb.append(" from repositoryentry as v, ").append(IdentityImpl.class.getName()).append(" as ident ")
-			  .append(" inner join fetch v.olatResource as res")
+			  .append(" inner join ").append(oracle ? "" : "fetch").append(" v.olatResource as res")
 			  .append(" inner join fetch v.statistics as stats")
 			  .append(" left join fetch v.lifecycle as lifecycle ");
 		}

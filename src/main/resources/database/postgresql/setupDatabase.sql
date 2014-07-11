@@ -1924,7 +1924,7 @@ create index idx_ref_target_idx on o_references (target_id);
 create index name_idx4 on o_olatresource (resname);
 create index id_idx on o_olatresource (resid);
 
--- repository 
+-- repository
 create index descritpion_idx on o_repositoryentry (description);
 create index access_idx on o_repositoryentry (accesscode);
 create index initialAuthor_idx on o_repositoryentry (initialauthor);
@@ -2085,6 +2085,9 @@ alter table o_ep_struct_artefact_link add constraint FKF26C8375236F25X foreign k
 create index idx_structart_to_art_idx on o_ep_struct_artefact_link (fk_artefact_id);
 alter table o_ep_struct_artefact_link add constraint FKF26C8375236F26Y foreign key (fk_auth_id) references o_bs_identity (id);
 create index idx_structart_to_auth_idx on o_ep_struct_artefact_link (fk_auth_id);
+
+alter table o_ep_struct_to_group add constraint struct_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
+alter table o_ep_struct_to_group add constraint struct_to_group_re_ctx foreign key (fk_struct_id) references o_ep_struct_el (structure_id);
 
 -- tag
 alter table o_tag add constraint FK6491FCA5A4FA5DC foreign key (fk_author_id) references o_bs_identity (id);

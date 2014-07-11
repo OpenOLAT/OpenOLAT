@@ -136,7 +136,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 		re.setCanReference(false);
 		re.setCanLaunch(true);
 		re.setDisplayname(displayname);
-		re.setResourcename(resourceName == null ? "" : resourceName);
+		re.setResourcename(StringHelper.containsNonWhitespace(resourceName) ? resourceName : "-");
 		re.setDescription(description == null ? "" : description);
 		if(resource == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", CodeHelper.getForeverUniqueID());
