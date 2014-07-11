@@ -113,8 +113,7 @@ public class UserCommentFormController extends FormBasicController {
 		formLayout.add(buttonContainer);
 
 		uifactory.addFormSubmitButton("submit", buttonContainer);
-		uifactory.addFormCancelButton("cancel", buttonContainer, ureq,
-				getWindowControl());
+		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 	}
 
 	@Override
@@ -140,13 +139,13 @@ public class UserCommentFormController extends FormBasicController {
 			if (toBeUpdatedComment == null) {
 				if (parentComment == null) {
 					// create new comment
-					this.toBeUpdatedComment = commentAndRatingService.createComment(getIdentity(), ores, resSubPath, commentText);					
+					toBeUpdatedComment = commentAndRatingService.createComment(getIdentity(), ores, resSubPath, commentText);					
 					// notify listeners that we finished.
 					fireEvent(ureq, Event.CHANGED_EVENT);			
 				} else {
 					// reply to parent comment
-					this.toBeUpdatedComment = commentAndRatingService.replyTo(parentComment, getIdentity(), commentText);
-					if (this.toBeUpdatedComment == null) {
+					toBeUpdatedComment = commentAndRatingService.replyTo(parentComment, getIdentity(), commentText);
+					if (toBeUpdatedComment == null) {
 						showError("comments.coment.reply.error");
 						fireEvent(ureq, Event.FAILED_EVENT);									
 					} else {
@@ -154,8 +153,8 @@ public class UserCommentFormController extends FormBasicController {
 					}
 				}
 			} else {
-				this.toBeUpdatedComment = commentAndRatingService.updateComment(toBeUpdatedComment, commentText);
-				if (this.toBeUpdatedComment == null) {
+				toBeUpdatedComment = commentAndRatingService.updateComment(toBeUpdatedComment, commentText);
+				if (toBeUpdatedComment == null) {
 					showError("comments.coment.update.error");					
 					fireEvent(ureq, Event.FAILED_EVENT);									
 				} else {

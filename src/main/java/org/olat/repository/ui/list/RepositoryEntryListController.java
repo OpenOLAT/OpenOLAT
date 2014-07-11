@@ -348,6 +348,11 @@ public class RepositoryEntryListController extends FormBasicController
 				row.getCommentsLink().getComponent().setDirty(true);
 			}
 			cleanUp();
+		} else if(commentsCtrl == source) {
+			if(event == Event.CANCELLED_EVENT) {
+				cmc.deactivate();
+				cleanUp();
+			}
 		} else if(searchCtrl == source) {
 			if(event instanceof SearchEvent) {
 				SearchEvent se = (SearchEvent)event;

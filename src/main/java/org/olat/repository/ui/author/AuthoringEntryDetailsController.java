@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -110,7 +109,6 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 	private CloseableModalController cmc;
 	private WizardCloseResourceController wc;
 	private OrdersAdminController ordersCtlr;
-	private UserCommentsController commentsCtrl;
 	private DialogBoxController deleteDialogCtrl;
 	private CatalogSettingsController catalogCtlr;
 	private CopyRepositoryEntryController copyCtrl;
@@ -448,9 +446,7 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(commentsCtrl == source) {
-			
-		} else if(cmc == source) {
+		if(cmc == source) {
 			cleanUp();
 		} else if (source == wc) {
 			if (event == Event.CANCELLED_EVENT) {
@@ -518,14 +514,12 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 	private void cleanUp() {
 		removeAsListenerAndDispose(membersEditController);
 		removeAsListenerAndDispose(deleteDialogCtrl);
-		removeAsListenerAndDispose(commentsCtrl);
 		removeAsListenerAndDispose(catalogCtlr);
 		removeAsListenerAndDispose(ordersCtlr);
 		removeAsListenerAndDispose(editCtrl);
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(wc);
 		deleteDialogCtrl = null;
-		commentsCtrl = null;
 		catalogCtlr = null;
 		ordersCtlr = null;
 		editCtrl = null;

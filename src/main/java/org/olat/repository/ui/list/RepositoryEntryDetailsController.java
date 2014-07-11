@@ -431,7 +431,10 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(commentsCtrl == source) {
-			
+			if(event == Event.CANCELLED_EVENT) {
+				cmc.deactivate();
+				cleanUp();
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		}

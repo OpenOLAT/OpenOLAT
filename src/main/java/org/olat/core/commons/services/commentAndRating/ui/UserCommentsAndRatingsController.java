@@ -267,12 +267,13 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == commentsCtr) {
 			if (event == UserCommentDisplayController.COMMENT_COUNT_CHANGED) {
 				updateCommentCountView();
 				// notify other user who also have this component
-				UserCommentsCountChangedEvent changedEvent = new UserCommentsCountChangedEvent(this, this.oresSubPath);
+				UserCommentsCountChangedEvent changedEvent = new UserCommentsCountChangedEvent(this, oresSubPath);
 				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(changedEvent, USER_COMMENTS_AND_RATING_CHANNEL);
 			}
 		}
@@ -293,7 +294,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	 * @return
 	 */
 	public Object getUserObject() {
-		return this.userObject;
+		return userObject;
 	}
 
 	@Override
