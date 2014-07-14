@@ -177,6 +177,19 @@
 		<property name="group" value="account" />
 		<property name="deletable" value="true" />
 	</bean>
+	
+	<bean id="userPropertyTypeOfUser" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="typeOfUser" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	<bean id="userPropertySocialSecurityNumber" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="socialSecurityNumber" />
+		<property name="group" value="institute" />
+		<property name="deletable" value="true" />
+	</bean>
+	
 
 	<!--
 		define the properties for matching IdentityEnvironment user attributes to LoggingObject.setUserPropertiesXX. Those can be used for the usertracking context.
