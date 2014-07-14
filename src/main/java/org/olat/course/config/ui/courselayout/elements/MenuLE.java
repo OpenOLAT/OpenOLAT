@@ -54,7 +54,7 @@ public class MenuLE extends AbstractLayoutElement {
 		setIframeRelativeChildren(iFrameRelativeChildren);
 		
 		HashMap<String, Integer> mainRelativeChildren = new HashMap<String, Integer>();
-		mainRelativeChildren.put("#o_main .b_tree a", 0);
+		mainRelativeChildren.put("#o_main .o_tree a", 0);
 		setMainRelativeChildren(mainRelativeChildren);
 		
 		ArrayList<AbstractLayoutAttribute> avAttribs = new ArrayList<AbstractLayoutAttribute>();

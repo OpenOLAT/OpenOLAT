@@ -132,18 +132,11 @@ public class LanguageChooserController extends FormBasicController {
 		String[] langKeys = StringHelper.getMapKeysAsStringArray(languages);
 		String[] langValues = StringHelper.getMapValuesAsStringArray(languages);
 		ArrayHelper.sort(langKeys, langValues, false, true, false);
-		// Build css classes for reference languages
-		String[] langCssClasses = I18nManager.getInstance().createLanguageFlagsCssClasses(langKeys, "b_with_small_icon_left");
-		
-		final FormLayoutContainer langLayout = FormLayoutContainer.createCustomFormLayout("langLayout", getTranslator(), velocity_root + "/langchooser.html");
-		formLayout.add(langLayout);
-		langs = uifactory.addDropdownSingleselect("select.language", langLayout, langKeys, langValues, langCssClasses); 
+
+		langs = uifactory.addDropdownSingleselect("select.language", formLayout, langKeys, langValues, null); 
 		langs.addActionListener(FormEvent.ONCHANGE);
 		langs.select(curlang, true);
-		Locale loc = I18nManager.getInstance().getLocaleOrDefault(curlang);
-		langLayout.contextPut("languageCode", loc.toString());
-		langLayout.contextPut("selectLanguage", translate("select.language"));
-		
+
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		formLayout.add(buttonLayout);
 		nextButton = uifactory.addFormSubmitButton("submit.weiter", buttonLayout);

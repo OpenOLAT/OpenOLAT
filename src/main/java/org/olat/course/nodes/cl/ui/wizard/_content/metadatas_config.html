@@ -1,4 +1,4 @@
-<div class="b_form clearfix">
+<div class="o_form clearfix">
 	<fieldset><legend>$r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover")
 	$off_title</legend>
 	<div class="o_desc">$off_desc</div>
@@ -11,7 +11,7 @@
 	<tbody>
 	#foreach($duedate in $duedates)
 		<tr><td>$r.render($duedate.titleName)</td>
-			<td><div class="b_form_element">
+			<td><div class="form-inline">
 			$r.render($duedate.dueDateName)</div></td></tr>
 	#end
 	</tbody>

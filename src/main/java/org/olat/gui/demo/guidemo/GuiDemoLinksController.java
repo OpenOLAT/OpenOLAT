@@ -84,9 +84,9 @@ public class GuiDemoLinksController extends BasicController {
 		buttonSmall = LinkFactory.createButtonSmall("button.small", mainVC, this);
 		button = LinkFactory.createButton("button", mainVC, this);
 		buttonDirty = LinkFactory.createButton("button.dirty", mainVC, this);
-		buttonDirty.setCustomEnabledLinkCSS("b_button o_button_dirty");
+		buttonDirty.setCustomEnabledLinkCSS("btn btn-default o_button_dirty");
 		buttonPreferred = LinkFactory.createButton("button.preferred", mainVC, this);
-		buttonPreferred.setCustomEnabledLinkCSS("b_button b_button_preferred");
+		buttonPreferred.setCustomEnabledLinkCSS("btn btn-primary");
 
 		Link buttonDisabled = LinkFactory.createCustomLink("button.disabled", "button.disabled", "button.disabled", Link.BUTTON, mainVC, this);
 		buttonDisabled.setEnabled(false);
@@ -104,7 +104,7 @@ public class GuiDemoLinksController extends BasicController {
 		linkExtern = LinkFactory.createCustomLink("link.ext", "link.ext", "link.ext", Link.LINK, mainVC, this);	
 		linkExtern.setIconLeftCSS("o_icon o_icon_link_extern");
 		linkMail = LinkFactory.createCustomLink("link.mail", "link.mail", "link.mail", Link.LINK, mainVC, this);	
-		linkMail.setCustomEnabledLinkCSS("b_link_mailto");
+		linkMail.setIconLeftCSS("o_icon o_icon_mail");
 		
 		linkPos = LinkFactory.createCustomLink("link.pos", "link.pos", "link.pos", Link.LINK, mainVC, this);
 		linkPos.registerForMousePositionEvent(true);
@@ -117,9 +117,9 @@ public class GuiDemoLinksController extends BasicController {
 		TextFactory.createTextComponentFromI18nKey("text.translated", "text.translated", getTranslator(), null, true, mainVC);
 		counterText = TextFactory.createTextComponentFromString("text.simple.counter", "I'm counting events fron this controller: 0", null, true, mainVC);
 		TextFactory.createTextComponentFromString("text.span", "I'm a text in a SPAN", null, true, mainVC);
-		TextFactory.createTextComponentFromString("text.div", "I'm a text in a DIV (with optional CSS class <b>o_warning b_border_box</b>)", "o_warning b_border_box", false, mainVC);
-		TextFactory.createTextComponentFromString("text.div.note", "I'm a text in a DIV (with optional CSS class <b>o_note </b>)", "o_note", false, mainVC);
-		TextFactory.createTextComponentFromString("text.div.dimmed", "I'm a text in a DIV (with optional CSS class <b>b_dimmed b_border_box</b>)", "b_dimmed b_border_box", false, mainVC);
+		TextFactory.createTextComponentFromString("text.div", "I'm a text in a DIV (with optional CSS class <b>o_warning</b>)", "o_warning", false, mainVC);
+		TextFactory.createTextComponentFromString("text.div.note", "I'm a text in a DIV (with optional CSS class <b>o_note</b>)", "o_note", false, mainVC);
+		TextFactory.createTextComponentFromString("text.div.dimmed", "I'm a text in a DIV (with optional CSS class <b>o_info</b>)", "o_info", false, mainVC);
 		
 		//add sourceview control
 		Controller sourceView = new SourceViewController(ureq, wControl, this.getClass(), mainVC);
@@ -192,13 +192,12 @@ public class GuiDemoLinksController extends BasicController {
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			uifactory.addToggleButton("toggle1", "Toggle 1", formLayout, null, null);			
-			FormToggle fi1 =	uifactory.addToggleButton("toggle_slide1", "&nbsp;", formLayout, "b_toggle_slide b_small b_on", "b_toggle_slide b_small");
-			FormToggle fi2 = uifactory.addToggleButton("toggle_slide2", "&nbsp;", formLayout, "b_toggle_slide b_on", "b_toggle_slide");
+			FormToggle fi1 = uifactory.addToggleButton("toggle_slide1", "&nbsp;", formLayout, null, null);
+			FormToggle fi2 = uifactory.addToggleButton("toggle_slide2", "&nbsp;", formLayout, null, null);
 			fi1.setEnabled(true);
 			fi2.setEnabled(true);
 			fi1.toggleOff();
 			fi2.toggleOff();
-		
 		}
 
 		@Override
@@ -210,7 +209,5 @@ public class GuiDemoLinksController extends BasicController {
 		protected void doDispose() {
 			// do nothing
 		}
-		
 	}
-
 }

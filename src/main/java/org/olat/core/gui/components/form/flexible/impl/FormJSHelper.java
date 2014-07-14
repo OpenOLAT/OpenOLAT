@@ -42,13 +42,8 @@ import org.olat.core.logging.OLATRuntimeException;
  * @author patrickb
  */
 public class FormJSHelper {
-	private static final String READONLYA = "<div class=\"b_form_disabled\">";
 
-	private static final String READONLYB = "</div>";
-
-	// EXTJS DEP
-	private static final String[] EXTJSACTIONS = { "dblclick", "click",
-			"change" };
+	private static final String[] EXTJSACTIONS = { "dblclick", "click", "change" };
 
 	/**
 	 * create for example an
@@ -117,12 +112,6 @@ public class FormJSHelper {
 		  .append("var eventIdField = '").append(form.getEventFieldId()).append("';\n")
 		  .append("var eventInt = ").append(FormEvent.ON_DOTDOTDOT[actionIndex]).append(";\n");
 		return sb.toString();
-	}
-
-	public static void appendReadOnly(String text, StringOutput sb) {
-		sb.append(READONLYA);
-		sb.append(text);
-		sb.append(READONLYB);
 	}
 
 	/**

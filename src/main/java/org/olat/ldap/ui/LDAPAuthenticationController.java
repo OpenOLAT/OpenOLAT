@@ -111,7 +111,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 			openChangePassword(ureq, null);	//fxdiff FXOLAT-113: business path in DMZ
 		} 
 	}
-	//fxdiff FXOLAT-113: business path in DMZ
+	
 	protected void openChangePassword(UserRequest ureq, String initialEmail) {
 		// double-check if allowed first
 		if (!UserModule.isPwdchangeallowed(ureq.getIdentity()) || !LDAPLoginModule.isPropagatePasswordChangedOnLdapServer())
@@ -119,7 +119,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 
 		
 		removeAsListenerAndDispose(subController);
-		subController = new PwChangeController(ureq, getWindowControl(), initialEmail);
+		subController = new PwChangeController(ureq, getWindowControl(), initialEmail, true);
 		listenTo(subController);
 		
 		removeAsListenerAndDispose(cmc);

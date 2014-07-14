@@ -51,6 +51,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_certificate:before { content: $fa-var-certificate;}
 .o_icon_chat:before { content: $fa-var-comment-o; }
 .o_icon_check:before { content: $fa-var-check; }
+.o_icon_check_off:before { content: $fa-var-square-o; }
+.o_icon_check_on:before { content: $fa-var-check-square-o; }
 .o_icon_checkbox:before { content: $fa-var-square-o; }
 .o_icon_checkbox_checked:before { content: $fa-var-check-square;  }
 .o_icon_cleanup:before { content: $fa-var-ambulance;}
@@ -148,6 +150,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_provider_shibboleth:before { content: $fa-var-university;}
 .o_icon_publish:before { content: $fa-var-share;}
 .o_icon_qrcode:before { content: $fa-var-qrcode;}
+.o_icon_radio_off:before { content: $fa-var-circle-o;}
+.o_icon_radio_on:before { content: $fa-var-check-circle-o;}
 .o_icon_rating_on:before { content: $fa-var-star;}
 .o_icon_rating_off:before { content: $fa-var-star-o;}
 .o_icon_read:before { content: $fa-var-circle-o; }
@@ -180,6 +184,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_statistics_tool:before { content: $fa-var-bar-chart-o;}
 .o_icon_table:before { content: $fa-var-table; }
 .o_icon_table_large:before { content: $fa-var-th-large; }
+.o_icon_tags:before { content: $fa-var-tags; }
 .o_icon_timelimit:before { content: $fa-var-bomb; }
 .o_icon_toggle:before { content: $fa-var-circle; }
 .o_icon_to_read:before { content: $fa-var-circle; }

@@ -197,14 +197,14 @@ border-collapse: collapse;
 		<xsl:param name="id"><xsl:value-of select="@ident"/></xsl:param>
 		<xsl:param name="score"><xsl:value-of select="//item_result[@ident_ref=$id]/outcomes/score/score_value"/></xsl:param>
 		<h4>
-    		<img align="middle"  border="0">
+    		<i>
 			<xsl:if test="$score &gt; 0">
-    			<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/correct.png</xsl:attribute>
+    			<xsl:attribute name="class">o_icon o_passed o_icon_passed</xsl:attribute>
 			</xsl:if>
 			<xsl:if test="$score &lt;= 0">
-    			<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/wrong.png</xsl:attribute>
+    			<xsl:attribute name="class">o_icon o_failed o_icon_failed</xsl:attribute>
 			</xsl:if>
-    		</img>
+    		</i>
 			&nbsp;<xsl:value-of select="@title"/>
 		</h4>
 		<xsl:apply-templates select="presentation"/>
@@ -270,29 +270,17 @@ border-collapse: collapse;
 					<xsl:when test="ancestor::item[starts-with(@ident, 'QTIEDIT:KPRIM:')]">
 						<xsl:choose>
 							<xsl:when test="$response/response_value = concat(@ident, ':correct')">
-								<img align="middle" border="0">
-    								<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_on.png</xsl:attribute>
-								</img>
-								<img align="middle" border="0">
-    								<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_off.png</xsl:attribute>
-								</img>
+								<i class="o_icon o_icon_radio_on"> </i>
+								<i class="o_icon o_icon_radio_off"> </i>
 							</xsl:when>
 							<xsl:when test="$response/response_value = concat(@ident, ':wrong')">
-								<img align="middle" border="0">
-    								<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_off.png</xsl:attribute>
-								</img>
-								<img align="middle" border="0">
-    								<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_on.png</xsl:attribute>
-								</img>
+								<i class="o_icon o_icon_radio_off"> </i>
+								<i class="o_icon o_icon_radio_on"> </i>
 							</xsl:when>
 							<!-- no answer -->
 							<xsl:otherwise>
-								<img align="middle" border="0">
-    								<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_off.png</xsl:attribute>
-								</img>
-								<img align="middle" border="0">
-    								<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_off.png</xsl:attribute>
-								</img>
+								<i class="o_icon o_icon_radio_off"> </i>
+								<i class="o_icon o_icon_radio_off"> </i>
 							</xsl:otherwise>
 						</xsl:choose>
 					</xsl:when>
@@ -302,14 +290,10 @@ border-collapse: collapse;
 							<xsl:when test="ancestor::response_lid/@rcardinality = 'Multiple'">
 								<xsl:choose>
 									<xsl:when test="$response/response_value = @ident">
-										<img align="middle" border="0">
-    										<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/check_on.png</xsl:attribute>
-										</img>
+										<i class="o_icon o_icon_check_on"> </i>
 									</xsl:when>
 									<xsl:otherwise>
-										<img align="middle" border="0">
-    										<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/check_off.png</xsl:attribute>
-										</img>
+										<i class="o_icon o_icon_check_off"> </i>
 									</xsl:otherwise>
 								</xsl:choose>
 							</xsl:when>
@@ -317,14 +301,10 @@ border-collapse: collapse;
 							<!-- Case Single Choice -->
 								<xsl:choose>
 									<xsl:when test="$response/response_value = @ident">
-										<img align="middle" border="0">
-    										<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_on.png</xsl:attribute>
-										</img>
+										<i class="o_icon o_icon_radio_on"> </i>
 									</xsl:when>
 									<xsl:otherwise>
-										<img align="middle" border="0">
-    										<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_off.png</xsl:attribute>
-										</img>
+										<i class="o_icon o_icon_radio_off"> </i>
 									</xsl:otherwise>
 								</xsl:choose>
 							</xsl:otherwise>
@@ -352,20 +332,12 @@ border-collapse: collapse;
 			<xsl:when test="ancestor::item[starts-with(@ident, 'QTIEDIT:KPRIM:')]">
 				<xsl:choose>
 					<xsl:when test="$response/response_form/correct_response = concat(@ident, ':correct')">
-						<img align="middle" border="0">
-    						<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_on.png</xsl:attribute>
-						</img>
-						<img align="middle" border="0">
-    						<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_off.png</xsl:attribute>
-						</img>
+						<i class="o_icon o_icon_radio_on"> </i>
+						<i class="o_icon o_icon_radio_off"> </i>
 					</xsl:when>
 					<xsl:otherwise>
-						<img align="middle" border="0">
-    						<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_off.png</xsl:attribute>
-						</img>
-						<img align="middle" border="0">
-    						<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_on.png</xsl:attribute>
-						</img>
+						<i class="o_icon o_icon_radio_off"> </i>
+						<i class="o_icon o_icon_radio_on"> </i>
 					</xsl:otherwise>
 				</xsl:choose>
 			</xsl:when>
@@ -376,15 +348,11 @@ border-collapse: collapse;
 						<xsl:choose>
 							<xsl:when test="$response/response_form/correct_response = @ident"> 
 								<!-- case correct MC answer -->
-								<img align="middle" border="0">
-    								<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/check_on.png</xsl:attribute>
-								</img>
+								<i class="o_icon o_icon_check_on"> </i>
 							</xsl:when>
 							<xsl:otherwise>
 								<!-- case incorrect MC answer -->
-								<img align="middle" border="0">
-    								<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/check_off.png</xsl:attribute>
-								</img>
+								<i class="o_icon o_icon_check_off"> </i>
 							</xsl:otherwise>
 						</xsl:choose>
 					</xsl:when>
@@ -393,15 +361,11 @@ border-collapse: collapse;
 						<xsl:choose>
 							<xsl:when test="$response/response_form/correct_response = @ident">
 								<!-- case correct SC answer -->
-								<img align="middle" border="0">
-    								<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_on.png</xsl:attribute>
-								</img>
+								<i class="o_icon o_icon_radio_on"> </i>
 							</xsl:when>
 							<xsl:otherwise>
-						<!-- case incorrect SC answer -->
-								<img align="middle" border="0">
-    								<xsl:attribute name="src">${staticPath}themes/openolat/images/qti/radio_off.png</xsl:attribute>
-								</img>
+								<!-- case incorrect SC answer -->
+								<i class="o_icon o_icon_radio_off"> </i>
 							</xsl:otherwise>
 						</xsl:choose>
 					</xsl:when>

@@ -140,7 +140,7 @@ public class MediaLinksController extends FormBasicController {
 		
 		// custom media action button
 		FormLink mediaButton = uifactory.addFormLink("media_" + id, " ", " ", layoutContainer, Link.NONTRANSLATED);
-		mediaButton.setCustomEnabledLinkCSS("b_small o_ll_browse");
+		mediaButton.setIconLeftCSS("o_icon o_icon_browse");
 		mediaButton.setUserObject(link);
 		link.setMediaButton(mediaButton);
 		

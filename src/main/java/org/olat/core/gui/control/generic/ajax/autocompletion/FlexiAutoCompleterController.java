@@ -64,7 +64,7 @@ import org.olat.core.gui.control.winmgr.JSCommand;
 public class FlexiAutoCompleterController extends FormBasicController {
 
 	protected static final String COMMAND_SELECT = "select";
-	protected static final String JSNAME_INPUTFIELD = "b_autocomplete_input";
+	protected static final String JSNAME_INPUTFIELD = "o_autocomplete_input";
 	protected static final String JSNAME_DATASTORE = "autocompleterDatastore";
 	protected static final String JSNAME_COMBOBOX = "autocompleterCombobox";
 	protected static final String AUTOCOMPLETER_NO_RESULT = "AUTOCOMPLETER_NO_RESULT";

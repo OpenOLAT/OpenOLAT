@@ -4,13 +4,13 @@
   	  <a href="$iurl" target="_blank"><img src='$r.staticLink("images/institution/$ilogo")' alt="$iname" /></a>
 	  <p>$iname</p>
 	</h4>
-	<div class="b_toolbox"><ul>
+	<ul>
 	#if($hasPolymorphLink)
 	   #foreach($polyLink in $polyLinks)
 	       <li>$r.render("$polyLink")</li>
        #end
 	#end
-	</ul></div>
+	</ul>
 	<p class="clearfix">$r.translate("stextintro")<br />$sperson</p>
 	#if($showphone)
 		<p>$r.translate("phone"): $sphone</p>

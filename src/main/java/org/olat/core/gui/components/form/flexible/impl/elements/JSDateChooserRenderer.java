@@ -181,7 +181,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 				shorter += "&nbsp;";
 			}
 		}				
-		sb.append("<input disabled=\"disabled\" class=\"b_form_element_disabled\" size=\"")
+		sb.append("<input disabled=\"disabled\" class=\"o_form_element_disabled\" size=\"")
 		  .append(te.displaySize)
 		  .append("\" value=\"").append(shorter).append("\" /></span>");
 	}

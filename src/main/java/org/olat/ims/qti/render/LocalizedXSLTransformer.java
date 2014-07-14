@@ -228,20 +228,18 @@ public class LocalizedXSLTransformer {
 		return evaluatedValue.toString();
 	}
 	
-	
 	/**
 	 * convert xsl InputStream to String
 	 * @param in
 	 * @return xsl as String
 	 * @throws IOException
 	 */
-	private static String slurp (InputStream in) throws IOException {
+	private static String slurp(InputStream in) throws IOException {
 	   StringBuffer out = new StringBuffer();
 	   byte[] b = new byte[4096];
 	   for (int n; (n = in.read(b)) != -1;) {
 	       out.append(new String(b, 0, n));
 	   }
 	   return out.toString();
-  }
-	
+	}
 }

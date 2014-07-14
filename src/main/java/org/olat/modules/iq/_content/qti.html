@@ -135,7 +135,7 @@ function confirmSuspend() {
 				
 				#if ($qtistatus.hasItemTimeLimit() && $qtistatus.hasItemAttemptsLimit())
 						#if($qtistatus.hasAttemptsExeeded())
-							<div class="o_warning"><i class="o_icon_ o_icon_attempt_limit"> </i>
+							<div class="o_warning"><i class="o_icon o_icon_attempt_limit"> </i>
 								$qtistatus.getItemAttemptsLeft()
 							</div>
 						#else

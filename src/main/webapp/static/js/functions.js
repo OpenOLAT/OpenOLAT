@@ -1318,13 +1318,13 @@ function treeNode_portfolioType(el) {
 function treeNode_portfolioTypes(nodeEl) {
 	if(nodeEl.find === undefined) {
 		return null;
-	} else if(nodeEl.find(".b_ep_struct_icon").length > 0 || nodeEl.hasClass('b_ep_struct_icon')) {
+	} else if(nodeEl.find(".o_ep_icon_struct").length > 0 || nodeEl.hasClass('o_ep_icon_struct')) {
 		return "struct";
-	} else if(nodeEl.find(".b_ep_page_icon").length > 0 || nodeEl.hasClass('b_ep_page_icon')) {
+	} else if(nodeEl.find(".o_ep_icon_page").length > 0 || nodeEl.hasClass('o_ep_icon_page')) {
 		return "page";
-	} else if(nodeEl.find(".b_ep_map_icon").length > 0 || nodeEl.hasClass('b_ep_map_icon')) {
+	} else if(nodeEl.find(".o_ep_icon_map").length > 0 || nodeEl.hasClass('o_ep_icon_map')) {
 		return "map";
-	} else if(nodeEl.find(".b_ep_artefact").length > 0 || nodeEl.hasClass('b_ep_artefact')) {
+	} else if(nodeEl.find(".o_ep_artefact").length > 0 || nodeEl.hasClass('o_ep_artefact')) {
 		return "artefact";
 	}
 	return null;

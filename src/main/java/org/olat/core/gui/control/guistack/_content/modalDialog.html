@@ -4,8 +4,6 @@
 ## 2) the modal area: this is the place where the modal content will be. Note that this are
 ##    has no visual effects like a border. It is just a container where the various modal elements
 ##    are placed.
-## 3) the overlay: a transparent element that covers the background. links in the background
-##    are not clickable anymore (see blow)
 
 ## First tell Ext on which z-index the next Ext-window can be opened so that is is on top of 
 ## this modal dialog
@@ -22,17 +20,8 @@
 ## that looses the curser in form fields if this iframe is present.
 ## See http://www.activewidgets.com/javascript.forum.8495.4/blinking-cursor-lost-in-text.html
 <!--[if IE]>
-	<iframe class="b_modal_iebug" src="$r.staticLink("empty.html")" style="position:absolute; left:0; top:0; width:100%; height:100%; border:none; z-index: $zindexshim; opacity:0; filter: alpha(opacity:0);" ></iframe>
+	<iframe class="o_modal_iebug" src="$r.staticLink("empty.html")" style="position:absolute; left:0; top:0; width:100%; height:100%; border:none; z-index: $zindexshim; opacity:0; filter: alpha(opacity:0);" ></iframe>
 <![endif]-->
-
 ## 2)
-## <div class="b_modal_area clearfix" style="z-index: $zindexarea">
-##	<div class="o_scrollblock"> 
-	##	<a name="b_modal"></a>
-		$r.render("guimsgplace")
-		$r.render("cont")
-##	</div>
-## </div>
-
-## 3)
-## <div class="b_modal_overlay" style="z-index: $zindexoverlay" id="b_modal_overlay_$r.getCId()"></div>
+$r.render("guimsgplace")
+$r.render("cont")

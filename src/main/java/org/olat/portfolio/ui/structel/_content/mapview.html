@@ -42,14 +42,14 @@
 			## show av. artefacts here...
 			#if ($r.available("artefactTable")) $r.render("artefactTable") #end
 		
-		</div> ## end b_map_header
+		</div> ## end o_map_header
 		
 			## multiple page(s) contains instances of page-ctrl
 			#if ($r.available("pagesCtrl")) $r.render("pagesCtrl") #end	
 			
 			
 		#else
-		</div> ## end b_map_header
+		</div> ## end o_map_header
 			$r.render("editor")
 		#end
 	</div>

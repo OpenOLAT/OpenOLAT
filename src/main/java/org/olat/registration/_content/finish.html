@@ -1,27 +1,30 @@
-
-
 #*
  velocity template for the last step (5) in the registration process
  it displays all entered values (except pw and language) in a table and
  provides a button that links to the login-screen of OpenOLAT
 *#
- 
-$r.translate("step5.reg.yourdata")
-<div class="b_border_box" style="width:20%;">
-	<table>
-		<tr>
-			<td><label>$r.translate("user.login"):</label></td>
-			<td>$username</td>
-		</tr>
-		#foreach( $propertyHandler in $userPropertyHandlers )
-		<tr>
-			<td><label>$r.translate($propertyHandler.i18nFormElementLabelKey()):</label></td>
-			<td>$!propertyHandler.getUserPropertyAsHTML($user, $locale)</td>
-		</tr>
-		#end
-	</table>
+<div class="panel-group" id="o_preview_details">
+	<div class="panel panel-default">
+    	<div class="panel-heading">
+      		<h4 class="panel-title">$r.translate("step5.reg.yourdata")</h4>
+      	</div>
+      	<div class="panel-body">
+      		<p>$text</p>
+      	</div>
+		<table class="table table-bordered">
+			<tr>
+				<th>$r.translate("user.login")</th>
+				<td>$username</td>
+			</tr>
+			#foreach( $propertyHandler in $userPropertyHandlers )
+			<tr>
+				<th>$r.translate($propertyHandler.i18nFormElementLabelKey())</th>
+				<td>$!propertyHandler.getUserPropertyAsHTML($user, $locale)</td>
+			</tr>
+			#end
+		</table>
+	</div>
 </div>
-<p style="margin-top:12px;">
-$text<br />
-<div style="margin-top:8px"><a href="$loginhref" class="b_button b_button_preferred"><span>Login</span></a> </div>
-</p>
+<div class="o_button_group o_button_group_left">
+	<a href="$loginhref" class="btn btn-primary">Login</a>
+</div>

@@ -1,5 +1,5 @@
-<div id="b_logviewer">
-	<div class="b_float_right">
+<div id="o_logviewer">
+	<div class="o_button_group o_button_group_right">
 	#if ($r.available("logviewer.link.update"))		
 		$r.render("logviewer.link.update")
 	#end
@@ -10,11 +10,9 @@
 		$r.render("logviewer.link.stop")
 	#end
 	</div>
-	<div style="font-weight: bold" class="b_logviewer_package">
-		$loggingPackage
-	</div>
-	<div id="b_logviewer_log" class="b_overflowscrollbox b_border_box">
-		<div class="b_xsmall">
+	<h4 class="o_logviewer_package">$loggingPackage</h4>
+	<div id="o_logviewer_log" class="o_scrollbox">
+		<div class="xsmall">
 		#if ($r.available("logviewer.link.update"))		
 			$log
 		#end
@@ -23,7 +21,7 @@
 	<script type="text/javascript">
 	/* <![CDATA[ */
 		jQuery(function(){
-			var logger = jQuery('#b_logviewer_log');
+			var logger = jQuery('#o_logviewer_log');
 			logger.scrollTop=logger.scrollHeight;
 		});
 	/* ]]> */ 

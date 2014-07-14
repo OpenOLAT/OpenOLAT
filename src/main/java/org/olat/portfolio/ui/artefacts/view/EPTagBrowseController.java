@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -37,6 +36,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.portfolio.manager.EPArtefactTagCloud;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -50,19 +50,18 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
  */
 public class EPTagBrowseController extends BasicController {
 	
-	private String activeCSS = "tag label label-info b_on";
+	private String activeCSS = "tag label label-info on";
 	private String inactiveCSS = "tag label label-info";
 	private String disabledCSS = "tag label label-info";
 
-	private final VelocityContainer mainVc;
-	private final EPFrontendManager ePFMgr;
+	@Autowired
+	private EPFrontendManager ePFMgr;
 	private final List<Link> tagLinks = new ArrayList<Link>();
 	private List<AbstractArtefact> allUsersArtefacts;
 
 	public EPTagBrowseController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		mainVc = createVelocityContainer("tagbrowser");
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+		VelocityContainer mainVc = createVelocityContainer("tagbrowser");
 		
 		List<String> tagList = ePFMgr.getUsersTagsOfArtefactType(getIdentity());
 		int count = 0;

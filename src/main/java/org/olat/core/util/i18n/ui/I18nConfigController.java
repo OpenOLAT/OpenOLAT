@@ -121,9 +121,9 @@ class I18nConfigController extends FormBasicController {
 			// count translation status
 			int keyCount = i18nMgr.countI18nItems(i18nMgr.getLocaleOrNull(key), null, true);
 			if(keyCount > 0) {
-				all += "   <span class='b_translation_status'>" + (keyCount * 100 / referenceKeyCount) + "%</span>";
+				all += "   <span class='o_translation_status'>" + (keyCount * 100 / referenceKeyCount) + "%</span>";
 			} else {
-				all += "   <span class='b_translation_status'>0%</span>";
+				all += "   <span class='o_translation_status'>0%</span>";
 			}
 			availableValues[i] = all;
 		}

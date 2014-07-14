@@ -30,13 +30,10 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.Reset;
-import org.olat.core.gui.components.form.flexible.elements.Submit;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormReset;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -59,7 +56,7 @@ import org.olat.repository.RepositoryManager;
 public class GroupSelectionController extends FormBasicController {
 
 	private MultipleSelectionElement entrySelector;
-	private FormLinkImpl createNew;
+	private FormLink createNew;
 	private CourseGroupManager courseGrpMngr;
 	private NewBGController groupCreateCntrllr;
 	private CloseableModalController cmc;
@@ -143,20 +140,12 @@ public class GroupSelectionController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(createEnable) {
 			// easy creation only possible if a default group context available
-			createNew = new FormLinkImpl("create");
-			//is a button
-			createNew.setCustomEnabledLinkCSS("b_button");
-			createNew.setCustomDisabledLinkCSS("b_button o_disabled");
-			// create new group/area on the right side
-			formLayout.add(createNew);
+			createNew = uifactory.addFormLink("create", formLayout, Link.BUTTON);
 		}
 
 		entrySelector = uifactory.addCheckboxesVertical("entries",  null, formLayout, groupKeys, groupNames, 1);
-		// submitCancel after checkboxes
-		Submit subm = new FormSubmit("subm", "apply");
-		Reset reset = new FormReset("reset", "cancel");
-		formLayout.add(subm);
-		formLayout.add(reset);
+		uifactory.addFormSubmitButton("subm", "apply", formLayout);
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 
 	@Override

@@ -318,7 +318,7 @@ public class InlineTranslationInterceptHandlerController extends BasicController
 					foundPos = false;
 				} else {
 					// check if link is visible, skip other links
-					int skipPos = stringWithMarkup.indexOf("b_skip", wrapperOpen);
+					int skipPos = stringWithMarkup.indexOf("o_skip", wrapperOpen);
 					if (skipPos > -1 && skipPos < wrapperClose) {
 						stringWithMarkup = replaceItemWithoutHTMLMarkup(stringWithMarkup, startSPos, startEPos, endSPos, endEPos);
 						continue;

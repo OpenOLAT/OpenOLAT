@@ -5,7 +5,7 @@ $r.render("artefact.tags")
 	<div class="b_tags">
 		<p><i>$r.translate("tagging.intro.existing")</i></p>
 		<p>$r.translate("users.tags")<p> 
-		<div class="b_with_small_icon_left b_tag_icon">
+		<div><i class="o_icon o_icon_tag"> </i>
 		#foreach($tagLink in $userTagLinks)
 			<span class="b_tag">$r.render($tagLink.getName())</span>
 		#end

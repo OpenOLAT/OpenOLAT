@@ -1,25 +1,19 @@
-<h4>$r.translate("userlist.title")</h4>
+<h2><i class="o_icon o_icon_group"> </i> $r.translate("userlist.title")</h2>
 #if($r.available("owners"))
-	<h5>$r.translate("userlist.owners.title")</h5>
+	<h3>$r.translate("userlist.owners.title")</h3>
 	<div class="o_sel_group_coaches">
 		$r.render("owners")
 	</div>
-#else
-    <div class="o_sel_group_coaches_not_visible" style="display:none;"></div>
 #end
 #if($r.available("participants"))
-	<h5>$r.translate("userlist.participants.title")</h5>
+	<h3>$r.translate("userlist.participants.title")</h3>
 	<div class="o_sel_group_participants">
 		$r.render("participants")
 	</div>
-#else
-    <div class="o_sel_group_participants_not_visible" style="display:none;"></div>
 #end
 #if($r.available("waitingList"))
-	<h5>$r.translate("userlist.waitingList.title")</h5>
+	<h3>$r.translate("userlist.waitingList.title")</h3>
    	<div class="o_sel_group_waiting_list">
 		$r.render("waitingList")
 	</div>
-#else
-	<div class="o_sel_group_waiting_list_not_visible" style="display:none;"></div>
 #end

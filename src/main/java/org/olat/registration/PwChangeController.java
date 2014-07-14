@@ -87,7 +87,7 @@ public class PwChangeController extends BasicController {
 	 * @param wControl
 	 */
 	public PwChangeController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, null);
+		this(ureq, wControl, null, false);
 	}
 	
 	/**
@@ -95,8 +95,7 @@ public class PwChangeController extends BasicController {
 	 * @param ureq
 	 * @param wControl
 	 */
-	//fxdiff FXOLAT-113: business path in DMZ
-	public PwChangeController(UserRequest ureq, WindowControl wControl, String initialEmail) {
+	public PwChangeController(UserRequest ureq, WindowControl wControl, String initialEmail, boolean modal) {
 		super(ureq, wControl);
 		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		myContent = createVelocityContainer("pwchange");
@@ -107,10 +106,7 @@ public class PwChangeController extends BasicController {
 		pwKey = ureq.getHttpReq().getParameter("key");
 		if (pwKey == null || pwKey.equals("")) {
 			// no temporarykey is given, we assume step 1
-			//fxdiff FXOLAT-113: business path in DMZ
 			createEmailForm(ureq, wControl, initialEmail);
-			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, myContent, null);
-			putInitialPanel(layoutCtr.getInitialComponent());
 		} else {
 			// we check if given key is a valid temporary key
 			tempKey = rm.loadTemporaryKeyByRegistrationKey(pwKey);
@@ -118,11 +114,7 @@ public class PwChangeController extends BasicController {
 			if (tempKey == null) {
 				// error, there should be an entry
 				getWindowControl().setError(translate("pwkey.missingentry"));
-				//fxdiff FXOLAT-113: business path in DMZ
 				createEmailForm(ureq, wControl, initialEmail);
-				// load view in layout
-				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, myContent, null);
-				putInitialPanel(layoutCtr.getInitialComponent());
 			} else {
 				wic.setCurStep(3);
 				pwf = new PwChangeForm(ureq, wControl);
@@ -130,10 +122,14 @@ public class PwChangeController extends BasicController {
 				myContent.contextPut("pwdhelp", translate("pwdhelp"));
 				myContent.contextPut("text", translate("step3.pw.text"));
 				pwarea.setContent(pwf.getInitialComponent());				
-				// load view in layout
-				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, myContent, null);
-				putInitialPanel(layoutCtr.getInitialComponent());
 			}
+		}
+		
+		if(modal) {
+			putInitialPanel(myContent);
+		} else {
+			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, myContent, null);
+			putInitialPanel(layoutCtr.getInitialComponent());
 		}
 	}
 

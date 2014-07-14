@@ -551,7 +551,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 
 	/**
 	 * Create a layout container that should be only used to render buttons using
-	 * a b_button_group css wrapper. Buttons are ususally rendered on one line
+	 * a o_button_group css wrapper. Buttons are ususally rendered on one line
 	 * without indent
 	 * 
 	 * @param name

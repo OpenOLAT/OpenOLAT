@@ -2,7 +2,7 @@
 #if(!$noMaps)
 
 #if($!showPaging)
-	<div class="b_map_page">
+	<div class="o_map_page">
 		#foreach($pageLink in $pageLinks)
 			$r.render($pageLink.componentName)
 		#end
@@ -45,7 +45,7 @@
 </div>
 
 #if($!showPaging)
-	<div class="b_map_page">
+	<div class="o_map_page">
 		#foreach($pageLink in $pageLinks)
 			$r.render($pageLink.componentName)
 		#end

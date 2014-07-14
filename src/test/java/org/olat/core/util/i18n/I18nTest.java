@@ -701,7 +701,7 @@ public class I18nTest extends OlatTestCase {
 		String convertedToHTMLMarkup = InlineTranslationInterceptHandlerController.replaceLocalizationMarkupWithHTML(plainVanillaWrapped, inlineTranslationURLBuilder, inlineTrans);
 		assertEquals("<span class=\"o_translation_i18nitem\">" + inlineTransLink.toString() + plainVanillaPlain + "</span>", convertedToHTMLMarkup);
 		// Simple link		
-		String linkOPEN = "<a href=\"http://www.olat.org/bla/blu:bli#bla\" title='funny title' class=\"b_css b_anothercss\">";
+		String linkOPEN = "<a href=\"http://www.olat.org/bla/blu:bli#bla\" title='funny title' class=\"o_css O_anothercss\">";
 		String linkCLOSE = "</a>";
 		String inlineSpanOPEN = "<span class=\"o_translation_i18nitem\">";
 		String inlineSpanCLOSE = "</span>";
@@ -742,7 +742,7 @@ public class I18nTest extends OlatTestCase {
 		assertEquals(convertedWithinMultipleLinksAndInputExpected, convertedToHTMLMarkup);
 		// Within element attribute
 		String attributeOPEN = "<a href='sdfsdf' title=\"";
-		String attributeCLOSE = "\" class=\"b_bluber\">hello world</a>";
+		String attributeCLOSE = "\" class=\"o_bluber\">hello world</a>";
 		String translatedWithinAttribute = attributeOPEN + plainVanillaWrapped + attributeCLOSE + rawtext1;
 		convertedToHTMLMarkup = InlineTranslationInterceptHandlerController.replaceLocalizationMarkupWithHTML(translatedWithinAttribute, inlineTranslationURLBuilder, inlineTrans);
 		String convertedWithinAttributeExpected = attributeOPEN + plainVanillaPlain + attributeCLOSE + rawtext1;

@@ -2,17 +2,12 @@
 	$r.render("pwwizard")
 	<h4>$r.translate("step1.pw.title")</h4>
 </div>
-<p>
-	$text
-</p>
+<p class="o_info">$text</p>
+
 #if ($pwdhelp)
-	<p>
-		$pwdhelp
-	</p>
+	<p>$pwdhelp</p>
 #end
-<p>
-	$r.render("pwarea")
-</p>
+<p>$r.render("pwarea")</p>
 #if ($r.available("pwchange.homelink"))
 	<div class="b_block">
 		$r.render("pwchange.homelink")

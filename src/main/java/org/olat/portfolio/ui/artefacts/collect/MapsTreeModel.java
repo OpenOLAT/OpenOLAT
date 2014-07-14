@@ -49,7 +49,7 @@ public class MapsTreeModel extends GenericTreeModel {
 		rootNode.setIconCssClass("o_st_icon");
 		
 		GenericTreeNode noMapNode = new GenericTreeNode(EPCollectStepForm04.NO_MAP_CHOOSEN, translator.translate("no.map.as.target"), null);
-		noMapNode.setIconCssClass("b_ep_collection_icon");
+		noMapNode.setIconCssClass("o_ep_icon_collection");
 		rootNode.addChild(noMapNode);
 
 		loadMaps(identity, rootNode);
@@ -82,69 +82,4 @@ public class MapsTreeModel extends GenericTreeModel {
 			loadStructure(childStruct, structureNode);
 		}
 	}
-
-/*
-	private boolean firstLevelDone = false;
-
-	@SuppressWarnings("synthetic-access")
-	@Override
-	public List<AjaxTreeNode> getChildrenFor(String nodeId) {
-		List<AjaxTreeNode> children = new ArrayList<AjaxTreeNode>();
-		AjaxTreeNode child;
-		try {
-			List<PortfolioStructure> structs = null;
-			if (nodeId.equals(ROOT_NODE_IDENTIFIER)) {
-				structs = ePFMgr.getStructureElementsForUser(getIdentity(), ElementType.STRUCTURED_MAP, ElementType.DEFAULT_MAP);
-				firstLevelDone = false;
-			} else {
-				PortfolioStructure selStruct = ePFMgr.loadPortfolioStructureByKey(new Long(nodeId));
-				structs = ePFMgr.loadStructureChildren(selStruct);
-			}
-			if (structs == null || structs.size() == 0) { return null; }
-			// add a fake map to choose if no target should be set
-			if (!firstLevelDone){
-				child = new AjaxTreeNode(NO_MAP_CHOOSEN, translate("no.map.as.target"));
-				child.put(AjaxTreeNode.CONF_LEAF, true);
-				child.put(AjaxTreeNode.CONF_IS_TYPE_LEAF, true);
-				child.put(AjaxTreeNode.CONF_ALLOWDRAG, false);
-				child.put(AjaxTreeNode.CONF_ALLOWDROP, false);
-				child.put(AjaxTreeNode.CONF_ICON_CSS_CLASS, "b_ep_collection_icon");
-				child.put(AjaxTreeNode.CONF_QTIP, translate("no.map.as.target.desc"));
-				if (isUsedInStepWizzard()) children.add(child);
-				firstLevelDone = true;
-			}
-			for (PortfolioStructure portfolioStructure : structs) {
-				// FXOLAT-436 : skip templateMaps that are closed
-				if (portfolioStructure instanceof EPStructuredMap) {
-					if( ((EPStructuredMap) portfolioStructure).getStatus() != null && ((EPStructuredMap) portfolioStructure).getStatus().equals(StructureStatusEnum.CLOSED)){
-						continue;
-					}
-				}
-				
-				String title = portfolioStructure.getTitle();
-				if (!isUsedInStepWizzard() && oldStructure.getKey().equals(portfolioStructure.getKey())) {
-					title = portfolioStructure.getTitle() + "&nbsp; &nbsp; <-- " + translate("move.artefact.actual.node");
-				}						
-				child = new AjaxTreeNode(String.valueOf(portfolioStructure.getKey()), title);
-				boolean hasChilds = ePFMgr.countStructureChildren(portfolioStructure) > 0;	
-				child.put(AjaxTreeNode.CONF_LEAF, !hasChilds);
-				child.put(AjaxTreeNode.CONF_IS_TYPE_LEAF, !hasChilds);
-				child.put(AjaxTreeNode.CONF_ALLOWDRAG, false);
-				child.put(AjaxTreeNode.CONF_ALLOWDROP, false);
-				child.put(AjaxTreeNode.CONF_EXPANDED, true);
-				child.put(AjaxTreeNode.CONF_DISABLED, portfolioStructure instanceof EPAbstractMap);
-				child.put(AjaxTreeNode.CONF_ICON_CSS_CLASS, portfolioStructure.getIcon());
-				child.put(AjaxTreeNode.CONF_QTIP, portfolioStructure.getDescription());
-				
-				children.add(child);
-			}
-		} catch (JSONException e) {
-			throw new OLATRuntimeException("Error while creating tree model for map/page/structure selection", e);
-		}
-		return children;
-	}
-};
-model.setCustomRootIconCssClass("o_st_icon");
-*/
-
 }

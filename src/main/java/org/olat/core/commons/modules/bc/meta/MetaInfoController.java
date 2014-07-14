@@ -201,7 +201,6 @@ public class MetaInfoController extends FormBasicController {
 
 		if (!hasMetadata(meta)) {
 			moreMetaDataLink = uifactory.addFormLink("mf.more.meta.link", formLayout, Link.LINK_CUSTOM_CSS);
-			moreMetaDataLink.setCustomEnabledLinkCSS("b_link_moreinfo");
 			setMetaFieldsVisible(false);
 		}
 

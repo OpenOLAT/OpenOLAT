@@ -33,11 +33,10 @@ import org.xml.sax.SAXException;
 
 public class QuoteAndTagFilter extends LogDelegator implements Filter {
 
-	private static final String QUOTE_WRAPPER = "b_quote_wrapper";
-	
 	/**
 	 * @see org.olat.core.util.filter.Filter#filter(java.lang.String)
 	 */
+	@Override
 	public String filter(String original) {
 		try {
 			DOMParser parser = new DOMParser();
@@ -59,8 +58,11 @@ public class QuoteAndTagFilter extends LogDelegator implements Filter {
 		for(Node child=node; child != null; child=child.getNextSibling()) {
 			if(child.hasAttributes()) {
 				Node nodeclass = child.getAttributes().getNamedItem("class");
-				if(nodeclass != null && QUOTE_WRAPPER.equals(nodeclass.getNodeValue())) {
-					continue;
+				if(nodeclass != null) {
+					String value = nodeclass.getNodeValue();
+					if("b_quote_wrapper".equals(value) || "o_quote_wrapper".equals(value)) {
+						continue;
+					}
 				}
 			}
 			if(child.hasChildNodes()) {

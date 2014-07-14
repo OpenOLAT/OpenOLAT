@@ -42,7 +42,7 @@ public class WordCountTest {
 	@Test
 	public void testCleanMessage() {
 		Filter filter = new QuoteAndTagFilter();
-		String text = "<p>&nbsp;</p><div class=\"b_quote_wrapper\"><div class=\"b_quote_author mceNonEditable\">Am 23.11.09 12:29 hat OLAT Administrator geschrieben:</div><blockquote class=\"b_quote\"><p>Quelques mots que je voulais &eacute;crire. Et encore un ou deux.</p></blockquote></div><p>Et une r&eacute;ponse avec citation incorpor&eacute;e</p>";
+		String text = "<p>&nbsp;</p><div class=\"o_quote_wrapper\"><div class=\"o_quote_author mceNonEditable\">Am 23.11.09 12:29 hat OLAT Administrator geschrieben:</div><blockquote class=\"o_quote\"><p>Quelques mots que je voulais &eacute;crire. Et encore un ou deux.</p></blockquote></div><p>Et une r&eacute;ponse avec citation incorpor&eacute;e</p>";
 		String output = filter.filter(text);
 		assertTrue("  Et une réponse avec citation incorporée".equals(output));
 	}

@@ -21,7 +21,7 @@
 				function detectQuote(el) {
 					var divQuote = ed.dom.getParent(el, 'DIV');
 					var blockquote = ed.dom.getParent(el, 'BLOCKQUOTE');
-					if(divQuote && blockquote && divQuote.className == "b_quote_wrapper") {
+					if(divQuote && blockquote && (divQuote.className == "b_quote_wrapper" || divQuote.className == "o_quote_wrapper")) {
 						return true;
 					}
 					return false;
@@ -36,10 +36,10 @@
 						var parent = parents[i];
 						endQuote += '</' + parent.nodeName + '>'
 
-						if(parent.className == "b_quote_wrapper") {
-							var quoteWrapper = '<div class="b_quote_wrapper"><div class="b_quote_author mceNonEditable">';
+						if(parent.className == "b_quote_wrapper" || parent.className == "o_quote_wrapper") {
+							var quoteWrapper = '<div class="o_quote_wrapper"><div class="o_quote_author mceNonEditable">';
 							for(var j=0; j<parent.childNodes.length; j++) {
-								if(parent.childNodes[j].className == "b_quote_author mceNonEditable") {
+								if(parent.childNodes[j].className == "o_quote_author mceNonEditable" || parent.childNodes[j].className == "b_quote_author mceNonEditable") {
 									quoteWrapper += parent.childNodes[j].innerHTML;
 									break;
 								}
@@ -72,7 +72,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : "1.1"
+				version : "1.1.1"
 			};
 		}
 	});

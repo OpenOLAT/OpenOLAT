@@ -170,7 +170,7 @@ public class MailDataModel implements TableDataModelWithMarkableRows<DBMailLight
 		for(DBMailRecipient recipient:mail.getRecipients()) {
 			if(recipient != null && recipient.getRecipient() != null && recipient.getRecipient().equalsByPersistableKey(identity)) {
 				if (!recipient.getRead()) {
-					return "b_marked";
+					return "o_marked";
 				}
 			}
 		}	

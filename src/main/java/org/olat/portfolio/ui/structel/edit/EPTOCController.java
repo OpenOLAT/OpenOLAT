@@ -438,7 +438,6 @@ public class EPTOCController extends BasicController {
 		return null;
 	}
 
-
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose()
 	 */
@@ -446,5 +445,4 @@ public class EPTOCController extends BasicController {
 	protected void doDispose() {
 		//
 	}
-
 }

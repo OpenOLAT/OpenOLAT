@@ -1280,7 +1280,7 @@ public class I18nManager extends BasicManager {
 	 * 
 	 * @param languageKeys The source array of language keys
 	 * @param additionalCssClass additional CSS classes that should be added or
-	 *          NULL. E.g. you could use 'b_with_small_icon_left'
+	 *          NULL. E.g. you could use 'o_flag'
 	 * @return
 	 */
 	public String[] createLanguageFlagsCssClasses(String[] languageKeys, String additionalCssClass) {

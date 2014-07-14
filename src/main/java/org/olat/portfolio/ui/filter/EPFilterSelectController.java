@@ -92,7 +92,7 @@ public class EPFilterSelectController extends FormBasicController {
 		}
 		// don't show anything if no filter exists
 		if (!nonEmptyFilters.isEmpty()) {
-			String page = this.velocity_root + "/filter_select.html";
+			String page = velocity_root + "/filter_select.html";
 			FormLayoutContainer selection = FormLayoutContainer.createCustomFormLayout("filter_selection", getTranslator(), page);
 			selection.setRootForm(mainForm);
 			selection.setLabel("filter.select", null);

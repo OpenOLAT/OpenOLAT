@@ -1,34 +1,29 @@
-
 #if ($importedCalendarWrappers.size() > 0)
-	<div class="b_subcolumns">
-	  <div class="b_c50l">
-      <div class="b_subcl">
+	<div class="clearfix">
         $r.render("importedCalendarConfig")
-      </div>
-    </div>
-	  <div class="b_c50r">
-	    <div class="b_subcr">
+    </div>  
+	<div class="clearfix">
         #if ($choose == 0)
           $r.render("fileupload")
         #else 
-          <div>
-            Import Calendar<br/><br/>
-            $r.render("cal.import.type.file")&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            $r.render("cal.import.type.url")<br/><br/><br/>
-          </div>
+            Import Calendar
+            <div class="o_button_group">
+				$r.render("cal.import.type.file")
+				$r.render("cal.import.type.url")
+            </div>
         #end
-		  </div>
 	  </div>
   </div>
 #else
-  #if ($choose == 0)
-    $r.render("fileupload")
-  #else 
-    <div>
-      $r.translate("cal.import.title")<br/><br/>
-      $r.render("cal.import.type.file")&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      $r.render("cal.import.type.url")<br/><br/><br/>
-    </div>
-  #end
+	#if ($choose == 0)
+		$r.render("fileupload")
+	#else 
+		<div>
+			$r.translate("cal.import.title")
+			<div class="o_button_group">
+				$r.render("cal.import.type.file")
+				$r.render("cal.import.type.url")
+			</div>
+		</div>
+	#end
 #end
-

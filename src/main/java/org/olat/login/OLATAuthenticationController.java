@@ -127,17 +127,15 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		
 		if (source == registerLink) {
-			//fxdiff FXOLAT-113: business path in DMZ
 			openRegistration(ureq);
 		} else if (source == pwLink) {
-			//fxdiff FXOLAT-113: business path in DMZ
 			openChangePassword(ureq, null);
 		}
 	}
-	//fxdiff FXOLAT-113: business path in DMZ
+	
 	protected RegistrationController openRegistration(UserRequest ureq) {
 		removeAsListenerAndDispose(subController);
 		subController = new RegistrationController(ureq, getWindowControl());
@@ -150,13 +148,13 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		cmc.activate();
 		return (RegistrationController)subController;
 	}
-	//fxdiff FXOLAT-113: business path in DMZ
+	
 	protected void openChangePassword(UserRequest ureq, String initialEmail) {
 		// double-check if allowed first
 		if (!UserModule.isPwdchangeallowed(ureq.getIdentity())) throw new OLATSecurityException("chose password to be changed, but disallowed by config");
 		
 		removeAsListenerAndDispose(subController);
-		subController = new PwChangeController(ureq, getWindowControl(), initialEmail);
+		subController = new PwChangeController(ureq, getWindowControl(), initialEmail, true);
 		listenTo(subController);
 		
 		removeAsListenerAndDispose(cmc);
@@ -169,8 +167,8 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		
 		if (source == loginForm && event == Event.DONE_EVENT) {
 			String login = loginForm.getLogin();
 			String pass = loginForm.getPass();	
@@ -222,20 +220,28 @@ public class OLATAuthenticationController extends AuthenticationController imple
 				// disclaimer acceptance not required		
 				authenticated(ureq, authenticatedIdentity);	
 			}
-		}
-		
-		if (source == disclaimerCtr) {
+		} else if (source == disclaimerCtr) {
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
 				// disclaimer accepted 
 				RegistrationManager.getInstance().setHasConfirmedDislaimer(authenticatedIdentity);
 				authenticated(ureq, authenticatedIdentity);
 			}
+		} else if(cmc == source) {
+			cleanUp();
+		} if (source == subController) {
+			if(event == Event.CANCELLED_EVENT) {
+				cmc.deactivate();
+				cleanUp();
+			}
 		}
-		
-		if (source == subController && event == Event.CANCELLED_EVENT) {
-			cmc.deactivate();
-		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(subController);
+		removeAsListenerAndDispose(cmc);
+		subController = null;
+		cmc = null;
 	}
 	
 	@Override

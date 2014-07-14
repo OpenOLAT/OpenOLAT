@@ -22,7 +22,6 @@ package org.olat.core.gui.components.panel;
 import java.util.List;
 
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.RenderingState;
@@ -41,15 +40,7 @@ import org.olat.core.gui.translator.Translator;
  * 
  * @author gnaegi
  */
-public class LayeredPanelRenderer extends PanelRenderer implements
-		ComponentRenderer {
-
-	/**
-	 * 
-	 */
-	public LayeredPanelRenderer() {
-		//
-	}
+public class LayeredPanelRenderer extends PanelRenderer {
 
 	/**
 	 * @see org.olat.core.gui.render.ui.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
@@ -59,6 +50,7 @@ public class LayeredPanelRenderer extends PanelRenderer implements
 	 *      org.olat.core.gui.translator.Translator,
 	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
+	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source,
 			URLBuilder ubu, Translator translator, RenderResult renderResult,
 			String[] args) {
@@ -75,7 +67,7 @@ public class LayeredPanelRenderer extends PanelRenderer implements
 			} else {
 				sb.append("<div");
 			}
-			sb.append(" class=\"b_layeredPanel b_layer_").append(level).append("\" style=\"z-index:")
+			sb.append(" class=\"o_layered_panel o_layer_").append(level).append("\" style=\"z-index:")
 					.append(layerLevel).append("\">");
 			renderer.render(sb, component, args);
 			if (component.getSpanAsDomReplaceable()) {
@@ -97,6 +89,7 @@ public class LayeredPanelRenderer extends PanelRenderer implements
 	 *      org.olat.core.gui.render.URLBuilder,
 	 *      org.olat.core.gui.translator.Translator)
 	 */
+	@Override
 	public void renderHeaderIncludes(Renderer renderer, StringOutput sb,
 			Component source, URLBuilder ubu, Translator translator,
 			RenderingState rstate) {
@@ -116,6 +109,7 @@ public class LayeredPanelRenderer extends PanelRenderer implements
 	 *      org.olat.core.gui.render.StringOutput,
 	 *      org.olat.core.gui.components.Component)
 	 */
+	@Override
 	public void renderBodyOnLoadJSFunctionCall(Renderer renderer,
 			StringOutput sb, Component source, RenderingState rstate) {
 		LayeredPanel panel = (LayeredPanel) source;
@@ -128,5 +122,4 @@ public class LayeredPanelRenderer extends PanelRenderer implements
 			}
 		}
 	}
-
 }

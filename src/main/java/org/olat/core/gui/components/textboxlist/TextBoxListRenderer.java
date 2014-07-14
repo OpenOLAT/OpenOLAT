@@ -115,11 +115,11 @@ public class TextBoxListRenderer extends DefaultComponentRenderer {
 		// comma-separated string
 		String readOnlyContent = tblComponent.getInitialItemsAsString();
 		if (readOnlyContent.length() > 0) {
-			output.append("<div class=\"b_with_small_icon_left b_tag_icon\">");
-			FormJSHelper.appendReadOnly(readOnlyContent, output);
-			output.append("</div>");
+			output.append("<div><i class='o_icon o_icon_tags'> </i> ")
+			      .append(readOnlyContent)
+			      .append("</div>");
 		} else {
-			FormJSHelper.appendReadOnly("-", output);
+			output.append("-");
 		}
 	}
 }

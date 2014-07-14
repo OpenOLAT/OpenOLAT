@@ -81,7 +81,7 @@ public class ForumRTFFormatter extends ForumFormatter {
 	final Pattern PATTERN_HTML_LIST = Pattern.compile("<li>(.*?)</li>", Pattern.CASE_INSENSITIVE);
 	final Pattern HTML_SPACE_PATTERN = Pattern.compile("&nbsp;");
 	
-	final Pattern PATTERN_CSS_O_FOQUOTE = Pattern.compile("<div class=\"b_quote_wrapper\">\\s*<div class=\"b_quote_author mceNonEditable\">(.*?)</div>\\s*<blockquote class=\"b_quote\">\\s*(.*?)\\s*</blockquote>\\s*</div>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+	final Pattern PATTERN_CSS_O_FOQUOTE = Pattern.compile("<div class=\"o_quote_wrapper\">\\s*<div class=\"b_quote_author mceNonEditable\">(.*?)</div>\\s*<blockquote class=\"b_quote\">\\s*(.*?)\\s*</blockquote>\\s*</div>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
 	final Pattern PATTERN_THREEPOINTS = Pattern.compile("&#8230;", Pattern.CASE_INSENSITIVE);
 	final String THREEPOINTS = "...";

@@ -19,10 +19,10 @@
 	/** with the noprint class, you can hide any element in printout **/
 	.o_noprint { @include o-ghost();} 
 	
-	.b_print_break_avoid {
+	.o_print_break_avoid {
 		page-break-inside : avoid;
 	}
-	.b_print_break_before {
+	.o_print_break_before {
 		page-break-before: always;
 	}
 		 
