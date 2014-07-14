@@ -208,7 +208,7 @@ public class CPUIFactory {
 		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, true, true, true, deliveryOptions, null, null);		
 		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, cpCtr.getMenuComponent(), cpCtr.getInitialComponent(), rootContainer.getName());
 		layoutCtr.addDisposableChildController(cpCtr); // cascade disposing requests
-		layoutCtr.addCssClassToMain("b_preview");
+		layoutCtr.addCssClassToMain("o_preview");
 		return layoutCtr;
 	}
 		

@@ -16,7 +16,7 @@ $r.render("performanceinfos")
 </p>
 <br />
 <h5>Checks for cluster functionality</h5>
-<table class="b_table b_grid"><tbody>
+<table class="table table-bordered"><tbody>
 	<tr><td>Syncer:</td><td>$r.render("sync.long") $r.render("sync.short")</td></tr>
 	<tr><td>Syncer Performance:</td><td>$r.render("testSFUPerf")</td></tr>
 	<tr><td>JMS Performance:</td><td>$r.render("testPerf") (should be at least around 2000 msg / sec)</td></tr>

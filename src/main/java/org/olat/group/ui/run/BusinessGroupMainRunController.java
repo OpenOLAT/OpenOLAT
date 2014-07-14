@@ -980,7 +980,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		root.setTitle(businessGroup.getName());
 		root.setUserObject(ACTIVITY_MENUSELECT_OVERVIEW);
 		root.setAltText(translate("menutree.top.alt") + " " + businessGroup.getName());
-		root.setIconCssClass("b_group_icon");
+		root.setIconCssClass("o_icon o_icon_group");
 		gtm.setRootNode(root);
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(this.businessGroup);

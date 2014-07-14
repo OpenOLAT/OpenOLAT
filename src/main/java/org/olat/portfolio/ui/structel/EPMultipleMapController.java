@@ -204,7 +204,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 			
 			if(currentPageNum < pageCount){
 				forwardLink = LinkFactory.createCustomLink("forwardLink", "pagingFWD", "table.forward", Link.LINK, vC, this);
-				forwardLink.setCustomEnabledLinkCSS("b_map_page_forward");
+				forwardLink.setIconRightCSS("o_icon o_icon_next_page");
 			}
 		}
 

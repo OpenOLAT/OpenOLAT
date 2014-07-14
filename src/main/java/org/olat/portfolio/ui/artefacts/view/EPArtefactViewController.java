@@ -194,8 +194,6 @@ public class EPArtefactViewController extends FormBasicController {
 		if (viewOnlyMode || artefactInClosedMap) {
 			tblE.setEnabled(false);
 		} else {
-			flc.contextPut("tagclass", "b_tag_list");
-			//tblE.addActionListener(FormEvent.ONCHANGE);
 			Map<String, String> allUsersTags = ePFMgr.getUsersMostUsedTags(getIdentity(), -1);
 			tblE.setAutoCompleteContent(allUsersTags);
 		}

@@ -87,7 +87,7 @@ public class ContextHelpDocument extends OlatDocument {
 		contextHelpDocument.setLastChange(new Date(i18nMgr.getLastModifiedDate(pageTranslator.getLocale(), bundleName)));
 		String lang = I18nManager.getInstance().getLanguageTranslated(pageTranslator.getLocale().toString(), I18nModule.isOverlayEnabled());
 		contextHelpDocument.setDocumentType(TYPE);	
-		contextHelpDocument.setCssIcon("b_contexthelp_icon");
+		contextHelpDocument.setCssIcon("o_icon_help");
 		contextHelpDocument.setTitle(pageTranslator.translate("chelp." + page.split("\\.")[0] + ".title") + " (" + lang + ")");
 		
 		try {

@@ -62,7 +62,7 @@ import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
  */
 public class AutoCompleterController extends BasicController {
 	private static final String COMMAND_SELECT = "select";
-	private static final String JSNAME_INPUTFIELD = "b_autocomplete_input";
+	private static final String JSNAME_INPUTFIELD = "o_autocomplete_input";
 	private static final String JSNAME_DATASTORE = "autocompleterDatastore";
 	private static final String JSNAME_COMBOBOX = "autocompleterCombobox";
 

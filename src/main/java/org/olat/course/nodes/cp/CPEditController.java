@@ -242,7 +242,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 					setCPReference(re, config);
 					cpConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
 					previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, cpConfigurationVc, this);
-					previewLink.setCustomEnabledLinkCSS("b_preview");
+					previewLink.setCustomEnabledLinkCSS("o_preview");
 					previewLink.setTitle(getTranslator().translate("command.preview"));
 					// remove existing edit link, add new one if user is allowed to edit this CP
 					if (editLink != null) {

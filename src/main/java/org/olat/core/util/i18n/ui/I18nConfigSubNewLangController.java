@@ -95,8 +95,8 @@ class I18nConfigSubNewLangController extends FormBasicController {
 		// New language elements:
 		// A title, displayed in fieldset
 		setFormTitle("configuration.management.create.title");
-		String[] args = new String[] { "<a href='http://www.ics.uci.edu/pub/ietf/http/related/iso639.txt' class='b_link_extern' target='_blank'>ISO639</a>",
-				"<a href='http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html' class='b_link_extern' target='_blank'>ISO3166</a>" };
+		String[] args = new String[] { "<a href='http://www.ics.uci.edu/pub/ietf/http/related/iso639.txt' target='_blank'><i class='o_icon o_icon_link_extern'> </i> ISO639</a>",
+				"<a href='http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html' target='_blank'><i class='o_icon o_icon_link_extern'> </i> ISO3166</a>" };
 		setFormDescription("configuration.management.create.description", args);
 		//
 		// a) the language code

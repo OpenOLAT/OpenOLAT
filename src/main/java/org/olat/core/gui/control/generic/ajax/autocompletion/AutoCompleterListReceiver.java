@@ -42,7 +42,7 @@ public class AutoCompleterListReceiver extends LogDelegator implements ListRecei
 	private static final String VALUE = "value";
 	private static final String CSS_CLASS = "cssClass";
 	private static final String CSS_CLASS_EMPTY = "";
-	private static final String CSS_CLASS_WITH_ICON = "b_with_small_icon_left ";
+	private static final String CSS_CLASS_WITH_ICON = "o_icon ";
 	private static final String DISPLAY_KEY = "displayKey";
 	private static final String DISPLAY_KEY_NO_RESULTS = "-";
 	

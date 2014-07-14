@@ -279,7 +279,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 				// FIXING LINK ONLY IF A DEFAULTCONTEXT EXISTS
 				fixGroupError = new FormLinkImpl("error.fix", "create");
 				// link
-				fixGroupError.setCustomEnabledLinkCSS("b_button");
+				fixGroupError.setCustomEnabledLinkCSS("btn btn-default");
 				errorGroupItemLayout.add(fixGroupError);
 
 				fixGroupError.setErrorKey(labelKey, params);
@@ -332,7 +332,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 				// FXINGIN LINK ONLY IF DEFAULT CONTEXT EXISTS
 				fixAreaError = new FormLinkImpl("error.fix", "create");// erstellen
 				// link
-				fixAreaError.setCustomEnabledLinkCSS("b_button");
+				fixAreaError.setCustomEnabledLinkCSS("btn btn-default");
 				errorAreaItemLayout.add(fixAreaError);
 
 				fixAreaError.setErrorKey(labelKey, params);

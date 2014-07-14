@@ -52,12 +52,12 @@
 	## render subcatecories of current category
 	#if ($hasSubcats)
 		<div class="o_catalog_itemlist">
-			<ul>
+			<ul class="list-unstyled">
 			#set ($ri = 0)
 			#foreach($child in $children)
 				#if ($child.getType()==$node)
 					<li><a href="$r.commandURIbg("child$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget()>
-						<span class="b_with_small_icon_left o_catalog_sub_icon">$r.escapeHtml($child.getName())</span> 
+						<i class="o_icon o_icon_catalog_sub"> </i> $r.escapeHtml($child.getName())</span> 
 					</a></li>
 				#end
 				#set ($ri = $ri +1)
@@ -76,17 +76,17 @@
 			#if ($child.getType()==$leaf)
 				<tr>
 					<td>
-						<a href="$r.commandURIbg("leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_with_small_icon_left ${iconRenderer.getIconCssClass($child.getRepositoryEntry())}">
-							<span id="leaf$ri">$r.escapeHtml($child.getRepositoryEntry().getDisplayname())</span>
+						<a href="$r.commandURIbg("leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="">
+							<i class="o_icon ${iconRenderer.getIconCssClass($child.getRepositoryEntry())}"> </i> <span id="leaf$ri">$r.escapeHtml($child.getRepositoryEntry().getDisplayname())</span>
 						</a>
 						#set ($repoDesc = $child.getRepositoryEntry().getFormattedDescription())
 						#if($r.available("image$ri") || ($repoDesc && $repoDesc.length() > 0))
 						<div id="o_tooltip_$ri" style="display:none;">
 							#if($r.available("image$ri"))
 								<div class="o_repository_resource_image">$r.render("image$ri")</div>
-								<div class="b_ext_tooltip_wrapper" style="min-height:110px">$repoDesc</div>
+								<div class="o_tooltip_wrapper" style="min-height:110px">$repoDesc</div>
 							#else
-								<div class="b_ext_tooltip_wrapper">$repoDesc</div>
+								<div class="o_tooltip_wrapper">$repoDesc</div>
 							#end								
 						</div>
 <script type="text/javascript">
@@ -103,15 +103,15 @@ jQuery(function() {
 					#if ($canRemoveAllLinks || $hasOwnedLinks)
 						#if($canRemoveAllLinks || $ownedLinks.contains($child))
 							</td><td>	
-								  <a href="$r.commandURIbg("edit.leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_float_right">$r.translate("edit")</a>
+								  <a href="$r.commandURIbg("edit.leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget()>$r.translate("edit")</a>
 							</td><td>
-								<a href="$r.commandURIbg("remove.leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_float_right">$r.translate("delete")</a>
+								<a href="$r.commandURIbg("remove.leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget()>$r.translate("delete")</a>
 							</td><td>
-								<a href="$r.commandURIbg("move.leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget() class="b_float_right">$r.translate("move")</a>
+								<a href="$r.commandURIbg("move.leaf$ri")" onclick="return o2cl()"  onkeypress="return o2cl()" $r.bgTarget()>$r.translate("move")</a>
 						#end
 					#end
 					</td><td>
-						<a href="$r.commandURIbg("detail.leaf$ri")" onclick="return o2cl()" onkeypress="return o2cl()" $r.bgTarget() class="b_float_right">$r.translate("details.header")</a>
+						<a href="$r.commandURIbg("detail.leaf$ri")" onclick="return o2cl()" onkeypress="return o2cl()" $r.bgTarget()>$r.translate("details.header")</a>
 					</td>				
 				</tr>
 				#set ($i = $i +1)

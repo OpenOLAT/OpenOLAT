@@ -83,7 +83,7 @@ public class EPTOCTreeModel extends GenericTreeModel implements DnDTreeModel {
 		for (AbstractArtefact artefact : artList) {
 			String artefactIdent = structureNode.getIdent() + artefact.getKey().toString();
 			GenericTreeNode artefactNode = new GenericTreeNode(artefactIdent, artefact.getTitle(), artefact);
-			artefactNode.setIconCssClass(artefact.getIcon() + " b_ep_artefact");
+			artefactNode.setIconCssClass("o_icon " + artefact.getIcon());
 			structureNode.addChild(artefactNode);
 		}
 	}

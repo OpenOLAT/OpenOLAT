@@ -363,7 +363,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 			}
 
 			previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, myContent, this);
-			previewLink.setCustomEnabledLinkCSS("b_preview");
+			previewLink.setCustomEnabledLinkCSS("o_preview");
 			previewLink.setTitle(getTranslator().translate("command.preview"));
 		}
 
@@ -738,7 +738,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 
 				setIQReference(re, moduleConfiguration);
 				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, myContent, this);
-				previewLink.setCustomEnabledLinkCSS("b_preview");
+				previewLink.setCustomEnabledLinkCSS("o_preview");
 				previewLink.setTitle(getTranslator().translate("command.preview"));
 				myContent.contextPut("dontRenderRepositoryButton", new Boolean(true));
 				// If of type test, get min, max, cut - put in module config and push

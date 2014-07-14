@@ -1,8 +1,7 @@
 $r.render("sourceview")
 <h3>Callout windows</h3>
-
-<hr style="clear:both" />
-<div class="b_float_right" >
+<hr />
+<div class="o_button_group o_button_group_right">
 	$r.render("calloutTriggerLink")
 </div>
 <p>
@@ -10,24 +9,14 @@ $r.render("sourceview")
 	scenario is very close. The callout windows should only be used when the displayed form is small and simple. Good candidates are a list of groups to select or something like that. 
 	Click the add user button to see how a mini-subworkflow look-and-feels in a callout window.
 </p>
-
-<hr />
-
+<hr style="clear:both;"/>
 <p>
 	The callout window has a trigger that opens the window and functions as an anchor for the callout window. ExtJS chooses itself where to put the window (north, west, south, east), north is the default. 
 	Click the  more... button to see a very simple info in a callout window.
 	
 	$r.render("calloutTriggerLink2")
-</p>	
-
-
+</p>
 <hr />
-
-<style>
-<!--
-.trigger3 div.b_callout_content {width: 20em;}
--->
-</style>
 <p>
 	The constructor works with both a link object or by providing the DOM ID of the trigger element in case you're not using a link or you want to do something special. In the example below the trigger is 
 	a javascript on-click event.
@@ -45,8 +34,5 @@ jQuery(function() {
 		$r.javaScriptBgCommand('trigger3');
 	});
 });
-             
 /* ]]> */
 </script>
-             
-

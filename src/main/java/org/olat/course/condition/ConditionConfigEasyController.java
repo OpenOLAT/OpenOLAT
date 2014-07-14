@@ -598,7 +598,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 					// FIXING LINK ONLY IF A DEFAULTCONTEXT EXISTS
 					fixGroupError = new FormLinkImpl("error.fix", "create");
 					// link
-					fixGroupError.setCustomEnabledLinkCSS("b_button");
+					fixGroupError.setCustomEnabledLinkCSS("btn btn-default");
 					errorGroupItemLayout.add(fixGroupError);
 
 					fixGroupError.setErrorKey(labelKey, params);
@@ -653,7 +653,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 					// FXINGIN LINK ONLY IF DEFAULT CONTEXT EXISTS
 					fixAreaError = new FormLinkImpl("error.fix", "create");// erstellen
 					// link
-					fixAreaError.setCustomEnabledLinkCSS("b_button");
+					fixAreaError.setCustomEnabledLinkCSS("btn btn-default");
 					errorAreaItemLayout.add(fixAreaError);
 
 					fixAreaError.setErrorKey(labelKey, params);
@@ -1179,8 +1179,8 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		easyGroupList = uifactory.addStaticTextElement("groupList", "form.easy.group", groupInitVal, groupChooseSubContainer);
 		easyGroupList.setUserObject(groupKeyList);
 
-		chooseGroupsLink = uifactory.addFormLink("choose", groupChooseSubContainer, "b_form_groupchooser");
-		createGroupsLink = uifactory.addFormLink("create", groupChooseSubContainer, "b_form_groupchooser");	
+		chooseGroupsLink = uifactory.addFormLink("choose", groupChooseSubContainer, "o_form_groupchooser");
+		createGroupsLink = uifactory.addFormLink("create", groupChooseSubContainer, "o_form_groupchooser");	
 		
 		//areas
 		areaChooseSubContainer = FormLayoutContainer.createDefaultFormLayout("areaChooseSubContainer", getTranslator());
@@ -1189,8 +1189,8 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		easyAreaList = uifactory.addStaticTextElement("groupList", "form.easy.area", areaInitVal, areaChooseSubContainer);
 		easyAreaList.setUserObject(areaKeyList);
 		
-		chooseAreasLink = uifactory.addFormLink("choose", areaChooseSubContainer, "b_form_groupchooser");
-		createAreasLink = uifactory.addFormLink("create", areaChooseSubContainer, "b_form_groupchooser");
+		chooseAreasLink = uifactory.addFormLink("choose", areaChooseSubContainer, "o_form_groupchooser");
+		createAreasLink = uifactory.addFormLink("create", areaChooseSubContainer, "o_form_groupchooser");
 		
 		updateGroupsAndAreasCheck();
 	}

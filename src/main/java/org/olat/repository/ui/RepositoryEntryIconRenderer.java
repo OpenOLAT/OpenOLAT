@@ -42,6 +42,18 @@ import org.olat.repository.RepositoryEntryShort;
  */
 public class RepositoryEntryIconRenderer implements CustomCellRenderer {
 	
+	public String getIconCssClass(Object val) {
+		String cssClass = null;
+		if (val instanceof RepositoryEntry) {
+			RepositoryEntry re = (RepositoryEntry)val;
+			cssClass = RepositoyUIFactory.getIconCssClass(re);
+		} else if(val instanceof RepositoryEntryShort) {
+			RepositoryEntryShort re = (RepositoryEntryShort)val;
+			cssClass = RepositoyUIFactory.getIconCssClass(re);
+		}
+		return cssClass == null ? "" : cssClass;
+	}
+	
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 		if (renderer == null) {

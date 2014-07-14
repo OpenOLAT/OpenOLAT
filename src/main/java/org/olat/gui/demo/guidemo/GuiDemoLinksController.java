@@ -102,7 +102,7 @@ public class GuiDemoLinksController extends BasicController {
 		link = LinkFactory.createLink("link", mainVC, this);
 		linkBack = LinkFactory.createLinkBack(mainVC, this);
 		linkExtern = LinkFactory.createCustomLink("link.ext", "link.ext", "link.ext", Link.LINK, mainVC, this);	
-		linkExtern.setCustomEnabledLinkCSS("b_link_extern");
+		linkExtern.setIconLeftCSS("o_icon o_icon_link_extern");
 		linkMail = LinkFactory.createCustomLink("link.mail", "link.mail", "link.mail", Link.LINK, mainVC, this);	
 		linkMail.setCustomEnabledLinkCSS("b_link_mailto");
 		

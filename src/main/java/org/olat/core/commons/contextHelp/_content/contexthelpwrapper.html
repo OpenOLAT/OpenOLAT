@@ -1,12 +1,11 @@
-<div id="b_contexthelp">
-
+<div id="o_contexthelp">
 #if($pageFound)
-	<h2 class="">$title</h2>
-	<div id="b_contexthelp_content">
+	<h2>$title</h2>
+	<div id="o_contexthelp_content">
 		$r.render("contextHelpPage")
 	</div>
 	#if($r.available("commentsAndRatingCtr"))
-	<div id="b_contexthelp_rating">
+	<div id="o_contexthelp_rating">
 		<h4>$r.translate("contexthelp.rating.title")</h4>
 	</div>
 		$r.render("commentsAndRatingCtr")

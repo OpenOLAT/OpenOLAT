@@ -76,11 +76,11 @@ public class EmailProperty extends Generic127CharTextPropertyHandler {
 		if (StringHelper.containsNonWhitespace(mail)) {
 			mail = StringHelper.escapeHtml(mail);
 			StringBuilder sb = new StringBuilder();
-			sb.append("<a href=\"mailto:");
-			sb.append(mail);
-			sb.append("\" class=\"b_link_mailto\">");
-			sb.append(mail);
-			sb.append("</a>");
+			sb.append("<a href=\"mailto:")
+			  .append(mail)
+			  .append("\"><i class='o_icon o_icon_mail'> </i> ")
+			  .append(mail)
+			  .append("</a>");
 			return StringHelper.xssScan(sb.toString());
 		}
 		return null;

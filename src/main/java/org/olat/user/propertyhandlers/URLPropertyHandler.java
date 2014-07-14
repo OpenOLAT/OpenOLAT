@@ -53,7 +53,7 @@ public class URLPropertyHandler extends Generic127CharTextPropertyHandler {
 			StringBuffer sb = new StringBuffer();
 			sb.append("<a href=\"");
 			sb.append(href);
-			sb.append("\" class=\"b_link_extern\" target=\"_blank\">");
+			sb.append("\" target=\"_blank\"><i class=\"o_icon o_icon_link_extern\"> </i> ");
 			sb.append(href);
 			sb.append("</a>");
 			String htmlFragment = sb.toString();

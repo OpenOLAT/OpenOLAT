@@ -61,6 +61,13 @@ public class ErrorSearchController extends FormBasicController {
 		formLayout.add(fieldsCont);
 		formLayout.add("fields", fieldsCont);
 		
+		Long errCount = Tracing.getErrorCount();
+		String lastError = "-";
+		if (errCount > 0) {
+			String nodeId = StringHelper.containsNonWhitespace(Settings.getNodeInfo()) ? Settings.getNodeInfo() : "N1";
+			lastError = nodeId + "-E" + errCount;
+		}
+		uifactory.addStaticTextElement("error.last", lastError, fieldsCont);
 		errorNumberEl = uifactory.addTextElement("error.number", "error.number", 32, "", fieldsCont);
 		dateChooserEl = uifactory.addDateChooser("error.date", "error.date", null, fieldsCont);
 		
@@ -71,14 +78,6 @@ public class ErrorSearchController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			errorCont = createVelocityContainer("error_list");
 			((FormLayoutContainer)formLayout).put("errors", errorCont);
-		
-			Long errCount = Tracing.getErrorCount();
-			String lastError = "-";
-			if (errCount > 0) {
-				String nodeId = StringHelper.containsNonWhitespace(Settings.getNodeInfo()) ? Settings.getNodeInfo() : "N1";
-				lastError = nodeId + "-E" + errCount;
-			}
-			((FormLayoutContainer)formLayout).contextPut("highestError", lastError);
 		}
 	}
 

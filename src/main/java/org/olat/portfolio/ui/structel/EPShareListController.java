@@ -588,7 +588,7 @@ public class EPShareListController extends FormBasicController {
 		policyWrapper.setUserListBox(userListBox);
 
 		FormLink chooseUsersLink = uifactory.addFormLink("choose.identity", "choose.identity", null, userListBox, Link.BUTTON);
-		chooseUsersLink.setElementCssClass("b_form_groupchooser");
+		chooseUsersLink.setElementCssClass("o_form_groupchooser");
 		chooseUsersLink.setUserObject(policyWrapper);	
 	}
 	
@@ -612,7 +612,7 @@ public class EPShareListController extends FormBasicController {
 		policyWrapper.setGroupListBox(groupListBox);
 
 		FormLink chooseGroupsLink = uifactory.addFormLink("choose.group", "choose.group", null, groupListBox,Link.BUTTON);
-		chooseGroupsLink.setElementCssClass("b_form_groupchooser");
+		chooseGroupsLink.setElementCssClass("o_form_groupchooser");
 		chooseGroupsLink.setUserObject(policyWrapper);	
 	}
 	

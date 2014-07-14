@@ -199,7 +199,7 @@ public class FileChooseCreateEditController extends BasicController{
 		changeFileButtonTwo.setElementCssClass("o_sel_filechooser_create");
 		previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", getTranslator().translate(NLS_FOLDER_DISPLAYNAME) + chosenFile, Link.NONTRANSLATED, myContent, this);
 		previewLink.setElementCssClass("o_sel_filechooser_preview");
-		previewLink.setCustomEnabledLinkCSS("b_preview");
+		previewLink.setCustomEnabledLinkCSS("o_preview");
 		previewLink.setTitle(getTranslator().translate("command.preview"));
 		
 		this.fileChooser = createVelocityContainer("filechoosecreateedit");

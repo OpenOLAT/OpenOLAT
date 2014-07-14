@@ -231,7 +231,7 @@ public class COConfigForm extends FormBasicController {
 				// FIXING LINK ONLY IF A DEFAULTCONTEXT EXISTS
 				fixGroupError = new FormLinkImpl("error.fix", "create");
 				// link
-				fixGroupError.setCustomEnabledLinkCSS("b_button");
+				fixGroupError.setCustomEnabledLinkCSS("btn btn-default");
 				errorGroupItemLayout.add(fixGroupError);
 
 				fixGroupError.setErrorKey(labelKey, params);
@@ -286,7 +286,7 @@ public class COConfigForm extends FormBasicController {
 				// FXINGIN LINK ONLY IF DEFAULT CONTEXT EXISTS
 				fixAreaError = new FormLinkImpl("error.fix", "create");// erstellen
 				// link
-				fixAreaError.setCustomEnabledLinkCSS("b_button");
+				fixAreaError.setCustomEnabledLinkCSS("btn btn-default");
 				errorAreaItemLayout.add(fixAreaError);
 
 				fixAreaError.setErrorKey(labelKey, params);
@@ -442,8 +442,8 @@ public class COConfigForm extends FormBasicController {
 		easyGroupList = uifactory.addStaticTextElement("group", "form.message.group", groupInitVal, formLayout);
 		easyGroupList.setUserObject(groupKeys);
 		
-		chooseGroupsLink = uifactory.addFormLink("choose", formLayout, "b_form_groupchooser");
-		createGroupsLink = uifactory.addFormLink("create", formLayout, "b_form_groupchooser");	
+		chooseGroupsLink = uifactory.addFormLink("choose", formLayout, "o_form_groupchooser");
+		createGroupsLink = uifactory.addFormLink("create", formLayout, "o_form_groupchooser");	
 
 		hasGroups = businessGroupService.countBusinessGroups(null, cev.getCourseGroupManager().getCourseEntry()) > 0;
 	
@@ -463,8 +463,8 @@ public class COConfigForm extends FormBasicController {
 		easyAreaList = uifactory.addStaticTextElement("area", "form.message.area", areaInitVal, formLayout);
 		easyAreaList.setUserObject(areaKeys);
 		
-		chooseAreasLink = uifactory.addFormLink("choose", formLayout, "b_form_groupchooser");
-		createAreasLink = uifactory.addFormLink("create", formLayout, "b_form_groupchooser");
+		chooseAreasLink = uifactory.addFormLink("choose", formLayout, "o_form_groupchooser");
+		createAreasLink = uifactory.addFormLink("create", formLayout, "o_form_groupchooser");
 		
 		hasAreas = areaManager.countBGAreasInContext(cev.getCourseGroupManager().getCourseResource()) > 0;
 		

@@ -151,7 +151,7 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 				editLink = LinkFactory.createButtonSmall("edit", content, this);
 				content.contextPut("showPreviewLink", Boolean.TRUE);
 				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, content, this);
-				previewLink.setCustomEnabledLinkCSS("b_preview");
+				previewLink.setCustomEnabledLinkCSS("o_preview");
 				previewLink.setTitle(getTranslator().translate("command.preview"));
 			}
 		} else {
@@ -221,7 +221,7 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 					setWikiRepoReference(re, moduleConfiguration);
 					content.contextPut("showPreviewLink", Boolean.TRUE);
 					previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, content, this);
-					previewLink.setCustomEnabledLinkCSS("b_preview");
+					previewLink.setCustomEnabledLinkCSS("o_preview");
 					previewLink.setTitle(getTranslator().translate("command.preview"));
 					// no securitycheck on wiki, editable by everybody
 					editLink = LinkFactory.createButtonSmall("edit", content, this);

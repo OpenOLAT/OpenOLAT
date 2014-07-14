@@ -56,7 +56,7 @@ public abstract class CustomCssCellRenderer implements CustomCellRenderer {
 				} else {
 					// remove helper css classes
 					if (value != null){
-						value = value.replace("b_small_icon", "").trim();
+						value = value.replace("o_icon", "").trim();
 					}
 				}
 			}

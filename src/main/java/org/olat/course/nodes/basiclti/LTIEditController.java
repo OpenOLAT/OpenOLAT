@@ -95,8 +95,9 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 		this.editCourseEnv = course.getCourseEnvironment();
 		this.stackPanel = stackPanel;
 		
-		myContent = this.createVelocityContainer("edit");
+		myContent = createVelocityContainer("edit");
 		previewButton = LinkFactory.createButtonSmall("command.preview", myContent, this);
+		previewButton.setIconLeftCSS("o_icon o_icon_preview");
 		
 		ltConfigForm = new LTIConfigForm(ureq, wControl, config);
 		listenTo(ltConfigForm);

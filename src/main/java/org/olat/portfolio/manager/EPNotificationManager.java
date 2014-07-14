@@ -88,7 +88,7 @@ public class EPNotificationManager {
 
 			String bPath = rootBusinessPath + "[EPPage:" + pageKey + "]";
 			String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
-			SubscriptionListItem item = new SubscriptionListItem(translator.translate("li.newartefact", title), linkUrl, bPath, link.getCreationDate(), "b_eportfolio_link");
+			SubscriptionListItem item = new SubscriptionListItem(translator.translate("li.newartefact", title), linkUrl, bPath, link.getCreationDate(), "o_icon_eportfolio_link");
 			item.setUserObject(pageKey);
 			items.add(item);
 		}
@@ -105,20 +105,20 @@ public class EPNotificationManager {
 				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(rootBusinessPath);
 				if (rating.getLastModified() != null) {
 					// there is a modified date, also add this as a listitem
-					items.add(new SubscriptionListItem(translator.translate("li.changerating", title), linkUrl, rootBusinessPath, rating.getLastModified(), "b_star_icon"));
+					items.add(new SubscriptionListItem(translator.translate("li.changerating", title), linkUrl, rootBusinessPath, rating.getLastModified(), "o_icon_rating_on"));
 				}
-				items.add(new SubscriptionListItem(translator.translate("li.newrating", title), linkUrl, rootBusinessPath, rating.getCreationDate(), "b_star_icon"));
+				items.add(new SubscriptionListItem(translator.translate("li.newrating", title), linkUrl, rootBusinessPath, rating.getCreationDate(), "o_icon_rating_on"));
 			} else {
 				String bPath = rootBusinessPath + "[EPPage:" + rating.getPageKey() + "]";
 				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
 				String[] title = new String[] { rating.getTitle(), userManager.getUserDisplayName(rating.getAuthor()) };
 				if (rating.getLastModified() != null) {
 					// there is a modified date, also add this as a listitem
-					SubscriptionListItem item = new SubscriptionListItem(translator.translate("li.changerating", title ), linkUrl, bPath, rating.getLastModified(), "b_star_icon");
+					SubscriptionListItem item = new SubscriptionListItem(translator.translate("li.changerating", title ), linkUrl, bPath, rating.getLastModified(), "o_icon_rating_on");
 					item.setUserObject(rating.getPageKey());
 					items.add(item);
 				}
-				SubscriptionListItem item = new SubscriptionListItem(translator.translate("li.newrating", title), linkUrl, bPath, rating.getCreationDate(), "b_star_icon");
+				SubscriptionListItem item = new SubscriptionListItem(translator.translate("li.newrating", title), linkUrl, bPath, rating.getCreationDate(), "o_icon_rating_on");
 				item.setUserObject(rating.getPageKey());
 				items.add(item);
 			}

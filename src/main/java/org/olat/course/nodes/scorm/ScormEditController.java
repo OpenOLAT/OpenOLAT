@@ -169,7 +169,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 			} else {
 				cpConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
 				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, cpConfigurationVc, this);
-				previewLink.setCustomEnabledLinkCSS("b_preview");
+				previewLink.setCustomEnabledLinkCSS("o_preview");
 				previewLink.setTitle(getTranslator().translate("command.preview"));
 				
 				ScormPackageConfig scormConfig = ScormMainManager.getInstance().getScormPackageConfig(re.getOlatResource());
@@ -278,7 +278,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 					setScormCPReference(re, config);
 					cpConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
 					previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, cpConfigurationVc, this);
-					previewLink.setCustomEnabledLinkCSS("b_preview");
+					previewLink.setCustomEnabledLinkCSS("o_preview");
 					previewLink.setTitle(getTranslator().translate("command.preview"));
 					// fire event so the updated config is saved by the
 					// editormaincontroller

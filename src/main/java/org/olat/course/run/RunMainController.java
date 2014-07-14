@@ -1311,16 +1311,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					)
 			);
 	}
-	
-	/*private void addCurrentUserCount(ToolController myTool) {
-			VelocityContainer currentUsers = createVelocityContainer("currentUsers");
-			currentUserCountLink = LinkFactory.createCustomLink("currentUsers", "cUsers", "", Link.NONTRANSLATED, currentUsers, this);
-			updateCurrentUserCount();
-			currentUserCountLink.setCustomEnabledLinkCSS("b_toolbox_link");
-			currentUserCountLink.setTooltip(getTranslator().translate("participants.in.course.desc"));
-			currentUserCountLink.setEnabled(false);
-			myTool.addComponent(currentUserCountLink);
-	}*/
 
 	/**
 	 * Reads the users learning group rights from a local hash map. use

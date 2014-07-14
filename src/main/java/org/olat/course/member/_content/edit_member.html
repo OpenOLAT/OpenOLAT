@@ -4,14 +4,14 @@
 #if($r.available("repoRights"))
 	<fieldset>
 		<legend>$editTitle</legend>
-		<div class="b_form_desc">$r.translate("edit.member.repo.desc")</div>
+		<div class="o_desc">$r.translate("edit.member.repo.desc")</div>
 		$r.render("repoRights")
 	</fieldset>
 #end
 #if($r.available("groupList"))
 	<fieldset>
 		<legend>$r.translate("edit.member.groups")</legend>
-		<div class="b_form_desc">$r.translate("edit.member.groups.desc")</div>
+		<div class="o_desc">$r.translate("edit.member.groups.desc")</div>
 		$r.render("groupList")
 	</fieldset>
 #end

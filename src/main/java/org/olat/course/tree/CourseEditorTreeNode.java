@@ -112,7 +112,9 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 	 * @see org.olat.core.gui.components.tree.TreeNode#getCssClass()
 	 */
 	public String getCssClass() {
-		if (deleted) return "b_deleted";
+		if (deleted) {
+			return "o_deleted";
+		}
 		return null;
 	}
 

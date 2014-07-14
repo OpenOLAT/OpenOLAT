@@ -115,7 +115,7 @@ public class CustomConfigManager extends BasicManager {
 	private void appendLogoPart(StringBuffer sb, VFSContainer themeBase) {
 		VFSItem vfsItem = getLogoItem(themeBase);
 		if (vfsItem != null) {
-			sb.append("#b_right_logo {\n\tbackground-image: url(").append(vfsItem.getName()).append("); \n");
+			sb.append("#o_right_logo {\n\tbackground-image: url(").append(vfsItem.getName()).append("); \n");
 			sb.append("\tbackground-position: left top; \n");
 			sb.append("\tbackground-repeat: no-repeat; \n");
 			LocalFileImpl leaf = (LocalFileImpl) vfsItem;
@@ -123,7 +123,7 @@ public class CustomConfigManager extends BasicManager {
 			sb.append("\twidth: ").append(size[0]).append("px; \n");
 			sb.append("\theight: ").append(size[1]).append("px; \n");
 			sb.append("\tfloat: left; \n}\n");
-			sb.append("#b_logo { \n\t float: left; \n}");
+			sb.append("#o_logo { \n\t float: left; \n}");
 		}
 	}
 

@@ -73,7 +73,7 @@ public class DownloadComponent extends AbstractComponent {
 	 * @param linkToolTip
 	 *            an optional tool tip (hover text over link)
 	 * @param linkCssIconClass
-	 *            an optional css icon class. Note that b_with_small_icon_left
+	 *            an optional css icon class. Note that o_icon
 	 *            will be added when this argument is used. Use the render
 	 *            argument when you want to provide additional CSS classes.
 	 */
@@ -153,7 +153,7 @@ public class DownloadComponent extends AbstractComponent {
 	/**
 	 * @param linkCssIconClass
 	 *            The link icon css class or NULL if no css should be used. Note
-	 *            that b_with_small_icon_left will be added when this argument
+	 *            that o_icon will be added when this argument
 	 *            is used. Use the render argument when you want to provide
 	 *            additional CSS classes.
 	 */

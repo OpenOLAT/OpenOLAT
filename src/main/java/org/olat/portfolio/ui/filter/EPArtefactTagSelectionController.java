@@ -65,9 +65,7 @@ public class EPArtefactTagSelectionController extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-//		setFormTitle("filter.tag.title");
 		setFormDescription("filter.tag.intro");
-		setFormStyle("b_eportfolio_tag_selector");
 		
 		Map<String, String> allUserTags = ePFMgr.getUsersMostUsedTags(getIdentity(), -1);
 		LinkedList<Entry<String, String>> sortEntrySet = new LinkedList<Entry<String, String>>(allUserTags.entrySet());

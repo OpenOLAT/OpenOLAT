@@ -118,7 +118,7 @@ public class CalendarDetailsController extends BasicController {
 				wrapper.setDisplayName(link.getDisplayName());
 				wrapper.setTitle(StringEscapeUtils.escapeHtml(link.getDisplayName()));
 				if (StringHelper.containsNonWhitespace(iconCssClass)) {
-					wrapper.setCssClass("b_with_small_icon_left " + iconCssClass);
+					wrapper.setCssClass(iconCssClass);
 				}
 
 				if(uri.startsWith(rootUri)) {

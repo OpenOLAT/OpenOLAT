@@ -118,7 +118,7 @@ public class PortfolioConfigForm extends FormBasicController {
 		mapNameElement.setVisible(map == null);
 		
 		previewMapLink = uifactory.addFormLink("preview", "selected.map", "selected.map", formLayout, Link.LINK);
-		previewMapLink.setCustomEnabledLinkCSS("b_preview");
+		previewMapLink.setCustomEnabledLinkCSS("o_preview");
 		((Link)previewMapLink.getComponent()).setCustomDisplayText(name);
 		previewMapLink.setVisible(map != null);
 		previewMapLink.setElementCssClass("o_sel_preview_map");

@@ -1,6 +1,6 @@
 ## the attribute config rows are rendered in separate form. show them only when the attribute connector element is also shown
-<div class="b_overflowscrollbox">
-<table class="b_table_nobackground">
+<div class="o_scrollbox">
+<table class="table">
 	<thead>
 		<tr>
 			<th>$r.translate("institution.attribute")</th>
@@ -14,15 +14,15 @@
      	#foreach ($c1entry in $columnAttribute)
 		<tr>
 	      	#set ($i = $velocityCount - 1)
-	      	<td valign="top">
+	      	<td>
 		      	## attribute
 		      	$r.render(${c1entry}) 
 		     </td>
-	      	<td valign="top">
+	      	<td>
 		      	## operator
 		      	$r.render(${columnOperator.get($i)})
 		     </td>
-	      	<td valign="top">
+	      	<td>
    			#if ($f.isVisible(${columnValueText.get($i)}))
    				## input field
    				$r.render(${columnValueText.get($i)})
@@ -33,11 +33,11 @@
    				$r.render(${columnValueSelection.get($i)})
    			#end
 		    </td>
-			<td valign="top">	      			
+			<td>	      			
 				## add button
 	      		$r.render(${columnAddRow.get($i)}) 
 		     </td>
-			<td valign="top">	      			
+			<td>	      			
 	      	#if ($columnAttribute.size() > 1)
 				## delete button
 	      		$r.render(${columnRemoveRow.get($i)})

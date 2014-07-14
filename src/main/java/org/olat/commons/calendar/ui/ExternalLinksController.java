@@ -227,7 +227,7 @@ public class ExternalLinksController extends FormBasicController {
 				if(link.getId().equals(linkWrapper.getId())) {
 					link.setURI(linkWrapper.getUrl().getValue());
 					link.setDisplayName(linkWrapper.getName().getValue());
-					link.setIconCssClass("b_link_extern");
+					link.setIconCssClass("o_icon o_icon_link_extern");
 					found = true;
 				}
 			}
@@ -235,7 +235,7 @@ public class ExternalLinksController extends FormBasicController {
 				KalendarEventLink newLink = linkWrapper.getLink();
 				newLink.setURI(linkWrapper.getUrl().getValue());
 				newLink.setDisplayName(linkWrapper.getName().getValue());
-				newLink.setIconCssClass("b_link_extern");
+				newLink.setIconCssClass("o_icon o_icon_link_extern");
 				links.add(newLink);
 			}
 		}

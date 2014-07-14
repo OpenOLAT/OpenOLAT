@@ -149,6 +149,7 @@ public class CourseSiteAdminController extends FormBasicController {
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsLayout);
 		okButton = uifactory.addFormLink("save", "save", null, buttonsLayout, Link.BUTTON);
+		okButton.setCustomEnabledLinkCSS("btn btn-primary");
 		//uifactory.addFormSubmitButton("save", "save", formLayout);
 	}
 	
@@ -182,7 +183,7 @@ public class CourseSiteAdminController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == enableToolbar) {
-			okButton.setCustomEnabledLinkCSS("b_button o_button_dirty");
+			okButton.setCustomEnabledLinkCSS("btn btn-primary o_button_dirty");
 		} else if(source == tableEl) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -190,12 +191,12 @@ public class CourseSiteAdminController extends FormBasicController {
 					LanguageConfigurationRow row = model.getObject(se.getIndex());
 					doReset(row);
 					okButton.getComponent().setDirty(true);
-					okButton.setCustomEnabledLinkCSS("b_button o_button_dirty");
+					okButton.setCustomEnabledLinkCSS("btn btn-primary o_button_dirty");
 				} else if("select".equals(se.getCommand())) {
 					LanguageConfigurationRow row = model.getObject(se.getIndex());
 					doSelecCourse(ureq, row);
 					okButton.getComponent().setDirty(true);
-					okButton.setCustomEnabledLinkCSS("b_button o_button_dirty");
+					okButton.setCustomEnabledLinkCSS("btn btn-primary o_button_dirty");
 				} else if("openre".equals(se.getCommand())) {
 					LanguageConfigurationRow row = model.getObject(se.getIndex());
 					RepositoryEntry re = row.getRepositoryEntry();
@@ -205,7 +206,7 @@ public class CourseSiteAdminController extends FormBasicController {
 				}
 			}
 		} else if(source == okButton) {
-			okButton.setCustomEnabledLinkCSS("b_button");
+			okButton.setCustomEnabledLinkCSS("btn btn-primary");
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 	}

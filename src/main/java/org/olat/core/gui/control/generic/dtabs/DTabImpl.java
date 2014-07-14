@@ -70,7 +70,6 @@ public class DTabImpl implements Disposable, DTab {
 		StackedBusinessControl businessControl = new StackedBusinessControl(null, wOrigControl.getBusinessControl());
 		wControl = BusinessControlFactory.getInstance().createBusinessWindowControl(businessControl, wOrigControl);
 		
-		String typeName = ores.getResourceableTypeName();
 		String shortTitle;
 		if(title == null) {
 			shortTitle = "???";
@@ -80,7 +79,8 @@ public class DTabImpl implements Disposable, DTab {
 		} else {
 			shortTitle = title;
 		}
-		navElement = new DefaultNavElement(shortTitle, title, "b_resource_" + typeName.replace(".", "-"));
+		String iconCSSClass = "";//"o_" + ores.getResourceableTypeName().replace(".", "-") + "_icon";
+		navElement = new DefaultNavElement(shortTitle, title, iconCSSClass);
 	}
 
 	/**

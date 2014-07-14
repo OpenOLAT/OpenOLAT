@@ -1,19 +1,26 @@
-$r.render("command.config")
-<hr />
-<fieldset id="o_preview_details">
-	<legend>$r.translate("details.header")</legend>
-	<table class="b_grid b_small">
-		<tbody>
-			<tr><td>$r.translate("details.title")</td><td>$!coursenode.getShortTitle()</td></tr>
-			<tr><td>$r.translate("details.longtitle")</td><td>$!coursenode.getLongTitle()</td></tr>
-			<tr><td>$r.translate("details.role")</td><td>$r.translate("${asRole}")</td></tr>
-			<tr><td>$r.translate("details.visibility")</td><td>$!visibilityExpr</td></tr>
-			<tr><td>$r.translate("details.time")</td><td>$!time</td></tr>
-			<tr><td>$r.translate("details.groups")</td><td>$!groups</td></tr>
-			<tr><td>$r.translate("details.areas")</td><td>$!areas</td></tr>
-		</tbody>
-	</table>
-</fieldset>
-<a href="#" onclick="jQuery('#o_preview_details').slideToggle(300);">$r.translate("details.toggle")</a>
-<hr />
+<div class="o_button_group o_button_group_right">
+	$r.render("command.config")
+</div>
+<div class="panel-group" id="o_preview_details">
+	<div class="panel panel-default">
+    	<div class="panel-heading">
+      		<h4 class="panel-title">
+       			 <a data-toggle="collapse" data-parent="#o_preview_details" href="#collapseOne">$r.translate("details.header")</a>
+      		</h4>
+    	</div>
+		<div id="collapseOne" class="panel-collapse collapse in">
+			<table class="table table-bordered">
+				<tbody>
+					<tr><th>$r.translate("details.title")</th><td>$!coursenode.getShortTitle()</td></tr>
+					<tr><th>$r.translate("details.longtitle")</th><td>$!coursenode.getLongTitle()</td></tr>
+					<tr><th>$r.translate("details.role")</th><td>$r.translate("${asRole}")</td></tr>
+					<tr><th>$r.translate("details.visibility")</th><td>$!visibilityExpr</td></tr>
+					<tr><th>$r.translate("details.time")</th><td>$!time</td></tr>
+					<tr><th>$r.translate("details.groups")</th><td>$!groups</td></tr>
+					<tr><th>$r.translate("details.areas")</th><td>$!areas</td></tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
 $r.render("content")

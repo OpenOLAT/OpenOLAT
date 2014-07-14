@@ -551,16 +551,21 @@ public class Formatter {
 			sb.append(url);
 			sb.append("\"");
 			if (url.startsWith("mailto")) {
-				sb.append(" target=\"_blank\" class=\"b_link_mailto\"");				
+				sb.append(" target=\"_blank\"");				
 			}
 			// OpenOLAT URL's are opened in same window, all other URL's in separate window
 			else if (!url.startsWith(Settings.getServerContextPathURI())) {
-				sb.append(" target=\"_blank\" class=\"b_link_extern\"");				
-			}
-			else {
+				sb.append(" target=\"_blank\"");				
+			} else {
 				sb.append(" class=\"b_link_forward\"");				
 			}
 			sb.append(">");
+			if (url.startsWith("mailto")) {
+				sb.append("<i class='o_icon o_icon_mail'> </i> ");					
+			} else if (!url.startsWith(Settings.getServerContextPathURI())) {
+				sb.append("<i class='o_icon o_icon_link_extern'> </i> ");				
+			}
+			
 			sb.append(url);
 			sb.append("</a>");
 		}

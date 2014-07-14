@@ -166,7 +166,7 @@ public abstract class FeedNodeEditController extends ActivateableTabbableDefault
 				contentVC.contextPut(SHOW_PREVIEW_LINK, Boolean.TRUE);
 				previewLink = LinkFactory.createCustomLink(COMMAND_PREVIEW, COMMAND_PREVIEW, re.getDisplayname(), Link.NONTRANSLATED, contentVC,
 						this);
-				previewLink.setCustomEnabledLinkCSS("b_preview");
+				previewLink.setCustomEnabledLinkCSS("o_preview");
 				previewLink.setTitle(getTranslator().translate(COMMAND_PREVIEW));
 
 			}
@@ -282,7 +282,7 @@ public abstract class FeedNodeEditController extends ActivateableTabbableDefault
 					contentVC.contextPut("showPreviewLink", Boolean.TRUE);
 					previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED,
 							contentVC, this);
-					previewLink.setCustomEnabledLinkCSS("b_preview");
+					previewLink.setCustomEnabledLinkCSS("o_preview");
 					previewLink.setTitle(getTranslator().translate("command.preview"));
 					// no securitycheck on feeds, editable by everybody
 					editLink = LinkFactory.createButtonSmall("edit", contentVC, this);

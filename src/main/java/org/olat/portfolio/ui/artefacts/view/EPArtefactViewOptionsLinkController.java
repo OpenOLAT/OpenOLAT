@@ -19,7 +19,6 @@
  */
 package org.olat.portfolio.ui.artefacts.view;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -38,6 +37,7 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.ui.artefacts.collect.EPCollectStepForm04;
 import org.olat.portfolio.ui.structel.EPStructureChangeEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description: Displays the options-Link for an artefact. handles displaying of the callout and its links 
@@ -54,7 +54,8 @@ public class EPArtefactViewOptionsLinkController extends BasicController {
 	private PortfolioStructure struct;
 	private final EPSecurityCallback secCallback;
 	private final VelocityContainer vC;
-	private final EPFrontendManager ePFMgr;
+	@Autowired
+	private EPFrontendManager ePFMgr;
 	
 	//controllers
 	private EPCollectStepForm04 moveTreeCtrl;
@@ -80,14 +81,13 @@ public class EPArtefactViewOptionsLinkController extends BasicController {
 		this.struct = struct;
 		this.secCallback = secCallback;
 		
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		vC = createVelocityContainer("optionsLink");
 		
-		optionLink = LinkFactory.createCustomLink("option.link", "option", "&nbsp;&nbsp;", Link.NONTRANSLATED, vC, this);
-		optionLink.setCustomEnabledLinkCSS("b_ep_options");
+		optionLink = LinkFactory.createCustomLink("option.link", "option", " ", Link.NONTRANSLATED, vC, this);
+		optionLink.setIconLeftCSS("o_icon o_icon_actions");
 		optionLink.setTooltip(translate("option.link"));
 		
-		putInitialPanel(vC);
+		putInitialPanel(optionLink);
 	}
 	
 	

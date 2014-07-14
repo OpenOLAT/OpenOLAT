@@ -30,10 +30,10 @@ $r.render("vc.options")
 			#set( $duration = $vcDurationInputList.get($iter).getName() )
 			#set( $durationErr = $duration + "_ERROR" )
 			<tr>
-				<td><div class="b_form_error">#if($f.hasError($title))$r.render($titleErr)#end</div></td>
-				<td><div class="b_form_error">#if($f.hasError($descr))$r.render($descrErr)#end</div></td>
-				<td><div class="b_form_error">#if($f.hasError($begin))$r.render($beginErr)#end</div></td>
-				<td><div class="b_form_error">#if($f.hasError($duration))$r.render($durationErr)#end</div></td>
+				<td>#if($f.hasError($title)) <span class="o_icon o_icon_error form-control-feedback"> </span> $r.render($titleErr)#end</td>
+				<td>#if($f.hasError($descr)) <span class="o_icon o_icon_error form-control-feedback"> </span> $r.render($descrErr)#end</td>
+				<td>#if($f.hasError($begin)) <span class="o_icon o_icon_error form-control-feedback"> </span> $r.render($beginErr)#end</td>
+				<td>#if($f.hasError($duration)) <span class="o_icon o_icon_error form-control-feedback"> </span> $r.render($durationErr)#end</td>
 				<td></td>
 				<td></td>
 			</tr>

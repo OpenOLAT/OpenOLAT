@@ -113,7 +113,6 @@ public class DialogBoxController extends BasicController {
 		
 		// configuration default values:
 		setCloseWindowEnabled(true);
-		setCssClass("b_dialog_icon");
 		// activate modal dialog now
 		putInitialPanel(dialogBoxVC);
 	}
@@ -205,5 +204,4 @@ public class DialogBoxController extends BasicController {
 			fireEvent(ureq, new ButtonClickedEvent(pos));
 		}
 	}
-
 }

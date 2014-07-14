@@ -1,4 +1,4 @@
-<div class="b_form_auto_completer">
+<div class="o_form_auto_completer">
 	#if($flexi)
 		<div id='$r.getId("aj_ac_f")'>
 	#else
@@ -8,7 +8,7 @@
 		$autocompleter_label 
 	#end
 	<div class="$formElementClass">
-	    <input type="text" size="$inputWidth" class="form-control" name='$r.getId("b_autocomplete_input")' id='$r.getId("b_autocomplete_input")' />
+	    <input type="text" size="$inputWidth" class="form-control" name='$r.getId("o_autocomplete_input")' id='$r.getId("o_autocomplete_input")' />
 	</div>	
 	#if($flexi)
 		</div>
@@ -41,7 +41,7 @@ jQuery(function(){
 		}
 	});
 	fullNameTypeahead.initialize();
-	jQuery('#$r.getId("b_autocomplete_input")').typeahead({
+	jQuery('#$r.getId("o_autocomplete_input")').typeahead({
 		hint: false,
 		highlight: false,
 		minLength: 3
