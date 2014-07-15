@@ -56,13 +56,7 @@
 		<script type="text/javascript">
 		/* <![CDATA[ */
 			jQuery(function() {
-				jQuery("#o_link").popover({
-				    	placement : 'top',
-				    	html: true,
-				    	container: 'body',
-				    	trigger: 'click',
-				    	content: o_shareCallout
-				 });
+				o_shareLinkPopup('o_link', o_shareCallout);
 			});
 			jQuery(function() {
 				o_QRCodePopup('o_qrcode', o_shareSocialUrl);

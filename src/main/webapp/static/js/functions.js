@@ -914,6 +914,26 @@ function o_scrollToElement(elem) {
 	}, 1000);
 }
 
+function o_shareLinkPopup(id, text, loc) {
+	if(typeof(loc)==='undefined') loc = 'top';
+	
+	jQuery('#' + id).popover({
+    	placement : loc,
+    	html: true,
+    	trigger: 'click',
+    	container: 'body',
+    	content: text,
+	}).on('shown.bs.popover', function () {
+		var clickListener = function (e) {
+			if (jQuery(e.target).data('toggle') !== 'popover' && jQuery(e.target).parents('.popover.in').length === 0) { 
+				jQuery('#' + id).popover('hide');
+				jQuery('body').unbind('click', clickListener);
+			}
+		};
+		jQuery('body').on('click', clickListener);
+	});
+}
+
 function o_QRCodePopup(id, text, loc) {	
 	if(typeof(loc)==='undefined') loc = 'top';
 	jQuery('#' + id).popover({
@@ -924,6 +944,13 @@ function o_QRCodePopup(id, text, loc) {
     	content: '<div id="' + id + '_pop" class="o_qrcode"></div>'
 	 }).on('shown.bs.popover', function () {
 		 o_info.qr = o_QRCode(id + '_pop', (jQuery.isFunction(text) ? text() : text));
+		 var clickListener = function (e) {
+			 if (jQuery(e.target).data('toggle') !== 'popover' && jQuery(e.target).parents('.popover.in').length === 0) { 
+				 jQuery("#" + id).popover('hide');
+				 jQuery('body').unbind('click', clickListener);
+			 }
+		 };
+		 jQuery('body').on('click', clickListener);
 	 }).on('hidden.bs.popover', function () {
 		 try {
 			 o_info.qr.clear();
