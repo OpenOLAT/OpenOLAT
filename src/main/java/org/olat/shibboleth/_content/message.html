@@ -4,13 +4,13 @@
 <head>
 <meta name="description" content="$r.translate("meta.description")" />
 <meta name="keywords" content="$r.translate("meta.keywords")" /> 
-<meta name="dcterms.creator" content="University of Zurich - http://www.uzh.ch" />
-<meta name="dcterms.subject" content="OLAT - Online Learning And Training - Your Open Source Learning Management System" />
-<meta name="dcterms.contributor" content="see http://www.olat.org/website/en/html/download_license.html" />
+<meta name="dcterms.creator" content="OpenOLAT - http://www.openolat.org" />
+<meta name="dcterms.subject" content="OpenOLAT - infinite learning - Your Open Source Learning Management System" />
+<meta name="dcterms.contributor" content="see http://www.openolat.org" />
 <meta name="dcterms.date" content="2010-03-16" />
 <meta name="dcterms.type" content="Interactive Resource" />
-<meta name="dcterms.identifier" content="http://www.olat.org/" />
-<meta name="dcterms.rights" content="http://www.olat.org/website/en/html/download_license.html" />
+<meta name="dcterms.identifier" content="http://www.openolat.org" />
+<meta name="dcterms.rights" content="http://www.openolat.org" />
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 ## <!-- IE cache -->
 <script type="text/javascript">
@@ -22,42 +22,43 @@ var o_info = new Object();
 ## CSS theme inclusion: first the standard css and second the IE bugfixes
 <link rel="icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
 <link rel="shortcut icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
-<link href="${theme.getBaseURI()}layout.css" rel="stylesheet" type="text/css" />
+<link id="o_theme_css" href="${theme.getBaseURI()}theme.css" rel="stylesheet" type="text/css" />
 <title>$r.translate("error.shibboleth.head")</title>
 </head>
 <body>
-<div id="b_page_margins"><div id="b_page">
-	<a name="b_top"></a>
-	<div id="b_header">
-		<div id="b_logo"></div>
-		<div id="b_topnav"></div>
-	</div>
-	
-	<div id="o_main" class="b_hideboth b_exception">
-		<div id="o_main_center">
-			<div id="o_main_center_content" class="clearfix">
-				<a id="o_content"></a> 
-				<div id="o_main_center_content_inner" class="o_scrollblock">
-## START ERROR AREA	
-<center>
-<div class="o_important">
-$detailedmessage
-</div>
-#if ($supportEmail)
-<div class="o_note">
-$r.translate("idp.support.email")
-$supportEmail
-</div>
-#end
-<div class="o_button_group">
-<a class="btn" href="$r.relLink('')"><span>Login</span></a>
-</div>
-</center>		
-## END ERROR AREA				
-				</div>
-			</div>	
+	<div id="o_header_wrapper"> 
+		<div id="o_header_container"> 
+			<div id="o_logo"></div>
+			<div id="o_right_logo"></div>
 		</div>
 	</div>
-</div>
+	
+	<div id="o_main_wrapper">
+		<div id="o_main_container">
+			<div id="o_main" class="row o_loginscreen">
+				<div id="o_main_center" class="split-pane" style="min-height: 655px; width:480px; margin:100px auto;">
+					<div id="o_main_center_content" class="clearfix">
+						<a id="o_content"></a> 
+						<div id="o_main_center_content_inner">
+## START ERROR AREA	
+<center>
+	<div class="o_important">$detailedmessage</div>
+	#if ($supportEmail)
+	<div class="o_note">
+	$r.translate("idp.support.email")
+	$supportEmail
+	</div>
+	#end
+	<div class="o_button_group">
+		<a class="btn btn-primary" href="$r.relLink('')"><span>Login</span></a>
+	</div>
+</center>		
+## END ERROR AREA	
+						</div>			
+					</div>
+				</div>	
+			</div>
+		</div>
+	</div>
 	
 </body></html>
