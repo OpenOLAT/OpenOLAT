@@ -137,14 +137,14 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	}
 	
 	protected RegistrationController openRegistration(UserRequest ureq) {
+		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(subController);
+		
 		subController = new RegistrationController(ureq, getWindowControl());
 		listenTo(subController);
-		
-		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent());
+		String title = ((RegistrationController)subController).getWizardTitle();
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent(), true, title);
 		listenTo(cmc);
-
 		cmc.activate();
 		return (RegistrationController)subController;
 	}
@@ -152,13 +152,15 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	protected void openChangePassword(UserRequest ureq, String initialEmail) {
 		// double-check if allowed first
 		if (!UserModule.isPwdchangeallowed(ureq.getIdentity())) throw new OLATSecurityException("chose password to be changed, but disallowed by config");
-		
+
+		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(subController);
+		
 		subController = new PwChangeController(ureq, getWindowControl(), initialEmail, true);
 		listenTo(subController);
 		
-		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent());
+		String title = ((PwChangeController)subController).getWizardTitle();
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent(), true, title);
 		listenTo(cmc);
 		
 		cmc.activate();

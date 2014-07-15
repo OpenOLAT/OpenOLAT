@@ -3,29 +3,26 @@
 		<div class="pull-right">$r.render("closeIcon")</div>
 		<h4>$wizardTitle</h4>
 	</div>
-	<div class="modal-body o_wizard_steps_wrapper">
-		<div class="row o_wizard_steps_content clearfix">
-			<!-- workflow / wizard steps -->
-			<div class="col-md-4 o_wizard_steps_list">
-				<ol>
-				#foreach($item in $stepLinks)
-					<li class="	#if($currentStepPos == $velocityCount) o_wizard_steps_current #end	#if(!${item.isEnabled()}) o_enabled #end ">
-						$r.render(${item})
-					</li>
-				#end
-				</ol>
-			</div>
+	<div class="modal-body">
+		<div class="wizard clearfix">
+			<ul class="steps">
+			#foreach($item in $stepLinks)
+				<li class="	#if($currentStepPos == $velocityCount) active #end	#if(!${item.isEnabled()}) o_enabled #end ">
+					$r.render(${item})<span class="chevron"></span>
+				</li>
+			#end
+			</ul>
+		</div>	
 			
-			<!-- wizard step content -->
-			<div class="col-md-8 o_wizard_steps_current">
-				<div class="o_wizard_steps_current_inner">
-					<div class="o_wizard_steps_current_content clearfix">
-						<div class="o_floatscrollbox">
-							$r.render("FFO_CURRENTSTEPPAGE")
-						</div>
+		<!-- wizard step content -->
+		<div class="o_wizard_steps_current">
+			<div class="o_wizard_steps_current_inner">
+				<div class="o_wizard_steps_current_content clearfix">
+					<div class="o_floatscrollbox">
+						$r.render("FFO_CURRENTSTEPPAGE")
 					</div>
-					<div style="clear:both; height: 1px">&nbsp;</div>	   	
 				</div>
+				<div style="clear:both; height: 1px">&nbsp;</div>	   	
 			</div>
 		</div>
 	</div>

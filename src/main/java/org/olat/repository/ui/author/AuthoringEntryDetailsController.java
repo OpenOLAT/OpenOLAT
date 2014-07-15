@@ -540,18 +540,17 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 	}
 
 	private void doCloseResource(UserRequest ureq) {
-		RepositoryHandler repoHandler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
-
+		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(wc);
+		
+		RepositoryHandler repoHandler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
 		wc = repoHandler.createCloseResourceController(ureq, getWindowControl(), entry);
 		listenTo(wc);
-		
 		wc.startWorkflow();
 		
-		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), wc.getInitialComponent());
+		String title = wc.getAndRemoveWizardTitle();
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), wc.getInitialComponent(), true, title);
 		listenTo(cmc);
-		
 		cmc.activate();
 	}
 	

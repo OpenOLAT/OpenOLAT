@@ -75,12 +75,18 @@ public class WizardController extends BasicController {
 		wizardVC.put("wic", wic.getInitialComponent());
 		putInitialPanel(wizardVC);
 	}
+	
+	public String getAndRemoveWizardTitle() {
+		String wizardTitle = (String)wizardVC.contextGet("wizardTitle");
+		wizardVC.contextRemove("wizardTitle");
+		return wizardTitle;
+	}
 
 	/**
 	 * @param wizardTitle
 	 */
 	public void setWizardTitle(String wizardTitle) {
-		this.wizardVC.contextPut("wizardTitle", wizardTitle);
+		wizardVC.contextPut("wizardTitle", wizardTitle);
 	}
 
 	/**
@@ -106,16 +112,16 @@ public class WizardController extends BasicController {
 	 * @param component
 	 */
 	private void setWizardVcContent(String title, Component component) {
-		this.wic.setCurStep(this.currentStep);
-		this.wizardVC.contextPut("currentStep", new Integer(this.currentStep));
-		this.wizardVC.contextPut("steps", new Integer(this.steps));
-		this.wizardVC.contextPut("title", title);
-		if(this.currentStep == this.steps){
-			this.wizardVC.contextPut("lastStep", Boolean.TRUE);
+		wic.setCurStep(this.currentStep);
+		wizardVC.contextPut("currentStep", new Integer(currentStep));
+		wizardVC.contextPut("steps", new Integer(steps));
+		wizardVC.contextPut("title", title);
+		if(currentStep == steps){
+			wizardVC.contextPut("lastStep", Boolean.TRUE);
 		}else{
-			this.wizardVC.contextPut("lastStep", Boolean.FALSE);
+			wizardVC.contextPut("lastStep", Boolean.FALSE);
 		}
-		this.wizardVC.put("component", component);
+		wizardVC.put("component", component);
 	}
 
 	/**
@@ -134,5 +140,4 @@ public class WizardController extends BasicController {
 	protected void doDispose() {
 		//
 	}
-
 }

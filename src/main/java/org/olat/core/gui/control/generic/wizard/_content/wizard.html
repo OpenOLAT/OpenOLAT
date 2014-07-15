@@ -1,8 +1,8 @@
 <div class="o_legacy_wizard">
-	<div class="clearfix">
-		$r.render("wic")
+	$r.render("wic")
+	#if($wizardTitle)	
 		<h4>$wizardTitle</h4>
-	</div>
+	#end
 	<fieldset>
 		<legend>$r.translate("wizard.step") $currentStep/$steps: $title</legend>
 		$r.render("component")

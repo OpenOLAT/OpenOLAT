@@ -132,6 +132,10 @@ public class PwChangeController extends BasicController {
 			putInitialPanel(layoutCtr.getInitialComponent());
 		}
 	}
+	
+	public String getWizardTitle() {
+		return translate("step1.pw.title");
+	}
 
 	/**
 	 * just needed for creating EmailForm

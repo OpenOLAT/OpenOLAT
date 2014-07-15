@@ -127,6 +127,7 @@ This produce uses software based on the MIT License
 * cropper.js (MIT License) [https://github.com/fengyuanchen/cropper]
 * html5shiv (MIT License / GPL2) [https://github.com/aFarkas/html5shiv]
 * respond.js (MIT License) [https://github.com/scottjehl/Respond]
+* Fuel UX (MIT License) [http://exacttarget.github.io/fuelux]
 
 -----------------------------------------------------------------------
 This product uses software based on the BSD License

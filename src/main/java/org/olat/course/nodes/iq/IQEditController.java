@@ -520,7 +520,8 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 						&& onyxSuccess > 0) {
 					replaceWizard = new IQEditReplaceWizard(ureq, getWindowControl(), course, courseNode, types, learners, null, onyxSuccess, true);
 					replaceWizard.addControllerListener(this);
-					cmc = new CloseableModalController(getWindowControl(), translate("close"), replaceWizard.getInitialComponent());
+					String title = replaceWizard.getAndRemoveWizardTitle();
+					cmc = new CloseableModalController(getWindowControl(), translate("close"), replaceWizard.getInitialComponent(), true, title);
 				} else {
 					List<QTIResult> results = QTIResultManager.getInstance().selectResults(course.getResourceableId(), courseNode.getIdent(), re.getKey(), null, 1);
 					// test was passed from an user

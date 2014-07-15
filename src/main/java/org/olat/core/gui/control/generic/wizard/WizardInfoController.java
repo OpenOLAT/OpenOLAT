@@ -26,6 +26,8 @@
 
 package org.olat.core.gui.control.generic.wizard;
 
+import java.io.IOException;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -83,7 +85,9 @@ public class WizardInfoController extends DefaultController {
 	 * @param i
 	 */
 	public void setCurStep(int i) {
-		if (i > maxSteps) throw new AssertException("Trying to set a step above max setps.");
+		if (i > maxSteps) {
+			throw new AssertException("Trying to set a step above max setps.");
+		}
 		myContent.contextPut("cur", String.valueOf(i));
 	}
 
@@ -100,7 +104,8 @@ public class WizardInfoController extends DefaultController {
 	 * @param strMaxStep
 	 * @return
 	 */
-	public StringOutput renderWizardSteps(String strStep, String strMaxStep) {
+	public StringOutput renderWizardSteps(String strStep, String strMaxStep)
+	throws IOException {
 		int step = Integer.parseInt(strStep);
 		int maxStep = Integer.parseInt(strMaxStep);
 		StringOutput sb = new StringOutput(100);
@@ -108,16 +113,14 @@ public class WizardInfoController extends DefaultController {
 		return sb;
 	}
 	
-	private void renderWizardSteps(StringOutput target, int totalSteps, int step) {
-		target.append("<div class='o_legacy_wizard_steps'>");
-		String activeImage = "";
-		String passiveImage = "";
+	private void renderWizardSteps(StringOutput target, int totalSteps, int step)
+	throws IOException {
 		for (int i = 1; i <= totalSteps; i++) {
-			activeImage = "<i class='o_icon o_legacy_wizard_step_a" + i + "'></i>";
-			passiveImage = "<i class='o_icon o_legacy_wizard_step_p" + i + "'></i>";
-			if (step == i) target.append(activeImage);
-			else target.append(passiveImage);
+			target.append("<li class='")
+			      .append("active", step == i)
+			      .append("'><span class'badge'>")
+			      .append(Integer.toString(i))
+			      .append("</span><span class='chevron'></span></li>");
 		}
-		target.append("</div>");
 	}
 }

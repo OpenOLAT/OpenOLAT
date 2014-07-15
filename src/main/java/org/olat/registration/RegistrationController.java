@@ -192,6 +192,10 @@ public class RegistrationController extends BasicController implements Activatea
 		}		
 	}
 	
+	public String getWizardTitle() {
+		return translate("step1.reg.title");
+	}
+	
 	private VelocityContainer setErrorPage(String errorKey, WindowControl wControl) {
 		String error = getTranslator().translate(errorKey);
 		wControl.setError(error);

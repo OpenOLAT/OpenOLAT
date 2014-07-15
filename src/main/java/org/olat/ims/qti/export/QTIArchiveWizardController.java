@@ -172,6 +172,10 @@ public class QTIArchiveWizardController extends BasicController {
 		main.setContent(wc.getInitialComponent());
 		putInitialPanel(main);
 	}
+	
+	public String getAndRemoveWizardTitle() {
+		return wc.getAndRemoveWizardTitle();
+	}
 
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == backLinkAtOptionChoose){

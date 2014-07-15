@@ -1,30 +1,15 @@
-<div class="clearfix">
-	$r.render("regwizard")
-	<h4>$r.translate("step1.reg.title")</h4>
-</div>
-<p>
-	$text
-</p>
+$r.render("regwizard")
+<p>$text</p>
 #if ($loginhelp)
-	<p>
-		$loginhelp
-	</p>
+	<p>$loginhelp</p>
 #end
 #if ($pwdhelp)
-	<p>
-		$pwdhelp
-	</p>
+	<p>$pwdhelp</p>
 #end
 #if ($disclaimer)
-	<p>
-		$disclaimer
-	</p>
+	<p>$disclaimer</p>
 #end
 #if ($yourdata)
-	<p>
-		$yourdata
-	</p>
+	<p>$yourdata</p>
 #end
-<p>
-	$r.render("regarea")
-</p>
+<p>$r.render("regarea")</p>
