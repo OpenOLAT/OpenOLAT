@@ -79,6 +79,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
@@ -342,9 +343,13 @@ public class AuthorListController extends FormBasicController implements Activat
 				doOpenDetails(ureq, repoEntryKey);
 			} else if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				dirtyRows.add(new Integer(-1));
-				/*
-				System.out.println("Mark as dirty");
-				*/
+			} else if(event instanceof EntryChangedEvent) {
+				EntryChangedEvent ce = (EntryChangedEvent)event;
+				if(ce.getChange() == EntryChangedEvent.DELETED) {
+					stackPanel.popUpToRootController(ureq);
+					dirtyRows.add(new Integer(-1));
+					reloadDirtyRows();
+				}
 			}
 		} else if(userSearchCtr == source) {
 			@SuppressWarnings("unchecked")

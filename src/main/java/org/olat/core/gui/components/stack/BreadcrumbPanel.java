@@ -36,6 +36,6 @@ public interface BreadcrumbPanel extends StackedPanel {
 	
 	public void pushController(String displayName, Controller controller);
 	
-	public void popController(Controller controller);
+	public void popUpToController(Controller controller);
 
 }

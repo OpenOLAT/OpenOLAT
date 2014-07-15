@@ -179,17 +179,37 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 	}
 
 	@Override
+	public void popUpToController(Controller controller) {
+		int index = getIndex(controller);
+		if(index > 0 && index < stack.size() - 1) {
+			BreadCrumb popedCrumb = null;
+			for(int i=stack.size(); i-->(index+1); ) {
+				Link link = stack.remove(i);
+				popedCrumb = (BreadCrumb)link.getUserObject();
+				popedCrumb.dispose();
+			}
+
+			Link currentLink = stack.get(index);
+			BreadCrumb crumb  = (BreadCrumb)currentLink.getUserObject();
+			setContent(crumb.getController());
+			updateCloseLinkTitle();
+		}
+	}
+
+	@Override
 	public void pushContent(Component newContent) {
 		setContent(newContent);
 	}
 	
-	public void popController(Controller controller) {
-		for(Link link:stack) {
-			BreadCrumb crumb = (BreadCrumb)link.getUserObject();
+	private int getIndex(Controller controller) {
+		int index = -1;
+		for(int i=0; i<stack.size(); i++) {
+			BreadCrumb crumb = (BreadCrumb)stack.get(i).getUserObject();
 			if(crumb.getController() == controller) {
-				popController(link);
+				index = i;
 			}
 		}
+		return index;
 	}
 	
 	private Controller popController(Component source) {

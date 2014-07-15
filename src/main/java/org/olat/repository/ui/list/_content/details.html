@@ -194,7 +194,7 @@
 						<tr><th>$r.translate("orderby.lastModified")</th><td>$r.formatDateAndTime($v.getLastModified())</td></tr>
 						
 						#if ($isAuthor || $roles.isOLATAdmin() || $roles.isAuthor() || $roles.isInstitutionalResourceManager())		
-						<tr><th>$r.translate("cif.access")</th><td>$r.translate("$accessI18n")</td></tr>
+						<tr><th>$r.translate("cif.access")</th><td>$accessI18n</td></tr>
 						<tr><th>$r.translate("cif.initialAuthor")</th><td>$v.getInitialAuthor()</td></tr>
 						<tr><th>$r.translate("cif.owners")</th><td>TODO</td></tr>
 					</tbody></table>

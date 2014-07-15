@@ -102,9 +102,10 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 	public static final OLATResourceable EDIT_SETTINGS_ORES = OresHelper.createOLATResourceableInstance("Settings", 0l);
 	
 	private Link editLink, launchLink,
-		copyLink, deleteLink, closeLink,
+		copyLink, deleteLink, closeLink, detailsLink,
 		downloadLink, downloadCompatLink, bookmarkLink, catalogLink,
 		editSettingsLink, membersLink, orderLink;
+	private Dropdown tools;
 	
 	private CloseableModalController cmc;
 	private WizardCloseResourceController wc;
@@ -159,14 +160,23 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 		return entry;
 	}
 	
+	private void updateToolbar() {
+		if(catalogLink != null) {
+			catalogLink.setEnabled(!corrupted && (entry.getAccess() >= RepositoryEntry.ACC_USERS || entry.isMembersOnly()));
+		}
+		if(orderLink != null) {
+			boolean booking = acService.isResourceAccessControled(entry.getOlatResource(), null);
+			orderLink.setEnabled(!corrupted && booking);
+		}
+	}
 	
 	private void initToolbar(UserRequest ureq) {
 		// init handler details
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(entry);
-
+		stackPanel.removeAllTools();
 		if (isOwner) {
 			/* the resource tools menu */
-			Dropdown tools = new Dropdown("tools", "toolbox.tools", false, getTranslator());
+			tools = new Dropdown("tools", "toolbox.tools", false, getTranslator());
 			tools.setIconCSS("o_icon o_icon_tools");
 			stackPanel.addTool(tools,Align.left);
 			/* catalog management */
@@ -194,7 +204,12 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 			editSettingsLink.setElementCssClass("o_sel_author_edit_entry_settings");
 			editSettingsLink.setEnabled(!corrupted);
 			stackPanel.addTool(editSettingsLink, Align.left);
-
+			
+			detailsLink = LinkFactory.createToolLink("details", translate("details.header"), this, "o_sel_repo_details");
+			detailsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_details");
+			detailsLink.setElementCssClass("o_sel_author_details");
+			detailsLink.setEnabled(!corrupted);
+			
 			/* resource editor */
 			editLink = LinkFactory.createToolLink("edit", translate("details.openeditor"), this, "o_sel_repo_edit_descritpion");
 			editLink.setIconLeftCSS("o_icon o_icon_edit");
@@ -283,7 +298,6 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 		launchLink.setElementCssClass("o_sel_author_launch");
 		launchLink.setEnabled(checkIsRepositoryEntryLaunchable(ureq) && !corrupted);
 		stackPanel.addTool(launchLink, Align.right);
-		
 	}
 	
 	private boolean checkIsRepositoryEntryLaunchable(UserRequest ureq) {
@@ -462,6 +476,7 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 				entry = repositoryService.loadByKey(entry.getKey());
 				flc.contextPut("v", entry);
 				updateView(ureq, flc);
+				updateToolbar();
 				fireEvent(ureq, event);
 			}
 		} else if (deleteDialogCtrl == source){
@@ -489,17 +504,23 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 		} else if (editLink == source) {
 			doEdit(ureq);
 		} else if (editSettingsLink == source) {
+			stackPanel.popUpToController(this);
 			doEditSettings(ureq);
+		} else if(detailsLink == source) {
+			stackPanel.popUpToController(this);
 		} else if (catalogLink == source) {
 			if(repositoryModule.isCatalogEnabled()) {
-				doAddCatalog(ureq);
+				stackPanel.popUpToController(this);
+				doCatalog(ureq);
 			}
 		} else if (bookmarkLink == source) {
 			String css = "o_icon " + (doMark() ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON);
 			bookmarkLink.setIconLeftCSS(css);
 		} else if (membersLink == source) {
-			doOpenMembers(ureq);
+			stackPanel.popUpToController(this);
+			doMembers(ureq);
 		} else if (orderLink == source) {
+			stackPanel.popUpToController(this);
 			doOrders(ureq);
 		} else if (closeLink == source) {
 			doCloseResource(ureq);
@@ -629,25 +650,53 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 	 */
 	private void doEditSettings(UserRequest ureq) {
 		removeAsListenerAndDispose(editCtrl);
-
 		editCtrl = new AuthoringEditEntrySettingsController(ureq, getWindowControl(), stackPanel, entry);
 		listenTo(editCtrl);
+		stackPanel.addTool(tools, Align.left);
+		stackPanel.addTool(detailsLink, Align.left);
 	}
 	
-	private void doOpenMembers(UserRequest ureq) {
-		if (!isOwner) throw new OLATSecurityException("Trying to access groupmanagement, but not allowed: user = " + getIdentity());
+	/**
+	 * Internal helper to initiate the add to catalog workflow
+	 * @param ureq
+	 */
+	private void doCatalog(UserRequest ureq) {
+		removeAsListenerAndDispose(catalogCtlr);
+		catalogCtlr = new CatalogSettingsController(ureq, getWindowControl(), stackPanel, entry);
+		listenTo(catalogCtlr);
+		stackPanel.addTool(tools, Align.left);
+		stackPanel.addTool(editSettingsLink, Align.left);
+		stackPanel.addTool(detailsLink, Align.left);
+		catalogCtlr.initToolbar();
+	}
+	
+	private void doMembers(UserRequest ureq) {
+		if (!isOwner) {
+			throw new OLATSecurityException("Trying to access groupmanagement, but not allowed: user = " + getIdentity());
+		}
 		removeAsListenerAndDispose(membersEditController);
 		membersEditController = new RepositoryMembersController(ureq, getWindowControl(), entry);
 		listenTo(membersEditController);
+		
 		stackPanel.pushController(translate("details.members"), membersEditController);
+		stackPanel.addTool(tools, Align.left);
+		stackPanel.addTool(editSettingsLink, Align.left);
+		stackPanel.addTool(detailsLink, Align.left);
 	}
 	
 	private void doOrders(UserRequest ureq) {
-		if (!isOwner) throw new OLATSecurityException("Trying to access groupmanagement, but not allowed: user = " + getIdentity());
+		if (!isOwner) {
+			throw new OLATSecurityException("Trying to access groupmanagement, but not allowed: user = " + getIdentity());
+		}
+		
 		removeAsListenerAndDispose(ordersCtlr);
 		ordersCtlr = new OrdersAdminController(ureq, getWindowControl(), entry.getOlatResource());
 		listenTo(ordersCtlr);
+		
 		stackPanel.pushController(translate("details.orders"), ordersCtlr);
+		stackPanel.addTool(tools, Align.left);
+		stackPanel.addTool(editSettingsLink, Align.left);
+		stackPanel.addTool(detailsLink, Align.left);
 	}
 	
 	private void launch(UserRequest ureq) {
@@ -660,14 +709,7 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 		}
 	}
 	
-	/**
-	 * Internal helper to initiate the add to catalog workflow
-	 * @param ureq
-	 */
-	private void doAddCatalog(UserRequest ureq) {
-		catalogCtlr = new CatalogSettingsController(ureq, getWindowControl(), stackPanel, entry);
-		listenTo(catalogCtlr);
-	}
+
 	
 	private void deleteRepositoryEntry(UserRequest ureq) {
 		Roles roles = ureq.getUserSession().getRoles();

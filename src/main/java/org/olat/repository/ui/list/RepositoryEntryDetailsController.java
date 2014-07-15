@@ -296,7 +296,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 					startLink.setPrimary(true);
 
 				}
-				accessI18n = "cif.access.membersonly";
+				accessI18n = translate("cif.access.membersonly");
 			} else {
 				AccessResult acResult = acService.isAccessible(entry, getIdentity(), false);
 				if(acResult.isAccessible()) {
@@ -327,13 +327,15 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				startLink.setPrimary(true);
 				
 				switch (entry.getAccess()) {
-					case 1: accessI18n = "cif.access.owners";					
+					case 0: accessI18n = "ERROR";
 						break;
-					case 2: accessI18n = "cif.access.owners_authors";					
+					case 1: accessI18n = translate("cif.access.owners");			
 						break;
-					case 3: accessI18n = "cif.access.owners_authors";					
+					case 2: accessI18n = translate("cif.access.owners_authors");
 						break;
-					case 4: accessI18n = "cif.access.users_guests";					
+					case 3: accessI18n = translate("cif.access.owners_authors");
+						break;
+					case 4: accessI18n = translate("cif.access.users_guests");
 						break;
 				}
 			}
