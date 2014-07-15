@@ -1,10 +1,16 @@
-<fieldset>
-	<legend>$r.translate("preview.header")</legend>
-	<table class="b_grid b_small">
-		<tbody>
-			<tr><td>$r.translate("preview.canRead")</td><td>#if ($canRead) $r.translate("yes") #else $r.translate("no") #end</td></tr>
-			<tr><td>$r.translate("preview.canPost")</td><td>#if ($canPost) $r.translate("yes") #else $r.translate("no") #end</td></tr>
-			<tr><td>$r.translate("preview.canModerate")</td><td>#if ($canModerate) $r.translate("yes") #else $r.translate("no") #end</td></tr>
-		</tbody>
-	</table>
-</fieldset>
+<div class="panel-group" id="o_preview_fo_details"><div class="panel panel-default">
+    <div class="panel-heading">
+      	<h4 class="panel-title">
+      		<a data-toggle="collapse" data-parent="#o_preview_fo_details" href="#collapseFo">$r.translate("preview.header")</a>
+      	</h4>
+	</div>
+	<div id="collapseFo" class="panel-collapse collapse in">
+		<table class="table table-bordered">
+			<tbody>
+				<tr><th>$r.translate("preview.canRead")</th><td>#if ($canRead) $r.translate("yes") #else $r.translate("no") #end</td></tr>
+				<tr><th>$r.translate("preview.canPost")</th><td>#if ($canPost) $r.translate("yes") #else $r.translate("no") #end</td></tr>
+				<tr><th>$r.translate("preview.canModerate")</th><td>#if ($canModerate) $r.translate("yes") #else $r.translate("no") #end</td></tr>
+			</tbody>
+		</table>
+	</div>
+</div></div>

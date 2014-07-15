@@ -94,9 +94,9 @@
 		#end
 		<label class="control-label col-sm-3">$r.translate("form.metadata.duration")</label>
 		<div class="col-sm-9">
-			<input type="radio" name="duration" value="Yes" $yeschecked onclick="unShadeFormElement('sec');unShadeFormElement('min');return setFormDirty('ofo_assessform')" onkeypress="unShadeFormElement('sec');unShadeFormElement('min');return setFormDirty('ofo_assessform')" onchange="return setFormDirty('ofo_assessform')" class="b_radio"/>$r.translate("yes")
+			<input type="radio" name="duration" value="Yes" $yeschecked onclick="unShadeFormElement('sec');unShadeFormElement('min');return setFormDirty('ofo_assessform')" onkeypress="unShadeFormElement('sec');unShadeFormElement('min');return setFormDirty('ofo_assessform')" onchange="return setFormDirty('ofo_assessform')" />$r.translate("yes")
 			&nbsp;
-			<input type="radio" name="duration" value="No" $nochecked onclick="shadeFormElement('sec');shadeFormElement('min');return setFormDirty('ofo_assessform')" onkeypress="shadeFormElement('sec');shadeFormElement('min');return setFormDirty('ofo_assessform')" onchange="return setFormDirty('ofo_assessform')" class="b_radio"/>$r.translate("no")
+			<input type="radio" name="duration" value="No" $nochecked onclick="shadeFormElement('sec');shadeFormElement('min');return setFormDirty('ofo_assessform')" onkeypress="shadeFormElement('sec');shadeFormElement('min');return setFormDirty('ofo_assessform')" onchange="return setFormDirty('ofo_assessform')" />$r.translate("no")
 			&nbsp;
 			<input id="min" type="text" name="duration_min" value="$minval"  size="3" onchange="return setFormDirty('ofo_assessform')"  onclick="return setFormDirty('ofo_assessform')" $!readonly class="$css"/>:
 			<input id="sec" type="text" name="duration_sec" value="$secval"  size="3" maxlength="2" onchange="return setFormDirty('ofo_assessform')"  onclick="return setFormDirty('ofo_assessform')" $!readonly class="$css"/>			
@@ -114,9 +114,9 @@
 		#end
 		<label class="control-label col-sm-3">$r.translate("form.metadata.globalfeedbackNsolution")</label>
 		<div class="col-sm-9">
-			<input type="radio" name="inheritswitch" value="Yes" $!yeschecked onclick="return setFormDirty('ofo_assessform');showSwitches();" onkeypress="return setFormDirty('ofo_assessform');showSwitches();" onchange="return setFormDirty('ofo_assessform')" class="b_radio"/>$r.translate("yes")
+			<input type="radio" name="inheritswitch" value="Yes" $!yeschecked onclick="return setFormDirty('ofo_assessform');showSwitches();" onkeypress="return setFormDirty('ofo_assessform');showSwitches();" onchange="return setFormDirty('ofo_assessform')" /> $r.translate("yes")
 			&nbsp;
-			<input type="radio" name="inheritswitch" value="No" $!nochecked onclick="return setFormDirty('ofo_assessform');hideSwitches();" onkeypress="return setFormDirty('ofo_assessform');hideSwitches();" onchange="return setFormDirty('ofo_assessform')" class="b_radio"/>$r.translate("no")
+			<input type="radio" name="inheritswitch" value="No" $!nochecked onclick="return setFormDirty('ofo_assessform');hideSwitches();" onkeypress="return setFormDirty('ofo_assessform');hideSwitches();" onchange="return setFormDirty('ofo_assessform')" /> $r.translate("no")
 		</div>
 	</div>
 
@@ -136,9 +136,9 @@
 		#end
 		<label class="control-label col-sm-3">$r.translate("form.metadata.show.feedback")</label>
 		<div class="col-sm-9">
-			<input type="radio" name="feedbackswitch" value="Yes" $!yeschecked onchange="return setFormDirty('ofo_assessform');" class="b_radio"/>$r.translate("yes")
+			<input type="radio" name="feedbackswitch" value="Yes" $!yeschecked onchange="return setFormDirty('ofo_assessform');" /> $r.translate("yes")
 			&nbsp;
-			<input type="radio" name="feedbackswitch" value="No" $!nochecked onchange="return setFormDirty('ofo_assessform');" class="b_radio"/>$r.translate("no")
+			<input type="radio" name="feedbackswitch" value="No" $!nochecked onchange="return setFormDirty('ofo_assessform');" /> $r.translate("no")
 		</div>
 	</div>
 	<div id="sswitch" class="form-group">
@@ -157,9 +157,9 @@
 		#end		
 		<label class="control-label col-sm-3">$r.translate("form.metadata.show.hints")</label>
 		<div class="col-sm-9">
-			<input type="radio" name="hintswitch" value="Yes" $yeschecked onchange="return setFormDirty('ofo_assessform')" class="b_radio"/>$r.translate("yes")
+			<input type="radio" name="hintswitch" value="Yes" $yeschecked onchange="return setFormDirty('ofo_assessform')" /> $r.translate("yes")
 			&nbsp;
-			<input type="radio" name="hintswitch" value="No" $nochecked onchange="return setFormDirty('ofo_assessform')" class="b_radio"/>$r.translate("no")
+			<input type="radio" name="hintswitch" value="No" $nochecked onchange="return setFormDirty('ofo_assessform')" /> $r.translate("no")
 		</div>
 	</div>
 	<div id="hswitch" class="form-group">
@@ -178,9 +178,9 @@
 		#end		
 		<label class="control-label col-sm-3">$r.translate("form.metadata.show.solution")</label>
 		<div class="col-sm-9">
-			<input type="radio" name="solutionswitch" value="Yes" $yeschecked onchange="return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')" class="b_radio"/>$r.translate("yes")
+			<input type="radio" name="solutionswitch" value="Yes" $yeschecked onchange="return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')" /> $r.translate("yes")
 			&nbsp;
-			<input type="radio" name="solutionswitch" value="No" $nochecked onchange="return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')" class="b_radio"/>$r.translate("no")
+			<input type="radio" name="solutionswitch" value="No" $nochecked onchange="return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')" /> $r.translate("no")
 		</div>
 	</div>
 #if ($assessment.isInheritControls() && !$isRestrictedEdit)

@@ -40,7 +40,7 @@ import org.olat.core.util.Util;
  */
 public abstract class TextAreaElementImpl extends AbstractTextElement {
 
-	protected TextAreaElementComponent component;
+	protected final TextAreaElementComponent component;
 
 	/**
 	 * Constructor for specialized TextElements, i.e. IntegerElementImpl.
@@ -98,5 +98,9 @@ public abstract class TextAreaElementImpl extends AbstractTextElement {
 		Translator elmTranslator = Util.createPackageTranslator(TextAreaElementImpl.class, translator.getLocale(), translator);
 		super.setTranslator(elmTranslator);
 	}
-	
+
+	@Override
+	public void setDomReplacementWrapperRequired(boolean required) {
+		component.setDomReplacementWrapperRequired(required);
+	}
 }

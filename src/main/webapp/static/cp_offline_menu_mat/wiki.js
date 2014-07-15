@@ -8,7 +8,7 @@ function changeAnchorTargets(id) {
 		if (Element.readAttribute(anchor, "class")) {
 			if (Element.readAttribute(anchor, "class") == "externallink") {
 				if(Element.readAttribute(anchor,"href").indexOf("mailto:") != -1) {
-					anchor.setAttribute("class", "b_link_mailto");
+					anchor.setAttribute("class", "o_icon o_icon_mail");
 					openInNewWindow = false;
 				} else {
 					openInNewWindow = true;

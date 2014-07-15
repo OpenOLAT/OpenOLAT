@@ -261,7 +261,7 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		cancelButton.setCustomEnabledLinkCSS("btn btn-default o_wizard_button_cancel");
 		cancelButton.setCustomDisabledLinkCSS("btn btn-default o_wizard_button_cancel");
 		closeLink = new FormLinkImpl("closeIcon", "close", "", Link.NONTRANSLATED);
-		closeLink.setCustomEnabledLinkCSS("b_link_close");
+		closeLink.setIconLeftCSS("o_icon o_icon_close");
 		formLayout.add(prevButton);
 		formLayout.add(nextButton);
 		formLayout.add(finishButton);

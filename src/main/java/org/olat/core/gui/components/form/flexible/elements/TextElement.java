@@ -182,5 +182,6 @@ public interface TextElement extends FormItem{
 	public boolean hasPlaceholder();
 
 
+	public void setDomReplacementWrapperRequired(boolean required);
 	
 }

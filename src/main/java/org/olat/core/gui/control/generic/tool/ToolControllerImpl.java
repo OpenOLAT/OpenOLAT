@@ -85,7 +85,7 @@ class ToolControllerImpl extends DefaultController implements ToolController {
 	 */
 	public void addHeader(String text, String ident) {
 		// use default value
-		entries.add(new ToolEntry(ident, text, "b_toolbox_head_default"));
+		entries.add(new ToolEntry(ident, text, "o_toolbox_head_default"));
 	}
 
 	/**
@@ -124,7 +124,7 @@ class ToolControllerImpl extends DefaultController implements ToolController {
 			myLinks.add(linkCmp);
 			addComponent(linkCmp, ident);
 		}
-		else if (cssClass.equals("b_toolbox_close")){
+		else if (cssClass.equals("o_toolbox_close")){
 			Link linkCmp = LinkFactory.createCustomLink(linkCmpName, action, text, Link.TOOLENTRY_CLOSE + Link.NONTRANSLATED, null, this);
 			if(markAsDownloadLink){
 				LinkFactory.markDownloadLink(linkCmp);

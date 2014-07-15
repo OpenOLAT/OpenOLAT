@@ -51,42 +51,9 @@ public class RichTextElementImpl extends AbstractTextElement implements
 		RichTextElement, Disposable {
 	
 	private static final OLog log = Tracing.createLoggerFor(RichTextElementImpl.class);
-	protected RichTextElementComponent component;
+	private final RichTextElementComponent component;
 	private RichTextConfiguration configuration;
 	private WindowBackOffice windowBackOffice;
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.AbstractTextElement#getValue()
-	 * The returned value is XSS save and
-	 * does not contain executable JavaScript code. If you want to get the raw
-	 * user data use the getRawValue() method.
-	 */
-	@Override
-	public String getValue() {
-		String val = getRawValue();
-		Filter xssFilter = FilterFactory.getXSSFilter(val.length() + 1);
-		return xssFilter.filter(val);
-	}
-	
-	@Override
-	public String getValue(Filter filter) {
-		String val = getRawValue();
-		return filter.filter(val);
-	}
-
-	/**
-	 * This apply a filter to remove some buggy conditional comment
-	 * of Word
-	 * 
-	 * @see org.olat.core.gui.components.form.flexible.elements.RichTextElement#getRawValue()
-	 */
-	@Override
-	public String getRawValue() {
-		if(value != null) {
-			value = value.replace("<!--[endif] -->", "<![endif]-->");
-		}
-		return value;
-	}
 	
 	/**
 	 * Constructor for specialized TextElements, i.e. IntegerElementImpl.
@@ -138,6 +105,44 @@ public class RichTextElementImpl extends AbstractTextElement implements
 				rootForm.getDispatchFieldId()
 			);
 		}
+	}
+	
+	/**
+	 * @see org.olat.core.gui.components.form.flexible.impl.elements.AbstractTextElement#getValue()
+	 * The returned value is XSS save and
+	 * does not contain executable JavaScript code. If you want to get the raw
+	 * user data use the getRawValue() method.
+	 */
+	@Override
+	public String getValue() {
+		String val = getRawValue();
+		Filter xssFilter = FilterFactory.getXSSFilter(val.length() + 1);
+		return xssFilter.filter(val);
+	}
+	
+	@Override
+	public String getValue(Filter filter) {
+		String val = getRawValue();
+		return filter.filter(val);
+	}
+	
+	@Override
+	public void setDomReplacementWrapperRequired(boolean required) {
+		component.setDomReplacementWrapperRequired(required);
+	}
+
+	/**
+	 * This apply a filter to remove some buggy conditional comment
+	 * of Word
+	 * 
+	 * @see org.olat.core.gui.components.form.flexible.elements.RichTextElement#getRawValue()
+	 */
+	@Override
+	public String getRawValue() {
+		if(value != null) {
+			value = value.replace("<!--[endif] -->", "<![endif]-->");
+		}
+		return value;
 	}
 
 	/**

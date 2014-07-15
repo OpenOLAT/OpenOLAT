@@ -263,7 +263,7 @@ public class PortfolioPage {
 	}
 	
 	public PortfolioPage assertArtefact(String artefactTitle) {
-		By artefactBy = By.cssSelector(".b_artefact h3");
+		By artefactBy = By.cssSelector(".o_artefact h3");
 		List<WebElement> artefactEls = browser.findElements(artefactBy);
 		Assert.assertFalse(artefactEls.isEmpty());
 		WebElement artefactEl = null;

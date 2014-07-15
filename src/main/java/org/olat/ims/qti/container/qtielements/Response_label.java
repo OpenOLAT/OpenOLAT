@@ -73,7 +73,7 @@ public class Response_label extends GenericQTIElement {
 		} else if (renderClass.equals("choice")) {
 			renderChoice(buffer, ri, iinput);
 		} else if (renderClass.equals("kprim")) {
-			buffer.append("<tr><td class='o_qti_item_kprim_input'><input id=\"QTI_").append(ri.get(RenderInstructions.KEY_ITEM_IDENT)).append(getQTIIdent()).append("\" type=\"radio\" class=\"b_radio\" name=\"");
+			buffer.append("<tr><td class='o_qti_item_kprim_input'><input id=\"QTI_").append(ri.get(RenderInstructions.KEY_ITEM_IDENT)).append(getQTIIdent()).append("\" type=\"radio\" class=\"radio\" name=\"");
 			appendParameterIdent(buffer, ri);
 			buffer.append("\" value=\"" + getQTIIdent() + ":correct");
 			if (iinput != null && !iinput.isEmpty()) {
@@ -81,7 +81,7 @@ public class Response_label extends GenericQTIElement {
 				if (responses != null && responses.contains(getQTIIdent() + ":correct")) buffer.append("\" checked=\"checked");
 			}
 			buffer.append("\" onchange=\"return setFormDirty('ofo_iq_item')\" onclick=\"return setFormDirty('ofo_iq_item')\"/>");
-			buffer.append("</td><td class='o_qti_item_kprim_input'><input id=\"QTI_").append(ri.get(RenderInstructions.KEY_ITEM_IDENT)).append(getQTIIdent()).append("\" type=\"radio\" class=\"b_radio\" name=\"");
+			buffer.append("</td><td class='o_qti_item_kprim_input'><input id=\"QTI_").append(ri.get(RenderInstructions.KEY_ITEM_IDENT)).append(getQTIIdent()).append("\" type=\"radio\" class=\"radio\" name=\"");
 			appendParameterIdent(buffer, ri);
 			buffer.append("\" value=\"" + getQTIIdent() + ":wrong");
 			if (iinput != null && !iinput.isEmpty()) {

@@ -99,7 +99,7 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 		if(asInline){
 			initInlineEditing(predefinedValue);
 		}else{
-			this.component = new TextElementComponent(id, this);
+			component = new TextElementComponent(id, this);
 		}
 	}
 	
@@ -111,7 +111,7 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 	protected TextElementImpl(String id, String name){
 		//if you change something here, please see if other constructors need a change too.
 		super(name);
-		this.component = new TextElementComponent(id, this);
+		component = new TextElementComponent(id, this);
 	}
 	
 	/**
@@ -130,14 +130,12 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 			throw new AssertException(htmlInputType + " html input type not supported!");
 		}
 		
-		if(asInlineEditingElement){
+		if(asInlineEditingElement) {
 			initInlineEditing(predefinedValue);
-		}else{
+		} else {
 			// init the standard element component
-			this.component = new TextElementComponent(id, this);
+			component = new TextElementComponent(id, this);
 		}
-		
-		
 	}
 
 	private void initInlineEditing(String predefinedValue) {
@@ -234,13 +232,13 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		if(isInlineEditingElement()){
-			evalFormRequestInline(ureq);
+			//evalFormRequestInline(ureq);
 		}else {
-			evalFormRequestStandard(ureq);		
+			evalFormRequestStandard();		
 		}
 	}
 
-	private void evalFormRequestStandard(UserRequest ureq){
+	private void evalFormRequestStandard() {
 		String paramId = String.valueOf(component.getFormDispatchId());
 		String value = getRootForm().getRequestParameter(paramId);
 		if (value != null) {
@@ -249,11 +247,8 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 			component.setDirty(true);
 		}		
 	}
-	
-	private void evalFormRequestInline(UserRequest ureq){
-		// not used yet
-	}
-	
+
+	@Override
 	protected void dispatchFormRequest(UserRequest ureq) {
 		if(isInlineEditingElement()){
 			dispatchFormRequestInline(ureq);
@@ -300,13 +295,21 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 		getInlineEditingComponent().setDirty(true);
 	}
 
+	@Override
 	protected Component getFormItemComponent() {
 		return component;
 	}
 
 	protected String getHtmlInputType() {
 		return htmlInputType;
-	}	
+	}
+
+	@Override
+	public void setDomReplacementWrapperRequired(boolean required) {
+		if(component != null) {
+			component.setDomReplacementWrapperRequired(required);
+		}
+	}
 	
 	@Override
 	public void setTranslator(Translator translator) {

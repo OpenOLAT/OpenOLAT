@@ -12,20 +12,20 @@
 			#if ($velocityCount != 1)
 	</div></div></div>
 			#end
-	<div class="b_translation_list_package">
+	<div class="o_translation_list_package">
 			#set ($currentBundle=$item.getBundleName())
 			
 			<div class="clearfix">
 				<div class="pull-right">$r.render("translateBundle_$currentBundle")</div>
 				<div class="o_tooglebox_wrapper">
-					<a href="#" data-toggle="collapse" data-target="#$b_translation_item_$velocityCount"  class="o_opener" onclick="jQuery(this).toggleClass('o_in')">
-						<b class="b_with_small_icon_left b_translation_package_icon">$r.translate("generic.bundle"): $currentBundle </b> 
+					<a href="#" data-toggle="collapse" data-target="#$o_translation_item_$velocityCount"  class="o_opener" onclick="jQuery(this).toggleClass('o_in')">
+						<i class="o_icon o_icon_translation_package"> </i> $r.translate("generic.bundle"): $currentBundle
 					</a>
 				</div>
 			</div>
-			<div id="$b_translation_item_$velocityCount" class="collapse"><div class="o_togglebox_content">
+			<div id="$o_translation_item_$velocityCount" class="collapse"><div class="o_togglebox_content">
 		#end
-		<div class="o_icon o_icon_translation_item">$item.getKey()</div>
+		<div><i class="o_icon o_icon_translation_item"> </i> $item.getKey()</div>
 	#end
 	</div></div></div>	
 	<div class="o_button_group">

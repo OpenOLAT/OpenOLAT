@@ -16,7 +16,7 @@ function changeAnchorTargets(id) {
 		//set interwiki and externallink link to open in new window 
 		if (anchor.hasClass("externallink")) {
 			if(anchor.attr("href").indexOf("mailto:") != -1) {
-				anchor.addClass("b_link_mailto");
+				anchor.addClass("o_icon o_icon_mail");
 				openInNewWindow = false;
 			} else {
 				openInNewWindow = true;

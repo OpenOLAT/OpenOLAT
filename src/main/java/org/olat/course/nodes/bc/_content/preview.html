@@ -1,14 +1,18 @@
-<fieldset id="o_preview_nodedetails">
-	<legend>$r.translate("preview.header")</legend>
-	<table class="b_grid b_small">
-		<tbody>
-			<tr><td>$r.translate("preview.canUpload")</td><td>#if ($canUpload) $r.translate("yes") #else $r.translate("no") #end</td></tr>
-			<tr><td>$r.translate("preview.canDownload")</td><td>#if ($canDownload) $r.translate("yes") #else $r.translate("no") #end</td></tr>
-			<tr><td>$r.translate("preview.quotaKB")</td><td>$quotaKB</td></tr>
-		</tbody>
-	</table>
-	$r.translate("preview.info")
-</fieldset>
-<a href="#" onclick="jQuery('#o_preview_nodedetails').slideToggle(300);">$r.translate("preview.conf.toggle")</a>
-<hr />
+<div class="panel-group" id="o_preview_bc_details"><div class="panel panel-default">
+    <div class="panel-heading">
+     	<h4 class="panel-title">
+     		<a data-toggle="collapse" data-parent="#o_preview_bc_details" href="#collapseBc">$r.translate("preview.header")</a>
+     	</h4>
+	</div>
+	<div id="collapseBc" class="panel-collapse collapse in">
+		<table class="table table-bordered">
+			<tbody>
+				<tr><td>$r.translate("preview.canUpload")</td><td>#if ($canUpload) $r.translate("yes") #else $r.translate("no") #end</td></tr>
+				<tr><td>$r.translate("preview.canDownload")</td><td>#if ($canDownload) $r.translate("yes") #else $r.translate("no") #end</td></tr>
+				<tr><td>$r.translate("preview.quotaKB")</td><td>$quotaKB</td></tr>
+			</tbody>
+		</table>
+		<div class="panel-body">$r.translate("preview.info")</div>
+	</div>
+</div></div>
 $r.render("folder")

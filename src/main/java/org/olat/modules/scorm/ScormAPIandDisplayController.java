@@ -180,17 +180,17 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		myContent.contextPut("frameId", SCORM_CONTENT_FRAME);
 		
 		//pre next navigation links
-		nextScoTop = LinkFactory.createCustomLink("nextScoTop", "nextsco", "", Link.NONTRANSLATED, myContent, this);
-		nextScoTop.setCustomEnabledLinkCSS("b_small_icon o_scorm_next_icon");
+		nextScoTop = LinkFactory.createCustomLink("nextScoTop", "nextsco", "", Link.NONTRANSLATED | Link.BUTTON, myContent, this);
+		nextScoTop.setIconLeftCSS("o_icon o_icon_next_page");
 		
-		previousScoTop = LinkFactory.createCustomLink("previousScoTop", "previoussco", "", Link.NONTRANSLATED, myContent, this);
-		previousScoTop.setCustomEnabledLinkCSS("b_small_icon o_scorm_previous_icon");
+		previousScoTop = LinkFactory.createCustomLink("previousScoTop", "previoussco", "", Link.NONTRANSLATED | Link.BUTTON, myContent, this);
+		previousScoTop.setIconLeftCSS("o_icon o_icon_previous_page");
 		
-		nextScoBottom = LinkFactory.createCustomLink("nextScoBottom", "nextsco", "", Link.NONTRANSLATED, myContent, this);
-		nextScoBottom.setCustomEnabledLinkCSS("b_small_icon o_scorm_next_icon");
+		nextScoBottom = LinkFactory.createCustomLink("nextScoBottom", "nextsco", "", Link.NONTRANSLATED | Link.BUTTON, myContent, this);
+		nextScoBottom.setIconLeftCSS("o_icon o_icon_next_page");
 		
-		previousScoBottom = LinkFactory.createCustomLink("previousScoBottom", "previoussco", "", Link.NONTRANSLATED, myContent, this);
-		previousScoBottom.setCustomEnabledLinkCSS("b_small_icon o_scorm_previous_icon");
+		previousScoBottom = LinkFactory.createCustomLink("previousScoBottom", "previoussco", "", Link.NONTRANSLATED | Link.BUTTON, myContent, this);
+		previousScoBottom.setIconLeftCSS("o_icon o_icon_previous_page");
 		
 		// show the buttons, default. use setter method to change default behaviour
 		myContent.contextPut("showNavButtons", Boolean.TRUE);

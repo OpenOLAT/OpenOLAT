@@ -109,18 +109,15 @@ public class WizardInfoController extends DefaultController {
 	}
 	
 	private void renderWizardSteps(StringOutput target, int totalSteps, int step) {
-		target.append("<div class=\"b_legacy_wizard_steps\">");
+		target.append("<div class='o_legacy_wizard_steps'>");
 		String activeImage = "";
 		String passiveImage = "";
 		for (int i = 1; i <= totalSteps; i++) {
-			activeImage = "<span class=\"b_small_icon b_legacy_wizard_step_a" + i + "\"></span>";
-			passiveImage = "<span class=\"b_small_icon b_legacy_wizard_step_p" + i + "\"></span>";
+			activeImage = "<i class='o_icon o_legacy_wizard_step_a" + i + "'></i>";
+			passiveImage = "<i class='o_icon o_legacy_wizard_step_p" + i + "'></i>";
 			if (step == i) target.append(activeImage);
 			else target.append(passiveImage);
 		}
-
 		target.append("</div>");
 	}
-	
-
 }

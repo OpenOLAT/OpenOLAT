@@ -1,4 +1,4 @@
-<div class="panel panel-default b_artefact">
+<div class="panel panel-default o_artefact">
 	<div class="panel-heading">
 		<h4><i class="o_icon $artefact.getIcon()"> </i> $r.escapeHtml($!artefact.getTitle())
 		#if ($cssClosed != "") <i class="o_icon pull-right $cssClosed"> </i> #end</h4>
@@ -14,7 +14,7 @@
 		#end
 		#if ($artAttribConfig.get("artefact.description"))
 		<tr><th>$r.translate("artefact.description")</th>
-			<td class="b_form_element">
+			<td>
 				#if ($r.available("descriptionBtn")) $r.render("descriptionBtn") 
 				#else $!artefact.getDescription() #end 
 			</td></tr>

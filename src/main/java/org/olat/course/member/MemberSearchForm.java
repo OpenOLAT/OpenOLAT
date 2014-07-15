@@ -119,7 +119,7 @@ public class MemberSearchForm extends FormBasicController {
 		originEl = uifactory.addRadiosHorizontal("openBg", "search.origin", rightContainer, originKeys, openValues);
 		originEl.select("all", true);
 
-		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
+		FormLayoutContainer buttonLayout = FormLayoutContainer.createDefaultFormLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton("search", "search", buttonLayout);
 	}

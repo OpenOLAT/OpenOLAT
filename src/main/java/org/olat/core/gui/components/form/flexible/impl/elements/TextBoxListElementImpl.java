@@ -52,7 +52,7 @@ public class TextBoxListElementImpl extends AbstractTextElement implements TextB
 
 	public TextBoxListElementImpl(String name, String inputHint, Map<String, String> initialItems, Translator translator) {
 		super(name,true);// we wan't to be an inline-editing element!
-		this.component = new TextBoxListElementComponent(this, name, inputHint, initialItems, translator);
+		component = new TextBoxListElementComponent(this, name, inputHint, initialItems, translator);
 		setInlineEditingComponent(component);
 		setTranslator(translator);
 	}
@@ -60,6 +60,11 @@ public class TextBoxListElementImpl extends AbstractTextElement implements TextB
 	@Override
 	protected Component getFormItemComponent() {
 		return component;
+	}
+	
+	@Override
+	public void setDomReplacementWrapperRequired(boolean required) {
+		component.setDomReplacementWrapperRequired(required);
 	}
 
 	@Override

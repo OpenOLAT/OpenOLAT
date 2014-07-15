@@ -213,13 +213,11 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		}
 		ArrayHelper.sort(comparelangKeys, compareLangValues, false, true, false);
 		// Build css classes for comparison languages
-		String[] compareLangCssClasses = i18nMgr.createLanguageFlagsCssClasses(comparelangKeys, "b_with_small_icon_left");
 		String comparePrefs = (String) guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_PREFERRED_COMPARE_LANG, I18nModule
 				.getDefaultLocale().toString());
 		compareLocale = i18nMgr.getLocaleOrNull(comparePrefs);
 		if (compareLocale == null) compareLocale = I18nModule.getDefaultLocale();
-		compareLangSelection = uifactory.addDropdownSingleselect("compareLangSelection", this.flc, comparelangKeys, compareLangValues,
-				compareLangCssClasses);
+		compareLangSelection = uifactory.addDropdownSingleselect("compareLangSelection", flc, comparelangKeys, compareLangValues, null);
 		compareLangSelection.setDomReplacementWrapperRequired(false);
 		compareLangSelection.select(i18nMgr.getLocaleKey(compareLocale), true);
 		flc.contextPut("compareLanguageKey", i18nMgr.getLocaleKey(compareLocale));

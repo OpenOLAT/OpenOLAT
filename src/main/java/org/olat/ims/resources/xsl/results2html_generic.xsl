@@ -141,21 +141,19 @@ border-collapse: collapse;
 		<table border="0" cellpadding="0" cellspacing="0" height="12" width="150">
 			<tbody>
 				<tr>
-					<td valign="top" bgcolor="#B0C4DE">
-						<div class="b_progress">
-							<div class="b_progress_bar" style="width:150px;">
-								<div>
-									<xsl:choose>
-										<xsl:when test="(number(score_max) &gt; 0) and (number(score_value) &lt;= number(score_max))">
-											<xsl:attribute name="style">width:<xsl:value-of select="number(score_value) div number(score_max) * 150"/>px</xsl:attribute>
-											<xsl:attribute name="title"><xsl:value-of select="number(score_value) div number(score_max) * 100"/>%</xsl:attribute>
-										</xsl:when>
-										<xsl:otherwise>
-											<xsl:attribute name="style">width:150px</xsl:attribute>
-											<xsl:attribute name="title">100%</xsl:attribute>
-										</xsl:otherwise>
-									</xsl:choose>
-								</div>
+					<td>
+						<div class="progress" style="width:150px;">
+							<div class="progress-bar">
+								<xsl:choose>
+									<xsl:when test="(number(score_max) &gt; 0) and (number(score_value) &lt;= number(score_max))">
+										<xsl:attribute name="style">width:<xsl:value-of select="number(score_value) div number(score_max) * 150"/>px</xsl:attribute>
+										<xsl:attribute name="title"><xsl:value-of select="number(score_value) div number(score_max) * 100"/>%</xsl:attribute>
+									</xsl:when>
+									<xsl:otherwise>
+										<xsl:attribute name="style">width:150px</xsl:attribute>
+										<xsl:attribute name="title">100%</xsl:attribute>
+									</xsl:otherwise>
+								</xsl:choose>
 							</div>
 						</div>
 					</td>

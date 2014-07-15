@@ -32,9 +32,9 @@ function gotoSite(event) {
 	var offsetTop = pos.top;
 
 	var i=0;
-	for(var offsetParent = el.offsetParent(); offsetParent.attr('id') != 'b_body'; offsetParent = offsetParent.offsetParent()) {
+	for(var offsetParent = el.offsetParent(); offsetParent.attr('id') != 'o_body'; offsetParent = offsetParent.offsetParent()) {
 		var posn = offsetParent.position();
-		if(offsetParent.attr('id') != "b_col3" && offsetParent.attr('id') != "b_page") {//ie give it an offset which is the same as _content
+		if(offsetParent.attr('id') != "o_col3" && offsetParent.attr('id') != "o_page") {//ie give it an offset which is the same as _content
 			offsetLeft += posn.left;
 			offsetTop += posn.top;
 		}

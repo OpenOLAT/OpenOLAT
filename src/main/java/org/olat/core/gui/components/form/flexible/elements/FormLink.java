@@ -26,7 +26,7 @@ package org.olat.core.gui.components.form.flexible.elements;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
 
-public interface FormLink extends FormItem{
+public interface FormLink extends FormItem {
 	
 	public String getCmd();
 
@@ -52,6 +52,9 @@ public interface FormLink extends FormItem{
 	 * @param iconCSS
 	 */
 	public void setIconRightCSS(String iconCSS);
+	
+
+	public void setDomReplacementWrapperRequired(boolean required);
 	
 	/**
 	 * @return The i18n key for the link text

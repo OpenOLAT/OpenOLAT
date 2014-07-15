@@ -229,7 +229,7 @@ public class PortfolioResultDetailsController extends FormBasicController {
 		removeAsListenerAndDispose(deadlineCalloutCtr);
 		FormLink changeDeadlineLink = mapToElements.get(map).changeDeadlineLink;
 		deadlineCalloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(), deadlineCtr.getInitialComponent(),
-				changeDeadlineLink, title, true, "b_eportfolio_deadline_callout");
+				changeDeadlineLink, title, true, "o_ep_deadline_callout");
 		listenTo(deadlineCalloutCtr);
 		deadlineCalloutCtr.activate();
 	}

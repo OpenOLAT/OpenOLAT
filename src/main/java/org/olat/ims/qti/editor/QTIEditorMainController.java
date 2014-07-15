@@ -1100,20 +1100,20 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		customizeTools.setIconCSS("o_icon o_icon_customize");
 		stackedPanel.addTool(customizeTools, Align.left);
 		
-		deleteLink = LinkFactory.createToolLink(CMD_TOOLS_CHANGE_DELETE, translate("tools.change.delete"), this, "b_toolbox_delete");
+		deleteLink = LinkFactory.createToolLink(CMD_TOOLS_CHANGE_DELETE, translate("tools.change.delete"), this);
 		deleteLink.setIconLeftCSS("o_icon o_icon_delete_item");
 		customizeTools.addComponent(deleteLink);
-		moveLink = LinkFactory.createToolLink(CMD_TOOLS_CHANGE_MOVE, translate("tools.change.move"), this, "b_toolbox_move");
+		moveLink = LinkFactory.createToolLink(CMD_TOOLS_CHANGE_MOVE, translate("tools.change.move"), this);
 		moveLink.setIconLeftCSS("o_icon o_icon_move");
 		customizeTools.addComponent(moveLink);
-		copyLink = LinkFactory.createToolLink(CMD_TOOLS_CHANGE_COPY, translate("tools.change.copy"), this, "b_toolbox_copy");
+		copyLink = LinkFactory.createToolLink(CMD_TOOLS_CHANGE_COPY, translate("tools.change.copy"), this);
 		copyLink.setIconLeftCSS("o_icon o_icon_copy");
 		customizeTools.addComponent(copyLink);
 		
-		previewLink = LinkFactory.createToolLink(CMD_TOOLS_PREVIEW, translate("tools.tools.preview"), this, "b_toolbox_preview");
+		previewLink = LinkFactory.createToolLink(CMD_TOOLS_PREVIEW, translate("tools.tools.preview"), this);
 		previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 		stackedPanel.addTool(previewLink, Align.right);
-		closeLink = LinkFactory.createToolLink(CMD_TOOLS_CLOSE_EDITOR, translate("tools.tools.closeeditor"), this, "b_toolbox_close");
+		closeLink = LinkFactory.createToolLink(CMD_TOOLS_CLOSE_EDITOR, translate("tools.tools.closeeditor"), this, "o_toolbox_close");
 		closeLink.setIconLeftCSS("o_icon o_icon_publish");
 		stackedPanel.addTool(closeLink, Align.right);
 	}

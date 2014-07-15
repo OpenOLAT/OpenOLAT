@@ -67,7 +67,7 @@
 		if(displayname == "null" || displayname == null) displayname = "";
 		if(displayduration == "null" || displayduration == null) displayduration = "";
 		if (displayname != "" || displayduration != "") {
-			doc.write("<h3 class='b_with_small_icon_left b_filetype_mov'>");
+			doc.write("<h3><i class='o_icon o_filetype_mov'> </i> ");
 			if (displayname != "") {
 				doc.write(displayname);
 				if (displayduration != "") {
@@ -122,8 +122,8 @@
 </script>
 </head>
 	
-<body class="b_timemarker">
-	<div id="b_timemarker">
+<body class="o_timemarker">
+	<div id="o_timemarker">
 		<!--	
 			callback to call the o_playButtonTag in iframe... 
 			see http://developer.apple.com/documentation/QuickTime/Conceptual/QTScripting_JavaScript/bQTScripting_JavaScri_Document/chapter_1000_section_4.html  

@@ -58,9 +58,9 @@
 #if($isSurveyMode.equals("false") && !$isRestrictedEdit)
 				<td valign="middle" align="center">
 					#if($content.isCorrect())
-					<input type="radio" class="b_radio" name="correctChoice" value="value_q$count" checked onchange="return setFormDirty('ofo_tab_scitem')" onclick="return setFormDirty('ofo_tab_scitem')"/>
+					<input type="radio" name="correctChoice" value="value_q$count" checked onchange="return setFormDirty('ofo_tab_scitem')" onclick="return setFormDirty('ofo_tab_scitem')"/>
 					#else
-					<input type="radio" class="b_radio" name="correctChoice" value="value_q$count" onchange="return setFormDirty('ofo_tab_scitem')" onclick="return setFormDirty('ofo_tab_scitem')"/>
+					<input type="radio" name="correctChoice" value="value_q$count" onchange="return setFormDirty('ofo_tab_scitem')" onclick="return setFormDirty('ofo_tab_scitem')"/>
 					#end					
 				</td>
 #end

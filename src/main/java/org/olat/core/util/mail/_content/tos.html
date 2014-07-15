@@ -1,7 +1,7 @@
-<p>
+<p class="form-control-static">
 	#foreach($to in $tos)
-		<span class="b_deletableentry_wrapper"><span class="b_deletableentry">$to.name</span>$r.render($to.removeLinkName)</span>
+		$to.name $r.render($to.removeLinkName)
 	#end
+	
+	$r.render("add.email")
 </p>
-$r.render("add.email")
-

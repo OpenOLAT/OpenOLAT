@@ -63,7 +63,7 @@ public class PhonePropertyHandler extends Generic127CharTextPropertyHandler {
 			phonenr = StringHelper.escapeHtml(phonenr);
 			StringBuffer sb = new StringBuffer();
 			sb.append("<a href=\"callto:")
-			  .append(phonenr).append("\" class=\"b_link_call\">")
+			  .append(phonenr).append("\"><i class='o_icon o_icon_phone'> </i> ")
 			  .append(phonenr).append("</a>");
 			return sb.toString();
 		}

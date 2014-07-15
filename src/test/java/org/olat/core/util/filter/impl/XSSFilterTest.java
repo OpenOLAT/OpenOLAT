@@ -179,10 +179,16 @@ public class XSSFilterTest {
 	}
 	
 	@Test
-	public void test_links(){
-		testsToRun = 2;
+	public void test_link() {
+		testsToRun = 1;
 		t("<a href=\"blibla.html\" alt=\"blub\" target=\"_blank\">new window link</A>", "<a alt=\"blub\" href=\"blibla.html\" target=\"_blank\">new window link</a>");
-		t("<a target=\"_blank\" href=\"http://www.frentix.com\" onclick=\"javascript:alert('hallo');\" title=\"a good link\" class=\"o_icon_link_externe\">a complicated link</a>","<a class=\"o_icon_link_extern\" href=\"http://www.frentix.com\" target=\"_blank\" title=\"a good link\">a complicated link</a>");
+	}
+	
+	@Test
+	public void test_link_complexer(){
+		testsToRun = 1;
+		t("<a class=\"o_icon_link_extern\" target=\"_blank\" href=\"http://www.frentix.com\" onclick=\"javascript:alert('hallo');\" title=\"a good link\">a complicated link</a>",
+				"<a class=\"o_icon_link_extern\" href=\"http://www.frentix.com\" target=\"_blank\" title=\"a good link\">a complicated link</a>");
 	}
 
 	@Test

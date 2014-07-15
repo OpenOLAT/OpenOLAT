@@ -551,7 +551,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		
 		Component eventCmp = printCtrl.getInitialComponent();
 		eventCalloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(), eventCmp, targetDomId,
-				translate("print"), true, "b_cal_event_callout");
+				translate("print"), true, "o_cal_event_callout");
 		listenTo(eventCalloutCtr);
 		eventCalloutCtr.activate();
 	}
@@ -565,7 +565,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		
 		Component eventCmp = eventDetailsCtr.getInitialComponent();
 		eventCalloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(), eventCmp, targetDomId,
-				"Event", true, "b_cal_event_callout");
+				"Event", true, "o_cal_event_callout");
 		listenTo(eventCalloutCtr);
 		eventCalloutCtr.activate();
 	}

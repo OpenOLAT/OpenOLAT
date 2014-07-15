@@ -121,7 +121,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("send.mail.description");
-		setFormStyle("b_send_documents");
+		setFormStyle("o_send_documents");
 
 		int emailCols = 25;
 
@@ -132,7 +132,8 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		userListBox.contextPut("tos", toValues);
 		formLayout.add(userListBox);
 
-		addEmailLink = uifactory.addFormLink("add.email", userListBox,"b_form_userchooser");
+		addEmailLink = uifactory.addFormLink("add.email", userListBox);
+		addEmailLink.setIconLeftCSS("o_icon o_icon_add");
 
 		subjectElement = uifactory.addTextElement("tsubject", "send.mail.subject", 255, "", formLayout);
 
@@ -481,9 +482,9 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 	}
 	
 	private void addIdentity(Identity identity) {
-		FormLink rmLink = uifactory.addFormLink("rm-" + CodeHelper.getForeverUniqueID(), "&nbsp;", null, userListBox, Link.NONTRANSLATED + Link.LINK);
+		FormLink rmLink = uifactory.addFormLink("rm-" + CodeHelper.getForeverUniqueID(), " ", null, userListBox, Link.NONTRANSLATED + Link.LINK);
 		IdentityWrapper wrapper = new IdentityWrapper(identity, rmLink);
-		rmLink.setCustomEnabledLinkCSS("b_link_left_icon b_remove_icon");
+		rmLink.setIconLeftCSS("o_icon o_icon_remove");
 		rmLink.setUserObject(wrapper);
 		toValues.add(wrapper);
 		userListBox.setDirty(true);

@@ -177,7 +177,6 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		}
 		ArrayHelper.sort(referencelangKeys, referenceLangValues, false, true, false);
 		// Build css classes for reference languages
-		String[] referenceLangCssClasses = i18nMgr.createLanguageFlagsCssClasses(referencelangKeys, "b_with_small_icon_left");
 		// Use first reference locale as default
 		referenceLocale = i18nMgr.getLocaleOrNull(referenceLangs.get(0));
 		// Override with user preset
@@ -190,7 +189,7 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 			}
 		}
 		referenceLangSelection = formFactory.addDropdownSingleselect("start.referenceLangSelection", formLayout, referencelangKeys,
-				referenceLangValues, referenceLangCssClasses);
+				referenceLangValues, null);
 		referenceLangSelection.select(referenceLocale.toString(), true);
 		this.flc.contextPut("referenceLangKey", referenceLocale.toString());
 		referenceLangSelection.addActionListener(FormEvent.ONCHANGE);
@@ -223,9 +222,7 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		}
 		ArrayHelper.sort(targetlangKeys, targetLangValues, false, true, false);
 		// Build css classes for reference languages
-		String[] targetLangCssClasses = i18nMgr.createLanguageFlagsCssClasses(targetlangKeys, "b_with_small_icon_left");
-		targetLangSelection = formFactory.addDropdownSingleselect("start.targetLangSelection", formLayout, targetlangKeys, targetLangValues,
-				targetLangCssClasses);
+		targetLangSelection = formFactory.addDropdownSingleselect("start.targetLangSelection", formLayout, targetlangKeys, targetLangValues, null);
 		// Select current language if in list or the first one in the menu
 		if (customizingMode) {
 			// Use same as reference language in customizing mode

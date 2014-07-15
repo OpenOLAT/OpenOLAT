@@ -61,6 +61,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	private String cmd = null;
 	private boolean hasCustomEnabledCss = false;
 	private boolean hasCustomDisabledCss = false;
+	private boolean domReplacementWrapperRequired = false;
 	private String iconLeftCSS;
 	private String iconRightCSS;
 	private String customEnabledLinkCSS;
@@ -101,6 +102,14 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		this.presentation = presentation;
 	}
 	
+	@Override
+	public void setDomReplacementWrapperRequired(boolean required) {
+		this.domReplacementWrapperRequired = required;
+		if(component != null) {
+			component.setDomReplacementWrapperRequired(required);
+		}
+	}
+
 	/*
 	 * uses the FormLinkFactory to create the link associated with this formlink
 	 * it is deferred to have the translator, and most of all the form id where
@@ -142,6 +151,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		component.setTranslator(getTranslator());
 		component.setIconLeftCSS(iconLeftCSS);
 		component.setIconRightCSS(iconRightCSS);
+		component.setDomReplacementWrapperRequired(domReplacementWrapperRequired);
 	}
 	
 	@Override

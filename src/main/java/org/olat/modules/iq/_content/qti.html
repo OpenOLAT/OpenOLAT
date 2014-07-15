@@ -92,7 +92,7 @@ function confirmSuspend() {
 	<div id="o_qti_run_main" class="clearfix">
 		#if ($displayMenu)
 		<div id="o_qti_run_menu" class="col-md-4">		
-			<div id="o_qti_run_menu_inner" class="b_floatbox">
+			<div id="o_qti_run_menu_inner" class="o_floatbox">
 				$r.render("qticomp", "menu")
 			</div>
 		</div>
@@ -107,7 +107,7 @@ function confirmSuspend() {
 			#end
 			
 			#if ($qtistatus.isOpen())			
-				<div id="o_qti_run_content_inner" class="b_floatscrollbox">
+				<div id="o_qti_run_content_inner" class="o_floatscrollbox">
 				
 				#if ($qtistatus.hasItemTimeLimit() && !$qtistatus.hasItemAttemptsLimit())
 					#if ($qtistatus.hasItemTimeLimitExeeded())
@@ -157,7 +157,7 @@ function confirmSuspend() {
 				$r.render("qticomp", "qtiform")
 			</div>
 			#elseif($qtistatus.isClosed())		
-				<div id="o_qti_run_content_inner" class="b_floatscrollbox">
+				<div id="o_qti_run_content_inner" class="o_floatscrollbox">
 					$r.render("qticomp", "qtiform")
 				</div>
 			#end

@@ -1,5 +1,5 @@
 #if($messages)
-	<p class="b_eportfolio_restriction #if($restrictionsPassed) b_eportfolio_restriction_passed #else b_eportfolio_restriction_error #end">
+	<p class="o_eportfolio_restriction #if($restrictionsPassed) o_passed #else o_failed #end">
 	#foreach($message in $messages)
 		<span>$message</span><br/>
 	#end

@@ -79,7 +79,7 @@ public class TextArtefactDetailsController extends BasicController {
 			fulltext = StringHelper.xssScan(fulltext);
 			fulltext = Formatter.truncate(fulltext, 50);
 			editBtn = LinkFactory.createCustomLink("text.edit.link", "edit", fulltext, Link.NONTRANSLATED, vC, this);
-			editBtn.setCustomEnabledLinkCSS("b_inline_editable b_ep_nolink");
+			editBtn.setIconRightCSS("o_icon o_icon_inline_editable");
 		} else {
 			// register a mapper to deliver uploaded media files
 			final VFSContainer artefactFolder = ePFMgr.getArtefactContainer(artefact);

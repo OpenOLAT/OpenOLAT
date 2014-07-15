@@ -36,16 +36,16 @@
 		<div class="o_important">$qtistatus.message</div>	
 	#end
 
-	<div id="o_qti_run_main" class="b_subcolumns">
+	<div id="o_qti_run_main">
 		#if ($displayMenu)
 		<div id="o_qti_run_menu" class="col-md-4">		
-			<div id="o_qti_run_menu_inner" class="b_floatbox">
+			<div id="o_qti_run_menu_inner" class="o_floatbox">
 				$r.render("qticomp", "menu")	
 			</div>
 		</div>
 		#end
 		<div id="o_qti_run_content" class="col-md-8">			
-			<div id="o_qti_run_content_inner" class="b_floatscrollbox">
+			<div id="o_qti_run_content_inner" class="o_floatscrollbox">
 				#if ($displayreporting)
 					<h3>$r.translate("DetailedResults")</h3>
 					<div id="o_qti_results">

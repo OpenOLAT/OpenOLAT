@@ -5,14 +5,14 @@
 			#set($specialCtrlName = "special$artefactCtrlPanel.componentName")
 			#set($optionsLinkName = "optionsLink$innerCounter")
 			#if($r.available($specialCtrlName))
-				<div class="col-sm-12 b_artefact">
+				<div class="col-sm-12 o_artefact">
 					$r.render($artefactCtrlPanel.componentName)
-					<div class="b_artefact_optionslink">$r.render($optionsLinkName)</div>
+					<div class="o_artefact_optionslink">$r.render($optionsLinkName)</div>
 				</div>
 			#else
-				<div class="col-sm-4 b_artefact">
+				<div class="col-sm-4 o_artefact">
 					$r.render($artefactCtrlPanel.componentName)
-					<div class="b_artefact_optionslink">$r.render($optionsLinkName)</div>
+					<div class="o_artefact_optionslink">$r.render($optionsLinkName)</div>
 				</div>
 			#end
 			#set($innerCounter = $innerCounter + 1)

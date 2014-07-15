@@ -169,6 +169,7 @@ public class PwChangeController extends BasicController {
 				myContent.contextPut("pwdhelp", "");
 				myContent.contextPut("text", translate("step4.pw.text"));
 				pwchangeHomelink = LinkFactory.createLink("pwchange.homelink", myContent, this);
+				pwchangeHomelink.setCustomEnabledLinkCSS("btn btn-primary");
 				//pwf.setVisible(false);
 				pwarea.setVisible(false);
 				Identity identToChange = UserManager.getInstance().findIdentityByEmail(tempKey.getEmailAddress());

@@ -45,7 +45,7 @@ public class ToolEntry {
 	private Component component;
 	private String componentName;
 	private boolean enabled = true;
-	private String cssClass = "b_toolbox_link"; // default
+	private String cssClass = "o_toolbox_link"; // default
 	private String elementCssClass;
 	private String width;
 	private String height;
@@ -63,7 +63,7 @@ public class ToolEntry {
 		this.headerText = headerText;
 		if (cssClass == null) {
 			// header default;
-			this.cssClass = "b_toolbox_head_default";
+			this.cssClass = "o_toolbox_head_default";
 		}	else {
 			this.cssClass = cssClass;
 		}

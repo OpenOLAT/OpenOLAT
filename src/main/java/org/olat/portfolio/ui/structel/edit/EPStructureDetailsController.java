@@ -156,8 +156,8 @@ public class EPStructureDetailsController extends FormBasicController {
 		}
 		// show restrictions only for templates and on page/structure-level, as artefacts are not linkable on maps itself
 		if (editStructure instanceof EPStructureElement && rootStructure instanceof EPStructuredMapTemplate && editStructure.getRoot() != null) {
-			final FormLayoutContainer collectContainer = FormLayoutContainer.createCustomFormLayout("collect.restriction", getTranslator(), velocity_root
-					+ "/restrictions.html");
+			final FormLayoutContainer collectContainer = FormLayoutContainer
+					.createCustomFormLayout("collect.restriction", getTranslator(), velocity_root + "/restrictions.html");
 			collectContainer.setRootForm(mainForm);
 			collectContainer.setLabel("collect.restriction", null);
 			formLayout.add(collectContainer);
@@ -196,6 +196,7 @@ public class EPStructureDetailsController extends FormBasicController {
 
 				final SingleSelection restrictionElement = uifactory.addDropdownSingleselect("collect.restriction.restriction." + count, "", collectContainer,
 						restrictionKeys, restrictionValues, null);
+				restrictionElement.setDomReplacementWrapperRequired(false);
 				restrictionElement.setMandatory(true);
 				if (restriction != null && StringHelper.containsNonWhitespace(restriction.getRestriction())) {
 					restrictionElement.select(restriction.getRestriction(), true);
@@ -204,6 +205,7 @@ public class EPStructureDetailsController extends FormBasicController {
 
 				final SingleSelection restrictToArtefactElement = uifactory.addDropdownSingleselect("collect.restriction.artefacts." + count, "", collectContainer,
 						artefactKeys, artefactValues, null);
+				restrictToArtefactElement.setDomReplacementWrapperRequired(false);
 				restrictToArtefactElement.setMandatory(true);
 				if (restriction != null && StringHelper.containsNonWhitespace(restriction.getArtefactType())) {
 					restrictToArtefactElement.select(restriction.getArtefactType(), true);
@@ -214,6 +216,7 @@ public class EPStructureDetailsController extends FormBasicController {
 					amountStr = Integer.toString(restriction.getAmount());
 				}
 				final TextElement amountElement = uifactory.addTextElement("collect.restriction.amount." + count, "", 2, amountStr, collectContainer);
+				amountElement.setDomReplacementWrapperRequired(false);
 				amountElement.setDisplaySize(3);
 				
 				StaticTextElement errorElement = uifactory.addStaticTextElement("collect.restriction.error." + count, "", collectContainer);
@@ -226,9 +229,11 @@ public class EPStructureDetailsController extends FormBasicController {
 
 				final FormLink addLink = uifactory.addFormLink("collect.restriction.add." + count, "collect.restriction.add", "collect.restriction.add",
 						collectContainer, Link.BUTTON_SMALL);
+				addLink.setDomReplacementWrapperRequired(false);
 				addLink.setUserObject(restriction);
 				final FormLink delLink = uifactory.addFormLink("collect.restriction.del." + count, "collect.restriction.delete", "collect.restriction.delete",
 						collectContainer, Link.BUTTON_SMALL);
+				delLink.setDomReplacementWrapperRequired(false);
 				delLink.setUserObject(restriction);
 
 				counts.add(Integer.toString(count));

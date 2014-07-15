@@ -1,8 +1,7 @@
-<h4>$r.translate("sess.details")</h4>
-<hr />
+<h3>$r.translate("sess.details")</h3>
 <fieldset>
 	<legend>Session Information</legend>
-	<table class="b_table">
+	<table class="table table-bordered">
 		<tr><td>$r.translate("sess.authent"):</td><td>$isauth</td></tr> 
 		<tr><td>ID:</td><td>$!si.getSession().getId()</td></tr>
 		<tr><td>$r.translate("sess.first"):</td><td>$!si.getFirstname()</td></tr>
@@ -26,7 +25,7 @@
 
 <fieldset>
 	<legend>$r.translate("sess.locks.title")</legend>
-	<table class="b_table">
+	<table class="table table-bordered">
 		#if ($locklist.size() == 0)
 		<tr><td><i>$r.translate("sess.locks.nolock")</i></td></tr>
 		#else
@@ -40,7 +39,7 @@
 
 <fieldset>
 	<legend>$r.translate("sess.attributes.title")</legend>
-	<table class="b_table">
+	<table class="table table-bordered">
 		#if (!$env.getAttributes())
 		<tr><td><i>$r.translate("sess.noattributes")</i></td></tr>
 		#else
@@ -57,6 +56,6 @@
 </fieldset>
 <fieldset>
 	<legend>$r.translate("sess.kill")</legend>
-	<p>$r.translate("sess.kill.info")</p>
-	<p>$r.render("sess.kill")</p>
+	<p class="o_warning">$r.translate("sess.kill.info")</p>
+	<div class="o_button_group">$r.render("sess.kill")</div>
 </fieldset>

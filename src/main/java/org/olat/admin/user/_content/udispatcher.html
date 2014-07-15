@@ -1,11 +1,9 @@
 #if ($showButton)
-$r.render("backLink")
-<p />
+	$r.render("backLink")
 #end
 <h4>$r.translate("content.usermgmt.userfound")</h4>
 <div class="clearfix">
-	<div class="b_float_left b_border_box">$r.render("portrait")</div>
+	<div class="pull-left">$r.render("portrait")</div>
 	$r.render("userShortDescription")
 </div>
-<p />
 $r.render("userTabP")

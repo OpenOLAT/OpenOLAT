@@ -28,13 +28,8 @@
 		</thead>
 		<tbody>			
 			#foreach($content in $question.getResponses())
-				#if ($velocityCount % 2 == 0)
-					#set ($rowclass="")
-				#else
-					#set ($rowclass="b_table_odd")				
-				#end
 				#set ($count = ($velocityCount - 1))
-			<tr class="$rowclass">
+			<tr>
 				<td>
 				#if(!$isRestrictedEdit)
 					<a href="$r.commandURI("up", "posid", "$count")"  onclick="return o2cl()"  onkeypress="return o2cl()" title="$r.translateInAttribute("mat.move_up")"><img src="$r.staticLink("images/qti/move_up.png")" alt="$r.translateInAttribute("mat.move_up")" border="0"></a>

@@ -42,7 +42,7 @@ public class SizeLA extends AbstractLayoutAttribute {
 		setRelativeKeys(relativeKeys);
 		String[] availValues = new String[] { "1 (xx-small)", "2 (x-small)", "3 (small)", "4 (medium)", "5 (large)", "6 (x-large)", "7 (xx-large)" };
 		setAvailValues(availValues);
-		String[] availCSS = new String[] 		{ "clgen_font_xxsmall", "b_xsmall", "b_small", "", "b_large", "b_xlarge", "clgen_font_xxlarge" };
+		String[] availCSS = new String[] 		{ "clgen_font_xxsmall", "o_xsmall", "o_small", "", "o_large", "o_xlarge", "clgen_font_xxlarge" };
 		setAvailCSS(availCSS);
 	}
 

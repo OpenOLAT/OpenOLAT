@@ -1,15 +1,15 @@
 <div class="modal show in"><div class="modal-dialog modal-lg #if($elementCssClass) $elementCssClass #end"><div class="modal-content">
 	<div class="modal-header">
-		$r.render("closeIcon")
+		<div class="pull-right">$r.render("closeIcon")</div>
 		<h4>$wizardTitle</h4>
 	</div>
-	<div class="modal-body b_wizard_steps_wrapper">
-		<div class="row b_wizard_steps_content clearfix">
+	<div class="modal-body o_wizard_steps_wrapper">
+		<div class="row o_wizard_steps_content clearfix">
 			<!-- workflow / wizard steps -->
-			<div class="col-md-4 b_wizard_steps_list b_float_left">
+			<div class="col-md-4 o_wizard_steps_list">
 				<ol>
 				#foreach($item in $stepLinks)
-					<li class="	#if($currentStepPos == $velocityCount) b_wizard_steps_current #end	#if(!${item.isEnabled()}) b_enabled #end ">
+					<li class="	#if($currentStepPos == $velocityCount) o_wizard_steps_current #end	#if(!${item.isEnabled()}) o_enabled #end ">
 						$r.render(${item})
 					</li>
 				#end
@@ -17,10 +17,10 @@
 			</div>
 			
 			<!-- wizard step content -->
-			<div class="col-md-8 b_wizard_steps_current">
-				<div class="b_wizard_steps_current_inner">
-					<div class="b_wizard_steps_current_content clearfix">
-						<div class="b_floatscrollbox">
+			<div class="col-md-8 o_wizard_steps_current">
+				<div class="o_wizard_steps_current_inner">
+					<div class="o_wizard_steps_current_content clearfix">
+						<div class="o_floatscrollbox">
 							$r.render("FFO_CURRENTSTEPPAGE")
 						</div>
 					</div>
