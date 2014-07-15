@@ -91,8 +91,8 @@ public class EPStructureElementsController extends BasicController {
 				List<CollectRestriction> restrictions = portStruct.getCollectRestrictions();
 				if(!restrictions.isEmpty()) {
 					boolean check = ePFMgr.checkCollectRestriction(portStruct);
-					EPCollectRestrictionResultController resultCtrl = new EPCollectRestrictionResultController(ureq, getWindowControl(), portStruct);
-					resultCtrl.setMessage(ureq, portStruct.getCollectRestrictions(), check);
+					EPCollectRestrictionResultController resultCtrl = new EPCollectRestrictionResultController(ureq, getWindowControl());
+					resultCtrl.setMessage(portStruct.getCollectRestrictions(), check);
 					flc.put("checkResults" + i, resultCtrl.getInitialComponent());
 					listenTo(resultCtrl);
 				}

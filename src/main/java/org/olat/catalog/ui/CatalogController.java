@@ -76,13 +76,13 @@ import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.RepositorySearchController;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.repository.ui.RepositoryEntryIconRenderer;
 import org.olat.repository.ui.RepositoryTableModel;
 import org.olat.repository.ui.author.RepositoryEditDescriptionController;
+import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -214,6 +214,8 @@ public class CatalogController extends BasicController implements Activateable2 
 	private Link loginLink;
 	private CloseableModalController cmc;
 	private Controller catEntryMoveController;
+	
+	private RepositoryEntryDetailsController repositoryEntryDetailsCtrl;
 	private RepositoryEditDescriptionController repositoryEditDescriptionController;
 
 	// locking stuff for cataloge edit operations
@@ -354,7 +356,7 @@ public class CatalogController extends BasicController implements Activateable2 
 					int pos = Integer.parseInt(s.substring(CATENTRY_LEAF.length()));
 					linkMarkedToBeEdited = childCe.get(pos);
 					repositoryEditDescriptionController = new RepositoryEditDescriptionController(ureq, getWindowControl(), linkMarkedToBeEdited.getRepositoryEntry(), false);
-					repositoryEditDescriptionController.addControllerListener(this);
+					listenTo(repositoryEditDescriptionController);
 					// open form in dialog
 					removeAsListenerAndDispose(cmc);
 					cmc = new CloseableModalController(getWindowControl(), "close", repositoryEditDescriptionController.getInitialComponent(), true, translate("tools.edit.catalog.category"));
@@ -370,12 +372,14 @@ public class CatalogController extends BasicController implements Activateable2 
 					if(repoEnt == null) {//concurrent edition, reload the current listing
 						updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
 					} else {
-						fireEvent(ureq, new EntryChangedEvent(repoEnt, EntryChangedEvent.MODIFIED));
-						//fxdiff BAKS-7 Resume function
-						OLATResourceable ceRes = OresHelper.createOLATResourceableInstance(CatalogEntry.class.getSimpleName(), showDetailForLink.getKey());
-						WindowControl bwControl = addToHistory(ureq, ceRes, null);
-						OLATResourceable ores = OresHelper.createOLATResourceableInstance("details", 0l);
-						addToHistory(ureq, ores, null, bwControl, true);
+						repositoryEntryDetailsCtrl = new RepositoryEntryDetailsController(ureq, getWindowControl(), repoEnt);
+						listenTo(repositoryEntryDetailsCtrl);
+						
+						// open form in dialog
+						removeAsListenerAndDispose(cmc);
+						cmc = new CloseableModalController(getWindowControl(), "close", repositoryEntryDetailsCtrl.getInitialComponent(), true, translate("tools.edit.catalog.category"));
+						listenTo(cmc);
+						cmc.activate();
 					}
 				}
 			}
@@ -708,11 +712,15 @@ public class CatalogController extends BasicController implements Activateable2 
 		removeAsListenerAndDispose(addEntryForm);
 		removeAsListenerAndDispose(editEntryForm);
 		removeAsListenerAndDispose(groupController);
+		removeAsListenerAndDispose(repositoryEntryDetailsCtrl);
+		removeAsListenerAndDispose(repositoryEditDescriptionController);
 		cmc = null;
 		cfc = null;
 		addEntryForm = null;
 		editEntryForm = null;
 		groupController = null;
+		repositoryEntryDetailsCtrl = null;
+		repositoryEditDescriptionController = null;
 	}
 	
 	private void doAddOwners(Event event) {

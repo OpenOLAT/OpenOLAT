@@ -5,7 +5,6 @@
 	#if($description)
 	<div class="panel-body">$description</div>
 	#end
-	
 	<table class="table table-condensed table-striped"><tbody>
 		<tr><th>$r.translate("artefact.author")</th>
 			<td>$!authorName</td></tr>
@@ -15,8 +14,10 @@
 		<tr><td colspan="2"><i class="o_icon o_icon_tags"> </i> $tags</td></tr>
 		#end	
 	</tbody></table>
+	<div class="panel-footer">
+		$r.render("small.details.link")
+		#if($r.available("option.link"))
+			<div class="o_ep_options">$r.render("option.link")</div>
+		#end
+	</div>
 </div>
-#if($r.available("option.link"))
-	$r.render("option.link")
-#end
-$r.render("small.details.link")

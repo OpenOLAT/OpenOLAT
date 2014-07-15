@@ -95,8 +95,8 @@ public class EPPageViewController extends BasicController {
 			List<CollectRestriction> restrictions = page.getCollectRestrictions();
 			if(!restrictions.isEmpty()) {
 				boolean check = ePFMgr.checkCollectRestriction(page);
-				resultCtrl = new EPCollectRestrictionResultController(ureq, getWindowControl(), page);
-				resultCtrl.setMessage(ureq, restrictions, check);
+				resultCtrl = new EPCollectRestrictionResultController(ureq, getWindowControl());
+				resultCtrl.setMessage(restrictions, check);
 				vC.put("checkResults", resultCtrl.getInitialComponent());
 				listenTo(resultCtrl);
 			}

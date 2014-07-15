@@ -1,7 +1,18 @@
 #if($messages)
-	<p class="o_eportfolio_restriction #if($restrictionsPassed) o_passed #else o_failed #end">
-	#foreach($message in $messages)
-		<span>$message</span><br/>
-	#end
-	</p>
+<div class="panel-group" id="o_ep_restrictions">
+	<div class="panel #if($restrictionsPassed) panel-success #else panel-warning #end">
+    	<div class="panel-heading">
+      		<h4 class="panel-title">
+       			 <a data-toggle="collapse" data-parent="#o_ep_restrictions" href="#collapseMessages">$r.translate("collect.restriction")</a>
+      		</h4>
+    	</div>
+		<div id="collapseMessages" class="panel-collapse collapse">
+			<div class="panel-body">
+			#foreach($message in $messages)
+				<p>$message</p>
+			#end
+			</div>
+		</div>
+	</div>
+</div>
 #end

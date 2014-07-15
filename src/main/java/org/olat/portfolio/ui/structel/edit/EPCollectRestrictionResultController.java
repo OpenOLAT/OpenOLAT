@@ -30,13 +30,11 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.spacesaver.ToggleBoxController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.portfolio.EPArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.model.restriction.CollectRestriction;
-import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.ui.filter.PortfolioFilterController;
 
 /**
@@ -50,25 +48,16 @@ import org.olat.portfolio.ui.filter.PortfolioFilterController;
  */
 public class EPCollectRestrictionResultController extends BasicController {
 	
-	private final VelocityContainer vc;
 	private final VelocityContainer mainVc;
-	private ToggleBoxController errorBoxController;
-	private final PortfolioStructure structureEl;
 	
-	public EPCollectRestrictionResultController(UserRequest ureq, WindowControl wControl, PortfolioStructure structureEl) {
+	public EPCollectRestrictionResultController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
-		this.structureEl = structureEl;
 
-		vc = createVelocityContainer("restrictions_msg");
-		mainVc = createVelocityContainer("restrictions_msg_wrapper");
-		errorBoxController = new ToggleBoxController(ureq, getWindowControl(), "ep-restrictions-" + structureEl.getKey(), "  ", " ", vc);
-		listenTo(errorBoxController);
-		mainVc.put("description", errorBoxController.getInitialComponent());
+		mainVc = createVelocityContainer("restrictions_msg");
 		putInitialPanel(mainVc);
 	}
 
-	public void setMessage(UserRequest ureq, List<CollectRestriction> restrictions, boolean passed) {
+	public void setMessage(List<CollectRestriction> restrictions, boolean passed) {
 		List<String> errors = new ArrayList<String>();
 		for(CollectRestriction restriction:restrictions) {
 			String error = getMessage(restriction, getTranslator(), null);
@@ -76,14 +65,7 @@ public class EPCollectRestrictionResultController extends BasicController {
 		}
 		
 		Boolean passedObj = new Boolean(passed);
-		Object currentStatus = vc.getContext().get("restrictionsPassed");
-		if(Boolean.TRUE.equals(currentStatus) && Boolean.FALSE.equals(passedObj)) {
-			removeAsListenerAndDispose(errorBoxController);
-			errorBoxController = new ToggleBoxController(ureq, getWindowControl(), "ep-restrictions-" + structureEl.getKey(), "  ", " ", vc);
-			listenTo(errorBoxController);
-		}
-		vc.contextPut("messages", errors);
-		vc.contextPut("restrictionsPassed", passedObj);
+		mainVc.contextPut("messages", errors);
 		mainVc.contextPut("restrictionsPassed", passedObj);
 		mainVc.setDirty(true);
 	}

@@ -86,7 +86,7 @@ class RichTextElementRenderer implements ComponentRenderer {
 			sb.append(FormJSHelper.getRawJSFor(te.getRootForm(), domID, te.getAction()));
 			sb.append(" id=\"");
 			sb.append(domID);
-			sb.append("_disabled\" readonly class=\"b_form_element_disabled\" style=\"");
+			sb.append("_disabled\" readonly class='o_disabled' style=\"");
 			if (cols != -1) {
 				sb.append(" width:").append(cols).append("em;");
 			}

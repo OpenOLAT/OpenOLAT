@@ -1,21 +1,19 @@
 <div class="o_form clearfix">
 	<fieldset><legend>$r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover")
-	$off_title</legend>
-	<div class="o_desc">$off_desc</div>
-
-<table>
-	<thead>
-		<tr><th>$r.translate("title.prefix")</th>
-		<th>$r.translate("config.due.date")</th></tr>
-	</thead>
-	<tbody>
-	#foreach($duedate in $duedates)
-		<tr><td>$r.render($duedate.titleName)</td>
-			<td><div class="form-inline">
-			$r.render($duedate.dueDateName)</div></td></tr>
-	#end
-	</tbody>
-</table>
-
+		$off_title</legend>
+		<div class="o_desc">$off_desc</div>
+		<table>
+			<thead>
+				<tr><th>$r.translate("title.prefix")</th>
+				<th>$r.translate("config.due.date")</th></tr>
+			</thead>
+			<tbody>
+			#foreach($duedate in $duedates)
+				<tr><td>$r.render($duedate.titleName)</td>
+					<td><div class="form-inline">
+					$r.render($duedate.dueDateName)</div></td></tr>
+			#end
+			</tbody>
+		</table>
 	</fieldset>
 </div>

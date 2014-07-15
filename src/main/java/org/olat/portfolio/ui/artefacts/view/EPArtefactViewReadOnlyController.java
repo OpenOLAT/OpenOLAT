@@ -28,6 +28,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -40,6 +41,7 @@ import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.EPUIFactory;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -59,7 +61,8 @@ public class EPArtefactViewReadOnlyController extends BasicController {
 	private AbstractArtefact artefact;
 	private EPSecurityCallback secCallback;
 
-	protected EPArtefactViewReadOnlyController(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact, EPSecurityCallback secCallback) {
+	protected EPArtefactViewReadOnlyController(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact,
+			PortfolioStructure struct, EPSecurityCallback secCallback, boolean options) {
 		super(ureq, wControl);
 		this.artefact = artefact;
 		this.secCallback = secCallback;
@@ -75,6 +78,16 @@ public class EPArtefactViewReadOnlyController extends BasicController {
 		if (secCallback.canView()){
 			detailsLink = LinkFactory.createCustomLink("small.details.link", "open", "small.details.link", Link.LINK, vC, this);
 			detailsLink.setElementCssClass("o_sel_artefact_details");
+			detailsLink.setIconLeftCSS("o_icon o_icon_details");
+		}
+		
+		if(options) {
+			//add the optionsLink to the artefact
+			EPArtefactViewOptionsLinkController optionsLinkCtrl
+				= new EPArtefactViewOptionsLinkController(ureq, getWindowControl(), artefact, secCallback, struct);
+			vC.put("option.link" , optionsLinkCtrl.getInitialComponent());
+			listenTo(optionsLinkCtrl);
+			
 		}
 		
 		List<String> tags = ePFMgr.getArtefactTags(artefact);
@@ -97,6 +110,12 @@ public class EPArtefactViewReadOnlyController extends BasicController {
 			CloseableModalController artDetails = EPUIFactory.getAndActivatePopupArtefactController(artefact, ureq, getWindowControl(), title);
 			listenTo(artDetails);
 		} 
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		super.event(ureq, source, event);
+		fireEvent(ureq, event);
 	}
 
 	/**

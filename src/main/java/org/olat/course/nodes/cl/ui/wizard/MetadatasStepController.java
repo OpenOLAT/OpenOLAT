@@ -78,7 +78,7 @@ public class MetadatasStepController extends StepFormBasicController {
 	private DueDateWrapper forgeRow(int i, FormLayoutContainer tableCont) {
 		String title = data.getNodePrefix() + " " + (i+1);
 		TextElement titleEl = uifactory.addTextElement("title_" + i, null, 32, title, tableCont);
-		titleEl.setDisplaySize(60);
+		titleEl.setDisplaySize(21);
 		DateChooser dueDateEl = uifactory.addDateChooser("duedate_" + i, "config.due.date", null, tableCont);
 		dueDateEl.setDateChooserTimeEnabled(true);
 		DueDateWrapper wrapper = new DueDateWrapper(titleEl, dueDateEl);

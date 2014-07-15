@@ -87,8 +87,15 @@ public class EPMultipleArtefactSmallReadOnlyPreviewController extends BasicContr
 			boolean special = artHandler.isProvidingSpecialMapViewController();
 			if (special) {
 				artCtrl = artHandler.getSpecialMapViewController(ureq, getWindowControl(), artefact);
+				if(artCtrl != null) { 
+					//add the optionsLink to the artefact
+					EPArtefactViewOptionsLinkController optionsLinkCtrl = new EPArtefactViewOptionsLinkController(ureq, getWindowControl(), artefact, secCallback, struct);
+					vC.put("optionsLink"+i,optionsLinkCtrl.getInitialComponent());
+					listenTo(optionsLinkCtrl);
+					optionLinkCtrls.add(optionsLinkCtrl);
+				}
 			} else {
-				artCtrl = new EPArtefactViewReadOnlyController(ureq, getWindowControl(), artefact, secCallback);
+				artCtrl = new EPArtefactViewReadOnlyController(ureq, getWindowControl(), artefact, struct, secCallback, true);
 			}
 			if (artCtrl != null){
 				artefactCtrls.add(artCtrl);
@@ -117,13 +124,6 @@ public class EPMultipleArtefactSmallReadOnlyPreviewController extends BasicContr
 				if(special) {//need a flag in a lopp for the velociy template
 					vC.put("specialartCtrl" + i, artefactCtrlComponent);
 				}
-
-				//add the optionsLink to the artefact
-				EPArtefactViewOptionsLinkController optionsLinkCtrl = new EPArtefactViewOptionsLinkController(ureq, getWindowControl(), artefact, secCallback, struct);
-				vC.put("optionsLink"+i,optionsLinkCtrl.getInitialComponent());
-				listenTo(optionsLinkCtrl);
-				optionLinkCtrls.add(optionsLinkCtrl);
-				
 				i++;
 			}
 		}
