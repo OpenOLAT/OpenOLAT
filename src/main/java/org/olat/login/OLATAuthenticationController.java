@@ -151,7 +151,9 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	
 	protected void openChangePassword(UserRequest ureq, String initialEmail) {
 		// double-check if allowed first
-		if (!UserModule.isPwdchangeallowed(ureq.getIdentity())) throw new OLATSecurityException("chose password to be changed, but disallowed by config");
+		if (!UserModule.isPwdchangeallowed(ureq.getIdentity())) {
+			throw new OLATSecurityException("chose password to be changed, but disallowed by config");
+		}
 
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(subController);
