@@ -80,7 +80,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	private SelectBusinessGroupController selectController;
 	
 	public CourseBusinessGroupListController(UserRequest ureq, WindowControl wControl, RepositoryEntry re) {
-		super(ureq, wControl, "group_list", false, false, re);
+		super(ureq, wControl, "group_list", false, false, "course", re);
 		this.re = re;
 	}
 

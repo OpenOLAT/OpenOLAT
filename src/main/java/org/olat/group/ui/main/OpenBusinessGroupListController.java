@@ -41,8 +41,8 @@ import org.olat.group.ui.main.BusinessGroupFlexiTableModel.Cols;
  */
 public class OpenBusinessGroupListController extends AbstractBusinessGroupListController {
 	
-	public OpenBusinessGroupListController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "group_list");
+	public OpenBusinessGroupListController(UserRequest ureq, WindowControl wControl, String prefsKey) {
+		super(ureq, wControl, "group_list", prefsKey);
 	}
 	
 	@Override

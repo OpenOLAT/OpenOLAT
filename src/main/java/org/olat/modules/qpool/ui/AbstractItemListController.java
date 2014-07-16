@@ -75,6 +75,7 @@ public abstract class AbstractItemListController extends FormBasicController
 	private FlexiTableElement itemsTable;
 	private QuestionItemDataModel model;
 	
+	private final String prefsKey;
 	private ExtendedSearchController extendedSearchCtrl;
 	
 	private final MarkManager markManager;
@@ -86,6 +87,7 @@ public abstract class AbstractItemListController extends FormBasicController
 	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source, String key) {
 		super(ureq, wControl, "item_list");
 
+		this.prefsKey = key;
 		this.itemsSource = source;
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
@@ -146,6 +148,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		itemsTable.setSortSettings(new FlexiTableSortOptions(true));
 		itemsTable.setExtendedSearch(extendedSearchCtrl);
 		itemsTable.setColumnIndexForDragAndDropLabel(Cols.title.ordinal());
+		itemsTable.setAndLoadPersistedPreferences(ureq, "qpool-list-" + prefsKey);
 
 		initButtons(ureq, formLayout);
 	}

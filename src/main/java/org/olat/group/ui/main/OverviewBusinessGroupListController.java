@@ -168,7 +168,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Favorits", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		favoritGroupsCtrl = new FavoritBusinessGroupListController(ureq, bwControl);
+		favoritGroupsCtrl = new FavoritBusinessGroupListController(ureq, bwControl, "favorit");
 		listenTo(favoritGroupsCtrl);
 		
 		favoritGroupsCtrl.doDefaultSearch();
@@ -183,7 +183,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("AllGroups", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		myGroupsCtrl = new BusinessGroupListController(ureq, bwControl);
+		myGroupsCtrl = new BusinessGroupListController(ureq, bwControl, "my");
 		listenTo(myGroupsCtrl);
 
 		myGroupsCtrl.doDefaultSearch();
@@ -198,7 +198,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("OwnedGroups", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		openGroupsCtrl = new OpenBusinessGroupListController(ureq, bwControl);
+		openGroupsCtrl = new OpenBusinessGroupListController(ureq, bwControl, "public");
 		listenTo(openGroupsCtrl);
 
 		openGroupsCtrl.doDefaultSearch();
@@ -213,7 +213,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		searchGroupsCtrl = new SearchBusinessGroupListController(ureq, bwControl);
+		searchGroupsCtrl = new SearchBusinessGroupListController(ureq, bwControl, "search");
 		listenTo(searchGroupsCtrl);
 
 		mainVC.put("groupList", searchGroupsCtrl.getInitialComponent());

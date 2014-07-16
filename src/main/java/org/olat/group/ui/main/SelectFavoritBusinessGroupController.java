@@ -32,7 +32,7 @@ import org.olat.group.model.SearchBusinessGroupParams;
 public class SelectFavoritBusinessGroupController extends AbstractBusinessGroupListController {
 
 	public SelectFavoritBusinessGroupController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "group_list");
+		super(ureq, wControl, "group_list", "sel-favorit");
 	}
 
 

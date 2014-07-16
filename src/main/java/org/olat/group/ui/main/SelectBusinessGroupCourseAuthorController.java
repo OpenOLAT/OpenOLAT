@@ -35,7 +35,7 @@ import org.olat.group.model.SearchBusinessGroupParams;
 public class SelectBusinessGroupCourseAuthorController extends AbstractBusinessGroupListController {
 	
 	public SelectBusinessGroupCourseAuthorController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "group_list");
+		super(ureq, wControl, "group_list", "authors");
 	}
 
 	@Override

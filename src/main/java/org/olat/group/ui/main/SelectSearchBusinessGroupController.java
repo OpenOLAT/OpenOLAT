@@ -34,7 +34,7 @@ public class SelectSearchBusinessGroupController extends AbstractBusinessGroupLi
 	private final boolean restricted;
 	
 	public SelectSearchBusinessGroupController(UserRequest ureq, WindowControl wControl, boolean restricted) {
-		super(ureq, wControl, "group_list");
+		super(ureq, wControl, "group_list", "sel-search");
 		this.restricted = restricted;
 	}
 

@@ -172,13 +172,14 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	
 	private BusinessGroupViewFilter filter;
 	private Object userObject;
+	private final String prefsKey;
 	
-	public AbstractBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page) {
-		this(ureq, wControl, page, false, false, null);
+	public AbstractBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page, String prefsKey) {
+		this(ureq, wControl, page, false, false, prefsKey, null);
 	}
 	
 	public AbstractBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page,
-			boolean showAdminTools, boolean startExtendedSearch, Object userObject) {
+			boolean showAdminTools, boolean startExtendedSearch, String prefsKey, Object userObject) {
 		super(ureq, wControl, page);
 		setTranslator(Util.createPackageTranslator(AbstractBusinessGroupListController.class, ureq.getLocale(), getTranslator()));
 
@@ -187,6 +188,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		this.showAdminTools = showAdminTools && admin;
 		this.userObject = userObject;
 		this.startExtendedSearch = startExtendedSearch;
+		this.prefsKey = prefsKey;
 
 		initForm(ureq);
 	}
@@ -201,6 +203,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setFromColumnModel(true);
 		tableEl.setSortSettings(options);
+		tableEl.setAndLoadPersistedPreferences(ureq, "gbg-list-" + prefsKey);
 		
 		searchCtrl = new BusinessGroupSearchController(ureq, getWindowControl(), isAdmin(), true, showAdminTools, mainForm);
 		searchCtrl.setEnabled(false);
