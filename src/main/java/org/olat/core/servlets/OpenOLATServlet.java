@@ -122,7 +122,7 @@ public class OpenOLATServlet extends HttpServlet {
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
-		//log.info(req.getMethod() + " :: " + req.getPathInfo());
+		log.info(req.getMethod() + " :: " + req.getPathInfo());
 		
 		GUIInterna.begin(req);
 		Tracing.setUreq(req);
@@ -272,7 +272,19 @@ public class OpenOLATServlet extends HttpServlet {
 				String dmzUri = WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault();
 				response.sendRedirect(dmzUri);
 			} else {
-				response.sendError(HttpServletResponse.SC_NOT_FOUND);
+				String uri = request.getRequestURI();
+				if(uri != null && uri.contains("/raw/_noversion_/")) {
+					//cut and redirect
+					int index = uri.indexOf("/raw/_noversion_/");
+					if(index > 0) {
+						String redirectUri = Settings.getServerContextPathURI() + uri.substring(index, uri.length());
+						response.sendRedirect(redirectUri);
+					} else {
+						response.sendError(HttpServletResponse.SC_NOT_FOUND);
+					}
+				} else {
+					response.sendError(HttpServletResponse.SC_NOT_FOUND);
+				}
 			}
 		}
 	}
