@@ -19,6 +19,7 @@
  */
 package org.olat.core.extensions.action;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -36,6 +37,7 @@ import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
 
 /**
@@ -55,10 +57,11 @@ public class GenericActionExtension extends AbstractExtension implements ActionE
 	private String i18nActionKey;
 	private String i18nDescriptionKey;
 	/*
-	 * fxdiff : we use this navigationKey to find the correct actionExtension in a
+	 * We use this navigationKey to find the correct actionExtension in a
 	 * genericMainController. (to select the correct tree-entry...)
 	 */
 	private String navigationKey;
+	private List<String> alternativeNavigationKeys;
 	private List<String> extensionPoints;
 	private String translationPackageName;
 	private String translationPackageNameDerived;
@@ -104,7 +107,9 @@ public class GenericActionExtension extends AbstractExtension implements ActionE
 		if(getActionController() instanceof AutoCreator){
 			sb.append(((AutoCreator) getActionController()).getClassName()).append(":");
 		}
-		sb.append(getActionText(I18nManager.getInstance().getLocaleOrDefault(null))).append(":").append(getOrder()).append(":").append(getNavigationKey());
+		sb.append(getActionText(I18nManager.getInstance().getLocaleOrDefault(null)))
+		  .append(":").append(getOrder())
+		  .append(":").append(getNavigationKey());
 		return sb.toString();	
 	}
 	
@@ -140,17 +145,19 @@ public class GenericActionExtension extends AbstractExtension implements ActionE
 		return translator.translate(i18nDescriptionKey);
 	}
 
-	public String getNavigationKey(){
+	public String getNavigationKey() {
 		return navigationKey;
 	}
-	
-	//fxdiff
+
+	public List<String> getAlternativeNavigationKeys() {
+		return alternativeNavigationKeys;
+	}
+
 	public String getClassNameOfCorrespondingController(){
 		if(contentControllerClassName == null) return "";
 		return contentControllerClassName.substring(contentControllerClassName.lastIndexOf(".")+1);
 	}
 	
-	// fxdiff
 	private Translator createPackageTranslator(Locale loc){
 		if (translationPackageName==null){
 			translationPackageName = translationPackageNameDerived;
@@ -203,6 +210,15 @@ public class GenericActionExtension extends AbstractExtension implements ActionE
 		this.navigationKey = navKey;
 	}
 	
+	public void setAlternativeNavigationKeys(String keys) {
+		if(StringHelper.containsNonWhitespace(keys)) {
+			alternativeNavigationKeys = new ArrayList<>();
+			for(String key:keys.split(",")) {
+				alternativeNavigationKeys.add(key);
+			}
+		}
+	}
+
 	public List<String> getExtensionPoints() {
 		return extensionPoints;
 	}

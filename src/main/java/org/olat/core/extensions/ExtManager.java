@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.extensions.action.GenericActionExtension;
@@ -153,7 +154,7 @@ public class ExtManager extends LogDelegator {
 
 		int count_disabled = 0;
 		int count_duplid = 0;
-		int count_duplnavkey = 0;
+		AtomicInteger count_duplnavkey = new AtomicInteger(0);
 		
 		// first build ordered list
 		for (Extension extension : extensionValues) {
@@ -190,13 +191,13 @@ public class ExtManager extends LogDelegator {
 						List<String>extensionPoints = gAE.getExtensionPoints();
 						for(String extensionPoint:extensionPoints) {
 							ExtensionPointKeyPair key = new ExtensionPointKeyPair(extensionPoint, gAE.getNavigationKey());
-							if (navKeyGAExtensionlookup.containsKey(key)) {
-								count_duplnavkey++;
-								logInfo(
-									"Devel-Info :: duplicate navigation-key for extension :: " + gAE.getNavigationKey() + " [ [" + idExtensionlookup.get(uid)
-									+ "]  and [" + extension + "] ]", null);
-							} else {
-									navKeyGAExtensionlookup.put(key, gAE);
+							append(key, gAE, count_duplnavkey);
+							List<String> alternativeNavigationKeys = gAE.getAlternativeNavigationKeys();
+							if(alternativeNavigationKeys != null && alternativeNavigationKeys.size() > 0) {
+								for(String alternativeNavigationKey:alternativeNavigationKeys) {
+									ExtensionPointKeyPair altKey = new ExtensionPointKeyPair(extensionPoint, alternativeNavigationKey);
+									append(altKey, gAE, count_duplnavkey);
+								}
 							}
 						}
 					}
@@ -209,7 +210,16 @@ public class ExtManager extends LogDelegator {
 		return extensionsList;
 	}
 	
-	private class ExtensionPointKeyPair {
+	private void append(ExtensionPointKeyPair key, GenericActionExtension gAE, AtomicInteger countDuplicate) {
+		if (navKeyGAExtensionlookup.containsKey(key)) {
+			logInfo("Devel-Info :: duplicate navigation-key for extension :: " + key.navigationKey, null);
+			countDuplicate.incrementAndGet();
+		} else {
+			navKeyGAExtensionlookup.put(key, gAE);
+		}
+	}
+	
+	private static class ExtensionPointKeyPair {
 		private String extensionPoint;
 		private String navigationKey;
 		

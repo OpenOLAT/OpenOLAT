@@ -122,7 +122,7 @@ public class OpenOLATServlet extends HttpServlet {
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
-		log.info(req.getMethod() + " :: " + req.getPathInfo());
+		//log.info(req.getMethod() + " :: " + req.getPathInfo());
 		
 		GUIInterna.begin(req);
 		Tracing.setUreq(req);

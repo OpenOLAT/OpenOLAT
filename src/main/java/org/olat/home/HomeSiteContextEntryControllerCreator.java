@@ -17,46 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-
 package org.olat.home;
 
-import org.olat.NewControllerFactory;
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
-import org.olat.home.controllerCreators.GuestHomeCEControllerCreator;
+import java.util.List;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.ContextEntryControllerCreator;
+import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 
 /**
  * 
- * Description:<br>
- * 
- * <P>
- * Initial Date:  18 janv. 2012 <br>
- *
+ * Initial date: 16.07.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class HomeModule extends AbstractOLATModule {
+public class HomeSiteContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
 
 	@Override
-	public void init() {
-		NewControllerFactory.getInstance().addContextEntryControllerCreator(HomeSite.class.getSimpleName(),
-				new HomeSiteContextEntryControllerCreator());
-		NewControllerFactory.getInstance().addContextEntryControllerCreator("Guest",
-				new GuestHomeCEControllerCreator());
+	public ContextEntryControllerCreator clone() {
+		return this;
 	}
 
 	@Override
-	protected void initDefaultProperties() {
-		//
+	public String getSiteClassName(List<ContextEntry> ces, UserRequest ureq) {
+		return HomeSite.class.getName();
 	}
-
-	@Override
-	protected void initFromChangedProperties() {
-		//
-	}
-	
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
-	}
-
 }
