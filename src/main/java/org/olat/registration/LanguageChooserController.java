@@ -99,10 +99,6 @@ public class LanguageChooserController extends FormBasicController {
 			setLocale(loc, true);
 			ureq.getUserSession().setLocale(loc);
 			ureq.getUserSession().putEntry(LocaleNegotiator.NEGOTIATED_LOCALE, loc);
-			
-			FormLayoutContainer langLayout = (FormLayoutContainer)flc.getFormComponent("langLayout");
-			langLayout.contextPut("languageCode", loc.toString());
-			langLayout.contextPut("selectLanguage", translate("select.language"));
 			nextButton.setTranslator(getTranslator());
 			
 			if(fireStandardEvent) {
