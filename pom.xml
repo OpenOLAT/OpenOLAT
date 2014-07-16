@@ -138,6 +138,7 @@
 									<nocompress>false</nocompress>
 									<outputDirectory>${basedir}/target/bootstrap</outputDirectory>
 									<sourceDirectory>${basedir}/src/main/webapp/static/bootstrap</sourceDirectory>
+									<excludeResources>true</excludeResources>
 									<aggregations>
 										<aggregation>
 											<output>${basedir}/target/bootstrap/bootstrap-openolat.min.js</output>
@@ -173,6 +174,7 @@
 									<nocompress>false</nocompress>
 									<outputDirectory>${basedir}/target/jquery</outputDirectory>
 									<sourceDirectory>${basedir}/src/main/webapp/static/js</sourceDirectory>
+									<excludeResources>true</excludeResources>
 									<aggregations>
 										<aggregation>
 											<output>${basedir}/src/main/webapp/static/js/js.plugins.min.js</output>
@@ -241,6 +243,7 @@
 									<nocompress>false</nocompress>
 									<outputDirectory>${basedir}/target/jquery</outputDirectory>
 									<sourceDirectory>${basedir}/src/main/webapp/static/js</sourceDirectory>
+									<excludeResources>true</excludeResources>
 									<aggregations>
 										<aggregation>
 											<output>${basedir}/src/main/webapp/static/js/js.plugins.min.css</output>
