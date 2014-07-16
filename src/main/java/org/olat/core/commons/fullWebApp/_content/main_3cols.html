@@ -106,13 +106,12 @@ jQuery().ready(function() {
 		} 
 	};
 	window.o_responsiveMenu = function() {
-		if (jQuery(window).width() < 992) {
-			// same breakpoint as bootstrap screen-md
+		if (jQuery(window).width() < 992 && !(jQuery.support.opacity == false)) {
+			// same breakpoint as bootstrap screen-md, opacity detect IE8
 			o_undockMenu();
 		} else {
 			o_dockMenu();
 		}
-		
 	};
 
 	// toggle menu on toggle events

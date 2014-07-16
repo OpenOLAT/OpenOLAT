@@ -272,8 +272,11 @@
 				$('body').addClass('o_offcanvas_right_visible');	    	
 				that.state.rightVisible = true;			
 			} );
-			// hide menu when clicking anywhere in content
-			$('html').on('click', $.proxy(this.hideRight,this));			
+			// hide menu when clicking anywhere in content (timeout to pass the event in IE8/9 which hide the navbar)
+			var listener = $.proxy(this.hideRight, this);
+			setTimeout(function() {
+				$('html').on('click', listener);
+			}, 125);			
 		}
 	}
 	Navbar.prototype.hideRight = function() {
