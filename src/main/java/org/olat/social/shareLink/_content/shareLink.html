@@ -14,7 +14,7 @@
 		return document.title;
 	}
 	function o_shareCallout() {
-		return '<p><span>$r.translate("share.link")</span>:<br/><input id="callout_share_link_in" type="text" name="cl_share_link" value="' + o_shareSocialUrl() + '" size="64" /></p>';
+		return '<p><input id="callout_share_link_in" type="text" name="cl_share_link" value="' + o_shareSocialUrl() + '" size="64" /></p>';
 	}
 /* ]]> */
 </script>
@@ -47,7 +47,7 @@
 			<i class="o_icon o_icon_mailto o_icon-lg"></i>
 		</a>
 	#elseif ($link == "link")	
-		<a id="o_link" href="javascript:;">
+		<a id="o_link" href="javascript:;" title="$r.translateInAttribute("share.link")">
 			<i class="o_icon o_icon_link o_icon-lg"></i>
 		</a>
 		<a id="o_qrcode" href="javascript:;">
@@ -57,8 +57,6 @@
 		/* <![CDATA[ */
 			jQuery(function() {
 				o_shareLinkPopup('o_link', o_shareCallout);
-			});
-			jQuery(function() {
 				o_QRCodePopup('o_qrcode', o_shareSocialUrl);
 			});
 		/* ]]> */

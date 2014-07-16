@@ -152,6 +152,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 
 	private final boolean admin;
 	private final boolean showAdminTools;
+	private final boolean startExtendedSearch;
 	@Autowired
 	protected MarkManager markManager;
 	@Autowired
@@ -173,11 +174,11 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	private Object userObject;
 	
 	public AbstractBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page) {
-		this(ureq, wControl, page, false, null);
+		this(ureq, wControl, page, false, false, null);
 	}
 	
 	public AbstractBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page,
-			boolean showAdminTools, Object userObject) {
+			boolean showAdminTools, boolean startExtendedSearch, Object userObject) {
 		super(ureq, wControl, page);
 		setTranslator(Util.createPackageTranslator(AbstractBusinessGroupListController.class, ureq.getLocale(), getTranslator()));
 
@@ -185,6 +186,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		admin = roles.isOLATAdmin() || roles.isGroupManager();
 		this.showAdminTools = showAdminTools && admin;
 		this.userObject = userObject;
+		this.startExtendedSearch = startExtendedSearch;
 
 		initForm(ureq);
 	}
@@ -206,6 +208,9 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		
 		tableEl.setSearchEnabled(true);
 		tableEl.setExtendedSearch(searchCtrl);
+		if(startExtendedSearch) {
+			tableEl.expandExtendedSearch(ureq);
+		}
 		
 		initButtons(formLayout, ureq);
 	}
