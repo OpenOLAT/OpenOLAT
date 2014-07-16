@@ -256,7 +256,16 @@ public class PreferencesFormController extends FormBasicController {
 		String[] csKeys = StringHelper.getMapKeysAsStringArray(charsets);
 		charset = uifactory.addDropdownSingleselect("form.charset", formLayout, csKeys, csKeys, null);
 		charset.setElementCssClass("o_sel_home_settings_charset");
-		charset.select(currentCharset, true);
+		if(currentCharset != null) {
+			for(String csKey:csKeys) {
+				if(csKey.equals(currentCharset)) {
+					charset.select(currentCharset, true);
+				}
+			}
+		}
+		if(!charset.isOneSelected() && charsets.containsKey("UTF-8")) {
+			charset.select("UTF-8", true);
+		}
 
 		// Submit and cancel buttons
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
