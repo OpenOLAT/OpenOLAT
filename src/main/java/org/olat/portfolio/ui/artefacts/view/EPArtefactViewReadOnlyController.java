@@ -53,14 +53,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
 public class EPArtefactViewReadOnlyController extends BasicController {
-
-	private VelocityContainer vC;
-	@Autowired
-	private EPFrontendManager ePFMgr;
+	
 	private Link detailsLink;
+	private VelocityContainer vC;
+	private EPArtefactViewOptionsLinkController optionsLinkCtrl;
+
 	private AbstractArtefact artefact;
 	private EPSecurityCallback secCallback;
-
+	@Autowired
+	private EPFrontendManager ePFMgr;
+	
 	protected EPArtefactViewReadOnlyController(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact,
 			PortfolioStructure struct, EPSecurityCallback secCallback, boolean options) {
 		super(ureq, wControl);
@@ -83,21 +85,23 @@ public class EPArtefactViewReadOnlyController extends BasicController {
 		
 		if(options) {
 			//add the optionsLink to the artefact
-			EPArtefactViewOptionsLinkController optionsLinkCtrl
-				= new EPArtefactViewOptionsLinkController(ureq, getWindowControl(), artefact, secCallback, struct);
+			optionsLinkCtrl = new EPArtefactViewOptionsLinkController(ureq, getWindowControl(), artefact, secCallback, struct);
 			vC.put("option.link" , optionsLinkCtrl.getInitialComponent());
 			listenTo(optionsLinkCtrl);
-			
 		}
 		
+		updateTags();
+		putInitialPanel(vC);	
+	}
+	
+	private void updateTags() {
 		List<String> tags = ePFMgr.getArtefactTags(artefact);
 		List<String> escapedTags = new ArrayList<String>(tags.size());
 		for(String tag:tags) {
 			escapedTags.add(StringHelper.escapeHtml(tag));
 		}
 		vC.contextPut("tags", StringHelper.formatAsCSVString(escapedTags));
-		
-		putInitialPanel(vC);	
+		vC.setDirty(true);
 	}
 
 	/**
@@ -114,6 +118,11 @@ public class EPArtefactViewReadOnlyController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(optionsLinkCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				updateTags();
+			}
+		}
 		super.event(ureq, source, event);
 		fireEvent(ureq, event);
 	}

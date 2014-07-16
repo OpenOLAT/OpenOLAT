@@ -55,6 +55,7 @@ import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.portfolio.model.structel.StructureStatusEnum;
 import org.olat.portfolio.ui.artefacts.collect.EPCollectStepForm04;
+import org.olat.portfolio.ui.artefacts.edit.EPReflexionWrapperController;
 import org.olat.portfolio.ui.filter.PortfolioFilterController;
 import org.olat.portfolio.ui.structel.EPStructureChangeEvent;
 
@@ -227,7 +228,8 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 				if(CMD_TITLE.equals(action)) {
 					popupArtefact(artefact, ureq);
 				} else if (CMD_REFLEXION.equals(action)){
-					EPUIFactory.getReflexionPopup(ureq, getWindowControl(), secCallback, artefact, struct);
+					EPReflexionWrapperController reflexionCtrl = new EPReflexionWrapperController(ureq, getWindowControl(), secCallback, artefact, struct);
+					listenTo(reflexionCtrl);
 				} else if (CMD_CHOOSE.equals(action)){
 					fireEvent(ureq, new EPArtefactChoosenEvent(artefact));
 				} else if (CMD_UNLINK.equals(action)){

@@ -21,3 +21,9 @@ $r.render("artefact.tags")
 		$r.render($tagLink.getName())
 	#end
 #end
+
+#if($r.available("stepform.submit"))
+<div class="o_button_group">
+	$r.render("stepform.submit")
+</div>
+#end

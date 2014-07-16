@@ -61,8 +61,8 @@ public class EPReflexionWrapperController extends BasicController {
 	private PortfolioStructure struct;
 	private CloseableModalController reflexionBox;
 
-	public EPReflexionWrapperController(UserRequest ureq, WindowControl wControl, EPSecurityCallback secCallback, AbstractArtefact artefact,
-			PortfolioStructure struct) {
+	public EPReflexionWrapperController(UserRequest ureq, WindowControl wControl, EPSecurityCallback secCallback,
+			AbstractArtefact artefact, PortfolioStructure struct) {
 		super(ureq, wControl);
 		if (struct != null && struct.getRoot() instanceof PortfolioStructureMap) {
 			mapClosed = StructureStatusEnum.CLOSED.equals(((PortfolioStructureMap) struct.getRoot()).getStatus());
@@ -107,7 +107,6 @@ public class EPReflexionWrapperController extends BasicController {
 		removeAsListenerAndDispose(reflexionBox);
 		reflexionBox = new CloseableModalController(getWindowControl(), title, reflexionCtrl.getInitialComponent());
 		listenTo(reflexionBox);
-		//reflexionBox.setInitialWindowSize(550, 600);
 		reflexionBox.activate();
 	}
 

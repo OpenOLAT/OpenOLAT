@@ -36,6 +36,7 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.ui.artefacts.collect.EPCollectStepForm04;
 import org.olat.portfolio.ui.artefacts.edit.EPReflexionWrapperController;
+import org.olat.portfolio.ui.artefacts.edit.EPTagsController;
 import org.olat.portfolio.ui.structel.EPStructureChangeEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -49,7 +50,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EPArtefactViewOptionsLinkController extends BasicController {
 
-	
 	private final AbstractArtefact artefact;
 	private PortfolioStructure struct;
 	private final EPSecurityCallback secCallback;
@@ -60,11 +60,10 @@ public class EPArtefactViewOptionsLinkController extends BasicController {
 	//controllers
 	private EPCollectStepForm04 moveTreeCtrl;
 	private CloseableModalController moveTreeBox;
-	private Controller reflexionCtrl;
+	private Controller tagsCtrl;
+	private EPReflexionWrapperController reflexionCtrl;
 	private CloseableCalloutWindowController artefactOptionCalloutCtrl;
 	
-	
-
 	// the link that triggers the callout
 	private Link optionLink;
 
@@ -72,7 +71,7 @@ public class EPArtefactViewOptionsLinkController extends BasicController {
 	private Link unlinkLink;
 	private Link moveLink;
 	private Link reflexionLink;
-	
+	private Link tagsLink;
 	
 	public EPArtefactViewOptionsLinkController(final UserRequest ureq, final WindowControl wControl, final AbstractArtefact artefact,
 			final EPSecurityCallback secCallback, final PortfolioStructure struct){
@@ -90,7 +89,6 @@ public class EPArtefactViewOptionsLinkController extends BasicController {
 		putInitialPanel(optionLink);
 	}
 	
-	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == optionLink){
@@ -106,6 +104,10 @@ public class EPArtefactViewOptionsLinkController extends BasicController {
 			closeArtefactOptionsCallout();
 			reflexionCtrl = new EPReflexionWrapperController(ureq, getWindowControl(), secCallback, artefact, struct);
 			listenTo(reflexionCtrl);
+		} else if (source == tagsLink) {
+			closeArtefactOptionsCallout();
+			tagsCtrl = new EPTagsController(ureq, getWindowControl(), secCallback, artefact, struct);
+			listenTo(tagsCtrl);
 		}
 	}
 	
@@ -122,6 +124,11 @@ public class EPArtefactViewOptionsLinkController extends BasicController {
 		} else if (source == artefactOptionCalloutCtrl) {
 			removeAsListenerAndDispose(artefactOptionCalloutCtrl);
 			artefactOptionCalloutCtrl = null;
+		} else if (source == tagsCtrl) {
+			if(event == Event.DONE_EVENT) {
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			removeAsListenerAndDispose(tagsCtrl);
 		}
 		fireEvent(ureq, event);
 	}
@@ -139,7 +146,6 @@ public class EPArtefactViewOptionsLinkController extends BasicController {
 		listenTo(moveTreeBox);
 		moveTreeBox.activate();
 	}
-	
 	
 	/**
 	 * closes the callout
@@ -161,10 +167,14 @@ public class EPArtefactViewOptionsLinkController extends BasicController {
 		if (secCallback.canRemoveArtefactFromStruct()){
 			unlinkLink = LinkFactory.createCustomLink("unlink.link", "remove", "remove.from.map", Link.LINK, artOptVC, this);
 		}		
-		if (secCallback.canAddArtefact() && secCallback.canRemoveArtefactFromStruct() && secCallback.isOwner()){ // isOwner: don't show move in group maps!
+		if (secCallback.canAddArtefact() && secCallback.canRemoveArtefactFromStruct() && secCallback.isOwner()) { // isOwner: don't show move in group maps!
 			moveLink = LinkFactory.createCustomLink("move.link", "move", "artefact.options.move", Link.LINK, artOptVC, this);
 		}
 		reflexionLink = LinkFactory.createCustomLink("reflexion.link", "reflexion", "table.header.reflexion", Link.LINK, artOptVC, this);
+		if(secCallback.canEditTags()) {
+			tagsLink = LinkFactory.createCustomLink("tags.link", "tags", "artefact.tags", Link.LINK, artOptVC, this);
+		}
+		
 		String title = translate("option.link");
 		removeAsListenerAndDispose(artefactOptionCalloutCtrl);
 		artefactOptionCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), artOptVC, optionLink, title, true, null);
@@ -172,10 +182,8 @@ public class EPArtefactViewOptionsLinkController extends BasicController {
 		artefactOptionCalloutCtrl.activate();
 	}
 	
-
 	@Override
 	protected void doDispose() {
 		closeArtefactOptionsCallout();
 	}
-
 }

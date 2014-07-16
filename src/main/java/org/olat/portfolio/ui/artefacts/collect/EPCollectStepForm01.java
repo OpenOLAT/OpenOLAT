@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -42,11 +41,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -61,19 +59,22 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
 public class EPCollectStepForm01 extends StepFormBasicController {
 
 	private AbstractArtefact artefact;
-	private EPFrontendManager ePFMgr;
 	private TextBoxListElement tagListElement;
+	@Autowired
+	private EPFrontendManager ePFMgr;
 
 	private static final String RUNCTX_TAGLIST_KEY = "artefactTagsList"; 
 	
-	private static OLog logger = Tracing.createLoggerFor(EPCollectStepForm01.class);
-
+	public EPCollectStepForm01(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact) {
+		super(ureq, wControl, "step01tagging");
+		this.artefact = artefact;
+		initForm(ureq);
+	}
+	
 	public EPCollectStepForm01(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, AbstractArtefact artefact) {
 		super(ureq, wControl, rootForm, runContext, FormBasicController.LAYOUT_CUSTOM, "step01tagging");
-		ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
-
 		this.artefact = artefact;
-		initForm(this.flc, this, ureq);
+		initForm(ureq);
 	}
 
 	/**
@@ -100,7 +101,12 @@ public class EPCollectStepForm01 extends StepFormBasicController {
 			userTagLinks.add(tagLink);
 			i++;
 		}
-		this.flc.contextPut("userTagLinks", userTagLinks);
+		flc.contextPut("userTagLinks", userTagLinks);
+		
+		if (!isUsedInStepWizzard()) {
+			// add form buttons
+			uifactory.addFormSubmitButton("stepform.submit", formLayout);
+		}
 	}
 
 	/**
@@ -121,7 +127,7 @@ public class EPCollectStepForm01 extends StepFormBasicController {
 		Collection<String> preSetArtefactTags = ePFMgr.getArtefactTags(artefact);
 
 		@SuppressWarnings("unchecked")
-		Collection<String> runContextTags = (List<String>) getFromRunContext(RUNCTX_TAGLIST_KEY);
+		Collection<String> runContextTags = isUsedInStepWizzard() ? (List<String>) getFromRunContext(RUNCTX_TAGLIST_KEY) : null;
 		if (runContextTags != null) {
 			// there are already tags in runContext, use those
 			tagCollection = runContextTags;
@@ -136,9 +142,6 @@ public class EPCollectStepForm01 extends StepFormBasicController {
 			}
 		}
 
-		if (logger.isDebug())
-			logger.debug("initForm -->  adding TextBoxListElement with tags: " + tagMap);
-
 		return tagMap;
 	}
 
@@ -152,8 +155,6 @@ public class EPCollectStepForm01 extends StepFormBasicController {
 		if (source == tagListElement) {
 			// nothing to do here, update dataModel on FormOK
 		} else if (source instanceof FormLink) {
-			if (logger.isDebug())
-				logger.debug("formInnerEvent -->  source is FormLink --> updating UI with newly added Tag from List");
 			
 			// user clicked on a tag in the "50 most used tags"-list
 			FormLink link = (FormLink) source;
@@ -163,7 +164,9 @@ public class EPCollectStepForm01 extends StepFormBasicController {
 				newTagFromLink = StringHelper.escapeHtml(newTagFromLink);
 				newTagFromLink = StringHelper.escapeJavaScript(newTagFromLink);
 				currentTagsInComponent.add(newTagFromLink);
-				addToRunContext(RUNCTX_TAGLIST_KEY, currentTagsInComponent);
+				if(isUsedInStepWizzard()) {
+					addToRunContext(RUNCTX_TAGLIST_KEY, currentTagsInComponent);
+				}
 				// refresh gui
 				flc.setDirty(true);
 				initForm(ureq);
@@ -176,14 +179,19 @@ public class EPCollectStepForm01 extends StepFormBasicController {
 	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
-		List<String> actualTagList = tagListElement.getValueList();
-		if (actualTagList.size() != 0) {
-			addToRunContext(RUNCTX_TAGLIST_KEY, actualTagList);
+		if(isUsedInStepWizzard()) {
+			List<String> actualTagList = tagListElement.getValueList();
+			if (actualTagList.size() != 0) {
+				addToRunContext(RUNCTX_TAGLIST_KEY, actualTagList);
+			}	
+			// force repaint when navigating back and forth
+			flc.setDirty(true);
+			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+		} else {
+			List<String> tags = tagListElement.getValueList();
+			ePFMgr.setArtefactTags(ureq.getIdentity(), artefact, tags);
+			fireEvent(ureq, StepsEvent.DONE_EVENT);
 		}
-			
-		// force repaint when navigating back and forth
-		this.flc.setDirty(true);
-		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 
 	/**
