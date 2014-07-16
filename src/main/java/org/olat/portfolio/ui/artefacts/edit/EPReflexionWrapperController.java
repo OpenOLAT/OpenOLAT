@@ -19,7 +19,6 @@
  */
 package org.olat.portfolio.ui.artefacts.edit;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -28,7 +27,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.portfolio.EPSecurityCallback;
@@ -42,6 +40,7 @@ import org.olat.portfolio.ui.artefacts.collect.EPReflexionChangeEvent;
 import org.olat.portfolio.ui.artefacts.view.EPArtefactViewController;
 import org.olat.portfolio.ui.artefacts.view.EPReflexionViewController;
 import org.olat.portfolio.ui.structel.EPStructureChangeEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -53,7 +52,7 @@ import org.olat.portfolio.ui.structel.EPStructureChangeEvent;
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
 public class EPReflexionWrapperController extends BasicController {
-
+	@Autowired
 	private EPFrontendManager ePFMgr;
 	private Controller reflexionCtrl;
 	private boolean mapClosed;
@@ -65,7 +64,6 @@ public class EPReflexionWrapperController extends BasicController {
 	public EPReflexionWrapperController(UserRequest ureq, WindowControl wControl, EPSecurityCallback secCallback, AbstractArtefact artefact,
 			PortfolioStructure struct) {
 		super(ureq, wControl);
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		if (struct != null && struct.getRoot() instanceof PortfolioStructureMap) {
 			mapClosed = StructureStatusEnum.CLOSED.equals(((PortfolioStructureMap) struct.getRoot()).getStatus());
 		} else {
@@ -74,8 +72,7 @@ public class EPReflexionWrapperController extends BasicController {
 		this.secCallback = secCallback;
 		this.artefact = artefact;
 		this.struct = struct;
-		Translator pt = Util.createPackageTranslator(EPArtefactViewController.class, ureq.getLocale(), getTranslator());
-		setTranslator(pt);
+		setTranslator(Util.createPackageTranslator(EPArtefactViewController.class, ureq.getLocale(), getTranslator()));
 
 		init(ureq);
 	}
@@ -84,7 +81,7 @@ public class EPReflexionWrapperController extends BasicController {
 		removeAsListenerAndDispose(reflexionCtrl);
 		String title = "";
 		boolean artClosed = ePFMgr.isArtefactClosed(artefact);
-		if (mapClosed || !secCallback.canEditStructure() || (artClosed && struct == null)) {
+		if (mapClosed || !secCallback.canEditReflexion() || (artClosed && struct == null)) {
 			// reflexion cannot be edited, view only!
 			reflexionCtrl = new EPReflexionViewController(ureq, getWindowControl(), artefact, struct);
 		} else {

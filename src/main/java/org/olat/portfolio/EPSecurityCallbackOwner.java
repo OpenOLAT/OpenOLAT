@@ -61,6 +61,11 @@ public class EPSecurityCallbackOwner implements EPSecurityCallback {
 	}
 	
 	@Override
+	public boolean canEditReflexion() {
+		return canEdit();
+	}
+
+	@Override
 	public boolean canShareMap() {
 		return canEdit();
 	}

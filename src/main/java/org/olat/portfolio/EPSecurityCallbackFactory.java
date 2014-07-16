@@ -57,11 +57,12 @@ public class EPSecurityCallbackFactory {
 	
 	public static boolean isLockNeeded(EPSecurityCallback secCallback) {
 		return secCallback.canAddArtefact() || secCallback.canAddPage() || secCallback.canAddStructure()
-			|| secCallback.canEditStructure();
+			|| secCallback.canEditStructure() || secCallback.canEditReflexion();
 	}
 	
 	public static EPSecurityCallback updateAfterFailedLock(EPSecurityCallback secCallback) {
 		boolean canEditStructure = false;
+		boolean canEditReflexion = false;
 		boolean canShare = secCallback.canShareMap();
 		boolean canAddArtefact = false;
 		boolean canRemoveArtefactFromStruct = false;
@@ -73,7 +74,7 @@ public class EPSecurityCallbackFactory {
 		boolean restrictionsEnabled = secCallback.isRestrictionsEnabled();
 		boolean isOwner = secCallback.isOwner();
 
-		return new EPSecurityCallbackImpl(canEditStructure, canShare, canAddArtefact, canRemoveArtefactFromStruct, canAddStructure, canAddPage,
+		return new EPSecurityCallbackImpl(canEditStructure, canEditReflexion, canShare, canAddArtefact, canRemoveArtefactFromStruct, canAddStructure, canAddPage,
 				canView, canCommentAndRate, canSubmitAssess, restrictionsEnabled, isOwner);
 	}
 	
@@ -89,6 +90,7 @@ public class EPSecurityCallbackFactory {
 		boolean isVisible = ePFMgr.isMapVisible(ureq.getIdentity(), map.getOlatResource());
 		
 		boolean canEditStructure = isOwner;
+		boolean canEditReflexion = isOwner;
 		boolean canShare = isOwner;
 		boolean canAddArtefact = isOwner;
 		boolean canRemoveArtefactFromStruct = isOwner;
@@ -99,7 +101,7 @@ public class EPSecurityCallbackFactory {
 		boolean canSubmitAssess = false;
 		boolean restrictionsEnabled = false;
 		
-		return new EPSecurityCallbackImpl(canEditStructure, canShare, canAddArtefact, canRemoveArtefactFromStruct, canAddStructure, canAddPage,
+		return new EPSecurityCallbackImpl(canEditStructure, canEditReflexion, canShare, canAddArtefact, canRemoveArtefactFromStruct, canAddStructure, canAddPage,
 				canView, canCommentAndRate, canSubmitAssess, restrictionsEnabled, isOwner);
 	}
 	
@@ -117,6 +119,7 @@ public class EPSecurityCallbackFactory {
 		boolean open = !StructureStatusEnum.CLOSED.equals(map.getStatus());
 		
 		boolean canEditStructure = false;
+		boolean canEditReflexion = isOwner && open;
 		boolean canShare = (isOwner || isCoach);
 		boolean canAddArtefact = isOwner && open;
 		boolean canRemoveArtefactFromStruct = isOwner && open;
@@ -127,7 +130,7 @@ public class EPSecurityCallbackFactory {
 		boolean canSubmitAssess = isOwner;
 		boolean restrictionsEnabled = true;
 		
-		return new EPSecurityCallbackImpl(canEditStructure, canShare, canAddArtefact, canRemoveArtefactFromStruct, canAddStructure, canAddPage,
+		return new EPSecurityCallbackImpl(canEditStructure, canEditReflexion, canShare, canAddArtefact, canRemoveArtefactFromStruct, canAddStructure, canAddPage,
 				canView, canCommentAndRate, canSubmitAssess, restrictionsEnabled, isOwner);
 	}
 	
@@ -151,6 +154,7 @@ public class EPSecurityCallbackFactory {
 		boolean open = !StructureStatusEnum.CLOSED.equals(map.getStatus());
 		
 		boolean canEditStructure = (isOwner || isAdmin) && open;
+		boolean canEditReflexion = (isOwner) && open;
 		boolean canShare = false;
 		boolean canAddArtefact = false; // (isOwner || isAdmin) && open;
 		boolean canRemoveArtefactFromStruct = (isOwner || isAdmin) && open;
@@ -161,7 +165,7 @@ public class EPSecurityCallbackFactory {
 		boolean canSubmitAssess = false;
 		boolean restrictionsEnabled = true;//for author
 
-		return new EPSecurityCallbackImpl(canEditStructure, canShare, canAddArtefact, canRemoveArtefactFromStruct, canAddStructure, canAddPage,
+		return new EPSecurityCallbackImpl(canEditStructure, canEditReflexion, canShare, canAddArtefact, canRemoveArtefactFromStruct, canAddStructure, canAddPage,
 				canView, canCommentAndRate, canSubmitAssess, restrictionsEnabled, isOwner);
 	}
 }

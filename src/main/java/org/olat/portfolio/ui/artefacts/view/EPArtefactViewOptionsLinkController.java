@@ -31,11 +31,11 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.portfolio.EPSecurityCallback;
-import org.olat.portfolio.EPUIFactory;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.ui.artefacts.collect.EPCollectStepForm04;
+import org.olat.portfolio.ui.artefacts.edit.EPReflexionWrapperController;
 import org.olat.portfolio.ui.structel.EPStructureChangeEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -104,7 +104,7 @@ public class EPArtefactViewOptionsLinkController extends BasicController {
 			showMoveTree(ureq);
 		} else if (source == reflexionLink) {
 			closeArtefactOptionsCallout();
-			reflexionCtrl = EPUIFactory.getReflexionPopup(ureq, getWindowControl(), secCallback, artefact, struct);
+			reflexionCtrl = new EPReflexionWrapperController(ureq, getWindowControl(), secCallback, artefact, struct);
 			listenTo(reflexionCtrl);
 		}
 	}

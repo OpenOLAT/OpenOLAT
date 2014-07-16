@@ -159,7 +159,7 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 		StaticColumnDescriptor staticDescr;
 		
 		if(!artefactChooseMode) {
-			if(mapClosed || !secCallback.canEditStructure()) { // change link-description in row, when map is closed or viewed by another person
+			if(mapClosed || !secCallback.canEditReflexion()) { // change link-description in row, when map is closed or viewed by another person
 				staticDescr = new StaticColumnDescriptor(CMD_REFLEXION, "table.header.reflexion", translate("table.header.view"));
 			} else {
 				staticDescr = new StaticColumnDescriptor(CMD_REFLEXION, "table.header.reflexion", translate("table.row.reflexion"));

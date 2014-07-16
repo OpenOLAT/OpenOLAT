@@ -32,6 +32,7 @@ package org.olat.portfolio;
 public class EPSecurityCallbackImpl implements EPSecurityCallback {
 	
 	private final boolean canEditStructure;
+	private final boolean canEditReflexion;
 	private final boolean canShare;
 	private final boolean canAddArtefact;
 	private final boolean canRemoveArtefactFromStruct;
@@ -45,6 +46,7 @@ public class EPSecurityCallbackImpl implements EPSecurityCallback {
 	
 	public EPSecurityCallbackImpl(boolean canEdit, boolean canView) {
 		this.canEditStructure = canEdit;
+		this.canEditReflexion = canEdit;
 		this.canShare = canEdit;
 		this.canAddArtefact = canEdit;
 		this.canRemoveArtefactFromStruct = canEdit;
@@ -57,9 +59,10 @@ public class EPSecurityCallbackImpl implements EPSecurityCallback {
 		this.isOwner = false;//TODO
 	}
 	
-	protected EPSecurityCallbackImpl(boolean canEditStructure, boolean canShare, boolean canAddArtefact, boolean canRemoveArtefactFromStruct, boolean canAddStructure, boolean canAddPage,
+	protected EPSecurityCallbackImpl(boolean canEditStructure, boolean canEditReflexion, boolean canShare, boolean canAddArtefact, boolean canRemoveArtefactFromStruct, boolean canAddStructure, boolean canAddPage,
 			boolean canView, boolean canCommentAndRate, boolean canSubmitAssess, boolean restrictionsEnabled, boolean isOwner) {
 		this.canEditStructure = canEditStructure;
+		this.canEditReflexion = canEditReflexion;
 		this.canShare = canShare;
 		this.canAddArtefact = canAddArtefact;
 		this.canRemoveArtefactFromStruct = canRemoveArtefactFromStruct;
@@ -88,7 +91,12 @@ public class EPSecurityCallbackImpl implements EPSecurityCallback {
 	public boolean canEditStructure() {
 		return canEditStructure;
 	}
-	
+
+	@Override
+	public boolean canEditReflexion() {
+		return canEditReflexion;
+	}
+
 	@Override
 	public boolean canShareMap() {
 		return canShare;
