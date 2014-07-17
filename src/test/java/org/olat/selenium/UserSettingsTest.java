@@ -103,7 +103,6 @@ public class UserSettingsTest {
 		
 		//set the preferences to resume automatically
 		userTools
-			.assertOnUserTools()
 			.openUserToolsMenu()
 			.openMySettings()
 			.assertOnUserSettings()
@@ -237,7 +236,6 @@ public class UserSettingsTest {
 		
 		//set the languages preferences to german
 		userTools
-			.assertOnUserTools()
 			.openUserToolsMenu()
 			.openMySettings()
 			.assertOnUserSettings()
@@ -295,7 +293,6 @@ public class UserSettingsTest {
 			.resume();
 		
 		userTools
-			.assertOnUserTools()
 			.openUserToolsMenu()
 			.openPassword();
 		

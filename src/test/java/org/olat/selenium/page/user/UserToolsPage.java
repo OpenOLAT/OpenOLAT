@@ -19,6 +19,8 @@
  */
 package org.olat.selenium.page.user;
 
+import java.util.List;
+
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.jboss.arquillian.graphene.page.Page;
@@ -29,7 +31,6 @@ import org.olat.selenium.page.portfolio.PortfolioPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
 
 /**
  * 
@@ -40,21 +41,10 @@ import org.openqa.selenium.support.FindBy;
 public class UserToolsPage {
 	
 	public static final By mySettingsClassName = By.className("o_sel_user_tools-mysettings");
-	
+
 	@Drone
 	private WebDriver browser;
-	
-	@FindBy(id = "o_navbar_tools_personal")
-	private WebElement toolbarMenu;
-	@FindBy(id = "o_sel_navbar_my_menu_caret")
-	private WebElement toolbarCaretLink;
-	
-	@FindBy(className = "o_sel_user_tools-mysettings")
-	private WebElement mySettingsLink;
-	
-	@FindBy(className = "o_logout")
-	private WebElement logoutLink;
-	
+
 	@Page
 	private UserSettingsPage userSettings;
 	
@@ -64,7 +54,10 @@ public class UserToolsPage {
 	 * @return
 	 */
 	public UserToolsPage assertOnUserTools() {
-		Assert.assertTrue(toolbarMenu.isDisplayed());
+		By personnalToolsBy = By.id("o_navbar_tools_personal");
+		List<WebElement> personnalTools = browser.findElements(personnalToolsBy);
+		Assert.assertEquals(1, personnalTools.size());
+		Assert.assertTrue(personnalTools.get(0).isDisplayed());
 		return this;
 	}
 	
@@ -74,10 +67,25 @@ public class UserToolsPage {
 	 * @return The user menu page
 	 */
 	public UserToolsPage openUserToolsMenu() {
-		if(!mySettingsLink.isDisplayed()) {
+		List<WebElement> mySettingsLinks = browser.findElements(mySettingsClassName);
+		if(mySettingsLinks.isEmpty() || !mySettingsLinks.get(0).isDisplayed()) {
+			By toolbarCaretBy = By.id("o_sel_navbar_my_menu_caret");
+			List<WebElement> toolbarCaretLinks = browser.findElements(toolbarCaretBy);
+			WebElement toolbarCaretLink = null;
+			//if window is too small > toggle the right navigation
+			if(toolbarCaretLinks.isEmpty() || !toolbarCaretLinks.get(0).isDisplayed()) {
+				By navbarToogleBy = By.id("o_navbar_right-toggle");
+				List<WebElement> navbarToogleButtons = browser.findElements(navbarToogleBy);
+				Assert.assertEquals(1, navbarToogleButtons.size());
+				toolbarCaretLink = navbarToogleButtons.get(0);
+			} else {
+				toolbarCaretLink = toolbarCaretLinks.get(0);
+			}
+			Assert.assertNotNull(toolbarCaretLink);
 			toolbarCaretLink.click();
 			OOGraphene.waitElement(mySettingsClassName);
 		}
+		assertOnUserTools();
 		return this;
 	}
 	
@@ -87,6 +95,7 @@ public class UserToolsPage {
 	 * @return The user sesstings page fragment
 	 */
 	public UserSettingsPage openMySettings() {
+		WebElement mySettingsLink = browser.findElement(mySettingsClassName);
 		Assert.assertTrue(mySettingsLink.isDisplayed());
 		mySettingsLink.click();
 		OOGraphene.waitBusy();
@@ -116,9 +125,12 @@ public class UserToolsPage {
 	 * Log out and wait until the login form appears
 	 */
 	public void logout() {
+		OOGraphene.closeBlueMessageWindow(browser);
 		openUserToolsMenu();
+
+		By logoutBy = By.className("o_logout");
+		WebElement logoutLink = browser.findElement(logoutBy);
 		Graphene.guardHttp(logoutLink).click();
 		OOGraphene.waitElement(LoginPage.loginFormBy);
 	}
-
 }
