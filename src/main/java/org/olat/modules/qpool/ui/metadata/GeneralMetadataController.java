@@ -26,7 +26,6 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -64,19 +63,16 @@ public class GeneralMetadataController extends FormBasicController {
 			editLink = uifactory.addFormLink("edit", "edit", null, formLayout, Link.BUTTON_XSMALL);
 			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		}
-		
-		FormLayoutContainer metaCont = FormLayoutContainer.createDefaultFormLayout("metadatas", getTranslator());
-		formLayout.add("metadatas", metaCont);
 
 		//general
-		titleEl = uifactory.addStaticTextElement("general.title", "", metaCont);
-		keywordsEl = uifactory.addStaticTextElement("general.keywords", "", metaCont);
-		coverageEl = uifactory.addStaticTextElement("general.coverage", "", metaCont);
-		addInfosEl = uifactory.addStaticTextElement("general.additional.informations", "", metaCont);
-		languageEl = uifactory.addStaticTextElement("general.language", "", metaCont);
+		titleEl = uifactory.addStaticTextElement("general.title", "", formLayout);
+		keywordsEl = uifactory.addStaticTextElement("general.keywords", "", formLayout);
+		coverageEl = uifactory.addStaticTextElement("general.coverage", "", formLayout);
+		addInfosEl = uifactory.addStaticTextElement("general.additional.informations", "", formLayout);
+		languageEl = uifactory.addStaticTextElement("general.language", "", formLayout);
 		
 		//classification
-		studyFieldEl = uifactory.addStaticTextElement("classification.taxonomic.path", "", metaCont);
+		studyFieldEl = uifactory.addStaticTextElement("classification.taxonomic.path", "", formLayout);
 	}
 	
 	public void setItem(QuestionItem item) {

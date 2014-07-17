@@ -22,6 +22,7 @@ package org.olat.modules.qpool.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -45,6 +46,11 @@ public class QuestionItemSummaryController extends FormBasicController {
 	
 	public QuestionItemSummaryController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		initForm(ureq);
+	}
+	
+	public QuestionItemSummaryController(UserRequest ureq, WindowControl wControl, Form rootForm) {
+		super(ureq, wControl, LAYOUT_PANEL, null, rootForm);
 		initForm(ureq);
 	}
 
@@ -79,9 +85,9 @@ public class QuestionItemSummaryController extends FormBasicController {
 		updateItem(item, canEdit);
 	}
 	
-	public void updateItem(QuestionItem item, boolean canEdit) {
-		this.item = item;
-		if(item == null) {
+	public void updateItem(QuestionItem updatedItem, boolean canEdit) {
+		this.item = updatedItem;
+		if(updatedItem == null) {
 			canEdit = false;
 			subjectEl.setValue("");
 			keywordsEl.setValue("" );
@@ -93,24 +99,24 @@ public class QuestionItemSummaryController extends FormBasicController {
 			differentiationEl.setValue("");
 		} else {
 			this.canEdit = canEdit;
-			subjectEl.setValue(item.getTitle());
-			String keywords = item.getKeywords();
+			subjectEl.setValue(updatedItem.getTitle());
+			String keywords = updatedItem.getKeywords();
 			keywordsEl.setValue(keywords == null ? "" : keywords);
-			String taxonPath = item.getTaxonomicPath();
+			String taxonPath = updatedItem.getTaxonomicPath();
 			studyFieldEl.setValue(taxonPath == null ? "" : taxonPath);
 			
-			int usage = item.getUsage();
+			int usage = updatedItem.getUsage();
 			String usageStr = "";
 			if(usage >= 0) {
 				usageStr = Integer.toString(usage);
 			}
 			usageEl.setValue(usageStr);
 			
-			difficultyEl.setValue(MetaUIFactory.bigDToString(item.getDifficulty()));
-			stdevDifficultyEl.setValue(MetaUIFactory.bigDToString(item.getStdevDifficulty()));
-			differentiationEl.setValue(MetaUIFactory.bigDToString(item.getDifferentiation()));
+			difficultyEl.setValue(MetaUIFactory.bigDToString(updatedItem.getDifficulty()));
+			stdevDifficultyEl.setValue(MetaUIFactory.bigDToString(updatedItem.getStdevDifficulty()));
+			differentiationEl.setValue(MetaUIFactory.bigDToString(updatedItem.getDifferentiation()));
 			
-			String description = item.getDescription();
+			String description = updatedItem.getDescription();
 			if(StringHelper.containsNonWhitespace(description)) {
 				descriptionEl.setValue(description);
 			} else {

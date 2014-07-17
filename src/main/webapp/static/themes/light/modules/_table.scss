@@ -39,6 +39,10 @@
 	}
 }
 
+.o_table_row_details td {
+	background-color: white !important;
+}
+
 .o_table_config {
 	font-size: floor($font-size-base * 0.9);
 }

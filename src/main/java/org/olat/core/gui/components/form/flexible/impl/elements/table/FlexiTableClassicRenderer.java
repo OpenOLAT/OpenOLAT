@@ -29,9 +29,11 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -82,5 +84,105 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("sort", sortKey), new NameValuePair("asc", "asc")))
 			  .append("\"><i class='o_icon o_icon_sort_desc'></a>");
 		}
+	}
+	
+	@Override
+	protected void renderRow(Renderer renderer, StringOutput target, FlexiTableComponent ftC, String rowIdPrefix,
+			int row, URLBuilder ubu, Translator translator, RenderResult renderResult) {
+
+		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableColumnModel columnsModel = ftE.getTableDataModel().getTableColumnModel();
+		int numOfCols = columnsModel.getColumnCount();
+		
+		// use alternating css class
+		int numOfColumns = 0;
+		target.append("<tr id='").append(rowIdPrefix).append(row)
+				  .append("'>");
+				
+		if(ftE.isMultiSelect()) {
+			target.append("<td>")
+			      .append("<input type='checkbox' name='to_ms' value='").append(rowIdPrefix).append(row).append("'");
+			if(ftE.isAllSelectedIndex() || ftE.isMultiSelectedIndex(row)) {
+				target.append(" checked='checked'");
+			}   
+			target.append("/></td>");
+		}
+				
+		for (int j = 0; j<numOfCols; j++) {
+			FlexiColumnModel fcm = columnsModel.getColumnModel(j);
+			if(ftE.isColumnModelVisible(fcm)) {
+				renderCell(renderer, target, ftC, fcm, row, ubu, translator, renderResult);
+				numOfColumns++;
+			}
+		}
+		target.append("</tr>");
+		if(ftE.isDetailsExpended(row)) {
+			target.append("<tr id='").append(rowIdPrefix).append(row)
+			  .append("_details' class='o_table_row_details'>");
+			
+			VelocityContainer container = ftE.getDetailsRenderer();
+			Object rowObject = ftE.getTableDataModel().getObject(row);
+			container.contextPut("row", rowObject);
+
+			FlexiTableComponentDelegate cmpDelegate = ftE.getComponentDelegate();
+			if(cmpDelegate != null) {
+				Iterable<Component> cmps = cmpDelegate.getComponents(row, rowObject);
+				if(cmps != null) {
+					for(Component cmp:cmps) {
+						container.put(cmp.getComponentName(), cmp);
+					}
+				}
+			}
+			
+			if(ftE.isMultiSelect()) {
+				target.append("<td></td>");
+			}
+			target.append("<td colspan='").append(numOfColumns).append("'>");
+
+			container.getHTMLRendererSingleton().render(renderer, target, container, ubu, translator, renderResult, null);
+			container.contextRemove("row");
+			
+			target.append("</td></tr>");
+		}
+	}
+
+	private void renderCell(Renderer renderer, StringOutput target, FlexiTableComponent ftC, FlexiColumnModel fcm,
+			int row, URLBuilder ubu, Translator translator, RenderResult renderResult) {
+
+		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
+
+		int alignment = fcm.getAlignment();
+		String cssClass = (alignment == FlexiColumnModel.ALIGNMENT_LEFT ? "text-left" : (alignment == FlexiColumnModel.ALIGNMENT_RIGHT ? "text-right" : "text-center"));
+
+		target.append("<td class=\"").append(cssClass).append(" ")
+		  .append("o_dnd_label", ftE.getColumnIndexForDragAndDropLabel() == fcm.getColumnIndex())
+		  .append("\">");
+		
+		int columnIndex = fcm.getColumnIndex();
+		Object cellValue = columnIndex >= 0 ? 
+				dataModel.getValueAt(row, columnIndex) : null;
+		if (cellValue instanceof FormItem) {
+			FormItem formItem = (FormItem)cellValue;
+			formItem.setTranslator(translator);
+			if(ftE.getRootForm() != formItem.getRootForm()) {
+				formItem.setRootForm(ftE.getRootForm());
+			}
+			ftE.addFormItem(formItem);
+			if(formItem.isVisible()) {
+				formItem.getComponent().getHTMLRendererSingleton().render(renderer, target, formItem.getComponent(),
+					ubu, translator, renderResult, null);
+			}
+		} else if(cellValue instanceof Component) {
+			Component cmp = (Component)cellValue;
+			cmp.setTranslator(translator);
+			if(cmp.isVisible()) {
+				cmp.getHTMLRendererSingleton().render(renderer, target, cmp,
+					ubu, translator, renderResult, null);
+			}
+		} else {
+			fcm.getCellRenderer().render(renderer, target, cellValue, row, ftC, ubu, translator);
+		}
+		target.append("</td>");
 	}
 }

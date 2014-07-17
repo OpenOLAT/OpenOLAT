@@ -1,10 +1,25 @@
-<fieldset>
-	<legend>#if($off_chelp_package) $r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end
-	$off_title</legend>
-	#if($r.available("edit"))
+<div class="panel panel-default">
+	<div class="panel-heading o_header_with_buttons">
+		<h4>$off_title</h4>
 		<div class="o_button_group o_button_group_right">
-			$r.render("edit")
+			#if($r.available("edit"))
+				$r.render("edit")
+			#end
+			#if($off_chelp_package) $r.contextHelp("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end
 		</div>
+	</div>
+	<table class="table table-condensed"><tbody>
+	#foreach ($item in $formitemnames)
+		#if($item != "edit")
+		<tr>	
+			#if ($f.hasLabel($item))
+				<th>$r.render("${item}_LABEL", "$f.getItemId($item)", "")</th>
+			#else
+				<td></td>
+			#end
+			<td>$r.render(${item}, "form")</td>
+		</tr>
+		#end
 	#end
-	$r.render("metadatas")
-</fieldset>
+	</tbody></table>
+</div>

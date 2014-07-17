@@ -1,27 +1,33 @@
-<div class="o_qpool_metadata_sharing clearfix">
-	<fieldset><legend>$r.translate("sharing")</legend>
-	#if ($off_chelp_package) $r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end
-	#if($showPoolInfos) 
-		<h5>
-			<i class="o_icon o_icon-fw  o_icon_qpool"> </i>
-			$r.translate("menu.pools")
-		</h5>
+#if($showPoolInfos) 
+	<div class="panel panel-default">
+		<div class="panel-heading o_header_with_buttons">
+			<h4><i class="o_icon o_icon-fw o_icon_qpool"> </i> $r.translate("menu.pools")</h4>
+			<div class="o_button_group o_button_group_right">
+				#if ($off_chelp_package) $r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end
+			</div>
+		</div>
 		$r.render("pools")
-	#end
-	#if($showAuthors)
-		<h5>
-			<i class="o_icon o_icon-fw  o_icon_group"> </i>
-			$r.translate("sharing.authors")
-		</h5>
+	</div>
+#end
+#if($showAuthors)
+	<div class="panel panel-default">
+		<div class="panel-heading o_header_with_buttons">
+			<h4><i class="o_icon o_icon-fw o_icon_group"> </i> $r.translate("sharing.authors")</h4>
+			<div class="o_button_group o_button_group_right">
+				#if ($off_chelp_package) $r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end
+			</div>
+		</div>
 		$r.render("authors")
-	#end
-	
-	#if($showShares)
-		<h5>
-			<i class="o_icon o_icon-fw  o_icon_qpool_share"> </i>
-			$r.translate("sharing.shares")
-		</h5>
+	</div>
+#end
+#if($showShares)
+	<div class="panel panel-default">
+		<div class="panel-heading o_header_with_buttons">
+			<h4><i class="o_icon o_icon-fw o_icon_pool_pool"> </i> $r.translate("sharing.shares")</h4>
+			<div class="o_button_group o_button_group_right">
+				#if ($off_chelp_package) $r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end
+			</div>
+		</div>
 		$r.render("shares")
-	#end
-	</fieldset>
-</div>
+	</div>
+#end

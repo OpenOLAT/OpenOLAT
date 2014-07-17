@@ -72,20 +72,20 @@ public class QuestionItemPreviewController extends BasicController {
 		updateItem(ureq, item);
 	}
 	
-	public void updateItem(UserRequest ureq, QuestionItem item) {
-		this.item = item;
+	public void updateItem(UserRequest ureq, QuestionItem updatedItem) {
+		this.item = updatedItem;
 		removeAsListenerAndDispose(previewCtrl);
-		if(item == null) {
+		if(updatedItem == null) {
 			removeAsListenerAndDispose(previewCtrl);
 			previewCtrl = null;
 			previewPanel.setContent(null);
 		} else {
 			Component content;
-			QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
+			QPoolSPI spi = poolModule.getQuestionPoolProvider(updatedItem.getFormat());
 			if(spi == null) {
 				content = getRawContent();
 			} else {
-				previewCtrl = spi.getPreviewController(ureq, getWindowControl(), item, true);
+				previewCtrl = spi.getPreviewController(ureq, getWindowControl(), updatedItem, true);
 				if(previewCtrl == null) {
 					content = getRawContent();
 				} else {

@@ -75,8 +75,6 @@ import org.olat.core.util.prefs.Preferences;
 public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableElement, FormItemCollection,
 	ControllerEventListener, ComponentEventListener {
 	
-	//private static final XStream prefsXStream 
-
 	//settings
 	private boolean multiSelect;
 	private FlexiTableRendererType rendererType = FlexiTableRendererType.classic;
@@ -96,11 +94,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private boolean exportEnabled;
 	private boolean searchEnabled;
 	private boolean selectAllEnabled;
+	private boolean numOfRowsEnabled;
 	private boolean extendedSearchExpanded = false;
 	private int columnLabelForDragAndDrop;
 	private String emptyTableMessageKey = null;
 	
 	private VelocityContainer rowRenderer;
+	private VelocityContainer detailsRenderer;
 
 	private FormLink customButton, exportButton;
 	private FormLink searchButton, extendedSearchButton;
@@ -123,6 +123,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private Object selectedObj;
 	private boolean allSelectedIndex;
 	private Set<Integer> multiSelectedIndex;
+	private Set<Integer> detailsIndex;
 	private List<String> conditionalQueries;
 	private Set<Integer> enabledColumnIndex = new HashSet<Integer>();
 	
@@ -256,6 +257,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		this.customizeColumns = customizeColumns;
 	}
 
+	public boolean isNumOfRowsEnabled() {
+		return numOfRowsEnabled;
+	}
+
+	@Override
+	public void setNumOfRowsEnabled(boolean enable) {
+		numOfRowsEnabled = enable;
+	}
+
 	@Override
 	public void setAndLoadPersistedPreferences(UserRequest ureq, String id) {
 		persistentId = id;
@@ -280,6 +290,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public VelocityContainer getRowRenderer() {
 		return rowRenderer;
 	}
+	
+	public VelocityContainer getDetailsRenderer() {
+		return detailsRenderer;
+	}
 
 	public FlexiTableComponentDelegate getComponentDelegate() {
 		return componentDelegate;
@@ -288,6 +302,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public void setRowRenderer(VelocityContainer rowRenderer, FlexiTableComponentDelegate componentDelegate) {
 		this.rowRenderer = rowRenderer;
+		this.componentDelegate = componentDelegate;
+	}
+	
+	@Override
+	public void setDetailsRenderer(VelocityContainer detailsRenderer, FlexiTableComponentDelegate componentDelegate) {
+		this.detailsRenderer = detailsRenderer;
 		this.componentDelegate = componentDelegate;
 	}
 
@@ -451,9 +471,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public boolean isExtendedSearchExpanded() {
 		return extendedSearchExpanded;
 	}
-	
 
-	
 	public Component getExtendedSearchComponent() {
 		return (extendedSearchCtrl == null) ? null : extendedSearchCtrl.getInitialComponent();
 	}
@@ -483,6 +501,45 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public void setSelectAllEnable(boolean enable) {
 		this.selectAllEnabled = enable;
+	}
+	
+	public void openDetails() {
+		
+	}
+	
+	@Override
+	public boolean isDetailsExpended(int row) {
+		if(detailsIndex == null) {
+			return false;
+		}
+		return detailsIndex.contains(row);
+	}
+
+	@Override
+	public void expandDetails(int row) {
+		if(detailsIndex == null) {
+			detailsIndex = new HashSet<>();
+		}
+		detailsIndex.add(row);
+		component.setDirty(true);
+	}
+
+	@Override
+	public void collapseDetails(int row) {
+		if(detailsIndex != null && detailsIndex.remove(row)) {
+			component.setDirty(true);
+			if(detailsIndex.isEmpty()) {
+				detailsIndex = null;
+			}
+		}
+	}
+
+	@Override
+	public void collapseAllDetails() {
+		if(detailsIndex != null && detailsIndex.size() > 0) {
+			detailsIndex = null;
+			component.setDirty(true);
+		}
 	}
 
 	public String getSearchText() {

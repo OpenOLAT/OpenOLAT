@@ -32,6 +32,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -44,11 +45,13 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -70,13 +73,15 @@ import org.olat.modules.qpool.ui.metadata.ExtendedSearchController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public abstract class AbstractItemListController extends FormBasicController
-	implements GenericEventListener, FlexiTableDataSourceDelegate<ItemRow> {
+	implements GenericEventListener, FlexiTableDataSourceDelegate<ItemRow>, FlexiTableComponentDelegate {
 
 	private FlexiTableElement itemsTable;
 	private QuestionItemDataModel model;
 	
 	private final String prefsKey;
 	private ExtendedSearchController extendedSearchCtrl;
+	private QuestionItemSummaryController summaryCtrl;
+	private QuestionItemPreviewController previewCtrl;
 	
 	private final MarkManager markManager;
 	protected final QPoolService qpoolService;
@@ -100,6 +105,11 @@ public abstract class AbstractItemListController extends FormBasicController
 		listenTo(extendedSearchCtrl);
 		
 		initForm(ureq);
+		
+		summaryCtrl = new QuestionItemSummaryController(ureq, getWindowControl(), mainForm);
+		listenTo(summaryCtrl);
+		previewCtrl = new QuestionItemPreviewController(ureq, getWindowControl());
+		listenTo(previewCtrl);
 	}
 
 	@Override
@@ -111,6 +121,7 @@ public abstract class AbstractItemListController extends FormBasicController
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("quickview", "<i class='o_icon o_icon_quickview'> </i>", "quick-view"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mark.i18nKey(), Cols.mark.ordinal(), true, "marked"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.editable.i18nKey(), Cols.editable.ordinal(),
 				false, null, FlexiColumnModel.ALIGNMENT_LEFT,
@@ -149,13 +160,24 @@ public abstract class AbstractItemListController extends FormBasicController
 		itemsTable.setExtendedSearch(extendedSearchCtrl);
 		itemsTable.setColumnIndexForDragAndDropLabel(Cols.title.ordinal());
 		itemsTable.setAndLoadPersistedPreferences(ureq, "qpool-list-" + prefsKey);
+		
+		VelocityContainer detailsVC = createVelocityContainer("item_list_details");
+		itemsTable.setDetailsRenderer(detailsVC, this);
 
 		initButtons(ureq, formLayout);
 	}
 	
 	protected abstract void initButtons(UserRequest ureq, FormItemContainer formLayout);
 
-    protected void setSource(QuestionItemsSource source) {
+    @Override
+	public Iterable<Component> getComponents(int rowIndex, Object rowObject) {
+    	List<Component> components = new ArrayList<>(2);
+    	components.add(summaryCtrl.getInitialComponent());
+    	components.add(previewCtrl.getInitialComponent());
+		return components;
+	}
+
+	protected void setSource(QuestionItemsSource source) {
         this.itemsSource = source;
     }
 	
@@ -212,6 +234,21 @@ public abstract class AbstractItemListController extends FormBasicController
 					ItemRow row = getModel().getObject(se.getIndex());
 					if(row != null) {
 						doSelect(ureq, row);
+					}
+				} else if("quick-view".equals(se.getCommand())) {
+					int rowIndex = se.getIndex();
+					if(rowIndex >= 0) {
+						if(itemsTable.isDetailsExpended(rowIndex)) {
+							itemsTable.collapseDetails(rowIndex);
+						} else {
+							itemsTable.collapseAllDetails();
+							itemsTable.expandDetails(rowIndex);
+
+							ItemRow row = getModel().getObject(rowIndex);
+					    	QuestionItem item = qpoolService.loadItemById(row.getKey());
+							summaryCtrl.updateItem(item, false);
+					    	previewCtrl.updateItem(ureq, item);
+						}
 					}
 				}
 			}

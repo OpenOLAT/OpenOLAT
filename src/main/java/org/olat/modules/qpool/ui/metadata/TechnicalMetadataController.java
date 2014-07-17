@@ -26,7 +26,6 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -68,17 +67,14 @@ public class TechnicalMetadataController extends FormBasicController  {
 			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		}
 		
-		FormLayoutContainer metaCont = FormLayoutContainer.createDefaultFormLayout("metadatas", getTranslator());
-		formLayout.add("metadatas", metaCont);
+		identifierEl = uifactory.addStaticTextElement("general.identifier", "", formLayout);
+		masterIdentifierEl = uifactory.addStaticTextElement("general.master.identifier", "", formLayout);
 		
-		identifierEl = uifactory.addStaticTextElement("general.identifier", "", metaCont);
-		masterIdentifierEl = uifactory.addStaticTextElement("general.master.identifier", "", metaCont);
-		
-		editorEl = uifactory.addStaticTextElement("technical.editor", "", metaCont);
-		editorVersionEl = uifactory.addStaticTextElement("technical.editorVersion", "", metaCont);
-		formatEl = uifactory.addStaticTextElement("technical.format", "", metaCont);
-		creationDateEl = uifactory.addStaticTextElement("technical.creation", "", metaCont);
-		lastModifiedEl = uifactory.addStaticTextElement("technical.lastModified", "", metaCont);
+		editorEl = uifactory.addStaticTextElement("technical.editor", "", formLayout);
+		editorVersionEl = uifactory.addStaticTextElement("technical.editorVersion", "", formLayout);
+		formatEl = uifactory.addStaticTextElement("technical.format", "", formLayout);
+		creationDateEl = uifactory.addStaticTextElement("technical.creation", "", formLayout);
+		lastModifiedEl = uifactory.addStaticTextElement("technical.lastModified", "", formLayout);
 	}
 	
 	public void setItem(QuestionItem item) {

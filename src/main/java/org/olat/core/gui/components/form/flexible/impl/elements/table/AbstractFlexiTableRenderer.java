@@ -117,8 +117,14 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	
 	protected void renderHeaderButtons(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
-
 		Component searchCmp = ftE.getExtendedSearchComponent();
+		
+		if(searchCmp == null && !ftE.isExtendedSearchExpanded() && !ftE.isNumOfRowsEnabled()
+				&& !ftE.isFilterEnabled() && !ftE.isSortEnabled() && ! ftE.isExportEnabled()
+				&& !ftE.isCustomizeColumns() && ftE.getAvailableRendererTypes().length  <= 1) {
+			return;
+		}
+		
 		sb.append("<div class='row clearfix o_table_toolbar'>");
 		if(searchCmp != null && ftE.isExtendedSearchExpanded()) {
 			renderer.render(searchCmp, sb, args);
@@ -128,51 +134,17 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			renderHeaderSearch(renderer, sb, ftE, ubu, translator, renderResult, args);
 			sb.append("</div>");
 		}
-		
-		
-		sb.append("<div class='col-lg-3'>");
-		int rowCount = ftE.getTableDataModel().getRowCount();
-		if(rowCount == 1) {
-			sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entry"));
-		} else if(rowCount > 1) {
-			sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entries"));
-		}
-		sb.append("</div><div class='col-lg-3'>");
-		renderHeaderTools(renderer, sb, ftE, ubu, translator, renderResult,  args);
-		sb.append("</div></div>");
-	}
-	
-	protected void renderHeaderSearch(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
-			RenderResult renderResult, String[] args) {
 
-		if(ftE.isSearchEnabled()) {
-			sb.append("<div class='o_table_search input-group'>");
-			renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, args);
-			sb.append("<div class='input-group-btn'>");
-			renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, args);
-			if(ftE.getExtendedSearchButton() != null) {
-				renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, args);
+		sb.append("<div class='col-lg-3'>");
+		if(ftE.isNumOfRowsEnabled()) {
+			int rowCount = ftE.getTableDataModel().getRowCount();
+			if(rowCount == 1) {
+				sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entry"));
+			} else if(rowCount > 1) {
+				sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entries"));
 			}
-			sb.append("</div></div>");
-		} else if(ftE.getExtendedSearchButton() != null) {
-			renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, args);
 		}
-	}
-	
-	/**
-	 * The method rendered the tools:  filter, sort, customize, export, switch type of renderer.
-	 * @param renderer
-	 * @param sb
-	 * @param ftE
-	 * @param ubu
-	 * @param translator
-	 * @param renderResult
-	 * @param args
-	 */
-	protected void renderHeaderTools(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
-			RenderResult renderResult, String[] args) {
-		
-		sb.append("<div class='pull-right o_table_tools'>");
+		sb.append("</div><div class='col-lg-3'><div class='pull-right o_table_tools'>");
 		
 		boolean empty = ftE.getTableDataModel().getRowCount() == 0;
 		
@@ -213,7 +185,24 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			}
 			sb.append("</div> ");
 		}
-		sb.append("</div>");
+		sb.append("</div></div></div>");
+	}
+	
+	protected void renderHeaderSearch(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
+			RenderResult renderResult, String[] args) {
+
+		if(ftE.isSearchEnabled()) {
+			sb.append("<div class='o_table_search input-group'>");
+			renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, args);
+			sb.append("<div class='input-group-btn'>");
+			renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, args);
+			if(ftE.getExtendedSearchButton() != null) {
+				renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, args);
+			}
+			sb.append("</div></div>");
+		} else if(ftE.getExtendedSearchButton() != null) {
+			renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, args);
+		}
 	}
 	
 	protected void renderFilterDropdown(StringOutput sb, FlexiTableElementImpl ftE, List<FlexiTableFilter> filters) {
@@ -390,75 +379,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		// end of table table
 	}
 	
-	protected void renderRow(Renderer renderer, StringOutput target, FlexiTableComponent ftC, String rowIdPrefix,
-			int row, URLBuilder ubu, Translator translator, RenderResult renderResult) {
+	protected abstract void renderRow(Renderer renderer, StringOutput target, FlexiTableComponent ftC, String rowIdPrefix,
+			int row, URLBuilder ubu, Translator translator, RenderResult renderResult);
 
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
-		FlexiTableColumnModel columnsModel = ftE.getTableDataModel().getTableColumnModel();
-		int numOfCols = columnsModel.getColumnCount();
-		
-		// use alternating css class
-		target.append("<tr id='").append(rowIdPrefix).append(row)
-				  .append("'>");
-				
-		if(ftE.isMultiSelect()) {
-			target.append("<td>")
-			      .append("<input type='checkbox' name='to_ms' value='").append(rowIdPrefix).append(row).append("'");
-			if(ftE.isAllSelectedIndex() || ftE.isMultiSelectedIndex(row)) {
-				target.append(" checked='checked'");
-			}   
-			target.append("/></td>");
-		}
-				
-		for (int j = 0; j<numOfCols; j++) {
-			FlexiColumnModel fcm = columnsModel.getColumnModel(j);
-			if(ftE.isColumnModelVisible(fcm)) {
-				renderCell(renderer, target, ftC, fcm, row, ubu, translator, renderResult);
-			}
-		}
-		target.append("</tr>");
-	}
-
-	private void renderCell(Renderer renderer, StringOutput target, FlexiTableComponent ftC, FlexiColumnModel fcm,
-			int row, URLBuilder ubu, Translator translator, RenderResult renderResult) {
-
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
-		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
-
-		int alignment = fcm.getAlignment();
-		String cssClass = (alignment == FlexiColumnModel.ALIGNMENT_LEFT ? "text-left" : (alignment == FlexiColumnModel.ALIGNMENT_RIGHT ? "text-right" : "text-center"));
-
-		target.append("<td class=\"").append(cssClass).append(" ")
-		  .append("o_dnd_label", ftE.getColumnIndexForDragAndDropLabel() == fcm.getColumnIndex())
-		  .append("\">");
-		
-		int columnIndex = fcm.getColumnIndex();
-		Object cellValue = columnIndex >= 0 ? 
-				dataModel.getValueAt(row, columnIndex) : null;
-		if (cellValue instanceof FormItem) {
-			FormItem formItem = (FormItem)cellValue;
-			formItem.setTranslator(translator);
-			if(ftE.getRootForm() != formItem.getRootForm()) {
-				formItem.setRootForm(ftE.getRootForm());
-			}
-			ftE.addFormItem(formItem);
-			if(formItem.isVisible()) {
-				formItem.getComponent().getHTMLRendererSingleton().render(renderer, target, formItem.getComponent(),
-					ubu, translator, renderResult, null);
-			}
-		} else if(cellValue instanceof Component) {
-			Component cmp = (Component)cellValue;
-			cmp.setTranslator(translator);
-			if(cmp.isVisible()) {
-				cmp.getHTMLRendererSingleton().render(renderer, target, cmp,
-					ubu, translator, renderResult, null);
-			}
-		} else {
-			fcm.getCellRenderer().render(renderer, target, cellValue, row, ftC, ubu, translator);
-		}
-		target.append("</td>");
-	}
-	
 
 	private void renderPagesLinks(StringOutput sb, FlexiTableComponent ftC) {
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();

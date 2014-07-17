@@ -19,15 +19,16 @@
  */
 package org.olat.ims.qti;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.impl.NekoHTMLFilter;
 import org.olat.ims.qti.editor.ItemNodeTabbedFormController;
@@ -60,47 +61,43 @@ public class QTI12MetadataController extends FormBasicController  {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		Question question = item.getQuestion();
 		
+		FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		
 		if(question != null) {
-			//settings
-			FormLayoutContainer leftSettingsCont = FormLayoutContainer.createDefaultFormLayout("left_settings", getTranslator());
-			leftSettingsCont.setRootForm(mainForm);
-			formLayout.add("leftSettings", leftSettingsCont);
+			layoutCont.contextPut("hasQuestion", Boolean.TRUE);
 			
+			//settings
 			String shuffleStr = translate(question.isShuffle() ? "editor.true" : "editor.false");
-			uifactory.addStaticTextElement("form.imd.shuffle", shuffleStr, leftSettingsCont);
+			uifactory.addStaticTextElement("form.imd.shuffle", shuffleStr, formLayout);
 			
 			String duration = "";
 			if(item.getDuration() != null) {
 				duration = item.getDuration().getMin() + ":" + item.getDuration().getSec();
 			}
-			uifactory.addStaticTextElement("form.metadata.duration", duration, leftSettingsCont);
+			uifactory.addStaticTextElement("form.metadata.duration", duration, formLayout);
 			
-			FormLayoutContainer rightSettingsCont = FormLayoutContainer.createDefaultFormLayout("right_settings", getTranslator());
-			rightSettingsCont.setRootForm(mainForm);
-			formLayout.add("rightSettings", rightSettingsCont);
 			if(question instanceof ChoiceQuestion) {
 				ChoiceQuestion choice = (ChoiceQuestion)question;
 				if(item.getQuestion().getType() == Question.TYPE_SC) {
 					String score = Float.toString(question.getSingleCorrectScore());
-					uifactory.addStaticTextElement("score", score, rightSettingsCont);
-					
+					uifactory.addStaticTextElement("score", score, formLayout);
 				} else if(item.getQuestion().getType() == Question.TYPE_MC) {
 					String minVal = Float.toString(choice.getMinValue());
 					String maxVal = Float.toString(choice.getMaxValue());
-					uifactory.addStaticTextElement("score.min", minVal, rightSettingsCont);
-					uifactory.addStaticTextElement("score.max", maxVal, rightSettingsCont);
+					uifactory.addStaticTextElement("score.min", minVal, formLayout);
+					uifactory.addStaticTextElement("score.max", maxVal, formLayout);
 				} 
 			}
 			
 			//correct responses
 			List<Response> responses = question.getResponses();
+			List<String> responesNames = new ArrayList<>();
 			if(responses != null && responses.size() > 0) {
 				FormLayoutContainer correctResponsesCont = FormLayoutContainer.createVerticalFormLayout("correctResponses", getTranslator());
 				correctResponsesCont.setRootForm(mainForm);
 				correctResponsesCont.setLabel("ans.correct", null);
-				leftSettingsCont.add(correctResponsesCont);
+				formLayout.add(correctResponsesCont);
 
-				int count = 0;
 				for(Response response:responses) {
 					boolean correct = response.isCorrect();
 					if(correct && response.getContent() != null) {
@@ -111,53 +108,43 @@ public class QTI12MetadataController extends FormBasicController  {
 								responseSummary = responseSummary.substring(0, 125) + "...";
 							}
 						}
-						uifactory.addStaticTextElement("item_correct_response_" + count++, null, responseSummary, correctResponsesCont);
+						if(StringHelper.containsNonWhitespace(responseSummary)) {
+							responesNames.add(responseSummary);
+						}
 					}
 				}
 			}
+			layoutCont.contextPut("responses", responesNames);
 		}
 		
 		//feedbacks
 		boolean hasFeedbacks = false;
-		
-		FormLayoutContainer leftFeedbackCont = FormLayoutContainer.createDefaultFormLayout("left_feedback", getTranslator());
-		leftFeedbackCont.setRootForm(mainForm);
-		
 		Material masteryMat = QTIEditHelper.getFeedbackMasteryMaterial(item);
 		if(masteryMat != null) {
-			String text = masteryMat.renderAsText();
-			uifactory.addStaticTextElement("item_feedback_mastery", text, leftFeedbackCont);
+			layoutCont.contextPut("item_feedback_mastery", masteryMat.renderAsText());
 			hasFeedbacks = true;
 		}
-		
-		FormLayoutContainer rightFeedbackCont = FormLayoutContainer.createDefaultFormLayout("right_feedback", getTranslator());
-		rightFeedbackCont.setRootForm(mainForm);
-		
+
 		Material failureMat = QTIEditHelper.getFeedbackFailMaterial(item);
 		if(failureMat != null) {
-			String text = failureMat.renderAsText();
-			uifactory.addStaticTextElement("item_feedback_fail", text, rightFeedbackCont);
+			layoutCont.contextPut("item_feedback_fail", failureMat.renderAsText());
 			hasFeedbacks = true;
 		}
 		
+		List<String> responsesFeedback = new ArrayList<>();
 		if (question != null && question.getType() <= Question.TYPE_MC) {
-			int count = 0;
 			for (Object obj : question.getResponses()) {
 				ChoiceResponse response = (ChoiceResponse) obj;
 				Material responseFeedbackMat = QTIEditHelper.getFeedbackOlatRespMaterial(item, response.getIdent());
 				if(responseFeedbackMat != null) {
-					boolean left = (count++ % 2 == 0);
-					String text = responseFeedbackMat.renderAsText();
-					StaticTextElement el = uifactory.addStaticTextElement("item_feedback_" + count, null, text, left ? leftFeedbackCont : rightFeedbackCont);
-					el.setLabel(null, null);
+					responsesFeedback.add(responseFeedbackMat.renderAsText());
 				}
 			}
-			hasFeedbacks = count > 0;
+			hasFeedbacks |= responsesFeedback.size() > 0;
 		}
-		if(hasFeedbacks) {
-			formLayout.add("leftFeedback", leftFeedbackCont);
-			formLayout.add("rightFeedback", rightFeedbackCont);
-		}
+
+		layoutCont.contextPut("responsesFeedback", responsesFeedback);
+		layoutCont.contextPut("hasFeedbacks", new Boolean(hasFeedbacks));
 	}
 	
 	@Override

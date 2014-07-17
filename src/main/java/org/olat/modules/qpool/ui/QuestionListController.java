@@ -606,7 +606,7 @@ public class QuestionListController extends AbstractItemListController implement
 		Step start = new Export_1_TypeStep(ureq, items);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
-			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
 				return StepsMainRunController.DONE_MODIFIED;
 			}
 		};
@@ -670,7 +670,7 @@ public class QuestionListController extends AbstractItemListController implement
 		Step start = new ImportAuthor_1_ChooseMemberStep(ureq, items);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
-			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
 				addAuthors(runContext);
 				return StepsMainRunController.DONE_MODIFIED;
 			}
@@ -804,6 +804,7 @@ public class QuestionListController extends AbstractItemListController implement
 		listenTo(cmc);	
 	}
 	
+	@Override
 	protected void doSelect(UserRequest ureq, ItemRow row) {
 		QuestionItem item = qpoolService.loadItemById(row.getKey());
 		doSelect(ureq, item, row.isEditable());

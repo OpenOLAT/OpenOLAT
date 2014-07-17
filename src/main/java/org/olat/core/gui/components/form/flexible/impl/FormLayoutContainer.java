@@ -67,6 +67,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	private static final String LAYOUT_BAREBONE = VELOCITY_ROOT + "/form_barebone.html";
 	private static final String LAYOUT_BUTTONGROUP = VELOCITY_ROOT + "/form_buttongroup.html";
 	private static final String LAYOUT_INPUTGROUP = VELOCITY_ROOT + "/form_inputgroup.html";
+	private static final String LAYOUT_PANEL = VELOCITY_ROOT + "/form_panel.html";
 
 	/**
 	 * manage the form components of this form container
@@ -546,6 +547,17 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 */
 	public static FormLayoutContainer createBareBoneFormLayout(String name, Translator formTranslator){
 		FormLayoutContainer tmp = new FormLayoutContainer(name, formTranslator, LAYOUT_BAREBONE);
+		return tmp;
+	}
+	
+	/**
+	 * Create a layout container based on the panel of bootstrap
+	 * @param name
+	 * @param formTranslator
+	 * @return
+	 */
+	public static FormLayoutContainer createPanelFormLayout(String name, Translator formTranslator){
+		FormLayoutContainer tmp = new FormLayoutContainer(name, formTranslator, LAYOUT_PANEL);
 		return tmp;
 	}
 

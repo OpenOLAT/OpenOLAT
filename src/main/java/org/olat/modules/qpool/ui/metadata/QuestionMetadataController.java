@@ -26,7 +26,6 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -67,16 +66,13 @@ public class QuestionMetadataController extends FormBasicController  {
 			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		}
 		
-		FormLayoutContainer metaCont = FormLayoutContainer.createDefaultFormLayout("metadatas", getTranslator());
-		formLayout.add("metadatas", metaCont);
-		
-		typeEl = uifactory.addStaticTextElement("question.type", "", metaCont);
-		difficultyEl = uifactory.addStaticTextElement("question.difficulty", "", metaCont);
-		stdevDifficultyEl = uifactory.addStaticTextElement("question.stdevDifficulty", "", metaCont);
-		differentiationEl = uifactory.addStaticTextElement("question.differentiation", "", metaCont);
-		numAnswerAltEl = uifactory.addStaticTextElement("question.numOfAnswerAlternatives", "", metaCont);
-		usageEl = uifactory.addStaticTextElement("question.usage", "", metaCont);
-		assessmentTypeEl = uifactory.addStaticTextElement("question.assessmentType", "", metaCont);
+		typeEl = uifactory.addStaticTextElement("question.type", "", formLayout);
+		difficultyEl = uifactory.addStaticTextElement("question.difficulty", "", formLayout);
+		stdevDifficultyEl = uifactory.addStaticTextElement("question.stdevDifficulty", "", formLayout);
+		differentiationEl = uifactory.addStaticTextElement("question.differentiation", "", formLayout);
+		numAnswerAltEl = uifactory.addStaticTextElement("question.numOfAnswerAlternatives", "", formLayout);
+		usageEl = uifactory.addStaticTextElement("question.usage", "", formLayout);
+		assessmentTypeEl = uifactory.addStaticTextElement("question.assessmentType", "", formLayout);
 	}
 	
 	public void setItem(QuestionItem item) {

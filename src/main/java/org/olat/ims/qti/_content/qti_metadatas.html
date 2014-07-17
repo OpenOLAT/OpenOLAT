@@ -1,31 +1,65 @@
-#if($r.available("leftSettings") || $r.available("rightSettings"))
-	<fieldset>
-		<legend>$r.translate("editor.settings")</legend>
-		$r.contextHelpWithWrapper("org.olat.ims.qti","metadatas.html","help.hover.metadatas")
-		<div class="container-fluid">
-			<div class="row">
-				<div class="col-sm-6">
-					$r.render("leftSettings")
-				</div>
-				<div class="col-sm-6">	
-					$r.render("rightSettings")
-				</div>
-			</div>
+<div class="o_qti_metadatas"><div class="panel panel-default">
+#if($hasQuestion)
+	<div class="panel-heading o_header_with_buttons">
+		<h4>$r.translate("editor.settings")</h4>
+		<div class="o_button_group o_button_group_right">
+			$r.contextHelp("org.olat.ims.qti","metadatas.html","help.hover.metadatas")
 		</div>
-	</fieldset>
-#end
-#if($r.available("leftFeedback") || $r.available("rightFeedback"))
-	<fieldset>
-		<legend>$r.translate("editor.feedback")</legend>
-		<div class="container-fluid">
-			<div class="row">
-				<div class="col-sm-6">
-					$r.render("leftFeedback")
-				</div>
-				<div class="col-sm-6">	
-					$r.render("rightFeedback")
-				</div>
-			</div>
+	</div>
+	<div class="panel-body">
+		<div class="col-sm-6">	
+			<table class="table table-condensed"><tbody>
+				<tr><th>$r.translate("form.imd.shuffle")</th><td>$r.render("form.imd.shuffle", "form")</td></tr>
+				<tr><th>$r.translate("form.metadata.duration")</th><td>$r.render("form.metadata.duration", "form")</td></tr>
+				#if($responses.size() > 0)
+				<tr>
+					<th>$r.translate("ans.correct")</th>
+					<td>
+					#foreach($response in $responses)
+						<div><i class="o_icon o_icon_correct_answer"> </i> $response</div>
+					#end
+					</td>
+				</tr>
+				#end
+			</tbody></table>
 		</div>
-	</fieldset>
+		<div class="col-sm-6">	
+			<table class="table table-condensed"><tbody>
+				#if($r.available("score"))
+					<tr><th>$r.translate("score")</th><td>$r.render("score")</td></tr>
+				#end
+				#if($r.available("score.min"))
+					<tr><th>$r.translate("score.min")</th><td>$r.render("score.min")</td></tr>
+				#end
+				#if($r.available("score.max"))
+					<tr><th>$r.translate("score.max")</th><td>$r.render("score.max")</td></tr>
+				#end
+			</tbody></table>
+		</div>
+	</div>
 #end
+#if($hasFeedbacks)
+	<div class="panel-heading o_header_with_buttons">
+		<h4>$r.translate("editor.feedback")</h4>
+	</div>
+	<div class="panel-body">
+		<div class="col-sm-6">	
+			<table class="table table-condensed"><tbody>
+				#if($item_feedback_mastery)
+				<tr><th>$r.translate("item_feedback_mastery")</th><td>$item_feedback_mastery</td></tr>
+				#end
+				#if($item_feedback_fail)
+				<tr><th>$r.translate("item_feedback_fail")</th><td>$item_feedback_fail</td></tr>
+				#end
+			</tbody></table>
+		</div>
+		<div class="col-sm-6">	
+			<table class="table table-condensed"><tbody>
+			#foreach($responseFeedback in $responsesFeedback)
+				<tr><td><i class="o_icon o_icon_response_feedback"> </i> $responseFeedback</td></tr>
+			#end
+			</tbody></table>
+		</div>
+	</div>
+#end
+</div></div>

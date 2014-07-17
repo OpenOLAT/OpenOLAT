@@ -82,21 +82,18 @@ public class RightsMetadataController extends FormBasicController  {
 			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		}
 		
-		FormLayoutContainer metaCont = FormLayoutContainer.createDefaultFormLayout("metadatas", getTranslator());
-		formLayout.add("metadatas", metaCont);
-		
 		String authorListPage = velocity_root + "/author_list.html";
 		authorCont = FormLayoutContainer.createCustomFormLayout("owners", getTranslator(), authorListPage);
 		authorCont.setLabel("rights.owners", null);
-		metaCont.add(authorCont);
+		formLayout.add(authorCont);
 		authorCont.setRootForm(mainForm);
 		
 		String[] keys = new String[]{ "on" };
 		String[] values = new String[]{ "" };
-		copyrightEl = uifactory.addCheckboxesHorizontal("rights.copyright", "rights.copyright", metaCont, keys, values);
+		copyrightEl = uifactory.addCheckboxesHorizontal("rights.copyright", "rights.copyright", formLayout, keys, values);
 		copyrightEl.setEnabled(false);
 	
-		descriptionEl = uifactory.addStaticTextElement("rights.description", "", metaCont);
+		descriptionEl = uifactory.addStaticTextElement("rights.description", "", formLayout);
 	}
 	
 	public void setItem(QuestionItem item) {

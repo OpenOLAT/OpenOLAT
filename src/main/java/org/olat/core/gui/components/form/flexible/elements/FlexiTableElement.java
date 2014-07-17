@@ -70,6 +70,13 @@ public interface FlexiTableElement extends FormItem {
 	 * @param componentDelegate
 	 */
 	public void setRowRenderer(VelocityContainer renderer, FlexiTableComponentDelegate componentDelegate);
+	
+	/**
+	 * Set the details renderer used by the classic renderer type.
+	 * @param rowRenderer
+	 * @param componentDelegate
+	 */
+	public void setDetailsRenderer(VelocityContainer rowRenderer, FlexiTableComponentDelegate componentDelegate);
 
 	/**
 	 * @return True if muli selection is enabled
@@ -119,6 +126,13 @@ public interface FlexiTableElement extends FormItem {
 	 * @return
 	 */
 	public int getColumnIndexForDragAndDropLabel();
+	
+	/**
+	 * Show the num of rows, or not
+	 * 
+	 * @param enable
+	 */
+	public void setNumOfRowsEnabled(boolean enable);
 
 	/**
 	 * Setting a value enable the drag and drop on this table. Drag and drop
@@ -242,6 +256,20 @@ public interface FlexiTableElement extends FormItem {
 	 * Close the extended search callout if open
 	 */
 	public void collapseExtendedSearch();
+	
+	/**
+	 * Is the details view visible for this particular row?
+	 */
+	public boolean isDetailsExpended(int row);
+	
+	/**
+	 * 
+	 */
+	public void expandDetails(int row);
+	
+	public void collapseDetails(int row);
+	
+	public void collapseAllDetails();
 	
 	/**
 	 * Return the page size

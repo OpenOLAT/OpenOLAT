@@ -73,6 +73,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_comments:before { content: $fa-var-comments;}
 .o_icon_comments_none:before { content: $fa-var-comment-o;}
 .o_icon_content_popup:before { content: $fa-var-external-link; }
+.o_icon_correct_answer:before { content: $fa-var-check; color: $brand-success; }
 .o_icon_customize:before { content: $fa-var-gear;}
 .o_icon_delete_item:before { content: $fa-var-trash-o;}
 .o_icon_delete:before { content: $fa-var-minus-circle; color: #A87E7E;}
@@ -151,6 +152,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_provider_shibboleth:before { content: $fa-var-university;}
 .o_icon_publish:before { content: $fa-var-share;}
 .o_icon_qrcode:before { content: $fa-var-qrcode;}
+.o_icon_quickview:before { content: $fa-var-eye;}
 .o_icon_radio_off:before { content: $fa-var-circle-o;}
 .o_icon_radio_on:before { content: $fa-var-check-circle-o;}
 .o_icon_rating_on:before { content: $fa-var-star;}
@@ -164,6 +166,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_remove:before { content: $fa-var-times; }
 .o_icon_reply:before { content: $fa-var-reply; }
 .o_icon_reply_with_quote:before { content: $fa-var-reply-all; }
+.o_icon_response_feedback:before { content: $fa-var-refresh; }
 .o_icon_rss:before { content: $fa-var-rss;}
 .o_icon_rss_unsubscribe:before { content: $fa-var-rss; color: #996633;}
 .o_icon_search:before { content: $fa-var-search;}
