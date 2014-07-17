@@ -664,6 +664,27 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		myWindow.setDTabs(null);
 
 		getWindowControl().getWindowBackOffice().removeCycleListener(this);
+		
+		if (jsServerC != null) {
+			jsServerC.dispose();
+			jsServerC = null;
+		}
+		if (debugC != null) {
+			debugC.dispose();
+			debugC = null;
+		}
+		if (inlineTranslationC != null) {
+			inlineTranslationC.dispose();
+			inlineTranslationC = null;
+		}
+		if (developmentC != null) {
+			developmentC.dispose();
+			developmentC = null;
+		}
+		if (jsLoggerC != null) {
+			jsLoggerC.dispose();
+			jsLoggerC = null;
+		}
 	}
 
 	private void setGuiStack(GuiStack guiStack) {
