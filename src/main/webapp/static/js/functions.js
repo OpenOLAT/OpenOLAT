@@ -1170,6 +1170,14 @@ function showInfoBox(title, content){
     content = null;
     msgCt = null;
     time = null;
+    
+    setTimeout(function(){
+		try {
+			cleanup();
+		} catch(e) {
+			//possible if the user has closed the window
+		}
+	}, 8000);
 }
 /*
 * renders an message box which the user has to click away
