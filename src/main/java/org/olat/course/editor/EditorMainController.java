@@ -101,6 +101,7 @@ import org.olat.course.editor.PublishStepCatalog.CategoryLabel;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.nodes.cl.CheckListCourseNodeConfiguration;
 import org.olat.course.nodes.cl.ui.wizard.CheckListStepRunnerCallback;
 import org.olat.course.nodes.cl.ui.wizard.CheckList_1_CheckboxStep;
 import org.olat.course.run.preview.PreviewConfigController;
@@ -338,8 +339,12 @@ public class EditorMainController extends MainLayoutBasicController implements G
 
 			toolC.addHeader(translate(NLS_HEADER_INSERTNODES));
 			CourseNodeFactory cnf = CourseNodeFactory.getInstance();
+			boolean hasCheckList = false;
 			for (String courseNodeAlias : cnf.getRegisteredCourseNodeAliases()) {
 				CourseNodeConfiguration cnConfig = cnf.getCourseNodeConfiguration(courseNodeAlias);
+				if (cnConfig instanceof CheckListCourseNodeConfiguration) {
+					hasCheckList = true;
+				}
 				try {
 					toolC.addLink(TB_ACTION + courseNodeAlias, cnConfig.getLinkText(ureq.getLocale()), courseNodeAlias, cnConfig.getIconCSSClass());
 				} catch (Exception e) {
@@ -349,8 +354,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			
 			toolC.addHeader(translate(NLS_ADMIN_HEADER));
 			toolC.addLink(CMD_MULTI_SP, translate(NLS_MULTI_SPS), CMD_MULTI_SP, "b_toolbox_copy");
-			toolC.addLink(CMD_MULTI_CHECKLIST, translate(NLS_MULTI_CHECKLIST), CMD_MULTI_CHECKLIST, "b_toolbox_copy");
-
+			if (hasCheckList) {
+				toolC.addLink(CMD_MULTI_CHECKLIST, translate(NLS_MULTI_CHECKLIST), CMD_MULTI_CHECKLIST, "b_toolbox_copy");
+			}
 			toolC.addHeader(translate(NLS_COMMAND_DELETENODE_HEADER));
 			toolC.addLink(CMD_DELNODE, translate(NLS_COMMAND_DELETENODE), CMD_DELNODE, "b_toolbox_delete");
 			toolC.addLink(CMD_MOVENODE, translate(NLS_COMMAND_MOVENODE), CMD_MOVENODE, "b_toolbox_move");
