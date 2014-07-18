@@ -81,6 +81,7 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.search.SearchServiceUIFactory;
 import org.olat.search.SearchServiceUIFactory.DisplayOption;
 import org.olat.search.ui.SearchInputController;
+import org.olat.user.UserManager;
 
 /**
  * Description:<br>
@@ -111,13 +112,14 @@ public class FolderRunController extends BasicController implements Activateable
 	private Link editQuotaButton;
 
 	/**
-	 * default Constructor, results in showing users personal folder
+	 * Default Constructor, results in showing users personal folder, used by Spring
 	 * 
 	 * @param ureq
 	 * @param wControl
 	 */
 	public FolderRunController(UserRequest ureq, WindowControl wControl) {
-		this(new BriefcaseWebDAVProvider().getContainer(ureq.getIdentity()), true, true, true, ureq, wControl);
+		this(new BriefcaseWebDAVMergeSource(ureq.getIdentity(), UserManager.getInstance().getUserDisplayName(ureq.getIdentity())),
+				true, true, true, ureq, wControl);
 		//set the resource URL to match the indexer ones
 		setResourceURL("[Identity:" + ureq.getIdentity().getKey() + "][userfolder:0]");
 	}

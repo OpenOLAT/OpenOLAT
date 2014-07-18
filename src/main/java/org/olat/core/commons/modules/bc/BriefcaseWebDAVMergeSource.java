@@ -45,6 +45,11 @@ public class BriefcaseWebDAVMergeSource  extends MergeSource {
 		super(null, identity.getName());
 		this.identity = identity;
 	}
+	
+	public BriefcaseWebDAVMergeSource(Identity identity, String name) {
+		super(null, name);
+		this.identity = identity;
+	}
 
 	@Override
 	public List<VFSItem> getItems() {
