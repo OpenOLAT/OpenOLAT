@@ -97,12 +97,11 @@ class RichTextElementRenderer implements ComponentRenderer {
 			sb.append(Formatter.formatLatexFormulas(value));
 			sb.append("</div>");
 		} else if(teC.isUseTiny4()) {
-			renderTinyMCE_4(sb, domID, teC, ubu);
+			renderTinyMCE_4(sb, domID, teC, ubu, source.getTranslator());
 		}
 	}
-	
 
-	private void renderTinyMCE_4(StringOutput sb, String domID, RichTextElementComponent teC, URLBuilder ubu) {
+	private void renderTinyMCE_4(StringOutput sb, String domID, RichTextElementComponent teC, URLBuilder ubu, Translator translator) {
 		RichTextElementImpl te = teC.getRichTextElementImpl();
 		RichTextConfiguration config = te.getEditorConfiguration();
 		List<String> onInit = config.getOnInit();
@@ -111,7 +110,7 @@ class RichTextElementRenderer implements ComponentRenderer {
 		renderTextarea(sb, domID, teC);
 
 		StringOutput configurations = new StringOutput();
-		config.appendConfigToTinyJSArray_4(configurations);
+		config.appendConfigToTinyJSArray_4(configurations, translator);
 		
 		StringOutput baseUrl = new StringOutput();
 		StaticMediaDispatcher.renderStaticURI(baseUrl, "js/tinymce4/tinymce/tinymce.min.js", false);
