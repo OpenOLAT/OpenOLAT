@@ -230,7 +230,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 				attrValues[i] = translate(attrKeys[i]);
 			}
 
-			attributeChoice = uifactory.addDropdownSingleselect("attr-" + id, flc, attrKeys, attrValues, null);
+			attributeChoice = uifactory.addDropdownSingleselect("attr-" + id, null, flc, attrKeys, attrValues, null);
 			attributeChoice.select(attrKeys[0], true);
 			if(pref == null) {
 				selectAttributeType(attrKeys[0], null);
