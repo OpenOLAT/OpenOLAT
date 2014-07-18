@@ -41,6 +41,7 @@ import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -139,7 +140,7 @@ public class CreateRepositoryEntryController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		doCreate();
 		fireEvent(ureq, Event.DONE_EVENT);
-		fireEvent(ureq, new EntryChangedEvent(addedEntry, EntryChangedEvent.ADDED));
+		fireEvent(ureq, new EntryChangedEvent(addedEntry, getIdentity(), Change.added));
 	}
 
 	@Override

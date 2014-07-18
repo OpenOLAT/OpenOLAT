@@ -60,6 +60,7 @@ import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.repository.ui.RepositoryTableModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -589,7 +590,7 @@ public class RepositorySearchController extends BasicController implements Activ
 		} 
 		else if (event instanceof EntryChangedEvent) { // remove deleted entry
 			EntryChangedEvent ecv = (EntryChangedEvent)event;
-			if (ecv.getChange() == EntryChangedEvent.DELETED) {
+			if (ecv.getChange() == Change.deleted) {
 				List<RepositoryEntry> newEntries = new ArrayList<RepositoryEntry>();
 				for (int i = 0; i < repoTableModel.getRowCount(); i++) {
 					RepositoryEntry foo = repoTableModel.getObject(i);
@@ -598,7 +599,7 @@ public class RepositorySearchController extends BasicController implements Activ
 				}
 				repoTableModel.setObjects(newEntries);
 				tableCtr.modelChanged();
-			} else if (ecv.getChange() == EntryChangedEvent.ADDED) {
+			} else if (ecv.getChange() == Change.added) {
 				doSearchByOwner(urequest.getIdentity());
 			}
 		}	else if (source == searchForm) { // process search form events

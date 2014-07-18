@@ -37,6 +37,8 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.config.CourseConfigEvent;
+import org.olat.course.config.CourseConfigEvent.CourseConfigType;
 
 /**
  * 
@@ -102,7 +104,9 @@ public class CourseCalendarConfigForm extends FormBasicController {
 		ThreadLocalUserActivityLogger.log(loggingAction, getClass());
         CoordinatorManager.getInstance().getCoordinator().getEventBus()
         	.fireEventToListenersOf(new KalendarModifiedEvent(), OresHelper.lookupType(CalendarManager.class));
-				
+        CoordinatorManager.getInstance().getCoordinator().getEventBus()
+        	.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.calendar, course.getResourceableId()), course);
+		
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 }

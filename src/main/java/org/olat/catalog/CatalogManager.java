@@ -60,6 +60,7 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -657,7 +658,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	public void updateReferencedRepositoryEntry(RepositoryEntry re) {
 		RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(re, re.getDisplayname(), re.getDescription());
 		// inform anybody interested about this change
-		MultiUserEvent modifiedEvent = new EntryChangedEvent(reloaded, EntryChangedEvent.MODIFIED_DESCRIPTION);
+		MultiUserEvent modifiedEvent = new EntryChangedEvent(reloaded, null, Change.modifiedDescription);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, reloaded);
 	}
 	

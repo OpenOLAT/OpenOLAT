@@ -34,6 +34,7 @@ import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 
 /**
@@ -112,8 +113,8 @@ public class AuthoringEditAccessController extends BasicController {
 					editproptabpubVC.remove(acCtr.getInitialComponent());
 				}
 				
-				// inform anybody interrested about this change
-				MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, EntryChangedEvent.MODIFIED);
+				// inform anybody interested about this change
+				MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess);
 				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);			
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}

@@ -49,6 +49,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
+import org.olat.course.config.CourseConfigEvent.CourseConfigType;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 /**
@@ -150,7 +151,7 @@ public class CourseEfficencyStatementForm extends FormBasicController {
 		}
 		//inform everybody else		
 		EventBus eventBus = CoordinatorManager.getInstance().getCoordinator().getEventBus();
-		CourseConfigEvent courseConfigEvent = new CourseConfigEvent(CourseConfigEvent.EFFICIENCY_STATEMENT_TYPE, course.getResourceableId());
+		CourseConfigEvent courseConfigEvent = new CourseConfigEvent(CourseConfigType.efficiencyStatement, course.getResourceableId());
 		eventBus.fireEventToListenersOf(courseConfigEvent, course);
 		ThreadLocalUserActivityLogger.log(loggingAction, getClass());
 	}

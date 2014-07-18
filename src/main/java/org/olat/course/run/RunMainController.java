@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.NewControllerFactory;
@@ -193,7 +194,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 	private CourseNode currentCourseNode;
 	private TreeModel treeModel;
-	private boolean needsRebuildAfterPublish;
+	private boolean needsRebuildAfter = false;
+	private boolean needsRebuildAfterPublish = false;
 	private boolean needsRebuildAfterRunDone = false;
 	
 	private String courseTitle;
@@ -409,6 +411,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		courseRightsCache.put(CourseRights.RIGHT_STATISTICS, new Boolean(rights.contains(CourseRights.RIGHT_STATISTICS)));
 		courseRightsCache.put(CourseRights.RIGHT_DB, new Boolean(rights.contains(CourseRights.RIGHT_DB)));
 	}
+	
+	private void updateAfterChanges(UserRequest ureq, CourseNode currentCourseNode) {
+		
+	}
 
 	/**
 	 * side-effecty to content and luTree
@@ -455,7 +461,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		currentNodeController = nclr.getRunController();
 		addToHistory(ureq, currentNodeController);
 		
-		//fxdiff BAKS-7 Resume function
 		if (currentNodeController instanceof TitledWrapperController) {
 			Controller contentcontroller = ((TitledWrapperController)currentNodeController).getContentController();
 			addToHistory(ureq, contentcontroller);
@@ -466,7 +471,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			((Activateable2)currentNodeController).activate(ureq, entries, state);
 		}
 		contentP.setContent(currentNodeController.getInitialComponent());
-		// enableCustomCourseCSS(ureq);
 		
 		return true;
 	}
@@ -478,6 +482,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
+		if(needsRebuildAfter) {
+			updateAfterChanges(ureq, currentCourseNode);
+			needsRebuildAfter = false;
+		}
+		
 		if(runLink == source) {
 			toolbarPanel.popUpToRootController(ureq);
 			currentToolCtr = null;
@@ -582,6 +591,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
+		if(needsRebuildAfter) {
+			updateAfterChanges(ureq, currentCourseNode);
+			needsRebuildAfter = false;
+		}
 		
 		// event from the current tool (editor, groupmanagement, archiver)		
 		if (source == currentToolCtr) {
@@ -980,24 +993,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	@Override
 	public void event(Event event) {	
 		if (event instanceof PublishEvent) {
-			PublishEvent pe = (PublishEvent) event;
-			// so far not interested in PRE PUBLISH event, but one could add user
-			// and the currently active BB information. This in turn could be used 
-			// by the publish event issuer to decide whether or not to publish...
-			//check if it's the right course
-			if (pe.getState() != PublishEvent.PRE_PUBLISH
-					&& course.getResourceableId().equals(pe.getPublishedCourseResId())) {
-				// disable this controller and issue a information
-				if (isInEditor) {
-					needsRebuildAfterPublish = true;
-					// author went in editor and published the course -> raise a flag to
-					// later prepare the new
-					// course to present him/her a nice view when
-					// he/she closes the editor to return to the run main (this controller)
-				} else {
-					//TODO
-					//doDisposeAfterEvent();
-				}
+			PublishEvent pe = (PublishEvent)event;
+			if(course.getResourceableId().equals(pe.getPublishedCourseResId())) {
+				processPublishEvent(pe);
 			}
 		} else if (event instanceof OLATResourceableJustBeforeDeletedEvent) {
 			OLATResourceableJustBeforeDeletedEvent ojde = (OLATResourceableJustBeforeDeletedEvent) event;
@@ -1024,7 +1022,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 						UserEfficiencyStatement es = efficiencyStatementManager
 							.getUserEfficiencyStatementLight(courseRepositoryEntry.getKey(), identity);
 						efficiencyStatementsLink.setEnabled(es != null);
-						efficiencyStatementsLink.setPopup(true);//"750", "800"
 					}
 				}
 				// raise a flag to indicate refresh
@@ -1034,11 +1031,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			processBusinessGroupModifiedEvent((BusinessGroupModifiedEvent)event);
 		} else if (event instanceof CourseConfigEvent) {				
 			processCourseConfigEvent((CourseConfigEvent)event);
-		} else if (event instanceof EntryChangedEvent && ((EntryChangedEvent)event).getChange()!=EntryChangedEvent.MODIFIED_AT_PUBLISH) {
-			//courseRepositoryEntry changed (e.g. fired at course access rule change)
-			EntryChangedEvent repoEvent = (EntryChangedEvent) event;			
-			if (courseRepositoryEntry.getKey().equals(repoEvent.getChangedEntryKey()) && repoEvent.getChange() == EntryChangedEvent.MODIFIED) {				
-				doDisposeAfterEvent();
+		} else if (event instanceof EntryChangedEvent ) {
+			EntryChangedEvent repoEvent = (EntryChangedEvent) event;
+			if (courseRepositoryEntry.getKey().equals(repoEvent.getChangedEntryKey())) {
+				processEntryChangedEvent(repoEvent);
 			}
 		//All events are MultiUserEvent, check with command at the end
 		} else if (event instanceof MultiUserEvent) {
@@ -1048,11 +1044,88 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		} 
 	}
 	
+	private void processPublishEvent(PublishEvent pe) {
+		if (pe.getState() == PublishEvent.PRE_PUBLISH) {
+			// so far not interested in PRE PUBLISH event, but one could add user
+			// and the currently active BB information. This in turn could be used 
+			// by the publish event issuer to decide whether or not to publish...
+		} else if (pe.getState() == PublishEvent.PUBLISH) {
+			// disable this controller and issue a information
+			if (isInEditor) {
+				needsRebuildAfterPublish = true;
+				// author went in editor and published the course -> raise a flag to
+				// later prepare the new
+				// course to present him/her a nice view when
+				// he/she closes the editor to return to the run main (this controller)
+			} else if(getIdentity().getKey().equals(pe.getAuthorKey())) {
+				//do nothing
+			} else {
+				if(currentCourseNode == null) {
+					needsRebuildAfter = true;
+				} else {
+					try {
+						String currentNodeIdent = currentCourseNode.getIdent();
+						Set<String> deletedNodeIds = pe.getDeletedCourseNodeIds();
+						Set<String> modifiedNodeIds = pe.getModifiedCourseNodeIds();
+						
+						if(deletedNodeIds != null && deletedNodeIds.contains(currentNodeIdent)) {
+							doDisposeAfterEvent();
+						} else if(modifiedNodeIds != null && modifiedNodeIds.contains(currentNodeIdent)) {
+							doDisposeAfterEvent();
+						}
+					} catch (Exception e) {
+						logError("", e);
+						//beyond update, be paranoid
+						doDisposeAfterEvent();
+					}
+				}
+			}
+		}
+	}
+	
+	private void processEntryChangedEvent(EntryChangedEvent repoEvent) {
+		switch(repoEvent.getChange()) {
+			case modifiedAtPublish:
+			case modifiedAccess:
+				if(repoEvent.getAuthorKey() == null || !getIdentity().getKey().equals(repoEvent.getAuthorKey())) {
+					doDisposeAfterEvent();
+				} 
+				break;
+			case deleted:
+				doDisposeAfterEvent();
+				break;
+			default: {}
+		}
+	}
+	
 	private void processCourseConfigEvent(CourseConfigEvent event) {
-		String cmd = event.getCommand();
-		System.out.println(cmd);
-		
-		doDisposeAfterEvent();
+		switch(event.getType()) {
+			case calendar: {
+				if(calendarLink != null) {
+					CourseConfig cc = uce.getCourseEnvironment().getCourseConfig();
+					calendarLink.setVisible(cc.isCalendarEnabled());
+					toolbarPanel.setDirty(true);
+				}
+				break;
+			}
+			case efficiencyStatement: {
+				if(efficiencyStatementsLink != null) {
+					CourseConfig cc = uce.getCourseEnvironment().getCourseConfig();
+					efficiencyStatementsLink.setVisible(cc.isEfficencyStatementEnabled());
+					if(cc.isEfficencyStatementEnabled()) {
+						UserEfficiencyStatement es = efficiencyStatementManager
+								.getUserEfficiencyStatementLight(courseRepositoryEntry.getKey(), getIdentity());
+						efficiencyStatementsLink.setEnabled(es != null);
+					}
+					toolbarPanel.setDirty(true);
+				}
+				break;
+			}
+			case layout: {
+				//don't restart for that
+				break;
+			}
+		}
 	}
 	
 	private void processBusinessGroupModifiedEvent(BusinessGroupModifiedEvent bgme) {
@@ -1235,9 +1308,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			detailsLink = LinkFactory.createToolLink("courseconfig",translate("command.courseconfig"), this, "o_icon_details");
 			toolbarPanel.addTool(detailsLink);
 		}		
-		if (cc.isCalendarEnabled() && !isGuest) {
+		if (!isGuest) {
 			calendarLink = LinkFactory.createToolLink("calendar",translate("command.calendar"), this, "o_icon_calendar");
 			calendarLink.setPopup(new LinkPopupSettings(950, 750, "cal"));
+			calendarLink.setVisible(cc.isCalendarEnabled());
 			toolbarPanel.addTool(calendarLink);
 		}
 		if (cc.hasGlossary()) {
@@ -1252,13 +1326,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			toolbarPanel.addTool(chatLink);
 		}
 		
-		if (CourseModule.displayParticipantsCount() && !isGuest) {
-			//TODO toolbox
-			//addCurrentUserCount(myTool);
-		}
-		
 		// Personal tools on right side
-		if (cc.isEfficencyStatementEnabled() && course.hasAssessableNodes() && !isGuest) {
+		if (course.hasAssessableNodes() && !isGuest) {
 			// link to efficiency statements should
 			// - not appear when not configured in course configuration
 			// - not appear when configured in course configuration but no assessable
@@ -1269,12 +1338,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			// data exists for user
 			efficiencyStatementsLink = LinkFactory.createToolLink("efficiencystatement",translate("command.efficiencystatement"), this, "o_icon_certificate");
 			efficiencyStatementsLink.setPopup(new LinkPopupSettings(750, 800, "eff"));
+			efficiencyStatementsLink.setVisible(cc.isEfficencyStatementEnabled());
 			toolbarPanel.addTool(efficiencyStatementsLink, Align.right);
-			
-			UserEfficiencyStatement es = efficiencyStatementManager
-					.getUserEfficiencyStatementLight(courseRepositoryEntry.getKey(), getIdentity());
-			if (es == null) {
-				efficiencyStatementsLink.setEnabled(false);
+			if(cc.isEfficencyStatementEnabled()) {
+				UserEfficiencyStatement es = efficiencyStatementManager
+						.getUserEfficiencyStatementLight(courseRepositoryEntry.getKey(), getIdentity());
+				efficiencyStatementsLink.setEnabled(es != null);
 			}
 		}
 		

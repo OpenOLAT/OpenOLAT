@@ -25,6 +25,7 @@
 
 package org.olat.repository.controllers;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.repository.RepositoryEntry;
 
@@ -36,28 +37,9 @@ import org.olat.repository.RepositoryEntry;
 public class EntryChangedEvent extends MultiUserEvent {
 
 	private static final long serialVersionUID = 8339474599787388699L;
-	private int change;
+	private Change change;
 	private Long changedEntryKey;
-	
-	/**
-	 * Entry modified status.
-	 */
-	public static final int MODIFIED = 0;
-	/**
-	 * Entry added status.
-	 */
-	public static final int ADDED = 1;
-	/**
-	 * Entry deleted status.
-	 */
-	public static final int DELETED = 2;
-	
-	/**
-	 * Entry description modified status.
-	 */
-	public static final int MODIFIED_DESCRIPTION = 3;
-	
-	public static final int MODIFIED_AT_PUBLISH = 4;
+	private Long authorKey;
 	
 	/**
 	 * Event signaling the change of a repository entry. Use getChange to see the status of the change.
@@ -65,21 +47,41 @@ public class EntryChangedEvent extends MultiUserEvent {
 	 * @param changedEntry
 	 * @param change
 	 */
-	public EntryChangedEvent(RepositoryEntry changedEntry, int change) {
+	public EntryChangedEvent(RepositoryEntry changedEntry, IdentityRef identity, Change change) {
 		super("");
-		this.changedEntryKey = changedEntry.getKey();
+		changedEntryKey = changedEntry.getKey();
+		authorKey = identity == null ? null : identity.getKey();
 		this.change = change;
 	}
 	
 	/**
 	 * @return the key of the repository entry that has been changed.
 	 */
-	public Long getChangedEntryKey() { return changedEntryKey; }
+	public Long getChangedEntryKey() {
+		return changedEntryKey;
+	}
 	
+	/**
+	 * The author of the change
+	 * @return
+	 */
+	public Long getAuthorKey() {
+		return authorKey;
+	}
+
 	/**
 	 * Get the type of change.
 	 * @return type of change.
 	 */
-	public int getChange() { return change; }
+	public Change getChange() {
+		return change;
+	}
 	
+	public static enum Change {
+		added,
+		deleted,
+		modifiedAccess,
+		modifiedDescription,
+		modifiedAtPublish
+	}
 }

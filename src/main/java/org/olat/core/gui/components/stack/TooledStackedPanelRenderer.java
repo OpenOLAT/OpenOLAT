@@ -115,13 +115,13 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 		List<Tool> alignedTools = new ArrayList<>(tools.size());
 		if(alignement == null) {
 			for(Tool tool:tools) {
-				if(tool.getAlign() == null) {
+				if(tool.getAlign() == null && tool.getComponent().isVisible()) {
 					alignedTools.add(tool);
 				}
 			}
 		} else {
 			for(Tool tool:tools) {
-				if(alignement.equals(tool.getAlign())) {
+				if(alignement.equals(tool.getAlign()) && tool.getComponent().isVisible()) {
 					alignedTools.add(tool);
 				}
 			}

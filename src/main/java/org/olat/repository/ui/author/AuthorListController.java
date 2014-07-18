@@ -80,6 +80,7 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
@@ -345,7 +346,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				dirtyRows.add(new Integer(-1));
 			} else if(event instanceof EntryChangedEvent) {
 				EntryChangedEvent ce = (EntryChangedEvent)event;
-				if(ce.getChange() == EntryChangedEvent.DELETED) {
+				if(ce.getChange().equals(Change.deleted)) {
 					stackPanel.popUpToRootController(ureq);
 					dirtyRows.add(new Integer(-1));
 					reloadDirtyRows();

@@ -73,6 +73,7 @@ import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.resource.references.ReferenceImpl;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
@@ -406,7 +407,7 @@ public class PublishProcess {
 		/*
 		 * broadcast PRE PUBLISH event that a publish will take place
 		 */
-		PublishEvent beforePublish = new PublishEvent(editorTreeModel.getLatestPublishTimestamp(), course, PublishEvent.EVENT_IDENTIFIER);
+		PublishEvent beforePublish = new PublishEvent(course, identity);
 		beforePublish.setDeletedCourseNodeIds(deletedCourseNodeIds);
 		beforePublish.setInsertedCourseNodeIds(insertedCourseNodeIds);
 		beforePublish.setModifiedCourseNodeIds(modifiedCourseNodeIds);
@@ -493,7 +494,7 @@ public class PublishProcess {
 		/*
 		 * broadcast event
 		 */
-		PublishEvent publishEvent = new PublishEvent(pubtimestamp, course, PublishEvent.EVENT_IDENTIFIER);
+		PublishEvent publishEvent = new PublishEvent(course, identity);
 		publishEvent.setDeletedCourseNodeIds(deletedCourseNodeIds);
 		publishEvent.setInsertedCourseNodeIds(insertedCourseNodeIds);
 		publishEvent.setModifiedCourseNodeIds(modifiedCourseNodeIds);
@@ -504,7 +505,6 @@ public class PublishProcess {
 		/*
 		 * END NEW STYLE PUBLISH
 		 */
-
 	}
 	
 	public void applyUpdateSet(Identity identity, Locale locale) {
@@ -700,9 +700,9 @@ public class PublishProcess {
 		return publishTreeModel;
 	}
 
-	public void changeGeneralAccess(int access, boolean membersOnly){
+	public void changeGeneralAccess(Identity author, int access, boolean membersOnly){
 		RepositoryManager.getInstance().setAccess(repositoryEntry, access, membersOnly);
-		MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, EntryChangedEvent.MODIFIED_AT_PUBLISH);
+		MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, author, Change.modifiedAtPublish);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, repositoryEntry);
 	}
 	

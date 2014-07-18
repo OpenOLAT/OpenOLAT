@@ -233,7 +233,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		} else {
 			ICourse course = CourseFactory.openCourseEditSession(ores.getResourceableId());
 			main = createVelocityContainer("index");
-			main.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 			
 			OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", ores.getResourceableId());
 			RepositoryEntry repo = RepositoryManager.getInstance().lookupRepositoryEntry(courseOres, false);
@@ -1074,7 +1073,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 					
 					// fires an EntryChangedEvent for repository entry notifying
 					// about modification.
-					publishManager.changeGeneralAccess(newAccess, membersOnly);
+					publishManager.changeGeneralAccess(getIdentity(), newAccess, membersOnly);
 					hasChanges = true;
 				}
 				

@@ -73,6 +73,7 @@ import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -709,15 +710,13 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 		}
 	}
 	
-
-	
 	private void deleteRepositoryEntry(UserRequest ureq) {
 		Roles roles = ureq.getUserSession().getRoles();
 		ErrorList errors = repositoryService.delete(entry, getIdentity(), roles, getLocale());
 		if (errors.hasErrors()) {
 			showInfo("info.could.not.delete.entry");
 		} else {
-			fireEvent(ureq, new EntryChangedEvent(entry, EntryChangedEvent.DELETED));
+			fireEvent(ureq, new EntryChangedEvent(entry, getIdentity(), Change.deleted));
 			showInfo("info.entry.deleted");
 		}
 	}

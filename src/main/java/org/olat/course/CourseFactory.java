@@ -745,7 +745,7 @@ public class CourseFactory extends BasicManager {
 		 //RepositoryEntry.ACC_OWNERS_AUTHORS //only owners and authors can the see course
 		 //RepositoryEntry.ACC_USERS_GUESTS // users and guests can see the course
 		 //fxdiff VCRP-1,2: access control of resources
-		 publishProcess.changeGeneralAccess(newAccess, membersOnly);
+		 publishProcess.changeGeneralAccess(identity, newAccess, membersOnly);
 		 
 		 if (publishTreeModel.hasPublishableChanges()) {
 			 List<String>nodeToPublish = new ArrayList<String>();
