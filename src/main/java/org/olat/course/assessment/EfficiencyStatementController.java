@@ -248,7 +248,7 @@ public class EfficiencyStatementController extends BasicController {
 		ContactList contactList = new ContactList("to");
 		contactList.add(statementOwner);
 		cmsg.addEmailTo(contactList);
-		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, true, false, false, cmsg);
+		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
 		listenTo(contactCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), contactCtrl.getInitialComponent());
 		cmc.activate();

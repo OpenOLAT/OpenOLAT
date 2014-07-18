@@ -791,7 +791,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 					changeEmail.setBodyText(userMsg + "\n" + changeLog);
 				}// else nothing was added!
 				changeEmail.setSubject("Change log for " + startedWithTitle);
-				cfc = new ContactFormController(ureq, getWindowControl(), false, true, false, false, changeEmail);
+				cfc = new ContactFormController(ureq, getWindowControl(), true, false, false, changeEmail);
 				listenTo(cfc);
 				exitPanel.setContent(cfc.getInitialComponent());
 				return;

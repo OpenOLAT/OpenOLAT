@@ -437,7 +437,7 @@ public class CollaborationTools implements Serializable {
 	 * @return a contact form controller
 	 */
 	public ContactFormController createContactFormController(UserRequest ureq, WindowControl wControl, ContactMessage cmsg) {
-		ContactFormController cfc = new ContactFormController(ureq, wControl, true, true, false, false, cmsg);
+		ContactFormController cfc = new ContactFormController(ureq, wControl, true, false, false, cmsg);
 		return cfc;
 	}
 

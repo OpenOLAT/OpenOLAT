@@ -510,7 +510,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 		contactList.addAllIdentites(identities);
 		contactMessage.addEmailTo(contactList);
 		
-		contactCtrl = new ContactFormController(ureq, getWindowControl(), false, true, false, false, contactMessage);
+		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, contactMessage);
 		listenTo(contactCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), contactCtrl.getInitialComponent(),

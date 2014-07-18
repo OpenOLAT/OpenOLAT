@@ -338,7 +338,7 @@ public class DENManageParticipantsController extends BasicController {
 		cmsg.addEmailTo(contactList);
 		
 		removeAsListenerAndDispose(contactCtr);
-		contactCtr = new ContactFormController(ureq, getWindowControl(), false, false, false, false, cmsg);
+		contactCtr = new ContactFormController(ureq, getWindowControl(), false, false, false, cmsg);
 		listenTo(contactCtr);
 		
 		sendMessageVC.contextPut("title", translate("participants.message"));

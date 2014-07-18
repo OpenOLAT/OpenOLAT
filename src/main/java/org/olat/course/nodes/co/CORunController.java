@@ -165,7 +165,7 @@ public class CORunController extends BasicController {
 			
 			cmsg.setBodyText(mBody);
 			cmsg.setSubject(mSubject);
-			coFoCtr = new ContactFormController(ureq, getWindowControl(), true,false,false,false, cmsg);
+			coFoCtr = new ContactFormController(ureq, getWindowControl(), false, false, false, cmsg);
 			listenTo(coFoCtr);//dispose as this controller is disposed
 			myContent.put("myCoForm", coFoCtr.getInitialComponent());
 			putInitialPanel(myContent);

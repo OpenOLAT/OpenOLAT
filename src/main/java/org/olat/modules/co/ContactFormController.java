@@ -37,8 +37,6 @@ import javax.mail.SendFailedException;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -107,11 +105,8 @@ public class ContactFormController extends BasicController {
 	private Identity emailFrom;
 	
 	private ContactForm cntctForm;
-	private VelocityContainer vcCreateContactMsg;
 	private DialogBoxController noUsersErrorCtr;
 	private ArrayList<String> myButtons;
-	private Panel main;
-	
 	private MailManager mailService;
 	/**
 	 * 
@@ -123,7 +118,7 @@ public class ContactFormController extends BasicController {
 	 * @param hasRecipientsEditable
 	 * @param cmsg
 	 */
-	public ContactFormController(UserRequest ureq, WindowControl windowControl, boolean useDefaultTitle, boolean isCanceable, boolean isReadonly, boolean hasRecipientsEditable, ContactMessage cmsg) {
+	public ContactFormController(UserRequest ureq, WindowControl windowControl, boolean isCanceable, boolean isReadonly, boolean hasRecipientsEditable, ContactMessage cmsg) {
 		super(ureq, windowControl);
 		
 		//init email form
@@ -137,11 +132,9 @@ public class ContactFormController extends BasicController {
 		boolean hasAtLeastOneAddress = hasAtLeastOneAddress(recipList);
 		cntctForm.setBody(cmsg.getBodyText());
 		cntctForm.setSubject(cmsg.getSubject());
-
-		main = new Panel("contactFormMainPanel");
 		
 		//init display component
-		init(ureq, useDefaultTitle, hasAtLeastOneAddress, cmsg.getDisabledIdentities());
+		init(ureq, hasAtLeastOneAddress, cmsg.getDisabledIdentities());
 	}
 	
 	private boolean hasAtLeastOneAddress(List<ContactList> recipList) {
@@ -161,14 +154,9 @@ public class ContactFormController extends BasicController {
 	 * @param useDefaultTitle
 	 * @param hasAtLeastOneAddress
 	 */
-	private void init(UserRequest ureq, boolean useDefaultTitle, boolean hasAtLeastOneAddress, List<Identity> disabledIdentities) {
+	private void init(UserRequest ureq, boolean hasAtLeastOneAddress, List<Identity> disabledIdentities) {
 		if (hasAtLeastOneAddress) {
-
-			vcCreateContactMsg = createVelocityContainer("c_contactMsg");
-			vcCreateContactMsg.put("cntctForm", cntctForm.getInitialComponent());
-			main.setContent(vcCreateContactMsg);
-			putInitialPanel(main);
-			
+			putInitialPanel(cntctForm.getInitialComponent());	
 		} else {
 			Controller mCtr = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, translate("error.msg.send.no.rcps"));
 			listenTo(mCtr);// to be disposed as this controller gets disposed
@@ -259,7 +247,6 @@ public class ContactFormController extends BasicController {
 
 	/**
 	 * handles events from Components <BR>
-	 * i.e. ContactForm and c_contactMsg.html <br>
 	 * creates an InfoMessage in the WindowController on error. <br>
 	 * <b>Fires: </b>
 	 * <UL>

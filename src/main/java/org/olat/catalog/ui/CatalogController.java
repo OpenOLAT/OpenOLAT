@@ -539,7 +539,7 @@ public class CatalogController extends BasicController implements Activateable2 
 				cmsg.addEmailTo(caretaker);
 				
 				removeAsListenerAndDispose(cfc);
-				cfc = new ContactFormController(ureq, getWindowControl(), false, true, false, false, cmsg);
+				cfc = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
 				listenTo(cfc);
 				
 				// open form in dialog

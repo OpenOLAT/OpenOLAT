@@ -536,7 +536,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 
 					// create contact form controller with ContactMessage
 					removeAsListenerAndDispose(contactCtr);
-					contactCtr = new ContactFormController(ureq, getWindowControl(), false, true, false, false, cmsg);
+					contactCtr = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
 					listenTo(contactCtr);
 
 					mailVC.put("mailform", contactCtr.getInitialComponent());

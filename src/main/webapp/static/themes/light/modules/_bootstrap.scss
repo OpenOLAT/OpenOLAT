@@ -86,3 +86,7 @@ body .progress {
 .form-horizontal .has-feedback .form-control-feedback {
 	top: 10px;
 }
+
+.btn.btn-primary.o_disabled {
+	color: $o-content-text-color !important;
+}

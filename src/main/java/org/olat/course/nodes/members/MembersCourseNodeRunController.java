@@ -315,7 +315,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 			ContactMessage cmsg = new ContactMessage(ureq.getIdentity());
 			cmsg.addEmailTo(contactList);
 			
-			emailController = new ContactFormController(ureq, getWindowControl(), false, true, false, false, cmsg);
+			emailController = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
 			listenTo(emailController);
 			
 			removeAsListenerAndDispose(cmc);

@@ -64,7 +64,6 @@ class RichTextElementRenderer implements ComponentRenderer {
 
 		RichTextElementComponent teC = (RichTextElementComponent) source;
 		RichTextElementImpl te = teC.getRichTextElementImpl();
-		int cols = teC.getCols();
 		int rows = teC.getRows();
 		// DOM ID used to identify the rich text element in the browser DOM
 		String domID;
@@ -86,10 +85,7 @@ class RichTextElementRenderer implements ComponentRenderer {
 			sb.append(FormJSHelper.getRawJSFor(te.getRootForm(), domID, te.getAction()));
 			sb.append(" id=\"");
 			sb.append(domID);
-			sb.append("_disabled\" readonly class='o_disabled' style=\"");
-			if (cols != -1) {
-				sb.append(" width:").append(cols).append("em;");
-			}
+			sb.append("_disabled\" readonly class='form-control-static o_disabled' style=\"");
 			if (rows != -1) {
 				sb.append(" min-height:").append(rows).append("em;");
 			}

@@ -49,7 +49,6 @@ import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeNode;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -93,7 +92,6 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 	private static final String CMD_PORTFOLIO = "portfolio";
 
 	private MenuTree menuTree;
-	private VelocityContainer myContent;
 	private Panel main;
 	
 	public static final OLATResourceable BUSINESS_CONTROL_TYPE_FOLDER = OresHelper.createOLATResourceableTypeWithoutCheck(FolderRunController.class
@@ -152,7 +150,6 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 				main.setContent(createComponent(ureq, CMD_FOLDER, chosenIdentity));
 			}
 		}
-
 	}
 
 	/**
@@ -250,7 +247,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 	}
 
 	private Component createComponent(UserRequest ureq, String menuCommand, Identity identity) {
-		myContent = createVelocityContainer("userinfo");
+		Component myContent = null;
 
 		if (menuCommand.equals(CMD_HOMEPAGE)) {
 			HomePageConfigManager hpcm = HomePageConfigManagerImpl.getInstance();
@@ -258,7 +255,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 			removeAsListenerAndDispose(homePageDisplayController);
 			homePageDisplayController = new HomePageDisplayController(ureq, getWindowControl(), identity, homePageConfig);
 			listenTo(homePageDisplayController);
-			myContent.put("userinfo", homePageDisplayController.getInitialComponent());
+			myContent = homePageDisplayController.getInitialComponent();
 
 		} else if (menuCommand.equals(CMD_CALENDAR)) {
 			CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
@@ -280,7 +277,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 			calendarController = new WeeklyCalendarController(ureq, getWindowControl(), calendars,
 					WeeklyCalendarController.CALLER_PROFILE, true);
 			listenTo(calendarController);
-			myContent.put("userinfo", calendarController.getInitialComponent());
+			myContent = calendarController.getInitialComponent();
 		} else if (menuCommand.equals(CMD_FOLDER)) {
 
 			String chosenUserFolderRelPath = FolderConfig.getUserHome(identity.getName()) + "/public";
@@ -297,7 +294,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 			folderRunController = new FolderRunController(namedFolder, false, true, false, ureq, getWindowControl());
 			folderRunController.setResourceURL("[Identity:" + identity.getKey() + "][userfolder:0]");
 			listenTo(folderRunController);
-			myContent.put("userinfo", folderRunController.getInitialComponent());
+			myContent = folderRunController.getInitialComponent();
 
 		} else if (menuCommand.equals(CMD_CONTACT)) {
 			ContactMessage cmsg = new ContactMessage(ureq.getIdentity());
@@ -305,14 +302,14 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 			emailList.add(identity);
 			cmsg.addEmailTo(emailList);
 			removeAsListenerAndDispose(contactFormController);
-			contactFormController = new ContactFormController(ureq, getWindowControl(), true,true,false,false,cmsg);
+			contactFormController = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
 			listenTo(contactFormController);
-			myContent.put("userinfo", contactFormController.getInitialComponent());
+			myContent = contactFormController.getInitialComponent();
 		} else if (menuCommand.equals(CMD_PORTFOLIO)) {
 			removeAsListenerAndDispose(portfolioController);
 			portfolioController = EPUIFactory.createPortfolioMapsVisibleToOthersController(ureq, getWindowControl(), chosenIdentity);
 			listenTo(portfolioController);
-			myContent.put("userinfo", portfolioController.getInitialComponent());
+			myContent = portfolioController.getInitialComponent();
 		}
 		return myContent;
 	}

@@ -749,7 +749,7 @@ public class DENManager {
 		}
 		contactList.addAllIdentites(participants);
 		cmsg.addEmailTo(contactList);
-		ContactFormController contactCtr = new ContactFormController(ureq, wControl, false, false, false, false, cmsg);
+		ContactFormController contactCtr = new ContactFormController(ureq, wControl, false, false, false, cmsg);
 		contactCtr.addControllerListener(listener);
 		sendMessageVC.contextPut("title", trans.translate("participants.message"));
 		sendMessageVC.put("contactForm", contactCtr.getInitialComponent());
