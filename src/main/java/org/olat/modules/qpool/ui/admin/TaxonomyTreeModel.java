@@ -39,6 +39,8 @@ public class TaxonomyTreeModel extends GenericTreeModel {
 
 	private static final long serialVersionUID = 3032222581990406868L;
 	private final QPoolService qpoolService;
+	
+	public static final String ROOT = "root";
 
 	public TaxonomyTreeModel(String rootLabel) {
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
@@ -46,7 +48,7 @@ public class TaxonomyTreeModel extends GenericTreeModel {
 	}
 	
 	private void buildTree(String rootLabel) {
-		GenericTreeNode rootNode = new GenericTreeNode(rootLabel, "root");
+		GenericTreeNode rootNode = new GenericTreeNode(rootLabel, ROOT);
 		setRootNode(rootNode);
 
 		List<TaxonomyLevel> fields = qpoolService.getTaxonomyLevels();
