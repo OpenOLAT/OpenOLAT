@@ -220,8 +220,11 @@ a.b_link_forward { background: transparent url('../../openolat/images/arrow_righ
 
 /* image styles */
 img.b_float_left {float: left; margin: 0 2em 2em 0;}
+img.b_float_left_clear { margin: 0 2em 2em 0;  }
 img.b_float_right {float: right; margin: 0 0 2em 2em;}
+img.b_float_right_clear { display:block; margin: 0 0 2em auto;  }
 img.b_centered {display: block; margin: 0 auto 2em auto;}
+
 	
 /* ---------- smilies / emoticons in tinyMCE (excluded in editor styles) ------------------------ */
 /* i know, these are icons... but they must be in content.css, 'cause tinyMCE needs 'em... */
