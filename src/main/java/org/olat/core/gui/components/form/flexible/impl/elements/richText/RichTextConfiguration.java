@@ -38,11 +38,13 @@ import org.olat.core.gui.components.form.flexible.impl.elements.richText.plugins
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.themes.Theme;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -702,7 +704,7 @@ public class RichTextConfiguration implements Disposable {
 		return linkBrowserCustomTreeModel;
 	}
 
-	protected void appendConfigToTinyJSArray_4(StringOutput out) {
+	protected void appendConfigToTinyJSArray_4(StringOutput out, Translator translator) {
 		// Now add the quoted values
 		Map<String,String> copyValues = new HashMap<String,String>(quotedConfigValues);
 
@@ -731,10 +733,20 @@ public class RichTextConfiguration implements Disposable {
 		  .append("statusbar:true,\n")
 		  .append("menubar:").append(tinyConfig.hasMenu()).append(",\n");
  		
+ 		String leftAndClear = "Left and clear";
+ 		String rightAndClear = "Right and clear";
+ 		if(translator != null) {
+ 			translator = Util.createPackageTranslator(RichTextConfiguration.class, translator.getLocale(), translator);
+ 			leftAndClear = translator.translate("left.clear");
+ 			rightAndClear = translator.translate("right.clear");
+ 		}
+ 		
  		tinyMenuSb.append("image_class_list: [\n")
  		  .append("  {title: 'Left', value: 'b_float_left'},\n")
+ 		  .append("  {title: '").append(leftAndClear).append("', value: 'b_float_left_clear'},\n")
  		  .append("  {title: 'Center', value: 'b_centered'},\n")
- 		  .append("  {title: 'Right', value: 'b_float_right'}\n")
+ 		  .append("  {title: 'Right', value: 'b_float_right'},\n")
+ 		  .append("  {title: '").append(rightAndClear).append("', value: 'b_float_right_clear'}\n")
  		  .append("],\n");
  		
 		if (tinyConfig.getTool1() != null) {

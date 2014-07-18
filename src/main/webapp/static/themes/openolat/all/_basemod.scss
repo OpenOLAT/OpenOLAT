@@ -597,7 +597,9 @@ div.b_ext_elem {
 
 /* FLOTING STYLES */
 .b_float_left { float: left; display:inline; margin-right: 1em; margin-bottom: 0.15em;  }
+.b_float_left_clear { float: left; margin-right: 1em; margin-bottom: 0.15em;  }
 .b_float_right { float: right; display:inline; margin-left: 1em; margin-bottom: 0.15em;  }
+.b_float_right_clear { float: right; margin-left: 1em; margin-bottom: 0.15em;  }
 .b_center { text-align:center; margin: 0.5em auto }
 /* CLEAR container: additonal to b_floatbox */
 .b_floatscrollbox { 
