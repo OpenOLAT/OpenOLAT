@@ -135,7 +135,6 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	
 	protected void overrideWindowControl(WindowControl wControl) {
 		this.newWControl = wControl; //new LocalWindowControl(wControl, this);
-		this.userActivityLogger = UserActivityLoggerImpl.setupLoggerForController(wControl);
 	}
 		
 	/**

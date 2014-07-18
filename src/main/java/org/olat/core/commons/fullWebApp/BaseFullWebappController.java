@@ -167,6 +167,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	public BaseFullWebappController(UserRequest ureq, BaseFullWebappControllerParts baseFullWebappControllerParts) {
 		// only-use-in-super-call, since we define our own
 		super(ureq, null);
+		setLoggingUserRequest(ureq);
 
 		this.baseFullWebappControllerParts = baseFullWebappControllerParts;
 
