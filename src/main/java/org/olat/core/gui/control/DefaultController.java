@@ -70,7 +70,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	private Component initialComponent;
 	private boolean disposed = false;
 	private StackedPanel wrapperPanel;
-	private final IUserActivityLogger userActivityLogger;
+	private IUserActivityLogger userActivityLogger;
 	
 	private WindowControl newWControl;
 	
@@ -135,6 +135,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	
 	protected void overrideWindowControl(WindowControl wControl) {
 		this.newWControl = wControl; //new LocalWindowControl(wControl, this);
+		this.userActivityLogger = UserActivityLoggerImpl.setupLoggerForController(wControl);
 	}
 		
 	/**
