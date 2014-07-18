@@ -476,7 +476,7 @@
 		</profile>
 
 		<profile>
-			<id>jbossas7</id>
+			<id>wildfly</id>
 			<dependencies>
 				<dependency>
 					<groupId>log4j</groupId>
@@ -591,7 +591,7 @@
 						<configuration>
 							<webResources>
 								<resource>
-									<directory>src/main/webapp-jbossas7</directory>
+									<directory>src/main/webapp-wildfly</directory>
 									<filtering>false</filtering>
 								</resource>
 							</webResources>

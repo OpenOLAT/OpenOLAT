@@ -7,37 +7,13 @@ servers like JBoss AS / Wildfly. This README is intended for people who have
 some minimal experience with these servers and can install a JDBC driver, set some
 JMS resources...
 
+As of OpenOLAT 10, we need WildFly because we use JPA 2.1 (Hibernate 4.3.x)
+
 The beginning of the installation is the same as Tomcat, it's described in INSTALL.README.
 To create your eclipse project, use these commands instead of the default one:
 
 for JBoss AS:
-  mvn eclipse:clean eclipse:eclipse -P-tomcat,jbossas7
- 
- 
-Configuration JBoss AS 7.1
---------------------------
-
-1. I use a JBoss AS 7.1.1 with Hibernate upgraded to the latest version or JBoss AS 7.1.3.
-2. Define a JDBC connection pool in your standalone.xml configuration with a jndi-name like:
-     java:jboss/datasources/OpenOLATDS and set this JNDI name
-   in olat.local.properties set the following properties:
-     db.source=jndi
-     db.jndi=java:jboss/datasources/OpenOLATDS
-     hibernate.cache=disabled
-3. Create a queue with a jndi-name like:
-     java:jboss/exported/jms/queue/searchQueue
-   and a topic:
-     java:jboss/exported/jms/topic/sysbus
-   in olat.local.properties set the following properties:
-     jms.provider=jndi
-     jms.broker.jndi=java:/ConnectionFactory
-     sysbus.broker.jndi=java:jboss/exported/jms/topic/sysbus
-     search.broker.jndi=java:jboss/exported/jms/queue/searchQueue
-     index.broker.jndi=java:jboss/exported/jms/queue/indexQueue
-     exam.broker.jndi=java:jboss/exported/jms/queue/examQueue
-4. In the databaseCoreContext.xml in the bean with id: hibernateCacheProps_enabled_Cluster
-   remove the properties "hibernate.cache.region.factory_class" and "hibernate.cache.infinispan.cachemanager"
-   set the two cache properties "hibernate.cache.use_query_cache" and "hibernate.cache.use_second_level_cache" to false
+  mvn eclipse:clean eclipse:eclipse -P-tomcat,wildfly
      
 Configuration WildFly (JBoss AS 8.0)
 ------------------------------------
@@ -47,6 +23,8 @@ Configuration WildFly (JBoss AS 8.0)
    in olat.local.properties set the following properties:
      db.source=jndi
      db.jndi=java:jboss/datasources/OpenOLATDS
+     cluster.mode=Cluster
+   The cluster mode will disable the hibernate cache
 2. Create a queue with a jndi-name like:
      java:jboss/exported/jms/queue/searchQueue
    and a topic:
