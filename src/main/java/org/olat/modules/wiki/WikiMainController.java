@@ -653,17 +653,18 @@ public class WikiMainController extends BasicController implements CloneableCont
 			 * tabbed pane change to discussion tab
 			 **********************************************************************/
 			Forum forum = null;
-			if (page.getForumKey() == 0) {
+			if (page.getForumKey() > 0) {
+				forum = ForumManager.getInstance().loadForum(Long.valueOf(page.getForumKey()));
+			}
+			if(forum == null) {
 				forum = ForumManager.getInstance().addAForum();
 				page.setForumKey(forum.getKey().longValue());
 				WikiManager.getInstance().updateWikiPageProperties(ores, page);
-			} else {
-				forum = ForumManager.getInstance().loadForum(Long.valueOf(page.getForumKey()));
 			}
 			// TODO enhance forum callback with subscription stuff								
 			boolean isModerator = securityCallback.mayModerateForum();				
 			ForumCallback forumCallback = new WikiForumCallback(ureq.getUserSession().getRoles().isGuestOnly(), isModerator);
-
+			
 			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(forum);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, getWindowControl());
 			
