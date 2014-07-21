@@ -60,11 +60,13 @@ public class CoachingServiceImpl implements CoachingService {
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
-	
+
+	@Override
 	public boolean isCoach(Identity coach) {
 		return coachingDao.isCoach(coach);
 	}
-	
+
+	@Override
 	public Map<Long, String> getIdentities(Collection<Long> identityNames) {
 		Map<Long,String> identityMap = new HashMap<Long,String>();
 		
@@ -76,44 +78,53 @@ public class CoachingServiceImpl implements CoachingService {
 		return identityMap;
 	}
 
+	@Override
 	public List<RepositoryEntry> getStudentsCourses(Identity coach, Identity student, int firstResult, int maxResults) {
 		return coachingDao.getStudentsCourses(coach, student, firstResult, maxResults);
 	}
-	
+
+	@Override
 	public List<StudentStatEntry> getStudentsStatistics(Identity coach) {
 		return coachingDao.getStudentsStatistics(coach);
 	}
-	
+
+	@Override
 	public List<CourseStatEntry> getCoursesStatistics(Identity coach) {
 		return coachingDao.getCoursesStatistics(coach);
 	}
-	
+
+	@Override
 	public List<GroupStatEntry> getGroupsStatistics(Identity coach) {
 		return coachingDao.getGroupsStatistics(coach);
 	}
-	
+
+	@Override
 	public List<EfficiencyStatementEntry> getGroup(BusinessGroup group) {
 		List<Identity> students = businessGroupService.getMembers(group, GroupRoles.participant.name());
 		List<RepositoryEntry> courses = businessGroupService.findRepositoryEntries(Collections.singletonList(group), 0, -1);
 		return coachingDao.getEfficencyStatementEntriesAlt(students, courses);
 	}
-	
-	public List<EfficiencyStatementEntry> getCourse(Identity coach, RepositoryEntry entry, int firstResult, int maxResults) {
-		List<Long> studentKeys = coachingDao.getStudents(coach, entry, firstResult, maxResults);
+
+	@Override
+	public List<EfficiencyStatementEntry> getCourse(Identity coach, RepositoryEntry entry) {
+		List<Long> studentKeys = coachingDao.getStudents(coach, entry);
 		List<IdentityShort> students = securityManager.findShortIdentitiesByKey(studentKeys);
 		return coachingDao.getEfficencyStatementEntries(students, Collections.singletonList(entry));
 	}
-	
+
+	@Override
 	public EfficiencyStatementEntry getEfficencyStatement(UserEfficiencyStatement statement) {
 		return coachingDao.getEfficencyStatementEntry(statement);
 	}
-	
+
+	@Override
 	public List<EfficiencyStatementEntry> getEfficencyStatements(Identity student, List<RepositoryEntry> courses) {
 		IdentityShort identity = securityManager.loadIdentityShortByKey(student.getKey());
 		List<IdentityShort> students = Collections.singletonList(identity);
 		return coachingDao.getEfficencyStatementEntries(students, courses);
 	}
 	
+	@Override
 	public List<UserEfficiencyStatement> getEfficencyStatements(Identity student) {
 		return coachingDao.getEfficencyStatementEntries(student);
 	}

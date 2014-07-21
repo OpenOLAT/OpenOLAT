@@ -56,6 +56,12 @@ public class RepositoryEntryRelationDAO {
 	@Autowired
 	private GroupDAO groupDao;
 	
+	/**
+	 * Get roles in the repository entry, with business groups too
+	 * @param identity
+	 * @param re
+	 * @return
+	 */
 	public List<String> getRoles(IdentityRef identity, RepositoryEntryRef re) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select membership.role from ").append(RepositoryEntry.class.getName()).append(" as v")
@@ -71,12 +77,19 @@ public class RepositoryEntryRelationDAO {
 				.getResultList();
 	}
 
+	/**
+	 * Has role in the repository entry only (without business groups)
+	 * @param identity
+	 * @param re
+	 * @param roles
+	 * @return
+	 */
 	public boolean hasRole(IdentityRef identity, RepositoryEntryRef re, String... roles) {
 		List<String> roleList = GroupRoles.toList(roles);
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(membership) from ").append(RepositoryEntry.class.getName()).append(" as v")
-		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join v.groups as relGroup on relGroup.defaultGroup=true")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
 		  .append(" where v.key=:repoKey and membership.identity.key=:identityKey");

@@ -315,7 +315,7 @@ public class CoachingServiceTest extends OlatTestCase {
 		List<Long> myCourses = coachToCourseMap.get(coach10.getKey());
 		assertNotNull(myCourses);
 
-		List<EfficiencyStatementEntry> statEntries = coachingService.getCourse(coach10, course10, 0, -1);
+		List<EfficiencyStatementEntry> statEntries = coachingService.getCourse(coach10, course10);
 		assertNotNull(statEntries);
 		assertFalse(statEntries.isEmpty());
 		assertTrue(myCourses.contains(course10.getKey()));

@@ -55,7 +55,7 @@ public interface CoachingService {
 	
 	public List<EfficiencyStatementEntry> getGroup(BusinessGroup group);
 	
-	public List<EfficiencyStatementEntry> getCourse(Identity coach, RepositoryEntry entry, int firstResult, int maxResults);
+	public List<EfficiencyStatementEntry> getCourse(Identity coach, RepositoryEntry entry);
 	
 	public EfficiencyStatementEntry getEfficencyStatement(UserEfficiencyStatement statement);
 	

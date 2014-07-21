@@ -268,7 +268,7 @@ public class CoachingDAO extends BasicManager {
 		return stats;
 	}
 	
-	public List<Long> getStudents(Identity coach, RepositoryEntry entry, int firstResult, int maxResults) {
+	public List<Long> getStudents(Identity coach, RepositoryEntry entry) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct(participant.identity.key) from repoentrytogroup as relGroup ")
 		  .append(" inner join relGroup.group as baseGroup")

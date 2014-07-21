@@ -168,7 +168,7 @@ public class CourseController extends BasicController implements Activateable2 {
 	}
 	
 	public List<EfficiencyStatementEntry> loadModel() {
-		List<EfficiencyStatementEntry> entries = coachingService.getCourse(getIdentity(), course, 0, -1);
+		List<EfficiencyStatementEntry> entries = coachingService.getCourse(getIdentity(), course);
 		TableDataModel<EfficiencyStatementEntry> model = new EfficiencyStatementEntryTableDataModel(entries);
 		tableCtr.setTableDataModel(model);
 		return entries;

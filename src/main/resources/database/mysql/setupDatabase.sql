@@ -1461,7 +1461,7 @@ create or replace view o_re_membership_v as (
       bmember.g_role as g_role,
       re.repositoryentry_id as fk_entry_id
    from o_repositoryentry as re
-   inner join o_re_to_group relgroup on (relgroup.fk_entry_id=re.repositoryentry_id)
+   inner join o_re_to_group relgroup on (relgroup.fk_entry_id=re.repositoryentry_id and relgroup.r_defgroup=1)
    inner join o_bs_group_member as bmember on (bmember.fk_group_id=relgroup.fk_group_id) 
 );
   
@@ -1513,8 +1513,8 @@ create view o_as_eff_statement_students_v as (
       sg_coach.fk_identity_id as tutor_id,
       sg_participant.fk_identity_id as student_id,
       sg_statement.id as st_id,
-      (case when sg_statement.passed = true then 1 else 0 end) as st_passed,
-      (case when sg_statement.passed = false then 1 else 0 end) as st_failed,
+      (case when sg_statement.passed = 1 then 1 else 0 end) as st_passed,
+      (case when sg_statement.passed = 0 then 1 else 0 end) as st_failed,
       (case when sg_statement.passed is null then 1 else 0 end) as st_not_attempted,
       sg_statement.score as st_score,
       pg_initial_launch.id as pg_id
@@ -1524,6 +1524,8 @@ create view o_as_eff_statement_students_v as (
    inner join o_bs_group_member as sg_participant on (sg_participant.fk_group_id=sg_coach.fk_group_id and sg_participant.g_role='participant')
    left join o_as_eff_statement as sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource)
    left join o_as_user_course_infos as pg_initial_launch on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)
+   group by sg_re.repositoryentry_id, sg_coach.fk_identity_id, sg_participant.fk_identity_id,
+      sg_statement.id, sg_statement.score, pg_initial_launch.id
 );
 
 create view o_as_eff_statement_courses_v as (
@@ -1533,8 +1535,8 @@ create view o_as_eff_statement_courses_v as (
       sg_coach.fk_identity_id as tutor_id,
       sg_participant.fk_identity_id as student_id,
       sg_statement.id as st_id,
-      (case when sg_statement.passed = true then 1 else 0 end) as st_passed,
-      (case when sg_statement.passed = false then 1 else 0 end) as st_failed,
+      (case when sg_statement.passed = 1 then 1 else 0 end) as st_passed,
+      (case when sg_statement.passed = 0 then 1 else 0 end) as st_failed,
       (case when sg_statement.passed is null then 1 else 0 end) as st_not_attempted,
       sg_statement.score as st_score,
       pg_initial_launch.id as pg_id
@@ -1544,6 +1546,8 @@ create view o_as_eff_statement_courses_v as (
    inner join o_bs_group_member as sg_participant on (sg_participant.fk_group_id=sg_coach.fk_group_id and sg_participant.g_role='participant')
    left join o_as_eff_statement as sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource)
    left join o_as_user_course_infos as pg_initial_launch on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)
+   group by sg_re.repositoryentry_id, sg_re.displayname, sg_coach.fk_identity_id, sg_participant.fk_identity_id,
+      sg_statement.id, sg_statement.score, pg_initial_launch.id
 );
 
 create view o_as_eff_statement_groups_v as (
@@ -1555,8 +1559,8 @@ create view o_as_eff_statement_groups_v as (
       sg_coach.fk_identity_id as tutor_id,
       sg_participant.fk_identity_id as student_id,
       sg_statement.id as st_id,
-      (case when sg_statement.passed = true then 1 else 0 end) as st_passed,
-      (case when sg_statement.passed = false then 1 else 0 end) as st_failed,
+      (case when sg_statement.passed = 1 then 1 else 0 end) as st_passed,
+      (case when sg_statement.passed = 0 then 1 else 0 end) as st_failed,
       (case when sg_statement.passed is null then 1 else 0 end) as st_not_attempted,
       sg_statement.score as st_score,
       pg_initial_launch.id as pg_id
@@ -1567,6 +1571,9 @@ create view o_as_eff_statement_groups_v as (
    inner join o_bs_group_member as sg_participant on (sg_participant.fk_group_id=sg_coach.fk_group_id and sg_participant.g_role='participant')
    left join o_as_eff_statement as sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource)
    left join o_as_user_course_infos as pg_initial_launch on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)
+   group by sg_re.repositoryentry_id, sg_re.displayname, sg_bg.group_id, sg_bg.groupname,
+      sg_coach.fk_identity_id, sg_participant.fk_identity_id,
+      sg_statement.id, sg_statement.score, pg_initial_launch.id
 );
 
 -- instant messaging

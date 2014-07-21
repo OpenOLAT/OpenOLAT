@@ -660,7 +660,8 @@ public class CourseFactory extends BasicManager {
 				(CourseEditorTreeNode)course.getEditorTreeModel().getRootNode());
 		// register any references in the run structure. The referenced entries have been 
 		// previousely deplyed (as part of the editor structure deployment process - see above method call)
-		registerReferences(course, course.getRunStructure().getRootNode());
+		registerReferences(course, 
+				(CourseEditorTreeNode)course.getEditorTreeModel().getRootNode());
 		// import shared folder references
 		deployReferencedSharedFolders(courseExportData, course);
 		// import glossary references
@@ -693,12 +694,13 @@ public class CourseFactory extends BasicManager {
 	 * @param course
 	 * @param currentNode
 	 */
-	private static void registerReferences(ICourse course, CourseNode currentNode) {
+	private static void registerReferences(ICourse course, CourseEditorTreeNode currentNode) {
 		for (int i = 0; i < currentNode.getChildCount(); i++) {
-			CourseNode childNode = (CourseNode)currentNode.getChildAt(i);
-			if (childNode.needsReferenceToARepositoryEntry()) {
-				referenceManager.addReference(course,
-					childNode.getReferencedRepositoryEntry().getOlatResource(), childNode.getIdent());
+			CourseEditorTreeNode childNode = (CourseEditorTreeNode)currentNode.getChildAt(i);
+			CourseNode childCourseNode = childNode.getCourseNode();
+			if (childCourseNode.needsReferenceToARepositoryEntry()) {
+				RepositoryEntry re = childCourseNode.getReferencedRepositoryEntry();
+				referenceManager.addReference(course, re.getOlatResource(), childNode.getIdent());
 			}
 			registerReferences(course, childNode);
 		}

@@ -161,7 +161,7 @@ public class CourseOverviewController extends BasicController  {
 		//course membership
 		List<RepositoryEntryMembership> memberships = repositoryManager.getRepositoryEntryMembership(null, editedIdentity);
 
-		//group memebership
+		//group membership
 		List<BusinessGroupMembership> groupMemberships =  businessGroupService.getBusinessGroupMembership(Collections.<Long>emptyList(), editedIdentity);
 		Collection<Long> groupKeys = new ArrayList<Long>(groupMemberships.size());
 		for(BusinessGroupMembership membership: groupMemberships) {

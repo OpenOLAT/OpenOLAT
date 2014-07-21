@@ -304,11 +304,20 @@ public class RepositoryServiceImpl implements RepositoryService {
 		return reToGroupDao.getDefaultGroup(ref);
 	}
 
+	/**
+	 * Get the role in the specified resource, business group are included in
+	 * the query.
+	 * 
+	 */
 	@Override
 	public List<String> getRoles(Identity identity, RepositoryEntryRef re) {
 		return reToGroupDao.getRoles(identity, re);
 	}
 
+	/**
+	 * Has specific role in the specified resource WITHOUT business groups included in
+	 * the query.
+	 */
 	@Override
 	public boolean hasRole(Identity identity, RepositoryEntryRef re, String... roles) {
 		return reToGroupDao.hasRole(identity, re, roles);
