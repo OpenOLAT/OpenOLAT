@@ -269,6 +269,13 @@ public class RepositoryEntryAuthorQueries {
 					sb.append(" order by lower(v.initialAuthor)");
 					appendAsc(sb, asc).append(", lower(v.displayname) asc");	
 					break;
+				case access:
+					if(asc) {
+						sb.append(" order by v.access asc, lower(v.displayname) asc");
+					} else {
+						sb.append(" order by v.access desc, lower(v.displayname) desc");
+					}
+					break;
 				case ac:
 					if(asc) {
 						sb.append(" order by offers asc, lower(v.displayname) asc");
@@ -281,7 +288,7 @@ public class RepositoryEntryAuthorQueries {
 					appendAsc(sb, asc).append(", lower(v.displayname) asc");
 					break;
 				case lastUsage:
-					sb.append(" order by v.stats.lastUsage ");
+					sb.append(" order by v.statistics.lastUsage ");
 					appendAsc(sb, asc).append(", lower(v.displayname) asc");
 					break;
 				case lifecycleLabel:

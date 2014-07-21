@@ -163,6 +163,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 		displayname,
 		authors,
 		author,
+		access,
 		ac,
 		creationDate,
 		lastUsage,

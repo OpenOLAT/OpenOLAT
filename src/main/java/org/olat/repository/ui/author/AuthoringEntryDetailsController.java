@@ -88,7 +88,6 @@ import org.olat.resource.accesscontrol.model.OfferAccess;
 import org.olat.resource.accesscontrol.model.Price;
 import org.olat.resource.accesscontrol.ui.OrdersAdminController;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -121,8 +120,6 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 	
 	private boolean corrupted;
 
-	@Autowired
-	private UserManager userManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired

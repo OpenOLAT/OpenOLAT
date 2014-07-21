@@ -50,12 +50,21 @@ public class BusinessGroupFlexiTableModelSort extends SortableFlexiTableModelDel
 		int columnIndex = getColumnIndex();
 		Cols column = Cols.values()[columnIndex];
 		switch(column) {
+			case name: Collections.sort(rows, new BusinessGroupNameComparator()); break;
 			case mark: Collections.sort(rows, new MarkComparator()); break;
 			case resources: Collections.sort(rows, new ResourcesComparator()); break;
 			case role: Collections.sort(rows, new RoleComparator()); break;
 			default: {
 				super.sort(rows);
 			}
+		}
+	}
+	
+	private class BusinessGroupNameComparator implements Comparator<BGTableItem> {
+
+		@Override
+		public int compare(BGTableItem t1, BGTableItem t2) {
+			return compareString(t1.getBusinessGroupName(), t2.getBusinessGroupName());
 		}
 	}
 	
@@ -80,16 +89,14 @@ public class BusinessGroupFlexiTableModelSort extends SortableFlexiTableModelDel
 		@Override
 		public int compare(BGTableItem t1, BGTableItem t2) {
 			List<RepositoryEntryShort> r1 = t1.getRelations();
-			List<RepositoryEntryShort> r2 = t1.getRelations();
+			List<RepositoryEntryShort> r2 = t2.getRelations();
 				
 			if(r1 != null && r1.size() > 0) {
 				if(r2 != null && r2.size() > 0) {
 					return compareTo(r1, r2);
 				}
 				return 1;
-			}
-			
-			if(r2 != null && r2.size() > 0) {
+			} else if(r2 != null && r2.size() > 0) {
 				return -1;
 			}
 			return compareString(t1.getBusinessGroupName(), t2.getBusinessGroupName());

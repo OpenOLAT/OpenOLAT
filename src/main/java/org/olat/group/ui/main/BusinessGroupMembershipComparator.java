@@ -32,6 +32,16 @@ public class BusinessGroupMembershipComparator implements Comparator<BusinessGro
 
 	@Override
 	public int compare(BusinessGroupMembership m1, BusinessGroupMembership m2) {
+		if(m1 == null) {
+			if(m2 == null) {
+				return 0;
+			} else {
+				return -1;
+			}
+		} else if(m2 == null) {
+			return 1;
+		}
+		
 		if(m1.isOwner()) {
 			if(m2.isOwner()) {
 				return 0;
