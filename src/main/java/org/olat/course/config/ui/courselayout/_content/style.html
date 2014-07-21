@@ -1,5 +1,4 @@
-<br/>
-<table>
+<table class="table table-bordered">
   <tr>
     <th>&nbsp;</th>
 	#foreach( $attrib in $allAttribs )
@@ -17,7 +16,7 @@
 	
 		#set($elAttribs = $element.getValue())
 		#foreach( $attrib in $allAttribs )
-			<td>
+			<td class="">
 			#set($attribName = $attrib.getLayoutAttributeTypeName())
 			#if ($elAttribs.get($attribName)) 
 				$r.render($elAttribs.get($attribName).getName())

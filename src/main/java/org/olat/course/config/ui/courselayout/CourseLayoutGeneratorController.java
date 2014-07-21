@@ -76,7 +76,7 @@ import org.olat.course.run.environment.CourseEnvironment;
  */
 public class CourseLayoutGeneratorController extends FormBasicController {
 
-	private static final String ELEMENT_ATTRIBUTE_DELIM = "::";
+	private static final String ELEMENT_ATTRIBUTE_DELIM = "__";
 	private static final String PREVIEW_IMAGE_NAME = "preview.png";
 	private CourseConfig courseConfig;
 	private SingleSelection styleSel;
