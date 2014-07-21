@@ -28,12 +28,15 @@ import java.util.Set;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.Policy;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.basesecurity.model.GroupImpl;
+import org.olat.basesecurity.model.GroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.right.BGRightManager;
@@ -515,11 +518,35 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 	private void processSecurityGroup(Group group, String role, SecurityGroup secGroup) {
 		if(secGroup == null) return;
 
-		List<Identity> identities = securityManager.getIdentitiesOfSecurityGroup(secGroup);
-		for(Identity identity:identities) {
-			groupDao.addMembership(group, identity, role);
+		List<SecurityGroupMembershipImpl> oldMemberships = getMembershipsOfSecurityGroup(secGroup);
+		for(SecurityGroupMembershipImpl oldMembership:oldMemberships) {
+			GroupMembershipImpl membership = new GroupMembershipImpl();
+			membership.setCreationDate(oldMembership.getCreationDate());
+			membership.setLastModified(oldMembership.getLastModified());
+			membership.setGroup(group);
+			membership.setIdentity(oldMembership.getIdentity());
+			membership.setRole(role);
+			dbInstance.getCurrentEntityManager().persist(membership);
+
+			Set<GroupMembership> members = ((GroupImpl)group).getMembers();
+			if(members == null) {
+				members = new HashSet<>();
+				((GroupImpl)group).setMembers(members);
+			}
+			members.add(membership);
 		}	
 	}
+	
+	private List<SecurityGroupMembershipImpl> getMembershipsOfSecurityGroup(SecurityGroup secGroup) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select membership from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as membership")
+		  .append("  where membership.securityGroup=:secGroup");
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), SecurityGroupMembershipImpl.class)
+			.setParameter("secGroup", secGroup)
+			.getResultList();
+	}
+	
 	
 	private List<BusinessGroupUpgrade> findBusinessGroups(int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();	

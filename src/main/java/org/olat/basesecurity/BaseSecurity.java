@@ -132,30 +132,12 @@ public interface BaseSecurity {
 	 */
 	public List<Identity> getIdentitiesOfSecurityGroups(List<SecurityGroup> secGroups);
 
-	//fxdiff: FXOLAT-219 decrease the load for synching groups
-	public List<IdentityShort> getIdentitiesShortOfSecurityGroups(List<SecurityGroup> secGroups, int firstResult, int maxResults);
-
 	/**
 	 * @param secGroup
 	 * @return a List of Object[] with the array[0] = Identity, array[1] =
 	 *         addedToGroupTimestamp
 	 */
 	public List<Object[]> getIdentitiesAndDateOfSecurityGroup(SecurityGroup secGroup);
-
-	/**
-	 * @see org.olat.basesecurity.Manager#getIdentitiesAndDateOfSecurityGroup(org.olat.basesecurity.SecurityGroup)
-	 * @param sortedByAddDate true= return list of idenities sorted by added date
-	 */
-	public List<Object[]> getIdentitiesAndDateOfSecurityGroup(SecurityGroup secGroup, boolean sortedByAddDate);
-	
-	
-	/**
-	 * Get date where identity joined a security group
-	 * @param secGroup
-	 * @param identity
-	 * @return joindate of given securityGroup. May return null if group doesn't exist or user isn't in this group
-	 */
-	public Date getSecurityGroupJoinDateForIdentity(SecurityGroup secGroup, Identity identity);
 	
 	/**
 	 * @param securityGroupName

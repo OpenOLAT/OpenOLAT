@@ -795,85 +795,35 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		sb.append("select distinct(identity) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
 		  .append(" inner join sgmsi.identity identity ")
 		  .append(" inner join fetch  identity.user user ")
-			.append(" where sgmsi.securityGroup in (:secGroups)");
+		  .append(" where sgmsi.securityGroup in (:secGroups)");
 		
-		return DBFactory.getInstance().getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("secGroups", secGroups)
 				.getResultList();
 	}
-	
+
+	/**
+	 * @see org.olat.basesecurity.Manager#getIdentitiesAndDateOfSecurityGroup(org.olat.basesecurity.SecurityGroup)
+	 */
 	@Override
-	//fxdiff: FXOLAT-219 decrease the load for synching groups
-	public List<IdentityShort> getIdentitiesShortOfSecurityGroups(List<SecurityGroup> secGroups, int firstResult, int maxResults) {
-		if (secGroups == null || secGroups.isEmpty()) {
-			return Collections.emptyList();
-		}
-
-		StringBuilder sb = new StringBuilder();
-		sb.append("select id from ").append(IdentityShort.class.getName()).append(" as id ")
-		.append(" where id.key in (")
-		.append("   select sgmsi.identity.key from  ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
-		.append("   where sgmsi.securityGroup in (:secGroups)")
-		.append(" )");
-
-		DBQuery query = DBFactory.getInstance().createQuery(sb.toString());
-		query.setParameterList("secGroups", secGroups);
-		List<IdentityShort> idents = query.list();
-		return idents;
+	public List<Object[]> getIdentitiesAndDateOfSecurityGroup(SecurityGroup secGroup) {
+	   StringBuilder sb = new StringBuilder();
+	   sb.append("select ii, sgmsi.lastModified from ").append(IdentityImpl.class.getName()).append(" as ii")
+	     .append(" inner join fetch ii.user as iuser, ")
+	     .append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi")
+	     .append(" where sgmsi.securityGroup=:secGroup and sgmsi.identity = ii");
+	 
+	   return dbInstance.getCurrentEntityManager()
+				 .createQuery(sb.toString(), Object[].class)
+				 .setParameter("secGroup", secGroup)
+				 .getResultList();
 	}
-
-	/**
-	 * @see org.olat.basesecurity.Manager#getIdentitiesAndDateOfSecurityGroup(org.olat.basesecurity.SecurityGroup)
-	 */
-	public List getIdentitiesAndDateOfSecurityGroup(SecurityGroup secGroup) {
-		return getIdentitiesAndDateOfSecurityGroup(secGroup,false);
-	}
-	
-	/**
-	 * @see org.olat.basesecurity.Manager#getIdentitiesAndDateOfSecurityGroup(org.olat.basesecurity.SecurityGroup)
-	 * @param sortedByAddDate true= return list of idenities sorted by added date
-	 */
-	public List getIdentitiesAndDateOfSecurityGroup(SecurityGroup secGroup, boolean sortedByAddDate) {
-	   StringBuilder queryString = new StringBuilder();
-	   queryString.append("select ii, sgmsi.lastModified from"
-         + " org.olat.basesecurity.IdentityImpl as ii inner join fetch ii.user as iuser, "
-         + " org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi "
-         + " where sgmsi.securityGroup = ? and sgmsi.identity = ii");
-	   if (sortedByAddDate) {
-	  	 queryString.append(" order by sgmsi.lastModified, sgmsi.key");
-	   } 
-		 List identAndDate = DBFactory.getInstance().find(queryString.toString(),
-         new Object[] { secGroup.getKey() },
-         new Type[] { StandardBasicTypes.LONG });
-     return identAndDate;
-	}
-
-	/**
-	 * 
-	 * @see org.olat.basesecurity.Manager#getSecurityGroupJoinDateForIdentity(org.olat.basesecurity.SecurityGroup, org.olat.core.id.Identity)
-	 */
-	public Date getSecurityGroupJoinDateForIdentity(SecurityGroup secGroup, Identity identity){
-		String query = "select creationDate from " + "  org.olat.basesecurity.SecurityGroupMembershipImpl as sgi "
-				+ " where sgi.securityGroup = :secGroup and sgi.identity = :identId";
-		
-		DB db = DBFactory.getInstance();
-		DBQuery dbq = db.createQuery(query);
-		dbq.setLong("identId", identity.getKey().longValue());
-		dbq.setLong("secGroup", secGroup.getKey());
-		List result = dbq.list();
-		if (result.size()==0){
-			return null;
-		}
-		else {
-			return (Date)result.get(0);
-		}
-	}
-	
 
 	/**
 	 * @see org.olat.basesecurity.Manager#countIdentitiesOfSecurityGroup(org.olat.basesecurity.SecurityGroup)
 	 */
+	@Override
 	public int countIdentitiesOfSecurityGroup(SecurityGroup secGroup) {
 		DB db = DBFactory.getInstance();
 		String q = "select count(sgm) from org.olat.basesecurity.SecurityGroupMembershipImpl sgm where sgm.securityGroup = :group";
@@ -887,6 +837,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	/**
 	 * @see org.olat.basesecurity.Manager#createAndPersistNamedSecurityGroup(java.lang.String)
 	 */
+	@Override
 	public SecurityGroup createAndPersistNamedSecurityGroup(String groupName) {
 		SecurityGroup secG = createAndPersistSecurityGroup();
 		NamedGroupImpl ngi = new NamedGroupImpl(groupName, secG);
