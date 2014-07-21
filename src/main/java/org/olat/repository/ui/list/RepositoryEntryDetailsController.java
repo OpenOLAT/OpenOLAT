@@ -49,6 +49,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -87,6 +88,7 @@ import org.olat.resource.accesscontrol.model.OfferAccess;
 import org.olat.resource.accesscontrol.model.Price;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.olat.resource.references.ReferenceManager;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -109,6 +111,8 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 
 	@Autowired
 	protected UserRatingsDAO userRatingsDao;
+	@Autowired
+	protected UserManager userManager;
 	@Autowired
 	protected ACService acService;
 	@Autowired
@@ -417,6 +421,19 @@ public class RepositoryEntryDetailsController extends FormBasicController {
             layoutCont.contextPut("extlink", url);
             layoutCont.contextPut("isGuestAllowed", (entry.getAccess() >= RepositoryEntry.ACC_USERS_GUESTS ? Boolean.TRUE : Boolean.FALSE));
 
+            //Owners
+            
+          //add the list of owners
+    		List<Identity> authors = repositoryService.getMembers(entry, GroupRoles.owner.name());
+    		List<String> authorLinkNames = new ArrayList<String>(authors.size());
+    		int counter = 0;
+    		for(Identity author:authors) {
+    			String authorName = userManager.getUserDisplayName(author);
+    			FormLink authorLink = uifactory.addFormLink("owner-" + counter, "owner", authorName, null, formLayout, Link.NONTRANSLATED | Link.LINK);
+    			authorLink.setUserObject(author.getKey());
+    			authorLinkNames.add(authorLink.getComponent().getComponentName());
+    		}
+    		layoutCont.contextPut("authorlinknames", authorLinkNames);
 		}
 	}
 	
@@ -470,6 +487,9 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			} else if("group".equals(cmd)) {
 				Long groupKey = (Long)link.getUserObject();
 				doOpenGroup(ureq, groupKey);
+			} else if("owner".equals(cmd)) {
+				Long ownerKey = (Long)link.getUserObject();
+				doOpenVisitCard(ureq, ownerKey);
 			}
 		} else if(ratingEl == source && event instanceof RatingFormEvent) {
 			RatingFormEvent ratingEvent = (RatingFormEvent)event;
@@ -495,6 +515,11 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	
 	protected void doOpenGroup(UserRequest ureq, Long groupKey) {
 		String businessPath = "[BusinessGroup:" + groupKey + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+	
+	protected void doOpenVisitCard(UserRequest ureq, Long ownerKey) {
+		String businessPath = "[HomePage:" + ownerKey + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	

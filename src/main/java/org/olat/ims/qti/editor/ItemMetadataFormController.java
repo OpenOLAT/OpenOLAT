@@ -138,8 +138,8 @@ public class ItemMetadataFormController extends FormBasicController {
 		item.setTitle(newTitle);
 		item.setObjectives(newObjectives); // trust authors, don't to XSS filtering
 		Question q = item.getQuestion();
-		if (layout != null) {
-			((ChoiceQuestion) q).setFlowLabelClass(layout.getSelectedKey() == "h" ? ChoiceQuestion.BLOCK : ChoiceQuestion.LIST);
+		if (layout != null && q instanceof ChoiceQuestion) {
+			((ChoiceQuestion) q).setFlowLabelClass("h".equals(layout.getSelectedKey()) ? ChoiceQuestion.BLOCK : ChoiceQuestion.LIST);
 		}
 		if (!isSurvey && !isRestrictedEditMode) {
 			q.setShuffle(shuffle.getSelected() == 0);
@@ -207,7 +207,7 @@ public class ItemMetadataFormController extends FormBasicController {
 			String[] layoutValues = new String[] { translate("form.imd.layout.horizontal"), translate("form.imd.layout.vertical") };
 			//layout = uifactory.addDropdownSingleselect("form.imd.layout", formLayout, layoutKeys, layoutValues, null);
 			layout = uifactory.addRadiosHorizontal("layout", "form.imd.layout", formLayout, layoutKeys, layoutValues);
-			layout.select(((ChoiceQuestion) q).getFlowLabelClass() == ChoiceQuestion.BLOCK ? "h" : "v", true);
+			layout.select(((ChoiceQuestion) q).getFlowLabelClass().equals(ChoiceQuestion.BLOCK) ? "h" : "v", true);
 		}
 
 		if (!isSurvey && !isRestrictedEditMode) {

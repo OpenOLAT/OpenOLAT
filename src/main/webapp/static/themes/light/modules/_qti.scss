@@ -16,6 +16,13 @@ div.o_qti_item_itemfeedback {
 	border-color: #000000;
 }
 
+
+div.o_qti_item_choice_option_flow {
+	display: inline-block;
+	padding: .5em;
+	border: 1px solid transparent;
+}
+
 .d3chart {
 	.bar_green { fill: $brand-success; }
 	.bar_red { fill: $brand-danger; }

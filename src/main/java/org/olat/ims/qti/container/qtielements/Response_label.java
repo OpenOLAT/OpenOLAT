@@ -186,6 +186,7 @@ public class Response_label extends GenericQTIElement {
 			super.render(buffer, ri);
 			buffer.append("</label></div>");
 		}
+		buffer.append("</div>");
 	}
 	
 	private void addBr (RenderInstructions ri, StringBuilder buffer) {

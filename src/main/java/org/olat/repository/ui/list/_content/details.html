@@ -196,7 +196,14 @@
 						#if ($isAuthor || $roles.isOLATAdmin() || $roles.isAuthor() || $roles.isInstitutionalResourceManager())		
 						<tr><th>$r.translate("cif.access")</th><td>$accessI18n</td></tr>
 						<tr><th>$r.translate("cif.initialAuthor")</th><td>$v.getInitialAuthor()</td></tr>
-						<tr><th>$r.translate("cif.owners")</th><td>TODO</td></tr>
+						<tr>
+							<th>$r.translate("cif.owners")</th>
+							<td><ul class="list-unstyled">
+								#foreach($authorlinkname in $authorlinknames)
+									<li>$r.render($authorlinkname)</li>
+								#end
+							</ul></td>
+						</tr>
 					</tbody></table>
 					<div class="panel-body">
 						<h5>$r.translate("details.extlinkheader")</h5>

@@ -625,8 +625,11 @@ public class ChoiceQuestion extends Question implements QTIObject {
 	 */
 	public void setFlowLabelClass(String string) {
 		// only allow Block or List as value, default is set to List
-		if (string != null && string.equals(BLOCK)) flowLabelClass = BLOCK;
-		else flowLabelClass = LIST;
+		if (string != null && string.equals(BLOCK)) {
+			flowLabelClass = BLOCK;
+		} else {
+			flowLabelClass = LIST;
+		}
 	}
 
 }
