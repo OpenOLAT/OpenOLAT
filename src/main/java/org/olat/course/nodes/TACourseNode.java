@@ -214,7 +214,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 			String message = trans.translate(NLS_GUESTNOACCESS_MESSAGE);
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
-			controller = new TACourseNodeRunController(ureq, wControl, userCourseEnv, ne, false);
+			controller = new TACourseNodeRunController(ureq, wControl, userCourseEnv, this, ne, false);
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_ta_icon");
 		return new NodeRunConstructionResult(ctrl);
@@ -228,7 +228,7 @@ public class TACourseNode extends GenericCourseNode implements AssessableCourseN
 	 */
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		return new TACourseNodeRunController(ureq, wControl, userCourseEnv, ne, true);
+		return new TACourseNodeRunController(ureq, wControl, userCourseEnv, this, ne, true);
 	}
 
 	/**

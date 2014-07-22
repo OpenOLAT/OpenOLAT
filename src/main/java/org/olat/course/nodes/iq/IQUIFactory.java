@@ -35,7 +35,6 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
-import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.repository.RepositoryEntry;
 
@@ -79,23 +78,23 @@ public class IQUIFactory {
 	}
 
 	public static Controller createIQTestRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne, IQTESTCourseNode courseNode) {
-		return IQUIFactory.iqControllerCreator.createIQTestRunController(ureq, wControl, userCourseEnv, ne, courseNode);
+			IQTESTCourseNode courseNode) {
+		return IQUIFactory.iqControllerCreator.createIQTestRunController(ureq, wControl, userCourseEnv, courseNode);
 	}
 
 	public static Controller createIQTestPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne, IQTESTCourseNode courseNode) {
-		return IQUIFactory.iqControllerCreator.createIQTestPreviewController(ureq, wControl, userCourseEnv, ne, courseNode);
+			IQTESTCourseNode courseNode) {
+		return IQUIFactory.iqControllerCreator.createIQTestPreviewController(ureq, wControl, userCourseEnv, courseNode);
 	}
 
 	public static Controller createIQSelftestRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne, IQSELFCourseNode courseNode) {
-		return IQUIFactory.iqControllerCreator.createIQSelftestRunController(ureq, wControl, userCourseEnv, ne, courseNode);
+			IQSELFCourseNode courseNode) {
+		return IQUIFactory.iqControllerCreator.createIQSelftestRunController(ureq, wControl, userCourseEnv, courseNode);
 	}
 
 	public static Controller createIQSurveyRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne, IQSURVCourseNode courseNode) {
-		return IQUIFactory.iqControllerCreator.createIQSurveyRunController(ureq, wControl, userCourseEnv, ne, courseNode);
+			IQSURVCourseNode courseNode) {
+		return IQUIFactory.iqControllerCreator.createIQSurveyRunController(ureq, wControl, userCourseEnv, courseNode);
 	}
 
 	public static Controller createIQTestDetailsEditController(Long courseResourceableId, String ident, Identity identity,

@@ -247,7 +247,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		if (ne.isAtLeastOneAccessible()) {
 			// Create a forum peekview controller that shows the latest two messages		
 			Forum theForum = loadOrCreateForum(userCourseEnv.getCourseEnvironment());
-			Controller peekViewController = new FOPeekviewController(ureq, wControl, theForum, ne.getCourseNode().getIdent(), 2);
+			Controller peekViewController = new FOPeekviewController(ureq, wControl, theForum, getIdent(), 2);
 			return peekViewController;			
 		} else {
 			// use standard peekview

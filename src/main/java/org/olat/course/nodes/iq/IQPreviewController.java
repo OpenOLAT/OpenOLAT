@@ -33,7 +33,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
-import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
@@ -56,8 +55,7 @@ class IQPreviewController extends BasicController {
 	 * @param cn
 	 * @param ne
 	 */
-	IQPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, IQTESTCourseNode cn,
-			NodeEvaluation ne) {
+	IQPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, IQTESTCourseNode cn) {
 		super(ureq, wControl);
 
 		this.userCourseEnv = userCourseEnv;

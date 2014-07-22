@@ -35,6 +35,7 @@ import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.tree.GenericTreeModel;
+import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
@@ -139,7 +140,9 @@ public class NavigationHandler implements Disposable {
 		NodeClickedRef ncr;
 		String treeNodeId = treeEvent.getNodeId();
 		TreeNode selTN = treeModel.getNodeById(treeNodeId);
-		if (selTN == null) throw new AssertException("no treenode found:" + treeNodeId);
+		if (selTN == null) {
+			throw new AssertException("no treenode found:" + treeNodeId);
+		}
 
 		// check if appropriate for subtreemodelhandler
 		Object userObject = selTN.getUserObject();
@@ -217,7 +220,7 @@ public class NavigationHandler implements Disposable {
 				subtreemodelListener.dispatchEvent(ureq, null, treeEvent);
 				// no node construction result indicates handled
 			}
-			ncr = new NodeClickedRef(treeModel, true, null, null, internCourseNode, nrcr, true);
+			ncr = new NodeClickedRef(treeModel, true, selTN.getIdent(), openTreeNodeIds, internCourseNode, nrcr, true);
 		} else {
 			// normal dispatching to a coursenode.
 			// get the courseNode that was called
@@ -246,6 +249,46 @@ public class NavigationHandler implements Disposable {
 		}
 		return ncr;
 	}
+	
+	public NodeClickedRef reloadTreeAfterChanges(CourseNode courseNode) {
+		
+		TreeEvaluation treeEval = new TreeEvaluation();
+		GenericTreeModel treeModel = new GenericTreeModel();
+		CourseNode rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
+		NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval);
+		TreeNode treeRoot = rootNodeEval.getTreeNode();
+		treeModel.setRootNode(treeRoot);
+		
+		TreeNode treeNode = treeEval.getCorrespondingTreeNode(courseNode.getIdent());
+		NodeClickedRef nclr;
+		if(treeNode == null) {
+			nclr = null;
+		} else {
+			Object uObject = treeNode.getUserObject();
+			if(uObject instanceof NodeEvaluation) {
+				NodeEvaluation nodeEval = (NodeEvaluation)uObject;
+				
+				ControllerEventListener subtreemodelListener = null;
+				if(externalTreeModels.containsKey(courseNode.getIdent())) {
+					SubTree subTree = externalTreeModels.get(courseNode.getIdent());
+					subtreemodelListener = subTree.getTreeModelListener();
+					reattachExternalTreeModels(treeEval);
+				}
+				
+				openTreeNodeIds = convertToTreeNodeIds(treeEval, openCourseNodeIds);
+				selectedCourseNodeId = nodeEval.getCourseNode().getIdent();
+				
+				if(subtreemodelListener == null) {
+					nclr = new NodeClickedRef(treeModel, true, selectedCourseNodeId, openTreeNodeIds, nodeEval.getCourseNode(), null, false);
+				} else {
+					nclr = new NodeClickedRef(treeModel, true, selectedCourseNodeId, openTreeNodeIds, nodeEval.getCourseNode(), null, true);
+				}
+			} else {
+				nclr = null;
+			}
+		}
+		return nclr;
+	}
 
 	private NodeClickedRef doEvaluateJumpTo(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			ControllerEventListener listeningController, String nodecmd, String nodeSubCmd, Controller currentNodeController) {
@@ -258,8 +301,6 @@ public class NavigationHandler implements Disposable {
 		TreeEvaluation treeEval = new TreeEvaluation();
 		GenericTreeModel treeModel = new GenericTreeModel();
 		CourseNode rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
-		CourseNodePasswordManager cnpm = CourseNodePasswordManagerImpl.getInstance();
-		Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval);
 		TreeNode treeRoot = rootNodeEval.getTreeNode();
 		treeModel.setRootNode(treeRoot);
@@ -279,8 +320,12 @@ public class NavigationHandler implements Disposable {
 			// calculate the NodeClickedRef
 			// 1. get the correct (new) nodeevaluation
 			NodeEvaluation nodeEval = (NodeEvaluation) newCalledTreeNode.getUserObject();
-			if (nodeEval.getCourseNode() != courseNode) throw new AssertException("error in structure");
-			if (!nodeEval.isVisible()) throw new AssertException("node eval not visible!!");
+			if (nodeEval.getCourseNode() != courseNode) {
+				throw new AssertException("error in structure");
+			}
+			if (!nodeEval.isVisible()) {
+				throw new AssertException("node eval not visible!!");
+			}
 			// 2. start with the current NodeEvaluation, evaluate overall accessiblity
 			// per node bottom-up to see if all ancestors still grant access to the
 			// desired node
@@ -289,6 +334,8 @@ public class NavigationHandler implements Disposable {
 			Controller controller;
 			AdditionalConditionManager addMan = null;
 			if (courseNode instanceof AbstractAccessableCourseNode) {
+				Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
+				CourseNodePasswordManager cnpm = CourseNodePasswordManagerImpl.getInstance();
 				AdditionalConditionAnswerContainer answerContainer = cnpm.getAnswerContainer(ureq.getIdentity());
 				addMan = new AdditionalConditionManager( (AbstractAccessableCourseNode) courseNode, courseId, answerContainer);
 			}
@@ -526,10 +573,28 @@ public class NavigationHandler implements Disposable {
 		for (int i = chdCnt; i > 0; i--) {
 			INode chd = root.getChildAt(i-1);
 			INode chdc = (INode) XStreamHelper.xstreamClone(chd);
+			if(chdc instanceof GenericTreeNode) {
+				((GenericTreeNode)chdc).setIdent(chd.getIdent());
+			}
 			// always insert before already existing course building block children
 			parent.insert(chdc, 0);
 		}
+		
+		copyIdent(parent, root);
 	}
+	
+	private void copyIdent(TreeNode guiNode, TreeNode originalNode) {
+		if(guiNode instanceof GenericTreeNode) {
+			((GenericTreeNode)guiNode).setIdent(originalNode.getIdent());
+		}
+		
+		for (int i=originalNode.getChildCount(); i-->0; ) {
+			INode originalChild = originalNode.getChildAt(i);
+			INode guiChild = guiNode.getChildAt(i);
+			copyIdent((TreeNode)guiChild, (TreeNode)originalChild);
+		}
+	}
+	
 	/**
 	 * @param ne
 	 * @return

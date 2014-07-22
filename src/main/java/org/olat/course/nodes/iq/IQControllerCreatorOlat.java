@@ -42,7 +42,6 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
-import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti.QTI12ResultDetailsController;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
@@ -119,7 +118,7 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 	 * @return
 	 */
 	@Override
-	public Controller createIQTestRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne, IQTESTCourseNode courseNode) {
+	public Controller createIQTestRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, IQTESTCourseNode courseNode) {
 		Controller controller;
 		// Do not allow guests to start tests
 		Roles roles = ureq.getUserSession().getRoles();
@@ -136,7 +135,7 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 			} else {
 				AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 				IQSecurityCallback sec = new CourseIQSecurityCallback(courseNode, am, ureq.getIdentity());
-				RepositoryEntry repositoryEntry = ne.getCourseNode().getReferencedRepositoryEntry();
+				RepositoryEntry repositoryEntry = courseNode.getReferencedRepositoryEntry();
 				OLATResourceable ores = repositoryEntry.getOlatResource();
 				Long resId = ores.getResourceableId();
 				TestFileResource fr = new TestFileResource();
@@ -155,20 +154,20 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 	}
 	
 	@Override
-	public Controller createIQTestPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne, IQTESTCourseNode courseNode){
+	public Controller createIQTestPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, IQTESTCourseNode courseNode) {
 		Controller controller;
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
 		boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI));
 		if (onyx) {
 			controller = new OnyxRunController(ureq, wControl, courseNode);
 		} else {
-			controller = new IQPreviewController(ureq, wControl, userCourseEnv, courseNode, ne);
+			controller = new IQPreviewController(ureq, wControl, userCourseEnv, courseNode);
 		}
 		return controller;
 	}
 
 	@Override
-	public Controller createIQSelftestRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne, IQSELFCourseNode courseNode){
+	public Controller createIQSelftestRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, IQSELFCourseNode courseNode) {
 		Controller controller;
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
@@ -183,7 +182,7 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 	}
 
 	@Override
-	public Controller createIQSurveyRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne, IQSURVCourseNode courseNode){
+	public Controller createIQSurveyRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, IQSURVCourseNode courseNode) {
 		Controller controller;
 		
 		// Do not allow guests to start questionnaires
@@ -199,7 +198,7 @@ public class IQControllerCreatorOlat implements IQControllerCreator {
 			if (onyx) {
 				controller = new OnyxRunController(userCourseEnv, config, ureq, wControl, courseNode);
 			} else {
-				RepositoryEntry repositoryEntry = ne.getCourseNode().getReferencedRepositoryEntry();
+				RepositoryEntry repositoryEntry = courseNode.getReferencedRepositoryEntry();
 				OLATResourceable ores = repositoryEntry.getOlatResource();
 				Long resId = ores.getResourceableId();
 				SurveyFileResource fr = new SurveyFileResource();

@@ -70,18 +70,18 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 	 * @param bcCourseNode
 	 * @param scallback
 	 */
-	public BCCourseNodeRunController(NodeEvaluation ne, CourseEnvironment courseEnv, UserRequest ureq, WindowControl wContr) {
+	public BCCourseNodeRunController(UserRequest ureq, WindowControl wContr, CourseEnvironment courseEnv, BCCourseNode courseNode, NodeEvaluation ne) {
 		super(wContr);
 
 		boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		boolean isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		// set logger on this run controller
-		addLoggingResourceable(LoggingResourceable.wrap(ne.getCourseNode()));
+		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 
 		// offer subscription, but not to guests
-		SubscriptionContext nodefolderSubContext = (isGuestOnly ? null : CourseModule.createSubscriptionContext(courseEnv, ne.getCourseNode()));
+		SubscriptionContext nodefolderSubContext = (isGuestOnly ? null : CourseModule.createSubscriptionContext(courseEnv, courseNode));
 
-		OlatNamedContainerImpl namedContainer = BCCourseNode.getNodeFolderContainer((BCCourseNode) ne.getCourseNode(), courseEnv);
+		OlatNamedContainerImpl namedContainer = BCCourseNode.getNodeFolderContainer(courseNode, courseEnv);
 		VFSSecurityCallback scallback = new FolderNodeCallback(namedContainer.getRelPath(), ne, isOlatAdmin, isGuestOnly, nodefolderSubContext);
 		namedContainer.setLocalSecurityCallback(scallback);
 	

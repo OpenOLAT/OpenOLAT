@@ -85,7 +85,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
@@ -365,7 +365,8 @@ public class WikiMainController extends BasicController implements CloneableCont
 		if(wikiMenuNode != null) {
 			wikiMenuNode.removeAllChildren();
 			for(String link:links) {
-				GenericTreeNode menuItemNode = new GenericTreeNode(link, link);
+				String ident = "w" + Encoder.md5hash(link);
+				GenericTreeNode menuItemNode = new GenericTreeNode(ident, link, link);
 				wikiMenuNode.addChild(menuItemNode);
 			}
 		}
@@ -382,37 +383,39 @@ public class WikiMainController extends BasicController implements CloneableCont
 	}
 	
 	public GenericTreeModel getAndUseExternalTree() {
+		final String resId = ores.getResourceableId().toString();
 		Wiki wiki = getWiki();
 		wikiMenuModel = new GenericTreeModel();
-		GenericTreeNode rootNode = new GenericTreeNode();
+
+		String root = "wiki-" + resId;
+		GenericTreeNode rootNode = new GenericTreeNode(root);
 		wikiMenuModel.setRootNode(rootNode);
 
 		//Navigation
-		String navItem = "nav-item-" + CodeHelper.getRAMUniqueID();
-		navigationNode = new GenericTreeNode(translate("navigation.navigation"), navItem);
+		String navItem = "nav-item-" + resId;
+		navigationNode = new GenericTreeNode(navItem, translate("navigation.navigation"), navItem);
 		rootNode.addChild(navigationNode);
 		
-		String navMainItem = "nav-main-item-" + CodeHelper.getRAMUniqueID();
-		navMainPageNode = new GenericTreeNode(translate("navigation.mainpage"), navMainItem);
+		String navMainItem = "nav-main-item-" + resId;
+		navMainPageNode = new GenericTreeNode(navMainItem, translate("navigation.mainpage"), navMainItem);
 		navigationNode.addChild(navMainPageNode);
 		
-		String navAZItem = "nav-az-item-" + CodeHelper.getRAMUniqueID();
-		navAZNode = new GenericTreeNode(translate("navigation.a-z"), navAZItem);
+		String navAZItem = "nav-az-item-" + resId;
+		navAZNode = new GenericTreeNode(navAZItem, translate("navigation.a-z"), navAZItem);
 		navigationNode.addChild(navAZNode);
 		
-		String navChangesItem = "nav-changes-item-" + CodeHelper.getRAMUniqueID();
-		navChangesNode = new GenericTreeNode(translate("navigation.changes"), navChangesItem);
+		String navChangesItem = "nav-changes-item-" + resId;
+		navChangesNode = new GenericTreeNode(navChangesItem, translate("navigation.changes"), navChangesItem);
 		navigationNode.addChild(navChangesNode);
 		
 		//Wiki-Menu
 		String wikiMenuTitle = translate("navigation.menu");
-		String wikiMenuItem = "menu-item-" + CodeHelper.getRAMUniqueID();
-		wikiMenuNode = new GenericTreeNode(wikiMenuTitle, wikiMenuItem);
+		String wikiMenuItem = "menu-item-" + resId;
+		wikiMenuNode = new GenericTreeNode(wikiMenuItem, wikiMenuTitle, wikiMenuItem);
 		rootNode.addChild(wikiMenuNode);
 		
 		updateWikiMenu(wiki);
 		
-		//
 		navigationDropdown.setVisible(false);
 		wikiMenuDropdown.setVisible(false);
 
@@ -447,8 +450,8 @@ public class WikiMainController extends BasicController implements CloneableCont
 					}
 					updatePageContext(ureq, page);
 					
-					OLATResourceable ores = OresHelper.createOLATResourceableInstance("tab", 1l);
-					ContextEntry tabCe = BusinessControlFactory.getInstance().createContextEntry(ores);
+					OLATResourceable tabOres = OresHelper.createOLATResourceableInstance("tab", 1l);
+					ContextEntry tabCe = BusinessControlFactory.getInstance().createContextEntry(tabOres);
 					tabs.activate(ureq, Collections.singletonList(tabCe), null);
 					if(forumController != null && entries.size() > 1) {
 						List<ContextEntry> subEntries = entries.subList(1, entries.size());

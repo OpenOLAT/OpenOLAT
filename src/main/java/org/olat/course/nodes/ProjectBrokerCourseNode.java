@@ -208,7 +208,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 					Tracing.createLoggerFor(this.getClass()).warn("Could not create message ID from given nodemcd::" + nodecmd, e);
 				}
 			}
-			controller = ProjectBrokerControllerFactory.createRunController(ureq, wControl,userCourseEnv, ne);
+			controller = ProjectBrokerControllerFactory.createRunController(ureq, wControl,userCourseEnv, this);
 		}
 		Controller wrapperCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_projectbroker_icon");
 		return new NodeRunConstructionResult(wrapperCtrl);
@@ -222,7 +222,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 	 */
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		return ProjectBrokerControllerFactory.createPreviewController(ureq, wControl,userCourseEnv, ne);
+		return ProjectBrokerControllerFactory.createPreviewController(ureq, wControl,userCourseEnv, this);
 	}
 
 	/**
@@ -235,7 +235,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Assess
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			NodeEvaluation ne) {
 		if (ne.isAtLeastOneAccessible()) {
-			Controller peekViewController = ProjectBrokerControllerFactory.createPeekViewRunController(ureq, wControl,userCourseEnv, ne);
+			Controller peekViewController = ProjectBrokerControllerFactory.createPeekViewRunController(ureq, wControl, userCourseEnv, this);
 			return peekViewController;			
 		} else {
 			// use standard peekview

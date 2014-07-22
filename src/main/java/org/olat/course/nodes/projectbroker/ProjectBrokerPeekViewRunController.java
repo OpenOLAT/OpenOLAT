@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
@@ -34,11 +33,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
 import org.olat.course.properties.CoursePropertyManager;
-import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * The projectbroker peekview controller displays the selected and coached projects for certain user.
@@ -49,22 +49,24 @@ public class ProjectBrokerPeekViewRunController extends BasicController implemen
 
 
 	private static final int MAX_NBR_PROJECTS = 3;
-	private NodeEvaluation ne;
-
-	private final ProjectBrokerManager projectBrokerManager;
+	
+	private final String courseNodeIdent;
+	@Autowired
+	private ProjectBrokerManager projectBrokerManager;
+	
 	/**
 	 * Constructor
 	 * @param ureq The user request
 	 * @param wControl The window control
 	 */
-	public ProjectBrokerPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {		
+	public ProjectBrokerPeekViewRunController(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment userCourseEnv, CourseNode courseNode) {		
 		// Use fallback translator from forum
 		super(ureq, wControl);
-		this.ne = ne;
-		projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
+		courseNodeIdent = courseNode.getIdent();
 		
 		CoursePropertyManager cpm = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
-		Long projectBrokerId = projectBrokerManager.getProjectBrokerId(cpm, ne.getCourseNode());
+		Long projectBrokerId = projectBrokerManager.getProjectBrokerId(cpm, courseNode);
 		getLogger().debug("projectBrokerId=" +projectBrokerId);
 		VelocityContainer peekviewVC = createVelocityContainer("peekview");
 		List<Project> myProjects = null;
@@ -123,9 +125,9 @@ public class ProjectBrokerPeekViewRunController extends BasicController implemen
 			Link projectLink = (Link) source;
 			String projectId = (String) projectLink.getUserObject();
 			if (projectId == null) {
-				fireEvent(ureq, new OlatCmdEvent(OlatCmdEvent.GOTONODE_CMD, ne.getCourseNode().getIdent()));								
+				fireEvent(ureq, new OlatCmdEvent(OlatCmdEvent.GOTONODE_CMD, courseNodeIdent));								
 			} else {
-				fireEvent(ureq, new OlatCmdEvent(OlatCmdEvent.GOTONODE_CMD, ne.getCourseNode().getIdent() + "/" + projectId));				
+				fireEvent(ureq, new OlatCmdEvent(OlatCmdEvent.GOTONODE_CMD, courseNodeIdent + "/" + projectId));				
 			}
 		}
 	}

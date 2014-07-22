@@ -118,7 +118,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	 */
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
-		Controller controller = IQUIFactory.createIQSurveyRunController(ureq, wControl, userCourseEnv, ne, this);
+		Controller controller = IQUIFactory.createIQSurveyRunController(ureq, wControl, userCourseEnv, this);
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_iqsurv_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}

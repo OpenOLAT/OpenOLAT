@@ -273,7 +273,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 		// build up the running structure for this user;
 		// get all group memberships for this course
-		uce = loadUserCourseEnvironment(ureq, course);
+		uce = loadUserCourseEnvironment(ureq);
 		// 2) all course internal rights
 		reloadUserRolesAndRights(identity);
 
@@ -359,7 +359,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 	}
 	
-	private UserCourseEnvironmentImpl loadUserCourseEnvironment(UserRequest ureq, ICourse course) {
+	private UserCourseEnvironmentImpl loadUserCourseEnvironment(UserRequest ureq) {
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		List<BusinessGroup> coachedGroups = cgm.getOwnedBusinessGroups(ureq.getIdentity());
 		List<BusinessGroup> participatedGroups = cgm.getParticipatingBusinessGroups(ureq.getIdentity());
@@ -412,8 +412,23 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		courseRightsCache.put(CourseRights.RIGHT_DB, new Boolean(rights.contains(CourseRights.RIGHT_DB)));
 	}
 	
-	private void updateAfterChanges(UserRequest ureq, CourseNode currentCourseNode) {
+	private CourseNode updateAfterChanges(CourseNode courseNode) {
+		if(currentCourseNode == null) return null;
 		
+		CourseNode newCurrentCourseNode;
+		NodeClickedRef nclr = navHandler.reloadTreeAfterChanges(courseNode);
+		if(nclr == null) {
+			doDisposeAfterEvent();
+			newCurrentCourseNode = null;
+		} else {
+			treeModel = nclr.getTreeModel();
+			luTree.setTreeModel(treeModel);
+			String selNodeId = nclr.getSelectedNodeId();
+			luTree.setSelectedNodeId(selNodeId);
+			luTree.setOpenNodeIds(nclr.getOpenNodeIds());
+			newCurrentCourseNode = nclr.getCalledCourseNode();
+		}
+		return newCurrentCourseNode;
 	}
 
 	/**
@@ -483,7 +498,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(needsRebuildAfter) {
-			updateAfterChanges(ureq, currentCourseNode);
+			currentCourseNode = updateAfterChanges(currentCourseNode);
 			needsRebuildAfter = false;
 		}
 		
@@ -567,7 +582,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				
 			  // rebuild up the running structure for this user, after publish;
 				course = CourseFactory.loadCourse(course.getResourceableId());
-				uce = loadUserCourseEnvironment(ureq, course);
+				uce = loadUserCourseEnvironment(ureq);
 				// build score now
 				uce.getScoreAccounting().evaluateAll();
 				navHandler = new NavigationHandler(uce, false);
@@ -592,7 +607,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(needsRebuildAfter) {
-			updateAfterChanges(ureq, currentCourseNode);
+			currentCourseNode = updateAfterChanges(currentCourseNode);
 			needsRebuildAfter = false;
 		}
 		
@@ -718,6 +733,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				Component nodeComp = currentNodeController.getInitialComponent();
 				contentP.setContent(nodeComp);
 			}
+			
+			if(nclr.getSelectedNodeId() != null && nclr.getOpenNodeIds() != null) {
+				luTree.setSelectedNodeId(nclr.getSelectedNodeId());
+				luTree.setOpenNodeIds(nclr.getOpenNodeIds());
+			}
 			return;
 		}
 
@@ -748,8 +768,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		
 		//re set current user count but not every click
 		if (currentUserCountLink != null) {
-			OLATResourceable courseRunOres = OresHelper.createOLATResourceableInstance(RunMainController.ORES_TYPE_COURSE_RUN, course.getResourceableId());
-			int cUsers = CoordinatorManager.getInstance().getCoordinator().getEventBus().getListeningIdentityCntFor(courseRunOres);
+			OLATResourceable runOres = OresHelper.createOLATResourceableInstance(RunMainController.ORES_TYPE_COURSE_RUN, course.getResourceableId());
+			int cUsers = CoordinatorManager.getInstance().getCoordinator().getEventBus().getListeningIdentityCntFor(runOres);
 			if (cUsers == 0) {
 				cUsers = 1;
 			}
@@ -1072,6 +1092,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 							doDisposeAfterEvent();
 						} else if(modifiedNodeIds != null && modifiedNodeIds.contains(currentNodeIdent)) {
 							doDisposeAfterEvent();
+						} else {
+							needsRebuildAfter = true;
 						}
 					} catch (Exception e) {
 						logError("", e);
@@ -1403,7 +1425,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		List<BusinessGroup> coachedGroups = cgm.getOwnedBusinessGroups(identity);
 		List<BusinessGroup> participatedGroups = cgm.getParticipatingBusinessGroups(identity);
 		List<BusinessGroup> waitingLists = cgm.getWaitingListGroups(identity);
-		uce.setGroupMemberships(courseRepositoryEntry, coachedGroups, participatedGroups, waitingLists);
+		uce.setGroupMemberships(coachedGroups, participatedGroups, waitingLists);
 	}
 
 	/**

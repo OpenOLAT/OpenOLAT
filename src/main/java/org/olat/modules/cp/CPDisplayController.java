@@ -216,8 +216,7 @@ public class CPDisplayController extends BasicController implements Activateable
 				updateNextPreviousLink(node);
 				if(node.getUserObject() != null) {
 					String identifierRes = (String)node.getUserObject();
-					Long id = Long.parseLong(node.getIdent());
-					OLATResourceable pOres = OresHelper.createOLATResourceableInstanceWithoutCheck("path=" + identifierRes, id);
+					OLATResourceable pOres = OresHelper.createOLATResourceableInstanceWithoutCheck("path=" + identifierRes, 0l);
 					addToHistory(ureq, pOres, null);
 				}
 			}
@@ -455,9 +454,7 @@ public class CPDisplayController extends BasicController implements Activateable
 	
 	public void switchToPage(UserRequest ureq, TreeNode tn) {
 		String identifierRes = (String) tn.getUserObject();
-		//fxdiff BAKS-7 Resume function
-		Long id = Long.parseLong(tn.getIdent());
-		OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck("path=" + identifierRes, id);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck("path=" + identifierRes, 0l);
 		addToHistory(ureq, ores, null);
 		
 		// security check

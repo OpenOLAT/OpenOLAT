@@ -29,8 +29,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.ICourse;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
-import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
@@ -45,17 +45,17 @@ public class ProjectBrokerControllerFactory {
 		return new ProjectBrokerCourseEditorController(ureq, wControl, course, projectBrokerCourseNode, euce);
 	}
 
-	public static Controller createRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		return new ProjectListController(ureq, wControl, userCourseEnv, ne, false);
+	public static Controller createRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNode courseNode) {
+		return new ProjectListController(ureq, wControl, userCourseEnv, courseNode, false);
 	}
 
-	public static Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		return new ProjectListController(ureq, wControl, userCourseEnv, ne, true);
+	public static Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNode courseNode) {
+		return new ProjectListController(ureq, wControl, userCourseEnv, courseNode, true);
 	}
 
 	public static Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne) {
-		return new ProjectBrokerPeekViewRunController(ureq, wControl, userCourseEnv, ne);
+			CourseNode courseNode) {
+		return new ProjectBrokerPeekViewRunController(ureq, wControl, userCourseEnv, courseNode);
 	}
 	
 }

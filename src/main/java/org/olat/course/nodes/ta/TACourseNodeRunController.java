@@ -31,7 +31,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
@@ -68,9 +67,9 @@ public class TACourseNodeRunController extends BasicController {
 	 * @param ne
 	 * @param previewMode
 	 */
-	public TACourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne, boolean previewMode) { 
+	public TACourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, TACourseNode courseNode, NodeEvaluation ne, boolean previewMode) { 
 		super(ureq, wControl);
-		this.config = ne.getCourseNode().getModuleConfiguration();
+		this.config = courseNode.getModuleConfiguration();
 		
 		readConfig(config);
 		// modify hasTask/hasDropbox/hasScoring according to accessability
@@ -86,40 +85,40 @@ public class TACourseNodeRunController extends BasicController {
 		
 		content = createVelocityContainer("run");
 		if (hasTask) {
-			taskController = new TaskController(ureq, wControl, config, ne.getCourseNode(), userCourseEnv.getCourseEnvironment());
+			taskController = new TaskController(ureq, wControl, config, courseNode, userCourseEnv.getCourseEnvironment());
 			content.put("taskController", taskController.getInitialComponent());
 			content.contextPut("hasTask", Boolean.TRUE);
 		}
 		
 		if (hasDropbox) {
-			dropboxController = new DropboxController(ureq, wControl, config, ne.getCourseNode(), userCourseEnv, previewMode);
+			dropboxController = new DropboxController(ureq, wControl, config, courseNode, userCourseEnv, previewMode);
 			content.put("dropboxController", dropboxController.getInitialComponent());
 			content.contextPut("hasDropbox", Boolean.TRUE);
 		}
 		if (hasReturnbox) {
-			returnboxController = new ReturnboxController(ureq, wControl, ne.getCourseNode(), userCourseEnv, previewMode);
+			returnboxController = new ReturnboxController(ureq, wControl, courseNode, userCourseEnv, previewMode);
 			content.put("returnboxController", returnboxController.getInitialComponent());
 			content.contextPut("hasReturnbox", Boolean.TRUE);
 		}
 
 		if (hasSolution) {
-			solutionController = new SolutionController(ureq, wControl, ne.getCourseNode(), userCourseEnv.getCourseEnvironment(), previewMode);
+			solutionController = new SolutionController(ureq, wControl, courseNode, userCourseEnv.getCourseEnvironment(), previewMode);
 			content.put("solutionController", solutionController.getInitialComponent());
 			content.contextPut("hasSolution", Boolean.TRUE);
 		}
 				
 		if (hasScoring && !previewMode) {
-			scoringController = new MSCourseNodeRunController(ureq, getWindowControl(), userCourseEnv, (AssessableCourseNode) ne.getCourseNode(), false);
+			scoringController = new MSCourseNodeRunController(ureq, getWindowControl(), userCourseEnv, courseNode, false);
 			content.put("scoringController", scoringController.getInitialComponent());
 			content.contextPut("hasScoring", Boolean.TRUE);
 		}
 		
 		// push title and learning objectives, only visible on intro page
-		content.contextPut("menuTitle", ne.getCourseNode().getShortTitle());
-		content.contextPut("displayTitle", ne.getCourseNode().getLongTitle());
+		content.contextPut("menuTitle", courseNode.getShortTitle());
+		content.contextPut("displayTitle", courseNode.getLongTitle());
 
 		// Adding learning objectives
-		String learningObj = ne.getCourseNode().getLearningObjectives();
+		String learningObj = courseNode.getLearningObjectives();
 		if (learningObj != null) {
 			Component learningObjectives = ObjectivesHelper.createLearningObjectivesComponent(learningObj, ureq);
 			content.put("learningObjectives", learningObjectives);

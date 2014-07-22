@@ -35,7 +35,6 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
-import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.repository.RepositoryEntry;
 
@@ -90,16 +89,16 @@ public interface IQControllerCreator {
 	 * @return
 	 */
 	public Controller createIQTestRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne, IQTESTCourseNode courseNode);
+			IQTESTCourseNode courseNode);
 
 	public Controller createIQTestPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne, IQTESTCourseNode courseNode);
+			IQTESTCourseNode courseNode);
 
 	public Controller createIQSelftestRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne, IQSELFCourseNode courseNode);
+			IQSELFCourseNode courseNode);
 
 	public Controller createIQSurveyRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne, IQSURVCourseNode courseNode);
+			IQSURVCourseNode courseNode);
 
 	public Controller createIQTestDetailsEditController(Long courseResourceableId, String ident, Identity identity,
 			RepositoryEntry referencedRepositoryEntry, String qmdEntryTypeAssess, UserRequest ureq, WindowControl wControl);

@@ -112,7 +112,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		
-		Controller runController = IQUIFactory.createIQSelftestRunController(ureq, wControl, userCourseEnv, ne, this);
+		Controller runController = IQUIFactory.createIQSelftestRunController(ureq, wControl, userCourseEnv, this);
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runController, this, "o_iqself_icon");
 		
 		return new NodeRunConstructionResult(ctrl);

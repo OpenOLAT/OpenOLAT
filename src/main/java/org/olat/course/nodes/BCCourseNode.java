@@ -114,7 +114,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	 */
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
-		BCCourseNodeRunController bcCtrl = new BCCourseNodeRunController(ne, userCourseEnv.getCourseEnvironment(), ureq, wControl);
+		BCCourseNodeRunController bcCtrl = new BCCourseNodeRunController(ureq, wControl, userCourseEnv.getCourseEnvironment(), this, ne);
 		if (StringHelper.containsNonWhitespace(nodecmd)) {
 			bcCtrl.activatePath(ureq, nodecmd);			
 		}
@@ -133,10 +133,10 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 			NodeEvaluation ne) {
 		if (ne.isAtLeastOneAccessible()) {
 			// Create a folder peekview controller that shows the latest two entries		
-			String path = getFoldernodePathRelToFolderBase(userCourseEnv.getCourseEnvironment(), ne.getCourseNode());
+			String path = getFoldernodePathRelToFolderBase(userCourseEnv.getCourseEnvironment(), this);
 			OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(path, null);
 			rootFolder.setDefaultItemFilter(new SystemItemFilter());
-			Controller peekViewController = new BCPeekviewController(ureq, wControl, rootFolder, ne.getCourseNode().getIdent(), 4);
+			Controller peekViewController = new BCPeekviewController(ureq, wControl, rootFolder, getIdent(), 4);
 			return peekViewController;			
 		} else {
 			// use standard peekview

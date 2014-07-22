@@ -123,7 +123,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		updateModuleConfigDefaults(false);		
-		Controller controller = IQUIFactory.createIQTestRunController(ureq, wControl, userCourseEnv, ne, this);
+		Controller controller = IQUIFactory.createIQTestRunController(ureq, wControl, userCourseEnv, this);
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_iqtest_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
@@ -135,7 +135,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements As
 	 *      org.olat.course.run.userview.NodeEvaluation)
 	 */
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		return IQUIFactory.createIQTestPreviewController(ureq, wControl, userCourseEnv, ne, this);
+		return IQUIFactory.createIQTestPreviewController(ureq, wControl, userCourseEnv, this);
 	}
 
 	@Override

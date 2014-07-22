@@ -44,6 +44,7 @@ import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.Encoder;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XMLParser;
 import org.olat.ims.resources.IMSEntityResolver;
@@ -121,12 +122,10 @@ public class CPManifestTreeModel extends GenericTreeModel {
 		return hrefToTreeNode.get(href);
 	}
 	
-	//fxdiff VCRP-13: cp navigation
 	public List<TreeNode> getFlattedTree() {
 		return new ArrayList<TreeNode>(treeNodes);
 	}
 	
-	//fxdiff VCRP-13: cp navigation
 	public TreeNode getNextNodeWithContent(TreeNode node) {
 		if(node == null) return null;
 		int index = treeNodes.indexOf(node);
@@ -199,6 +198,9 @@ public class CPManifestTreeModel extends GenericTreeModel {
 			gtn.setIconCssClass("o_cp_item");
 			//set resolved file path directly
 			String identifierref = item.attributeValue("identifierref");
+			if(identifierref != null) {
+				gtn.setIdent("cp" + Encoder.md5hash(identifierref));
+			}
 			XPath meta = rootElement.createXPath("//ns:resource[@identifier='" + identifierref + "']");
 			meta.setNamespaceURIs(nsuris);
 			String href = resources.get(identifierref);
@@ -206,8 +208,9 @@ public class CPManifestTreeModel extends GenericTreeModel {
 				gtn.setUserObject(href);
 				// allow lookup of a treenode given a href so we can quickly adjust the menu if the user clicks on hyperlinks within the text
 				hrefToTreeNode.put(href, gtn);
-			} 
-			else gtn.setAccessible(false);
+			} else {
+				gtn.setAccessible(false);
+			}
 		}
 		
 		@SuppressWarnings("unchecked")

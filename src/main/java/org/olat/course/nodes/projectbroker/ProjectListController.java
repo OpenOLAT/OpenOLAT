@@ -35,8 +35,8 @@ import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
@@ -61,6 +61,7 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.projectbroker.datamodel.CustomField;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectBroker;
@@ -69,7 +70,6 @@ import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
 import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
 import org.olat.course.properties.CoursePropertyManager;
-import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.user.HomePageConfigManager;
@@ -101,8 +101,8 @@ public class ProjectListController extends BasicController implements GenericEve
 	private Link createNewProjectButton;
 
 	private Long courseId;
+	private CourseNode courseNode;
 	private UserCourseEnvironment userCourseEnv;
-	private NodeEvaluation nodeEvaluation;
 	
 	private ProjectBrokerModuleConfiguration moduleConfig;
 	private Long projectBrokerId;
@@ -123,15 +123,15 @@ public class ProjectListController extends BasicController implements GenericEve
 	 * @param ne
 	 * @param previewMode
 	 */
-	protected ProjectListController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne, boolean previewMode) { 
+	protected ProjectListController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNode courseNode, boolean previewMode) { 
 		super(ureq, wControl);
 		this.userCourseEnv = userCourseEnv;
-		this.nodeEvaluation = ne;
+		this.courseNode = courseNode;
 		projectBrokerMailer = CoreSpringFactory.getImpl(ProjectBrokerMailer.class);
 		projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
 		projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 		courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-		moduleConfig = new ProjectBrokerModuleConfiguration(ne.getCourseNode().getModuleConfiguration());
+		moduleConfig = new ProjectBrokerModuleConfiguration(courseNode.getModuleConfiguration());
 		
 		contentVC = createVelocityContainer("project_list");
 		// set header info with project-broker run mode [accept.automatically.limited , accept.manually.limited etc.]
@@ -154,7 +154,7 @@ public class ProjectListController extends BasicController implements GenericEve
 		contentVC.contextPut("infoProjectBrokerRunMode", infoProjectBrokerRunMode);
 		mainPanel = new SimpleStackedPanel("projectlist_panel");
 		CoursePropertyManager cpm = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
-		if (  (projectGroupManager.isAccountManager(ureq.getIdentity(), cpm, ne.getCourseNode() ) && !previewMode)
+		if (  (projectGroupManager.isAccountManager(ureq.getIdentity(), cpm, courseNode ) && !previewMode)
 				|| userCourseEnv.getCourseEnvironment().getCourseGroupManager().isIdentityCourseAdministrator(ureq.getIdentity())
 				|| ureq.getUserSession().getRoles().isOLATAdmin()) {
 			contentVC.contextPut("isAccountManager", true);
@@ -164,15 +164,15 @@ public class ProjectListController extends BasicController implements GenericEve
 			contentVC.contextPut("isAccountManager", false);
 		}
 		// push title and learning objectives, only visible on intro page
-		contentVC.contextPut("menuTitle", ne.getCourseNode().getShortTitle());
-		contentVC.contextPut("displayTitle", ne.getCourseNode().getLongTitle());
+		contentVC.contextPut("menuTitle", courseNode.getShortTitle());
+		contentVC.contextPut("displayTitle", courseNode.getLongTitle());
 	
-		projectBrokerId = projectBrokerManager.getProjectBrokerId(cpm, ne.getCourseNode());
+		projectBrokerId = projectBrokerManager.getProjectBrokerId(cpm, courseNode);
 		if (projectBrokerId == null) {
 			// no project-broker exist => create a new one, happens only once
 			ProjectBroker projectBroker = projectBrokerManager.createAndSaveProjectBroker();
 			projectBrokerId = projectBroker.getKey();
-			projectBrokerManager.saveProjectBrokerId(projectBrokerId, cpm, ne.getCourseNode());
+			projectBrokerManager.saveProjectBrokerId(projectBrokerId, cpm, courseNode);
 			getLogger().info("no project-broker exist => create a new one projectBrokerId=" + projectBrokerId);
 		}
 		
@@ -228,7 +228,7 @@ public class ProjectListController extends BasicController implements GenericEve
 			Project project = projectBrokerManager.createAndSaveProjectFor(projectTitle, projectTitle, projectBrokerId, projectGroup);
 			projectGroupManager.sendGroupChangeEvent(project, courseId, ureq.getIdentity());
 			getLogger().debug("Created a new project=" + project);
-			projectController = new ProjectController(ureq, this.getWindowControl(), userCourseEnv, nodeEvaluation, project, true, moduleConfig);
+			projectController = new ProjectController(ureq, this.getWindowControl(), userCourseEnv, courseNode, project, true, moduleConfig);
 			listenTo(projectController);
 			mainPanel.pushContent(projectController.getInitialComponent());
 		} else if (event.getCommand().equals(OPEN_IDENTITY_CMD)){
@@ -255,7 +255,7 @@ public class ProjectListController extends BasicController implements GenericEve
 			if (pbEditEvent.isCancelEvent()){
 				getLogger().info("event form cancelled => delete project");
 				projectBrokerManager.deleteProject(pbEditEvent.getProject(), true, userCourseEnv.getCourseEnvironment(),
-						nodeEvaluation.getCourseNode());
+						courseNode);
 				mainPanel.popContent();
 				updateProjectListModelOf(tableController, urequest.getIdentity());
 			} else if (pbEditEvent.isCreateEvent() || pbEditEvent.isDeletedEvent()){
@@ -387,7 +387,7 @@ public class ProjectListController extends BasicController implements GenericEve
 
 	private void activateProjectController(Project project, UserRequest urequest) {
 		removeAsListenerAndDispose(projectController);
-		projectController = new ProjectController(urequest, this.getWindowControl(), userCourseEnv, nodeEvaluation, project, false, moduleConfig);
+		projectController = new ProjectController(urequest, this.getWindowControl(), userCourseEnv, courseNode, project, false, moduleConfig);
 		listenTo(projectController);
 		mainPanel.pushContent(projectController.getInitialComponent());
 	}

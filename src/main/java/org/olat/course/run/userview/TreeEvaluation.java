@@ -37,7 +37,7 @@ import org.olat.course.nodes.CourseNode;
  *
  */
 public class TreeEvaluation {
-	private Map<CourseNode,TreeNode> courseToTree = new HashMap<CourseNode,TreeNode>();  // keys: coursenodes; values: treenodes
+	private final Map<CourseNode,TreeNode> courseToTree = new HashMap<CourseNode,TreeNode>();  // keys: coursenodes; values: treenodes
 
 	public void cacheCourseToTreeNode(CourseNode cn, TreeNode tn) {
 		courseToTree.put(cn, tn);
@@ -52,7 +52,17 @@ public class TreeEvaluation {
 	public TreeNode getCorrespondingTreeNode(CourseNode cn) {
 		return courseToTree.get(cn);
 	}
-
 	
-
+	public TreeNode getCorrespondingTreeNode(String cnIdent) {
+		TreeNode tn = null;
+		for(Map.Entry<CourseNode, TreeNode> entry:courseToTree.entrySet()) {
+			CourseNode cn = entry.getKey();
+			if(cn.getIdent().equals(cnIdent)) {
+				tn = entry.getValue();
+				break;
+			}
+			
+		}
+		return tn;
+	}
 }

@@ -222,7 +222,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		return waitingLists;
 	}
 	
-	public void setGroupMemberships(RepositoryEntry repoEntry, List<BusinessGroup> coachedGroups,
+	public void setGroupMemberships(List<BusinessGroup> coachedGroups,
 			List<BusinessGroup> participatingGroups, List<BusinessGroup> waitingLists) {
 		this.coachedGroups = coachedGroups;
 		this.participatingGroups = participatingGroups;

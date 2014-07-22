@@ -53,10 +53,10 @@ public class NodeEvaluation extends GenericNode {
 
 	private static final long serialVersionUID = -5576947730073187682L;
 	
-	private CourseNode courseNode;
-	private GenericTreeNode gtn = null;
+	private final CourseNode courseNode;
+	private GenericTreeNode gtn;
 
-	private Map<String, Boolean> accesses = new HashMap<String, Boolean>(4);
+	private final Map<String, Boolean> accesses = new HashMap<String, Boolean>(4);
 
 	private boolean visible = false;
 	private boolean atLeastOneAccessible = false;
@@ -121,7 +121,7 @@ public class NodeEvaluation extends GenericNode {
 
 		// if the coursenode is visible, build a treenode
 		if (isVisible()) {
-			gtn = new GenericTreeNode();
+			gtn = new GenericTreeNode(courseNode.getIdent());
 			gtn.setTitle(courseNode.getShortTitle());
 			gtn.setAltText(courseNode.getLongTitle());
 			String type = courseNode.getType();
