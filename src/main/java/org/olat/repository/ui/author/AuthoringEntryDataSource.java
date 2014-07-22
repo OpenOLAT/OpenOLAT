@@ -132,6 +132,8 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 			} catch (ServiceNotAvailableException | ParseException | QueryException e) {
 				log.error("", e);
 			}
+		} else {
+			searchParams.setRepoEntryKeys(null);
 		}
 		
 		List<RepositoryEntryAuthorView> views = repositoryService.searchAuthorView(searchParams, firstResult, maxResults);

@@ -77,32 +77,35 @@ class SearchOrderByCallable implements Callable<List<Long>> {
 			log.info("queryString=" + queryString);
 			IndexSearcher searcher = searchService.getIndexSearcher();
 			BooleanQuery query = searchService.createQuery(queryString, condQueries);
+			//log.info("query=" + query);
 
-	    int n = SearchServiceFactory.getService().getSearchModuleConfig().getMaxHits();
-	    TopDocs docs;
-	    if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
-	    	SortField[] sortFields = new SortField[orderBy.length];
-	    	for(int i=0; i<orderBy.length; i++) {
-	    		sortFields[i] = new SortField(orderBy[i].getKey(), SortField.Type.STRING_VAL, orderBy[i].isAsc());
-	    	}
-	    	Sort sort = new Sort(sortFields);
-	    	docs = searcher.search(query, n, sort);
-	    } else {
-	    	docs = searcher.search(query, n);
-	    }
+			int n = SearchServiceFactory.getService().getSearchModuleConfig().getMaxHits();
+			TopDocs docs;
+			if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
+				SortField[] sortFields = new SortField[orderBy.length];
+				for(int i=0; i<orderBy.length; i++) {
+					sortFields[i] = new SortField(orderBy[i].getKey(), SortField.Type.STRING_VAL, orderBy[i].isAsc());
+				}
+				Sort sort = new Sort(sortFields);
+				docs = searcher.search(query, n, sort);
+			} else {
+				docs = searcher.search(query, n);
+			}
 
 			int numOfDocs = Math.min(n, docs.totalHits);
 			Set<String> retrievedFields = new HashSet<String>();
 			retrievedFields.add(AbstractOlatDocument.DB_ID_NAME);
 			
 			List<Long> res = new ArrayList<Long>();
-	    for (int i=firstResult; i<numOfDocs && res.size() < maxResults; i++) {
-	    	Document doc = searcher.doc(docs.scoreDocs[i].doc, retrievedFields);
-	    	String dbKeyStr = doc.get(AbstractOlatDocument.DB_ID_NAME);
-	    	if(StringHelper.containsNonWhitespace(dbKeyStr)) {
-	    		res.add(Long.parseLong(dbKeyStr));
-	    	}
-	    }
+			for (int i=firstResult; i<numOfDocs && res.size() < maxResults; i++) {
+				Document doc = searcher.doc(docs.scoreDocs[i].doc, retrievedFields);
+				String dbKeyStr = doc.get(AbstractOlatDocument.DB_ID_NAME);
+				if(StringHelper.containsNonWhitespace(dbKeyStr)) {
+					res.add(Long.parseLong(dbKeyStr));
+				}
+			}
+			
+			//log.info("found=" + res.size());
 
 			return res;
 		} catch (Exception naex) {

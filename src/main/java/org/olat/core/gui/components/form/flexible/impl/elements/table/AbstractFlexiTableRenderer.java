@@ -109,9 +109,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		
 		//source
 		if (source.isEnabled()) {
-			sb.append(FormJSHelper.getJSStartWithVarDeclaration(id));
-			sb.append(FormJSHelper.getSetFlexiFormDirty(ftE.getRootForm(), id));
-			sb.append(FormJSHelper.getJSEnd());
+			sb.append(FormJSHelper.getJSStartWithVarDeclaration(id))
+			  .append(FormJSHelper.getSetFlexiFormDirty(ftE.getRootForm(), id))
+			  .append(FormJSHelper.getJSEnd());
 		}
 	}
 	
@@ -125,15 +125,16 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			return;
 		}
 		
-		sb.append("<div class='row clearfix o_table_toolbar'>");
 		if(searchCmp != null && ftE.isExtendedSearchExpanded()) {
 			renderer.render(searchCmp, sb, args);
-			sb.append("<div class='col-lg-6'></div>");
-		} else {
-			sb.append("<div class='col-lg-6'>");
-			renderHeaderSearch(renderer, sb, ftE, ubu, translator, renderResult, args);
-			sb.append("</div>");
 		}
+		
+		sb.append("<div class='row clearfix o_table_toolbar'>")
+		  .append("<div class='col-lg-6'>");
+		if(searchCmp == null || !ftE.isExtendedSearchExpanded()) {
+			renderHeaderSearch(renderer, sb, ftE, ubu, translator, renderResult, args);
+		}
+		sb.append("</div>");
 
 		sb.append("<div class='col-lg-3 o_table_row_count'>");
 		if(ftE.isNumOfRowsEnabled()) {

@@ -160,11 +160,18 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 	
 	private void updateToolbar() {
 		if(catalogLink != null) {
-			catalogLink.setEnabled(!corrupted && (entry.getAccess() >= RepositoryEntry.ACC_USERS || entry.isMembersOnly()));
+			boolean newState = !corrupted && (entry.getAccess() >= RepositoryEntry.ACC_USERS || entry.isMembersOnly());
+			if(catalogLink.isEnabled() != newState) {
+				catalogLink.setEnabled(newState);
+				stackPanel.setDirty(true);
+			}
 		}
 		if(orderLink != null) {
-			boolean booking = acService.isResourceAccessControled(entry.getOlatResource(), null);
-			orderLink.setEnabled(!corrupted && booking);
+			boolean newState = !corrupted &&  acService.isResourceAccessControled(entry.getOlatResource(), null);
+			if(orderLink.isEnabled() != newState) {
+				orderLink.setEnabled(newState);
+				stackPanel.setDirty(true);
+			}
 		}
 	}
 	

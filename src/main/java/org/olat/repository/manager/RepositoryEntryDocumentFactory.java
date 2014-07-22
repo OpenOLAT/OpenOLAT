@@ -59,10 +59,22 @@ public class RepositoryEntryDocumentFactory {
 		oDocument.setCreatedDate(re.getCreationDate());
 		oDocument.setLastChange(re.getLastModified());
 		oDocument.setTitle(re.getDisplayname());
-		oDocument.setDescription(re.getDescription());
+		
+		StringBuilder sb = new StringBuilder();
+		String desc = re.getDescription();
+		if(desc != null) {
+			sb.append(desc).append(" ");
+		}
+		String objectives = re.getObjectives();
+		if(objectives != null) {
+			sb.append(objectives).append(" ");
+		}
+		String requirements = re.getRequirements();
+		if(requirements != null) {
+			sb.append(requirements);
+		}
+		oDocument.setDescription(sb.toString());
 		oDocument.setResourceUrl(getResourceUrl(re.getKey()));
-		oDocument.setDocumentType(RepositoryEntryDocument.TYPE);
-		oDocument.setCssIcon("o_qitem_icon");
 		
 		String docType = RepositoryEntryDocument.TYPE + re.getOlatResource().getResourceableTypeName();
 		oDocument.setDocumentType(docType);

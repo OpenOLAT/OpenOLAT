@@ -82,9 +82,9 @@ public class IndexWriterHolder {
 				int used = counter.decrementAndGet();
 				if(used == 0) {
 					long start = System.currentTimeMillis();
-					//indexWriter.commit();
-					//indexWriter.close();
-					//writerRef = null;
+					indexWriter.commit();
+					indexWriter.close();
+					writerRef = null;
 					log.info("Close writer takes (ms): " + (System.currentTimeMillis() - start));
 				}
 			} catch (Exception e) {

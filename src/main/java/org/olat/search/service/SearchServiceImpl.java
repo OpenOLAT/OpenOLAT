@@ -256,7 +256,7 @@ public class SearchServiceImpl implements SearchService {
 			int firstResult, int maxResults, SortKey... orderBy)
 	throws ServiceNotAvailableException, ParseException, QueryException {
 		try {
-			SearchOrderByCallable run = new SearchOrderByCallable(queryString,  condQueries, orderBy, firstResult, maxResults, this);
+			SearchOrderByCallable run = new SearchOrderByCallable(queryString, condQueries, orderBy, firstResult, maxResults, this);
 			Future<List<Long>> futureResults = searchExecutor.submit(run);
 			List<Long> results = futureResults.get();
 			queryCount++;
@@ -396,7 +396,6 @@ public class SearchServiceImpl implements SearchService {
 		if(hasChanged) {
 			MultiReader mReader = new MultiReader(reader, permReader);
 			searcher = new IndexSearcher(mReader);
-			//openIndexDate = reader.getVersion();
 		}
 		return searcher;
 	}

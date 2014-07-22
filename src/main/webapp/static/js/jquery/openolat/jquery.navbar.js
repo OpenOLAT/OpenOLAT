@@ -276,7 +276,7 @@
 			var listener = $.proxy(this.hideRight, this);
 			setTimeout(function() {
 				$('html').on('click', listener);
-			}, 125);			
+			}, 10);			
 		}
 	}
 	Navbar.prototype.hideRight = function() {

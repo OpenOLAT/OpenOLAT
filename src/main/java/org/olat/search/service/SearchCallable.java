@@ -90,7 +90,8 @@ class SearchCallable implements Callable<SearchResults> {
 			SearchResultsImpl searchResult = new SearchResultsImpl(searchService.getMainIndexer(), searcher, docs, query, searchService.getAnalyzer(), identity, roles, firstResult, maxResults, doHighlighting, false);
 			searchResult.setQueryTime(queryTime);
 			searchResult.setNumberOfIndexDocuments(docs.totalHits);
-
+			if(debug) log.debug("found=" + docs.totalHits);
+			
 			return searchResult;
 		} catch(ParseException pex) {
 			throw pex;

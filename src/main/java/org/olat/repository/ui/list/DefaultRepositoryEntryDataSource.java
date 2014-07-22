@@ -138,6 +138,8 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			} catch (ServiceNotAvailableException | ParseException | QueryException e) {
 				log.error("", e);
 			}
+		} else {
+			searchParams.setRepoEntryKeys(null);
 		}
 		
 		List<RepositoryEntryMyView> views = repositoryService.searchMyView(searchParams, firstResult, maxResults);
