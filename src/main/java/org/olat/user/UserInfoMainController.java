@@ -66,9 +66,10 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.modules.co.ContactFormController;
-import org.olat.portfolio.EPUIFactory;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.manager.InvitationDAO;
+import org.olat.portfolio.ui.EPMapRunController;
+import org.olat.portfolio.ui.EPMapRunViewOption;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -307,7 +308,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 			myContent = contactFormController.getInitialComponent();
 		} else if (menuCommand.equals(CMD_PORTFOLIO)) {
 			removeAsListenerAndDispose(portfolioController);
-			portfolioController = EPUIFactory.createPortfolioMapsVisibleToOthersController(ureq, getWindowControl(), chosenIdentity);
+			portfolioController = new EPMapRunController(ureq, getWindowControl(), false, EPMapRunViewOption.OTHER_MAPS, chosenIdentity);
 			listenTo(portfolioController);
 			myContent = portfolioController.getInitialComponent();
 		}

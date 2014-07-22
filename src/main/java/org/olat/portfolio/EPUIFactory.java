@@ -26,14 +26,11 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.portfolio.ui.EPArtefactPoolRunController;
-import org.olat.portfolio.ui.EPMapRunController;
-import org.olat.portfolio.ui.EPMapRunViewOption;
 import org.olat.portfolio.ui.PortfolioAdminController;
 import org.olat.portfolio.ui.artefacts.collect.ArtefactWizzardStepsController;
 import org.olat.portfolio.ui.artefacts.view.EPArtefactViewController;
@@ -75,16 +72,6 @@ public class EPUIFactory {
 	 */
 	public static Controller createPortfolioAdminController(UserRequest ureq, WindowControl wControl) {
 		return new PortfolioAdminController(ureq, wControl);
-	}
-	
-	/**
-	 * Get a controller with all maps I can see from other users,
-	 * @param ureq
-	 * @param wControl
-	 * @return
-	 */
-	public static Controller createPortfolioMapsVisibleToOthersController(UserRequest ureq, WindowControl wControl, Identity choosenOwner) {
-		return new EPMapRunController(ureq, wControl, false, EPMapRunViewOption.OTHER_MAPS, choosenOwner);
 	}
 	
 	public static Controller createPortfolioStructureMapController(UserRequest ureq, WindowControl wControl, PortfolioStructureMap map,

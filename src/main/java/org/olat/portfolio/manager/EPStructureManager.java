@@ -272,7 +272,7 @@ public class EPStructureManager extends BasicManager {
 	private <U> TypedQuery<U> buildStructureElementsFromOthersLimitedQuery(Identity choosenOwner, Class<U> cl, ElementType... types){
 		StringBuilder sb = new StringBuilder();
 		if(cl.equals(Number.class)) {
-			sb.append("select count(stEl.key) from ").append(EPStructureElement.class.getName()).append(" stEl ")
+			sb.append("select count(stEl) from ").append(EPStructureElement.class.getName()).append(" stEl ")
 			  .append(" inner join stEl.olatResource as oRes ");
 		} else {
 			sb.append("select stEl from ").append(EPStructureElement.class.getName()).append(" stEl ")
@@ -292,8 +292,8 @@ public class EPStructureManager extends BasicManager {
 		  .append(" )");
 
 		if (choosenOwner != null) {
-			sb.append(" and stEl.group in (select sgi.key from bgroup as sgi, bgroupmember as sgmsi ")
-			  .append("   where sgmsi.group=sgi and sgmsi.identity=:owner")
+			sb.append(" and exists (select sgi.key from bgroup as sgi, bgroupmember as sgmsi ")
+			  .append("   where sgmsi.group=baseGroup and sgmsi.identity=:owner")
 			  .append(" )");
 		}
 		if (types != null && types.length > 0) {
@@ -353,7 +353,7 @@ public class EPStructureManager extends BasicManager {
 		  .append(" and (relGroup.validTo is null or relGroup.validTo>=:date)");
 		
 		if(choosenOwner != null) {
-			sb.append(" and exists (select sgi from bgroupmember as sgmsi ")
+			sb.append(" and exists (select sgmsi from bgroupmember as sgmsi ")
 			  .append("   where sgmsi.group=baseGroup and sgmsi.identity.key=:ownerKey")
 			  .append(" )");
 		}
