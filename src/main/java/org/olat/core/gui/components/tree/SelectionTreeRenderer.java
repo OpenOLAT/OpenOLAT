@@ -208,8 +208,7 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 		// item icon css class and icon decorator (for each icon quadrant a div, eclipse style)
 		String iconCssClass = node.getIconCssClass();
 		if (iconCssClass != null) {
-			sb.append("<div title=\"").append(StringEscapeUtils.escapeHtml(node.getAltText()))
-			  .append("\"><i class='o_icon ").append(iconCssClass).append("'> </i></div>");
+			sb.append("<i class='o_icon ").append(iconCssClass).append("'> </i> ");
 		}
 	}
 	private void renderNodeDecorators(StringOutput sb, TreeNode node) {	
