@@ -94,7 +94,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private boolean exportEnabled;
 	private boolean searchEnabled;
 	private boolean selectAllEnabled;
-	private boolean numOfRowsEnabled;
+	private boolean numOfRowsEnabled = true;
 	private boolean extendedSearchExpanded = false;
 	private int columnLabelForDragAndDrop;
 	private String emptyTableMessageKey = null;

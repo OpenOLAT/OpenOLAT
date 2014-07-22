@@ -135,7 +135,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append("</div>");
 		}
 
-		sb.append("<div class='col-lg-3'>");
+		sb.append("<div class='col-lg-3 o_table_row_count'>");
 		if(ftE.isNumOfRowsEnabled()) {
 			int rowCount = ftE.getTableDataModel().getRowCount();
 			if(rowCount == 1) {

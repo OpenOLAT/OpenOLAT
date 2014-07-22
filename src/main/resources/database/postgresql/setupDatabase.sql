@@ -1526,7 +1526,7 @@ create view o_as_eff_statement_students_v as (
    left join o_as_eff_statement as sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource)
    left join o_as_user_course_infos as pg_initial_launch on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)
    group by sg_re.repositoryentry_id, sg_coach.fk_identity_id, sg_participant.fk_identity_id,
-      sg_statement.id, sg_statement.score, pg_initial_launch.id
+      sg_statement.id, sg_statement.passed, sg_statement.score, pg_initial_launch.id
 );
 
 create view o_as_eff_statement_courses_v as (
@@ -1548,7 +1548,7 @@ create view o_as_eff_statement_courses_v as (
    left join o_as_eff_statement as sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource)
    left join o_as_user_course_infos as pg_initial_launch on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)
    group by sg_re.repositoryentry_id, sg_re.displayname, sg_coach.fk_identity_id, sg_participant.fk_identity_id,
-      sg_statement.id, sg_statement.score, pg_initial_launch.id
+      sg_statement.id, sg_statement.passed, sg_statement.score, pg_initial_launch.id
 );
 
 create view o_as_eff_statement_groups_v as (
@@ -1574,7 +1574,7 @@ create view o_as_eff_statement_groups_v as (
    left join o_as_user_course_infos as pg_initial_launch on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)
    group by sg_re.repositoryentry_id, sg_re.displayname, sg_bg.group_id, sg_bg.groupname,
       sg_coach.fk_identity_id, sg_participant.fk_identity_id,
-      sg_statement.id, sg_statement.score, pg_initial_launch.id
+      sg_statement.id, sg_statement.passed, sg_statement.score, pg_initial_launch.id
 );
 
 -- instant messaging

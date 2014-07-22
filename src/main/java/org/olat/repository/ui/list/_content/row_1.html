@@ -48,12 +48,10 @@
 
 		#if($row.isMember() || $row.getVisit() > 0)
 			#if($row.passed || $row.failed)
-			<div class="o_state row #if($row.passed) o_passed #else o_failed #end">
+			<div class="row">
 				#if($row.passed)
-					<i class="o_icon o_icon_passed"></i>
 					$r.translate("passed.true")
 				#elseif($row.failed)
-					<i class="o_icon o_icon_failed"></i>
 					$r.translate("passed.false")
 				#end
 			</div>
