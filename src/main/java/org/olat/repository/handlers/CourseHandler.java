@@ -394,7 +394,7 @@ public class CourseHandler implements RepositoryHandler {
 		}
 		
 		boolean managedLayout = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.layout);
-		CourseLayoutGeneratorController layoutC = new CourseLayoutGeneratorController(ureq, wControl, courseConfig,
+		CourseLayoutGeneratorController layoutC = new CourseLayoutGeneratorController(ureq, wControl, course, courseConfig,
 		  		course.getCourseEnvironment(), !managedLayout);
 		pane.appendEditor(pane.getTranslator().translate("tab.layout"), layoutC);
 

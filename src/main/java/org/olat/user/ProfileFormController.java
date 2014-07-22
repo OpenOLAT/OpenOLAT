@@ -387,6 +387,11 @@ public class ProfileFormController extends FormBasicController {
 		if(uploadedImage != null) {
 			dps.setPortrait(uploadedImage, identityToModify.getName());
 		}
+		
+		// Store the "about me" text.
+		HomePageConfig conf = hpcm.loadConfigFor(identityToModify.getName());
+		conf.setTextAboutMe(textAboutMe.getValue());
+		hpcm.saveConfigTo(identityToModify.getName(), conf);
 
 		// fire the appropriate event
 		fireEvent(ureq, Event.DONE_EVENT);

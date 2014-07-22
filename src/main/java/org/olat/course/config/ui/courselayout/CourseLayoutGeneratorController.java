@@ -51,15 +51,21 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSItemSuffixFilter;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.config.CourseConfigEvent;
+import org.olat.course.config.CourseConfigEvent.CourseConfigType;
 import org.olat.course.config.ui.courselayout.attribs.AbstractLayoutAttribute;
 import org.olat.course.config.ui.courselayout.attribs.PreviewLA;
 import org.olat.course.config.ui.courselayout.attribs.SpecialAttributeFormItemHandler;
@@ -78,11 +84,10 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 
 	private static final String ELEMENT_ATTRIBUTE_DELIM = "__";
 	private static final String PREVIEW_IMAGE_NAME = "preview.png";
-	private CourseConfig courseConfig;
+
 	private SingleSelection styleSel;
 	private FileElement logoUpl;
 	private FormLayoutContainer previewImgFlc;
-	private CourseEnvironment courseEnvironment;
 	private FormLayoutContainer styleFlc;
 	private CustomConfigManager customCMgr;
 	private LinkedHashMap<String, Map<String, FormItem>> guiWrapper;
@@ -91,12 +96,17 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	private FormLink logoDel;
 	private boolean elWithErrorExists = false;
 	private final boolean editable;
+	
+	private final OLATResourceable courseOres;
+	private CourseConfig courseConfig;
+	private CourseEnvironment courseEnvironment;
 
-	public CourseLayoutGeneratorController(UserRequest ureq, WindowControl wControl, CourseConfig courseConfig,
+	public CourseLayoutGeneratorController(UserRequest ureq, WindowControl wControl, OLATResourceable courseOres, CourseConfig courseConfig,
 			CourseEnvironment courseEnvironment, boolean editable) {
 		super(ureq, wControl);
 		
 		this.editable = editable;
+		this.courseOres = courseOres;
 		this.courseConfig = courseConfig;
 		this.courseEnvironment = courseEnvironment;
 		customCMgr = (CustomConfigManager) CoreSpringFactory.getBean("courseConfigManager");
@@ -361,6 +371,10 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String selection = styleSel.getSelectedKey();
+		
+		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
+		courseEnvironment = course.getCourseEnvironment();
+		courseConfig = courseEnvironment.getCourseConfig();
 		courseConfig.setCssLayoutRef(selection);
 		
 		if(CourseLayoutHelper.CONFIG_KEY_CUSTOM.equals(selection)){
@@ -369,6 +383,12 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			persistedCustomConfig = customConfig;
 			if (!elWithErrorExists) prepareStyleEditor(customConfig);
 		}
+		
+		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
+		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
+		
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+    		.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.layout, course.getResourceableId()), course);
 		
 		// inform course-settings-dialog about changes:
 		fireEvent(ureq, Event.CHANGED_EVENT);
