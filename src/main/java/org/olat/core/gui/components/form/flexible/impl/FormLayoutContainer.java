@@ -62,6 +62,8 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(FormLayoutContainer.class);
 	private static final String LAYOUT_DEFAULT = VELOCITY_ROOT + "/form_default.html";
+	private static final String LAYOUT_DEFAULT_6_6 = VELOCITY_ROOT + "/form_default_6_6.html";
+	private static final String LAYOUT_DEFAULT_9_3 = VELOCITY_ROOT + "/form_default_9_3.html";
 	private static final String LAYOUT_HORIZONTAL = VELOCITY_ROOT + "/form_horizontal.html";
 	private static final String LAYOUT_VERTICAL = VELOCITY_ROOT + "/form_vertical.html";
 	private static final String LAYOUT_BAREBONE = VELOCITY_ROOT + "/form_barebone.html";
@@ -511,6 +513,30 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		FormLayoutContainer tmp = new FormLayoutContainer(name, formTranslator, LAYOUT_DEFAULT);
 		return tmp;
 	}
+	
+	/**
+	 * This a variant of the default form layout but with a ration 6 to 6 for label and field.
+	 * @param name
+	 * @param formTranslator
+	 * @return
+	 */
+	public static FormLayoutContainer createDefaultFormLayout_6_6(String name, Translator formTranslator){
+		FormLayoutContainer tmp = new FormLayoutContainer(name, formTranslator, LAYOUT_DEFAULT_6_6);
+		return tmp;
+	}
+	
+	
+	/**
+	 * This a variant of the default form layout but with a ration 9 to 3 for label and field.
+	 * @param name
+	 * @param formTranslator
+	 * @return
+	 */
+	public static FormLayoutContainer createDefaultFormLayout_9_3(String name, Translator formTranslator){
+		FormLayoutContainer tmp = new FormLayoutContainer(name, formTranslator, LAYOUT_DEFAULT_9_3);
+		return tmp;
+	}
+	
 	
 	/**
 	 * Create a layout container that renders the form elements and its labels vertically. 

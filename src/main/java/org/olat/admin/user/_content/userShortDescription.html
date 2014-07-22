@@ -1,16 +1,16 @@
-<table class="table table-bordered">		
+<table class="table table-bordered">
 	#if($username)
 	<tr>
 		<th>$usernameLabel</th>
 		<td>$username</td>
 	</tr>
 	#end
-	#foreach( $propertyHandler in $userPropertyHandlers )		
-	    #if ($propertyHandler.getUserPropertyAsHTML($user, $locale) && $propertyHandler.getUserPropertyAsHTML($user, $locale) != "")		
+	#foreach( $propertyHandler in $userPropertyHandlers )
+	    #if ($propertyHandler.getUserPropertyAsHTML($user, $locale) && $propertyHandler.getUserPropertyAsHTML($user, $locale) != "")
 		<tr>
 			<th>$r.translate($propertyHandler.i18nFormElementLabelKey())</th>
 			<td>$propertyHandler.getUserPropertyAsHTML($user, $locale)</td>
-		</tr>				
+		</tr>
 		#end
-	#end				
-</table>		
+	#end
+</table>
