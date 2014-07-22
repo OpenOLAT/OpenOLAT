@@ -57,6 +57,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
@@ -143,7 +144,9 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
   private List<PortletEntry<UserEfficiencyStatementLight>> convertEfficiencyStatementToPortletEntryList(List<UserEfficiencyStatementLight> items) {
 		List<PortletEntry<UserEfficiencyStatementLight>> convertedList = new ArrayList<PortletEntry<UserEfficiencyStatementLight>>();
 		for(UserEfficiencyStatementLight item:items) {
-			convertedList.add(new EfficiencyStatementPortletEntry(item));
+			if(StringHelper.containsNonWhitespace(item.getShortTitle())) {
+				convertedList.add(new EfficiencyStatementPortletEntry(item));
+			}
 		}
 		return convertedList;
 	}
@@ -152,20 +155,19 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 	 * 
 	 * @see org.olat.core.gui.control.generic.portal.AbstractPortletRunController#reloadModel(org.olat.core.gui.UserRequest, org.olat.core.gui.control.generic.portal.SortingCriteria)
 	 */
-  protected void reloadModel(SortingCriteria sortingCriteria) {
-  	if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
-  		EfficiencyStatementManager esm = EfficiencyStatementManager.getInstance();
-  		List<UserEfficiencyStatementLight> efficiencyStatementsList = esm.findEfficiencyStatementsLight(getIdentity());
+	protected void reloadModel(SortingCriteria sortingCriteria) {
+		if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
+			EfficiencyStatementManager esm = EfficiencyStatementManager.getInstance();
+			List<UserEfficiencyStatementLight> efficiencyStatementsList = esm.findEfficiencyStatementsLight(getIdentity());
 
-  		efficiencyStatementsList = getSortedList(efficiencyStatementsList, sortingCriteria);  		
-  		List<PortletEntry<UserEfficiencyStatementLight>> entries = convertEfficiencyStatementToPortletEntryList(efficiencyStatementsList);
-  		efficiencyStatementsListModel = new EfficiencyStatementsTableDataModel(entries,2);
-  		tableCtr.setTableDataModel(efficiencyStatementsListModel);
-  		tableCtr.setTableDataModel(efficiencyStatementsListModel);
+			efficiencyStatementsList = getSortedList(efficiencyStatementsList, sortingCriteria);  		
+			List<PortletEntry<UserEfficiencyStatementLight>> entries = convertEfficiencyStatementToPortletEntryList(efficiencyStatementsList);
+			efficiencyStatementsListModel = new EfficiencyStatementsTableDataModel(entries,2);
+			tableCtr.setTableDataModel(efficiencyStatementsListModel);
 		} else {
-			reloadModel(this.getPersistentManuallySortedItems());
+			reloadModel(getPersistentManuallySortedItems());
 		}
-  }
+	}
 	
   /**
    * 

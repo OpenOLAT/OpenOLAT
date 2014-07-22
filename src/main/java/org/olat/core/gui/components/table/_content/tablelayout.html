@@ -2,6 +2,7 @@
 #if ($tableEmpty)
 	<div class="o_table_empty o_info">$tableEmptyMessage</div>
 #else
+	#if(($hasTableSearch && !$tableEmpty) || $tableConfig.isDisplayRowCount() || ($hasFilters && $filters.size() > 0) || $hasSorters || $tableConfig.isPreferencesOffered() || $tableConfig.isDownloadOffered())
 	<div class="row clearfix o_table_toolbar">
 		<div class="col-lg-6">
 			#if ($hasTableSearch && !$tableEmpty)
@@ -9,12 +10,14 @@
 			#end
 		</div>
 		<div class="col-lg-3 o_table_row_count">
+		#if ($tableConfig.isDisplayRowCount())
 			$numberOfElements
 			#if ($numberOfElements == "1")
 				$r.translate("table.entry")
 			#else
 				$r.translate("table.entries")
 			#end
+		#end
 		</div>
 		<div class="col-lg-3"><div class="pull-right o_table_tools">
 			#if ($hasFilters && $filters.size() > 0)
@@ -52,6 +55,7 @@
 			#end
 		</div></div>
 	</div>
+	#end
 	$r.render("table", $tableConfig.getCssPrefix())
 #end
 </div>
