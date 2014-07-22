@@ -1,13 +1,11 @@
-<fieldset id="$r.getCId()" class="o_form form-horizontal o_desc" role="form">
+<fieldset id="$r.getCId()" class="o_form form-horizontal" role="form">
 	<legend>
 		$r.contextHelpWithWrapper("org.olat.course.editor","ced-des.html","help.hover.des")
-		$r.translate("nodeConfigForm.title")
-	</legend>
+		$r.translate("nodeConfigForm.title")</legend>
 	<div class="clearfix">
 		<div class="small pull-left">Id: $nodeId</div>
 	</div>
 	$r.render("nodeConfigForm")
-	
 	
 	#o_togglebox_start("o_course_node_links" $r.translate("nodeEdit.links"))
 		<p>
@@ -35,6 +33,4 @@
 		});
 	/* ]]> */
 	</script>
-	
 </fieldset>
-							

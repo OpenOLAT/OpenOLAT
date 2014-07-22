@@ -28,7 +28,7 @@
 <h4>$r.translate("about.copyright")</h4>
 <pre>$r.getLicences()</pre>
 <h4>$r.translate("about.translate")</h4>
-<ul style="list-style: none;">
+<ul class="list-unstyled">
 #set($langInfos = $r.getLanguages())
 #foreach ($lang in $langInfos.enabledKeys) 
 	<li><i class="o_flag o_flag_${lang}"> </i> $langInfos.langNames.get("$lang") : $langInfos.langTranslators.get("$lang")</li>

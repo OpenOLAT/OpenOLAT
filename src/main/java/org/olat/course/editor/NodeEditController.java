@@ -110,7 +110,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		listenTo(childTabsCntrllr);
 		
 		// description and metadata component		
-		descriptionVc = this.createVelocityContainer("nodeedit");
+		descriptionVc = createVelocityContainer("nodeedit");
 		descriptionVc.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 		Long repoKey = RepositoryManager.getInstance().lookupRepositoryEntryKey(course, true);
 		
@@ -125,14 +125,14 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		descriptionVc.contextPut("intLink", intLink.toString());
 		descriptionVc.contextPut("nodeId", luNode.getIdent());
 		
-		this.putInitialPanel(descriptionVc);
+		putInitialPanel(descriptionVc);
 
 		nodeConfigController = new NodeConfigFormController(ureq, wControl, luNode);
 		listenTo(nodeConfigController);
 		descriptionVc.put("nodeConfigForm", nodeConfigController.getInitialComponent());
 		
 		// Visibility and no-access explanation component		
-		visibilityVc = this.createVelocityContainer("visibilityedit");
+		visibilityVc = createVelocityContainer("visibilityedit");
 
 		// Visibility precondition
 		Condition visibCondition = luNode.getPreConditionVisibility();

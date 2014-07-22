@@ -5,7 +5,7 @@
 			<i class="o_icon o_icon-fw o_miderr"></i>
 			$r.translate("toggle.coursestatus.errors", $errorsCount)
 		</h4>
-		<ul class="o_error">
+		<ul class="o_error list-unstyled">
 		#foreach($elem in $errorIsForNode)
 			<li>
 			#set ($counter = $velocityCount - 1)
@@ -27,7 +27,7 @@
 			<i class="o_icon o_icon-fw o_icon_warn"></i>
 			$r.translate("toggle.coursestatus.warnings", $warningsCount)
 		</h4>
-		<ul>
+		<ul class="list-unstyled">
 		#foreach($elem in $warningIsForNode)
 			<li>
 			#set ($counter = $velocityCount - 1)
