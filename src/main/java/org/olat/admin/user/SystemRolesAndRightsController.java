@@ -195,7 +195,7 @@ public class SystemRolesAndRightsController extends BasicController {
 									: (newStatus == Identity.STATUS_DELETED ? "deleted"
 											: "unknown"))));
 			
-			if(newStatus == Identity.STATUS_LOGIN_DENIED) {
+			if(oldStatus != newStatus && newStatus == Identity.STATUS_LOGIN_DENIED && form.getSendLoginDeniedEmail()) {
 				UserBulkChangeManager.getInstance().sendLoginDeniedEmail(myIdentity);
 			}
 			

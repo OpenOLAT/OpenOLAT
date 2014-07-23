@@ -103,6 +103,7 @@ class UserBulkChangeStep01 extends BasicStep {
 		private SingleSelection setAdmin;
 		private MultipleSelectionElement chkStatus;
 		private SingleSelection setStatus;
+		private MultipleSelectionElement sendLoginDeniedEmail;
 
 		public UserBulkChangeStepForm01(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -146,6 +147,10 @@ class UserBulkChangeStep01 extends BasicStep {
 
 			if (chkStatus!=null && chkStatus.getSelectedKeys().contains("Status")) {
 				roleChangeMap.put("Status", setStatus.getSelectedKey());
+				// also check dependent send-email checkbox
+				if (sendLoginDeniedEmail!=null) {
+					roleChangeMap.put("sendLoginDeniedEmail", Boolean.toString(sendLoginDeniedEmail.isSelected(0)));					
+				}
 				validChange = true;
 			}
 
@@ -267,10 +272,20 @@ class UserBulkChangeStep01 extends BasicStep {
 
 				setStatus = uifactory.addDropdownSingleselect("setStatus",null, innerFormLayout, statusKeys, statusValues, null);
 				setStatus.setVisible(false);
+				setStatus.addActionListener(listener, FormEvent.ONCHANGE);
 				targets = new HashSet<FormItem>();
 				targets.add(setStatus);
 				RulesFactory.createHideRule(chkStatus, null, targets, innerFormLayout);
 				RulesFactory.createShowRule(chkStatus, "Status", targets, innerFormLayout);
+				
+				sendLoginDeniedEmail = uifactory.addCheckboxesHorizontal("rightsForm.sendLoginDeniedEmail", innerFormLayout, new String[]{"y"}, new String[]{translate("rightsForm.sendLoginDeniedEmail")}, null);
+				sendLoginDeniedEmail.setLabel(null, null);
+				sendLoginDeniedEmail.setVisible(false);
+				RulesFactory.createHideRule(chkStatus, null, sendLoginDeniedEmail, innerFormLayout);
+				RulesFactory.createHideRule(setStatus, Integer.toString(Identity.STATUS_ACTIV), sendLoginDeniedEmail, innerFormLayout);
+				RulesFactory.createHideRule(setStatus, Integer.toString(Identity.STATUS_PERMANENT), sendLoginDeniedEmail, innerFormLayout);
+				RulesFactory.createShowRule(setStatus, Integer.toString(Identity.STATUS_LOGIN_DENIED), sendLoginDeniedEmail, innerFormLayout);
+
 			}
 
 		}
