@@ -151,7 +151,7 @@ public class KalendarEntryDetailsController extends BasicController {
 						if (activeLinkProvider != null) {
 							activeLinkProvider.addControllerListener(this);
 							activeLinkProvider.setKalendarEvent(kalendarEvent);
-							activeLinkProvider.setDisplayOnly(true);
+							activeLinkProvider.setDisplayOnly(isReadOnly);
 							linkVC.put("linkprovider", activeLinkProvider.getControler().getInitialComponent());
 							linkVC.contextPut("hasLinkProvider", Boolean.TRUE);
 						} else {

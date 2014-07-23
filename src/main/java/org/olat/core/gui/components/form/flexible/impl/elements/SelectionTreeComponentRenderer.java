@@ -74,14 +74,7 @@ class SelectionTreeComponentRenderer extends DefaultComponentRenderer {
 		if(selectableFilter == null || selectableFilter.isVisible(currentNode)) {
 			sb.append("<li><div>");
 			// append radio or checkbox if selectable
-			if(currentNode == root) {
-				String cssClass = root.getCssClass();
-				sb.append("<span class='o_tree_l").append(level).append(" ")
-				  .append(cssClass, cssClass != null).append("'>");
-				renderNodeIcon(sb, currentNode);
-				sb.append(StringEscapeUtils.escapeHtml(root.getTitle()))
-				  .append("</span>");
-			} else if (currentNode.isAccessible()) {
+			if (currentNode.isAccessible()) {
 				renderCheckbox(sb, currentNode, level, checkboxes.get(currentNode.getIdent()), stc);
 			} else {
 				// node title (using css if available)
