@@ -337,7 +337,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 						break;
 					case 2: accessI18n = translate("cif.access.owners_authors");
 						break;
-					case 3: accessI18n = translate("cif.access.owners_authors");
+					case 3: accessI18n = translate("cif.access.users");
 						break;
 					case 4: accessI18n = translate("cif.access.users_guests");
 						break;
