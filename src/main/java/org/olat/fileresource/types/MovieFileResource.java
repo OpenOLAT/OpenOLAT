@@ -55,6 +55,8 @@ public class MovieFileResource extends FileResource {
 		String f = filename.toLowerCase();
 		return f.endsWith(".avi") || f.endsWith(".mpeg") ||
 				f.endsWith(".mpg") || f.endsWith(".qt") ||
-				f.endsWith(".rm") || f.endsWith(".ram");
+				f.endsWith(".rm") || f.endsWith(".ram") ||
+				f.endsWith(".mp4") || f.endsWith(".m4v") ||
+				f.endsWith(".mov");
 	}
 }

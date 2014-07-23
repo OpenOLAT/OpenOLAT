@@ -53,6 +53,8 @@ public class SoundFileResource extends FileResource {
 	
 	public static boolean validate(String filename) {
 		String f = filename.toLowerCase();
-		return f.endsWith(".mp3") || f.endsWith(".wav") || f.endsWith(".ra") || f.endsWith(".midi");
+		return f.endsWith(".mp3") || f.endsWith(".wav")
+				|| f.endsWith(".ra") || f.endsWith(".midi")
+				|| f.endsWith(".aac");
 	}
 }
