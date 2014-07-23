@@ -199,7 +199,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == showAllLink) {
-			String businessPath = "[GroupsSite:0][MyGroups:0][AllGroups:0]";
+			String businessPath = "[GroupsSite:0][AllGroups:0]";
 			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		} 
 	}

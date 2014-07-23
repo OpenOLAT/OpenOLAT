@@ -158,6 +158,9 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 			} else if("Search".equals(segment) && searchOpenLink != null) {
 				updateSearch(ureq).activate(ureq, subEntries, entry.getTransientState());
 				segmentView.select(searchOpenLink);
+			} else {//default all groups
+				updateMyGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
+				segmentView.select(myGroupsLink);
 			}
 		}
 	}

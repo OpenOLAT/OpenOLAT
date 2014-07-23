@@ -212,7 +212,7 @@ public class BookmarksPortletRunController extends AbstractPortletRunController<
 	public void event(UserRequest ureq, Component source, Event event) {		
 		if (source == showAllLink){
 			// activate homes tab in top navigation and active bookmarks menu item
-			String resourceUrl = "[HomeSite:" + ureq.getIdentity().getKey() + "][bookmarks:0]";
+			String resourceUrl = "[MyCoursesSite:0][Favorits:0]";
 			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 			NewControllerFactory.getInstance().launch(ureq, bwControl);

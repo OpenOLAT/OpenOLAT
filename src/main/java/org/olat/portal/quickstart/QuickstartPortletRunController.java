@@ -69,15 +69,15 @@ public class QuickstartPortletRunController extends DefaultController {
 
 		Roles roles = ureq.getUserSession().getRoles();
 		if (roles.isGuestOnly()) {
-			this.quickstartVC = new VelocityContainer("quickstartVC", VELOCITY_ROOT + "/quickstartPortletGuest.html", trans, this);
+			quickstartVC = new VelocityContainer("quickstartVC", VELOCITY_ROOT + "/quickstartPortletGuest.html", trans, this);
 		} else {
-			this.quickstartVC = new VelocityContainer("quickstartVC", VELOCITY_ROOT + "/quickstartPortlet.html", trans, this);
+			quickstartVC = new VelocityContainer("quickstartVC", VELOCITY_ROOT + "/quickstartPortlet.html", trans, this);
 		}
 		helpLink = LinkFactory.createLink("quickstart.link.help", quickstartVC, this);
 		helpLink.setTooltip("quickstart.ttip.help");
 		helpLink.setTarget("_help");		
 
-		setInitialComponent(this.quickstartVC);
+		setInitialComponent(quickstartVC);
 	}
 
 	public void event(UserRequest ureq, Component source, Event event) {
@@ -85,9 +85,9 @@ public class QuickstartPortletRunController extends DefaultController {
 			String cmd = event.getCommand();
 			String businessPath = null;
 			if (cmd.equals("cmd.repo.course")) {
-				businessPath = "[RepositorySite:0][search.course:0]";
+				businessPath = "[MyCoursesSite:0]";
 			} else if (cmd.equals("cmd.repo.catalog")) {
-				businessPath = "[RepositorySite:0][search.catalog:0]";
+				businessPath = "[MyCoursesSite:0][Catalog:0]";
 			} else if (cmd.equals("cmd.settings")) {
 				businessPath = "[HomeSite:" + ureq.getIdentity().getKey() + "][mysettings:0]";
 			}	else if (cmd.equals("cmd.buddygroup.new")) {
