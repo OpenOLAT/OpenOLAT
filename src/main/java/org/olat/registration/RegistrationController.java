@@ -32,13 +32,18 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.LanguageChangedEvent;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
+import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -81,6 +86,7 @@ public class RegistrationController extends BasicController implements Activatea
 
 	private VelocityContainer myContent;	
 	private Panel regarea;
+	private Link loginButton;
 	private WizardInfoController wizInfoController;
 	private DisclaimerController disclaimerController;
 	private RegistrationManager registrationManager = RegistrationManager.getInstance();
@@ -229,24 +235,24 @@ public class RegistrationController extends BasicController implements Activatea
 		myContent.contextPut("text", translate("step1.reg.text"));
 		regarea.setContent(emailSendForm.getInitialComponent());
 	}
-	
-	
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		// 
+		if(source == loginButton) {
+			Identity persistedIdentity = (Identity)loginButton.getUserObject();
+			doLogin(ureq, persistedIdentity);
+		}
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == emailSendForm) {
 			if (event == Event.DONE_EVENT) { // form
@@ -355,9 +361,9 @@ public class RegistrationController extends BasicController implements Activatea
 		} else if (source == disclaimerController) {
 			if (event == Event.DONE_EVENT) {
 				// finalize the registration by creating the user
-				User persitedUser = createNewUserAfterRegistration();
+				Identity persitedIdentity = createNewUserAfterRegistration();
 				// display step5
-				displayFinalStep(persitedUser);
+				displayFinalStep(persitedIdentity);
 			} else if (event == Event.CANCELLED_EVENT) {
 				ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(Settings.getServerContextPathURI()));
 			}
@@ -375,7 +381,7 @@ public class RegistrationController extends BasicController implements Activatea
 	 *            The newly created User from which to display information
 	 * 
 	 */
-	private void displayFinalStep(User user){
+	private void displayFinalStep(Identity persitedIdentity){
 		// set wizard step to 5
 		wizInfoController.setCurStep(5);
 		
@@ -389,16 +395,14 @@ public class RegistrationController extends BasicController implements Activatea
 		
 		List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(RegistrationForm2.USERPROPERTIES_FORM_IDENTIFIER, false);
 		finishVC.contextPut("userPropertyHandlers", userPropertyHandlers);
-		finishVC.contextPut("user", user);
+		finishVC.contextPut("user", persitedIdentity.getUser());
 		finishVC.contextPut("locale", getLocale());
 		finishVC.contextPut("username", registrationForm.getLogin());
-		finishVC.contextPut("text", getTranslator().translate("step5.reg.text", new String[] {registrationForm.getLogin() }));
-		String loginhref = WebappHelper.getServletContextPath();
-		if(StringHelper.containsNonWhitespace(loginhref)) {
-			finishVC.contextPut("loginhref", loginhref);
-		} else {
-			finishVC.contextPut("loginhref", "/");
-		}
+		finishVC.contextPut("text", getTranslator().translate("step5.reg.text", new String[]{ registrationForm.getLogin() }));
+		loginButton = LinkFactory.createButton("form.login", finishVC, this);
+		loginButton.setCustomEnabledLinkCSS("btn btn-primary");
+		loginButton.setUserObject(persitedIdentity);
+		finishVC.put("loginhref", loginButton);
 		
 		regarea.setContent(finishVC);
 	}
@@ -409,7 +413,7 @@ public class RegistrationController extends BasicController implements Activatea
 	 * 
 	 * @return User the newly created, persisted User Object
 	 */
-	private User createNewUserAfterRegistration() {
+	private Identity createNewUserAfterRegistration() {
 		// create user with mandatory fields from registration-form
 		UserManager um = UserManager.getInstance();
 		User volatileUser = um.createUser(registrationForm.getFirstName(), registrationForm.getLastName(), tempKey.getEmailAddress());
@@ -461,7 +465,18 @@ public class RegistrationController extends BasicController implements Activatea
 
 			// tell system that this user did accept the disclaimer
 			RegistrationManager.getInstance().setHasConfirmedDislaimer(persistedIdentity);
-			return persistedUser;
+			return persistedIdentity;
+		}
+	}
+	
+	private void doLogin(UserRequest ureq, Identity persistedIdentity) {
+		int loginStatus = AuthHelper.doLogin(persistedIdentity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
+		if (loginStatus == AuthHelper.LOGIN_OK) {
+			//youppi
+		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
+			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
+		} else {
+			getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
 		}
 	}
 
