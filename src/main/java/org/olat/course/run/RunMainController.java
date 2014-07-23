@@ -42,8 +42,10 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -58,6 +60,7 @@ import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.ConfigurationChangedListener;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -504,29 +507,41 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		
 		if(runLink == source) {
 			toolbarPanel.popUpToRootController(ureq);
+			addCustomCSS(ureq);
 			currentToolCtr = null;
 		} else if(editLink == source) {
 			launchEdit(ureq);
+			removeCustomCSS(ureq);
 		} else if(editSettingsLink == source) {
 			launchEditSettings(ureq);
+			removeCustomCSS(ureq);
 		} else if(userMgmtLink == source) {
 			launchMembersManagement(ureq);
+			removeCustomCSS(ureq);
 		} else if(archiverLink == source) {
 			launchArchive(ureq);
+			removeCustomCSS(ureq);
 		} else if(assessmentLink == source) {
 			launchAssessmentTool(ureq);
+			removeCustomCSS(ureq);
 		} else if(testStatisticLink == source) {
 			launchAssessmentStatistics(ureq, "command.openteststatistic", "TestStatistics", QTIType.test, QTIType.onyx);
+			removeCustomCSS(ureq);
 		} else if (surveyStatisticLink == source) {
 			launchAssessmentStatistics(ureq, "command.opensurveystatistic", "SurveyStatistics", QTIType.survey);
+			removeCustomCSS(ureq);
 		} else if(courseStatisticLink == source) {
 			launchStatistics(ureq);
+			removeCustomCSS(ureq);
 		} else if(dbLink == source) {
 			launchDbs(ureq);
+			removeCustomCSS(ureq);
 		} else if(folderLink == source) {
 			launchCourseFolder(ureq);
+			removeCustomCSS(ureq);
 		} else if(areaLink == source) {
 			launchCourseAreas(ureq);
+			removeCustomCSS(ureq);
 		} else if(efficiencyStatementsLink == source) {
 			launchEfficiencyStatements(ureq);
 		} else if(bookmarkLink == source) {
@@ -535,6 +550,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			launchCalendar(ureq);
 		} else if(detailsLink == source) {
 			launchDetails(ureq);
+			removeCustomCSS(ureq);
 		} else if(noteLink == source) {
 			launchPersonalNotes(ureq);
 		} else if(chatLink == source) {
@@ -572,11 +588,36 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 	}
 	
+	private void addCustomCSS(UserRequest ureq) {
+		uce = loadUserCourseEnvironment(ureq);
+		CustomCSS customCSS = CourseFactory.getCustomCourseCss(ureq.getUserSession(), uce.getCourseEnvironment());
+		ChiefController cc = Windows.getWindows(ureq).getChiefController();
+		if (cc != null) {
+			if(customCSS == null) {
+				cc.removeCurrentCustomCSSFromView();
+			} else {
+				cc.addCurrentCustomCSSToView(customCSS);
+			}
+		}
+		setCustomCSS(customCSS);
+	}
+	
+	private void removeCustomCSS(UserRequest ureq) {
+		ChiefController cc = Windows.getWindows(ureq).getChiefController();
+		if (cc != null) {
+			cc.removeCurrentCustomCSSFromView();
+		}
+		setCustomCSS(null);
+	}
+	
 	private void eventDone(UserRequest ureq) {
+		// release current node controllers resources and do cleanup
+		removeAsListenerAndDispose(currentToolCtr);
+		currentToolCtr = null;
+		addCustomCSS(ureq);
+		
 		if (isInEditor) {
 			isInEditor = false; // for clarity
-			removeAsListenerAndDispose(currentToolCtr);
-			currentToolCtr = null;
 			if (needsRebuildAfterPublish) {
 				needsRebuildAfterPublish = false;
 				
@@ -593,10 +634,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				// statment)
 				initToolController();
 			}
-		} else {
-			// release current node controllers resources and do cleanup if it was not the editor!
-			removeAsListenerAndDispose(currentToolCtr);
-			currentToolCtr = null;
 		}
 	}
 	

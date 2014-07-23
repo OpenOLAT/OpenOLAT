@@ -37,6 +37,7 @@ import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
+import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.DefaultChiefController;
@@ -242,6 +243,16 @@ public class ExceptionWindowController extends DefaultChiefController {
 
 	@Override
 	public void removeBodyCssClass(String cssClass) {
+		//
+	}
+	
+	@Override
+	public void addCurrentCustomCSSToView(CustomCSS customCSS) {
+		//
+	}
+
+	@Override
+	public void removeCurrentCustomCSSFromView() {
 		//
 	}
 

@@ -33,6 +33,7 @@ import org.olat.core.gui.WindowSettings;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
+import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.DefaultChiefController;
@@ -103,20 +104,32 @@ public class MessageWindowController extends DefaultChiefController {
 	public void removeBodyCssClass(String cssClass) {
 		//
 	}
+	
+	@Override
+	public void addCurrentCustomCSSToView(CustomCSS customCSS) {
+		//
+	}
+	
+	@Override
+	public void removeCurrentCustomCSSFromView() {
+		//
+	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-	//
+		//
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
-	//
+		//
 	}
 	
 	/**
@@ -130,5 +143,4 @@ public class MessageWindowController extends DefaultChiefController {
 	public static ChiefController createMessageChiefController(UserRequest ureq, Throwable th, String message, String supportEmail) {
 		return new MessageWindowController(ureq, th, message, supportEmail);
 	}
-
 }

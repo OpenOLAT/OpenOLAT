@@ -788,7 +788,8 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	/**
 	 * Remove the current custom css from the view
 	 */
-	protected void removeCurrentCustomCSSFromView() {
+	@Override
+	public void removeCurrentCustomCSSFromView() {
 		Window myWindow = getWindowControl().getWindowBackOffice().getWindow();
 		CustomCSS currentCustomCSS = myWindow.getCustomCSS();
 		if (currentCustomCSS != null) {
@@ -803,7 +804,8 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	 * 
 	 * @param customCSS
 	 */
-	protected void addCurrentCustomCSSToView(CustomCSS customCSS) {
+	@Override
+	public void addCurrentCustomCSSToView(CustomCSS customCSS) {
 		if (customCSS == null) return;
 		// The current CSS is stored as a window attribute so that is can be
 		// accessed by the IFrameDisplayController

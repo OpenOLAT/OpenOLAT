@@ -27,6 +27,7 @@
 package org.olat.core.gui.control;
 
 import org.olat.core.gui.components.Window;
+import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 /**
  * Description: <br>
  * 
@@ -58,5 +59,19 @@ public interface ChiefController extends Controller {
 	 * @param cssClass
 	 */
 	public void removeBodyCssClass(String cssClass);
+	
+	/**
+	 * Add manually the custom CSS with an special timing to the view.
+	 * Don't forget to set the custom CSS in your main controller too. The
+	 * custom CSS is removed and readded at every tab/site changes.
+	 * 
+	 * @param customCSS
+	 */
+	public void addCurrentCustomCSSToView(CustomCSS customCSS);
+	
+	/**
+	 * 
+	 */
+	public void removeCurrentCustomCSSFromView();
 
 }
