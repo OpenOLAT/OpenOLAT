@@ -20,7 +20,8 @@
 		<constructor-arg index="0" ref="searchModule" />
 		<constructor-arg index="1" ref="mainIndexer" />
 		<constructor-arg index="2" ref="searchProvider" />
-		<constructor-arg index="3" ref="schedulerFactoryBean"/>
+		<constructor-arg index="3" ref="coordinatorManager"/>
+		<constructor-arg index="4" ref="schedulerFactoryBean"/>
 		<property name="lifeIndexer" ref="jmsIndexer"/>
 		<property name="metadataFields" ref="SearchMetadataFieldsProvider" />
 		<property name="searchExecutor" ref="searchExecutor" />
@@ -42,6 +43,7 @@
 	
 	<bean id="jmsIndexer" class="org.olat.search.service.indexer.JmsIndexer" init-method="springInit" destroy-method="stop">
 		<constructor-arg index="0" ref="searchModule" />
+		<constructor-arg index="1" ref="coordinatorManager"/>
 		<property name="connectionFactory" ref="indexConnectionFactory"/>
 		<property name="jmsQueue" ref="indexQueue"/>
 		<property name="searchService" ref="org.olat.search.service.${search.service}" />

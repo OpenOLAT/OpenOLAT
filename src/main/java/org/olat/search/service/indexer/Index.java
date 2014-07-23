@@ -35,6 +35,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.search.SearchModule;
 import org.olat.search.service.spell.SearchSpellChecker;
 
@@ -62,14 +63,15 @@ public class Index {
 	 * @param restartInterval Restart interval of full-index in milliseconds.
 	 * @param indexInterval   Sleeping time in milliseconds between adding documents to index.
 	 */
-	public Index(SearchModule searchModuleConfig, SearchSpellChecker spellChecker, MainIndexer mainIndexer, LifeFullIndexer lifeIndexer) {
+	public Index(SearchModule searchModuleConfig, SearchSpellChecker spellChecker, MainIndexer mainIndexer,
+			LifeFullIndexer lifeIndexer, CoordinatorManager coordinatorManager) {
 		this.spellChecker = spellChecker;
 		this.indexPath = searchModuleConfig.getFullIndexPath();
 		this.tempIndexPath = searchModuleConfig.getFullTempIndexPath();
 		this.permanentIndexPath = searchModuleConfig.getFullPermanentIndexPath();
 		this.lifeIndexer = lifeIndexer;
 		
-		fullIndexer = new OlatFullIndexer(this, searchModuleConfig, mainIndexer);
+		fullIndexer = new OlatFullIndexer(this, searchModuleConfig, mainIndexer, coordinatorManager);
 	}
 
 	/**
@@ -78,9 +80,9 @@ public class Index {
 	public void startFullIndex() {
 		// do not start search engine in test mode, some repository tests might lead to nullpointers
 		// since only dummy entries are generated (or fix the search service to handle those correctly)
-		if ( ! Settings.isJUnitTest()) {
+		if (!Settings.isJUnitTest()) {
 			lifeIndexer.fullIndex();
-		  fullIndexer.startIndexing();
+			fullIndexer.startIndexing();
 		}
 	}
 	
@@ -123,12 +125,7 @@ public class Index {
 	 */
 	public void indexingIsDone() {
 		// Full indexing is done => move tempIndex to index dir
-		moveTempIndexToIndex(tempIndexPath,indexPath);
-		spellChecker.createSpellIndex();
-	}
-
-	private void moveTempIndexToIndex(String tempIndexPath, String indexPath) {
-		File indexDir = new File( indexPath );
+		File indexDir = new File(indexPath);
 		if (!indexDir.exists()) {
 		  indexDir.mkdirs();
 		}
@@ -138,6 +135,8 @@ public class Index {
 		FileUtils.deleteDirsAndFiles(indexDir, true, false);
 		FileUtils.copyDirContentsToDir(new File(tempIndexDir, "main") , indexDir ,true, "search indexer move tmp index");
 		log.info("New generated Index ready to use." );
+		
+		spellChecker.createSpellIndex();
 	}
 	
 	public OlatFullIndexer getIndexer() {

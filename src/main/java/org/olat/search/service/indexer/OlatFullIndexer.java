@@ -47,6 +47,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WorkThreadInformations;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.search.SearchModule;
 import org.olat.search.SearchService;
 import org.olat.search.model.OlatDocument;
@@ -71,12 +72,13 @@ public class OlatFullIndexer {
 	 */
 	private Index index;
 	private IndexWriter indexWriter;
-	
-	
+
 	/** Flag to stop indexing. */
 	private boolean stopIndexing;
   /** When restartIndexingWhenFinished is true, the restart interval in ms can be set. */
 	private long indexInterval = 500;
+
+	private double ramBufferSizeMB;
 	
 	/** Current status of full-indexer. */
 	private FullIndexerStatus fullIndexerStatus;
@@ -99,7 +101,8 @@ public class OlatFullIndexer {
 	private Map<String,Integer> fileTypeCounters;
 
 	private MainIndexer mainIndexer;
-	private double ramBufferSizeMB;
+	private CoordinatorManager coordinatorManager;
+
 	
 	/**
 	 * 
@@ -108,18 +111,20 @@ public class OlatFullIndexer {
 	 * @param restartInterval Restart interval in milliseconds.
 	 * @param indexInterval   Sleep time in milliseconds between adding documents.
 	 */
-	public OlatFullIndexer(Index index, SearchModule searchModuleConfig, MainIndexer mainIndexer) {
-    this.index = index;
-    this.mainIndexer = mainIndexer;
-    tempIndexPath = searchModuleConfig.getFullTempIndexPath();
-    indexInterval = searchModuleConfig.getIndexInterval();
-    numberIndexWriter = searchModuleConfig.getNumberIndexWriter();
-    documentsPerInterval = searchModuleConfig.getDocumentsPerInterval();
-    ramBufferSizeMB = searchModuleConfig.getRAMBufferSizeMB();
-    fullIndexerStatus = new FullIndexerStatus(numberIndexWriter);    
-    stopIndexing = true;
-    documentQueue = new Vector<Document>();
-    resetDocumentCounters();
+	public OlatFullIndexer(Index index, SearchModule searchModuleConfig,
+			MainIndexer mainIndexer, CoordinatorManager coordinatorManager) {
+		this.index = index;
+		this.mainIndexer = mainIndexer;
+		this.coordinatorManager = coordinatorManager;
+		tempIndexPath = searchModuleConfig.getFullTempIndexPath();
+		indexInterval = searchModuleConfig.getIndexInterval();
+		numberIndexWriter = searchModuleConfig.getNumberIndexWriter();
+		documentsPerInterval = searchModuleConfig.getDocumentsPerInterval();
+		ramBufferSizeMB = searchModuleConfig.getRAMBufferSizeMB();
+		fullIndexerStatus = new FullIndexerStatus(numberIndexWriter);    
+		stopIndexing = true;
+		documentQueue = new Vector<Document>();
+		resetDocumentCounters();
 	}
 	
 	/**
@@ -228,6 +233,10 @@ public class OlatFullIndexer {
 			indexWriter.close();
 			indexWriter = null;
 			indexWriterWorkers = null;
+			
+			//created because the index is deleted and copied
+			IndexerEvent event = new IndexerEvent(IndexerEvent.INDEX_CREATED);
+			coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, IndexerEvent.INDEX_ORES);
 		} catch (IOException e) {
 			log.warn("Can not create IndexWriter, indexname=" + tempIndexPath, e);
 		} finally {

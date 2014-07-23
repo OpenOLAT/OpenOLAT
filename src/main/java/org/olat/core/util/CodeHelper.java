@@ -104,6 +104,12 @@ public class CodeHelper {
 		return UUID.randomUUID().toString();
 	}
 	
+	public static long nanoToMilliTime(long start) {
+		long end = System.nanoTime();
+		long takes = (end - start) / 1000000;
+		return takes;
+	}
+	
 	public static void printNanoTime(long start, String action) {
 		long end = System.nanoTime();
 		long takes = (end - start) / 1000000;

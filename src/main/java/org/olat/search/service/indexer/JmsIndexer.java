@@ -54,6 +54,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.search.SearchModule;
 import org.olat.search.SearchService;
 import org.olat.search.model.AbstractOlatDocument;
@@ -78,6 +79,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 	private QueueConnection connection;
 	
 	private SearchService searchService;
+	private CoordinatorManager coordinatorManager;
 
 	private String permanentIndexPath;
 	private DirectoryReader reader;
@@ -88,10 +90,11 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 	
 	private List<LifeIndexer> indexers = new ArrayList<LifeIndexer>();
 	
-	public JmsIndexer(SearchModule searchModuleConfig) {
+	public JmsIndexer(SearchModule searchModuleConfig, CoordinatorManager coordinatorManager) {
 		indexingNode = searchModuleConfig.isSearchServiceEnabled();
 		ramBufferSizeMB = searchModuleConfig.getRAMBufferSizeMB();
 		permanentIndexPath = searchModuleConfig.getFullPermanentIndexPath();
+		this.coordinatorManager = coordinatorManager;
 	}
 
 	public Queue getJmsQueue() {
@@ -172,8 +175,12 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 			File tempIndexDir = new File(permanentIndexPath);
 			Directory indexPath = FSDirectory.open(tempIndexDir);
 			if(indexingNode) {
-				permanentIndexWriter = new IndexWriterHolder (indexPath, this);
-				permanentIndexWriter.ensureIndexExists();
+				permanentIndexWriter = new IndexWriterHolder(indexPath, this);
+				boolean created = permanentIndexWriter.ensureIndexExists();
+				if(created) {
+					IndexerEvent event = new IndexerEvent(IndexerEvent.INDEX_CREATED);
+					coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, IndexerEvent.INDEX_ORES);
+				}
 			}
 			reader = DirectoryReader.open(indexPath);
 		} catch (IOException e) {
@@ -297,8 +304,8 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 	private void doIndex(JmsIndexWork workUnit) {
 		if(searchService instanceof SearchServiceImpl) {
 			String type = workUnit.getIndexType();
-			List<LifeIndexer> indexers = getIndexerByType(type);
-			for(LifeIndexer indexer:indexers) {
+			List<LifeIndexer> lifeIndexers = getIndexerByType(type);
+			for(LifeIndexer indexer:lifeIndexers) {
 				indexer.indexDocument(workUnit.getKey(), this);
 			}
 		}
@@ -307,8 +314,8 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 	private void doDelete(JmsIndexWork workUnit) {
 		if(searchService instanceof SearchServiceImpl) {
 			String type = workUnit.getIndexType();
-			List<LifeIndexer> indexers = getIndexerByType(type);
-			for(LifeIndexer indexer:indexers) {
+			List<LifeIndexer> lifeIndexers = getIndexerByType(type);
+			for(LifeIndexer indexer:lifeIndexers) {
 				indexer.deleteDocument(workUnit.getKey(), this);
 			}
 		}
@@ -360,8 +367,8 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 			String resourceUrl = document.get(AbstractOlatDocument.RESOURCEURL_FIELD_NAME);
 			Term uuidTerm = new Term(AbstractOlatDocument.RESOURCEURL_FIELD_NAME, resourceUrl);
 
-			DirectoryReader reader = getReader();
-			IndexSearcher searcher = new IndexSearcher(reader);
+			DirectoryReader currentReader = getReader();
+			IndexSearcher searcher = new IndexSearcher(currentReader);
 			TopDocs hits = searcher.search(new TermQuery(uuidTerm), 10);
 			writer = permanentIndexWriter.getAndLock();
 			if(hits.totalHits > 0) {
@@ -381,8 +388,8 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 		try {
 			String resourceUrl = document.get(AbstractOlatDocument.RESOURCEURL_FIELD_NAME);
 			Term uuidTerm = new Term(AbstractOlatDocument.RESOURCEURL_FIELD_NAME, resourceUrl);
-			DirectoryReader reader = getReader();
-			IndexSearcher searcher = new IndexSearcher(reader);
+			DirectoryReader currentReader = getReader();
+			IndexSearcher searcher = new IndexSearcher(currentReader);
 			TopDocs hits = searcher.search(new TermQuery(uuidTerm), 10);
 			if(hits.totalHits > 0) {
 				writer.updateDocument(uuidTerm, document);

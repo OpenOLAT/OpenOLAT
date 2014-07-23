@@ -68,6 +68,7 @@ class SearchOrderByCallable implements Callable<List<Long>> {
 	
 	@Override
 	public List<Long> call() {
+		IndexSearcher searcher = null;
 		try {
 			if (!searchService.existIndex()) {
 				log.warn("Index does not exist, can't search for queryString: "+queryString);
@@ -75,11 +76,11 @@ class SearchOrderByCallable implements Callable<List<Long>> {
 			}
 			
 			log.info("queryString=" + queryString);
-			IndexSearcher searcher = searchService.getIndexSearcher();
+			searcher = searchService.getIndexSearcher();
 			BooleanQuery query = searchService.createQuery(queryString, condQueries);
 			//log.info("query=" + query);
 
-			int n = SearchServiceFactory.getService().getSearchModuleConfig().getMaxHits();
+			int n = searchService.getSearchModuleConfig().getMaxHits();
 			TopDocs docs;
 			if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
 				SortField[] sortFields = new SortField[orderBy.length];
@@ -112,6 +113,7 @@ class SearchOrderByCallable implements Callable<List<Long>> {
 			log.error("", naex);
 			return null;
 		} finally {
+			searchService.releaseIndexSearcher(searcher);
 			DBFactory.getInstance().commitAndCloseSession();
 		}
 	}

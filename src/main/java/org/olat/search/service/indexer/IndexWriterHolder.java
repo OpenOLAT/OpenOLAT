@@ -27,6 +27,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.store.Directory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 
 /**
  * 
@@ -49,27 +50,33 @@ public class IndexWriterHolder {
 		this.indexer = indexer;
 	}
 	
-	public synchronized void ensureIndexExists() {
+	/**
+	 * @return true if it has created the index
+	 */
+	public synchronized boolean ensureIndexExists() {
+		boolean created = false;
 		IndexWriter writer = null;
 		try {
 			if(!DirectoryReader.indexExists(indexPath)) {
 				writer = getAndLock();
+				created = true;
 			}
 		} catch (IOException e) {
 			log.error("",  e);
 		} finally {
 			release(writer);
 		}
+		return created;
 	}
 
 	public synchronized IndexWriter getAndLock() throws IOException {
 		if(writerRef == null) {
-			long start = System.currentTimeMillis();
+			long start = System.nanoTime();
 			IndexWriter indexWriter = new IndexWriter(indexPath, indexer.newIndexWriterConfig());
 			if(!DirectoryReader.indexExists(indexPath)) {
 				indexWriter.commit();//make sure it exists
 			}
-			log.info("Opening writer takes (ms): " + (System.currentTimeMillis() - start));
+			log.info("Opening writer takes (ms): " + CodeHelper.nanoToMilliTime(start));
 			writerRef = indexWriter;
 		}
 		counter.incrementAndGet();
@@ -81,11 +88,11 @@ public class IndexWriterHolder {
 			try {
 				int used = counter.decrementAndGet();
 				if(used == 0) {
-					long start = System.currentTimeMillis();
+					long start = System.nanoTime();
 					indexWriter.commit();
 					indexWriter.close();
 					writerRef = null;
-					log.info("Close writer takes (ms): " + (System.currentTimeMillis() - start));
+					log.info("Close writer takes (ms): " + CodeHelper.nanoToMilliTime(start));
 				}
 			} catch (Exception e) {
 				log.error("", e);

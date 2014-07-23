@@ -68,6 +68,7 @@ class SearchCallable implements Callable<SearchResults> {
 	
 	@Override
 	public SearchResults call() throws ParseException {
+		IndexSearcher searcher = null;
 		try {
 			boolean debug = log.isDebug();
 			
@@ -77,7 +78,7 @@ class SearchCallable implements Callable<SearchResults> {
 			}
 			
 			if(debug) log.debug("queryString=" + queryString);
-			IndexSearcher searcher = searchService.getIndexSearcher();
+			searcher = searchService.getIndexSearcher();
 			BooleanQuery query = searchService.createQuery(queryString, condQueries);
 			if(debug) log.debug("query=" + query);
 			
@@ -99,6 +100,7 @@ class SearchCallable implements Callable<SearchResults> {
 			log.error("", naex);
 			return null;
 		} finally {
+			searchService.releaseIndexSearcher(searcher);
 			DBFactory.getInstance().commitAndCloseSession();
 		}
 	}
