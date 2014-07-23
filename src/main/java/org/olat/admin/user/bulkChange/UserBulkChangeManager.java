@@ -221,7 +221,7 @@ public class UserBulkChangeManager extends BasicManager {
 								: (status == Identity.STATUS_LOGIN_DENIED ? "login_denied"
 										: (status == Identity.STATUS_DELETED ? "deleted"
 												: "unknown"))));
-				if(status == Identity.STATUS_LOGIN_DENIED) {
+				if(oldStatus != status && status == Identity.STATUS_LOGIN_DENIED && Boolean.parseBoolean(roleChangeMap.get("sendLoginDeniedEmail"))) {
 					sendLoginDeniedEmail(identity);
 				}
 				identity = secMgr.saveIdentityStatus(identity, status);

@@ -36,6 +36,7 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
@@ -65,6 +66,7 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 	private SpacerElement rolesSep;
 	private SpacerElement sysSep;
 	private SingleSelection statusRE;
+	private MultipleSelectionElement sendLoginDeniedEmailCB;
 	
 	private Identity identity;
 	private boolean iAmOlatAdmin, isAdmin, isUserManager, isAuthor, isGroupManager, isPoolManager, isGuestOnly, isInstitutionalResourceManager;
@@ -255,6 +257,10 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 		statusRE.setEnabled(status != Identity.STATUS_DELETED);
 	}
 
+	public boolean getSendLoginDeniedEmail() {
+		return sendLoginDeniedEmailCB.isSelected(0);
+	}
+	
 	private void setRole (String k, boolean tf) {
 		if (roleKeys.contains(k)) RolesSE.select(k, tf); 
 	}
@@ -278,7 +284,10 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 		if (source == AnonymousRE) {
 			RolesSE.setVisible(!isAnonymous());
 			rolesSep.setVisible(!isAnonymous());
+		} else if (source == statusRE && iAmOlatAdmin) {
+			sendLoginDeniedEmailCB.setVisible(statusRE.isSelected(2));
 		}
+		
 	}
 
 	@Override
@@ -308,9 +317,13 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 				statusKeys.toArray(new String[statusKeys.size()]),
 				statusValues.toArray(new String[statusKeys.size()])
 		);
+		statusRE.addActionListener(this, FormEvent.ONCHANGE);
+		sendLoginDeniedEmailCB = uifactory.addCheckboxesHorizontal("rightsForm.sendLoginDeniedEmail", formLayout, new String[]{"y"}, new String[]{translate("rightsForm.sendLoginDeniedEmail")}, null);
+		sendLoginDeniedEmailCB.setLabel(null, null);
 		
 		rolesSep.setVisible(iAmOlatAdmin);
 		statusRE.setVisible(iAmOlatAdmin);
+		sendLoginDeniedEmailCB.setVisible(false);
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);
