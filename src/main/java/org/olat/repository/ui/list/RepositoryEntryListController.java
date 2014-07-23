@@ -85,8 +85,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RepositoryEntryListController extends FormBasicController
 	implements Activateable2, RepositoryEntryDataSourceUIFactory, FlexiTableComponentDelegate {
 
-	private final List<Link> filters = new ArrayList<>();
-	private final List<Link> orderBy = new ArrayList<>();
+	private final List<Link> filterLinks = new ArrayList<>();
+	private final List<Link> orderByLinks = new ArrayList<>();
 	
 	private boolean startExtendedSearch;
 
@@ -145,7 +145,9 @@ public class RepositoryEntryListController extends FormBasicController
 		filters.add(new FlexiTableFilter(translate("filter.booked.participant"), Filter.asParticipant.name()));
 		filters.add(new FlexiTableFilter(translate("filter.booked.coach"), Filter.asCoach.name()));
 		filters.add(new FlexiTableFilter(translate("filter.booked.author"), Filter.asAuthor.name()));
-		filters.add(new FlexiTableFilter(translate("filter.not.booked"), Filter.notBooked.name()));
+		if(!searchParams.isMembershipMandatory()) {
+			filters.add(new FlexiTableFilter(translate("filter.not.booked"), Filter.notBooked.name()));
+		}
 		filters.add(FlexiTableFilter.SPACER);
 		filters.add(new FlexiTableFilter(translate("filter.passed"), Filter.passed.name()));
 		filters.add(new FlexiTableFilter(translate("filter.not.passed"), Filter.notPassed.name()));
@@ -295,7 +297,7 @@ public class RepositoryEntryListController extends FormBasicController
 			Object uo = link.getUserObject();
 			if(uo instanceof OrderBy) {
 				OrderBy sort = (OrderBy)uo;
-				for(Link order:orderBy) {
+				for(Link order:orderByLinks) {
 					removeCheck(order);
 				}
 				toggleCheck(link);
@@ -304,7 +306,7 @@ public class RepositoryEntryListController extends FormBasicController
 			} else if(uo instanceof Filter) {
 				toggleCheck(link);
 				List<Filter> selectedFilters = new ArrayList<>();
-				for(Link filter:filters) {
+				for(Link filter:filterLinks) {
 					String iconCss = filter.getIconLeftCSS();
 					if(StringHelper.containsNonWhitespace(iconCss)) {
 						selectedFilters.add((Filter)filter.getUserObject());
@@ -457,8 +459,8 @@ public class RepositoryEntryListController extends FormBasicController
 	
 	@Override
 	public void forgeSelectLink(RepositoryEntryRow row) {
-		String name = row.getDisplayName();
-		FormLink selectLink = uifactory.addFormLink("select_" + row.getKey(), "select", name, null, null, Link.NONTRANSLATED);
+		String displayName = row.getDisplayName();
+		FormLink selectLink = uifactory.addFormLink("select_" + row.getKey(), "select", displayName, null, null, Link.NONTRANSLATED);
 		selectLink.setUserObject(row);
 		row.setSelectLink(selectLink);
 	}

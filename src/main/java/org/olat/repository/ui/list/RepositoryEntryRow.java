@@ -124,13 +124,13 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		setNumOfComments(entry.getNumOfComments());
 		
 		//lifecycle
-		RepositoryEntryLifecycle lifecycle = entry.getLifecycle();
-		if(lifecycle != null) {
-			setLifecycleStart(lifecycle.getValidFrom());
-			setLifecycleEnd(lifecycle.getValidTo());
-			if(!lifecycle.isPrivateCycle()) {
-				setLifecycle(lifecycle.getLabel());
-				setLifecycleSoftKey(lifecycle.getSoftKey());
+		RepositoryEntryLifecycle reLifecycle = entry.getLifecycle();
+		if(reLifecycle != null) {
+			setLifecycleStart(reLifecycle.getValidFrom());
+			setLifecycleEnd(reLifecycle.getValidTo());
+			if(!reLifecycle.isPrivateCycle()) {
+				setLifecycle(reLifecycle.getLabel());
+				setLifecycleSoftKey(reLifecycle.getSoftKey());
 			}
 		}
 	}

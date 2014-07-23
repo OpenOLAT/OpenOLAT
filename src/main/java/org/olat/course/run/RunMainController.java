@@ -687,8 +687,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					isInEditor = true;
 				}
 			}
-		} else {
-			throw new OLATSecurityException("wanted to activate editor, but no according right");
 		}
 	}
 	
@@ -700,8 +698,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				currentToolCtr = new AuthoringEditEntrySettingsController(ureq, getWindowControl(), toolbarPanel, courseRepositoryEntry);
 				listenTo(currentToolCtr);
 			}
-		} else {
-			throw new OLATSecurityException("wanted to activate editor, but no according right");
 		}
 	}
 	
@@ -1092,6 +1088,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 							doDisposeAfterEvent();
 						} else if(modifiedNodeIds != null && modifiedNodeIds.contains(currentNodeIdent)) {
 							doDisposeAfterEvent();
+							//needsRebuildAfter = true;
 						} else {
 							needsRebuildAfter = true;
 						}
