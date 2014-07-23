@@ -317,8 +317,8 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 				statusKeys.toArray(new String[statusKeys.size()]),
 				statusValues.toArray(new String[statusKeys.size()])
 		);
-		statusRE.addActionListener(this, FormEvent.ONCHANGE);
-		sendLoginDeniedEmailCB = uifactory.addCheckboxesHorizontal("rightsForm.sendLoginDeniedEmail", formLayout, new String[]{"y"}, new String[]{translate("rightsForm.sendLoginDeniedEmail")}, null);
+		statusRE.addActionListener(FormEvent.ONCHANGE);
+		sendLoginDeniedEmailCB = uifactory.addCheckboxesHorizontal("rightsForm.sendLoginDeniedEmail", formLayout, new String[]{"y"}, new String[]{translate("rightsForm.sendLoginDeniedEmail")});
 		sendLoginDeniedEmailCB.setLabel(null, null);
 		
 		rolesSep.setVisible(iAmOlatAdmin);

@@ -272,13 +272,13 @@ class UserBulkChangeStep01 extends BasicStep {
 
 				setStatus = uifactory.addDropdownSingleselect("setStatus",null, innerFormLayout, statusKeys, statusValues, null);
 				setStatus.setVisible(false);
-				setStatus.addActionListener(listener, FormEvent.ONCHANGE);
+				setStatus.addActionListener(FormEvent.ONCHANGE);
 				targets = new HashSet<FormItem>();
 				targets.add(setStatus);
 				RulesFactory.createHideRule(chkStatus, null, targets, innerFormLayout);
 				RulesFactory.createShowRule(chkStatus, "Status", targets, innerFormLayout);
 				
-				sendLoginDeniedEmail = uifactory.addCheckboxesHorizontal("rightsForm.sendLoginDeniedEmail", innerFormLayout, new String[]{"y"}, new String[]{translate("rightsForm.sendLoginDeniedEmail")}, null);
+				sendLoginDeniedEmail = uifactory.addCheckboxesHorizontal("rightsForm.sendLoginDeniedEmail", innerFormLayout, new String[]{"y"}, new String[]{translate("rightsForm.sendLoginDeniedEmail")});
 				sendLoginDeniedEmail.setLabel(null, null);
 				sendLoginDeniedEmail.setVisible(false);
 				RulesFactory.createHideRule(chkStatus, null, sendLoginDeniedEmail, innerFormLayout);
