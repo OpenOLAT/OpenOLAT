@@ -80,4 +80,16 @@ div.o_callout_overlay {
 	
 }
 
+/* extend bootstrap modal classes for extra large modal views that should us entire available space, e.g. in wizards */
+.modal {
+	.o_modal_fullwidth {
+		@media (min-width: $screen-sm-min) {
+			width: 90%;
+		}
+		@media (min-width: $screen-md-min) {
+			width: 80%;
+		}
+	}
+}
+
 
