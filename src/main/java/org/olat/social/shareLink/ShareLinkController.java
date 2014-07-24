@@ -21,14 +21,23 @@
 
 package org.olat.social.shareLink;
 
+import java.util.List;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.HistoryPoint;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.social.SocialModule;
 
 /**
@@ -67,6 +76,8 @@ public class ShareLinkController extends BasicController {
 		// Load configured share link buttons from the SocialModule configuration
 		SocialModule socialModule = (SocialModule) CoreSpringFactory.getBean("socialModule");
 		this.shareLinkVC.contextPut("shareLinks", socialModule.getEnabledShareLinkButtons());
+		// Tell if user is logged in
+		this.shareLinkVC.contextPut("isUser", ureq.getUserSession().isAuthenticated() && !ureq.getUserSession().getRoles().isGuestOnly());
 		//
 		putInitialPanel(this.shareLinkVC);
 	}
@@ -77,7 +88,23 @@ public class ShareLinkController extends BasicController {
 	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		// nothing to do
+		if (source == shareLinkVC && event.getCommand().equals("setLandingPage") && ureq.getUserSession().isAuthenticated()) {
+			HistoryPoint p = ureq.getUserSession().getLastHistoryPoint();
+			if(p != null && StringHelper.containsNonWhitespace(p.getBusinessPath())) {
+				List<ContextEntry> ces = p.getEntries();
+				String landingPage = BusinessControlFactory.getInstance().getAsURIString(ces, true);
+				int start = landingPage.indexOf("/url/");
+				if (start != -1) {
+					// start with / after /url
+					landingPage = landingPage.substring(start + 4);
+				}
+				// update user prefs
+				Preferences prefs = ureq.getUserSession().getGuiPreferences();
+				prefs.put(WindowManager.class, "landing-page", landingPage);				
+				prefs.save();
+				getWindowControl().getWindowBackOffice().sendCommandTo(new JSCommand("showInfoBox(\"" + translate("info.header") + "\",\"" + translate("landingpage.set.message") + "\");"));
+			}
+		}
 	}
 
 	/* (non-Javadoc)
