@@ -37,7 +37,7 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class WebDAVAdminController extends FormBasicController {
 	
-	private MultipleSelectionElement enableModuleEl, enableLinkEl, enableDigestEl;
+	private MultipleSelectionElement enableModuleEl, enableLinkEl, enableDigestEl, enableTermsFoldersEl;
 	private final WebDAVModule webDAVModule;
 	
 	public WebDAVAdminController(UserRequest ureq, WindowControl wControl) {
@@ -69,6 +69,15 @@ public class WebDAVAdminController extends FormBasicController {
 		enableDigestEl.select("xx", webDAVModule.isDigestAuthenticationEnabled());
 		enableDigestEl.addActionListener(FormEvent.ONCHANGE);
 		enableDigestEl.setEnabled(enabled);
+		
+		uifactory.addSpacerElement("spacer1", formLayout, false);
+		
+		enableTermsFoldersEl = uifactory.addCheckboxesHorizontal("webdavTermsFolders", "webdav.termsfolders", formLayout, new String[]{"xx"}, values);
+		enableTermsFoldersEl.select("xx", webDAVModule.isTermsFoldersEnabled());
+		enableTermsFoldersEl.addActionListener(FormEvent.ONCHANGE);
+		enableTermsFoldersEl.setEnabled(enabled);
+		
+		
 	}
 
 	@Override
@@ -83,12 +92,16 @@ public class WebDAVAdminController extends FormBasicController {
 			webDAVModule.setEnabled(enabled);
 			enableLinkEl.setEnabled(enabled);
 			enableDigestEl.setEnabled(enabled);
+			enableTermsFoldersEl.setEnabled(enabled);
 		} else if(source == enableLinkEl) {
 			boolean enabled = enableLinkEl.isAtLeastSelected(1);
 			webDAVModule.setLinkEnabled(enabled);
 		} else if(source == enableDigestEl) {
 			boolean enabled = enableDigestEl.isAtLeastSelected(1);
 			webDAVModule.setDigestAuthenticationEnabled(enabled);
+		} else if(source == enableTermsFoldersEl) {
+			boolean enabled = enableTermsFoldersEl.isAtLeastSelected(1);
+			webDAVModule.setTermsFoldersEnabled(enabled);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

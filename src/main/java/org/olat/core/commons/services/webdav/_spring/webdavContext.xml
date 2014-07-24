@@ -32,6 +32,7 @@
 				webdav.enabled=${webdav.enabled}
 				webdav.links.enabled=${webdav.links.enabled}
 				auth.digest.enabled=${auth.digest.enabled}
+				webdav.termsfolders.enabled=${webdav.termsfolders.enabled}
 			</value>
 		</property>
 	</bean>

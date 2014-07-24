@@ -46,12 +46,14 @@ public class WebDAVModule extends AbstractOLATModule implements ConfigOnOff {
 	private static final String WEBDAV_ENABLED = "webdav.enabled";
 	private static final String WEBDAV_LINKS_ENABLED = "webdav.links.enabled";
 	private static final String DIGEST_AUTH_ENABLED = "auth.digest.enabled";
+	private static final String TERMS_FOLDERS_ENABLED = "webdav.termsfolders.enabled";
 	
 	private Map<String, WebDAVProvider> webdavProviders;
 
 	private boolean enabled;
 	private boolean linkEnabled;
 	private boolean digestAuthenticationEnabled;
+	private boolean termsFoldersEnabled;
 	
 	@Override
 	public void init() {
@@ -70,6 +72,12 @@ public class WebDAVModule extends AbstractOLATModule implements ConfigOnOff {
 		if(StringHelper.containsNonWhitespace(digestEnabledObj)) {
 			digestAuthenticationEnabled = "true".equals(digestEnabledObj);
 		}
+
+		String termsFoldersEnabledObj = getStringPropertyValue(TERMS_FOLDERS_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(termsFoldersEnabledObj)) {
+			termsFoldersEnabled = "true".equals(termsFoldersEnabledObj);
+		}
+
 	}
 	
 	@Override
@@ -77,6 +85,7 @@ public class WebDAVModule extends AbstractOLATModule implements ConfigOnOff {
 		enabled = getBooleanConfigParameter(WEBDAV_ENABLED, true);
 		linkEnabled = getBooleanConfigParameter(WEBDAV_LINKS_ENABLED, true);
 		digestAuthenticationEnabled = getBooleanConfigParameter(DIGEST_AUTH_ENABLED, true);
+		termsFoldersEnabled = getBooleanConfigParameter(TERMS_FOLDERS_ENABLED, true);
 	}
 
 	@Override
@@ -116,6 +125,17 @@ public class WebDAVModule extends AbstractOLATModule implements ConfigOnOff {
 		String enabledStr = digestAuthenticationEnabled ? "true" : "false";
 		setStringProperty(DIGEST_AUTH_ENABLED, enabledStr, true);
 	}
+	
+
+	public void setTermsFoldersEnabled(boolean termsFoldersEnabled) {
+		String enabledStr = termsFoldersEnabled ? "true" : "false";
+		setStringProperty(TERMS_FOLDERS_ENABLED, enabledStr, true);
+	}
+
+	public boolean isTermsFoldersEnabled() {
+		return termsFoldersEnabled;
+	}
+
 
 	/**
 	 * Return an unmodifiable map
