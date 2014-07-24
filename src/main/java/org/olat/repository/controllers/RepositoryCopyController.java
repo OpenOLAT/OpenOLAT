@@ -47,6 +47,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 
@@ -139,8 +140,9 @@ public class RepositoryCopyController extends BasicController {
 			}
 			String displayname = descriptionController.getRepositoryEntry().getDisplayname();
 			String description = descriptionController.getRepositoryEntry().getDescription();
+			RepositoryEntryLifecycle cycle = descriptionController.getRepositoryEntry().getLifecycle();
 			//update needed to save changed name and desc.
-			newEntry = RepositoryManager.getInstance().setDescriptionAndName(newEntry, displayname, description);
+			newEntry = RepositoryManager.getInstance().setDescriptionAndName(newEntry, displayname, description, cycle);
 			RepositoryHandler typeToCopy = RepositoryHandlerFactory.getInstance().getRepositoryHandler(sourceEntry);			
 			IAddController addController = typeToCopy.createAddController(null, null, ureq, getWindowControl());
 			addController.repositoryEntryCreated(newEntry);
