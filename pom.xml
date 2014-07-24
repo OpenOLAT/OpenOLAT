@@ -1234,12 +1234,14 @@
 					<exclude>log4j.xml</exclude>
 				</excludes>
 			</resource>
+			<!-- 
 			<resource>
 				<directory>src/../</directory>
 				<includes>
 					<include>NOTICE.TXT</include>
 				</includes>
 			</resource>
+			-->
 		</resources>
 		<testResources>
 			<!-- Same comment as for src/main/java also applies to src/test/java -->
@@ -1272,6 +1274,26 @@
 					<doCheck>true</doCheck>
 					<doUpdate>true</doUpdate>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<id>copy-notices-txt</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target name="copy notice.tx to web project">      
+								<copy file="${project.basedir}/NOTICE.TXT"
+									tofile="${project.build.outputDirectory}/NOTICE.TXT"/>
+							</target>
+						</configuration>                       
+					</execution> 
+				</executions>
 			</plugin>
 		</plugins>
 		<pluginManagement>
