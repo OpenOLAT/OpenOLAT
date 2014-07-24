@@ -4,12 +4,12 @@
 #else
 	#if(($hasTableSearch && !$tableEmpty) || $tableConfig.isDisplayRowCount() || ($hasFilters && $filters.size() > 0) || $hasSorters || $tableConfig.isPreferencesOffered() || $tableConfig.isDownloadOffered())
 	<div class="row clearfix o_table_toolbar">
-		<div class="col-lg-6">
+		<div class="col-sm-6 col-xs-12">
 			#if ($hasTableSearch && !$tableEmpty)
 			  $r.render("tableSearch")
 			#end
 		</div>
-		<div class="col-lg-3 o_table_row_count">
+		<div class="col-sm-3 col-xs-4 o_table_row_count">
 		#if ($tableConfig.isDisplayRowCount())
 			$numberOfElements
 			#if ($numberOfElements == "1")
@@ -19,7 +19,7 @@
 			#end
 		#end
 		</div>
-		<div class="col-lg-3"><div class="pull-right o_table_tools">
+		<div class="col-sm-3 col-xs-8"><div class="pull-right o_table_tools">
 			#if ($hasFilters && $filters.size() > 0)
 			<div class="btn-group">	
 				<button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>

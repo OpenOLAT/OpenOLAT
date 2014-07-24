@@ -70,12 +70,12 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				case custom: sb.append(" o_rendertype_custom"); break;
 				case classic: sb.append(" o_rendertype_classic"); break;
 			}
-			sb.append(" table-responsive'");
+			sb.append("'");
 			String wrapperSelector = ftE.getWrapperSelector();
 			if (wrapperSelector != null) {
 				sb.append(" id='").append(wrapperSelector).append("'");
 			}
-			sb.append("><table id=\"").append(id).append("\" class=\"table table-condensed  table-striped table-hover table-responsive\">");
+			sb.append("><table id=\"").append(id).append("\" class=\"table table-condensed table-striped table-hover\">");
 			
 			//render headers
 			renderHeaders(sb, ftC, translator);
@@ -130,13 +130,13 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 		
 		sb.append("<div class='row clearfix o_table_toolbar'>")
-		  .append("<div class='col-lg-6'>");
+		  .append("<div class='col-sm-6 col-xs-12'>");
 		if(searchCmp == null || !ftE.isExtendedSearchExpanded()) {
 			renderHeaderSearch(renderer, sb, ftE, ubu, translator, renderResult, args);
 		}
 		sb.append("</div>");
 
-		sb.append("<div class='col-lg-3 o_table_row_count'>");
+		sb.append("<div class='col-sm-3 col-xs-4 o_table_row_count'>");
 		if(ftE.isNumOfRowsEnabled()) {
 			int rowCount = ftE.getTableDataModel().getRowCount();
 			if(rowCount == 1) {
@@ -145,7 +145,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entries"));
 			}
 		}
-		sb.append("</div><div class='col-lg-3'><div class='pull-right o_table_tools'>");
+		sb.append("</div><div class='col-sm-3 col-xs-8'><div class='pull-right o_table_tools'>");
 		
 		boolean empty = ftE.getTableDataModel().getRowCount() == 0;
 		

@@ -46,12 +46,16 @@
 	overflow-y: hidden;
 	overflow-x: auto;
 	-ms-overflow-style: -ms-autohiding-scrollbar;
-	border: 1px solid #ddd;
 	-webkit-overflow-scrolling: touch;
+
+	.table {
+		margin-bottom: 0;
+	}
 }
 
 .o_table_row_count {
-	padding:6px 0;
+	padding-top:6px;
+	padding-bottom:6px;
 	vertical-align:middle;
 }
 
