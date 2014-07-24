@@ -35,6 +35,12 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 	}
 
 	@Override
+	public void clear() {
+		super.clear();
+		getSourceDelegate().resetCount();
+	}
+
+	@Override
 	public DefaultFlexiTableDataSourceModel<RepositoryEntryRow> createCopyWithEmptyList() {
 		return new RepositoryEntryDataModel(getSourceDelegate(), getTableColumnModel());
 	}

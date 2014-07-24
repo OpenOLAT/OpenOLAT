@@ -94,6 +94,10 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 	public void setOrderBy(OrderBy orderBy) {
 		searchParams.setOrderBy(orderBy);
 	}
+	
+	public void resetCount() {
+		count = null;
+	}
 
 	@Override
 	public int getRowCount() {
