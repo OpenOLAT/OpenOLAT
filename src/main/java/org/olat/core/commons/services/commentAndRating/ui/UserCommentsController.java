@@ -113,6 +113,10 @@ public class UserCommentsController extends BasicController {
 	public void setUserObject(Object userObject) {
 		this.userObject = userObject;
 	}
+	
+	public int getNumOfComments() {
+		return commentControllers == null ? 0 : commentControllers.size();
+	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose()

@@ -451,13 +451,24 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(commentsCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {
+				updateComments(commentsCtrl.getNumOfComments());
 				cmc.deactivate();
 				cleanUp();
 			}
 		} else if(cmc == source) {
+			if(commentsCtrl != null) {
+				updateComments(commentsCtrl.getNumOfComments());
+			}
 			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void updateComments(int numOfComments) {
+		String title = "(" + numOfComments + ")";
+		commentsLink.setI18nKey(title);
+		String css = numOfComments > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
+		commentsLink.setIconLeftCSS(css);
 	}
 	
 	private void cleanUp() {

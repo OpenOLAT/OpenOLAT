@@ -229,10 +229,10 @@ public class CmdCreateFile extends FormBasicController implements FolderCommand 
 				isInputValid = false;
 				return isInputValid;
 			} else if (!fileName.endsWith(".html") && !fileName.endsWith(".htm") && !fileName.endsWith(".txt") && !fileName.endsWith(".css")) {
-      //add html extension if missing
+				//add html extension if missing
 				fileName = fileName + ".html";
 			}
-      //ok, file name is sanitized, let's see if a file with this name already exists
+			//ok, file name is sanitized, let's see if a file with this name already exists
 			VFSContainer currentContainer = folderComponent.getCurrentContainer();
 			VFSItem item = currentContainer.resolve(fileName);
 			if (item != null) {
@@ -240,6 +240,7 @@ public class CmdCreateFile extends FormBasicController implements FolderCommand 
 				isInputValid = false;
 			} else {
 				isInputValid = true;
+				textElement.setValue(fileName);
 			}
 		}
 		return isInputValid;			
