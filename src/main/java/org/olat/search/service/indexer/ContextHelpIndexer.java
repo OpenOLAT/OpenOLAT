@@ -68,6 +68,7 @@ public class ContextHelpIndexer extends AbstractHierarchicalIndexer {
 	/**
 	 * @see org.olat.search.service.indexer.Indexer#checkAccess(org.olat.core.id.context.ContextEntry, org.olat.core.id.context.BusinessControl, org.olat.core.id.Identity, org.olat.core.id.Roles)
 	 */
+	@Override
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
 		// context help is visible to everybody, even not-logged in users
 		return true;
@@ -76,6 +77,7 @@ public class ContextHelpIndexer extends AbstractHierarchicalIndexer {
 	/**
 	 * @see org.olat.search.service.indexer.Indexer#getSupportedTypeName()
 	 */
+	@Override
 	public String getSupportedTypeName() {
 		return OresHelper.calculateTypeName(ContextHelpModule.class);	
 	}
@@ -86,21 +88,23 @@ public class ContextHelpIndexer extends AbstractHierarchicalIndexer {
 	 *      java.lang.Object, org.olat.search.service.indexer.OlatFullIndexer)
 	 */
 	@Override
-  public void doIndex(SearchResourceContext parentResourceContext, Object parentObject, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
-  	if (!ContextHelpModule.isContextHelpEnabled()) {
-  		// don't index context help when disabled
-  		return;
-  	}  		
-  	long startTime = System.currentTimeMillis();
+	public void doIndex(SearchResourceContext parentResourceContext, Object parentObject, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
+		if (!ContextHelpModule.isContextHelpEnabled()) {
+  			// don't index context help when disabled
+  			return;
+  		}
+		
 		Set<String> helpPageIdentifyers = ContextHelpModule.getAllContextHelpPages();		
 		Set<String> languages = I18nModule.getEnabledLanguageKeys();
+		GlobalSettings globalSettings = new HelpSettings();
+		
 		if (log.isDebug()) log.debug("ContextHelpIndexer helpPageIdentifyers.size::" + helpPageIdentifyers.size() + " and languages.size::" + languages.size());
   	// loop over all help pages
 		for (String helpPageIdentifyer : helpPageIdentifyers) {			
 			String[] identifyerSplit = helpPageIdentifyer.split(":");
 			String bundleName = identifyerSplit[0];
 			String page = identifyerSplit[1];
-			//fxdiff: FXOLAT-221: don't use velocity on images
+			//only index html pages
 			if(page == null || !page.endsWith(".html")) {
 				continue;
 			}
@@ -112,14 +116,6 @@ public class ContextHelpIndexer extends AbstractHierarchicalIndexer {
 			String pagePath = bundleName.replace('.', '/') + ContextHelpModule.CHELP_DIR + page;
 			VelocityContainer container =  new VelocityContainer("contextHelpPageVC", pagePath, pageTranslator, null);					
 			Context ctx = container.getContext();		
-			GlobalSettings globalSettings = new GlobalSettings() {
-				public int getFontSize() { return 100;}
-				public AJAXFlags getAjaxFlags() { return new EmptyAJAXFlags();}
-				public ComponentRenderer getComponentRendererFor(Component source) {
-					return null;
-				}
-				public boolean isIdDivsForced() { return false; }
-			};
 			Renderer renderer = Renderer.getInstance(container, pageTranslator, new EmptyURLBuilder(), null, globalSettings);
 			// Add render decorator with helper methods
 			VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, container, null);			
@@ -139,30 +135,42 @@ public class ContextHelpIndexer extends AbstractHierarchicalIndexer {
 				indexWriter.addDocument(document);
 			}
 			IOUtils.closeQuietly(vrdec);
-			
-	  }
-		long indexTime = System.currentTimeMillis() - startTime;
-		if (log.isDebug()) log.debug("ContextHelpIndexer finished in " + indexTime + " ms");
+		}
 	}
+	
+	public static class HelpSettings implements GlobalSettings {
+		private final AJAXFlags empty = new EmptyAJAXFlags();
+		
+		@Override
+		public int getFontSize() {
+			return 100;
+		}
+		
+		@Override
+		public AJAXFlags getAjaxFlags() {
+			return empty;
+		}
 
-}
+		@Override
+		public ComponentRenderer getComponentRendererFor(Component source) {
+			return null;
+		}
 
-/**
- * 
- * Description:<br>
- * Helper flags that work with the context help indexer
- * <P>
- * Initial Date:  05.11.2008 <br>
- * @author gnaegi
- */
-class EmptyAJAXFlags extends AJAXFlags {
-
-	public EmptyAJAXFlags() {
-		super(null);
+		@Override
+		public boolean isIdDivsForced() {
+			return false;
+		}
 	}
+	
+	public static class EmptyAJAXFlags extends AJAXFlags {
 
-	@Override
-	public boolean isIframePostEnabled() {
-		return false;
+		public EmptyAJAXFlags() {
+			super(null);
+		}
+
+		@Override
+		public boolean isIframePostEnabled() {
+			return false;
+		}
 	}
 }
