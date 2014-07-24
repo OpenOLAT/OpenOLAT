@@ -220,11 +220,11 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		String portraitCssClass = null;
 		String gender = identity.getUser().getProperty(UserConstants.GENDER, Locale.ENGLISH);
 		if (gender.equalsIgnoreCase("male")) {
-			portraitCssClass = DisplayPortraitManager.DUMMY_MALE_SMALL_CSS_CLASS;
+			portraitCssClass = DisplayPortraitManager.DUMMY_MALE_BIG_CSS_CLASS;
 		} else if (gender.equalsIgnoreCase("female")) {
-			portraitCssClass = DisplayPortraitManager.DUMMY_FEMALE_SMALL_CSS_CLASS;
+			portraitCssClass = DisplayPortraitManager.DUMMY_FEMALE_BIG_CSS_CLASS;
 		} else {
-			portraitCssClass = DisplayPortraitManager.DUMMY_SMALL_CSS_CLASS;
+			portraitCssClass = DisplayPortraitManager.DUMMY_BIG_CSS_CLASS;
 		}
 		String fullname = userManager.getUserDisplayName(identity);
 		Member member = new Member(identity.getKey(), firstname, lastname, fullname, rsrc != null, portraitCssClass);

@@ -275,6 +275,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			uifactory.addSpacerElement("spacer3", descCont, false);
 
 			expenditureOfWork = uifactory.addTextElement("cif.expenditureOfWork", "cif.expenditureOfWork", 100, repositoryEntry.getExpenditureOfWork(), descCont);
+			expenditureOfWork.setExampleKey("details.expenditureOfWork.example", null);
 
 			String obj = (repositoryEntry.getObjectives() != null ? repositoryEntry.getObjectives() : " ");
 			objectives = uifactory.addRichTextElementForStringData("cif.objectives", "cif.objectives",
