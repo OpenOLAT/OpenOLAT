@@ -600,21 +600,24 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		if(state == null) return;//no red screen for this
 		
 		OLATResourceable ores = state.getOLATResourceable();
-		DTab dt = getDTab(ores);
-		if(dt != null) {
-			doActivateDTab(dt);
-			if(dt.getController() instanceof Activateable2) {
-				((Activateable2)dt.getController()).activate(ureq, entries, null);
-			}
-			updateBusinessPath(ureq, dt);
+		if(ores != null && "HomeSite".equals(ores.getResourceableTypeName())) {
+			activateSite(userTools, ureq, entries, false);
 		} else {
-			StateEntry s = state.getTransientState();
-			if(s instanceof StateSite && ((StateSite)s).getSite() != null && sites != null) {
-				SiteInstance site = ((StateSite)s).getSite();
-				for(SiteInstance savedSite:sites) {
-					if(savedSite != null && site.getClass().equals(savedSite.getClass())) {
-						activateSite(savedSite, ureq, entries, false);
-						//updateBusinessPath(ureq, savedSite);
+			DTab dt = getDTab(ores);
+			if(dt != null) {
+				doActivateDTab(dt);
+				if(dt.getController() instanceof Activateable2) {
+					((Activateable2)dt.getController()).activate(ureq, entries, null);
+				}
+				updateBusinessPath(ureq, dt);
+			} else {
+				StateEntry s = state.getTransientState();
+				if(s instanceof StateSite && ((StateSite)s).getSite() != null && sites != null) {
+					SiteInstance site = ((StateSite)s).getSite();
+					for(SiteInstance savedSite:sites) {
+						if(savedSite != null && site.getClass().equals(savedSite.getClass())) {
+							activateSite(savedSite, ureq, entries, false);
+						}
 					}
 				}
 			}
@@ -1086,7 +1089,6 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		}
 		updateBusinessPath(ureq, dtabi);
 		
-		//fxdiff BAKS-7 Resume function
 		//update the panels after activation
 		setGuiStack(dtabi.getGuiStackHandle());
 
