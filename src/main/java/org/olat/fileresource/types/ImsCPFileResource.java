@@ -62,30 +62,14 @@ public class ImsCPFileResource extends FileResource {
 	public ImsCPFileResource() {
 		super(TYPE_NAME);
 	}
-	
-	/**
-	 * Check for title and at least one resource.
-	 * @param unzippedDir
-	 * @return True if is of type.
-	 */
-	public static boolean validate(File unzippedDir) {
-		File fManifest = new File(unzippedDir, IMS_MANIFEST);
-		Document doc = IMSLoader.loadIMSDocument(fManifest);
-		//do not throw exception already here, as it might be only a generic zip file
-		if (doc == null) {
-			return false;
-		} else {
-			return validateImsManifest(doc);
-		}
-	}
-	
+
 	public static ResourceEvaluation evaluate(File file, String filename) {
 		ResourceEvaluation eval = new ResourceEvaluation();
 		try {
 			ImsManifestFileFilter visitor = new ImsManifestFileFilter();
 			Path fPath = PathUtils.visit(file, filename, visitor);
 			if(visitor.isValid()) {
-				Path manifestPath = fPath.resolve(IMS_MANIFEST);
+				Path manifestPath = fPath.resolve(visitor.getManifestPath());
 				Document doc = IMSLoader.loadIMSDocument(manifestPath);
 				if(validateImsManifest(doc)) {
 					eval.setValid(true);
@@ -170,6 +154,7 @@ public class ImsCPFileResource extends FileResource {
 	
 	private static class ImsManifestFileFilter extends SimpleFileVisitor<Path> {
 		private boolean manifestFile;
+		private Path manifestPath;
 
 		@Override
 		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
@@ -178,12 +163,17 @@ public class ImsCPFileResource extends FileResource {
 			String filename = file.getFileName().toString();
 			if(IMS_MANIFEST.equals(filename)) {
 				manifestFile = true;
+				manifestPath = file;
 			}
 			return manifestFile ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
 		}
 		
 		public boolean isValid() {
 			return manifestFile;
+		}
+		
+		public Path getManifestPath() {
+			return manifestPath;
 		}
 	}
 }

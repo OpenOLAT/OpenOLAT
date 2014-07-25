@@ -112,11 +112,22 @@ public class FileResource implements OLATResourceable {
 		} else if(filename != null && filename.toLowerCase().endsWith(".zip")) {
 			//perhaps find root folder and return it
 			fPath = FileSystems.newFileSystem(file.toPath(), null).getPath("/");
+			RootSearcher rootSearcher = searchRootDirectory(fPath);
+			if(rootSearcher.foundRoot()) {
+				Path rootPath = rootSearcher.getRoot();
+				fPath = fPath.resolve(rootPath);
+			}
 		} else {
 			fPath = file.toPath();
 		}
-
 		return fPath;
+	}
+	
+	protected static  RootSearcher searchRootDirectory(Path fPath)
+	throws IOException {
+		RootSearcher rootSearcher = new RootSearcher();
+		Files.walkFileTree(fPath, rootSearcher);
+		return rootSearcher;
 	}
 	
 	public static boolean copyResource(File file, String filename, File targetDirectory) {
@@ -131,11 +142,43 @@ public class FileResource implements OLATResourceable {
 			}
 			
 			Path destDir = targetDirectory.toPath();
-			Files.walkFileTree(path, new CopyVisitor(destDir, filter));
+			Files.walkFileTree(path, new CopyVisitor(path, destDir, filter));
 			return true;
 		} catch (IOException e) {
 			log.error("", e);
 			return false;
+		}
+	}
+
+	public static class RootSearcher extends SimpleFileVisitor<Path> {
+		
+		private Path root;
+		private boolean rootFound = false;
+		
+		public Path getRoot() {
+			return root;
+		}
+		
+		public boolean foundRoot() {
+			return root != null && rootFound;
+		}
+
+		@Override
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+		throws IOException {
+			Path tokenZero = file.getName(0);
+			if("__MACOSX".equals(tokenZero.toString()) || Files.isHidden(file)) {
+				//ignore
+			} else if(root == null) {
+				if(Files.isRegularFile(file) && file.getNameCount() > 1) {
+					root = tokenZero;
+					rootFound = true;
+				}
+			} else if(!root.equals(tokenZero)) {
+				rootFound = false;
+		        return FileVisitResult.TERMINATE;
+			}
+	        return FileVisitResult.CONTINUE;
 		}
 	}
 	
@@ -147,11 +190,13 @@ public class FileResource implements OLATResourceable {
 	}
 	
 	public static class CopyVisitor extends SimpleFileVisitor<Path> {
-		
+
+		private final Path source;
 		private final Path destDir;
 		private final PathMatcher filter;
 		
-		public CopyVisitor(Path destDir, PathMatcher filter) {
+		public CopyVisitor(Path source, Path destDir, PathMatcher filter) {
+			this.source = source;
 			this.destDir = destDir;
 			this.filter = filter;
 		}
@@ -159,7 +204,8 @@ public class FileResource implements OLATResourceable {
 		@Override
 		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
 	    throws IOException {
-	        final Path destFile = Paths.get(destDir.toString(), file.toString());
+			Path relativeFile = source.relativize(file);
+	        final Path destFile = Paths.get(destDir.toString(), relativeFile.toString());
 	        if(filter.matches(file)) {
 	        	Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
 	        }
@@ -169,7 +215,8 @@ public class FileResource implements OLATResourceable {
 		@Override
 		public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
 		throws IOException {
-	        final Path dirToCreate = Paths.get(destDir.toString(), dir.toString());
+			Path relativeDir = source.relativize(dir);
+	        final Path dirToCreate = Paths.get(destDir.toString(), relativeDir.toString());
 	        if(Files.notExists(dirToCreate)){
 	        	Files.createDirectory(dirToCreate);
 	        }

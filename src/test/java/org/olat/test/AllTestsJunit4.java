@@ -93,6 +93,7 @@ import org.junit.runners.Suite;
 	org.olat.group.test.BusinessGroupRelationDAOTest.class,//ok
 	org.olat.group.test.BusinessGroupConcurrentTest.class,//ok
 	org.olat.group.test.ContactDAOTest.class,//ok
+	org.olat.fileresource.FileResourceTest.class,//ok
 	org.olat.resource.lock.pessimistic.PLockTest.class,//ok
 	org.olat.resource.references.ReferenceManagerTest.class,//ok
 	org.olat.resource.OLATResourceManagerTest.class,//ok
@@ -127,6 +128,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.wiki.WikiUnitTest.class,//ok
 	org.olat.modules.wiki.versioning.diff.CookbookDiffTest.class,//ok
 	org.olat.modules.wiki.gui.components.wikiToHtml.FilterUtilTest.class,
+	org.olat.modules.coach.CoachingDAOTest.class,//ok
 	org.olat.modules.coach.CoachingServiceTest.class,//ok
 	org.olat.properties.PropertyTest.class,//ok
 	org.olat.search.service.document.file.FileDocumentFactoryTest.class,

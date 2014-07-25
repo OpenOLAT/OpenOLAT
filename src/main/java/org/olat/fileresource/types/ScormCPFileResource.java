@@ -28,6 +28,7 @@ package org.olat.fileresource.types;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -67,24 +68,23 @@ public class ScormCPFileResource extends FileResource {
 		super(TYPE_NAME);
 	}
 	
-	/**
-	 * Check for title and at least one resource.
-	 * @param unzippedDir
-	 * @return True if is of type.
-	 */
-	public static boolean validate(File unzippedDir) {
-		File fManifest = new File(unzippedDir, "imsmanifest.xml");
-		Document doc = IMSLoader.loadIMSDocument(fManifest);
-		return validateImsManifest(doc);
-	}
-	
 	public static ResourceEvaluation evaluate(File file, String filename) {
 		ResourceEvaluation eval = new ResourceEvaluation();
 		try {
 			ImsManifestFileFilter visitor = new ImsManifestFileFilter();
 			Path fPath = PathUtils.visit(file, filename, visitor);
 			if(visitor.isValid()) {
-				Path manifestPath = fPath.resolve(IMS_MANIFEST);
+				Path realManifestPath = visitor.getManifestPath();
+				Path manifestPath = fPath.resolve(realManifestPath);
+				
+				RootSearcher rootSearcher = new RootSearcher();
+				Files.walkFileTree(fPath, rootSearcher);
+				if(rootSearcher.foundRoot()) {
+					manifestPath = rootSearcher.getRoot().resolve(IMS_MANIFEST);
+				} else {
+					manifestPath = fPath.resolve(IMS_MANIFEST);
+				}
+				
 				Document doc = IMSLoader.loadIMSDocument(manifestPath);
 				if(validateImsManifest(doc)) {
 					eval.setValid(true);
@@ -214,6 +214,7 @@ public class ScormCPFileResource extends FileResource {
 	
 	private static class ImsManifestFileFilter extends SimpleFileVisitor<Path> {
 		private boolean manifestFile;
+		private Path manifestPath;
 
 		@Override
 		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
@@ -222,12 +223,17 @@ public class ScormCPFileResource extends FileResource {
 			String filename = file.getFileName().toString();
 			if(IMS_MANIFEST.equals(filename)) {
 				manifestFile = true;
+				manifestPath = file;
 			}
 			return manifestFile ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
 		}
 		
 		public boolean isValid() {
 			return manifestFile;
+		}
+
+		public Path getManifestPath() {
+			return manifestPath;
 		}
 	}
 }
