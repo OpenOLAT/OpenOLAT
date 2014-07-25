@@ -34,7 +34,9 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -112,42 +114,62 @@ public class ToolsPrefsController extends FormBasicController {
 		}
 		presetEl = uifactory.addCheckboxesVertical("usertools.set", "usertools.set", formLayout, toolKeys, toolValues, 1);
 		presetEl.addActionListener(FormEvent.ONCHANGE);
-		presetEl.setEnabled(enabled);
+		presetEl.setEnabled(enabled);		
+		initPresetElementUserData();
 		
-		String selectedTools = (String)prefs.get(WindowManager.class, "user-tools");
-		if(!StringHelper.containsNonWhitespace(selectedTools)) {
-			selectedTools = userToolsModule.getDefaultPresetOfUserTools();
-		}
-		if(StringHelper.containsNonWhitespace(selectedTools)) {
-			String[] selectedToolArr = selectedTools.split(",");
-			for(String toolKey:toolKeys) {
-				for(String selectedTool:selectedToolArr) {
-					if(toolKey.equals(selectedTool)) {
-						presetEl.select(toolKey, true);
-					}
-				}
-			}
-		}
+		// Create submit and cancel buttons
+		FormLayoutContainer buttonLayoutWrappper = FormLayoutContainer.createButtonLayout("buttonLayoutWrappper", getTranslator());
+		formLayout.add(buttonLayoutWrappper);
+		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayoutInner", getTranslator());
+		buttonLayoutWrappper.add(buttonLayout);
+		uifactory.addFormSubmitButton("save", buttonLayout);
+		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+
 	}
 	
 	@Override
 	protected void doDispose() {
 		//
 	}
-	
-	
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(presetEl == source) {
-			doSave();
-		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//
+		doSave();
+		showInfo("preferences.successful");
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		// reset to last saved state: re-initialize form
+		initPresetElementUserData();
+		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+
+	private void initPresetElementUserData() {
+		String selectedTools = (String)prefs.get(WindowManager.class, "user-tools");
+		if(!StringHelper.containsNonWhitespace(selectedTools)) {
+			// use presets when user has not yet any values
+			selectedTools = userToolsModule.getDefaultPresetOfUserTools();
+		}
+		if(StringHelper.containsNonWhitespace(selectedTools)) {
+			String[] selectedToolArr = selectedTools.split(",");
+			keyloop: for (String toolKey:presetEl.getKeys()) {
+				for(String selectedTool:selectedToolArr) {
+					if(toolKey.equals(selectedTool)) {
+						presetEl.select(toolKey, true);
+						continue keyloop;
+					}
+				}
+				// not found: disable
+				presetEl.select(toolKey, false);
+			}
+		}
 	}
 	
 	private void doSave() {
