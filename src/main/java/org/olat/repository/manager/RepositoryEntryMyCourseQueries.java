@@ -394,6 +394,7 @@ public class RepositoryEntryMyCourseQueries {
 		OrderBy orderBy = params.getOrderBy();
 		if(orderBy != null) {
 			switch(orderBy) {
+				case automatic://need lastVisited
 				case lastVisited:
 					sb.append(" ,(select infos2.recentLaunch from usercourseinfos as infos2")
 					  .append("    where infos2.resource=res and infos2.identity=ident")
@@ -417,9 +418,12 @@ public class RepositoryEntryMyCourseQueries {
 	private void appendOrderBy(OrderBy orderBy, boolean asc, StringBuilder sb) {
 		if(orderBy != null) {
 			switch(orderBy) {
-				case automatic:
-					sb.append(" order by lower(v.displayname)");
-					appendAsc(sb, asc);
+				case automatic://! the sorting is reverse
+					if(asc) {
+						sb.append(" order by recentLaunch desc nulls last, lifecycle.validFrom desc nulls last, marks asc nulls last, lower(v.displayname) asc ");
+					} else {
+						sb.append(" order by recentLaunch asc nulls last, lifecycle.validFrom asc nulls last, marks asc nulls last, lower(v.displayname) desc ");
+					}
 					break;
 				case favorit:
 					if(asc) {
