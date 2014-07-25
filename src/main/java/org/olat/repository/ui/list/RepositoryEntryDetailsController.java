@@ -280,7 +280,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 					|| roles.contains(GroupRoles.coach.name())
 					|| roles.contains(GroupRoles.participant.name());
 			if (isMember) {
-				Boolean isAuthor = Boolean.valueOf(roles.contains(GroupRoles.owner));
+				Boolean isAuthor = Boolean.valueOf(roles.contains(GroupRoles.owner.name()));
 				layoutCont.contextPut("isEntryAuthor", isAuthor);
 			}
 			// push roles to velocity as well
