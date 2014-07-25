@@ -39,6 +39,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * Render the table as a long HTML table
@@ -51,39 +52,78 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 			Translator translator, RenderResult renderResult, String[] args) {
 		super.render(renderer, target, source, ubu, translator, renderResult, args);
 	}
-
+	
 	@Override
-	protected void renderHeaderSort(StringOutput sb, FlexiTableComponent ftC, FlexiColumnModel fcm, int colPos, Translator translator) {
-		// sort is not defined
-		if (!fcm.isSortable() || fcm.getSortKey() == null) return;
-		
+	protected void renderHeaders(StringOutput target, FlexiTableComponent ftC, Translator translator) {
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
+		FlexiTableColumnModel columnModel = dataModel.getTableColumnModel();
+		      
+		target.append("<thead><tr>");
+
+		if(ftE.isMultiSelect()) {
+			String choice = translator.translate("table.header.choice");
+			target.append("<th>").append(choice).append("</th>");
+		}
 		
-		Boolean asc = null;
-		String sortKey = fcm.getSortKey();
-		SortKey[] orderBy = ftE.getOrderBy();
-		if(orderBy != null && orderBy.length > 0) {
-			for(int i=orderBy.length; i-->0; ) {
-				if(sortKey.equals(orderBy[i].getKey())) {
-					asc = new Boolean(orderBy[i].isAsc());
-				}
+		int cols = columnModel.getColumnCount();
+		for(int i=0; i<cols; i++) {
+			FlexiColumnModel fcm = columnModel.getColumnModel(i);
+			if(ftE.isColumnModelVisible(fcm)) {
+				renderHeader(target, ftC, fcm, translator);
 			}
 		}
-
-		Form theForm = ftE.getRootForm();
-		if(asc == null) {
-			sb.append("<a class='o_sorting' href=\"javascript:")
-			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("sort", sortKey), new NameValuePair("asc", "asc")))
-			  .append("\"><i class='o_icon o_icon_sort'></i></a>");
-		} else if(asc.booleanValue()) {
-			sb.append("<a class='o_sorting_asc' href=\"javascript:")
-			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("sort", sortKey), new NameValuePair("asc", "desc")))
-			  .append("\"><i class='o_icon o_icon_sort_asc'></a>");
+		
+		target.append("</tr></thead>");
+	}
+	
+	private void renderHeader(StringOutput sb, FlexiTableComponent ftC, FlexiColumnModel fcm, Translator translator) {
+		String header = getHeader(fcm, translator);
+		sb.append("<th>");
+		// sort is not defined
+		if (!fcm.isSortable() || fcm.getSortKey() == null) {
+			sb.append(header);	
 		} else {
-			sb.append("<a class='o_sorting_desc' href=\"javascript:")
-			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("sort", sortKey), new NameValuePair("asc", "asc")))
-			  .append("\"><i class='o_icon o_icon_sort_desc'></a>");
+			FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+			
+			Boolean asc = null;
+			String sortKey = fcm.getSortKey();
+			SortKey[] orderBy = ftE.getOrderBy();
+			if(orderBy != null && orderBy.length > 0) {
+				for(int i=orderBy.length; i-->0; ) {
+					if(sortKey.equals(orderBy[i].getKey())) {
+						asc = new Boolean(orderBy[i].isAsc());
+					}
+				}
+			}
+
+			Form theForm = ftE.getRootForm();
+			if(asc == null) {
+				sb.append("<a class='o_orderby' href=\"javascript:")
+				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("sort", sortKey), new NameValuePair("asc", "asc")))
+				  .append("\">");
+			} else if(asc.booleanValue()) {
+				sb.append("<a class='o_orderby o_orderby_asc' href=\"javascript:")
+				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("sort", sortKey), new NameValuePair("asc", "desc")))
+				  .append("\">");
+			} else {
+				sb.append("<a class='o_orderby o_orderby_desc' href=\"javascript:")
+				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("sort", sortKey), new NameValuePair("asc", "asc")))
+				  .append("\">");
+			}
+			sb.append(header).append("</a>");
 		}
+		sb.append("</th>");
+	}
+	
+	private String getHeader(FlexiColumnModel fcm, Translator translator) {
+		String header;
+		if(StringHelper.containsNonWhitespace(fcm.getHeaderLabel())) {
+			header = fcm.getHeaderLabel();
+		} else {
+			header = translator.translate(fcm.getHeaderKey());
+		}
+		return header;
 	}
 	
 	@Override

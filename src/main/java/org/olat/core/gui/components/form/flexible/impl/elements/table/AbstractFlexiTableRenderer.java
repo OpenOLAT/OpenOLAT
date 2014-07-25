@@ -324,52 +324,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 	}
 	
-	protected void renderHeaders(StringOutput target, FlexiTableComponent ftC, Translator translator) {
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
-		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
-		FlexiTableColumnModel columnModel = dataModel.getTableColumnModel();
-		      
-		target.append("<thead><tr>");
-
-		int col = 0;
-		if(ftE.isMultiSelect()) {
-			String choice = translator.translate("table.header.choice");
-			target.append("<th>").append(choice).append("</th>");
-			col++;
-		}
-		
-		int cols = columnModel.getColumnCount();
-		for(int i=0; i<cols; i++) {
-			FlexiColumnModel fcm = columnModel.getColumnModel(i);
-			if(ftE.isColumnModelVisible(fcm)) {
-				renderHeader(target, ftC, fcm, col++, translator);
-			}
-		}
-		
-		target.append("</tr></thead>");
-	}
-	
-	protected void renderHeader(StringOutput target, FlexiTableComponent ftC, FlexiColumnModel fcm, int colPos, Translator translator) {
-		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
-		String header = getHeader(fcm, translator);
-		target.append("<th>").append(header);
-		if(ftE.getSortOptions() == null || !ftE.getSortOptions().isFromColumnModel()) {
-			renderHeaderSort(target, ftC, fcm, colPos, translator);
-		}
-		target.append("</th>");
-	}
-	
-	private String getHeader(FlexiColumnModel fcm, Translator translator) {
-		String header;
-		if(StringHelper.containsNonWhitespace(fcm.getHeaderLabel())) {
-			header = fcm.getHeaderLabel();
-		} else {
-			header = translator.translate(fcm.getHeaderKey());
-		}
-		return header;
-	}
-	
-	protected abstract void renderHeaderSort(StringOutput target, FlexiTableComponent ftC, FlexiColumnModel fcm, int colPos, Translator translator);
+	protected abstract void renderHeaders(StringOutput target, FlexiTableComponent ftC, Translator translator);
 	
 	protected void renderBody(Renderer renderer, StringOutput target, FlexiTableComponent ftC,
 			URLBuilder ubu, Translator translator, RenderResult renderResult) {
