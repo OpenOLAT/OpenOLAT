@@ -20,7 +20,7 @@
 package org.olat.admin.landingpages.ui;
 
 import org.olat.admin.landingpages.model.Rule;
-import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 
@@ -39,7 +39,7 @@ public class RuleWrapper {
 	private SingleSelection attrNameEl;
 	private TextElement attrValueEl;
 	private TextElement landingPageEl;
-	private DropdownItem landingPageChooser;
+	private FormLink landingPageChooser;
 	
 	public RuleWrapper(Rule rule) {
 		this.rule = rule;
@@ -89,11 +89,11 @@ public class RuleWrapper {
 		this.landingPageEl = landingPageEl;
 	}
 	
-	public DropdownItem getLandingPageChooser() {
+	public FormLink getLandingPageChooser() {
 		return landingPageChooser;
 	}
 
-	public void setLandingPageChooser(DropdownItem landingPageChooser) {
+	public void setLandingPageChooser(FormLink landingPageChooser) {
 		this.landingPageChooser = landingPageChooser;
 	}
 

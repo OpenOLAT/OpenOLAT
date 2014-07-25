@@ -127,6 +127,12 @@ public class LinkFactory {
 		return link;
 	}
 	
+	public static Link createLink(String name, String cmd, Translator translator, VelocityContainer vc, ComponentEventListener listener, int presentation) {
+		Link link = new Link(name, cmd, name, presentation, vc, listener);
+		link.setTranslator(translator);
+		return link;
+	}
+	
 	/**
 	 * add a link to the <code>vc</code> Velocity Container and make the <code>listeningController</code> listen to this link.<p>
 	 * Follow these instructions to show the link and catch its events:

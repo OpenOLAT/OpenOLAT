@@ -36,7 +36,7 @@ import org.olat.admin.landingpages.model.Rules;
 import org.olat.admin.landingpages.ui.RulesDataModel.RCols;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -46,6 +46,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -54,8 +55,13 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.util.Util;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -79,6 +85,10 @@ public class LandingPagesAdminController extends FormBasicController {
 	private final String[] roleValues;
 	private final String[] attrKeys;
 	private final String[] attrValues;
+
+	private FormSubmit saveButton;
+	private ChooserController chooserCtrl;
+	private CloseableCalloutWindowController chooserCalloutCtrl;
 
 	@Autowired
 	private UserManager userManager;
@@ -157,7 +167,7 @@ public class LandingPagesAdminController extends FormBasicController {
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
-		uifactory.addFormSubmitButton("save", buttonLayout);
+		saveButton = uifactory.addFormSubmitButton("save", buttonLayout);
 	}
 	
 	@Override
@@ -197,22 +207,12 @@ public class LandingPagesAdminController extends FormBasicController {
 		landingPageEl.setValue(rule.getLandingPath());
 		wrapper.setLandingPageEl(landingPageEl);
 		formLayout.add(landingPageEl);
-		
-		DropdownItem chooser = new DropdownItem("chooser-" + i, RCols.landingPageChooser.i18nKey(), getTranslator());
-		chooser.setButton(true);
-		chooser.setEmbbeded(true);
-		fillChooser(wrapper, chooser, formLayout);
+
+		FormLink chooser = uifactory.addFormLink("chooser-" + i, "chooser", RCols.landingPageChooser.i18nKey(), null, formLayout, Link.BUTTON);
+		chooser.setIconRightCSS("o_icon o_icon_caret");
+		chooser.setUserObject(wrapper);
 		wrapper.setLandingPageChooser(chooser);
 		return wrapper;
-	}
-	
-	private void fillChooser(RuleWrapper rule, DropdownItem chooser, FormItemContainer formLayout) {
-		int i = counter.incrementAndGet();
-		for(LandingPages lp:LandingPages.values()) {
-			FormLink link = uifactory.addFormLink(lp.name() + "-" + i, lp.name(), lp.i18nKey(), null, formLayout, Link.LINK);
-			link.setUserObject(rule);
-			chooser.addElement(link);
-		}
 	}
 
 	@Override
@@ -249,18 +249,53 @@ public class LandingPagesAdminController extends FormBasicController {
 		} else if(source instanceof FormLink && source.getUserObject() instanceof RuleWrapper) {
 			RuleWrapper rule = (RuleWrapper)source.getUserObject();
 			String cmd = ((FormLink)source).getCmd();
-			if("catalog".equals(cmd)) {
-				//do choose catalog
-			} else if("repo".equals(cmd)) {
-				
-			} else {
-				LandingPages lp = LandingPages.landingPageFromCmd(cmd);
-				if(lp != null) {
-					rule.getLandingPageEl().setValue(lp.businessPath());
-				}
+			if("chooser".equals(cmd)) {
+				FormLink link = (FormLink)source;
+				openChooser(ureq, rule, link);
 			}
+			saveButton.getComponent().setDirty(false);
+			source.getComponent().setDirty(false);
+			tableEl.getComponent().setDirty(false);
+			flc.setDirty(false);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(chooserCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				LandingPages lp = chooserCtrl.getSelectedLandingPage();
+				RuleWrapper rule = chooserCtrl.getRow();
+				if(lp != null) {
+					rule.getLandingPageEl().setValue(lp.businessPath());
+					saveButton.getComponent().setDirty(true);
+				}
+			}
+			chooserCalloutCtrl.deactivate();
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(chooserCtrl);
+		removeAsListenerAndDispose(chooserCalloutCtrl);
+		chooserCtrl = null;
+		chooserCalloutCtrl = null;
+	}
+
+	private void openChooser(UserRequest ureq, RuleWrapper row, FormLink link) {
+		removeAsListenerAndDispose(chooserCtrl);
+		removeAsListenerAndDispose(chooserCalloutCtrl);
+
+		chooserCtrl = new ChooserController(ureq, getWindowControl(), row);
+		listenTo(chooserCtrl);
+
+		chooserCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				chooserCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(chooserCalloutCtrl);
+		chooserCalloutCtrl.activate();
 	}
 	
 	private void addRow(RuleWrapper row) {
@@ -311,5 +346,54 @@ public class LandingPagesAdminController extends FormBasicController {
 			row.setPosition(++i);
 		}
 		return rows;
+	}
+	
+	private class ChooserController extends BasicController {
+		
+		private final RuleWrapper row;
+		private LandingPages selectedLandingPage;
+		
+		public ChooserController(UserRequest ureq, WindowControl wControl, RuleWrapper row) {
+			super(ureq, wControl);
+			this.row = row;
+			VelocityContainer mainVC = createVelocityContainer("chooser");
+			
+			int i = counter.incrementAndGet();
+			List<String> links = new ArrayList<>();
+			for(LandingPages lp:LandingPages.values()) {
+				String name = lp.name() + "-" + i;
+				Link link = LinkFactory.createLink(name, lp.name(), getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
+				link.setCustomDisplayText(translate(lp.i18nKey()));
+				link.setUserObject(lp);
+				mainVC.put(name, link);
+				links.add(name);
+			}
+			mainVC.contextPut("links", links);
+			putInitialPanel(mainVC);
+		}
+		
+		public RuleWrapper getRow() {
+			return row;
+		}
+		
+		public LandingPages getSelectedLandingPage() {
+			return selectedLandingPage;
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if(source instanceof Link) {
+				Link link = (Link)source;
+				if(link.getUserObject() instanceof LandingPages) {
+					selectedLandingPage = (LandingPages)link.getUserObject();
+				}
+			}
+			fireEvent(ureq, Event.DONE_EVENT);
+		}
+
+		@Override
+		protected void doDispose() {
+			//
+		}
 	}
 }
