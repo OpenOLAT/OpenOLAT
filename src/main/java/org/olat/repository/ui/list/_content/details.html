@@ -193,7 +193,7 @@
 						<tr><th>$r.translate("orderby.creationDate")</th><td>$r.formatDateAndTime($v.getCreationDate())</td></tr>
 						<tr><th>$r.translate("orderby.lastModified")</th><td>$r.formatDateAndTime($v.getLastModified())</td></tr>
 						
-						#if ($isAuthor || $roles.isOLATAdmin() || $roles.isAuthor() || $roles.isInstitutionalResourceManager())		
+						#if ($isEntryAuthor || $roles.isOLATAdmin() || $roles.isAuthor() || $roles.isInstitutionalResourceManager())		
 						<tr><th>$r.translate("cif.access")</th><td>$accessI18n</td></tr>
 						<tr><th>$r.translate("cif.initialAuthor")</th><td>$v.getInitialAuthor()</td></tr>
 						<tr>
@@ -204,6 +204,7 @@
 								#end
 							</ul></td>
 						</tr>
+						#end
 					</tbody></table>
 					<div class="panel-body">
 						<h5>$r.translate("details.extlinkheader")</h5>
@@ -235,6 +236,7 @@
 				</div>
 			</div>
 
+			#if ($referenceDetails && ($isEntryAuthor || $roles.isOLATAdmin() || $roles.isInstitutionalResourceManager()))
 			<div class="panel panel-default">
 				<div class="panel-heading" data-toggle="collapse" data-target="#collapseUsage">
 			    	<h3 class="panel-title">
@@ -242,24 +244,20 @@
 						$r.translate("details.referenceinfoheader")
 			    	</h3>
 				</div>
-				<div id="collapseUsage" class="panel-collapse collapse">
+				<div id="collapseUsage" class="panel-collapse collapse in">
 					<table class="table table-condensed table-striped"><tbody>
-						#if ($referenceDetails)
 						<tr>
 							<th>$r.translate("details.referenceinfo")</th>
 							<td>$referenceDetails</td>
 						</tr>
-						#end
-							#if ($isAuthor || $roles.isOLATAdmin() || $roles.isInstitutionalResourceManager())
-							<tr><th>$r.translate("cif.lastusage")</th><td>$r.formatDateAndTime($v.getStatistics().getLastUsage())</td></tr>
-							<tr><th>$r.translate("cif.usedbycnt")</th><td>$numUsers</td></tr>
-							<tr><th>$r.translate("cif.launched")</th><td>#if ($v.getStatistics().getLaunchCounter()) $v.getStatistics().getLaunchCounter() #else 0 #end</td></tr>
-							<tr><th>$r.translate("cif.downloaded")</th><td>#if ($v.getStatistics().getDowloadCounter()) $v.getStatistics().getDowloadCounter() #else 0 #end</td></tr>
-							#end
-						#end
+						<tr><th>$r.translate("cif.lastusage")</th><td>$r.formatDateAndTime($v.getStatistics().getLastUsage())</td></tr>
+						<tr><th>$r.translate("cif.usedbycnt")</th><td>$numUsers</td></tr>
+						<tr><th>$r.translate("cif.launched")</th><td>#if ($v.getStatistics().getLaunchCounter()) $v.getStatistics().getLaunchCounter() #else 0 #end</td></tr>
+						<tr><th>$r.translate("cif.downloaded")</th><td>#if ($v.getStatistics().getDowloadCounter()) $v.getStatistics().getDowloadCounter() #else 0 #end</td></tr>
 					</tbody></table>
 				</div>
 			</div>
+			#end
 
 			#if ($v.getManagedFlags().size() > 0)
 			<div class="panel panel-default">
@@ -269,7 +267,7 @@
 						$r.translate("cif.managedflags")
 			    	</h3>
 				</div>
-				<div id="collapseManaged" class="panel-collapse collapse">
+				<div id="collapseManaged" class="panel-collapse collapse in">
 					<div class="panel-body">
 						$r.translate("managed.resource.intro")
 					</div>
