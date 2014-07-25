@@ -52,9 +52,9 @@ public class ContactViewExtended implements BusinessGroupMemberView, IdentityNam
 	private Long identityKey;
 	@Column(name="member_name", nullable=false, insertable=false, updatable=false)
 	private String username;
-	@Column(name="member_name", nullable=false, insertable=false, updatable=false)
+	@Column(name="member_firstname", nullable=false, insertable=false, updatable=false)
 	private String firstName;
-	@Column(name="member_name", nullable=false, insertable=false, updatable=false)
+	@Column(name="member_lastname", nullable=false, insertable=false, updatable=false)
 	private String lastName;
 	
 	@Column(name="membership_role", nullable=false, insertable=false, updatable=false)
