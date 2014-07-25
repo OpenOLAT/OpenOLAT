@@ -145,7 +145,6 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.ui.author.AuthoringEditEntrySettingsController;
-import org.olat.repository.ui.author.AuthoringEntryDetailsController;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.resource.OLATResource;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -850,12 +849,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	private void launchDetails(UserRequest ureq) {
-		if(isCourseAdmin) {
-			currentToolCtr = new AuthoringEntryDetailsController(ureq, getWindowControl(), toolbarPanel, courseRepositoryEntry);
-		} else {
-			currentToolCtr = new RepositoryEntryDetailsController(ureq, getWindowControl(), courseRepositoryEntry);
-			toolbarPanel.pushController(translate("command.courseconfig"), currentToolCtr);
-		}
+		currentToolCtr = new RepositoryEntryDetailsController(ureq, getWindowControl(), courseRepositoryEntry);
+		toolbarPanel.pushController(translate("command.courseconfig"), currentToolCtr);
 	}
 	
 	private void launchCourseFolder(UserRequest ureq) {
