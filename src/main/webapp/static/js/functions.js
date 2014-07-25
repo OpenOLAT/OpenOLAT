@@ -928,13 +928,15 @@ function o_popover(id, contentId, loc) {
 			jQuery('#' + id).popover('hide');
 			jQuery('body').unbind('click', clickListener);
 		};
-		jQuery('body').on('click', clickListener);
+		setTimeout(function() {
+			jQuery('body').on('click', clickListener);
+		},5);
 	});
 }
 
 function o_shareLinkPopup(id, text, loc) {
 	if(typeof(loc)==='undefined') loc = 'top';
-	
+
 	jQuery('#' + id).popover({
     	placement : loc,
     	html: true,
@@ -942,13 +944,15 @@ function o_shareLinkPopup(id, text, loc) {
     	container: 'body',
     	content: text,
 	}).on('shown.bs.popover', function () {
-		var clickListener = function (e) {
+		var clickListener = function (e) {	
 			if (jQuery(e.target).data('toggle') !== 'popover' && jQuery(e.target).parents('.popover.in').length === 0) { 
 				jQuery('#' + id).popover('hide');
 				jQuery('body').unbind('click', clickListener);
 			}
 		};
-		jQuery('body').on('click', clickListener);
+		setTimeout(function() {
+			jQuery('body').on('click', clickListener);
+		}, 5);
 	});
 }
 
@@ -967,8 +971,10 @@ function o_QRCodePopup(id, text, loc) {
 				 jQuery("#" + id).popover('hide');
 				 jQuery('body').unbind('click', clickListener);
 			 }
-		 };
-		 jQuery('body').on('click', clickListener);
+		};
+		setTimeout(function() {
+			jQuery('body').on('click', clickListener);
+		}, 5);
 	 }).on('hidden.bs.popover', function () {
 		 try {
 			 o_info.qr.clear();
