@@ -19,7 +19,7 @@
 			#end
 		#end
 		</div>
-		<div class="col-sm-3 col-xs-8"><div class="pull-right o_table_tools">
+		<div class="col-sm-3 col-xs-8"><div class="pull-right"><div class="o_table_tools">
 			#if ($hasFilters && $filters.size() > 0)
 			<div class="btn-group">	
 				<button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>
@@ -53,6 +53,12 @@
 			#if ($tableConfig.isDownloadOffered())	
 				$r.render("downloadLink")
 			#end
+		</div>
+		#if($selectedFilterValue && $selectedFilterValue.shortName && !($selectedFilterValue.shortName == "") && !($selectedFilterValue.shortName == "-"))
+		<div class="o_table_tools_indications">
+			<i class='o_icon o_icon_filter o_icon-lg'> </i> $selectedFilterValue.shortName
+		</div>
+		#end
 		</div></div>
 	</div>
 	#end

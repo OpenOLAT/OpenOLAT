@@ -145,15 +145,16 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entries"));
 			}
 		}
-		sb.append("</div><div class='col-sm-3 col-xs-8'><div class='pull-right o_table_tools'>");
+		sb.append("</div><div class='col-sm-3 col-xs-8'><div class='pull-right'><div class='o_table_tools'>");
 		
 		boolean empty = ftE.getTableDataModel().getRowCount() == 0;
-		
+
+		String filterIndication = null;
 		//filter
 		if(ftE.isFilterEnabled()) {
 			List<FlexiTableFilter> filters = ftE.getFilters();
 			if(filters != null && filters.size() > 0) {
-				renderFilterDropdown(sb, ftE, filters);
+				filterIndication = renderFilterDropdown(sb, ftE, filters);
 			}
 		}
 		
@@ -186,7 +187,14 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			}
 			sb.append("</div> ");
 		}
-		sb.append("</div></div></div>");
+		sb.append("</div>");
+		if(StringHelper.containsNonWhitespace(filterIndication)) {
+			sb.append("<div class='o_table_tools_indications'><i class='o_icon o_icon_filter o_icon-lg'> </i> ").append(filterIndication).append("</div>");
+		}
+		sb.append("</div>");
+		
+		
+		sb.append("</div></div>");
 	}
 	
 	protected void renderHeaderSearch(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
@@ -206,9 +214,10 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 	}
 	
-	protected void renderFilterDropdown(StringOutput sb, FlexiTableElementImpl ftE, List<FlexiTableFilter> filters) {
+	protected String renderFilterDropdown(StringOutput sb, FlexiTableElementImpl ftE, List<FlexiTableFilter> filters) {
 		Form theForm = ftE.getRootForm();
 		String dispatchId = ftE.getFormDispatchId();
+		String selected = null;
 		
 		sb.append("<div class='btn-group'>")
 		  .append("<button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
@@ -223,9 +232,13 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, new NameValuePair("filter", filter.getFilter())))
 				  .append("\">").append("<i class='o_icon o_icon_check o_icon-fw'> </i> ", filter.isSelected())
 				  .append(filter.getLabel()).append("</a></li>");
+				if(filter.isSelected()) {
+					selected = filter.getLabel();
+				}
 			}
 		}
 		sb.append("</ul></div> ");
+		return selected;
 	}
 	
 	protected void renderSortDropdown(StringOutput sb, FlexiTableElementImpl ftE, List<FlexiTableSort> sorts) {
