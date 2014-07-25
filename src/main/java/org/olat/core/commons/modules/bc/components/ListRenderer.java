@@ -425,8 +425,8 @@ public class ListRenderer {
 
 			} else if (actionCount > 1) {
 				// add actions to menu if multiple actions available
-				sb.append("<div class='dropdown'><a href='#' class='dropdown-toggle' data-toggle='dropdown'><i class='o_icon o_icon-lg o_icon_actions'></i></a>");
-				sb.append("<ul class=\"o_bc_actions dropdown-menu dropdown-menu-right\">");
+				sb.append("<a id='o_sel_actions_").append(pos).append("' href='javascript:;'><i class='o_icon o_icon-lg o_icon_actions'></i></a>")
+				  .append("<div id='o_sel_actions_pop_").append(pos).append("' style='display:none;'><ul class='list-unstyled'>");
 				
 				// meta edit action (rename etc)
 				if (canMetaData) {
@@ -490,7 +490,14 @@ public class ListRenderer {
 						}
 					}
 				}
-				sb.append("</ul></div>");				
+				sb.append("</ul></div>")
+				  .append("<script type='text/javascript'>")
+			      .append("/* <![CDATA[ */")
+				  .append("jQuery(function() {\n")
+				  .append("  o_popover('o_sel_actions_").append(pos).append("','o_sel_actions_pop_").append(pos).append("','left');\n")
+				  .append("});")
+				  .append("/* ]]> */")
+				  .append("</script>");
 			}
 		}
 

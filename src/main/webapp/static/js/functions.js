@@ -914,6 +914,24 @@ function o_scrollToElement(elem) {
 	}, 1000);
 }
 
+function o_popover(id, contentId, loc) {
+	if(typeof(loc)==='undefined') loc = 'bottom';
+
+	jQuery('#' + id).popover({
+    	placement : loc,
+    	html: true,
+    	trigger: 'click',
+    	container: 'body',
+    	content: function() { return jQuery('#' + contentId).clone().html(); },
+	}).on('shown.bs.popover', function () {
+		var clickListener = function (e) {
+			jQuery('#' + id).popover('hide');
+			jQuery('body').unbind('click', clickListener);
+		};
+		jQuery('body').on('click', clickListener);
+	});
+}
+
 function o_shareLinkPopup(id, text, loc) {
 	if(typeof(loc)==='undefined') loc = 'top';
 	
