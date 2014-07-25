@@ -25,6 +25,11 @@
 			$r.render("topnav.impressum")
 		</li>
 	#end
+	<li id="o_navbar_print">
+		<a href="javascript:o_doPrint();" title="$r.translateInAttribute("topnav.printview.alt")" >
+			<i class="o_icon o_icon_print o_icon-lg"></i>
+		</a>
+	</li>	
 	#if (!$inAssessment && $r.available("search_input"))
 		<li id="o_navbar_search_opener" class="dropdown">
 			<a href="#" class="dropdown-toggle" data-toggle="dropdown" title="$r.translate("search")">

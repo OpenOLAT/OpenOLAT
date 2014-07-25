@@ -47,6 +47,9 @@
 			/* help icon */
 			margin-right: 0.4em;
 		}
+		#o_navbar_print a, #o_navbar_impress a {
+			padding-right: 0;		
+		}
 		@media (max-width: $screen-xs-max) { 
 			/* on small viewport show only icons */
 			#o_navbar_impress a span {
