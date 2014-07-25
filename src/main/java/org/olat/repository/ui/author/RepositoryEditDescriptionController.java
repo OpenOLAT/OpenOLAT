@@ -283,17 +283,20 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			objectives.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.objectives));
 			objectives.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			
+			
 			String req = (repositoryEntry.getRequirements() != null ? repositoryEntry.getRequirements() : " ");
 			requirements = uifactory.addRichTextElementForStringData("cif.requirements", "cif.requirements",
 					req, 10, -1,  false, mediaContainer, null, descCont, ureq.getUserSession(), getWindowControl());
 			requirements.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.requirements));
 			requirements.getEditorConfiguration().setFileBrowserUploadRelPath("media");
+			requirements.setMaxLength(2000);
 			
 			String cred = (repositoryEntry.getCredits() != null ? repositoryEntry.getCredits() : " ");
 			credits = uifactory.addRichTextElementForStringData("cif.credits", "cif.credits",
 					cred, 10, -1,  false, mediaContainer, null, descCont, ureq.getUserSession(), getWindowControl());
 			credits.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.credits));
 			credits.getEditorConfiguration().setFileBrowserUploadRelPath("media");
+			credits.setMaxLength(2000);
 			
 			uifactory.addSpacerElement("spacer4", descCont, false);
 		}
@@ -375,8 +378,28 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			displayName.clearError();
 		}
 
+		allOk &= validateTextElement(objectives, 2000);
+		allOk &= validateTextElement(requirements, 2000);
+		allOk &= validateTextElement(credits, 2000);
+		allOk &= validateTextElement(externalRef, 225);
+		allOk &= validateTextElement(expenditureOfWork, 225);
+		allOk &= validateTextElement(authors, 2000);
+
 		// Ok, passed all checks
 		return allOk & super.validateFormLogic(ureq);
+	}
+	
+	private boolean validateTextElement(TextElement el, int maxLength) {
+		boolean ok;
+		String val = el.getValue();
+		el.clearError();
+		if(val != null && val.length() > maxLength) {
+			el.setErrorKey("input.toolong", new String[]{ Integer.toString(maxLength) });
+			ok = false;
+		} else {
+			ok = true;
+		}
+		return ok;
 	}
 
 	@Override
