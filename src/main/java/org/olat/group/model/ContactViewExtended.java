@@ -66,7 +66,7 @@ public class ContactViewExtended implements BusinessGroupMemberView, IdentityNam
 	@Column(name="bg_id", nullable=false, insertable=false, updatable=false)
 	private Long groupKey;
 
-	@Column(name="bg_id", nullable=false, insertable=false, updatable=false)
+	@Column(name="bg_name", nullable=false, insertable=false, updatable=false)
 	private String groupName;
 
 	@Override

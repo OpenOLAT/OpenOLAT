@@ -1492,7 +1492,7 @@ create view o_gp_contactext_v as (
       last_member.propvalue as member_lastname,
       bg_me.fk_identity_id as me_id,
       bgroup.group_id as bg_id,
-      bgroup.group_id as bg_name
+      bgroup.groupname as bg_name
    from o_gp_business as bgroup
    inner join o_bs_group_member as bg_member on (bg_member.fk_group_id = bgroup.fk_group_id)
    inner join o_bs_identity as id_member on (bg_member.fk_identity_id = id_member.id)
