@@ -130,9 +130,10 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			
 		//read write view
 		String cssClass = check.getCssClass(); //optional CSS class
-		sb.append("<label class='checkbox").append("-inline", inline)
-		  .append(" ").append(cssClass, cssClass != null)
-		  .append("' for=\"").append(formDispatchId).append("\">");
+		sb.append("<div class='checkbox'>", !inline); // normal checkboxes need a wrapper (bootstrap) ...
+		sb.append("<label class='").append("checkbox-inline ", inline); // ... and inline a class on the label (bootstrap)			
+		sb.append(cssClass, cssClass != null).append("' for=\"").append(formDispatchId).append("\">");
+		
 		
 		sb.append("<input type='checkbox' id='").append(formDispatchId).append("' ")
 		  .append(subStrName)
@@ -153,8 +154,12 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		}
 		if (StringHelper.containsNonWhitespace(value)) {
 			sb.append(" ").append(value);		
+		} else if(inline) {
+			// at least something in label required for properly aligned rendering, nbsp is important for bootstrap
+			sb.append("&nbsp;"); 
 		}
 		sb.append("</label>");
+		sb.append("</div>", !inline); // normal radios need a wrapper (bootstrap)
 			
 		if(stC.isEnabled()){
 			//add set dirty form only if enabled

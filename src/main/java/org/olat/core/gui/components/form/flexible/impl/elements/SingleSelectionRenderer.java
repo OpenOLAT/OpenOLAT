@@ -29,6 +29,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -61,9 +62,7 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 	private void renderVertical(StringOutput sb, SingleSelectionComponent source) {
 		RadioElementComponent[] radios = source.getRadioComponents();
 		for(RadioElementComponent radio:radios) {
-			sb.append("<div class='radio'>");
 			renderRadio(sb, source, radio, false);
-			sb.append("</div>");
 		}
 	}
 	
@@ -85,9 +84,11 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 		String formDispatchId = ssec.getFormDispatchId();
 		
 		// read write view
-		sb.append("<label class='radio").append("-inline", inline)
-		  .append("' for='").append(formDispatchId).append("'>")
-		  .append("<input id='").append(formDispatchId).append("' ")
+		sb.append("<div class='radio'>", !inline); // normal radios need a wrapper (bootstrap) ...
+		sb.append("<label ").append("class='radio-inline' ", inline); // ... and inline a class on the label (bootstrap)			
+		sb.append(" for=\"").append(formDispatchId).append("\">");
+		  
+		sb.append("<input id='").append(formDispatchId).append("' ")
 		  .append("type='radio' ").append(subStrName)
 		  .append(" value='").append(key).append("' ")
 		  .append(" checked='checked' ", selected);
@@ -99,13 +100,23 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 			//mark as disabled and do not add javascript
 			sb.append(" disabled='disabled' ");
 		}
-		sb.append(" />").append(value).append("</label>");
+		sb.append(" />");
+		if (StringHelper.containsNonWhitespace(value)) {
+			sb.append(" ").append(value);		
+		} else if(inline) {
+			// at least something in label required for properly aligned rendering, nbsp is important for bootstrap
+			sb.append("&nbsp;"); 
+		}
 		
 		if(source.isEnabled()){
-			//add set dirty form only if enabled
+			// add set dirty form only if enabled
+			// must be placed within label to make multiple radio-inline rules of bootstrap match 
 			sb.append(FormJSHelper.getJSStartWithVarDeclaration(formDispatchId))
 			  .append(FormJSHelper.getSetFlexiFormDirtyForCheckbox(ssec.getRootForm(), formDispatchId))
 			  .append(FormJSHelper.getJSEnd());
 		}
+		
+		sb.append("</label>");
+		sb.append("</div>", !inline); // normal radios need a wrapper (bootstrap)
 	}
 }
