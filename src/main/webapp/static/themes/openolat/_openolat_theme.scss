@@ -1,0 +1,17 @@
+/* 
+	Add your custom content styles here to override styles from light/modules/_content.scss. 
+	Only used in iframes content 
+*/
+
+ /* OpenOLAT logo in navbar */
+.o_navbar-brand {
+  	padding: $navbar-padding-vertical $navbar-padding-horizontal;
+	font-size: 40px;
+	vertical-align: top;
+	font-weight: bold;
+	color: $brand-primary !important;
+	&:after {
+		content: "\221E";
+	}		
+}
+ 

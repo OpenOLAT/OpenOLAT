@@ -445,7 +445,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 
 	private void appendDecorator(String decorator, StringOutput sb) {
 		if (decorator != null && decorator.length() > 0) {
-			sb.append("<span class='badge'><i class='o_icon ").append(decorator).append("'></i></span>");
+			sb.append("<span class='badge ").append(decorator).append("'><i class='o_icon ").append(decorator).append("'></i></span>");
 		}
 	}
 	

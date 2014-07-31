@@ -41,11 +41,6 @@ a {
   }
 }
 
-hr {
-  margin-top:    $o-content-line-height-computed;
-  margin-bottom: $o-content-line-height-computed;  
-  border-top: 1px solid $o-content-hr-color;
-}
 h1 { 
 	color: $o-content-h1-color;
 }
@@ -61,7 +56,9 @@ h4 {
 h5 { 
 	color: $o-content-h5-color;
 }
-
+h5 { 
+	color: $o-content-h5-color;
+}
 
 /* 2) OpenOLAT specific styles /* 
 

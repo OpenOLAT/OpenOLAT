@@ -258,8 +258,6 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		Window w = wbo.getWindow();
 
 		mainVc.put("jsCssRawHtmlHeader", w.getJsCssRawHtmlHeader());
-		cssHolder = new Panel("customCss");
-		mainVc.put("customCssHolder", cssHolder);
 
 		// control part for ajax-communication. returns an empty panel if ajax
 		// is not enabled, so that ajax can be turned on on the fly for
@@ -357,6 +355,10 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		guimsgHolder.setContent(guimsgPanel);
 		currentMsgHolder = guimsgHolder;
 		mainVc.put("guimessage", guimsgHolder);
+		
+		// CSS panel
+		cssHolder = new Panel("customCss");
+		mainVc.put("customCssHolder", cssHolder);
 
 		// sticky maintenance message
 		stickymsgVc = createVelocityContainer("stickymsg");

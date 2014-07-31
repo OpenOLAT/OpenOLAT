@@ -214,19 +214,19 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 	private void renderNodeDecorators(StringOutput sb, TreeNode node) {	
 		String deco1 = node.getIconDecorator1CssClass();
 		if (deco1 != null) {
-			sb.append("<span class='badge pull-right ").append(deco1).append("'></span>");
+			sb.append("<span class='badge ").append(deco1).append(" pull-right ").append(deco1).append("'></span>");
 		}
 		String deco2 = node.getIconDecorator2CssClass();
 		if (deco2 != null) {
-			sb.append("<span class='badge pull-right ").append(deco2).append("'></span>");
+			sb.append("<span class='badge ").append(deco2).append(" pull-right ").append(deco2).append("'></span>");
 		}
 		String deco3 = node.getIconDecorator3CssClass();
 		if (deco3 != null) {
-			sb.append("<span class='badge pull-right ").append(deco3).append("'></span>");
+			sb.append("<span class='badge ").append(deco3).append(" pull-right ").append(deco3).append("'></span>");
 		}
 		String deco4 = node.getIconDecorator4CssClass();
 		if (deco4 != null) {
-			sb.append("<span class='badge pull-right").append(deco4).append("'></span>");
+			sb.append("<span class='badge ").append(deco4).append(" pull-right").append(deco4).append("'></span>");
 		}
 	}
 

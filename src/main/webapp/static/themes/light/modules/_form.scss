@@ -99,7 +99,7 @@
 }
 
 .o_button_dirty {
-	@include button-variant($btn-warning-color, $btn-warning-bg, $btn-warning-border);
+	@include button-variant($o-button-dirty-color, $o-button-dirty-bg, $o-button-dirty-border);
 }
 
 /* TOGGLE SLIDERS */

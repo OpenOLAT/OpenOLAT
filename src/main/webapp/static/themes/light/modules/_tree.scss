@@ -63,6 +63,9 @@
 		li .badge {
 			float: right;
 			font-size: 70%;
+			&:before { 
+				content: none; 
+			}
 		}
 		
 		li div.o_dnd_sibling {

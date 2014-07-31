@@ -2,16 +2,6 @@
 	z-index: 4;
 	#o_navbar_container {
 		position: relative;
-	
-		a.o_navbar-brand {
-			font-size: 40px;
-			vertical-align: top;
-			font-weight: bold;
-			color: #31729B;
-			&:after {
-				content: "\221E";
-			}		
-		}
 	}		
 }
 		
@@ -189,16 +179,15 @@
 // Brand/project name
 
 .o_navbar-brand {
-  float: left;
-  padding: $navbar-padding-vertical $navbar-padding-horizontal;
+  /* put your brand logo and link here, use theme.js to change the href */
+  float: left;  
   font-size: $font-size-large;
   line-height: $line-height-computed;
   height: $navbar-height;
-
-  &:hover,
-  &:focus {
-    text-decoration: none;
-  }
+	&:hover,
+  	&:focus {
+    	text-decoration: none;
+  	}
 }
 
 

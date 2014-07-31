@@ -90,6 +90,13 @@ div.o_callout_overlay {
 			width: 80%;
 		}
 	}
+	.modal-header h4 {
+		color: $o-dialog-header-color;
+	  	font-weight: $o-dialog-header-font-weight;
+		font-family: $headings-font-family;
+	  	line-height: $headings-line-height;
+	}
 }
+
 
 

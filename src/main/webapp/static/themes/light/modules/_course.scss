@@ -1,57 +1,34 @@
-.o_sp_icon:before { content: $fa-var-file-text-o; }
-.o_st_icon:before { content: $fa-var-cubes; }
-.o_tu_icon:before { content: $fa-var-external-link; }
-.o_bc_icon:before { content: $fa-var-folder-open-o;}
-.o_lti_icon:before { content: $fa-var-external-link; }
-.o_cp_icon:before { content: $fa-var-archive; }
-.o_cp_item:before { content: $fa-var-file-text-o;}
-.o_scorm_icon:before { content: $fa-var-archive; }
-.o_en_icon:before { content: $fa-var-sign-in; }
-.o_fo_icon:before { content: $fa-var-comments-o; }
-.o_co_icon:before { content: $fa-var-envelope-o; }
-.o_infomsg_icon:before { content: $fa-var-info-circle; }
-.o_cal_icon:before { content: $fa-var-calendar; }
-.o_wiki_icon:before { content: $fa-var-globe; }
-.o_podcast_icon:before { content: $fa-var-video-camera; }
-.o_blog_icon:before { content: $fa-var-bullhorn; }
-.o_ep_icon:before { content: $fa-var-puzzle-piece; }
-.o_iqtest_icon:before { content: $fa-var-pencil-square-o; }
-.o_iqself_icon:before { content: $fa-var-pencil-square-o; }
-.o_iqsurv_icon:before { content: $fa-var-meh-o; }
-.o_ta_icon:before { content: $fa-var-tasks; }
-.o_ms_icon:before { content: $fa-var-thumbs-o-up; }
-.o_dialog_icon:before { content: $fa-var-files-o; }
-.o_projectbroker_icon:before { content: $fa-var-circle-o; }
-.o_ll_icon:before { content: $fa-var-link;}
-.o_den_icon:before { content: $fa-var-calendar-o;}
-.o_cmembers_icon:before { content: $fa-var-users;}
-.o_cl_icon:before { content: $fa-var-check-square-o;}
-.o_vc_icon:before { content: $fa-var-desktop;}
-.o_vitero_icon:before { content: $fa-var-desktop;}
-.o_openmeetings_icon:before { content: $fa-var-desktop;}
-
-.o_midpub:before { content: $fa-var-check-circle; color: green; }
-.o_midwarn:before { content: $fa-var-warning; color: orange; }
-.o_midlock:before { content: $fa-var-lock;}
-.o_miderr:before { content: $fa-var-warning; color: red;}
-.o_middel:before { content: $fa-var-eraser;}
+.badge {
+	/* badge color */
+	&.o_midpub { background-color: $o-course-node-published; }
+	&.o_midwarn { background-color: $o-course-node-warning; }
+	&.o_midlock { background-color: $o-course-node-locked;}
+	&.o_miderr { background-color: $o-course-node-error;}
+	&.o_middel { background-color: $o-course-node-deleted;}
+}
+.o_course_editor_legend .badge {
+	font-size: 80%;
+	&:before {
+		content: none;
+	}
+}
 
 /* score info status classes */
 .o_passed {
-	color: $state-success-text;
+	color: $o-course-state-passed-color;
 	font-weight: bold;
 	a:hover {
-	    color: darken($state-success-text, 10%);
+	    color: darken($o-course-state-passed-color, 10%);
 	}					
 	th {
 		color: $text-color		
 	}
 }
 .o_failed {
-	color: $state-danger-text;
+	color: $o-course-state-failed-color;
 	font-weight: bold;
 	a:hover {
-	    color: darken($state-danger-text, 10%);
+	    color: darken($o-course-state-unknown-color, 10%);
 	}				
 	th {
 		color: $text-color		
@@ -61,7 +38,7 @@
 	color: $state-warning-text;
 	font-weight: bold;
 	a:hover {
-	    color: darken($state-warning-text, 10%);
+	    color: darken($o-course-state-unknown-color, 10%);
 	}				
 	th {
 		color: $text-color		
@@ -141,11 +118,4 @@
 	}
 }
 
-/* scorm */
-.o_scorm_org:before { content: $fa-var-archive; }
-.o_scorm_item:before { content: $fa-var-file-o; }
-.o_scorm_completed:before, .o_scorm_passed:before { content: $fa-var-check-circle; color: green; }
-.o_scorm_failed:before { content: $fa-var-warning; color: red; }
-.o_scorm_incomplete:before { content: $fa-var-warning; color: orange; }
-.o_scorm_not_attempted:before { background: none; }
 

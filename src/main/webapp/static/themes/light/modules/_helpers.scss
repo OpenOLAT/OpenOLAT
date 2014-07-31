@@ -123,6 +123,10 @@
 .o_deleted, %o_deleted { 
 	text-decoration: line-through;
 }	
+/* clickable elements that should indicate this with a cursor change */
+.o_clickable, %o_clickable {
+	cursor: pointer;
+}
 
 /* colors (used in repo and else where) //FIXME: FG refactor to something meaningfull*/
 .o_ochre { color: #c8a959; }

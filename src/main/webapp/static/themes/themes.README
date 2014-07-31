@@ -5,10 +5,12 @@ can only choose different fon't sizes. In courses, course authors can override t
 with custom CSS rules to create a course layout. This document describes how you can create a
 custom theme.
 
-The OpenOLAT layout layer is based on the YAML framework (http://www.yaml.de). It is mandatory to 
-understand the YAML framework before your start writing your own theme. CSS is a very complex 
-world, if you are not an expert in this field, learn CSS before you start working on an OpenOLAT 
+The OpenOLAT layout layer is based on the Twitter bootstrap framework (http://http://getbootstrap.com). 
+It is mandatory to understand the bootstrap framework before your start writing your own theme. CSS is a 
+very complex world, if you are not an expert in this field, learn CSS before you start working on an OpenOLAT 
 theme.
+
+As icon set we use monochome, vectorbased icons from font-awesome. See http://fortawesome.github.io
 
 When you have created a new high-quality theme, why not share it with the OpenOLAT community?
 Please contact us via the developer mailinglist (http://www.openolat.org)
@@ -17,112 +19,94 @@ Please contact us via the developer mailinglist (http://www.openolat.org)
 Credits:	frentix GmbH - professional services for the Open Source LMS OpenOLAT
 Info:		http://www.frentix.com
 Date:		Zürich, 7. Mai 2008
-Modified:	Zürich, 22. Dez 2011       (work in progress)
-
+Modified:	Zürich, 31. July 2014       (work in progress)
 
 
 Theme structure
 ===============
-The OpenOLAT themes follow the YAML terminology, but to not create conflicts with other YAML based
-CSS we use a "b_" prefix before all YAML classes. 
+The OpenOLAT themes follow the bootstrap terminology. 
 We also rely heavily on SASS: 
 	"Sass is an extension of CSS3, adding nested rules, variables, mixins, selector inheritance, and more. 
 	It’s translated to well-formatted, standard CSS using the command line tool or a web-framework plugin." 
 	(http://sass-lang.com/).
 
+In the default theme ("light"), the SASS (css) rules are splitted up in different many different module files
+for better readibility and managebility. 
 
-In the default theme ("openolat"), the SASS (css) rules are splitted up in different files.
-After compilation, all scss files are combined within one css-file called "layout.css". This file contains the whole
-Stylesheet and is the only css-file included in OpenOLAT's html markup. 
-( Exception: patches.scss which is compiled to patches.css and contains IE fixes)
-
-
-Sass-Files:
------------
-
-- all/_definitions.scss 
-Here you define some basic SASS variables.
-
-- all/_mixins.scss 
-Our little helpers :)  . Useful mixins.
-
- - all/_basemod.scss 
-Basic layout. Here you define the
-page background, page with and height, the elements top nav, nav using the sliding door technique, 
-main with col1, col2 and col3 and the footer. We added some elements to the YAML framework in this 
-area, they are also in this file.
-
-- all/_dd.scss
-DRAG and DROP style rules
-
-- all/_dialogs.scss
-Style rules for dialogs, modal windows and wizards
-
-- all/_icons.scss
-Icons, Icons, Icons
-
-- all/_portlets_boxes.scss
-Style rules for portal, portlets and toolboxes
-
-- all/_tabpane.scss
-Style rules for tabbed panes and segmented views
-
-- all/_content.scss 
-Headings, Links, Buttons, Tables, Tabs, etc.
+There are two CSS files which are compiled and used in OpenOLAT: 
+- theme.css: this file is included in the OpenOLAT application. It contains all styles for the application.
+- content.css: this file is included in learning content pages within iframes. This can be disabled for 
+  single pages, scorm or cp files. The content.css contains several classes starting with b_* which can be
+  selected in the HTML for simple page styling. 
 
 
-The media files are stored in the images and the sounds directory. The images are furthermore splitted 
-up in "category"-folders. Images are referenced from within the CSS files using relative url parameters.
+Sass-Files in the light theme:
+------------------------------
+Note this is the base theme, normally you do not modify those files but create a new theme that inherits from
+the light theme and extends on top of it. 
+
+- theme.scss: defines what to include for the main css file
+- content.scss: defines what to include for the content css file used in iframe content
+- favicon.ico: favicon that is displayed for the OpenOLAT server in the browser
+- theme.js (optional): javascript code that should be embedded to the page to add some more complex
+  features that can't be done with CSS alone
+- _config.scss: all OpenOLAT and bootstrap SASS variables
+- modules/*: tonns of include files for different aspects of OpenOLAT
 
 
 Creating a custom theme
 =======================
 
-A good way is to start with a copy of "openolatexample" (i.e. my_theme). Adjust the variables in 
-_definitions.scss according to your needs.
+A good way is to start with a copy of "openolat" (i.e. copy openolat to mytheme). 
+- Copy from the openolat theme:
+  cd openolat/src/main/webapp/static/themes/
+  cp -r openolat to mytheme
+- Rename mytheme/_openolat_config.scss to mytheme/_mytheme_config.scss
+- Rename mytheme/_openolat_theme.scss to mytheme/_mytheme_theme.scss
+- Rename mytheme/_openolat_content.scss to mytheme/_mytheme_content.scss
+- Open mytheme/theme.sass and replace the references to the files you just renamed 
+  (openolat_config -> mytheme_config, openolat_theme -> mytheme_theme)
+- Open mytheme/content.sass and replace the references to the files you just renamed
+  (openolat_config -> mytheme_config, openolat_content -> mytheme_content)
+- Open mytheme/_mytheme_config.scss and add all bootstrap and OpenOLAT SASS variables you want to 
+  override. As references yo can look at the following files:
+  - for all bootstrap variables: ../../bootstrap/stylesheets/bootstrap/_variables.scss
+  - for all OpenOLAT variables: light/_config.scss
+- Open mytheme/_mytheme_theme.scss and override or extend styles from the light theme. Best is to use the 
+  browser to lookup the CSS classes and then search in the light theme for the definitions. Don't miss the 
+  tag hierarchies and the responsive rules!
+- Open mytheme/_mytheme_content.scss and override or extend styles from the light theme. 
 
-If you want to change the layout of	standard OpenOLAT elements lookup the css rules in the corresponding
-modules in the OpenOLAT theme: from openolat/all/modules
+Optional:
+- Place your own favicon.ico file to mytheme/favicon.ico
+- Create a file mytheme/theme.js and add your theme specific JavaScript. Best is to create a JQuery module 
+  for it. Make sure you check for necessary changes after each DOM replacement cycle. See the theme.js file
+  in the openolat theme for an example.
 
-You can a) copy the files you your theme and modify it or b) import the styles from the openolat theme
-and override the values you want to change. Variant b) is recommended since it automatically adds new 
-layout features from future releases. 
 
-The structure of the scss-files is very clear, so it should be no problem to do any change and understanding
-theme. If you copied a file from openolat-theme to my_theme/all, you have to adjust your layout.scss:
-...
-@import "all/basemod";
-...
-@import "all/tables";
-...
-@import "all/portlets_boxes";
+Compiling a theme
+=======================
+Compile your theme using the simple script:
 
-If you want to display a logo or background-image in the #header, you should set $enablebiz to true and 
-adjust the box-size to your needs.
+cd openolat/src/main/webapp/static/themes/
+./compiletheme.sh mytheme
 
-Edit _basemod.scss (an example):
-...
-#b_header {
-...	
-@if $enablebiz == true { height: 120px; }
-...
-background: transparent url('images/my_logo.png') no-repeat 42px 10px;
-
-After all work is done, you have to compile the theme (see below): sh compiletheme.sh my_theme
-
+If you don't have SASS installed, see "Installing SASS below"
 
 Testing a custom theme
 ======================
 Once you have created the new theme you can log in as administrator and select the 
-Administration site in the main navigation. Choose 'layout' from the menu. You new theme
-will appear in the themes list. Select your theme to apply it. 
+Administration site in the main navigation. Choose 'Customizing' -> 'Layout' from the menu. 
+You new theme will appear in the themes list. Select your theme to apply it. 
 
 Note that the theme will be applied to the whole OpenOLAT installation. All users that log into
 the system will work with the selected right away.
 
+Don't forget to tweet @openolat to report your success together with a screenshot of your new theme!
 
-Using Sass
-==========
+
+Installing SASS
+======================
 installing on a Fedora-like-System
 ensure, that "/etc/yum.repos.d/fedora.repo" includes "Everything"
 yum install ruby
@@ -130,8 +114,10 @@ yum install ruby-devel
 yum install rubygem-rake
 gem install sass
 
-Compiling a theme
-=================
-sh compiletheme.sh [theme-folder]
-or using the command-line sass --style [compressed|compact|nested|expanded] --update [theme-folder]/layout.scss:[theme-folder]/layout.css --load-path openolat openolat/all openolat/all/modules openolat/print openolat/mobile
-Note: if you made changes to a .scss other than _definitions.scss i.e. content.scss, those changes are not recognized by sass. So you have to make a change to _definitions.scss for compiling the theme.
+Note OpenOLAT requires SASS > 3.3
+
+
+Advanced Features
+======================
+- TODO: Course themes
+- TODO: place theme in olatdata and not webapp

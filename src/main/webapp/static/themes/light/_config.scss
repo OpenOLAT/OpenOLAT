@@ -30,6 +30,7 @@
 @import "../../bootstrap/stylesheets/bootstrap/variables";
 
 /* ---- OpenOLAT specific configurations ---- */
+$o-images-path : "../light/images/" !default;
 
 /* Content styles used in iFrame e-learning content and in HTML editor */
 $o-content-font-family-base		: $font-family-base !default;
@@ -46,6 +47,7 @@ $o-content-h2-color				: $brand-primary !default;
 $o-content-h3-color				: $brand-primary !default;
 $o-content-h4-color				: $brand-primary !default;
 $o-content-h5-color				: $o-content-text-color !default;
+$o-content-fieldset-legend-color: $text-color !default;
 $o-content-hr-color				: $hr-border !default;
 $o-content-table-border			: $gray-light !default;
 $o-content-table-header			: $gray-light !default;
@@ -140,22 +142,58 @@ $o-tree-padding-opener-left-px 	: 1px !default;
 /* Tabbed pane component */
 $o-tabbed-pane-padding			: ($padding-large-vertical * 2) 0 $padding-base-vertical 0;
 
+/* Dirty button */
+$o-button-dirty-color			: $btn-warning-color !default;
+$o-button-dirty-bg				: $btn-warning-bg !default; 
+$o-button-dirty-border			: darken($o-button-dirty-bg	, 5%) !default;
+
+/* Login page */
+$o-login-form-width				: 400px !default;
+$o-login-form-align				: right !default; 								/* left, center or right */
+$o-login-form-bg-img			: $o-images-path + "learn-bg.jpg" !default;  	/* image CC by Thomas Leuthard https://www.flickr.com/photos/thomasleuthard/8587724648/ */
+
 /* Course and catalog site */
-$o-coursesite-rowelem-width-md : 180px;
-$o-coursesite-rowelem-height-md : 120px;
-$o-coursesite-rowelem-width-sm : 120px;
-$o-coursesite-rowelem-height-sm : 80px;
-$o-coursesite-rowelem-width-xs : 75px;
-$o-coursesite-rowelem-height-xs : 50px;
-$o-coursesite-rowelem-border : $brand-primary;
-$o-coursesite-catalog-space : $padding-large-vertical * 2;
-$o-coursesite-catalog-space-sm : $padding-large-vertical;
-$o-coursesite-catalog-space-xs : $padding-xs-vertical;
-$o-coursesite-catalog-border : $brand-primary;
+$o-coursesite-rowelem-width-md 	: 180px !default;
+$o-coursesite-rowelem-height-md : 120px !default;
+$o-coursesite-rowelem-width-sm 	: 120px !default;
+$o-coursesite-rowelem-height-sm : 80px !default;
+$o-coursesite-rowelem-width-xs 	: 75px !default;
+$o-coursesite-rowelem-height-xs : 50px !default;
+$o-coursesite-rowelem-border 	: $brand-primary !default;
+$o-coursesite-catalog-space 	: $padding-large-vertical * 2 !default;
+$o-coursesite-catalog-space-sm 	: $padding-large-vertical !default;
+$o-coursesite-catalog-space-xs 	: $padding-xs-vertical !default;
+$o-coursesite-catalog-border 	: $brand-primary !default;
+$o-coursesite-meta-title-color	: $brand-primary !default;
+$o-coursesite-meta-author-color	: $state-success-text !default;
+$o-coursesite-start-color		: $btn-primary-color !default;
+$o-coursesite-start-bg			: $btn-primary-bg !default;
+$o-coursesite-start-border		: darken($o-coursesite-start-bg, 5%) !default;
+$o-coursesite-book-color		: $btn-warning-color !default;
+$o-coursesite-book-bg			: $btn-warning-bg !default;
+$o-coursesite-book-border		: darken($o-coursesite-book-bg, 5%) !default;
+$o-coursesite-details-color		: $btn-success-color !default;
+$o-coursesite-details-bg		: $btn-success-bg !default;
+$o-coursesite-details-border	: darken($o-coursesite-details-bg, 5%) !default;
+
+/* Course editor and runtime */
+$o-course-state-passed-color	: $state-success-text !default;
+$o-course-state-failed-color	: $state-danger-text !default;
+$o-course-state-unknown-color	: $state-warning-text !default;
+$o-course-node-published		: $state-success-text !default;
+$o-course-node-warning			: $state-warning-text !default;
+$o-course-node-locked			: $state-info-text !default;
+$o-course-node-error			: $state-danger-text !default;
+$o-course-node-deleted			: $badge-bg !default;
+
+
+
 
 /* Chat and other floating window */
 $o-dialog-window-bg				: #fefefe !default;
 $o-dialog-window-bar-bg			: #eee !default;
+$o-dialog-header-color			: $brand-primary !default;
+$o-dialog-header-font-weight	: $headings-font-weight !default;
 
 /* Instant messaging and chat */
 $o-im-chat-load-font-size		: $font-size-small !default;
@@ -202,18 +240,18 @@ $o-search-excerpt-color			: $gray !default;
 $o-box-margin					: 20px !default;
 $o-box-padding					: 20px !default;
 $o-box-border-left-size			: 3px !default;
-$o-box-info-bg					: #eee !default;
-$o-box-info-color				: #d4d4d4 !default;
-$o-box-note-bg					: #f4f8fa !default;
-$o-box-note-color				: #5bc0de !default;
+$o-box-info-bg					: $gray-lighter !default;
+$o-box-info-color				: $gray-light !default;
+$o-box-note-bg					: $state-info-bg !default;
+$o-box-note-color				: $state-info-text !default;
 $o-box-important-bg				: #FFF1A4 !default;
 $o-box-important-color			: #F4D000 !default;
-$o-box-success-bg				: #d6e9c6 !default;
-$o-box-success-color			: #3c763d !default;
-$o-box-warning-bg				: #FFD5AA !default;
-$o-box-warning-color			: #FF9E3E !default;
-$o-box-error-bg					: #fdf7f7 !default;
-$o-box-error-color				: #d9534f !default;
+$o-box-success-bg				: $state-success-bg !default;
+$o-box-success-color			: $state-success-text !default;
+$o-box-warning-bg				: $state-warning-bg !default;
+$o-box-warning-color			: $state-warning-text !default;
+$o-box-error-bg					: $state-danger-bg !default;
+$o-box-error-color				: $state-danger-text !default;
 
 /* Context help buttons */
 $o-chelp-font-size				: 10px !default;
@@ -233,4 +271,4 @@ $o-datecomp-day-color			: $text-color !default;
 /* other configurations */
 $o-portrait-radius				: 50% !default;
 $o-portrait-border				: none !default;
-$o-images-path : "../light/images/" !default;
+$o-bookmark-color				: #bc2d0c !default;

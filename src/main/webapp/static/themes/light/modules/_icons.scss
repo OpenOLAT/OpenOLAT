@@ -35,7 +35,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_back_history:before { content: $fa-var-history;}
 .o_icon_bold:before { content: $fa-var-bold; }
 .o_icon_booking:before { content: $fa-var-shopping-cart; }
-.o_icon_bookmark:before { content: $fa-var-bookmark; color: #996633; }
+.o_icon_bookmark:before { content: $fa-var-bookmark; color: $o-bookmark-color; }
 .o_icon_bookmark_add:before { content: $fa-var-bookmark-o; }
 .o_icon_bookmark_header:before { content: $fa-var-bookmark; }
 .o_icon_browse:before { content: $fa-var-search-plus; } 
@@ -230,6 +230,39 @@ $fa-css-prefix: "o_icon" !default;
 .o_FileResource-MOVIE_icon:before { content: $fa-var-file-video-o; }
 .o_FileResource-FILE_icon:before { content: $fa-var-file-o; }
 
+/* course element icons */
+.o_sp_icon:before { content: $fa-var-file-text-o; }
+.o_st_icon:before { content: $fa-var-cubes; }
+.o_tu_icon:before { content: $fa-var-external-link; }
+.o_bc_icon:before { content: $fa-var-folder-open-o;}
+.o_lti_icon:before { content: $fa-var-external-link; }
+.o_cp_icon:before { content: $fa-var-archive; }
+.o_cp_item:before { content: $fa-var-file-text-o;}
+.o_scorm_icon:before { content: $fa-var-archive; }
+.o_en_icon:before { content: $fa-var-sign-in; }
+.o_fo_icon:before { content: $fa-var-comments-o; }
+.o_co_icon:before { content: $fa-var-envelope-o; }
+.o_infomsg_icon:before { content: $fa-var-info-circle; }
+.o_cal_icon:before { content: $fa-var-calendar; }
+.o_wiki_icon:before { content: $fa-var-globe; }
+.o_podcast_icon:before { content: $fa-var-video-camera; }
+.o_blog_icon:before { content: $fa-var-bullhorn; }
+.o_ep_icon:before { content: $fa-var-puzzle-piece; }
+.o_iqtest_icon:before { content: $fa-var-pencil-square-o; }
+.o_iqself_icon:before { content: $fa-var-pencil-square-o; }
+.o_iqsurv_icon:before { content: $fa-var-meh-o; }
+.o_ta_icon:before { content: $fa-var-tasks; }
+.o_ms_icon:before { content: $fa-var-thumbs-o-up; }
+.o_dialog_icon:before { content: $fa-var-files-o; }
+.o_projectbroker_icon:before { content: $fa-var-circle-o; }
+.o_ll_icon:before { content: $fa-var-link;}
+.o_den_icon:before { content: $fa-var-calendar-o;}
+.o_cmembers_icon:before { content: $fa-var-users;}
+.o_cl_icon:before { content: $fa-var-check-square-o;}
+.o_vc_icon:before { content: $fa-var-desktop;}
+.o_vitero_icon:before { content: $fa-var-desktop;}
+.o_openmeetings_icon:before { content: $fa-var-desktop;}
+
 /* portal icons */
 .o_portlet_infomsg_icon:before {content: $fa-var-info-circle; }
 .o_portlet_quickstart_icon:before {content: $fa-var-paper-plane-o; }
@@ -302,6 +335,19 @@ $fa-css-prefix: "o_icon" !default;
 .o_ac_order_status_canceled_icon:before { content: $fa-var-minus; color: $brand-warning;}
 .o_ac_order_status_error_icon:before { content: $fa-var-times; color: $brand-danger;}
 .o_ac_order_status_warning_icon:before { content: $fa-var-exclamation; color: $brand-warning;}
+
+/* Menu tree status icons for course editor and SCORM module */
+.o_scorm_org:before { content: $fa-var-archive; }
+.o_scorm_item:before { content: $fa-var-file-o; }
+.o_scorm_completed:before, .o_scorm_passed:before { content: $fa-var-check-circle; }
+.o_scorm_failed:before { content: $fa-var-warning; }
+.o_scorm_incomplete:before { content: $fa-var-warning; }
+.o_scorm_not_attempted:before { background: none; }
+.o_midpub:before { content: $fa-var-check-circle;}
+.o_midwarn:before { content: $fa-var-warning;}
+.o_midlock:before { content: $fa-var-lock;}
+.o_miderr:before { content: $fa-var-warning;}
+.o_middel:before { content: $fa-var-eraser;}
 
 
 /* File type icons */

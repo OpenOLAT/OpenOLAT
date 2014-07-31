@@ -114,12 +114,12 @@
 				.o_start, .o_book {
 					right: 0;
 				}
-				.o_start { @include button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border); }
-				.o_book  { @include button-variant($btn-warning-color, $btn-warning-bg, $btn-warning-border); }
+				.o_start { @include button-variant($o-coursesite-start-color, $o-coursesite-start-bg, $o-coursesite-start-border); }
+				.o_book  { @include button-variant($o-coursesite-book-color, $o-coursesite-book-bg, $o-coursesite-book-border); }
 
 				.o_details {
 					right: floor($o-coursesite-rowelem-width-md / 2);
-					@include button-variant($btn-success-color, $btn-success-bg, $btn-success-border);
+					@include button-variant($o-coursesite-details-color, $o-coursesite-details-bg, $o-coursesite-details-border);
 				}
 				
 				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
@@ -157,9 +157,9 @@
 					a {
 						@extend %o_undecorated;
 						display: block;
-						color: $brand-primary;
+						color: $o-coursesite-meta-title-color;
 						&:hover {
-						    color: darken($brand-primary, 10%);
+						    color: darken($o-coursesite-meta-title-color, 10%);
 						}				
 					}
 				}
@@ -168,7 +168,7 @@
 					line-height: 1em;
 					font-size: 90%;
 					@include text-overflow();
-					color: $state-success-text;
+					color: $o-coursesite-meta-author-color;
 				}
 				.o_lifecycle {
 					position: absolute; 
