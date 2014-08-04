@@ -38,7 +38,6 @@ import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.GlobalMapperRegistry;
 import org.olat.core.dispatcher.mapper.MapperDispatcher;
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -123,8 +122,7 @@ public class OpenOLATServlet extends HttpServlet {
 	protected void service(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
 		//log.info(req.getMethod() + " :: " + req.getPathInfo());
-		
-		GUIInterna.begin(req);
+
 		Tracing.setUreq(req);
 		ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(req);
 		WorkThreadInformations.set("Serve request: " + req.getRequestURI());
@@ -164,7 +162,6 @@ public class OpenOLATServlet extends HttpServlet {
 			ThreadLocalUserActivityLoggerInstaller.resetUserActivityLogger();
 			I18nManager.remove18nInfoFromThread();
 			Tracing.setUreq(null);
-			GUIInterna.end(req);
 			//let it at the end
 			DBFactory.getInstance().commitAndCloseSession();
 		}

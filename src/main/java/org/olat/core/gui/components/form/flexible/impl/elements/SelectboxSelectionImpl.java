@@ -27,7 +27,6 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.util.List;
 
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
@@ -265,11 +264,7 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 		 * dispatch id, but it must always be the formLayoutContainer -> see getComponent() to
 		 * understand why this is not always the case.
 		 */
-		if(GUIInterna.isLoadPerformanceMode()){
-			return DISPPREFIX + getRootForm().getReplayableDispatchID(component);
-		}else{
-			return DISPPREFIX + component.getDispatchID();
-		}
+		return DISPPREFIX + component.getDispatchID();
 	}
 	
 	@Override

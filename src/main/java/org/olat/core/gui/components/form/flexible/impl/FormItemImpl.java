@@ -27,7 +27,6 @@ package org.olat.core.gui.components.form.flexible.impl;
 
 import java.util.List;
 
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
@@ -515,13 +514,9 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 
 		if(comp instanceof FormBaseComponentIdProvider){
 			return ((FormBaseComponentIdProvider)comp).getFormDispatchId();
-		}else{
+		} else {
 			//do the same as the FormBaseComponentIdProvider would do
-			if(GUIInterna.isLoadPerformanceMode()) {
-				return DISPPREFIX+getRootForm().getReplayableDispatchID(comp);
-			} else {
-				return DISPPREFIX+comp.getDispatchID();
-			}
+			return DISPPREFIX+comp.getDispatchID();
 		}
 	}
 

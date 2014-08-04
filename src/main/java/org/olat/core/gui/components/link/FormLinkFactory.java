@@ -25,7 +25,6 @@
 */
 package org.olat.core.gui.components.link;
 
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 
@@ -59,11 +58,7 @@ public class FormLinkFactory {
 	 */
 	public static Link createFormLink(String id, String name, Form form) {
 		Link foLnk = new Link(id, name, name, name,  Link.LINK + Link.FLEXIBLEFORMLNK, form);
-		if (GUIInterna.isLoadPerformanceMode()) {
-			foLnk.setElementId(FormBaseComponentIdProvider.DISPPREFIX+form.getReplayableDispatchID(foLnk));
-		} else {
-			foLnk.setElementId(FormBaseComponentIdProvider.DISPPREFIX+foLnk.getDispatchID());
-		}
+		foLnk.setElementId(FormBaseComponentIdProvider.DISPPREFIX+foLnk.getDispatchID());
 		return foLnk;
 	}
 	
@@ -91,12 +86,7 @@ public class FormLinkFactory {
 	 */
 	public static Link createCustomFormLink(String id, String name, String cmd, String key, int presentation, Form form) {
 		Link foLnk = new Link(id, name, cmd, key, presentation + Link.FLEXIBLEFORMLNK, form);
-		if (GUIInterna.isLoadPerformanceMode()) {
-			foLnk.setElementId(FormBaseComponentIdProvider.DISPPREFIX+form.getReplayableDispatchID(foLnk));
-		} else {
-			foLnk.setElementId(FormBaseComponentIdProvider.DISPPREFIX+foLnk.getDispatchID());
-		}
+		foLnk.setElementId(FormBaseComponentIdProvider.DISPPREFIX+foLnk.getDispatchID());
 		return foLnk;
 	}
-
 }

@@ -30,7 +30,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.regex.Pattern;
 
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
@@ -52,7 +51,6 @@ public class URLBuilder {
 	private final String timestampID;
 	private String componentID;
 	private String componentTimestamp;
-	private String componentPath;
 	
 	private final String iframeTargetName;
 
@@ -170,14 +168,6 @@ public class URLBuilder {
 			}
 		}
 		
-		// OLAT-1973 
-		if (GUIInterna.isLoadPerformanceMode()) {
-			result.append(UserRequest.PARAM_DELIM);
-			result.append('e');
-			result.append(UserRequest.PARAM_DELIM);
-			result.append(componentPath);			
-		}
-		
 		result.append('/');
 		if (modURI != null) result.append(modURI);
 		//FIXME:fj:a urlEncodeUTF8 is slow; improve the regexp, also convert only the modURI to utf-8?
@@ -263,18 +253,7 @@ public class URLBuilder {
 		return encodedURL;
 	}
 
-	/**
-	 * used for OLAT-1973 only: if in replayable-url-mode for performance testing
-	 * @param componentPath The componentPath to set.
-	 */
-	public void setComponentPath(String componentPath) {
-		this.componentPath = componentPath;
-	}
-
 	String getUriPrefix() {
 		return uriPrefix;
 	}
-
-	
-
 }

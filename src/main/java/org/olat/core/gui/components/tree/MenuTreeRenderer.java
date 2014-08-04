@@ -37,7 +37,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
@@ -48,7 +47,6 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
-import org.olat.core.util.tree.TreeHelper;
 
 /**
  * enclosing_type Description: <br>
@@ -170,17 +168,11 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 			target.append("<a onclick='o2cl_secure()' href=\"");
 			
 			// Build menu item URI
-			if (GUIInterna.isLoadPerformanceMode()) {
-				//	 if in load perf test -> generate the treeposition and include it as param, since the nodeid itself is random and thus not replayable			
-				String treePath = TreeHelper.buildTreePath(curRoot);			
-				ubu.buildURI(target, new String[] { "en" }, new String[] { treePath });
+			String cmd = renderChildren ? MenuTree.TREENODE_CLOSE : MenuTree.TREENODE_OPEN;
+			if (iframePostEnabled) {
+				ubu.buildURI(target, new String[] { COMMAND_ID, NODE_IDENT, COMMAND_TREENODE }, new String[] { COMMAND_TREENODE_CLICKED, curRoot.getIdent(), cmd }, AJAXFlags.MODE_TOBGIFRAME);
 			} else {
-				String cmd = renderChildren ? MenuTree.TREENODE_CLOSE : MenuTree.TREENODE_OPEN;
-				if (iframePostEnabled) {
-					ubu.buildURI(target, new String[] { COMMAND_ID, NODE_IDENT, COMMAND_TREENODE }, new String[] { COMMAND_TREENODE_CLICKED, curRoot.getIdent(), cmd }, AJAXFlags.MODE_TOBGIFRAME);
-				} else {
-					ubu.buildURI(target, new String[] { COMMAND_ID, NODE_IDENT, cmd }, new String[] { COMMAND_TREENODE_CLICKED, curRoot.getIdent(), cmd });
-				}
+				ubu.buildURI(target, new String[] { COMMAND_ID, NODE_IDENT, cmd }, new String[] { COMMAND_TREENODE_CLICKED, curRoot.getIdent(), cmd });
 			}
 			
 			target.append("\"");
@@ -223,17 +215,12 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		target.append("' onclick='o2cl_secure()' href=\"");					
 		
 		// Build menu item URI
-		if (GUIInterna.isLoadPerformanceMode()) {
-			//	 if in load perf test -> generate the treeposition and include it as param, since the nodeid itself is random and thus not replayable			
-			String treePath = TreeHelper.buildTreePath(curRoot);			
-			ubu.buildURI(target, new String[] { "en" }, new String[] { treePath });
+		if (iframePostEnabled) {
+			ubu.buildURI(target, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { COMMAND_TREENODE_CLICKED, curRoot.getIdent() }, AJAXFlags.MODE_TOBGIFRAME);
 		} else {
-			if (iframePostEnabled) {
-				ubu.buildURI(target, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { COMMAND_TREENODE_CLICKED, curRoot.getIdent() }, AJAXFlags.MODE_TOBGIFRAME);
-			} else {
-				ubu.buildURI(target, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { COMMAND_TREENODE_CLICKED, curRoot.getIdent() });
-			}
+			ubu.buildURI(target, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { COMMAND_TREENODE_CLICKED, curRoot.getIdent() });
 		}
+
 		target.append("\"");	
 		
 		// Add menu item title as alt hoover text

@@ -26,14 +26,12 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -46,21 +44,17 @@ import org.olat.core.gui.translator.Translator;
  * Initial Date:  02.01.2007 <br>
  * @author patrickb
  */
-class SelectboxRenderer implements ComponentRenderer {
+class SelectboxRenderer extends DefaultComponentRenderer {
 
 	/**
 	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator, org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
+	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 
 		SelectboxComponent ssec = (SelectboxComponent)source;
-		
-		if (GUIInterna.isLoadPerformanceMode()) {
-			// Just make sure the replayID mapping is known
-			ssec.getRootForm().getReplayableDispatchID(source);
-		}
-		
+
 		String subStrName = "name=\"" + ssec.getGroupingName() + "\"";
 		String[] options = ssec.getOptions();
 		String[] values = ssec.getValues();
@@ -129,22 +123,4 @@ class SelectboxRenderer implements ComponentRenderer {
 		}
 		
 	}
-
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.RenderingState)
-	 */
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-	// TODO Auto-generated method stub
-
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator, org.olat.core.gui.render.RenderingState)
-	 */
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
-			RenderingState rstate) {
-	// TODO Auto-generated method stub
-
-	}
-
 }

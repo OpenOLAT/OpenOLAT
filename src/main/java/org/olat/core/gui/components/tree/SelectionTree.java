@@ -26,14 +26,12 @@
 
 package org.olat.core.gui.components.tree;
 
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.Form;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-import org.olat.core.util.tree.TreeHelper;
 
 /**
  * Description: <br> 
@@ -76,13 +74,7 @@ public class SelectionTree extends AbstractComponent {
 		int iMode = -1;//0 -> OK, 1 -> CANCEL
 		if (ureq.getParameter(Form.SUBMIT_IDENTIFICATION) != null) {
 			iMode = 0;
-			if (GUIInterna.isLoadPerformanceMode()) {
-				String selPath = ureq.getParameter(SelectionTreeRenderer.ATTR_SELECTION);
-				TreeNode tn = TreeHelper.resolveTreeNode(selPath, getTreeModel());
-				selectedNodeId = tn.getIdent();
-			} else {
-				selectedNodeId = ureq.getParameter(SelectionTreeRenderer.ATTR_SELECTION);
-			}
+			selectedNodeId = ureq.getParameter(SelectionTreeRenderer.ATTR_SELECTION);
 		} else {
 			iMode = 1;
 		}

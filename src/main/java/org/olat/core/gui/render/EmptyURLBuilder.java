@@ -67,9 +67,4 @@ public class EmptyURLBuilder extends URLBuilder {
 	public URLBuilder createCopyFor(Component source) {
 		return super.createCopyFor(source);
 	}
-
-	@Override
-	public void setComponentPath(String componentPath) {
-		// nothing to do
-	}
 }

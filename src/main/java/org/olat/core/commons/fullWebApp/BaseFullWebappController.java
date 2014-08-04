@@ -40,7 +40,6 @@ import org.olat.core.commons.chiefcontrollers.LanguageChangedEvent;
 import org.olat.core.commons.fullWebApp.util.GlobalStickyMessage;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.dispatcher.Dispatcher;
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.GUIMessage;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
@@ -175,8 +174,8 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		guimsgPanel = new OncePanel("guimsgPanel");
 		
 		WindowManager winman = Windows.getWindows(ureq).getWindowManager();
-		String wSettings = (String)ureq.getUserSession().removeEntryFromNonClearedStore(Dispatcher.WINDOW_SETTINGS);
-		WindowSettings settings = WindowSettings.parse(wSettings);
+		String windowSettings = (String)ureq.getUserSession().removeEntryFromNonClearedStore(Dispatcher.WINDOW_SETTINGS);
+		WindowSettings settings = WindowSettings.parse(windowSettings);
 		wbo = winman.createWindowBackOffice("basechiefwindow", this, settings);
 
 		// define the new windowcontrol
@@ -561,11 +560,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			}
 		} else if (source == getWindowControl().getWindowBackOffice().getWindow()) {
 			if (event == Window.OLDTIMESTAMPCALL) {
-				if (GUIInterna.isLoadPerformanceMode()) {
-					getLogger().info("loadtestMode RELOAD");
-				} else {
-					getLogger().info("RELOAD");
-				}
+				getLogger().info("RELOAD");
 				
 				if(isBackEnabled(ureq)) {
 					HistoryPoint point = ureq.getUserSession().popLastHistoryEntry();

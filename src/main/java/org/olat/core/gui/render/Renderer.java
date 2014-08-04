@@ -26,11 +26,7 @@
 
 package org.olat.core.gui.render;
 
-import java.util.Iterator;
-import java.util.Map;
-
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
@@ -226,30 +222,7 @@ public class Renderer {
 			
 			ComponentRenderer cr = findComponentRenderer(source);
 			URLBuilder cubu = urlBuilder.createCopyFor(source);
-			
-			// OLAT-1973
-			if (GUIInterna.isLoadPerformanceMode()) {
-				StringBuilder pathsb = new StringBuilder();
-				Component cc = source;
-				ComponentCollection ccpar = cc.getParent();
-				while (ccpar != null) { // omit content pane
-					// find out name under which cc was registered in its parent - that is the relevant name, not the name of the component itself
-					Map<String,Component> namedChildren = ccpar.getComponentMap();
-					for (Iterator<String> it_chd = namedChildren.keySet().iterator(); it_chd.hasNext();) {
-						String chdName = it_chd.next();
-						Component chd = ccpar.getComponent(chdName);
-						if (chd == cc) {
-							// found -> append name
-							pathsb.append(chdName).append('!');
-							break;
-						}
-					}
-					cc = ccpar;
-					ccpar = cc.getParent();
-				}
-				cubu.setComponentPath(pathsb.toString());
-			}
-			
+
 			renderResult.incNestedLevel();
 	
 			// ---- for gui debug mode, direct the rendering to a special componentrenderer 

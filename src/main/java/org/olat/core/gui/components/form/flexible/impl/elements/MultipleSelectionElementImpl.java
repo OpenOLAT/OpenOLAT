@@ -31,7 +31,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
@@ -359,11 +358,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	 */
 	@Override
 	public String getFormDispatchId() {
-		if(GUIInterna.isLoadPerformanceMode()){
-			return DISPPREFIX + getRootForm().getReplayableDispatchID(getComponent());
-		}else{
-			return DISPPREFIX + getComponent().getDispatchID();
-		}
+		return DISPPREFIX + getComponent().getDispatchID();
 	}
 
 	@Override

@@ -33,7 +33,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -189,15 +188,6 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		formComponentsNames.add(formCompName);
 		formComponents.put(formCompName, formComp);
 		
-		
-		if (GUIInterna.isLoadPerformanceMode()) {
-			// sort of "register" the new FormItem
-			// so that it will have a replayableID
-			getRootForm().getReplayableDispatchID(
-				formComp.getComponent()
-			);
-		}
-		
 		/*
 		 * add the gui representation
 		 */
@@ -262,18 +252,10 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		String formCompName = formComp.getName();
 		// book keeping of FormComponent order
 		listeningOnlyFormComponents.put(formCompName, formComp);
-		
-		if (GUIInterna.isLoadPerformanceMode()) {
-			// sort of "register" the new FormItem
-			// so that it will have a replayableID
-			getRootForm().getReplayableDispatchID(
-				formComp.getComponent()
-			);
-		}
-		
 	}
-
-	public void remove(FormItem toBeRemoved){
+	
+	@Override
+	public void remove(FormItem toBeRemoved) {
 		String formCompName = toBeRemoved.getName();
 		remove(formCompName, toBeRemoved);
 	}

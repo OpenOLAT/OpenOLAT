@@ -20,7 +20,6 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements.richText;
 
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -94,17 +93,9 @@ public class RichTextElementImpl extends AbstractTextElement implements
 		component = new RichTextElementComponent(this, rows, cols);
 		// configure tiny (must be after component initialization)
 		// init editor on our form element
-		if (GUIInterna.isLoadPerformanceMode()) {
-			configuration = new RichTextConfiguration(
-				DISPPREFIX+rootForm.getReplayableDispatchID(getComponent()),
-				rootForm.getDispatchFieldId()
-			);
-		} else {
-			configuration = new RichTextConfiguration(
-				getFormDispatchId(),
-				rootForm.getDispatchFieldId()
-			);
-		}
+		configuration = new RichTextConfiguration(
+			getFormDispatchId(),
+			rootForm.getDispatchFieldId());
 	}
 	
 	/**

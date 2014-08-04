@@ -25,7 +25,6 @@
 
 package org.olat.login.auth;
 
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -98,10 +97,6 @@ public class OLATAuthentcationForm extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("login.form");
 		setFormDescription("login.intro");
-		
-		if (GUIInterna.isLoadPerformanceMode()) {
-			setFormWarning("loadtest.warn");
-		}
 	
 		FormLayoutContainer loginWrapper = FormLayoutContainer.createInputGroupLayout("loginWrapper", getTranslator(), "<i class='o_icon o_icon-fw o_icon_user'> </i>", null);
 		formLayout.add(loginWrapper);

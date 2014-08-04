@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
@@ -128,26 +127,10 @@ public class MenuTreeScreenreaderRenderer implements ComponentRenderer {
 		target.append("<a onclick=\"return o2cl()\" href=\"");			
 		
 		boolean iframePostEnabled = flags.isIframePostEnabled();
-		if (GUIInterna.isLoadPerformanceMode()) {
-			//	 if in load perf test -> generate the treeposition and include it as param, since the nodeid itself is random and thus not replayable
-			StringBuilder conPath = new StringBuilder();
-			// we need at least one char in the var, even if we click the root node
-			conPath.append('!');
-			TreeNode cur = curRoot;
-			TreeNode par = (TreeNode) cur.getParent();
-			while (par != null) {
-				int cpos = cur.getPosition();
-				conPath.append(cpos).append('!');
-				cur = par;
-				par = (TreeNode) cur.getParent();
-			}
-			ubu.buildURI(target, new String[] { "en" }, new String[] { conPath.toString() });
+		if (iframePostEnabled) {
+			ubu.buildURI(target, new String[] { MenuTree.NODE_IDENT }, new String[] { curRoot.getIdent() }, AJAXFlags.MODE_TOBGIFRAME);
 		} else {
-			if (iframePostEnabled) {
-				ubu.buildURI(target, new String[] { MenuTree.NODE_IDENT }, new String[] { curRoot.getIdent() }, AJAXFlags.MODE_TOBGIFRAME);
-			} else {
-				ubu.buildURI(target, new String[] { MenuTree.NODE_IDENT }, new String[] { curRoot.getIdent() });
-			}
+			ubu.buildURI(target, new String[] { MenuTree.NODE_IDENT }, new String[] { curRoot.getIdent() });
 		}		
 		
 		target.append("\" title=\"");

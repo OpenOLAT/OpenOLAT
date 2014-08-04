@@ -41,7 +41,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.MapperService;
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
@@ -1087,56 +1086,9 @@ public class Window extends AbstractComponent {
 			return NO_DISPATCHRESULT;
 		}
 
-		Component target;
 		List<Component> foundPath = new ArrayList<Component>(10);
 		// OLAT-1973
-		if (GUIInterna.isLoadPerformanceMode()) {
-			String compPath = ureq.getParameter("e");
-			Component cur = getContentPane();
-			String[] res = compPath.split("!");
-			boolean correctFullPath = true;
-			for (int i = res.length -1; i >= 0 && correctFullPath; i--) {
-				String cname = res[i];	
-				ComponentCollection co = (ComponentCollection) cur; // we did not record the leaf, so we know it's a container
-				Component c = co.getComponent(cname);
-				if (c == null) {
-					correctFullPath = false;
-					//throw new AssertException("cannot find: "+compPath);
-				} else {
-					foundPath.add(c);
-					cur = c;
-				}
-			}
-			// if we could not find our component following the full path, also search the component in the full component tree.
-			// the reason is that simply adding a panel or such around a component should not break existing (jmeter)-functional-tests.
-			// 
-			// As long as we find only one component with a child with the name we search, we are ok and assume this new component to be the
-			// same from a gui-side meaning, even if it is in a different parent hierarchy.
-			// If more than one match is found (which should occur very rarely when developers choose meaningful names for components 
-			// to be put into containers), we cannot determine which component was meant and must throw an exception - the functional test 
-			// will break and needs to be improved/adjusted to the new layout.
-			// if no match is found, we could not find the component at all and must raise an exception also.
-			// 
-			if (correctFullPath) {
-				// cur is now the component to dispatch
-				target = cur;
-			} else {
-				String childName = res[0]; // Pre: all paths have at least one entry	
-				List<Component> founds = findComponentsWithChildName(childName, getContentPane());
-				int foundsCnt = founds.size();
-				if (foundsCnt == 1) {
-					// unique -> high probability that the recorded link is still the same
-					target = founds.get(0);
-				} else if (foundsCnt == 0) {
-					throw new AssertException("cannot find: "+compPath);
-				} else { // >1 -> ambiguous, two possible targets
-					throw new AssertException("cannot find: "+compPath);
-				}
-			}			
-		} else {
-			target = ComponentHelper.findDescendantOrSelfByID(getContentPane(), s_compID, foundPath);			
-		}
-		
+		Component target = ComponentHelper.findDescendantOrSelfByID(getContentPane(), s_compID, foundPath);
 		if (target == null) {
 			// there was a component id given, but no matching target could be found
 			fireEvent(ureq, COMPONENTNOTFOUND);

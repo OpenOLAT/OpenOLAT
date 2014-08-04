@@ -44,7 +44,6 @@ import org.apache.commons.fileupload.FileUploadBase.SizeLimitExceededException;
 import org.apache.commons.fileupload.MultipartStream.MalformedStreamException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.util.Streams;
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
@@ -173,17 +172,8 @@ public class Form extends LogDelegator {
 	private Map<String, String> requestMultipartFileMimeTypes = new HashMap<String,String>();
 	private int requestError = REQUEST_ERROR_NO_ERROR;
 	
-	// replayableID Counter
-	private long replayIdCount;
-	// Map to replayableID real dispatchID
-	private Map<String,Long> replayIdMap = new HashMap<String,Long>();
-	
-	private Form(Controller listener) {
-		// internal use only
-		
-		if (GUIInterna.isLoadPerformanceMode()) {
-			initReplayIdCounter(listener);
-		}
+	private Form() {
+		//
 	}
 
 	/**
@@ -198,7 +188,7 @@ public class Form extends LogDelegator {
 	 * @return
 	 */
 	public static Form create(String id, String name, FormItemContainer formLayout, Controller listener) {
-		Form form = new Form(listener);
+		Form form = new Form();
 		// this is where the formitems go to
 		form.formLayout = formLayout;
 		form.formLayout.setRootForm(form);
@@ -652,22 +642,17 @@ public class Form extends LogDelegator {
 			return dispatchFormItem;
 		}
 
+		@Override
 		public boolean visit(FormItem fi, UserRequest ureq) {
 			/*
 			 * check if this is the FormItem to be dispatched
 			 */
 			Component tmp = fi.getComponent();
-			
-			String tmpD;
-			if (GUIInterna.isLoadPerformanceMode()) {
-				tmpD = FormBaseComponentIdProvider.DISPPREFIX+Long.toString(getReplayableDispatchID(fi.getComponent()));
-			} else {
-				tmpD = FormBaseComponentIdProvider.DISPPREFIX + tmp.getDispatchID();
-			}
-			
+			String tmpD = FormBaseComponentIdProvider.DISPPREFIX + tmp.getDispatchID();
+
 			if (!foundDispatchItem && tmpD.equals(dispatchId)) {
 				dispatchFormItem = fi;
-				foundDispatchItem = true; //
+				foundDispatchItem = true;
 			}
 			
 			/*
@@ -686,6 +671,7 @@ public class Form extends LogDelegator {
 			return submit;
 		}
 
+		@Override
 		public boolean visit(FormItem fi, UserRequest ureq) {
 			if(fi instanceof Submit) {
 				submit = (Submit)fi;
@@ -870,74 +856,5 @@ public class Form extends LogDelegator {
 	
 	public boolean isMultipartEnabled() {
 		return multipartEnabled;
-	}
-	
-	/**
-	 * Make replayID distinct for distinct forms by inserting the 
-	 * number of Form Objects created during the current session at
-	 * the 10000 position.
-	 * So the replayID will look like o_fi900060004 for the
-	 * fourth FormItem of the sixth Form. The last four digits
-	 * represent the running number of Items in the current Form.
-	 * @param form
-	 * @param binderName
-	 */
-	private void initReplayIdCounter(Controller listener) {
-		
-		Integer formNum = null;
-		Object o = GUIInterna.getReplayModeData().get("formsSeen");
-			
-		if (o == null) {
-			o = new HashMap<String,Integer>();
-			GUIInterna.getReplayModeData().put("formsSeen", o);
-		} 
-		
-		Map<String,Integer> m = (Map<String,Integer>) o;
-		String k = listener.getClass().getName();
-		if (m.containsKey(k)) {
-			formNum = m.get(k);
-		}
-		
-		if (formNum == null) {		
-			o = GUIInterna.getReplayModeData().get("formNum");
-			formNum = (o == null) ? 1 : (Integer) o + 1;
-			GUIInterna.getReplayModeData().put("formNum", formNum); 
-			m = (Map<String,Integer>) GUIInterna.getReplayModeData().get("formsSeen");
-			m.put(listener.getClass().getName(), formNum);
-		} 
-		
-		replayIdCount = 900000000L + formNum * 10000L;
-		// max 10000 items can be in a form
-		// max 10000 forms can appear in a  load test run
-	}
-	
-	
-	/**
-	 * Get the replayableID for a component, for use only in urlReplay mode.
-	 * The replayableID is set the first time this method is called
-	 * for a particular component. 
-	 * @param component
-	 * @return replayableID
-	 */
-	
-	public long getReplayableDispatchID (Component comp) {
-		String oid = comp.getDispatchID();
-		Long id = replayIdMap.get(oid);
-		if (id != null) return id.longValue();
-		id = new Long(++replayIdCount);
-		
-		if (id >= 999900000L) {
-			throw new AssertException ("Form count limit for a loadtest reached");
-		}
-		if (id%999990000L==9999) {
-			throw new AssertException ("Form item countlimit for a form reached");
-		}
-		
-		replayIdMap.put(oid, id);
-		if (comp instanceof FormBaseComponentImpl) {
-			// set the replayID which was just determined because it is convenient
-			((FormBaseComponentImpl)comp).setReplayableDispatchID(id);
-		} // else it is a VelocityContainer
-		return id.longValue();
 	}
 }

@@ -24,10 +24,8 @@ import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -66,12 +64,7 @@ class RichTextElementRenderer implements ComponentRenderer {
 		RichTextElementImpl te = teC.getRichTextElementImpl();
 		int rows = teC.getRows();
 		// DOM ID used to identify the rich text element in the browser DOM
-		String domID;
-        if (GUIInterna.isLoadPerformanceMode()) {
-        	domID = FormBaseComponentIdProvider.DISPPREFIX+te.getRootForm().getReplayableDispatchID(teC);
-        } else {
-        	domID = teC.getFormDispatchId();
-        }
+		String domID = teC.getFormDispatchId();
 		
         // Use an empty string as default value
 		String value = te.getRawValue();

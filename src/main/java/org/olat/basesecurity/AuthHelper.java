@@ -43,7 +43,6 @@ import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.dispatcher.DispatcherModule;
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.Windows;
@@ -456,12 +455,6 @@ public class AuthHelper {
 	 * @param ureq
 	 */
 	private static void setAjaxModeFor(UserRequest ureq) {
-		
-		if (GUIInterna.isLoadPerformanceMode()) {
-			Windows.getWindows(ureq).getWindowManager().setAjaxEnabled(false);
-			return;
-		}
-		
 		Preferences prefs = ureq.getUserSession().getGuiPreferences();
 		
 		Boolean web2aEnabled = (Boolean) prefs.get(WindowManager.class, "web2a-beta-on");
@@ -470,8 +463,7 @@ public class AuthHelper {
 			Windows.getWindows(ureq).getWindowManager().setForScreenReader(true);		
 			Windows.getWindows(ureq).getWindowManager().setAjaxEnabled(false);
 			return;
-		} 
-		
+		}
 		
 		Boolean ajaxOn = (Boolean) ureq.getUserSession().getGuiPreferences().get(WindowManager.class, "ajax-beta-on");
 		//if user does not have an gui preference it will be only enabled if globally on and browser is capable

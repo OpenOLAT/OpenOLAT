@@ -33,7 +33,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -42,7 +41,6 @@ import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
-import org.olat.core.util.tree.TreeHelper;
 
 /**
  * Description: <br>
@@ -154,14 +152,6 @@ public class MenuTree extends AbstractComponent {
 	 */
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
-		if (GUIInterna.isLoadPerformanceMode()) {
-			String compPath = ureq.getParameter("en");
-			TreeNode selTreeNode = TreeHelper.resolveTreeNode(compPath, getTreeModel());
-			selectedNodeId = selTreeNode.getIdent();
-			handleClick(ureq, "", selectedNodeId);
-			return;
-		}
-		
 		String cmd = ureq.getParameter(COMMAND_ID);
 		String nodeId = ureq.getParameter(NODE_IDENT);
 		if(COMMAND_TREENODE_CLICKED.equals(cmd)) {

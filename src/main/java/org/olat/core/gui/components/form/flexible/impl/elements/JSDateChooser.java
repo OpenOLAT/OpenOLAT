@@ -31,7 +31,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -147,9 +146,6 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		super.rootFormAvailable();
 		//locale is available!
 		locale = getTranslator().getLocale();
-		if (GUIInterna.isLoadPerformanceMode()) {
-			getRootForm().getReplayableDispatchID(dateComponent);
-		}
 	}
 
 	private boolean checkValidDate() {
@@ -167,6 +163,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	/* (non-Javadoc)
 	 * @see org.olat.core.gui.components.form.flexible.impl.elements.DateChooser#getDate()
 	 */
+	@Override
 	public Date getDate() {
 		Date d = null;
 		try {

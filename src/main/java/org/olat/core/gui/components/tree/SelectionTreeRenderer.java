@@ -27,7 +27,6 @@
 package org.olat.core.gui.components.tree;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.olat.core.gui.GUIInterna;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.Form;
@@ -38,7 +37,6 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.tree.TreeHelper;
 
 /**
  * enclosing_type Description: <br>
@@ -153,13 +151,9 @@ public class SelectionTreeRenderer extends DefaultComponentRenderer {
 			sb.append("<div class='radio o_tree_l").append(level).append("'>")
 			  .append("<label class='").append(cssClass, cssClass != null).append("'>");
 			
-			sb.append("<input type='radio' name=\"" + ATTR_SELECTION + "\" value=\"");
-			if (GUIInterna.isLoadPerformanceMode()) {
-				sb.append(TreeHelper.buildTreePath(child));
-			} else {
-				sb.append(child.getIdent());
-			}
-			sb.append("\" onchange=\"return setFormDirty('").append(Form.JSFORMID).append(treeID).append("')\" ")
+			sb.append("<input type='radio' name=\"" + ATTR_SELECTION + "\" value=\"")
+			  .append(child.getIdent())
+			  .append("\" onchange=\"return setFormDirty('").append(Form.JSFORMID).append(treeID).append("')\" ")
 			  .append(" onclick=\"return setFormDirty('").append(Form.JSFORMID).append(treeID).append("')\" />");
 			
 			renderNodeIcon(sb, child);				
