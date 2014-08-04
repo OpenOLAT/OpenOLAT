@@ -153,14 +153,14 @@ public class FileResource implements OLATResourceable {
 	public static class RootSearcher extends SimpleFileVisitor<Path> {
 		
 		private Path root;
-		private boolean rootFound = false;
+		private Boolean rootFound;
 		
 		public Path getRoot() {
 			return root;
 		}
 		
 		public boolean foundRoot() {
-			return root != null && rootFound;
+			return root != null && rootFound != null && rootFound.booleanValue();
 		}
 
 		@Override
@@ -169,13 +169,17 @@ public class FileResource implements OLATResourceable {
 			Path tokenZero = file.getName(0);
 			if("__MACOSX".equals(tokenZero.toString()) || Files.isHidden(file)) {
 				//ignore
-			} else if(root == null) {
-				if(Files.isRegularFile(file) && file.getNameCount() > 1) {
-					root = tokenZero;
-					rootFound = true;
+			} else if(rootFound == null) {
+				if(Files.isRegularFile(file)) {
+					if(file.getNameCount() > 1) {
+						root = tokenZero;
+						rootFound = Boolean.TRUE;
+					} else {
+						rootFound = Boolean.FALSE;
+					}
 				}
-			} else if(!root.equals(tokenZero)) {
-				rootFound = false;
+			} else if(rootFound.booleanValue() && !root.equals(tokenZero)) {
+				rootFound = Boolean.FALSE;
 		        return FileVisitResult.TERMINATE;
 			}
 	        return FileVisitResult.CONTINUE;

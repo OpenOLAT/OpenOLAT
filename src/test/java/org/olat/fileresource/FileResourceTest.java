@@ -33,6 +33,9 @@ import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.ScormCPFileResource;
 
 /**
+ * Test if the system to detect SCORM or CP packages within a directory
+ * works as expect with in several different constellations.
+ * 
  * 
  * Initial date: 25.07.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -57,6 +60,14 @@ public class FileResourceTest {
 	}
 	
 	@Test
+	public void scormPackage_scosInSubDirectory() throws URISyntaxException, IOException {
+		URL fileUrl = FileResourceTest.class.getResource("scorm_scos_in_sub_directory.zip");
+		File file = new File(fileUrl.toURI());
+		ResourceEvaluation eval = ScormCPFileResource.evaluate(file, file.getName());
+		Assert.assertTrue(eval.isValid());
+	}
+	
+	@Test
 	public void scormPackage_invalid() throws URISyntaxException {
 		URL fileUrl = FileResourceTest.class.getResource("invalid_scorm.zip");
 		File file = new File(fileUrl.toURI());
@@ -72,5 +83,7 @@ public class FileResourceTest {
 		//must be root
 		Assert.assertEquals(0, path.getNameCount());
 	}
+	
+
 
 }
