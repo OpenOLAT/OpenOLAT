@@ -32,7 +32,7 @@
 		ThemeJS.prototype.execThemeJS = function() {
 			OPOL.themejs.addClientLinks()
 			// execute after each dom replacement (navbar might have been changed)
-			$(document).on("oo.dom.replacement.after", OPOL.themejs.execThemeJS);
+			$(document).on("oo.dom.replacement.after", OPOL.themejs.addClientLinks);
 		}
 		
 		//Execute when loading of page has been finished
