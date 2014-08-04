@@ -532,7 +532,7 @@ public class CourseTest {
 		Assert.assertEquals(blogTitle, podcastH2.getText().trim());
 		
 		FeedPage feed = FeedPage.getFeedPage(browser);
-		feed.newExternalBlog("http://blogs.frentix.com/blogs/frentix/rss.xml");
+		feed.newExternalBlog("http://www.openolat.com/feed/");
 
 		//check only that the subscription link is visible
 		WebElement subscriptionLink = browser.findElement(By.cssSelector("div.o_subscription>a"));

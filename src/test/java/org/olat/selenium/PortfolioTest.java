@@ -396,6 +396,7 @@ public class PortfolioTest {
 		String textTitle = "Text-1-" + UUID.randomUUID();
 		//create a text artefact
 		portfolio
+			.addArtefact()
 			.createTextArtefact()
 			.fillTextArtefactContent("Content of the text artefact")
 			.next()
@@ -528,6 +529,7 @@ public class PortfolioTest {
 		String textTitle = "Journal-1-" + UUID.randomUUID();
 		//create a live blog or learning journal
 		portfolio
+			.addArtefact()
 			.createLearningJournal()
 			.fillArtefactMetadatas(textTitle, "Description")
 			.next()
@@ -690,6 +692,7 @@ public class PortfolioTest {
 		File file = new File(courseUrl.toURI());
 		//create the artefact
 		portfolio
+			.addArtefact()
 			.createFileArtefact()
 			.uploadFile(file)
 			.next()

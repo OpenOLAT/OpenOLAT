@@ -99,8 +99,10 @@ public class FeedPage {
 		browser.findElement(configureExternalButton).click();
 		OOGraphene.waitBusy();
 		//fill the URL input field
-		By urlField = By.xpath("(//div[contains(@class,'modal-body ')]//form//input[@type='text'])[2]");
-		browser.findElement(urlField).sendKeys(url);
+		By urlField = By.xpath("(//div[contains(@class,'modal-body')]//form//input[@type='text'])[2]");
+		WebElement urlEl = browser.findElement(urlField);
+		urlEl.sendKeys(url);
+		
 		//write something in description
 		OOGraphene.tinymce("...", browser);
 		

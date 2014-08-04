@@ -73,14 +73,14 @@ public class ForumPage {
 		OOGraphene.waitBusy();
 		
 		//fill the form
-		By titleBy = By.cssSelector("div.o_content form input[type='text']");
+		By titleBy = By.cssSelector("div.modal-content form input[type='text']");
 		WebElement titleEl = browser.findElement(titleBy);
 		titleEl.sendKeys(title);
 		
 		OOGraphene.tinymce(content, browser);
 		
 		//save
-		By saveBy = By.cssSelector("div.o_content form button.btn-primary");
+		By saveBy = By.cssSelector("div.modal-content form button.btn-primary");
 		WebElement saveButton = browser.findElement(saveBy);
 		saveButton.click();
 		OOGraphene.waitBusy();
