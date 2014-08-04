@@ -104,7 +104,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 		String formName = renderMultiselectForm(target, source, ubu, iframePostEnabled);
 		target.append("<div class=\"o_table_wrapper\" id=\"o_table_wrapper_").append(table.hashCode()).append("\">")
 		      .append("<table id=\"o_table").append(table.hashCode()).append("\" class=\"o_table table table-striped table-condensed table-hover").append(CLOSE_HTML_BRACE);		
-		appendHeaderLinks(target, translator, table, cols);
+		appendHeaderLinks(target, translator, table, formName, cols);
 		appendDataRows(renderer, target, ubu, table, iframePostEnabled, cols, selRowUnSelectable, selRowId, startRowId, endRowId);
 		target.append("</table><div class='o_table_footer'>");
 		appendSelectDeselectAllButtons(target, translator, table, formName, rows, resultsPerPage);
@@ -257,7 +257,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 
 			TableDataModel<?> model = table.getTableDataModel();
 			if (model instanceof TableDataModelWithMarkableRows) {
-				TableDataModelWithMarkableRows markableModel = (TableDataModelWithMarkableRows) model;
+				TableDataModelWithMarkableRows<?> markableModel = (TableDataModelWithMarkableRows<?>) model;
 				String rowCss = markableModel.getRowCssClass(currentPosInModel);
 				if (rowCss != null) {
 					cssClass += " " + rowCss;
@@ -343,24 +343,31 @@ public class TableRenderer extends DefaultComponentRenderer {
 		target.append(CLOSE_HREF);
 	}
 
-	private void appendHeaderLinks(final StringOutput target, final Translator translator, Table table, int cols) {
-		if (table.isDisplayTableHeader()) {
-			target.append("<thead><tr>");
-			for (int i = 0; i < cols; i++) {
-				ColumnDescriptor cd = table.getColumnDescriptor(i);
-				String header;
-				if (cd.translateHeaderKey()) {
-					header = translator.translate(cd.getHeaderKey());
-				} else {
-					header = cd.getHeaderKey();
-				}
-
-				target.append("<th>")
-				      .append(header)
-				      .append("</th>");
+	private void appendHeaderLinks(final StringOutput target, final Translator translator, Table table, String formName, int cols) {
+		if (!table.isDisplayTableHeader()) return;
+		target.append("<thead><tr>");
+		for (int i = 0; i < cols; i++) {
+			ColumnDescriptor cd = table.getColumnDescriptor(i);
+			String header;
+			if (cd.translateHeaderKey()) {
+				header = translator.translate(cd.getHeaderKey());
+			} else {
+				header = cd.getHeaderKey();
 			}
-			target.append("</tr></thead>");
+
+			target.append("<th>");
+			// header either a link or not
+			if (table.isSortingEnabled() && cd.isSortingAllowed()) {
+				target.append("<a class='o_orderby' href=\"javascript:tableFormInjectCommandAndSubmit('")
+				      .append(formName).append("','").append(Table.COMMAND_SORTBYCOLUMN).append("','").append(i).append("');\">")
+				      .append(header)
+				      .append(CLOSE_HREF);
+			} else {
+				target.append(header);
+			}
+			target.append("</th>");
 		}
+		target.append("</tr></thead>");
 	}
 
 	private String renderMultiselectForm(final StringOutput target, final Component source, final URLBuilder ubu, final boolean iframePostEnabled) {
