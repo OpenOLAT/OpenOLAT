@@ -59,36 +59,39 @@ public abstract class FeedCourseNodeIndexer extends DefaultIndexer implements Co
 	 * @see org.olat.search.service.indexer.Indexer#doIndex(org.olat.search.service.SearchResourceContext,
 	 *      java.lang.Object, org.olat.search.service.indexer.OlatFullIndexer)
 	 */
+	@Override
 	public void doIndex(SearchResourceContext searchResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexer)
 			throws IOException, InterruptedException {
 		RepositoryEntry repositoryEntry = courseNode.getReferencedRepositoryEntry();
-		// used for log messages
-		String repoEntryName = "*name not available*";
-		try {
-			repoEntryName = repositoryEntry.getDisplayname();
-			if (log.isDebug()) {
-				log.info("Indexing: " + repoEntryName);
+		if(repositoryEntry != null) {
+			// used for log messages
+			String repoEntryName = "*name not available*";
+			try {
+				repoEntryName = repositoryEntry.getDisplayname();
+				if (log.isDebug()) {
+					log.info("Indexing: " + repoEntryName);
+				}
+				Feed feed = FeedManager.getInstance().getFeed(repositoryEntry.getOlatResource());
+	
+				// Set the document type, e.g. type.repository.entry.FileResource.BLOG
+				SearchResourceContext nodeSearchContext = new SearchResourceContext(searchResourceContext);
+				nodeSearchContext.setBusinessControlFor(courseNode);
+				nodeSearchContext.setDocumentType(getDocumentType());
+				nodeSearchContext.setTitle(courseNode.getShortTitle());
+				nodeSearchContext.setDescription(courseNode.getLongTitle());
+	
+				// Create the olatDocument for the feed course node itself
+				OlatDocument feedNodeDoc = new FeedNodeDocument(feed, nodeSearchContext);
+				indexer.addDocument(feedNodeDoc.getLuceneDocument());
+				
+				// Only index items. Feed itself is indexed by RepositoryEntryIndexer.
+				for (Item item : feed.getPublishedItems()) {
+					OlatDocument itemDoc = new FeedItemDocument(item, nodeSearchContext);
+					indexer.addDocument(itemDoc.getLuceneDocument());
+				}
+			} catch (NullPointerException e) {
+				log.error("Error indexing feed:" + repoEntryName, e);
 			}
-			Feed feed = FeedManager.getInstance().getFeed(repositoryEntry.getOlatResource());
-
-			// Set the document type, e.g. type.repository.entry.FileResource.BLOG
-			SearchResourceContext nodeSearchContext = new SearchResourceContext(searchResourceContext);
-			nodeSearchContext.setBusinessControlFor(courseNode);
-			nodeSearchContext.setDocumentType(getDocumentType());
-			nodeSearchContext.setTitle(courseNode.getShortTitle());
-			nodeSearchContext.setDescription(courseNode.getLongTitle());
-
-			// Create the olatDocument for the feed course node itself
-			OlatDocument feedNodeDoc = new FeedNodeDocument(feed, nodeSearchContext);
-			indexer.addDocument(feedNodeDoc.getLuceneDocument());
-			
-			// Only index items. Feed itself is indexed by RepositoryEntryIndexer.
-			for (Item item : feed.getPublishedItems()) {
-				OlatDocument itemDoc = new FeedItemDocument(item, nodeSearchContext);
-				indexer.addDocument(itemDoc.getLuceneDocument());
-			}
-		} catch (NullPointerException e) {
-			log.error("Error indexing feed:" + repoEntryName, e);
 		}
 	}
 

@@ -1489,14 +1489,12 @@ public class EPStructureManager extends BasicManager {
 		sb.append("select element from ").append(EPStructureElement.class.getName()).append(" element")
 			.append(" where element.olatResource=:resource");
 		
-		DBQuery query = dbInstance.createQuery(sb.toString());
-		query.setEntity("resource", resource);
-		
-		@SuppressWarnings("unchecked")
-		List<PortfolioStructure> resources = query.list();
+		List<PortfolioStructure> resources = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PortfolioStructure.class)
+				.setParameter("resource", resource)
+				.getResultList();
 		// if not found, it is an empty list
-		if (resources.isEmpty()) return null;
-		return resources.get(0);
+		return resources.isEmpty() ? null : resources.get(0);
 	}
 	
 	/**

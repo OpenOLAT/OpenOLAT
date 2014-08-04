@@ -41,7 +41,7 @@ public class SlicedDocument {
 
 	public void setHeader(int index, StringBuilder doc) {
 		ensureSize(headers, index);
-		documents.set(index, doc);
+		headers.set(index, doc);
 		size += doc.length();
 	}
 	

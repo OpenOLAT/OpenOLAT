@@ -452,6 +452,20 @@ public class EPStructureManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void loadPortfolioStructure_resourceable() {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("EP-res-tmp-");
+		//a template
+		PortfolioStructureMap template = epStructureManager.createPortfolioMapTemplate(user, "resourced-el", "resource-element");
+		epStructureManager.savePortfolioStructure(template);
+		dbInstance.commitAndCloseSession();
+		
+		OLATResource resource = template.getOlatResource();
+		PortfolioStructure structure = epStructureManager.loadPortfolioStructure(resource);
+		Assert.assertNotNull(structure);
+		Assert.assertEquals(template, structure);
+	}
+	
+	@Test
 	public void testCountStructureElementsFromOthers() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("EP-tmp-");
 		
@@ -463,8 +477,6 @@ public class EPStructureManagerTest extends OlatTestCase {
 		int count = epStructureManager.countStructureElementsFromOthers(user, null);
 		Assert.assertEquals(0, count);
 	}
-	
-	
 	
 	@Test
 	public void testMoveUp() {

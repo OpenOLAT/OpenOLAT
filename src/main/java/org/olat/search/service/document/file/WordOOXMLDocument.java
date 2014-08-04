@@ -103,6 +103,7 @@ public class WordOOXMLDocument extends FileDocument {
 		} catch (DocumentException e) {
 			throw e;
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new DocumentException(e.getMessage());
 		} finally {
 			FileUtils.closeSafely(zip);

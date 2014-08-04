@@ -89,7 +89,10 @@ public class CalendarNotificationHandler extends LogDelegator implements Notific
 				} else if (type.equals(CalendarController.ACTION_CALENDAR_GROUP)) {
 					BusinessGroup group = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(id);
 					calType = CalendarManager.TYPE_GROUP;
-					title = translator.translate("cal.notifications.header.group", new String[]{group.getName()});
+					if(group == null) {
+						return NotificationsManager.getInstance().getNoSubscriptionInfo();
+					}
+					title = translator.translate("cal.notifications.header.group", new String[]{ group.getName() });
 				}
 
 				if (calType != null) {

@@ -391,13 +391,17 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	
 	private boolean validateTextElement(TextElement el, int maxLength) {
 		boolean ok;
-		String val = el.getValue();
-		el.clearError();
-		if(val != null && val.length() > maxLength) {
-			el.setErrorKey("input.toolong", new String[]{ Integer.toString(maxLength) });
-			ok = false;
-		} else {
+		if(el == null) {
 			ok = true;
+		} else {
+			String val = el.getValue();
+			el.clearError();
+			if(val != null && val.length() > maxLength) {
+				el.setErrorKey("input.toolong", new String[]{ Integer.toString(maxLength) });
+				ok = false;
+			} else {
+				ok = true;
+			}
 		}
 		return ok;
 	}

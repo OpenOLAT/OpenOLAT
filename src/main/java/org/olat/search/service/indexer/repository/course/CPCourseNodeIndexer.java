@@ -28,7 +28,6 @@ package org.olat.search.service.indexer.repository.course;
 import java.io.File;
 import java.io.IOException;
 
-import org.olat.core.logging.AssertException;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.ICourse;
@@ -53,24 +52,26 @@ public class CPCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 
 	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.CPCourseNode";
 	
-	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
-		if (isLogDebugEnabled()) logDebug("Index Content Package...");
-
-    SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
-    courseNodeResourceContext.setBusinessControlFor(courseNode);
-    courseNodeResourceContext.setDocumentType(TYPE);
-    courseNodeResourceContext.setTitle(courseNode.getShortTitle());
-    courseNodeResourceContext.setDescription(courseNode.getLongTitle());
+	@Override
+	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter)
+	throws IOException,InterruptedException  {
+	    RepositoryEntry re = CPEditController.getCPReference(courseNode.getModuleConfiguration(), false);
+	    if(re != null) {
+	    	SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
+	    	courseNodeResourceContext.setBusinessControlFor(courseNode);
+	    	courseNodeResourceContext.setDocumentType(TYPE);
+	    	courseNodeResourceContext.setTitle(courseNode.getShortTitle());
+	    	courseNodeResourceContext.setDescription(courseNode.getLongTitle());
     
-    RepositoryEntry re = CPEditController.getCPReference(courseNode.getModuleConfiguration(), true);
-		if (re == null) throw new AssertException("configurationkey 'CONFIG_KEY_REPOSITORY_SOFTKEY' of BB CP was missing");
-    File cpRoot = FileResourceManager.getInstance().unzipFileResource(re.getOlatResource());
-		if (cpRoot == null) throw new AssertException("file of repository entry " + re.getKey() + "was missing");
-
-    VFSContainer rootContainer = new LocalFolderImpl(cpRoot);
-    doIndexVFSContainer(courseNodeResourceContext,rootContainer,indexWriter,"", FolderIndexerAccess.FULL_ACCESS);
+	    	File cpRoot = FileResourceManager.getInstance().unzipFileResource(re.getOlatResource());
+	    	if(cpRoot != null) {
+	    		VFSContainer rootContainer = new LocalFolderImpl(cpRoot);
+	    		doIndexVFSContainer(courseNodeResourceContext,rootContainer,indexWriter,"", FolderIndexerAccess.FULL_ACCESS);
+	    	}
+	    }
 	}
 
+	@Override
 	public String getSupportedTypeName() {
 		return SUPPORTED_TYPE_NAME;
 	}
