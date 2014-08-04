@@ -51,11 +51,19 @@
 	.table {
 		margin-bottom: 0;
 	}
+	
+	th {
+		color: $o-table-header-color;
+	}
 }
 
 a.o_orderby, a.o_orderby:hover {
-	color: black;
+	color: $o-table-header-color;
 	text-decoration: none;
+
+	&.o_orderby_asc, &.o_orderby_desc {
+		border-bottom: 1px solid $table-border-color;
+	}
 }
 
 .o_table_row_count {

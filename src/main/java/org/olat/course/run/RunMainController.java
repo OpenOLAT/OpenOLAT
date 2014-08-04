@@ -238,7 +238,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	public RunMainController(final UserRequest ureq, final WindowControl wControl, final ICourse course,
 			final RepositoryEntry re, final boolean offerBookmark, final boolean showCourseConfigLink) {
 
-		super(ureq, wControl);
+		// Use repository package as fallback translator
+		super(ureq, wControl, Util.createPackageTranslator(RepositoryEntry.class, ureq.getLocale()));
 		
 		roles = ureq.getUserSession().getRoles();
 
@@ -1030,6 +1031,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			css = Mark.MARK_CSS_ICON;
 		}
 		bookmarkLink.setIconLeftCSS(css);
+		bookmarkLink.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
 		bookmarkLink.setDirty(true);
 	}
 
@@ -1408,6 +1410,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			boolean marked = markManager.isMarked(courseRepositoryEntry, getIdentity(), null);
 			String css = marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON;
 			bookmarkLink = LinkFactory.createToolLink("bookmark",translate("command.bookmark"), this, css);
+			bookmarkLink.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
 			toolbarPanel.addTool(bookmarkLink, Align.right);
 		}
 	}

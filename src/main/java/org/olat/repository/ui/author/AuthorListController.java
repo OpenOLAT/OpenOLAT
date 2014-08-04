@@ -410,6 +410,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				AuthoringEntryRow row = (AuthoringEntryRow)link.getUserObject();
 				boolean marked = doMark(row);
 				link.setIconLeftCSS(marked ? "o_icon o_icon_bookmark o_icon-lg" : "o_icon o_icon_bookmark_add o_icon-lg");
+				link.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
 				link.getComponent().setDirty(true);
 				row.setMarked(marked);
 			}
@@ -566,6 +567,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	public void forgeMarkLink(AuthoringEntryRow row) {
 		FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "", null, null, Link.NONTRANSLATED);
 		markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+		markLink.setTitle(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
 		markLink.setUserObject(row);
 		row.setMarkLink(markLink);
 	}

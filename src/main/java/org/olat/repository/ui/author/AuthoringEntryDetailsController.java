@@ -291,7 +291,8 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 		if (!isGuestOnly) {
 			boolean marked = markManager.isMarked(entry, getIdentity(), null);
 			String css = "o_icon " + (marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON);
-			bookmarkLink = LinkFactory.createToolLink("downloadcompat", translate("details.bookmark") , this);
+			bookmarkLink = LinkFactory.createToolLink("downloadcompat", translate("details.bookmark.label") , this);
+			bookmarkLink.setTitle( translate(marked ? "details.bookmark.remove" : "details.bookmark"));
 			bookmarkLink.setEnabled(!corrupted);
 			bookmarkLink.setIconLeftCSS(css);
 			stackPanel.addTool(bookmarkLink, Align.right);
@@ -519,8 +520,11 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 				doCatalog(ureq);
 			}
 		} else if (bookmarkLink == source) {
-			String css = "o_icon " + (doMark() ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON);
+			boolean marked = doMark();
+			String css = "o_icon " + (marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON);
 			bookmarkLink.setIconLeftCSS(css);
+			bookmarkLink.setTitle( translate(marked ? "details.bookmark.remove" : "details.bookmark"));
+
 		} else if (membersLink == source) {
 			stackPanel.popUpToController(this);
 			doMembers(ureq);

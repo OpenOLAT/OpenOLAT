@@ -66,6 +66,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	private String iconRightCSS;
 	private String customEnabledLinkCSS;
 	private String customDisabledLinkCSS;
+	private String title;
 
 	/**
 	 * creates a form link with the given name which acts also as command, i18n
@@ -151,6 +152,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		component.setTranslator(getTranslator());
 		component.setIconLeftCSS(iconLeftCSS);
 		component.setIconRightCSS(iconRightCSS);
+		component.setTitle(title);
 		component.setDomReplacementWrapperRequired(domReplacementWrapperRequired);
 	}
 	
@@ -206,6 +208,14 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		}
 	}
 
+	@Override
+	public void setTitle(String linkTitle) {
+		this.title = linkTitle;
+		if(component != null){
+			component.setTitle(linkTitle);
+		}
+	}
+	
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.FormLink#setCustomEnabledLinkCSS(java.lang.String)
 	 */

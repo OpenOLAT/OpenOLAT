@@ -63,6 +63,7 @@ $o-content-border-img-padding	: 3px !default;
 $o-font-size-xsmall				: ceil(($font-size-base * 1.7)) !default;  // ~24px
 $o-font-size-xlage				: ceil(($font-size-base * 0.71)) !default; // ~10px
 $o-table-row-selected-color     : $state-success-bg !default;
+$o-table-header-color			: $text-color !default;
 
 
 /* The max width the header/navbar/main/footer can possibly have. */

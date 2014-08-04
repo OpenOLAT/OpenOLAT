@@ -52,7 +52,13 @@ public interface FormLink extends FormItem {
 	 * @param iconCSS
 	 */
 	public void setIconRightCSS(String iconCSS);
-	
+
+	/**
+	 * Set the title used as hover text on link
+	 * @param linkTitle
+	 */
+	public void setTitle(String linkTitle);
+
 
 	public void setDomReplacementWrapperRequired(boolean required);
 	
