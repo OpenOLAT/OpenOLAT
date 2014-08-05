@@ -1,0 +1,48 @@
+/*
+	The realistic style can be added to the light theme to add realistic effects
+	to the light theme. The light theme is flat without shadows etc. The realistic
+	style adds shadows and gradients to buttons and alike. 
+	
+	To use this style, first load the standard light theme and then add this style
+	before you add your own patches. See the OpenOLAT theme for an example.
+*/
+// First add theme styles from bootstrap theme
+@import "../../../bootstrap/stylesheets/bootstrap/theme";
+// Second add same style patches for OpenOLAT modules
+
+
+/* Top navbar */
+.o_navbar.o_navbar-default {
+  	@include gradient-vertical($start-color: lighten($navbar-default-bg, 10%), $end-color: $navbar-default-bg);
+  	@include reset-filter(); // Remove gradient in IE<10 to fix bug where dropdowns don't get triggered
+  	$shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 5px rgba(0,0,0,.075);
+  	@include box-shadow($shadow);
+
+  	.o_navbar-nav > .active > a {
+    	@include gradient-vertical($start-color: darken($navbar-default-bg, 5%), $end-color: darken($navbar-default-bg, 2%));
+    	@include box-shadow(inset 0 3px 9px rgba(0,0,0,.075));
+    	&.o_navbar_tab_close {
+    		background: none;
+    		@include box-shadow(none);
+       	}
+  	}
+}
+.o_navbar-brand,
+.o_navbar-nav > li > a {
+  	text-shadow: 0 1px 0 rgba(255,255,255,.25);
+}
+
+
+/* Toolbar with integrated bread crumb */
+.o_toolbar {
+  	$shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 5px rgba(0,0,0,.05);
+  	@include box-shadow($shadow);
+	.o_breadcrumb .breadcrumb {
+		@include gradient-vertical($start-color: lighten($o-toolbar-breadcrumb-bg-color, 10%), $end-color: $o-toolbar-breadcrumb-bg-color);
+		@include reset-filter(); // Remove gradient in IE<10 to fix bug where dropdowns don't get triggered
+	}
+	.o_tools_container {
+		@include gradient-vertical($start-color: lighten($o-toolbar-bg-color, 15%), $end-color: $o-toolbar-bg-color);
+	  	@include reset-filter(); // Remove gradient in IE<10 to fix bug where dropdowns don't get triggered
+	}
+}

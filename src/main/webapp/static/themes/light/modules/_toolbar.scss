@@ -1,78 +1,69 @@
-.o_toolbar {
-	// Following rules copied from .navbar;
-	position: relative;
-  	min-height: $o-toolbar-height-md; // Ensure a navbar always shows (e.g., without a .navbar-brand in collapsed mode)
-  	margin-bottom: $navbar-margin-bottom;
-  	border: 1px solid transparent;
-  	@include clearfix();
- 	@media (min-width: $grid-float-breakpoint) {
-    	border-radius: $navbar-border-radius;
-  	}
-	
-	// Following rules copied from .navbar-default;
-  	background-color: $navbar-default-bg;
-  	border-color: $navbar-default-border;
 
-	text-align: center;
-	min-height: $o-toolbar-height-md;
-	
-	a {
-		// Following rules copied from .navbar-link;
-   	 	color: $navbar-default-link-color;
-    	&:hover {
-      		color: $navbar-default-link-hover-color;
-    	}
-    	@extend %o_undecorated;
-    	display: inline-block;
+.o_toolbar {
+	position: relative;
+  	margin-bottom: $o-toolbar-margin-bottom;
+	margin-top: $o-toolbar-margin-top; 	// don't waste so much space with a toolbar
+  	@include clearfix();
+
+	.o_breadcrumb {
+	  	@include clearfix();
+		.breadcrumb {
+			margin-bottom: 0;
+			padding: 5px 9px;
+			font-size: $o-toolbar-breadcrumb-font-size;
+			line-height: $o-toolbar-breadcrumb-line-height;
+			border: 1px solid $o-toolbar-border-color;
+			border-bottom: 0;
+	    	border-radius: 0;
+			background: $o-toolbar-breadcrumb-bg-color;
+		 	@media (min-width: $grid-float-breakpoint) {
+		    	@include border-top-radius($o-toolbar-border-radius);
+		    }
+		}
 	}
 	
-	.o_breadcrumb {
-		float: left;	
-		margin-top: floor($o-toolbar-margin-top-md / 2);
-		margin-bottom: floor($o-toolbar-margin-bottom-md / 2);
-		padding-right: 5px;
-		padding-left: 5px;
-		padding-top: floor($o-toolbar-size-icon-md * 0.20);
-		border-right: 1px solid $navbar-default-border;
-		margin-right: 15px;
-		margin-left: -15px;
-		
-		i {
-			font-size: $o-toolbar-size-icon-md;
-		}
-		.o_history.o_tool_dropdown i {
-			font-size: floor($o-toolbar-size-icon-md * 0.80);
-		}
-		
-		@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
-			margin-top: floor($o-toolbar-margin-top-sm / 2);
-			margin-bottom: floor($o-toolbar-margin-bottom-sm / 2);
-			padding-top: floor($o-toolbar-size-icon-sm * 0.20);
-			i {
-				font-size: $o-toolbar-size-icon-sm;
-			}
-			.o_history.o_tool_dropdown i {
-				font-size: floor($o-toolbar-size-icon-sm * 0.80);
-			}
+	.o_tools_container {
+		text-align: center;
+	  	min-height: $o-toolbar-height-md; // Ensure a navbar always shows (e.g., without a .navbar-brand in collapsed mode)
+	  	position: realtive;
+	  	@include clearfix();
+
+	  	background-color: $o-toolbar-bg-color;
+	  	border: 1px solid $o-toolbar-border-color;
+	 	@media (min-width: $grid-float-breakpoint) {
+	    	@include border-top-radius($o-toolbar-border-radius);
+	    	@include border-bottom-radius($o-toolbar-border-radius);
+	  	}	  	
+		@media (max-width: $screen-sm-max) { 
+			min-height: $o-toolbar-height-sm;
 		}
 		@media (max-width: $screen-xs-max) { 
-			margin-top: $o-toolbar-margin-top-xs;
-			margin-bottom: $o-toolbar-margin-bottom-xs;
-			padding-top: 0;
-			i {
-				font-size: $o-toolbar-size-icon-xs;
-			}
-			.o_history {
-				display: none;
-			}
-		}	
+			min-height: $o-toolbar-height-xs;
+			text-align: left;
+		}
+
+		a {
+			// Following rules copied from .navbar-link;
+	   	 	color: $o-tooblar-link-color;
+	    	&:hover {
+	      		color: $o-tooblar-link-hover-color;
+	    	}
+	    	@extend %o_undecorated;
+	    	display: inline-block;
+	    }
+
 	}
+	
+	.o_breadcrumb + .o_tools_container {
+		/* don't use top radius when breadcrumb is shown above tools */
+		@include border-top-radius(0);
+	}	
 		
 	.o_tools_close {
 		float: right;
 		position: relative;
-		margin: $o-toolbar-margin-top-md -15px $o-toolbar-margin-bottom-md 15px;
-		border-left: 1px solid $navbar-default-border;
+		margin: $o-toolbar-tools-margin-top-md -15px $o-toolbar-tools-margin-bottom-md 15px;
+		border-left: 1px solid $o-toolbar-border-color;
 		padding-right: 5px;
 		padding-left: 5px;
 		vertical-align: middle;
@@ -90,8 +81,8 @@
 			}
 		}
 		@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
-			margin-top: $o-toolbar-margin-top-sm;
-			margin-bottom: $o-toolbar-margin-bottom-sm;
+			margin-top: $o-toolbar-tools-margin-top-sm;
+			margin-bottom: $o-toolbar-tools-margin-bottom-sm;
 			a {
 				line-height: $o-toolbar-height-sm;
 				i {
@@ -101,8 +92,8 @@
 		}
 		@media (max-width: $screen-xs-max) { 
 			min-height: $o-toolbar-height-xs;
-			margin-top: $o-toolbar-margin-top-xs;
-			margin-bottom: $o-toolbar-margin-bottom-xs;
+			margin-top: $o-toolbar-tools-margin-top-xs;
+			margin-bottom: $o-toolbar-tools-margin-bottom-xs;
 			a {
 				line-height: $o-toolbar-height-xs;
 				i {
@@ -114,8 +105,8 @@
 		
 		
 	.o_tools {
-		margin-top: $o-toolbar-margin-top-md;
-		margin-bottom: $o-toolbar-margin-bottom-md;
+		margin-top: $o-toolbar-tools-margin-top-md;
+		margin-bottom: $o-toolbar-tools-margin-bottom-md;
 	}
 
 	.o_tool, .o_text {
@@ -227,10 +218,9 @@
 	}
 	
 	@media (max-width: $screen-sm-max) { 
-		min-height: $o-toolbar-height-sm;
 		.o_tools {
-			margin-top: $o-toolbar-margin-top-sm;
-			margin-bottom: $o-toolbar-margin-bottom-sm;
+			margin-top: $o-toolbar-tools-margin-top-sm;
+			margin-bottom: $o-toolbar-tools-margin-bottom-sm;
 		}
 		.o_tool span {
 			max-width: 10em;
@@ -238,11 +228,9 @@
 		}
 	}
 	@media (max-width: $screen-xs-max) { 
-		min-height: $o-toolbar-height-xs;
-		text-align: left;
 		.o_tools {
-			margin-top: $o-toolbar-margin-top-xs;
-			margin-bottom: $o-toolbar-margin-bottom-xs;
+			margin-top: $o-toolbar-tools-margin-top-xs;
+			margin-bottom: $o-toolbar-tools-margin-bottom-xs;
 			.o_chelp {
 				top: 0;
 				vertical-align: top;
@@ -250,9 +238,7 @@
 		}
 		.o_tools_right, .o_tools_center {
 			float: left;
-		}
-		
+		}		
 	}
 	
-
 }

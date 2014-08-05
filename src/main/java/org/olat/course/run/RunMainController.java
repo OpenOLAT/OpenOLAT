@@ -261,6 +261,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		
 		// set up the components
 		toolbarPanel = new TooledStackedPanel("courseStackPanel", getTranslator(), this);
+		toolbarPanel.setInvisibleCrumb(0); // show root (course) level
 				
 		//StackedControllerImpl(getWindowControl(), getTranslator(), "o_course_breadcumbs");
 		luTree = new MenuTree(null, "luTreeRun", this);

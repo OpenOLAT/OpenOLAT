@@ -48,31 +48,31 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 		TooledStackedPanel panel = (TooledStackedPanel) source;
 		List<Link> breadCrumbs = panel.getBreadCrumbs();
 		List<Tool> tools = panel.getTools();
+				
 		if(breadCrumbs.size() > panel.getInvisibleCrumb() || tools.size() > 0) {
 			String mainCssClass = panel.getCssClass();
-			sb.append("<div id='o_main_toolbar' class='o_toolbar clearfix list-unstyled").append(mainCssClass, mainCssClass != null).append("'>")
-			  .append("<div class='container-fluid'>");
+			sb.append("<div id='o_main_toolbar' class='o_toolbar list-unstyled").append(mainCssClass, mainCssClass != null).append("'>");
 
-			Link backLink = panel.getBackLink();
-			int numOfCrumbs = breadCrumbs.size();
-			if(backLink.isVisible() && numOfCrumbs > 1) {
-				// breadcrum back link
-				sb.append("<ul class='o_breadcrumb list-unstyled'>")
-				.append("<li class='o_breadcrumb_back'>");
-				backLink.getHTMLRendererSingleton().render(renderer, sb, backLink, ubu, translator, renderResult, args);
-				sb.append("</li>");
-				// breadcrum history
-				sb.append("<li class='o_history o_tool_dropdown'>")
-				  .append("<a href='#' class='dropdown-toggle' data-toggle='dropdown'><i class='o_icon o_icon_back_history'></i></a>")
-				  .append("<ul class='dropdown-menu' role='menu'>");
-				
-				for(int i=0; i<numOfCrumbs; i++) {
-					sb.append("<li>");
-					renderer.render(breadCrumbs.get(i), sb, args);
+			if(breadCrumbs.size() > panel.getInvisibleCrumb()) {
+				sb.append("<div class='o_breadcrumb'><ol class='breadcrumb'>");
+
+				Link backLink = panel.getBackLink();
+				int numOfCrumbs = breadCrumbs.size();
+				if(backLink.isVisible() && numOfCrumbs > panel.getInvisibleCrumb()) {
+					sb.append("<li class='o_breadcrumb_back'>");
+					backLink.getHTMLRendererSingleton().render(renderer, sb, backLink, ubu, translator, renderResult, args);
 					sb.append("</li>");
+					
+					for(Link crumb:breadCrumbs) {
+						sb.append("<li").append(" class='active'", breadCrumbs.indexOf(crumb) == numOfCrumbs-1).append(">");
+						renderer.render(crumb, sb, args);
+						sb.append("</li>");
+					}
 				}
-				sb.append("</ul></li></ul>");
+				sb.append("</ol></div>"); // o_breadcrumb
 			}
+			
+			sb.append("<div class='o_tools_container'><div class='container-fluid'>");
 			Link closeLink = panel.getCloseLink();
 			if (closeLink.isVisible()) {
 				sb.append("<ul class='o_tools_close list-unstyled'><li>");
@@ -101,8 +101,9 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 				renderTools(notAlignedTools, renderer, sb, args);
 				sb.append("</ul>");
 			}
+			sb.append("</div>"); // o_tools_container
 			
-			sb.append("</div></div>");
+			sb.append("</div></div>"); // container-fluid, o_toolbar
 		}
 		
 		Component toRender = panel.getContent();

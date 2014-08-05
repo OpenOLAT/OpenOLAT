@@ -6,7 +6,7 @@
 /* Add all default config and apply styles from light theme */
 @import "light/theme";
 /* Add styles from bootstrap theme (nice buttons etc) */
-@import "../../../bootstrap/stylesheets/bootstrap/theme";
+@import "light/styles/realistic";
 
 /* Override with OpenOLAT customizations */
 @import "openolat_theme"; 

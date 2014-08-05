@@ -60,8 +60,8 @@ $o-content-border-img-border	: $thumbnail-border !default;
 $o-content-border-img-radius	: $thumbnail-border-radius !default;
 $o-content-border-img-padding	: 3px !default;
 
-$o-font-size-xsmall				: ceil(($font-size-base * 1.7)) !default;  // ~24px
-$o-font-size-xlage				: ceil(($font-size-base * 0.71)) !default; // ~10px
+$o-font-size-xlarge				: ceil(($font-size-base * 1.7)) !default;  // ~24px
+$o-font-size-xsmall				: ceil(($font-size-base * 0.71)) !default; // ~10px
 $o-table-row-selected-color     : $state-success-bg !default;
 $o-table-header-color			: $text-color !default;
 
@@ -99,6 +99,11 @@ $o-offcanvas-color				: $navbar-inverse-color;
 $o-offcanvas-link-hover-color 	: $navbar-inverse-link-hover-color;
 
 /* Toolbar in course, editor etc */
+$o-toolbar-bg-color				: $navbar-default-bg !default;
+$o-toolbar-border-color			: $navbar-default-border !default;
+$o-toolbar-border-radius		: $navbar-border-radius !default;
+$o-tooblar-link-color			: $navbar-default-link-color !default;
+$o-tooblar-link-hover-color		: $navbar-default-link-hover-color !default;
 $o-toolbar-size-icon-md 		: ceil($font-size-base * 1.25) !default;
 $o-toolbar-size-text-md 		: ceil($font-size-base * 0.85) !default;
 $o-toolbar-size-caret-md 		: $font-size-base !default;
@@ -109,13 +114,18 @@ $o-toolbar-size-icon-xs 		: ceil($font-size-base * 1.4) !default;
 $o-toolbar-height-md			: 37px !default;
 $o-toolbar-height-sm			: 35px !default;
 $o-toolbar-height-xs			: 22px !default;
-$o-toolbar-margin-top-md		: 8px !default;
-$o-toolbar-margin-bottom-md		: 5px !default;
-$o-toolbar-margin-top-sm		: 6px !default;
-$o-toolbar-margin-bottom-sm		: 4px !default;
-$o-toolbar-margin-top-xs		: 6px !default;
-$o-toolbar-margin-bottom-xs		: 4px !default;
-$o-toolbar-close-color			: $brand-danger !default;
+$o-toolbar-margin-top			: -10px !default;
+$o-toolbar-margin-bottom		: $navbar-margin-bottom !default;
+$o-toolbar-tools-margin-top-md		: 8px !default;
+$o-toolbar-tools-margin-bottom-md	: 5px !default;
+$o-toolbar-tools-margin-top-sm		: 6px !default;
+$o-toolbar-tools-margin-bottom-sm	: 4px !default;
+$o-toolbar-tools-margin-top-xs		: 6px !default;
+$o-toolbar-tools-margin-bottom-xs	: 4px !default;
+$o-toolbar-close-color				: $brand-danger !default;
+$o-toolbar-breadcrumb-bg-color		: $panel-default-heading-bg !default;
+$o-toolbar-breadcrumb-font-size 	: ceil(($font-size-base * 0.75)) !default;
+$o-toolbar-breadcrumb-line-height	: floor(($o-toolbar-breadcrumb-font-size * $line-height-base)) !default;
 
 /* Left side menu tree */
 $o-tree-bg						: none !default;
