@@ -236,7 +236,6 @@ public class AuthorListController extends FormBasicController implements Activat
 		tableEl.setAndLoadPersistedPreferences(ureq, "authors-list-" + i18nName);
 		if(!startExtendedSearch) {
 			tableEl.reloadData();
-			tableEl.sort("", false);
 		}
 		
 		if(startExtendedSearch) {
