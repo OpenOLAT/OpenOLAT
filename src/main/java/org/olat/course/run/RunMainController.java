@@ -25,6 +25,7 @@
 
 package org.olat.course.run;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -92,6 +93,7 @@ import org.olat.core.util.nodes.INode;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.tree.TreeHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.NamedContainerImpl;
@@ -172,7 +174,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	private MenuTree luTree;
 	//tools
-	private Link runLink, editLink, editSettingsLink, areaLink, folderLink,
+	private Link previousLink, nextLink,
+			runLink, editLink, editSettingsLink, areaLink, folderLink,
 			surveyStatisticLink, testStatisticLink, courseStatisticLink,
 			userMgmtLink, archiverLink, assessmentLink, dbLink,
 			efficiencyStatementsLink, bookmarkLink, calendarLink, detailsLink, noteLink, chatLink;
@@ -434,6 +437,25 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 		return newCurrentCourseNode;
 	}
+	
+	private void updateNextPrevious() {
+		if(nextLink == null || previousLink == null || luTree == null) return;
+		
+		boolean hasPrevious;
+		boolean hasNext;
+		if(luTree.getSelectedNode() == null) {
+			hasPrevious = true;
+			hasNext = true;
+		} else {
+			List<TreeNode> flatTree = new ArrayList<>();
+			TreeHelper.makeTreeFlat(luTree.getTreeModel().getRootNode(), flatTree);
+			int index = flatTree.indexOf(luTree.getSelectedNode());
+			hasPrevious = index > 0;
+			hasNext = index  >= 0 && index+1 < flatTree.size();
+		}
+		previousLink.setEnabled(hasPrevious);
+		nextLink.setEnabled(hasNext);
+	}
 
 	/**
 	 * side-effecty to content and luTree
@@ -490,6 +512,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			((Activateable2)currentNodeController).activate(ureq, entries, state);
 		}
 		contentP.setContent(currentNodeController.getInitialComponent());
+		
+		updateNextPrevious();
 		
 		return true;
 	}
@@ -560,6 +584,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			String groupIdent = ((Link)source).getCommand().substring(CMD_START_GROUP_PREFIX.length());
 			Long groupKey = new Long(Long.parseLong(groupIdent));
 			launchGroup(ureq, groupKey);
+		} else if(nextLink == source) {
+			doNext(ureq);
+		} else if(previousLink == source) {
+			doPrevious(ureq);
 		} else if (source == luTree) {
 			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
 				TreeEvent tev = (TreeEvent) event;
@@ -739,13 +767,36 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 	}
 	
+	private void doNext(UserRequest ureq) {
+		List<TreeNode> flatList = new ArrayList<>();
+		TreeNode currentNode = luTree.getSelectedNode();
+		TreeHelper.makeTreeFlat(luTree.getTreeModel().getRootNode(), flatList);
+		int index = flatList.indexOf(currentNode);
+		if(index >= 0 && index+1 <flatList.size()) {
+			TreeNode nextNode = flatList.get(index + 1);
+			TreeEvent tev = new TreeEvent(MenuTree.COMMAND_TREENODE_CLICKED, nextNode.getIdent());
+			doNodeClick(ureq, tev);
+		}
+	}
+	
+	private void doPrevious(UserRequest ureq) {
+		List<TreeNode> flatList = new ArrayList<>();
+		TreeNode currentNode = luTree.getSelectedNode();
+		TreeHelper.makeTreeFlat(luTree.getTreeModel().getRootNode(), flatList);
+		int index = flatList.indexOf(currentNode);
+		if(index-1 >= 0 && index-1 < flatList.size()) {
+			TreeNode previousNode = flatList.get(index - 1);
+			TreeEvent tev = new TreeEvent(MenuTree.COMMAND_TREENODE_CLICKED, previousNode.getIdent());
+			doNodeClick(ureq, tev);
+		}
+	}
+	
 	private void doNodeClick(UserRequest ureq, TreeEvent tev) {
 		if(assessmentChangedEventReceived) {
 			uce.getScoreAccounting().evaluateAll();
 			assessmentChangedEventReceived = false;
 		}
 		
-		//getWindowControl().setInfo("time: "+System.currentTimeMillis());
 		// goto node:
 		// after a click in the tree, evaluate the model anew, and set the
 		// selection of the tree again
@@ -753,7 +804,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		if (!nclr.isVisible()) {
 			getWindowControl().setWarning(translate("msg.nodenotavailableanymore"));
 			// go to root since the current node is no more visible 
-			this.updateTreeAndContent(ureq, null, null);					
+			updateTreeAndContent(ureq, null, null);
+			updateNextPrevious();					
 			return;
 		}
 		// a click to a subtree's node
@@ -772,6 +824,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				luTree.setSelectedNodeId(nclr.getSelectedNodeId());
 				luTree.setOpenNodeIds(nclr.getOpenNodeIds());
 			}
+			updateNextPrevious();
 			return;
 		}
 
@@ -810,6 +863,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			currentUserCountLink.setCustomDisplayText(getTranslator().translate("participants.in.course", new String[]{ String.valueOf(cUsers) }));
 			currentUserCountLink.setEnabled(false);
 		}
+
+		updateNextPrevious();
 	}
 	
 	private void launchArchive(UserRequest ureq) {
@@ -1357,7 +1412,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	private void initGeneralTools(CourseConfig cc) {
-		// new toolbox 'general'
 		if (showCourseConfigLink) {
 			detailsLink = LinkFactory.createToolLink("courseconfig",translate("command.courseconfig"), this, "o_icon_details");
 			toolbarPanel.addTool(detailsLink);
@@ -1414,6 +1468,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			bookmarkLink.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
 			toolbarPanel.addTool(bookmarkLink, Align.right);
 		}
+		
+		// new toolbox 'general'
+		previousLink = LinkFactory.createToolLink("previouselement",translate("command.previous"), this, "o_icon_previous");
+		toolbarPanel.addTool(previousLink, Align.right);
+		nextLink = LinkFactory.createToolLink("nextelement",translate("command.next"), this, "o_icon_next");
+		toolbarPanel.addTool(nextLink, Align.right);
+		updateNextPrevious();
 	}
 
 	private void updateCurrentUserCount() {
