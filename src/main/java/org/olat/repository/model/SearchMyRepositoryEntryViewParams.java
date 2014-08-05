@@ -190,7 +190,13 @@ public class SearchMyRepositoryEntryViewParams {
 		author,
 		creationDate,
 		lastModified,
-		rating	
+		rating,
+		key,
+		displayname,
+		lifecycleLabel,
+		lifecycleSoftkey,
+		lifecycleStart,
+		lifecycleEnd,
 	}
 	
 	public enum Filter {

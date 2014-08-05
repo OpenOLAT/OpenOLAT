@@ -467,7 +467,37 @@ public class RepositoryEntryMyCourseQueries {
 				case rating:
 					sb.append(" order by v.statistics.rating ");
 					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
-					break;	
+					break;
+				case key:
+					sb.append(" order by v.key");
+					appendAsc(sb, asc);
+					break;
+				case displayname:
+					sb.append(" order by lower(v.displayname)");
+					appendAsc(sb, asc);	
+					break;
+				case lifecycleLabel:
+					if(asc) {
+						sb.append(" order by lifecycle.label nulls last, lower(v.displayname) asc");
+					} else {
+						sb.append(" order by lifecycle.label nulls last, lower(v.displayname) desc");
+					}
+					break;
+				case lifecycleSoftkey:
+					if(asc) {
+						sb.append(" order by lifecycle.softKey nulls last, lower(v.displayname) asc");
+					} else {
+						sb.append(" order by lifecycle.softKey nulls last, lower(v.displayname) desc");
+					}
+					break;
+				case lifecycleStart:
+					sb.append(" order by lifecycle.validFrom ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					break;
+				case lifecycleEnd:
+					sb.append(" order by lifecycle.validTo ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					break;
 				default:
 					sb.append(" order by lower(v.displayname)");
 					appendAsc(sb, asc);
@@ -484,76 +514,4 @@ public class RepositoryEntryMyCourseQueries {
 		}
 		return sb;
 	}
-	
-	/*
-	protected <T> TypedQuery<T> creatMyViewQuery(SearchMyRepositoryEntryViewParams params,
-			Class<T> type) {
-
-		Roles roles = params.getRoles();
-		Identity identity = params.getIdentity();
-		List<String> resourceTypes = params.getResourceTypes();
-
-		boolean count = Number.class.equals(type);
-		StringBuilder sb = new StringBuilder();
-		
-		String entity = "repositoryentrymy";
-		if(params.getMarked() != null && params.getMarked().booleanValue()) {
-			entity = "repositoryentrymy";
-		}
-		
-		if(count) {
-			sb.append("select count(v.key) from ").append(entity).append(" as v ")
-			  .append(" inner join v.olatResource as res")
-			  .append(" left join v.lifecycle as lifecycle");
-		} else {
-			sb.append("select v from ").append(entity).append(" as v ")
-			  .append(" inner join fetch v.olatResource as res")
-			  .append(" left join fetch v.lifecycle as lifecycle");
-		}
-
-		sb.append(" where v.identityKey=:identityKey and ");
-		appendMyViewAccessSubSelect(sb, roles, params.getFilters(), params.isMembershipMandatory());
-		if(params.getRepoEntryKeys() != null && params.getRepoEntryKeys().size() > 0) {
-			sb.append(" and v.key in (:repoEntryKeys) ");
-		}
-		
-		if(params.getFilters() != null) {
-			for(Filter filter:params.getFilters()) {
-				appendMyViewFilters(filter, sb);
-			}
-		}
-		
-		if(params.getParentEntry() != null) {
-			sb.append(" and exists (select cei.parent.key from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
-			  .append("   where cei.parent.key=:parentCeiKey and cei.repositoryEntry.key=v.key")
-			  .append(" )");
-		}
-		if (params.isResourceTypesDefined()) {
-			sb.append(" and res.resName in (:resourcetypes)");
-		}
-		if(params.getMarked() != null) {
-			sb.append(" and v.markKey ").append(params.getMarked().booleanValue() ? " is not null " : " is null ");
-		}
-		
-		if(!count) {
-			appendMyViewOrderBy(params.getOrderBy(), params.isOrderByAsc(), sb);
-		}
-
-		TypedQuery<T> dbQuery = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), type);
-		if(params.getParentEntry() != null) {
-			dbQuery.setParameter("parentCeiKey", params.getParentEntry().getKey());
-		}
-		if(params.getRepoEntryKeys() != null && params.getRepoEntryKeys().size() > 0) {
-			dbQuery.setParameter("repoEntryKeys", params.getRepoEntryKeys());
-		}
-		if (params.isResourceTypesDefined()) {
-			dbQuery.setParameter("resourcetypes", resourceTypes);
-		}
-		if(params.isLifecycleFilterDefined()) {
-			dbQuery.setParameter("now", new Date());
-		}
-		dbQuery.setParameter("identityKey", identity.getKey());
-		return dbQuery;
-	}*/
 }

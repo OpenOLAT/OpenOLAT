@@ -235,7 +235,8 @@ public class AuthorListController extends FormBasicController implements Activat
 		tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(OrderBy.displayname.name(), true)));
 		tableEl.setAndLoadPersistedPreferences(ureq, "authors-list-" + i18nName);
 		if(!startExtendedSearch) {
-			tableEl.sort(OrderBy.displayname.name(), true);
+			tableEl.reloadData();
+			tableEl.sort("", false);
 		}
 		
 		if(startExtendedSearch) {

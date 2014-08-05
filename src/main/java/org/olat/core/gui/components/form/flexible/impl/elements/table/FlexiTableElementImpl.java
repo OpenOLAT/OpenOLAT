@@ -27,6 +27,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -664,6 +665,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		} else if(StringHelper.containsNonWhitespace(sort)) {
 			String asc = form.getRequestParameter("asc");
 			sort(sort, "asc".equals(asc));
+			saveCustomSettings(ureq);
 		} else if(StringHelper.containsNonWhitespace(selectedIndex)) {
 			int index = selectedIndex.lastIndexOf('-');
 			if(index > 0 && index+1 < selectedIndex.length()) {
@@ -902,8 +904,32 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private void saveCustomSettings(UserRequest ureq) {
 		if(StringHelper.containsNonWhitespace(persistentId)) {
 			Preferences prefs = ureq.getUserSession().getGuiPreferences();
+			
+			boolean sortDirection = false;
+			String sortedColKey = null;
+			if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
+				sortDirection = orderBy[0].isAsc();
+				String sortKey = orderBy[0].getKey();
+				FlexiTableColumnModel colModel = dataModel.getTableColumnModel();
+				for(int i=colModel.getColumnCount(); i-->0; ) {
+					FlexiColumnModel col = colModel.getColumnModel(i);
+					if(col.getSortKey() != null && sortKey.equals(col.getSortKey())) {
+						sortedColKey = col.getColumnKey();
+					}
+				}
+				
+				if(sortedColKey == null && sortOptions != null && sortOptions.getSorts() != null) {
+					for(FlexiTableSort sortOption :sortOptions.getSorts()) {
+						if(sortOption.getSortKey().getKey().equals(sortKey)) {
+							sortedColKey = sortKey;
+						}
+					}
+				}
+			}
+
 			FlexiTablePreferences tablePrefs =
-					new FlexiTablePreferences(enabledColumnIndex, rendererType);
+					new FlexiTablePreferences(sortedColKey, sortDirection,
+							convertColumnIndexToKeys(enabledColumnIndex), rendererType);
 			prefs.put(FlexiTableElement.class, persistentId, tablePrefs);
 			prefs.save();
 		}
@@ -914,16 +940,69 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			Preferences prefs = ureq.getUserSession().getGuiPreferences();
 			FlexiTablePreferences tablePrefs = (FlexiTablePreferences)prefs.get(FlexiTableElement.class, persistentId);
 			if(tablePrefs != null) {
-				if(tablePrefs.getEnabledColumnIndex() != null) {
+				if(tablePrefs.getEnabledColumnKeys() != null) {
 					enabledColumnIndex.clear();
-					enabledColumnIndex.addAll(tablePrefs.getEnabledColumnIndex());
+					enabledColumnIndex.addAll(convertColumnKeysToIndex(tablePrefs.getEnabledColumnKeys()));
 				}
 				
+				if(StringHelper.containsNonWhitespace(tablePrefs.getSortedColumnKey())) {
+					String sortKey = null;
+					String columnKey = tablePrefs.getSortedColumnKey();
+					FlexiTableColumnModel colModel = dataModel.getTableColumnModel();
+					for(int i=colModel.getColumnCount(); i-->0; ) {
+						FlexiColumnModel col = colModel.getColumnModel(i);
+						if(columnKey.equals(col.getColumnKey()) && col.isSortable()) {
+							sortKey = col.getSortKey();
+						}
+					}
+					if(sortKey == null && sortOptions != null && sortOptions.getSorts() != null) {
+						for(FlexiTableSort sortOption :sortOptions.getSorts()) {
+							if(sortOption.getSortKey().getKey().equals(columnKey)) {
+								sortKey = columnKey;
+							}
+						}
+					}
+					
+					if(sortKey != null) {
+						orderBy = new SortKey[]{ new SortKey(sortKey, tablePrefs.isSortDirection()) };
+					}
+				}
+
 				if(tablePrefs.getRendererType() != null) {
 					setRendererType(tablePrefs.getRendererType());
 				}
 			}
 		}
+	}
+	
+	private List<Integer> convertColumnKeysToIndex(Collection<String> columnKeys) {
+		if(columnKeys == null) return new ArrayList<>(0);
+		
+		List<Integer> index = new ArrayList<>(columnKeys.size());
+		FlexiTableColumnModel colModel = dataModel.getTableColumnModel();
+		for(String columnKey:columnKeys) {
+			for(int i=colModel.getColumnCount(); i-->0; ) {
+				FlexiColumnModel col = colModel.getColumnModel(i);
+				if(columnKey.equals(col.getColumnKey())) {
+					index.add(new Integer(col.getColumnIndex()));
+				}
+			}
+		}
+		return index;
+	}
+	
+	private List<String> convertColumnIndexToKeys(Collection<Integer> columnIndex) {
+		List<String> keys = new ArrayList<>();
+		FlexiTableColumnModel colModel = dataModel.getTableColumnModel();
+		for(Integer columnId:columnIndex) {
+			for(int i=colModel.getColumnCount(); i-->0; ) {
+				FlexiColumnModel col = colModel.getColumnModel(i);
+				if(columnId.intValue() == col.getColumnIndex()) {
+					keys.add(col.getColumnKey());
+				}
+			}
+		}
+		return keys;
 	}
 	
 	private Choice getColumnListAndTheirVisibility() {

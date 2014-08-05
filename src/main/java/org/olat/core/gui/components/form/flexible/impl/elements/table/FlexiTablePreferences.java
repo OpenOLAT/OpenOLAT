@@ -20,7 +20,7 @@
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 import java.io.Serializable;
-import java.util.Set;
+import java.util.List;
 
 /**
  * 
@@ -31,20 +31,42 @@ import java.util.Set;
 public class FlexiTablePreferences implements Serializable {
 
 	private static final long serialVersionUID = 220256298006571339L;
-	private Set<Integer> enabledColumnIndex;
+
+	private boolean sortDirection;
+	private String sortedColumnKey;
+	private List<String> enabledColumnKey;
 	private FlexiTableRendererType rendererType;
 	
-	public FlexiTablePreferences(Set<Integer> enabledColumnIndex, FlexiTableRendererType rendererType) {
-		this.enabledColumnIndex = enabledColumnIndex;
+	public FlexiTablePreferences(String sortedColumnKey, boolean sortDirection,
+			List<String> enabledColumnKey, FlexiTableRendererType rendererType) {
+		this.sortedColumnKey = sortedColumnKey;
+		this.sortDirection = sortDirection;
+		this.enabledColumnKey = enabledColumnKey;
 		this.rendererType = rendererType;
 	}
 
-	public Set<Integer> getEnabledColumnIndex() {
-		return enabledColumnIndex;
+	public boolean isSortDirection() {
+		return sortDirection;
 	}
 
-	public void setEnabledColumnIndex(Set<Integer> enabledColumnIndex) {
-		this.enabledColumnIndex = enabledColumnIndex;
+	public void setSortDirection(boolean sortDirection) {
+		this.sortDirection = sortDirection;
+	}
+
+	public String getSortedColumnKey() {
+		return sortedColumnKey;
+	}
+
+	public void setSortedColumnKey(String sortedColumnKey) {
+		this.sortedColumnKey = sortedColumnKey;
+	}
+
+	public List<String> getEnabledColumnKeys() {
+		return enabledColumnKey;
+	}
+
+	public void setEnabledColumnKeys(List<String> enabledColumnKey) {
+		this.enabledColumnKey = enabledColumnKey;
 	}
 
 	public FlexiTableRendererType getRendererType() {

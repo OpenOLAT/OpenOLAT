@@ -43,14 +43,12 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.rating.RatingFormEvent;
 import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
@@ -124,11 +122,9 @@ public class RepositoryEntryListController extends FormBasicController
 		this.searchParams = searchParams;
 		dataSource = new DefaultRepositoryEntryDataSource(searchParams, this);
 		initForm(ureq);
-		initFilters();
-		initSorters();
 		
 		if(load) {
-			tableEl.sort(OrderBy.automatic.name(), true);
+			tableEl.reloadData();
 		}
 	}
 	
@@ -136,7 +132,57 @@ public class RepositoryEntryListController extends FormBasicController
 		return dataSource.getRowCount() == 0;
 	}
 
-	private void initFilters() {
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		searchCtrl = new RepositoryEntrySearchController(ureq, getWindowControl(), !startExtendedSearch, mainForm);
+		searchCtrl.setEnabled(false);
+		listenTo(searchCtrl);
+
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), true, OrderBy.key.name()));
+		if(!guestOnly) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mark.i18nKey(), Cols.mark.ordinal(), true, OrderBy.favorit.name()));
+		}
+
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName.i18nKey(), Cols.select.ordinal(),
+				true, OrderBy.displayname.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lifecycleLabel.i18nKey(), Cols.lifecycleLabel.ordinal(),
+				true, OrderBy.lifecycleLabel.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lifecycleSoftkey.i18nKey(), Cols.lifecycleSoftkey.ordinal(),
+				true, OrderBy.lifecycleSoftkey.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.lifecycleStart.i18nKey(), Cols.lifecycleStart.ordinal(),
+				true, OrderBy.lifecycleStart.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.lifecycleEnd.i18nKey(), Cols.lifecycleEnd.ordinal(),
+				true, OrderBy.lifecycleEnd.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,Cols.details.i18nKey(), Cols.details.ordinal(), false, null));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.start.i18nKey(), Cols.start.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.ratings.i18nKey(), Cols.ratings.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.comments.i18nKey(), Cols.comments.ordinal()));
+
+		model = new RepositoryEntryDataModel(dataSource, columnsModel);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
+		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
+		tableEl.setRendererType(FlexiTableRendererType.custom);
+		tableEl.setSearchEnabled(true);
+		tableEl.setExtendedSearch(searchCtrl);
+		tableEl.setCustomizeColumns(true);
+		tableEl.setElementCssClass("o_coursetable");
+		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
+		VelocityContainer row = createVelocityContainer("row_1");
+		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
+		tableEl.setRowRenderer(row, this);
+		
+		initFilters(tableEl);
+		initSorters(tableEl);
+		
+		tableEl.setAndLoadPersistedPreferences(ureq, "re-list-" + name);
+		
+		if(startExtendedSearch) {
+			tableEl.expandExtendedSearch(ureq);
+		}
+	}
+	
+	private void initFilters(FlexiTableElement tableElement) {
 		List<FlexiTableFilter> filters = new ArrayList<>(14);
 		filters.add(new FlexiTableFilter(translate("filter.current.courses"), Filter.currentCourses.name()));
 		filters.add(new FlexiTableFilter(translate("filter.upcoming.courses"), Filter.upcomingCourses.name()));
@@ -152,11 +198,11 @@ public class RepositoryEntryListController extends FormBasicController
 		filters.add(new FlexiTableFilter(translate("filter.passed"), Filter.passed.name()));
 		filters.add(new FlexiTableFilter(translate("filter.not.passed"), Filter.notPassed.name()));
 		filters.add(new FlexiTableFilter(translate("filter.without.passed.infos"), Filter.withoutPassedInfos.name()));
-		tableEl.setFilters(null, filters);
+		tableElement.setFilters(null, filters);
 	}
 	
-	private void initSorters() {
-		List<FlexiTableSort> sorters = new ArrayList<>();
+	private void initSorters(FlexiTableElement tableElement) {
+		List<FlexiTableSort> sorters = new ArrayList<>(14);
 		sorters.add(new FlexiTableSort(translate("orderby.automatic"), OrderBy.automatic.name()));
 		sorters.add(new FlexiTableSort(translate("orderby.favorit"), OrderBy.favorit.name()));
 		sorters.add(new FlexiTableSort(translate("orderby.lastVisited"), OrderBy.lastVisited.name()));
@@ -172,51 +218,7 @@ public class RepositoryEntryListController extends FormBasicController
 		
 		FlexiTableSortOptions options = new FlexiTableSortOptions(sorters);
 		options.setDefaultOrderBy(new SortKey(OrderBy.automatic.name(), true));
-		tableEl.setSortSettings(options);
-	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		searchCtrl = new RepositoryEntrySearchController(ureq, getWindowControl(), !startExtendedSearch, mainForm);
-		searchCtrl.setEnabled(false);
-		listenTo(searchCtrl);
-
-		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), false, null));
-		if(!guestOnly) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mark.i18nKey(), Cols.mark.ordinal()));
-		}
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(Cols.displayName.i18nKey(), Cols.displayName.ordinal(),
-				"select", new StaticFlexiCellRenderer("select", new TextFlexiCellRenderer())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lifecycleLabel.i18nKey(), Cols.lifecycleLabel.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lifecycleSoftkey.i18nKey(), Cols.lifecycleSoftkey.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lifecycleStart.i18nKey(), Cols.lifecycleStart.ordinal(),
-				new DateFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lifecycleEnd.i18nKey(), Cols.lifecycleEnd.ordinal(),
-				new DateFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.select.i18nKey(), Cols.select.ordinal(), false, null));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.details.i18nKey(), Cols.details.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.start.i18nKey(), Cols.start.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.ratings.i18nKey(), Cols.ratings.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.comments.i18nKey(), Cols.comments.ordinal()));
-
-		model = new RepositoryEntryDataModel(dataSource, columnsModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
-		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
-		tableEl.setRendererType(FlexiTableRendererType.custom);
-		tableEl.setSearchEnabled(true);
-		tableEl.setExtendedSearch(searchCtrl);
-		tableEl.setCustomizeColumns(false);
-		tableEl.setElementCssClass("o_coursetable");
-		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
-		VelocityContainer row = createVelocityContainer("row_1");
-		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
-		tableEl.setRowRenderer(row, this);
-		tableEl.setAndLoadPersistedPreferences(ureq, "re-list-" + name);
-		
-		if(startExtendedSearch) {
-			tableEl.expandExtendedSearch(ureq);
-		}
+		tableElement.setSortSettings(options);
 	}
 
 	@Override
