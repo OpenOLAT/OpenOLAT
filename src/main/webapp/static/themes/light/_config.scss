@@ -143,6 +143,29 @@ $o-tree-padding-opener-left-px 	: 1px !default;
 /* Tabbed pane component */
 $o-tabbed-pane-padding			: ($padding-large-vertical * 2) 0 $padding-base-vertical 0;
 
+/* Auto completer input field */
+$o-autocomplete-width				: 400px !default;
+$o-autocomplete-font-size			: $font-size-base !default;
+$o-autocomplete-line-height			: $line-height-base !default;
+$o-autocomplete-border-radius		: $input-border-radius !default;
+$o-autocomplete-bg-color			: $input-bg !default;
+$o-autocomplete-color 				: $input-color !default;
+$o-autocomplete-suggestion-color 	: $btn-primary-color !default;
+$o-autocomplete-suggestion-bg-color	: $btn-primary-bg !default;
+
+/* Chart library configuration for visualized statistics */
+$o-d3chart-default 				: $brand-primary;
+$o-d3chart-light 				: lighten($brand-primary, 15%);
+$o-d3chart-dark 				: darken($brand-primary, 15%);
+
+/* Toggle sliders */
+$o-toggle-size					: 16px !default;
+$o-toggle-border-color			: $gray-light !default;
+$o-toggle-bg					: $gray-lighter !default;
+$o-toggle-off-color				: $gray-light !default;
+$o-toggle-on-color				: $brand-primary !default;
+$o-toggle-text-color			: $text-muted !default;
+
 /* Dirty button */
 $o-button-dirty-color			: $btn-warning-color !default;
 $o-button-dirty-bg				: $btn-warning-bg !default; 

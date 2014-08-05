@@ -1,5 +1,5 @@
 .o_forum_peekview {
-	.o_quote_wrapper, .b_quote_wrapper {
+	.o_quote_wrapper, .b_quote_wrapper { /* keep b_* for legacy posts */
 		display: none;
 	}
 }

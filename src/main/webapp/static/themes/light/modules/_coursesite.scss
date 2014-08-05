@@ -268,9 +268,9 @@
 					@extend %o_undecorated;
 					display: block;
 					
-					color: $brand-primary;
+					color: $o-coursesite-meta-title-color;
 					&:hover {
-					    color: darken($brand-primary, 10%);
+					    color: darken($o-coursesite-meta-title-color, 10%);
 					}				
 				}
 			}
@@ -350,9 +350,9 @@
 					a {
 						@extend %o_undecorated;
 						display: block;
-						color: $brand-primary;
+						color: $o-coursesite-meta-title-color;
 						&:hover {
-						    color: darken($brand-primary, 10%);
+						    color: darken($o-coursesite-meta-title-color, 10%);
 						}				
 					}
 				}				

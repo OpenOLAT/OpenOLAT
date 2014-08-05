@@ -1,8 +1,4 @@
 /* charts (crispEdges) */
-$o-d3chart-default : $brand-primary;
-$o-d3chart-light : lighten($brand-primary, 15%);
-$o-d3chart-dark : darken($brand-primary, 15%);
-
 .d3chart {
 	.bar { shape-rendering: crispEdges; }
 	.bar_default_light { fill: $o-d3chart-light; }

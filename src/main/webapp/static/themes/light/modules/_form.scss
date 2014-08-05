@@ -1,7 +1,4 @@
 .o_form{
-	legend {}
-	.o_chelp {}
-	
 	.o_desc {
 		@extend %o_note;
 	}
@@ -24,9 +21,7 @@
 		margin-bottom: 0;
 		padding: 10px;
 	}	
-	.o_disabled {}
 	
-	hr.o_spacer {}
 	hr.o_spacer_noline {
 		border-top: 1px solid transparent;
 	}
@@ -103,37 +98,36 @@
 }
 
 /* TOGGLE SLIDERS */
-$toggle-size: 16px !default;
 .o_button_toggle {
-	border: 1px solid $gray-light;
-	@include border-top-radius($toggle-size/2 + 1px);
-	@include border-bottom-radius($toggle-size/2 + 1px);
-	background: $gray-lighter;
+	border: 1px solid $o-toggle-border-color;
+	@include border-top-radius($o-toggle-size/2 + 1px);
+	@include border-bottom-radius($o-toggle-size/2 + 1px);
+	background: $o-toggle-bg;
 	display: inline-block;
-	height: $toggle-size + 2px;
-	line-height: $toggle-size;
-	font-size: $toggle-size;
+	height: $o-toggle-size + 2px;
+	line-height: $o-toggle-size;
+	font-size: $o-toggle-size;
 	text-align: left;
 	padding: 0 0.5em 0 0;
 	margin: 0;
 	@extend %o_undecorated;
 	
 	i {
-		color: $gray-light;
+		color: $o-toggle-off-color;
 		text-shadow: 1px 0 2px rgba(0,0,0,.25);		
 	}	
 	span {
-		line-height: $toggle-size;
+		line-height: $o-toggle-size;
 		vertical-align: top;		
 		font-size: 60%;
-		color: $text-muted;
+		color: $o-toggle-text-color;
 		text-transform: uppercase;
 	}
 	&.o_on {
 		text-align: right;
 		padding: 0 0 0 0.5em;
 		i {
-			color: $brand-primary;
+			color: $o-toggle-on-color;
 			text-shadow: -1px 0 2px rgba(0,0,0,.25);
 		}	
 	}
