@@ -118,13 +118,13 @@
 						<tr class="o_recent">					
 							<th>$r.translate("cif.lastusage"):</th>
 							<td>$r.formatDateAndTime($recentLaunch)
-						<tr>
+						</tr>
 						#end
 						#if($r.available("mark"))
 						<tr class="o_bookmark">					
 							<th>$r.translate("details.bookmark.label"):</th>
 							<td>$r.render("mark")</td>
-						<tr>
+						</tr>
 						#end
 						#if($groups && $groups.size() > 0)
 						<tr class="o_groups">					

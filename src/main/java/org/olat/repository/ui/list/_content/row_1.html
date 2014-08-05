@@ -1,4 +1,4 @@
-<div id="$r.getCId()" #if($row.selected) class="o_selected" #end>
+<div #if($row.selected) class="o_selected" #end>
 	<div class="o_visual">
 		#if($row.isThumbnailAvailable())
 			<img src="${row.getThumbnailRelPath()}" />

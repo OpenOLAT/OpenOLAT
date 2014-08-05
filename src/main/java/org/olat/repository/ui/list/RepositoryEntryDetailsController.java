@@ -21,7 +21,9 @@ package org.olat.repository.ui.list;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.GroupRoles;
@@ -426,12 +428,16 @@ public class RepositoryEntryDetailsController extends FormBasicController {
           //add the list of owners
     		List<Identity> authors = repositoryService.getMembers(entry, GroupRoles.owner.name());
     		List<String> authorLinkNames = new ArrayList<String>(authors.size());
+    		Set<Long> duplicates = new HashSet<>(authors.size() * 2 + 1);
     		int counter = 0;
     		for(Identity author:authors) {
-    			String authorName = userManager.getUserDisplayName(author);
-    			FormLink authorLink = uifactory.addFormLink("owner-" + counter, "owner", authorName, null, formLayout, Link.NONTRANSLATED | Link.LINK);
-    			authorLink.setUserObject(author.getKey());
-    			authorLinkNames.add(authorLink.getComponent().getComponentName());
+    			if(!duplicates.contains(author.getKey())) {
+	    			String authorName = userManager.getUserDisplayName(author);
+	    			FormLink authorLink = uifactory.addFormLink("owner-" + ++counter, "owner", authorName, null, formLayout, Link.NONTRANSLATED | Link.LINK);
+	    			authorLink.setUserObject(author.getKey());
+	    			authorLinkNames.add(authorLink.getComponent().getComponentName());
+	    			duplicates.add(author.getKey());
+    			}
     		}
     		layoutCont.contextPut("authorlinknames", authorLinkNames);
 		}
