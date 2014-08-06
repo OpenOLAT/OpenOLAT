@@ -88,6 +88,13 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 				sb.append("</ul>");
 			}
 			
+			List<Tool> rightEdgeTools = getTools(tools, Align.rightEdge);
+			if(rightEdgeTools.size() > 0) {
+				sb.append("<ul class='o_tools o_tools_right_edge list-inline'>");
+				renderTools(rightEdgeTools, renderer, sb, args);
+				sb.append("</ul>");
+			}
+			
 			List<Tool> rightTools = getTools(tools, Align.right);
 			if(rightTools.size() > 0) {
 				sb.append("<ul class='o_tools o_tools_right list-inline'>");

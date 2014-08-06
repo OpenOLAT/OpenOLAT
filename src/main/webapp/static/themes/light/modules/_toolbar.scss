@@ -44,12 +44,19 @@
 
 		a {
 			// Following rules copied from .navbar-link;
-	   	 	color: $o-tooblar-link-color;
-	    	&:hover {
-	      		color: $o-tooblar-link-hover-color;
+	   	 	color: $o-toolbar-link-color;
+	    	&:hover { 
+	      		color: $o-toolbar-link-hover-color;
 	    	}
 	    	@extend %o_undecorated;
 	    	display: inline-block;
+	    	
+	    	&.o_disabled {
+		    	color: $o-toolbar-link-disabled-color !important;
+		    	&:hover {
+		      		color: $o-toolbar-link-disabled-color !important;
+		    	}
+	    	}
 	    }
 
 	}
@@ -102,8 +109,7 @@
 			}
 		}
 	}
-		
-		
+			
 	.o_tools {
 		margin-top: $o-toolbar-tools-margin-top-md;
 		margin-bottom: $o-toolbar-tools-margin-bottom-md;
@@ -162,6 +168,51 @@
 			vertical-align: top;
 		}
 	}
+	
+	.o_tool_next, .o_tool_previous {
+		padding: 0;
+		margin-top: floor($o-toolbar-nav-size-icon-md / 4);
+		border: 1px solid $o-toolbar-nav-border-color;
+		background-color: $o-toolbar-nav-bg-color;
+		a {
+			color: $o-toolbar-nav-link-color;
+			&:hover {
+				color: $o-toolbar-nav-link-hover-color;			
+			}
+
+			&.o_disabled {
+		    	color: $o-toolbar-nav-link-disabled-color !important;
+		    	&:hover {
+		      		color: $o-toolbar-nav-link-disabled-color !important;
+		    	}
+	    	}
+			
+		}
+		i {
+			font-size: $o-toolbar-nav-size-icon-md;
+		}
+		@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
+			margin-top: floor($o-toolbar-nav-size-icon-sm / 4);
+			i {
+				font-size: $o-toolbar-nav-size-icon-sm;
+			}
+		}
+		@media (max-width: $screen-xs-max) { 
+			margin-top: 0;
+			i {
+				font-size: $o-toolbar-nav-size-icon-xs;
+			}
+		}
+	}
+	.o_tool_previous {
+		margin-left: 10px;
+		@include border-left-radius($o-toolbar-nav-border-radius);
+		border-right: 0;
+	}
+	.o_tool_next {
+		@include border-right-radius($o-toolbar-nav-border-radius);
+	}
+	
 				
 	.o_tool_dropdown {
 		position: relative;
@@ -213,6 +264,10 @@
 	.o_tools_right {
 		float: right;
 	}
+	.o_tools_right_edge {
+		// at the right edge of the toolbar, even on small screens
+		float: right;
+	}
 	.o_tools_center {
 		// default
 	}
@@ -236,7 +291,7 @@
 				vertical-align: top;
 			}
 		}
-		.o_tools_right, .o_tools_center {
+		.o_tools_right, .o_tools_right, .o_tools_center {
 			float: left;
 		}		
 	}

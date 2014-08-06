@@ -133,7 +133,7 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		}
 		currentTools.addAll(getCurrentCrumb().getTools());
 		if(isShowCloseLink()) {
-			currentTools.add(new Tool(getCloseLink(), Align.right, false, null));
+			currentTools.add(new Tool(getCloseLink(), Align.rightEdge, false, null));
 		}
 		return currentTools;
 	}
@@ -198,6 +198,7 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	
 	public enum Align {
 		left,
-		right
+		right,
+		rightEdge
 	}
 }

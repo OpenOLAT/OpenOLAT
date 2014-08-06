@@ -1470,10 +1470,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 		
 		// new toolbox 'general'
-		previousLink = LinkFactory.createToolLink("previouselement",translate("command.previous"), this, "o_icon_previous");
-		toolbarPanel.addTool(previousLink, Align.right);
-		nextLink = LinkFactory.createToolLink("nextelement",translate("command.next"), this, "o_icon_next");
-		toolbarPanel.addTool(nextLink, Align.right);
+		previousLink = LinkFactory.createToolLink("previouselement","", this, "o_icon_previous_toolbar");
+		previousLink.setTitle(translate("command.previous"));
+		toolbarPanel.addTool(previousLink, Align.rightEdge, false, "o_tool_previous");
+		nextLink = LinkFactory.createToolLink("nextelement","", this, "o_icon_next_toolbar");
+		nextLink.setTitle(translate("command.next"));
+		toolbarPanel.addTool(nextLink, Align.rightEdge, false, "o_tool_next");
 		updateNextPrevious();
 	}
 

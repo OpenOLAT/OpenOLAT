@@ -102,8 +102,9 @@ $o-offcanvas-link-hover-color 	: $navbar-inverse-link-hover-color;
 $o-toolbar-bg-color				: $navbar-default-bg !default;
 $o-toolbar-border-color			: $navbar-default-border !default;
 $o-toolbar-border-radius		: $navbar-border-radius !default;
-$o-tooblar-link-color			: $navbar-default-link-color !default;
-$o-tooblar-link-hover-color		: $navbar-default-link-hover-color !default;
+$o-toolbar-link-color			: $navbar-default-link-color !default;
+$o-toolbar-link-hover-color		: $navbar-default-link-hover-color !default;
+$o-toolbar-link-disabled-color		: lighten($navbar-default-link-color, 20%) !default;
 $o-toolbar-size-icon-md 		: ceil($font-size-base * 1.25) !default;
 $o-toolbar-size-text-md 		: ceil($font-size-base * 0.85) !default;
 $o-toolbar-size-caret-md 		: $font-size-base !default;
@@ -126,6 +127,15 @@ $o-toolbar-close-color				: $brand-danger !default;
 $o-toolbar-breadcrumb-bg-color		: $panel-default-heading-bg !default;
 $o-toolbar-breadcrumb-font-size 	: ceil(($font-size-base * 0.75)) !default;
 $o-toolbar-breadcrumb-line-height	: floor(($o-toolbar-breadcrumb-font-size * $line-height-base)) !default;
+$o-toolbar-nav-link-color			: $o-toolbar-link-color !default; 
+$o-toolbar-nav-link-hover-color		: $o-toolbar-link-hover-color !default; 
+$o-toolbar-nav-link-disabled-color	: $o-toolbar-link-disabled-color !default; 
+$o-toolbar-nav-bg-color				: $gray-lighter !default;
+$o-toolbar-nav-border-color			: $btn-default-border !default; 
+$o-toolbar-nav-border-radius		: 4px !default; 
+$o-toolbar-nav-size-icon-md 		: ceil($font-size-base * 1.5) !default;
+$o-toolbar-nav-size-icon-sm 		: ceil($font-size-base * 1.25) !default;
+$o-toolbar-nav-size-icon-xs 		: ceil($font-size-base * 1.4) !default;
 
 /* Left side menu tree */
 $o-tree-bg						: none !default;
@@ -164,9 +174,9 @@ $o-autocomplete-suggestion-color 	: $btn-primary-color !default;
 $o-autocomplete-suggestion-bg-color	: $btn-primary-bg !default;
 
 /* Chart library configuration for visualized statistics */
-$o-d3chart-default 				: $brand-primary;
-$o-d3chart-light 				: lighten($brand-primary, 15%);
-$o-d3chart-dark 				: darken($brand-primary, 15%);
+$o-d3chart-default 				: $brand-primary !default;
+$o-d3chart-light 				: lighten($brand-primary, 15%) !default;
+$o-d3chart-dark 				: darken($brand-primary, 15%) !default;
 
 /* Toggle sliders */
 $o-toggle-size					: 16px !default;
