@@ -192,6 +192,7 @@ $o-button-dirty-bg				: $btn-warning-bg !default;
 $o-button-dirty-border			: darken($o-button-dirty-bg	, 5%) !default;
 
 /* Login page */
+$o-login-header-color			: $brand-primary !default;
 $o-login-form-width				: 400px !default;
 $o-login-form-align				: right !default; 								/* left, center or right */
 $o-login-form-bg-img			: $o-images-path + "learn-bg.jpg" !default;  	/* image CC by Thomas Leuthard https://www.flickr.com/photos/thomasleuthard/8587724648/ */
@@ -221,6 +222,10 @@ $o-coursesite-details-bg		: $btn-success-bg !default;
 $o-coursesite-details-border	: darken($o-coursesite-details-bg, 5%) !default;
 
 /* Course editor and runtime */
+$o-course-show-icon-title		: false !default; 	// don't show icon in title - no info value
+$o-course-show-icon-toc			: true !default;	// show icons in menu - looks prettier
+$o-course-show-icon-menu		: true !default;	// show icons in menu - looks prettier
+$o-course-show-icon-editor-menu : true !default;	// show icons in menu - looks prettier
 $o-course-state-passed-color	: $state-success-text !default;
 $o-course-state-failed-color	: $state-danger-text !default;
 $o-course-state-unknown-color	: $state-warning-text !default;

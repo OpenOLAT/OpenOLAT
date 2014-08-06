@@ -40,6 +40,7 @@ import org.olat.core.gui.translator.Translator;
 public class TooledStackedPanel extends BreadcrumbedStackedPanel implements StackedPanel, BreadcrumbPanel, ComponentEventListener {
 	
 	private static final ComponentRenderer RENDERER = new TooledStackedPanelRenderer();
+	boolean toolbarEnabled = true;
 	
 	public TooledStackedPanel(String name, Translator translator, ComponentEventListener listener) {
 		this(name, translator, listener, null);
@@ -144,6 +145,24 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		}
 		return (TooledBreadCrumb)stack.get(stack.size() - 1).getUserObject();
 	}
+
+	/**
+	 * By default, the toolbar is enabled, using this method it can be disable to just show
+	 * the bread crumb path to the user (e.g. course site)
+	 * @param enableToolbar
+	 */
+	public void setToolbarEnabled(boolean enableToolbar) {
+		toolbarEnabled = enableToolbar;		
+	}
+	
+	/**
+	 * @return true: toolbar is visible ; false: toolbar is not displayed to
+	 *         user, but breadcrumb is
+	 */
+	public boolean isToolbarEnabled() {
+		return toolbarEnabled;
+	}
+
 	
 	public static class Tool {
 		private final  Align align;
@@ -201,4 +220,5 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		right,
 		rightEdge
 	}
+	
 }

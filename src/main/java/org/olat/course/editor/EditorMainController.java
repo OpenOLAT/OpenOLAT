@@ -252,6 +252,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			menuTree.setDropEnabled(true);
 			menuTree.setDropSiblingEnabled(true);	
 			menuTree.setDndAcceptJSMethod("treeAcceptDrop_notWithChildren");	
+			menuTree.setElementCssClass("o_editor_menu");
 
 			/*
 			 * create editor user course environment for enhanced syntax/semantic

@@ -1,0 +1,6 @@
+@if not $o-course-show-icon-editor-menu {
+	// hide icons in menu
+	.o_tree.o_editor_menu .o_tree_link > i {
+		display: none;
+	}
+}

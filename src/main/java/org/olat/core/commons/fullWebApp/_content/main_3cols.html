@@ -53,25 +53,27 @@ jQuery().ready(function() {
 		docked : true			
 	};
 	
-	window.o_showMenu = function() {
+	window.o_showMenu = function(duration) {
+		duration = (typeof duration === "undefined") ? 500 : duration;
 		if (!menuState.open) {
 			jQuery('#o_main_left_content').show();
 			var l = jQuery('#o_main_left');
-			l.transition({'x': '0', 'left': '0'}, function() {
+			l.transition({'x': '0', 'left': '0'}, duration, function() {
 				menuState.open = true;
 			});
 		} 
 	};
-	window.o_hideMenu = function() {
+	window.o_hideMenu = function(duration) {
+		duration = (typeof duration === "undefined") ? 500 : duration;
 		if (!menuState.docked && menuState.open) {
 			var l = jQuery('#o_main_left');
 			jQuery('#o_main_left_content').hide();
-			l.transition({'x': '-' + l.css('width'), 'left': '5px'}, function() {
+			l.transition({'x': '-' + l.css('width'), 'left': '5px'}, duration, function() {
 				menuState.open = false;
 			});			
 		} 
 	};
-	window.o_undockMenu = function() {
+	window.o_undockMenu = function(duration) {
 		if (menuState.docked) {
 			var left = jQuery('#o_main_left');
 			var offset = 0;
@@ -83,19 +85,19 @@ jQuery().ready(function() {
 			jQuery('#o_main_left_toggle').show();
 			left.css({position: 'absolute'})
 				.addClass('o_offcanvas')
-				.transition({'y': '-' + offset}, function() {
+				.transition({'y': '-' + offset}, duration, function() {
 					OPOL.adjustHeight();
 					// close menu when something happens on the screen
 					jQuery(document).on('click', '.o_tree_link', o_hideMenu);
 					menuState.docked = false;
-					o_hideMenu();
-			});			
+					o_hideMenu(duration);
+			});							
 		} 
 	};
-	window.o_dockMenu = function() {
+	window.o_dockMenu = function(duration) {
 		o_showMenu();
 		if (!menuState.docked) {
-			jQuery('#o_main_left').transition({'y': 0}, function() {
+			jQuery('#o_main_left').transition({'y': 0}, duration, function() {
 				jQuery('#o_main_left').css({position: 'relative'})
 					.removeClass('o_offcanvas');
 				OPOL.adjustHeight();
@@ -108,24 +110,28 @@ jQuery().ready(function() {
 	window.o_responsiveMenu = function() {
 		if (jQuery(window).width() < 992 && !(jQuery.support.opacity == false)) {
 			// same breakpoint as bootstrap screen-md, opacity detect IE8
-			o_undockMenu();
+			o_undockMenu(500);
 		} else {
-			o_dockMenu();
+			o_dockMenu(500);
 		}
 	};
 
+	
 	// toggle menu on toggle events
 	jQuery('#o_main_left_toggle').on('click', function() {
 		if (menuState.open) {
-			o_hideMenu();
+			o_hideMenu(500);
 		} else {
-			o_showMenu();
+			o_showMenu(500);
 		}
 	});
 	// recalculate menu when browser is resized
 	jQuery(document).on("oo.window.resize.after", o_responsiveMenu);
 	// do initialization now
-	o_responsiveMenu();
+	if (jQuery(window).width() < 992 && !(jQuery.support.opacity == false)) {
+		// same breakpoint as bootstrap screen-md, opacity detect IE8
+		o_undockMenu(0);
+	}
 
 #end
 

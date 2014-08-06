@@ -105,6 +105,10 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		else {
 			target.append(" o_tree_root_visible");
 		}
+		// add element CSS
+		if(StringHelper.containsNonWhitespace(tree.getElementCssClass())) {
+			target.append(" ").append(tree.getElementCssClass());
+		}
 		target.append("'><ul class=\"o_tree_l0\">");
 		if(tree.isRootVisible()) {
 			renderLevel(target, 0, root, selPath, openNodeIds, elements, ubu, flags, tree);

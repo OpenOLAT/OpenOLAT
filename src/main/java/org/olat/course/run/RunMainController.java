@@ -269,6 +269,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		//StackedControllerImpl(getWindowControl(), getTranslator(), "o_course_breadcumbs");
 		luTree = new MenuTree(null, "luTreeRun", this);
 		luTree.setExpandSelectedNode(false);
+		luTree.setElementCssClass("o_course_menu");
 		contentP = new Panel("building_block_content");
 
 		// Initialize the the users roles and right for this course
@@ -1634,7 +1635,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 
 	public void disableToolController(boolean disable) {
-		columnLayoutCtr.hideCol2(disable);
+		toolbarPanel.setToolbarEnabled(!disable);
 	}
 
 	@Override

@@ -23,6 +23,7 @@ body.o_dmz {
 		padding-bottom: $padding-large-vertical * 2;
 		h1 {
 			margin-bottom: $padding-large-vertical * 4;
+			color: $o-login-header-color;
 		}
 		.o_infomessage_wrapper {
 			background-color: #fff;
@@ -35,6 +36,14 @@ body.o_dmz {
 			}
 		}
 	}	
+	.o_login_footer_wrapper {
+		@extend %o_block_large;	
+	}
+	.o_login_footer {
+		display: inline-block;
+		text-align: left;
+	}
+	
 
 	@if $o-login-form-align == left {
 		.o_login_intro {
@@ -50,7 +59,8 @@ body.o_dmz {
 				text-align: right
 			}
 		}
-		.o_login_box_wrapper {
+		.o_login_box_wrapper,
+		.o_login_footer_wrapper {
 			text-align: right;			
 		}
 	}		
@@ -58,7 +68,8 @@ body.o_dmz {
 		.o_login_intro h1 {
 			text-align: center
 		}
-		.o_login_box_wrapper {
+		.o_login_box_wrapper,
+		.o_login_footer_wrapper {
 			text-align: center;			
 		}	
 	}
@@ -110,7 +121,7 @@ body.o_dmz {
 		small {
 			font-size: $font-size-base;
 		}
-	}
+	}	
 }
 
 @media (max-width: $screen-xs-max) { 
