@@ -116,6 +116,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 					String imgId = "image_" + count;
 					mainVC.contextPut(imgId, entry.getKey());
 				}
+				mainVC.contextPut("k" + cmpId, entry.getKey());
 				
 				Link link = LinkFactory.createCustomLink(cmpId, "select_node", cmpId, Link.LINK + Link.NONTRANSLATED, mainVC, this);
 				link.setCustomDisplayText(entry.getName());
@@ -153,6 +154,13 @@ public class CatalogNodeController extends BasicController implements Activateab
 			Link link = (Link)source;
 			if("select_node".equals(link.getCommand())) {
 				Long categoryNodeKey = (Long)link.getUserObject();
+				CatalogEntry entry = catalogManager.getCatalogNodeByKey(categoryNodeKey);
+				selectCatalogEntry(ureq, entry);
+			}
+		} else if("img_select".equals(event.getCommand())) {
+			String node = ureq.getParameter("node");
+			if(StringHelper.isLong(node)) {
+				Long categoryNodeKey = new Long(node);
 				CatalogEntry entry = catalogManager.getCatalogNodeByKey(categoryNodeKey);
 				selectCatalogEntry(ureq, entry);
 			}
