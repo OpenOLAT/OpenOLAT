@@ -160,9 +160,13 @@ public class CatalogNodeController extends BasicController implements Activateab
 		} else if("img_select".equals(event.getCommand())) {
 			String node = ureq.getParameter("node");
 			if(StringHelper.isLong(node)) {
-				Long categoryNodeKey = new Long(node);
-				CatalogEntry entry = catalogManager.getCatalogNodeByKey(categoryNodeKey);
-				selectCatalogEntry(ureq, entry);
+				try {
+					Long categoryNodeKey = new Long(node);
+					CatalogEntry entry = catalogManager.getCatalogNodeByKey(categoryNodeKey);
+					selectCatalogEntry(ureq, entry);
+				} catch (NumberFormatException e) {
+					logWarn("Not a valid long: " + node, e);
+				}
 			}
 		}
 	}

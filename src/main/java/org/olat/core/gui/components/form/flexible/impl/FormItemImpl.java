@@ -474,8 +474,7 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 			return;
 		}
 		//before/ after pattern
-		int action = getRootForm().getAction();
-		switch (action) {
+		switch (getRootForm().getAction()) {
 			case FormEvent.ONCLICK:
 				getRootForm().fireFormEvent(ureq, new FormEvent("ONCLICK", this, FormEvent.ONCLICK));
 				break;

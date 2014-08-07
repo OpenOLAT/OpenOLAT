@@ -27,7 +27,6 @@ package org.olat.core.gui.components.form.flexible.impl;
 
 import java.util.Map;
 
-import org.olat.core.gui.components.form.flexible.FormDecorator;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
@@ -42,11 +41,15 @@ import org.olat.core.util.StringHelper;
  * 
  * @author patrickb
  */
-public class FormDecoratorImpl implements FormDecorator {
+public class FormDecorator {
 
 	private final FormItemContainer container;
+	
+	public FormDecorator(Form theForm) {
+		this.container = theForm.getFormItemContainer();
+	}
 
-	public FormDecoratorImpl(FormItemContainer container) {
+	public FormDecorator(FormItemContainer container) {
 		this.container = container;
 	}
 	
@@ -119,6 +122,12 @@ public class FormDecoratorImpl implements FormDecorator {
 			return false;
 		else
 			return (item instanceof SpacerElement);
+	}
+	
+	public String ffXHREvent(String key, String value) {
+		Form theForm = container.getRootForm();
+		String elementId = "o_fi" + container.getComponent().getDispatchID();
+		return FormJSHelper.getXHRFnCallFor(theForm, elementId, 1, new NameValuePair(key, value));
 	}
 	
 	public String getContainerCssClass() {

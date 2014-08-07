@@ -523,6 +523,10 @@ public class Form extends LogDelegator {
 	ComponentCollection getFormLayout() {
 		return (ComponentCollection) formLayout.getComponent();
 	}
+	
+	FormItemContainer getFormItemContainer() {
+		return formLayout;
+	}
 
 	public Component getInitialComponent() {
 		return formWrapperComponent;

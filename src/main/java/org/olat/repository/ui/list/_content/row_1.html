@@ -1,10 +1,12 @@
 <div #if($row.selected) class="o_selected" #end>
 	<div class="o_visual">
+		<a href="javascript:${f.ffXHREvent("select_row","$row.key")}">
 		#if($row.isThumbnailAvailable())
 			<img src="${row.getThumbnailRelPath()}" />
 		#else
 			<div class="o_visual_not_available"></div>
-		#end	
+		#end
+		</a>	
 	</div>
 	<div class="o_meta o_withEllipsis">
 		<div class="o_go_xs visible-xs">

@@ -122,7 +122,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		}
 		translator = formTranslator;
 		// add the form decorator for the $f.hasError("ddd") etc.
-		formLayoutContainer.contextPut("f", new FormDecoratorImpl(this));
+		formLayoutContainer.contextPut("f", new FormDecorator(this));
 		// this container manages the form items, the GUI form item componentes are
 		// managed in the associated velocitycontainer
 		formComponentsNames = new ArrayList<String>(5);

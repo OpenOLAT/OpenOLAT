@@ -318,6 +318,27 @@ public class RepositoryEntryListController extends FormBasicController
 				doFilter(selectedFilters);
 				flc.setDirty(true);
 			}
+		} else if(source == mainForm.getInitialComponent()) {
+			if("ONCLICK".equals(event.getCommand())) {
+				String rowKeyStr = ureq.getParameter("select_row");
+				if(StringHelper.isLong(rowKeyStr)) {
+					try {
+						Long rowKey = new Long(rowKeyStr);
+						List<RepositoryEntryRow> rows = model.getObjects();
+						for(RepositoryEntryRow row:rows) {
+							if(row.getKey().equals(rowKey)) {
+								if (row.isMember()) {
+									doOpen(ureq, row);					
+								} else {
+									doOpenDetails(ureq, row);
+								}
+							}
+						}
+					} catch (NumberFormatException e) {
+						logWarn("Not a valid long: " + rowKeyStr, e);
+					}
+				}
+			}
 		}
 		super.event(ureq, source, event);
 	}

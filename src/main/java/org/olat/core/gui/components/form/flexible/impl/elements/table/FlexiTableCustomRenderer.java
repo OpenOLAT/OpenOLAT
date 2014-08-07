@@ -23,6 +23,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.impl.FormDecorator;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.render.RenderResult;
@@ -92,6 +93,7 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		VelocityContainer container = ftE.getRowRenderer();
+		container.contextPut("f", new FormDecorator(ftE.getRootForm()));
 
 		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 		Object rowObject = ftE.getTableDataModel().getObject(row);
@@ -127,6 +129,7 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 
 		container.getHTMLRendererSingleton().render(renderer, sb, container, ubu, translator, renderResult, null);
 		container.contextRemove("row");
+		container.contextRemove("f");
 
 		sb.append("</div>");
 	}
