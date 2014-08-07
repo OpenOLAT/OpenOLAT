@@ -19,8 +19,6 @@
  */
 package org.olat.repository;
 
-import java.util.Date;
-
 import org.olat.core.id.OLATResourceable;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
@@ -64,16 +62,7 @@ public interface RepositoryEntryMyView extends OLATResourceable {
 	 */
 	public boolean isMarked();
 	
-	/**
-	 * @return The date of the first launch saved in the user course infos.
-	 */
-	public Date getInitialLaunch();
-	
-	public Date getRecentLaunch();
-	
 	public Integer getVisit();
-	
-	public Long getTimeSpend();
 	
 	/**
 	 * @return The rating made by the user or null if the user has never rated the entry

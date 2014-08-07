@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.UserCourseInformations;
 import org.olat.repository.RepositoryEntry;
@@ -34,16 +35,18 @@ import org.olat.resource.OLATResource;
  */
 public interface UserCourseInformationsManager {
 	
-	public UserCourseInformations getUserCourseInformations(Long courseResourceId, Identity identity);
+	public UserCourseInformations getUserCourseInformations(Long courseResourceId, IdentityRef identity);
 
-	public List<UserCourseInformations> getUserCourseInformations(Identity identity, List<OLATResource> resources);
+	public List<UserCourseInformations> getUserCourseInformations(IdentityRef identity, List<OLATResource> resources);
 	
 	public List<UserCourseInformations> getUserCourseInformations(List<Long> keys);
 	
 	
 	public void updateUserCourseInformations(Long courseResId, Identity identity, boolean strict);
 	
-	public Date getInitialLaunchDate(Long courseResourceId, Identity identity);
+	public Date getInitialLaunchDate(Long courseResourceId, IdentityRef identity);
+	
+	public Date getRecentLaunchDate(Long courseResourceId, IdentityRef identity);
 	
 	public Map<Long,Date> getInitialLaunchDates(Long courseResourceId, List<Identity> identities);
 	

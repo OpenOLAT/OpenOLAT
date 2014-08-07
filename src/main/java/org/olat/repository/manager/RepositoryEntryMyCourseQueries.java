@@ -40,7 +40,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.EfficiencyStatementManager;
-import org.olat.course.assessment.UserCourseInformations;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
@@ -101,7 +100,6 @@ public class RepositoryEntryMyCourseQueries {
 			query.setMaxResults(maxResults);
 		}
 		
-		List<Long> infosKeys = new ArrayList<>();
 		List<Long> effKeys = new ArrayList<>();
 		List<Object[]> objects = query.getResultList();
 		List<RepositoryEntryMyView> views = new ArrayList<>(objects.size());
@@ -118,9 +116,9 @@ public class RepositoryEntryMyCourseQueries {
 			views.add(view);
 			viewsMap.put(re.getOlatResource(), view);
 			
-			Long infosKey = (Long)object[4];
-			if(infosKey != null) {
-				infosKeys.add(infosKey);
+			Integer visit = (Integer)object[4];
+			if(visit != null && visit.intValue() >= 0) {
+				view.setVisit(visit);
 			}
 			Long effKey = (Long)object[5];
 			if(effKey != null) {
@@ -134,15 +132,6 @@ public class RepositoryEntryMyCourseQueries {
 			for(UserEfficiencyStatementLight efficiencyStatement:efficiencyStatements) {
 				if(viewsMap.containsKey(efficiencyStatement.getResource())) {
 					viewsMap.get(efficiencyStatement.getResource()).setEfficiencyStatement(efficiencyStatement);
-				}
-			}
-		}
-		
-		if(infosKeys.size() > 0) {
-			List<UserCourseInformations> courseInfos = userCourseInformationsManager.getUserCourseInformations(infosKeys);
-			for(UserCourseInformations courseInfo:courseInfos) {
-				if(viewsMap.containsKey(courseInfo.getResource())) {
-					viewsMap.get(courseInfo.getResource()).setCourseInfos(courseInfo);
 				}
 			}
 		}
@@ -180,9 +169,9 @@ public class RepositoryEntryMyCourseQueries {
 			  .append("   where rating.resId=v.key and rating.creator=ident and rating.resName='RepositoryEntry'")
 			  .append(" ) as myrating")
 			  // user course informations
-			  .append(" ,(select infos.key from usercourseinfos as infos")
+			  .append(" ,(select infos.visit from usercourseinfos as infos")
 			  .append("    where infos.resource=res and infos.identity=ident")
-			  .append(" ) as infosKey")
+			  .append(" ) as visit")
 			  //efficiency statements
 			  .append(" ,(select eff.key from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as eff")
 			  .append("    where eff.resource=res and eff.identity=ident")

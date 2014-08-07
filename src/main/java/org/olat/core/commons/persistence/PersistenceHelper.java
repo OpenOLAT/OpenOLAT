@@ -150,7 +150,9 @@ public class PersistenceHelper {
 		if (string.length() > 1 && string.startsWith("\"") && string.endsWith("\"")) {			
 			string = string.substring(1, string.length()-1);
 		} else {
-			string = string + "%";
+			if(!string.startsWith("*") && !string.endsWith("*")) {
+				string = "%" + string + "%";
+			}
 			string = string.replace('*', '%');
 		}
 		// with 'LIKE' the character '_' is a wildcard which matches exactly one character.
@@ -158,6 +160,8 @@ public class PersistenceHelper {
 		string = string.replace("_", "\\_");
 		return string.toLowerCase();
 	}
+	
+
 
 	/**
 	 * 

@@ -96,6 +96,19 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getRecentLaunchDate() {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-7-" + UUID.randomUUID().toString());
+		ICourse course = CoursesWebService.createEmptyCourse(user, "course-launch-dates", "course long name", null);
+		dbInstance.commitAndCloseSession();
+		
+		userCourseInformationsManager.updateUserCourseInformations(course.getResourceableId(), user, true);
+		dbInstance.commitAndCloseSession();
+		
+		Date launchDate = userCourseInformationsManager.getRecentLaunchDate(course.getResourceableId(), user);
+		Assert.assertNotNull(launchDate);
+	}
+	
+	@Test
 	public void getInitialLaunchDate() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-2-" + UUID.randomUUID().toString());
 		ICourse course = CoursesWebService.createEmptyCourse(user, "course-launch-dates", "course long name", null);

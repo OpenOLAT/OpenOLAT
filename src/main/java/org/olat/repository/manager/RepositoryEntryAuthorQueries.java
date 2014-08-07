@@ -31,6 +31,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -101,8 +102,10 @@ public class RepositoryEntryAuthorQueries {
 			Class<T> type) {
 
 		Identity identity = params.getIdentity();
+		Roles roles = params.getRoles();
 		List<String> resourceTypes = params.getResourceTypes();
 		boolean oracle = "oracle".equals(dbInstance.getDbVendor());
+		boolean admin = (roles != null && (roles.isInstitutionalResourceManager() || roles.isOLATAdmin()));
 
 		boolean count = Number.class.equals(type);
 		StringBuilder sb = new StringBuilder();
@@ -132,6 +135,8 @@ public class RepositoryEntryAuthorQueries {
 			  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=ident.key")
 			  .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
 			  .append(" )");
+		} else if(admin) {
+			sb.append(" and v.access>=").append(RepositoryEntry.ACC_OWNERS);
 		} else {
 			sb.append(" and (v.access>=").append(RepositoryEntry.ACC_OWNERS_AUTHORS)
 			  .append(" or (v.access=").append(RepositoryEntry.ACC_OWNERS)

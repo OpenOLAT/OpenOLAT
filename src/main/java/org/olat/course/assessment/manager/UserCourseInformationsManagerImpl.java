@@ -30,6 +30,7 @@ import java.util.Set;
 import javax.persistence.FlushModeType;
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
@@ -61,7 +62,7 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 	private OLATResourceManager resourceManager;
 
 	@Override
-	public UserCourseInfosImpl getUserCourseInformations(Long courseResourceId, Identity identity) {
+	public UserCourseInfosImpl getUserCourseInformations(Long courseResourceId, IdentityRef identity) {
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("select infos from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
@@ -86,7 +87,7 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 	}
 	
 	@Override
-	public List<UserCourseInformations> getUserCourseInformations(Identity identity, List<OLATResource> resources) {
+	public List<UserCourseInformations> getUserCourseInformations(IdentityRef identity, List<OLATResource> resources) {
 		if(resources == null || resources.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -242,7 +243,26 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 	}
 	
 	@Override
-	public Date getInitialLaunchDate(Long courseResourceId, Identity identity) {
+	public Date getRecentLaunchDate(Long courseResourceId, IdentityRef identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select infos.recentLaunch from usercourseinfos as infos ")
+		  .append(" inner join infos.resource as resource")
+		  .append(" where infos.identity.key=:identityKey and resource.resId=:resId and resource.resName='CourseModule'");
+
+		List<Date> infoList = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Date.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("resId", courseResourceId)
+				.getResultList();
+
+		if(infoList.isEmpty()) {
+			return null;
+		}
+		return infoList.get(0);
+	}
+
+	@Override
+	public Date getInitialLaunchDate(Long courseResourceId, IdentityRef identity) {
 		return getInitialLaunchDate(courseResourceId, identity.getKey());
 	}
 	
@@ -251,8 +271,7 @@ public class UserCourseInformationsManagerImpl extends BasicManager implements U
 			StringBuilder sb = new StringBuilder();
 			sb.append("select infos.initialLaunch from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
 			  .append(" inner join infos.resource as resource")
-			  .append(" inner join infos.identity as identity")
-			  .append(" where identity.key=:identityKey and resource.resId=:resId and resource.resName='CourseModule'");
+			  .append(" where infos.identity.key=:identityKey and resource.resId=:resId and resource.resName='CourseModule'");
 
 			List<Date> infoList = dbInstance.getCurrentEntityManager()
 					.createQuery(sb.toString(), Date.class)

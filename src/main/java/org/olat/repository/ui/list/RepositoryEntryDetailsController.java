@@ -62,7 +62,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.EfficiencyStatementManager;
-import org.olat.course.assessment.UserCourseInformations;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.run.RunMainController;
@@ -386,23 +385,15 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			layoutCont.contextPut("failed", failed);
 			layoutCont.contextPut("score", score);
 			
-			Date recentLaunch = null;
-			if(row != null) {
-				recentLaunch = row.getRecentLaunch();
-			} else {
-				Long courseResId = entry.getOlatResource().getResourceableId();
-				UserCourseInformations infos = userCourseInfosManager.getUserCourseInformations(courseResId, getIdentity());
-				if(infos != null) {
-					recentLaunch= infos.getRecentLaunch();
-				}
-			}
+			Long courseResId = entry.getOlatResource().getResourceableId();
+			Date recentLaunch = userCourseInfosManager.getRecentLaunchDate(courseResId, getIdentity());
 			layoutCont.contextPut("recentLaunch", recentLaunch);
 			
 			// show how many users are currently using this resource
             String numUsers;
             OLATResourceable ores = entry.getOlatResource();
             int cnt = 0;
-            OLATResourceable courseRunOres = OresHelper.createOLATResourceableInstance(RunMainController.ORES_TYPE_COURSE_RUN, entry.getOlatResource().getResourceableId());
+            OLATResourceable courseRunOres = OresHelper.createOLATResourceableInstance(RunMainController.ORES_TYPE_COURSE_RUN, courseResId);
             if (ores != null) cnt = coordinatorManager.getCoordinator().getEventBus().getListeningIdentityCntFor(courseRunOres);
             numUsers = String.valueOf(cnt);
             layoutCont.contextPut("numUsers", numUsers);

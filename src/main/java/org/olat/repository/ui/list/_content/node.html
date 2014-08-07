@@ -54,7 +54,9 @@
 	</div>	## END o_catalog
 	
 	## Render course list component
-	$r.render("entries")
+	#if($r.available("entries"))
+		$r.render("entries")
+	#end
 
 <script type="text/javascript">
 /* <![CDATA[ */ 

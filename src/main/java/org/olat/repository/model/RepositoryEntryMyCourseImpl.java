@@ -63,11 +63,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	private Double averageRating;
 	private long numOfRatings;
 	private long numOfComments;
-	
-	private Date initialLaunch;
-	private Date recentLaunch;
 	private Integer visit;
-	private Long timeSpend;
 
 	private long offersAvailable;
 	
@@ -109,10 +105,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	
 	public void setCourseInfos(UserCourseInformations courseInfos) {
 		if(courseInfos != null) {
-			initialLaunch = courseInfos.getInitialLaunch();
-			recentLaunch = courseInfos.getRecentLaunch();
 			visit = courseInfos.getVisit();
-			timeSpend = courseInfos.getTimeSpend();
 		}
 	}
 
@@ -249,39 +242,12 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	}
 
 	@Override
-	public Date getInitialLaunch() {
-		return initialLaunch;
-	}
-
-	public void setInitialLaunch(Date initialLaunch) {
-		this.initialLaunch = initialLaunch;
-	}
-
-	@Override
-	public Date getRecentLaunch() {
-		return recentLaunch;
-	}
-
-	public void setRecentLaunch(Date recentLaunch) {
-		this.recentLaunch = recentLaunch;
-	}
-
-	@Override
 	public Integer getVisit() {
 		return visit;
 	}
 
 	public void setVisit(Integer visit) {
 		this.visit = visit;
-	}
-
-	@Override
-	public Long getTimeSpend() {
-		return timeSpend;
-	}
-
-	public void setTimeSpend(Long timeSpend) {
-		this.timeSpend = timeSpend;
 	}
 
 	public Integer getMyRating() {

@@ -43,7 +43,7 @@ doCompile () {
 	fi
 	echo "Compiling SASS: $TARGET $STYLE"
 	sass --version
-	sass --style $STYLE --update $TARGET:$TARGET --load-path light light/modules
+	sass --style $STYLE --no-cache --update $TARGET:$TARGET --load-path light light/modules
 	echo "sass --style $STYLE --update $TARGET:$TARGET --load-path light light/modules"
 	echo "done"
 }

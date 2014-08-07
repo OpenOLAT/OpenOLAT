@@ -58,9 +58,6 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private boolean member;
 	
 	public int visit;
-	public long timeSpend;
-	public Date initialLaunch;
-	public Date recentLaunch;
 	
 	private Integer myRating;
 	private Double averageRating;
@@ -104,17 +101,10 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		setScore(AssessmentHelper.getRoundedScore(entry.getScore()));
 		
 		//user course infos
-		setInitialLaunch(entry.getInitialLaunch());
-		setRecentLaunch(entry.getRecentLaunch());
 		if(entry.getVisit() != null) {
 			setVisit(entry.getVisit().intValue());
 		} else {
 			setVisit(0);
-		}
-		if(entry.getTimeSpend() != null) {
-			setTimeSpend(entry.getTimeSpend().longValue());
-		} else {
-			setTimeSpend(0l);
 		}
 		
 		//rating
@@ -447,29 +437,5 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	
 	public void setVisit(int visit) {
 		this.visit = visit;
-	}
-	
-	public long getTimeSpend() {
-		return timeSpend;
-	}
-	
-	public void setTimeSpend(long timeSpend) {
-		this.timeSpend = timeSpend;
-	}
-	
-	public Date getInitialLaunch() {
-		return initialLaunch;
-	}
-	
-	public void setInitialLaunch(Date initialLaunch) {
-		this.initialLaunch = initialLaunch;
-	}
-	
-	public Date getRecentLaunch() {
-		return recentLaunch;
-	}
-	
-	public void setRecentLaunch(Date recentLaunch) {
-		this.recentLaunch = recentLaunch;
 	}
 }
