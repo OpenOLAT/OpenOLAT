@@ -15,7 +15,7 @@
 		 */
 		ThemeJS.prototype.addClientLinks = function(){
 			var logoElement = $(".o_navbar-brand");
-			if (logoElement && !logoElement.hasClass('o_clickable')) {
+			if (logoElement && logoElement.size() > 0 && !logoElement.hasClass('o_clickable')) {
 				// add marker css to remember this link is already ok, add link reference
 				logoElement.addClass('o_clickable');					
 				logoElement.prop('href', "http://www.openolat.org");

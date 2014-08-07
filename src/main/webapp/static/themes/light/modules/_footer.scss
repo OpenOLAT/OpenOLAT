@@ -7,7 +7,7 @@
 	overflow: hidden;
 	background-color: $o-footer-outer-bg;
 	color: $o-footer-default-color;
-	line-height: 16px;
+	line-height: $o-footer-line-height;
 	font-size: $o-footer-font-size;
 	
 	a { 

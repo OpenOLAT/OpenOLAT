@@ -221,7 +221,8 @@
 					height: $o-coursesite-rowelem-height-xs;
 					width: floor($o-coursesite-rowelem-height-xs * .75);
 					line-height: $o-coursesite-rowelem-height-xs;
-   					background-color: $state-success-bg;
+					color: $o-coursesite-go-xs-color;
+					background-color: $o-coursesite-go-xs-bg;
 				}
 				
 			}

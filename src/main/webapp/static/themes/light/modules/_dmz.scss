@@ -35,6 +35,12 @@ body.o_dmz {
 				margin: 0;
 			}
 		}
+		.lead {
+			// add more space since lead text is larger than normal
+			h2, h3, h4 {
+				margin-bottom: 20px;
+			}
+		}
 	}	
 	.o_login_footer_wrapper {
 		@extend %o_block_large;	

@@ -42,11 +42,12 @@ $o-content-body-bg				: $body-bg !default;
 $o-content-link-color			: $link-color !default;
 $o-content-link-hover-color		: $link-hover-color !default;
 $o-content-link-decoration		: underline !default;
-$o-content-h1-color				: $brand-primary !default;
-$o-content-h2-color				: $brand-primary !default;
-$o-content-h3-color				: $brand-primary !default;
-$o-content-h4-color				: $brand-primary !default;
-$o-content-h5-color				: $o-content-text-color !default;
+$o-content-header-base-color	: $brand-primary !default;
+$o-content-h1-color				: $o-content-header-base-color !default;
+$o-content-h2-color				: $o-content-header-base-color !default;
+$o-content-h3-color				: $o-content-header-base-color !default;
+$o-content-h4-color				: $o-content-header-base-color !default;
+$o-content-h5-color				: $o-content-header-base-color !default;
 $o-content-fieldset-legend-color: $text-color !default;
 $o-content-hr-color				: $hr-border !default;
 $o-content-table-border			: $gray-light !default;
@@ -78,6 +79,7 @@ $o-main-right-bg	: inherit !default;
 
 /* Page footer */
 $o-footer-font-size					: $font-size-small !default;
+$o-footer-line-height				: 16px !default;
 $o-footer-share-font-size			: $font-size-base !default;
 $o-footer-padding-top				: 10px !default;
 $o-footer-height 					: 70px !default;
@@ -220,6 +222,8 @@ $o-coursesite-book-border		: darken($o-coursesite-book-bg, 5%) !default;
 $o-coursesite-details-color		: $btn-success-color !default;
 $o-coursesite-details-bg		: $btn-success-bg !default;
 $o-coursesite-details-border	: darken($o-coursesite-details-bg, 5%) !default;
+$o-coursesite-go-xs-color		: $o-coursesite-start-color !default; 
+$o-coursesite-go-xs-bg			: $o-coursesite-start-bg !default;
 
 /* Course editor and runtime */
 $o-course-show-icon-title		: false !default; 	// don't show icon in title - no info value

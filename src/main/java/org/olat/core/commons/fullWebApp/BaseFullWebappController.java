@@ -276,6 +276,8 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		mainVc.contextPut("theme", w.getGuiTheme());
 		mainVc.contextPut("globalSettings", winman.getGlobalSettings());
 		mainVc.contextPut("isScreenReader", winman.isForScreenReader());
+		// also add the optional theme javascript 
+		addThemeJS();
 
 		// content panel
 		contentPanel = new Panel("olatContentPanel");
@@ -451,8 +453,6 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		}
 
 		setWindowSettings(getWindowControl().getWindowBackOffice().getWindowSettings());
-		
-		addCustomThemeJS();
 	}
 	
 	private void updateStickyMessage() {
@@ -506,10 +506,9 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	}
 
 	/**
-	 * adds the custom js-code to the mainVc
-	 * FXOLAT-310
+	 * adds the theme custom js-code to the mainVc
 	 */
-	private void addCustomThemeJS() {
+	private void addThemeJS() {
 		Theme currentTheme = getWindowControl().getWindowBackOffice().getWindow().getGuiTheme();
 		if (currentTheme.hasCustomJS()) {
 			String relPath = currentTheme.getRelPathToCustomJS();
@@ -517,7 +516,8 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			if (isLogDebugEnabled()) {
 				logDebug("injecting custom javascript from current OLAT-Theme", relPath);
 			}
-			cssHolder.setContent(customJS);
+			// no need to wrap in panel, will never change
+			mainVc.put(customJS.getComponentName(), customJS);
 		}
 	}
 	
@@ -800,7 +800,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	}
 
 	/**
-	 * Add a custom css to the view and mark it as the curent custom CSS.
+	 * Add a custom css to the view and mark it as the current custom CSS.
 	 * 
 	 * @param customCSS
 	 */
@@ -813,8 +813,6 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		myWindow.setCustomCSS(customCSS);
 		// add css component to view
 		cssHolder.setContent(customCSS.getJSAndCSSComponent());
-		
-		addCustomThemeJS();
 	}
 	
 	@Override
