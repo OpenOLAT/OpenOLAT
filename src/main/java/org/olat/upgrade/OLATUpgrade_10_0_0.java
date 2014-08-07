@@ -383,15 +383,15 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 	}
 	
 	private void processMap(EPMapUpgrade map) {
-		if(map.getGroups() != null && map.getGroups().size() > 0) {
+		if(hasGroupsRelations(map)) {
 			return;
 		}
 		
+		Set<EPMapUpgradeToGroupRelation> relations = new HashSet<>();
 		SecurityGroup ownerGroup = map.getOwnerGroup();
 		if(ownerGroup != null) {
 			//create default group
 			RepositoryEntryUpgrade re = findMapRepoEntry(ownerGroup);
-			Set<EPMapUpgradeToGroupRelation> relations = map.getGroups();
 			if(re != null) {
 				Group reGroup = repositoryEntryToGroupDAO.getDefaultGroup(re);
 				if(reGroup != null) {
@@ -405,18 +405,29 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 			}
 			
 			//create policy -> relation
-
 			List<Policy> policies = securityManager.getPoliciesOfResource(map.getOlatResource(), null);
 			for(Policy policy:policies) {
 				if(policy.getPermission().contains(Constants.PERMISSION_READ)) {
-					EPMapUpgradeToGroupRelation politeRelation = processMapPolicy(policy, map);
-					if(politeRelation != null) {
-						relations.add(politeRelation);
+					EPMapUpgradeToGroupRelation policyRelation = processMapPolicy(policy, map);
+					if(policyRelation != null) {
+						relations.add(policyRelation);
 					}
 				}
 			}
-			dbInstance.getCurrentEntityManager().merge(map);
+			
+			for(EPMapUpgradeToGroupRelation relation:relations) {
+				dbInstance.getCurrentEntityManager().persist(relation);
+			}
 		}
+	}
+	
+	private boolean hasGroupsRelations(EPMapUpgrade map) {
+		String sb = "select count(rel.key) from structureuptogroup as rel where rel.entry.key=:mapKey";
+		
+		List<Number> counts = dbInstance.getCurrentEntityManager().createQuery(sb, Number.class)
+			.setParameter("mapKey", map.getKey())
+			.getResultList();
+		return counts != null && counts.size() > 0 && counts.get(0) != null && counts.get(0).intValue() > 0;
 	}
 	
 	private EPMapUpgradeToGroupRelation processMapPolicy(Policy policy, EPMapUpgrade element) {
@@ -433,6 +444,9 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 			role = EPMapPolicy.Type.group.name();
 		} else if (permission.startsWith(EPMapPolicy.Type.invitation.name())) {
 			InvitationUpgrade invitation = findInvitation(policy.getSecurityGroup());
+			if(invitation == null) {
+				return null;
+			}
 			group = invitation.getBaseGroup();
 			role = EPMapPolicy.Type.invitation.name();
 		} else if (permission.startsWith(EPMapPolicy.Type.allusers.name())) {

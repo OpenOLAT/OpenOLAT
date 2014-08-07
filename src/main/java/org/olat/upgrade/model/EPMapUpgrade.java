@@ -19,11 +19,21 @@
  */
 package org.olat.upgrade.model;
 
-import java.util.Set;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
+import org.hibernate.annotations.GenericGenerator;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.commons.persistence.PersistentObject;
+import org.olat.basesecurity.SecurityGroupImpl;
+import org.olat.core.id.Persistable;
 import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceImpl;
 
 /**
  * Needed to upgrade the maps
@@ -32,28 +42,40 @@ import org.olat.resource.OLATResource;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class EPMapUpgrade extends PersistentObject {
+@Entity(name="epmapupgrade")
+@Table(name="o_ep_struct_el")
+public class EPMapUpgrade implements Persistable {
 
 	private static final long serialVersionUID = 9041327840189041360L;
 
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@Column(name="structure_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+
+	@ManyToOne(targetEntity=SecurityGroupImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_ownergroup", nullable=true, insertable=true, updatable=true)
 	private SecurityGroup ownerGroup;
+	
+	@ManyToOne(targetEntity=OLATResourceImpl.class,fetch=FetchType.LAZY, optional=false)
+	@JoinColumn(name="fk_olatresource", nullable=false, insertable=true, updatable=false)
 	private OLATResource olatResource;
-	private Set<EPMapUpgradeToGroupRelation> groups;
 	 
+	public Long getKey() {
+		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
 	public OLATResource getOlatResource() {
 		return olatResource;
 	}
 
 	public void setOlatResource(OLATResource olatResource) {
 		this.olatResource = olatResource;
-	}
-
-	public Set<EPMapUpgradeToGroupRelation> getGroups() {
-		return groups;
-	}
-
-	public void setGroups(Set<EPMapUpgradeToGroupRelation> groups) {
-		this.groups = groups;
 	}
 
 	public SecurityGroup getOwnerGroup() {
@@ -79,5 +101,10 @@ public class EPMapUpgrade extends PersistentObject {
 			return getKey() != null && getKey().equals(map.getKey());
 		}
 		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

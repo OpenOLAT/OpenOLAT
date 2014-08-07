@@ -83,8 +83,8 @@
 		<mapping-file>org/olat/upgrade/model/BusinessGroupUpgrade.hbm.xml</mapping-file>
 		<mapping-file>org/olat/upgrade/model/BGResourceRelation.hbm.xml</mapping-file>
 		<mapping-file>org/olat/upgrade/model/RepositoryEntryUpgrade.hbm.xml</mapping-file>
-		<mapping-file>org/olat/upgrade/model/EPMapUpgrade.hbm.xml</mapping-file>
 		<class>org.olat.upgrade.model.RepositoryEntryUpgradeToGroupRelation</class>
+		<class>org.olat.upgrade.model.EPMapUpgrade</class>
 		<class>org.olat.upgrade.model.EPMapUpgradeToGroupRelation</class>
 		<class>org.olat.upgrade.model.InvitationUpgrade</class>
 		<!-- End upgraders mapping -->
