@@ -90,6 +90,11 @@ public interface RepositoryService {
 	
 	public int countMembers(RepositoryEntryRef re, String... roles);
 	
+	/**
+	 * Return the primary keys of the authors
+	 */
+	public List<Long> getAuthors(RepositoryEntryRef re);
+	
 	public List<Identity> getMembers(RepositoryEntryRef re, String... roles);
 	
 	public List<String> getRoles(Identity identity, RepositoryEntryRef re);

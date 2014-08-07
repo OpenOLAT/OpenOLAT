@@ -21,12 +21,10 @@ package org.olat.repository.ui.list;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import org.olat.NewControllerFactory;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
@@ -51,7 +49,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.helpers.Settings;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -277,12 +274,10 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			commentsLink.setIconLeftCSS(css);
 			
 			//load memberships
-			List<String> roles = repositoryService.getRoles(getIdentity(), entry);
-			boolean isMember = roles.contains(GroupRoles.owner.name())
-					|| roles.contains(GroupRoles.coach.name())
-					|| roles.contains(GroupRoles.participant.name());
+			boolean isMember = repositoryService.isMember(getIdentity(), entry);
+            List<Long> authorKeys = repositoryService.getAuthors(entry);
 			if (isMember) {
-				Boolean isAuthor = Boolean.valueOf(roles.contains(GroupRoles.owner.name()));
+				Boolean isAuthor = Boolean.valueOf(authorKeys.contains(getIdentity().getKey()));
 				layoutCont.contextPut("isEntryAuthor", isAuthor);
 			}
 			// push roles to velocity as well
@@ -424,8 +419,19 @@ public class RepositoryEntryDetailsController extends FormBasicController {
             layoutCont.contextPut("isGuestAllowed", (entry.getAccess() >= RepositoryEntry.ACC_USERS_GUESTS ? Boolean.TRUE : Boolean.FALSE));
 
             //Owners
-            
-          //add the list of owners
+            List<String> authorLinkNames = new ArrayList<String>(authorKeys.size());
+    		Map<Long,String> authorNames = userManager.getUserDisplayNamesByKey(authorKeys);
+    		int counter = 0;
+    		for(Map.Entry<Long, String> author:authorNames.entrySet()) {
+    			Long authorKey = author.getKey();
+    			String authorName = author.getValue();
+    			
+	    		FormLink authorLink = uifactory.addFormLink("owner-" + ++counter, "owner", authorName, null, formLayout, Link.NONTRANSLATED | Link.LINK);
+	    		authorLink.setUserObject(authorKey);
+	    		authorLinkNames.add(authorLink.getComponent().getComponentName());
+    		}
+    		layoutCont.contextPut("authorlinknames", authorLinkNames);
+            /*
     		List<Identity> authors = repositoryService.getMembers(entry, GroupRoles.owner.name());
     		List<String> authorLinkNames = new ArrayList<String>(authors.size());
     		Set<Long> duplicates = new HashSet<>(authors.size() * 2 + 1);
@@ -440,6 +446,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
     			}
     		}
     		layoutCont.contextPut("authorlinknames", authorLinkNames);
+    		*/
 		}
 	}
 	
