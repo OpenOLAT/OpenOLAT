@@ -26,11 +26,20 @@
     		@include box-shadow(none);
        	}
   	}
-}
+}  	
 .o_navbar-brand,
 .o_navbar-nav > li > a {
   	text-shadow: 0 1px 0 rgba(255,255,255,.25);
 }
+
+.o_navbar-offcanvas {
+  	.dropdown-menu>li>a:hover,
+  	.dropdown-menu>li>a:focus {
+	        background-image:none;
+	}
+}
+
+
 
 
 /* Toolbar with integrated bread crumb */

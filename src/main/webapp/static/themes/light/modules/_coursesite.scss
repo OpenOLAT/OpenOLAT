@@ -202,6 +202,12 @@
 					padding: 0 0 0 1em;
 					.o_title {
 						line-height: $o-coursesite-rowelem-height-xs;
+						a {
+							border-right:floor($o-coursesite-rowelem-height-xs * .75) solid transparent;
+							@include text-overflow();
+							span {
+							}
+						}
 					}
 					.o_author, .o_bookmark, .o_lifecycle, .o_desc {
 						display: none;
@@ -213,6 +219,7 @@
 					right: 0;
 					padding: 0 1em;
 					height: $o-coursesite-rowelem-height-xs;
+					width: floor($o-coursesite-rowelem-height-xs * .75);
 					line-height: $o-coursesite-rowelem-height-xs;
    					background-color: $state-success-bg;
 				}
