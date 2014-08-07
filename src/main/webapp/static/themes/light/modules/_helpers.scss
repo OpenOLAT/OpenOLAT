@@ -167,10 +167,10 @@
 
 /* media classes for video and image component */
 .o_video, %o_video {
-	@include img-responsive();
+	@include img-responsive(inline-block);
 }
 .o_image, %o_image {
-	@include img-responsive();
+	@include img-responsive(inline-block);
 }
 
 /* Styling for overflow text with ellipsis (see js/ellipsis.js) */
