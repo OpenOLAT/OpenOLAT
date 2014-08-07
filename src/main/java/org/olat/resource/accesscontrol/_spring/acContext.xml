@@ -116,30 +116,8 @@
 		<property name="jobClass" value="org.olat.resource.accesscontrol.manager.ReservationsJob" />
 	</bean>
 	
-	<bean id="acOfferManager" class="org.olat.resource.accesscontrol.manager.ACOfferManagerImpl">
-		<property name="dbInstance" ref="database"/>
-	</bean>
-	
-	<bean id="acMethodManager" class="org.olat.resource.accesscontrol.manager.ACMethodManagerImpl"
-		depends-on="acModule">
-		<constructor-arg index="0" ref="coordinatorManager" />
-		<constructor-arg index="1" ref="acModule" />
-		<property name="dbInstance" ref="database"/>
-		<property name="businessGroupService" ref="businessGroupService"/>
-	</bean>
-	
-	<bean id="acOrderManager" class="org.olat.resource.accesscontrol.manager.ACOrderManagerImpl">
-		<property name="dbInstance" ref="database"/>
-	</bean>
-	
-	<bean id="acTransactionManager" class="org.olat.resource.accesscontrol.manager.ACTransactionManagerImpl">
-		<property name="dbInstance" ref="database"/>
-	</bean>
-	
 	<bean id="freeAccessHandler" class="org.olat.resource.accesscontrol.provider.free.FreeAccessHandler"/>
 	<bean id="tokenAccessHandler" class="org.olat.resource.accesscontrol.provider.token.TokenAccessHandler"/>
-
-	
 	
 	<!--  Orders admin panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
@@ -160,5 +138,4 @@
 		</property>
 		<property name="order" value="7600" />
 	</bean>
-
 </beans>

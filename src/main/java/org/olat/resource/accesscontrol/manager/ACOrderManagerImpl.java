@@ -30,7 +30,6 @@ import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.manager.BasicManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.model.Offer;
 import org.olat.resource.accesscontrol.model.OfferAccess;
@@ -41,6 +40,8 @@ import org.olat.resource.accesscontrol.model.OrderLineImpl;
 import org.olat.resource.accesscontrol.model.OrderPart;
 import org.olat.resource.accesscontrol.model.OrderPartImpl;
 import org.olat.resource.accesscontrol.model.OrderStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -52,21 +53,11 @@ import org.olat.resource.accesscontrol.model.OrderStatus;
  * Initial Date:  19 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ACOrderManagerImpl extends BasicManager implements ACOrderManager {
+@Service
+public class ACOrderManagerImpl implements ACOrderManager {
 	
+	@Autowired
 	private DB dbInstance;
-	
-	private ACOrderManagerImpl() {
-		//
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param dbInstance
-	 */
-	public void setDbInstance(DB dbInstance) {
-		this.dbInstance = dbInstance;
-	}
 	
 	@Override
 	public OrderImpl createOrder(Identity delivery) {

@@ -32,10 +32,11 @@ import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.manager.BasicManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.model.Offer;
 import org.olat.resource.accesscontrol.model.OfferImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -45,21 +46,11 @@ import org.olat.resource.accesscontrol.model.OfferImpl;
  * Initial Date:  14 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ACOfferManagerImpl extends BasicManager implements ACOfferManager {
+@Service
+public class ACOfferManagerImpl implements ACOfferManager {
 	
+	@Autowired
 	private DB dbInstance;
-
-	private ACOfferManagerImpl() {
-		//
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param dbInstance
-	 */
-	public void setDbInstance(DB dbInstance) {
-		this.dbInstance = dbInstance;
-	}
 	
 	@Override
 	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate) {

@@ -38,7 +38,7 @@ import org.springframework.stereotype.Service;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-@Service("acReservationDAO")
+@Service
 public class ACReservationDAO {
 	
 	@Autowired

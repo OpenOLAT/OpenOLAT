@@ -36,7 +36,8 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupDAO;
@@ -79,7 +80,9 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service("acService")
-public class ACFrontendManager extends BasicManager implements ACService {
+public class ACFrontendManager implements ACService {
+	
+	private static final OLog log = Tracing.createLoggerFor(ACFrontendManager.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -109,7 +112,6 @@ public class ACFrontendManager extends BasicManager implements ACService {
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private BusinessGroupService businessGroupService;
-	
 
 	/**
 	 * The rule to access the repository entry:<br/>
@@ -320,13 +322,13 @@ public class ACFrontendManager extends BasicManager implements ACService {
 	@Override
 	public AccessResult accessResource(Identity identity, OfferAccess link, Object argument) {
 		if(link == null || link.getOffer() == null || link.getMethod() == null) {
-			logAudit("Access refused (no offer) to: " + link + " for " + identity);
+			log.audit("Access refused (no offer) to: " + link + " for " + identity);
 			return new AccessResult(false);
 		}
 		
 		AccessMethodHandler handler = accessModule.getAccessMethodHandler(link.getMethod().getType());
 		if(handler == null) {
-			logAudit("Access refused (no handler method) to: " + link + " for " + identity);
+			log.audit("Access refused (no handler method) to: " + link + " for " + identity);
 			return new AccessResult(false);
 		}
 		
@@ -335,13 +337,13 @@ public class ACFrontendManager extends BasicManager implements ACService {
 				Order order = orderManager.saveOneClick(identity, link);
 				AccessTransaction transaction = transactionManager.createTransaction(order, order.getParts().get(0), link.getMethod());
 				transactionManager.save(transaction);
-				logAudit("Access granted to: " + link + " for " + identity);
+				log.audit("Access granted to: " + link + " for " + identity);
 				return new AccessResult(true);
 			} else {
-				logAudit("Access error to: " + link + " for " + identity);
+				log.audit("Access error to: " + link + " for " + identity);
 			}
 		} else {
-			logAudit("Access refused to: " + link + " for " + identity);
+			log.audit("Access refused to: " + link + " for " + identity);
 		}
 		return new AccessResult(false);
 	}
@@ -424,7 +426,7 @@ public class ACFrontendManager extends BasicManager implements ACService {
 		Date oneHourTimeout = cal.getTime();
 		List<ResourceReservation> oldReservations = reservationDao.loadExpiredReservation(oneHourTimeout);
 		for(ResourceReservation reservation:oldReservations) {
-			logAudit("Remove reservation:" + reservation);
+			log.audit("Remove reservation:" + reservation);
 			reservationDao.deleteReservation(reservation);
 		}
 	}

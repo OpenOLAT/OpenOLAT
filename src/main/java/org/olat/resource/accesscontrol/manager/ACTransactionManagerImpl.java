@@ -24,13 +24,14 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.manager.BasicManager;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.AccessTransaction;
 import org.olat.resource.accesscontrol.model.AccessTransactionImpl;
 import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
 import org.olat.resource.accesscontrol.model.Order;
 import org.olat.resource.accesscontrol.model.OrderPart;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -41,21 +42,11 @@ import org.olat.resource.accesscontrol.model.OrderPart;
  * Initial Date:  19 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ACTransactionManagerImpl extends BasicManager implements ACTransactionManager {
+@Service
+public class ACTransactionManagerImpl implements ACTransactionManager {
 	
+	@Autowired
 	private DB dbInstance;
-	
-	private ACTransactionManagerImpl() {
-		//
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param dbInstance
-	 */
-	public void setDbInstance(DB dbInstance) {
-		this.dbInstance = dbInstance;
-	}
 	
 	@Override
 	public AccessTransaction createTransaction(Order order, OrderPart orderPart, AccessMethod method) {

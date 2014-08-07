@@ -38,7 +38,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.FrameworkStartedEvent;
@@ -64,6 +65,8 @@ import org.olat.resource.accesscontrol.model.Price;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -76,31 +79,22 @@ import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
  * Initial Date:  18 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ACMethodManagerImpl extends BasicManager implements ACMethodManager, GenericEventListener {
-
-	private DB dbInstance;
-	private final AccessControlModule acModule;
-	private BusinessGroupService businessGroupService;
+@Service
+public class ACMethodManagerImpl implements ACMethodManager, GenericEventListener {
 	
+	private static final OLog log = Tracing.createLoggerFor(ACMethodManagerImpl.class);
+
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+
+	private final AccessControlModule acModule;
+	
+	@Autowired
 	public ACMethodManagerImpl(CoordinatorManager coordinatorManager, AccessControlModule acModule) {
 		this.acModule = acModule;
 		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null, FrameworkStartupEventChannel.getStartupEventChannel());
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param dbInstance
-	 */
-	public void setDbInstance(DB dbInstance) {
-		this.dbInstance = dbInstance;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param businessGroupService
-	 */
-	public void setBusinessGroupService(BusinessGroupService businessGroupService) {
-		this.businessGroupService = businessGroupService;
 	}
 
 	@Override
@@ -125,9 +119,9 @@ public class ACMethodManagerImpl extends BasicManager implements ACMethodManager
 			try {
 				dbInstance.saveObject(type.newInstance());
 			} catch (InstantiationException e) {
-				logError("Failed to instantiate an access method", e);
+				log.error("Failed to instantiate an access method", e);
 			} catch (IllegalAccessException e) {
-				logError("Failed to instantiate an access method", e);
+				log.error("Failed to instantiate an access method", e);
 			}
 		} else {
 			for(AccessMethod method:methods) {
