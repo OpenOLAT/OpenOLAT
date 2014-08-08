@@ -201,6 +201,9 @@ public class ImageHelperImpl extends AbstractImageHelper {
 		ImageInputStream ins = null;
 		try {
 			ins = getInputStream(image);
+			if(ins == null) {
+				return null;
+			}
 			String extension = FileUtils.getFileSuffix(image.getName());
 			SizeAndBufferedImage scaledSize = calcScaledSize(ins, extension, maxWidth, maxHeight, fill);
 			if(scaledSize == null || scaledSize.getImage() == null) {
@@ -208,6 +211,9 @@ public class ImageHelperImpl extends AbstractImageHelper {
 			}
 			
 			ins = getInputStream(image);
+			if(ins == null) {
+				return null;
+			}
 			bos = new BufferedOutputStream(scaledImage.getOutputStream(false));
 			if(!scaledSize.getScaledSize().isChanged() && isSameFormat(image, scaledImage)) {
 				InputStream cloneIns = image.getInputStream();
@@ -243,7 +249,14 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	throws IOException {
 		if(leaf instanceof LocalFileImpl) {
 			LocalFileImpl file = (LocalFileImpl)leaf;
-			return new FileImageInputStream(file.getBasefile());
+			if(file.getBasefile() != null) {
+				return new FileImageInputStream(file.getBasefile());
+			}
+			return null;
+		}
+		InputStream ins = leaf.getInputStream();
+		if(ins == null) {
+			return null;
 		}
 		return new MemoryCacheImageInputStream(leaf.getInputStream());
 	}

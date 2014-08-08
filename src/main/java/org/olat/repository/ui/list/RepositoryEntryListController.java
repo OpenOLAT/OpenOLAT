@@ -30,6 +30,7 @@ import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
+import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -105,6 +106,8 @@ public class RepositoryEntryListController extends FormBasicController
 	private MarkManager markManager;
 	@Autowired
 	private UserRatingsDAO userRatingsDao;
+	@Autowired
+	private MapperService mapperService;
 	
 	private final boolean guestOnly;
 	
@@ -113,7 +116,7 @@ public class RepositoryEntryListController extends FormBasicController
 			boolean startExtendedSearch, String name, BreadcrumbPanel stackPanel) {
 		super(ureq, wControl, "repoentry_table");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
-		mapperThumbnailUrl = registerCacheableMapper(ureq, "repositoryentryImage", new RepositoryEntryImageMapper());
+		mapperThumbnailUrl = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
 		this.name = name;
 		this.stackPanel = stackPanel;
 		this.startExtendedSearch = startExtendedSearch;

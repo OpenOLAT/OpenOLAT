@@ -26,6 +26,7 @@ import java.util.List;
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
 import org.olat.catalog.ui.CatalogEntryComparator;
+import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -69,6 +70,8 @@ public class CatalogNodeController extends BasicController implements Activateab
 	private final WindowControl rootwControl;
 	
 	@Autowired
+	private MapperService mapperService;
+	@Autowired
 	private CatalogManager catalogManager;
 	
 	public CatalogNodeController(UserRequest ureq, WindowControl wControl, WindowControl rootwControl,
@@ -83,7 +86,8 @@ public class CatalogNodeController extends BasicController implements Activateab
 		VelocityContainer mainVC = createVelocityContainer("node");
 		mainVC.setDomReplacementWrapperRequired(false); // uses own DOM ID
 		
-		mapperThumbnailUrl = registerCacheableMapper(ureq, "catalogentryImage", new CatalogEntryImageMapper());
+		//one mapper for all users
+		mapperThumbnailUrl = mapperService.register(null, "catalogentryImage", new CatalogEntryImageMapper());
 		mainVC.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
 		
 		mainVC.contextPut("catalogEntryName", catalogEntry.getName());
