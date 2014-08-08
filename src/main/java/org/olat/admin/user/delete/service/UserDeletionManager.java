@@ -52,7 +52,6 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
@@ -96,16 +95,14 @@ public class UserDeletionManager extends BasicManager {
 	// Flag used in user-delete to indicate that all deletable managers are initialized
 	private boolean managersInitialized = false;
 	private DeletionModule deletionModule;
-	private CoordinatorManager coordinatorManager;
 	private BaseSecurity securityManager;
 	private MailManager mailManager;
 
 	/**
 	 * [used by spring]
 	 */
-	private UserDeletionManager(DeletionModule deletionModule, CoordinatorManager coordinatorManager) {
+	private UserDeletionManager(DeletionModule deletionModule) {
 		this.deletionModule = deletionModule;
-		this.coordinatorManager = coordinatorManager;
 		INSTANCE = this;
 	}
 

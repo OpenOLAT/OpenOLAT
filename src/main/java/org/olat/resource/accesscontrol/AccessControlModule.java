@@ -24,19 +24,19 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.configuration.AbstractOLATModule;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
-import org.olat.core.configuration.PersistedProperties;
-import org.olat.core.extensions.action.GenericActionExtension;
-import org.olat.core.gui.control.Event;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.event.FrameworkStartedEvent;
-import org.olat.core.util.event.FrameworkStartupEventChannel;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -47,7 +47,10 @@ import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
  * Initial Date:  14 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class AccessControlModule extends AbstractOLATModule implements ConfigOnOff {
+@Service("acModule")
+public class AccessControlModule extends AbstractSpringModule implements ConfigOnOff {
+	
+	private static final OLog log = Tracing.createLoggerFor(AccessControlModule.class);
 	
 	public static final String AC_ENABLED = "resource.accesscontrol.enabled";
 	public static final String AC_HOME_ENABLED = "resource.accesscontrol.home.overview";
@@ -59,47 +62,31 @@ public class AccessControlModule extends AbstractOLATModule implements ConfigOnO
 	private static final String FREE_ENABLED = "method.free.enabled";
 	private static final String PAYPAL_ENABLED = "method.paypal.enabled";
 
+	@Value("${resource.accesscontrol.enabled:true}")
 	private boolean enabled;
-	private boolean freeEnabled;
-	private boolean tokenEnabled;
-	private boolean paypalEnabled;
+	@Value("${resource.accesscontrol.home.overview:true}")
 	private boolean homeOverviewEnabled;
-	
+	@Value("${method.free.enabled:true}")
+	private boolean freeEnabled;
+	@Value("${method.token.enabled:true}")
+	private boolean tokenEnabled;
+	@Value("${method.paypal.enabled:false}")
+	private boolean paypalEnabled;
+	@Value("${vat.enabled:false}")
 	private boolean vatEnabled;
+	@Value("${vat.rate:7.0}")
 	private BigDecimal vatRate;
+	@Value("${vat.number:1}")
 	private String vatNumber;
-	
-	private final List<AccessMethodHandler> methodHandlers = new ArrayList<AccessMethodHandler>();
-	
+
+	@Autowired
 	private ACService acService;
+	@Autowired
+	private List<AccessMethodHandler> methodHandlers;
 
-	/**
-	 * [Used by Spring]
-	 * @param methodManager
-	 */
-	public void setAcService(ACService acService) {
-		this.acService = acService;
-	}
-
-	public AccessControlModule(){
-		FrameworkStartupEventChannel.registerForStartupEvent(this);
-	}
-	
-	private void enableExtensions(boolean enabled) {
-		try {
-			((GenericActionExtension) CoreSpringFactory.getBean("accesscontrol.actExt")).setEnabled(enabled);
-		} catch (Exception e) {
-			// do nothing when extension don't exist.
-		}
-	}
-
-	@Override
-	public void event(Event event) {
-		if (event instanceof FrameworkStartedEvent) {
-			enableExtensions(isEnabled());
-		} else {
-			super.event(event);
-		}
+	@Autowired
+	public AccessControlModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
 	}
 
 	@Override
@@ -140,7 +127,7 @@ public class AccessControlModule extends AbstractOLATModule implements ConfigOnO
 			try {
 				vatRate = new BigDecimal(vatRateObj);
 			} catch (Exception e) {
-				logError("Error parsing the VAT: " + vatRateObj, e);
+				log.error("Error parsing the VAT: " + vatRateObj, e);
 			}
 		}
 		
@@ -148,33 +135,7 @@ public class AccessControlModule extends AbstractOLATModule implements ConfigOnO
 		if(StringHelper.containsNonWhitespace(vatNrObj)) {
 			vatNumber = vatNrObj;
 		}
-		enableExtensions(enabled);
-		
-		logInfo("Access control module is enabled: " + Boolean.toString(enabled));
-	}
-
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
-	}
-
-	@Override
-	protected void initDefaultProperties() {
-		enabled = getBooleanConfigParameter(AC_ENABLED, true);
-		freeEnabled = getBooleanConfigParameter(FREE_ENABLED, true);
-		tokenEnabled = getBooleanConfigParameter(TOKEN_ENABLED, true);
-		paypalEnabled = getBooleanConfigParameter(PAYPAL_ENABLED, false);
-		homeOverviewEnabled = getBooleanConfigParameter(AC_HOME_ENABLED, true);
-		vatEnabled = getBooleanConfigParameter(VAT_ENABLED, true);
-		String vatRateStr = getStringConfigParameter(VAT_RATE, "", true);
-		if(StringHelper.containsNonWhitespace(vatRateStr)) {
-			try {
-				vatRate = new BigDecimal(vatRateStr);
-			} catch (Exception e) {
-				logError("Error parsing the VAT: " + vatRateStr, e);
-			}
-		}
-		vatNumber = getStringConfigParameter(VAT_NR, "", true);
+		log.info("Access control module is enabled: " + Boolean.toString(enabled));
 	}
 
 	@Override
@@ -191,7 +152,6 @@ public class AccessControlModule extends AbstractOLATModule implements ConfigOnO
 		if(this.enabled != enabled) {
 			setStringProperty(AC_ENABLED, Boolean.toString(enabled), true);
 		}
-		enableExtensions(enabled);
 	}
 
 	public boolean isTokenEnabled() {

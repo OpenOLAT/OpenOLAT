@@ -8,39 +8,7 @@
                         http://www.springframework.org/schema/context/spring-context.xsd">
 
 	<context:component-scan base-package="org.olat.resource.accesscontrol" />
-	
-	<bean id="acModule" class="org.olat.resource.accesscontrol.AccessControlModule">
-		<property name="persistedProperties">
-	  	<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
-	  		depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
-	    	<constructor-arg index="0" ref="coordinatorManager"/>
-	    	<constructor-arg index="1" ref="acModule" />
-	  	</bean>
-		</property>
-		<property name="methodHandlers">
-			<list>
-				<ref bean="freeAccessHandler"/>
-				<ref bean="tokenAccessHandler"/>
-				<ref bean="paypalAccessHandler"/>
-			</list>
-		</property>
-		<property name="acService" ref="acService"/>
-	</bean>
-	
-	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject" ref="acModule" />
-		<property name="targetMethod" value="init" />
-		<property name="arguments">
-			<value>
-				resource.accesscontrol.enabled=${resource.accesscontrol.enabled}
-				resource.accesscontrol.home.overview=${resource.accesscontrol.home.overview}
-				method.token.enabled=${method.token.enabled}
-				method.free.enabled=${method.free.enabled}
-				method.paypal.enabled=${method.paypal.enabled}
-			</value>
-		</property>
-	</bean>
-	
+
 	<!--  Extension for archiver -->
 	<bean class="org.olat.resource.accesscontrol.ui.OrdersActionExtension" init-method="initExtensionPoints">
 		<constructor-arg index="0" ref="acModule" />

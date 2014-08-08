@@ -55,7 +55,6 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
-import org.olat.resource.accesscontrol.ACService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -78,8 +77,6 @@ public class EnrollmentManager extends BasicManager {
 	private BGAreaManager areaManager;
 	@Autowired
 	private BaseSecurity securityManager;
-	@Autowired
-	private ACService acService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 

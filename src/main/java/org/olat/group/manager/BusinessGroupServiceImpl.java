@@ -109,7 +109,6 @@ import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
-import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.model.ResourceReservation;
 import org.olat.testutils.codepoints.server.Codepoint;
@@ -153,8 +152,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	private NotificationsManager notificationsManager;
 	@Autowired
 	private MailManager mailManager;
-	@Autowired
-	private ACService acService;
 	@Autowired
 	private ACReservationDAO reservationDao;
 	@Autowired
@@ -949,7 +946,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	public void acceptPendingParticipation(Identity ureqIdentity, Identity reservationOwner, OLATResource resource) {
-		ResourceReservation reservation = acService.getReservation(reservationOwner, resource);
+		ResourceReservation reservation = reservationDao.loadReservation(reservationOwner, resource);
 		if(reservation != null && "BusinessGroup".equals(resource.getResourceableTypeName())) {
 			BusinessGroup group = businessGroupDAO.loadForUpdate(resource.getResourceableId());
 			List<BusinessGroupModifiedEvent.Deferred> events = new ArrayList<BusinessGroupModifiedEvent.Deferred>();
@@ -1071,7 +1068,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			dbInstance.commit();
 		}
 
-		List<ResourceReservation> reservations = acService.getReservations(groupResources);
+		List<ResourceReservation> reservations = reservationDao.loadReservations(groupResources);
 		for(ResourceReservation reservation:reservations) {
 			if(identities.contains(reservation.getIdentity())) {
 				reservationDao.deleteReservation(reservation);
@@ -1239,7 +1236,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		EnrollState enrollStatus = new EnrollState();
 		List<BusinessGroupModifiedEvent.Deferred> events = new ArrayList<BusinessGroupModifiedEvent.Deferred>();
 
-		ResourceReservation reservation = acService.getReservation(identity, reloadedGroup.getResource());
+		ResourceReservation reservation = reservationDao.loadReservation(identity, reloadedGroup.getResource());
 		
 		//reservation has the highest priority over max participant or other settings
 		if(reservation != null) {
@@ -1251,7 +1248,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			}
 		} else if (reloadedGroup.getMaxParticipants() != null) {
 			int participantsCounter = businessGroupRelationDAO.countRoles(reloadedGroup, GroupRoles.participant.name());
-			int reservations = acService.countReservations(reloadedGroup.getResource());
+			int reservations = reservationDao.countReservations(reloadedGroup.getResource());
 			
 			log.info("doEnroll - participantsCounter: " + participantsCounter + ", reservations: " + reservations + " maxParticipants: " + reloadedGroup.getMaxParticipants().intValue(), identity.getName());
 			if (reservation == null && (participantsCounter + reservations) >= reloadedGroup.getMaxParticipants().intValue()) {
@@ -1298,7 +1295,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				&& group.getAutoCloseRanksEnabled() != null && group.getAutoCloseRanksEnabled().booleanValue()) {
 			// Check if participant is not full
 			Integer maxSize = group.getMaxParticipants();
-			int reservations = acService.countReservations(group.getResource());
+			int reservations = reservationDao.countReservations(group.getResource());
 			int partipiciantSize = businessGroupRelationDAO.countRoles(group, GroupRoles.participant.name());
 			if (maxSize != null && (partipiciantSize + reservations) < maxSize.intValue()) {
 				// ok it has free places => get first identities from waiting list

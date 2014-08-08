@@ -287,7 +287,6 @@
 	
 	<bean id="userDeletionManager" class="org.olat.admin.user.delete.service.UserDeletionManager">
 		<constructor-arg index="0" ref="deletionModule" />
-		<constructor-arg index="1" ref="coordinatorManager" />
 		<property name="baseSecurityManager" ref="baseSecurityManager" />
 		<property name="mailManager" ref="mailManager"/>
 		<property name="keepUserLoginAfterDeletion" value="${keepUserLoginAfterDeletion}" />
