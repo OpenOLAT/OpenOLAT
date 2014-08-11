@@ -27,6 +27,7 @@
 package org.olat.core.gui.control;
 
 import org.olat.core.gui.components.Window;
+import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 /**
  * Description: <br>
@@ -73,5 +74,11 @@ public interface ChiefController extends Controller {
 	 * 
 	 */
 	public void removeCurrentCustomCSSFromView();
-
+	
+	/**
+	 * Check if the static site of a specific type is available
+	 * @param type
+	 * @return
+	 */
+	public boolean hasStaticSite(Class<? extends SiteInstance> type);
 }

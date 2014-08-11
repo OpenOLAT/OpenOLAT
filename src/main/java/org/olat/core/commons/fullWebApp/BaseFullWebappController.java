@@ -1165,6 +1165,18 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		}
 	}
 
+	public boolean hasStaticSite(Class<? extends SiteInstance> type) {
+		boolean hasSite = false;
+		if(sites != null && sites.size() > 0) {
+			for(SiteInstance site:sites) {
+				if(site.getClass().equals(type)) {
+					hasSite = true;
+				}
+			}
+		}
+		return hasSite;
+	}
+
 	/**
 	 * [used by velocity] helper for velocity
 	 * 
