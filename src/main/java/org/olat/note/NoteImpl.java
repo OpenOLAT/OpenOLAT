@@ -26,6 +26,7 @@
 package org.olat.note;
 
 import java.util.Date;
+
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
@@ -37,6 +38,9 @@ import org.olat.core.logging.AssertException;
  * @author Alexander Schneider
  */
 public class NoteImpl extends PersistentObject implements Note {
+
+	private static final long serialVersionUID = -403450817851666464L;
+	
 	private Identity owner;
 	private String resourceTypeName;
 	private Long resourceTypeId;
@@ -156,5 +160,22 @@ public class NoteImpl extends PersistentObject implements Note {
 	 */
 	public void setLastModified(Date date) {
 		this.lastModified = date;
+	}
+
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 2609815 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof NoteImpl) {
+			NoteImpl note = (NoteImpl)obj;
+			return getKey() != null && getKey().equals(note.getKey());
+		}
+		return false;
 	}
 }

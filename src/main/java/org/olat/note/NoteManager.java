@@ -29,39 +29,26 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import org.hibernate.type.StandardBasicTypes;
-import org.hibernate.type.Type;
-import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
+import org.olat.basesecurity.IdentityRef;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.user.UserDataDeletable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Description:
  * 
  * @author Alexander Schneider
  */
-public class NoteManager extends BasicManager implements UserDataDeletable {
-	private static NoteManager instance;
+@Service
+public class NoteManager implements UserDataDeletable {
 
-	/**
-	 * [spring]
-	 * @param userDeletionManager
-	 */
-	private NoteManager() {
-		instance = this;
-	}
-
-	/**
-	 * @return the singleton
-	 */
-	public static NoteManager getInstance() {
-		return instance;
-	}
+	@Autowired
+	private DB dbInstance;
 
 	/**
 	 * @param owner
@@ -98,29 +85,30 @@ public class NoteManager extends BasicManager implements UserDataDeletable {
 	 * @param resourceTypeId
 	 * @return the note
 	 */
-	private Note findNote(Identity owner, String resourceTypeName, Long resourceTypeId) {
+	private Note findNote(IdentityRef owner, String resourceTypeName, Long resourceTypeId) {
 
-		String query = "from org.olat.note.NoteImpl as n where n.owner = ? and n.resourceTypeName = ? and n.resourceTypeId = ?";
-		List notes = DBFactory.getInstance().find(query, new Object[] { owner.getKey(), resourceTypeName, resourceTypeId },
-				new Type[] { StandardBasicTypes.LONG, StandardBasicTypes.STRING, StandardBasicTypes.LONG });
-
+		String query = "select n from org.olat.note.NoteImpl as n where n.owner.key=:ownerKey and n.resourceTypeName=:resName and n.resourceTypeId=:resId";
+		List<Note> notes = dbInstance.getCurrentEntityManager().createQuery(query, Note.class)
+				.setParameter("ownerKey", owner.getKey())
+				.setParameter("resName", resourceTypeName)
+				.setParameter("resId", resourceTypeId)
+				.getResultList();
 		if (notes == null || notes.size() != 1) {
 			return null;
-		} else {
-			return (Note) notes.get(0);
 		}
+		return notes.get(0);
 	}
 
 	/**
 	 * @param owner
 	 * @return a list of notes belonging to the owner
 	 */
-	public List<Note> listUserNotes(Identity owner) {
-		String query = "from org.olat.note.NoteImpl as n inner join fetch n.owner as noteowner where noteowner = :noteowner";
-		DBQuery dbQuery = DBFactory.getInstance().createQuery(query.toString());
-		dbQuery.setEntity("noteowner", owner);
-		List<Note> notes = dbQuery.list();
-		return notes;
+	public List<Note> listUserNotes(IdentityRef owner) {
+		String query = "select n from org.olat.note.NoteImpl as n inner join fetch n.owner as noteowner where noteowner.key=:noteowner";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString(), Note.class).
+				setParameter("noteowner", owner.getKey())
+				.getResultList();
 	}
 
 	/**
@@ -129,8 +117,8 @@ public class NoteManager extends BasicManager implements UserDataDeletable {
 	 * @param n the note
 	 */
 	public void deleteNote(Note n) {
-		n = (Note)DBFactory.getInstance().loadObject(n);
-		DBFactory.getInstance().deleteObject(n);
+		Note reloadedNote = dbInstance.getCurrentEntityManager().find(NoteImpl.class, n.getKey());
+		dbInstance.getCurrentEntityManager().remove(reloadedNote);
 		fireBookmarkEvent(n.getOwner());
 	}
 
@@ -141,7 +129,7 @@ public class NoteManager extends BasicManager implements UserDataDeletable {
 	 */
 	public void saveNote(Note n) {
 		n.setLastModified(new Date());
-		DBFactory.getInstance().saveObject(n);
+		dbInstance.getCurrentEntityManager().persist(n);
 		fireBookmarkEvent(n.getOwner());
 	}
 
@@ -150,10 +138,11 @@ public class NoteManager extends BasicManager implements UserDataDeletable {
 	 * 
 	 * @param n
 	 */
-	public void updateNote(Note n) {
+	public Note updateNote(Note n) {
 		n.setLastModified(new Date());
-		DBFactory.getInstance().updateObject(n);
+		Note mergedNote = dbInstance.getCurrentEntityManager().merge(n);
 		fireBookmarkEvent(n.getOwner());
+		return mergedNote;
 	}
 
 	/**
@@ -162,12 +151,9 @@ public class NoteManager extends BasicManager implements UserDataDeletable {
 	 */
 	@Override
 	public void deleteUserData(Identity identity,	String newDeletedUserName) {
-		List<Note> userNotes = this.listUserNotes(identity);
+		List<Note> userNotes = listUserNotes(identity);
 		for (Iterator<Note> iter = userNotes.iterator(); iter.hasNext();) {
-			this.deleteNote( iter.next() );			
-		}
-		if (isLogDebugEnabled()) {
-			logDebug("All notes deleted for identity=" + identity, null );
+			deleteNote( iter.next() );			
 		}
 	}
 	

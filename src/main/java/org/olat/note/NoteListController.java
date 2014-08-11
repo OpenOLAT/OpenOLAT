@@ -49,6 +49,7 @@ import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -61,7 +62,6 @@ public class NoteListController extends BasicController implements GenericEventL
 
 	private NoteListTableDataModel nLModel;
 	private Note chosenN = null;
-	private NoteManager nm = NoteManager.getInstance();
 
 	private TableController tableC;
 	private DialogBoxController deleteDialogCtr;
@@ -70,6 +70,9 @@ public class NoteListController extends BasicController implements GenericEventL
 	private Identity cOwner;
 	private Locale locale;
 	private CloseableModalController cmc;
+	
+	@Autowired
+	private NoteManager nm;
 
 	/**
 	 * @param ureq

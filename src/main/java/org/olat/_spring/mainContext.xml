@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="
-  http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans.xsd">
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context.xsd">
+  
+	<context:component-scan base-package="org.olat.note" />
 
 	<import resource="classpath:/org/olat/core/util/threadlog/_spring/threadlogCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/_spring/mainCorecontext.xml"/>
@@ -33,7 +38,6 @@
 	<import resource="classpath:/org/olat/instantMessaging/_spring/instantMessagingContext.xml"/>
 	<import resource="classpath:/org/olat/ldap/_spring/ldapContext.xml"/>
 	<import resource="classpath:/org/olat/login/_spring/loginContext.xml"/>
-	<import resource="classpath:/org/olat/note/_spring/noteContext.xml"/>
 	<import resource="classpath:/org/olat/portfolio/_spring/portfolioContext.xml"/>
 	<import resource="classpath:/org/olat/properties/_spring/propertiesContext.xml"/>
 	<import resource="classpath:/org/olat/registration/_spring/registrationContext.xml"/>

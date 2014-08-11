@@ -45,6 +45,7 @@ import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date: Dec 9, 2004
@@ -58,12 +59,14 @@ import org.olat.core.util.resource.OresHelper;
  */
 public class NoteController extends FormBasicController implements GenericEventListener {
 
-	private NoteManager nm;
 	private Note n;
 	private EventBus sec;
 	private RichTextElement noteField;
 	private FormLink editButton;
 	private FormSubmit submitButton;
+	
+	@Autowired
+	private NoteManager nm;
 
 	/**
 	 * @param ureq
@@ -98,8 +101,7 @@ public class NoteController extends FormBasicController implements GenericEventL
 
 	private void init(UserRequest ureq, String resourceTypeName, Long resourceTypeId, String noteTitle) {
 		Identity owner = ureq.getIdentity();
-		this.nm = NoteManager.getInstance();
-		this.n = nm.loadNoteOrCreateInRAM(owner, resourceTypeName, resourceTypeId);
+		n = nm.loadNoteOrCreateInRAM(owner, resourceTypeName, resourceTypeId);
 		n.setNoteTitle(noteTitle);
 
 		// register for local event (for the same user), is used to dispose

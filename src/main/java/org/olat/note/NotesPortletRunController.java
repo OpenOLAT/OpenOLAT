@@ -65,6 +65,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -83,6 +84,9 @@ public class NotesPortletRunController extends AbstractPortletRunController<Note
 	private Identity cOwner;
 	private Link showAllLink;
 	private final OLATResourceable eventBusThisIdentityOres;
+	
+	@Autowired
+	private NoteManager nm;
 	
 	/**
 	 * Constructor
@@ -136,7 +140,6 @@ public class NotesPortletRunController extends AbstractPortletRunController<Note
 	 * @return
 	 */
 	private List<PortletEntry<Note>> getAllPortletEntries() {
-		NoteManager nm = NoteManager.getInstance();
 		List<Note> noteList = nm.listUserNotes(cOwner);
 		return convertNoteToPortletEntryList(noteList);		
 	}
@@ -159,13 +162,10 @@ public class NotesPortletRunController extends AbstractPortletRunController<Note
 	 * 
 	 * @see org.olat.core.gui.control.generic.portal.AbstractPortletRunController#reloadModel(org.olat.core.gui.UserRequest, org.olat.core.gui.control.generic.portal.SortingCriteria)
 	 */
-	protected void reloadModel(SortingCriteria sortingCriteria) {
-		if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
-			NoteManager nm = NoteManager.getInstance();
+	protected void reloadModel(SortingCriteria sortCriteria) {
+		if (sortCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
 			List<Note> noteList = nm.listUserNotes(cOwner);
-			
-			noteList = getSortedList(noteList, sortingCriteria );
-			
+			noteList = getSortedList(noteList, sortCriteria );
 			List<PortletEntry<Note>> entries = convertNoteToPortletEntryList(noteList);
 			notesListModel = new NoteSortingTableDataModel(entries, getLocale());
 			tableCtr.setTableDataModel(notesListModel);
@@ -287,16 +287,16 @@ public class NotesPortletRunController extends AbstractPortletRunController<Note
 	 * 
 	 * @see org.olat.core.gui.control.generic.portal.AbstractPortletRunController#getComparator(org.olat.core.gui.control.generic.portal.SortingCriteria)
 	 */
-	protected Comparator<Note> getComparator(final SortingCriteria sortingCriteria) {
+	protected Comparator<Note> getComparator(final SortingCriteria criteria) {
 		return new Comparator<Note>(){			
 			public int compare(final Note note1, final Note note2) {	
 				int comparisonResult = 0;
-			  if(sortingCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	
+			  if(criteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	
 			  	comparisonResult = collator.compare(StringEscapeUtils.escapeHtml(note1.getNoteTitle()).toString(), StringEscapeUtils.escapeHtml(note2.getNoteTitle()).toString());			  		  	
-			  } else if(sortingCriteria.getSortingTerm()==SortingCriteria.DATE_SORTING) {
+			  } else if(criteria.getSortingTerm()==SortingCriteria.DATE_SORTING) {
 			  	comparisonResult = note1.getLastModified().compareTo(note2.getLastModified());
 			  } 
-			  if(!sortingCriteria.isAscending()) {
+			  if(!criteria.isAscending()) {
 			  	//if not isAscending return (-comparisonResult)			  	
 			  	return -comparisonResult;
 			  }

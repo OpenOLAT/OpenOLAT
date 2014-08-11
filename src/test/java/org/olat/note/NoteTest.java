@@ -26,22 +26,16 @@
 
 package org.olat.note;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.util.List;
-import java.util.UUID;
 
-import org.junit.Before;
+import org.junit.Assert;
 import org.junit.Test;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
-import org.olat.resource.OLATResourceManager;
+import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  Dec 9, 2004
@@ -51,73 +45,56 @@ import org.olat.test.OlatTestCase;
  * Comment:  
  * 
  */
-public class NoteTest extends OlatTestCase implements OLATResourceable {
+public class NoteTest extends OlatTestCase {
 
-	private long RESOURCE_ID = 42;
-	private String RESOURCE_TYPE = "org.olat.note.NoteTest";
-	private static OLog log = Tracing.createLoggerFor(NoteTest.class);
-	private static boolean isInitialized = false;
-	private static Identity identity = null;
-	private static org.olat.resource.OLATResource res = null;
-	private static NoteManager nm;
-
-
-	/**
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	@Before
-	public void setup() {
-		if (NoteTest.isInitialized == false) {
-			try {
-				nm = NoteManager.getInstance();
-				// identity with null User should be ok for test case
-				String name = UUID.randomUUID().toString().replace("-", "");
-				identity = JunitTestHelper.createAndPersistIdentityAsUser(name);
-				res = OLATResourceManager.getInstance().createOLATResourceInstance(this);
-				OLATResourceManager.getInstance().saveOLATResource(res);
-				
-				NoteTest.isInitialized = true;
-			} catch (Exception e) {
-				log.error(
-					"Error while generating database tables or opening hibernate session: " +
-					e);
-			}
-		}
-	}
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private NoteManager noteManager;
 
 	@Test
 	public void testGenericLoadDeleteNote() {
-	    Long resourceTypeId = res.getResourceableId(); 
-	    String resourceTypeName = res.getResourceableTypeName();
-	    Note n = nm.loadNoteOrCreateInRAM(identity, resourceTypeName, resourceTypeId);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("note-1-");
+	    OLATResource resource = JunitTestHelper.createRandomResource();
+	    
+	    Note n = noteManager.loadNoteOrCreateInRAM(identity, resource.getResourceableTypeName(), resource.getResourceableId());
 	    n.setNoteTitle("Notiz Titel");
 	    n.setNoteText("Notiz Text");
-	    nm.saveNote(n);
+	    noteManager.saveNote(n);
 	    
-	    DBFactory.getInstance().closeSession();
+	    dbInstance.commitAndCloseSession();
 	    
-	    Note note = nm.loadNoteOrCreateInRAM(identity, resourceTypeName, resourceTypeId);
-	    assertNotNull(note);
+	    Note note = noteManager.loadNoteOrCreateInRAM(identity, resource.getResourceableTypeName(), resource.getResourceableId());
+	    Assert.assertNotNull(note);
 	    
-	    nm.deleteNote(note);
+	    noteManager.deleteNote(note);
 	    
-	    List<Note> notes = nm.listUserNotes(identity);
-	    assertTrue(notes.size()==0);
-	   
+	    List<Note> notes = noteManager.listUserNotes(identity);
+	    Assert.assertTrue(notes.isEmpty());
 	}
-
 	
-	/**
-	 * @see org.olat.core.id.OLATResourceablegetResourceableTypeName()
-	 */
-	public String getResourceableTypeName() {
-		return RESOURCE_TYPE;
-	}
-
-	/**
-	 * @see org.olat.core.id.OLATResourceablegetResourceableId()
-	 */
-	public Long getResourceableId() {
-		return new Long(RESOURCE_ID);
+	@Test
+	public void saveUpdateNote() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("note-2-");
+	    OLATResource resource = JunitTestHelper.createRandomResource();
+		Note note = noteManager.loadNoteOrCreateInRAM(identity, resource.getResourceableTypeName(), resource.getResourceableId());
+		note.setNoteTitle("Very important");
+	    note.setNoteText("Critical update with new features");
+	    noteManager.saveNote(note);
+	    dbInstance.commitAndCloseSession();
+	    
+	    Note updateNote = noteManager.loadNoteOrCreateInRAM(identity, resource.getResourceableTypeName(), resource.getResourceableId());
+	    updateNote.setNoteTitle("Important");
+	    updateNote.setNoteText("Cool update with new features");
+	    noteManager.saveNote(updateNote);
+	    dbInstance.commitAndCloseSession();
+	    
+	    List<Note> notes = noteManager.listUserNotes(identity);
+	    Assert.assertNotNull(notes);
+	    Assert.assertEquals(1, notes.size());
+	    Assert.assertEquals(updateNote, notes.get(0));
+	    Note reloadedNote = notes.get(0);
+	    Assert.assertEquals("Important", reloadedNote.getNoteTitle());
+	    Assert.assertEquals("Cool update with new features", reloadedNote.getNoteText());
 	}
 }
