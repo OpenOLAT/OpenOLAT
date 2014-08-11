@@ -95,6 +95,20 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getRoles() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("get-roles-1-");
+		RepositoryEntry re = repositoryService.create("Rei Ayanami", "rel", "rel", null, null);
+		dbInstance.commit();
+		repositoryEntryRelationDao.addRole(id, re, GroupRoles.owner.name());
+		dbInstance.commit();
+		
+		List<String> ownerRoles = repositoryEntryRelationDao.getRoles(id, re);
+		Assert.assertNotNull(ownerRoles);
+		Assert.assertEquals(1, ownerRoles.size());
+		Assert.assertEquals(GroupRoles.owner.name(), ownerRoles.get(0));
+	}
+	
+	@Test
 	public void removeRole() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("add-role-4-");
 		RepositoryEntry re = repositoryService.create("Rei Ayanami", "rel", "rel", null, null);
@@ -317,13 +331,68 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void removeRelations() {
-		
+	public void removeRelation_specificOne() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
+		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
+
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "remove relation", "tg", null, null, false, false, re1);
+	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
+	    businessGroupService.addResourceTo(group, re2);
+	    dbInstance.commitAndCloseSession();
+	    
+	    int numOfRelations = repositoryEntryRelationDao.removeRelation(group.getBaseGroup(), re2);
+	    Assert.assertEquals(1, numOfRelations);
+	    dbInstance.commitAndCloseSession();
+	    
+	    List<Group> groups = Collections.singletonList(group.getBaseGroup());
+	    List<RepositoryEntryToGroupRelation> relations = repositoryEntryRelationDao.getRelations(groups);
+	    Assert.assertEquals(1, relations.size());
+	    RepositoryEntry relationRe1 = relations.get(0).getEntry();
+	    Assert.assertNotNull(relationRe1);
+	    Assert.assertEquals(re1, relationRe1);
 	}
 	
 	@Test
-	public void removeNotDefaultRelation() {
-		
+	public void removeRelations_repositoryEntrySide() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
+		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
+
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "remove all relations", "tg", null, null, false, false, re1);
+	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
+	    businessGroupService.addResourceTo(group, re2);
+	    dbInstance.commitAndCloseSession();
+	    
+	    int numOfRelations = repositoryEntryRelationDao.removeRelations(re2);
+	    Assert.assertEquals(2, numOfRelations);//default relation + relation to group
+	    dbInstance.commitAndCloseSession();
+	    
+	    List<Group> groups = Collections.singletonList(group.getBaseGroup());
+	    List<RepositoryEntryToGroupRelation> relations = repositoryEntryRelationDao.getRelations(groups);
+	    Assert.assertEquals(1, relations.size());
+	    RepositoryEntry relationRe1 = relations.get(0).getEntry();
+	    Assert.assertNotNull(relationRe1);
+	    Assert.assertEquals(re1, relationRe1);
 	}
 	
+	@Test
+	public void removeRelation_byGroup() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-member-lc-" + UUID.randomUUID().toString());
+		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry();
+
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "remove relation by group", "tg", null, null, false, false, re1);
+	    businessGroupRelationDao.addRole(id, group, GroupRoles.coach.name());
+	    businessGroupService.addResourceTo(group, re2);
+	    dbInstance.commitAndCloseSession();
+	    
+	    int numOfRelations = repositoryEntryRelationDao.removeRelation(group.getBaseGroup());
+	    Assert.assertEquals(2, numOfRelations);
+	    dbInstance.commitAndCloseSession();
+	    
+	    List<Group> groups = Collections.singletonList(group.getBaseGroup());
+	    List<RepositoryEntryToGroupRelation> relations = repositoryEntryRelationDao.getRelations(groups);
+	    Assert.assertEquals(0, relations.size());
+	}
 }

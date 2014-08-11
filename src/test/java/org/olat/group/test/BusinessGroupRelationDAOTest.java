@@ -232,7 +232,7 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//delete relation
-		businessGroupRelationDao.deleteRelations(group1);
+		businessGroupRelationDao.deleteRelationsToRepositoryEntry(group1);
 		dbInstance.commitAndCloseSession();
 		
 		//check group1

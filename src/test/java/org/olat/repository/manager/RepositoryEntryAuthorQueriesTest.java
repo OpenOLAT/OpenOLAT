@@ -29,6 +29,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
+import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +49,6 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 	@Autowired
 	private RepositoryEntryAuthorQueries repositoryEntryAuthorViewQueries;
 	
-
 	@Test
 	public void searchViews() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("view-");
@@ -61,5 +61,26 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		
 		List<RepositoryEntryAuthorView> views = repositoryEntryAuthorViewQueries.searchViews(params, 0, 10);
 		Assert.assertNotNull(views);
+	}
+	
+	@Test
+	public void searchViews_orderBy() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("view-");
+		dbInstance.commit();
+		Roles roles = securityManager.getRoles(id);
+		
+		SearchAuthorRepositoryEntryViewParams params
+			= new SearchAuthorRepositoryEntryViewParams(id, roles);
+		params.setMarked(Boolean.TRUE);
+		
+		for(OrderBy orderBy:OrderBy.values()) {
+			params.setOrderBy(orderBy);
+			params.setOrderByAsc(true);
+			List<RepositoryEntryAuthorView> viewAsc = repositoryEntryAuthorViewQueries.searchViews(params, 0, 10);
+			Assert.assertNotNull(viewAsc);
+			params.setOrderByAsc(false);
+			List<RepositoryEntryAuthorView> viewDesc = repositoryEntryAuthorViewQueries.searchViews(params, 0, 10);
+			Assert.assertNotNull(viewDesc);
+		}
 	}
 }

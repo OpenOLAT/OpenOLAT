@@ -123,15 +123,15 @@ public class SCORMCPHandler extends FileHandler {
 		
 		deliveryOptionsCtrl.addControllerListener(new ControllerEventListener() {
 			@Override
-			public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
+			public void dispatchEvent(UserRequest uureq, Controller source, Event event) {
 				if(source == deliveryOptionsCtrl && (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT)) {
 					DeliveryOptions newConfig = deliveryOptionsCtrl.getDeliveryOptions();
-					ScormPackageConfig scormConfig = ScormMainManager.getInstance().getScormPackageConfig(resource);
-					if(scormConfig == null) {
-						scormConfig = new ScormPackageConfig();
+					ScormPackageConfig sConfig = ScormMainManager.getInstance().getScormPackageConfig(resource);
+					if(sConfig == null) {
+						sConfig = new ScormPackageConfig();
 					}
-					scormConfig.setDeliveryOptions(newConfig);
-					ScormMainManager.getInstance().setScormPackageConfig(resource, scormConfig);
+					sConfig.setDeliveryOptions(newConfig);
+					ScormMainManager.getInstance().setScormPackageConfig(resource, sConfig);
 				}
 			}
 		});

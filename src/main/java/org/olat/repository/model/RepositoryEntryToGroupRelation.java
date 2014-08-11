@@ -28,6 +28,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -46,6 +48,13 @@ import org.olat.repository.RepositoryEntry;
  */
 @Entity(name="repoentrytogroup")
 @Table(name="o_re_to_group")
+@NamedQueries({
+	@NamedQuery(name="relationByRepositoryEntryAndGroup",query="select rel from repoentrytogroup as rel where rel.entry.key=:repoKey and rel.group.key=:groupKey"),
+	@NamedQuery(name="relationByRepositoryEntry", query="select rel from repoentrytogroup as rel where rel.entry.key=:repoKey"),
+	@NamedQuery(name="relationByGroup", query="select rel from repoentrytogroup as rel where rel.group.key=:groupKey")
+	
+	
+})
 public class RepositoryEntryToGroupRelation implements Persistable {
 
 	private static final long serialVersionUID = 2215547264646107606L;

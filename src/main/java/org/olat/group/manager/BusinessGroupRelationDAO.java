@@ -207,8 +207,8 @@ public class BusinessGroupRelationDAO {
 		repositoryEntryRelationDao.removeRelation(group.getBaseGroup(), entry);
 	}
 	
-	public void deleteRelations(BusinessGroup group) {
-		repositoryEntryRelationDao.removeNotDefaultRelation(group.getBaseGroup());
+	public void deleteRelationsToRepositoryEntry(BusinessGroup group) {
+		repositoryEntryRelationDao.removeRelation(group.getBaseGroup());
 	}
 
 	public boolean isIdentityInBusinessGroup(IdentityRef identity, Long groupKey, boolean ownedById, boolean attendeeById,

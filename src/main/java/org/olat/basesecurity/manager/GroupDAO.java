@@ -99,9 +99,8 @@ public class GroupDAO {
 	}
 	
 	public int removeMemberships(Group group) {
-		String sb = "select membership from bgroupmember as membership where membership.group.key=:groupKey";
 		EntityManager em = dbInstance.getCurrentEntityManager();
-		List<GroupMembership> memberships = em.createQuery(sb, GroupMembership.class)
+		List<GroupMembership> memberships = em.createNamedQuery("membershipsByGroup", GroupMembership.class)
 			.setParameter("groupKey", group.getKey())
 			.getResultList();
 		for(GroupMembership membership:memberships) {
@@ -111,9 +110,8 @@ public class GroupDAO {
 	}
 	
 	public int removeMembership(Group group, Identity identity) {
-		String sb = "select membership from bgroupmember as membership where membership.group.key=:groupKey and membership.identity.key=:identityKey";
 		EntityManager em = dbInstance.getCurrentEntityManager();
-		List<GroupMembership> memberships = em.createQuery(sb, GroupMembership.class)
+		List<GroupMembership> memberships = em.createNamedQuery("membershipsByGroupAndIdentity", GroupMembership.class)
 			.setParameter("groupKey", group.getKey())
 			.setParameter("identityKey", identity.getKey())
 			.getResultList();
@@ -124,12 +122,8 @@ public class GroupDAO {
 	}
 	
 	public int removeMembership(Group group, IdentityRef identity, String role) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select membership from bgroupmember as membership")
-		  .append(" where membership.group.key=:groupKey and membership.identity.key=:identityKey and membership.role=:role");
-		
 		EntityManager em = dbInstance.getCurrentEntityManager();
-		List<GroupMembership> memberships = em.createQuery(sb.toString(), GroupMembership.class)
+		List<GroupMembership> memberships = em.createNamedQuery("membershipsByGroupIdentityAndRole", GroupMembership.class)
 			.setParameter("groupKey", group.getKey())
 			.setParameter("identityKey", identity.getKey())
 			.setParameter("role", role)
@@ -141,18 +135,16 @@ public class GroupDAO {
 	}
 	
 	public int countMembers(Group group) {
-		String sb = "select count(membership.key) from bgroupmember as membership where membership.group.key=:groupKey";
 		Number count = dbInstance.getCurrentEntityManager()
-			.createQuery(sb, Number.class)
+			.createNamedQuery("countMembersByGroup", Number.class)
 			.setParameter("groupKey", group.getKey())
 			.getSingleResult();
 		return count == null ? 0 : count.intValue();
 	}
 	
 	public boolean hasRole(Group group, Identity identity, String role) {
-		String sb = "select count(membership.key) from bgroupmember as membership where membership.group.key=:groupKey and membership.identity.key=:identityKey and membership.role=:role";
 		Number count = dbInstance.getCurrentEntityManager()
-			.createQuery(sb, Number.class)
+			.createNamedQuery("hasRoleByGroupIdentityAndRole", Number.class)
 			.setParameter("groupKey", group.getKey())
 			.setParameter("identityKey", identity.getKey())
 			.setParameter("role", role)
@@ -161,18 +153,16 @@ public class GroupDAO {
 	}
 	
 	public List<Identity> getMembers(Group group, String role) {
-		String sb = "select distinct membership.identity from bgroupmember as membership where membership.group.key=:groupKey and membership.role=:role";
 		return dbInstance.getCurrentEntityManager()
-			.createQuery(sb, Identity.class)
+			.createNamedQuery("membersByGroupAndRole", Identity.class)
 			.setParameter("groupKey", group.getKey())
 			.setParameter("role", role)
 			.getResultList();
 	}
 	
 	public List<GroupMembership> getMemberships(Group group, String role) {
-		String sb = "select membership from bgroupmember as membership where membership.group.key=:groupKey and membership.role=:role";
 		return dbInstance.getCurrentEntityManager()
-			.createQuery(sb, GroupMembership.class)
+			.createNamedQuery("membershipsByGroupAndRole", GroupMembership.class)
 			.setParameter("groupKey", group.getKey())
 			.setParameter("role", role)
 			.getResultList();

@@ -159,16 +159,16 @@ public class ImsCPHandler extends FileHandler {
 		deliveryOptionsCtrl.addControllerListener(new ControllerEventListener() {
 
 			@Override
-			public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
+			public void dispatchEvent(UserRequest uureq, Controller source, Event event) {
 				if(source == deliveryOptionsCtrl
 						&& (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT)) {
 					DeliveryOptions newConfig = deliveryOptionsCtrl.getDeliveryOptions();
-					CPPackageConfig cpConfig = cpManager.getCPPackageConfig(resource);
-					if(cpConfig == null) {
-						cpConfig = new CPPackageConfig();
+					CPPackageConfig cConfig = cpManager.getCPPackageConfig(resource);
+					if(cConfig == null) {
+						cConfig = new CPPackageConfig();
 					}
-					cpConfig.setDeliveryOptions(newConfig);
-					cpManager.setCPPackageConfig(resource, cpConfig);
+					cConfig.setDeliveryOptions(newConfig);
+					cpManager.setCPPackageConfig(resource, cConfig);
 				}
 			}
 		});

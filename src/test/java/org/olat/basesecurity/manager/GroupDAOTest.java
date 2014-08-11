@@ -154,5 +154,93 @@ public class GroupDAOTest extends OlatTestCase {
 		int numOfMembers = groupDao.countMembers(group);
 		Assert.assertEquals(3, numOfMembers);
 	}
+	
+	@Test
+	public void removeMembership() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-7-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-8-");
+		Group group = groupDao.createGroup();
+		GroupMembership membership1 = groupDao.addMembership(group, id1, "pilot");
+		GroupMembership membership2 = groupDao.addMembership(group, id2, "pilot");
+		Assert.assertNotNull(membership1);
+		Assert.assertNotNull(membership2);
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		List<GroupMembership> memberships = groupDao.getMemberships(group, "pilot");
+		Assert.assertEquals(2, memberships.size());
+		
+		//remove
+		groupDao.removeMembership(group, id1);
+		dbInstance.commitAndCloseSession();
+		
+		//check 
+		List<GroupMembership> deletedMemberships = groupDao.getMemberships(group, "pilot");
+		Assert.assertEquals(1, deletedMemberships.size());
+		Identity stayingMember = deletedMemberships.get(0).getIdentity();
+		Assert.assertNotNull(stayingMember);
+		Assert.assertEquals(id2, stayingMember);
+	}
+	
+	@Test
+	public void removeMembership_byRole() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-7-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-8-");
+		Group group = groupDao.createGroup();
+		GroupMembership membership1 = groupDao.addMembership(group, id1, "pilot");
+		GroupMembership membership2 = groupDao.addMembership(group, id2, "pilot");
+		GroupMembership membership2alt = groupDao.addMembership(group, id2, "commander");
+		Assert.assertNotNull(membership1);
+		Assert.assertNotNull(membership2);
+		Assert.assertNotNull(membership2alt);
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		List<GroupMembership> memberships = groupDao.getMemberships(group, "pilot");
+		Assert.assertEquals(2, memberships.size());
+		List<GroupMembership> membershipsAlt = groupDao.getMemberships(group, "commander");
+		Assert.assertEquals(1, membershipsAlt.size());
+
+		//remove
+		groupDao.removeMembership(group, id2, "pilot");
+		dbInstance.commitAndCloseSession();
+		
+		//check pilots
+		List<GroupMembership> stayingMemberships = groupDao.getMemberships(group, "pilot");
+		Assert.assertEquals(1, stayingMemberships.size());
+		Identity stayingMember = stayingMemberships.get(0).getIdentity();
+		Assert.assertNotNull(stayingMember);
+		Assert.assertEquals(id1, stayingMember);
+		//check commanders
+		List<GroupMembership> stayingMembershipsAlt = groupDao.getMemberships(group, "commander");
+		Assert.assertEquals(1, stayingMembershipsAlt.size());
+		Identity stayingMemberAlt = stayingMembershipsAlt.get(0).getIdentity();
+		Assert.assertNotNull(stayingMemberAlt);
+		Assert.assertEquals(id2, stayingMemberAlt);
+	}
+	
+	@Test
+	public void removeMemberships() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-7-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-8-");
+		Group group = groupDao.createGroup();
+		GroupMembership membership1 = groupDao.addMembership(group, id1, "pilot");
+		GroupMembership membership2 = groupDao.addMembership(group, id2, "pilot");
+		Assert.assertNotNull(membership1);
+		Assert.assertNotNull(membership2);
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		List<GroupMembership> memberships = groupDao.getMemberships(group, "pilot");
+		Assert.assertEquals(2, memberships.size());
+		
+		//remove
+		groupDao.removeMemberships(group);
+		dbInstance.commitAndCloseSession();
+		
+		//check 
+		List<GroupMembership> deletedMemberships = groupDao.getMemberships(group, "pilot");
+		Assert.assertTrue(deletedMemberships.isEmpty());
+	}
 
 }

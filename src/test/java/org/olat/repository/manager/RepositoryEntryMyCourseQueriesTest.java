@@ -29,6 +29,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
+import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,7 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 
 	@Test
 	public void searchViews() {
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("view-");
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("mycourses-view-1-");
 		dbInstance.commit();
 		Roles roles = securityManager.getRoles(id);
 		
@@ -61,5 +62,26 @@ public class RepositoryEntryMyCourseQueriesTest extends OlatTestCase {
 		List<RepositoryEntryMyView> views = repositoryEntryMyCourseViewQueries.searchViews(params, 0, 10);
 		Assert.assertNotNull(views);
 		
+	}
+	
+	@Test
+	public void searchViews_orderBy() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("mycourses-view-2-");
+		dbInstance.commit();
+		Roles roles = securityManager.getRoles(id);
+		
+		SearchMyRepositoryEntryViewParams params
+			= new SearchMyRepositoryEntryViewParams(id, roles);
+		params.setMarked(Boolean.TRUE);
+		
+		for(OrderBy orderBy:OrderBy.values()) {
+			params.setOrderBy(orderBy);
+			params.setOrderByAsc(true);
+			List<RepositoryEntryMyView> viewAsc = repositoryEntryMyCourseViewQueries.searchViews(params, 0, 10);
+			Assert.assertNotNull(viewAsc);
+			params.setOrderByAsc(false);
+			List<RepositoryEntryMyView> viewDesc = repositoryEntryMyCourseViewQueries.searchViews(params, 0, 10);
+			Assert.assertNotNull(viewDesc);
+		}
 	}
 }

@@ -285,12 +285,8 @@ public class RepositoryEntryRelationDAO {
 	}
 	
 	public int removeRelation(Group group, RepositoryEntryRef re) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select rel from repoentrytogroup as rel")
-		  .append(" where rel.entry.key=:repoKey and rel.group.key=:groupKey");
-
 		EntityManager em = dbInstance.getCurrentEntityManager();
-		List<RepositoryEntryToGroupRelation> rels = em.createQuery(sb.toString(), RepositoryEntryToGroupRelation.class)
+		List<RepositoryEntryToGroupRelation> rels = em.createNamedQuery("relationByRepositoryEntryAndGroup", RepositoryEntryToGroupRelation.class)
 			.setParameter("repoKey", re.getKey())
 			.setParameter("groupKey", group.getKey())
 			.getResultList();
@@ -301,13 +297,16 @@ public class RepositoryEntryRelationDAO {
 		return rels.size();
 	}
 	
+	/**
+	 * This will remove all relations from the repository entry,
+	 * the default one too.
+	 * 
+	 * @param re
+	 * @return
+	 */
 	public int removeRelations(RepositoryEntryRef re) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select rel from repoentrytogroup as rel")
-		  .append(" where rel.entry.key=:repoKey");
-
 		EntityManager em = dbInstance.getCurrentEntityManager();
-		List<RepositoryEntryToGroupRelation> rels = em.createQuery(sb.toString(), RepositoryEntryToGroupRelation.class)
+		List<RepositoryEntryToGroupRelation> rels = em.createNamedQuery("relationByRepositoryEntry", RepositoryEntryToGroupRelation.class)
 			.setParameter("repoKey", re.getKey())
 			.getResultList();
 		for(RepositoryEntryToGroupRelation rel:rels) {
@@ -316,13 +315,9 @@ public class RepositoryEntryRelationDAO {
 		return rels.size();
 	}
 
-	public int removeNotDefaultRelation(Group group) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select rel from repoentrytogroup as rel")
-		  .append(" where rel.group.key=:groupKey");
-	
+	public int removeRelation(Group group) {
 		EntityManager em = dbInstance.getCurrentEntityManager();
-		List<RepositoryEntryToGroupRelation> rels = em.createQuery(sb.toString(), RepositoryEntryToGroupRelation.class)
+		List<RepositoryEntryToGroupRelation> rels = em.createNamedQuery("relationByGroup", RepositoryEntryToGroupRelation.class)
 			.setParameter("groupKey", group.getKey())
 			.getResultList();
 		

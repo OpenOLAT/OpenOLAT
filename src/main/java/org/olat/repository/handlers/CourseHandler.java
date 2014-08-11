@@ -514,13 +514,13 @@ public class CourseHandler implements RepositoryHandler {
 		// wizard finish callback called after "finish" is called
 		final CourseCreationHelper ccHelper = new CourseCreationHelper(ureq.getLocale(), repoEntry, courseConfig , course);
 		StepRunnerCallback finishCallback = new StepRunnerCallback() {
-			public Step execute(UserRequest ureq, WindowControl control, StepsRunContext runContext) {
+			public Step execute(UserRequest uureq, WindowControl control, StepsRunContext runContext) {
 				// here goes the code which reads out the wizards data from the runContext and then does some wizardry
-				ccHelper.finalizeWorkflow(ureq);
-				control.setInfo(CourseCreationMailHelper.getSuccessMessageString(ureq));
+				ccHelper.finalizeWorkflow(uureq);
+				control.setInfo(CourseCreationMailHelper.getSuccessMessageString(uureq));
 				// send notification mail
-				final MailerResult mr = CourseCreationMailHelper.sentNotificationMail(ureq, ccHelper.getConfiguration());
-				MailHelper.printErrorsAndWarnings(mr, control, ureq.getLocale());
+				final MailerResult mr = CourseCreationMailHelper.sentNotificationMail(uureq, ccHelper.getConfiguration());
+				MailHelper.printErrorsAndWarnings(mr, control, uureq.getLocale());
 				return StepsMainRunController.DONE_MODIFIED;
 			}
 		};

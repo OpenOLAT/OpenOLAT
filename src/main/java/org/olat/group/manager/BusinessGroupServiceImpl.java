@@ -724,7 +724,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			// 2) Delete the group areas
 			areaManager.deleteBGtoAreaRelations(group);
 			// 3) Delete the relations
-			businessGroupRelationDAO.deleteRelations(group);
+			businessGroupRelationDAO.deleteRelationsToRepositoryEntry(group);
 			// 4) delete properties
 			propertyManager.deleteProperties(null, group, null, null, null);
 			propertyManager.deleteProperties(null, null, group, null, null);
