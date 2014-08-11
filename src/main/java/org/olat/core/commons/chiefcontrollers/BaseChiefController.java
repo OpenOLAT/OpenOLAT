@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.chiefcontrollers.controller.simple.SimpleBaseController;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.mapper.GlobalMapperRegistry;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -52,6 +53,7 @@ import org.olat.core.gui.control.WindowControlInfoImpl;
 import org.olat.core.gui.control.guistack.GuiStack;
 import org.olat.core.gui.control.guistack.GuiStackSimpleImpl;
 import org.olat.core.gui.control.info.WindowControlInfo;
+import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
@@ -375,6 +377,14 @@ public class BaseChiefController extends DefaultChiefController implements Conte
 	 */
 	public static boolean isJsMathEnabled() {
 		return true;
+	}
+	
+	@Override
+	public boolean hasStaticSite(Class<? extends SiteInstance> type) {
+		if(contentController instanceof SimpleBaseController) {
+			return ((SimpleBaseController)contentController).hasStaticSite(type);
+		}
+		return false;
 	}
 
 	/**

@@ -25,6 +25,7 @@
 */ 
 package org.olat.core.commons.chiefcontrollers.controller.simple;
 
+import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.gui.GUIMessage;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -40,6 +41,7 @@ import org.olat.core.gui.control.WindowControlInfoImpl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.guistack.GuiStack;
 import org.olat.core.gui.control.info.WindowControlInfo;
+import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.logging.AssertException;
 
@@ -180,6 +182,13 @@ public class SimpleBaseController extends BasicController implements Contentable
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
+	}
+	
+	public boolean hasStaticSite(Class<? extends SiteInstance> type) {
+		if(contentController instanceof BaseFullWebappController) {
+			return ((BaseFullWebappController)contentController).hasStaticSite(type);
+		}
+		return false;
 	}
 
 	@Override

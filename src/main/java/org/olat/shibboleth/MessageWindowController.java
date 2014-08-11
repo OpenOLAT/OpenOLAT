@@ -38,6 +38,7 @@ import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.DefaultChiefController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowBackOffice;
+import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
@@ -92,6 +93,11 @@ public class MessageWindowController extends DefaultChiefController {
 		
 		w.setContentPane(msg);
 		setWindow(w);
+	}
+	
+	@Override
+	public boolean hasStaticSite(Class<? extends SiteInstance> type) {
+		return false;
 	}
 
 	/**

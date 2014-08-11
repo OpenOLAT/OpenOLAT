@@ -43,6 +43,7 @@ import org.olat.core.gui.control.DefaultChiefController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.info.WindowControlInfo;
+import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
@@ -234,6 +235,11 @@ public class ExceptionWindowController extends DefaultChiefController {
 
 		w.setContentPane(msg);
 		setWindow(w);
+	}
+
+	@Override
+	public boolean hasStaticSite(Class<? extends SiteInstance> type){
+		return false;
 	}
 
 	/**

@@ -38,6 +38,7 @@ import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
 import org.olat.core.gui.components.link.Link;
@@ -52,6 +53,7 @@ import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.ConfigurationChangedListener;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -131,6 +133,7 @@ import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.RepositoryDetailsController;
+import org.olat.repository.site.RepositorySite;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -794,8 +797,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			openInNewBrowserWindow(ureq, popupLayoutCtr);
 			//
 		} else if (cmd.equals(TOOLBOX_LINK_COURSECONFIG)) {
-			String businessPath = "[RepositorySite:0][RepositoryEntry:" + courseRepositoryEntry.getKey() + "]";
-			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			ChiefController chief = (ChiefController) Windows.getWindows(ureq).getAttribute("AUTHCHIEFCONTROLLER");
+			if (chief.hasStaticSite(RepositorySite.class)) {
+				String businessPath = "[RepositorySite:0][RepositoryEntry:" + courseRepositoryEntry.getKey() + "]";
+				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			}
 		} else if (cmd.equals(ACTION_BOOKMARK)) { // add bookmark
 			boolean marked = markManager.isMarked(courseRepositoryEntry, getIdentity(), null);
 			if(marked) {
@@ -1125,7 +1131,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			myTool.addComponent(glossaryToolCtr.getInitialComponent());
 		}
 		if (showCourseConfigLink) {
-		  myTool.addLink(TOOLBOX_LINK_COURSECONFIG, translate("command.courseconfig"));
+			ChiefController chief = (ChiefController) Windows.getWindows(ureq).getAttribute("AUTHCHIEFCONTROLLER");
+			if (chief.hasStaticSite(RepositorySite.class)) {
+				myTool.addLink(TOOLBOX_LINK_COURSECONFIG, translate("command.courseconfig"));
+			}
 		}
 		if (!isGuest) {
 			myTool.addPopUpLink("personalnote", translate("command.personalnote"), null, null, "750", "550", false);

@@ -27,6 +27,7 @@
 package org.olat.core.gui.control;
 
 import org.olat.core.gui.components.Window;
+import org.olat.core.gui.control.navigation.SiteInstance;
 /**
  * Description: <br>
  * 
@@ -42,5 +43,12 @@ public interface ChiefController extends Controller {
 	 * @return the windowcontrol
 	 */
 	public WindowControl getWindowControl();
+	
+	/**
+	 * Check if the static site of a specific type is available
+	 * @param type
+	 * @return
+	 */
+	public boolean hasStaticSite(Class<? extends SiteInstance> type);
 
 }
