@@ -496,7 +496,9 @@ public class QTIEditHelper {
 				content.getElements().addAll(mat.getElements());
 			}
 			// assure material always has some content
-			if (content.getElements().size() == 0) content.getElements().add(new Mattext("[blank]"));
+			if (content.getElements().size() == 0) {
+				content.getElements().add(new Mattext(""));
+			}
 			choice.setContent(content);
 			choices.add(choice);
 		}
