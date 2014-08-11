@@ -147,12 +147,14 @@ public class TreeHelper {
 	 */
 	public static void makeTreeFlat(TreeNode node, List<TreeNode> outNodeList){
 		//add node
-		outNodeList.add(node);
-		int childcnt = node.getChildCount();
-		for (int i = 0; i < childcnt; i++) {
-			//add all subnodes.
-			TreeNode child = (TreeNode) node.getChildAt(i);
-			makeTreeFlat(child, outNodeList);
+		if(node != null) {
+			outNodeList.add(node);
+			int childcnt = node.getChildCount();
+			for (int i = 0; i < childcnt; i++) {
+				//add all subnodes.
+				TreeNode child = (TreeNode) node.getChildAt(i);
+				makeTreeFlat(child, outNodeList);
+			}
 		}
 	}
 }

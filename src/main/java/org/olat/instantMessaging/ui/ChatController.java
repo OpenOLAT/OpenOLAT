@@ -37,6 +37,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
@@ -61,6 +62,7 @@ import org.olat.instantMessaging.model.Buddy;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br />
@@ -93,9 +95,14 @@ public class ChatController extends BasicController implements GenericEventListe
 	private final Roster buddyList;
 	private final Long privateReceiverKey;
 	
-	private final UserManager userManager;
-	private final InstantMessagingService imService;
-	private final DisplayPortraitManager portraitManager;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private MapperService mapperService;
+	@Autowired
+	private InstantMessagingService imService;
+	@Autowired
+	private DisplayPortraitManager portraitManager;
 	
 	private final String avatarBaseURL;
 
@@ -111,9 +118,8 @@ public class ChatController extends BasicController implements GenericEventListe
 		this.highlightVip = highlightVip;
 		setToday();
 
-		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new UserAvatarMapper(false));
+		avatarBaseURL = mapperService.register(null, "avatars-members", new UserAvatarMapper(false));
 		
-		//allChats = ureq.getUserSession().getChats();
 		allChats = new ArrayList<String>();
 		allChats.add(Integer.toString(hashCode()));
 		
