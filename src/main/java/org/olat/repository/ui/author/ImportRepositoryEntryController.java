@@ -86,6 +86,8 @@ public class ImportRepositoryEntryController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormDescription("cmd.import.ressource.desc");
+		
 		uploadFileEl = uifactory.addFileElement("upload", "import.file", formLayout);
 		uploadFileEl.addActionListener(FormEvent.ONCHANGE);
 		
@@ -103,7 +105,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		displaynameEl.setMandatory(true);
 		displaynameEl.setVisible(false);
 
-		String[] refValues = new String[]{ "" };
+		String[] refValues = new String[]{ translate("references.expl") };
 		referencesEl = uifactory.addCheckboxesHorizontal("references", "references", formLayout, refKeys, refValues);
 		referencesEl.setVisible(false);
 		
