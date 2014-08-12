@@ -69,6 +69,7 @@
 	&.o_navbar-offcanvas {
 		.o_navbar_tab_close {
 			top: 10px; 
+			right: 10px; // Win8 issue with overlapping scrollbar
 		}
 		.o_navbar_tool {
 			display: none;

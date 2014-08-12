@@ -133,9 +133,6 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 			}
 		}
 		currentTools.addAll(getCurrentCrumb().getTools());
-		if(isShowCloseLink()) {
-			currentTools.add(new Tool(getCloseLink(), Align.rightEdge, false, null));
-		}
 		return currentTools;
 	}
 	

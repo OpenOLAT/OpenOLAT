@@ -60,6 +60,14 @@ public class BreadcrumbedStackedPanelRenderer extends DefaultComponentRenderer {
 					sb.append("</li>");
 				}
 			}
+			
+			Link closeLink = panel.getCloseLink();
+			if (closeLink.isVisible()) {
+				sb.append("<li class='o_breadcrumb_close'>");
+				closeLink.getHTMLRendererSingleton().render(renderer, sb, closeLink, ubu, translator, renderResult, args);
+				sb.append("</li>");				
+			}	
+
 			sb.append("</ol></div>");
 		}
 		

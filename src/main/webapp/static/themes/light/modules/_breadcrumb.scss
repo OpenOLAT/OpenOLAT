@@ -1,7 +1,28 @@
 .o_breadcrumb {
 	position:relative;
 
+	/* close link, used mostly in breadcrumb wrapped in toolbar */
 	.o_breadcrumb_close {
-		float:right;
+		float: right;
+		position: relative;
+		margin: 0 0 0 15px;
+		vertical-align: middle;
+		a {
+			line-height: $o-toolbar-breadcrumb-line-height;
+			color: $o-toolbar-close-color;
+			&:hover {
+				color: darken($o-toolbar-close-color, 15%);
+			}
+			i {
+				font-size: floor($o-toolbar-breadcrumb-font-size * 1.5);
+			}
+			span {
+				display: none;
+			}
+		}
+		&:before {
+			content: none;
+		}
 	}
+
 }

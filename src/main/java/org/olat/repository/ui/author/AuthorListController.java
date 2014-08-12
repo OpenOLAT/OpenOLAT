@@ -143,7 +143,6 @@ public class AuthorListController extends FormBasicController implements Activat
 		initForm(ureq);
 
 		stackPanel = new TooledStackedPanel(i18nName, getTranslator(), this);
-		stackPanel.setShowCloseLink(false);
 		stackPanel.pushController(translate(i18nName), this);
 		if(!withSearch) {
 			importLink = LinkFactory.createLink("cmd.import.ressource", getTranslator(), this);

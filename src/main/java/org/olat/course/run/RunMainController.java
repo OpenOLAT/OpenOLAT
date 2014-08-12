@@ -69,6 +69,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.dtabs.DTab;
+import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
@@ -78,13 +80,16 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -189,6 +194,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private Controller currentToolCtr;
 	private Controller currentNodeController; // the currently open node config
 	private TooledStackedPanel toolbarPanel;
+	private String launchdFromBusinessPath;
 
 	private boolean isInEditor = false;
 
@@ -265,6 +271,15 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// set up the components
 		toolbarPanel = new TooledStackedPanel("courseStackPanel", getTranslator(), this);
 		toolbarPanel.setInvisibleCrumb(0); // show root (course) level
+		toolbarPanel.setShowCloseLink(true, true);
+		// set last location as path from where the controller was launched
+		UserSession session = ureq.getUserSession();
+		if(session != null &&  session.getHistoryStack() != null && session.getHistoryStack().size() >= 2) {
+			// Set previous business path as back link for this course - brings user back to place from which he launched the course
+			List<HistoryPoint> stack = session.getHistoryStack();
+			HistoryPoint point = stack.get(stack.size() - 2);
+			launchdFromBusinessPath = point.getBusinessPath();
+		}
 				
 		//StackedControllerImpl(getWindowControl(), getTranslator(), "o_course_breadcumbs");
 		luTree = new MenuTree(null, "luTreeRun", this);
@@ -613,7 +628,27 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				PopEvent pop = (PopEvent)event;
 				if(pop.getController() == currentToolCtr) {
 					eventDone(ureq);
-				}	
+				}
+			} else if (event == Event.CLOSE_EVENT) {
+				// Navigate beyond the stack, our own layout has been popped - close this tab
+				DTabs tabs = getWindowControl().getWindowBackOffice().getWindow().getDTabs();
+				if (tabs != null) {
+					DTab tab = tabs.getDTab(course);
+					if (tab != null) {
+						tabs.removeDTab(ureq, tab);						
+					}
+				}
+				// Now try to go back to place that is attacked to (optional) root back business path
+				if (StringHelper.containsNonWhitespace(launchdFromBusinessPath)) {
+					BusinessControl bc = BusinessControlFactory.getInstance().createFromString(launchdFromBusinessPath);
+					WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+					try {
+						//make the resume secure. If something fail, don't generate a red screen
+						NewControllerFactory.getInstance().launch(ureq, bwControl);
+					} catch (Exception e) {
+						logError("Error while resuming with root leve back business path::" + launchdFromBusinessPath, e);
+					}
+				}
 			}
 		}
 	}
@@ -1636,6 +1671,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 	public void disableToolController(boolean disable) {
 		toolbarPanel.setToolbarEnabled(!disable);
+	}
+	public void disableCourseClose(boolean disable) {
+		toolbarPanel.setShowCloseLink(true, !disable);
 	}
 
 	@Override

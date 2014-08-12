@@ -68,18 +68,19 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 						sb.append("</li>");
 					}
 				}
+
+				Link closeLink = panel.getCloseLink();
+				if (closeLink.isVisible()) {
+					sb.append("<li class='o_breadcrumb_close'>");
+					closeLink.getHTMLRendererSingleton().render(renderer, sb, closeLink, ubu, translator, renderResult, args);
+					sb.append("</li>");				
+				}	
+
 				sb.append("</ol></div>"); // o_breadcrumb
 			}
 			
 			if (panel.isToolbarEnabled()) {
 				sb.append("<div class='o_tools_container'><div class='container-fluid'>");
-				Link closeLink = panel.getCloseLink();
-				if (closeLink.isVisible()) {
-					sb.append("<ul class='o_tools_close list-unstyled'><li>");
-					closeLink.getHTMLRendererSingleton().render(renderer, sb, closeLink, ubu, translator, renderResult, args);
-					sb.append("</li></ul>");				
-				}
-	
 				
 				List<Tool> leftTools = getTools(tools, Align.left);
 				if(leftTools.size() > 0) {

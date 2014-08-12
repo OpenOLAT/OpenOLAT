@@ -21,6 +21,29 @@
 	    	border-radius: 0; // reset from default breadcrumb style
 			background: $o-toolbar-breadcrumb-bg-color;
 	    	@include border-top-radius($o-toolbar-border-radius); // don't hide background
+
+			.o_breadcrumb_close {
+				float: right;
+				position: relative;
+				margin: 0 0 0 15px;
+				vertical-align: middle;
+				a {
+					line-height: $o-toolbar-breadcrumb-line-height;
+					color: $o-toolbar-close-color;
+					&:hover {
+						color: darken($o-toolbar-close-color, 15%);
+					}
+					i {
+						font-size: floor($o-toolbar-breadcrumb-font-size * 1.5);
+					}
+					span {
+						display: none;
+					}
+				}
+				&:before {
+					content: none;
+				}
+			}
 		}
 	}
 	
@@ -59,51 +82,7 @@
 	    }
 
 	}
-		
-	.o_tools_close {
-		float: right;
-		position: relative;
-		margin: $o-toolbar-tools-margin-top-md -15px $o-toolbar-tools-margin-bottom-md 15px;
-		border-left: 1px solid $o-toolbar-border-color;
-		padding-right: 5px;
-		padding-left: 5px;
-		vertical-align: middle;
-		a {
-			line-height: $o-toolbar-height-md;
-			color: $o-toolbar-close-color;
-			&:hover {
-				color: darken($o-toolbar-close-color, 15%);
-			}
-			i {
-				font-size: $o-toolbar-size-icon-md;
-			}
-			span {
-				display: none;
-			}
-		}
-		@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
-			margin-top: $o-toolbar-tools-margin-top-sm;
-			margin-bottom: $o-toolbar-tools-margin-bottom-sm;
-			a {
-				line-height: $o-toolbar-height-sm;
-				i {
-					font-size: $o-toolbar-size-icon-sm;
-				}
-			}
-		}
-		@media (max-width: $screen-xs-max) { 
-			min-height: $o-toolbar-height-xs;
-			margin-top: $o-toolbar-tools-margin-top-xs;
-			margin-bottom: $o-toolbar-tools-margin-bottom-xs;
-			a {
-				line-height: $o-toolbar-height-xs;
-				i {
-					font-size: $o-toolbar-size-icon-xs;
-				}
-			}
-		}
-	}
-			
+	
 	.o_tools {
 		margin-top: $o-toolbar-tools-margin-top-md;
 		margin-bottom: $o-toolbar-tools-margin-bottom-md;

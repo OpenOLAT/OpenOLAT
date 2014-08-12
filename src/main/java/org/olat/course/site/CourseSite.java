@@ -127,12 +127,17 @@ public class CourseSite extends AbstractSiteInstance {
 			// build up the context path for linked course
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, entry, new StateSite(this), wControl, true) ;	
 			
-			c = new RunMainController(ureq, bwControl, course, entry, false, true);
+			RunMainController runCtr = new RunMainController(ureq, bwControl, course, entry, false, true);
 			BasicController disposeMsgController = new DisposedCourseSiteRestartController(ureq, wControl, entry);
-			((RunMainController) c).setDisposedMsgController(disposeMsgController);
+			runCtr.setDisposedMsgController(disposeMsgController);
+			// Configure run controller
+			// a: don't show close link, is opened as site not tab
+			runCtr.disableCourseClose(true);
+			// b: don't show toolbar
 			if (!showToolController) {
-				((RunMainController) c).disableToolController(true);
+				runCtr.disableToolController(true);
 			}
+			c = runCtr;
 		} else {
 			// access restricted (not in group / author) -> show controller
 			// defined in olat_extensions (type autoCreator)

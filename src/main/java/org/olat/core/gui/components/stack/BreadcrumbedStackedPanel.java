@@ -57,7 +57,8 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 	
 	private int invisibleCrumb = 1;
 	private String cssClass;
-	private boolean showCloseLink;
+	private boolean showCloseLink = false;
+	private boolean showCloseLinkForRootCrumb = false;
 	
 	public BreadcrumbedStackedPanel(String name, Translator translator, ComponentEventListener listener) {
 		this(name, translator, listener, null);
@@ -111,8 +112,13 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		return showCloseLink;
 	}
 
-	public void setShowCloseLink(boolean showCloseLink) {
-		this.showCloseLink = showCloseLink;
+	public boolean isShowCloseLinkForRootCrumb() {
+		return showCloseLinkForRootCrumb;
+	}
+
+	public void setShowCloseLink(boolean showCloseLinkForCrumbs, boolean showCloseLinkForRootCrumb) {
+		this.showCloseLink = showCloseLinkForCrumbs;
+		this.showCloseLinkForRootCrumb = showCloseLinkForRootCrumb;
 	}
 	
 	public List<Link> getBreadCrumbs() {
@@ -158,6 +164,9 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 				// back means to one level down, change source to the stack item one below current
 				source = stack.get(stack.size()-2);
 				// now continue as if user manually pressed a stack item in the list
+			} else {
+				// notify listeners that back or link beyond breadcrumb has been called
+				fireEvent(ureq, Event.CLOSE_EVENT);
 			}
 		}
 		
@@ -278,16 +287,23 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 	 * Update the close link title to match the name of the last visible item
 	 */
 	private void updateCloseLinkTitle() {
+		String closeText;
+		boolean showClose; 
 		if(stack.size() < 2) { 
-			// special case: don't show close for last level
-			closeLink.setVisible(false);								
+			// special case: root crumb
+			Link link = stack.get(0);
+			closeText = getTranslator().translate("doclose", new String[] { link.getCustomDisplayText() });
+			showClose = isShowCloseLinkForRootCrumb();
+			backLink.setTitle(closeText);
 		} else {
 			Link link = stack.get(stack.size()-1);
-			String closeText = getTranslator().translate("doclose", new String[] { link.getCustomDisplayText() });
-			closeLink.setCustomDisplayText(closeText);
-			closeLink.setTitle(closeText);
-			closeLink.setVisible(true);								
+			closeText = getTranslator().translate("doclose", new String[] { link.getCustomDisplayText() });
+			showClose = isShowCloseLink();
+			backLink.setTitle(getTranslator().translate("back"));
 		}
+		closeLink.setCustomDisplayText(closeText);
+		closeLink.setTitle(closeText);
+		closeLink.setVisible(showClose);								
 	}
 	
 	public static class BreadCrumb {

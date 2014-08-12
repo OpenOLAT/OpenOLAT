@@ -42,6 +42,8 @@ public class Event implements Serializable {
 	
 	public static final Event BACK_EVENT = new Event("back");
 	
+	public static final Event CLOSE_EVENT = new Event("close");
+	
 	public static final Event CANCELLED_EVENT = new Event("cancelled");
 	
 	public static final Event CHANGED_EVENT = new Event("changed");
