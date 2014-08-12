@@ -20,6 +20,7 @@
 package org.olat.repository.ui.author;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -84,6 +85,7 @@ import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.handlers.RepositoryHandlerFactory.OrderedRepositoryHandler;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.model.TransientRepositoryEntryRef;
@@ -151,7 +153,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			importLink.setIconLeftCSS("o_icon o_icon_import");
 			stackPanel.addTool(importLink, Align.left);
 			
-			Set<String> types = repositoryHandlerFactory.getSupportedTypes();
+			Collection<String> types = repositoryHandlerFactory.getSupportedTypes();
 			createDropdown = new Dropdown("cmd.create.ressource", "cmd.create.ressource", false, getTranslator());
 			createDropdown.setElementCssClass("o_sel_author_create");
 			createDropdown.setIconCSS("o_icon o_icon_add");
@@ -247,9 +249,10 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private List<FlexiTableFilter> getFilters() {
-		Set<String> supportedTypes = repositoryHandlerFactory.getSupportedTypes();
-		List<FlexiTableFilter> resources = new ArrayList<>(supportedTypes.size() + 1);
-		for(String type:supportedTypes) {
+		List<OrderedRepositoryHandler> supportedHandlers = repositoryHandlerFactory.getOrderRepositoryHandlers();
+		List<FlexiTableFilter> resources = new ArrayList<>(supportedHandlers.size() + 1);
+		for(OrderedRepositoryHandler handler:supportedHandlers) {
+			String type = handler.getHandler().getSupportedType();
 			String inconLeftCss = RepositoyUIFactory.getIconCssClass(type);
 			resources.add(new FlexiTableFilter(translate(type), type, inconLeftCss));
 		}

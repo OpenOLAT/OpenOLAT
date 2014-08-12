@@ -41,6 +41,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.handlers.RepositoryHandlerFactory.OrderedRepositoryHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -227,8 +228,8 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	private List<String> getResources() {
 		List<String> resources = new ArrayList<String>();
 		resources.add("");
-		for(String type:repositoryHandlerFactory.getSupportedTypes()) {
-			resources.add(type);
+		for(OrderedRepositoryHandler handler:repositoryHandlerFactory.getOrderRepositoryHandlers()) {
+			resources.add(handler.getHandler().getSupportedType());
 		}
 		return resources;
 	}

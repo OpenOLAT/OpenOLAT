@@ -25,7 +25,10 @@
 
 package org.olat.repository.handlers;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -56,32 +59,39 @@ import org.springframework.stereotype.Service;
 public class RepositoryHandlerFactory {
 
 	private static Map<String, RepositoryHandler> handlerMap;
+	private static List<OrderedRepositoryHandler> handlerList;
 	static {
 		handlerMap = new HashMap<String, RepositoryHandler>(21);
+		handlerList = new ArrayList<OrderedRepositoryHandler>(21);
 
-		registerHandler(new ImsCPHandler());
-		registerHandler(new SCORMCPHandler());
-		registerHandler(new CourseHandler());
-		registerHandler(new SharedFolderHandler());
-		registerHandler(new WikiHandler());
-		registerHandler(new PodcastHandler());
-		registerHandler(new BlogHandler());
-		registerHandler(new GlossaryHandler());
-		registerHandler(new PortfolioHandler());
+		registerHandler(new CourseHandler(), 0);
+		registerHandler(new SCORMCPHandler(), 10);
+		registerHandler(new ImsCPHandler(), 20);
+		registerHandler(new SharedFolderHandler(), 21);
+		registerHandler(new WikiHandler(), 21);
+		registerHandler(new PodcastHandler(), 22);
+		registerHandler(new BlogHandler(), 23);
+		registerHandler(new GlossaryHandler(), 24);
+		registerHandler(new PortfolioHandler(), 25);
 		
-		registerHandler(new WebDocumentHandler(FileResource.GENERIC_TYPE_NAME));
-		registerHandler(new WebDocumentHandler(DocFileResource.TYPE_NAME));
-		registerHandler(new WebDocumentHandler(XlsFileResource.TYPE_NAME));
-		registerHandler(new WebDocumentHandler(PowerpointFileResource.TYPE_NAME));
-		registerHandler(new WebDocumentHandler(PdfFileResource.TYPE_NAME));
-		registerHandler(new WebDocumentHandler(SoundFileResource.TYPE_NAME));
-		registerHandler(new WebDocumentHandler(MovieFileResource.TYPE_NAME));
-		registerHandler(new WebDocumentHandler(AnimationFileResource.TYPE_NAME));
-		registerHandler(new WebDocumentHandler(ImageFileResource.TYPE_NAME));
+		registerHandler(new WebDocumentHandler(DocFileResource.TYPE_NAME), 10001);
+		registerHandler(new WebDocumentHandler(XlsFileResource.TYPE_NAME), 10002);
+		registerHandler(new WebDocumentHandler(PowerpointFileResource.TYPE_NAME), 10003);
+		registerHandler(new WebDocumentHandler(PdfFileResource.TYPE_NAME), 10010);
+		registerHandler(new WebDocumentHandler(ImageFileResource.TYPE_NAME), 10011);
+		registerHandler(new WebDocumentHandler(SoundFileResource.TYPE_NAME), 10020);
+		registerHandler(new WebDocumentHandler(MovieFileResource.TYPE_NAME), 10021);
+		registerHandler(new WebDocumentHandler(AnimationFileResource.TYPE_NAME), 10022);
+		registerHandler(new WebDocumentHandler(FileResource.GENERIC_TYPE_NAME), 10100);
 	}
 
-	public static void registerHandler(RepositoryHandler handler) {
+	public static void registerHandler(RepositoryHandler handler, int order) {
 		handlerMap.put(handler.getSupportedType(), handler);
+		OrderedRepositoryHandler oHandler = new OrderedRepositoryHandler(handler, order);
+		if(handlerList.contains(oHandler)) {
+			handlerList.remove(oHandler);
+		}
+		handlerList.add(oHandler);
 	}
 	
 	public static RepositoryHandlerFactory getInstance() {
@@ -108,11 +118,57 @@ public class RepositoryHandlerFactory {
 		return handlerMap.get(resourceableTypeName);
 	}
 	
+	public List<OrderedRepositoryHandler> getOrderRepositoryHandlers() {
+		List<OrderedRepositoryHandler> ordered = new ArrayList<>(handlerList);
+		Collections.sort(ordered);
+		return ordered;
+	}
+	
 	/**
 	 * Get a set of types this factory supports.
 	 * @return Set of supported types.
 	 */
 	public Set<String> getSupportedTypes() {
 		return handlerMap.keySet();
+	}
+	
+	public static class OrderedRepositoryHandler implements Comparable<OrderedRepositoryHandler> {
+		private final int order;
+		private final RepositoryHandler handler;
+		
+		public OrderedRepositoryHandler(RepositoryHandler handler, int order) {
+			this.handler = handler;
+			this.order = order;
+		}
+
+		public int getOrder() {
+			return order;
+		}
+
+		public RepositoryHandler getHandler() {
+			return handler;
+		}
+
+		@Override
+		public int compareTo(OrderedRepositoryHandler o) {
+			return order - o.order;
+		}
+
+		@Override
+		public int hashCode() {
+			return handler.getSupportedType().hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof OrderedRepositoryHandler) {
+				OrderedRepositoryHandler oh = (OrderedRepositoryHandler)obj;
+				return handler.getSupportedType().equals(oh.getHandler().getSupportedType());
+			}
+			return false;
+		}
 	}
 }
