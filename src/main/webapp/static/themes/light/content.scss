@@ -49,3 +49,5 @@ $fa-css-prefix		: "o_icon" !default;
 
 // finally add the real content styles
 @import "modules/content";
+
+@import "modules/print";

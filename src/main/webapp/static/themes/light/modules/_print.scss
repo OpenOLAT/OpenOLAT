@@ -12,98 +12,42 @@
 */
 
 @media print {
-	@mixin o-ghost {
-		 display:none !important; visibility: hidden !important; height:0px !important; width:0px !important;
-	}
 
-	/** with the noprint class, you can hide any element in printout **/
-	.o_noprint { @include o-ghost();} 
-	
+	/* don't print URL's on href, ugly bootstrap default */
+	a[href]:after {
+    	content: "";
+  	}
+
+	/* Hide general elements */
+	#o_header_wrapper,
+	#o_offcanvas_right,
+	#o_navbar_wrapper,
+	#o_footer_wrapper,
+	#o_toplink,
+	#o_main_left, 
+	#o_main_right,
+	#o_main_toolbar,
+	#jsMath_PrintWarning,
+	.o_noti,
+	.o_opener,
+	.o_hide,
+	.o_noprint { 
+		display: none !important;
+	} 
+
+	/* Page breaks */	
 	.o_print_break_avoid {
 		page-break-inside : avoid;
 	}
 	.o_print_break_before {
 		page-break-before: always;
 	}
-		 
-	#o_toplink { @include o-ghost();} 
-		  
-	/* change font size unit to [pt] - avoiding problems with [px] unit in Gecko based browsers  */
-	body { font-size:10pt; }
-	
-	.b_noti {@include o-ghost();}
-	
-	
-	/* login site background image */
-	#o_main.o_loginscreen { background-image: none; }
-	/* home site background image */
-	#o_main.o_home { background-image: none; }
-	/* editor background */
-	#o_main.o_editor { background-image: none; }
-	
-	/* remove box-shadow if any */
-	#o_main {@include o-box-shadow-none(); border:none;} 
-	
-	/* no borders, no margin, no padding */
-	body,#b_page_margins,#b_page,#o_main,#b_page_wrapper  {margin:0;padding:0;border:0;}
-	/* a default font for printout */
-	body * {font-family:"Times New Roman", Times, serif;}
-	/* font for code and pre */
-	code,pre{font-family:"Courier New", Courier, mono}
-	/* width to pagewidth */
-	#b_page_margins,#b_page{width:100% !important;min-width:0;max-width:none}
-	/* hide footer, hide topnav, hide main navigation */
-	#b_footer,#b_topnav,#b_nav,#search{display:none}
-	/* hide col1 and col2, make main column without margins */
-	#o_main_left, #o_main_right {display:none;}
-	#o_main_center { margin:0 !important; border:none !important;}
 
-	.b_c25l,.b_c33l,.b_c38l,.b_c50l,.b_c62l,.b_c66l,.b_c75l,.b_c25r,.b_c33r,.b_c38r,.b_c50r,.b_c62r,.b_c66r,.b_c75r {width:100%;margin:0;float:none;overflow:visible;display:table}
-	.b_subc,.b_subcl,.b_subcr {margin:0;padding:0}
-	
-	h1,h2,h3,h4,h5,h6{page-break-after:avoid}
-	#b_page a[href^="http:"],#b_page a[href^="https:"]{padding-left:0;background-image:none}
-	#o_main_left_content:before,#o_main_right_content:before,#o_main_center_content:before{content:"";color:#888;background:inherit;display:block;font-weight:700;font-size:1.5em}
-	.b_floatbox,.b_subcolumns,.b_subcolums_oldgecko{overflow:visible;display:table;}
-	
-	/* hide jsMath print warning */
-	#jsMath_PrintWarning {@include o-ghost(); }
-	
-	
-	/*  ---  nice print styles for wiki pages ---- */
-	.o_wiki_wrapper {
-		.b_c20l, .o_wikimod_nav {display:none;}
-		.b_c80r {
-			width:100%;
-			 div.b_tabbedpane_tabs {display: none;}
-		}
+	/* Hide backgrounds */	
+	body.o_dmz {
+		background: white !important;
 	}
-	
-	
-	/* calendar */
-	.o_cal_toptoolbar.b_clearfix { display: none; } /* hide top toolbar */
-	.o_cal_wv { display: none; } /* hide grid calendar */
-	.o_cal_wv_print { display: block; } /* display the print view */
-	#o_cal_config .b_float_right { display: none; } /* hide buttons */
-	#o_cal_config_below_cal_container .b_subcolumns { display: none; } /* hide date navigation and search link */
-	.o_cal_wv_print ul { list-style-type: none; margin-left: 0; }
-	.o_cal_event { clear:left; margin: 0.2em 0; }
-	.o_cal_wv_list * { float: left; width: 100%; } /* float all elements in order to fully include floating children */
-	.o_cal_event span { padding: 0 0.4em; display:block; }
-	.o_cal_date { font-weight: bold; }
-	.o_cal_time { width: 25%; } 
-	.o_cal_subject { width: 40%; border-left-style: solid; border-left-width: thick; }
-	.o_cal_subject p { padding:0 0.4em; margin:0;  }
-	.o_cal_location { float: right; width: 34%; } /* Since subject has a 1px border, decrease the width of location by 1% */
-	.o_cal_config_scrollwrapper { width: auto; height: auto; overflow: visible; overflow-x: visible; }
-	.o_cal_config_calendar { border-width: 0; border-left-style: solid; border-left-width: thick; float: none; display: block;}
-	#o_cal_config_below_cal_container { border: none; background: none; overflow: visible; }
-	#o_cal_config_below_cal_container * { background: none; color: black; }
-	#o_cal_config_below_cal_container fieldset { border: none; }
-	#o_cal_config_below_cal_container fieldset legend { font-weight: bold; }
-	
-	/* fix padding of missing backgrond images */
-	.b_with_small_icon_left { padding-left: 0;}
+
 }
 
 
