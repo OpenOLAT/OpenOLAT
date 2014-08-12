@@ -113,12 +113,14 @@ public class LandingPagesAdminController extends FormBasicController {
 				.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		
 		int numOfProperties = userPropertyHandlers.size();
-		attrKeys = new String[numOfProperties];
-		attrValues = new String[numOfProperties];
+		attrKeys = new String[numOfProperties + 1];
+		attrValues = new String[numOfProperties + 1];
+		attrKeys[0] = "";
+		attrValues[0] = "-";
 		for(int i=0; i<numOfProperties; i++) {
 			UserPropertyHandler handler = userPropertyHandlers.get(i);
-			attrKeys[i] = handler.getName();
-			attrValues[i] = translate(handler.i18nFormElementLabelKey());
+			attrKeys[i+1] = handler.getName();
+			attrValues[i+1] = translate(handler.i18nFormElementLabelKey());
 		}
 		
 		initForm(ureq);
