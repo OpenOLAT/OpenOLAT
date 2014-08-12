@@ -114,10 +114,10 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 		putInitialPanel(repoEntriesVC);
 	}
 	
-	private List<RepositoryEntryLight> getAllEntries(SortingCriteria sortingCriteria) {
-		int maxResults = sortingCriteria == null ? -1 : sortingCriteria.getMaxEntries();
+	private List<RepositoryEntryLight> getAllEntries(SortingCriteria criteria) {
+		int maxResults = criteria == null ? -1 : criteria.getMaxEntries();
 		RepositoryEntryOrder orderBy = RepositoryEntryOrder.nameAsc;
-		if(sortingCriteria != null && !sortingCriteria.isAscending()) {
+		if(criteria != null && !criteria.isAscending()) {
 			orderBy = RepositoryEntryOrder.nameDesc;
 		}
 		
@@ -160,9 +160,9 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	}
 
 	@Override
-	protected void reloadModel(SortingCriteria sortingCriteria) {
-		if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
-			List<RepositoryEntryLight> items = getAllEntries(sortingCriteria);
+	protected void reloadModel(SortingCriteria criteria) {
+		if (criteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
+			List<RepositoryEntryLight> items = getAllEntries(criteria);
 			List<PortletEntry<RepositoryEntryLight>> entries = convertShortRepositoryEntriesToPortletEntryList(items);
 			repoEntryListModel = new RepositoryPortletTableDataModel(entries, getLocale());
 			tableCtr.setTableDataModel(repoEntryListModel);
@@ -262,18 +262,18 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 	 * Comparator implementation used for sorting BusinessGroup entries according with the
 	 * input sortingCriteria.
 	 * <p>
-	 * @param sortingCriteria
+	 * @param criteria
 	 * @return a Comparator for the input sortingCriteria
 	 */
 	@Override
-	protected Comparator<RepositoryEntryLight> getComparator(final SortingCriteria sortingCriteria) {
+	protected Comparator<RepositoryEntryLight> getComparator(final SortingCriteria criteria) {
 		return new Comparator<RepositoryEntryLight>(){			
 			public int compare(final RepositoryEntryLight repoEntry1, final RepositoryEntryLight repoEntry2) {
 				int comparisonResult = 0;
-			  if(sortingCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	
+			  if(criteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	
 			  	comparisonResult = collator.compare(repoEntry1.getDisplayname(), repoEntry2.getDisplayname());			  		  	
 			  }
-			  if(!sortingCriteria.isAscending()) {
+			  if(!criteria.isAscending()) {
 			  	//if not isAscending return (-comparisonResult)			  	
 			  	return -comparisonResult;
 			  }

@@ -125,23 +125,23 @@ public class NGramProfile {
   /**
    * Add ngrams from a single word to this profile
    * 
-   * @param word is the word to add
+   * @param w is the word to add
    */
-  public void add(StringBuffer word) {
-    for (int i=minLength; (i <= maxLength) && (i < word.length()); i++) {
-      add(word, i);
+  public void add(StringBuffer w) {
+    for (int i=minLength; (i <= maxLength) && (i < w.length()); i++) {
+      add(w, i);
     }
   }
 
   /**
    * Add the last NGrams from the specified word.
    */
-  private void add(QuickStringBuffer word) {
-    int wlen = word.length();
+  private void add(QuickStringBuffer w) {
+    int wlen = w.length();
     if (wlen >= minLength) {
         int max = Math.min(maxLength, wlen);
         for (int i=minLength; i<=max; i++) {
-            add(word.subSequence(wlen-i, wlen));
+            add(w.subSequence(wlen-i, wlen));
         }
     }
   }
@@ -200,12 +200,12 @@ public class NGramProfile {
   }
 
   /**
-   * @param word
+   * @param w
    * @param n sequence length
    */
-  private void add(StringBuffer word, int n) {
-    for (int i=0; i <= word.length()-n; i++) {
-      add(word.subSequence(i, i + n));
+  private void add(StringBuffer w, int n) {
+    for (int i=0; i <= w.length()-n; i++) {
+      add(w.subSequence(i, i + n));
     }
   }
     

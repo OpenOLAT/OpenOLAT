@@ -759,6 +759,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(dataModel instanceof SortableFlexiTableDataModel) {
 			((SortableFlexiTableDataModel<?>)dataModel).sort(key);
 		} else if(dataSource != null) {
+			currentPage = 0;
 			dataSource.clear();
 			dataSource.load(null, conditionalQueries, 0, getPageSize(), orderBy);
 		}

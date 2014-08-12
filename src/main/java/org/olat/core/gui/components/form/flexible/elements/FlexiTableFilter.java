@@ -31,11 +31,17 @@ public class FlexiTableFilter {
 	
 	private final String label;
 	private final String filter;
+	private final String iconLeftCSS;
 	private boolean selected;
 	
 	public FlexiTableFilter(String label, String filter) {
+		this(label, filter, null);
+	}
+	
+	public FlexiTableFilter(String label, String filter,String iconLeftCSS) {
 		this.label = label;
 		this.filter = filter;
+		this.iconLeftCSS = iconLeftCSS;
 	}
 	
 	public String getLabel() {
@@ -44,6 +50,10 @@ public class FlexiTableFilter {
 	
 	public String getFilter() {
 		return filter;
+	}
+
+	public String getIconLeftCSS() {
+		return iconLeftCSS;
 	}
 
 	public boolean isSelected() {

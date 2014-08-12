@@ -103,7 +103,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private FlexiTableElement tableEl;
 	private final TooledStackedPanel stackPanel;
 	
-	private boolean startExtendedSearch;
+	private boolean withSearch;;
 	
 	private AuthoringEntryDataModel model;
 	private AuthoringEntryDataSource dataSource;
@@ -131,39 +131,38 @@ public class AuthorListController extends FormBasicController implements Activat
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public AuthorListController(UserRequest ureq, WindowControl wControl, String i18nName,
-			SearchAuthorRepositoryEntryViewParams searchParams, boolean startExtendedSearch) {
+			SearchAuthorRepositoryEntryViewParams searchParams, boolean withSearch) {
 		super(ureq, wControl, "entries");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 
 		this.i18nName = i18nName;
+		this.withSearch = withSearch;
 		this.searchParams = searchParams;
-		this.startExtendedSearch = startExtendedSearch;
-		
-		importLink = LinkFactory.createLink("cmd.import.ressource", getTranslator(), this);
-		importLink.setDomReplacementWrapperRequired(false);
-		importLink.setIconLeftCSS("o_icon o_icon_import");
-		
-		Set<String> types = repositoryHandlerFactory.getSupportedTypes();
 
-		createDropdown = new Dropdown("cmd.create.ressource", "cmd.create.ressource", false, getTranslator());
-		createDropdown.setElementCssClass("o_sel_author_create");
-		createDropdown.setIconCSS("o_icon o_icon_add");
-		for(String type:types) {
-			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
-			if(handler != null && handler.isCreate()) {
-				addCreateLink(handler, createDropdown);
-			}
-		}
-		
 		dataSource = new AuthoringEntryDataSource(searchParams, this);
-
 		initForm(ureq);
 
 		stackPanel = new TooledStackedPanel(i18nName, getTranslator(), this);
 		stackPanel.setShowCloseLink(false);
 		stackPanel.pushController(translate(i18nName), this);
-		stackPanel.addTool(createDropdown, Align.left);
-		stackPanel.addTool(importLink, Align.left);
+		if(!withSearch) {
+			importLink = LinkFactory.createLink("cmd.import.ressource", getTranslator(), this);
+			importLink.setDomReplacementWrapperRequired(false);
+			importLink.setIconLeftCSS("o_icon o_icon_import");
+			stackPanel.addTool(importLink, Align.left);
+			
+			Set<String> types = repositoryHandlerFactory.getSupportedTypes();
+			createDropdown = new Dropdown("cmd.create.ressource", "cmd.create.ressource", false, getTranslator());
+			createDropdown.setElementCssClass("o_sel_author_create");
+			createDropdown.setIconCSS("o_icon o_icon_add");
+			for(String type:types) {
+				RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
+				if(handler != null && handler.isCreate()) {
+					addCreateLink(handler, createDropdown);
+				}
+			}
+			stackPanel.addTool(createDropdown, Align.left);
+		}
 	}
 	
 	@Override
@@ -186,9 +185,12 @@ public class AuthorListController extends FormBasicController implements Activat
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//search form
-		searchCtrl = new AuthorSearchController(ureq, getWindowControl(), !startExtendedSearch, mainForm);
-		searchCtrl.setEnabled(false);
-		listenTo(searchCtrl);
+		if(withSearch) {
+			setFormDescription("table.search.author.desc");
+			searchCtrl = new AuthorSearchController(ureq, getWindowControl(), true, mainForm);
+			searchCtrl.setEnabled(false);
+			listenTo(searchCtrl);
+		}
 		
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -226,21 +228,17 @@ public class AuthorListController extends FormBasicController implements Activat
 		
 		model = new AuthoringEntryDataModel(dataSource, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
-		tableEl.setSearchEnabled(true);
+		tableEl.setSearchEnabled(withSearch);
 		tableEl.setExportEnabled(true);
 		tableEl.setExtendedSearch(searchCtrl);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_coursetable");
 		tableEl.setMultiSelect(true);
+		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
 		tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(OrderBy.displayname.name(), true)));
 		tableEl.setAndLoadPersistedPreferences(ureq, "authors-list-" + i18nName);
-		if(!startExtendedSearch) {
+		if(!withSearch) {
 			tableEl.reloadData();
-		}
-		
-		if(startExtendedSearch) {
-			tableEl.expandExtendedSearch(ureq);
-		} else {
 			tableEl.setFilters(null, getFilters());
 		}
 		
@@ -251,7 +249,8 @@ public class AuthorListController extends FormBasicController implements Activat
 		Set<String> supportedTypes = repositoryHandlerFactory.getSupportedTypes();
 		List<FlexiTableFilter> resources = new ArrayList<>(supportedTypes.size() + 1);
 		for(String type:supportedTypes) {
-			resources.add(new FlexiTableFilter(translate(type), type));
+			String inconLeftCss = RepositoyUIFactory.getIconCssClass(type);
+			resources.add(new FlexiTableFilter(translate(type), type, inconLeftCss));
 		}
 		return resources;
 	}

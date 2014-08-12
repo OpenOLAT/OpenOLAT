@@ -87,7 +87,7 @@ public class RepositoryEntryListController extends FormBasicController
 	private final List<Link> filterLinks = new ArrayList<>();
 	private final List<Link> orderByLinks = new ArrayList<>();
 	
-	private boolean startExtendedSearch;
+	private boolean withSearch;
 
 	private final String name;
 	private FlexiTableElement tableEl;
@@ -113,13 +113,13 @@ public class RepositoryEntryListController extends FormBasicController
 	
 	public RepositoryEntryListController(UserRequest ureq, WindowControl wControl,
 			SearchMyRepositoryEntryViewParams searchParams, boolean load, 
-			boolean startExtendedSearch, String name, BreadcrumbPanel stackPanel) {
+			boolean withSearch, String name, BreadcrumbPanel stackPanel) {
 		super(ureq, wControl, "repoentry_table");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		mapperThumbnailUrl = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
 		this.name = name;
 		this.stackPanel = stackPanel;
-		this.startExtendedSearch = startExtendedSearch;
+		this.withSearch = withSearch;
 		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		
 		this.searchParams = searchParams;
@@ -137,9 +137,12 @@ public class RepositoryEntryListController extends FormBasicController
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		searchCtrl = new RepositoryEntrySearchController(ureq, getWindowControl(), !startExtendedSearch, mainForm);
-		searchCtrl.setEnabled(false);
-		listenTo(searchCtrl);
+		if(withSearch) {
+			setFormDescription("table.search.mycourses.desc");
+			searchCtrl = new RepositoryEntrySearchController(ureq, getWindowControl(), true, mainForm);
+			searchCtrl.setEnabled(false);
+			listenTo(searchCtrl);
+		}
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), true, OrderBy.key.name()));
@@ -159,14 +162,15 @@ public class RepositoryEntryListController extends FormBasicController
 				true, OrderBy.lifecycleEnd.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,Cols.details.i18nKey(), Cols.details.ordinal(), false, null));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.start.i18nKey(), Cols.start.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.ratings.i18nKey(), Cols.ratings.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.ratings.i18nKey(), Cols.ratings.ordinal(),
+				true, OrderBy.rating.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.comments.i18nKey(), Cols.comments.ordinal()));
 
 		model = new RepositoryEntryDataModel(dataSource, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
-		tableEl.setSearchEnabled(true);
+		tableEl.setSearchEnabled(withSearch);
 		tableEl.setExtendedSearch(searchCtrl);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_coursetable");
@@ -179,14 +183,12 @@ public class RepositoryEntryListController extends FormBasicController
 		initSorters(tableEl);
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, "re-list-" + name);
-		
-		if(startExtendedSearch) {
-			tableEl.expandExtendedSearch(ureq);
-		}
 	}
 	
 	private void initFilters(FlexiTableElement tableElement) {
-		List<FlexiTableFilter> filters = new ArrayList<>(14);
+		List<FlexiTableFilter> filters = new ArrayList<>(16);
+		filters.add(new FlexiTableFilter(translate("filter.show.all"), Filter.showAll.name()));
+		filters.add(FlexiTableFilter.SPACER);
 		filters.add(new FlexiTableFilter(translate("filter.current.courses"), Filter.currentCourses.name()));
 		filters.add(new FlexiTableFilter(translate("filter.upcoming.courses"), Filter.upcomingCourses.name()));
 		filters.add(new FlexiTableFilter(translate("filter.old.courses"), Filter.oldCourses.name()));

@@ -204,13 +204,13 @@ public class ReferencableEntriesSearchController extends BasicController {
 
 	/**
 	 * Admin. search allow group managers to search all courses
-	 * @param limitTypes
+	 * @param limitingTypes
 	 * @param ureq
 	 * @return
 	 */
-	private boolean isAdminSearchVisible(String[] limitTypes, UserRequest ureq) {
+	private boolean isAdminSearchVisible(String[] limitingTypes, UserRequest ureq) {
 		Roles roles = ureq.getUserSession().getRoles();
-		return limitTypes != null && limitTypes.length == 1 && "CourseModule".equals(limitTypes[0])
+		return limitingTypes != null && limitingTypes.length == 1 && "CourseModule".equals(limitingTypes[0])
 				&& (roles.isOLATAdmin() ||
 						(roles.isInstitutionalResourceManager() && roles.isGroupManager()) ||
 						(roles.isGroupManager()
@@ -349,7 +349,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 				// user selected entry to get a preview
 				selectedRepositoryEntry = searchCtr.getSelectedEntry();
 				RepositoryEntry repositoryEntry = searchCtr.getSelectedEntry();
-				RepositoryHandler typeToLaunch = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
+				RepositoryHandler typeToLaunch = repositoryHandlerFactory.getRepositoryHandler(repositoryEntry);
 				if (typeToLaunch == null) {
 					StringBuilder sb = new StringBuilder(translate("error.launch"));
 					sb.append(": No launcher for repository entry: ");

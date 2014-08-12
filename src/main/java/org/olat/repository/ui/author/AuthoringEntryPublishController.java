@@ -183,15 +183,14 @@ public class AuthoringEntryPublishController extends FormBasicController {
 		setFormTitle("rentry.publish");
 		setFormContextHelp("org.olat.repository", "rep-meta-olatauthorEd.html", "help.hover.rep.detail");
 
-
-		String type = entry.getOlatResource().getResourceableTypeName();
-		if (TestFileResource.TYPE_NAME.equals(type)
-			|| SurveyFileResource.TYPE_NAME.equals(type)
-			|| ScormCPFileResource.TYPE_NAME.equals(type)) {
+		String resourceType = entry.getOlatResource().getResourceableTypeName();
+		if (TestFileResource.TYPE_NAME.equals(resourceType)
+			|| SurveyFileResource.TYPE_NAME.equals(resourceType)
+			|| ScormCPFileResource.TYPE_NAME.equals(resourceType)) {
 			String warning = translate("warn.resource.need.course");
 			flc.contextPut("off_warn", warning);
 		}
-		if (CourseModule.ORES_TYPE_COURSE.equals(type)) {
+		if (CourseModule.ORES_TYPE_COURSE.equals(resourceType)) {
 			setFormDescription("rentry.publish.course.desc");			
 		} else {
 			setFormDescription("rentry.publish.other.desc");			

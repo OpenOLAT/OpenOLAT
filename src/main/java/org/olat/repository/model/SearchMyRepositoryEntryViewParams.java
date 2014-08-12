@@ -200,6 +200,7 @@ public class SearchMyRepositoryEntryViewParams {
 	}
 	
 	public enum Filter {
+		showAll,
 		currentCourses,
 		oldCourses,
 		upcomingCourses,

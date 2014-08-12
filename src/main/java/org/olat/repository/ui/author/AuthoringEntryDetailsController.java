@@ -334,7 +334,7 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 			String cssClass = RepositoyUIFactory.getIconCssClass(entry);
 			layoutCont.contextPut("cssClass", cssClass);
 			
-			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
+			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(entry);
 			VFSContainer mediaContainer = handler.getMediaContainer(entry);
 			if(mediaContainer != null) {
 				baseUrl = registerMapper(ureq, new VFSContainerMapper(mediaContainer.getParentContainer()));
@@ -452,8 +452,8 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
-		ContextEntry entry = entries.get(0);
-		String segment = entry.getOLATResourceable().getResourceableTypeName();
+		ContextEntry contextEntry = entries.get(0);
+		String segment = contextEntry.getOLATResourceable().getResourceableTypeName();
 		if(EDIT_SETTINGS_ORES.getResourceableTypeName().equals(segment)) {
 			doEditSettings(ureq);
 		}
@@ -573,7 +573,7 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(wc);
 		
-		RepositoryHandler repoHandler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
+		RepositoryHandler repoHandler = repositoryHandlerFactory.getRepositoryHandler(entry);
 		wc = repoHandler.createCloseResourceController(ureq, getWindowControl(), entry);
 		listenTo(wc);
 		wc.startWorkflow();
@@ -606,7 +606,7 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 	}
 	
 	private void doDownload(UserRequest ureq, boolean backwardsCompatible) {
-		RepositoryHandler typeToDownload = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
+		RepositoryHandler typeToDownload = repositoryHandlerFactory.getRepositoryHandler(entry);
 		if (typeToDownload == null) {
 			StringBuilder sb = new StringBuilder(translate("error.download"));
 			sb.append(": No download handler for repository entry: ")

@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.LockModeType;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
@@ -878,9 +877,10 @@ public class RepositoryManager extends BasicManager {
 	 */
 	public List<RepositoryEntry> queryByInitialAuthor(String initialAuthor) {
 		String query = "select v from org.olat.repository.RepositoryEntry v where v.initialAuthor= :initialAuthor";
-		DBQuery dbquery = dbInstance.createQuery(query);
-		dbquery.setString("initialAuthor", initialAuthor);
-		return dbquery.list();
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, RepositoryEntry.class)
+				.setParameter("initialAuthor", initialAuthor)
+				.getResultList();
 	}
 
 	/**
@@ -1098,14 +1098,14 @@ public class RepositoryManager extends BasicManager {
 	}
 	
 	public int countGenericANDQueryWithRolesRestriction(SearchRepositoryEntryParameters params) {
-		Query dbQuery = createGenericANDQueryWithRolesRestriction(params, false, true);
-		Number count = (Number)dbQuery.getSingleResult();
+		TypedQuery<Number> dbQuery = createGenericANDQueryWithRolesRestriction(params, false, Number.class);
+		Number count = dbQuery.getSingleResult();
 		return count.intValue();
 	}
 	
 	public List<RepositoryEntry> genericANDQueryWithRolesRestriction(SearchRepositoryEntryParameters params, int firstResult, int maxResults, boolean orderBy) {
 		
-		Query dbQuery = createGenericANDQueryWithRolesRestriction(params, orderBy, false);
+		TypedQuery<RepositoryEntry> dbQuery = createGenericANDQueryWithRolesRestriction(params, orderBy, RepositoryEntry.class);
 		dbQuery.setFirstResult(firstResult);
 		if(maxResults > 0) {
 			dbQuery.setMaxResults(maxResults);
@@ -1114,7 +1114,7 @@ public class RepositoryManager extends BasicManager {
 		return res;
 	}
 	
-	private Query createGenericANDQueryWithRolesRestriction(SearchRepositoryEntryParameters params, boolean orderBy, boolean count) {
+	private <T> TypedQuery<T> createGenericANDQueryWithRolesRestriction(SearchRepositoryEntryParameters params, boolean orderBy, Class<T> type) {
 		String displayName = params.getDisplayName();
 		String author = params.getAuthor();
 		String desc = params.getDesc();
@@ -1128,6 +1128,7 @@ public class RepositoryManager extends BasicManager {
 		boolean var_displayname = StringHelper.containsNonWhitespace(displayName);
 		boolean var_desc = StringHelper.containsNonWhitespace(desc);
 		boolean var_resourcetypes = (resourceTypes != null && resourceTypes.size() > 0);
+		boolean count = Number.class.equals(type);
 		
 		StringBuilder query = new StringBuilder();
 		if(count) {
@@ -1264,7 +1265,7 @@ public class RepositoryManager extends BasicManager {
 			query.append(" order by v.displayname, v.key ASC");
 		}
 		
-		Query dbQuery = dbInstance.getCurrentEntityManager().createQuery(query.toString());
+		TypedQuery<T> dbQuery = dbInstance.getCurrentEntityManager().createQuery(query.toString(), type);
 		if(institut) {
 			dbQuery.setParameter("institution", institution);
 		}

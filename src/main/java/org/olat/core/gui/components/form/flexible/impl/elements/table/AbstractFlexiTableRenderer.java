@@ -230,8 +230,11 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			} else {
 				sb.append("<li><a href=\"javascript:")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, new NameValuePair("filter", filter.getFilter())))
-				  .append("\">").append("<i class='o_icon o_icon_check o_icon-fw'> </i> ", filter.isSelected())
-				  .append(filter.getLabel()).append("</a></li>");
+				  .append("\">").append("<i class='o_icon o_icon_check o_icon-fw'> </i> ", filter.isSelected());
+				if(filter.getIconLeftCSS() != null) {
+					sb.append("<i class='o_icon ").append(filter.getIconLeftCSS()).append("'> </i> ");
+				}
+				sb.append(filter.getLabel()).append("</a></li>");
 				if(filter.isSelected()) {
 					selected = filter.getLabel();
 				}

@@ -121,12 +121,12 @@ public class SharedFolderSecurityCallback implements VFSSecurityCallback {
 	 * 
 	 * @param path
 	 */
-	private void initSharedFolderQuota(String relPath) {
+	private void initSharedFolderQuota(String path) {
 		QuotaManager qm = QuotaManager.getInstance();
-		sharedFolderQuota = qm.getCustomQuota(relPath);
+		sharedFolderQuota = qm.getCustomQuota(path);
 		if (sharedFolderQuota == null) {
 			Quota defQuota = qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_COURSE);
-			sharedFolderQuota = QuotaManager.getInstance().createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
+			sharedFolderQuota = QuotaManager.getInstance().createQuota(path, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
 		}
 	}
 

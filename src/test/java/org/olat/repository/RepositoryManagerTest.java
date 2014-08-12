@@ -252,6 +252,18 @@ public class RepositoryManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void queryByInitialAuthor() {
+		String initialAuthor = UUID.randomUUID().toString();
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(initialAuthor, false);
+		dbInstance.commitAndCloseSession();
+
+		List<RepositoryEntry> reList = repositoryManager.queryByInitialAuthor(initialAuthor);
+		Assert.assertNotNull(reList);
+		Assert.assertEquals(1, reList.size());
+		Assert.assertEquals(re, reList.get(0));
+	}
+	
+	@Test
 	public void getLearningResourcesAsStudent() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-stud-la-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);

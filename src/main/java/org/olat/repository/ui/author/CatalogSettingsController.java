@@ -203,11 +203,11 @@ class CatalogSettingsController extends FormBasicController {
 
 		@Override
 		public Object getValueAt(int row, int col) {
-			CatalogEntry entry = getObject(row);
+			CatalogEntry catEntry = getObject(row);
 			if(col == 0) {
 				// calculate cat entry path: travel up to the root node
 				String path = "";
-				CatalogEntry tempEntry = entry;
+				CatalogEntry tempEntry = catEntry;
 				while (tempEntry != null) {
 					path = "/" + tempEntry.getName() + path;
 					tempEntry = tempEntry.getParent();

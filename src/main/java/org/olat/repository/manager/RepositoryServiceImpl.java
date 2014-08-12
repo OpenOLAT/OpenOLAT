@@ -97,6 +97,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Autowired
 	private RepositoryEntryAuthorQueries authorViewQueries;
 	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
+	@Autowired
 	private OLATResourceManager resourceManager;
 	@Autowired
 	private UserCourseInformationsManager userCourseInformationsManager;
@@ -209,7 +211,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 
 	@Override
 	public VFSLeaf getIntroductionMovie(RepositoryEntry re) {
-		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
+		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(re);
 		VFSContainer mediaContainer = handler.getMediaContainer(re);
 		if(mediaContainer != null) {
 			List<VFSItem> items = mediaContainer.getItems();
@@ -233,7 +235,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 		if(debug) log.debug("deleteRepositoryEntry start entry=" + entry);
 		entry = (RepositoryEntry) dbInstance.loadObject(entry,true);
 		if(debug) log.debug("deleteRepositoryEntry after load entry=" + entry);
-		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
+		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(entry);
 		OLATResource resource = entry.getOlatResource();
 		//delete old context
 		if (!handler.readyToDelete(resource, identity, roles, locale, errors)) {

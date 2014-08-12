@@ -349,13 +349,12 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	
 	public void addObject(RepositoryEntry object) {
 		getObjects().add(object);
-		List<RepositoryEntry> objects = Collections.singletonList(object);
-		secondaryInformations(objects);
+		secondaryInformations(Collections.singletonList(object));
 	}
 	
-	public void addObjects(List<RepositoryEntry> objects) {
-		getObjects().addAll(objects);
-		secondaryInformations(objects);
+	public void addObjects(List<RepositoryEntry> addedObjects) {
+		getObjects().addAll(addedObjects);
+		secondaryInformations(addedObjects);
 	}
 	
 	private void secondaryInformations(List<RepositoryEntry> repoEntries) {

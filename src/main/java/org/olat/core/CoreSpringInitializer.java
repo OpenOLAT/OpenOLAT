@@ -61,8 +61,8 @@ public class CoreSpringInitializer implements ApplicationContextInitializer<Conf
 		}
 
 		@Override
-		public Object getProperty(String name) {
-			if("jms.provider".equals(name)) {
+		public Object getProperty(String propertyName) {
+			if("jms.provider".equals(propertyName)) {
 				return jmsProvider;
 			}
 			return null;

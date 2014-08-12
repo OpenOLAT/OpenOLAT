@@ -51,6 +51,8 @@ public class AuthoringEditEntrySettingsController extends BasicController {
 	private RepositoryEntry entry;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public AuthoringEditEntrySettingsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntryRef entryRef) {
@@ -68,7 +70,7 @@ public class AuthoringEditEntrySettingsController extends BasicController {
 		tabbedPane.addTab(translate("tab.public"), descriptionCtrl.getInitialComponent());
 		tabbedPane.addTab(translate("tab.accesscontrol"), accessCtrl.getInitialComponent());
 		
-		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
+		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(entry);
 		handler.addExtendedEditionControllers(ureq, getWindowControl(), this, entry);
 		
 		putInitialPanel(tabbedPane);

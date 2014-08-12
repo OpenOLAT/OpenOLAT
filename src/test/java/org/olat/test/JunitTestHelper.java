@@ -170,17 +170,21 @@ public class JunitTestHelper {
 	}
 	
 	public static final RepositoryEntry createAndPersistRepositoryEntry(boolean membersOnly) {
+		return createAndPersistRepositoryEntry("Florian Gnägi", membersOnly);
+	}
+	
+	public static final RepositoryEntry createAndPersistRepositoryEntry(String initialAuthor, boolean membersOnly) {
 		OLATResourceManager resourceManager = OLATResourceManager.getInstance();
 		String resourceName = UUID.randomUUID().toString().replace("-", "").substring(0, 30);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(resourceName, CodeHelper.getForeverUniqueID());
 		OLATResource r =  resourceManager.createOLATResourceInstance(ores);
 		resourceManager.saveOLATResource(r);
-		return createAndPersistRepositoryEntry(r, membersOnly);
+		return createAndPersistRepositoryEntry(initialAuthor, r, membersOnly);
 	}
 	
-	public static final RepositoryEntry createAndPersistRepositoryEntry(OLATResource r, boolean membersOnly) {
+	private static final RepositoryEntry createAndPersistRepositoryEntry(String initialAuthor, OLATResource r, boolean membersOnly) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		RepositoryEntry re = repositoryService.create("Florian Gnägi", "Lernen mit OLAT", r.getResourceableTypeName(), null, r);
+		RepositoryEntry re = repositoryService.create(initialAuthor, "Lernen mit OLAT", r.getResourceableTypeName(), null, r);
 		if(membersOnly) {
 			re.setAccess(RepositoryEntry.ACC_OWNERS);
 			re.setMembersOnly(true);

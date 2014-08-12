@@ -350,6 +350,7 @@ public class RepositoryEntryMyCourseQueries {
 	
 	private void appendFiltersInWhereClause(Filter filter, StringBuilder sb) {
 		switch(filter) {
+			case showAll: break;
 			case currentCourses:
 				sb.append(" and lifecycle.validFrom<=:now and lifecycle.validTo>=:now");
 				break;
@@ -374,7 +375,7 @@ public class RepositoryEntryMyCourseQueries {
 				  .append("    where eff4.resource=res and eff4.identity=ident and eff4.passed is null")
 				  .append(" )");
 				break;
-			default: //do nothing
+			default: {}
 		}
 	}
 	
@@ -455,7 +456,12 @@ public class RepositoryEntryMyCourseQueries {
 					break;
 				case rating:
 					sb.append(" order by v.statistics.rating ");
-					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					if(asc) {
+						sb.append(" asc nulls first");
+					} else {
+						sb.append(" desc nulls last");
+					}
+					sb.append(", lower(v.displayname) asc");
 					break;
 				case key:
 					sb.append(" order by v.key");
