@@ -29,14 +29,16 @@ public enum LandingPages {
 	
 	myCourses("page.myCourses", "/MyCoursesSite/0"),
 	myFavoritCourses("page.myFavoritCourses", "/MyCoursesSite/0/Favorits/0"),
-	catalog("page.catalog", "/CatalogEntry/0"),
+	coursesCatalog("page.coursesCatalog", "/MyCoursesSite/0/Catalog/0"),
 	myGroups("page.groups", "/GroupsSite/0/MyGroups/0"),
 	myFavoritGroups("page.myFavoritGroups", "/GroupsSite/0/MyGroups/0/Favorits/0"),
 	myNotifications("page.myNotifications", "/HomeSite/0/notifications/0"),
 	myPortfolios("page.myPortfolio", "/HomeSite/0/Portfolio/0"),
 	infoPage1("page.infoPage1", "/CourseSite/1"),
 	infoPage2("page.infoPage2", "/CourseSite/2"),
-	learnResources("page.learnResources", "/RepositorySite/0");
+	learnResources("page.learnResources", "/RepositorySite/0"),
+	catalog("page.catalog", "/CatalogEntry/0"),
+	portal("page.portal", "	/Portal/0");
 	
 	private String i18nKey;
 	private String businessPath;
