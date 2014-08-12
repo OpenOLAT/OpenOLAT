@@ -43,14 +43,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EPViewModeController extends FormBasicController {
 
-	private FormLink tableLink;
-	private FormLink detailsLink;
 	public static final String VIEWMODE_TABLE = "table";
 	public static final String VIEWMODE_DETAILS = "details";
 	public static final String VIEWMODE_CONTEXT_ARTEFACTPOOL = "artefact";
 	public static final String VIEWMODE_CONTEXT_MAP = "map";
 	public static final String VIEWMODE_CHANGED_EVENT_CMD = "viewModeChangedEventCommand";
 
+	private FormLink tableLink, detailsLink;
+	
 	@Autowired
 	private EPFrontendManager ePFMgr;
 	private String userPrefsMode;
@@ -75,13 +75,13 @@ public class EPViewModeController extends FormBasicController {
 	}
 	
 	public void selectDetails() {
-		tableLink.setIconLeftCSS(null);
-		detailsLink.setIconLeftCSS("o_icon o_icon_check o_icon-lg");
+		tableLink.setElementCssClass(null);
+		detailsLink.setElementCssClass("active");
 	}
 	
 	public void selectTable() {
-		tableLink.setIconLeftCSS("o_icon o_icon_check o_icon-lg");
-		detailsLink.setIconLeftCSS(null);
+		tableLink.setElementCssClass("active");
+		detailsLink.setElementCssClass(null);
 	}
 
 	/**

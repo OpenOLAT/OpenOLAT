@@ -306,7 +306,7 @@ public class CPTreeDataModel extends GenericTreeModel implements DnDTreeModel {
 		}
 	}
 
-	public void removePath(String identifier) {
+	public void removePath() {
 		update();
 	}
 }

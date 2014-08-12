@@ -18,6 +18,9 @@ jQuery(function() {
 		var targetOffset = targetEl.offset();
 		if(targetOffset) {
 			var callout = jQuery(el);
+			callout.css('display','block').css('z-index', o_info.zseed + 105);
+			jQuery('#callout_overlay_$r.getCId()').css('z-index', o_info.zseed + 103);
+			
 			var docWidth = jQuery(document).width();
 			if(targetOffset.left >= 0 && callout.width() > 50 && targetOffset.left <= (callout.width() / 2)) {
 				## left edge case: show at left border
@@ -44,12 +47,10 @@ jQuery(function() {
 			} else {
 				## standard case: show centered below element
 				callout.offset({
-					top: (targetOffset.top + targetEl.height() + 15) ,
+					top: (targetOffset.top + targetEl.height() + 25),
 					left: (targetOffset.left + targetEl.width()) - callout.width()/2 
 				});
 			}
-			callout.css('display','block').css('z-index', o_info.zseed + 105);
-			jQuery('#callout_overlay_$r.getCId()').css('z-index', o_info.zseed + 103);
 		}
 	});
 });

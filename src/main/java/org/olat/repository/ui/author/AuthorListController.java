@@ -233,6 +233,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_coursetable");
 		tableEl.setMultiSelect(true);
+		tableEl.setSelectAllEnable(true);
 		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
 		tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(OrderBy.displayname.name(), true)));
 		tableEl.setAndLoadPersistedPreferences(ureq, "authors-list-" + i18nName);

@@ -461,6 +461,11 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			boolean ok = repositoryManager.setImage(newFile, repositoryEntry);
 			if (!ok) {
 				showError("Failed");
+			} else {
+				VFSLeaf image = repositoryManager.getImage(repositoryEntry);
+				if(image instanceof  LocalFileImpl) {
+					fileUpload.setInitialFile(((LocalFileImpl)image).getBasefile());
+				}
 			}
 			container.delete();
 		}

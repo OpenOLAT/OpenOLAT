@@ -257,18 +257,11 @@ public class GlossaryMainController extends BasicController implements Activatea
 				updateRegisterAndGlossaryItems();
 			}
 		}
-
 	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
-		
-		String viewIdentifier = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if (viewIdentifier != null){
-			boolean allowEdit = Boolean.parseBoolean(viewIdentifier);
-			initEditView(ureq, allowEdit);
-		}
+		//
 	}
 
 	private void updateRegisterAndGlossaryItems(){
@@ -334,8 +327,8 @@ public class GlossaryMainController extends BasicController implements Activatea
 	 * @param allowGlossaryEditing
 	 */
 	private void initEditView(UserRequest ureq, boolean allowGlossaryEditing) {
-
-		glistVC.contextPut("editModeEnabled", Boolean.valueOf(allowGlossaryEditing));
+		Boolean editModeEnabled = Boolean.valueOf(allowGlossaryEditing);
+		glistVC.contextPut("editModeEnabled", editModeEnabled);
 		if (allowGlossaryEditing) {
 			// try to get lock for this glossary
 			lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(resourceable, ureq.getIdentity(), "GlossaryEdit");

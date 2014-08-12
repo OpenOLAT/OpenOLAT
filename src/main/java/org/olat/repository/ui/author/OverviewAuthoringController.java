@@ -77,6 +77,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		mainPanel.setContent(mainVC);
 
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		segmentView.setReselect(true);
 		favoriteLink = LinkFactory.createLink("search.mark", mainVC, this);
 		segmentView.addSegment(favoriteLink, false);
 		myEntriesLink = LinkFactory.createLink("search.my", mainVC, this);

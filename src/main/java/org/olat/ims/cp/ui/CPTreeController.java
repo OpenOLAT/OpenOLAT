@@ -162,7 +162,7 @@ public class CPTreeController extends BasicController {
 			// no page selected
 		} else {
 			CPManager cpMgm = CPManager.getInstance();
-			treeModel.removePath(identifier);
+			treeModel.removePath();
 			cpMgm.removeElement(cp, identifier, deleteResource);
 			cpMgm.writeToFile(cp);
 			updateTree();

@@ -84,8 +84,6 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 	private static final String PANE_TAB_DELIVERYOPTIONS = "pane.tab.deliveryOptions";
 	private static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "reporef";
 	private static final String VC_CHOSENCP = "chosencp";
-	//fxdiff VCRP-13: cp navigation
-	public static final String CONFIG_SHOWNAVBUTTONS = "shownavbuttons";
 	public static final String CONFIG_DELIVERYOPTIONS = "deliveryOptions";
   
 	// NLS support:	
@@ -168,8 +166,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 		}
 		
 		Boolean cpMenu = config.getBooleanEntry(NodeEditController.CONFIG_COMPONENT_MENU);
-		Boolean cpNavButtons = config.getBooleanEntry(CPEditController.CONFIG_SHOWNAVBUTTONS);
-		cpMenuForm = new CompMenuForm(ureq, wControl, cpMenu, cpNavButtons);
+		cpMenuForm = new CompMenuForm(ureq, wControl, cpMenu);
 		listenTo(cpMenuForm);
 		
 		cpConfigurationVc.put("cpMenuForm", cpMenuForm.getInitialComponent());
@@ -271,8 +268,6 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 		} else if (source == cpMenuForm) {
 			if (event == Event.DONE_EVENT) {
 				config.setBooleanEntry(NodeEditController.CONFIG_COMPONENT_MENU, cpMenuForm.isCpMenu());
-				//fxdiff VCRP-13: cp navigation
-				config.setBooleanEntry(CPEditController.CONFIG_SHOWNAVBUTTONS, cpMenuForm.isCpNavButtons());
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if (source == deliveryOptionsCtrl) {
@@ -384,32 +379,18 @@ class CompMenuForm extends FormBasicController {
 	 * 
 	 * @author Lars Eberle (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
 	 */
-
-	// NLS support:
-	private static final String NLS_DISPLAY_CONFIG_COMPMENU = "display.config.compMenu";
-	private static final String NLS_DISPLAY_CONFIG_COMP_NEXT_PREVIOUS = "display.config.compNextPrevious";
-
 	private SelectionElement cpMenu;
-	private SelectionElement cpNavButtons;
 
 	private boolean compMenuConfig;
-	private boolean compNavButtonsConfig;
 
-	
-	CompMenuForm(UserRequest ureq, WindowControl wControl, Boolean compMenuConfig, Boolean compNavButtons) {
+	CompMenuForm(UserRequest ureq, WindowControl wControl, Boolean compMenuConfig) {
 		super(ureq, wControl);
 		compMenuConfig = compMenuConfig == null ? true:compMenuConfig.booleanValue();
-		//fxdiff VCRP-13: cp navigation
-		compNavButtonsConfig = compNavButtons == null ? true:compNavButtons.booleanValue();
 		initForm(ureq);
 	}
 
 	public boolean isCpMenu() {
 		return cpMenu.isSelected(0);
-	}
-	
-	public boolean isCpNavButtons() {
-		return cpNavButtons.isSelected(0);
 	}
 	
 	@Override
@@ -419,12 +400,9 @@ class CompMenuForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {	
-		cpMenu = uifactory.addCheckboxesVertical("cpMenu", NLS_DISPLAY_CONFIG_COMPMENU, formLayout, new String[]{"xx"}, new String[]{null}, 1);
+		cpMenu = uifactory.addCheckboxesVertical("cpMenu", "display.config.compMenu", formLayout, new String[]{"xx"}, new String[]{null}, 1);
 		cpMenu.select("xx",compMenuConfig);
-		
-		cpNavButtons = uifactory.addCheckboxesVertical("cpNextPrevious", NLS_DISPLAY_CONFIG_COMP_NEXT_PREVIOUS, formLayout, new String[]{"xx"}, new String[]{null}, 1);
-		cpNavButtons.select("xx",compNavButtonsConfig);
-		
+
 		uifactory.addFormSubmitButton("submit", formLayout);
 	}
 

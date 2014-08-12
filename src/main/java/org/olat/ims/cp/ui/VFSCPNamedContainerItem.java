@@ -79,12 +79,12 @@ public class VFSCPNamedContainerItem extends NamedLeaf implements VFSContainer {
 	}
 
 	@Override
-	public VFSContainer createChildContainer(String name) {
+	public VFSContainer createChildContainer(String containerName) {
 		return null;
 	}
 
 	@Override
-	public VFSLeaf createChildLeaf(String name) {
+	public VFSLeaf createChildLeaf(String leafName) {
 		return null;
 	}
 	

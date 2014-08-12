@@ -44,6 +44,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -747,12 +748,13 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		removeAsListenerAndDispose(groupListCtr);
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("groupchoose.nogroups"));
-		//fxdiff VCRP-4: assessment overview with max score
 		tableConfig.setPreferencesOffered(true, "assessmentGroupList");
 		groupListCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 		listenTo(groupListCtr);
 		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.group.name", 0, CMD_CHOOSE_GROUP, ureq.getLocale()));
-		groupListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.group.desc", 1, null, ureq.getLocale()));
+		DefaultColumnDescriptor desc = new DefaultColumnDescriptor("table.group.desc", 1, null, ureq.getLocale());
+		desc.setEscapeHtml(EscapeMode.antisamy);
+		groupListCtr.addColumnDescriptor(desc);
 
 		// loop over all groups to filter depending on condition
 		List<BusinessGroup> currentGroups = new ArrayList<BusinessGroup>();
@@ -781,7 +783,6 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 
 	private void doUserChooseWithData(UserRequest ureq, List<Identity> identities, BusinessGroup group, AssessableCourseNode courseNode) {
 		ICourse course = CourseFactory.loadCourse(ores);
-		//fxdiff FXOLAT-108: improve results table of tests
 		if (mode == MODE_GROUPFOCUS || mode == MODE_USERFOCUS) {
 			nodeFilters = getNodeFilters(course.getRunStructure().getRootNode(), group);
 		}		
@@ -792,7 +793,6 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		if(mode == MODE_USERFOCUS) {
 			tableConfig.setPreferencesOffered(true, "assessmentSimpleUserList");
 		} else if(mode == MODE_GROUPFOCUS){
-			//fxdiff VCRP-4: assessment overview with max score
 			tableConfig.setPreferencesOffered(true, "assessmentGroupUsersNode");
 		} else if (mode == MODE_NODEFOCUS) {
 			tableConfig.setPreferencesOffered(true, "assessmentUserNodeList");

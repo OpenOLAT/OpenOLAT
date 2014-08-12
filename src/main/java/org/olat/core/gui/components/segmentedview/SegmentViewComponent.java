@@ -35,6 +35,7 @@ import org.olat.core.gui.control.Event;
 
 public class SegmentViewComponent extends AbstractComponent  {
 	
+	private boolean reselect;
 	private boolean allowNoSelection;
 	private boolean allowMultipleSelection;
 	
@@ -61,6 +62,19 @@ public class SegmentViewComponent extends AbstractComponent  {
 
 	public void setAllowNoSelection(boolean allowNoSelection) {
 		this.allowNoSelection = allowNoSelection;
+	}
+
+	public boolean isReselect() {
+		return reselect;
+	}
+
+	/**
+	 * If a segment is selectable and clicked, send
+	 * a select event. Default is false.
+	 * @param reselect
+	 */
+	public void setReselect(boolean reselect) {
+		this.reselect = reselect;
 	}
 
 	public boolean isEmpty() {
@@ -146,6 +160,8 @@ public class SegmentViewComponent extends AbstractComponent  {
 					if(isAllowNoSelection() || selectedSegments.size() > 1) {
 						e = new SegmentViewEvent(SegmentViewEvent.DESELECTION_EVENT, segment.getComponentName(), count);
 						selectedSegments.remove(segment);
+					} else if(isReselect()) {
+						e = new SegmentViewEvent(SegmentViewEvent.SELECTION_EVENT, segment.getComponentName(), count);
 					}
 				} else {
 					if(!isAllowMultipleSelection()) {

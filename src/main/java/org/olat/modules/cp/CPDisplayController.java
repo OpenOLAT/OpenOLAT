@@ -92,8 +92,7 @@ public class CPDisplayController extends BasicController implements Activateable
 	private HtmlStaticPageComponent cpComponent;
 	private IFrameDisplayController cpContentCtr;
 	private SearchInputController searchCtrl;
-	private Link nextLink;
-	private Link previousLink;
+	private Link nextLink, previousLink;
 	private Link printLink;
 	private String mapperBaseURL;
 	private CPPrintMapper printMapper;
@@ -105,6 +104,7 @@ public class CPDisplayController extends BasicController implements Activateable
 	 * @param ureq
 	 * @param cpRoot
 	 * @param showMenu
+	 * @param showNavigation Show the next/previous link
 	 * @param activateFirstPage
 	 */
 	CPDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, boolean showMenu, boolean showNavigation,
@@ -113,7 +113,7 @@ public class CPDisplayController extends BasicController implements Activateable
 		this.rootContainer = rootContainer;
 
 		// wrapper velocity container for page content
-		this.myContent = createVelocityContainer("cpcontent");
+		myContent = createVelocityContainer("cpcontent");
 		// the cp component, added to the velocity
 		
 		if(!ureq.getUserSession().getRoles().isGuestOnly()) {

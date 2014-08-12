@@ -87,6 +87,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		mainPanel.setContent(mainVC);
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		segmentView.setReselect(true);
 		favoriteLink = LinkFactory.createLink("search.mark", mainVC, this);
 		favoriteLink.setElementCssClass("o_sel_mycourses_fav");
 		segmentView.addSegment(favoriteLink, false);

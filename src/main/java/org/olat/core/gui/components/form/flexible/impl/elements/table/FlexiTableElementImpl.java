@@ -645,7 +645,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	 */
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
-		String[] selectedIndexArr = getRootForm().getRequestParameterValues("to_ms");
+		String[] selectedIndexArr = getRootForm().getRequestParameterValues("tb_ms");
 		if(selectedIndexArr != null) {
 			setMultiSelectIndex(selectedIndexArr);
 		}

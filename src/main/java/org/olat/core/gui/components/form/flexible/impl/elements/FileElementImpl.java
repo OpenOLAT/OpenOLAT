@@ -434,7 +434,9 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 			}
 			// Move file now
 			File targetFile = new File(destinationDir, uploadFilename);
-			if (FileUtils.copyFileToFile(tempUploadFile, targetFile, true)) { return targetFile; }
+			if (FileUtils.copyFileToFile(tempUploadFile, targetFile, true)) {
+				return targetFile;
+			}
 		}
 		return null;
 	}

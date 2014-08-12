@@ -201,9 +201,8 @@ public class CPRunController extends BasicController implements ControllerEventL
 		if ( (nodecmd != null) && !nodecmd.equals("") ) {
  		  activateFirstPage = false; 
 		}
-		//fxdiff VCRP-13: cp navigation
-		boolean navButtons = isNavButtonConfigured();
-		cpDispC = CPUIFactory.getInstance().createContentOnlyCPDisplayController(ureq, getWindowControl(), new LocalFolderImpl(cpRoot), activateFirstPage, navButtons, deliveryOptions, nodecmd, courseResource);
+		cpDispC = CPUIFactory.getInstance().createContentOnlyCPDisplayController(ureq, getWindowControl(), new LocalFolderImpl(cpRoot),
+				activateFirstPage, false, deliveryOptions, nodecmd, courseResource);
 		cpDispC.setContentEncoding(deliveryOptions.getContentEncoding());
 		cpDispC.setJSEncoding(deliveryOptions.getJavascriptEncoding());
 		cpDispC.addControllerListener(this);
@@ -230,14 +229,6 @@ public class CPRunController extends BasicController implements ControllerEventL
 	 */
 	private boolean isExternalMenuConfigured() {
 		return (config.getBooleanEntry(NodeEditController.CONFIG_COMPONENT_MENU).booleanValue());
-	}
-
-	/**
-	 * @return true: show next-previous buttons; false: hide next-previous buttons
-	 */
-	private boolean isNavButtonConfigured() {
-		Boolean navButton = config.getBooleanEntry(CPEditController.CONFIG_SHOWNAVBUTTONS);
-		return navButton == null ? true : navButton.booleanValue();
 	}
 	
 	/**

@@ -188,8 +188,6 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 			// use defaults for new course building blocks
 			config.setBooleanEntry(NodeEditController.CONFIG_STARTPAGE, Boolean.FALSE.booleanValue());
 			config.setBooleanEntry(NodeEditController.CONFIG_COMPONENT_MENU, Boolean.TRUE.booleanValue());
-			// cp navigation
-			config.setBooleanEntry(CPEditController.CONFIG_SHOWNAVBUTTONS, Boolean.TRUE.booleanValue());
 			// how to render files (include jquery etc)
 			DeliveryOptions nodeDeliveryOptions = DeliveryOptions.defaultWithGlossary();
 			nodeDeliveryOptions.setInherit(Boolean.TRUE);
@@ -212,11 +210,6 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 				config.set(NodeEditController.CONFIG_CONTENT_ENCODING, NodeEditController.CONFIG_CONTENT_ENCODING_AUTO);
 				config.set(NodeEditController.CONFIG_JS_ENCODING, NodeEditController.CONFIG_JS_ENCODING_AUTO);
 				config.setConfigurationVersion(3);
-			}
-			
-			if(config.getConfigurationVersion() < 4) {
-				config.setBooleanEntry(CPEditController.CONFIG_SHOWNAVBUTTONS, Boolean.TRUE.booleanValue());
-				config.setConfigurationVersion(4);
 			}
 			// Version 5 was ineffective since the delivery options were not set. We have to redo this and
 			// save it as version 6
