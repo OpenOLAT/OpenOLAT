@@ -125,10 +125,9 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	 */
 	protected void updateUserEfficiencyStatement(UserCourseEnvironment userCourseEnv) {
 		Long courseResId = userCourseEnv.getCourseEnvironment().getCourseResourceableId(); 
-		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(
-				OresHelper.createOLATResourceableInstance(CourseModule.class, courseResId), false);
-		ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseResourceableId());
-		updateUserEfficiencyStatement(userCourseEnv, re.getKey(), course);
+		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance(CourseModule.class, courseResId);
+		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(courseOres, false);
+		updateUserEfficiencyStatement(userCourseEnv, re.getKey(), courseOres);
 	}
 	
 	/**
@@ -137,7 +136,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	 * @param repoEntryKey
 	 * @param checkForExistingProperty
 	 */
-	private void updateUserEfficiencyStatement(final UserCourseEnvironment userCourseEnv, final Long repoEntryKey, ICourse course) {
+	private void updateUserEfficiencyStatement(final UserCourseEnvironment userCourseEnv, final Long repoEntryKey, OLATResourceable courseOres) {
     //	o_clusterOK: by ld
 		CourseConfig cc = userCourseEnv.getCourseEnvironment().getCourseConfig();
 		// write only when enabled for this course
@@ -194,7 +193,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 			
 			// send modified event to everybody
 			AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_EFFICIENCY_STATEMENT_CHANGED, identity);
-			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, courseOres);
 		}
 	}
 	
@@ -573,8 +572,8 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 						// create temporary user course env
 						UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
 						updateUserEfficiencyStatement(uce, re.getKey(), course);
-						}
-					});
+					}
+				});
 				if (Thread.interrupted()) break;
 			}
 			//}
