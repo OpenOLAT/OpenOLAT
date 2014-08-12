@@ -94,7 +94,7 @@ $r.renderHeaderIncludes()
 <title>$r.translate("page.appname") - $r.translate("error.header")</title>
 </head>
 
-<body id="o_body">
+<body id="o_body" class="o_exception">
 
 <div id="o_beta_logo"></div>
 
@@ -153,7 +153,7 @@ $r.renderHeaderIncludes()
 								<span>$r.translate("error.back")</span>
 							</a>
 						#end
-						<button type="submit" name="olat_fosm" value="$r.translateInAttribute('send.report')" class="btn btn-default btn-primary">
+						<button type="submit" name="olat_fosm" value="$r.translateInAttribute('send.report')" class="btn btn-default btn-danger">
 							<i class="o_icon o_icon_mail"></i> 
 							<span>$r.translateInAttribute('send.report')</span>
 						</button>				
