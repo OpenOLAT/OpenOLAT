@@ -88,7 +88,6 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.nodes.INode;
@@ -257,7 +256,7 @@ public class CourseFactory extends BasicManager {
 	public static ICourse createEmptyCourse(OLATResourceable ores, String shortTitle, String longTitle, String learningObjectives) {
 		PersistingCourseImpl newCourse = new PersistingCourseImpl(ores.getResourceableId());
 		// Put new course in course cache    
-		putCourseInCache(newCourse.getResourceableId() ,newCourse);
+		loadedCourses.put(newCourse.getResourceableId() ,newCourse);
 		
 		Structure initialStructure = new Structure();
 		CourseNode runRootNode = new STCourseNode();
@@ -286,25 +285,20 @@ public class CourseFactory extends BasicManager {
 	 */
 	public static ICourse loadCourse(final Long resourceableId) {
 		if (resourceableId == null) throw new AssertException("No resourceable ID found.");
-		PersistingCourseImpl course = getCourseFromCache(resourceableId);
+		PersistingCourseImpl course = loadedCourses.get(resourceableId);
 		if (course == null) {
 			// o_clusterOK by:ld - load and put in cache in doInSync block to ensure
 			// that no invalidate cache event was missed
-			if (log.isDebug()) log.debug("try to load course with resourceableId=" + resourceableId);
-			OLATResourceable courseResourceable = OresHelper.createOLATResourceableInstance(PersistingCourseImpl.class, resourceableId);
-			course = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(courseResourceable, new SyncerCallback<PersistingCourseImpl>() {
-				public PersistingCourseImpl execute() {
-					PersistingCourseImpl theCourse = getCourseFromCache(resourceableId);
-					if (theCourse == null) {
-						theCourse = new PersistingCourseImpl(resourceableId);
-						theCourse.load();
-						putCourseInCache(resourceableId, theCourse);
-					}
-					return theCourse;
-				}
-			});
+			PersistingCourseImpl theCourse = new PersistingCourseImpl(resourceableId);
+			theCourse.load();
+			
+			PersistingCourseImpl cachedCourse = loadedCourses.putIfAbsent(resourceableId, theCourse);
+			if(cachedCourse != null) {
+				course = cachedCourse;
+			} else {
+				course = theCourse;
+			}
 		}
-
 		return course;
 	}
 
@@ -317,25 +311,6 @@ public class CourseFactory extends BasicManager {
 	public static ICourse loadCourse(OLATResourceable olatResource) {
 		Long resourceableId = olatResource.getResourceableId();
 		return loadCourse(resourceableId);
-	}
-
-	/**
-	 * 
-	 * @param resourceableId
-	 * @return the PersistingCourseImpl instance for the input key.
-	 */
-	static PersistingCourseImpl getCourseFromCache(Long resourceableId) {	//o_clusterOK by:ld    
-		return loadedCourses.get(resourceableId);
-	}
-
-	/**
-	 * Puts silent.
-	 * @param resourceableId
-	 * @param course
-	 */
-	static void putCourseInCache(Long resourceableId, PersistingCourseImpl course) { //o_clusterOK by:ld    
-		loadedCourses.put(resourceableId, course);
-		log.debug("putCourseInCache ");
 	}
 			
 	/**
@@ -584,7 +559,7 @@ public class CourseFactory extends BasicManager {
 				CourseConfig cc = CourseConfigManagerImpl.getInstance().loadConfigFor(newCourse);								
 				//newCourse is not in cache yet, so we cannot call setCourseConfig()
 				newCourse.setCourseConfig(cc);
-				putCourseInCache(newCourse.getResourceableId(), newCourse);						
+				loadedCourses.put(newCourse.getResourceableId(), newCourse);						
 				return newCourse;
 			} catch (AssertException ae) {
 				// ok failed, cleanup below
@@ -968,13 +943,13 @@ public class CourseFactory extends BasicManager {
 				public void execute() {
 					final PersistingCourseImpl course = getCourseEditSession(resourceableId);
 					if(course!=null && course.isReadAndWrite()) {
-		        course.initHasAssessableNodes();
-		        course.saveRunStructure();
-		        course.saveEditorTreeModel();
+						course.initHasAssessableNodes();
+						course.saveRunStructure();
+						course.saveEditorTreeModel();
 		        
-		        //clear modifyCourseEvents at publish, since the updateCourseInCache is called anyway
-		        modifyCourseEvents.remove(resourceableId);
-		        updateCourseInCache(resourceableId, course);		        
+						//clear modifyCourseEvents at publish, since the updateCourseInCache is called anyway
+						modifyCourseEvents.remove(resourceableId);
+						updateCourseInCache(resourceableId, course);		        
 					} else if(!course.isReadAndWrite()) {
 						throw new AssertException("Cannot saveCourse because theCourse is readOnly! You have to open an courseEditSession first!");
 					}
@@ -1083,9 +1058,8 @@ public class CourseFactory extends BasicManager {
 				public void execute() {
 					PersistingCourseImpl course = getCourseEditSession(resourceableId);
 					if(course!=null) {
-					  course.setCourseConfig(cc);
-		    	    
-		        updateCourseInCache(resourceableId, course);
+						course.setCourseConfig(cc);
+						updateCourseInCache(resourceableId, course);
 					}
 				}
 			});
