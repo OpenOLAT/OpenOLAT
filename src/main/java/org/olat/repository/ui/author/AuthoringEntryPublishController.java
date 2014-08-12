@@ -212,7 +212,7 @@ public class AuthoringEntryPublishController extends FormBasicController {
 		canCopy.setEnabled(!managedSettings);
 		canDownload = uifactory.addCheckboxesVertical("cif_canDownload", null, authorConfigLayout, new String[] { YES_KEY }, new String[] { translate("cif.canDownload") }, 1);
 		canDownload.setEnabled(!managedSettings);
-		canDownload.setVisible(handler.supportsDownload(entry));
+		canDownload.setVisible(handler.supportsDownload());
 		uifactory.addSpacerElement("authorSpacer", authorConfigLayout, true);
 
 		String[] publishedValues;

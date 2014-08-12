@@ -218,17 +218,17 @@ public class PodcastHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public boolean supportsDownload(RepositoryEntry repoEntry) {
+	public boolean supportsDownload() {
 		return true;
 	}
 
 	@Override
-	public boolean supportsEdit(RepositoryEntry repoEntry) {
+	public boolean supportsEdit(OLATResourceable resource) {
 		return true;
 	}
 
 	@Override
-	public boolean supportsLaunch(RepositoryEntry repoEntry) {
+	public boolean supportsLaunch() {
 		return true;
 	}
 

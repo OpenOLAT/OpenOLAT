@@ -120,17 +120,17 @@ public interface RepositoryHandler {
 	/**
 	 * @return true if this handler supports donwloading Resourceables of its type.
 	 */
-	public boolean supportsDownload(RepositoryEntry repoEntry);
+	public boolean supportsDownload();
 	
 	/**
 	 * @return true if this handler supports launching Resourceables of its type.
 	 */
-	public boolean supportsLaunch(RepositoryEntry repoEntry);
+	public boolean supportsLaunch();
 
 	/**
 	 * @return true if this handler supports an editor for Resourceables of its type.
 	 */
-	public boolean supportsEdit(RepositoryEntry repoEntry);
+	public boolean supportsEdit(OLATResourceable resource);
 	
 	/**
 	 * Return the container where image and files can be saved for the description field.

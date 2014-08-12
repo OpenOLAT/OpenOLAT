@@ -105,18 +105,18 @@ public class QTISurveyHandler extends QTIHandler {
 	}
 
 	@Override
-	public boolean supportsLaunch(RepositoryEntry repoEntry) {
+	public boolean supportsLaunch() {
 		return true;
 	}
 
 	@Override
-	public boolean supportsDownload(RepositoryEntry repoEntry) {
+	public boolean supportsDownload() {
 		return true;
 	}
 
 	@Override
-	public boolean supportsEdit(RepositoryEntry repoEntry) {
-		if (OnyxModule.isOnyxTest(repoEntry.getOlatResource())) {
+	public boolean supportsEdit(OLATResourceable resource) {
+		if(resource != null && OnyxModule.isOnyxTest(resource)) {
 			return false;
 		}
 		return true;

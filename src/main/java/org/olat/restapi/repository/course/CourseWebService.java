@@ -242,7 +242,7 @@ public class CourseWebService {
 		if (!(isAuthor | isOwner)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		boolean canDownload = re.getCanDownload() && typeToDownload.supportsDownload(re);
+		boolean canDownload = re.getCanDownload() && typeToDownload.supportsDownload();
 		if (!canDownload) {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}

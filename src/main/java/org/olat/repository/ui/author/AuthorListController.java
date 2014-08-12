@@ -43,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
@@ -222,8 +223,8 @@ public class AuthorListController extends FormBasicController implements Activat
 				true, OrderBy.lastUsage.name()));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("details", -1, "details",
 				new StaticFlexiCellRenderer("" /* translate("details")*/, "details", "o_icon-lg o_icon_details")));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", -1, "edit",
-				new StaticFlexiCellRenderer("" /* translate("edit") */, "edit", "o_icon-lg o_icon_edit")));
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", Cols.editionSupported.ordinal(), "edit",
+				new BooleanCellRenderer(new StaticFlexiCellRenderer("" /* translate("edit") */, "edit", "o_icon-lg o_icon_edit"), null)));
 		
 		model = new AuthoringEntryDataModel(dataSource, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
@@ -544,8 +545,13 @@ public class AuthorListController extends FormBasicController implements Activat
 	
 	private void launch(UserRequest ureq, AuthoringEntryRow row) {
 		try {
-			String businessPath = "[RepositoryEntry:" + row.getKey() + "]";
-			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(row.getResourceType());
+			if(handler != null && handler.supportsLaunch()) {
+				String businessPath = "[RepositoryEntry:" + row.getKey() + "]";
+				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			} else {
+				doOpenDetails(ureq, row);
+			}
 		} catch (CorruptedCourseException e) {
 			logError("Course corrupted: " + row.getKey() + " (" + row.getOLATResourceable().getResourceableId() + ")", e);
 			showError("cif.error.corrupted");

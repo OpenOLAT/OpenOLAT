@@ -84,7 +84,7 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 				labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
 			}
 			target.append("</a>");
-		}	else if(labelDelegate == null) {
+		} else if(labelDelegate == null) {
 			target.append(getLabel());
 		} else {
 			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);

@@ -73,7 +73,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 			ContextEntry subcontext = ces.get(1);
 			if("Editor".equals(subcontext.getOLATResourceable().getResourceableTypeName())) {
 				RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
-				if(handler != null && handler.supportsEdit(re) && isAllowedToEdit(ureq, re)) {
+				if(handler != null && handler.supportsEdit(re.getOlatResource()) && isAllowedToEdit(ureq, re)) {
 					ctrl = handler.createEditorController(re, ureq, wControl);
 				}
 			}

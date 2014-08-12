@@ -476,7 +476,7 @@ public class RepositoryEntryResource {
     boolean isAuthor = RestSecurityHelper.isAuthor(request);
     boolean isOwner = repositoryManager.isOwnerOfRepositoryEntry(identity, re);
     if(!(isAuthor | isOwner)) return Response.serverError().status(Status.UNAUTHORIZED).build();
-    boolean canDownload = re.getCanDownload() && typeToDownload.supportsDownload(re);
+    boolean canDownload = re.getCanDownload() && typeToDownload.supportsDownload();
     if(!canDownload) return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 
     boolean isAlreadyLocked = typeToDownload.isLocked(ores);

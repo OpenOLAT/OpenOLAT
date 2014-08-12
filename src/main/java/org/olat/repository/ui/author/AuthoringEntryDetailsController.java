@@ -220,7 +220,7 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 			editLink.setIconLeftCSS("o_icon o_icon_edit");
 			editLink.setElementCssClass("o_sel_author_edit_entry");
 			boolean editManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.editcontent);
-			editLink.setEnabled(handler.supportsEdit(entry) && !corrupted && !editManaged);
+			editLink.setEnabled(handler.supportsEdit(entry.getOlatResource()) && !corrupted && !editManaged);
 			stackPanel.addTool(editLink, Align.left);
 		}
 
@@ -260,13 +260,13 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 
 		/* export resource */
 		if (!isGuestOnly) {
-			boolean canDownload = entry.getCanDownload() && handler.supportsDownload(entry);
+			boolean canDownload = entry.getCanDownload() && handler.supportsDownload();
 			// disable download for courses if not author or owner
 			if (entry.getOlatResource().getResourceableTypeName().equals(CourseModule.getCourseTypeName()) && !(isOwner || isAuthor)) {
 				canDownload = false;
 			}
 			// always enable download for owners
-			if (isOwner && handler.supportsDownload(entry)) {
+			if (isOwner && handler.supportsDownload()) {
 				canDownload = true;
 			}
 			downloadLink = LinkFactory.createToolLink("download", translate("details.download"), this, "o_sel_repo_download");
@@ -302,14 +302,14 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 		launchLink = LinkFactory.createToolLink("launch", translate("details.launch"), this, "o_sel_repo_launch");
 		launchLink.setIconLeftCSS("o_icon o_icon-fw o_icon_start");
 		launchLink.setElementCssClass("o_sel_author_launch");
-		launchLink.setEnabled(checkIsRepositoryEntryLaunchable(ureq) && !corrupted);
+		launchLink.setEnabled(handler.supportsLaunch() && checkIsRepositoryEntryLaunchable(ureq) && !corrupted);
 		stackPanel.addTool(launchLink, Align.right);
 	}
 	
 	private boolean checkIsRepositoryEntryLaunchable(UserRequest ureq) {
 		RepositoryHandler type = repositoryHandlerFactory.getRepositoryHandler(entry);
 		if (repositoryManager.isAllowedToLaunch(ureq, entry) ||
-				(type.supportsLaunch(entry) && ureq.getUserSession().getRoles().isOLATAdmin())) {
+				(type.supportsLaunch() && ureq.getUserSession().getRoles().isOLATAdmin())) {
 			return true;
 		}
 		return false;

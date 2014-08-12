@@ -195,17 +195,17 @@ public class WebDocumentHandler extends FileHandler {
 	}
 
 	@Override
-	public boolean supportsLaunch(RepositoryEntry repoEntry) {
+	public boolean supportsLaunch() {
 		return false;
 	}
 
 	@Override
-	public boolean supportsDownload(RepositoryEntry repoEntry) {
+	public boolean supportsDownload() {
 		return true;
 	}
 
 	@Override
-	public boolean supportsEdit(RepositoryEntry repoEntry) {
+	public boolean supportsEdit(OLATResourceable resource) {
 		return false;
 	}
 

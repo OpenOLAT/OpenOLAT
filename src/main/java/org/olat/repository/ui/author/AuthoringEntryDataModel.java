@@ -19,8 +19,11 @@
  */
 package org.olat.repository.ui.author;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 
 /**
  * 
@@ -30,8 +33,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  */
 class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<AuthoringEntryRow> {
 	
+	private final RepositoryHandlerFactory handlerFactory;
+	
 	public AuthoringEntryDataModel(AuthoringEntryDataSource source, FlexiTableColumnModel columnModel) {
 		super(source, columnModel);
+		handlerFactory = CoreSpringFactory.getImpl(RepositoryHandlerFactory.class);
 	}
 
 	@Override
@@ -74,6 +80,14 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 			case creationDate: return item.getCreationDate();
 			case lastUsage: return item.getLastUsage();
 			case mark: return item.getMarkLink();
+			case detailsSupported: {
+				RepositoryHandler handler = handlerFactory.getRepositoryHandler(item.getResourceType());
+				return (handler != null && handler.supportsLaunch()) ? Boolean.TRUE : Boolean.FALSE;
+			}
+			case editionSupported: {
+				RepositoryHandler handler = handlerFactory.getRepositoryHandler(item.getResourceType());
+				return (handler != null && handler.supportsEdit(item.getOLATResourceable())) ? Boolean.TRUE : Boolean.FALSE;
+			}
 		}
 		return null;
 	}
@@ -94,7 +108,9 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		access("table.header.access"),
 		creationDate("table.header.date"),
 		lastUsage("table.header.lastusage"),
-		mark("table.header.mark");
+		mark("table.header.mark"),
+		detailsSupported(""),
+		editionSupported("");
 		
 		private final String i18nKey;
 		

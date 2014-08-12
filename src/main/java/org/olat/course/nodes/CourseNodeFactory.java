@@ -135,7 +135,7 @@ public class CourseNodeFactory {
 		}
 		
 		RepositoryHandler typeToEdit = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
-		if (!typeToEdit.supportsEdit(repositoryEntry)){
+		if (!typeToEdit.supportsEdit(repositoryEntry.getOlatResource())){
 			throw new AssertException("Trying to edit repository entry which has no assoiciated editor: "+ typeToEdit);
 		}					
 		// Open editor in new tab
