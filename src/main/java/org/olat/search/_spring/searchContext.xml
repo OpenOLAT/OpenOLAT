@@ -153,8 +153,10 @@
 	
 	<!-- Repository -->
 	<bean id="repositoryIndexer" class="org.olat.search.service.indexer.repository.RepositoryIndexer">
-		<constructor-arg index="0" ref="repositoryManager" />
-		<constructor-arg index="1" ref="searchModule" />
+		<property name="repositoryManager" ref="repositoryManager" />
+		<property name="searchModule" ref="searchModule" />
+		<property name="repositoryEntryDocumentFactory" ref="repositoryEntryDocumentFactory" />
+		<property name="dbInstance" ref="database" />
 		<property name="indexerList">
 			<list>
 				<ref bean="courseIndexer" />

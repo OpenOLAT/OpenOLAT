@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -40,10 +40,10 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.manager.RepositoryEntryDocumentFactory;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.search.SearchModule;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.search.service.document.RepositoryEntryDocument;
 import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
 import org.olat.search.service.indexer.Indexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
@@ -55,82 +55,121 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  */
 public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 	
-  private RepositoryManager repositoryManager;
+	private static final int BATCH_SIZE = 10;
+	
+	private DB dbInstance;
+	private RepositoryManager repositoryManager;
+	private RepositoryEntryDocumentFactory documentFactory;
+	
 	private List<Long> repositoryBlackList;
 
-	/**
-	 * [used by spring]
-	 * @param repositoryManager
-	 */
-  private RepositoryIndexer(RepositoryManager repositoryManager, SearchModule searchModule) {
-  	this.repositoryManager = repositoryManager;
-  	this.repositoryBlackList = searchModule.getRepositoryBlackList();
+	private RepositoryIndexer() {
+		//
 	}
 	
+	/**
+	 * [used by spring]
+	 */
+	public void setSearchModule(SearchModule searchModule) {
+		repositoryBlackList = searchModule.getRepositoryBlackList();
+	}
+	
+	/**
+	 * [used by spring]
+	 */
+	public void setRepositoryEntryDocumentFactory(RepositoryEntryDocumentFactory documentFactory) {
+		this.documentFactory = documentFactory;
+	}
+	
+	/**
+	 * [used by spring]
+	 */
+	public void setRepositoryManager(RepositoryManager repositoryManager) {
+		this.repositoryManager = repositoryManager;
+	}
+	
+	/**
+	 * [used by spring]
+	 */
+	public void setDbInstance(DB dbInstance) {
+		this.dbInstance = dbInstance;
+	}
 
-  /**
-   * Loops over all repository-entries. Index repository meta data. 
-   * Go further with repository-indexer for certain type if available. 
-   * @see org.olat.search.service.indexer.Indexer#doIndex(org.olat.search.service.SearchResourceContext, java.lang.Object, org.olat.search.service.indexer.OlatFullIndexer)
-   */
-  public void doIndex(SearchResourceContext parentResourceContext, Object businessObj, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
-  	Roles roles = new Roles(true, true, true, true, false, true, false);
-  	int counter = 0;
-  	//fxdiff VCRP-1,2: access control of resources
-  	SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
-  	params.setRoles(roles);
-  	List<RepositoryEntry> repositoryList = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, true);
-  	if (isLogDebugEnabled()) logDebug("RepositoryIndexer repositoryList.size=" + repositoryList.size());
-  	// loop over all repository-entries
+	/**
+    * Loops over all repository-entries. Index repository meta data. 
+    * Go further with repository-indexer for certain type if available. 
+    * @see org.olat.search.service.indexer.Indexer#doIndex(org.olat.search.service.SearchResourceContext, java.lang.Object, org.olat.search.service.indexer.OlatFullIndexer)
+    */
+	@Override
+	public void doIndex(SearchResourceContext parentResourceContext, Object businessObj, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
+		final Roles roles = new Roles(true, true, true, true, false, true, false);
+
+		final SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
+		params.setRoles(roles);
+		
+		boolean debug = isLogDebugEnabled();
+
+		
+		// loop over all repository-entries
 		// committing here to make sure the loadBusinessGroup below does actually
 		// reload from the database and not only use the session cache 
 		// (see org.hibernate.Session.get(): 
 		//  If the instance, or a proxy for the instance, is already associated with the session, return that instance or proxy.)
-		DBFactory.getInstance().commitAndCloseSession();
+		dbInstance.commitAndCloseSession();
 		
-		for(RepositoryEntry repositoryEntry:repositoryList) {
-			try {
-				// reload the repositoryEntry here before indexing it to make sure it has not been deleted in the meantime
-				RepositoryEntry reloadedRepositoryEntry = repositoryManager.lookupRepositoryEntry(repositoryEntry.getKey());
-				if (reloadedRepositoryEntry==null) {
-					logInfo("doIndex: repositoryEntry was deleted while we were indexing. The deleted repositoryEntry was: "+repositoryEntry);
-					continue;
-				}
-				repositoryEntry = reloadedRepositoryEntry;
-
-				if (isLogDebugEnabled()) logDebug("Index repositoryEntry=" + repositoryEntry + "  counter=" + counter++ + " with ResourceableId=" + repositoryEntry.getOlatResource().getResourceableId());
-				if (!isOnBlacklist(repositoryEntry.getOlatResource().getResourceableId()) ) {
-					SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
-					searchResourceContext.setBusinessControlFor(repositoryEntry);
-					searchResourceContext.setTitle(repositoryEntry.getDisplayname());
-					searchResourceContext.setDescription(repositoryEntry.getDescription());
-					Document document = RepositoryEntryDocument.createDocument(searchResourceContext, repositoryEntry);
-					indexWriter.addDocument(document);
-					// Pass created-date & modified-date in context to child indexer because the child have no dates
-		      // TODO:chg: Check ob courseNode keine Daten hat 
-					searchResourceContext.setLastModified(repositoryEntry.getLastModified());
-					searchResourceContext.setCreatedDate(repositoryEntry.getCreationDate());
-					// go further with resource
-					Indexer repositoryEntryIndexer = getRepositoryEntryIndexer(repositoryEntry);
-					if (repositoryEntryIndexer != null) {
-					  repositoryEntryIndexer.doIndex(searchResourceContext, repositoryEntry, indexWriter);
-					} else {
-						if (isLogDebugEnabled()) logDebug("No RepositoryEntryIndexer for " + repositoryEntry.getOlatResource()); // e.g. RepositoryEntry				
+		int counter = 0;
+		List<RepositoryEntry> repositoryList;
+		do {
+			repositoryList = repositoryManager.genericANDQueryWithRolesRestriction(params, counter, BATCH_SIZE, true);
+	
+			for(RepositoryEntry repositoryEntry:repositoryList) {
+				try {
+					// reload the repositoryEntry here before indexing it to make sure it has not been deleted in the meantime
+					RepositoryEntry reloadedRepositoryEntry = repositoryManager.lookupRepositoryEntry(repositoryEntry.getKey());
+					if (reloadedRepositoryEntry==null) {
+						logInfo("doIndex: repositoryEntry was deleted while we were indexing. The deleted repositoryEntry was: "+repositoryEntry);
+						continue;
 					}
-				} else {
-					logWarn("RepositoryEntry is on black-list and excluded from search-index, repositoryEntry=" + repositoryEntry, null);
+					repositoryEntry = reloadedRepositoryEntry;
+					if (debug) {
+						logDebug("Index repositoryEntry=" + repositoryEntry + "  counter=" + counter++ + " with ResourceableId=" + repositoryEntry.getOlatResource().getResourceableId());
+					}
+					if (!isOnBlacklist(repositoryEntry.getOlatResource().getResourceableId()) ) {
+						SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
+						searchResourceContext.setBusinessControlFor(repositoryEntry);
+						searchResourceContext.setTitle(repositoryEntry.getDisplayname());
+						searchResourceContext.setDescription(repositoryEntry.getDescription());
+						Document document = documentFactory.createDocument(searchResourceContext, repositoryEntry);
+						indexWriter.addDocument(document);
+						// Pass created-date & modified-date in context to child indexer because the child have no dates
+						searchResourceContext.setLastModified(repositoryEntry.getLastModified());
+						searchResourceContext.setCreatedDate(repositoryEntry.getCreationDate());
+						// go further with resource
+						Indexer repositoryEntryIndexer = getRepositoryEntryIndexer(repositoryEntry);
+						if (repositoryEntryIndexer != null) {
+							repositoryEntryIndexer.doIndex(searchResourceContext, repositoryEntry, indexWriter);
+						} else if (debug) {
+							logDebug("No RepositoryEntryIndexer for " + repositoryEntry.getOlatResource()); // e.g. RepositoryEntry				
+						}
+					} else {
+						logWarn("RepositoryEntry is on black-list and excluded from search-index, repositoryEntry=" + repositoryEntry, null);
+					}
+				} catch (Throwable ex) {
+					// create meaninfull debugging output to find repo entry that is somehow broken
+					String entryDebug = "NULL";
+					if (repositoryEntry != null) {
+						entryDebug = "resId::" + repositoryEntry.getResourceableId() + " resTypeName::" + repositoryEntry.getResourceableTypeName() + " resName::" + repositoryEntry.getResourcename();
+					}
+					logWarn("Exception=" + ex.getMessage() + " for repo entry " + entryDebug, ex);
+					dbInstance.rollbackAndCloseSession();
 				}
-			} catch (Throwable ex) {
-				// create meaninfull debugging output to find repo entry that is somehow broken
-				String entryDebug = "NULL";
-				if (repositoryEntry != null) {
-					entryDebug = "resId::" + repositoryEntry.getResourceableId() + " resTypeName::" + repositoryEntry.getResourceableTypeName() + " resName::" + repositoryEntry.getResourcename();
-				}
-				logWarn("Exception=" + ex.getMessage() + " for repo entry " + entryDebug, ex);
-				DBFactory.getInstance(false).rollbackAndCloseSession();
 			}
+			counter += repositoryList.size();
+			
+		} while(repositoryList.size() == BATCH_SIZE);
+		if (debug) {
+			logDebug("RepositoryIndexer finished.  counter=" + counter);
 		}
-		if (isLogDebugEnabled()) logDebug("RepositoryIndexer finished.  counter=" + counter);
 	}
 
 	private boolean isOnBlacklist(Long key) {
@@ -149,8 +188,10 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 	 * 
 	 * @see org.olat.search.service.indexer.Indexer#checkAccess(org.olat.core.id.context.ContextEntry, org.olat.core.id.context.BusinessControl, org.olat.core.id.Identity, org.olat.core.id.Roles)
 	 */
+	@Override
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		if (isLogDebugEnabled()) logDebug("checkAccess for businessControl=" + businessControl + "  identity=" + identity + "  roles=" + roles);
+		boolean debug = isLogDebugEnabled();
+		if (debug) logDebug("checkAccess for businessControl=" + businessControl + "  identity=" + identity + "  roles=" + roles);
 		Long repositoryKey = contextEntry.getOLATResourceable().getResourceableId();
 		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(repositoryKey);
 		if (repositoryEntry != null) {
@@ -159,10 +200,10 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 			if (!isOwner) {
 				isAllowedToLaunch = repositoryManager.isAllowedToLaunch(identity, roles, repositoryEntry);
 			}
-			if (isLogDebugEnabled()) logDebug("isOwner=" + isOwner + "  isAllowedToLaunch=" + isAllowedToLaunch);
-  		if (isOwner || isAllowedToLaunch) {
+			if (debug) logDebug("isOwner=" + isOwner + "  isAllowedToLaunch=" + isAllowedToLaunch);
+			if (isOwner || isAllowedToLaunch) {
 				Indexer repositoryEntryIndexer = getRepositoryEntryIndexer(repositoryEntry);
-				if (isLogDebugEnabled()) logDebug("repositoryEntryIndexer=" + repositoryEntryIndexer);
+				if (debug) logDebug("repositoryEntryIndexer=" + repositoryEntryIndexer);
 				if (repositoryEntryIndexer != null) {
 				  return super.checkAccess(contextEntry, businessControl, identity, roles)
 				  		&& repositoryEntryIndexer.checkAccess(contextEntry, businessControl, identity, roles);
@@ -171,7 +212,7 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 					return false;
 				}
 			} else {
-	  		return false;
+				return false;
 			}
 		} else {
 			logWarn("Can not found RepositoryEntry with key=" + repositoryKey, null);
