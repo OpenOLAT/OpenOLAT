@@ -157,7 +157,7 @@ public class DefaultNavigator implements Serializable {
 			pendingOutput = itc.getOutput();
 		}
 
-		getAssessmentInstance().close();
+		getAssessmentInstance().stop();
 		if(!getAssessmentInstance().isPreview() && !alreadyClosed) {
 			CoreSpringFactory.getImpl(IQManager.class).persistResults(getAssessmentInstance());
 		}
@@ -181,10 +181,12 @@ public class DefaultNavigator implements Serializable {
 		if(delegate != null && !getAssessmentInstance().isPreview() && !alreadyClosed) {
 			delegate.submitAssessment(assessmentInstance);
 		}
+		
+		getAssessmentInstance().cleanUp();
 	}
 
 	public final void cancelAssessment() {
-		getAssessmentInstance().close();
+		getAssessmentInstance().stop();
 		info.clear();
 		info.setMessage(QTIConstants.MESSAGE_ASSESSMENT_CANCELED);
 		info.setStatus(QTIConstants.ASSESSMENT_CANCELED);
@@ -193,6 +195,7 @@ public class DefaultNavigator implements Serializable {
 		if(delegate != null) {
 			delegate.cancelAssessment(assessmentInstance);
 		}
+		getAssessmentInstance().cleanUp();
 	}
 	
 	/**

@@ -223,12 +223,12 @@ public class QTI12ResultDetailsController extends BasicController {
 			cmc = null;
 		} else if (source == retrieveConfirmationCtr) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
-				updateTableModel();
 				if(tableModel.isTestRunning()) {
 					IQRetrievedEvent retrieveEvent = new IQRetrievedEvent(assessedIdentity, courseResourceableId, nodeIdent);
 					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(retrieveEvent, retrieveEvent);
 					doRetrieveTest();
 				}
+				updateTableModel();
 			}
 			removeAsListenerAndDispose(retrieveConfirmationCtr);
 			retrieveConfirmationCtr = null;
@@ -261,7 +261,7 @@ public class QTI12ResultDetailsController extends BasicController {
 		String resourcePathInfo = courseResourceableId + File.separator + nodeIdent;
 		AssessmentInstance ai = AssessmentFactory.createAssessmentInstance(assessedIdentity, "", modConfig, false, courseResourceableId, nodeIdent, resourcePathInfo, null);
 		//close the test
-		ai.close();
+		ai.stop();
 		//persist the results
 		iqm.persistResults(ai);
 
@@ -276,6 +276,9 @@ public class QTI12ResultDetailsController extends BasicController {
 		ScoreEvaluation sceval = new ScoreEvaluation(score, passed, Boolean.FALSE, new Long(ai.getAssessID()));
 		UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 		testNode.updateUserScoreEvaluation(sceval, userCourseEnv, assessedIdentity, true);
+		
+		//cleanup
+		ai.cleanUp();
 		
 		List<QTIResultSet> resultSets = qrm.getResultSets(courseResourceableId, nodeIdent, repositoryEntry.getKey(), assessedIdentity);
 		tableModel.setObjects(resultSets);

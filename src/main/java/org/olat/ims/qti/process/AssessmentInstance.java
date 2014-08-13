@@ -59,7 +59,7 @@ public class AssessmentInstance implements Serializable {
 	
 	private long callingResId;
 	private String callingResDetail;
-	private List sourceBankRefs;
+	private List<String> sourceBankRefs;
 	private String remoteAddr;
 	private Identity assessedIdentity;
 	
@@ -393,13 +393,18 @@ public class AssessmentInstance implements Serializable {
 	/**
 	 * Method close.
 	 */
-	public void close() {
+	public void stop() {
 		closed = true;
 		assessmentContext.stop();
 		SectionContext sc = assessmentContext.getCurrentSectionContext();
 		if (sc != null) sc.setCurrentItemContextPos(-1);
 		assessmentContext.setCurrentSectionContextPos(-1);
-		if (persister != null) persister.cleanUp();
+	}
+	
+	public void cleanUp() {
+		if (persister != null) {
+			persister.cleanUp();
+		}
 	}
 
 	/**
@@ -465,7 +470,7 @@ public class AssessmentInstance implements Serializable {
 	 */
 	public void addObjectBankRef(String sourceBankRef) {
 		if (sourceBankRefs == null) {
-			sourceBankRefs = new ArrayList(1);
+			sourceBankRefs = new ArrayList<>(1);
 		}
 		sourceBankRefs.add(sourceBankRef);
 	}
@@ -475,7 +480,7 @@ public class AssessmentInstance implements Serializable {
 	/**
 	 * @return List of all references to sourcebanks that have been used in this run of the assessment
 	 */
-	public List getSourceBankRefs() {
+	public List<String> getSourceBankRefs() {
 		return sourceBankRefs;
 	}
 
