@@ -244,30 +244,4 @@ public abstract class AbstractFeedCourseNode extends GenericCourseNode {
 			FeedNodeEditController.setReference(re, getModuleConfiguration());
 		}
 	}
-
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#archiveNodeData(java.util.Locale,
-	 *      org.olat.course.ICourse, java.io.File, java.lang.String)
-	 *//*
-	@Override
-	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String charset) {
-		VFSContainer exportContainer = new LocalFolderImpl(exportDirectory);
-		VFSContainer exportDir = (VFSContainer) exportContainer.resolve(type);
-		if (exportDir == null) {
-			exportDir = exportContainer.createChildContainer(type);
-		}
-		String exportDirName = getShortTitle() + "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
-		VFSContainer destination = exportDir.createChildContainer(exportDirName);
-		String repoRef = (String) getModuleConfiguration().get(CONFIG_KEY_REPOSITORY_SOFTKEY);
-		if (repoRef != null) {
-			OLATResourceable ores = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repoRef, true).getOlatResource();
-			
-			VFSContainer container = FeedManager.getInstance().getFeedContainer(ores);
-			if (container != null) {
-				VFSLeaf archive = FeedManager.getInstance().getFeedArchive(ores);
-				destination.copyFrom(archive);
-			}
-			// FIXME:FG:6.3 Archive user comments as soon as implemented.			
-		}
-	}*/
 }

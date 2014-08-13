@@ -87,7 +87,7 @@ public class CourseModule extends AbstractOLATModule {
 	 * [used by spring]
 	 */
 	private CourseModule(CoordinatorManager coordinatorManager, PropertyManager propertyManager, CourseFactory courseFactory, RepositoryService repositoryService, OLATResourceManager olatResourceManager) {
-		this.coordinatorManager = coordinatorManager;
+		CourseModule.coordinatorManager = coordinatorManager;
 		this.propertyManager = propertyManager;
 		this.courseFactory = courseFactory;
 		this.repositoryService = repositoryService;
@@ -192,7 +192,7 @@ public class CourseModule extends AbstractOLATModule {
 				logWarn("Cannot deploy course from file: " + file.getAbsolutePath(),null);
 				return null;
 			}
-			re = courseFactory.deployCourseFromZIP(file, access);
+			re = CourseFactory.deployCourseFromZIP(file, null, access);
 			if (re != null) markAsDeployed(export, re);
 			return re;
 		}

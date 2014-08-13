@@ -29,8 +29,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 import org.apache.commons.io.IOUtils;
 import org.olat.core.gui.media.MediaResource;
@@ -163,10 +165,25 @@ public class RepositoryEntryImportExport {
 	 */
 	private void loadConfiguration() {
 		try {
-			File inputFile = new File(baseDirectory, PROPERTIES_FILE);
-			if(inputFile.exists()) {
-				XStream xstream = getXStream();
-				repositoryProperties = (RepositoryEntryImport)xstream.fromXML(inputFile);
+			if(baseDirectory.exists()) {
+				if(baseDirectory.getName().endsWith(".zip")) {
+					Path fPath = FileSystems.newFileSystem(baseDirectory.toPath(), null).getPath("/");
+					Path manifestPath = fPath.resolve("export").resolve(PROPERTIES_FILE);
+					try(InputStream inputFile = Files.newInputStream(manifestPath, StandardOpenOption.READ)) {
+						XStream xstream = getXStream();
+						repositoryProperties = (RepositoryEntryImport)xstream.fromXML(inputFile);
+					} catch(Exception e) {
+						log.error("Cannot read repo.xml im zip", e);
+					}
+				} else {
+					File inputFile = new File(baseDirectory, PROPERTIES_FILE);
+					if(inputFile.exists()) {
+						XStream xstream = getXStream();
+						repositoryProperties = (RepositoryEntryImport)xstream.fromXML(inputFile);
+					} else {
+						repositoryProperties = new RepositoryEntryImport();
+					}
+				}
 			} else {
 				repositoryProperties = new RepositoryEntryImport();
 			}

@@ -43,8 +43,6 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.poi.util.IOUtils;
 import org.olat.admin.quota.QuotaConstants;
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
 import org.olat.commons.calendar.notification.CalendarNotificationManager;
@@ -102,7 +100,6 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.archiver.ScoreAccountingHelper;
-import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigManagerImpl;
 import org.olat.course.config.ui.courselayout.CourseLayoutHelper;
@@ -119,8 +116,6 @@ import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
-import org.olat.course.repository.ImportGlossaryReferencesController;
-import org.olat.course.repository.ImportSharedfolderReferencesController;
 import org.olat.course.run.RunMainController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.statistic.AsyncExportManager;
@@ -130,14 +125,13 @@ import org.olat.course.tree.PublishTreeModel;
 import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.manager.ChatLogHelper;
-import org.olat.modules.glossary.GlossaryManager;
-import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.ReferenceImpl;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.testutils.codepoints.server.Codepoint;
@@ -162,26 +156,20 @@ public class CourseFactory extends BasicManager {
 	public static final String COURSE_EDITOR_LOCK = "courseEditLock";
   //this is the lock that must be aquired at course editing, copy course, export course, configure course.
 	private static Map<Long,PersistingCourseImpl> courseEditSessionMap = new ConcurrentHashMap<Long,PersistingCourseImpl>();
-	private static OLog log = Tracing.createLoggerFor(CourseFactory.class);
+	private static final OLog log = Tracing.createLoggerFor(CourseFactory.class);
 	private static RepositoryManager repositoryManager;
-	private static OLATResourceManager olatResourceManager;
-	private static BaseSecurity securityManager;
 	private static ReferenceManager referenceManager;
-	private static GlossaryManager glossaryManager;
 	private static RepositoryService repositoryService;
 	
 	
 	/**
 	 * [used by spring]
 	 */
-	private CourseFactory(CoordinatorManager coordinatorManager, RepositoryManager repositoryManager, RepositoryService repositoryService, OLATResourceManager olatResourceManager, 
-			BaseSecurity securityManager, ReferenceManager referenceManager, GlossaryManager glossaryManager) {
+	private CourseFactory(CoordinatorManager coordinatorManager, RepositoryManager repositoryManager,
+			RepositoryService repositoryService, ReferenceManager referenceManager) {
 		loadedCourses = coordinatorManager.getCoordinator().getCacher().getCache(CourseFactory.class.getSimpleName(), "courses");
 		CourseFactory.repositoryManager = repositoryManager;
-		CourseFactory.olatResourceManager = olatResourceManager;
-		CourseFactory.securityManager = securityManager;
 		CourseFactory.referenceManager = referenceManager;
-		CourseFactory.glossaryManager = glossaryManager;
 		CourseFactory.repositoryService = repositoryService;
 	}
 	
@@ -579,129 +567,32 @@ public class CourseFactory extends BasicManager {
 	 * 
 	 * @param exportedCourseZIPFile
 	 */
-	public static RepositoryEntry deployCourseFromZIP(File exportedCourseZIPFile, int access) {
-		return deployCourseFromZIP(exportedCourseZIPFile, null, access);
-	}
-	
 	public static RepositoryEntry deployCourseFromZIP(File exportedCourseZIPFile, String softKey, int access) {
-		// create the course instance
-		OLATResource newCourseResource = olatResourceManager.createOLATResourceInstance(CourseModule.class);
-		ICourse course = CourseFactory.importCourseFromZip(newCourseResource, exportedCourseZIPFile);
-		// course is now also in course cache!
-		if (course == null) {
-			log.error("Error deploying course from ZIP: " + exportedCourseZIPFile.getAbsolutePath());
-			return null;
-		}
-		File courseExportData = course.getCourseExportDataDir().getBasefile();
-		// get the export data directory
-		// create the repository entry
-		RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(courseExportData);
+
+		RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(exportedCourseZIPFile);
 		if(!StringHelper.containsNonWhitespace(softKey)) {
 			softKey = importExport.getSoftkey();
 		}
 		RepositoryEntry existingEntry = repositoryManager.lookupRepositoryEntryBySoftkey(softKey, false);
 		if (existingEntry != null) {
 			log.info("RepositoryEntry with softkey " + softKey + " already exists. Course will not be deployed.");
-			//seem to be a problem
-			UserCourseInformationsManager userCourseInformationsManager = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
-			userCourseInformationsManager.deleteUserCourseInformations(existingEntry);
-			CourseFactory.deleteCourse(newCourseResource);
 			return existingEntry;
 		}
 		
-		newCourseResource = olatResourceManager.findOrPersistResourceable(newCourseResource);
-		RepositoryEntry re = repositoryService.create(importExport.getInitialAuthor(), importExport.getResourceName(),
-				importExport.getDisplayName(), importExport.getDescription(), newCourseResource);
-		// ok, continue import
-		re.setOlatResource(newCourseResource);
-		re.setSoftkey(softKey);
-		// set access configuration
-		re.setAccess(access);
-
-		// save the repository entry
-		repositoryService.update(re);
-
-		//import groups
-		course = openCourseEditSession(course.getResourceableId());
-		// create group management
-		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		// import groups
-		cgm.importCourseBusinessGroups(courseExportData);
 		
-		// deploy any referenced repository entries of the editor structure. This will also
-		// include any references in the run structure, since any node in the runstructure is also
-		// present in the editor structure.
-		deployReferencedRepositoryEntries(courseExportData, course,
-				(CourseEditorTreeNode)course.getEditorTreeModel().getRootNode());
-		// register any references in the run structure. The referenced entries have been 
-		// previousely deplyed (as part of the editor structure deployment process - see above method call)
-		registerReferences(course, 
-				(CourseEditorTreeNode)course.getEditorTreeModel().getRootNode());
-		// import shared folder references
-		deployReferencedSharedFolders(courseExportData, course);
-		// import glossary references
-		deployReferencedGlossary(courseExportData, course);
-		closeCourseEditSession(course.getResourceableId(), true);
-		// cleanup export data
-		FileUtils.deleteDirsAndFiles(courseExportData, true, true);
-		log.info("Successfully deployed course " + re.getDisplayname() + " from ZIP: " + exportedCourseZIPFile.getAbsolutePath());
+		RepositoryHandler courseHandler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(CourseModule.getCourseTypeName());
+		RepositoryEntry re = courseHandler.importResource(null, importExport.getInitialAuthor(), importExport.getDisplayName(), importExport.getDescription(),
+				true, Locale.ENGLISH, exportedCourseZIPFile, exportedCourseZIPFile.getName());
+		
+		re.setSoftkey(softKey);
+		re.setAccess(access);
+		repositoryService.update(re);
+		
+		ICourse course = CourseFactory.loadCourse(re.getOlatResource());
+		CourseFactory.publishCourse(course, RepositoryEntry.ACC_USERS, false,  null, Locale.ENGLISH);
 		return re;
 	}
-	
-	
-	/**
-	 * Unattended deploy any referenced repository entries.
-	 * 
-	 * @param importDirectory
-	 * @param course
-	 * @param currentNode
-	 */
-	private static void deployReferencedRepositoryEntries(File importDirectory, ICourse course, CourseEditorTreeNode currentNode) {
-		for (int i = 0; i < currentNode.getChildCount(); i++) {
-			CourseEditorTreeNode childNode = (CourseEditorTreeNode)currentNode.getChildAt(i);
-			childNode.getCourseNode().importNode(importDirectory, course, null, null);
-			deployReferencedRepositoryEntries(importDirectory, course, childNode);
-		}
-	}
-	
-	/**
-	 * Register any referenced repository entries.
-	 * @param course
-	 * @param currentNode
-	 */
-	private static void registerReferences(ICourse course, CourseEditorTreeNode currentNode) {
-		for (int i = 0; i < currentNode.getChildCount(); i++) {
-			CourseEditorTreeNode childNode = (CourseEditorTreeNode)currentNode.getChildAt(i);
-			CourseNode childCourseNode = childNode.getCourseNode();
-			if (childCourseNode.needsReferenceToARepositoryEntry()) {
-				RepositoryEntry re = childCourseNode.getReferencedRepositoryEntry();
-				referenceManager.addReference(course, re.getOlatResource(), childNode.getIdent());
-			}
-			registerReferences(course, childNode);
-		}
-	}
-	
-	private static void deployReferencedSharedFolders(File importDirectory, ICourse course) {
-		CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
-		if (!cc.hasCustomSharedFolder()) return;
-		RepositoryEntryImportExport importExport = SharedFolderManager.getInstance()
-			.getRepositoryImportExport(importDirectory);
-		Identity owner = BaseSecurityManager.getInstance().findIdentityByName("administrator");
-		ImportSharedfolderReferencesController.doImport(importExport, course, owner);
-	}
 
-	/**
-	 * Deploy referenced glossaries using the administrator account as owner
-	 * @param importDirectory
-	 * @param course
-	 */
-	private static void deployReferencedGlossary(File importDirectory, ICourse course) {
-		CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
-		if (!cc.hasGlossary()) return;
-		RepositoryEntryImportExport importExport = glossaryManager.getRepositoryImportExport(importDirectory);
-		Identity owner = securityManager.findIdentityByName("administrator");
-		ImportGlossaryReferencesController.doImport(importExport, course, owner);
-	}
 	
 	/**
 	 * Publish the course with some standard options

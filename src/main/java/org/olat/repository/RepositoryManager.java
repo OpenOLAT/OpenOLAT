@@ -1059,6 +1059,9 @@ public class RepositoryManager extends BasicManager {
 	 * @return true if the identity is member of the security group of the repository entry
 	 */
 	public boolean isOwnerOfRepositoryEntry(Identity identity, RepositoryEntry entry) {
+		if(entry == null || identity == null) {
+			return false;
+		}
 		return repositoryEntryRelationDao.hasRole(identity, entry, GroupRoles.owner.name());
 	}
 	
