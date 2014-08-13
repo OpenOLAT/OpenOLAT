@@ -184,6 +184,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			surveyStatisticLink, testStatisticLink, courseStatisticLink,
 			userMgmtLink, archiverLink, assessmentLink, dbLink,
 			efficiencyStatementsLink, bookmarkLink, calendarLink, detailsLink, noteLink, chatLink;
+	private Dropdown editTools;
 	
 	private Panel contentP;
 
@@ -546,43 +547,58 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			needsRebuildAfter = false;
 		}
 		
+		// Links in editTools dropdown
 		if(runLink == source) {
 			toolbarPanel.popUpToRootController(ureq);
 			addCustomCSS(ureq);
 			currentToolCtr = null;
+			editTools.setActiveLink(runLink);
 		} else if(editLink == source) {
 			launchEdit(ureq);
 			removeCustomCSS(ureq);
+			editTools.setActiveLink(editLink);
 		} else if(editSettingsLink == source) {
 			launchEditSettings(ureq);
 			removeCustomCSS(ureq);
+			editTools.setActiveLink(editSettingsLink);
 		} else if(userMgmtLink == source) {
 			launchMembersManagement(ureq);
 			removeCustomCSS(ureq);
+			editTools.setActiveLink(userMgmtLink);
 		} else if(archiverLink == source) {
 			launchArchive(ureq);
 			removeCustomCSS(ureq);
+			editTools.setActiveLink(archiverLink);
 		} else if(assessmentLink == source) {
 			launchAssessmentTool(ureq);
 			removeCustomCSS(ureq);
+			editTools.setActiveLink(assessmentLink);
 		} else if(testStatisticLink == source) {
 			launchAssessmentStatistics(ureq, "command.openteststatistic", "TestStatistics", QTIType.test, QTIType.onyx);
 			removeCustomCSS(ureq);
+			editTools.setActiveLink(testStatisticLink);
 		} else if (surveyStatisticLink == source) {
 			launchAssessmentStatistics(ureq, "command.opensurveystatistic", "SurveyStatistics", QTIType.survey);
 			removeCustomCSS(ureq);
+			editTools.setActiveLink(surveyStatisticLink);
 		} else if(courseStatisticLink == source) {
 			launchStatistics(ureq);
 			removeCustomCSS(ureq);
+			editTools.setActiveLink(courseStatisticLink);
 		} else if(dbLink == source) {
 			launchDbs(ureq);
 			removeCustomCSS(ureq);
+			editTools.setActiveLink(dbLink);
 		} else if(folderLink == source) {
 			launchCourseFolder(ureq);
 			removeCustomCSS(ureq);
+			editTools.setActiveLink(folderLink);
 		} else if(areaLink == source) {
 			launchCourseAreas(ureq);
 			removeCustomCSS(ureq);
+			editTools.setActiveLink(areaLink);
+			
+		// links as dedicated tools
 		} else if(efficiencyStatementsLink == source) {
 			launchEfficiencyStatements(ureq);
 		} else if(bookmarkLink == source) {
@@ -1336,7 +1352,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				|| hasCourseRight(CourseRights.RIGHT_STATISTICS) || hasCourseRight(CourseRights.RIGHT_DB)
 				|| hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
 
-			Dropdown editTools = new Dropdown("editTools", "header.tools", false, getTranslator());
+			editTools = new Dropdown("editTools", "header.tools", false, getTranslator());
 			editTools.setElementCssClass("o_sel_course_tools");
 			editTools.setIconCSS("o_icon o_icon_tools");
 			
@@ -1408,6 +1424,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			}
 			
 			toolbarPanel.addTool(editTools, Align.left, true);
+			editTools.setActiveLink(runLink);
 		}
 	}
 	

@@ -79,8 +79,21 @@
 		      		color: $o-toolbar-link-disabled-color !important;
 		    	}
 	    	}
+			&.active {
+				color: $o-toolbar-link-active-color;
+				background-color: $o-toolbar-link-active-bg;
+			}
 	    }
-
+	    .dropdown-menu {
+			a {
+				// override rule from above
+		    	display: block;
+		    	&.active {
+		    		color: $o-toolbar-dropdown-active-color;
+					background-color: $o-toolbar-dropdown-active-bg;
+		    	}
+		    }
+	    }
 	}
 	
 	.o_tools {

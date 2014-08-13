@@ -10,6 +10,11 @@
 @import "../../../bootstrap/stylesheets/bootstrap/theme";
 // Second add same style patches for OpenOLAT modules
 
+/* Buttons */
+.o_button_dirty {
+	@include btn-styles($o-button-dirty-bg);
+}
+
 
 /* Top navbar */
 .o_navbar.o_navbar-default {

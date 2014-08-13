@@ -28,6 +28,7 @@ package org.olat.core.gui.components.table;
 
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 
 class MultiSelectColumnDescriptor implements ColumnDescriptor {
@@ -116,11 +117,14 @@ class MultiSelectColumnDescriptor implements ColumnDescriptor {
 	}
 	
 	public String getHeaderKey() {
-		return "table.header.multiselect";
+		// render as checkbox icon to minimize used space for header
+		Translator trans = (table != null ? table.getTranslator() : null);		
+		String choice = (trans != null ? trans.translate("table.header.multiselect") : "");
+		return "<i class='o_icon o_icon_checkbox_checked o_icon-lg' title=\"" + choice + "\"> </i>";
 	}
 	
 	public boolean translateHeaderKey() {
-		return true;
+		return false;
 	}
 
 	public int getAlignment() {

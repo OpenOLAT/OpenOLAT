@@ -62,8 +62,9 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 		target.append("<thead><tr>");
 
 		if(ftE.isMultiSelect()) {
+			// render as checkbox icon to minimize used space for header
 			String choice = translator.translate("table.header.choice");
-			target.append("<th>").append(choice).append("</th>");
+			target.append("<th><i class='o_icon o_icon_checkbox_checked o_icon-lg' title=\"").append(choice).append("\"> </i></th>");
 		}
 		
 		int cols = columnModel.getColumnCount();

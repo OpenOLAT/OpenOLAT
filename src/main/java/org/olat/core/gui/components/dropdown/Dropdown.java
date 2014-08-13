@@ -115,6 +115,29 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 		return components.size();
 	}
 
+	/**
+	 * Mark the active link from this dropdown as active. This is only a GUI issue, see active method on link
+	 * @param activeLink
+	 */
+	public void setActiveLink(Link activeLink) {
+		for (Component component : components) {
+			if (component instanceof Link) {
+				// only handle link
+				Link link = (Link) component;
+				if (activeLink == null) {
+					// deactivate all links
+					link.setActive(false);
+				} else if (link == activeLink && !link.isActive()) { 
+					// activate active link if not already activated
+					link.setActive(true);
+				} else if (link != activeLink && link.isActive()) {
+					// deactivate all other links that are activated
+					link.setActive(false);
+				}
+			}
+		}
+	}
+	
 	@Override
 	public Component getComponent(String name) {
 		for(Component component:components) {
