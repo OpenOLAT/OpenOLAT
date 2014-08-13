@@ -393,13 +393,18 @@ public class AssessmentInstance implements Serializable {
 	/**
 	 * Method close.
 	 */
-	public void close() {
+	public void stop() {
 		closed = true;
 		assessmentContext.stop();
 		SectionContext sc = assessmentContext.getCurrentSectionContext();
 		if (sc != null) sc.setCurrentItemContextPos(-1);
 		assessmentContext.setCurrentSectionContextPos(-1);
-		if (persister != null) persister.cleanUp();
+	}
+	
+	public void cleanUp() {
+		if (persister != null) {
+			persister.cleanUp();
+		}
 	}
 
 	/**
