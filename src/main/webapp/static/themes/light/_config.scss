@@ -77,6 +77,72 @@ $o-main-left-bg		: #fff !default;
 $o-main-center-bg	: inherit !default;
 $o-main-right-bg	: inherit !default;
 
+/* Page main navigation for sites, tabs and tools */
+$o-navbar-height					: $navbar-height !default;
+$o-navbar-z-index					: 4 !default;
+$o-navbar-margin-bottom				: $navbar-margin-bottom !default;
+$o-navbar-padding-horizontal		: $navbar-padding-horizontal !default;
+$o-navbar-padding-vertical			: $navbar-padding-vertical !default;
+$o-navbar-collapse-max-height		: $navbar-collapse-max-height !default;
+$o-navbar-border-color				: $navbar-default-border !default;
+$o-navbar-bg						: $navbar-default-bg !default;
+$o-navbar-color						: $navbar-default-color !default;
+$o-navbar-link-color				: $navbar-default-link-color !default;
+$o-navbar-link-hover-color			: $navbar-default-link-hover-color !default;
+$o-navbar-link-hover-bg 			: $navbar-default-link-hover-bg !default;
+$o-navbar-link-active-color 		: $navbar-default-link-active-color !default;
+$o-navbar-link-active-bg 			: $navbar-default-link-active-bg !default;
+$o-navbar-link-disabled-color 		: $navbar-default-link-disabled-color !default;
+$o-navbar-link-disabled-bg 			: $navbar-default-link-disabled-bg !default;
+$o-navbar-toggle-border-color		: $navbar-default-toggle-border-color !default;
+$o-navbar-toggle-border-radius		: $border-radius-base !default;
+$o-navbar-toggle-hover-bg			: $navbar-default-toggle-hover-bg !default;
+$o-navbar-toggle-icon-bar-bg		: $navbar-default-toggle-icon-bar-bg !default;
+$o-navbar-tab-close-color			: $brand-danger !default;
+$o-navbar-tab-close-hover-color		: darken($o-navbar-tab-close-color, 10%)!default;
+$o-navbar-tools-permanent-color		: $navbar-default-color !default;
+$o-navbar-logout-color				: $brand-danger !default;
+$o-navbar-brand-font-size			: $font-size-large !default;
+$o-navbar-brand-height				: $navbar-height !default;
+$o-navbar-brand-color				: $navbar-default-brand-color !default;
+$o-navbar-brand-hover-color			: $navbar-default-brand-hover-color !default;
+$o-navbar-brand-hover-bg			: $navbar-default-brand-hover-bg !default;
+
+/* inverse style
+$o-navbar-border-color				: $navbar-inverse-border ;
+$o-navbar-bg						: $navbar-inverse-bg ;
+$o-navbar-color						: $navbar-inverse-color ;
+$o-navbar-link-color				: $navbar-inverse-link-color ;
+$o-navbar-link-hover-color			: $navbar-inverse-link-hover-color ;
+$o-navbar-link-hover-bg 			: $navbar-inverse-link-hover-bg ;
+$o-navbar-link-active-color 		: $navbar-inverse-link-active-color ;
+$o-navbar-link-active-bg 			: $navbar-inverse-link-active-bg ;
+$o-navbar-link-disabled-color 		: $navbar-inverse-link-disabled-color ;
+$o-navbar-link-disabled-bg 			: $navbar-inverse-link-disabled-bg ;
+$o-navbar-toggle-border-color		: $navbar-inverse-toggle-border-color ;
+$o-navbar-toggle-hover-bg			: $navbar-inverse-toggle-hover-bg ;
+$o-navbar-toggle-icon-bar-bg		: $navbar-inverse-toggle-icon-bar-bg ;
+$o-navbar-brand-color				: $navbar-inverse-brand-color ;
+$o-navbar-brand-hover-color			: $navbar-inverse-brand-hover-color ;
+$o-navbar-brand-hover-bg			: $navbar-inverse-brand-hover-bg ;
+*/
+
+/* Right off-canvas menu, part of navbar */
+$o-offcanvas-width 					: 250px !default;
+$o-offcanvas-padding-horizontal		: $navbar-padding-horizontal !default;
+$o-offcanvas-padding-vertical		: $navbar-padding-vertical !default;
+$o-offcanvas-border 				: $navbar-inverse-border !default;
+$o-offcanvas-bg 					: $navbar-inverse-bg !default;
+$o-offcanvas-link-color				: $navbar-inverse-color!default;
+$o-offcanvas-link-hover-color 		: $navbar-inverse-link-hover-color!default;
+$o-offcanvas-link-hover-bg 			: $navbar-inverse-link-hover-bg!default;
+$o-offcanvas-link-active-color		: $navbar-inverse-link-active-color!default;
+$o-offcanvas-link-active-bg			: $navbar-inverse-link-active-bg!default;
+$o-offcanvas-logout-color			: $brand-danger !default;
+$o-offcanvas-logout-hover-color		: darken($o-offcanvas-logout-color,10%)!default;
+$o-offcanvas-dropdown-bg			: $o-offcanvas-bg !default;
+$o-offcanvas-dropdown-font-size		: $font-size-base !default;
+
 /* Page footer */
 $o-footer-font-size					: $font-size-small !default;
 $o-footer-line-height				: 16px !default;
@@ -89,16 +155,6 @@ $o-footer-default-color 			: #999 !default;
 $o-footer-default-link-color 		: #999 !default;
 $o-footer-default-link-hover-color 	: #000 !default;
 $o-footer-position-absolute 		: true !default; 
-
-/* Right off-canvas menu */
-$o-offcanvas-width 				: 250px !default;
-$o-offcanvas-padding-horizontal	: $navbar-padding-horizontal !default;
-$o-offcanvas-padding-vertical	: $navbar-padding-vertical !default;
-$o-offcanvas-border 			: $navbar-inverse-border !default;
-$o-offcanvas-bg 				: $navbar-inverse-bg !default;
-$o-offcanvas-link-hover-bg 		: $navbar-inverse-link-hover-bg;
-$o-offcanvas-color				: $navbar-inverse-color;
-$o-offcanvas-link-hover-color 	: $navbar-inverse-link-hover-color;
 
 /* Toolbar in course, editor etc */
 $o-toolbar-bg-color				: $navbar-default-bg !default;
