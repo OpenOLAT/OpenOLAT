@@ -47,12 +47,11 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service
-public class ACOfferManagerImpl implements ACOfferManager {
+public class ACOfferDAO {
 	
 	@Autowired
 	private DB dbInstance;
 	
-	@Override
 	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select offer from ").append(OfferImpl.class.getName()).append(" offer")
@@ -75,7 +74,6 @@ public class ACOfferManagerImpl implements ACOfferManager {
 		return offers;
 	}
 
-	@Override
 	public Offer loadOfferByKey(Long key) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select offer from ").append(OfferImpl.class.getName()).append(" offer")
@@ -117,7 +115,6 @@ public class ACOfferManagerImpl implements ACOfferManager {
 		return resourceWithOffers;
 	}
 	
-	@Override
 	public Offer createOffer(OLATResource resource, String resourceName) {
 		OfferImpl offer = new OfferImpl();
 		offer.setResource(resource);
@@ -135,7 +132,6 @@ public class ACOfferManagerImpl implements ACOfferManager {
 		return offer;
 	}
 	
-	@Override
 	public void deleteOffer(Offer offer) {
 		if(offer instanceof OfferImpl) {
 			((OfferImpl)offer).setValid(false);
@@ -143,7 +139,6 @@ public class ACOfferManagerImpl implements ACOfferManager {
 		saveOffer(offer);
 	}
 
-	@Override
 	public void saveOffer(Offer offer) {
 		if(offer instanceof OfferImpl) {
 			((OfferImpl)offer).setLastModified(new Date());

@@ -43,8 +43,8 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.resource.accesscontrol.manager.ACMethodManager;
-import org.olat.resource.accesscontrol.manager.ACOfferManager;
+import org.olat.resource.accesscontrol.manager.ACMethodDAO;
+import org.olat.resource.accesscontrol.manager.ACOfferDAO;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.Offer;
@@ -68,7 +68,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private ACOfferManager acOfferManager;
+	private ACOfferDAO acOfferManager;
 	@Autowired
 	private ACService acService;
 	@Autowired
@@ -84,7 +84,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
-	private ACMethodManager acMethodManager;
+	private ACMethodDAO acMethodManager;
 	@Autowired
 	private AccessControlModule acModule;
 	

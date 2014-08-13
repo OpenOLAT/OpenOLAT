@@ -31,16 +31,13 @@ import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.model.PersistedMapper;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.cache.CacheWrapper;
-import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.SyncerExecutor;
-import org.olat.core.util.resource.OresHelper;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -49,7 +46,7 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service("mapperService")
-public class MapperServiceImpl implements MapperService {
+public class MapperServiceImpl implements MapperService, InitializingBean {
 	
 	private Map<MapperKey,Mapper> mapperKeyToMapper = new ConcurrentHashMap<MapperKey,Mapper>();
 	private Map<Mapper,MapperKey> mapperToMapperKey = new ConcurrentHashMap<Mapper, MapperKey>();
@@ -59,21 +56,12 @@ public class MapperServiceImpl implements MapperService {
 	
 	@Autowired
 	private MapperDAO mapperDao;
+	@Autowired
+	private CoordinatorManager coordinatorManager;
 	
-	private CacheWrapper<String, Serializable> getMapperCache() {
-		if (mapperCache == null) {
-			OLATResourceable ores = OresHelper.createOLATResourceableType(Mapper.class);
-			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor() {
-				@SuppressWarnings("synthetic-access")
-				public void execute() {
-					if (mapperCache == null) {
-						Coordinator coordinator = CoordinatorManager.getInstance().getCoordinator();
-						mapperCache = coordinator.getCacher().getCache(MapperService.class.getSimpleName(), "mapper");
-					}
-				}
-			});
-		}
-		return mapperCache;
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		mapperCache = coordinatorManager.getCoordinator().getCacher().getCache(MapperService.class.getSimpleName(), "mapper");
 	}
 	
 	@Override
@@ -155,11 +143,11 @@ public class MapperServiceImpl implements MapperService {
 		MapperKey mapperKey = new MapperKey(session, id);
 		Mapper mapper = mapperKeyToMapper.get(mapperKey);
 		if(mapper == null) {
-			mapper = (Mapper)getMapperCache().get(id);
+			mapper = (Mapper)mapperCache.get(id);
 			if(mapper == null) {
 				mapper = mapperDao.retrieveMapperById(id);
 				if(mapper != null) {
-					getMapperCache().put(id, (Serializable)mapper);
+					mapperCache.put(id, (Serializable)mapper);
 				}
 			}
 		}

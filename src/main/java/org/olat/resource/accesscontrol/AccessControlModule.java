@@ -30,6 +30,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.resource.accesscontrol.manager.ACMethodDAO;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
@@ -80,7 +81,7 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 	private String vatNumber;
 
 	@Autowired
-	private ACService acService;
+	private ACMethodDAO acMethodManager;
 	@Autowired
 	private List<AccessMethodHandler> methodHandlers;
 
@@ -162,8 +163,8 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 		if(this.tokenEnabled != tokenEnabled) {
 			setStringProperty(TOKEN_ENABLED, Boolean.toString(tokenEnabled), true);
 		}
-		if(acService != null) {
-			acService.enableMethod(TokenAccessMethod.class, tokenEnabled);
+		if(acMethodManager != null) {
+			acMethodManager.enableMethod(TokenAccessMethod.class, tokenEnabled);
 		}
 	}
 
@@ -175,8 +176,8 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 		if(this.freeEnabled != freeEnabled) {
 			setStringProperty(FREE_ENABLED, Boolean.toString(freeEnabled), true);
 		}
-		if(acService != null) {
-			acService.enableMethod(FreeAccessMethod.class, freeEnabled);
+		if(acMethodManager != null) {
+			acMethodManager.enableMethod(FreeAccessMethod.class, freeEnabled);
 		}
 	}
 	
@@ -188,8 +189,8 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 		if(this.paypalEnabled != paypalEnabled) {
 			setStringProperty(PAYPAL_ENABLED, Boolean.toString(paypalEnabled), true);
 		}
-		if(acService != null) {
-			acService.enableMethod(PaypalAccessMethod.class, paypalEnabled);
+		if(acMethodManager != null) {
+			acMethodManager.enableMethod(PaypalAccessMethod.class, paypalEnabled);
 		}
 	}
 

@@ -80,20 +80,20 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service
-public class ACMethodManagerImpl implements ACMethodManager, GenericEventListener {
+public class ACMethodDAO implements GenericEventListener {
 	
-	private static final OLog log = Tracing.createLoggerFor(ACMethodManagerImpl.class);
+	private static final OLog log = Tracing.createLoggerFor(ACMethodDAO.class);
 
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private BusinessGroupService businessGroupService;
-
-	private final AccessControlModule acModule;
+	@Autowired
+	private AccessControlModule acModule;
 	
 	@Autowired
-	public ACMethodManagerImpl(CoordinatorManager coordinatorManager, AccessControlModule acModule) {
-		this.acModule = acModule;
+	public ACMethodDAO(CoordinatorManager coordinatorManager) {
+
 		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null, FrameworkStartupEventChannel.getStartupEventChannel());
 	}
 
@@ -107,7 +107,6 @@ public class ACMethodManagerImpl implements ACMethodManager, GenericEventListene
 		}
 	}
 
-	@Override
 	public void enableMethod(Class<? extends AccessMethod> type, boolean enable) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select method from ").append(AbstractAccessMethod.class.getName())
@@ -133,7 +132,6 @@ public class ACMethodManagerImpl implements ACMethodManager, GenericEventListene
 		}
 	}
 
-	@Override
 	public boolean isValidMethodAvailable(OLATResource resource, Date atDate) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(access.method) from ").append(OfferAccessImpl.class.getName()).append(" access ")
@@ -157,7 +155,6 @@ public class ACMethodManagerImpl implements ACMethodManager, GenericEventListene
 		return methods.intValue() > 0;
 	}
 
-	@Override
 	public List<AccessMethod> getAvailableMethods(Identity identity, Roles roles) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select method from ").append(AbstractAccessMethod.class.getName()).append(" method")
@@ -180,7 +177,6 @@ public class ACMethodManagerImpl implements ACMethodManager, GenericEventListene
 		return allowedMethods;
 	}
 
-	@Override
 	public List<AccessMethod> getAvailableMethodsByType(Class<? extends AccessMethod> type) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select method from ").append(AbstractAccessMethod.class.getName()).append(" method")
@@ -192,7 +188,6 @@ public class ACMethodManagerImpl implements ACMethodManager, GenericEventListene
 		return methods;
 	}
 
-	@Override
 	public List<OfferAccess> getOfferAccess(Offer offer, boolean valid) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select access from ").append(OfferAccessImpl.class.getName()).append(" access")
@@ -206,7 +201,6 @@ public class ACMethodManagerImpl implements ACMethodManager, GenericEventListene
 		return methods;
 	}
 	
-	@Override
 	public List<OfferAccess> getOfferAccess(Collection<Offer> offers, boolean valid) {
 		if(offers == null || offers.isEmpty()) return Collections.emptyList();
 
@@ -223,7 +217,6 @@ public class ACMethodManagerImpl implements ACMethodManager, GenericEventListene
 		return methods;
 	}
 	
-	@Override
 	public List<OfferAccess> getOfferAccessByResource(Collection<Long> resourceKeys, boolean valid, Date atDate) {
 		if(resourceKeys == null || resourceKeys.isEmpty()) return Collections.emptyList();
 
@@ -249,7 +242,6 @@ public class ACMethodManagerImpl implements ACMethodManager, GenericEventListene
 		return methods;
 	}
 	
-	@Override
 	public List<BusinessGroupAccess> getAccessMethodForBusinessGroup(boolean valid, Date atDate) {
 
 		StringBuilder sb = new StringBuilder();
@@ -294,7 +286,6 @@ public class ACMethodManagerImpl implements ACMethodManager, GenericEventListene
 		return groupAccess;
 	}
 	
-	@Override
 	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys,
 			String resourceType, String excludedResourceType, boolean valid, Date atDate) {
 
@@ -366,7 +357,6 @@ public class ACMethodManagerImpl implements ACMethodManager, GenericEventListene
 		return groupAccess;
 	}
 
-	@Override
 	public OfferAccess createOfferAccess(Offer offer, AccessMethod method) {
 		OfferAccessImpl access = new OfferAccessImpl();
 		access.setOffer(offer);
@@ -375,7 +365,6 @@ public class ACMethodManagerImpl implements ACMethodManager, GenericEventListene
 		return access;
 	}
 	
-	@Override
 	public void save(OfferAccess link) {
 		if(link.getKey() == null) {
 			dbInstance.saveObject(link);
@@ -384,7 +373,6 @@ public class ACMethodManagerImpl implements ACMethodManager, GenericEventListene
 		}
 	}
 	
-	@Override
 	public void delete(OfferAccess link) {
 		OfferAccessImpl access = (OfferAccessImpl)link;
 		access.setValid(false);

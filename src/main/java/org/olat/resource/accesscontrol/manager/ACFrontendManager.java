@@ -95,15 +95,15 @@ public class ACFrontendManager implements ACService {
 	@Autowired
 	private AccessControlModule accessModule;
 	@Autowired
-	private ACOfferManager accessManager;
+	private ACOfferDAO accessManager;
 	@Autowired
-	private ACMethodManager methodManager;
+	private ACMethodDAO methodManager;
 	@Autowired
-	private ACOrderManager orderManager;
+	private ACOrderDAO orderManager;
 	@Autowired
 	private ACReservationDAO reservationDao;
 	@Autowired
-	private ACTransactionManager transactionManager;
+	private ACTransactionDAO transactionManager;
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
 	@Autowired

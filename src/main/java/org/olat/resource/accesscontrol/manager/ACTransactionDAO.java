@@ -43,12 +43,11 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service
-public class ACTransactionManagerImpl implements ACTransactionManager {
+public class ACTransactionDAO {
 	
 	@Autowired
 	private DB dbInstance;
 	
-	@Override
 	public AccessTransaction createTransaction(Order order, OrderPart orderPart, AccessMethod method) {
 		AccessTransactionImpl transaction = new AccessTransactionImpl();
 		transaction.setOrder(order);
@@ -57,7 +56,6 @@ public class ACTransactionManagerImpl implements ACTransactionManager {
 		return transaction;
 	}
 
-	@Override
 	public AccessTransaction save(AccessTransaction transaction) {
 		if(transaction.getKey() == null) {
 			dbInstance.saveObject(transaction);
@@ -67,13 +65,11 @@ public class ACTransactionManagerImpl implements ACTransactionManager {
 		return transaction;
 	}
 	
-	@Override
 	public AccessTransaction update(AccessTransaction transaction, AccessTransactionStatus status) {
 		((AccessTransactionImpl)transaction).setStatus(status);
 		return save(transaction);
 	}
 	
-	@Override
 	public AccessTransaction loadTransactionByKey(Long transactionKey) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select trx from ").append(AccessTransactionImpl.class.getName()).append(" trx")
@@ -87,7 +83,6 @@ public class ACTransactionManagerImpl implements ACTransactionManager {
 		return transactions.get(0);
 	}
 	
-	@Override
 	public List<AccessTransaction> loadTransactionsForOrders(List<Order> orders) {
 		if(orders == null || orders.isEmpty()) return Collections.emptyList();
 		

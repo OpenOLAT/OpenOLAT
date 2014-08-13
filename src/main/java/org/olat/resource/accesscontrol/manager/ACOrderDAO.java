@@ -54,12 +54,11 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service
-public class ACOrderManagerImpl implements ACOrderManager {
+public class ACOrderDAO {
 	
 	@Autowired
 	private DB dbInstance;
 	
-	@Override
 	public OrderImpl createOrder(Identity delivery) {
 		OrderImpl order = new OrderImpl();
 		order.setDelivery(delivery);
@@ -68,7 +67,6 @@ public class ACOrderManagerImpl implements ACOrderManager {
 		return order;
 	}
 
-	@Override
 	public OrderPart addOrderPart(Order order) {
 		OrderPartImpl orderPart = new OrderPartImpl();
 		dbInstance.saveObject(orderPart);
@@ -76,7 +74,6 @@ public class ACOrderManagerImpl implements ACOrderManager {
 		return orderPart;
 	}
 
-	@Override
 	public OrderLine addOrderLine(OrderPart part, Offer offer) {
 		OrderLineImpl line = new OrderLineImpl();
 		line.setOffer(offer);
@@ -87,7 +84,6 @@ public class ACOrderManagerImpl implements ACOrderManager {
 		return line;
 	}
 	
-	@Override
 	public Order save(Order order) {
 		if(order.getKey() == null) {
 			dbInstance.saveObject(order);
@@ -97,7 +93,6 @@ public class ACOrderManagerImpl implements ACOrderManager {
 		return order;
 	}
 	
-	@Override
 	public Order save(Order order, OrderStatus status) {
 		((OrderImpl)order).setOrderStatus(status);
 		if(order.getKey() == null) {
@@ -108,12 +103,10 @@ public class ACOrderManagerImpl implements ACOrderManager {
 		return order;
 	}
 	
-	@Override
 	public Order saveOneClick(Identity delivery, OfferAccess link) {
 		return saveOneClick(delivery, link, OrderStatus.PAYED);
 	}
 	
-	@Override
 	public Order saveOneClick(Identity delivery, OfferAccess link, OrderStatus status) {
 		OrderImpl order = createOrder(delivery);
 		order.setOrderStatus(status);
@@ -132,7 +125,6 @@ public class ACOrderManagerImpl implements ACOrderManager {
 		return order;
 	}
 	
-	@Override
 	public List<Order> findOrdersByDelivery(Identity delivery, OrderStatus... status) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select order from ").append(OrderImpl.class.getName()).append(" order")
@@ -156,7 +148,6 @@ public class ACOrderManagerImpl implements ACOrderManager {
 		return orders;
 	}
 
-	@Override
 	public List<Order> findOrdersByResource(OLATResource resource, OrderStatus... status) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct(o) from ").append(OrderImpl.class.getName()).append(" o")
@@ -183,7 +174,6 @@ public class ACOrderManagerImpl implements ACOrderManager {
 		return orders;
 	}
 	
-	@Override
 	public List<Order> findOrders(OLATResource resource, Identity delivery, Long orderNr, Date from, Date to, OrderStatus... status) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct(o) from ").append(OrderImpl.class.getName()).append(" o");
@@ -265,7 +255,6 @@ public class ACOrderManagerImpl implements ACOrderManager {
 		return true;
 	}
 
-	@Override
 	public Order loadOrderByKey(Long orderKey) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select order from ").append(OrderImpl.class.getName()).append(" order")
@@ -279,7 +268,6 @@ public class ACOrderManagerImpl implements ACOrderManager {
 		return orders.get(0);
 	}
 	
-	@Override
 	public Order loadOrderByNr(String orderNr) {
 		Long orderKey = new Long(orderNr);
 		return loadOrderByKey(orderKey);

@@ -36,9 +36,9 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.OLATResourceManager;
-import org.olat.resource.accesscontrol.manager.ACMethodManager;
-import org.olat.resource.accesscontrol.manager.ACOfferManager;
-import org.olat.resource.accesscontrol.manager.ACOrderManager;
+import org.olat.resource.accesscontrol.manager.ACMethodDAO;
+import org.olat.resource.accesscontrol.manager.ACOfferDAO;
+import org.olat.resource.accesscontrol.manager.ACOrderDAO;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.Offer;
@@ -73,19 +73,19 @@ public class ACOrderManagerTest extends OlatTestCase {
 	private DB dbInstance;
 	
 	@Autowired
-	private ACOfferManager acOfferManager;
+	private ACOfferDAO acOfferManager;
 	
 	@Autowired
 	private ACService acService;
 	
 	@Autowired
-	private ACMethodManager acMethodManager;
+	private ACMethodDAO acMethodManager;
 
 	@Autowired
 	private OLATResourceManager resourceManager;
 	
 	@Autowired
-	private ACOrderManager acOrderManager;
+	private ACOrderDAO acOrderManager;
 	
 	@Before
 	public void setUp() {

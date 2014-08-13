@@ -38,7 +38,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.OLATResourceManager;
-import org.olat.resource.accesscontrol.manager.ACOfferManager;
+import org.olat.resource.accesscontrol.manager.ACOfferDAO;
 import org.olat.resource.accesscontrol.model.Offer;
 import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.olat.test.OlatTestCase;
@@ -59,7 +59,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 	private DB dbInstance;
 	
 	@Autowired
-	private ACOfferManager acOfferManager;
+	private ACOfferDAO acOfferManager;
 	
 	@Autowired
 	private ACService acService;

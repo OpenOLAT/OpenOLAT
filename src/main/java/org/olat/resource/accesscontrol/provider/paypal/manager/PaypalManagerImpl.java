@@ -39,9 +39,9 @@ import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.manager.ACOrderManager;
+import org.olat.resource.accesscontrol.manager.ACOrderDAO;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
-import org.olat.resource.accesscontrol.manager.ACTransactionManager;
+import org.olat.resource.accesscontrol.manager.ACTransactionDAO;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.AccessTransaction;
 import org.olat.resource.accesscontrol.model.AccessTransactionStatus;
@@ -126,11 +126,11 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private ACOrderManager orderManager;
+	private ACOrderDAO orderManager;
 	@Autowired
 	private ACService acService;
 	@Autowired
-	private ACTransactionManager transactionManager;
+	private ACTransactionDAO transactionManager;
 	@Autowired
 	private PaypalModule paypalModule;
 	@Autowired
