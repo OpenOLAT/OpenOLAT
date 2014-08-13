@@ -46,6 +46,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
 import org.olat.core.gui.components.link.Link;
@@ -1346,6 +1347,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	private void initEditionTools() {
+		boolean managed = RepositoryEntryManagedFlag.isManaged(courseRepositoryEntry, RepositoryEntryManagedFlag.editcontent);
 		// 1) administrative tools
 		if (isCourseAdmin || isCourseCoach || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)
 				|| hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || hasCourseRight(CourseRights.RIGHT_ARCHIVING)
@@ -1361,7 +1363,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			editTools.addComponent(runLink);
 
 			if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
-				boolean managed = RepositoryEntryManagedFlag.isManaged(courseRepositoryEntry, RepositoryEntryManagedFlag.editcontent);
 				editLink = LinkFactory.createToolLink("edit.cmd", translate("command.openeditor"), this, "o_icon_courseeditor");
 				editLink.setElementCssClass("o_sel_course_editor");
 				editLink.setEnabled(!managed);
@@ -1374,23 +1375,23 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				folderLink.setElementCssClass("o_sel_course_folder");
 				folderLink.setEnabled(!managed);
 				editTools.addComponent(folderLink);
-				areaLink = LinkFactory.createToolLink("careas", translate("command.courseareas"), this, "o_icon_courseareas");
-				areaLink.setElementCssClass("o_sel_course_areas");
-				areaLink.setEnabled(!managed);
-				editTools.addComponent(areaLink);
 			}
+			editTools.addComponent(new Spacer(""));
 			if (hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || isCourseAdmin) {
 				userMgmtLink = LinkFactory.createToolLink("unifiedusermngt", translate("command.opensimplegroupmngt"), this, "o_icon_membersmanagement");
 				editTools.addComponent(userMgmtLink);
-			}
-			if (hasCourseRight(CourseRights.RIGHT_ARCHIVING) || isCourseAdmin) {
-				archiverLink = LinkFactory.createToolLink("archiver", translate("command.openarchiver"), this, "o_icon_archive_tool");
-				editTools.addComponent(archiverLink);
 			}
 			if (hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || isCourseCoach || isCourseAdmin) {
 				assessmentLink = LinkFactory.createToolLink("assessment",translate("command.openassessment"), this, "o_icon_assessment_tool");
 				editTools.addComponent(assessmentLink);
 			}
+			if (hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || isCourseAdmin) {
+				areaLink = LinkFactory.createToolLink("careas", translate("command.courseareas"), this, "o_icon_courseareas");
+				areaLink.setElementCssClass("o_sel_course_areas");
+				areaLink.setEnabled(!managed);
+				editTools.addComponent(areaLink);
+			}
+			editTools.addComponent(new Spacer(""));
 			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin || isCourseCoach) {
 				final AtomicInteger testNodes = new AtomicInteger();
 				final AtomicInteger surveyNodes = new AtomicInteger();
@@ -1417,6 +1418,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			if (hasCourseRight(CourseRights.RIGHT_STATISTICS) || isCourseAdmin) {
 				courseStatisticLink = LinkFactory.createToolLink("statistic",translate("command.openstatistic"), this, "o_icon_statistics_tool");
 				editTools.addComponent(courseStatisticLink);
+			}
+			editTools.addComponent(new Spacer(""));
+			if (hasCourseRight(CourseRights.RIGHT_ARCHIVING) || isCourseAdmin) {
+				archiverLink = LinkFactory.createToolLink("archiver", translate("command.openarchiver"), this, "o_icon_archive_tool");
+				editTools.addComponent(archiverLink);
 			}
 			if (CourseDBManager.getInstance().isEnabled() && (hasCourseRight(CourseRights.RIGHT_DB) || isCourseAdmin)) {
 				dbLink = LinkFactory.createToolLink("customDb",translate("command.opendb"), this, "o_icon_coursedb");
