@@ -30,15 +30,24 @@ import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.id.Identity;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseFactory;
+import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryService;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -52,6 +61,11 @@ import org.olat.test.OlatTestCase;
 public class PublishProcessTest extends OlatTestCase {
 	
 	private static final Locale locale = Locale.GERMAN;
+	
+	@Autowired
+	private OLATResourceManager olatResourceManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	/**
 	 * Publish process without error
@@ -284,8 +298,57 @@ public class PublishProcessTest extends OlatTestCase {
 		
 		//deploy a course
 		String softKey = UUID.randomUUID().toString().replace("-", "").substring(0, 30);
-		RepositoryEntry re = CourseFactory.deployCourseFromZIP(courseFile, softKey, 1);
+		RepositoryEntry re = deployRawCourseFromZIP(courseFile, softKey, 1);
 		Assert.assertNotNull(re);
+		return re;
+	}
+	
+	/**
+	 * This method copy the edtiro tree model and run structure as is during the import.
+	 * @param exportedCourseZIPFile
+	 * @param softKey
+	 * @param access
+	 * @return
+	 */
+	private RepositoryEntry deployRawCourseFromZIP(File exportedCourseZIPFile, String softKey, int access) {
+		// create the course instance
+		OLATResource newCourseResource = olatResourceManager.createOLATResourceInstance(CourseModule.class);
+		ICourse course = CourseFactory.importCourseFromZip(newCourseResource, exportedCourseZIPFile);
+		// course is now also in course cache!
+		if (course == null) {
+			return null;
+		}
+		
+		File courseExportData = course.getCourseExportDataDir().getBasefile();
+		// get the export data directory
+		// create the repository entry
+		RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(courseExportData);
+		if(!StringHelper.containsNonWhitespace(softKey)) {
+			softKey = importExport.getSoftkey();
+		}
+		
+		newCourseResource = olatResourceManager.findOrPersistResourceable(newCourseResource);
+		RepositoryEntry re = repositoryService.create(importExport.getInitialAuthor(), importExport.getResourceName(),
+				importExport.getDisplayName(), importExport.getDescription(), newCourseResource);
+		// ok, continue import
+		re.setOlatResource(newCourseResource);
+		re.setSoftkey(softKey);
+		// set access configuration
+		re.setAccess(access);
+
+		// save the repository entry
+		repositoryService.update(re);
+
+		//import groups
+		course = CourseFactory.openCourseEditSession(course.getResourceableId());
+		// create group management
+		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
+		// import groups
+		cgm.importCourseBusinessGroups(courseExportData);
+
+		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
+		// cleanup export data
+		FileUtils.deleteDirsAndFiles(courseExportData, true, true);
 		return re;
 	}
 }
