@@ -26,6 +26,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * 
@@ -47,14 +48,18 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 	
 	private static final OLog log = Tracing.createLoggerFor(AbstractSpringModule.class);
 	
-	protected final PersistedProperties moduleConfigProperties;
+	private final PersistedProperties moduleConfigProperties;
 	
 	public AbstractSpringModule(CoordinatorManager coordinatorManager) {
 		moduleConfigProperties = new PersistedProperties(coordinatorManager, this);
 	}
+	
+	@Value("${userdata.dir}")
+	private String userDataDirectory;
 
 	@Override
 	public void afterPropertiesSet()  {
+		moduleConfigProperties.setUserDataDirectory(userDataDirectory);
 		moduleConfigProperties.init();
 		initDefaultProperties();
 		init();

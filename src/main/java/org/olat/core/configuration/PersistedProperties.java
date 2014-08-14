@@ -32,6 +32,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.util.Properties;
@@ -137,7 +138,6 @@ import org.olat.core.util.resource.OresHelper;
  */
 public class PersistedProperties extends LogDelegator implements Initializable, Destroyable{
 	// base directory where all system config files are located
-	private final File SYSTEM_CONFIG_DIRECTORY = new File(WebappHelper.getUserDataRoot() + "/system/configuration/");
 	private File configurationPropertiesFile;
 	// the properties loaded from disk
 	private final Properties configuredProperties = new Properties();
@@ -152,9 +152,14 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 	
 	private final boolean secured;
 	private final String filename;
+	private String userDataDirectory;
 	
 	static {
-  	Security.insertProviderAt(new BouncyCastleProvider(), 1);
+		Security.insertProviderAt(new BouncyCastleProvider(), 1);
+	}
+	
+	public PersistedProperties(GenericEventListener listener) {
+		this(CoordinatorManager.getInstance(), listener);
 	}
 	
 	public PersistedProperties(CoordinatorManager coordinatorManager, GenericEventListener listener, boolean secured) {
@@ -184,9 +189,8 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 		this.secured = false;
 	}
 	
-	// fxdiff: backward compatibility
-	public PersistedProperties(GenericEventListener listener) {
-		this(CoordinatorManager.getInstance(), listener);
+	public void setUserDataDirectory(String directory) {
+		userDataDirectory = directory;
 	}
 
 	/**
@@ -195,9 +199,14 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 	 * 
 	 * @param propertiesChangedEventListener
 	 */
+	@Override
 	public void init() {
+		if(userDataDirectory == null) {
+			userDataDirectory = WebappHelper.getUserDataRoot();
+		}
+		
 		// Load configured properties from properties file
-		configurationPropertiesFile = new File(SYSTEM_CONFIG_DIRECTORY, filename);
+		configurationPropertiesFile = Paths.get(userDataDirectory, "system", "configuration", filename).toFile();
 		loadPropertiesFromFile();
 		// Finally add listener to configuration changes done in other nodes
 		PROPERTIES_CHANGED_EVENT_CHANNEL = OresHelper.createOLATResourceableType(propertiesChangedEventListener.getClass().getSimpleName()
@@ -216,12 +225,12 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 			InputStream is;
 			try {
 				is = new FileInputStream(configurationPropertiesFile);
-				
+
 				if(secured) {
 					SecretKey key = generateKey("rk6R9pQy7dg3usJk");
-	        Cipher cipher = Cipher.getInstance("AES/CTR/NOPADDING");
-	        cipher.init(Cipher.DECRYPT_MODE, key, generateIV(cipher), random);
-	        is =  new CipherInputStream(is, cipher);	
+					Cipher cipher = Cipher.getInstance("AES/CTR/NOPADDING");
+					cipher.init(Cipher.DECRYPT_MODE, key, generateIV(cipher), random);
+					is =  new CipherInputStream(is, cipher);	
 				}
 				
 				configuredProperties.load(is);
