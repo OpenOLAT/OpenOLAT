@@ -173,6 +173,17 @@
 	@include img-responsive(inline-block);
 }
 
+/* Hyphenated text */
+.o_with_hyphens, %o_with_hyphens {	
+	 -ms-word-break: break-all;
+	 word-break: break-all;
+	 // Non standard for webkit
+	 word-break: break-word;
+	-webkit-hyphens: auto;
+	-moz-hyphens: auto;
+	hyphens: auto;
+}
+
 /* Styling for overflow text with ellipsis (see js/ellipsis.js) */
 .o_withEllipsis {
 	.o_ellipsis_links {
