@@ -94,8 +94,8 @@ public class TranslationToolLauncherController extends BasicController {
 		if (source == startTranslationToolLink) {
 			// wrap the content controller into a full header layout
 			ControllerCreator controllerCreator = new ControllerCreator() {
-				public Controller createController(UserRequest ureq, WindowControl wControl) {
-					return new TranslationToolMainController(ureq, wControl, !I18nModule.isTransToolEnabled());
+				public Controller createController(UserRequest uureq, WindowControl wControl) {
+					return new TranslationToolMainController(uureq, wControl, !I18nModule.isTransToolEnabled());
 				}
 			};
 			// no need for later disposal, opens in popup window and will be disposed

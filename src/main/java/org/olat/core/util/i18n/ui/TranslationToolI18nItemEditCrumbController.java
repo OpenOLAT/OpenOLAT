@@ -158,7 +158,6 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		I18nManager i18nMgr = I18nManager.getInstance();
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		flc.contextPut("referenceLanguageKey", referenceLocale.toString());
 		flc.contextPut("referenceLanguage", i18nMgr.getLanguageTranslated(referenceLocale.toString(), false));
@@ -269,7 +268,6 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 	}
 
 	private void initOrUpdateCurrentItem(UserRequest ureq) {
-		I18nManager i18nMgr = I18nManager.getInstance();
 		// Set keys (must call before setting new currentItemPosition bundle name!
 		if (bundlesSelection.getSelectedKey().equals(currentItem.getBundleName())) {
 			// still in same bundle, just select the currentItemPosition key
@@ -313,7 +311,6 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 	private void updateCompareArea(UserRequest ureq) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (compareSwitch.isSelected(0)) {
-			I18nManager i18nMgr = I18nManager.getInstance();
 			// Add target value
 			String compareValue = i18nMgr.getLocalizedString(currentItem.getBundleName(), currentItem.getKey(), null, compareLocale, customizingMode, false,
 					false, false, 0);
@@ -365,7 +362,6 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 	}
 
 	private void doSaveCurrentItem(UserRequest ureq) {
-		I18nManager i18nMgr = I18nManager.getInstance();
 		// update annotation if dirty
 		String newAnnotation = annotationArea.getValue();
 		if (!StringHelper.containsNonWhitespace(newAnnotation)) newAnnotation = null;

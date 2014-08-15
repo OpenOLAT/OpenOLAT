@@ -133,6 +133,7 @@ public class InlineTranslationInterceptHandlerController extends BasicController
 
 	public ComponentRenderer createInterceptComponentRenderer(final ComponentRenderer originalRenderer) {
 		return new ComponentRenderer() {
+			@Override
 			public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 					RenderResult renderResult, String[] args) {
 				// ------------- show translator keys
@@ -164,6 +165,7 @@ public class InlineTranslationInterceptHandlerController extends BasicController
 			 *      org.olat.core.gui.translator.Translator,
 			 *      org.olat.core.gui.render.RenderingState)
 			 */
+			@Override
 			public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 					RenderingState rstate) {
 				originalRenderer.renderHeaderIncludes(renderer, sb, source, ubu, translator, rstate);
@@ -175,6 +177,7 @@ public class InlineTranslationInterceptHandlerController extends BasicController
 			 *      org.olat.core.gui.components.Component,
 			 *      org.olat.core.gui.render.RenderingState)
 			 */
+			@Override
 			public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
 				originalRenderer.renderBodyOnLoadJSFunctionCall(renderer, sb, source, rstate);
 			}
