@@ -185,7 +185,7 @@ public class PortfolioConfigForm extends FormBasicController {
 			}
 			cmc.activate();
 		} else if (source == editMapLink) {
-			CourseNodeFactory.getInstance().launchReferencedRepoEntryEditor(ureq, courseNode);
+			CourseNodeFactory.getInstance().launchReferencedRepoEntryEditor(ureq, getWindowControl(), courseNode);
 		} else if (source == previewMapLink) {
 			EPSecurityCallback secCallback = new EPSecurityCallbackImpl(false, true);
 

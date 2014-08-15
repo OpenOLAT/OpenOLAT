@@ -422,22 +422,6 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	    		authorLinkNames.add(authorLink.getComponent().getComponentName());
     		}
     		layoutCont.contextPut("authorlinknames", authorLinkNames);
-            /*
-    		List<Identity> authors = repositoryService.getMembers(entry, GroupRoles.owner.name());
-    		List<String> authorLinkNames = new ArrayList<String>(authors.size());
-    		Set<Long> duplicates = new HashSet<>(authors.size() * 2 + 1);
-    		int counter = 0;
-    		for(Identity author:authors) {
-    			if(!duplicates.contains(author.getKey())) {
-	    			String authorName = userManager.getUserDisplayName(author);
-	    			FormLink authorLink = uifactory.addFormLink("owner-" + ++counter, "owner", authorName, null, formLayout, Link.NONTRANSLATED | Link.LINK);
-	    			authorLink.setUserObject(author.getKey());
-	    			authorLinkNames.add(authorLink.getComponent().getComponentName());
-	    			duplicates.add(author.getKey());
-    			}
-    		}
-    		layoutCont.contextPut("authorlinknames", authorLinkNames);
-    		*/
 		}
 	}
 	

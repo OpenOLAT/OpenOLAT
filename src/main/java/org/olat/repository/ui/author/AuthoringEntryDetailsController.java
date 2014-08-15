@@ -75,6 +75,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.PriceMethod;
@@ -220,7 +221,7 @@ public class AuthoringEntryDetailsController extends RepositoryEntryDetailsContr
 			editLink.setIconLeftCSS("o_icon o_icon_edit");
 			editLink.setElementCssClass("o_sel_author_edit_entry");
 			boolean editManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.editcontent);
-			editLink.setEnabled(handler.supportsEdit(entry.getOlatResource()) && !corrupted && !editManaged);
+			editLink.setEnabled(handler.supportsEdit(entry.getOlatResource()) != EditionSupport.no && !corrupted && !editManaged);
 			stackPanel.addTool(editLink, Align.left);
 		}
 

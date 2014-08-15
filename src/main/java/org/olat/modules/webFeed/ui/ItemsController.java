@@ -179,7 +179,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 			createCommentsAndRatingsLinks(ureq, feed);
 		}
 		// Add date components
-		createDateComponents(ureq, feed);
+		createDateComponents(feed);
 
 		// The year/month navigation
 		List<Item> items = feed.getFilteredItems(callback, ureq.getIdentity());
@@ -288,7 +288,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 	 * @param ureq
 	 * @param feed
 	 */
-	private void createDateComponents(UserRequest ureq, Feed feed) {
+	private void createDateComponents(Feed feed) {
 		List<Item> items = feed.getItems();
 		if (items != null) {
 			for (Item item : items) {
@@ -751,7 +751,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 			createCommentsAndRatingsLinks(ureq, feed);
 		}
 		// Add date components
-		createDateComponents(ureq, feed);
+		createDateComponents(feed);
 		vcItems.setDirty(true);
 	}
 

@@ -32,7 +32,6 @@ import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -69,9 +68,6 @@ public class AuthoringEditEntrySettingsController extends BasicController {
 		tabbedPane = new TabbedPane("editSettingsTabbedPane", getLocale());
 		tabbedPane.addTab(translate("tab.public"), descriptionCtrl.getInitialComponent());
 		tabbedPane.addTab(translate("tab.accesscontrol"), accessCtrl.getInitialComponent());
-		
-		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(entry);
-		handler.addExtendedEditionControllers(ureq, getWindowControl(), this, entry);
 		
 		putInitialPanel(tabbedPane);
 		stackPanel.pushController(translate("settings.editor"), this);

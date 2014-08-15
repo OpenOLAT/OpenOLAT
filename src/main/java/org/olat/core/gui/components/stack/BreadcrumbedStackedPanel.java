@@ -33,6 +33,7 @@ import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.VetoableCloseController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
@@ -171,9 +172,20 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		}
 		
 		if(stack.contains(source)) {
+			Controller controllerToPop = getControllerToPop(source);
+			//part of a hack for QTI editor
+			if(controllerToPop instanceof VetoableCloseController
+					&& !((VetoableCloseController)controllerToPop).requestForClose()) {
+				// not my problem anymore, I have done what I can
+				fireEvent(ureq, new VetoPopEvent());
+				return;
+			}
 			Controller popedCtrl = popController(source);
 			if(popedCtrl != null) {
 				fireEvent(ureq, new PopEvent(popedCtrl));
+			} else if(stack.indexOf(source) == 0) {
+				fireEvent(ureq, new RootEvent());
+				
 			}
 		}
 	}
@@ -195,7 +207,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 			for(int i=stack.size(); i-->(index+1); ) {
 				Link link = stack.remove(i);
 				popedCrumb = (BreadCrumb)link.getUserObject();
-				popedCrumb.dispose();
+				popedCrumb.getController().dispose();
 			}
 
 			Link currentLink = stack.get(index);
@@ -221,6 +233,19 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		return index;
 	}
 	
+	private Controller getControllerToPop(Component source) {
+		int index = stack.indexOf(source);
+		if(index < (stack.size() - 1)) {
+			BreadCrumb popedCrumb = null;
+			for(int i=stack.size(); i-->(index+1); ) {
+				Link link = stack.get(i);
+				popedCrumb = (BreadCrumb)link.getUserObject();
+			}
+			return popedCrumb.getController();
+		}
+		return null;
+	}
+	
 	private Controller popController(Component source) {
 		int index = stack.indexOf(source);
 		if(index < (stack.size() - 1)) {
@@ -239,6 +264,19 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 			return popedCrumb.getController();
 		}
 		return null;
+	}
+	
+	@Override
+	public void rootController(String displayName, Controller controller) {
+		if(stack.size() > 0) {
+			for(int i=stack.size(); i-->0; ) {
+				Link link = stack.remove(i);
+				BreadCrumb crumb = (BreadCrumb)link.getUserObject();
+				crumb.dispose();
+			}
+		}
+		
+		pushController(displayName, controller);
 	}
 
 	@Override

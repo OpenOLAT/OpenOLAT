@@ -40,6 +40,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
@@ -81,12 +82,6 @@ import org.olat.course.ICourse;
 import org.olat.course.PersistingCourseImpl;
 import org.olat.course.Structure;
 import org.olat.course.config.CourseConfig;
-import org.olat.course.config.ui.CourseCalendarConfigForm;
-import org.olat.course.config.ui.CourseChatSettingsForm;
-import org.olat.course.config.ui.CourseConfigGlossaryController;
-import org.olat.course.config.ui.CourseEfficencyStatementForm;
-import org.olat.course.config.ui.CourseSharedFolderController;
-import org.olat.course.config.ui.courselayout.CourseLayoutGeneratorController;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
@@ -95,19 +90,16 @@ import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.fileresource.types.GlossaryResource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.SharedFolderFileResource;
-import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.modules.glossary.GlossaryManager;
 import org.olat.modules.sharedfolder.SharedFolderManager;
+import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
-import org.olat.repository.ErrorList;
-import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.WizardCloseCourseController;
 import org.olat.repository.controllers.WizardCloseResourceController;
-import org.olat.repository.ui.author.AuthoringEditEntrySettingsController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
@@ -320,7 +312,9 @@ public class CourseHandler implements RepositoryHandler {
 		// set the new shared folder reference
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
 		courseConfig.setSharedFolderSoftkey(importedRepositoryEntry.getSoftkey());
-		CourseSharedFolderController.updateRefTo(importedRepositoryEntry, course);			
+		
+		CoreSpringFactory.getImpl(ReferenceManager.class)
+			.addReference(importedRepositoryEntry.getOlatResource(), course, SharedFolderManager.SHAREDFOLDERREF);		
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 	}
 	
@@ -376,44 +370,6 @@ public class CourseHandler implements RepositoryHandler {
 			}
 		}
 	}
-
-	@Override
-	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl,
-			AuthoringEditEntrySettingsController pane, RepositoryEntry entry) {
-
-		final OLATResource resource = entry.getOlatResource();
-		ICourse course = CourseFactory.loadCourse(resource);
-		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
-		
-		//chat
-		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
-		if (imModule.isEnabled() && imModule.isCourseEnabled() && CourseModule.isCourseChatEnabled()) {
-			boolean managedChat = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.chat);
-			CourseChatSettingsForm ccc = new CourseChatSettingsForm(ureq, wControl, course, courseConfig, !managedChat);
-			pane.appendEditor(pane.getTranslator().translate("tab.chat"), ccc);
-		}
-		
-		boolean managedLayout = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.layout);
-		CourseLayoutGeneratorController layoutC = new CourseLayoutGeneratorController(ureq, wControl, course, courseConfig,
-		  		course.getCourseEnvironment(), !managedLayout);
-		pane.appendEditor(pane.getTranslator().translate("tab.layout"), layoutC);
-
-		boolean managedFolder = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.resourcefolder);
-		CourseSharedFolderController csfC = new CourseSharedFolderController(ureq, wControl, course, courseConfig, !managedFolder);
-		pane.appendEditor(pane.getTranslator().translate("tab.sharedfolder"), csfC);
-
-		boolean managedStatement = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.efficencystatement);
-		CourseEfficencyStatementForm ceffC = new CourseEfficencyStatementForm(ureq, wControl, course, courseConfig, !managedStatement);
-		pane.appendEditor(pane.getTranslator().translate("tab.efficencystatement"), ceffC);
-
-		boolean managedCalendar = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.calendar);
-		CourseCalendarConfigForm calCfgCtr = new CourseCalendarConfigForm(ureq, wControl, course, courseConfig, !managedCalendar);
-		pane.appendEditor(pane.getTranslator().translate("tab.calendar"), calCfgCtr);
-
-		boolean managedGlossary = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.glossary);
-		CourseConfigGlossaryController cglosCtr = new CourseConfigGlossaryController(ureq, wControl, course, courseConfig, !managedGlossary);
-		pane.appendEditor(pane.getTranslator().translate("tab.glossary"), cglosCtr);	
-	}
 	
 	@Override
 	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target) {
@@ -458,8 +414,8 @@ public class CourseHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public boolean supportsEdit(OLATResourceable resource) {
-		return true;
+	public EditionSupport supportsEdit(OLATResourceable resource) {
+		return EditionSupport.yes;
 	}
 
 	@Override
@@ -497,7 +453,7 @@ public class CourseHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel panel) {
 		//run + activate
 		MainLayoutController courseCtrl = CourseFactory.createLaunchController(ureq, wControl, re);
 		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, courseCtrl);

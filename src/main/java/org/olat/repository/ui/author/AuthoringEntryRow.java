@@ -70,6 +70,7 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 	private OLATResourceable olatResource;
 	
 	private FormLink markLink;
+	private FormLink toolsLink;
 	
 	public AuthoringEntryRow(RepositoryEntryAuthorView view, String fullnameAuthor) {
 		key = view.getKey();
@@ -279,5 +280,13 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 
 	public void setMarkLink(FormLink markLink) {
 		this.markLink = markLink;
+	}
+
+	public FormLink getToolsLink() {
+		return toolsLink;
+	}
+
+	public void setToolsLink(FormLink toolsLink) {
+		this.toolsLink = toolsLink;
 	}
 }

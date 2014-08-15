@@ -243,7 +243,7 @@ public abstract class FeedNodeEditController extends ActivateableTabbableDefault
 			}
 			
 		} else if (source == editLink) {
-			CourseNodeFactory.getInstance().launchReferencedRepoEntryEditor(ureq, node);
+			CourseNodeFactory.getInstance().launchReferencedRepoEntryEditor(ureq, getWindowControl(), node);
 		}
 
 	}

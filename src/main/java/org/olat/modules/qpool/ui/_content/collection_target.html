@@ -1,8 +1,10 @@
-$r.render("create.list")<br/>
-$r.render("add.to.list")<br/>
+<ul class="o_dropdown list-unstyled">
+	<li>$r.render("create.list")</li>
+	<li>$r.render("add.to.list")</li>
 #if($r.available("rename.collection"))
-	$r.render("rename.collection")<br/>
+	<li>$r.render("rename.collection")</li>
 #end
 #if($r.available("delete.collection"))
-	$r.render("delete.collection")
+	<li>$r.render("delete.collection")</li>
 #end
+</ul>

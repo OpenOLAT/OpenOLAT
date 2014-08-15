@@ -17,12 +17,12 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui;
+package org.olat.resource.accesscontrol.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -30,27 +30,20 @@ import org.olat.core.gui.control.controller.BasicController;
 
 /**
  * 
- * 
- * 
- * Initial date: 15.04.2013<br>
+ * Initial date: 14.08.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class ImportSourcesController extends BasicController {
-	
-	public static final String IMPORT_REPO = "qpool.import.repository";
-	public static final String IMPORT_FILE = "qpool.import.file";
+public class AccessRefusedController extends BasicController {
 
-	private final Link importRepository, importFile;
-	
-	public ImportSourcesController(UserRequest ureq, WindowControl wControl) {
+	public AccessRefusedController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		VelocityContainer mainVC = createVelocityContainer("import_sources");
-		importRepository = LinkFactory.createLink("import.repository", mainVC, this);
-		importRepository.setIconLeftCSS("o_icon o_icon-fw o_FileResource-TEST_icon");
-		importFile = LinkFactory.createLink("import.file", mainVC, this);
-		importFile.setIconLeftCSS("o_icon o_icon-fw o_filetype_file");
-		putInitialPanel(mainVC);
+		VelocityContainer mainVC = createVelocityContainer("access_refused");
+		StackedPanel contentP = new SimpleStackedPanel("");
+		contentP.setContent(mainVC);
+		wControl.setWarning(translate("course.closed"));
+		putInitialPanel(contentP);
 	}
 
 	@Override
@@ -60,10 +53,6 @@ public class ImportSourcesController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(importRepository == source) {
-			fireEvent(ureq, new Event(IMPORT_REPO));
-		} else if(importFile == source) {
-			fireEvent(ureq, new Event(IMPORT_FILE));
-		}
+		//
 	}
 }

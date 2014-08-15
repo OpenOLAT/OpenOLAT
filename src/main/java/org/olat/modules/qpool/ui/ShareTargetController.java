@@ -45,7 +45,9 @@ public class ShareTargetController extends BasicController {
 		
 		VelocityContainer mainVC = createVelocityContainer("share_target");
 		shareGroup = LinkFactory.createLink("share.group", mainVC, this);
+		shareGroup.setIconLeftCSS("o_icon o_icon-fw o_icon_pool_share");
 		sharePool = LinkFactory.createLink("share.pool", mainVC, this);
+		sharePool.setIconLeftCSS("o_icon o_icon-fw o_icon_pool_pool");
 		putInitialPanel(mainVC);
 	}
 

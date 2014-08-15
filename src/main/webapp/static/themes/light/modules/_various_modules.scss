@@ -72,6 +72,22 @@ a.o_chelp {
 	}
 }
 
+.o_dropdown {
+	.divider {
+    	@include nav-divider($dropdown-divider-bg);
+  	}
+  	
+  	> li > a {
+    	display: block;
+		padding: 3px 0;
+		clear: both;
+		font-weight: normal;
+		line-height: $line-height-base;
+		color: $dropdown-link-color;
+		white-space: nowrap; // prevent links from randomly breaking onto new lines
+	}
+}
+
 /* SCORM module */
 .badge {
 	/* badge color */

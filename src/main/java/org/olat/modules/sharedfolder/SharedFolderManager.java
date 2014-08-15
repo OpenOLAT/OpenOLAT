@@ -34,7 +34,6 @@ import org.olat.core.commons.services.webdav.servlets.RequestUtil;
 import org.olat.core.gui.media.CleanupAfterDeliveryFileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -53,7 +52,9 @@ import org.olat.resource.OLATResourceManager;
  * Initial Date:  Aug 29, 2005 <br>
  * @author Alexander Schneider
  */
-public class SharedFolderManager extends BasicManager {
+public class SharedFolderManager {
+	
+	public static final String SHAREDFOLDERREF = "sharedfolderref";
 
 	private static final SharedFolderManager INSTANCE = new SharedFolderManager();
 	/**

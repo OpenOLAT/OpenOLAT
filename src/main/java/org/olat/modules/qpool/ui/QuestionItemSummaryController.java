@@ -85,7 +85,7 @@ public class QuestionItemSummaryController extends FormBasicController {
 		updateItem(item, canEdit);
 	}
 	
-	public void updateItem(QuestionItem updatedItem, boolean canEdit) {
+	public void updateItem(QuestionItem updatedItem, boolean edit) {
 		this.item = updatedItem;
 		if(updatedItem == null) {
 			canEdit = false;
@@ -98,7 +98,7 @@ public class QuestionItemSummaryController extends FormBasicController {
 			stdevDifficultyEl.setValue("");
 			differentiationEl.setValue("");
 		} else {
-			this.canEdit = canEdit;
+			canEdit = edit;
 			subjectEl.setValue(updatedItem.getTitle());
 			String keywords = updatedItem.getKeywords();
 			keywordsEl.setValue(keywords == null ? "" : keywords);

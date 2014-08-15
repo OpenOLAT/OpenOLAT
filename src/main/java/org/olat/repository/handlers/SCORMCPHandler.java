@@ -31,12 +31,9 @@ import java.util.Locale;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
-import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationController;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
@@ -51,13 +48,13 @@ import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.modules.scorm.ScormMainManager;
 import org.olat.modules.scorm.ScormPackageConfig;
+import org.olat.modules.scorm.ScormRuntimeController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.WizardCloseResourceController;
-import org.olat.repository.ui.author.AuthoringEditEntrySettingsController;
+import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 
@@ -112,32 +109,6 @@ public class SCORMCPHandler extends FileHandler {
 	}
 	
 	@Override
-	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl,
-			AuthoringEditEntrySettingsController pane, RepositoryEntry entry) {
-		
-		ScormPackageConfig scormConfig = ScormMainManager.getInstance().getScormPackageConfig(entry.getOlatResource());
-		DeliveryOptions config = scormConfig == null ? null : scormConfig.getDeliveryOptions();
-		final OLATResource resource = entry.getOlatResource();
-		final DeliveryOptionsConfigurationController deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, wControl, config);
-		pane.appendEditor(pane.getTranslator().translate("tab.layout"), deliveryOptionsCtrl);
-		
-		deliveryOptionsCtrl.addControllerListener(new ControllerEventListener() {
-			@Override
-			public void dispatchEvent(UserRequest uureq, Controller source, Event event) {
-				if(source == deliveryOptionsCtrl && (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT)) {
-					DeliveryOptions newConfig = deliveryOptionsCtrl.getDeliveryOptions();
-					ScormPackageConfig sConfig = ScormMainManager.getInstance().getScormPackageConfig(resource);
-					if(sConfig == null) {
-						sConfig = new ScormPackageConfig();
-					}
-					sConfig.setDeliveryOptions(newConfig);
-					ScormMainManager.getInstance().setScormPackageConfig(resource, sConfig);
-				}
-			}
-		});
-	}
-	
-	@Override
 	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target) {
 		final ScormMainManager scormManager = ScormMainManager.getInstance();
 		OLATResource sourceResource = source.getOlatResource();
@@ -173,8 +144,8 @@ public class SCORMCPHandler extends FileHandler {
 	}
 
 	@Override
-	public boolean supportsEdit(OLATResourceable resource) {
-		return false;
+	public EditionSupport supportsEdit(OLATResourceable resource) {
+		return EditionSupport.no;
 	}
 
 	@Override
@@ -187,16 +158,22 @@ public class SCORMCPHandler extends FileHandler {
 		if (re != null) {
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapScormRepositoryEntry(re));
 		}
-		OLATResource res = re.getOlatResource();
-		File cpRoot = FileResourceManager.getInstance().unzipFileResource(res);
-		MainLayoutController realController = ScormMainManager.getInstance().createScormAPIandDisplayController(ureq, wControl, true, null, cpRoot,
-				res.getResourceableId(), null, "browse", "no-credit", false, null, false, false, false, null);
-		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, realController);
-		return wrapper; 
+		
+		return new ScormRuntimeController(ureq, wControl, re, 
+			new RuntimeControllerCreator() {
+				@Override
+				public Controller create(UserRequest uureq, WindowControl wwControl, RepositoryEntry entry) {
+					OLATResource res = entry.getOlatResource();
+					File cpRoot = FileResourceManager.getInstance().unzipFileResource(res);
+					MainLayoutController realController = ScormMainManager.getInstance().createScormAPIandDisplayController(uureq, wwControl, true, null, cpRoot,
+							res.getResourceableId(), null, "browse", "no-credit", false, null, false, false, false, null);
+					return realController;
+				}
+			});
 	}
 
 	@Override
-	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel panel) {
 		throw new AssertException("Trying to get editor for an SCORM CP type where no editor is provided for this type.");
 	}
 

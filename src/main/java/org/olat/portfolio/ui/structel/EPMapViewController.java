@@ -81,7 +81,9 @@ public class EPMapViewController extends BasicController implements Activateable
 	private EPStructureTreeAndDetailsEditController editCtrl;
 	private DialogBoxController confirmationSubmissionCtr;
 	private final boolean back;
+	private boolean editInToolbar = false;
 	
+	private EditMode editMode = EditMode.view;
 	private PortfolioStructureMap map;
 	private EPSecurityCallback secCallback;
 	private LockResult lockEntry;
@@ -90,6 +92,8 @@ public class EPMapViewController extends BasicController implements Activateable
 	private EPFrontendManager ePFMgr;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private CoordinatorManager coordinatorManager;
 
 	public EPMapViewController(UserRequest ureq, WindowControl control, PortfolioStructureMap initialMap, boolean back,
 			boolean preview, EPSecurityCallback secCallback) {
@@ -108,7 +112,7 @@ public class EPMapViewController extends BasicController implements Activateable
 		}
 		
 		if(EPSecurityCallbackFactory.isLockNeeded(secCallback)) {
-			lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(initialMap, ureq.getIdentity(), "mmp");
+			lockEntry = coordinatorManager.getCoordinator().getLocker().acquireLock(initialMap, ureq.getIdentity(), "mmp");
 			if(!lockEntry.isSuccess()) {
 				this.secCallback = EPSecurityCallbackFactory.updateAfterFailedLock(secCallback);
 				showWarning("map.already.edited");
@@ -126,7 +130,16 @@ public class EPMapViewController extends BasicController implements Activateable
 		initForm(ureq);
 		putInitialPanel(mainVc);
 	}
-
+	
+	public boolean canEditStructure() {
+		return secCallback.canEditStructure();
+	}
+	
+	public void delegateEditButton() {
+		if(editButton != null) {
+			editButton.setVisible(false);
+		}
+	}
 
 	protected void initForm(UserRequest ureq) {
 		Identity ownerIdentity = ePFMgr.getFirstOwnerIdentity(map);
@@ -138,18 +151,19 @@ public class EPMapViewController extends BasicController implements Activateable
 		mainVc.contextPut("map", map);
 		mainVc.contextPut("style", ePFMgr.getValidStyleName(map));
 		
-		Boolean editMode = editButton == null ? Boolean.FALSE : (Boolean)editButton.getUserObject();
 		mainVc.remove(mainVc.getComponent("map.editButton"));
 		if(secCallback.canEditStructure()) {
 			editButton = LinkFactory.createButton("map.editButton", mainVc, this);
 			editButton.setElementCssClass("o_sel_ep_edit_map");
 			editButton.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
-			if(Boolean.FALSE.equals(editMode)) {
+			if(editMode == EditMode.view) {
 				editButton.setCustomDisplayText(translate("map.editButton.on"));
 			} else {
 				editButton.setCustomDisplayText(translate("map.editButton.off"));
 			}
-			editButton.setUserObject(editMode);
+			if(editInToolbar) {
+				mainVc.remove(mainVc.getComponent("map.editButton"));
+			}
 		} 
 		if(back) {
 			backLink = LinkFactory.createLinkBack(mainVc, this);
@@ -198,29 +212,9 @@ public class EPMapViewController extends BasicController implements Activateable
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest, org.olat.core.gui.components.form.flexible.FormItem, org.olat.core.gui.components.form.flexible.impl.FormEvent)
 	 */
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
+	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == editButton){
-			removeAsListenerAndDispose(editCtrl);
-			if (Boolean.FALSE.equals(editButton.getUserObject())){
-				PortfolioStructure selectedPage = null;
-				if(pageCtrl != null) {
-					selectedPage = pageCtrl.getSelectedPage();
-				}
-				initOrUpdateEditMode(ureq, selectedPage);
-			} else {
-				mainVc.remove(editCtrl.getInitialComponent());
-				PortfolioStructure currentEditedStructure = editCtrl.getSelectedStructure();
-				initForm(ureq);
-				editButton.setUserObject(Boolean.FALSE);
-				editButton.setCustomDisplayText(translate("map.editButton.on"));
-				if(currentEditedStructure != null && pageCtrl != null) {
-					EPPage page = getSelectedPage(currentEditedStructure);
-					if(page != null) {
-						pageCtrl.selectPage(ureq, page);
-						addToHistory(ureq, page, null);
-					}
-				}
-			}
+			toogleEditMode(ureq);
 		} else if(source == backLink) {
 			fireEvent(ureq, new EPMapEvent(EPStructureEvent.CLOSE, map));
 		} else if(source == submitAssessLink) {
@@ -230,6 +224,45 @@ public class EPMapViewController extends BasicController implements Activateable
 				showWarning("map.cannot.submit.nomore.coursenode");
 			}
 		} 
+	}
+	
+	public void toogleEditMode(UserRequest ureq) {
+		removeAsListenerAndDispose(editCtrl);
+		if (editMode == EditMode.view){
+			view(ureq);
+		} else {
+			edit(ureq);
+		}
+	}
+	
+	public void view(UserRequest ureq) {
+		PortfolioStructure currentEditedStructure = null;
+		if(editCtrl != null) {
+			removeAsListenerAndDispose(editCtrl);
+			mainVc.remove(editCtrl.getInitialComponent());
+			currentEditedStructure = editCtrl.getSelectedStructure();
+		}
+		initForm(ureq);
+		editMode = EditMode.view;
+		editButton.setCustomDisplayText(translate("map.editButton.on"));
+		if(currentEditedStructure != null && pageCtrl != null) {
+			EPPage page = getSelectedPage(currentEditedStructure);
+			if(page != null) {
+				pageCtrl.selectPage(ureq, page);
+				addToHistory(ureq, page, null);
+			}
+		}
+	}
+	
+	public void edit(UserRequest ureq) {
+		if(canEditStructure()) {
+			removeAsListenerAndDispose(editCtrl);
+			PortfolioStructure selectedPage = null;
+			if(pageCtrl != null) {
+				selectedPage = pageCtrl.getSelectedPage();
+			}
+			initOrUpdateEditMode(ureq, selectedPage);
+		}
 	}
 	
 	@Override
@@ -340,8 +373,13 @@ public class EPMapViewController extends BasicController implements Activateable
 	@Override
 	protected void doDispose() {
 		if(lockEntry != null) {
-			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
+			coordinatorManager.getCoordinator().getLocker().releaseLock(lockEntry);
 			lockEntry = null;
 		}
+	}
+	
+	private enum EditMode {
+		view,
+		editor
 	}
 }

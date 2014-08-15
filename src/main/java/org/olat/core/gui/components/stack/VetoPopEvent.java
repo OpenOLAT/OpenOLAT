@@ -19,31 +19,20 @@
  */
 package org.olat.core.gui.components.stack;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.panel.StackedPanel;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 
 /**
  * 
+ * Initial date: 15.08.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public interface BreadcrumbPanel extends StackedPanel {
-	
-	/**
-	 * Dismiss all controller and replace the root
-	 * @param displayName
-	 * @param controller
-	 */
-	public void rootController(String displayName, Controller controller);
-	
-	/**
-	 * Dissmiss all controllers but the root
-	 */
-	public void popUpToRootController(UserRequest ureq);
-	
-	public void pushController(String displayName, Controller controller);
-	
-	
-	public void popUpToController(Controller controller);
+public class VetoPopEvent extends Event {
+
+	private static final long serialVersionUID = 8230688627245883270L;
+
+	public VetoPopEvent() {
+		super("veto-pop");
+	}
 
 }

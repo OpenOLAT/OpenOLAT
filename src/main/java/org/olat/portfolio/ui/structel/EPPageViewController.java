@@ -138,8 +138,8 @@ public class EPPageViewController extends BasicController {
 			removeAsListenerAndDispose(commentsAndRatingCtr);	
 
 			boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
-			CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, anonym);
-			commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), map.getOlatResource(), page.getKey().toString(), secCallback, true, true, true);
+			CommentAndRatingSecurityCallback ratingSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, anonym);
+			commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), map.getOlatResource(), page.getKey().toString(), ratingSecCallback, true, true, true);
 			listenTo(commentsAndRatingCtr);
 			vC.put("commentCtrl", commentsAndRatingCtr.getInitialComponent());
 		}

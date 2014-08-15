@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
@@ -40,6 +40,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.ims.qti.QTIRuntimeController;
 import org.olat.ims.qti.editor.QTIEditorMainController;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
@@ -50,6 +51,8 @@ import org.olat.modules.iq.IQPreviewSecurityCallback;
 import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.repository.handlers.EditionSupport;
+import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.references.ReferenceImpl;
 import org.olat.resource.references.ReferenceManager;
@@ -115,11 +118,11 @@ public class QTISurveyHandler extends QTIHandler {
 	}
 
 	@Override
-	public boolean supportsEdit(OLATResourceable resource) {
+	public EditionSupport supportsEdit(OLATResourceable resource) {
 		if(resource != null && OnyxModule.isOnyxTest(resource)) {
-			return false;
+			return EditionSupport.no;
 		}
-		return true;
+		return EditionSupport.yes;
 	}
 
 	@Override
@@ -135,25 +138,27 @@ public class QTISurveyHandler extends QTIHandler {
 	 */
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
-		Controller runController;
-		OLATResource res = re.getOlatResource();
-		if (OnyxModule.isOnyxTest(res)) {
-			runController = new OnyxRunController(ureq, wControl, re, false);
-		} else {
-			Resolver resolver = new ImsRepositoryResolver(re);
-			IQSecurityCallback secCallback = new IQPreviewSecurityCallback();
-			runController = CoreSpringFactory.getImpl(IQManager.class)
-					.createIQDisplayController(res, resolver, AssessmentInstance.QMD_ENTRY_TYPE_SURVEY, secCallback, ureq, wControl);
-		}
-		
-		// use on column layout
-		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, runController);
-		layoutCtr.addDisposableChildController(runController); // dispose content on layout dispose
-		return layoutCtr;
+		return new QTIRuntimeController(ureq, wControl, re, 
+			new RuntimeControllerCreator() {
+				@Override
+				public Controller create(UserRequest uureq, WindowControl wwControl, RepositoryEntry entry) {
+					Controller runController;
+					OLATResource res = entry.getOlatResource();
+					if (OnyxModule.isOnyxTest(res)) {
+						runController = new OnyxRunController(uureq, wwControl, entry, false);
+					} else {
+						Resolver resolver = new ImsRepositoryResolver(entry);
+						IQSecurityCallback secCallback = new IQPreviewSecurityCallback();
+						runController = CoreSpringFactory.getImpl(IQManager.class)
+								.createIQDisplayController(res, resolver, AssessmentInstance.QMD_ENTRY_TYPE_SURVEY, secCallback, uureq, wwControl);
+					}
+					return runController;
+				}
+		});
 	}
 
 	@Override
-	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel panel) {
 		OLATResource res = re.getOlatResource();
 		if (OnyxModule.isOnyxTest(res)) {
 			return null;

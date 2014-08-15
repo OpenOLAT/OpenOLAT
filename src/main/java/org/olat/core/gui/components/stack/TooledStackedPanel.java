@@ -143,6 +143,14 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		return (TooledBreadCrumb)stack.get(stack.size() - 1).getUserObject();
 	}
 
+	@Override
+	public void pushController(String displayName, Controller controller) {
+		TooledBreadCrumb currentCrumb = getCurrentCrumb();
+		if(currentCrumb == null || currentCrumb.getController() != controller) {
+			super.pushController(displayName, controller);
+		}
+	}
+
 	/**
 	 * By default, the toolbar is enabled, using this method it can be disable to just show
 	 * the bread crumb path to the user (e.g. course site)

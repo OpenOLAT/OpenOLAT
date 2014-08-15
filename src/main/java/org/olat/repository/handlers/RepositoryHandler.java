@@ -29,6 +29,7 @@ import java.io.File;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
@@ -43,7 +44,6 @@ import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.WizardCloseResourceController;
-import org.olat.repository.ui.author.AuthoringEditEntrySettingsController;
 
 
 /**
@@ -99,14 +99,7 @@ public interface RepositoryHandler {
 	 */
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname,
 			String description, boolean withReferences, Locale locale, File file, String filename);	
-	
-	/**
-	 * 
-	 * @param pane
-	 * @param entry
-	 */
-	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl, AuthoringEditEntrySettingsController pane, RepositoryEntry entry);
-	
+
 	/**
 	 * 
 	 * @param source
@@ -130,7 +123,7 @@ public interface RepositoryHandler {
 	/**
 	 * @return true if this handler supports an editor for Resourceables of its type.
 	 */
-	public boolean supportsEdit(OLATResourceable resource);
+	public EditionSupport supportsEdit(OLATResourceable resource);
 	
 	/**
 	 * Return the container where image and files can be saved for the description field.
@@ -154,12 +147,13 @@ public interface RepositoryHandler {
 	 * Called if a user wants to edit a Resourceable that this handler can provide an editor for. 
 	 * (it is given here that this method 
 	 * can only be called when the current user is either olat admin or in the owning group of this resource
-	 * @param res
 	 * @param ureq
 	 * @param wControl
+	 * @param panel TODO
+	 * @param res
 	 * @return Controler able to edit resourceable.
 	 */
-	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl);
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel panel);
 	
 	/**
 	 * Called if a user wants to create a Resourceable via wizard.

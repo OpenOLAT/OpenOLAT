@@ -33,17 +33,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.generic.dtabs.DTab;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.id.context.ContextEntry;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.course.CorruptedCourseException;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 
@@ -54,6 +53,8 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
  * @author guido
  */
 public class CourseNodeFactory {
+	
+	private static final OLog log = Tracing.createLoggerFor(CourseNodeFactory.class);
 
 	private static CourseNodeFactory INSTANCE;
 	private Map<String, CourseNodeConfiguration> allCourseNodeConfigurations;
@@ -127,7 +128,7 @@ public class CourseNodeFactory {
 	 * @param ureq
 	 * @param node
 	 */
-	public void launchReferencedRepoEntryEditor(UserRequest ureq, CourseNode node) {
+	public void launchReferencedRepoEntryEditor(UserRequest ureq, WindowControl wControl, CourseNode node) {
 		RepositoryEntry repositoryEntry = node.getReferencedRepositoryEntry();
 		if (repositoryEntry == null) {
 			// do nothing
@@ -135,32 +136,16 @@ public class CourseNodeFactory {
 		}
 		
 		RepositoryHandler typeToEdit = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
-		if (!typeToEdit.supportsEdit(repositoryEntry.getOlatResource())){
+		if (typeToEdit.supportsEdit(repositoryEntry.getOlatResource()) == EditionSupport.no){
 			throw new AssertException("Trying to edit repository entry which has no assoiciated editor: "+ typeToEdit);
-		}					
-		// Open editor in new tab
-		OLATResourceable ores = repositoryEntry.getOlatResource();
-		DTabs dts = Windows.getWindows(ureq).getWindow(ureq).getDTabs();
-		DTab dt = dts.getDTab(ores);
-		if (dt == null) {
-			// does not yet exist -> create and add
-			//fxdiff BAKS-7 Resume function
-			dt = dts.createDTab(ores, repositoryEntry, repositoryEntry.getDisplayname());
-			if (dt == null){
-				//null means DTabs are full -> warning is shown
-				return;
-			}
-			//user activity logger is set by course factory
-			Controller editorController = typeToEdit.createEditorController(repositoryEntry, ureq, dt.getWindowControl());
-			if(editorController == null){
-				//editor could not be created -> warning is shown
-				return;
-			}
-			dt.setController(editorController);
-			dts.addDTab(ureq, dt);
 		}
-		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType("activateEditor");
-		dts.activate(ureq, dt, entries);
+		
+		try {
+			String businessPath = "[RepositoryEntry:" + repositoryEntry.getKey() + "][Editor:0]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, wControl);
+		} catch (CorruptedCourseException e) {
+			log.error("Course corrupted: " + repositoryEntry.getKey() + " (" + repositoryEntry.getOlatResource().getResourceableId() + ")", e);
+		}
 	}
 	
 	private static class OrderComparator implements Comparator<CourseNodeConfiguration> {

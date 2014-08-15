@@ -31,7 +31,7 @@ import org.olat.core.gui.translator.Translator;
  */
 public interface AuthoringEntryDataSourceUIFactory {
 
-	public void forgeMarkLink(AuthoringEntryRow row);
+	public void forgeLinks(AuthoringEntryRow row);
 	
 	public Translator getTranslator();
 

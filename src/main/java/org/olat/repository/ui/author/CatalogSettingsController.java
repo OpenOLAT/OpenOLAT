@@ -57,7 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class CatalogSettingsController extends FormBasicController {
+public class CatalogSettingsController extends FormBasicController {
 	
 	private Link addToCatalogLink;
 	private FlexiTableElement tableEl;
@@ -83,7 +83,7 @@ class CatalogSettingsController extends FormBasicController {
 		stackPanel.pushController(translate("details.categoriesheader"), this);
 	}
 	
-	protected void initToolbar() {
+	public void initToolbar() {
 		addToCatalogLink = LinkFactory.createToolLink("cat", translate("details.catadd"), this, "o_icon_add");
 		addToCatalogLink.setElementCssClass("o_sel_repo_add_to_catalog");
 		addToCatalogLink.setEnabled((entry.getAccess() >= RepositoryEntry.ACC_USERS || entry.isMembersOnly()));

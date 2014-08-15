@@ -34,14 +34,13 @@ import java.util.Locale;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
@@ -80,11 +79,11 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.repository.ui.RepositoryEntryRuntimeController;
+import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.repository.ui.RepositoyUIFactory;
-import org.olat.repository.ui.author.AuthoringEditEntrySettingsController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.resource.references.ReferenceManager;
 
 
@@ -142,12 +141,6 @@ public class WikiHandler implements RepositoryHandler {
 			.create(initialAuthor, null, WikiManager.WIKI_RESOURCE_FOLDER_NAME, displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();
 		return re;
-	}
-	
-	@Override
-	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl,
-			AuthoringEditEntrySettingsController pane, RepositoryEntry entry) {
-		//
 	}
 	
 	@Override
@@ -212,8 +205,8 @@ public class WikiHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public boolean supportsEdit(OLATResourceable resource) {
-		return true;
+	public EditionSupport supportsEdit(OLATResourceable resource) {
+		return EditionSupport.embedded;
 	}
 	
 	@Override
@@ -234,9 +227,7 @@ public class WikiHandler implements RepositoryHandler {
 		if (!securityModule.isWikiEnabled()) {
 			return RepositoyUIFactory.createRepoEntryDisabledDueToSecurityMessageController(ureq, wControl);
 		}
-		// proceed with standard case
-		Controller controller = null;
-		
+
 		//check role
 		boolean isOLatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		boolean isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
@@ -250,31 +241,33 @@ public class WikiHandler implements RepositoryHandler {
 		
 		OLATResource res = re.getOlatResource();
 		BusinessControl bc = wControl.getBusinessControl();
-		ContextEntry ce = bc.popLauncherContextEntry();
+		final ContextEntry ce = bc.popLauncherContextEntry();
 		SubscriptionContext subsContext = new SubscriptionContext(res, WikiManager.WIKI_RESOURCE_FOLDER_NAME);
-		WikiSecurityCallback callback = new WikiSecurityCallbackImpl(null, isOLatAdmin, isGuestOnly, false, isResourceOwner, subsContext);
-		
-		if ( ce != null ) { //jump to a certain context
-			OLATResourceable ores = ce.getOLATResourceable();
-			String typeName = ores.getResourceableTypeName();
-			String page = typeName.substring("page=".length());
-			controller = WikiManager.getInstance().createWikiMainControllerDisposeOnOres(ureq, wControl, res, callback, page);
-		} else {
-			controller = WikiManager.getInstance().createWikiMainControllerDisposeOnOres(ureq, wControl, res, callback, null);
-		}
-		// use on column layout
-		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, controller);
-		layoutCtr.addDisposableChildController(controller); // dispose content on layout dispose
-		if(controller instanceof Activateable2) {
-			layoutCtr.addActivateableDelegate((Activateable2)controller);
-		}
-		
-		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, layoutCtr);	
-		return wrapper;
+		final WikiSecurityCallback callback = new WikiSecurityCallbackImpl(null, isOLatAdmin, isGuestOnly, false, isResourceOwner, subsContext);
+
+		RepositoryEntryRuntimeController runtime = new RepositoryEntryRuntimeController(ureq, wControl, re, 
+			new RuntimeControllerCreator() {
+				@Override
+				public Controller create(UserRequest uureq, WindowControl wwControl, RepositoryEntry entry) {
+					Controller controller;
+					if ( ce != null ) { //jump to a certain context
+						OLATResourceable ores = ce.getOLATResourceable();
+						String typeName = ores.getResourceableTypeName();
+						String page = typeName.substring("page=".length());
+						controller = WikiManager.getInstance().createWikiMainControllerDisposeOnOres(uureq, wwControl, entry.getOlatResource(), callback, page);
+					} else {
+						controller = WikiManager.getInstance().createWikiMainControllerDisposeOnOres(uureq, wwControl, entry.getOlatResource(), callback, null);
+					}
+					
+					return controller;
+				}
+			});
+
+		return runtime;
 	}
 
 	@Override
-	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel panel) {
 		return createLaunchController(re, ureq, wControl);
 	}
 

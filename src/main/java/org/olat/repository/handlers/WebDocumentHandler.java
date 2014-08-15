@@ -34,6 +34,7 @@ import java.util.Locale;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
@@ -60,7 +61,6 @@ import org.olat.fileresource.types.XlsFileResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.WizardCloseResourceController;
-import org.olat.repository.ui.author.AuthoringEditEntrySettingsController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 
@@ -174,12 +174,6 @@ public class WebDocumentHandler extends FileHandler {
 	}
 	
 	@Override
-	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl,
-			AuthoringEditEntrySettingsController pane, RepositoryEntry entry) {
-		//
-	}
-	
-	@Override
 	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target) {
 		OLATResource sourceResource = source.getOlatResource();
 		OLATResource targetResource = target.getOlatResource();
@@ -205,8 +199,8 @@ public class WebDocumentHandler extends FileHandler {
 	}
 
 	@Override
-	public boolean supportsEdit(OLATResourceable resource) {
-		return false;
+	public EditionSupport supportsEdit(OLATResourceable resource) {
+		return EditionSupport.no;
 	}
 
 	@Override
@@ -220,7 +214,7 @@ public class WebDocumentHandler extends FileHandler {
 	}
 
 	@Override
-	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel panel) {
 		throw new AssertException("a web document is not editable!!! res-id:"+re.getResourceableId());
 	}
 

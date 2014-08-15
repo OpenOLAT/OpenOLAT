@@ -23,10 +23,9 @@ import java.io.File;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
@@ -41,7 +40,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
-import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.BlogFileResource;
@@ -51,16 +49,16 @@ import org.olat.modules.webFeed.FeedResourceSecurityCallback;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.managers.FeedManager;
 import org.olat.modules.webFeed.ui.FeedMainController;
+import org.olat.modules.webFeed.ui.FeedRuntimeController;
 import org.olat.modules.webFeed.ui.blog.BlogUIFactory;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.WizardCloseResourceController;
-import org.olat.repository.ui.author.AuthoringEditEntrySettingsController;
+import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.resource.references.ReferenceManager;
 
 /**
@@ -119,16 +117,6 @@ public class BlogHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl, AuthoringEditEntrySettingsController pane, RepositoryEntry entry) {
-		QuotaManager qm = QuotaManager.getInstance();
-		if (qm.hasQuotaEditRights(ureq.getIdentity())) {
-			OlatRootFolderImpl feedRoot = FileResourceManager.getInstance().getFileResourceRootImpl(entry.getOlatResource());
-			Controller quotaCtrl = qm.getQuotaEditorInstance(ureq, wControl, feedRoot.getRelPath(), false);
-			pane.appendEditor(pane.getTranslator().translate("tab.quota.edit"), quotaCtrl);
-		}
-	}
-
-	@Override
 	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target) {
 		OLATResource sourceResource = source.getOlatResource();
 		OLATResource targetResource = target.getOlatResource();
@@ -176,7 +164,7 @@ public class BlogHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl control) {
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl control, TooledStackedPanel panel) {
 		return createLaunchController(re, ureq, control);
 	}
 
@@ -186,15 +174,19 @@ public class BlogHandler implements RepositoryHandler {
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
 	@Override
-	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq,
+	public MainLayoutController createLaunchController(final RepositoryEntry re, UserRequest ureq,
 			WindowControl wControl) {
 		boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ureq.getIdentity(), re);	
-		FeedSecurityCallback callback = new FeedResourceSecurityCallback(isAdmin, isOwner);
-		FeedMainController blogCtr = BlogUIFactory.getInstance(ureq.getLocale()).createMainController(re.getOlatResource(), ureq, wControl, callback);
-		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, blogCtr);
-		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, layoutCtr);
-		return wrapper;
+		final FeedSecurityCallback callback = new FeedResourceSecurityCallback(isAdmin, isOwner);
+		return new FeedRuntimeController(ureq, wControl, re, 
+				new RuntimeControllerCreator() {
+					@Override
+					public Controller create(UserRequest uureq, WindowControl wwControl, RepositoryEntry entry) {
+						return new FeedMainController(entry.getOlatResource(), uureq, wwControl, null, null,
+							BlogUIFactory.getInstance(uureq.getLocale()), callback, null);
+					}
+			});
 	}
 
 	@Override
@@ -225,8 +217,8 @@ public class BlogHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public boolean supportsEdit(OLATResourceable resource) {
-		return true;
+	public EditionSupport supportsEdit(OLATResourceable resource) {
+		return EditionSupport.embedded;
 	}
 
 	@Override

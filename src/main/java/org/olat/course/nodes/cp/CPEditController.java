@@ -220,7 +220,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 				stackPanel.pushController(translate("preview.cp"), previewCtr);
 			}
 		} else if (source == editLink) {
-			CourseNodeFactory.getInstance().launchReferencedRepoEntryEditor(ureq, cpNode);
+			CourseNodeFactory.getInstance().launchReferencedRepoEntryEditor(ureq, getWindowControl(), cpNode);
 		}
 	}
 

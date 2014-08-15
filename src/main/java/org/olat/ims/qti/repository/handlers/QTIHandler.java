@@ -31,7 +31,6 @@ import java.nio.file.PathMatcher;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
@@ -47,22 +46,13 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.ims.qti.editor.QTIEditorPackageImpl;
-import org.olat.ims.qti.fileresource.SurveyFileResource;
-import org.olat.ims.qti.process.AssessmentInstance;
-import org.olat.ims.qti.process.ImsRepositoryResolver;
-import org.olat.ims.qti.process.Resolver;
-import org.olat.modules.iq.IQManager;
-import org.olat.modules.iq.IQPreviewSecurityCallback;
-import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.FileHandler;
-import org.olat.repository.ui.author.AuthoringEditEntrySettingsController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.resource.references.ReferenceManager;
 
 /**
@@ -109,12 +99,6 @@ public abstract class QTIHandler extends FileHandler {
 	}
 	
 	@Override
-	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl,
-			AuthoringEditEntrySettingsController pane, RepositoryEntry entry) {
-		//
-	}
-	
-	@Override
 	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target) {
 		OLATResource sourceResource = source.getOlatResource();
 		OLATResource targetResource = target.getOlatResource();
@@ -140,21 +124,7 @@ public abstract class QTIHandler extends FileHandler {
 	}
 
 	@Override
-	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
-		Resolver resolver = new ImsRepositoryResolver(re);
-		IQSecurityCallback secCallback = new IQPreviewSecurityCallback();
-		IQManager iqManager = CoreSpringFactory.getImpl(IQManager.class);
-		OLATResource res = re.getOlatResource();
-		MainLayoutController runController = res.getResourceableTypeName().equals(SurveyFileResource.TYPE_NAME) ?
-			iqManager.createIQDisplayController(res, resolver, AssessmentInstance.QMD_ENTRY_TYPE_SURVEY, secCallback, ureq, wControl) :	
-			iqManager.createIQDisplayController(res, resolver, AssessmentInstance.QMD_ENTRY_TYPE_SELF, secCallback, ureq, wControl);
-			// use on column layout
-		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, runController);
-		layoutCtr.addDisposableChildController(runController); // dispose content on layout dispose
-		
-		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, layoutCtr);
-		return wrapper;
-	}
+	public abstract MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl);
 
 	@Override
 	public boolean readyToDelete(OLATResourceable res, Identity identity, Roles roles, Locale locale, ErrorList errors) {

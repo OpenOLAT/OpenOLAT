@@ -30,25 +30,21 @@ import java.util.Locale;
 
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
-import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationController;
+import org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.LockResult;
@@ -65,15 +61,15 @@ import org.olat.ims.cp.CPManager;
 import org.olat.ims.cp.ui.CPContentController;
 import org.olat.ims.cp.ui.CPEditMainController;
 import org.olat.ims.cp.ui.CPPackageConfig;
+import org.olat.ims.cp.ui.CPRuntimeController;
+import org.olat.modules.cp.CPDisplayController;
 import org.olat.modules.cp.CPOfflineReadableManager;
-import org.olat.modules.cp.CPUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.WizardCloseResourceController;
-import org.olat.repository.ui.author.AuthoringEditEntrySettingsController;
+import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 
 
 /**
@@ -85,8 +81,6 @@ import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
  * 
  */
 public class ImsCPHandler extends FileHandler {
-	
-	private static final OLog log = Tracing.createLoggerFor(ImsCPHandler.class);
 	
 	@Override
 	public boolean isCreate() {
@@ -140,41 +134,6 @@ public class ImsCPHandler extends FileHandler {
 	}
 	
 	@Override
-	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl,
-			AuthoringEditEntrySettingsController pane, RepositoryEntry entry) {
-		
-		final OLATResource resource = entry.getOlatResource();
-		final CPManager cpManager = CPManager.getInstance();
-		QuotaManager qm = QuotaManager.getInstance();
-		if (qm.hasQuotaEditRights(ureq.getIdentity())) {
-			OlatRootFolderImpl cpRoot = FileResourceManager.getInstance().unzipContainerResource(resource);
-			Controller quotaCtrl = qm.getQuotaEditorInstance(ureq, wControl, cpRoot.getRelPath(), false);
-			pane.appendEditor(pane.getTranslator().translate("tab.quota.edit"), quotaCtrl);
-		}
-		
-		CPPackageConfig cpConfig = cpManager.getCPPackageConfig(resource);
-		DeliveryOptions config = cpConfig == null ? null : cpConfig.getDeliveryOptions();
-		final DeliveryOptionsConfigurationController deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, wControl, config);
-		pane.appendEditor(pane.getTranslator().translate("tab.layout"), deliveryOptionsCtrl);
-		deliveryOptionsCtrl.addControllerListener(new ControllerEventListener() {
-
-			@Override
-			public void dispatchEvent(UserRequest uureq, Controller source, Event event) {
-				if(source == deliveryOptionsCtrl
-						&& (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT)) {
-					DeliveryOptions newConfig = deliveryOptionsCtrl.getDeliveryOptions();
-					CPPackageConfig cConfig = cpManager.getCPPackageConfig(resource);
-					if(cConfig == null) {
-						cConfig = new CPPackageConfig();
-					}
-					cConfig.setDeliveryOptions(newConfig);
-					cpManager.setCPPackageConfig(resource, cConfig);
-				}
-			}
-		});
-	}
-	
-	@Override
 	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target) {
 		final CPManager cpManager = CPManager.getInstance();
 		OLATResource sourceResource = source.getOlatResource();
@@ -212,8 +171,8 @@ public class ImsCPHandler extends FileHandler {
 	}
 
 	@Override
-	public boolean supportsEdit(OLATResourceable resource) {
-		return true;
+	public EditionSupport supportsEdit(OLATResourceable resource) {
+		return EditionSupport.yes;
 	}
 
 	@Override
@@ -225,15 +184,15 @@ public class ImsCPHandler extends FileHandler {
 	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		OLATResource res = re.getOlatResource();
 		File cpRoot = FileResourceManager.getInstance().unzipFileResource(res);
-		LocalFolderImpl vfsWrapper = new LocalFolderImpl(cpRoot);
+		final LocalFolderImpl vfsWrapper = new LocalFolderImpl(cpRoot);
+		CPPackageConfig packageConfig = CPManager.getInstance().getCPPackageConfig(res);
+		final DeliveryOptions deliveryOptions = (packageConfig == null ? null : packageConfig.getDeliveryOptions());
 		
 		// jump to either the forum or the folder if the business-launch-path says so.
+		/*
 		BusinessControl bc = wControl.getBusinessControl();
 		ContextEntry ce = bc.popLauncherContextEntry();
 		MainLayoutController layoutCtr;
-		
-		CPPackageConfig packageConfig = CPManager.getInstance().getCPPackageConfig(res);
-		DeliveryOptions deliveryOptions = (packageConfig == null ? null : packageConfig.getDeliveryOptions());
 		if ( ce != null ) { // a context path is left for me
 			log.debug("businesscontrol (for further jumps) would be:"+bc);
 			OLATResourceable ores = ce.getOLATResourceable();
@@ -251,13 +210,27 @@ public class ImsCPHandler extends FileHandler {
 		} else {
 			layoutCtr = CPUIFactory.getInstance().createMainLayoutResourceableListeningWrapperController(res, ureq, wControl, vfsWrapper, deliveryOptions);
 		}
+		*/
 		
-		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, layoutCtr);
-		return wrapper;
+		CPRuntimeController runtime = new CPRuntimeController(ureq, wControl, re,
+				new RuntimeControllerCreator() {
+					@Override
+					public Controller create(UserRequest uureq, WindowControl wwControl, RepositoryEntry entry) {
+						boolean activateFirstPage = true;
+						String initialUri = null;
+						
+						CPDisplayController cpCtr = new CPDisplayController(uureq, wwControl, vfsWrapper, true, true, activateFirstPage, true, deliveryOptions, initialUri, entry.getOlatResource());
+						MainLayout3ColumnsController ctr = new LayoutMain3ColsController(uureq, wwControl, cpCtr.getMenuComponent(), cpCtr.getInitialComponent(), vfsWrapper.getName());
+						ctr.addDisposableChildController(cpCtr);
+						return ctr;
+					}
+			});
+
+		return runtime;
 	}
 
 	@Override
-	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel panel) {
 		// only unzips, if not already unzipped
 		OlatRootFolderImpl cpRoot = FileResourceManager.getInstance().unzipContainerResource(re.getOlatResource());
 
@@ -269,7 +242,7 @@ public class ImsCPHandler extends FileHandler {
 		VFSSecurityCallback secCallback = new FullAccessWithQuotaCallback(quota);
 		cpRoot.setLocalSecurityCallback(secCallback);
 
-		return new CPEditMainController(ureq, wControl, cpRoot, re.getOlatResource());
+		return new CPEditMainController(ureq, wControl, panel, cpRoot, re.getOlatResource());
 	}
 	
 	protected String getDeletedFilePrefix() {

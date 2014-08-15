@@ -24,7 +24,6 @@
 */
 package org.olat.repository.ui;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -32,21 +31,12 @@ import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.GenericMainController;
-import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.AssertException;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryService;
-import org.olat.repository.handlers.RepositoryHandler;
-import org.olat.repository.handlers.RepositoryHandlerFactory;
 
 /**
  * Description:<br>
@@ -82,48 +72,6 @@ public class RepositoyUIFactory {
 			iconCSSClass = iconCSSClass.concat("_icon");
 		}
 		return iconCSSClass;
-	}
-
-	/**
-	 * Create a launch controller used to launch the given repo entry.
-	 * @param re
-	 * @param initialViewIdentifier if null the default view will be started, otherwise a controllerfactory type dependant view will be activated (subscription subtype)
-	 * @param ureq
-	 * @param wControl
-	 * @return null if no entry was found, a no access message controller if not allowed to launch or the launch 
-	 * controller if successful.
-	 */
-	public static MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
-		if (re == null) return null;
-		RepositoryManager rm = RepositoryManager.getInstance();
-		if (!rm.isAllowedToLaunch(ureq, re)) {
-			Translator trans = Util.createPackageTranslator(RepositoyUIFactory.class, ureq.getLocale());
-			String text = trans.translate("launch.noaccess");
-			Controller c = MessageUIFactory.createInfoMessage(ureq, wControl, null, text);
-			
-			// use on column layout
-			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, c);
-			layoutCtr.addDisposableChildController(c); // dispose content on layout dispose
-			return layoutCtr;
-		}
-
-		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
-		rs.incrementLaunchCounter(re);
-		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
-	
-		WindowControl bwControl;
-		OLATResourceable businessOres = re;
-		ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(businessOres);
-		//OLAT-5944: check if the current context entry is not already the repository entry to avoid duplicate in the business path
-		if(ce.equals(wControl.getBusinessControl().getCurrentContextEntry())) {
-			bwControl = wControl;
-		} else {
-			bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);
-		}
-		
-		MainLayoutController ctrl = handler.createLaunchController(re, ureq, bwControl);
-		if (ctrl == null) throw new AssertException("could not create controller for repositoryEntry "+re); 
-		return ctrl;	
 	}
 	
 	/**

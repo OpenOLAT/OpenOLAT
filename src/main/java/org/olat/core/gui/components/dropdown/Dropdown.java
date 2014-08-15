@@ -93,6 +93,16 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 		}
 	}
 	
+	public void addComponent(int index, Link component) {
+		if(component != null) {
+			if(index >= 0 && index < components.size()) {
+				components.add(index, component);
+			} else {
+				components.add(component);
+			}
+		}
+	}
+	
 	public void addComponent(Spacer spacer) {
 		if(spacer != null) {
 			components.add(spacer);

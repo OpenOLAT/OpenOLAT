@@ -33,6 +33,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
@@ -60,10 +61,10 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.WizardCloseResourceController;
-import org.olat.repository.ui.author.AuthoringEditEntrySettingsController;
+import org.olat.repository.ui.RepositoryEntryRuntimeController;
+import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.resource.references.ReferenceManager;
 
 
@@ -115,12 +116,6 @@ public class SharedFolderHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl,
-			AuthoringEditEntrySettingsController pane, RepositoryEntry entry) {
-		//
-	}
-	
-	@Override
 	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target) {
 		OLATResource sourceResource = source.getOlatResource();
 		OLATResource targetResource = target.getOlatResource();
@@ -146,8 +141,8 @@ public class SharedFolderHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public boolean supportsEdit(OLATResourceable resource) {
-		return true;
+	public EditionSupport supportsEdit(OLATResourceable resource) {
+		return EditionSupport.embedded;
 	}
 
 	/**
@@ -172,27 +167,32 @@ public class SharedFolderHandler implements RepositoryHandler {
 	 */
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
-		OLATResource res = re.getOlatResource();
-		VFSContainer sfContainer = SharedFolderManager.getInstance().getSharedFolder(res);
+		
+		RepositoryEntryRuntimeController runtime = new RepositoryEntryRuntimeController(ureq, wControl, re, 
+				new RuntimeControllerCreator() {
+					@Override
+					public Controller create(UserRequest uureq, WindowControl wwControl, RepositoryEntry entry) {
+						OLATResource res = entry.getOlatResource();
+						VFSContainer sfContainer = SharedFolderManager.getInstance().getSharedFolder(res);
 
-		Identity identity = ureq.getIdentity();
-		Roles roles = ureq.getUserSession().getRoles();
-		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		boolean canEdit = roles.isOLATAdmin()
-						|| repositoryService.hasRole(identity, re, GroupRoles.owner.name(), GroupRoles.coach.name()) 
-						|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, re);
-				
-		Controller sfdCtr;
-		if(canEdit) {
-			sfdCtr = new SharedFolderEditorController(re, ureq, wControl);
-		} else {
-			sfdCtr = new SharedFolderDisplayController(ureq, wControl, sfContainer, res);
-		}	
-		// use on column layout
-		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, sfdCtr);
-		layoutCtr.addDisposableChildController(sfdCtr); // dispose content on layout dispose
-		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, layoutCtr);
-		return wrapper;
+						Identity identity = uureq.getIdentity();
+						Roles roles = uureq.getUserSession().getRoles();
+						RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+						boolean canEdit = roles.isOLATAdmin()
+										|| repositoryService.hasRole(identity, entry, GroupRoles.owner.name(), GroupRoles.coach.name()) 
+										|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, entry);
+								
+						Controller sfdCtr;
+						if(canEdit) {
+							sfdCtr = new SharedFolderEditorController(entry, uureq, wwControl);
+						} else {
+							sfdCtr = new SharedFolderDisplayController(uureq, wwControl, sfContainer, res);
+						}	
+						return sfdCtr;
+					}
+			});
+		
+		return runtime;
 	}
 
 	/**
@@ -204,7 +204,7 @@ public class SharedFolderHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel panel) {
 		Controller sharedFolderCtr = new SharedFolderEditorController(re, ureq, wControl);
 		// use on column layout
 		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, sharedFolderCtr);

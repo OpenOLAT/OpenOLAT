@@ -34,10 +34,12 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.modules.glossary.GlossaryItemManager;
 import org.olat.core.commons.modules.glossary.GlossaryMainController;
+import org.olat.core.commons.modules.glossary.GlossaryRuntimeController;
 import org.olat.core.commons.modules.glossary.GlossarySecurityCallback;
 import org.olat.core.commons.modules.glossary.GlossarySecurityCallbackImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
@@ -58,18 +60,15 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.GlossaryResource;
 import org.olat.fileresource.types.ResourceEvaluation;
-import org.olat.modules.glossary.GlossaryEditSettingsController;
 import org.olat.modules.glossary.GlossaryManager;
-import org.olat.modules.glossary.GlossaryRegisterSettingsController;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.WizardCloseResourceController;
-import org.olat.repository.ui.author.AuthoringEditEntrySettingsController;
+import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.resource.references.ReferenceManager;
 
 
@@ -131,18 +130,6 @@ public class GlossaryHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public void addExtendedEditionControllers(UserRequest ureq, WindowControl wControl,
-			AuthoringEditEntrySettingsController pane, RepositoryEntry entry) {
-		OLATResource resource = entry.getOlatResource();
-		
-		GlossaryRegisterSettingsController glossRegisterSetCtr = new GlossaryRegisterSettingsController(ureq, wControl, resource);
-		pane.appendEditor(pane.getTranslator().translate("tab.glossary.register"), glossRegisterSetCtr);
-		
-		GlossaryEditSettingsController glossEditCtr = new GlossaryEditSettingsController(ureq, wControl, resource);
-		pane.appendEditor(pane.getTranslator().translate("tab.glossary.edit"), glossEditCtr);
-	}
-	
-	@Override
 	public RepositoryEntry copy(RepositoryEntry source, RepositoryEntry target) {
 		OLATResource sourceResource = source.getOlatResource();
 		OLATResource targetResource = target.getOlatResource();
@@ -168,8 +155,8 @@ public class GlossaryHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public boolean supportsEdit(OLATResourceable resource) {
-		return true;
+	public EditionSupport supportsEdit(OLATResourceable resource) {
+		return EditionSupport.embedded;
 	}
 	
 	@Override
@@ -192,26 +179,26 @@ public class GlossaryHandler implements RepositoryHandler {
 	 */
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
-		VFSContainer glossaryFolder = GlossaryManager.getInstance().getGlossaryRootFolder(re.getOlatResource());
+		return new GlossaryRuntimeController(ureq, wControl, re, 
+			new RuntimeControllerCreator() {
+				@Override
+				public Controller create(UserRequest uureq, WindowControl wwControl, RepositoryEntry entry) {
+					VFSContainer glossaryFolder = GlossaryManager.getInstance().getGlossaryRootFolder(entry.getOlatResource());
 
-		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		Properties glossProps = GlossaryItemManager.getInstance().getGlossaryConfig(glossaryFolder);
-		boolean editableByUser = "true".equals(glossProps.getProperty(GlossaryItemManager.EDIT_USERS));
-		boolean owner = repositoryService.hasRole(ureq.getIdentity(), re, GroupRoles.owner.name());
-		
-		GlossarySecurityCallback secCallback;
-		if (ureq.getUserSession().getRoles().isGuestOnly()) {
-			secCallback = new GlossarySecurityCallbackImpl();				
-		} else {
-			secCallback = new GlossarySecurityCallbackImpl(false, owner, editableByUser, ureq.getIdentity().getKey());
-		}
-		GlossaryMainController gctr = new GlossaryMainController(wControl, ureq, glossaryFolder, re.getOlatResource(), secCallback, false);
-		// use on column layout
-		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, gctr);
-		layoutCtr.addDisposableChildController(gctr); // dispose content on layout dispose
-		
-		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, layoutCtr);
-		return wrapper;
+					RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+					Properties glossProps = GlossaryItemManager.getInstance().getGlossaryConfig(glossaryFolder);
+					boolean editableByUser = "true".equals(glossProps.getProperty(GlossaryItemManager.EDIT_USERS));
+					boolean owner = repositoryService.hasRole(uureq.getIdentity(), entry, GroupRoles.owner.name());
+					
+					GlossarySecurityCallback secCallback;
+					if (uureq.getUserSession().getRoles().isGuestOnly()) {
+						secCallback = new GlossarySecurityCallbackImpl();				
+					} else {
+						secCallback = new GlossarySecurityCallbackImpl(false, owner, editableByUser, uureq.getIdentity().getKey());
+					}
+					return new GlossaryMainController(wwControl, uureq, glossaryFolder, entry.getOlatResource(), secCallback, false);	
+				}
+			});
 	}
 
 	@Override
@@ -220,7 +207,7 @@ public class GlossaryHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel panel) {
 		VFSContainer glossaryFolder = GlossaryManager.getInstance().getGlossaryRootFolder(re.getOlatResource());
 
 		Properties glossProps = GlossaryItemManager.getInstance().getGlossaryConfig(glossaryFolder);

@@ -230,7 +230,6 @@ public class CPOfflineReadableManager {
 		CPManifestTreeModel ctm = new CPManifestTreeModel(manifest);
 		TreeNode root = ctm.getRootNode();
 		// let's take the rootnode title as  page title
-		String rootTitle = root.getTitle(); 
 
 		StringBuilder menuTreeSB = new StringBuilder();
 		renderMenuTreeNodeRecursively(root, menuTreeSB, 0);
@@ -238,7 +237,7 @@ public class CPOfflineReadableManager {
 		// now put values to velocityContext
 		VelocityContext ctx = new VelocityContext();
 		ctx.put("menutree", menuTreeSB.toString());
-		ctx.put("rootTitle", rootTitle);
+		ctx.put("rootTitle", root.getTitle());
 		ctx.put("cpoff",DIRNAME_CPOFFLINEMENUMAT);
 		ctx.put("index", indexSrc);
 		

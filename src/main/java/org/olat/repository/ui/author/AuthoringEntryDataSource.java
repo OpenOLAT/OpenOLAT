@@ -195,7 +195,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 				row.setAccessTypes(types);
 			}
 			
-			uifactory.forgeMarkLink(row);
+			uifactory.forgeLinks(row);
 			
 			items.add(row);
 		}

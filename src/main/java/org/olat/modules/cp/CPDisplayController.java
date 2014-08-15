@@ -107,7 +107,7 @@ public class CPDisplayController extends BasicController implements Activateable
 	 * @param showNavigation Show the next/previous link
 	 * @param activateFirstPage
 	 */
-	CPDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, boolean showMenu, boolean showNavigation,
+	public CPDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, boolean showMenu, boolean showNavigation,
 			boolean activateFirstPage, boolean showPrint, DeliveryOptions deliveryOptions, String initialUri, OLATResourceable ores) {
 		super(ureq, wControl);
 		this.rootContainer = rootContainer;
@@ -278,7 +278,7 @@ public class CPDisplayController extends BasicController implements Activateable
 	 * @return The menu component for this content packaging. The Controller must
 	 *         be initialized properly to use this method
 	 */
-	Component getMenuComponent() {
+	public Component getMenuComponent() {
 		return cpTree;
 	}
 

@@ -326,7 +326,11 @@ public class CourseConfig implements Serializable, Cloneable {
 	 * @param softkey
 	 */
 	public void setSharedFolderSoftkey(String softkey) {
-		configuration.put(KEY_SHAREDFOLDER_SOFTKEY, softkey);
+		if(softkey == null) {
+			configuration.put(KEY_SHAREDFOLDER_SOFTKEY, VALUE_EMPTY_SHAREDFOLDER_SOFTKEY);
+		} else {
+			configuration.put(KEY_SHAREDFOLDER_SOFTKEY, softkey);
+		}
 	}
 
 	/**

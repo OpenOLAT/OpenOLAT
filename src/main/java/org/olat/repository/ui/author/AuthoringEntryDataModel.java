@@ -22,6 +22,7 @@ package org.olat.repository.ui.author;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 
@@ -84,9 +85,11 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 				RepositoryHandler handler = handlerFactory.getRepositoryHandler(item.getResourceType());
 				return (handler != null && handler.supportsLaunch()) ? Boolean.TRUE : Boolean.FALSE;
 			}
+			case tools: return item.getToolsLink();
 			case editionSupported: {
 				RepositoryHandler handler = handlerFactory.getRepositoryHandler(item.getResourceType());
-				return (handler != null && handler.supportsEdit(item.getOLATResourceable())) ? Boolean.TRUE : Boolean.FALSE;
+				return (handler == null || handler.supportsEdit(item.getOLATResourceable()) == EditionSupport.no)
+						? Boolean.FALSE : Boolean.TRUE;
 			}
 		}
 		return null;
@@ -110,7 +113,8 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		lastUsage("table.header.lastusage"),
 		mark("table.header.mark"),
 		detailsSupported(""),
-		editionSupported("");
+		tools("table.header.actions"),
+		editionSupported("table.header.edit");
 		
 		private final String i18nKey;
 		
