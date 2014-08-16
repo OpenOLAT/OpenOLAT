@@ -798,7 +798,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			//
 		} else if (cmd.equals(TOOLBOX_LINK_COURSECONFIG)) {
 			ChiefController chief = (ChiefController) Windows.getWindows(ureq).getAttribute("AUTHCHIEFCONTROLLER");
-			if (chief.hasStaticSite(RepositorySite.class)) {
+			if (chief != null && chief.hasStaticSite(RepositorySite.class)) {
 				String businessPath = "[RepositorySite:0][RepositoryEntry:" + courseRepositoryEntry.getKey() + "]";
 				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 			}
@@ -1132,7 +1132,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 		if (showCourseConfigLink) {
 			ChiefController chief = (ChiefController) Windows.getWindows(ureq).getAttribute("AUTHCHIEFCONTROLLER");
-			if (chief.hasStaticSite(RepositorySite.class)) {
+			if (chief != null && chief.hasStaticSite(RepositorySite.class)) {
 				myTool.addLink(TOOLBOX_LINK_COURSECONFIG, translate("command.courseconfig"));
 			}
 		}
