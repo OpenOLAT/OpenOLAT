@@ -64,7 +64,7 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 	@Override
 	protected void initToolbar(Dropdown toolsDropdown, Dropdown settingsDropdown) {
 		super.initToolbar(toolsDropdown, settingsDropdown);
-		if (isOwner || isInstitutionalResourceManager || isOlatAdmin) {
+		if (isEntryAdmin) {
 			settingsDropdown.addComponent(new Spacer(""));
 			
 			if (quotaManager.hasQuotaEditRights(getIdentity())) {

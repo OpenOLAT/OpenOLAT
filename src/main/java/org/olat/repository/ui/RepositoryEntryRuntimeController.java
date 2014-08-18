@@ -19,6 +19,7 @@
  */
 package org.olat.repository.ui;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
@@ -49,7 +50,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
@@ -82,7 +82,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RepositoryEntryRuntimeController extends MainLayoutBasicController implements Activateable2 {
 
 	private Controller runtimeController;
-	private final TooledStackedPanel toolbarPanel;
+	protected final TooledStackedPanel toolbarPanel;
 	private final RuntimeControllerCreator runtimeControllerCreator;
 	
 	protected Controller editorCtrl;
@@ -96,16 +96,22 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	private Dropdown tools;
 	private Dropdown settings;
-	private Link editLink, membersLink, ordersLink,
+	protected Link editLink, membersLink, ordersLink,
 				 editDescriptionLink, accessLink, catalogLink,
 				 detailsLink, bookmarkLink;
 	
 	protected final boolean isOlatAdmin;
-	protected final boolean isInstitutionalResourceManager;
-	protected final boolean isOwner;
-	protected final boolean isAuthor;
 	protected final boolean isGuestOnly;
+	protected final boolean isInstitutionalResourceManager;
+	protected final boolean isAuthor;
+	
+	protected boolean isOwner;
+	protected boolean isEntryAdmin;
+	protected final Roles roles;
 
+	protected final boolean showInfos;
+	protected final boolean allowBookmark;
+	
 	private boolean corrupted;
 	private RepositoryEntry re;
 	private final RepositoryHandler handler;
@@ -115,13 +121,19 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	@Autowired
 	private ACService acService;
 	@Autowired
-	private MarkManager markManager;
+	protected MarkManager markManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryHandlerFactory handlerFactory;
+	
+	public RepositoryEntryRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
+			RuntimeControllerCreator runtimeControllerCreator) {
+		this(ureq, wControl, re, runtimeControllerCreator, true, true);
+	}
 
-	public RepositoryEntryRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re, RuntimeControllerCreator runtimeControllerCreator) {
+	public RepositoryEntryRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
+			RuntimeControllerCreator runtimeControllerCreator, boolean allowBookmark, boolean showInfos) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		
@@ -136,18 +148,19 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 		
 		this.re = re;
+		this.showInfos = showInfos;
+		this.allowBookmark = allowBookmark;
 		this.runtimeControllerCreator = runtimeControllerCreator;
 		handler = handlerFactory.getRepositoryHandler(re);
 		
 		Identity identity = getIdentity();
-		Roles roles = ureq.getUserSession().getRoles();
+		roles = ureq.getUserSession().getRoles();
 		isOlatAdmin = roles.isOLATAdmin();
 		isInstitutionalResourceManager = !roles.isGuestOnly()
 					&& RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, re);
-		isOwner = isOlatAdmin || repositoryService.hasRole(ureq.getIdentity(), re, GroupRoles.owner.name())
-					| isInstitutionalResourceManager;
-		isAuthor = isOlatAdmin || roles.isAuthor() | isInstitutionalResourceManager;
+		isAuthor = isOlatAdmin | roles.isAuthor() | isInstitutionalResourceManager;
 		isGuestOnly = roles.isGuestOnly();
+		loadRights();
 
 		// set up the components
 		toolbarPanel = new TooledStackedPanel("courseStackPanel", getTranslator(), this);
@@ -156,6 +169,13 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		putInitialPanel(toolbarPanel);
 		doRun(ureq);
 		initToolbar();
+	}
+	/**
+	 * If override, need to set isOwner and isEntryAdmin
+	 */
+	protected void loadRights() {
+		isOwner = repositoryService.hasRole(getIdentity(), re, GroupRoles.owner.name());
+		isEntryAdmin = isOlatAdmin | isOwner | isInstitutionalResourceManager;
 	}
 	
 	protected RepositoryEntry getRepositoryEntry() {
@@ -182,7 +202,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		
 		boolean managed = false;
 		
-		if (isOwner || isInstitutionalResourceManager || isOlatAdmin) {
+		if (isEntryAdmin) {
 			//tools
 			if(handler.supportsEdit(re) == EditionSupport.yes) {
 				editLink = LinkFactory.createToolLink("edit.cmd", translate("details.openeditor"), this, "o_sel_repository_editor");
@@ -228,13 +248,14 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		detailsLink = LinkFactory.createToolLink("details", translate("details.header"), this, "o_sel_repo_details");
 		detailsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_details");
 		detailsLink.setElementCssClass("o_sel_author_details");
+		detailsLink.setVisible(showInfos);
 		toolbarPanel.addTool(detailsLink);
-		
 		
 		boolean marked = markManager.isMarked(re, getIdentity(), null);
 		String css = marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON;
 		bookmarkLink = LinkFactory.createToolLink("bookmark", translate("details.bookmark.label"), this, css);
 		bookmarkLink.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
+		bookmarkLink.setVisible(allowBookmark);
 		toolbarPanel.addTool(bookmarkLink, Align.right);
 	}
 	
@@ -252,16 +273,39 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries != null && entries.isEmpty()) {
+		entries = removeRepositoryEntry(entries);
+		if(entries != null && entries.size() > 0) {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("Editor".equals(type)) {
-				
+				doEdit(ureq);
+			} else if("Catalog".equals(type)) {
+				doCatalog(ureq);
+			} else if("Infos".equals(type)) {
+				doDetails(ureq);	
+			} else if("EditDescription".equals(type)) {
+				doEditSettings(ureq);
+			} else if("MembersMgmt".equals(type)) {
+				doMembers(ureq);
 			}
 		}
 
 		if(runtimeController instanceof Activateable2) {
 			((Activateable2)runtimeController).activate(ureq, entries, state);
 		}
+	}
+	
+	private List<ContextEntry> removeRepositoryEntry(List<ContextEntry> entries) {
+		if(entries != null && entries.size() > 0) {
+			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if("RepositoryEntry".equals(type)) {
+				if(entries.size() > 1) {
+					entries = entries.subList(1, entries.size());
+				} else {
+					entries = Collections.emptyList();
+				}
+			}
+		}
+		return entries;
 	}
 
 	@Override
@@ -386,6 +430,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected void doEdit(UserRequest ureq) {
+		if(!isEntryAdmin) return;
 		popToRoot(ureq).cleanUp();
 		editorCtrl = handler.createEditorController(re, ureq, getWindowControl(), toolbarPanel);
 		listenTo(editorCtrl);
@@ -404,6 +449,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	 * @param ureq
 	 */
 	protected void doEditSettings(UserRequest ureq) {
+		if(!isEntryAdmin) return;
 		popToRoot(ureq).cleanUp();
 		descriptionCtrl = new RepositoryEditDescriptionController(ureq, getWindowControl(), re, false);
 		listenTo(descriptionCtrl);
@@ -415,6 +461,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	 * @param ureq
 	 */
 	protected void doCatalog(UserRequest ureq) {
+		if(!isEntryAdmin) return;
 		popToRoot(ureq).cleanUp();
 		catalogCtlr = new CatalogSettingsController(ureq, getWindowControl(), toolbarPanel, re);
 		listenTo(catalogCtlr);
@@ -422,9 +469,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected void doMembers(UserRequest ureq) {
-		if (!isOwner) {
-			throw new OLATSecurityException("Trying to access groupmanagement, but not allowed: user = " + getIdentity());
-		}
+		if(!isEntryAdmin) return;
 		popToRoot(ureq).cleanUp();
 		membersEditController = new RepositoryMembersController(ureq, getWindowControl(), re);
 		listenTo(membersEditController);
@@ -432,10 +477,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected void doOrders(UserRequest ureq) {
-		if (!isOwner) {
-			throw new OLATSecurityException("Trying to access groupmanagement, but not allowed: user = " + getIdentity());
-		}
-
+		if(!isEntryAdmin) return;
 		popToRoot(ureq).cleanUp();
 		ordersCtlr = new OrdersAdminController(ureq, getWindowControl(), re.getOlatResource());
 		listenTo(ordersCtlr);

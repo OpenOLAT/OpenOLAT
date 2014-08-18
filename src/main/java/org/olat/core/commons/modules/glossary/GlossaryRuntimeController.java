@@ -49,7 +49,7 @@ public class GlossaryRuntimeController extends RepositoryEntryRuntimeController 
 	protected void initToolbar(Dropdown toolsDropdown, Dropdown settingsDropdown) {
 		super.initToolbar(toolsDropdown, settingsDropdown);
 		
-		if (isOwner || isInstitutionalResourceManager || isOlatAdmin) {
+		if (isEntryAdmin) {
 			registerLink = LinkFactory.createToolLink("register", translate("tab.glossary.register"), this, "o_sel_glossary_register");
 			settingsDropdown.addComponent(registerLink);
 			

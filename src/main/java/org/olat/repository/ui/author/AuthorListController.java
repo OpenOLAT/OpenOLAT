@@ -76,11 +76,9 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATSecurityException;
-import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -101,11 +99,9 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.handlers.RepositoryHandlerFactory.OrderedRepositoryHandler;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
-import org.olat.repository.model.TransientRepositoryEntryRef;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.AuthoringEntryDataModel.Cols;
 import org.olat.user.UserManager;
-import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -300,14 +296,6 @@ public class AuthorListController extends FormBasicController implements Activat
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
-		ContextEntry entry = entries.get(0);
-		String segment = entry.getOLATResourceable().getResourceableTypeName();
-		List<ContextEntry> subEntries = entries.subList(1, entries.size());
-		if("RepositoryEntry".equals(segment)) {
-			Long repoEntryKey = entry.getOLATResourceable().getResourceableId();
-			RepositoryEntryRef repoEntry = new TransientRepositoryEntryRef(repoEntryKey);
-			doOpenDetails(ureq, repoEntry).activate(ureq, subEntries, entry.getTransientState());
-		}
 	}
 	
 	@Override
@@ -335,7 +323,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		} else if(createCtrl == source) {
 			cmc.deactivate();
 			if(Event.DONE_EVENT.equals(event)) {
-				doOpenDetailsSettings(ureq, createCtrl.getAddedEntry());
+				launchEditDescription(ureq, createCtrl.getAddedEntry());
 				cleanUp();
 			} else if(CreateRepositoryEntryController.CREATION_WIZARD.equals(event)) {
 				doPostCreateWizard(ureq, createCtrl.getAddedEntry(), createCtrl.getHandler());
@@ -345,7 +333,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		}  else if(importCtrl == source) {
 			cmc.deactivate();
 			if(Event.DONE_EVENT.equals(event)) {
-				doOpenDetailsSettings(ureq, importCtrl.getImportedEntry());
+				launchEditDescription(ureq, importCtrl.getImportedEntry());
 				cleanUp();
 			} else {
 				cleanUp();
@@ -355,7 +343,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				getWindowControl().pop();
 				RepositoryEntry newEntry = (RepositoryEntry)wizardCtrl.getRunContext().get("authoringNewEntry");
 				cleanUp();
-				doOpenDetailsSettings(ureq, newEntry);
+				launchEditDescription(ureq, newEntry);
 			}
 		} else if(searchCtrl == source) {
 			if(event instanceof SearchEvent) {
@@ -372,7 +360,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			if(event instanceof OpenEvent) {
 				OpenEvent oe = (OpenEvent)event;
 				RepositoryEntryRef repoEntryKey = oe.getRepositoryEntry();
-				doOpenDetails(ureq, repoEntryKey);
+				launchDetails(ureq, repoEntryKey);
 			} else if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				dirtyRows.add(new Integer(-1));
 			} else if(event instanceof EntryChangedEvent) {
@@ -463,7 +451,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				String cmd = se.getCommand();
 				AuthoringEntryRow row = model.getObject(se.getIndex());
 				if("details".equals(cmd)) {
-					doOpenDetails(ureq, row);
+					launchDetails(ureq, row);
 				} else if("edit".equals(cmd)) {
 					launchEditor(ureq, row);
 				} else if("select".equals(cmd)) {
@@ -485,28 +473,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			dirtyRows.clear();
 		}
 	}
-	
-	private AuthoringEntryDetailsController doOpenDetails(UserRequest ureq, RepositoryEntryRef ref) {
-		stackPanel.popUpToRootController(ureq);
 
-		removeAsListenerAndDispose(detailsCtrl);
-		
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", ref.getKey());
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		detailsCtrl = new AuthoringEntryDetailsController(ureq, getWindowControl(), stackPanel, ref);
-		listenTo(detailsCtrl);
-		return detailsCtrl;
-	}
-	
-	private AuthoringEntryDetailsController doOpenDetailsSettings(UserRequest ureq, RepositoryEntryRef entry) {
-		detailsCtrl = doOpenDetails(ureq, entry);
-		
-		ContextEntry editEntry = BusinessControlFactory.getInstance().createContextEntry(AuthoringEntryDetailsController.EDIT_SETTINGS_ORES);
-		List<ContextEntry> entries = Collections.singletonList(editEntry);
-		detailsCtrl.activate(ureq, entries, null);
-		return detailsCtrl;
-	}
-	
 	private void doOpenTools(UserRequest ureq, AuthoringEntryRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
@@ -702,27 +669,32 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 	}
 	
-	private void launchCatalog(UserRequest ureq, AuthoringEntryRow row) {
-		launch(ureq, row);
-	}
-	
-	private void launchEditDescription(UserRequest ureq, AuthoringEntryRow row) {
-		launch(ureq, row);
-	}
-	
 	private void launch(UserRequest ureq, AuthoringEntryRow row) {
 		try {
 			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(row.getResourceType());
 			if(handler != null && handler.supportsLaunch()) {
 				String businessPath = "[RepositoryEntry:" + row.getKey() + "]";
 				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-			} else {
-				doOpenDetails(ureq, row);
 			}
 		} catch (CorruptedCourseException e) {
 			logError("Course corrupted: " + row.getKey() + " (" + row.getOLATResourceable().getResourceableId() + ")", e);
 			showError("cif.error.corrupted");
 		}
+	}
+	
+	private void launchCatalog(UserRequest ureq, RepositoryEntryRef ref) {
+		String businessPath = "[RepositoryEntry:" + ref.getKey() + "][Catalog:0]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+	
+	private void launchDetails(UserRequest ureq, RepositoryEntryRef ref) {
+		String businessPath = "[RepositoryEntry:" + ref.getKey() + "][Infos:0]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+	
+	private void launchEditDescription(UserRequest ureq, RepositoryEntryRef ref) {
+		String businessPath = "[RepositoryEntry:" + ref.getKey() + "][EditDescription:0]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
 	private void launchEditor(UserRequest ureq, AuthoringEntryRow row) {

@@ -406,6 +406,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		List<BusinessGroup> waitingLists = cgm.getWaitingListGroups(ureq.getIdentity());
 		return new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment(),
 				coachedGroups, participatedGroups, waitingLists, null, null, null);
+		//TODO fire event???
 	}
 	
 	private void setLaunchDates() {
@@ -1683,6 +1684,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private boolean hasCourseRight(String right) {
 		Boolean bool = courseRightsCache.get(right);
 		return bool.booleanValue();
+	}
+	
+	UserCourseEnvironmentImpl getUce() {
+		return uce;
 	}
 
 	/**
