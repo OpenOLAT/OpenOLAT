@@ -38,6 +38,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -537,6 +542,25 @@ public class FileUtils {
 		}
 		return totalBytesRead;
 	} // end readBlocking
+	
+	public static void deleteDirsAndFiles(Path path) throws IOException {
+		Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+			
+			@Override
+			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+			throws IOException {
+				Files.delete(file);
+				return FileVisitResult.CONTINUE;
+			}
+			
+			@Override
+			public FileVisitResult postVisitDirectory(Path dir, IOException exc)
+			throws IOException {
+				Files.delete(dir);
+				return FileVisitResult.CONTINUE;
+			}
+		});
+	}
 
 	/**
 	 * Get rid of ALL files and subdirectories in given directory, and all subdirs

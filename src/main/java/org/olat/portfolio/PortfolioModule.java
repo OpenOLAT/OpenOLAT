@@ -20,25 +20,25 @@
 package org.olat.portfolio;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.collaboration.CollaborationTools;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
-import org.olat.core.configuration.AbstractOLATModule;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
-import org.olat.core.configuration.PersistedProperties;
-import org.olat.core.extensions.action.GenericActionExtension;
-import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.event.FrameworkStartedEvent;
-import org.olat.core.util.event.FrameworkStartupEventChannel;
-import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -48,6 +48,9 @@ import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
 import org.olat.user.UserDataDeletable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -58,19 +61,31 @@ import org.olat.user.UserDataDeletable;
  * Initial Date:  11.06.2010 <br>
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
-public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, UserDataDeletable, DeletableGroupData {
+@Service("portfolioModule")
+public class PortfolioModule extends AbstractSpringModule implements ConfigOnOff, UserDataDeletable, DeletableGroupData {
 	
-	private List<EPArtefactHandler<?>> artefactHandlers = new ArrayList<EPArtefactHandler<?>>();
+	private static final OLog log = Tracing.createLoggerFor(PortfolioModule.class);
+	
 
+	@Value("${portfolio.enabled:true}")
 	private boolean enabled;
 	private VFSContainer portfolioRoot;
+	@Value("${portfolio.map.styles}")
+	private String availableMapStylesProperty;
 	private List<String> availableMapStyles = new ArrayList<String>();
+	@Value("${portfolio.offer.public.map.list:true}")
 	private boolean offerPublicMapList;
+	@Value("${wizard.step.reflexion:true}")
 	private boolean isReflexionStepEnabled;
+	@Value("${wizard.step.copyright:true}")
 	private boolean isCopyrightStepEnabled;
 	
-	public PortfolioModule(){
-		FrameworkStartupEventChannel.registerForStartupEvent(this);
+	@Autowired
+	private List<EPArtefactHandler<?>> artefactHandlers;
+	
+	@Autowired
+	public PortfolioModule(CoordinatorManager coordinatorManager){
+		super(coordinatorManager);
 	}
 	
 	@Override
@@ -90,7 +105,7 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, 
 		
 		String styles = getStringPropertyValue("portfolio.map.styles", true);
 		if(StringHelper.containsNonWhitespace(styles)) {
-			this.availableMapStyles = new ArrayList<String>();
+			availableMapStyles = new ArrayList<String>();
 			for(String style:styles.split(",")) {
 				availableMapStyles.add(style);
 			}
@@ -101,11 +116,10 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, 
 			setOfferPublicMapList("true".equals(offerPublicSetting));
 		}
 		
-		this.isReflexionStepEnabled = getBooleanPropertyValue("wizard.step.reflexion");
-		this.isCopyrightStepEnabled = getBooleanPropertyValue("wizard.step.copyright");
+		isReflexionStepEnabled = getBooleanPropertyValue("wizard.step.reflexion");
+		isCopyrightStepEnabled = getBooleanPropertyValue("wizard.step.copyright");
 		
-		cleanPortfolioTmpDir();
-		logInfo("ePortfolio is enabled: " + Boolean.toString(enabled));
+		log.info("ePortfolio is enabled: " + Boolean.toString(enabled));
 	}
 	
 	/**
@@ -114,72 +128,31 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, 
 	 * 
 	 */
 	private void cleanPortfolioTmpDir(){
-		logInfo("beginning to delete ePortfolio temp directory...");
-		VFSContainer artRoot = new OlatRootFolderImpl(File.separator + "tmp", null);
-		VFSItem tmpI = artRoot.resolve("portfolio");
-		if (tmpI instanceof VFSContainer) {
-			VFSContainer tmpContainer = (VFSContainer) tmpI;
-			if(tmpContainer.canDelete() == VFSConstants.YES){
-				tmpContainer.delete();
-				logInfo("deleted ePortfolio temp directory : "+tmpContainer.getName()+"    "+((tmpContainer instanceof LocalFolderImpl)?((LocalFolderImpl)tmpContainer).getBasefile().getAbsolutePath():""));
+		log.info("beginning to delete ePortfolio temp directory...");
+		Path portfolioTmp = Paths.get(FolderConfig.getCanonicalRoot(), "tmp", "portfolio");
+		if(portfolioTmp.toFile().exists()) {
+			try {
+				FileUtils.deleteDirsAndFiles(portfolioTmp);
+			} catch (IOException e) {
+				log.error("Cannot properly delete portfolio temporary portfolio", e);
 			}
-		}else{
-			logInfo("no ePortfolio temp dir found...");
-		}
-	}
-	
-	private void enableExtensions(boolean enabled){
-		try {
-			((GenericActionExtension)CoreSpringFactory.getBean("home.menupoint.ep")).setEnabled(enabled);
-			((GenericActionExtension)CoreSpringFactory.getBean("home.menupoint.ep.pool")).setEnabled(enabled);
-			((GenericActionExtension)CoreSpringFactory.getBean("home.menupoint.ep.maps")).setEnabled(enabled);
-			((GenericActionExtension)CoreSpringFactory.getBean("home.menupoint.ep.structuredmaps")).setEnabled(enabled);	
-			((GenericActionExtension)CoreSpringFactory.getBean("home.menupoint.ep.sharedmaps")).setEnabled(enabled);
-		} catch (Exception e) {
-			// do nothing when extension don't exist.
-		}
-	}
-
-	@Override
-	public void event(Event event) {
-		if(event instanceof FrameworkStartedEvent) {
-			enableExtensions(isEnabled());
-		} else {
-			super.event(event);
 		}
 	}
 
 	@Override
 	protected void initDefaultProperties() {
-		enabled = getBooleanConfigParameter("portfolio.enabled", true);
-		
-		for(EPArtefactHandler<?> handler:artefactHandlers) {
-			boolean enabledHandler = getBooleanConfigParameter("handler." + handler.getClass().getName(), true);
-			((EPAbstractHandler<?>)handler).setEnabled(enabledHandler);
-		}
-		
-		this.availableMapStyles = new ArrayList<String>();
-		String styles = this.getStringConfigParameter("portfolio.map.styles", "default", false);
-		if(StringHelper.containsNonWhitespace(styles)) {	
-			for(String style:styles.split(",")) {
+		availableMapStyles = new ArrayList<String>();
+		if(StringHelper.containsNonWhitespace(availableMapStylesProperty)) {	
+			for(String style:availableMapStylesProperty.split(",")) {
 				availableMapStyles.add(style);
 			}
 		}
-		
-		this.isReflexionStepEnabled = getBooleanConfigParameter("wizard.step.reflexion", true);
-		this.isCopyrightStepEnabled = getBooleanConfigParameter("wizard.step.copyright", true);
-		
-		setOfferPublicMapList(getBooleanConfigParameter("portfolio.offer.public.map.list", true));
+		cleanPortfolioTmpDir();
 	}
 
 	@Override
 	protected void initFromChangedProperties() {
 		init();
-	}
-	
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
 	}
 
 	@Override
@@ -191,7 +164,6 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, 
 		if(this.enabled != enabled) {
 			setStringProperty("portfolio.enabled", Boolean.toString(enabled), true);
 			this.enabled = enabled;
-			enableExtensions(enabled);
 		}
 	}
 	
@@ -222,14 +194,6 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, 
 		}
 		return handlers;
 	}
-
-	/**
-	 * [used by Spring]
-	 * @param artefacthandlers
-	 */
-	public void setArtefactHandlers(List<EPArtefactHandler<?>> artefacthandlers) {
-		this.artefactHandlers.addAll(artefacthandlers);
-	}
 	
 	public EPArtefactHandler<?> getArtefactHandler(String type) {
 		for(EPArtefactHandler<?> handler:artefactHandlers) {
@@ -237,7 +201,7 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, 
 				return handler;
 			}
 		}
-		logWarn("Either tried to get a disabled handler or could not return a handler for artefact-type: " + type, null);
+		log.warn("Either tried to get a disabled handler or could not return a handler for artefact-type: " + type, null);
 		return null;
 	}
 	
@@ -255,8 +219,7 @@ public class PortfolioModule extends AbstractOLATModule implements ConfigOnOff, 
 			((EPAbstractHandler<?>)artefacthandler).setEnabled("true".equals(propEnabled));
 		} else {
 			//default settings
-			boolean defEnabled = getBooleanConfigParameter(settingName, true);
-			((EPAbstractHandler<?>)artefacthandler).setEnabled(defEnabled);
+			((EPAbstractHandler<?>)artefacthandler).setEnabled(true);
 		}
 	}
 

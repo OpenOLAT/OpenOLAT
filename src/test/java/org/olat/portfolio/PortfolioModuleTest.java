@@ -55,7 +55,7 @@ public class PortfolioModuleTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void tesAddArtefactHandler() {
+	public void testAddArtefactHandler() {
 		DummyArtefactHandler artefactHandler = new DummyArtefactHandler();
 		portfolioModule.addArtefactHandler(artefactHandler);
 		

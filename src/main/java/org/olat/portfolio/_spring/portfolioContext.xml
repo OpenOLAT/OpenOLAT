@@ -8,56 +8,8 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
   
-	<context:component-scan base-package="org.olat.portfolio.manager" />
+	<context:component-scan base-package="org.olat.portfolio" />
 
-	<!-- E-PORTFOLIO CONFIGURATION -->
-	<!-- ========================= -->
-	
-	<bean id="portfolioModule" class="org.olat.portfolio.PortfolioModule">
-		<property name="persistedProperties">
-	  	<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
-	  		depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
-	    	<constructor-arg index="0" ref="coordinatorManager"/>
-	    	<constructor-arg index="1" ref="portfolioModule" />
-	  	</bean>
-		</property>
-		<!-- those handlers are not connected to an olat-module, therefore need to be loaded and registered here. -->
-		<property name="artefactHandlers">
-			<list>
-				<ref bean="forumArtefactHandler"/>
-				<ref bean="wikiArtefactHandler"/>
-				<ref bean="efficiencyStatementArtefact"/>
-				<ref bean="fileArtefactHandler"/>
-				<ref bean="textArtefactHandler"/>
-				<!-- hide everywhere as long as its not used 
-				<ref bean="structureElementArtefactHandler"/> -->
-				<ref bean="liveBlogArtefactHandler"/>
-				<ref bean="blogArtefactHandler"/>
-			</list>
-		</property>
-	</bean>
-	
-	<!-- default configuration -->
-	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject" ref="portfolioModule" />
-		<property name="targetMethod" value="init" />
-		<property name="arguments">
-			<value>
-				portfolio.enabled=true
-				<!--
-				set the names of available styles for portfolio-maps, this can be selected by user. translation is done with "org.olat.portfolio.ui.structel:map.style.<value>"
-				it needs also the style definitions in brasato.css , where the names are class names. the dropdown on a map can be styled with "<value>_icon".
-				-->
-				portfolio.map.styles=${portfolio.map.styles}
-				portfolio.offer.public.map.list=${portfolio.offer.public.map.list}
-				<!-- 
-				handler.org.olat.modules.fo.portfolio.ForumArtefactHandler=true
-				handler.org.olat.portfolio.model.artefacts.FileArtefactHandler=true
-				 -->
-			</value>
-		</property>
-	</bean>
-	
 	<!-- Portfolio admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="7205" />
@@ -99,7 +51,9 @@
 	
 	<bean name="textArtefactHandler" class="org.olat.portfolio.model.artefacts.EPTextArtefactHandler"/>
 	
+	<!-- 
 	<bean name="structureElementArtefactHandler" class="org.olat.portfolio.model.artefacts.EPStructureElementArtefactHandler"/>
+	-->
 	
 	<bean name="liveBlogArtefactHandler" class="org.olat.modules.webFeed.portfolio.LiveBlogArtefactHandler"/>
 	
@@ -107,8 +61,7 @@
 	
 	
 	<!--   define notifications handler -->
-	<bean id="org.olat.portfolio.manager.EPNotificationsHandler" class="org.olat.portfolio.manager.EPNotificationsHandler">
-	</bean>
+	<bean id="org.olat.portfolio.manager.EPNotificationsHandler" class="org.olat.portfolio.manager.EPNotificationsHandler" />
 
 	<!-- wrapper for add-link in folder -->
 	<bean name="folderCMDAddToEPortfolio" class="org.olat.core.gui.control.creator.AutoCreator" >
@@ -175,7 +128,7 @@
 	</bean>
 	
 	<!--  hook to the personal menu -->
-	<bean class="org.olat.portfolio.EPUserToolExtension" name="personal.tool.ep" init-method="initExtensionPoints" >
+	<bean class="org.olat.portfolio.PortfolioExtension" name="personal.tool.ep" init-method="initExtensionPoints" >
 		<property name="order" value="301" />
 		<property name="navigationKey" value="Portfolio" />
 		<property name="enabled" value="${minimalhome.ext.portfolio}"></property>

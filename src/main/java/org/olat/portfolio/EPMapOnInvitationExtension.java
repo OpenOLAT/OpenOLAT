@@ -64,9 +64,9 @@ public class EPMapOnInvitationExtension {
 				return null;
 			}
 			
-			PortfolioStructureMap map = getMapFromContext(ces.get(0));
+			PortfolioStructureMap structureMap = getMapFromContext(ces.get(0));
 			EPSecurityCallback secCallback = new EPSecurityCallbackImpl(false, true);
-			Controller epCtr = EPUIFactory.createMapViewController(ureq, wControl, map, secCallback);
+			Controller epCtr = EPUIFactory.createMapViewController(ureq, wControl, structureMap, secCallback);
 			
 			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, epCtr);
 			layoutCtr.addDisposableChildController(epCtr);
@@ -75,9 +75,9 @@ public class EPMapOnInvitationExtension {
 
 		@Override
 		public String getTabName(ContextEntry ce, UserRequest ureq) {
-			PortfolioStructureMap map = getMapFromContext(ce);
-			if(map != null) {
-				return map.getTitle();
+			PortfolioStructureMap structureMap = getMapFromContext(ce);
+			if(structureMap != null) {
+				return structureMap.getTitle();
 			}
 			return null;
 		}
@@ -89,11 +89,11 @@ public class EPMapOnInvitationExtension {
 			}
 			
 			final EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
-			PortfolioStructureMap map = getMapFromContext(ce);
-			if (map == null) {
+			PortfolioStructureMap structureMap = getMapFromContext(ce);
+			if (structureMap == null) {
 				return false;
 			}
-			boolean visible = ePFMgr.isMapVisible(ureq.getIdentity(), map.getOlatResource());
+			boolean visible = ePFMgr.isMapVisible(ureq.getIdentity(), structureMap.getOlatResource());
 			return visible;
 		}
 		

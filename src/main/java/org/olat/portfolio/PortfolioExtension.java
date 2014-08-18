@@ -28,7 +28,7 @@ import org.olat.core.extensions.action.GenericActionExtension;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class EPUserToolExtension extends GenericActionExtension {
+public class PortfolioExtension extends GenericActionExtension {
 
 	@Override
 	public boolean isEnabled() {
