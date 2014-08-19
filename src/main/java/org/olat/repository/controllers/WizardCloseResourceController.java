@@ -37,7 +37,9 @@ import org.olat.core.gui.control.ControllerEventListener;
  * @author bja <bja@bps-system.de>
  */
 public interface WizardCloseResourceController extends Controller, ControllerEventListener {
+	
 	public void startWorkflow();
 
 	public String getAndRemoveWizardTitle();
+	
 }

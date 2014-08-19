@@ -234,6 +234,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_FileResource-MOVIE_icon:before { content: $fa-var-file-video-o; }
 .o_FileResource-FILE_icon:before { content: $fa-var-file-o; }
 
+.o_CourseModule_icon_closed:before { content: $fa-var-ban; }
+
 /* course element icons */
 .o_sp_icon:before { content: $fa-var-file-text-o; }
 .o_st_icon:before { content: $fa-var-cubes; }

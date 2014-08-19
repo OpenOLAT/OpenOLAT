@@ -69,6 +69,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
@@ -86,12 +87,15 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseModule;
 import org.olat.course.run.RunMainController;
+import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -126,13 +130,13 @@ public class AuthorListController extends FormBasicController implements Activat
 	private StepsMainRunController wizardCtrl;
 	private AuthorSearchController searchCtrl;
 	private UserSearchController userSearchCtr;
+	private DialogBoxController deleteDialogCtrl;
+	private CopyRepositoryEntryController copyCtrl;
+	private WizardCloseResourceController closeCtrl;
 	private ImportRepositoryEntryController importCtrl;
 	private CreateRepositoryEntryController createCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 
-	private DialogBoxController deleteDialogCtrl;
-	private WizardCloseResourceController wc;
-	private CopyRepositoryEntryController copyCtrl;
 
 	private Link importLink;
 	private Dropdown createDropdown;
@@ -323,14 +327,18 @@ public class AuthorListController extends FormBasicController implements Activat
 			} else {
 				cleanUp();
 			}
-		}  else if(importCtrl == source) {
+		} else if(copyCtrl == source) {
+			cmc.deactivate();
+			if (event == Event.DONE_EVENT) {
+				launchEditDescription(ureq, copyCtrl.getCopiedEntry());
+			}
+			cleanUp();
+		} else if(importCtrl == source) {
 			cmc.deactivate();
 			if(Event.DONE_EVENT.equals(event)) {
 				launchEditDescription(ureq, importCtrl.getImportedEntry());
-				cleanUp();
-			} else {
-				cleanUp();
 			}
+			cleanUp();
 		} else if(wizardCtrl == source) {
 			if (event.equals(Event.CHANGED_EVENT) || event.equals(Event.CANCELLED_EVENT)) {
 				getWindowControl().pop();
@@ -366,6 +374,12 @@ public class AuthorListController extends FormBasicController implements Activat
 			if(event == Event.DONE_EVENT) {
 				toolsCalloutCtrl.deactivate();
 				cleanUp();
+			}
+		} else if(deleteDialogCtrl == source) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				AuthoringEntryRow row = (AuthoringEntryRow)deleteDialogCtrl.getUserObject();
+				doCompleteDelete(ureq, row);
+				reloadRows();
 			}
 		}
 		super.event(ureq, source, event);
@@ -447,9 +461,12 @@ public class AuthorListController extends FormBasicController implements Activat
 	
 	protected void reloadDirtyRows() {
 		if(dirtyRows.size() > 0) {
-			tableEl.reloadData();
-			dirtyRows.clear();
+			reloadRows();
 		}
+	}
+	protected void reloadRows() {
+		tableEl.reloadData();
+		dirtyRows.clear();
 	}
 
 	private void doOpenTools(UserRequest ureq, AuthoringEntryRow row, FormLink link) {
@@ -559,16 +576,16 @@ public class AuthorListController extends FormBasicController implements Activat
 	
 	private void doCloseResource(UserRequest ureq, AuthoringEntryRow row) {
 		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(wc);
+		removeAsListenerAndDispose(closeCtrl);
 		
 		RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
 		RepositoryHandler repoHandler = repositoryHandlerFactory.getRepositoryHandler(entry);
-		wc = repoHandler.createCloseResourceController(ureq, getWindowControl(), entry);
-		listenTo(wc);
-		wc.startWorkflow();
+		closeCtrl = repoHandler.createCloseResourceController(ureq, getWindowControl(), entry);
+		listenTo(closeCtrl);
+		closeCtrl.startWorkflow();
 		
-		String title = wc.getAndRemoveWizardTitle();
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), wc.getInitialComponent(), true, title);
+		String title = closeCtrl.getAndRemoveWizardTitle();
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), closeCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -601,6 +618,21 @@ public class AuthorListController extends FormBasicController implements Activat
 		
 		String dialogText = translate(corrupted ? "del.confirm.corrupted" : "del.confirm", String.valueOf(cnt));
 		deleteDialogCtrl = activateYesNoDialog(ureq, dialogTitle, dialogText, deleteDialogCtrl);
+		deleteDialogCtrl.setUserObject(row);
+	}
+	
+	private void doCompleteDelete(UserRequest ureq, AuthoringEntryRow row) {
+		Roles roles = ureq.getUserSession().getRoles();
+		RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
+		if(entry != null) {
+			ErrorList errors = repositoryService.delete(entry, getIdentity(), roles, getLocale());
+			if (errors.hasErrors()) {
+				showInfo("info.could.not.delete.entry");
+			} else {
+				fireEvent(ureq, new EntryChangedEvent(entry, getIdentity(), Change.deleted));
+				showInfo("info.entry.deleted");
+			}
+		}
 	}
 	
 	private void doDownload(UserRequest ureq, AuthoringEntryRow row) {
@@ -773,14 +805,17 @@ public class AuthorListController extends FormBasicController implements Activat
 				}
 			}
 			
+			boolean canClose = OresHelper.isOfType(entry.getOlatResource(), CourseModule.class)
+					&& !RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.close)
+					&& !RepositoryManager.getInstance().createRepositoryEntryStatus(entry.getStatusCode()).isClosed();
+			
 			if(isOwner) {
-				boolean closeManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.close);
 				boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete);
-				if(!closeManaged || !deleteManaged) {
+				if(canClose || !deleteManaged) {
 					links.add("-");
 				}
 
-				if(!closeManaged) {
+				if(canClose) {
 					addLink("details.close.ressoure", "close", "o_icon o_icon-fw o_icon_close_resource", links);
 				}
 				if(!deleteManaged) {
