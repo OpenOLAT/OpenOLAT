@@ -86,6 +86,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.run.RunMainController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -731,7 +732,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			boolean isInstitutionalResourceManager = !roles.isGuestOnly()
 						&& RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, entry);
 			isOwner = isOlatAdmin || repositoryService.hasRole(ureq.getIdentity(), entry, GroupRoles.owner.name())
-						| isInstitutionalResourceManager;
+						|| isInstitutionalResourceManager;
 			isAuthor = isOlatAdmin || roles.isAuthor() | isInstitutionalResourceManager;
 
 			mainVC = createVelocityContainer("tools");
@@ -745,14 +746,24 @@ public class AuthorListController extends FormBasicController implements Activat
 				addLink("details.members", "members", "o_icon o_icon-fw o_icon_membersmanagement", links);
 			}
 			links.add("-");
-			if (isAuthor || isOwner) {
+			boolean copyManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.copy);
+			if ((isAuthor || isOwner) && !copyManaged) {
 				addLink("details.copy", "copy", "o_icon o_icon-fw o_icon_copy", links);
 			}
 			addLink("details.download", "download", "o_icon o_icon-fw o_icon_download", links);
 			if(isOwner) {
-				links.add("-");
-				addLink("details.close.ressoure", "close", "o_icon o_icon-fw o_icon_close_resource", links);
-				addLink("details.delete", "delete", "o_icon o_icon-fw o_icon_delete_item", links);
+				boolean closeManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.close);
+				boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete);
+				if(!closeManaged || !deleteManaged) {
+					links.add("-");
+				}
+
+				if(!closeManaged) {
+					addLink("details.close.ressoure", "close", "o_icon o_icon-fw o_icon_close_resource", links);
+				}
+				if(!deleteManaged) {
+					addLink("details.delete", "delete", "o_icon o_icon-fw o_icon_delete_item", links);
+				}
 			}
 
 			mainVC.contextPut("links", links);
