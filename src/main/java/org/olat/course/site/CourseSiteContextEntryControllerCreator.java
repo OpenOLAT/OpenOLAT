@@ -26,7 +26,6 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.navigation.SiteDefinition;
@@ -76,11 +75,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 	@Override
 	public Controller createController(List<ContextEntry> ces, UserRequest ureq, WindowControl wControl) {
 		RepositoryEntry re = getRepositoryEntry(ureq, ces.get(0));
-		Controller ctrl = createLaunchController(re, ureq, wControl);
-		if(ctrl instanceof Activateable2) {
-			((Activateable2)ctrl).activate(ureq, ces, null);
-		}
-		return ctrl;
+		return createLaunchController(re, ureq, wControl);
 	}
 	
 	/**
