@@ -61,6 +61,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ResumeController extends FormBasicController implements SupportsAfterLoginInterceptor {
 
+	private FormSubmit okButton;
 	private FormLink noButton, landingButton;
 	
 	private String[] askagain_keys = new String[]{"askagain_k"};
@@ -85,7 +86,7 @@ public class ResumeController extends FormBasicController implements SupportsAft
 		// Button layout
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
-		FormSubmit okButton = uifactory.addFormSubmitButton("submit", "resume.button", buttonLayout);
+		okButton = uifactory.addFormSubmitButton("submit", "resume.button", buttonLayout);
 		okButton.setElementCssClass("o_sel_resume_yes");
 		landingButton = uifactory.addFormLink("landing", "resume.button.landing", null, buttonLayout, Link.BUTTON);
 		landingButton.setElementCssClass("o_sel_resume_landing");
@@ -96,28 +97,51 @@ public class ResumeController extends FormBasicController implements SupportsAft
 	@Override
 	public boolean isInterceptionRequired(UserRequest ureq) {
 		UserSession usess = ureq.getUserSession();
-		boolean disabled = isDisabled(ureq);
-		if(disabled) return false;//rest url, do not resume
-		
-		Preferences prefs =  usess.getGuiPreferences();
-		String resumePrefs = (String)prefs.get(WindowManager.class, "resume-prefs");
-		if(!StringHelper.containsNonWhitespace(resumePrefs)) {
-			resumePrefs = historyModule.getResumeDefaultSetting();
-		}
-		
+
 		boolean interception = false;
-		if("none".equals(resumePrefs)) {
+		if(isREST(ureq)) {
+			//do nothing
+		} else if(!historyModule.isResumeEnabled()) {
 			String bc = getLandingBC(ureq);
 			launch(ureq, bc);
-		} else if ("auto".equals(resumePrefs)) {
-			HistoryPoint historyEntry = HistoryManager.getInstance().readHistoryPoint(ureq.getIdentity());
-			if(historyEntry != null && StringHelper.containsNonWhitespace(historyEntry.getBusinessPath())) {
-				BusinessControl bc = BusinessControlFactory.getInstance().createFromContextEntries(historyEntry.getEntries());
-				launch(ureq, bc);
+		} else if(usess.getRoles().isGuestOnly()) {
+			String bc = getLandingBC(ureq);
+			launch(ureq, bc);
+		} else {
+			Preferences prefs =  usess.getGuiPreferences();
+			String resumePrefs = (String)prefs.get(WindowManager.class, "resume-prefs");
+			if(!StringHelper.containsNonWhitespace(resumePrefs)) {
+				resumePrefs = historyModule.getResumeDefaultSetting();
 			}
-		} else if ("ondemand".equals(resumePrefs)) {
-			HistoryPoint historyEntry = historyManager.readHistoryPoint(ureq.getIdentity());
-			interception = historyEntry != null &&  StringHelper.containsNonWhitespace(historyEntry.getBusinessPath());
+
+			if("none".equals(resumePrefs)) {
+				String bc = getLandingBC(ureq);
+				launch(ureq, bc);
+			} else if ("auto".equals(resumePrefs)) {
+				HistoryPoint historyEntry = HistoryManager.getInstance().readHistoryPoint(ureq.getIdentity());
+				if(historyEntry != null && StringHelper.containsNonWhitespace(historyEntry.getBusinessPath())) {
+					BusinessControl bc = BusinessControlFactory.getInstance().createFromContextEntries(historyEntry.getEntries());
+					launch(ureq, bc);
+				} else {
+					String bc = getLandingBC(ureq);
+					launch(ureq, bc);
+				}
+			} else if ("ondemand".equals(resumePrefs)) {
+				HistoryPoint historyEntry = historyManager.readHistoryPoint(ureq.getIdentity());
+				if(historyEntry != null && StringHelper.containsNonWhitespace(historyEntry.getBusinessPath())) {
+					interception = true;
+					
+					String bc = getLandingBC(ureq);
+					if(StringHelper.containsNonWhitespace(bc)) {
+						noButton.setVisible(false);
+					} else {
+						landingButton.setVisible(false);
+					}
+				} else {
+					String bc = getLandingBC(ureq);
+					launch(ureq, bc);
+				}
+			}
 		}
 		return interception;
 	}
@@ -135,17 +159,9 @@ public class ResumeController extends FormBasicController implements SupportsAft
 			launch(ureq, bc);
 		}
 	}
-
-	/**
-	 * Resume function is disabled if the module say it's disable, or
-	 * for REST URL and Jump'in URL
-	 * @param ureq
-	 * @return
-	 */
-	private boolean isDisabled(UserRequest ureq) {
-		if(!historyModule.isResumeEnabled()) return true;
+	
+	private boolean isREST(UserRequest ureq) {
 		UserSession usess = ureq.getUserSession();
-		if(usess.getRoles().isGuestOnly()) return true;
 		if(usess.getEntry("AuthDispatcher:businessPath") != null) return true;
 		if(usess.getEntry("AuthDispatcher:entryUrl") != null) return true;
 		return false;
@@ -209,12 +225,13 @@ public class ResumeController extends FormBasicController implements SupportsAft
 	}
 	
 	private void launch(UserRequest ureq, String businessPath) {
-		if(!StringHelper.containsNonWhitespace(businessPath)) return;
-		try {
-			//make the resume secure. If something fail, don't generate a red screen
-			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-		} catch (Exception e) {
-			logError("Error while resuming", e);
+		if(StringHelper.containsNonWhitespace(businessPath)) {
+			try {
+				//make the resume secure. If something fail, don't generate a red screen
+				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			} catch (Exception e) {
+				logError("Error while resuming", e);
+			}
 		}
 	}
 	
