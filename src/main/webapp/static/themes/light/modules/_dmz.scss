@@ -113,6 +113,13 @@ body.o_dmz {
 			bottom: 2em;
 			right: $padding-base-horizontal;
 		}		
+		/* Remove to much color form login screen */
+		.o_form .o_desc {
+		    margin: 0 0 30px 0;
+		    padding: 0;
+		    border-left: 0;
+		    background-color: transparent;
+		}
 	}
 	.o_login_register {
 		display: block;
