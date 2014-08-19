@@ -25,16 +25,17 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.extensions.ExtManager;
 import org.olat.core.extensions.Extension;
 import org.olat.core.extensions.ExtensionElement;
 import org.olat.core.extensions.action.GenericActionExtension;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.home.HomeMainController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -42,7 +43,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserToolsModule extends AbstractOLATModule {
+@Service("userToolsModule")
+public class UserToolsModule extends AbstractSpringModule {
 	
 	private static final String CONFIG_USER_TOOLS = "availableUserTools";
 	private static final String CONFIG_PRESET_USERTOOLES = "presetUserTools";
@@ -52,6 +54,11 @@ public class UserToolsModule extends AbstractOLATModule {
 	
 	@Autowired
 	private ExtManager extManager;
+	
+	@Autowired
+	public UserToolsModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
+	}
 
 	@Override
 	public void init() {
@@ -65,20 +72,10 @@ public class UserToolsModule extends AbstractOLATModule {
 			defaultPresetOfUserTools = presetToolsObj;
 		}
 	}
-	
-	@Override
-	protected void initDefaultProperties() {
-		//
-	}
 
 	@Override
 	protected void initFromChangedProperties() {
 		init();
-	}
-
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
 	}
 	
 	public List<UserTool> getAllUserTools(UserRequest ureq) {
@@ -127,6 +124,17 @@ public class UserToolsModule extends AbstractOLATModule {
 	
 	public String getDefaultPresetOfUserTools() {
 		return defaultPresetOfUserTools;
+	}
+	
+	public Set<String> getDefaultPresetOfUserToolSet() {
+		Set<String> toolSet = new HashSet<>();
+		if(StringHelper.containsNonWhitespace(defaultPresetOfUserTools)) {
+			String[] tools = defaultPresetOfUserTools.split(",");
+			for(String tool:tools) {
+				toolSet.add(tool);
+			}
+		}
+		return toolSet;
 	}
 	
 	public void setDefaultPresetOfUserTools(String preset) {

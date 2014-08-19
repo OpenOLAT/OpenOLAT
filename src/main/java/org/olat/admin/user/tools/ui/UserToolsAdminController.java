@@ -77,15 +77,17 @@ public class UserToolsAdminController extends FormBasicController {
 		availableEl = uifactory.addCheckboxesVertical("available.tools", "available.tools", formLayout, toolKeys, toolValues, 1);
 		availableEl.addActionListener(FormEvent.ONCHANGE);
 		
-		if(!userToolsModule.isUserToolsDisabled()) {
-			Set<String> aToolSet = userToolsModule.getAvailableUserToolSet();
-			if(aToolSet.isEmpty()) {
+		if(userToolsModule.isUserToolsDisabled()) {
+			availableEl.setEnabled(false);
+		} else {
+			Set<String> tools = userToolsModule.getAvailableUserToolSet();
+			if(tools.isEmpty()) {
 				for(String toolKey:toolKeys) {
 					availableEl.select(toolKey, true);
 				}
 			} else {
 				for(String toolKey:toolKeys) {
-					if(aToolSet.contains(toolKey)) {
+					if(tools.contains(toolKey)) {
 						availableEl.select(toolKey, true);
 					}
 				}
@@ -94,6 +96,20 @@ public class UserToolsAdminController extends FormBasicController {
 
 		presetEl = uifactory.addCheckboxesVertical("preset.tools", "preset.tools", formLayout, toolKeys, toolValues, 1);
 		presetEl.addActionListener(FormEvent.ONCHANGE);
+		
+		if(userToolsModule.isUserToolsDisabled()) {
+			presetEl.setEnabled(false);
+		} else {
+			Set<String> tools = userToolsModule.getDefaultPresetOfUserToolSet();
+			if(tools.size() > 0) {
+				for(String toolKey:toolKeys) {
+					if(tools.contains(toolKey)) {
+						presetEl.select(toolKey, true);
+					}
+				}
+			}
+		}
+		
 	}
 	
 	@Override
