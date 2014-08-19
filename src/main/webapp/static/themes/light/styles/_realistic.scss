@@ -15,6 +15,11 @@
 	@include btn-styles($o-button-dirty-bg);
 }
 
+/* remove text-shadow, barely readable because of small font */
+.o_login_providers .btn-default {
+	text-shadow: none;
+}
+
 
 /* Top navbar */
 .o_navbar.o_navbar-default {
