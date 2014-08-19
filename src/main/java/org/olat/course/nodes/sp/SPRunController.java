@@ -44,6 +44,7 @@ import org.olat.core.gui.control.generic.clone.CloneLayoutControllerCreatorCallb
 import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -56,7 +57,9 @@ import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryManager;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -88,6 +91,9 @@ public class SPRunController extends BasicController {
 	
 	private static final String[] EDITABLE_TYPES = new String[] { "html", "htm", "xml", "xhtml" };
 
+	@Autowired
+	private RepositoryManager repositoryManager;
+	
 	/**
 	 * Constructor for single page run controller 
 	 * @param wControl
@@ -109,9 +115,7 @@ public class SPRunController extends BasicController {
 		if (fileName == null) throw new AssertException("bad configuration at lauchtime: fileName cannot be null in SinglePage!");
 		this.courseFolderContainer = courseFolderContainer;
 		
-		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		hasEditRights = isFileTypeEditable(fileName)
-				&& (cgm.isIdentityCourseAdministrator(ureq.getIdentity()) || cgm.hasRight(ureq.getIdentity(), CourseRights.RIGHT_COURSEEDITOR));
+		hasEditRights = hasEditRights(ureq);
 
 		if (hasEditRights) {
 			linkTreeModel = new CourseInternalLinkTreeModel(userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode());
@@ -121,6 +125,24 @@ public class SPRunController extends BasicController {
 		main = new Panel("sprunmain");
 		doInlineIntegration(ureq, hasEditRights);		
 		putInitialPanel(main);
+	}
+	
+	private boolean hasEditRights(UserRequest ureq) {
+		if(isFileTypeEditable(fileName)) {
+			Roles roles = ureq.getUserSession().getRoles();
+			if(roles.isOLATAdmin()) {
+				return true;
+			}
+
+			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+			if(roles.isInstitutionalResourceManager() &&
+				repositoryManager.isInstitutionalRessourceManagerFor(getIdentity(), roles, cgm.getCourseEntry())) {
+				return true;
+			}
+			return cgm.isIdentityCourseAdministrator(getIdentity())
+					|| cgm.hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR);
+		}
+		return false;
 	}
 	
 	private boolean isFileTypeEditable(String filename) {
@@ -176,9 +198,8 @@ public class SPRunController extends BasicController {
 
 		// create clone wrapper layout
 		CloneLayoutControllerCreatorCallback clccc = new CloneLayoutControllerCreatorCallback() {
-			public ControllerCreator createLayoutControllerCreator(UserRequest ureq, final ControllerCreator contentControllerCreator) {
-				return BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, new ControllerCreator() {
-					@SuppressWarnings("synthetic-access")
+			public ControllerCreator createLayoutControllerCreator(UserRequest uureq, final ControllerCreator contentControllerCreator) {
+				return BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(uureq, new ControllerCreator() {
 					public Controller createController(UserRequest lureq, WindowControl lwControl) {
 						// Wrap in column layout, popup window needs a layout controller
 						Controller ctr = contentControllerCreator.createController(lureq, lwControl);
