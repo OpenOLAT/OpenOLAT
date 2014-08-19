@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
@@ -42,7 +41,6 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
@@ -60,6 +58,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.author.AuthoringEditAccessController;
 import org.olat.repository.ui.author.CatalogSettingsController;
 import org.olat.repository.ui.author.RepositoryEditDescriptionController;
@@ -103,8 +102,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected final boolean isOlatAdmin;
 	protected final boolean isGuestOnly;
-	protected final boolean isInstitutionalResourceManager;
-	protected final boolean isAuthor;
 	
 	protected boolean isOwner;
 	protected boolean isEntryAdmin;
@@ -131,12 +128,12 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private RepositoryHandlerFactory handlerFactory;
 	
 	public RepositoryEntryRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
-			RuntimeControllerCreator runtimeControllerCreator) {
-		this(ureq, wControl, re, runtimeControllerCreator, true, true);
+			RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
+		this(ureq, wControl, re, reSecurity, runtimeControllerCreator, true, true);
 	}
 
 	public RepositoryEntryRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
-			RuntimeControllerCreator runtimeControllerCreator, boolean allowBookmark, boolean showInfos) {
+			RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator, boolean allowBookmark, boolean showInfos) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		
@@ -166,21 +163,19 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		
 		handler = handlerFactory.getRepositoryHandler(re);
 
-		Identity identity = getIdentity();
 		roles = ureq.getUserSession().getRoles();
 		isOlatAdmin = roles.isOLATAdmin();
-		isInstitutionalResourceManager = !roles.isGuestOnly()
-					&& RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, re);
-		isAuthor = isOlatAdmin || roles.isAuthor() || isInstitutionalResourceManager;
 		isGuestOnly = roles.isGuestOnly();
+		isOwner = reSecurity.isOwner();
+		isEntryAdmin = reSecurity.isEntryAdmin();
 
 		// set up the components
 		toolbarPanel = new TooledStackedPanel("courseStackPanel", getTranslator(), this);
 		toolbarPanel.setInvisibleCrumb(0); // show root (course) level
 		toolbarPanel.setShowCloseLink(true, true);
 		putInitialPanel(toolbarPanel);
-		doRun(ureq);
-		loadRights();
+		doRun(ureq, reSecurity);
+		loadRights(reSecurity);
 		initToolbar();
 	}
 	
@@ -191,9 +186,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	/**
 	 * If override, need to set isOwner and isEntryAdmin
 	 */
-	protected void loadRights() {
-		isOwner = repositoryService.hasRole(getIdentity(), re, GroupRoles.owner.name());
-		isEntryAdmin = isOlatAdmin | isOwner | isInstitutionalResourceManager;
+	protected void loadRights(RepositoryEntrySecurity reSecurity) {
+		isOwner = reSecurity.isOwner();
+		isEntryAdmin = reSecurity.isEntryAdmin();
 	}
 	
 	protected RepositoryEntry getRepositoryEntry() {
@@ -375,7 +370,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == accessController) {
 			if(event.equals(AccessEvent.ACCESS_OK_EVENT)) {
-				launchContent(ureq);
+				RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, getRepositoryEntry());
+				launchContent(ureq, reSecurity);
 				cleanUp();
 			} else if(event.equals(AccessEvent.ACCESS_FAILED_EVENT)) {
 				String msg = ((AccessEvent)event).getMessage();
@@ -517,17 +513,17 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		currentToolCtr = ordersCtlr;
 	}
 	
-	private void doRun(UserRequest ureq) {
+	private void doRun(UserRequest ureq, RepositoryEntrySecurity reSecurity) {
 		if(ureq.getUserSession().getRoles().isOLATAdmin()) {
-			launchContent(ureq);
+			launchContent(ureq, reSecurity);
 		} else {
 			// guest are allowed to see resource with BARG 
 			if(re.getAccess() == RepositoryEntry.ACC_USERS_GUESTS && ureq.getUserSession().getRoles().isGuestOnly()) {
-				launchContent(ureq);
+				launchContent(ureq, reSecurity);
 			} else {
 				AccessResult acResult = acService.isAccessible(re, getIdentity(), false);
 				if(acResult.isAccessible()) {
-					launchContent(ureq);
+					launchContent(ureq, reSecurity);
 				} else if (re != null && acResult.getAvailableMethods().size() > 0) {
 					accessController = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods());
 					listenTo(accessController);
@@ -553,8 +549,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 	}
 	
-	protected void launchContent(UserRequest ureq) {
-		if(repositoryManager.isAllowedToLaunch(getIdentity(), roles, getRepositoryEntry())) {
+	protected void launchContent(UserRequest ureq, RepositoryEntrySecurity reSecurity) {
+		if(reSecurity.canLaunch()) {
 			runtimeController = runtimeControllerCreator.create(ureq, getWindowControl(), toolbarPanel, re);
 			listenTo(runtimeController);
 			toolbarPanel.rootController(re.getDisplayname(), runtimeController);

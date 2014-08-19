@@ -46,6 +46,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.model.RepositoryEntrySecurity;
 
 /**
  * <h3>Description:</h3>
@@ -94,7 +95,8 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 	private Controller createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		if (re == null) return null;
 		RepositoryManager rm = RepositoryManager.getInstance();
-		if (!rm.isAllowedToLaunch(ureq, re)) {
+		RepositoryEntrySecurity reSecurity = rm.isAllowed(ureq, re);
+		if (!reSecurity.canLaunch()) {
 			Translator trans = Util.createPackageTranslator(RepositoryService.class, ureq.getLocale());
 			String text = trans.translate("launch.noaccess");
 			Controller c = MessageUIFactory.createInfoMessage(ureq, wControl, null, text);
@@ -119,7 +121,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 			bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);
 		}
 		
-		MainLayoutController ctrl = handler.createLaunchController(re, ureq, bwControl);
+		MainLayoutController ctrl = handler.createLaunchController(re, reSecurity, ureq, bwControl);
 		if (ctrl == null) {
 			throw new AssertException("could not create controller for repositoryEntry "+re); 
 		}

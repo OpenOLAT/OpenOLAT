@@ -97,6 +97,7 @@ import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -145,9 +146,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private EfficiencyStatementManager efficiencyStatementManager;
 	
 	public CourseRuntimeController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry re, RuntimeControllerCreator runtimeControllerCreator,
+			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator,
 			boolean offerBookmark, boolean showCourseConfigLink) {
-		super(ureq, wControl, re, runtimeControllerCreator, offerBookmark, showCourseConfigLink);
+		super(ureq, wControl, re, reSecurity, runtimeControllerCreator, offerBookmark, showCourseConfigLink);
 		
 		ICourse course = CourseFactory.loadCourse(getOlatResourceable());
 
@@ -179,16 +180,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 
 	@Override
-	protected void loadRights() {
+	protected void loadRights(RepositoryEntrySecurity reSecurity) {
+		super.loadRights(reSecurity);
+		
 		ICourse course = CourseFactory.loadCourse(getOlatResourceable());
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		// 1) course admins: users who are in repository entry owner group
-		// if user has the role InstitutionalResourceManager and has the same institution like author
-		// then set isCourseAdmin true
-		isOwner = cgm.isIdentityCourseAdministrator(getIdentity());
-		isEntryAdmin = isEntryAdmin | isOwner;
-		// 2) course coaches: users who are in the owner group of any group of this
-		// course
 		isCourseCoach = cgm.isIdentityCourseCoach(getIdentity());
 		// 3) all other rights are defined in the groupmanagement using the learning
 		// group rights
@@ -970,8 +966,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 	
 	@Override
-	protected void launchContent(UserRequest ureq) {
-		super.launchContent(ureq);
+	protected void launchContent(UserRequest ureq, RepositoryEntrySecurity reSecurity) {
+		super.launchContent(ureq, reSecurity);
 		if(getRunMainController() != null) {
 			addCustomCSS(ureq);
 			getRunMainController().initToolbar();
@@ -1161,7 +1157,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		// was adding or removing of the user
 		if (bgme.wasMyselfAdded(identity) || bgme.wasMyselfRemoved(identity)) {
 			reloadGroupMemberships();
-			loadRights();
+			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(getIdentity(), roles, getRepositoryEntry());
+			loadRights(reSecurity);
 			initToolbar();
 		} else if (bgme.getCommand().equals(BusinessGroupModifiedEvent.GROUPRIGHTS_MODIFIED_EVENT)) {
 			// check if this affects a right group where the user does participate.
@@ -1171,7 +1168,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					PersistenceHelper.listContainsObjectByKey(uce.getCoachedGroups(), bgme.getModifiedGroupKey()))) {
 
 				reloadGroupMemberships();
-				loadRights();
+				RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(getIdentity(), roles, getRepositoryEntry());
+				loadRights(reSecurity);
 				initToolbar();
 			}
 		}
@@ -1195,12 +1193,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			//author is not affected
 		} else {
 			loadRepositoryEntry();
-			boolean canView = repositoryManager.isAllowedToLaunch(getIdentity(), roles, getRepositoryEntry());
-			if(canView) {
-				loadRights();
+			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(getIdentity(), roles, getRepositoryEntry());
+			if(reSecurity.canLaunch()) {
+				loadRights(reSecurity);
 			} else {
 				doDisposeAfterEvent();
-				loadRights();
+				loadRights(reSecurity);
 				initToolbar();
 			}
 		}

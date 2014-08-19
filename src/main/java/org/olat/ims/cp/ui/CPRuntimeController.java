@@ -36,6 +36,7 @@ import org.olat.core.util.vfs.QuotaManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.cp.CPManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,8 +58,9 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 	@Autowired
 	private QuotaManager quotaManager;
 	
-	public CPRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re, RuntimeControllerCreator runtimeControllerCreator) {
-		super(ureq, wControl, re, runtimeControllerCreator);
+	public CPRuntimeController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
+		super(ureq, wControl, re, reSecurity, runtimeControllerCreator);
 	}
 
 	@Override

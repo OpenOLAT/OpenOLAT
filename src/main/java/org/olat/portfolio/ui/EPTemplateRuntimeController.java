@@ -22,13 +22,13 @@ package org.olat.portfolio.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.RootEvent;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.portfolio.ui.structel.EPMapViewController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 
 /**
@@ -40,11 +40,10 @@ import org.olat.repository.ui.RepositoryEntryRuntimeController;
  *
  */
 public class EPTemplateRuntimeController extends RepositoryEntryRuntimeController {
-	
-	private Link editLink;
-	
-	public EPTemplateRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re, RuntimeControllerCreator runtimeControllerCreator) {
-		super(ureq, wControl, re, runtimeControllerCreator);
+
+	public EPTemplateRuntimeController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
+		super(ureq, wControl, re, reSecurity, runtimeControllerCreator);
 	}
 
 	@Override

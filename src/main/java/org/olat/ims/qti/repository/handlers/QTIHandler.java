@@ -51,6 +51,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.FileHandler;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.ReferenceManager;
@@ -124,7 +125,7 @@ public abstract class QTIHandler extends FileHandler {
 	}
 
 	@Override
-	public abstract MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl);
+	public abstract MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl);
 
 	@Override
 	public boolean readyToDelete(OLATResourceable res, Identity identity, Roles roles, Locale locale, ErrorList errors) {

@@ -28,6 +28,7 @@ import org.olat.core.gui.control.VetoableCloseController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 
 /**
@@ -42,8 +43,9 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 	
 	private Delayed delayedClose;
 	
-	public QTIRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re, RuntimeControllerCreator runtimeControllerCreator) {
-		super(ureq, wControl, re, runtimeControllerCreator);
+	public QTIRuntimeController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
+		super(ureq, wControl, re, reSecurity, runtimeControllerCreator);
 	}
 	
 	/**

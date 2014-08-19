@@ -66,6 +66,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -171,15 +172,15 @@ public class GlossaryHandler implements RepositoryHandler {
 	}
 
 	/**
-	 * @param res
-	 * @param initialViewIdentifier
 	 * @param ureq
 	 * @param wControl
+	 * @param res
+	 * @param initialViewIdentifier
 	 * @return Controller
 	 */
 	@Override
-	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
-		return new GlossaryRuntimeController(ureq, wControl, re, 
+	public MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
+		return new GlossaryRuntimeController(ureq, wControl, re, reSecurity,
 			new RuntimeControllerCreator() {
 				@Override
 				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry) {

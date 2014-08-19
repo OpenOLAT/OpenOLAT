@@ -32,6 +32,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -50,8 +51,9 @@ public class FeedRuntimeController extends RepositoryEntryRuntimeController {
 	@Autowired
 	private QuotaManager quotaManager;
 	
-	public FeedRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re, RuntimeControllerCreator runtimeControllerCreator) {
-		super(ureq, wControl, re, runtimeControllerCreator);
+	public FeedRuntimeController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
+		super(ureq, wControl, re, reSecurity, runtimeControllerCreator);
 	}
 
 	@Override

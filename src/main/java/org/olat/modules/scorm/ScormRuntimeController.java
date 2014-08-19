@@ -33,6 +33,7 @@ import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationController;
 import org.olat.ims.cp.CPManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,8 +53,9 @@ public class ScormRuntimeController extends RepositoryEntryRuntimeController {
 	@Autowired
 	private CPManager cpManager;
 	
-	public ScormRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re, RuntimeControllerCreator runtimeControllerCreator) {
-		super(ureq, wControl, re, runtimeControllerCreator);
+	public ScormRuntimeController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
+		super(ureq, wControl, re, reSecurity, runtimeControllerCreator);
 	}
 
 	@Override

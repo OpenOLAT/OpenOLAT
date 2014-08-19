@@ -29,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.glossary.GlossaryEditSettingsController;
 import org.olat.modules.glossary.GlossaryRegisterSettingsController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 
 /**
@@ -41,8 +42,9 @@ public class GlossaryRuntimeController extends RepositoryEntryRuntimeController 
 	
 	private Link registerLink, permissionLink;
 	
-	public GlossaryRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re, RuntimeControllerCreator runtimeControllerCreator) {
-		super(ureq, wControl, re, runtimeControllerCreator);
+	public GlossaryRuntimeController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
+		super(ureq, wControl, re, reSecurity, runtimeControllerCreator);
 	}
 
 	@Override

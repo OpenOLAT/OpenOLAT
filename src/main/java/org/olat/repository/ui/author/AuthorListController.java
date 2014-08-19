@@ -84,6 +84,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
+import org.olat.course.CourseModule;
 import org.olat.course.run.RunMainController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -734,6 +735,8 @@ public class AuthorListController extends FormBasicController implements Activat
 			isOwner = isOlatAdmin || repositoryService.hasRole(ureq.getIdentity(), entry, GroupRoles.owner.name())
 						|| isInstitutionalResourceManager;
 			isAuthor = isOlatAdmin || roles.isAuthor() | isInstitutionalResourceManager;
+			
+			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(entry);
 
 			mainVC = createVelocityContainer("tools");
 			List<String> links = new ArrayList<>();
@@ -745,12 +748,30 @@ public class AuthorListController extends FormBasicController implements Activat
 				}
 				addLink("details.members", "members", "o_icon o_icon-fw o_icon_membersmanagement", links);
 			}
-			links.add("-");
+			
 			boolean copyManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.copy);
-			if ((isAuthor || isOwner) && !copyManaged) {
-				addLink("details.copy", "copy", "o_icon o_icon-fw o_icon_copy", links);
+			boolean canCopy = (isAuthor || isOwner) && (entry.getCanCopy() || isOwner) && !copyManaged;
+			
+			boolean canDownload = entry.getCanDownload() && handler.supportsDownload();
+			// disable download for courses if not author or owner
+			if (entry.getOlatResource().getResourceableTypeName().equals(CourseModule.getCourseTypeName()) && !(isOwner || isAuthor)) {
+				canDownload = false;
 			}
-			addLink("details.download", "download", "o_icon o_icon-fw o_icon_download", links);
+			// always enable download for owners
+			if (isOwner && handler.supportsDownload()) {
+				canDownload = true;
+			}
+			
+			if(canCopy || canDownload) {
+				links.add("-");
+				if (canCopy) {
+					addLink("details.copy", "copy", "o_icon o_icon-fw o_icon_copy", links);
+				}
+				if(canDownload) {
+					addLink("details.download", "download", "o_icon o_icon-fw o_icon_download", links);
+				}
+			}
+			
 			if(isOwner) {
 				boolean closeManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.close);
 				boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete);

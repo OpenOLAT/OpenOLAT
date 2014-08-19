@@ -45,6 +45,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 
 /**
@@ -104,10 +105,10 @@ public class CourseSite extends AbstractSiteInstance {
 		MainLayoutController c;
 		ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
 
-		// course-launch-state depending course-settings 
-		boolean isAllowedToLaunch = rm.isAllowedToLaunch(ureq, entry);
+		// course-launch-state depending course-settings
+		RepositoryEntrySecurity reSecurity = rm.isAllowed(ureq, entry);
+		boolean isAllowedToLaunch = reSecurity.canLaunch();
 		boolean hasAccess = false;
-		
 		if (isAllowedToLaunch) {
 			// either check with securityCallback or use access-settings from course-nodes
 			if (siteSecCallback != null) {
@@ -123,12 +124,13 @@ public class CourseSite extends AbstractSiteInstance {
 			}
 		}
 		
+		
 		// load course (admins always see content) or alternative controller if course is not launchable
 		if (hasAccess || ureq.getUserSession().getRoles().isOLATAdmin()) {
 			rs.incrementLaunchCounter(entry); 
 			// build up the context path for linked course
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, entry, new StateSite(this), wControl, true);	
-			CourseRuntimeController runCtr = new CourseRuntimeController(ureq, bwControl, entry,
+			CourseRuntimeController runCtr = new CourseRuntimeController(ureq, bwControl, entry, reSecurity,
 				new RuntimeControllerCreator() {
 					@Override
 					public Controller create(UserRequest uureq, WindowControl wwControl,

@@ -52,6 +52,7 @@ import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.repository.handlers.EditionSupport;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.references.ReferenceImpl;
@@ -131,14 +132,14 @@ public class QTITestHandler extends QTIHandler {
 	}
 	
 	/**
-	 * @param res
 	 * @param ureq
 	 * @param wControl
+	 * @param res
 	 * @return Controller
 	 */
 	@Override
-	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
-		return new QTIRuntimeController(ureq, wControl, re, 
+	public MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
+		return new QTIRuntimeController(ureq, wControl, re, reSecurity,
 			new RuntimeControllerCreator() {
 				@Override
 				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry) {

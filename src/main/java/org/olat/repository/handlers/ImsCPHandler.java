@@ -67,6 +67,7 @@ import org.olat.modules.cp.CPOfflineReadableManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -181,7 +182,7 @@ public class ImsCPHandler extends FileHandler {
 	}
 
 	@Override
-	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
+	public MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
 		OLATResource res = re.getOlatResource();
 		File cpRoot = FileResourceManager.getInstance().unzipFileResource(res);
 		final LocalFolderImpl vfsWrapper = new LocalFolderImpl(cpRoot);
@@ -212,7 +213,7 @@ public class ImsCPHandler extends FileHandler {
 		}
 		*/
 		
-		CPRuntimeController runtime = new CPRuntimeController(ureq, wControl, re,
+		CPRuntimeController runtime = new CPRuntimeController(ureq, wControl, re, reSecurity,
 				new RuntimeControllerCreator() {
 					@Override
 					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry) {

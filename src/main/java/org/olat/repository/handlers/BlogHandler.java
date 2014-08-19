@@ -56,6 +56,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -165,7 +166,7 @@ public class BlogHandler implements RepositoryHandler {
 
 	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl control, TooledStackedPanel panel) {
-		return createLaunchController(re, ureq, control);
+		return null;
 	}
 
 	/**
@@ -174,12 +175,12 @@ public class BlogHandler implements RepositoryHandler {
 	 *      org.olat.core.gui.control.WindowControl)
 	 */
 	@Override
-	public MainLayoutController createLaunchController(final RepositoryEntry re, UserRequest ureq,
-			WindowControl wControl) {
+	public MainLayoutController createLaunchController(final RepositoryEntry re, RepositoryEntrySecurity reSecurity,
+			UserRequest ureq, WindowControl wControl) {
 		boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ureq.getIdentity(), re);	
 		final FeedSecurityCallback callback = new FeedResourceSecurityCallback(isAdmin, isOwner);
-		return new FeedRuntimeController(ureq, wControl, re, 
+		return new FeedRuntimeController(ureq, wControl, re, reSecurity,
 				new RuntimeControllerCreator() {
 					@Override
 					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry) {

@@ -77,6 +77,7 @@ import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.model.RepositoryEntryShortImpl;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
@@ -468,6 +469,10 @@ public class RepositoryManager extends BasicManager {
 	public boolean isAllowedToLaunch(UserRequest ureq, RepositoryEntry re) {
 		return isAllowedToLaunch(ureq.getIdentity(), ureq.getUserSession().getRoles(), re);
 	}
+	
+	public RepositoryEntrySecurity isAllowed(UserRequest ureq, RepositoryEntry re) {
+		return isAllowed(ureq.getIdentity(), ureq.getUserSession().getRoles(), re);
+	}
 
 	/**
 	 * Test a repo entry if identity is allowed to launch.
@@ -501,6 +506,48 @@ public class RepositoryManager extends BasicManager {
 		}
 		
 		return false;
+	}
+	
+	public RepositoryEntrySecurity isAllowed(Identity identity, Roles roles, RepositoryEntry re) {
+		boolean isOwner = false;
+		boolean isEntryAdmin = false;
+		boolean canLaunch = false;
+		
+		if (roles.isGuestOnly()) {
+			if (re.getAccess() >= RepositoryEntry.ACC_USERS_GUESTS) {
+				// allow for guests if access granted for guests
+				canLaunch = true;
+			}
+		} else {
+			// allow if identity is owner
+			if (repositoryEntryRelationDao.hasRole(identity, re, GroupRoles.owner.name())) {
+				canLaunch = true;
+				isOwner = true;
+				isEntryAdmin = true;
+			}
+			// allow if access limit matches identity's role
+			// allow for olat administrators
+			else if (roles.isOLATAdmin()) {
+				canLaunch = true;
+				isEntryAdmin = true;
+			}
+			// allow for institutional resource manager
+			else if (isInstitutionalRessourceManagerFor(identity, roles, re)) {
+				canLaunch = true;
+				isEntryAdmin = true;
+			}
+			if (roles.isAuthor() && re.getAccess() >= RepositoryEntry.ACC_OWNERS_AUTHORS) {
+				// allow for authors if access granted at least for authors
+				canLaunch = true;
+			} else if(re.getAccess() >= RepositoryEntry.ACC_USERS) {
+				// allow if access granted for users
+				canLaunch = true;
+			} else if (re.getAccess() == RepositoryEntry.ACC_OWNERS && re.isMembersOnly()) {
+				canLaunch = repositoryEntryRelationDao.isMember(identity, re);
+			}
+		}
+		
+		return new RepositoryEntrySecurity(isEntryAdmin, isOwner, canLaunch);
 	}
 
 	private RepositoryEntry loadForUpdate(RepositoryEntry re) {

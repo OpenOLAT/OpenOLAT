@@ -44,6 +44,7 @@ import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.repository.model.RepositoryEntrySecurity;
 
 
 /**
@@ -135,13 +136,14 @@ public interface RepositoryHandler {
 
 	/**
 	 * Called if a user launches a Resourceable that this handler can handle.
-	 * @param res
-	 * @param initialViewIdentifier if null the default view will be started, otherwise a controllerfactory type dependant view will be activated (subscription subtype)
+	 * @param reSecurity TODO
 	 * @param ureq
 	 * @param wControl
+	 * @param res
+	 * @param initialViewIdentifier if null the default view will be started, otherwise a controllerfactory type dependant view will be activated (subscription subtype)
 	 * @return Controller able to launch resourceable.
 	 */
-	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl);
+	public MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl);
 	
 	/**
 	 * Called if a user wants to edit a Resourceable that this handler can provide an editor for. 
