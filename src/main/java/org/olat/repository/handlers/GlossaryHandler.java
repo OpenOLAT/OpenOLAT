@@ -182,7 +182,7 @@ public class GlossaryHandler implements RepositoryHandler {
 		return new GlossaryRuntimeController(ureq, wControl, re, 
 			new RuntimeControllerCreator() {
 				@Override
-				public Controller create(UserRequest uureq, WindowControl wwControl, RepositoryEntry entry) {
+				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry) {
 					VFSContainer glossaryFolder = GlossaryManager.getInstance().getGlossaryRootFolder(entry.getOlatResource());
 
 					RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);

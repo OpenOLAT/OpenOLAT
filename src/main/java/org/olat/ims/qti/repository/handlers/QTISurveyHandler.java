@@ -141,7 +141,7 @@ public class QTISurveyHandler extends QTIHandler {
 		return new QTIRuntimeController(ureq, wControl, re, 
 			new RuntimeControllerCreator() {
 				@Override
-				public Controller create(UserRequest uureq, WindowControl wwControl, RepositoryEntry entry) {
+				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry) {
 					Controller runController;
 					OLATResource res = entry.getOlatResource();
 					if (OnyxModule.isOnyxTest(res)) {

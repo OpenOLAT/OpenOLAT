@@ -86,10 +86,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private final RuntimeControllerCreator runtimeControllerCreator;
 	
 	protected Controller editorCtrl;
-	private Controller accessController;
+	protected Controller currentToolCtr;
+	protected Controller accessController;
 	private OrdersAdminController ordersCtlr;
 	private CatalogSettingsController catalogCtlr;
-	private AuthoringEditAccessController accessCtrl;
+	protected AuthoringEditAccessController accessCtrl;
 	private RepositoryEntryDetailsController detailsCtrl;
 	private RepositoryMembersController membersEditController;
 	private RepositoryEditDescriptionController descriptionCtrl;
@@ -112,16 +113,18 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected final boolean showInfos;
 	protected final boolean allowBookmark;
 	
-	private boolean corrupted;
+	protected boolean corrupted;
 	private RepositoryEntry re;
 	private final RepositoryHandler handler;
 	
 	private String launchedFromBusinessPath;
 	
 	@Autowired
-	private ACService acService;
+	protected ACService acService;
 	@Autowired
 	protected MarkManager markManager;
+	@Autowired
+	protected RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -138,29 +141,38 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		
 		//! check corrupted
-		
-		UserSession session = ureq.getUserSession();
-		if(session != null &&  session.getHistoryStack() != null && session.getHistoryStack().size() >= 2) {
-			// Set previous business path as back link for this course - brings user back to place from which he launched the course
-			List<HistoryPoint> stack = session.getHistoryStack();
-			HistoryPoint point = stack.get(stack.size() - 2);
-			launchedFromBusinessPath = point.getBusinessPath();
-		}
+		corrupted = isCorrupted(re);
 		
 		this.re = re;
 		this.showInfos = showInfos;
 		this.allowBookmark = allowBookmark;
 		this.runtimeControllerCreator = runtimeControllerCreator;
-		handler = handlerFactory.getRepositoryHandler(re);
 		
+		UserSession session = ureq.getUserSession();
+		if(session != null &&  session.getHistoryStack() != null && session.getHistoryStack().size() >= 2) {
+			// Set previous business path as back link for this course - brings user back to place from which he launched the course
+			List<HistoryPoint> stack = session.getHistoryStack();
+			for(int i=stack.size() - 2; i-->0; ) {
+				HistoryPoint point = stack.get(stack.size() - 2);
+				if(point.getEntries().size() > 0) {
+					OLATResourceable ores = point.getEntries().get(0).getOLATResourceable();
+					if(!OresHelper.equals(re, ores) && !OresHelper.equals(re.getOlatResource(), ores)) {
+						launchedFromBusinessPath = point.getBusinessPath();
+						break;
+					}
+				}
+			}
+		}
+		
+		handler = handlerFactory.getRepositoryHandler(re);
+
 		Identity identity = getIdentity();
 		roles = ureq.getUserSession().getRoles();
 		isOlatAdmin = roles.isOLATAdmin();
 		isInstitutionalResourceManager = !roles.isGuestOnly()
 					&& RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, re);
-		isAuthor = isOlatAdmin | roles.isAuthor() | isInstitutionalResourceManager;
+		isAuthor = isOlatAdmin || roles.isAuthor() || isInstitutionalResourceManager;
 		isGuestOnly = roles.isGuestOnly();
-		loadRights();
 
 		// set up the components
 		toolbarPanel = new TooledStackedPanel("courseStackPanel", getTranslator(), this);
@@ -168,8 +180,14 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		toolbarPanel.setShowCloseLink(true, true);
 		putInitialPanel(toolbarPanel);
 		doRun(ureq);
+		loadRights();
 		initToolbar();
 	}
+	
+	protected boolean isCorrupted(RepositoryEntry entry) {
+		return entry != null;
+	}
+	
 	/**
 	 * If override, need to set isOwner and isEntryAdmin
 	 */
@@ -182,11 +200,19 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		return re;
 	}
 	
+	protected void loadRepositoryEntry() {
+		re = repositoryService.loadByKey(re.getKey());
+	}
+	
+	protected OLATResourceable getOlatResourceable() {
+		return OresHelper.clone(re.getOlatResource());
+	}
+	
 	protected Controller getRuntimeController() {
 		return runtimeController;
 	}
 
-	private void initToolbar() {
+	protected final void initToolbar() {
 		tools = new Dropdown("toolbox.tools", "toolbox.tools", false, getTranslator());
 		tools.setElementCssClass("o_sel_repository_tools");
 		tools.setIconCSS("o_icon o_icon_tools");
@@ -294,7 +320,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 	}
 	
-	private List<ContextEntry> removeRepositoryEntry(List<ContextEntry> entries) {
+	protected List<ContextEntry> removeRepositoryEntry(List<ContextEntry> entries) {
 		if(entries != null && entries.size() > 0) {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("RepositoryEntry".equals(type)) {
@@ -367,7 +393,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		return this;
 	}
 	
-	protected RepositoryEntryRuntimeController cleanUp() {
+	protected void cleanUp() {
 		removeAsListenerAndDispose(membersEditController);
 		removeAsListenerAndDispose(accessController);
 		removeAsListenerAndDispose(descriptionCtrl);
@@ -382,7 +408,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		detailsCtrl = null;
 		editorCtrl = null;
 		ordersCtlr = null;
-		return this;
 	}
 	
 	/**
@@ -391,9 +416,10 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	 * @param name
 	 * @param controller
 	 */
-	protected void pushController(UserRequest ureq, String name, Controller controller) {
+	protected <T extends Controller> T pushController(UserRequest ureq, String name, T controller) {
 		popToRoot(ureq).cleanUp();
 		toolbarPanel.pushController(name, controller);
+		return controller;
 	}
 	
 	/**
@@ -401,10 +427,10 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	 * @param ureq
 	 */
 	protected void doAccess(UserRequest ureq) {
-		popToRoot(ureq).cleanUp();
-		accessCtrl = new AuthoringEditAccessController(ureq, getWindowControl(), re);
-		listenTo(accessCtrl);
-		toolbarPanel.pushController(translate("tab.accesscontrol"), accessCtrl);
+		AuthoringEditAccessController ctrl = new AuthoringEditAccessController(ureq, getWindowControl(), re);
+		listenTo(ctrl);
+		accessCtrl = pushController(ureq, translate("tab.accesscontrol"), ctrl);
+		currentToolCtr = accessCtrl;
 	}
 	
 	protected void doClose(UserRequest ureq) {
@@ -431,17 +457,18 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected void doEdit(UserRequest ureq) {
 		if(!isEntryAdmin) return;
-		popToRoot(ureq).cleanUp();
-		editorCtrl = handler.createEditorController(re, ureq, getWindowControl(), toolbarPanel);
-		listenTo(editorCtrl);
-		toolbarPanel.pushController(translate("resource.editor"), editorCtrl);
+		
+		Controller ctrl = handler.createEditorController(re, ureq, getWindowControl(), toolbarPanel);
+		listenTo(ctrl);
+		editorCtrl = pushController(ureq, translate("resource.editor"), ctrl);
+		currentToolCtr = editorCtrl;
 	}
 	
 	protected void doDetails(UserRequest ureq) {
-		popToRoot(ureq).cleanUp();
-		detailsCtrl = new  RepositoryEntryDetailsController(ureq, getWindowControl(), re);
-		listenTo(detailsCtrl);
-		toolbarPanel.pushController(translate("details.header"), detailsCtrl);
+		RepositoryEntryDetailsController ctrl = new RepositoryEntryDetailsController(ureq, getWindowControl(), re);
+		listenTo(ctrl);
+		detailsCtrl = pushController(ureq, translate("details.header"), ctrl);
+		currentToolCtr = detailsCtrl;
 	}
 	
 	/**
@@ -450,10 +477,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	 */
 	protected void doEditSettings(UserRequest ureq) {
 		if(!isEntryAdmin) return;
-		popToRoot(ureq).cleanUp();
-		descriptionCtrl = new RepositoryEditDescriptionController(ureq, getWindowControl(), re, false);
-		listenTo(descriptionCtrl);
-		toolbarPanel.pushController(translate("settings.editor"), descriptionCtrl);
+		
+		RepositoryEditDescriptionController ctrl = new RepositoryEditDescriptionController(ureq, getWindowControl(), re, false);
+		listenTo(ctrl);
+		descriptionCtrl = pushController(ureq, translate("settings.editor"), ctrl);
+		currentToolCtr = descriptionCtrl;
 	}
 	
 	/**
@@ -462,26 +490,31 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	 */
 	protected void doCatalog(UserRequest ureq) {
 		if(!isEntryAdmin) return;
+		
 		popToRoot(ureq).cleanUp();
 		catalogCtlr = new CatalogSettingsController(ureq, getWindowControl(), toolbarPanel, re);
 		listenTo(catalogCtlr);
 		catalogCtlr.initToolbar();
+		currentToolCtr = catalogCtlr;
 	}
 	
-	protected void doMembers(UserRequest ureq) {
-		if(!isEntryAdmin) return;
-		popToRoot(ureq).cleanUp();
-		membersEditController = new RepositoryMembersController(ureq, getWindowControl(), re);
-		listenTo(membersEditController);
-		toolbarPanel.pushController(translate("details.members"), membersEditController);
+	protected Activateable2 doMembers(UserRequest ureq) {
+		if(!isEntryAdmin) return null;
+
+		RepositoryMembersController ctrl = new RepositoryMembersController(ureq, getWindowControl(), re);
+		listenTo(ctrl);
+		membersEditController = pushController(ureq, translate("details.members"), ctrl);
+		currentToolCtr = membersEditController;
+		return membersEditController;
 	}
 	
 	protected void doOrders(UserRequest ureq) {
 		if(!isEntryAdmin) return;
-		popToRoot(ureq).cleanUp();
-		ordersCtlr = new OrdersAdminController(ureq, getWindowControl(), re.getOlatResource());
-		listenTo(ordersCtlr);
-		toolbarPanel.pushController(translate("details.orders"), ordersCtlr);
+
+		OrdersAdminController ctrl = new OrdersAdminController(ureq, getWindowControl(), re.getOlatResource());
+		listenTo(ctrl);
+		ordersCtlr = pushController(ureq, translate("details.orders"), ctrl);
+		currentToolCtr = ordersCtlr;
 	}
 	
 	private void doRun(UserRequest ureq) {
@@ -520,14 +553,21 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 	}
 	
-	private void launchContent(UserRequest ureq) {
-		runtimeController = runtimeControllerCreator.create(ureq, getWindowControl(), re);
-		toolbarPanel.rootController(re.getDisplayname(), runtimeController);
+	protected void launchContent(UserRequest ureq) {
+		if(repositoryManager.isAllowedToLaunch(getIdentity(), roles, getRepositoryEntry())) {
+			runtimeController = runtimeControllerCreator.create(ureq, getWindowControl(), toolbarPanel, re);
+			listenTo(runtimeController);
+			toolbarPanel.rootController(re.getDisplayname(), runtimeController);
+		} else {
+			runtimeController = new AccessRefusedController(ureq, getWindowControl());
+			listenTo(runtimeController);
+			toolbarPanel.rootController(re.getDisplayname(), runtimeController);
+		}
 	}
 	
 	public interface RuntimeControllerCreator {
 		
-		public Controller create(UserRequest ureq, WindowControl wControl, RepositoryEntry entry);
+		public Controller create(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry);
 		
 	}
 }

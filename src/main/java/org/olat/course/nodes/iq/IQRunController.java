@@ -64,6 +64,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
+import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
@@ -416,7 +417,7 @@ public class IQRunController extends BasicController implements GenericEventList
 					ICourse course = CourseFactory.loadCourse(callingResId);
 					RepositoryEntry courseRepositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 					Panel empty = new Panel("empty");//empty panel set as "menu" and "tool"
-					Controller courseCloser = CourseFactory.createDisposedCourseRestartController(ureq, getWindowControl(), courseRepositoryEntry);
+					Controller courseCloser = new DisposedCourseRestartController(ureq, getWindowControl(), courseRepositoryEntry);
 					Controller disposedRestartController = new LayoutMain3ColsController(ureq, getWindowControl(), empty, courseCloser.getInitialComponent(), "disposed course whily in iqRun" + callingResId);
 					displayContainerController.setDisposedMessageController(disposedRestartController);
 					

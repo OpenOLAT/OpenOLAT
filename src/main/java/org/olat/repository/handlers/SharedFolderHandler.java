@@ -171,7 +171,7 @@ public class SharedFolderHandler implements RepositoryHandler {
 		RepositoryEntryRuntimeController runtime = new RepositoryEntryRuntimeController(ureq, wControl, re, 
 				new RuntimeControllerCreator() {
 					@Override
-					public Controller create(UserRequest uureq, WindowControl wwControl, RepositoryEntry entry) {
+					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry) {
 						OLATResource res = entry.getOlatResource();
 						VFSContainer sfContainer = SharedFolderManager.getInstance().getSharedFolder(res);
 

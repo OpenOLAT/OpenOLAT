@@ -162,7 +162,7 @@ public class SCORMCPHandler extends FileHandler {
 		return new ScormRuntimeController(ureq, wControl, re, 
 			new RuntimeControllerCreator() {
 				@Override
-				public Controller create(UserRequest uureq, WindowControl wwControl, RepositoryEntry entry) {
+				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry) {
 					OLATResource res = entry.getOlatResource();
 					File cpRoot = FileResourceManager.getInstance().unzipFileResource(res);
 					MainLayoutController realController = ScormMainManager.getInstance().createScormAPIandDisplayController(uureq, wwControl, true, null, cpRoot,

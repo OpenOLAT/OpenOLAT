@@ -41,7 +41,7 @@ import org.dom4j.Element;
  * Initial Date: Jul 14, 2006
  *  
  */
-public class TextMarker implements Comparable {
+public class TextMarker implements Comparable<TextMarker> {
 	// XML names for the elements
 	public static final String XML_CSS_CLASS_ELEMENT = "cssClass";
 	public static final String XML_HOOVER_TEXT_ELEMENT = "hooverText";
@@ -157,18 +157,16 @@ public class TextMarker implements Comparable {
 	 * @param arg0
 	 * @return
 	 */
-	public int compareTo(Object arg0) {
+	@Override
+	public int compareTo(TextMarker arg0) {
 		// only compare against other text marker objects
-		if (arg0 instanceof TextMarker) {
-			TextMarker arg0Marker = (TextMarker) arg0;
-			return Collator.getInstance(Locale.ENGLISH).compare(this.getMarkedText(), arg0Marker.getMarkedText());
-		}
-		return 0;
+		return Collator.getInstance(Locale.ENGLISH).compare(this.getMarkedText(), arg0.getMarkedText());
 	}
     
     /**
      * Check only marked text and ignore case
      */
+	@Override
     public boolean equals(Object obj) {
         if (obj instanceof TextMarker) {
             TextMarker tm = (TextMarker)obj;
@@ -178,5 +176,4 @@ public class TextMarker implements Comparable {
         }
         return false;
     }
-
 }

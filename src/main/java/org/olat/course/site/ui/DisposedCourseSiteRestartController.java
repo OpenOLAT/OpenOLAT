@@ -23,20 +23,11 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.messages.MessageController;
-import org.olat.core.gui.control.generic.messages.MessageUIFactory;
-import org.olat.core.id.OLATResourceable;
-import org.olat.course.CourseFactory;
 import org.olat.course.DisposedCourseRestartController;
-import org.olat.course.ICourse;
-import org.olat.course.run.RunMainController;
-import org.olat.repository.RepositoryEntry;
-import org.olat.resource.OLATResourceManager;
 
 /**
  * 
@@ -48,16 +39,13 @@ public class DisposedCourseSiteRestartController extends BasicController {
 
 	private VelocityContainer initialContent;
 	private Link restartLink;
-	private RepositoryEntry courseRepositoryEntry;
-	private StackedPanel panel;
 
-	public DisposedCourseSiteRestartController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseRepositoryEntry) {
+	public DisposedCourseSiteRestartController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setBasePackage(DisposedCourseRestartController.class);
 		initialContent = createVelocityContainer("disposedcourserestart");
 		restartLink = LinkFactory.createButton("course.disposed.command.restart", initialContent, this);
-		this.courseRepositoryEntry = courseRepositoryEntry;
-		panel = putInitialPanel(initialContent);
+		putInitialPanel(initialContent);
 	}
 
 	/**
@@ -76,18 +64,7 @@ public class DisposedCourseSiteRestartController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == restartLink) {
-			OLATResourceable ores = OLATResourceManager.getInstance().findResourceable(
-					courseRepositoryEntry.getOlatResource().getResourceableId(), courseRepositoryEntry.getOlatResource().getResourceableTypeName());
-			if(ores==null) {
-				//course was deleted!				
-				MessageController msgController = MessageUIFactory.createInfoMessage(ureq, this.getWindowControl(), translate("course.deleted.title"), translate("course.deleted.text"));
-				panel.setContent(msgController.getInitialComponent());				
-				return;
-			}
-			
-			ICourse course = CourseFactory.loadCourse(ores);
-			RunMainController c = new RunMainController(ureq, getWindowControl(), course, courseRepositoryEntry, false, true);
-			panel.setContent(c.getInitialComponent());
+			fireEvent(ureq, new Event("restart"));
 		}
 	}
 }

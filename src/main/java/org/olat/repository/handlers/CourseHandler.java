@@ -86,6 +86,8 @@ import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.CourseRuntimeController;
+import org.olat.course.run.RunMainController;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.fileresource.types.GlossaryResource;
 import org.olat.fileresource.types.ResourceEvaluation;
@@ -100,9 +102,9 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.WizardCloseCourseController;
 import org.olat.repository.controllers.WizardCloseResourceController;
+import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.resource.accesscontrol.ui.RepositoryMainAccessControllerWrapper;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
 
@@ -420,9 +422,14 @@ public class CourseHandler implements RepositoryHandler {
 
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
-		MainLayoutController courseCtrl = CourseFactory.createLaunchController(ureq, wControl, re);
-		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, courseCtrl);
-		return wrapper;
+		return new CourseRuntimeController(ureq, wControl, re,
+				new RuntimeControllerCreator() {
+					@Override
+					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry) {
+						ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+						return new RunMainController(uureq, wwControl, toolbarPanel, course, entry);
+					}
+			}, true, true);
 	}
 
 	@Override
@@ -454,10 +461,7 @@ public class CourseHandler implements RepositoryHandler {
 
 	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel panel) {
-		//run + activate
-		MainLayoutController courseCtrl = CourseFactory.createLaunchController(ureq, wControl, re);
-		RepositoryMainAccessControllerWrapper wrapper = new RepositoryMainAccessControllerWrapper(ureq, wControl, re, courseCtrl);
-		return wrapper;
+		return CourseFactory.createEditorController(ureq, wControl, panel, re.getOlatResource(), null);
 	}
 
 	@Override

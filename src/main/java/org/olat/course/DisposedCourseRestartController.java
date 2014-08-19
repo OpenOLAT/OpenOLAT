@@ -38,6 +38,7 @@ import org.olat.core.gui.control.generic.messages.MessageController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResourceManager;
 
@@ -84,20 +85,16 @@ public class DisposedCourseRestartController extends BasicController {
 			OLATResourceable ores = OLATResourceManager.getInstance().findResourceable(
 					courseRepositoryEntry.getOlatResource().getResourceableId(),
 					courseRepositoryEntry.getOlatResource().getResourceableTypeName());
-			if(ores==null) {
+			if(ores == null ) {
 				//course was deleted!				
-				MessageController msgController = MessageUIFactory.createInfoMessage(ureq, this.getWindowControl(), translate("course.deleted.title"), translate("course.deleted.text"));
-				panel.setContent(msgController.getInitialComponent());				
-				return;
+				MessageController msgController = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), translate("course.deleted.title"), translate("course.deleted.text"));
+				panel.setContent(msgController.getInitialComponent());
+			} else {
+				OLATResourceable reOres = OresHelper.clone(courseRepositoryEntry);
+				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(getWindowControl(), reOres);
+				NewControllerFactory.getInstance().launch(ureq, bwControl);
+				dispose();
 			}
-			
-			WindowControl bwControl = BusinessControlFactory.getInstance()
-					.createBusinessWindowControl(getWindowControl(), courseRepositoryEntry);
-			NewControllerFactory.getInstance().launch(ureq, bwControl);
-			/*
-			 * last but not least dispose myself - to clean up.
-			 */
-			dispose();
 		}
 	}
 }

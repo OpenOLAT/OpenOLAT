@@ -58,7 +58,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -91,8 +90,6 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.controllers.EntryChangedEvent;
-import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -127,7 +124,6 @@ public class AuthorListController extends FormBasicController implements Activat
 	private StepsMainRunController wizardCtrl;
 	private AuthorSearchController searchCtrl;
 	private UserSearchController userSearchCtr;
-	private AuthoringEntryDetailsController detailsCtrl;
 	private ImportRepositoryEntryController importCtrl;
 	private CreateRepositoryEntryController createCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
@@ -307,11 +303,6 @@ public class AuthorListController extends FormBasicController implements Activat
 			if(handler != null) {
 				doCreate(ureq, handler);
 			}
-		} else if(event instanceof PopEvent) {
-			PopEvent pop = (PopEvent)event;
-			if(pop.getController() == detailsCtrl) {
-				reloadDirtyRows();
-			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -355,21 +346,6 @@ public class AuthorListController extends FormBasicController implements Activat
 				searchParams.setAuthor(null);
 				searchParams.setDisplayname(null);
 				searchParams.setDescription(null);
-			}
-		} else if(detailsCtrl == source) {
-			if(event instanceof OpenEvent) {
-				OpenEvent oe = (OpenEvent)event;
-				RepositoryEntryRef repoEntryKey = oe.getRepositoryEntry();
-				launchDetails(ureq, repoEntryKey);
-			} else if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
-				dirtyRows.add(new Integer(-1));
-			} else if(event instanceof EntryChangedEvent) {
-				EntryChangedEvent ce = (EntryChangedEvent)event;
-				if(ce.getChange().equals(Change.deleted)) {
-					stackPanel.popUpToRootController(ureq);
-					dirtyRows.add(new Integer(-1));
-					reloadDirtyRows();
-				}
 			}
 		} else if(userSearchCtr == source) {
 			@SuppressWarnings("unchecked")

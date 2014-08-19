@@ -74,10 +74,10 @@ public class GlossaryMarkupItemController extends BasicController {
 		this.glossaryFolder = glossaryFolder;
 		this.glossaryId = glossaryId;
 		
-		init(ureq,tmComponent);
+		init(tmComponent);
 	}
 
-	private void init(UserRequest ureq, Component tmComponent) {
+	private void init(Component tmComponent) {
 		// add dom id for wrapper div
 		tmContainer.contextPut("domId", domId);
 
@@ -89,10 +89,6 @@ public class GlossaryMarkupItemController extends BasicController {
 		tmContainer.contextPut("glossaryFolder", glossFolderString.replace("/", "."));
 		tmContainer.contextPut("glossaryDefinitionMapperPath", glossaryDefinitionMapperPath);
 		tmContainer.contextPut("glossaryTermMapperPath", glossaryTermMapperPath);
-		
-//TODO:RH:improvement: use a hash and cache it somewhere in case folderId should not be exposed to user
-//		String glossaryId = Encoder.encrypt(((LocalFolderImpl)glossaryFolder).getBasefile().toString());
-		
 		tmContainer.contextPut("glossaryId", glossaryId);
 
 		// finally add the wrapped content to the velocity container

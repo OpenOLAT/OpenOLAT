@@ -173,20 +173,12 @@ public abstract class BasicController extends DefaultController {
 	 */
 
 	protected void removeAsListenerAndDispose(Controller controller) {
-		if (controller == null)
-			return;
-		/*
-		 * REVIEW:pb this is for quality and will be re-enabled after the OLAT
-		 * 6.0.0 Release if(childControllers == null){ throw new
-		 * AssertException("the controller you want to remove was not added via
-		 * listenTo(..) method"+controller.getClass().getCanonicalName()); }
-		 * if(!childControllers.contains(controller)){ throw new
-		 * AssertException("the controller you want to remove does not or no
-		 * longer reside here, this a workflow bug:
-		 * "+controller.getClass().getCanonicalName()); }
-		 */
-		childControllers.remove(controller);
-		controller.dispose();
+		if (controller != null) {
+			if(childControllers != null) {
+				childControllers.remove(controller);
+			}
+			controller.dispose();
+		}
 	}
 
 	/**

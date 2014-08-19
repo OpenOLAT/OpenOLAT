@@ -36,6 +36,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Configuration of the BARG and access control of a learn resource.
@@ -53,6 +54,8 @@ public class AuthoringEditAccessController extends BasicController {
 	private AccessConfigurationController acCtr;
 	
 	private RepositoryEntry entry;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	
 	public AuthoringEditAccessController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl);
@@ -100,8 +103,8 @@ public class AuthoringEditAccessController extends BasicController {
 				int access = propPupForm.getAccess();
 				int numOfBookingConfigs = acCtr.getNumOfBookingConfigurations();
 
-				entry = RepositoryManager.getInstance().setProperties(entry, propPupForm.canCopy(), propPupForm.canReference(), propPupForm.canDownload());		
-				entry = RepositoryManager.getInstance().setAccess(entry, access, propPupForm.isMembersOnly());		
+				entry = repositoryManager.setProperties(entry, propPupForm.canCopy(), propPupForm.canReference(), propPupForm.canDownload());
+				entry = repositoryManager.setAccess(entry, access, propPupForm.isMembersOnly());		
 
 				boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
 				if(access == RepositoryEntry.ACC_USERS || access == RepositoryEntry.ACC_USERS_GUESTS) {

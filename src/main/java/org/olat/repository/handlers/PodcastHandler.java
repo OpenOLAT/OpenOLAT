@@ -178,7 +178,7 @@ public class PodcastHandler implements RepositoryHandler {
 		return new FeedRuntimeController(ureq, wControl, re, 
 			new RuntimeControllerCreator() {
 				@Override
-				public Controller create(UserRequest uureq, WindowControl wwControl, RepositoryEntry entry) {
+				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry) {
 					return new FeedMainController(entry.getOlatResource(), uureq, wwControl, null, null,
 						PodcastUIFactory.getInstance(uureq.getLocale()), callback, null);
 				}

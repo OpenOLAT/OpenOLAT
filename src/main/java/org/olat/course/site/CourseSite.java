@@ -21,8 +21,9 @@ package org.olat.course.site;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.navigation.AbstractSiteInstance;
 import org.olat.core.gui.control.navigation.DefaultNavElement;
@@ -35,15 +36,16 @@ import org.olat.core.id.context.StateSite;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.CourseRuntimeController;
 import org.olat.course.run.RunMainController;
 import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
-import org.olat.course.site.ui.DisposedCourseSiteRestartController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 
 /**
  * 
@@ -125,17 +127,23 @@ public class CourseSite extends AbstractSiteInstance {
 		if (hasAccess || ureq.getUserSession().getRoles().isOLATAdmin()) {
 			rs.incrementLaunchCounter(entry); 
 			// build up the context path for linked course
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, entry, new StateSite(this), wControl, true) ;	
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, entry, new StateSite(this), wControl, true);	
+			CourseRuntimeController runCtr = new CourseRuntimeController(ureq, bwControl, entry,
+				new RuntimeControllerCreator() {
+					@Override
+					public Controller create(UserRequest uureq, WindowControl wwControl,
+							TooledStackedPanel toolbarPanel, RepositoryEntry re) {
+						return new RunMainController(uureq, wwControl, toolbarPanel,
+								CourseFactory.loadCourse(re.getOlatResource()), re);
+					}
+				}, false, true);
 			
-			RunMainController runCtr = new RunMainController(ureq, bwControl, course, entry, false, true);
-			BasicController disposeMsgController = new DisposedCourseSiteRestartController(ureq, wControl, entry);
-			runCtr.setDisposedMsgController(disposeMsgController);
 			// Configure run controller
 			// a: don't show close link, is opened as site not tab
-			runCtr.disableCourseClose(true);
+			runCtr.setCourseCloseEnabled(false);
 			// b: don't show toolbar
 			if (!showToolController) {
-				runCtr.disableToolController(true);
+				runCtr.setToolControllerEnabled(false);
 			}
 			c = runCtr;
 		} else {

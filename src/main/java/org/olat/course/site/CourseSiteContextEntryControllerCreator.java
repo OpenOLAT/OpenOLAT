@@ -46,7 +46,6 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
-import org.olat.repository.ui.RepositoyUIFactory;
 
 /**
  * <h3>Description:</h3>
@@ -96,7 +95,7 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 		if (re == null) return null;
 		RepositoryManager rm = RepositoryManager.getInstance();
 		if (!rm.isAllowedToLaunch(ureq, re)) {
-			Translator trans = Util.createPackageTranslator(RepositoyUIFactory.class, ureq.getLocale());
+			Translator trans = Util.createPackageTranslator(RepositoryService.class, ureq.getLocale());
 			String text = trans.translate("launch.noaccess");
 			Controller c = MessageUIFactory.createInfoMessage(ureq, wControl, null, text);
 			

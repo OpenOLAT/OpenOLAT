@@ -26,6 +26,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.VetoableCloseController;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 
@@ -137,11 +138,12 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 	}
 
 	@Override
-	protected void doMembers(UserRequest ureq) {
+	protected Activateable2 doMembers(UserRequest ureq) {
 		if(requestForClose()) {
-			super.doMembers(ureq);
+			return super.doMembers(ureq);
 		} else {
-			delayedClose = Delayed.members; 
+			delayedClose = Delayed.members;
+			return null;
 		}
 	}
 

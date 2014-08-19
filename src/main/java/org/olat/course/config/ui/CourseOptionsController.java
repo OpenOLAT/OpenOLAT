@@ -62,6 +62,7 @@ import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.modules.glossary.GlossaryManager;
 import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.resource.references.ReferenceImpl;
@@ -83,13 +84,15 @@ public class CourseOptionsController extends FormBasicController {
 	private SelectionElement efficencyEl, calendarEl, chatEl;
 	private FormLink addGlossaryCommand, removeGlossaryCommand;
 	private StaticTextElement glossaryNameEl;
+	private FormLink saveButton;
+	private FormLayoutContainer saveCont;
 	
 	private FormLink addFolderCommand, removeFolderCommand;
 	private StaticTextElement folderNameEl;
 	
 	private final boolean editable;
 	private CourseConfig courseConfig;
-	private final OLATResourceable courseOres;
+	private final RepositoryEntry entry;
 	
 
 	private CloseableModalController cmc;
@@ -106,34 +109,36 @@ public class CourseOptionsController extends FormBasicController {
 	 * @param chatEnabled
 	 */
 	public CourseOptionsController(UserRequest ureq, WindowControl wControl,
-			OLATResourceable courseOres, CourseConfig courseConfig, boolean editable) {
+			RepositoryEntry entry, CourseConfig courseConfig, boolean editable) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.courseConfig = courseConfig;
-		this.courseOres = OresHelper.clone(courseOres);
+		this.entry = entry;
 		
 		this.editable = editable;
 		initForm (ureq);
 
 		//glossary setup
+		boolean managedGlossary = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.glossary);
 		if (courseConfig.hasGlossary()) {
 			RepositoryEntry repoEntry = repositoryService.lookupRepositoryEntryBySoftkey(courseConfig.getGlossarySoftKey(), false);
 			if (repoEntry == null) {
 				// Something is wrong here, maybe the glossary has been deleted. Try to
 				// remove glossary from configuration
 				doRemoveGlossary();
-				log.warn("Course with ID::" + courseOres + " had a config for a glossary softkey::"
+				log.warn("Course with ID::" + entry.getOlatResource().getResourceableId() + " had a config for a glossary softkey::"
 						+ courseConfig.getGlossarySoftKey() + " but no such glossary was found");				
 			} else if(editable) {
 				glossaryNameEl.setValue(StringHelper.escapeHtml(repoEntry.getDisplayname()));
 				glossaryNameEl.setUserObject(repoEntry);
-				removeGlossaryCommand.setVisible(true);
+				removeGlossaryCommand.setVisible(editable && !managedGlossary);
 			}
-		} else if(editable) {
+		} else if(editable && !managedGlossary) {
 			removeGlossaryCommand.setVisible(false);
 			addGlossaryCommand.setVisible(true);
 		}
 		
 		//shared folder
+		boolean managedFolder = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.resourcefolder);
 		if (courseConfig.hasCustomSharedFolder()) {
 			RepositoryEntry repoEntry = repositoryService.lookupRepositoryEntryBySoftkey(courseConfig.getGlossarySoftKey(), false);
 			if (repoEntry == null) {
@@ -143,9 +148,9 @@ public class CourseOptionsController extends FormBasicController {
 			} else if(editable) {
 				folderNameEl.setValue(StringHelper.escapeHtml(repoEntry.getDisplayname()));
 				folderNameEl.setUserObject(repoEntry);
-				removeFolderCommand.setVisible(true);
+				removeFolderCommand.setVisible(editable && !managedFolder);
 			}
-		} else if(editable) {
+		} else if(editable && !managedFolder) {
 			removeFolderCommand.setVisible(false);
 			addFolderCommand.setVisible(true);
 		}
@@ -160,9 +165,11 @@ public class CourseOptionsController extends FormBasicController {
 		effCont.setFormContextHelp("org.olat.course.config.ui","course-efficiency.html","help.hover.course-eff");
 		
 		boolean effEnabled = courseConfig.isEfficencyStatementEnabled();
+		boolean managedEff = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.efficencystatement);
 		efficencyEl = uifactory.addCheckboxesHorizontal("effIsOn", "chkbx.efficency.onoff", effCont, new String[] {"xx"}, new String[] {""});
+		efficencyEl.addActionListener(FormEvent.ONCHANGE);
 		efficencyEl.select("xx", effEnabled);
-		efficencyEl.setEnabled(editable);
+		efficencyEl.setEnabled(editable && !managedEff);
 		
 		//calendar
 		FormLayoutContainer calCont = FormLayoutContainer.createDefaultFormLayout("cal", getTranslator());
@@ -171,9 +178,11 @@ public class CourseOptionsController extends FormBasicController {
 		calCont.setFormContextHelp("org.olat.course.config.ui","course-calendar.html","help.hover.coursecal");
 		
 		boolean calendarEnabled = courseConfig.isCalendarEnabled();
+		boolean managedCal = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.calendar);
 		calendarEl = uifactory.addCheckboxesHorizontal("calIsOn", "chkbx.calendar.onoff", calCont, new String[] {"xx"}, new String[] {""});
+		calendarEl.addActionListener(FormEvent.ONCHANGE);
 		calendarEl.select("xx", calendarEnabled);
-		calendarEl.setEnabled(editable);
+		calendarEl.setEnabled(editable && !managedCal);
 		
 		//chat
 		FormLayoutContainer chatCont = FormLayoutContainer.createDefaultFormLayout("chat", getTranslator());
@@ -182,9 +191,11 @@ public class CourseOptionsController extends FormBasicController {
 		chatCont.setFormContextHelp("org.olat.course.config.ui","course-chat.html","help.hover.course-chat");
 
 		boolean chatEnabled = courseConfig.isChatEnabled();
+		boolean managedChat = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.chat);
 		chatEl = uifactory.addCheckboxesHorizontal("chatIsOn", "chkbx.chat.onoff", chatCont, new String[] {"xx"}, new String[] {""});
+		chatEl.addActionListener(FormEvent.ONCHANGE);
 		chatEl.select("xx", chatEnabled);
-		chatEl.setEnabled(editable);
+		chatEl.setEnabled(editable && !managedChat);
 		
 		//glossary
 		FormLayoutContainer glossaryCont = FormLayoutContainer.createDefaultFormLayout("glossary", getTranslator());
@@ -194,13 +205,17 @@ public class CourseOptionsController extends FormBasicController {
 
 		glossaryNameEl = uifactory.addStaticTextElement("glossaryName", "glossary.isconfigured",
 				translate("glossary.no.glossary"), glossaryCont);
-		
+
+		boolean managedGlossary = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.glossary);
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		glossaryCont.add(buttonsCont);
 		removeGlossaryCommand = uifactory.addFormLink(COMMAND_REMOVE, buttonsCont, Link.BUTTON);
+		removeGlossaryCommand.setVisible(editable && !managedGlossary);
 		addGlossaryCommand = uifactory.addFormLink(COMMAND_ADD, buttonsCont, Link.BUTTON);
+		addGlossaryCommand.setVisible(editable && !managedGlossary);
 		
 		//shared folder
+		boolean managedFolder = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.resourcefolder);
 		FormLayoutContainer sharedFolderCont = FormLayoutContainer.createDefaultFormLayout("sharedfolder", getTranslator());
 		sharedFolderCont.setRootForm(mainForm);
 		formLayout.add(sharedFolderCont);
@@ -212,14 +227,16 @@ public class CourseOptionsController extends FormBasicController {
 		FormLayoutContainer buttons2Cont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		sharedFolderCont.add(buttons2Cont);
 		removeFolderCommand = uifactory.addFormLink("sf.unselectsfresource", buttons2Cont, Link.BUTTON);
+		removeFolderCommand.setVisible(editable && !managedFolder);
 		addFolderCommand = uifactory.addFormLink("sf.changesfresource", buttons2Cont, Link.BUTTON);
-		
+		addFolderCommand.setVisible(editable && !managedFolder);
 
 		if(editable) {
-			FormLayoutContainer save = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
-			save.setRootForm(mainForm);
-			formLayout.add(save);
-			uifactory.addFormSubmitButton("save", "save", save);
+			saveCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
+			saveCont.setRootForm(mainForm);
+			formLayout.add(saveCont);
+			saveButton = uifactory.addFormLink("save", saveCont, Link.BUTTON);
+			saveButton.setPrimary(true);
 		}
 	}
 
@@ -233,16 +250,19 @@ public class CourseOptionsController extends FormBasicController {
 		if (source == disableEfficiencyDC) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				doChangeConfig(ureq);
+				saveButton.setCustomEnabledLinkCSS("btn btn-primary");
 			}
 		} else if (source == enableEfficiencyDC) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {				
 				doChangeConfig(ureq);
+				saveButton.setCustomEnabledLinkCSS("btn btn-primary");
 			}
 		} else if (source == glossarySearchCtr) {
 			cmc.deactivate();
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 				RepositoryEntry repoEntry = glossarySearchCtr.getSelectedEntry();
 				doSelectGlossary(repoEntry);
+				setSaveButtonDirty();
 			}
 			cleanUp();
 		} else if (source == folderSearchCtr) {
@@ -250,6 +270,7 @@ public class CourseOptionsController extends FormBasicController {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 				RepositoryEntry repoEntry = folderSearchCtr.getSelectedEntry();
 				doSelectSharedFolder(repoEntry);
+				setSaveButtonDirty();
 			}
 			cleanUp();
 		} else if(cmc == source) {
@@ -258,7 +279,12 @@ public class CourseOptionsController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
-		
+		removeAsListenerAndDispose(glossarySearchCtr);
+		removeAsListenerAndDispose(folderSearchCtr);
+		removeAsListenerAndDispose(cmc);
+		glossarySearchCtr = null;
+		folderSearchCtr = null;
+		cmc = null;
 	}
 	
 	@Override
@@ -271,6 +297,7 @@ public class CourseOptionsController extends FormBasicController {
 			cmc.activate();
 		} else if (source == removeGlossaryCommand) {
 			doRemoveGlossary();
+			setSaveButtonDirty();
 		} else if (source == addFolderCommand) {
 			folderSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, SharedFolderFileResource.TYPE_NAME, translate("select"));			
 			listenTo(folderSearchCtr);
@@ -279,11 +306,27 @@ public class CourseOptionsController extends FormBasicController {
 			cmc.activate();
 		} else if (source == removeFolderCommand) {
 			doRemoveSharedFolder();
+			setSaveButtonDirty();
+		} else if (source instanceof SelectionElement) {
+			setSaveButtonDirty();
+		} else if(saveButton == source) {
+			doSave(ureq);
 		}
 	}
 
+
 	@Override
 	protected void formOK(UserRequest ureq) {
+		doSave(ureq);
+	}
+	
+	private void setSaveButtonDirty() {
+		if(saveButton != null) {
+			saveButton.setCustomEnabledLinkCSS("btn btn-primary o_button_dirty");
+		}
+	}
+	
+	private void doSave(UserRequest ureq) {
 		boolean confirmUpdateStatement = courseConfig.isEfficencyStatementEnabled() != efficencyEl.isSelected(0);
 		if(confirmUpdateStatement) {
 			if (courseConfig.isEfficencyStatementEnabled()) {
@@ -295,10 +338,12 @@ public class CourseOptionsController extends FormBasicController {
 			}
 		} else {
 			doChangeConfig(ureq);
+			saveButton.setCustomEnabledLinkCSS("btn btn-primary");
 		}
 	}
 	
 	private void doChangeConfig(UserRequest ureq) {
+		OLATResourceable courseOres = entry.getOlatResource();
 		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
 		courseConfig = course.getCourseEnvironment().getCourseConfig();
 		
@@ -313,7 +358,6 @@ public class CourseOptionsController extends FormBasicController {
 		boolean enableCalendar = calendarEl.isSelected(0);
 		boolean updateCalendar = courseConfig.isCalendarEnabled() != enableCalendar;
 		courseConfig.setCalendarEnabled(enableCalendar);
-
 		
 		String currentGlossarySoftKey = courseConfig.getGlossarySoftKey();
 		RepositoryEntry glossary = (RepositoryEntry)glossaryNameEl.getUserObject();
@@ -342,6 +386,9 @@ public class CourseOptionsController extends FormBasicController {
 					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_IM_ENABLED :
 					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_IM_DISABLED;
 	  		ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+
+	        CoordinatorManager.getInstance().getCoordinator().getEventBus()
+	        	.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.chat, course.getResourceableId()), course);
 		}
 		
 		if(updateCalendar) {
@@ -382,6 +429,9 @@ public class CourseOptionsController extends FormBasicController {
 			if(glossary != null) {
 				referenceManager.addReference(course, glossary.getOlatResource(), GlossaryManager.GLOSSARY_REPO_REF_IDENTIFYER); 
 			}
+
+	        CoordinatorManager.getInstance().getCoordinator().getEventBus()
+	        	.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.glossary, course.getResourceableId()), course);
 		}
 		
 		if(updateFolder) {

@@ -48,13 +48,15 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.textmarker.GlossaryMarkupItemController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.prefs.Preferences;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.run.RunMainController;
-import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.HomePageConfig;
@@ -76,16 +78,16 @@ public class CourseGlossaryToolLinkController extends BasicController {
 	private VelocityContainer mainVC;
 	private Link onCommand, offCommand;
 	private String guiPrefsKey;
-	boolean allowGlossaryEditing;
-	private CourseEnvironment courseEnvir;
+	private boolean allowGlossaryEditing;
+	private OLATResourceable courseOres;
 	private GlossaryMarkupItemController glossMarkupItmCtr;
 
 	public CourseGlossaryToolLinkController(WindowControl wControl, UserRequest ureq, ICourse course, Translator translator,
-			boolean allowGlossaryEditing, CourseEnvironment courseEnvironment, GlossaryMarkupItemController glossMarkupItmCtr) {
+			boolean allowGlossaryEditing, GlossaryMarkupItemController glossMarkupItmCtr) {
 		super(ureq, wControl, translator);
 		setBasePackage(RunMainController.class);
+		this.courseOres = OresHelper.clone(course);
 		this.allowGlossaryEditing = allowGlossaryEditing;
-		courseEnvir = courseEnvironment;
 		guiPrefsKey = CourseGlossaryFactory.createGuiPrefsKey(course);
 
 		mainVC = createVelocityContainer("glossaryToolLink");
@@ -102,6 +104,10 @@ public class CourseGlossaryToolLinkController extends BasicController {
 		this.glossMarkupItmCtr = glossMarkupItmCtr;
 
 		putInitialPanel(mainVC);
+	}
+	
+	public void setAllowGlossaryEditing(boolean edit) {
+		this.allowGlossaryEditing = edit;
 	}
 
 	/**
@@ -136,7 +142,8 @@ public class CourseGlossaryToolLinkController extends BasicController {
 			fireEvent(ureq, new Event("glossaryOff"));
 		} else if (source == mainVC && event.getCommand().equals("command.glossary")){
 			// start glossary in window
-			final CourseConfig cc = courseEnvir.getCourseConfig(); // do not cache cc, not save
+			ICourse course = CourseFactory.loadCourse(courseOres);
+			final CourseConfig cc = course.getCourseConfig(); // do not cache cc, not save
 			
 			// if glossary had been opened from LR as Tab before, warn user:
 			DTabs dts = Windows.getWindows(ureq).getWindow(ureq).getDTabs();

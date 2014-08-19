@@ -55,7 +55,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  */
 public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 	
-	private static final int BATCH_SIZE = 10;
+	private static final int BATCH_SIZE = 100;
 	
 	private DB dbInstance;
 	private RepositoryManager repositoryManager;

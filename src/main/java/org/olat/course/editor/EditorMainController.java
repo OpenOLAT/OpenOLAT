@@ -89,6 +89,7 @@ import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
+import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.ui.courselayout.CourseLayoutHelper;
@@ -237,7 +238,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			
 			OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", ores.getResourceableId());
 			RepositoryEntry repo = RepositoryManager.getInstance().lookupRepositoryEntry(courseOres, false);
-			Controller courseCloser = CourseFactory.createDisposedCourseRestartController(ureq, wControl, repo);
+			Controller courseCloser = new DisposedCourseRestartController(ureq, wControl, repo);
 			Controller disposedRestartController = new LayoutMain3ColsController(ureq, wControl, courseCloser);
 			setDisposedMsgController(disposedRestartController);
 			

@@ -248,7 +248,7 @@ public class WikiHandler implements RepositoryHandler {
 		RepositoryEntryRuntimeController runtime = new RepositoryEntryRuntimeController(ureq, wControl, re, 
 			new RuntimeControllerCreator() {
 				@Override
-				public Controller create(UserRequest uureq, WindowControl wwControl, RepositoryEntry entry) {
+				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry) {
 					Controller controller;
 					if ( ce != null ) { //jump to a certain context
 						OLATResourceable ores = ce.getOLATResourceable();

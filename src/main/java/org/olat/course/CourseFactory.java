@@ -62,7 +62,6 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -171,32 +170,6 @@ public class CourseFactory extends BasicManager {
 		CourseFactory.repositoryManager = repositoryManager;
 		CourseFactory.referenceManager = referenceManager;
 		CourseFactory.repositoryService = repositoryService;
-	}
-	
-	/**
-	 * Create a run controller for the given course resourceable
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param re
-	 * @param initialViewIdentifier if null the default view will be started,
-	 *          otherwise a controllerfactory type dependant view will be
-	 *          activated (subscription subtype)
-	 * @return run controller for the given course resourceable
-	 */
-	public static MainLayoutController createLaunchController(UserRequest ureq, WindowControl wControl, final RepositoryEntry re) {
-		ICourse course = loadCourse(re.getOlatResource());
-		boolean isDebug = log.isDebug();
-		long startT = 0;
-		if(isDebug){
-			startT = System.currentTimeMillis();
-		}
-		MainLayoutController launchC = new RunMainController(ureq, wControl, course, re, true, true);
-		if(isDebug){
-			log.debug("Runview for [["+course.getCourseTitle()+"]] took [ms]"+(System.currentTimeMillis() - startT));
-		}
-		
-		return launchC;
 	}
 
 	/**
@@ -672,7 +645,7 @@ public class CourseFactory extends BasicManager {
 			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(entry);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);	
 			
-			RunMainController launchC = new RunMainController(ureq, bwControl, course, entry, false, false);
+			RunMainController launchC = new RunMainController(ureq, bwControl, null, course, entry);// false, false);
 			return launchC;			
 		}		
 	}
@@ -894,10 +867,6 @@ public class CourseFactory extends BasicManager {
 		}
 		//close courseEditSession if not already closed
 		closeCourseEditSession(resourceableId, false);
-	}
-	
-	public static Controller createDisposedCourseRestartController(UserRequest ureq, WindowControl wControl, RepositoryEntry re) {
-		return new DisposedCourseRestartController(ureq, wControl, re);
 	}
 
 	/**
