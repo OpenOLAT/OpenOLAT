@@ -26,6 +26,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -57,6 +58,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	private TextElement author;
 	private TextElement description;
 	private SingleSelection types;
+	private MultipleSelectionElement ownedResourcesOnlyEl;
 	private FormSubmit searchButton;
 	
 	private String[] limitTypes;
@@ -107,7 +109,11 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		
 		id = uifactory.addTextElement("cif_id", "cif.id", 128, "", rightContainer);
 		id.setElementCssClass("o_sel_repo_search_id");
-
+		
+		String[] keys = new String[]{ "my" };
+		ownedResourcesOnlyEl = uifactory.addCheckboxesHorizontal("cif_my", "cif.owned.resources.only", rightContainer, keys, new String[]{ "" });
+		ownedResourcesOnlyEl.select(keys[0], true);
+		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
 		searchButton = uifactory.addFormSubmitButton("search", buttonLayout);
@@ -166,6 +172,10 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		return null;
 	}
 	
+	public boolean isOwnedResourcesOnly() {
+		return ownedResourcesOnlyEl.isAtLeastSelected(1);
+	}
+	
 	@Override
 	public void setEnabled(boolean enable) {
 		this.enabled = enable;
@@ -210,6 +220,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		e.setDisplayname(getDisplayName());
 		e.setDescription(getDescription());
 		e.setType(getRestrictedType());
+		e.setOwnedResourcesOnly(isOwnedResourcesOnly());
 		fireEvent(ureq, e);
 	}
 

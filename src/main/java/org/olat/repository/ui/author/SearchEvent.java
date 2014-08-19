@@ -37,6 +37,7 @@ public class SearchEvent extends Event implements StateEntry {
 	private String author;
 	private String description;
 	private String type;
+	private boolean ownedResourcesOnly;
 	
 	public SearchEvent() {
 		super("re-search");
@@ -75,7 +76,6 @@ public class SearchEvent extends Event implements StateEntry {
 		this.description = description;
 	}
 
-
 	public String getType() {
 		return type;
 	}
@@ -84,9 +84,23 @@ public class SearchEvent extends Event implements StateEntry {
 		this.type = type;
 	}
 
+	public boolean isOwnedResourcesOnly() {
+		return ownedResourcesOnly;
+	}
+
+	public void setOwnedResourcesOnly(boolean ownedResourcesOnly) {
+		this.ownedResourcesOnly = ownedResourcesOnly;
+	}
+
 	@Override
 	public SearchEvent clone() {
 		SearchEvent clone = new SearchEvent();
+		clone.id = id;
+		clone.displayname = displayname;
+		clone.author = author;
+		clone.description = description;
+		clone.type = type;
+		clone.ownedResourcesOnly = ownedResourcesOnly;
 		return clone;
 	}
 }

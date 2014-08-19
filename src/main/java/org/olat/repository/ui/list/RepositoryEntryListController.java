@@ -413,6 +413,7 @@ public class RepositoryEntryListController extends FormBasicController
 		searchParams.setIdAndRefs(se.getId());
 		searchParams.setAuthor(se.getAuthor());
 		searchParams.setText(se.getDisplayname());
+		searchParams.setMembershipMandatory(se.isMembershipMandatory());
 		tableEl.reset();
 	}
 	

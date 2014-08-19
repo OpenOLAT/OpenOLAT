@@ -35,11 +35,11 @@ class SearchEvent extends Event implements StateEntry {
 	private String id;
 	private String displayname;
 	private String author;
+	private boolean membershipMandatory;
 	
 	public SearchEvent() {
 		super("re-search");
 	}
-
 	
 	public String getId() {
 		return id;
@@ -65,9 +65,21 @@ class SearchEvent extends Event implements StateEntry {
 		this.author = author;
 	}
 
+	public boolean isMembershipMandatory() {
+		return membershipMandatory;
+	}
+
+	public void setMembershipMandatory(boolean membershipMandatory) {
+		this.membershipMandatory = membershipMandatory;
+	}
+
 	@Override
 	public SearchEvent clone() {
 		SearchEvent clone = new SearchEvent();
+		clone.id = id;
+		clone.displayname = displayname;
+		clone.author = author;
+		clone.membershipMandatory = membershipMandatory;
 		return clone;
 	}
 }

@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -50,6 +51,7 @@ public class RepositoryEntrySearchController extends FormBasicController impleme
 	private TextElement text;
 	private TextElement author;
 	private FormSubmit searchButton;
+	private MultipleSelectionElement membershipMandatoryEl;
 	
 	private boolean cancelAllowed;
 	private boolean enabled = true;
@@ -87,7 +89,10 @@ public class RepositoryEntrySearchController extends FormBasicController impleme
 		
 		id = uifactory.addTextElement("cif_id", "cif.id", 128, "", rightContainer);
 		id.setElementCssClass("o_sel_repo_search_id");
-
+		
+		membershipMandatoryEl = uifactory.addCheckboxesHorizontal("cif_my", "cif.membership.mandatory", rightContainer, new String[]{ "my" }, new String[]{ "" });
+		membershipMandatoryEl.select("my", true);
+		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
 		searchButton = uifactory.addFormSubmitButton("search", buttonLayout);
@@ -126,6 +131,10 @@ public class RepositoryEntrySearchController extends FormBasicController impleme
 	 */
 	public String getAuthor() {
 		return author.getValue();
+	}
+	
+	public boolean isMembershipMandatory() {
+		return membershipMandatoryEl.isAtLeastSelected(1);
 	}
 
 	
@@ -171,6 +180,7 @@ public class RepositoryEntrySearchController extends FormBasicController impleme
 		e.setId(getId());
 		e.setAuthor(getAuthor());
 		e.setDisplayname(getDisplayName());
+		e.setMembershipMandatory(isMembershipMandatory());
 		fireEvent(ureq, e);
 	}
 }

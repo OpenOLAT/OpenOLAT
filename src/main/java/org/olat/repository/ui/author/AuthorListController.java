@@ -527,6 +527,7 @@ public class AuthorListController extends FormBasicController implements Activat
 
 		searchParams.setIdAndRefs(se.getId());
 		searchParams.setAuthor(se.getAuthor());
+		searchParams.setOwnedResourcesOnly(se.isOwnedResourcesOnly());
 		searchParams.setDisplayname(se.getDisplayname());
 		searchParams.setDescription(se.getDescription());
 		tableEl.reset();
