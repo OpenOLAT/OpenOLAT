@@ -258,6 +258,9 @@ $o-login-header-color			: $brand-primary !default;
 $o-login-form-width				: 400px !default;
 $o-login-form-align				: right !default; 								/* left, center or right */
 $o-login-form-bg-img			: $o-images-path + "learn-bg.jpg" !default;  	/* image CC by Thomas Leuthard https://www.flickr.com/photos/thomasleuthard/8587724648/ */
+$o-login-btn-register-color		: $btn-info-color !default;
+$o-login-btn-register-bg		: $btn-info-bg !default;
+$o-login-btn-register-border	: darken($o-login-btn-register-bg, 5%) !default; 
 
 /* Course and catalog site */
 $o-coursesite-rowelem-width-md 	: 180px !default;
