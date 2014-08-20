@@ -153,7 +153,7 @@ public class EPMapRunController extends BasicController implements Activateable2
 		return vC;
 	}
 	
-	private void initTitle(VelocityContainer vC) {
+	private void initTitle(VelocityContainer container) {
 		String titleKey;
 		String descriptionKey;
 		switch(option) {
@@ -175,8 +175,8 @@ public class EPMapRunController extends BasicController implements Activateable2
 				break;
 		}
 
-		vC.contextPut("title", titleKey);
-		vC.contextPut("description", descriptionKey);
+		container.contextPut("title", titleKey);
+		container.contextPut("description", descriptionKey);
 	}
 
 	@Override

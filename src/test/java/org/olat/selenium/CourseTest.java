@@ -110,16 +110,15 @@ public class CourseTest {
 			.fillCreateForm(title)
 			.assertOnGeneralTab();
 		
-		//from description editor, back to details and launch the course
+		//from description editor, back to the course
 		editDescription
-			.clickToolbarBack()
-			.assertOnTitle(title)
-			.launch();
+			.clickToolbarBack();
 		
 		//open course editor
 		CoursePageFragment course = CoursePageFragment.getCourse(browser);
 		CourseEditorPageFragment editor = course
 			.assertOnCoursePage()
+			.assertOnTitle(title)
 			.openToolsMenu()
 			.edit();
 		
@@ -189,14 +188,13 @@ public class CourseTest {
 		RepositoryEditDescriptionPage editDescription = RepositoryEditDescriptionPage.getPage(browser);
 		//from description editor, back to details and launch the course
 		editDescription
-			.clickToolbarBack()
-			.assertOnTitle(title)
-			.launch();
+			.clickToolbarBack();
 		
 		//open course editor
 		CoursePageFragment course = CoursePageFragment.getCourse(browser);
 		course
-			.assertOnCoursePage();
+			.assertOnCoursePage()
+			.assertOnTitle(title);
 		
 		//assert the 5 nodes are there and click them
 		By nodeBy = By.cssSelector("a.o_tree_link.o_tree_l1.o_tree_level_label_leaf");
@@ -230,8 +228,7 @@ public class CourseTest {
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
-			.clickToolbarBack()
-			.edit();
+			.clickToolbarBack();
 		
 		//go the authoring environment to create a CP
 		String cpTitle = "CP for a course - " + UUID.randomUUID().toString();
@@ -244,7 +241,8 @@ public class CourseTest {
 		
 		String cpNodeTitle = "CP-1";
 		//create a course element of type CP with the CP that we create above
-		CourseEditorPageFragment courseEditor = CourseEditorPageFragment.getEditor(browser);
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
 		courseEditor
 			.createNode("cp")
 			.nodeTitle(cpNodeTitle)
@@ -292,8 +290,7 @@ public class CourseTest {
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
-			.clickToolbarBack()
-			.edit();
+			.clickToolbarBack();
 		
 		//go the authoring environment to create a CP
 		String wikiTitle = "Wiki for a course - " + UUID.randomUUID().toString();
@@ -306,7 +303,8 @@ public class CourseTest {
 		
 		String wikiNodeTitle = "Wiki-1";
 		//create a course element of type CP with the CP that we create above
-		CourseEditorPageFragment courseEditor = CourseEditorPageFragment.getEditor(browser);
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
 		courseEditor
 			.createNode("wiki")
 			.nodeTitle(wikiNodeTitle)
@@ -353,14 +351,14 @@ public class CourseTest {
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
-			.clickToolbarBack()
-			.edit();
+			.clickToolbarBack();
 		
 		String wikiNodeTitle = "Wiki-1";
 		String wikiTitle = "Wiki for a course - " + UUID.randomUUID().toString();
 		
 		//create a course element of type CP with the CP that we create above
-		CourseEditorPageFragment courseEditor = CourseEditorPageFragment.getEditor(browser);
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
 		courseEditor
 			.createNode("wiki")
 			.nodeTitle(wikiNodeTitle)
@@ -398,14 +396,14 @@ public class CourseTest {
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
-			.clickToolbarBack()
-			.edit();
+			.clickToolbarBack();
 		
 		String testNodeTitle = "QTITest-1";
 		String testTitle = "Test - " + UUID.randomUUID().toString();
 		
 		//create a course element of type CP with the CP that we create above
-		CourseEditorPageFragment courseEditor = CourseEditorPageFragment.getEditor(browser);
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
 		courseEditor
 			.createNode("iqtest")
 			.nodeTitle(testNodeTitle)
@@ -451,14 +449,14 @@ public class CourseTest {
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
-			.clickToolbarBack()
-			.edit();
+			.clickToolbarBack();
 		
 		String podcastNodeTitle = "Podcats-1";
 		String podcastTitle = "Podcast - " + UUID.randomUUID().toString();
 		
 		//create a course element of type CP with the CP that we create above
-		CourseEditorPageFragment courseEditor = CourseEditorPageFragment.getEditor(browser);
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
 		courseEditor
 			.createNode("podcast")
 			.nodeTitle(podcastNodeTitle)
@@ -501,14 +499,14 @@ public class CourseTest {
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
-			.clickToolbarBack()
-			.edit();
+			.clickToolbarBack();
 		
 		String blogNodeTitle = "Blog-1";
 		String blogTitle = "Blog - " + UUID.randomUUID().toString();
 		
 		//create a course element of type CP with the CP that we create above
-		CourseEditorPageFragment courseEditor = CourseEditorPageFragment.getEditor(browser);
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
 		courseEditor
 			.createNode("blog")
 			.nodeTitle(blogNodeTitle)
@@ -566,14 +564,14 @@ public class CourseTest {
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
-			.clickToolbarBack()
-			.edit();
+			.clickToolbarBack();
 				
 		String blogNodeTitle = "Blog-RW-1";
 		String blogTitle = "Blog - RW - " + UUID.randomUUID().toString();
 				
 		//create a course element of type blog with a blog
-		CourseEditorPageFragment courseEditor = CourseEditorPageFragment.getEditor(browser);
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
 		courseEditor
 			.createNode("blog")
 			.nodeTitle(blogNodeTitle)
@@ -687,10 +685,10 @@ public class CourseTest {
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
-			.clickToolbarBack()
-			.edit();
+			.clickToolbarBack();
 	
-		CourseEditorPageFragment courseEditor = CourseEditorPageFragment.getEditor(browser);
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
 		courseEditor
 			.publish()
 			.next()

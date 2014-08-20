@@ -49,8 +49,8 @@ public class UserPasswordPage {
 	
 	public UserPasswordPage setNewPassword(String oldPassword, String newPassword) {
 		//fill the form
-		By oldPasswordBy = By.cssSelector("div.o_sel_home_pwd_old input");
-		WebElement oldPasswordEl = browser.findElement(oldPasswordBy);
+		By oldPasswordInputBy = By.cssSelector("div.o_sel_home_pwd_old input");
+		WebElement oldPasswordEl = browser.findElement(oldPasswordInputBy);
 		oldPasswordEl.sendKeys(oldPassword);
 		By newPasswordBy = By.cssSelector("div.o_sel_home_pwd_new_1 input");
 		WebElement newPasswordEl = browser.findElement(newPasswordBy);

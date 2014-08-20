@@ -125,18 +125,17 @@ public class PortfolioTest {
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
 			.fillCreateForm(courseTitle)
-			.clickToolbarBack()
-			.edit();
+			.clickToolbarBack();
 		
 		//open course editor
-		CourseEditorPageFragment courseEditor = CourseEditorPageFragment.getEditor(browser);
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
 		courseEditor
 			.createNode("fo")
 			.nodeTitle(forumTitle)
 			.publish()
 			.quickPublish();
-		
-		navBar.backToTheTop();
+		courseEditor.clickToolbarBack();
 		
 		CoursePageFragment course = CoursePageFragment.getCourse(browser);
 		course
@@ -216,10 +215,9 @@ public class PortfolioTest {
 		authoringEnv
 			.openCreateDropDown()
 			.clickCreate(ResourceType.wiki)
-			.fillCreateForm(title).assertOnGeneralTab()
-			.clickToolbarBack()
-			.assertOnTitle(title)
-			.launch();
+			.fillCreateForm(title)
+			.assertOnGeneralTab()
+			.clickToolbarBack();
 		
 		//create a page in the wiki
 		String page = "LMS-" + UUID.randomUUID();
@@ -294,14 +292,14 @@ public class PortfolioTest {
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
-			.clickToolbarBack()
-			.edit();
+			.clickToolbarBack();
 		
 		String blogNodeTitle = "Blog-EP-1";
 		String blogTitle = "Blog - EP - " + UUID.randomUUID().toString();
 		
 		//create a course element of type blog with a blog
-		CourseEditorPageFragment courseEditor = CourseEditorPageFragment.getEditor(browser);
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
 		courseEditor
 			.createNode("blog")
 			.nodeTitle(blogNodeTitle)
@@ -816,14 +814,14 @@ public class PortfolioTest {
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
-			.clickToolbarBack()
-			.edit();
+			.clickToolbarBack();
 		
 		String portfolioNodeTitle = "Template-EP-1";
 		String portfolioTitle = "Template - EP - " + UUID.randomUUID().toString();
 		
 		//create a course element of type CP with the CP that we create above
-		CourseEditorPageFragment courseEditor = CourseEditorPageFragment.getEditor(browser);
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
 		PortfolioPage template = courseEditor
 			.createNode("ep")
 			.nodeTitle(portfolioNodeTitle)

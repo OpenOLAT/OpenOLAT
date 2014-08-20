@@ -176,11 +176,15 @@ public class PortfolioPage {
 	 * @return
 	 */
 	public PortfolioPage openEditor() {
-		By editorBy = By.className("o_sel_ep_edit_map");
-		WebElement editorButton = browser.findElement(editorBy);
-		Assert.assertTrue(editorButton.isDisplayed());
-		editorButton.click();
-		OOGraphene.waitBusy();
+		By editorMarkerBy = By.className("o_eportfolio_edit");
+		List<WebElement> markers = browser.findElements(editorMarkerBy);
+		if(markers.isEmpty()) {
+			By editorBy = By.className("o_sel_ep_edit_map");
+			WebElement editorButton = browser.findElement(editorBy);
+			Assert.assertTrue(editorButton.isDisplayed());
+			editorButton.click();
+			OOGraphene.waitBusy();
+		}
 		return this;
 	}
 	

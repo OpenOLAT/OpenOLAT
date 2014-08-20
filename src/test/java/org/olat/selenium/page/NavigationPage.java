@@ -111,9 +111,9 @@ public class NavigationPage {
 		return new CatalogAdminPage(browser);
 	}
 	
-	public GroupsPage openGroups(WebDriver browser) {
+	public GroupsPage openGroups(WebDriver currentBrowser) {
 		navigate(groupsBy);
-		return new GroupsPage(browser);
+		return new GroupsPage(currentBrowser);
 	}
 	
 	private void navigate(By linkBy) {

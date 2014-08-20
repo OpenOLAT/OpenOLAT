@@ -112,7 +112,7 @@ public class AuthoringEnvPage {
 		OOGraphene.waitBusy();
 		OOGraphene.waitElement(RepositoryEditDescriptionPage.generaltabBy);
 		
-		WebElement main = browser.findElement(By.id("o_main"));
+		WebElement main = browser.findElement(By.id("o_main_wrapper"));
 		return Graphene.createPageFragment(RepositoryEditDescriptionPage.class, main);
 	}
 	
@@ -143,9 +143,7 @@ public class AuthoringEnvPage {
 			
 		//from description editor, back to details and launch the course
 		editDescription
-			.clickToolbarBack()
-			.assertOnTitle(title)
-			.launch();
+			.clickToolbarBack();
 	}
 	
 	public enum ResourceType {

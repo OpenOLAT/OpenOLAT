@@ -46,7 +46,7 @@ public class RepositoryEditDescriptionPage {
 	private WebDriver browser;
 	
 	public static RepositoryEditDescriptionPage getPage(WebDriver browser) {
-		WebElement main = browser.findElement(By.id("o_main"));
+		WebElement main = browser.findElement(By.id("o_main_wrapper"));
 		return Graphene.createPageFragment(RepositoryEditDescriptionPage.class, main);
 	}
 	
@@ -57,11 +57,11 @@ public class RepositoryEditDescriptionPage {
 		return this;
 	}
 	
-	public RepositoryDetailsPage clickToolbarBack() {
+	public void clickToolbarBack() {
 		browser.findElement(NavigationPage.toolbarBackBy).click();
 		OOGraphene.waitBusy();
 		
-		WebElement main = browser.findElement(By.id("o_main"));
-		return Graphene.createPageFragment(RepositoryDetailsPage.class, main);
+		WebElement main = browser.findElement(By.id("o_main_wrapper"));
+		Assert.assertTrue(main.isDisplayed());
 	}
 }

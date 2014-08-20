@@ -20,6 +20,7 @@
 package org.olat.selenium.page.course;
 
 import java.net.URL;
+import java.util.List;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
@@ -71,6 +72,17 @@ public class CoursePageFragment {
 	public CoursePageFragment assertOnCoursePage() {
 		WebElement treeContainer = browser.findElement(treeContainerBy);
 		Assert.assertTrue(treeContainer.isDisplayed());
+		return this;
+	}
+	
+	public CoursePageFragment assertOnTitle(String displayName) {
+		List<WebElement> titleList = browser.findElements(By.tagName("h2"));
+		Assert.assertNotNull(titleList);
+		Assert.assertEquals(1, titleList.size());
+		
+		WebElement title = titleList.get(0);
+		Assert.assertTrue(title.isDisplayed());
+		Assert.assertTrue(title.getText().contains(displayName));
 		return this;
 	}
 	

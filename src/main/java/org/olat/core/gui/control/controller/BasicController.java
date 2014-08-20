@@ -148,8 +148,9 @@ public abstract class BasicController extends DefaultController {
 	 */
 	protected Controller listenTo(Controller controller) {
 		controller.addControllerListener(this);
-		if (childControllers == null)
+		if (childControllers == null) {
 			childControllers = new ArrayList<Controller>(4);
+		}
 		/*
 		 * REVIEW:pb this is for quality and will be re-enabled after the OLAT
 		 * 6.0.0 Release if(childControllers.contains(controller)){ throw new

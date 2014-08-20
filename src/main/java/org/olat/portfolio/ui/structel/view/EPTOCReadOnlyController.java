@@ -103,8 +103,8 @@ public class EPTOCReadOnlyController extends BasicController {
 		if (secCallback.canCommentAndRate()) {
 			removeAsListenerAndDispose(commentsAndRatingCtr);
 			boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
-			CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, anonym);
-			commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), map.getOlatResource(), null, secCallback, true, true, true);
+			CommentAndRatingSecurityCallback callback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, anonym);
+			commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), map.getOlatResource(), null, callback, true, true, true);
 			listenTo(commentsAndRatingCtr);
 			vC.put("commentCtrl", commentsAndRatingCtr.getInitialComponent());
 		}

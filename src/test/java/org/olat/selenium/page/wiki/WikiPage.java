@@ -42,7 +42,7 @@ public class WikiPage {
 	private WebDriver browser;
 	
 	public static WikiPage getWiki(WebDriver browser) {
-		WebElement main = browser.findElement(By.id("o_main"));
+		WebElement main = browser.findElement(By.id("o_main_wrapper"));
 		return Graphene.createPageFragment(WikiPage.class, main);
 	}
 	

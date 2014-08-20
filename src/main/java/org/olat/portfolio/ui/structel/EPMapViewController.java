@@ -226,12 +226,12 @@ public class EPMapViewController extends BasicController implements Activateable
 		} 
 	}
 	
-	public void toogleEditMode(UserRequest ureq) {
+	private void toogleEditMode(UserRequest ureq) {
 		removeAsListenerAndDispose(editCtrl);
 		if (editMode == EditMode.view){
-			view(ureq);
-		} else {
 			edit(ureq);
+		} else {
+			view(ureq);
 		}
 	}
 	

@@ -267,7 +267,7 @@ public class CourseEditorPageFragment {
 		editLink.click();
 		OOGraphene.waitBusy();
 		
-		WebElement main = browser.findElement(By.id("o_main"));
+		WebElement main = browser.findElement(By.id("o_main_wrapper"));
 		return Graphene.createPageFragment(PortfolioPage.class, main);
 	}
 	
