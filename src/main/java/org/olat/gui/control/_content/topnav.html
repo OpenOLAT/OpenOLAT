@@ -25,6 +25,11 @@
 			$r.render("topnav.impressum")
 		</li>
 	#end
+	#if($r.available("topnav.help"))
+		<li id="o_navbar_help">
+			$r.render("topnav.help")
+		</li>
+	#end
 	<li id="o_navbar_print">
 		<a href="javascript:o_doPrint();" title="$r.translateInAttribute("topnav.printview.alt")" >
 			<i class="o_icon o_icon_print o_icon-lg"></i>

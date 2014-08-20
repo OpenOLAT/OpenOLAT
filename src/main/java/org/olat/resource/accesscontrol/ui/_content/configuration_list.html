@@ -37,7 +37,7 @@
 			#set($desc = $confController.getLink().getOffer().getDescription())
 			#if ($desc)
 			<div class="$css o_ac_desc">
-				$r.escapeHtml($desc)
+				$r.xssScan($desc)
 			</div>
 			#end
 			<div class="o_block">
