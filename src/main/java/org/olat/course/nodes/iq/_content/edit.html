@@ -17,12 +17,11 @@
 			$r.render("command.preview")
 		#end
 		</p>
-		<p>
 		$r.render("command.changeRepFile")
 		#if($r.available("command.editRepFile"))
 			$r.render("command.editRepFile")
 		#end
-		</p>
+		<br />
 
 		#if ($showOutcomes)
 				#o_togglebox_start("o_course_node_outcomes" $r.translate("outcomes.title"))
@@ -56,9 +55,9 @@
 		$r.render("command.chooseRepFile")		
 	#end
 </fieldset>
-			
-$r.render("filechoosecreateedit")
-
+<div class="o_block">
+	$r.render("filechoosecreateedit")
+</div>
 <fieldset>
 	<legend>$r.translate("choosenlayout")</legend>
 	#if ($type == "Assessment")

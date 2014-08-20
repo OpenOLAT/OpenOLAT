@@ -255,10 +255,10 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 					if(demoForumNode == null) {
 						demoForumNode = (FOCourseNode)node;
 						Forum courseForum = demoForumNode.loadOrCreateForum(demoCourse.getCourseEnvironment());
-						Message m1 = ForumManager.getInstance().createMessage();
-						m1.setTitle("Thread-1");
-						m1.setBody("Body of Thread-1");
-						ForumManager.getInstance().addTopMessage(id1, courseForum, m1);
+						Message message1 = ForumManager.getInstance().createMessage();
+						message1.setTitle("Thread-1");
+						message1.setBody("Body of Thread-1");
+						ForumManager.getInstance().addTopMessage(id1, courseForum, message1);
 					}	
 				} else if (node instanceof BCCourseNode) {
 					if(demoBCCourseNode == null) {

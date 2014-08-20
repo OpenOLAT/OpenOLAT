@@ -25,6 +25,7 @@
 
 package org.olat.repository.delete.service;
 
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
@@ -36,6 +37,7 @@ import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +62,8 @@ public class DeletionModule extends AbstractSpringModule {
 	private String adminUserName;
 
 	private Identity adminUserIdentity;
-	
+	@Autowired
+	private WebappHelper webappHelper;
 	@Autowired
 	private BaseSecurity baseSecurityManager;
 
@@ -76,6 +79,10 @@ public class DeletionModule extends AbstractSpringModule {
 
 	@Override
 	public void init() {
+		if(!StringHelper.containsNonWhitespace(archiveRootPath)) {
+			archiveRootPath = Paths.get(System.getProperty("java.io.tmpdir"), "olatdata", "deleted_archive").toString();
+		}
+				
 		if (!emailResponseTo.contains("@")) {
 			List<IdentityShort> identities = baseSecurityManager.findShortIdentitiesByName(Collections.singletonList(emailResponseTo));
 			if (identities != null && identities.size() == 1) {
