@@ -764,6 +764,7 @@ public class RichTextConfiguration implements Disposable {
  		  .append("  {title: 'Border', value: 'b_with_border'}\n")
  		  .append("],\n");
  		tinyMenuSb.append("link_class_list: [\n")
+		  .append("  {title: '', value: ''},\n")
 		  .append("  {title: 'Extern', value: 'b_link_extern'},\n")
 		  .append("  {title: 'Mail', value: 'b_link_mailto'},\n")
 		  .append("  {title: 'Forward', value: 'b_link_forward'}\n")
