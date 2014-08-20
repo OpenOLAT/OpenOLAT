@@ -21,11 +21,11 @@
 		#if($r.available("command.editRepFile"))
 			$r.render("command.editRepFile")
 		#end
-		<br />
 
 		#if ($showOutcomes)
+			<div class="o_block">
 				#o_togglebox_start("o_course_node_outcomes" $r.translate("outcomes.title"))
-				<table>
+				<table class="table table-condensed table-striped">
 					<tbody>
 						#foreach($key in $outcomes.keySet())
 		        	 		<tr><td>$key:</td><td>$outcomes.get($key)</td></tr>
@@ -33,20 +33,23 @@
 		            </tbody>
 				</table>
 				#o_togglebox_end()
+			</div>
 		#else
-			<table>
-				<tbody>			
-				#if ($minscore)
-					<tr><td>$r.translate("score.min"):</td><td>$minscore</td></tr>
-				#end
-				#if ($maxscore)
-					<tr><td>$r.translate("score.max"):</td><td>$maxscore</td></tr>
-				#end			
-				#if ($cutvalue)
-					<tr><td>$r.translate("score.cut"):</td><td>$cutvalue</td></tr>
-				#end
-				</tbody>
-			</table>
+			<div class="o_block">
+				<table class="table table-condensed table-striped">
+					<tbody>			
+					#if ($minscore)
+						<tr><td>$r.translate("score.min"):</td><td>$minscore</td></tr>
+					#end
+					#if ($maxscore)
+						<tr><td>$r.translate("score.max"):</td><td>$maxscore</td></tr>
+					#end			
+					#if ($cutvalue)
+						<tr><td>$r.translate("score.cut"):</td><td>$cutvalue</td></tr>
+					#end
+					</tbody>
+				</table>
+			</div>
 		#end		
 	#else
 		<p>
@@ -55,7 +58,7 @@
 		$r.render("command.chooseRepFile")		
 	#end
 </fieldset>
-<div class="o_block">
+<div class="o_block_large">
 	$r.render("filechoosecreateedit")
 </div>
 <fieldset>

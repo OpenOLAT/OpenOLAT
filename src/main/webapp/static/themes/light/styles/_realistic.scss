@@ -12,12 +12,27 @@
 
 /* Buttons */
 .o_button_dirty {
+  	text-shadow: 0 -1px 0 rgba(0,0,0,.2);
+  	$shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 1px rgba(0,0,0,.075);
+  	@include box-shadow($shadow);
+  	// Reset the shadow
+  	&:active,
+  	&.active {
+    	@include box-shadow(inset 0 3px 5px rgba(0,0,0,.125));
+  	}
 	@include btn-styles($o-button-dirty-bg);
 }
 
-/* remove text-shadow, barely readable because of small font */
-.o_login_providers .btn-default {
-	text-shadow: none;
+/* remove text-shadow on default buttons in conjunction with other button styles */
+.btn-default {
+	&.btn-success,
+	&.btn-info,
+	&.btn-warning,
+	&.btn-danger,
+	&.btn-primary,
+	&.o_button_dirty {
+		text-shadow: none;
+	}
 }
 
 
