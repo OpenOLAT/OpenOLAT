@@ -130,10 +130,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			}
 			
 			// Add set dirty form on change
-			sb.append(FormJSHelper.getJSStartWithVarDeclaration(fileComp.getFormDispatchId()))
-			  .append(FormJSHelper.getSetFlexiFormDirty(fileElem.getRootForm(), fileComp.getFormDispatchId()))
-			  .append(FormJSHelper.getJSEnd());
-			
+			FormJSHelper.appendFlexiFormDirty(sb, fileElem.getRootForm(), fileComp.getFormDispatchId());
 		} else {
 			// Read only view
 			sb.append("<span id=\"").append(id).append("\" ")

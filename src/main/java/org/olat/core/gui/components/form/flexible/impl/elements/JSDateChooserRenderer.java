@@ -199,10 +199,8 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		  .append("\" maxlength=\"").append(maxlength)
 		  .append("\" value=\"").append(StringEscapeUtils.escapeHtml(te.getValue())).append("\" ")
 		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()))
-		  .append("/>")
+		  .append("/>");
 		//add set dirty form only if enabled
-		  .append(FormJSHelper.getJSStartWithVarDeclaration(teC.getFormDispatchId()))
-		  .append(FormJSHelper.getSetFlexiFormDirty(te.getRootForm(), teC.getFormDispatchId()))
-		  .append(FormJSHelper.getJSEnd());
+		FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), teC.getFormDispatchId());
 	}
 }

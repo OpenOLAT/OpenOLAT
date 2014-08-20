@@ -114,13 +114,9 @@ class SelectboxRenderer extends DefaultComponentRenderer {
 		 */
 		sb.append("</select>");
 	
-
 		if(source.isEnabled()){
 			//add set dirty form only if enabled
-			sb.append(FormJSHelper.getJSStartWithVarDeclaration(ssec.getFormDispatchId()));
-			sb.append(FormJSHelper.getSetFlexiFormDirty(ssec.getRootForm(), ssec.getFormDispatchId()));
-			sb.append(FormJSHelper.getJSEnd());
+			FormJSHelper.appendFlexiFormDirty(sb, ssec.getRootForm(), ssec.getFormDispatchId());
 		}
-		
 	}
 }

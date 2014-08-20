@@ -133,9 +133,7 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 		
 		if(source.isEnabled()){
 			//add set dirty form only if enabled
-			sb.append(FormJSHelper.getJSStartWithVarDeclaration(teC.getFormDispatchId()))
-			  .append(FormJSHelper.getSetFlexiFormDirty(te.getRootForm(), teC.getFormDispatchId()))
-			  .append(FormJSHelper.getJSEnd());
+			FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), teC.getFormDispatchId());
 		}
 	}
 }

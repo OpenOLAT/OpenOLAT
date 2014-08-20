@@ -111,9 +111,7 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 		if(source.isEnabled()){
 			// add set dirty form only if enabled
 			// must be placed within label to make multiple radio-inline rules of bootstrap match 
-			sb.append(FormJSHelper.getJSStartWithVarDeclaration(formDispatchId))
-			  .append(FormJSHelper.getSetFlexiFormDirtyForCheckbox(ssec.getRootForm(), formDispatchId))
-			  .append(FormJSHelper.getJSEnd());
+			FormJSHelper.appendFlexiFormDirtyForCheckbox(sb, ssec.getRootForm(), formDispatchId);
 		}
 		
 		sb.append("</label>");

@@ -153,9 +153,7 @@ class SelectionTreeComponentRenderer extends DefaultComponentRenderer {
 		
 		if(stc.isEnabled()){
 			//add set dirty form only if enabled
-			sb.append(FormJSHelper.getJSStartWithVarDeclaration(stc.getFormDispatchId()))
-			  .append(FormJSHelper.getSetFlexiFormDirtyForCheckbox(stF.getRootForm(), stc.getFormDispatchId()))
-			  .append(FormJSHelper.getJSEnd());
+			FormJSHelper.appendFlexiFormDirtyForCheckbox(sb, stF.getRootForm(), stc.getFormDispatchId());
 		}
 	}
 

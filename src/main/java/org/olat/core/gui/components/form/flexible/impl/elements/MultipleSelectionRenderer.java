@@ -163,9 +163,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			
 		if(stC.isEnabled()){
 			//add set dirty form only if enabled
-			sb.append(FormJSHelper.getJSStartWithVarDeclaration(stF.getFormDispatchId()))
-			  .append(FormJSHelper.getSetFlexiFormDirtyForCheckbox(stF.getRootForm(), stF.getFormDispatchId()))
-			  .append(FormJSHelper.getJSEnd());
+			FormJSHelper.appendFlexiFormDirtyForCheckbox(sb, stF.getRootForm(), formDispatchId);
 		}
 	}
 }

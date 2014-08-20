@@ -109,9 +109,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		
 		//source
 		if (source.isEnabled()) {
-			sb.append(FormJSHelper.getJSStartWithVarDeclaration(id))
-			  .append(FormJSHelper.getSetFlexiFormDirty(ftE.getRootForm(), id))
-			  .append(FormJSHelper.getJSEnd());
+			FormJSHelper.appendFlexiFormDirty(sb, ftE.getRootForm(), id);
 		}
 	}
 	

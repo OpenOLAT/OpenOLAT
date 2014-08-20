@@ -85,9 +85,7 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			sb.append(" />");
 			
 			//add set dirty form only if enabled
-			sb.append(FormJSHelper.getJSStartWithVarDeclaration(teC.getFormDispatchId()))
-			  .append(FormJSHelper.getSetFlexiFormDirty(te.getRootForm(), teC.getFormDispatchId()))
-			  .append(FormJSHelper.getJSEnd());
+			FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), teC.getFormDispatchId());	
 		} else {
 			//read only view
 			sb.append("<span id=\"").append(id).append("\" ")

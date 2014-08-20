@@ -75,9 +75,7 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 		
 		//source
 		if (source.isEnabled()) {
-			sb.append(FormJSHelper.getJSStartWithVarDeclaration(id));
-			sb.append(FormJSHelper.getSetFlexiFormDirty(ftE.getRootForm(), id));
-			sb.append(FormJSHelper.getJSEnd());
+			FormJSHelper.appendFlexiFormDirty(sb, ftE.getRootForm(), id);
 		}
 	}
 
