@@ -21,16 +21,19 @@ package org.olat.repository;
 
 import org.olat.NewControllerFactory;
 import org.olat.catalog.CatalogEntry;
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.course.site.CourseSite;
 import org.olat.course.site.CourseSiteContextEntryControllerCreator;
 import org.olat.group.BusinessGroupModule;
 import org.olat.repository.site.MyCoursesSite;
 import org.olat.repository.site.RepositorySite;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Description:<br>
@@ -41,22 +44,44 @@ import org.olat.repository.site.RepositorySite;
  * 
  * @author gnaegi
  */
-public class RepositoryModule extends AbstractOLATModule {
+@Service("repositoryModule")
+public class RepositoryModule extends AbstractSpringModule {
 
 	private static final String MANAGED_REPOENTRY_ENABLED = "managedRepositoryEntries";
 	private static final String CATALOG_SITE_ENABLED = "site.catalog.enable";
 	private static final String CATALOG_ENABLED = "catalog.enable";
 	private static final String CATALOG_BROWSING_ENABLED = "catalog.brwosing.enable";
-	private static final String MYCOURSES_SEARCH_ENABLED = "mycourses.search.enable";
+	private static final String MYCOURSES_SEARCH_ENABLED = "mycourses.search.enabled";
+	private static final String MYCOURSES_ALL_RESOURCES_ENABLED = "mycourses.all.resources.enabled";
 	
+	private static final String COMMENT_ENABLED = "repo.comment.enabled";
+	private static final String RATING_ENABLED = "repo.rating.enabled";
+	
+	@Value("${site.catalog.enable:true}")
 	private boolean catalogSiteEnabled;
+	@Value("${catalog.enable:true}")
 	private boolean catalogEnabled;
+	@Value("${repo.catalog.browsing.enable}")
 	private boolean catalogBrowsingEnabled;
-	private boolean listAllResourceTypes;
-	private boolean managedRepositoryEntries;
-	private boolean myCoursesSearchEnabled;
 	
+	@Value("${repo.managed}")
+	private boolean managedRepositoryEntries;
+	@Value("${mycourses.search.enabled:true}")
+	private boolean myCoursesSearchEnabled;
+	@Value("${mycourses.all.resources.enabled:true}")
+	private boolean listAllResourceTypes;
+	@Value("${repo.comment.enabled:true}")
+	private boolean commentEnabled;
+	@Value("${repo.rating.enabled:true}")
+	private boolean ratingEnabled;
+	
+	@Autowired
 	private BusinessGroupModule groupModule;
+	
+	@Autowired
+	public RepositoryModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
+	}
 	
 	/**
 	 * @see org.olat.core.configuration.AbstractOLATModule#init()
@@ -90,20 +115,6 @@ public class RepositoryModule extends AbstractOLATModule {
 		this.groupModule = groupModule;
 	}
 
-	/**
-	 * @see org.olat.core.configuration.AbstractOLATModule#initDefaultProperties()
-	 */
-	@Override
-	protected void initDefaultProperties() {
-		managedRepositoryEntries = getBooleanConfigParameter(MANAGED_REPOENTRY_ENABLED, false);
-
-		catalogSiteEnabled = getBooleanConfigParameter(CATALOG_SITE_ENABLED, true);
-		catalogEnabled = getBooleanConfigParameter(CATALOG_ENABLED, true);
-		catalogBrowsingEnabled = getBooleanConfigParameter(CATALOG_BROWSING_ENABLED, true);
-		
-		myCoursesSearchEnabled = getBooleanConfigParameter(MYCOURSES_SEARCH_ENABLED, true);
-	}
-
 	private void updateProperties() {
 		String managedRepo = getStringPropertyValue(MANAGED_REPOENTRY_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(managedRepo)) {
@@ -129,6 +140,21 @@ public class RepositoryModule extends AbstractOLATModule {
 		if(StringHelper.containsNonWhitespace(myCoursesSearch)) {
 			myCoursesSearchEnabled = "true".equals(myCoursesSearch);
 		}
+		
+		String myCoursesAllResources = getStringPropertyValue(MYCOURSES_ALL_RESOURCES_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(myCoursesAllResources)) {
+			listAllResourceTypes = "true".equals(myCoursesAllResources);
+		}
+		
+		String comment = getStringPropertyValue(COMMENT_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(comment)) {
+			commentEnabled = "true".equals(comment);
+		}
+		
+		String rating = getStringPropertyValue(RATING_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(rating)) {
+			ratingEnabled = "true".equals(rating);
+		}
 	}
 
 	/**
@@ -137,11 +163,6 @@ public class RepositoryModule extends AbstractOLATModule {
 	@Override
 	protected void initFromChangedProperties() {
 		updateProperties();
-	}
-
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
 	}
 	
 	public boolean isAcceptMembership(Roles roles) {
@@ -154,6 +175,10 @@ public class RepositoryModule extends AbstractOLATModule {
 
 	public boolean isListAllResourceTypes() {
 		return listAllResourceTypes;
+	}
+	
+	public void setListAllResourceTypes(boolean enabled) {
+		setStringProperty(MYCOURSES_ALL_RESOURCES_ENABLED, Boolean.toString(enabled), true);
 	}
 
 	public boolean isManagedRepositoryEntries() {
@@ -195,6 +220,20 @@ public class RepositoryModule extends AbstractOLATModule {
 	public void setMyCoursesSearchEnabled(boolean enabled) {
 		setStringProperty(MYCOURSES_SEARCH_ENABLED, Boolean.toString(enabled), true);
 	}
-	
-	
+
+	public boolean isCommentEnabled() {
+		return commentEnabled;
+	}
+
+	public void setCommentEnabled(boolean enabled) {
+		setStringProperty(COMMENT_ENABLED, Boolean.toString(enabled), true);
+	}
+
+	public boolean isRatingEnabled() {
+		return ratingEnabled;
+	}
+
+	public void setRatingEnabled(boolean enabled) {
+		setStringProperty(RATING_ENABLED, Boolean.toString(enabled), true);
+	}
 }

@@ -89,6 +89,7 @@ import org.olat.search.service.indexer.LifeFullIndexer;
 import org.olat.user.UserImpl;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Initial Date:  Mar 31, 2004
@@ -98,6 +99,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Comment:  
  * 
  */
+@Service("repositoryManager")
 public class RepositoryManager extends BasicManager {
 	
 	private final int PICTUREWIDTH = 570;
@@ -543,7 +545,11 @@ public class RepositoryManager extends BasicManager {
 				// allow if access granted for users
 				canLaunch = true;
 			} else if (re.getAccess() == RepositoryEntry.ACC_OWNERS && re.isMembersOnly()) {
-				canLaunch = repositoryEntryRelationDao.isMember(identity, re);
+				if(!canLaunch) {
+					if(repositoryEntryRelationDao.isMember(identity, re)) {
+						canLaunch = true;
+					}
+				}
 			}
 		}
 		

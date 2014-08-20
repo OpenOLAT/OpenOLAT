@@ -25,7 +25,6 @@
 
 package org.olat.repository.delete.service;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
@@ -33,46 +32,41 @@ import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityShort;
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
- * TODO:cg Documentation
  * Initial Date: 15.06.2006 <br>
  * @author Christian Guretzki
  */
-public class DeletionModule extends AbstractOLATModule {
-
-	private static final String CONF_ARCHIVE_ROOT_PATH = "archiveRootPath";
+@Service("deletionModule")
+public class DeletionModule extends AbstractSpringModule {
+	private static final OLog log = Tracing.createLoggerFor(DeletionModule.class);
 	private static final String CONF_DELETE_EMAIL_RESPONSE_TO_USER_NAME = "deleteEmailResponseToUserName";
-	private static final String CONF_ADMIN_USER_NAME = "adminUserName";
 	private static final String DEFAULT_ADMIN_USERNAME = "administrator";
+	
+	@Value("${archive.dir}")
 	private String archiveRootPath;
+	@Value("${deleteEmailResponseToUserName:administrator}")
 	private String emailResponseTo;
+	@Value("${deletionModule.adminUserName:administrator}")
+	private String adminUserName;
+
 	private Identity adminUserIdentity;
+	
+	@Autowired
 	private BaseSecurity baseSecurityManager;
 
-
-	/**
-	 * [used by spring]
-	 */
-	private DeletionModule() {
-		//
-	}
-
-	/**
-	 * [used by spring]
-	 * @param baseSecurityManager
-	 */
-	public void setBaseSecurityManager(BaseSecurity baseSecurityManager) {
-		this.baseSecurityManager = baseSecurityManager;
-	}
-
-	@Override
-	protected void initDefaultProperties() {
-		//
+	@Autowired
+	public DeletionModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
 	}
 	
 	@Override
@@ -80,35 +74,28 @@ public class DeletionModule extends AbstractOLATModule {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.configuration.OLATModule#init(com.anthonyeden.lib.config.Configuration)
-	 */
+	@Override
 	public void init() {
-		archiveRootPath = getStringConfigParameter(CONF_ARCHIVE_ROOT_PATH, System.getProperty("java.io.tmpdir") + File.separator+"olatdata"+File.separator + "deleted_archive", false);
-		emailResponseTo = getStringConfigParameter(CONF_DELETE_EMAIL_RESPONSE_TO_USER_NAME, WebappHelper.getMailConfig("mailDeleteUser"), false);
-		
 		if (!emailResponseTo.contains("@")) {
 			List<IdentityShort> identities = baseSecurityManager.findShortIdentitiesByName(Collections.singletonList(emailResponseTo));
 			if (identities != null && identities.size() == 1) {
 				emailResponseTo = identities.get(0).getEmail();
 			} else {
-				logWarn("Could not find:  " + CONF_DELETE_EMAIL_RESPONSE_TO_USER_NAME + " with name: " + emailResponseTo, null);
+				log.warn("Could not find:  " + CONF_DELETE_EMAIL_RESPONSE_TO_USER_NAME + " with name: " + emailResponseTo, null);
 				emailResponseTo = WebappHelper.getMailConfig("mailFrom");
 			}
-			
 		}
-		
-		String adminUserName = getStringConfigParameter(CONF_ADMIN_USER_NAME, "administrator", false);
+
 		if (adminUserName != null) {
 			adminUserIdentity = baseSecurityManager.findIdentityByName(adminUserName);
 		} else {
 			adminUserIdentity = baseSecurityManager.findIdentityByName(DEFAULT_ADMIN_USERNAME);
 		}
 		
-		if(isLogDebugEnabled()) {
-			logDebug("archiveRootPath=" + archiveRootPath);
-			logDebug("emailResponseTo=" + emailResponseTo);
-			logDebug("adminUserIdentity=" + adminUserIdentity);
+		if(log.isDebug()) {
+			log.debug("archiveRootPath=" + archiveRootPath);
+			log.debug("emailResponseTo=" + emailResponseTo);
+			log.debug("adminUserIdentity=" + adminUserIdentity);
 		}
 	}
 
@@ -133,13 +120,5 @@ public class DeletionModule extends AbstractOLATModule {
 
 	public Identity getAdminUserIdentity() {
 		return adminUserIdentity;
-	}
-
-	/**
-	 * [used by Spring]
-	 */
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
 	}
 }

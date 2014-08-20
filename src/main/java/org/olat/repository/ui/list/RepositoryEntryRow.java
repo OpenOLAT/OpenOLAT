@@ -22,8 +22,8 @@ package org.olat.repository.ui.list;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
@@ -78,7 +78,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private FormLink commentsLink;
 	
 	private OLATResourceable olatResource;
-	private RatingWithAverageFormItem ratingFormItem;
+	private FormItem ratingFormItem;
 	
 	public RepositoryEntryRow() {
 		//
@@ -297,7 +297,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	}
 	
 	public String getStartLinkName() {
-		return startLink.getComponent().getComponentName();
+		return startLink == null ? null :startLink.getComponent().getComponentName();
 	}
 	
 	public FormLink getStartLink() {
@@ -336,14 +336,14 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	}
 	
 	public String getRatingFormItemName() {
-		return ratingFormItem.getComponent().getComponentName();
+		return ratingFormItem == null ? null : ratingFormItem.getComponent().getComponentName();
 	}
 
-	public RatingWithAverageFormItem getRatingFormItem() {
+	public FormItem getRatingFormItem() {
 		return ratingFormItem;
 	}
 
-	public void setRatingFormItem(RatingWithAverageFormItem ratingFormItem) {
+	public void setRatingFormItem(FormItem ratingFormItem) {
 		this.ratingFormItem = ratingFormItem;
 	}
 	
@@ -352,7 +352,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	}
 	
 	public String getCommentsLinkName() {
-		return commentsLink.getComponent().getComponentName();
+		return commentsLink == null ? null : commentsLink.getComponent().getComponentName();
 	}
 
 	public void setCommentsLink(FormLink commentsLink) {

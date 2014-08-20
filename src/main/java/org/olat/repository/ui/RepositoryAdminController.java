@@ -40,7 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RepositoryAdminController extends FormBasicController {
 	
-	private MultipleSelectionElement enabled;
+	private MultipleSelectionElement myCourseSearchEl, commentEl, ratingEl;
 	private static final String[] keys = {"on"};
 	
 	@Autowired
@@ -57,11 +57,21 @@ public class RepositoryAdminController extends FormBasicController {
 		setFormTitle("repository.admin.title");
 		setFormContextHelp(RepositoryService.class.getPackage().getName(), "rep-admin.html", "help.hover.repository.admin");
 
-		boolean restEnabled = repositoryModule.isMyCoursesSearchEnabled();
-		String[] values = new String[] { translate("my.course.search.on") };
-		enabled = uifactory.addCheckboxesHorizontal("my.course.search.enabled", formLayout, keys, values);
-		enabled.addActionListener(FormEvent.ONCLICK);
-		enabled.select(keys[0], restEnabled);
+		boolean searchEnabled = repositoryModule.isMyCoursesSearchEnabled();
+		String[] values = new String[] { translate("on") };
+		myCourseSearchEl = uifactory.addCheckboxesHorizontal("my.course.search.enabled", formLayout, keys, values);
+		myCourseSearchEl.addActionListener(FormEvent.ONCLICK);
+		myCourseSearchEl.select(keys[0], searchEnabled);
+		
+		boolean commentEnabled = repositoryModule.isCommentEnabled();
+		commentEl = uifactory.addCheckboxesHorizontal("my.course.comment.enabled", formLayout, keys, values);
+		commentEl.addActionListener(FormEvent.ONCLICK);
+		commentEl.select(keys[0], commentEnabled);
+		
+		boolean ratingEnabled = repositoryModule.isCommentEnabled();
+		ratingEl = uifactory.addCheckboxesHorizontal("my.course.rating.enabled", formLayout, keys, values);
+		ratingEl.addActionListener(FormEvent.ONCLICK);
+		ratingEl.select(keys[0], ratingEnabled);
 	}
 	
 	@Override
@@ -71,9 +81,17 @@ public class RepositoryAdminController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(enabled == source) {
-			boolean on = !enabled.getSelectedKeys().isEmpty();
+		if(myCourseSearchEl == source) {
+			boolean on = !myCourseSearchEl.getSelectedKeys().isEmpty();
 			repositoryModule.setMyCoursesSearchEnabled(on);
+			getWindowControl().setInfo("saved");
+		} else if(commentEl == source) {
+			boolean on = !commentEl.getSelectedKeys().isEmpty();
+			repositoryModule.setCommentEnabled(on);
+			getWindowControl().setInfo("saved");
+		} else if(ratingEl == source) {
+			boolean on = !ratingEl.getSelectedKeys().isEmpty();
+			repositoryModule.setRatingEnabled(on);
 			getWindowControl().setInfo("saved");
 		}
 	}

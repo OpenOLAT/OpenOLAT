@@ -52,6 +52,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.rating.RatingFormEvent;
+import org.olat.core.gui.components.rating.RatingFormItem;
 import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -69,6 +70,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
@@ -108,6 +110,8 @@ public class RepositoryEntryListController extends FormBasicController
 	private UserRatingsDAO userRatingsDao;
 	@Autowired
 	private MapperService mapperService;
+	@Autowired
+	private RepositoryModule repositoryModule;
 	
 	private final boolean guestOnly;
 	
@@ -162,9 +166,13 @@ public class RepositoryEntryListController extends FormBasicController
 				true, OrderBy.lifecycleEnd.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false,Cols.details.i18nKey(), Cols.details.ordinal(), false, null));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.start.i18nKey(), Cols.start.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.ratings.i18nKey(), Cols.ratings.ordinal(),
+		if(repositoryModule.isRatingEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.ratings.i18nKey(), Cols.ratings.ordinal(),
 				true, OrderBy.rating.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.comments.i18nKey(), Cols.comments.ordinal()));
+		}
+		if(repositoryModule.isCommentEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.comments.i18nKey(), Cols.comments.ordinal()));
+		}
 
 		model = new RepositoryEntryDataModel(dataSource, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
@@ -503,6 +511,9 @@ public class RepositoryEntryListController extends FormBasicController
 		if(!row.isMembersOnly() && row.getAccessTypes() != null && !row.getAccessTypes().isEmpty() && !row.isMember()) {
 			label = "book";
 			isStart = false;
+			if(guestOnly) {
+				return;
+			}
 		} else {
 			label = "start";
 		}
@@ -528,29 +539,42 @@ public class RepositoryEntryListController extends FormBasicController
 
 	@Override
 	public void forgeRatings(RepositoryEntryRow row) {
-		Integer myRating = row.getMyRating();
-		Double averageRating = row.getAverageRating();
-		long numOfRatings = row.getNumOfRatings();
-
-		float ratingValue = myRating == null ? 0f : myRating.floatValue();
-		float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
-		RatingWithAverageFormItem ratingCmp
-			= new RatingWithAverageFormItem("rat_" + row.getKey(), ratingValue, averageRatingValue, 5, numOfRatings);
-		ratingCmp.setEnabled(!guestOnly);
-		row.setRatingFormItem(ratingCmp);
-		ratingCmp.setUserObject(row);
+		if(repositoryModule.isRatingEnabled()) {
+			if(guestOnly) {
+				Double averageRating = row.getAverageRating();
+				float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
+				
+				RatingFormItem ratingCmp
+					= new RatingFormItem("rat_" + row.getKey(), averageRatingValue, 5, false);
+				row.setRatingFormItem(ratingCmp);
+				ratingCmp.setUserObject(row);
+			} else {
+				Integer myRating = row.getMyRating();
+				Double averageRating = row.getAverageRating();
+				long numOfRatings = row.getNumOfRatings();
+		
+				float ratingValue = myRating == null ? 0f : myRating.floatValue();
+				float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
+				RatingWithAverageFormItem ratingCmp
+					= new RatingWithAverageFormItem("rat_" + row.getKey(), ratingValue, averageRatingValue, 5, numOfRatings);
+				row.setRatingFormItem(ratingCmp);
+				ratingCmp.setUserObject(row);
+			}
+		}
 	}
 
 	@Override
 	public void forgeComments(RepositoryEntryRow row) {
-		long numOfComments = row.getNumOfComments();
-		String title = "(" + numOfComments + ")";
-		FormLink commentsLink = uifactory.addFormLink("comments_" + row.getKey(), "comments", title, null, null, Link.NONTRANSLATED);
-		commentsLink.setUserObject(row);
-		String css = numOfComments > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
-		commentsLink.setCustomEnabledLinkCSS("o_comments");
-		commentsLink.setIconLeftCSS(css);
-		row.setCommentsLink(commentsLink);
+		if(repositoryModule.isCommentEnabled()) {
+			long numOfComments = row.getNumOfComments();
+			String title = "(" + numOfComments + ")";
+			FormLink commentsLink = uifactory.addFormLink("comments_" + row.getKey(), "comments", title, null, null, Link.NONTRANSLATED);
+			commentsLink.setUserObject(row);
+			String css = numOfComments > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
+			commentsLink.setCustomEnabledLinkCSS("o_comments");
+			commentsLink.setIconLeftCSS(css);
+			row.setCommentsLink(commentsLink);
+		}
 	}
 
 	@Override

@@ -63,6 +63,8 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
 /**
@@ -73,6 +75,7 @@ import org.olat.user.UserManager;
  * Comment:  
  * 
  */
+@Service("repositoryDeletionManager")
 public class RepositoryDeletionManager extends BasicManager implements UserDataDeletable {
 
 	private static final String REPOSITORY_ARCHIVE_DIR = "archive_deleted_resources";
@@ -87,34 +90,18 @@ public class RepositoryDeletionManager extends BasicManager implements UserDataD
 
 	public static final String SEND_DELETE_EMAIL_ACTION = "sendDeleteEmail";
 	private static final String REPOSITORY_DELETED_ACTION = "respositoryEntryDeleted";
-	private DeletionModule deletionModule;
+
+	private final DeletionModule deletionModule;
+	
+	@Autowired
 	private MailManager mailManager;
+	@Autowired
 	private RepositoryService repositoryService;
 	
-
-	/**
-	 * [used by spring]
-	 * @param userDeletionManager
-	 */
-	private RepositoryDeletionManager(DeletionModule deletionModule) {
+	@Autowired
+	public RepositoryDeletionManager(DeletionModule deletionModule) {
 		this.deletionModule = deletionModule;
 		INSTANCE = this;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param mailManager
-	 */
-	public void setMailManager(MailManager mailManager) {
-		this.mailManager = mailManager;
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param repositoryService
-	 */
-	public void setRepositoryService(RepositoryService repositoryService) {
-		this.repositoryService = repositoryService;
 	}
 
 	/**

@@ -83,15 +83,23 @@
 		</div> 
 		#end
 		
+		#if($row.ratingFormItemName || $row.commentsLinkName)
 		<div class="o_social o_ratings_and_comments row">
+			#if($row.ratingFormItemName)
 			<div class="o_rating_wrapper">
 				$r.render($row.ratingFormItemName)
 			</div>
-			$r.render($row.commentsLinkName)
+			#end
+			#if($row.commentsLinkName)
+				$r.render($row.commentsLinkName)
+			#end
 		</div>
+		#end
 		
 		$r.render($row.getDetailsLinkName())
-		$r.render($row.getStartLinkName())
+		#if($row.getStartLinkName())
+			$r.render($row.getStartLinkName())
+		#end
 	</div>	
 
 <script type="text/javascript">

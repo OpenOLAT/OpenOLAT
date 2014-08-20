@@ -8,60 +8,7 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
 
-	<context:component-scan base-package="org.olat.repository.manager,org.olat.repository.handlers" />
-
-	<bean id="repositoryModule" class="org.olat.repository.RepositoryModule" depends-on="userModule">
-		<property name="groupModule" ref="businessGroupModule"/>
-		<property name="persistedProperties">
-		  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
-		    <constructor-arg index="0" ref="coordinatorManager"/>
-		    <constructor-arg index="1" ref="repositoryModule" />
-		  </bean>
-		</property>
-	</bean>
-
-	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject" ref="repositoryModule" />
-		<property name="targetMethod" value="init" />
-		<property name="arguments">
-			<value>
-				managedRepositoryEntries=${repo.managed}
-				site.catalog.enable=${site.catalog.enable}
-				repo.catalog.enable=${repo.catalog.enable}
-				repo.catalog.browsing.enable=${repo.catalog.browsing.enable}
-			</value>
-		</property>
-	</bean>
-	
-	<bean id="repositoryManager" class="org.olat.repository.RepositoryManager"/>
-		<bean id="deletionModule" class="org.olat.repository.delete.service.DeletionModule">
-		<property name="baseSecurityManager" ref="baseSecurityManager" />
-		<property name="persistedProperties">
-			<bean class="org.olat.core.configuration.PersistedProperties"
-				scope="prototype" init-method="init" destroy-method="destroy">
-				<constructor-arg index="0" ref="coordinatorManager" />
-				<constructor-arg index="1" ref="deletionModule" />
-			</bean>
-		</property>
-	</bean>
-
-	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject" ref="deletionModule" />
-		<property name="targetMethod" value="init" />
-		<property name="arguments">
-			<value>
-				archiveRootPath=${archive.dir}
-				deleteEmailResponseToUserName=administrator
-				adminUserName=${deletionModule.adminUserName}
-	    </value>
-		</property>
-	</bean>
-
-	<bean id="repositoryDeletionManager"
-		class="org.olat.repository.delete.service.RepositoryDeletionManager">
-		<constructor-arg index="0" ref="deletionModule" />
-		<property name="mailManager" ref="mailManager" />
-	</bean>
+	<context:component-scan base-package="org.olat.repository" />
 	
 	<!-- life cycle admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">

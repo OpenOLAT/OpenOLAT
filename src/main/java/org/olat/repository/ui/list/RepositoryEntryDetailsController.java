@@ -249,28 +249,32 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 			}
 			
-			Integer myRating;
-			if(row == null) {
-				myRating = userRatingsDao.getRatingValue(getIdentity(), entry, null);
-			} else {
-				myRating = row.getMyRating();
+			RepositoryEntryStatistics statistics = entry.getStatistics();
+			if(repositoryModule.isRatingEnabled()) {
+				Integer myRating;
+				if(row == null) {
+					myRating = userRatingsDao.getRatingValue(getIdentity(), entry, null);
+				} else {
+					myRating = row.getMyRating();
+				}
+				
+				Double averageRating = statistics.getRating();
+				long numOfRatings = statistics.getNumOfRatings();
+				float ratingValue = myRating == null ? 0f : myRating.floatValue();
+				float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
+				ratingEl = new RatingWithAverageFormItem("rating", ratingValue, averageRatingValue, 5, numOfRatings);
+				ratingEl.setEnabled(!guestOnly);
+				layoutCont.add("rating", ratingEl);
 			}
 			
-			RepositoryEntryStatistics statistics = entry.getStatistics();
-			Double averageRating = statistics.getRating();
-			long numOfRatings = statistics.getNumOfRatings();
-			float ratingValue = myRating == null ? 0f : myRating.floatValue();
-			float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
-			ratingEl = new RatingWithAverageFormItem("rating", ratingValue, averageRatingValue, 5, numOfRatings);
-			ratingEl.setEnabled(!guestOnly);
-			layoutCont.add("rating", ratingEl);
-			
-			long numOfComments = statistics.getNumOfComments();
-			String title = "(" + numOfComments + ")";
-			commentsLink = uifactory.addFormLink("comments", "comments", title, null, layoutCont, Link.NONTRANSLATED);
-			commentsLink.setCustomEnabledLinkCSS("o_comments");
-			String css = numOfComments > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
-			commentsLink.setIconLeftCSS(css);
+			if(repositoryModule.isCommentEnabled()) {
+				long numOfComments = statistics.getNumOfComments();
+				String title = "(" + numOfComments + ")";
+				commentsLink = uifactory.addFormLink("comments", "comments", title, null, layoutCont, Link.NONTRANSLATED);
+				commentsLink.setCustomEnabledLinkCSS("o_comments");
+				String css = numOfComments > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
+				commentsLink.setIconLeftCSS(css);
+			}
 			
 			//load memberships
 			boolean isMember = repositoryService.isMember(getIdentity(), entry);
@@ -317,11 +321,13 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
 					startLink.setCustomEnabledLinkCSS("btn btn-success"); // custom style
 					startLink.setElementCssClass("o_book btn-block");
+					startLink.setVisible(!guestOnly);
 				} else {
 					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
 					startLink.setEnabled(false);
 					startLink.setElementCssClass("o_start btn-block");
+					startLink.setVisible(!guestOnly);
 				}
 				startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
 				startLink.setPrimary(true);

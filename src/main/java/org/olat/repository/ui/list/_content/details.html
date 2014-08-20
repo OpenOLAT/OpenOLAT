@@ -46,11 +46,14 @@
 					#end
 				</div>
 				
+				#if($r.available("rating") || $r.available("comments"))
 				<div class="o_social o_block">
 					<h4>$r.translate("ratings")</h4>
 					#if($r.available("rating")) $r.render("rating") #end
-					$r.render("comments")
+					#if($r.available("comments")) $r.render("comments") #end
 				</div>
+				#end
+				
 				#if($v.authors)
 				<div class="o_authors o_block">
 					<h4>$r.translate("cif.authors")</h4>
