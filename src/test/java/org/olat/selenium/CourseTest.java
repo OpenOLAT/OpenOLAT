@@ -607,7 +607,7 @@ public class CourseTest {
 		participantNavigation
 			.openMyCourses()
 			.openSearch()
-			.search(courseTitle)
+			.extendedSearch(courseTitle)
 			.select(courseTitle)
 			.start();
 		//Navigate the course to the blog

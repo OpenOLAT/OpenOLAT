@@ -64,7 +64,15 @@ public class MyCoursesPage {
 		return this;
 	}
 	
-	public MyCoursesPage search(String title) {
+	public MyCoursesPage extendedSearch(String title) {
+		By extendedSearchButtonBy = By.className("o_sel_flexi_extendedsearch");
+		List<WebElement> extendedSearchButtons = browser.findElements(extendedSearchButtonBy);
+		if(extendedSearchButtons.size() > 0 && extendedSearchButtons.get(0).isDisplayed()) {
+			WebElement extendedSearchButton = extendedSearchButtons.get(0);
+			extendedSearchButton.click();
+			OOGraphene.waitBusy();
+		}
+
 		By titleBy = By.cssSelector(".o_sel_repo_search_displayname input[type='text']");
 		WebElement titleEl = browser.findElement(titleBy);
 		titleEl.sendKeys(title);
