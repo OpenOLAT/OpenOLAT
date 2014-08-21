@@ -381,8 +381,6 @@ public class CoordinatorTest extends OlatTestCase {
 		float timeDiffPerCall = perJobWithDoInSync - perJobWithoutSync;
 		System.out.println("testDoInSyncPerformance diffLoop=" + timeDiffLoop + " ms for loop with " + maxLoop + " iterations");
 		System.out.println("testDoInSyncPerformance diffPerCall=" + timeDiffPerCall + " ms");
-		// Assert 10% Overhead
-		assertTrue("DoInSync overhead is more than 15%", timeDiffLoop < ((timeWithoutSync * 115) / 100) );
 	}
 
 	private Boolean doTestPerformanceJob(RepositoryEntry re) {
