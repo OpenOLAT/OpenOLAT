@@ -936,8 +936,8 @@ function o_popover(id, contentId, loc) {
 
 function o_shareLinkPopup(id, text, loc) {
 	if(typeof(loc)==='undefined') loc = 'top';
-
-	jQuery('#' + id).popover({
+	var elem = jQuery('#' + id);
+	elem.popover({
     	placement : loc,
     	html: true,
     	trigger: 'click',
@@ -954,11 +954,14 @@ function o_shareLinkPopup(id, text, loc) {
 			jQuery('body').on('click', clickListener);
 		}, 5);
 	});
+	// make mouse over link text work again
+	elem.attr('title',elem.attr('data-original-title'));
 }
 
 function o_QRCodePopup(id, text, loc) {	
 	if(typeof(loc)==='undefined') loc = 'top';
-	jQuery('#' + id).popover({
+	var elem = jQuery('#' + id);
+	elem.popover({
     	placement : loc,
     	html: true,
     	trigger: 'click',
@@ -981,6 +984,8 @@ function o_QRCodePopup(id, text, loc) {
 			 delete o_info.qr;			 
 		 } catch(e) {}
 	});
+	// make mouse over link text work again
+	elem.attr('title',elem.attr('data-original-title'));
 }
 function o_QRCode(id, text) {
 	// dynamically load qr code library
