@@ -248,11 +248,11 @@ public class AuthorListController extends FormBasicController implements Activat
 				true, OrderBy.creationDate.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastUsage.i18nKey(), Cols.lastUsage.ordinal(),
 				true, OrderBy.lastUsage.name()));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("details", -1, "details",
-				new StaticFlexiCellRenderer("" /* translate("details")*/, "details", "o_icon-lg o_icon_details")));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.tools.i18nKey(), Cols.tools.ordinal()));
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(Cols.detailsSupported.i18nKey(), Cols.detailsSupported.ordinal(), "details",
+				new StaticFlexiCellRenderer("", "details", "o_icon-lg o_icon_details", translate("details"))));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(Cols.editionSupported.i18nKey(), Cols.editionSupported.ordinal(), "edit",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer("" /* translate("edit") */, "edit", "o_icon-lg o_icon_edit"), null)));
+				new BooleanCellRenderer(new StaticFlexiCellRenderer("", "edit", "o_icon-lg o_icon_edit", translate("edit")), null)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.tools.i18nKey(), Cols.tools.ordinal()));
 		
 		model = new AuthoringEntryDataModel(dataSource, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
@@ -739,7 +739,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		//tools
 		FormLink toolsLink = uifactory.addFormLink("tools_" + counter.incrementAndGet(), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
-		toolsLink.setTitle(" ");
+		toolsLink.setTitle(translate("tools"));
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
 	}

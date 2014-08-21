@@ -20,6 +20,7 @@
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
@@ -40,16 +41,18 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 	private String label;
 	private String action;
 	private String iconCSS;
+	private String linkTitle; 
 	private FlexiCellRenderer labelDelegate;
 	
 	public StaticFlexiCellRenderer(String label, String action) {
-		this(label, action, null);
+		this(label, action, null, null);
 	}
 	
-	public StaticFlexiCellRenderer(String label, String action, String iconCSS) {
+	public StaticFlexiCellRenderer(String label, String action, String iconCSS, String linkTitle) {
 		this.label = label;
 		this.action = action;
 		this.iconCSS = iconCSS;
+		this.linkTitle = linkTitle;
 	}
 	
 	public StaticFlexiCellRenderer(String action, FlexiCellRenderer labelDelegate) {
@@ -74,7 +77,11 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 			Form rootForm = ftE.getRootForm();
 			NameValuePair pair = new NameValuePair(cellAction, Integer.toString(row));
 			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, pair);
-			target.append("<a href=\"javascript:").append(jsCode).append("\">");
+			target.append("<a href=\"javascript:").append(jsCode).append("\"");
+			if(StringHelper.containsNonWhitespace(linkTitle)) {
+				target.append(" title=\"").append(StringEscapeUtils.escapeHtml(linkTitle)).append("\"");
+			}
+			target.append(">");
 			if(StringHelper.containsNonWhitespace(iconCSS)) {
 				target.append("<i class=\"o_icon ").append(iconCSS).append("\">&nbsp;</i>");
 			}
