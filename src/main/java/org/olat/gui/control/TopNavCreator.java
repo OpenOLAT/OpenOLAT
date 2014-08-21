@@ -41,7 +41,6 @@ import org.olat.repository.RepositoryService;
  */
 public class TopNavCreator extends AutoCreator {
 	
-	private boolean impressum;
 	private boolean search;
 	private String internalSiteSoftKey;
 	private boolean searchOnlyHasInternalSiteMember;
@@ -49,15 +48,7 @@ public class TopNavCreator extends AutoCreator {
 	@Override
 	public Controller createController(UserRequest ureq, WindowControl wControl) {
 		boolean canSearch = canSearch(ureq.getIdentity());
-		return new OlatTopNavController(ureq, wControl, impressum, canSearch);
-	}
-	
-	public boolean isImpressum() {
-		return impressum;
-	}
-
-	public void setImpressum(boolean impressum) {
-		this.impressum = impressum;
+		return new OlatTopNavController(ureq, wControl, canSearch);
 	}
 
 	public boolean isSearch() {

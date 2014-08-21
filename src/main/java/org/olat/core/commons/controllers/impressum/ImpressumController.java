@@ -23,12 +23,11 @@ import java.io.File;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
-import org.olat.core.util.WebappHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <h3>Description:</h3> This controller displays an impressum which it reads
@@ -41,9 +40,8 @@ import org.olat.core.util.WebappHelper;
  */
 public class ImpressumController extends BasicController {
 
-	public static final String IMPRESSUM_HTML_FOLDER = "/customizing/impressum/";
-	private VelocityContainer content;
-	private IFrameDisplayController impressumIframe;
+	@Autowired
+	private ImpressumModule impressumModule;
 
 	/**
 	 * @param ureq
@@ -51,40 +49,28 @@ public class ImpressumController extends BasicController {
 	 */
 	public ImpressumController(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
-		this.content = createVelocityContainer("impressum");
-		File baseFolder = new File(WebappHelper.getUserDataRoot(), IMPRESSUM_HTML_FOLDER);		
-		this.impressumIframe = new IFrameDisplayController(ureq, getWindowControl(), baseFolder);
+		
+		File baseFolder = impressumModule.getImpressumDirectory();
+		IFrameDisplayController iframe = new IFrameDisplayController(ureq, getWindowControl(), baseFolder);
+		listenTo(iframe);
+
 		String langCode = ureq.getLocale().getLanguage();
 		String fileName = "index_" + langCode + ".html";
-		File termsFileInLang = new File (baseFolder, fileName);
-		if (termsFileInLang.exists()){
-			this.impressumIframe.setCurrentURI(fileName);
-		} else {
-			//default is german
-			this.impressumIframe.setCurrentURI("index_de.html");
+		if (new File(baseFolder, fileName).exists()) {
+			iframe.setCurrentURI(fileName);
+		} else if(new File (baseFolder, "index_de.html").exists()) {
+				iframe.setCurrentURI("index_de.html");
+		} else if(new File (baseFolder, "index_en.html").exists()) {
+				iframe.setCurrentURI("index_en.html");
 		}
-		this.content.put("impressumIFrame", this.impressumIframe.getInitialComponent());
-		putInitialPanel(content);
+		putInitialPanel(iframe.getInitialComponent());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
-		this.impressumIframe.dispose();
-		this.impressumIframe = null;
+		//
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @seeorg.olat.core.gui.control.DefaultController#event(org.olat.core.gui.
-	 * UserRequest, org.olat.core.gui.components.Component,
-	 * org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// Do nothing.

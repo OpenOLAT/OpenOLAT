@@ -17,9 +17,8 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.fullWebApp;
+package org.olat.admin.layout;
 
-import org.olat.admin.layout.LayoutModule;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 

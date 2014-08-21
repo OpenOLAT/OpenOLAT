@@ -23,12 +23,11 @@ import java.io.File;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
-import org.olat.core.util.WebappHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <h3>Description:</h3> This controller displays terms of use which it reads
@@ -40,10 +39,9 @@ import org.olat.core.util.WebappHelper;
  * @author twuersch, frentix GmbH, http://www.frentix.com
  */
 public class TermsOfUseController extends BasicController {
-
-	public static final String TERMS_OF_USE_HTML_FOLDER = "/customizing/terms_of_use/";
-	private VelocityContainer content;
-	private IFrameDisplayController termsOfUseIframe;
+	
+	@Autowired
+	private ImpressumModule impressumModule;
 
 	/**
 	 * @param ureq
@@ -51,37 +49,30 @@ public class TermsOfUseController extends BasicController {
 	 */
 	public TermsOfUseController(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
-		this.content = createVelocityContainer("terms_of_use");
-		File baseFolder = new File(WebappHelper.getUserDataRoot(), TERMS_OF_USE_HTML_FOLDER);		
-		this.termsOfUseIframe = new IFrameDisplayController(ureq, getWindowControl(), baseFolder);
+		File baseFolder = impressumModule.getTermsOfUseDirectory();
+		IFrameDisplayController iframe = new IFrameDisplayController(ureq, getWindowControl(), baseFolder);
+		listenTo(iframe);
+		
 		String langCode = ureq.getLocale().getLanguage();
 		String fileName = "index_" + langCode + ".html";
-		File termsFileInLang = new File (baseFolder, fileName);
-		if (termsFileInLang.exists()){
-			this.termsOfUseIframe.setCurrentURI(fileName);
-		} else {
-			//default is german
-			this.termsOfUseIframe.setCurrentURI("index_de.html");
+		if (new File (baseFolder, fileName).exists()){
+			iframe.setCurrentURI(fileName);
+		} else if(new File (baseFolder, "index_de.html").exists()) {
+			iframe.setCurrentURI("index_de.html");
+		} else if(new File (baseFolder, "index_en.html").exists()) {
+			iframe.setCurrentURI("index_en.html");
 		}
 		
-		this.content.put("termsOfUseIFrame", this.termsOfUseIframe.getInitialComponent());
-		putInitialPanel(content);
+		putInitialPanel(iframe.getInitialComponent());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
-		this.termsOfUseIframe.dispose();
-		this.termsOfUseIframe = null;
+		//
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		// Do nothing.
+		//
 	}
 }

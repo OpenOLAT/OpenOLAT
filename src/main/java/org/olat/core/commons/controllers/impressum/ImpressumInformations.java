@@ -17,24 +17,34 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.gui.control;
+package org.olat.core.commons.controllers.impressum;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.creator.AutoCreator;
+import org.olat.core.commons.controllers.impressum.ImpressumModule.Position;
 
 /**
  * 
- * <h3>Description:</h3>
- * <p>
- * Initial Date:  30 nov. 2010 <br>
- * @author srosse, srosse@frentix.com, www.frentix.com
+ * Initial date: 21.08.2014<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class GuestTopNavCreator extends AutoCreator {
-
-	@Override
-	public Controller createController(UserRequest ureq, WindowControl wControl) {
-		return new OlatGuestTopNavController(ureq, wControl);
+public class ImpressumInformations {
+	
+	private final ImpressumModule impressumModule;
+	
+	public ImpressumInformations(ImpressumModule impressumModule) {
+		this.impressumModule = impressumModule;
 	}
+	
+	public boolean isTop() {
+		return impressumModule.isEnabled()
+				&& impressumModule.getPosition() != null
+				&& Position.top.equals(impressumModule.getPosition());
+	}
+	
+	public boolean isFooter() {
+		return impressumModule.isEnabled()
+				&& impressumModule.getPosition() != null
+				&& Position.footer.equals(impressumModule.getPosition());
+	}
+
 }

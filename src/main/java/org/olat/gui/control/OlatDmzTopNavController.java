@@ -27,6 +27,8 @@ package org.olat.gui.control;
 import org.olat.core.commons.chiefcontrollers.LanguageChooserController;
 import org.olat.core.commons.contextHelp.ContextHelpModule;
 import org.olat.core.commons.controllers.impressum.ImpressumDmzMainController;
+import org.olat.core.commons.controllers.impressum.ImpressumInformations;
+import org.olat.core.commons.controllers.impressum.ImpressumModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -39,34 +41,33 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
+import org.springframework.beans.factory.annotation.Autowired;
 
-public class OlatDmzTopNavController extends BasicController{
+public class OlatDmzTopNavController extends BasicController {
 	
 	private static final Boolean contextHelpEnabled = Boolean.valueOf(ContextHelpModule.isContextHelpEnabled());
 	private Link impressumLink;
-	private VelocityContainer topNavVC;
 	private LanguageChooserController languageChooserC;
+
+	@Autowired
+	private ImpressumModule impressumModule;
 	
 	public OlatDmzTopNavController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, false);
-	}
-
-	public OlatDmzTopNavController(UserRequest ureq, WindowControl wControl, boolean impressum) {
 		super(ureq, wControl);
 
-		topNavVC = createVelocityContainer("dmztopnav");
+		VelocityContainer vc = createVelocityContainer("dmztopnav");
 		
 		// impressum
-		if(impressum) {
-			impressumLink = LinkFactory.createLink("_top_nav_dmz_impressum", "topnav.impressum", topNavVC, this);
-			impressumLink.setTooltip("topnav.impressum.alt");
-			impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-lg");
-			impressumLink.setAjaxEnabled(false);
-			impressumLink.setTarget("_blank");
-		}
+		vc.contextPut("impressumInfos", new ImpressumInformations(impressumModule));
+		impressumLink = LinkFactory.createLink("_top_nav_dmz_impressum", "topnav.impressum", vc, this);
+		impressumLink.setTooltip("topnav.impressum.alt");
+		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-lg");
+		impressumLink.setAjaxEnabled(false);
+		impressumLink.setTarget("_blank");
+
 		
 		// help on login page
-		topNavVC.contextPut("isContextHelpEnabled", contextHelpEnabled);
+		vc.contextPut("isContextHelpEnabled", contextHelpEnabled);
 
 		//choosing language 
 		languageChooserC = new LanguageChooserController(getWindowControl(), ureq, "_top_nav_dmz_lang_chooser");
@@ -74,15 +75,15 @@ public class OlatDmzTopNavController extends BasicController{
 		//which is catched by the BaseFullWebappController. This one is then 
 		//responsible to recreate the GUI with the new Locale 
 		//
-		topNavVC.put("languageChooser", languageChooserC.getInitialComponent());
-		
-
-		putInitialPanel(topNavVC);		
+		vc.put("languageChooser", languageChooserC.getInitialComponent());
+		putInitialPanel(vc);		
 	}
-	
+
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == impressumLink) {
 			ControllerCreator impressumControllerCreator = new ControllerCreator() {
+				@Override
 				public Controller createController(UserRequest lureq, WindowControl lwControl) {
 					return new ImpressumDmzMainController(lureq, lwControl);
 				}
@@ -98,6 +99,4 @@ public class OlatDmzTopNavController extends BasicController{
 			languageChooserC = null;
 		}
 	}
-	
-	
 }

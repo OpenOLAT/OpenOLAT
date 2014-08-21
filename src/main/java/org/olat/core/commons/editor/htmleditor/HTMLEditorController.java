@@ -111,6 +111,7 @@ public class HTMLEditorController extends FormBasicController {
 	private boolean editorCheckEnabled = true; // default
 	private boolean versions = true;
 	private String fileToLargeError = null;
+	private Object userObject;
 
 	/**
 	 * Factory method to create a file based HTML editor instance that uses
@@ -184,6 +185,14 @@ public class HTMLEditorController extends FormBasicController {
 		initForm(ureq);
 	}
 	
+	public Object getUserObject() {
+		return userObject;
+	}
+
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
+	}
+
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
 	 */

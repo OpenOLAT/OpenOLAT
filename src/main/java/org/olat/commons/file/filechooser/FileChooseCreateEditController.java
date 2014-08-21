@@ -560,8 +560,8 @@ public class FileChooseCreateEditController extends BasicController{
 		//TODO if not standard, remove reference to HTML pages
 	}
 	
-	protected Controller createWysiwygController(UserRequest ureq, WindowControl windowControl, VFSContainer rootContainer, String chosenFile) {
-	  return WysiwygFactory.createWysiwygController(ureq, windowControl, rootContainer, chosenFile, true, true);
+	protected Controller createWysiwygController(UserRequest ureq, WindowControl windowControl, VFSContainer fileContainer, String fileToEdit) {
+	  return WysiwygFactory.createWysiwygController(ureq, windowControl, fileContainer, fileToEdit, true, true);
 	}
 	
 	/**

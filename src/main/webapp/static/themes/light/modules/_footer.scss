@@ -58,6 +58,14 @@
 		}
 		#o_footer_textline {
 			position: absolute; 
+			top: ($line-height-computed + $o-footer-padding-top);
+			left: 25%;
+			width:50%;
+			text-align: center;
+		}
+		
+		#o_footer_impressum {
+			position: absolute; 
 			top: $o-footer-padding-top;
 			left: 25%;
 			width:50%;

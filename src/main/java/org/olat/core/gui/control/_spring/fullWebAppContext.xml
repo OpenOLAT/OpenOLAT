@@ -37,19 +37,13 @@
 		******************************************
 	-->
 	<!-- DMZ -->
-	<bean id="fullWebApp.DMZTopNavControllerCreator" class="org.olat.gui.control.DmzTopNavCreator">
-		<property name="impressum" value="${topnav.impressum}"/>
-	</bean>
+	<bean id="fullWebApp.DMZTopNavControllerCreator" class="org.olat.gui.control.DmzTopNavCreator" />
 	
 	<!-- Guest -->
-	<bean id="fullWebApp.GuestTopNavControllerCreator" class="org.olat.gui.control.GuestTopNavCreator">
-		<property name="impressum" value="${topnav.impressum}"/>
-	</bean>
+	<bean id="fullWebApp.GuestTopNavControllerCreator" class="org.olat.gui.control.GuestTopNavCreator" />
 
 	<!-- Authenticated -->
-
-	<bean id="fullWebApp.TopNavControllerCreator" class="org.olat.gui.control.TopNavCreator" >
-		<property name="impressum" value="${topnav.impressum}"/>
+	<bean id="fullWebApp.TopNavControllerCreator" class="org.olat.gui.control.TopNavCreator">
 		<property name="search" value="${topnav.search}" />
 	</bean>
 

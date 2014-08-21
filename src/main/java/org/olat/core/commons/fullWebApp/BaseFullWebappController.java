@@ -33,6 +33,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.olat.admin.layout.LayoutModule;
+import org.olat.admin.layout.LogoInformations;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;

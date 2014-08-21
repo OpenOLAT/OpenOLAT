@@ -28,7 +28,9 @@ import org.olat.NewControllerFactory;
 import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.controllers.impressum.ImpressumInformations;
 import org.olat.core.commons.controllers.impressum.ImpressumMainController;
+import org.olat.core.commons.controllers.impressum.ImpressumModule;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.extensions.ExtManager;
@@ -96,15 +98,17 @@ public class OlatTopNavController extends BasicController implements GenericEven
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private ImpressumModule impressumModule;
+	@Autowired
 	private UserToolsModule userToolsModule;
 	@Autowired
 	private DisplayPortraitManager portraitManager;
 	
 	public OlatTopNavController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, false, true);
+		this(ureq, wControl, true);
 	}
 	
-	public OlatTopNavController(UserRequest ureq, WindowControl wControl, boolean impressum, boolean search) {
+	public OlatTopNavController(UserRequest ureq, WindowControl wControl,  boolean search) {
 		super(ureq, wControl);
 		topNavVC = createVelocityContainer("topnav");
 		topNavVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacmenet ID
@@ -136,13 +140,13 @@ public class OlatTopNavController extends BasicController implements GenericEven
 			loginLink.setTooltip("topnav.login.alt");
 		}
 		
-		if(impressum) {
-			impressumLink = LinkFactory.createLink("topnav.impressum", topNavVC, this);
-			impressumLink.setTooltip("topnav.impressum.alt");
-			impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-lg");
-			impressumLink.setAjaxEnabled(false);
-			impressumLink.setTarget("_blank");
-		}
+		topNavVC.contextPut("impressumInfos", new ImpressumInformations(impressumModule));
+		impressumLink = LinkFactory.createLink("topnav.impressum", topNavVC, this);
+		impressumLink.setTooltip("topnav.impressum.alt");
+		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-lg");
+		impressumLink.setAjaxEnabled(false);
+		impressumLink.setTarget("_blank");
+
 		
 		if(search && ureq.getIdentity() != null && !isGuest && !isInvitee) {
 			SearchServiceUIFactory searchUIFactory = (SearchServiceUIFactory)CoreSpringFactory.getBean(SearchServiceUIFactory.class);

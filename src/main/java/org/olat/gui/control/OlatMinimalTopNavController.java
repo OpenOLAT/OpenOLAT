@@ -48,15 +48,14 @@ import org.olat.core.gui.media.RedirectMediaResource;
  */
 public class OlatMinimalTopNavController extends BasicController {
 
-	private VelocityContainer topNavVC;
-	private Link closeLink;
+	private final Link closeLink;
 
 	public OlatMinimalTopNavController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		topNavVC = createVelocityContainer("topnavminimal");
-		topNavVC.setDomReplacementWrapperRequired(false);
-		closeLink = LinkFactory.createLink("topnav.close", topNavVC, this);
-		putInitialPanel(topNavVC);
+		VelocityContainer vc = createVelocityContainer("topnavminimal");
+		vc.setDomReplacementWrapperRequired(false);
+		closeLink = LinkFactory.createLink("topnav.close", vc, this);
+		putInitialPanel(vc);
 	}
 
 	/**

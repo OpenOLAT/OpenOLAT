@@ -25,25 +25,31 @@
 
 package org.olat.gui.control;
 
-import org.olat.admin.layout.LayoutChangedEvent;
+import org.olat.admin.layout.FooterInformations;
 import org.olat.admin.layout.LayoutModule;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.controllers.impressum.ImpressumInformations;
+import org.olat.core.commons.controllers.impressum.ImpressumMainController;
+import org.olat.core.commons.controllers.impressum.ImpressumModule;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.UserLoggedInCounter;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.event.GenericEventListener;
 import org.olat.social.SocialModule;
 import org.olat.social.shareLink.ShareLinkController;
 import org.olat.user.UserManager;
@@ -61,20 +67,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author patrickb
  */
-public class OlatFooterController extends BasicController implements GenericEventListener { 
+public class OlatFooterController extends BasicController { 
 	
+	private Link impressumLink;
 	private final VelocityContainer olatFootervc;
 	
 	@Autowired
 	private LayoutModule layoutModule;
 	@Autowired
-	private CoordinatorManager coordinatorManager;
+	private ImpressumModule impressumModule;
 
 	public OlatFooterController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(BaseFullWebappController.class, getLocale(), Util.createPackageTranslator(OlatFooterController.class,getLocale())));
-		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null, LayoutModule.layoutCustomizingOResourceable);
-		
+
 		olatFootervc = createVelocityContainer("olatFooter");
 
 		Identity identity = ureq.getIdentity();
@@ -93,6 +99,14 @@ public class OlatFooterController extends BasicController implements GenericEven
 			// push to view
 			olatFootervc.put("shareLink", shareLinkCtr.getInitialComponent());
 		}
+		
+		olatFootervc.contextPut("impressumInfos", new ImpressumInformations(impressumModule));
+		impressumLink = LinkFactory.createLink("topnav.impressum", olatFootervc, this);
+		impressumLink.setTooltip("topnav.impressum.alt");
+		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-lg");
+		impressumLink.setAjaxEnabled(false);
+		impressumLink.setTarget("_blank");
+
 
 		// Push information about user
 		if (!isGuest && ureq.getUserSession().isAuthenticated()) {
@@ -114,8 +128,8 @@ public class OlatFooterController extends BasicController implements GenericEven
 		olatFootervc.contextPut("revisionNumber", WebappHelper.getRevisionNumber());
 		olatFootervc.contextPut("changeSet", WebappHelper.getChangeSet());
 		olatFootervc.contextPut("olatversion", Settings.getFullVersionInfo() +" "+ Settings.getNodeInfo());
+		olatFootervc.contextPut("footerInfos", new FooterInformations(layoutModule));
 
-		updateFooterLine();
 		putInitialPanel(olatFootervc);
 	}
 	
@@ -123,53 +137,27 @@ public class OlatFooterController extends BasicController implements GenericEven
 	protected void doDispose() {
 		//
 	}
-	
-	public void event(Event event) {
-		if (event instanceof LayoutChangedEvent) {
-			LayoutChangedEvent lcevent = (LayoutChangedEvent) event;
-			if (lcevent.toString().equals(LayoutChangedEvent.LAYOUTSETTINGSCHANGED)) {
-				updateFooterLine();
-			}
-		}
-	}
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		//
-	}
-
-	private void updateFooterLine() {
-		String footerLine = convertFooterLine(layoutModule.getFooterLine());
-		if(StringHelper.containsNonWhitespace(footerLine)) {
-			olatFootervc.contextPut("footerLine", footerLine);
-		} else {
-			olatFootervc.contextRemove("footerLine");
-		}
-		String footerUrl = layoutModule.getFooterLinkUri();
-		if(StringHelper.containsNonWhitespace(footerUrl)) {
-			olatFootervc.contextPut("footerUrl", footerUrl);
-		} else {
-			olatFootervc.contextRemove("footerUrl");
+		if(impressumLink == source) {
+			doOpenImpressum(ureq);
 		}
 	}
 	
-	/**
-	 * replaces email / weblink in footerLine-String and makes them clickable
-	 * 
-	 * @param dbFooterLine
-	 * @return string with email / weblink replaced to clickable link with <a
-	 *         href=...
-	 */
-	private String convertFooterLine(String dbFooterLine) {
-		if (dbFooterLine == null) {
-			return "";
+	protected void doOpenImpressum(UserRequest ureq) {
+		ControllerCreator impressumControllerCreator = new ControllerCreator() {
+			public Controller createController(UserRequest lureq, WindowControl lwControl) {
+				return new ImpressumMainController(lureq, lwControl);
+			}
+		};
+		PopupBrowserWindow popupBrowserWindow;
+		if(ureq.getUserSession().isAuthenticated()) {
+			popupBrowserWindow = Windows.getWindows(ureq).getWindowManager().createNewPopupBrowserWindowFor(ureq, impressumControllerCreator);
+		} else {
+			popupBrowserWindow = Windows.getWindows(ureq).getWindowManager().createNewUnauthenticatedPopupWindowFor(ureq, impressumControllerCreator);
 		}
-		
-		String parsedFooterLine = null;
-		String mailregex = "(\\w+)@([\\w\\.]+)";
-		parsedFooterLine = dbFooterLine.replaceAll(mailregex, "<a href=\"mailto:$0\">$0</a>");
-		String urlregex = "((http(s?)://)|(www.))(([\\w-.]+)*(/[^[:space:]]+)*)";
-		parsedFooterLine = parsedFooterLine.replaceAll(urlregex, "<a href=\"http$3://$4$5\" target=\"_blank\">$2$4$5</a>");
-		return parsedFooterLine;
+		popupBrowserWindow.open(ureq);
 	}
+
 }

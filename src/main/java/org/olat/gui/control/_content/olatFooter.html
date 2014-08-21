@@ -7,8 +7,13 @@
 		$r.render("shareLink")
 	#end 
 </div>
-#if($footerLine)
-	<div id="o_footer_textline" style="text-align: center;"><p>$footerLine</p></div>
+#if($impressumInfos.footer)
+	<div id="o_footer_impressum">
+		$r.render("topnav.impressum")
+	</div>
+#end 
+#if($footerInfos.hasFooterLine)
+	<div id="o_footer_textline" style="text-align: center;"><p>$footerInfos.footerLine</p></div>
 #end
 <div id="o_footer_powered" class="clearfix">
 	<a href="http://www.openolat.org" target="_blank" title="OpenOLAT - infinite learning">
