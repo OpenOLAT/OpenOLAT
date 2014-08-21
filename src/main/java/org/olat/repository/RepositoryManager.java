@@ -102,7 +102,7 @@ import org.springframework.stereotype.Service;
 @Service("repositoryManager")
 public class RepositoryManager extends BasicManager {
 	
-	private final int PICTUREWIDTH = 570;
+	public static final int PICTUREWIDTH = 570;
 
 	@Autowired
 	private BaseSecurity securityManager;

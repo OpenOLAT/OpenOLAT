@@ -10,8 +10,9 @@ td.o_qti_item_kprim_input, th.o_qti_item_kprim_input {
 	}
 }
 
-.o_qti_item_mattext {
-	line-height:2.5em;
+/* space in menu between sections */
+div.o_qti_menu_section {
+	margin-top: $padding-large-vertical;
 }
 
 div.o_qti_item_itemfeedback {

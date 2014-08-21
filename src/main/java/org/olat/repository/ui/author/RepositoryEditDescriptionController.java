@@ -308,6 +308,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		deleteImage.setVisible(img != null && !managed);
 
 		fileUpload = uifactory.addFileElement("rentry.pic", "rentry.pic", descCont);
+		fileUpload.setExampleKey("rentry.pic.example", new String[] {RepositoryManager.PICTUREWIDTH + "x" + (RepositoryManager.PICTUREWIDTH / 3 * 2)});
 		fileUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		fileUpload.setPreview(ureq.getUserSession(), true);
 		fileUpload.addActionListener(FormEvent.ONCHANGE);
@@ -324,6 +325,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		deleteMovie.setVisible(movie != null && !managed);
 		
 		movieUpload = uifactory.addFileElement("rentry.movie", "rentry.movie", descCont);
+		movieUpload.setExampleKey("rentry.movie.example", new String[] {"3:2"});
 		movieUpload.setMaxUploadSizeKB(movieUploadlimitKB, null, null);
 		movieUpload.setPreview(ureq.getUserSession(), true);
 		movieUpload.addActionListener(FormEvent.ONCHANGE);

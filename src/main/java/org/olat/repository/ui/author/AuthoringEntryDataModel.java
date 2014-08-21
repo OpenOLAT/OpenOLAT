@@ -112,7 +112,7 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		creationDate("table.header.date"),
 		lastUsage("table.header.lastusage"),
 		mark("table.header.mark"),
-		detailsSupported(""),
+		detailsSupported("table.header.details"),
 		tools("table.header.actions"),
 		editionSupported("table.header.edit");
 		
