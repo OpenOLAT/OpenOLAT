@@ -44,6 +44,7 @@ import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -62,6 +63,9 @@ public class CreateRepositoryEntryController extends FormBasicController {
 	private final RepositoryHandler handler;
 	
 	private Object userObject;
+	
+	@Autowired
+	private RepositoryManager repositoryManager;
 	
 	public CreateRepositoryEntryController(UserRequest ureq, WindowControl wControl, RepositoryHandler handler) {
 		super(ureq, wControl);
@@ -163,6 +167,8 @@ public class CreateRepositoryEntryController extends FormBasicController {
 		String displayname = displaynameEl.getValue();
 		
 		addedEntry = handler.createResource(getIdentity(), displayname, "", getLocale());
+
+		repositoryManager.triggerIndexer(addedEntry);
 
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
 				LoggingResourceable.wrap(addedEntry, OlatResourceableType.genRepoEntry));

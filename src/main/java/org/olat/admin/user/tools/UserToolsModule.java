@@ -119,6 +119,7 @@ public class UserToolsModule extends AbstractSpringModule {
 	}
 
 	public void setAvailableUserTools(String tools) {
+		availableUserTools = tools;
 		setStringProperty(CONFIG_USER_TOOLS, tools, true);
 	}
 	
@@ -138,6 +139,7 @@ public class UserToolsModule extends AbstractSpringModule {
 	}
 	
 	public void setDefaultPresetOfUserTools(String preset) {
+		defaultPresetOfUserTools = preset;
 		setStringProperty(CONFIG_PRESET_USERTOOLES, preset, true);
 	}
 }

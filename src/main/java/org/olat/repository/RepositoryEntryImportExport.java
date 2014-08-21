@@ -175,8 +175,10 @@ public class RepositoryEntryImportExport {
 	}
 	
 	public RepositoryEntry importContent(RepositoryEntry newEntry, VFSContainer mediaContainer) {
+		if(!anyExportedPropertiesAvailable()) return newEntry;
+
+		RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		if(StringHelper.containsNonWhitespace(getImageName())) {
-			RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 			File newFile = new File(baseDirectory, getImageName());
 			VFSLeaf newImage = new LocalFileImpl(newFile);
 			repositoryManager.setImage(newImage, newEntry);
@@ -193,29 +195,11 @@ public class RepositoryEntryImportExport {
 			}
 		}
 		
-		if(StringHelper.containsNonWhitespace(repositoryProperties.getDescription())) {
-			newEntry.setDescription(repositoryProperties.getDescription());
-		}
-		if(StringHelper.containsNonWhitespace(repositoryProperties.getAuthors())) {
-			newEntry.setAuthors(repositoryProperties.getAuthors());
-		}
-		if(StringHelper.containsNonWhitespace(repositoryProperties.getMainLanguage())) {
-			newEntry.setMainLanguage(repositoryProperties.getMainLanguage());
-		}
-		if(StringHelper.containsNonWhitespace(repositoryProperties.getObjectives())) {
-			newEntry.setObjectives(repositoryProperties.getObjectives());
-		}
-		if(StringHelper.containsNonWhitespace(repositoryProperties.getRequirements())) {
-			newEntry.setRequirements(repositoryProperties.getRequirements());
-		}
-		if(StringHelper.containsNonWhitespace(repositoryProperties.getCredits())) {
-			newEntry.setCredits(repositoryProperties.getCredits());
-		}
-		if(StringHelper.containsNonWhitespace(repositoryProperties.getExpenditureOfWork())) {
-			newEntry.setExpenditureOfWork(repositoryProperties.getExpenditureOfWork());
-		}
-		
-		return newEntry;
+		return repositoryManager.setDescriptionAndName(newEntry, null, null,
+				repositoryProperties.getAuthors(), repositoryProperties.getDescription(),
+				repositoryProperties.getObjectives(), repositoryProperties.getRequirements(),
+				repositoryProperties.getCredits(), repositoryProperties.getMainLanguage(),
+				repositoryProperties.getExpenditureOfWork(), null);
 	}
 
 	/**

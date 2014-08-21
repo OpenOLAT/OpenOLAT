@@ -728,6 +728,10 @@ public class RepositoryManager extends BasicManager {
 		return updatedRe;
 	}
 	
+	public void triggerIndexer(RepositoryEntryRef re) {
+		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, re.getKey());
+	}
+	
 	
 	/**
 	 * Return the course where the identity is owner or a group of type RightGroup as the

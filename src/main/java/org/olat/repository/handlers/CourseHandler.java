@@ -291,7 +291,6 @@ public class CourseHandler implements RepositoryHandler {
 		RepositoryEntryImportExport imp = new RepositoryEntryImportExport(fImportBaseDirectory);
 		if(imp.anyExportedPropertiesAvailable()) {
 			re = imp.importContent(re, getMediaContainer(re));
-			re = DBFactory.getInstance().getCurrentEntityManager().merge(re);
 		}
 		return re;
 	}

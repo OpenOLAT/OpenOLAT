@@ -58,6 +58,8 @@ public class CopyRepositoryEntryController extends FormBasicController {
 	private final RepositoryEntry sourceEntry;
 
 	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private OLATResourceManager resourceManager;
@@ -151,6 +153,8 @@ public class CopyRepositoryEntryController extends FormBasicController {
 
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
 				LoggingResourceable.wrap(copyEntry, OlatResourceableType.genRepoEntry));
+		
+		repositoryManager.triggerIndexer(copyEntry);
 	}
 
 	

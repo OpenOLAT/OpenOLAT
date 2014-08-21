@@ -73,7 +73,9 @@ public class ImportRepositoryEntryController extends FormBasicController {
 	private MultipleSelectionElement referencesEl;
 	
 	private final static String[] refKeys = new String[]{ "checked" };
-	
+
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
@@ -190,6 +192,8 @@ public class ImportRepositoryEntryController extends FormBasicController {
 	
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
 					LoggingResourceable.wrap(importedEntry, OlatResourceableType.genRepoEntry));
+			
+			repositoryManager.triggerIndexer(importedEntry);
 		}
 	}
 

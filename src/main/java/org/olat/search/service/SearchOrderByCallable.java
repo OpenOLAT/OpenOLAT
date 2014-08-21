@@ -26,16 +26,20 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.search.SearchService;
 import org.olat.search.ServiceNotAvailableException;
 import org.olat.search.model.AbstractOlatDocument;
 
@@ -69,16 +73,21 @@ class SearchOrderByCallable implements Callable<List<Long>> {
 	@Override
 	public List<Long> call() {
 		IndexSearcher searcher = null;
+		int found = -1;
 		try {
 			if (!searchService.existIndex()) {
 				log.warn("Index does not exist, can't search for queryString: "+queryString);
 				throw new ServiceNotAvailableException("Index does not exist");
 			}
 			
-			log.info("queryString=" + queryString);
 			searcher = searchService.getIndexSearcher();
 			BooleanQuery query = searchService.createQuery(queryString, condQueries);
-			//log.info("query=" + query);
+			
+			//only search document with an primary key
+			String idNotNull = AbstractOlatDocument.DB_ID_NAME + ":[* TO *]";
+			QueryParser idQueryParser = new QueryParser(SearchService.OO_LUCENE_VERSION, idNotNull, searchService.getAnalyzer());
+			Query idQuery = idQueryParser.parse(idNotNull);
+			query.add(idQuery, Occur.MUST);
 
 			int n = searchService.getSearchModuleConfig().getMaxHits();
 			TopDocs docs;
@@ -106,8 +115,7 @@ class SearchOrderByCallable implements Callable<List<Long>> {
 				}
 			}
 			
-			//log.info("found=" + res.size());
-
+			found = res.size();
 			return res;
 		} catch (Exception naex) {
 			log.error("", naex);
@@ -115,6 +123,7 @@ class SearchOrderByCallable implements Callable<List<Long>> {
 		} finally {
 			searchService.releaseIndexSearcher(searcher);
 			DBFactory.getInstance().commitAndCloseSession();
+			log.info("queryString=" + queryString + " (" + found + " hits)");
 		}
 	}
 }
