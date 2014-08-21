@@ -21,23 +21,35 @@ package org.olat.admin.layout;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.olat.admin.SystemAdminMainController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <h3>Description:</h3>
@@ -48,13 +60,32 @@ import org.olat.core.util.WebappHelper;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 public class LayoutAdminController extends FormBasicController {
+	
+	private static final Set<String> imageMimeTypes = new HashSet<String>();
+	static {
+		imageMimeTypes.add("image/gif");
+		imageMimeTypes.add("image/jpg");
+		imageMimeTypes.add("image/jpeg");
+		imageMimeTypes.add("image/png");
+	}
+	private FormLink deleteLogo;
+	private TextElement logoAlt, logoUrl; 
+	private TextElement footerLine, footerUrl;
+	private SingleSelection themeSelection;
+	private FileElement logoUpload;
 
-	private SingleSelection themeSelection;	
+	@Autowired
+	private LayoutModule layoutModule;
+	@Autowired
+	private CoordinatorManager coordinatorManager;
+	
 	public LayoutAdminController(UserRequest ureq, WindowControl wControl) {
 		// use admin package fallback translator to display warn message about not
 		// saving the data (see comment in formInnerEvent method)
-		super(ureq, wControl, "layoutadmin", Util.createPackageTranslator(SystemAdminMainController.class, ureq.getLocale()));
-		initForm(this.flc, this, ureq);
+		super(ureq, wControl, LAYOUT_BAREBONE);
+		setTranslator(Util.createPackageTranslator(SystemAdminMainController.class, getLocale(), getTranslator()));
+
+		initForm(ureq);
 	}
 
 	/**
@@ -62,15 +93,15 @@ public class LayoutAdminController extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		// wrapper container that generates standard layout for the form elements
-		FormItemContainer themeAdminFormContainer = FormLayoutContainer.createDefaultFormLayout("themeAdminFormContainer", getTranslator());
-		formLayout.add(themeAdminFormContainer);
-		
+		//themes
+		FormLayoutContainer themeCont = FormLayoutContainer.createDefaultFormLayout("themeAdminFormContainer", getTranslator());
+		formLayout.add(themeCont);
+		themeCont.setFormTitle(translate("layout.title"));
+		themeCont.setFormDescription(translate("layout.intro"));
 		
 		String[] keys = getThemes();
 		String enabledTheme = Settings.getGuiThemeIdentifyer();
-		themeSelection = uifactory.addDropdownSingleselect("themeSelection", "form.theme", themeAdminFormContainer, keys, keys, null);
-		// fxdiff
+		themeSelection = uifactory.addDropdownSingleselect("themeSelection", "form.theme", themeCont, keys, keys, null);
 		// select current theme if available but don't break on unavailable theme
 		for (String theme : keys) {
 			if (theme.equals(enabledTheme)) {
@@ -78,9 +109,128 @@ public class LayoutAdminController extends FormBasicController {
 				break;
 			}
 		}
-		themeSelection.addActionListener(FormEvent.ONCHANGE);	
+		themeSelection.addActionListener(FormEvent.ONCHANGE);
+
+		//logo
+		FormLayoutContainer logoCont = FormLayoutContainer.createDefaultFormLayout("logo", getTranslator());
+		formLayout.add(logoCont);
+		logoCont.setFormTitle(translate("customizing.logo"));
+		
+		File logo = layoutModule.getLogo();
+		boolean hasLogo = logo != null && logo.exists();
+		
+		deleteLogo = uifactory.addFormLink("deleteimg", "delete", null, logoCont, Link.BUTTON);
+		deleteLogo.setVisible(hasLogo);
+		
+		logoUpload = uifactory.addFileElement("customizing.logo", "customizing.logo", logoCont);
+		logoUpload.setMaxUploadSizeKB(1024, null, null);
+		logoUpload.setPreview(ureq.getUserSession(), true);
+		logoUpload.addActionListener(FormEvent.ONCHANGE);
+		if(hasLogo) {
+			logoUpload.setPreview(ureq.getUserSession(), true);
+			logoUpload.setInitialFile(logo);
+		}
+		logoUpload.limitToMimeType(imageMimeTypes, null, null);
+
+		
+		String oldLogoUrl = layoutModule.getLogoLinkUri();
+		logoUrl = uifactory.addTextElement("linkUrl", "linkUrl.description", 256, oldLogoUrl, logoCont);
+		logoUrl.setPlaceholderKey("linkUrl.default", null);
+		
+		String oldLogoAlt = layoutModule.getLogoAlt();
+		logoAlt = uifactory.addTextElement("logoAlt", "logoAlt.description", 256, oldLogoAlt, logoCont);
+		logoAlt.setPlaceholderKey("logoAlt.default", null);
+
+		//footer
+		FormLayoutContainer footerCont = FormLayoutContainer.createDefaultFormLayout("customizing", getTranslator());
+		formLayout.add(footerCont);
+		footerCont.setFormTitle(translate("customizing.settings"));
+
+		String oldFooterUrl = layoutModule.getFooterLinkUri();
+		footerUrl = uifactory.addTextElement("footerUrl", "footerUrl.description", 256, oldFooterUrl, footerCont);
+		footerUrl.setPlaceholderKey("linkUrl.default", null);
+		
+		String oldFooterLine = layoutModule.getFooterLine();
+		footerLine = uifactory.addTextAreaElement("footerLine", "footerLine.description", -1, 3, 50, true, oldFooterLine, footerCont);
+		footerLine.setPlaceholderKey("footerLine.default", null);
+
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		footerCont.add(buttonsCont);
+		uifactory.addFormSubmitButton("save", "submit.save", buttonsCont);
 	}
 
+	@Override
+	protected void doDispose() {
+		// nothing to clean up
+	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		String logoUrlValue = logoUrl.getValue();
+		if (logoUrlValue !="") {
+			try {
+				URL url = new URL(logoUrlValue);
+				allOk &= StringHelper.containsNonWhitespace(url.getHost());
+				
+			} catch (MalformedURLException e) {
+				logoUrl.setErrorKey("linkUrl.invalid", null);
+				showError("linkUrl.invalid");
+				allOk &= false;
+			}
+		}			
+		return allOk & super.validateFormLogic(ureq);
+	}	
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(logoUpload == source) {
+			if (logoUpload.isUploadSuccess()) {
+				layoutModule.removeLogo();
+				File destinationDir = layoutModule.getLogoDirectory();
+				File newLogo = logoUpload.moveUploadFileTo(destinationDir);
+				layoutModule.setLogoFilename(newLogo.getName());
+				logoUpload.setInitialFile(newLogo);
+				deleteLogo.setVisible(true);
+				Windows.getWindows(ureq).getChiefController().wishReload(true);
+				
+			}
+		} else if(deleteLogo == source) {
+			layoutModule.removeLogo();
+			logoUpload.reset();
+			deleteLogo.setVisible(false);
+			logoUpload.setInitialFile(null);
+			Windows.getWindows(ureq).getChiefController().wishReload(true);
+			
+		} else if(themeSelection == source) {
+			// set new theme in Settings
+			String newThemeIdentifyer = themeSelection.getSelectedKey();
+			Settings.setGuiThemeIdentifyerGlobally(newThemeIdentifyer);
+			// use new theme in current window
+			getWindowControl().getWindowBackOffice().getWindow().getGuiTheme().init(newThemeIdentifyer);
+			getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
+			logAudit("GUI theme changed", newThemeIdentifyer);
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		}
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//Logo-Link URI
+		layoutModule.setLogoLinkUri(logoUrl.getValue());
+		//Logo Alternative Text
+		layoutModule.setLogoAlt(logoAlt.getValue());
+		//FooterLine (large property -> text)
+		layoutModule.setFooterLinkUri(footerUrl.getValue());
+		layoutModule.setFooterLine(footerLine.getValue());
+		
+		//reload window for changes to take effect, fire event to footer/header
+		getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
+		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(new LayoutChangedEvent(LayoutChangedEvent.LAYOUTSETTINGSCHANGED), 
+				LayoutModule.layoutCustomizingOResourceable);	
+		showInfo("settings.saved");
+	}
 	
 	private String[] getThemes(){
 		// get all themes from disc
@@ -91,7 +241,6 @@ public class LayoutAdminController extends FormBasicController {
 			return new String[0];
 		}
 		File[] themes = themesDir.listFiles(new ThemesFileNameFilter());
-		
 		String[] themesStr = new String[themes.length];
 		for (int i = 0; i < themes.length; i++) {
 			File theme = themes[i];
@@ -114,52 +263,24 @@ public class LayoutAdminController extends FormBasicController {
 		return themesStr;
 	}
 	
-	
-	
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		// set new theme in Settings
-		String newThemeIdentifyer = themeSelection.getSelectedKey();
-		Settings.setGuiThemeIdentifyerGlobally(newThemeIdentifyer);
-		// use new theme in current window
-		getWindowControl().getWindowBackOffice().getWindow().getGuiTheme().init(newThemeIdentifyer);
-		getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
-		//
-		logAudit("GUI theme changed", newThemeIdentifyer);
-		fireEvent(ureq, Event.CHANGED_EVENT);
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose(boolean)
-	 */
-	@Override
-	protected void doDispose() {
-		// nothing to clean up
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		// saving already done in formInnerEvent method - no submit button
-	}
-	
 	/**
 	 * just a simple fileNameFilter that skips OS X .DS_Store , CVS and .sass-cache directories
 	 * 
 	 * @author strentini
 	 */
-	protected class ThemesFileNameFilter implements FilenameFilter {
-
+	private static class ThemesFileNameFilter implements FilenameFilter {
 		@Override
 		public boolean accept(File dir, String name) {
 				// remove files - only accept dirs
-				if ( ! new File(dir, name).isDirectory()) return false;
+				if (!new File(dir, name).isDirectory()) {
+					return false;
+				}
 				// remove unwanted meta-dirs
 				if (name.equalsIgnoreCase("CVS")) return false;
-				else if (name.equalsIgnoreCase(".DS_Store")) return false;
-				else if (name.equalsIgnoreCase(".sass-cache")) return false;
-				else if (name.equalsIgnoreCase(".hg")) return false;
-				else return true;
-			}
+				if (name.equalsIgnoreCase(".DS_Store")) return false;
+				if (name.equalsIgnoreCase(".sass-cache")) return false;
+				if (name.equalsIgnoreCase(".hg")) return false;
+				return true;
+		}
 	}
-
 }

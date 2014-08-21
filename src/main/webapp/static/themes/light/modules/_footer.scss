@@ -56,10 +56,21 @@
 				@extend %o_undecorated; 
 			}
 		}
+		#o_footer_textline {
+			position: absolute; 
+			top: $o-footer-padding-top;
+			left: 25%;
+			width:50%;
+			text-align: center;
+		}
+		
 		/* hide images on mobile */
 		@media (max-width: $screen-xs-max) { 
 			#o_counter, #o_footer_version {
 				display: none;
+			}
+			#o_footer_textline {
+				top: (35 + $o-footer-padding-top);
 			}
 			#o_footer_powered {
 				top: $o-footer-padding-top;

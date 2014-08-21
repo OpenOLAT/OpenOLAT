@@ -37,6 +37,13 @@
 		}
 	}
 	
+	.o_custom_navbar-brand {
+		background-position: 5px 0;
+		background-repeat: no-repeat;
+		height: 50px;
+		width: 120px;
+	}
+	
 	#o_navbar_tools_permanent {
 		#o_navbar_langchooser {
 			color: $o-navbar-tools-permanent-color;

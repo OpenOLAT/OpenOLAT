@@ -19,12 +19,16 @@
  */
 package org.olat.upgrade;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
+import org.olat.admin.layout.LayoutModule;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.Group;
@@ -37,11 +41,15 @@ import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.basesecurity.model.GroupImpl;
 import org.olat.basesecurity.model.GroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.right.BGRightsRole;
 import org.olat.portfolio.manager.EPMapPolicy;
+import org.olat.properties.Property;
+import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.resource.OLATResource;
@@ -68,7 +76,15 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 	private static final String TASK_REPOENTRY_TO_BUSINESSGROUP = "Upgrade relation business groups to repository entries";
 	private static final String TASK_INVITATION = "Upgrade invitations";
 	private static final String TASK_UPGRADE_MAP = "Upgrade e-portfolio maps";
+	private static final String TASK_LOGO = "Upgrade custom logo";
 	private static final String VERSION = "OLAT_10.0.0";
+	
+
+	private static String PROPERTY_CATEGORY = "_o3_";
+	private static String PNAME_LOGOURI = "customizing.img.uri";
+	private static String PNAME_LOGOALT = "customizing.img.alt";
+	private static String PNAME_LINKURI = "customizing.link.uri";
+	private static String PNAME_FOOTERLINE = "customizing.footer.text";
 
 	@Autowired
 	private DB dbInstance;
@@ -86,6 +102,10 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 	private RepositoryEntryRelationDAO repositoryEntryToGroupDAO;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private PropertyManager propertyManager;
+	@Autowired
+	private LayoutModule layoutModule;
 	
 	public OLATUpgrade_10_0_0() {
 		super();
@@ -112,6 +132,7 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 		}
 		
 		boolean allOk = true;
+		allOk &= upgradeLogo(upgradeManager, uhd);
 		allOk &= upgradeBusinessGroups(upgradeManager, uhd);
 		allOk &= upgradeRepositoryEntries(upgradeManager, uhd);
 		allOk &= upgradeRelationsRepoToBusinessGroups(upgradeManager, uhd);
@@ -126,6 +147,45 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 			log.audit("OLATUpgrade_10_0_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
+	}
+	
+	private boolean upgradeLogo(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		if (!uhd.getBooleanDataValue(TASK_LOGO)) {
+			try {
+				Property pLogoUri = propertyManager.findProperty(null, null, null, PROPERTY_CATEGORY, PNAME_LOGOURI);
+				if(pLogoUri != null && StringHelper.containsNonWhitespace(pLogoUri.getStringValue())) {
+					String filename = pLogoUri.getStringValue();
+					layoutModule.setLogoFilename(filename);
+					
+					File currentFile = Paths.get(WebappHelper.getUserDataRoot(), "system", "logo", filename).toFile();
+					if(currentFile.exists()) {
+						File target = Paths.get(WebappHelper.getUserDataRoot(), "customizing", "logo", filename).toFile();
+						FileUtils.copyFile(currentFile, target);
+					}	
+				}
+				Property pLogoAlt = propertyManager.findProperty(null, null, null, PROPERTY_CATEGORY, PNAME_LOGOALT);
+				if(pLogoAlt != null && StringHelper.containsNonWhitespace(pLogoAlt.getStringValue())) {
+					layoutModule.setLogoAlt(pLogoAlt.getStringValue());
+				}
+				Property pLinkUri = propertyManager.findProperty(null, null, null, PROPERTY_CATEGORY, PNAME_LINKURI);
+				if(pLinkUri != null && StringHelper.containsNonWhitespace(pLinkUri.getStringValue())) {
+					layoutModule.setLogoLinkUri(pLinkUri.getStringValue());
+				}
+				Property pFooterLine = propertyManager.findProperty(null, null, null, PROPERTY_CATEGORY, PNAME_FOOTERLINE);
+				if(pFooterLine != null && StringHelper.containsNonWhitespace(pFooterLine.getTextValue())) {
+					layoutModule.setFooterLine(pFooterLine.getTextValue());
+				}
+				
+				
+				
+				uhd.setBooleanDataValue(TASK_LOGO, true);
+				upgradeManager.setUpgradesHistory(uhd, VERSION);
+			} catch (Exception e) {
+				log.error("", e);
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	private boolean upgradeBusinessGroups(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {

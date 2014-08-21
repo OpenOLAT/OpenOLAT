@@ -7,11 +7,14 @@
 		$r.render("shareLink")
 	#end 
 </div>
+#if($footerLine)
+	<div id="o_footer_textline" style="text-align: center;"><p>$footerLine</p></div>
+#end
 <div id="o_footer_powered" class="clearfix">
 	<a href="http://www.openolat.org" target="_blank" title="OpenOLAT - infinite learning">
 		<img src="$r.staticLink("images/openolat/openolat_powerd_by_120x30.png")" alt="powered by OpenOLAT" />
 	</a>
 </div>
 <div id="o_footer_version" class="clearfix">
-	<a href="http://www.openolat.org" title="Homepage of the Open Source LMS OpenOLAT $appVersion (Build $revisionNumber:$changeSet)" target="_blank">$appName&nbsp;$appVersion&nbsp;($node)</a>
+	<a #if($footerUrl) href="$footerUrl" #else href="http://www.openolat.org" #end title="Homepage of the Open Source LMS OpenOLAT $appVersion (Build $revisionNumber:$changeSet)" target="_blank">$appName&nbsp;$appVersion</a>
 </div>	

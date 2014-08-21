@@ -129,6 +129,14 @@ $r.render("jsCssRawHtmlHeader", "post-theme")
 #else
 <style id="o_fontSize_css" type="text/css"></style>
 #end
+<style type="text/css">
+	#if($logoInfos.logo)
+		.o_custom_navbar-brand { background-image: url('$logoInfos.logoUri'); }
+	#else
+		.o_custom_navbar-brand { background-image: none; }
+	#end
+</style>
+
 
 ## deprecated - include any raw header
 $r.renderHeaderIncludes()
@@ -200,7 +208,7 @@ $r.renderForce("development")
 		  <span class="icon-bar"></span>
 		  <span class="icon-bar"></span>
 		</button>
-		<a class="o_navbar-brand" href="#"></a>
+		<a class="o_navbar-brand #if($logoInfos.logo) o_custom_navbar-brand #end" href="$logoInfos.logoLinkUri" title="$logoInfos.logoAlt"></a>
 		
 		<div class="o_collapse o_navbar-collapse">
 			## sites and tabs

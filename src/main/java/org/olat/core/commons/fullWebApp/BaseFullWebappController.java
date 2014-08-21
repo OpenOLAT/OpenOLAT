@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.admin.layout.LayoutModule;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
@@ -240,11 +241,10 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		OLATResourceable wrappedLocale = OresHelper.createOLATResourceableType(Locale.class);
 		ureq.getUserSession().getSingleUserEventCenter().registerFor(this, getIdentity(), wrappedLocale);
 		// register for global sticky message changed events
-		GlobalStickyMessage.registerForGlobalStickyMessage(this, ureq.getIdentity());
+		GlobalStickyMessage.registerForGlobalStickyMessage(this, ureq.getIdentity());	
 	}
 	
 	private void initializeBase(UserRequest ureq, WindowManager winman, ComponentCollection mainPanel) {
-		
 		// component-id of mainPanel for the window id
 		mainVc.contextPut("o_winid", mainPanel.getDispatchID());
 		
@@ -338,6 +338,10 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private void initialize(UserRequest ureq) {
 		mainVc = createVelocityContainer("fullwebapplayout");
 		mainVc.contextPut("screenMode", screenMode);
+
+		LayoutModule layoutModule = CoreSpringFactory.getImpl(LayoutModule.class);
+		LogoInformations logoInfos = new LogoInformations(layoutModule);
+		mainVc.contextPut("logoInfos", logoInfos);
 		
 		// use separate container for navigation to prevent full page refresh in ajax mode on site change
 		// nav is not a controller part because it is a fundamental part of the BaseFullWebAppConroller.
