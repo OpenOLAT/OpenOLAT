@@ -239,7 +239,8 @@ public class CourseHandler implements RepositoryHandler {
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		OLATResource courseResource = cgm.getCourseResource();
 		
-		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		RepositoryEntry re = repositoryService
 				.create(initialAuthor, null, "", displayname, description, courseResource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();
 		
@@ -264,7 +265,8 @@ public class CourseHandler implements RepositoryHandler {
 
 		// create group management / import groups
 		cgm = course.getCourseEnvironment().getCourseGroupManager();
-		CourseEnvironmentMapper envMapper = cgm.importCourseBusinessGroups(course.getCourseExportDataDir().getBasefile());
+		File fImportBaseDirectory = course.getCourseExportDataDir().getBasefile();
+		CourseEnvironmentMapper envMapper = cgm.importCourseBusinessGroups(fImportBaseDirectory);
 		//upgrade course
 		course = CourseFactory.loadCourse(cgm.getCourseResource());
 		course.postImport(envMapper);
@@ -285,7 +287,12 @@ public class CourseHandler implements RepositoryHandler {
 		//save and close edit session
 		CourseFactory.saveCourse(course.getResourceableId());
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
-
+		
+		RepositoryEntryImportExport imp = new RepositoryEntryImportExport(fImportBaseDirectory);
+		if(imp.anyExportedPropertiesAvailable()) {
+			re = imp.importContent(re, getMediaContainer(re));
+			re = DBFactory.getInstance().getCurrentEntityManager().merge(re);
+		}
 		return re;
 	}
 	

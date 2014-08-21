@@ -26,6 +26,7 @@
 package org.olat.repository;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,11 +36,17 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 import org.apache.commons.io.IOUtils;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -120,7 +127,23 @@ public class RepositoryEntryImportExport {
 		try {
 			fOut = new FileOutputStream(new File(baseDirectory, PROPERTIES_FILE));
 			XStream xstream = getXStream();
-			xstream.toXML(new RepositoryEntryImport(re), fOut);
+			
+			RepositoryEntryImport imp = new RepositoryEntryImport(re);
+			RepositoryManager rm = RepositoryManager.getInstance();
+			VFSLeaf image = rm.getImage(re);
+			if(image instanceof LocalFileImpl) {
+				imp.setImageName(image.getName());
+				FileUtils.copyFileToDir(((LocalFileImpl)image).getBasefile(), baseDirectory, "");
+				
+			}
+
+			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+			VFSLeaf movie = repositoryService.getIntroductionMovie(re);
+			if(movie instanceof LocalFileImpl) {
+				imp.setMovieName(movie.getName());
+				FileUtils.copyFileToDir(((LocalFileImpl)movie).getBasefile(), baseDirectory, "");
+			}
+			xstream.toXML(imp, fOut);
 		} catch (IOException ioe) {
 			throw new OLATRuntimeException("Error writing repo properties.", ioe);
 		} finally {
@@ -149,6 +172,50 @@ public class RepositoryEntryImportExport {
 			mr.release();
 		}
 		return true;
+	}
+	
+	public RepositoryEntry importContent(RepositoryEntry newEntry, VFSContainer mediaContainer) {
+		if(StringHelper.containsNonWhitespace(getImageName())) {
+			RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+			File newFile = new File(baseDirectory, getImageName());
+			VFSLeaf newImage = new LocalFileImpl(newFile);
+			repositoryManager.setImage(newImage, newEntry);
+		}
+		if(StringHelper.containsNonWhitespace(getMovieName())) {
+			String movieName = getMovieName();
+			String extension = FileUtils.getFileSuffix(movieName);
+			File newFile = new File(baseDirectory, movieName);
+			try(InputStream inStream = new FileInputStream(newFile)) {
+				VFSLeaf movieLeaf = mediaContainer.createChildLeaf(newEntry.getKey() + "." + extension);
+				VFSManager.copyContent(inStream, movieLeaf);
+			} catch(IOException e) {
+				log.error("", e);
+			}
+		}
+		
+		if(StringHelper.containsNonWhitespace(repositoryProperties.getDescription())) {
+			newEntry.setDescription(repositoryProperties.getDescription());
+		}
+		if(StringHelper.containsNonWhitespace(repositoryProperties.getAuthors())) {
+			newEntry.setAuthors(repositoryProperties.getAuthors());
+		}
+		if(StringHelper.containsNonWhitespace(repositoryProperties.getMainLanguage())) {
+			newEntry.setMainLanguage(repositoryProperties.getMainLanguage());
+		}
+		if(StringHelper.containsNonWhitespace(repositoryProperties.getObjectives())) {
+			newEntry.setObjectives(repositoryProperties.getObjectives());
+		}
+		if(StringHelper.containsNonWhitespace(repositoryProperties.getRequirements())) {
+			newEntry.setRequirements(repositoryProperties.getRequirements());
+		}
+		if(StringHelper.containsNonWhitespace(repositoryProperties.getCredits())) {
+			newEntry.setCredits(repositoryProperties.getCredits());
+		}
+		if(StringHelper.containsNonWhitespace(repositoryProperties.getExpenditureOfWork())) {
+			newEntry.setExpenditureOfWork(repositoryProperties.getExpenditureOfWork());
+		}
+		
+		return newEntry;
 	}
 
 	/**
@@ -211,6 +278,8 @@ public class RepositoryEntryImportExport {
 		xStream.aliasField(PROP_DISPLAYNAME, RepositoryEntryImport.class, "displayname");
 		xStream.aliasField(PROP_DECRIPTION, RepositoryEntryImport.class, "description");
 		xStream.aliasField(PROP_INITIALAUTHOR, RepositoryEntryImport.class, "initialAuthor");
+		xStream.omitField(RepositoryEntryImport.class, "outer-class");
+		xStream.ignoreUnknownElements();
 		return xStream;
 	}
 
@@ -264,25 +333,83 @@ public class RepositoryEntryImportExport {
 		return repositoryProperties.getInitialAuthor();
 	}
 	
+	public String getMovieName() {
+		if(!propertiesLoaded) {
+			loadConfiguration();
+		}
+		return repositoryProperties.getMovieName();
+	}
+	
+	public String getImageName() {
+		if(!propertiesLoaded) {
+			loadConfiguration();
+		}
+		return repositoryProperties.getImageName();
+	}
+	
 	public class RepositoryEntryImport {
+		
+		private Long key;
 		private String softkey;
 		private String resourcename;
 		private String displayname;
 		private String description;
 		private String initialAuthor;
 		
+		private String authors;
+		private String mainLanguage;
+		private String objectives;
+		private String requirements;
+		private String credits;
+		private String expenditureOfWork;
+		
+		private String movieName;
+		private String imageName;
+		
 		public RepositoryEntryImport() {
 			//
 		}
 		
 		public RepositoryEntryImport(RepositoryEntry re) {
-			this.softkey = re.getSoftkey();
-			this.resourcename = re.getResourcename();
-			this.displayname = re.getDisplayname();
-			this.description = re.getDescription();
-			this.initialAuthor = re.getInitialAuthor();
+			key = re.getKey();
+			softkey = re.getSoftkey();
+			resourcename = re.getResourcename();
+			displayname = re.getDisplayname();
+			description = re.getDescription();
+			initialAuthor = re.getInitialAuthor();
+			
+			authors = re.getAuthors();
+			mainLanguage = re.getMainLanguage();
+			objectives = re.getObjectives();
+			requirements = re.getRequirements();
+			credits = re.getCredits();
+			expenditureOfWork = re.getExpenditureOfWork();
 		}
 		
+		public Long getKey() {
+			return key;
+		}
+
+		public void setKey(Long key) {
+			this.key = key;
+		}
+
+		public String getMovieName() {
+			return movieName;
+		}
+
+		public void setMovieName(String movieName) {
+			this.movieName = movieName;
+		}
+
+		public String getImageName() {
+			return imageName;
+		}
+
+		public void setImageName(String imageName) {
+			this.imageName = imageName;
+		}
+
 		public String getSoftkey() {
 			return softkey;
 		}
@@ -321,6 +448,54 @@ public class RepositoryEntryImportExport {
 		
 		public void setInitialAuthor(String initialAuthor) {
 			this.initialAuthor = initialAuthor;
+		}
+
+		public String getAuthors() {
+			return authors;
+		}
+
+		public void setAuthors(String authors) {
+			this.authors = authors;
+		}
+
+		public String getMainLanguage() {
+			return mainLanguage;
+		}
+
+		public void setMainLanguage(String mainLanguage) {
+			this.mainLanguage = mainLanguage;
+		}
+
+		public String getObjectives() {
+			return objectives;
+		}
+
+		public void setObjectives(String objectives) {
+			this.objectives = objectives;
+		}
+
+		public String getRequirements() {
+			return requirements;
+		}
+
+		public void setRequirements(String requirements) {
+			this.requirements = requirements;
+		}
+
+		public String getCredits() {
+			return credits;
+		}
+
+		public void setCredits(String credits) {
+			this.credits = credits;
+		}
+
+		public String getExpenditureOfWork() {
+			return expenditureOfWork;
+		}
+
+		public void setExpenditureOfWork(String expenditureOfWork) {
+			this.expenditureOfWork = expenditureOfWork;
 		}
 	}
 }
