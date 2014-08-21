@@ -461,8 +461,8 @@ public class CourseHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel panel) {
-		return CourseFactory.createEditorController(ureq, wControl, panel, re.getOlatResource(), null);
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
+		return CourseFactory.createEditorController(ureq, wControl, re.getOlatResource(), null);
 	}
 
 	@Override

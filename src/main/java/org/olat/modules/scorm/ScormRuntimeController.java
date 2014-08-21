@@ -102,5 +102,6 @@ public class ScormRuntimeController extends RepositoryEntryRuntimeController {
 		});
 		
 		pushController(ureq, translate("tab.layout"), deliveryOptionsCtrl);
+		setActiveTool(deliveryOptionsLink);
 	}
 }

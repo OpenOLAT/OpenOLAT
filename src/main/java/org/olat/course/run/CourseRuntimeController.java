@@ -91,6 +91,7 @@ import org.olat.course.config.ui.CourseOptionsController;
 import org.olat.course.config.ui.courselayout.CourseLayoutGeneratorController;
 import org.olat.course.db.CourseDBManager;
 import org.olat.course.db.CustomDBMainController;
+import org.olat.course.editor.EditorMainController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.member.MembersManagementMainController;
@@ -573,6 +574,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 
 	@Override
+	public void setActiveTool(Link tool) {
+		if(myCourse != null) {
+			myCourse.setActiveLink(tool);
+		}
+		super.setActiveTool(tool);
+	}
+
+	@Override
 	protected void doDispose() {
 		super.doDispose();
 		
@@ -625,9 +634,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		} else if(courseStatisticLink == source) {
 			doCourseStatistics(ureq);
 		} else if(testStatisticLink == source) {
-			doAssessmentStatistics(ureq, "command.openteststatistic", "TestStatistics", QTIType.test, QTIType.onyx);
+			doAssessmentStatistics(ureq, "command.openteststatistic", "TestStatistics", testStatisticLink, QTIType.test, QTIType.onyx);
 		} else if(surveyStatisticLink == source) {
-			doAssessmentStatistics(ureq, "command.opensurveystatistic", "SurveyStatistics", QTIType.survey);
+			doAssessmentStatistics(ureq, "command.opensurveystatistic", "SurveyStatistics", surveyStatisticLink, QTIType.survey);
 		} else if(assessmentLink == source) {
 			doAssessmentTool(ureq);
 		} else if(calendarLink == source) {
@@ -756,9 +765,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					try {
 						Activateable2 assessmentCtrl = null;
 						if("TestStatistics".equalsIgnoreCase(type)) {
-							assessmentCtrl = doAssessmentStatistics(ureq, "command.openteststatistic", "TestStatistics", QTIType.test, QTIType.onyx);
+							assessmentCtrl = doAssessmentStatistics(ureq, "command.openteststatistic", "TestStatistics", testStatisticLink, QTIType.test, QTIType.onyx);
 						} else {
-							assessmentCtrl = doAssessmentStatistics(ureq, "command.opensurveystatistic", "SurveyStatistics", QTIType.survey);
+							assessmentCtrl = doAssessmentStatistics(ureq, "command.opensurveystatistic", "SurveyStatistics", surveyStatisticLink, QTIType.survey);
 						}
 						
 						List<ContextEntry> subEntries;
@@ -778,8 +787,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(getRunMainController() != null) {
 			getRunMainController().activate(ureq, entries, state);
 		}
-
-		//super.activate(ureq, entries, state);
 	}
 
 	@Override
@@ -799,12 +806,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			ICourse course = CourseFactory.loadCourse(getRepositoryEntry().getOlatResource());
 			CourseNode currentCourseNode = getCurrentCourseNode();
-			editorCtrl = CourseFactory.createEditorController(ureq, getWindowControl(), toolbarPanel, course, currentCourseNode);
+			EditorMainController ctrl = CourseFactory.createEditorController(ureq, getWindowControl(), course, currentCourseNode);
+			editorCtrl = pushController(ureq, "Editor", ctrl);
 			//user activity logger which was initialized with course run
 			if(editorCtrl != null){
 				listenTo(editorCtrl);
 				setIsInEditor(true);
 				currentToolCtr = editorCtrl;
+				setActiveTool(editLink);
 			}
 		}
 	}
@@ -827,6 +836,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			MembersManagementMainController ctrl = new MembersManagementMainController(ureq, addToHistory(ureq, bwControl), getRepositoryEntry());
 			listenTo(ctrl);
 			membersCtrl = pushController(ureq, translate("command.opensimplegroupmngt"), ctrl);
+			setActiveTool(membersLink);
 			currentToolCtr = membersCtrl;
 		}
 		return membersCtrl;
@@ -849,6 +859,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			  		course.getCourseEnvironment(), !managedLayout);
 			listenTo(ctrl);
 			courseLayoutCtrl = pushController(ureq, translate("command.layout"), ctrl);
+			setActiveTool(layoutLink);
 			currentToolCtr = courseLayoutCtrl;
 		}
 	}
@@ -860,6 +871,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
 			CourseOptionsController ctrl = new CourseOptionsController(ureq, getWindowControl(), getRepositoryEntry(), courseConfig, true);
 			optionsToolCtr = pushController(ureq, translate("command.options"), ctrl);
+			setActiveTool(optionsLink);
 			currentToolCtr = optionsToolCtr;
 		}
 	}
@@ -872,6 +884,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			listenTo(ctrl);
 			archiverCtrl = pushController(ureq, translate("command.openarchiver"), ctrl);
 			currentToolCtr = archiverCtrl;
+			setActiveTool(archiverLink);
 		}
 	}
 	
@@ -885,6 +898,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		FolderRunController ctrl = new FolderRunController(namedCourseFolder, true, true, true, ureq, getWindowControl(), null, customLinkTreeModel);
 		ctrl.addLoggingResourceable(LoggingResourceable.wrap(course));
 		courseFolderCtrl = pushController(ureq, translate("command.coursefolder"), ctrl);
+		setActiveTool(folderLink);
 		currentToolCtr = courseFolderCtrl;
 	}
 	
@@ -894,6 +908,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		CourseAreasController ctrl = new CourseAreasController(ureq, getWindowControl(), getRepositoryEntry().getOlatResource());
 		ctrl.addLoggingResourceable(LoggingResourceable.wrap(course));
 		areasCtrl = pushController(ureq, translate("command.courseareas"), ctrl);
+		setActiveTool(areaLink);
 		currentToolCtr = areasCtrl;
 	}
 	
@@ -904,6 +919,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			CustomDBMainController ctrl = new CustomDBMainController(ureq, getWindowControl(), course);
 			listenTo(ctrl);
 			databasesCtrl = pushController(ureq, translate("command.opendb"), ctrl);
+			setActiveTool(dbLink);
 			currentToolCtr = databasesCtrl;
 		}
 	}
@@ -915,11 +931,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			StatisticMainController ctrl = new StatisticMainController(ureq, getWindowControl(), course);
 			listenTo(ctrl);
 			statisticsCtrl = pushController(ureq, translate("command.openstatistic"), ctrl);
+			setActiveTool(courseStatisticLink);
 			currentToolCtr = statisticsCtrl;
 		}
 	}
 	
-	private Activateable2 doAssessmentStatistics(UserRequest ureq, String i18nCrumbKey, String typeName, QTIType... types) {
+	private Activateable2 doAssessmentStatistics(UserRequest ureq, String i18nCrumbKey, String typeName, Link tool, QTIType... types) {
 		OLATResourceable ores = OresHelper.createOLATResourceableType(typeName);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl swControl = addToHistory(ureq, ores, null);
@@ -930,6 +947,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			listenTo(ctrl);
 			statsToolCtr = pushController(ureq, translate(i18nCrumbKey), ctrl);
 			currentToolCtr = statsToolCtr;
+			setActiveTool(tool);
 			return statsToolCtr;
 		}
 		return null;
@@ -949,6 +967,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			listenTo(ctrl);
 			assessmentToolCtr = pushController(ureq, translate("command.openassessment"), ctrl);
 			currentToolCtr = assessmentToolCtr;
+			setActiveTool(assessmentLink);
 			return assessmentToolCtr;
 		}
 		// 2) users with coach right: limited access to coached groups
@@ -960,6 +979,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			listenTo(ctrl);
 			assessmentToolCtr = pushController(ureq, translate("command.openassessment"), ctrl);
 			currentToolCtr = assessmentToolCtr;
+			setActiveTool(assessmentLink);
 			return assessmentToolCtr;
 		}
 		return null;

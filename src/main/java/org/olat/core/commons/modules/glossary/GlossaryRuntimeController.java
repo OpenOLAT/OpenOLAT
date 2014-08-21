@@ -76,6 +76,7 @@ public class GlossaryRuntimeController extends RepositoryEntryRuntimeController 
 		GlossaryRegisterSettingsController glossRegisterSetCtr
 			= new GlossaryRegisterSettingsController(ureq, getWindowControl(), glossary.getOlatResource());
 		pushController(ureq, translate("tab.glossary.register"), glossRegisterSetCtr);
+		setActiveTool(registerLink);
 	}
 	
 	private void doPermission(UserRequest ureq) {
@@ -83,5 +84,6 @@ public class GlossaryRuntimeController extends RepositoryEntryRuntimeController 
 		GlossaryEditSettingsController glossEditCtr
 			= new GlossaryEditSettingsController(ureq, getWindowControl(), glossary.getOlatResource());
 		pushController(ureq, translate("tab.glossary.edit"), glossEditCtr);
+		setActiveTool(permissionLink);
 	}
 }

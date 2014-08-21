@@ -208,7 +208,7 @@ public class GlossaryHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel panel) {
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		VFSContainer glossaryFolder = GlossaryManager.getInstance().getGlossaryRootFolder(re.getOlatResource());
 
 		Properties glossProps = GlossaryItemManager.getInstance().getGlossaryConfig(glossaryFolder);

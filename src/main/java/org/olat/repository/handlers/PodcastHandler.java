@@ -165,7 +165,7 @@ public class PodcastHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl control, TooledStackedPanel panel) {
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl control) {
 		return null;
 	}
 

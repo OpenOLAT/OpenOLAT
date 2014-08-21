@@ -53,6 +53,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.EditionSupport;
@@ -220,12 +221,10 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected void initToolbar(Dropdown toolsDropdown, Dropdown settingsDropdown) {
-		
-		boolean managed = false;
-		
 		if (isEntryAdmin) {
 			//tools
 			if(handler.supportsEdit(re) == EditionSupport.yes) {
+				boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
 				editLink = LinkFactory.createToolLink("edit.cmd", translate("details.openeditor"), this, "o_sel_repository_editor");
 				editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
 				editLink.setEnabled(!managed);
@@ -239,23 +238,21 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			ordersLink = LinkFactory.createToolLink("bookings", translate("details.orders"), this, "o_sel_repo_booking");
 			ordersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_booking");
 			boolean booking = acService.isResourceAccessControled(re.getOlatResource(), null);
-			ordersLink.setEnabled(!corrupted && booking);
+			ordersLink.setEnabled(booking);
 			toolsDropdown.addComponent(ordersLink);
 			
 			//settings
 			editDescriptionLink = LinkFactory.createToolLink("settings.cmd", translate("details.chprop"), this, "o_icon_settings");
 			editDescriptionLink.setElementCssClass("o_sel_course_settings");
-			editDescriptionLink.setEnabled(!managed);
+			editDescriptionLink.setEnabled(!corrupted);
 			settingsDropdown.addComponent(editDescriptionLink);
 			
 			accessLink = LinkFactory.createToolLink("access.cmd", translate("tab.accesscontrol"), this, "o_icon_password");
 			accessLink.setElementCssClass("o_sel_course_access");
-			accessLink.setEnabled(!managed);
 			settingsDropdown.addComponent(accessLink);
 			
 			catalogLink = LinkFactory.createToolLink("cat", translate("details.categoriesheader"), this, "o_icon_catalog");
 			catalogLink.setElementCssClass("o_sel_repo_add_to_catalog");
-			catalogLink.setEnabled(!managed);
 			settingsDropdown.addComponent(catalogLink);
 		}
 		
@@ -278,6 +275,15 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		bookmarkLink.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
 		bookmarkLink.setVisible(allowBookmark);
 		toolbarPanel.addTool(bookmarkLink, Align.right);
+	}
+	
+	public void setActiveTool(Link tool) {
+		if(tools != null) {
+			tools.setActiveLink(tool);
+		}
+		if(settings != null) {
+			settings.setActiveLink(tool);
+		}
 	}
 	
 	@Override
@@ -415,6 +421,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected <T extends Controller> T pushController(UserRequest ureq, String name, T controller) {
 		popToRoot(ureq).cleanUp();
 		toolbarPanel.pushController(name, controller);
+		if(controller instanceof ToolbarAware) {
+			((ToolbarAware)controller).initToolbar(toolbarPanel);
+		}
 		return controller;
 	}
 	
@@ -426,6 +435,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		AuthoringEditAccessController ctrl = new AuthoringEditAccessController(ureq, getWindowControl(), re);
 		listenTo(ctrl);
 		accessCtrl = pushController(ureq, translate("tab.accesscontrol"), ctrl);
+		setActiveTool(accessLink);
 		currentToolCtr = accessCtrl;
 	}
 	
@@ -454,10 +464,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected void doEdit(UserRequest ureq) {
 		if(!isEntryAdmin) return;
 		
-		Controller ctrl = handler.createEditorController(re, ureq, getWindowControl(), toolbarPanel);
+		Controller ctrl = handler.createEditorController(re, ureq, getWindowControl());
 		listenTo(ctrl);
 		editorCtrl = pushController(ureq, translate("resource.editor"), ctrl);
 		currentToolCtr = editorCtrl;
+		setActiveTool(editLink);
 	}
 	
 	protected void doDetails(UserRequest ureq) {
@@ -478,6 +489,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		listenTo(ctrl);
 		descriptionCtrl = pushController(ureq, translate("settings.editor"), ctrl);
 		currentToolCtr = descriptionCtrl;
+		setActiveTool(editDescriptionLink);
 	}
 	
 	/**
@@ -492,6 +504,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		listenTo(catalogCtlr);
 		catalogCtlr.initToolbar();
 		currentToolCtr = catalogCtlr;
+		setActiveTool(catalogLink);
 	}
 	
 	protected Activateable2 doMembers(UserRequest ureq) {
@@ -501,6 +514,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		listenTo(ctrl);
 		membersEditController = pushController(ureq, translate("details.members"), ctrl);
 		currentToolCtr = membersEditController;
+		setActiveTool(membersLink);
 		return membersEditController;
 	}
 	
@@ -511,6 +525,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		listenTo(ctrl);
 		ordersCtlr = pushController(ureq, translate("details.orders"), ctrl);
 		currentToolCtr = ordersCtlr;
+		setActiveTool(ordersLink);
 	}
 	
 	private void doRun(UserRequest ureq, RepositoryEntrySecurity reSecurity) {
@@ -565,5 +580,10 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		
 		public Controller create(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry);
 		
+	}
+	
+	public interface ToolbarAware {
+		
+		public void initToolbar(TooledStackedPanel toolbar);
 	}
 }

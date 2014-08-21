@@ -58,7 +58,6 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -181,10 +180,10 @@ public class CourseFactory extends BasicManager {
 	 * @return editor controller for the given course resourceable; if the editor
 	 *         is already locked, it returns a controller with a lock message
 	 */
-	public static EditorMainController createEditorController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stack,
+	public static EditorMainController createEditorController(UserRequest ureq, WindowControl wControl,
 			OLATResourceable olatResource, CourseNode selectedNode) {
 		ICourse course = loadCourse(olatResource);
-		EditorMainController emc = new EditorMainController(ureq, wControl, course, stack, selectedNode);
+		EditorMainController emc = new EditorMainController(ureq, wControl, course, selectedNode);
 		if (emc.getLockEntry() == null) {
 			Translator translator = Util.createPackageTranslator(RunMainController.class, ureq.getLocale());
 			wControl.setWarning(translator.translate("error.editoralreadylocked", new String[] { "?" }));

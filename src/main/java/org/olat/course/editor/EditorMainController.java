@@ -104,6 +104,7 @@ import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -119,7 +120,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Felix Jost
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class EditorMainController extends MainLayoutBasicController implements GenericEventListener {
+public class EditorMainController extends MainLayoutBasicController implements GenericEventListener, ToolbarAware {
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(EditorMainController.class);
 	
 	protected static final String TB_ACTION = "o_tb_do_";
@@ -127,7 +128,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private static final String CMD_COPYNODE = "copyn";
 	private static final String CMD_MOVENODE = "moven";
 	private static final String CMD_DELNODE = "deln";
-	private static final String CMD_CLOSEEDITOR = "cmd.close";
 	private static final String CMD_PUBLISH = "pbl";
 	private static final String CMD_COURSEPREVIEW = "cprev";
 	protected static final String CMD_MULTI_SP = "cmp.multi.sp";
@@ -139,7 +139,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private static final String NLS_PUBLISHED_LATEST = "published.latest";
 	private static final String NLS_COMMAND_COURSEPREVIEW = "command.coursepreview";
 	private static final String NLS_COMMAND_PUBLISH = "command.publish";
-	private static final String NLS_COMMAND_CLOSEEDITOR = "command.closeeditor";
 	private static final String NLS_HEADER_INSERTNODES = "header.insertnodes";
 	private static final String NLS_COMMAND_DELETENODE_HEADER = "command.deletenode.header";
 	private static final String NLS_COMMAND_DELETENODE = "command.deletenode";
@@ -176,6 +175,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private HtmlHeaderComponent hc;
 	private EditorUserCourseEnvironmentImpl euce;
 	
+	private Dropdown nodeTools;
 	private Link undelButton, alternativeLink, statusLink;
 	private Link previewLink, publishLink, closeLink;
 	private Link createNodeLink, deleteNodeLink, moveNodeLink, copyNodeLink;
@@ -183,8 +183,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private CloseableModalController cmc;
 	private CloseableCalloutWindowController calloutCtrl;
 	
+	private TooledStackedPanel stackPanel;
 	private MultiSPController multiSPChooserCtr;
-	private final TooledStackedPanel stackPanel;
 
 	private final OLATResourceable ores;
 	
@@ -198,14 +198,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	 * @param wControl The window controller
 	 * @param course The course
 	 */
-	public EditorMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores,
-			TooledStackedPanel externStack, CourseNode selectedNode) {
+	public EditorMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, CourseNode selectedNode) {
 		super(ureq,wControl);
-		this.ores = ores;
-		stackPanel = externStack == null
-				? new TooledStackedPanel("courseEditorStackPanel", getTranslator(), this)
-				: externStack;
-				
+		this.ores = ores;		
 
 		// OLAT-4955: setting the stickyActionType here passes it on to any controller defined in the scope of the editor,
 		//            basically forcing any logging action called within the course editor to be of type 'admin'
@@ -225,139 +220,128 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), lockEntryOres);
 		
 		try {			
-		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_OPEN, getClass());
-
-		if (!lockEntry.isSuccess()) {
-			MainPanel empty = new MainPanel("empty");
-			putInitialPanel(empty);
-			return;
-		} else {
-			ICourse course = CourseFactory.openCourseEditSession(ores.getResourceableId());
-			main = createVelocityContainer("index");
-			main.setDomReplacementWrapperRequired(false);
-			
-			OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", ores.getResourceableId());
-			RepositoryEntry repo = RepositoryManager.getInstance().lookupRepositoryEntry(courseOres, false);
-			Controller courseCloser = new DisposedCourseRestartController(ureq, wControl, repo);
-			Controller disposedRestartController = new LayoutMain3ColsController(ureq, wControl, courseCloser);
-			setDisposedMsgController(disposedRestartController);
-			
-			undelButton = LinkFactory.createButton("undeletenode.button", main, this);
-			
-			// set the custom course css
-			enableCustomCss(ureq);
-
-			menuTree = new MenuTree("luTree");
-			menuTree.setExpandSelectedNode(false);
-			menuTree.setDragEnabled(true);
-			menuTree.setDropEnabled(true);
-			menuTree.setDropSiblingEnabled(true);	
-			menuTree.setDndAcceptJSMethod("treeAcceptDrop_notWithChildren");	
-			menuTree.setElementCssClass("o_editor_menu");
-
-			/*
-			 * create editor user course environment for enhanced syntax/semantic
-			 * checks. Initialize it with the current course node id, which is not set
-			 * yet. Furthermore the course is refreshed, e.g. as it get's loaded by
-			 * XSTREAM constructors are not called, but transient data must be
-			 * caculated and initialized
-			 */
-			cetm = CourseFactory.getCourseEditSession(ores.getResourceableId()).getEditorTreeModel();
-			CourseEditorEnv cev = new CourseEditorEnvImpl(cetm, course.getCourseEnvironment().getCourseGroupManager(), ureq.getLocale());
-			euce = new EditorUserCourseEnvironmentImpl(cev);
-			euce.getCourseEditorEnv().setCurrentCourseNodeId(null);
-			
-
-			long lpTimeStamp = cetm.getLatestPublishTimestamp();
-			if (lpTimeStamp == -1) {				
-				showInfo(NLS_PUBLISHED_NEVER_YET);
-			} else { // course has been published before
-				Date d = new Date(lpTimeStamp);
-				getWindowControl().setInfo(translate(NLS_PUBLISHED_LATEST, Formatter.getInstance(ureq.getLocale()).formatDateAndTime(d)));
-			}
-			menuTree.setTreeModel(cetm);
-			menuTree.setOpenNodeIds(Collections.singleton(cetm.getRootNode().getIdent()));
-			menuTree.addListener(this);
-
-			tabbedNodeConfig = new TabbedPane("tabbedNodeConfig", ureq.getLocale());
-			tabbedNodeConfig.setElementCssClass("o_node_config");
-			main.put(tabbedNodeConfig.getComponentName(), tabbedNodeConfig);
-			
-			alternativeLink = LinkFactory.createButton("alternative", main, this);
-			main.put("alternative", alternativeLink);
-
-			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, main, "course" + course.getResourceableId());			
-			columnLayoutCtr.addCssClassToMain("o_editor");
-			listenTo(columnLayoutCtr);
-			
-			if(externStack == null) {
-				stackPanel.pushController(course.getCourseTitle(), columnLayoutCtr);
-				putInitialPanel(stackPanel);
-			} else {
-				putInitialPanel(columnLayoutCtr.getInitialComponent());
-			}
+			ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_OPEN, getClass());
 	
-			stackPanel.pushController("Editor", this);
-			initToolbar(externStack == null);
-			
-			// validate course and update course status
-			euce.getCourseEditorEnv().validateCourse();
-			StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
-			updateCourseStatusMessages(ureq.getLocale(), courseStatus);
-
-			// add as listener to course so we are being notified about course events:
-			// - deleted events
-			CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), course);
-			// activate course root node
-			String nodeIdent = cetm.getRootNode().getIdent();
-			if(selectedNode != null) {
-				CourseEditorTreeNode editorNode = cetm.getCourseEditorNodeContaining(selectedNode);
-				if(editorNode != null) {
-					nodeIdent = editorNode.getIdent();
+			if (!lockEntry.isSuccess()) {
+				MainPanel empty = new MainPanel("empty");
+				putInitialPanel(empty);
+			} else {
+				ICourse course = CourseFactory.openCourseEditSession(ores.getResourceableId());
+				main = createVelocityContainer("index");
+				main.setDomReplacementWrapperRequired(false);
+				
+				OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", ores.getResourceableId());
+				RepositoryEntry repo = RepositoryManager.getInstance().lookupRepositoryEntry(courseOres, false);
+				Controller courseCloser = new DisposedCourseRestartController(ureq, wControl, repo);
+				Controller disposedRestartController = new LayoutMain3ColsController(ureq, wControl, courseCloser);
+				setDisposedMsgController(disposedRestartController);
+				
+				undelButton = LinkFactory.createButton("undeletenode.button", main, this);
+				
+				// set the custom course css
+				enableCustomCss(ureq);
+	
+				menuTree = new MenuTree("luTree");
+				menuTree.setExpandSelectedNode(false);
+				menuTree.setDragEnabled(true);
+				menuTree.setDropEnabled(true);
+				menuTree.setDropSiblingEnabled(true);	
+				menuTree.setDndAcceptJSMethod("treeAcceptDrop_notWithChildren");	
+				menuTree.setElementCssClass("o_editor_menu");
+	
+				/*
+				 * create editor user course environment for enhanced syntax/semantic
+				 * checks. Initialize it with the current course node id, which is not set
+				 * yet. Furthermore the course is refreshed, e.g. as it get's loaded by
+				 * XSTREAM constructors are not called, but transient data must be
+				 * caculated and initialized
+				 */
+				cetm = CourseFactory.getCourseEditSession(ores.getResourceableId()).getEditorTreeModel();
+				CourseEditorEnv cev = new CourseEditorEnvImpl(cetm, course.getCourseEnvironment().getCourseGroupManager(), ureq.getLocale());
+				euce = new EditorUserCourseEnvironmentImpl(cev);
+				euce.getCourseEditorEnv().setCurrentCourseNodeId(null);
+				
+	
+				long lpTimeStamp = cetm.getLatestPublishTimestamp();
+				if (lpTimeStamp == -1) {				
+					showInfo(NLS_PUBLISHED_NEVER_YET);
+				} else { // course has been published before
+					Date d = new Date(lpTimeStamp);
+					getWindowControl().setInfo(translate(NLS_PUBLISHED_LATEST, Formatter.getInstance(ureq.getLocale()).formatDateAndTime(d)));
 				}
+				menuTree.setTreeModel(cetm);
+				menuTree.setOpenNodeIds(Collections.singleton(cetm.getRootNode().getIdent()));
+				menuTree.addListener(this);
+	
+				tabbedNodeConfig = new TabbedPane("tabbedNodeConfig", ureq.getLocale());
+				tabbedNodeConfig.setElementCssClass("o_node_config");
+				main.put(tabbedNodeConfig.getComponentName(), tabbedNodeConfig);
+				
+				alternativeLink = LinkFactory.createButton("alternative", main, this);
+				main.put("alternative", alternativeLink);
+	
+				columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, main, "course" + course.getResourceableId());			
+				columnLayoutCtr.addCssClassToMain("o_editor");
+				listenTo(columnLayoutCtr);
+				putInitialPanel(columnLayoutCtr.getInitialComponent());
+				
+				//tools
+				statusLink = LinkFactory.createToolLink("status", translate("status"), this, null);
+				statusLink.setUserObject(new EditedCourseStatus());
+				
+				createNodeLink = LinkFactory.createToolLink(NLS_HEADER_INSERTNODES, translate(NLS_HEADER_INSERTNODES), this, "o_icon_add");
+				createNodeLink.setElementCssClass("o_sel_course_editor_create_node");
+				createNodeLink.setDomReplacementWrapperRequired(false);
+
+				nodeTools = new Dropdown("insertNodes", NLS_COMMAND_DELETENODE_HEADER, false, getTranslator());
+				nodeTools.setIconCSS("o_icon o_icon_customize");
+
+				deleteNodeLink = LinkFactory.createToolLink(CMD_DELNODE, translate(NLS_COMMAND_DELETENODE), this, "o_icon_delete_item");
+				nodeTools.addComponent(deleteNodeLink);
+				moveNodeLink = LinkFactory.createToolLink(CMD_MOVENODE, translate(NLS_COMMAND_MOVENODE), this, "o_icon_move");
+				nodeTools.addComponent(moveNodeLink);
+				copyNodeLink = LinkFactory.createToolLink(CMD_COPYNODE, translate(NLS_COMMAND_COPYNODE), this, "o_icon_copy");
+				nodeTools.addComponent(copyNodeLink);
+
+				previewLink = LinkFactory.createToolLink(CMD_COURSEPREVIEW, translate(NLS_COMMAND_COURSEPREVIEW), this, "o_icon_preview");
+				publishLink = LinkFactory.createToolLink(CMD_PUBLISH, translate(NLS_COMMAND_PUBLISH), this, "o_icon_publish");
+				publishLink.setElementCssClass("o_sel_course_editor_publish");
+				
+				// validate course and update course status
+				euce.getCourseEditorEnv().validateCourse();
+				StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
+				updateCourseStatusMessages(ureq.getLocale(), courseStatus);
+	
+				// add as listener to course so we are being notified about course events:
+				// - deleted events
+				CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), course);
+				// activate course root node
+				String nodeIdent = cetm.getRootNode().getIdent();
+				if(selectedNode != null) {
+					CourseEditorTreeNode editorNode = cetm.getCourseEditorNodeContaining(selectedNode);
+					if(editorNode != null) {
+						nodeIdent = editorNode.getIdent();
+					}
+				}
+				menuTree.setSelectedNodeId(nodeIdent);
+				updateViewForSelectedNodeId(ureq, nodeIdent);
 			}
-			menuTree.setSelectedNodeId(nodeIdent);
-			updateViewForSelectedNodeId(ureq, nodeIdent);
-		}
 		} catch (RuntimeException e) {
 			log.warn(RELEASE_LOCK_AT_CATCH_EXCEPTION+" [in <init>]", e);		
 			dispose();
 			throw e;
 		}
 	}
-	
-	private void initToolbar(boolean closeEditor) {
-		createNodeLink = LinkFactory.createToolLink(NLS_HEADER_INSERTNODES, translate(NLS_HEADER_INSERTNODES), this, "o_icon_add");
-		createNodeLink.setElementCssClass("o_sel_course_editor_create_node");
-		createNodeLink.setDomReplacementWrapperRequired(false);
-		stackPanel.addTool(createNodeLink, Align.left);
 
-		Dropdown nodeTools = new Dropdown("insertNodes", NLS_COMMAND_DELETENODE_HEADER, false, getTranslator());
-		nodeTools.setIconCSS("o_icon o_icon_customize");
-		stackPanel.addTool(nodeTools, Align.left);
+	@Override
+	public void initToolbar(TooledStackedPanel toolbar) {
+		this.stackPanel = toolbar;
 		
-		deleteNodeLink = LinkFactory.createToolLink(CMD_DELNODE, translate(NLS_COMMAND_DELETENODE), this, "o_icon_delete_item");
-		nodeTools.addComponent(deleteNodeLink);
-		moveNodeLink = LinkFactory.createToolLink(CMD_MOVENODE, translate(NLS_COMMAND_MOVENODE), this, "o_icon_move");
-		nodeTools.addComponent(moveNodeLink);
-		copyNodeLink = LinkFactory.createToolLink(CMD_COPYNODE, translate(NLS_COMMAND_COPYNODE), this, "o_icon_copy");
-		nodeTools.addComponent(copyNodeLink);
-		
-		statusLink = LinkFactory.createToolLink("status", translate("status"), this, null);
-		statusLink.setUserObject(new EditedCourseStatus());
-		stackPanel.addTool(statusLink, Align.right);
-
-		previewLink = LinkFactory.createToolLink(CMD_COURSEPREVIEW, translate(NLS_COMMAND_COURSEPREVIEW), this, "o_icon_preview");
-		stackPanel.addTool(previewLink, Align.right);
-		publishLink = LinkFactory.createToolLink(CMD_PUBLISH, translate(NLS_COMMAND_PUBLISH), this, "o_icon_publish");
-		publishLink.setElementCssClass("o_sel_course_editor_publish");
-		stackPanel.addTool(publishLink, Align.right);
-		
-		if(closeEditor) {
-			closeLink = LinkFactory.createToolLink(CMD_CLOSEEDITOR, translate(NLS_COMMAND_CLOSEEDITOR), this, "o_icon_close_tool");
-			stackPanel.addTool(closeLink, Align.right);
-		}
-
+		toolbar.addTool(createNodeLink, Align.left);
+		toolbar.addTool(nodeTools, Align.left);
+		toolbar.addTool(statusLink, Align.right);
+		toolbar.addTool(previewLink, Align.right);
+		toolbar.addTool(publishLink, Align.right);
 	}
 	
 	/**
@@ -463,8 +447,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		//set all dirty
 		TreeVisitor tv = new TreeVisitor( new Visitor() {
 			public void visit(INode node) {
-				CourseEditorTreeNode cetn = (CourseEditorTreeNode)node;
-				cetn.setDirty(true);
+				((CourseEditorTreeNode)node).setDirty(true);
 			}
 		}, newCetn, true);
 		tv.visitAll();
@@ -556,8 +539,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private void jumpToNodeEditor(String activatorIdent, UserRequest ureq, CourseNode chosenNode) {
 		initNodeEditor(ureq, chosenNode);
 		if (nodeEditCntrllr instanceof ActivateableTabbableDefaultController) {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck(activatorIdent, 0l);
-			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(ores);
+			OLATResourceable activeOres = OresHelper.createOLATResourceableInstanceWithoutCheck(activatorIdent, 0l);
+			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(activeOres);
 			((ActivateableTabbableDefaultController) nodeEditCntrllr).activate(ureq, entries, null);
 		}
 	}

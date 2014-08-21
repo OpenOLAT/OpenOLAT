@@ -44,11 +44,12 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.cp.CPManager;
 import org.olat.ims.cp.ContentPackage;
 import org.olat.modules.cp.CPUIFactory;
+import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
 
 /**
  * The content packaging main edit controller.
  */
-public class CPEditMainController extends BasicController {
+public class CPEditMainController extends BasicController implements ToolbarAware {
 
 	private CPContentController contentCtr;
 	private CPTreeController treeCtr;
@@ -56,7 +57,7 @@ public class CPEditMainController extends BasicController {
 	private LockResult lock;
 	private DeliveryOptions deliveryOptions;
 
-	public CPEditMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+	public CPEditMainController(UserRequest ureq, WindowControl wControl,
 			VFSContainer cpContainer, OLATResourceable ores) {
 		super(ureq, wControl);
 
@@ -86,10 +87,6 @@ public class CPEditMainController extends BasicController {
 				listenTo(columnLayoutCtr);
 				
 				putInitialPanel(columnLayoutCtr.getInitialComponent());
-				
-				stackPanel.pushController("Editor", this);
-				treeCtr.initToolbar(stackPanel);
-				contentCtr.initToolbar(stackPanel);
 
 				if (!cp.isOLATContentPackage()) {
 					showWarning("maincontroller.cp.created.with.third.party.editor");
@@ -106,6 +103,16 @@ public class CPEditMainController extends BasicController {
 			putInitialPanel(columnLayoutCtr.getInitialComponent());
 		}
 		logAudit("cp editor started. oresId: " + ores.getResourceableId(), null);
+	}
+
+	@Override
+	public void initToolbar(TooledStackedPanel stackPanel) {
+		if(stackPanel != null && treeCtr != null) {
+			treeCtr.initToolbar(stackPanel);
+		}
+		if(stackPanel != null && contentCtr != null) {
+			contentCtr.initToolbar(stackPanel);
+		}
 	}
 
 	@Override

@@ -231,7 +231,7 @@ public class ImsCPHandler extends FileHandler {
 	}
 
 	@Override
-	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel panel) {
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
 		// only unzips, if not already unzipped
 		OlatRootFolderImpl cpRoot = FileResourceManager.getInstance().unzipContainerResource(re.getOlatResource());
 
@@ -243,7 +243,7 @@ public class ImsCPHandler extends FileHandler {
 		VFSSecurityCallback secCallback = new FullAccessWithQuotaCallback(quota);
 		cpRoot.setLocalSecurityCallback(secCallback);
 
-		return new CPEditMainController(ureq, wControl, panel, cpRoot, re.getOlatResource());
+		return new CPEditMainController(ureq, wControl, cpRoot, re.getOlatResource());
 	}
 	
 	protected String getDeletedFilePrefix() {

@@ -29,7 +29,6 @@ import java.io.File;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
@@ -151,11 +150,10 @@ public interface RepositoryHandler {
 	 * can only be called when the current user is either olat admin or in the owning group of this resource
 	 * @param ureq
 	 * @param wControl
-	 * @param panel TODO
 	 * @param res
 	 * @return Controler able to edit resourceable.
 	 */
-	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel panel);
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl);
 	
 	/**
 	 * Called if a user wants to create a Resourceable via wizard.

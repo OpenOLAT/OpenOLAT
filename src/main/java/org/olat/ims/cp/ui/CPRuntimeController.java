@@ -91,7 +91,7 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 			super.event(ureq, source, event);
 		}
 	}
-	
+
 	private void doQuota(UserRequest ureq) {
 		if (quotaManager.hasQuotaEditRights(ureq.getIdentity())) {
 			RepositoryEntry entry = getRepositoryEntry();
@@ -99,6 +99,7 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 			OlatRootFolderImpl cpRoot = FileResourceManager.getInstance().unzipContainerResource(resource);
 			Controller quotaCtrl = quotaManager.getQuotaEditorInstance(ureq, getWindowControl(), cpRoot.getRelPath(), false);
 			pushController(ureq, translate("tab.quota.edit"), quotaCtrl);
+			setActiveTool(quotaLink);
 		}
 	}
 	
@@ -127,5 +128,6 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 		});
 		
 		pushController(ureq, translate("tab.layout"), deliveryOptionsCtrl);
+		setActiveTool(deliveryOptionsLink);
 	}
 }
