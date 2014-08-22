@@ -1,0 +1,12 @@
+<div #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="form-inline $f.getContainerCssClass()">
+#foreach ($button in $buttons)
+	#if($button.delete)
+	<div class="btn-group">
+		$r.render($button.editButtonName)
+		$r.render($button.deleteButtonName)
+	</div>
+	#else
+		$r.render("$button.editButtonName")
+	#end
+#end
+</div>

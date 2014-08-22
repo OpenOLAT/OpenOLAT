@@ -46,5 +46,4 @@ public class ImpressumInformations {
 				&& impressumModule.getPosition() != null
 				&& Position.footer.equals(impressumModule.getPosition());
 	}
-
 }

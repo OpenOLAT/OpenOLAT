@@ -112,6 +112,7 @@ public class ImpressumModule extends AbstractSpringModule implements ConfigOnOff
 	}
 	
 	public enum Position {
+		none,
 		top,
 		footer
 	}

@@ -21,6 +21,8 @@ package org.olat.core.commons.controllers.impressum;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import org.apache.commons.io.FileUtils;
@@ -32,6 +34,7 @@ import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -62,6 +65,8 @@ public class ImpressumAdminController extends FormBasicController {
 	private static final String[] positionKeys = new String[]{ Position.top.name(), Position.footer.name() };
 	
 	private SingleSelection positionEl;
+	private MultipleSelectionElement enableEl;
+	private FormLayoutContainer termsCont, impressumCont;
 
 	private CloseableModalController cmc;
 	private HTMLEditorController editorCtrl;
@@ -85,6 +90,14 @@ public class ImpressumAdminController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("menu.impressum");
 		
+		boolean enabled = impressumModule.isEnabled();
+		
+		String[] enableKeys = new String[]{ "on" };
+		enableEl = uifactory.addCheckboxesHorizontal("enable", "enable.impressum", formLayout,
+				enableKeys, new String[]{ translate("enable") });
+		enableEl.addActionListener(FormEvent.ONCHANGE);
+		enableEl.select(enableKeys[0], enabled);
+		
 		String[] positionValues = new String[]{ translate("position.top"), translate("position.footer") };
 		positionEl = uifactory.addDropdownSingleselect("position", "position", formLayout, positionKeys, positionValues, null);
 		positionEl.addActionListener(FormEvent.ONCHANGE);
@@ -92,36 +105,67 @@ public class ImpressumAdminController extends FormBasicController {
 			switch(impressumModule.getPosition()) {
 				case top: positionEl.select(positionKeys[0], true); break;
 				case footer: positionEl.select(positionKeys[1], true); break;
+				default:{}
 			}
 		}
 		
-		FormLayoutContainer impressum = FormLayoutContainer.createButtonLayout("impressums", getTranslator());
-		impressum.setLabel("impressum.file", null);
-		formLayout.add(impressum);
+		impressumCont = FormLayoutContainer.createCustomFormLayout("impressums", getTranslator(), velocity_root + "/buttongroups.html");
+		impressumCont.setLabel("impressum.file", null);
+		impressumCont.setVisible(enabled);
+		formLayout.add(impressumCont);
+		
+		List<ButtonGroup> impressumButtons = new ArrayList<>();
+		impressumCont.contextPut("buttons", impressumButtons);
 		
 		for(String lang:I18nModule.getEnabledLanguageKeys()) {
-			FormLink link = uifactory.addFormLink("impressum." + lang, "impressum", getTranslated(lang), "impressum.file", impressum, Link.BUTTON | Link.NONTRANSLATED);
-			link.setLabel(null, null);
+			FormLink editLink = uifactory
+					.addFormLink("impressum." + lang, "impressum", getTranslated(lang), "impressum.file", impressumCont, Link.BUTTON | Link.NONTRANSLATED);
+			editLink.setLabel(null, null);
 			String filePath = "index_" + lang + ".html";
-			if(checkContent(impressumDir.resolve(filePath))) {
-				link.setIconLeftCSS("o_icon o_icon_check");
+			boolean hasImpressum = checkContent(impressumDir.resolve(filePath));
+			if(hasImpressum) {
+				editLink.setIconLeftCSS("o_icon o_icon_check");	
 			}
-			link.setUserObject(lang);
-		}
-		
-		FormLayoutContainer cont = FormLayoutContainer.createButtonLayout("terms", getTranslator());
-		cont.setLabel("termofuse.file", null);
-		formLayout.add(cont);
-		
-		for(String lang:I18nModule.getEnabledLanguageKeys()) {
 			
-			FormLink link = uifactory.addFormLink("termofuser." + lang, "termsofuse", getTranslated(lang), "termofuse.file", cont, Link.BUTTON | Link.NONTRANSLATED);
-			link.setLabel(null, null);
+			FormLink deleteLink = uifactory
+					.addFormLink("impressum.del." + lang, "delete-impressum", "", "impressum.file", impressumCont, Link.BUTTON | Link.NONTRANSLATED);
+			deleteLink.setLabel(null, null);
+			deleteLink.setIconLeftCSS("o_icon o_icon_delete_item");
+			deleteLink.setVisible(hasImpressum);
+
+			ButtonGroup group = new ButtonGroup(lang, editLink, deleteLink);
+			editLink.setUserObject(group);
+			deleteLink.setUserObject(group);
+			impressumButtons.add(group);
+		}
+		
+		termsCont = FormLayoutContainer.createCustomFormLayout("terms", getTranslator(), velocity_root + "/buttongroups.html");
+		termsCont.setLabel("termofuse.file", null);
+		termsCont.setVisible(enabled);
+		formLayout.add(termsCont);
+		
+		List<ButtonGroup> termsOfUseButtons = new ArrayList<>();
+		termsCont.contextPut("buttons", termsOfUseButtons);
+		
+		for(String lang:I18nModule.getEnabledLanguageKeys()) {
+			FormLink editLink = uifactory.addFormLink("termofuser." + lang, "termsofuse", getTranslated(lang), "termofuse.file", termsCont, Link.BUTTON | Link.NONTRANSLATED);
+			editLink.setLabel(null, null);
 			String filePath = "index_" + lang + ".html";
-			if(checkContent(termsOfUseDir.resolve(filePath))) {
-				link.setIconLeftCSS("o_icon o_icon_check");
+			boolean hasTermsOfUse = checkContent(termsOfUseDir.resolve(filePath));
+			if(hasTermsOfUse) {
+				editLink.setIconLeftCSS("o_icon o_icon_check");
 			}
-			link.setUserObject(lang);
+			
+			FormLink deleteLink = uifactory
+					.addFormLink("impressum.del." + lang, "delete-termsofuse", "", "termofuse.file", termsCont, Link.BUTTON | Link.NONTRANSLATED);
+			deleteLink.setLabel(null, null);
+			deleteLink.setIconLeftCSS("o_icon o_icon_delete_item");
+			deleteLink.setVisible(hasTermsOfUse);
+
+			ButtonGroup group = new ButtonGroup(lang, editLink, deleteLink);
+			editLink.setUserObject(group);
+			deleteLink.setUserObject(group);
+			termsOfUseButtons.add(group);
 		}
 	}
 	
@@ -148,7 +192,17 @@ public class ImpressumAdminController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(positionEl == source) {
+		if(enableEl == source) {
+			boolean enabled = enableEl.isAtLeastSelected(1);
+			impressumModule.setEnabled(enabled);
+			
+			positionEl.setEnabled(enabled);
+			termsCont.setVisible(enabled);
+			impressumCont.setVisible(enabled);
+			
+			getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
+			Windows.getWindows(ureq).getChiefController().wishReload(true);
+		} else if(positionEl == source) {
 			if(positionEl.isOneSelected()) {
 				String key = positionEl.getSelectedKey();
 				impressumModule.setPosition(key);
@@ -158,11 +212,20 @@ public class ImpressumAdminController extends FormBasicController {
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
-			String lang = (String)source.getUserObject();
+			ButtonGroup group = (ButtonGroup)source.getUserObject();
+			String lang = group.getLang();
 			if("impressum".equals(cmd)) {
 				doEdit(ureq, link, impressumDir, lang);
 			} else if("termsofuse".equals(cmd)) {
 				doEdit(ureq, link, termsOfUseDir, lang);
+			} else if("delete-impressum".equals(cmd)) {
+				doDelete(impressumDir, lang);
+				group.getEditButton().setIconLeftCSS(null);
+				group.getDeleteButton().setVisible(false);
+			} else if("delete-termsofuse".equals(cmd)) {
+				doDelete(termsOfUseDir, lang);
+				group.getEditButton().setIconLeftCSS(null);
+				group.getDeleteButton().setVisible(false);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -172,8 +235,12 @@ public class ImpressumAdminController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(editorCtrl == source) {
 			FormLink link = (FormLink)editorCtrl.getUserObject();
+			cmc.deactivate();
+			cleanUp();
+			
 			String cmd = link.getCmd();
-			String lang = (String)link.getUserObject();
+			ButtonGroup group = (ButtonGroup)link.getUserObject();
+			String lang = group.getLang();
 			String filePath = "index_" + lang + ".html";
 			
 			boolean exists = false;
@@ -184,12 +251,14 @@ public class ImpressumAdminController extends FormBasicController {
 			}
 			
 			if(exists) {
-				link.setIconLeftCSS("o_icon o_icon_check");
+				group.getEditButton().setIconLeftCSS("o_icon o_icon_check");
+				group.getDeleteButton().setVisible(true);
 			} else {
-				link.setIconLeftCSS(null);
+				group.getEditButton().setIconLeftCSS(null);
+				group.getDeleteButton().setVisible(false);
 			}
-			cmc.deactivate();
-			cleanUp();
+			//needed to redraw the delete buttons
+			flc.getComponent().setDirty(true);
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -226,6 +295,15 @@ public class ImpressumAdminController extends FormBasicController {
 		cmc = null;
 	}
 	
+	private void doDelete(VFSContainer rootDir, String lang) {
+		String filePath = "index_" + lang + ".html";
+		
+		VFSItem file = rootDir.resolve(filePath);
+		if(file != null) {
+			file.delete();
+		}
+	}
+	
 	private void doEdit(UserRequest ureq, FormLink link, VFSContainer rootDir, String lang) {
 		String filePath = "index_" + lang + ".html";
 		if(rootDir.resolve(filePath) == null) {
@@ -237,5 +315,42 @@ public class ImpressumAdminController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), "close", editorCtrl.getInitialComponent());
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	public static final class ButtonGroup {
+		
+		private final String lang;
+		private final FormLink editButton;
+		private final FormLink deleteButton;
+		
+		public ButtonGroup(String lang, FormLink editButton, FormLink deleteButton) {
+			this.lang = lang;
+			this.editButton = editButton;
+			this.deleteButton = deleteButton;
+		}
+		
+		public String getLang() {
+			return lang;
+		}
+		
+		public FormLink getEditButton() {
+			return editButton;
+		}
+		
+		public String getEditButtonName() {
+			return editButton.getComponent().getComponentName();
+		}
+		
+		public boolean isDelete() {
+			return deleteButton.isVisible();
+		}
+		
+		public FormLink getDeleteButton() {
+			return deleteButton;
+		}
+		
+		public String getDeleteButtonName() {
+			return deleteButton.getComponent().getComponentName();
+		}
 	}
 }
