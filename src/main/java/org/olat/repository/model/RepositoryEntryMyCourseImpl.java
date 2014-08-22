@@ -67,7 +67,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 
 	private long offersAvailable;
 	
-	public RepositoryEntryMyCourseImpl(RepositoryEntry re,
+	public RepositoryEntryMyCourseImpl(RepositoryEntry re, RepositoryEntryStatistics stats,
 			boolean marked, long offersAvailable, Integer myRating) {
 		key = re.getKey();
 		externalRef = re.getExternalRef();
@@ -85,8 +85,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 
 		this.marked = marked;
 		this.myRating = myRating;
-		
-		RepositoryEntryStatistics stats = re.getStatistics();
+
 		if(stats != null) {
 			averageRating = stats.getRating();
 			numOfRatings = stats.getNumOfRatings();

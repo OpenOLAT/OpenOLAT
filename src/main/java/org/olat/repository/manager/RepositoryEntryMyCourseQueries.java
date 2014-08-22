@@ -47,6 +47,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.model.RepositoryEntryMyCourseImpl;
+import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
@@ -103,6 +104,8 @@ public class RepositoryEntryMyCourseQueries {
 			query.setMaxResults(maxResults);
 		}
 		
+		boolean neddStats = repositoryModule.isRatingEnabled() || repositoryModule.isCommentEnabled();
+		
 		List<Long> effKeys = new ArrayList<>();
 		List<Object[]> objects = query.getResultList();
 		List<RepositoryEntryMyView> views = new ArrayList<>(objects.size());
@@ -115,7 +118,13 @@ public class RepositoryEntryMyCourseQueries {
 			long offers = numOffers == null ? 0l : numOffers.longValue();
 			Integer myRating = (Integer)object[3];
 			
-			RepositoryEntryMyCourseImpl view = new RepositoryEntryMyCourseImpl(re, hasMarks, offers, myRating);
+			RepositoryEntryStatistics stats;
+			if(neddStats) {
+				stats = re.getStatistics();
+			} else {
+				stats = null;
+			}
+			RepositoryEntryMyCourseImpl view = new RepositoryEntryMyCourseImpl(re, stats, hasMarks, offers, myRating);
 			views.add(view);
 			viewsMap.put(re.getOlatResource(), view);
 			
@@ -157,7 +166,6 @@ public class RepositoryEntryMyCourseQueries {
 			sb.append("select count(v.key) ")
 			  .append(" from repositoryentry as v, ").append(IdentityImpl.class.getName()).append(" as ident ")
 			  .append(" inner join v.olatResource as res")
-			  .append(" inner join v.statistics as stats")
 			  .append(" left join v.lifecycle as lifecycle ");
 		} else {
 			sb.append("select v, ")
@@ -185,9 +193,11 @@ public class RepositoryEntryMyCourseQueries {
 			  .append(" ) as effKey");
 			appendOrderByInSelect(params, sb);
 			sb.append(" from repositoryentry as v, ").append(IdentityImpl.class.getName()).append(" as ident ")
-			  .append(" inner join ").append(oracle ? "" : "fetch").append(" v.olatResource as res")
-			  .append(" inner join fetch v.statistics as stats")
-			  .append(" left join fetch v.lifecycle as lifecycle ");
+			  .append(" inner join ").append(oracle ? "" : "fetch").append(" v.olatResource as res");
+			if(repositoryModule.isRatingEnabled() || repositoryModule.isCommentEnabled()) {
+				sb.append(" inner join fetch v.statistics as stats");
+			}
+			sb.append(" left join fetch v.lifecycle as lifecycle ");
 		}
 		//user course informations
 		//efficiency statements
