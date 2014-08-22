@@ -432,9 +432,9 @@ public class CourseHandler implements RepositoryHandler {
 		return new CourseRuntimeController(ureq, wControl, re, reSecurity,
 				new RuntimeControllerCreator() {
 					@Override
-					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry) {
+					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry, RepositoryEntrySecurity security) {
 						ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
-						return new RunMainController(uureq, wwControl, toolbarPanel, course, entry);
+						return new RunMainController(uureq, wwControl, toolbarPanel, course, entry, security);
 					}
 			}, true, true);
 	}

@@ -28,7 +28,6 @@ package org.olat.repository.handlers;
 import java.io.File;
 import java.util.Locale;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.persistence.DBFactory;
@@ -172,17 +171,10 @@ public class SharedFolderHandler implements RepositoryHandler {
 		RepositoryEntryRuntimeController runtime = new RepositoryEntryRuntimeController(ureq, wControl, re, reSecurity,
 				new RuntimeControllerCreator() {
 					@Override
-					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry) {
+					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry, RepositoryEntrySecurity security) {
 						OLATResource res = entry.getOlatResource();
 						VFSContainer sfContainer = SharedFolderManager.getInstance().getSharedFolder(res);
-
-						Identity identity = uureq.getIdentity();
-						Roles roles = uureq.getUserSession().getRoles();
-						RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-						boolean canEdit = roles.isOLATAdmin()
-										|| repositoryService.hasRole(identity, entry, GroupRoles.owner.name(), GroupRoles.coach.name()) 
-										|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, entry);
-								
+						boolean canEdit = security.isEntryAdmin() || security.isCourseCoach();
 						Controller sfdCtr;
 						if(canEdit) {
 							sfdCtr = new SharedFolderEditorController(entry, uureq, wwControl);

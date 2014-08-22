@@ -104,8 +104,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected final boolean isOlatAdmin;
 	protected final boolean isGuestOnly;
 	
-	protected boolean isOwner;
-	protected boolean isEntryAdmin;
+	protected RepositoryEntrySecurity reSecurity;
 	protected final Roles roles;
 
 	protected final boolean showInfos;
@@ -167,8 +166,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		roles = ureq.getUserSession().getRoles();
 		isOlatAdmin = roles.isOLATAdmin();
 		isGuestOnly = roles.isGuestOnly();
-		isOwner = reSecurity.isOwner();
-		isEntryAdmin = reSecurity.isEntryAdmin();
+		this.reSecurity = reSecurity;
 
 		// set up the components
 		toolbarPanel = new TooledStackedPanel("courseStackPanel", getTranslator(), this);
@@ -187,9 +185,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	/**
 	 * If override, need to set isOwner and isEntryAdmin
 	 */
-	protected void loadRights(RepositoryEntrySecurity reSecurity) {
-		isOwner = reSecurity.isOwner();
-		isEntryAdmin = reSecurity.isEntryAdmin();
+	protected void loadRights(RepositoryEntrySecurity security) {
+		this.reSecurity = security;
 	}
 	
 	protected RepositoryEntry getRepositoryEntry() {
@@ -221,7 +218,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected void initToolbar(Dropdown toolsDropdown, Dropdown settingsDropdown) {
-		if (isEntryAdmin) {
+		if (reSecurity.isEntryAdmin()) {
 			//tools
 			if(handler.supportsEdit(re) == EditionSupport.yes) {
 				boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
@@ -376,7 +373,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == accessController) {
 			if(event.equals(AccessEvent.ACCESS_OK_EVENT)) {
-				RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, getRepositoryEntry());
+				reSecurity = repositoryManager.isAllowed(ureq, getRepositoryEntry());
 				launchContent(ureq, reSecurity);
 				cleanUp();
 			} else if(event.equals(AccessEvent.ACCESS_FAILED_EVENT)) {
@@ -462,7 +459,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected void doEdit(UserRequest ureq) {
-		if(!isEntryAdmin) return;
+		if(!reSecurity.isEntryAdmin()) return;
 		
 		Controller ctrl = handler.createEditorController(re, ureq, getWindowControl());
 		listenTo(ctrl);
@@ -483,7 +480,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	 * @param ureq
 	 */
 	protected void doEditSettings(UserRequest ureq) {
-		if(!isEntryAdmin) return;
+		if(!reSecurity.isEntryAdmin()) return;
 		
 		RepositoryEditDescriptionController ctrl = new RepositoryEditDescriptionController(ureq, getWindowControl(), re, false);
 		listenTo(ctrl);
@@ -497,7 +494,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	 * @param ureq
 	 */
 	protected void doCatalog(UserRequest ureq) {
-		if(!isEntryAdmin) return;
+		if(!reSecurity.isEntryAdmin()) return;
 		
 		popToRoot(ureq).cleanUp();
 		catalogCtlr = new CatalogSettingsController(ureq, getWindowControl(), toolbarPanel, re);
@@ -508,7 +505,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected Activateable2 doMembers(UserRequest ureq) {
-		if(!isEntryAdmin) return null;
+		if(!reSecurity.isEntryAdmin()) return null;
 
 		RepositoryMembersController ctrl = new RepositoryMembersController(ureq, getWindowControl(), re);
 		listenTo(ctrl);
@@ -519,7 +516,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected void doOrders(UserRequest ureq) {
-		if(!isEntryAdmin) return;
+		if(!reSecurity.isEntryAdmin()) return;
 
 		OrdersAdminController ctrl = new OrdersAdminController(ureq, getWindowControl(), re.getOlatResource());
 		listenTo(ctrl);
@@ -528,17 +525,17 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		setActiveTool(ordersLink);
 	}
 	
-	private void doRun(UserRequest ureq, RepositoryEntrySecurity reSecurity) {
+	private void doRun(UserRequest ureq, RepositoryEntrySecurity security) {
 		if(ureq.getUserSession().getRoles().isOLATAdmin()) {
-			launchContent(ureq, reSecurity);
+			launchContent(ureq, security);
 		} else {
 			// guest are allowed to see resource with BARG 
 			if(re.getAccess() == RepositoryEntry.ACC_USERS_GUESTS && ureq.getUserSession().getRoles().isGuestOnly()) {
-				launchContent(ureq, reSecurity);
+				launchContent(ureq, security);
 			} else {
 				AccessResult acResult = acService.isAccessible(re, getIdentity(), false);
 				if(acResult.isAccessible()) {
-					launchContent(ureq, reSecurity);
+					launchContent(ureq, security);
 				} else if (re != null && acResult.getAvailableMethods().size() > 0) {
 					accessController = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods());
 					listenTo(accessController);
@@ -564,9 +561,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 	}
 	
-	protected void launchContent(UserRequest ureq, RepositoryEntrySecurity reSecurity) {
-		if(reSecurity.canLaunch()) {
-			runtimeController = runtimeControllerCreator.create(ureq, getWindowControl(), toolbarPanel, re);
+	protected void launchContent(UserRequest ureq, RepositoryEntrySecurity security) {
+		if(security.canLaunch()) {
+			runtimeController = runtimeControllerCreator.create(ureq, getWindowControl(), toolbarPanel, re, reSecurity);
 			listenTo(runtimeController);
 			toolbarPanel.rootController(re.getDisplayname(), runtimeController);
 		} else {
@@ -578,7 +575,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	public interface RuntimeControllerCreator {
 		
-		public Controller create(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry);
+		public Controller create(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry, RepositoryEntrySecurity reSecurity);
 		
 	}
 	

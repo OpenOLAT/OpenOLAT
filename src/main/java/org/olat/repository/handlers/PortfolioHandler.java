@@ -243,7 +243,7 @@ public class PortfolioHandler implements RepositoryHandler {
 		return new EPTemplateRuntimeController(ureq, wControl, re, reSecurity,
 			new RuntimeControllerCreator() {
 				@Override
-				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry) {
+				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry, RepositoryEntrySecurity security) {
 					EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 					PortfolioStructureMap map = (PortfolioStructureMap)ePFMgr.loadPortfolioStructure(entry.getOlatResource());
 					EPSecurityCallback secCallback = EPSecurityCallbackFactory.getSecurityCallback(uureq, map, ePFMgr);

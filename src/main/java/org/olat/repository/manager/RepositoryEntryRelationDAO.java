@@ -76,6 +76,28 @@ public class RepositoryEntryRelationDAO {
 				.setParameter("repoKey", re.getKey())
 				.getResultList();
 	}
+	
+	/**
+	 * Load role and default information
+	 * 
+	 * @param identity
+	 * @param re
+	 * @return Return an array with the role and true if the relation is the default one.
+	 */
+	public List<Object[]> getRoleAndDefaults(IdentityRef identity, RepositoryEntryRef re) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select membership.role, relGroup.defaultGroup from ").append(RepositoryEntry.class.getName()).append(" as v")
+		  .append(" inner join v.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where v.key=:repoKey and membership.identity.key=:identityKey");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("repoKey", re.getKey())
+				.getResultList();
+	}
 
 	/**
 	 * Has role in the repository entry only (without business groups)

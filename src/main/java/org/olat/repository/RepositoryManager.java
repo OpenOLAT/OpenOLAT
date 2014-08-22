@@ -512,6 +512,12 @@ public class RepositoryManager extends BasicManager {
 	
 	public RepositoryEntrySecurity isAllowed(Identity identity, Roles roles, RepositoryEntry re) {
 		boolean isOwner = false;
+		boolean isCourseCoach = false;
+		boolean isGroupCoach = false;
+		boolean isCourseParticipant = false;
+		boolean isGroupParticipant = false;
+		boolean isGroupWaiting = false;
+		
 		boolean isEntryAdmin = false;
 		boolean canLaunch = false;
 		
@@ -522,9 +528,44 @@ public class RepositoryManager extends BasicManager {
 			}
 		} else {
 			// allow if identity is owner
-			if (repositoryEntryRelationDao.hasRole(identity, re, GroupRoles.owner.name())) {
+			List<Object[]> roleAndDefs = repositoryEntryRelationDao.getRoleAndDefaults(identity, re);
+			for(Object[] roleAndDef:roleAndDefs) {
+				String role = (String)roleAndDef[0];
+				Boolean def = (Boolean)roleAndDef[1];
+				switch(GroupRoles.valueOf(role)) {
+					case owner: {
+						isOwner = true;
+						break;
+					}
+					case coach: {
+						boolean d = (def == null ? false : def.booleanValue());
+						if(d) {
+							isCourseCoach = true;
+						} else {
+							isGroupCoach = true;
+						}
+						break;
+					}
+					case participant: {
+						boolean d = (def == null ? false : def.booleanValue());
+						if(!d) {
+							isCourseParticipant = true;
+						} else {
+							isGroupParticipant = true;
+						}
+						break;
+					}
+					case waiting: {
+						isGroupWaiting = true;
+						break;
+					}
+					case invitee: break;
+				
+				}
+			}
+			
+			if(isOwner) {
 				canLaunch = true;
-				isOwner = true;
 				isEntryAdmin = true;
 			}
 			// allow if access limit matches identity's role
@@ -546,14 +587,19 @@ public class RepositoryManager extends BasicManager {
 				canLaunch = true;
 			} else if (re.getAccess() == RepositoryEntry.ACC_OWNERS && re.isMembersOnly()) {
 				if(!canLaunch) {
-					if(repositoryEntryRelationDao.isMember(identity, re)) {
+					//is member?
+					if(isGroupParticipant || isGroupCoach ||
+							isCourseParticipant || isCourseCoach) {
 						canLaunch = true;
 					}
 				}
 			}
 		}
 		
-		return new RepositoryEntrySecurity(isEntryAdmin, isOwner, canLaunch);
+		return new RepositoryEntrySecurity(isEntryAdmin, isOwner,
+				isCourseParticipant, isCourseCoach,
+				isGroupParticipant, isGroupCoach,
+				isGroupWaiting, canLaunch);
 	}
 
 	private RepositoryEntry loadForUpdate(RepositoryEntry re) {

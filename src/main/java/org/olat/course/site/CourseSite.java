@@ -134,9 +134,9 @@ public class CourseSite extends AbstractSiteInstance {
 				new RuntimeControllerCreator() {
 					@Override
 					public Controller create(UserRequest uureq, WindowControl wwControl,
-							TooledStackedPanel toolbarPanel, RepositoryEntry re) {
+							TooledStackedPanel toolbarPanel, RepositoryEntry re, RepositoryEntrySecurity security) {
 						return new RunMainController(uureq, wwControl, toolbarPanel,
-								CourseFactory.loadCourse(re.getOlatResource()), re);
+								CourseFactory.loadCourse(re.getOlatResource()), re, security);
 					}
 				}, false, true);
 			

@@ -26,12 +26,12 @@
 package org.olat.course.run;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -93,6 +93,7 @@ import org.olat.modules.cp.TreeNodeEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -155,8 +156,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 * @param offerBookmark - whether to offer bookmarks or not
 	 * @param showCourseConfigLink  Flag to enable/disable link to detail-page in tool menu. 
 	 */
-	public RunMainController(final UserRequest ureq, final WindowControl wControl,
-			TooledStackedPanel toolbarPanel, final ICourse course, final RepositoryEntry re) {
+	public RunMainController(UserRequest ureq, WindowControl wControl,
+			TooledStackedPanel toolbarPanel, ICourse course,
+			RepositoryEntry re, RepositoryEntrySecurity reSecurity) {
 
 		// Use repository package as fallback translator
 		super(ureq, wControl, Util.createPackageTranslator(RepositoryEntry.class, ureq.getLocale()));
@@ -187,7 +189,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 		// build up the running structure for this user;
 		// get all group memberships for this course
-		uce = loadUserCourseEnvironment(ureq);
+		uce = loadUserCourseEnvironment(ureq, reSecurity);
 
 		// build score now
 		uce.getScoreAccounting().evaluateAll();
@@ -272,13 +274,31 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 	}
 	
-	private UserCourseEnvironmentImpl loadUserCourseEnvironment(UserRequest ureq) {
+	private UserCourseEnvironmentImpl loadUserCourseEnvironment(UserRequest ureq, RepositoryEntrySecurity reSecurity) {
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		List<BusinessGroup> coachedGroups = cgm.getOwnedBusinessGroups(ureq.getIdentity());
-		List<BusinessGroup> participatedGroups = cgm.getParticipatingBusinessGroups(ureq.getIdentity());
-		List<BusinessGroup> waitingLists = cgm.getWaitingListGroups(ureq.getIdentity());
+		List<BusinessGroup> coachedGroups;
+		if(reSecurity.isGroupCoach()) {
+			coachedGroups = cgm.getOwnedBusinessGroups(ureq.getIdentity());
+		} else {
+			coachedGroups = Collections.emptyList();
+		}
+		List<BusinessGroup> participatedGroups;
+		if(reSecurity.isGroupParticipant()) {
+			participatedGroups = cgm.getParticipatingBusinessGroups(ureq.getIdentity());
+		} else {
+			participatedGroups = Collections.emptyList();
+		}
+		List<BusinessGroup> waitingLists;
+		if(reSecurity.isGroupWaiting()) {
+			waitingLists = cgm.getWaitingListGroups(ureq.getIdentity());
+		} else {
+			waitingLists = Collections.emptyList();
+		}
 		return new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment(),
-				coachedGroups, participatedGroups, waitingLists, null, null, null);
+				coachedGroups, participatedGroups, waitingLists,
+				reSecurity.isCourseCoach() || reSecurity.isGroupCoach(),
+				reSecurity.isEntryAdmin(),
+				reSecurity.isCourseParticipant() || reSecurity.isGroupParticipant());
 	}
 	
 	/**
@@ -286,12 +306,29 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 * 
 	 * @param identity
 	 */
-	protected void reloadGroupMemberships() {
+	protected void reloadGroupMemberships(RepositoryEntrySecurity reSecurity) {
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		List<BusinessGroup> coachedGroups = cgm.getOwnedBusinessGroups(getIdentity());
-		List<BusinessGroup> participatedGroups = cgm.getParticipatingBusinessGroups(getIdentity());
-		List<BusinessGroup> waitingLists = cgm.getWaitingListGroups(getIdentity());
+		List<BusinessGroup> coachedGroups;
+		if(reSecurity.isGroupCoach()) {
+			coachedGroups = cgm.getOwnedBusinessGroups(getIdentity());
+		} else {
+			coachedGroups = Collections.emptyList();
+		}
+		List<BusinessGroup> participatedGroups;
+		
+		if(reSecurity.isGroupParticipant()) {
+			participatedGroups = cgm.getParticipatingBusinessGroups(getIdentity());
+		} else {
+			participatedGroups = Collections.emptyList();
+		}
+		List<BusinessGroup> waitingLists;
+		if(reSecurity.isGroupWaiting()) {
+			waitingLists = cgm.getWaitingListGroups(getIdentity());
+		} else {
+			waitingLists = Collections.emptyList();
+		}
 		uce.setGroupMemberships(coachedGroups, participatedGroups, waitingLists);
+		needsRebuildAfterRunDone = true;
 	}
 	
 	private void setLaunchDates() {
@@ -446,7 +483,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				
 			  // rebuild up the running structure for this user, after publish;
 				course = CourseFactory.loadCourse(course.getResourceableId());
-				uce = loadUserCourseEnvironment(ureq);
+				uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment(),
+						uce.getCoachedGroups(), uce.getParticipatingGroups(), uce.getWaitingLists(),
+						null, null, null);
 				// build score now
 				uce.getScoreAccounting().evaluateAll();
 				navHandler = new NavigationHandler(uce, false);
@@ -648,9 +687,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				// raise a flag to indicate refresh
 				needsRebuildAfterRunDone = true;
 			}
-		} else if (event instanceof BusinessGroupModifiedEvent) {
-			processBusinessGroupModifiedEvent((BusinessGroupModifiedEvent)event);
-			needsRebuildAfterRunDone = true;
 		}
 	}
 	
@@ -696,26 +732,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 	}
 	
-	private void processBusinessGroupModifiedEvent(BusinessGroupModifiedEvent bgme) {
-		Identity identity = uce.getIdentityEnvironment().getIdentity();
-		// only do something if this identity is affected by change and the action
-		// was adding or removing of the user
-		if (bgme.wasMyselfAdded(identity) || bgme.wasMyselfRemoved(identity)) {
-			// 1) reinitialize all group memberships
-			reloadGroupMemberships();
-			needsRebuildAfterRunDone = true;
-		} else if (bgme.getCommand().equals(BusinessGroupModifiedEvent.GROUPRIGHTS_MODIFIED_EVENT)) {
-			// check if this affects a right group where the user does participate.
-			// if so, we need
-			// to rebuild the toolboxes
-			if (PersistenceHelper.listContainsObjectByKey(uce.getParticipatingGroups(), bgme.getModifiedGroupKey()) ||
-					PersistenceHelper.listContainsObjectByKey(uce.getCoachedGroups(), bgme.getModifiedGroupKey())) {
-				// 1) reinitialize all group memberships
-				reloadGroupMemberships();
-			}
-		}
-	}
-	
 	protected void doDisposeAfterEvent() {
 		if(currentNodeController instanceof ConfigurationChangedListener) {
 			//give to opportunity to close popups ...
@@ -731,8 +747,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	CourseNode getCurrentCourseNode() {
 		return currentCourseNode;
 	}
-
-
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)

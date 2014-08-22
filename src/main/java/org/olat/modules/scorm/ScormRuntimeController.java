@@ -61,7 +61,7 @@ public class ScormRuntimeController extends RepositoryEntryRuntimeController {
 	@Override
 	protected void initToolbar(Dropdown toolsDropdown, Dropdown settingsDropdown) {
 		super.initToolbar(toolsDropdown, settingsDropdown);
-		if (isEntryAdmin) {
+		if (reSecurity.isEntryAdmin()) {
 			settingsDropdown.addComponent(new Spacer(""));
 
 			deliveryOptionsLink = LinkFactory.createToolLink("layout", translate("tab.layout"), this, "o_sel_repo_layout");

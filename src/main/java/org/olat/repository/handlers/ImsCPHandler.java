@@ -216,7 +216,7 @@ public class ImsCPHandler extends FileHandler {
 		CPRuntimeController runtime = new CPRuntimeController(ureq, wControl, re, reSecurity,
 				new RuntimeControllerCreator() {
 					@Override
-					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry) {
+					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry, RepositoryEntrySecurity security) {
 						boolean activateFirstPage = true;
 						String initialUri = null;
 						

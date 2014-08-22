@@ -236,8 +236,7 @@ public class WikiHandler implements RepositoryHandler {
 		if (isOLatAdmin) {
 			isResourceOwner = true;
 		} else {
-			RepositoryManager repoMgr = RepositoryManager.getInstance();
-			isResourceOwner = repoMgr.isOwnerOfRepositoryEntry(ureq.getIdentity(), re);
+			isResourceOwner = reSecurity.isOwner();
 		}
 		
 		OLATResource res = re.getOlatResource();
@@ -249,7 +248,7 @@ public class WikiHandler implements RepositoryHandler {
 		RepositoryEntryRuntimeController runtime = new RepositoryEntryRuntimeController(ureq, wControl, re, reSecurity,
 			new RuntimeControllerCreator() {
 				@Override
-				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry) {
+				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry, RepositoryEntrySecurity security) {
 					Controller controller;
 					if ( ce != null ) { //jump to a certain context
 						OLATResourceable ores = ce.getOLATResourceable();

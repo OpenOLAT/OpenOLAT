@@ -59,7 +59,7 @@ public class FeedRuntimeController extends RepositoryEntryRuntimeController {
 	@Override
 	protected void initToolbar(Dropdown toolsDropdown, Dropdown settingsDropdown) {
 		super.initToolbar(toolsDropdown, settingsDropdown);
-		if (isEntryAdmin) {
+		if (reSecurity.isEntryAdmin()) {
 			if (quotaManager.hasQuotaEditRights(getIdentity())) {
 				settingsDropdown.addComponent(new Spacer(""));
 				quotaLink = LinkFactory.createToolLink("quota", translate("tab.quota.edit"), this, "o_sel_repo_quota");

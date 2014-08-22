@@ -129,6 +129,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.OLATResource;
 import org.olat.resource.references.ReferenceImpl;
 import org.olat.resource.references.ReferenceManager;
@@ -643,8 +644,8 @@ public class CourseFactory extends BasicManager {
 			
 			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(entry);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);	
-			
-			RunMainController launchC = new RunMainController(ureq, bwControl, null, course, entry);// false, false);
+			RepositoryEntrySecurity reSecurity = new RepositoryEntrySecurity(false, false, false, false, false, false, false, true);
+			RunMainController launchC = new RunMainController(ureq, bwControl, null, course, entry, reSecurity);
 			return launchC;			
 		}		
 	}

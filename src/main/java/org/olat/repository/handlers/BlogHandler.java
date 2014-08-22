@@ -183,7 +183,7 @@ public class BlogHandler implements RepositoryHandler {
 		return new FeedRuntimeController(ureq, wControl, re, reSecurity,
 				new RuntimeControllerCreator() {
 					@Override
-					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry) {
+					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry, RepositoryEntrySecurity security) {
 						return new FeedMainController(entry.getOlatResource(), uureq, wwControl, null, null,
 							BlogUIFactory.getInstance(uureq.getLocale()), callback, null);
 					}

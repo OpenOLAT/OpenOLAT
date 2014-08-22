@@ -64,7 +64,7 @@ public class EPTemplateRuntimeController extends RepositoryEntryRuntimeControlle
 	
 	@Override
 	protected void doEdit(UserRequest ureq) {
-		if(!isEntryAdmin) return;
+		if(!reSecurity.isEntryAdmin()) return;
 		
 		EPMapViewController mapCtrl = (EPMapViewController)getRuntimeController();
 		mapCtrl.edit(ureq);
