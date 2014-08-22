@@ -59,9 +59,12 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	private MainPanel mainPanel;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
-	private final Link favoriteLink, myEntriesLink, searchLink;
+	private Link favoriteLink;
+	private final Link myEntriesLink, searchLink;
 	private AuthorListController markedCtrl, myEntriesCtrl, searchEntriesCtrl;
 
+	private boolean isGuestonly;
+	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -70,6 +73,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	public OverviewAuthoringController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
+		isGuestonly = ureq.getUserSession().getRoles().isGuestOnly();
 		
 		mainPanel = new MainPanel("authoringMainPanel");
 		mainPanel.setDomReplaceable(false);
@@ -78,8 +82,11 @@ public class OverviewAuthoringController extends BasicController implements Acti
 
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setReselect(true);
-		favoriteLink = LinkFactory.createLink("search.mark", mainVC, this);
-		segmentView.addSegment(favoriteLink, false);
+		
+		if(!isGuestonly) {
+			favoriteLink = LinkFactory.createLink("search.mark", mainVC, this);
+			segmentView.addSegment(favoriteLink, false);
+		}
 		myEntriesLink = LinkFactory.createLink("search.my", mainVC, this);
 		segmentView.addSegment(myEntriesLink, false);
 		searchLink = LinkFactory.createLink("search.generic", mainVC, this);
@@ -96,20 +103,30 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
-			boolean markEmpty = doOpenMark(ureq).isEmpty();
-			if(markEmpty) {
+			if(isGuestonly) {
 				doOpenMyEntries(ureq);
 				segmentView.select(myEntriesLink);
 			} else {
-				segmentView.select(favoriteLink);
+				boolean markEmpty = doOpenMark(ureq).isEmpty();
+				if(markEmpty) {
+					doOpenMyEntries(ureq);
+					segmentView.select(myEntriesLink);
+				} else {
+					segmentView.select(favoriteLink);
+				}
 			}
 		} else {
 			ContextEntry entry = entries.get(0);
 			String segment = entry.getOLATResourceable().getResourceableTypeName();
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			if("Favorits".equals(segment)) {
-				doOpenMark(ureq).activate(ureq, subEntries, entry.getTransientState());
-				segmentView.select(favoriteLink);
+				if(isGuestonly) {
+					doOpenMyEntries(ureq).activate(ureq, subEntries, entry.getTransientState());
+					segmentView.select(myEntriesLink);
+				} else {
+					doOpenMark(ureq).activate(ureq, subEntries, entry.getTransientState());
+					segmentView.select(favoriteLink);
+				}
 			} else if("My".equals(segment)) {
 				doOpenMyEntries(ureq).activate(ureq, subEntries, entry.getTransientState());
 				segmentView.select(myEntriesLink);

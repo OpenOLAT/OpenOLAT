@@ -53,8 +53,8 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class OverviewBusinessGroupListController extends BasicController implements Activateable2 {
 	
-	private final Link markedGroupsLink, myGroupsLink, openGroupsLink;
-	private Link searchOpenLink;
+	private final Link openGroupsLink;
+	private Link markedGroupsLink, myGroupsLink, searchOpenLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 
@@ -63,8 +63,11 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 	private OpenBusinessGroupListController openGroupsCtrl;
 	private SearchBusinessGroupListController searchGroupsCtrl;
 	
+	private final boolean isGuestOnly;
+	
 	public OverviewBusinessGroupListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+		isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		
 		mainVC = createVelocityContainer("group_list_overview");
 		
@@ -74,12 +77,16 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 
 		//segmented view
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-		markedGroupsLink = LinkFactory.createLink("marked.groups", mainVC, this);
-		markedGroupsLink.setElementCssClass("o_sel_group_bookmarked_groups_seg");
-		segmentView.addSegment(markedGroupsLink, false);
-		myGroupsLink = LinkFactory.createLink("my.groups", mainVC, this);
-		myGroupsLink.setElementCssClass("o_sel_group_all_groups_seg");
-		segmentView.addSegment(myGroupsLink, false);
+		if(!isGuestOnly) {
+			markedGroupsLink = LinkFactory.createLink("marked.groups", mainVC, this);
+			markedGroupsLink.setElementCssClass("o_sel_group_bookmarked_groups_seg");
+			segmentView.addSegment(markedGroupsLink, false);
+			
+			myGroupsLink = LinkFactory.createLink("my.groups", mainVC, this);
+			myGroupsLink.setElementCssClass("o_sel_group_all_groups_seg");
+			segmentView.addSegment(myGroupsLink, false);
+		}
+
 		openGroupsLink = LinkFactory.createLink("open.groups", mainVC, this);
 		openGroupsLink.setElementCssClass("o_sel_group_open_groups_seg");
 		segmentView.addSegment(openGroupsLink, false);
@@ -135,23 +142,38 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
-			boolean markedEmpty = updateMarkedGroups(ureq).isEmpty();
-			if(markedEmpty) {
-				updateMyGroups(ureq);
-				segmentView.select(myGroupsLink);
+			if(isGuestOnly) {
+				updateOpenGroups(ureq);
+				segmentView.select(openGroupsLink);
 			} else {
-				segmentView.select(markedGroupsLink);
+				boolean markedEmpty = updateMarkedGroups(ureq).isEmpty();
+				if(markedEmpty) {
+					updateMyGroups(ureq);
+					segmentView.select(myGroupsLink);
+				} else {
+					segmentView.select(markedGroupsLink);
+				}
 			}
 		} else {
 			ContextEntry entry = entries.get(0);
 			String segment = entry.getOLATResourceable().getResourceableTypeName();
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			if("Favorits".equals(segment)) {
-				updateMarkedGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
-				segmentView.select(markedGroupsLink);
+				if(isGuestOnly) {
+					updateOpenGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
+					segmentView.select(openGroupsLink);
+				} else {
+					updateMarkedGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
+					segmentView.select(markedGroupsLink);
+				}
 			} else if("AllGroups".equals(segment)) {
-				updateMyGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
-				segmentView.select(myGroupsLink);
+				if(isGuestOnly) {
+					updateOpenGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
+					segmentView.select(openGroupsLink);
+				} else {
+					updateMyGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
+					segmentView.select(myGroupsLink);
+				}
 			} else if("OwnedGroups".equals(segment)) {
 				updateOpenGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
 				segmentView.select(openGroupsLink);
@@ -159,8 +181,13 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 				updateSearch(ureq).activate(ureq, subEntries, entry.getTransientState());
 				segmentView.select(searchOpenLink);
 			} else {//default all groups
-				updateMyGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
-				segmentView.select(myGroupsLink);
+				if(isGuestOnly) {
+					updateOpenGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
+					segmentView.select(openGroupsLink);
+				} else {
+					updateMyGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
+					segmentView.select(myGroupsLink);
+				}
 			}
 		}
 	}

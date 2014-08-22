@@ -64,7 +64,7 @@
 	   	<property name="defaultSiteSecurityCallbackBeanId" value="registredSiteSecurityCallback"/>
 	</bean>
 
-	<bean id="olatsites_repository" class="org.olat.repository.site.RepositorySiteDef">
+	<bean id="olatsites_authenv" class="org.olat.repository.site.RepositorySiteDef">
 	   <property name="order" value="9" />
 	   <property name="enabled" value="${site.repository.enable}"/>
 	   <property name="defaultSiteSecurityCallbackBeanId" value="restrictToInstResourceManagersAndAuthorsSiteSecurityCallback"/>

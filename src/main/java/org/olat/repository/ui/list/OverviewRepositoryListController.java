@@ -60,8 +60,8 @@ public class OverviewRepositoryListController extends BasicController implements
 
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
-	private final Link favoriteLink, myCourseLink;
-	private Link catalogLink, searchCourseLink;
+	private final Link myCourseLink;
+	private Link favoriteLink, catalogLink, searchCourseLink;
 	
 	private RepositoryEntryListController markedCtrl;
 	private BreadcrumbedStackedPanel markedStackPanel;
@@ -72,6 +72,8 @@ public class OverviewRepositoryListController extends BasicController implements
 	private RepositoryEntryListController searchCoursesCtrl;
 	private BreadcrumbedStackedPanel searchCoursesStackPanel;
 	
+	private final boolean isGuestOnly;
+	
 	@Autowired
 	private CatalogManager catalogManager;
 	@Autowired
@@ -80,6 +82,7 @@ public class OverviewRepositoryListController extends BasicController implements
 	public OverviewRepositoryListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
+		isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 
 		MainPanel mainPanel = new MainPanel("myCoursesMainPanel");
 		mainPanel.setDomReplaceable(false);
@@ -88,9 +91,12 @@ public class OverviewRepositoryListController extends BasicController implements
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setReselect(true);
-		favoriteLink = LinkFactory.createLink("search.mark", mainVC, this);
-		favoriteLink.setElementCssClass("o_sel_mycourses_fav");
-		segmentView.addSegment(favoriteLink, false);
+		if(!isGuestOnly) {
+			favoriteLink = LinkFactory.createLink("search.mark", mainVC, this);
+			favoriteLink.setElementCssClass("o_sel_mycourses_fav");
+			segmentView.addSegment(favoriteLink, false);
+		}
+		
 		myCourseLink = LinkFactory.createLink("search.mycourses.student", mainVC, this);
 		myCourseLink.setElementCssClass("o_sel_mycourses_my");
 		segmentView.addSegment(myCourseLink, false);
@@ -112,20 +118,30 @@ public class OverviewRepositoryListController extends BasicController implements
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
-			boolean markEmpty = doOpenMark(ureq).isEmpty();
-			if(markEmpty) {
+			if(isGuestOnly) {
 				doOpenMyCourses(ureq);
 				segmentView.select(myCourseLink);
 			} else {
-				segmentView.select(favoriteLink);
+				boolean markEmpty = doOpenMark(ureq).isEmpty();
+				if(markEmpty) {
+					doOpenMyCourses(ureq);
+					segmentView.select(myCourseLink);
+				} else {
+					segmentView.select(favoriteLink);
+				}
 			}
 		} else {
 			ContextEntry entry = entries.get(0);
 			String segment = entry.getOLATResourceable().getResourceableTypeName();
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			if("Favorits".equalsIgnoreCase(segment)) {
-				doOpenMark(ureq).activate(ureq, subEntries, entry.getTransientState());
-				segmentView.select(favoriteLink);
+				if(isGuestOnly) {
+					doOpenMyCourses(ureq).activate(ureq, subEntries, entry.getTransientState());
+					segmentView.select(myCourseLink);
+				} else {
+					doOpenMark(ureq).activate(ureq, subEntries, entry.getTransientState());
+					segmentView.select(favoriteLink);
+				}
 			} else if("My".equalsIgnoreCase(segment)) {
 				doOpenMyCourses(ureq).activate(ureq, subEntries, entry.getTransientState());
 				segmentView.select(myCourseLink);

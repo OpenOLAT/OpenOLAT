@@ -136,8 +136,9 @@ public class AuthorListController extends FormBasicController implements Activat
 	private ImportRepositoryEntryController importCtrl;
 	private CreateRepositoryEntryController createCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
-
-
+	
+	private boolean hasAuthorRight;
+	
 	private Link importLink;
 	private Dropdown createDropdown;
 	private FormLink addOwnersButton;
@@ -166,13 +167,16 @@ public class AuthorListController extends FormBasicController implements Activat
 		this.i18nName = i18nName;
 		this.withSearch = withSearch;
 		this.searchParams = searchParams;
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		hasAuthorRight = roles.isAuthor() || roles.isInstitutionalResourceManager() || roles.isOLATAdmin();
 
 		dataSource = new AuthoringEntryDataSource(searchParams, this);
 		initForm(ureq);
 
 		stackPanel = new TooledStackedPanel(i18nName, getTranslator(), this);
 		stackPanel.pushController(translate(i18nName), this);
-		if(!withSearch) {
+		if(!withSearch && hasAuthorRight) {
 			importLink = LinkFactory.createLink("cmd.import.ressource", getTranslator(), this);
 			importLink.setDomReplacementWrapperRequired(false);
 			importLink.setIconLeftCSS("o_icon o_icon_import");
@@ -250,9 +254,11 @@ public class AuthorListController extends FormBasicController implements Activat
 				true, OrderBy.lastUsage.name()));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(Cols.detailsSupported.i18nKey(), Cols.detailsSupported.ordinal(), "details",
 				new StaticFlexiCellRenderer("", "details", "o_icon-lg o_icon_details", translate("details"))));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(Cols.editionSupported.i18nKey(), Cols.editionSupported.ordinal(), "edit",
+		if(hasAuthorRight) {
+			columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel(Cols.editionSupported.i18nKey(), Cols.editionSupported.ordinal(), "edit",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer("", "edit", "o_icon-lg o_icon_edit", translate("edit")), null)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.tools.i18nKey(), Cols.tools.ordinal()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.tools.i18nKey(), Cols.tools.ordinal()));
+		}
 		
 		model = new AuthoringEntryDataModel(dataSource, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
@@ -271,7 +277,9 @@ public class AuthorListController extends FormBasicController implements Activat
 			tableEl.setFilters(null, getFilters());
 		}
 		
-		addOwnersButton = uifactory.addFormLink("tools.add.owners", formLayout, Link.BUTTON);
+		if(hasAuthorRight) {
+			addOwnersButton = uifactory.addFormLink("tools.add.owners", formLayout, Link.BUTTON);
+		}
 	}
 	
 	private List<FlexiTableFilter> getFilters() {
