@@ -83,4 +83,8 @@ public class RepositoryEntrySecurity {
 	public boolean isGroupWaiting() {
 		return groupWaiting;
 	}
+	
+	public boolean isMember() {
+		return owner || courseParticipant || courseCoach || groupParticipant || groupCoach;
+	}
 }

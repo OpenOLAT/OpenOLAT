@@ -533,7 +533,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			if(re.getAccess() == RepositoryEntry.ACC_USERS_GUESTS && ureq.getUserSession().getRoles().isGuestOnly()) {
 				launchContent(ureq, security);
 			} else {
-				AccessResult acResult = acService.isAccessible(re, getIdentity(), false);
+				AccessResult acResult = acService.isAccessible(re, getIdentity(), security.isMember(), false);
 				if(acResult.isAccessible()) {
 					launchContent(ureq, security);
 				} else if (re != null && acResult.getAvailableMethods().size() > 0) {

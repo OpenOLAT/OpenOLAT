@@ -121,14 +121,21 @@ public class ACFrontendManager implements ACService {
 	 * -Participants have access to the resource<br/>
 	 * @param entry
 	 * @param forId
+	 * @param knowMember give it if already know as a member
 	 * @return
 	 */
-	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, boolean allowNonInteractiveAccess) {
+	@Override
+	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, Boolean knowMember, boolean allowNonInteractiveAccess) {
 		if(!accessModule.isEnabled()) {
 			return new AccessResult(true);
 		}
 		
-		boolean member = repositoryService.isMember(forId, entry);
+		boolean member;
+		if(knowMember == null) {
+			member = repositoryService.isMember(forId, entry);
+		} else {
+			member = knowMember.booleanValue();
+		}
 		if(member) {
 			return new AccessResult(true);
 		}
@@ -143,6 +150,16 @@ public class ACFrontendManager implements ACService {
 			}	
 		}
 		return isAccessible(forId, offers, allowNonInteractiveAccess);
+	}
+	
+	@Override
+	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, boolean allowNonInteractiveAccess) {
+		if(!accessModule.isEnabled()) {
+			return new AccessResult(true);
+		}
+		
+		boolean member = repositoryService.isMember(forId, entry);
+		return isAccessible(entry, forId, new Boolean(member), allowNonInteractiveAccess);
 	}
 	
 	/**

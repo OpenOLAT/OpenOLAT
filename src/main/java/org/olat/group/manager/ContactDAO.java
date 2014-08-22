@@ -65,9 +65,8 @@ public class ContactDAO {
 		sb.append("select contact.identity.key from ").append(BusinessGroupImpl.class.getName()).append(" bgroup ")
 		  .append(" inner join bgroup.baseGroup baseGroup")
 		  .append(" inner join baseGroup.members contact")
-		  .append(" inner join baseGroup.members me")
-		  .append(" where me.identity.key=:identKey and ")
-		  .append("  ((bgroup.ownersVisibleIntern=true and contact.role='coach')")
+		  .append(" where exists (select me.key from bgroupmember as me where me.group=baseGroup and me.identity.key=:identKey)")
+		  .append("  and ((bgroup.ownersVisibleIntern=true and contact.role='coach')")
 		  .append("  or")
 		  .append("  (bgroup.participantsVisibleIntern=true and contact.role='participant'))");
 

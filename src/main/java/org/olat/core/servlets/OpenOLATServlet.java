@@ -65,7 +65,7 @@ public class OpenOLATServlet extends HttpServlet {
     
 	private String legacyContext;
 	
-	private DispatcherModule dispatcher;
+	private DispatcherModule dispatcherModule;
 	private SessionStatsManager sessionStatsManager;
 	private RequestBasedLogLevelManager requestBasedLogLevelManager;
 	
@@ -96,9 +96,9 @@ public class OpenOLATServlet extends HttpServlet {
 		FrameworkStartupEventChannel.fireEvent();
 		log.info("FrameworkStartupEvent processed by alle listeners. Webapp has started.");
 		sessionStatsManager = CoreSpringFactory.getImpl(SessionStatsManager.class);
-		dispatcher = CoreSpringFactory.getImpl(DispatcherModule.class);
+		dispatcherModule = CoreSpringFactory.getImpl(DispatcherModule.class);
 		
-		dispatchers = new HashMap<String, Dispatcher>(dispatcher.getDispatchers());
+		dispatchers = new HashMap<String, Dispatcher>(dispatcherModule.getDispatchers());
 		dispatchers.put(DispatcherModule.PATH_MAPPED, new MapperDispatcher());
 		dispatchers.put(DispatcherModule.PATH_GLOBAL_MAPPED,  GlobalMapperRegistry.getInstance());
 		

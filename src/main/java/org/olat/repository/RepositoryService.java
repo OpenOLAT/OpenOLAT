@@ -84,6 +84,12 @@ public interface RepositoryService {
 
 	public Group getDefaultGroup(RepositoryEntryRef ref);
 	
+	/**
+	 * 
+	 * @param identity
+	 * @param entry
+	 * @return True if the identity is member of the repository entry and its attached business groups
+	 */
 	public boolean isMember(IdentityRef identity, RepositoryEntryRef entry);
 	
 	public void filterMembership(IdentityRef identity, List<Long> entries);

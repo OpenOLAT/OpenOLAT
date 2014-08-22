@@ -68,6 +68,16 @@ public interface ACService {
 	public AccessResult isAccessible(BusinessGroup group, Identity forId, boolean allowNonInteractiveAccess);
 	
 	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, boolean allowNonInteractiveAccess);
+	
+	/**
+	 * 
+	 * @param entry
+	 * @param forId
+	 * @param knowMember If you know that the forId is a member
+	 * @param allowNonInteractiveAccess
+	 * @return
+	 */
+	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, Boolean knowMember, boolean allowNonInteractiveAccess);
 
 	
 	public Offer createOffer(OLATResource resource, String resourceName);

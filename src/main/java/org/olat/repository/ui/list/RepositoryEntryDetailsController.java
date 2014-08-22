@@ -50,6 +50,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -279,12 +280,14 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			//load memberships
 			boolean isMember = repositoryService.isMember(getIdentity(), entry);
             List<Long> authorKeys = repositoryService.getAuthors(entry);
+            boolean isAuthor = false;
 			if (isMember) {
-				Boolean isAuthor = Boolean.valueOf(authorKeys.contains(getIdentity().getKey()));
-				layoutCont.contextPut("isEntryAuthor", isAuthor);
+				isAuthor = authorKeys.contains(getIdentity().getKey());
+				layoutCont.contextPut("isEntryAuthor", new Boolean(isAuthor));
 			}
 			// push roles to velocity as well
-			layoutCont.contextPut("roles", ureq.getUserSession().getRoles());
+            Roles roles = ureq.getUserSession().getRoles();
+			layoutCont.contextPut("roles", roles);
 
 			//access control
 			String accessI18n = null;
@@ -302,7 +305,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				}
 				accessI18n = translate("cif.access.membersonly");
 			} else {
-				AccessResult acResult = acService.isAccessible(entry, getIdentity(), false);
+				AccessResult acResult = acService.isAccessible(entry, getIdentity(), isMember, false);
 				if(acResult.isAccessible()) {
 					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
@@ -405,9 +408,11 @@ public class RepositoryEntryDetailsController extends FormBasicController {
             layoutCont.contextPut("numUsers", numUsers);
             
             // Where is it in use
-            String referenceDetails = referenceManager.getReferencesToSummary(entry.getOlatResource(), getLocale());
-            if (referenceDetails != null) {
-            	layoutCont.contextPut("referenceDetails", referenceDetails);
+            if(isAuthor || roles.isOLATAdmin() || roles.isInstitutionalResourceManager()) {
+	            String referenceDetails = referenceManager.getReferencesToSummary(entry.getOlatResource(), getLocale());
+	            if (referenceDetails != null) {
+	            	layoutCont.contextPut("referenceDetails", referenceDetails);
+	            }
             }
             
             // Link to bookmark entry
