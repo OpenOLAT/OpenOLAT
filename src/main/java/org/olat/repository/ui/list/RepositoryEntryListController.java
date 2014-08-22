@@ -227,7 +227,9 @@ public class RepositoryEntryListController extends FormBasicController
 		sorters.add(new FlexiTableSort(translate("orderby.author"), OrderBy.author.name()));
 		sorters.add(new FlexiTableSort(translate("orderby.creationDate"), OrderBy.creationDate.name()));
 		sorters.add(new FlexiTableSort(translate("orderby.lastModified"), OrderBy.lastModified.name()));
-		sorters.add(new FlexiTableSort(translate("orderby.rating"), OrderBy.rating.name()));
+		if(repositoryModule.isRatingEnabled()) {
+			sorters.add(new FlexiTableSort(translate("orderby.rating"), OrderBy.rating.name()));
+		}
 		
 		FlexiTableSortOptions options = new FlexiTableSortOptions(sorters);
 		options.setDefaultOrderBy(new SortKey(OrderBy.automatic.name(), true));

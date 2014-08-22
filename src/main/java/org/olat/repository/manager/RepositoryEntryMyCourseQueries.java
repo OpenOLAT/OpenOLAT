@@ -45,6 +45,7 @@ import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.model.RepositoryEntryMyCourseImpl;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
@@ -72,6 +73,8 @@ public class RepositoryEntryMyCourseQueries {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private RepositoryModule repositoryModule;
 	@Autowired
 	private EfficiencyStatementManager efficiencyStatementManager;
 	@Autowired
@@ -164,12 +167,16 @@ public class RepositoryEntryMyCourseQueries {
 			  .append(" (select count(offer.key) from ").append(OfferImpl.class.getName()).append(" as offer ")
 			  .append("   where offer.resource=res and offer.valid=true")
 			  //TODO validity
-			  .append(" ) as offers, ")
-			  .append(" (select rating.rating from userrating as rating")
-			  .append("   where rating.resId=v.key and rating.creator=ident and rating.resName='RepositoryEntry'")
-			  .append(" ) as myrating")
+			  .append(" ) as offers, ");
+			  if(repositoryModule.isRatingEnabled()) {
+				  sb.append(" (select rating.rating from userrating as rating")
+				  	.append("   where rating.resId=v.key and rating.creator=ident and rating.resName='RepositoryEntry'")
+				  	.append(" ) as myrating");
+			  } else {
+				  sb.append(" 0 as myrating");
+			  }  
 			  // user course informations
-			  .append(" ,(select infos.visit from usercourseinfos as infos")
+			sb.append(" ,(select infos.visit from usercourseinfos as infos")
 			  .append("    where infos.resource=res and infos.identity=ident")
 			  .append(" ) as visit")
 			  //efficiency statements
