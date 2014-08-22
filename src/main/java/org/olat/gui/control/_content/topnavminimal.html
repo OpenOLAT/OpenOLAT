@@ -1,7 +1,10 @@
 <div id="$r.getCId()" class="o_navbar_tools">
-	<ul id="o_navbar_tools_personal" class="nav navbar-nav navbar-right">
+	<ul id="o_navbar_tools_permanent" class="nav navbar-nav navbar-right">
 		<li id="o_topnav_printview">
-			<a href="javascript:o_doPrint();" title="$r.translateInAttribute("topnav.printview.alt")" ><i class="o_icon o_icon_print">&nbsp;</i>$r.translate("topnav.printview")</a>
+			<a href="javascript:o_doPrint();" title="$r.translateInAttribute("topnav.printview.alt")" >
+				<i class="o_icon o_icon_print">&nbsp;</i>
+				<span>$r.translate("topnav.printview")</span>
+			</a>
 		</li>
 		<li id="o_topnav_close">
 			$r.render("topnav.close")

@@ -44,22 +44,22 @@
 		width: 120px;
 	}
 	
+	#o_navbar_langchooser {
+		color: $o-navbar-tools-permanent-color;
+		padding: floor($grid-gutter-width / 4) floor($grid-gutter-width / 2);
+		form span + div {
+			display: inline;
+		}
+	}
 	#o_navbar_tools_permanent {
-		#o_navbar_langchooser {
-			color: $o-navbar-tools-permanent-color;
-			padding: floor($grid-gutter-width / 4) floor($grid-gutter-width / 2);
-			form span + div {
-				display: inline;
+		#o_navbar_print, #o_navbar_impress, #o_navbar_help {
+			a {
+				color: $o-navbar-tools-permanent-color;
+				padding-right: 0;		
 			}
 		}
-		#o_navbar_print a, #o_navbar_impress a, #o_navbar_help a {
-			padding-right: 0;		
-		}
-		@media (max-width: $screen-xs-max) { 
-			/* on small viewport show only icons */
-			#o_navbar_impress a span, #o_navbar_help a span {
-				display: none;
-			}
+		#o_navbar_login a {
+			color: $o-navbar-login-color;
 		}	
 	}
 	#o_navbar_tools_personal {
@@ -182,6 +182,19 @@
 	}
 }
 
+/* hide texts for some topnav icons, but not in on login screen */
+#o_navbar_print, #o_navbar_impress, #o_navbar_help, #o_navbar_search_opener {
+	a span {
+		display: none;
+	}
+}
+body.o_dmz {
+	#o_navbar_print, #o_navbar_impress, #o_navbar_help, #o_navbar_search_opener {
+		a span {
+			display: inline;
+		}	
+	}
+}
 
 
 //
