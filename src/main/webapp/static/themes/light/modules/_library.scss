@@ -1,3 +1,5 @@
+.o_library_icon:before { content: $fa-var-university; }
+
 .o_library {
 	ul {
 		list-style: none;
@@ -9,3 +11,54 @@
 		margin: 0;
 	}
 }
+
+.o_library_item {
+	position: relative;
+	border: 1px solid $o-coursesite-rowelem-border;
+	margin-bottom: floor($line-height-computed / 2);
+	min-height:202px;
+	
+	.o_library_visual {
+		border-right: 1px solid $o-coursesite-rowelem-border;
+		width: 200px;
+		height:	200px;
+		position:absolute;
+		top:0;
+		left:0;
+	}
+	
+	.o_library_meta {
+		margin: 0 0 0 199px;
+		padding: 1em 0.5em 0.25em 1em;
+		border-left: 1px solid $o-coursesite-rowelem-border;
+	}
+	
+	.table {
+		margin-bottom: 0;
+	}
+	
+	p.o_library_more {
+		text-align: right;
+	}
+	
+	tr.o_library_more {
+		display:none;
+	}
+}
+
+.o_library_without_thumbnails {
+	.o_library_item {
+		.o_library_visual {
+			display:none;
+		}
+		
+		.o_library_meta {
+			margin: 0;
+			border: none;
+		}
+	}
+}
+
+			
+			
+			
