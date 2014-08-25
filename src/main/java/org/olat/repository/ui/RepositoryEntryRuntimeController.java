@@ -179,7 +179,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected boolean isCorrupted(RepositoryEntry entry) {
-		return entry != null;
+		return entry == null;
 	}
 	
 	/**

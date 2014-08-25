@@ -132,6 +132,10 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		repoEntryType = repositoryEntry.getOlatResource().getResourceableTypeName();
 		initForm(ureq);
 	}
+	
+	public RepositoryEntry getEntry() {
+		return repositoryEntry;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

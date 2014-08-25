@@ -81,6 +81,10 @@ public class AuthoringEditAccessController extends BasicController {
 		putInitialPanel(editproptabpubVC);
 	}
 	
+	public RepositoryEntry getEntry() {
+		return entry;
+	}
+	
 	@Override
 	protected void doDispose() {
 		//
