@@ -25,6 +25,8 @@
 
 package org.olat.modules.sharedfolder;
 
+import java.util.List;
+
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -36,7 +38,12 @@ import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.repository.RepositoryEntry;
@@ -45,7 +52,7 @@ import org.olat.repository.RepositoryEntry;
  * Initial Date:  Aug 29, 2005 <br>
  * @author Alexander Schneider
  */
-public class SharedFolderEditorController extends DefaultController {
+public class SharedFolderEditorController extends DefaultController implements Activateable2 {
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(SharedFolderEditorController.class);
 	
 	private Translator translator;
@@ -82,9 +89,20 @@ public class SharedFolderEditorController extends DefaultController {
 
 	}
 
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
+		if(StringHelper.containsNonWhitespace(path)) {
+			folderRunController.activatePath(ureq, path);
+		}
+	}
+
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == previewButton) {
 			VFSContainer sharedFolderPreview = SharedFolderManager.getInstance().getNamedSharedFolder(re, false);

@@ -25,6 +25,8 @@
 
 package org.olat.modules.sharedfolder;
 
+import java.util.List;
+
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -33,11 +35,16 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -54,7 +61,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * 
  * @author Alexander Schneider
  */
-public class SharedFolderDisplayController extends DefaultController {
+public class SharedFolderDisplayController extends DefaultController implements Activateable2 {
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(SharedFolderDisplayController.class);
 
 	/**
@@ -118,14 +125,25 @@ public class SharedFolderDisplayController extends DefaultController {
 
 		setInitialComponent(vcDisplay);
 	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
+		if(StringHelper.containsNonWhitespace(path) && controller instanceof FolderRunController) {
+			((FolderRunController)controller).activatePath(ureq, path);
+		}
+	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-	// nothing to do
+		// nothing to do
 	}
 
 	/**
