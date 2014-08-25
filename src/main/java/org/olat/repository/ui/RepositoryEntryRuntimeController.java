@@ -31,6 +31,7 @@ import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
@@ -365,6 +366,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		} else if(source == toolbarPanel) {
 			if (event == Event.CLOSE_EVENT) {
 				doClose(ureq);
+			} else if(event instanceof PopEvent) {
+				setActiveTool(null);
 			}
 		}
 	}
@@ -383,6 +386,14 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				} else {
 					showError("error.accesscontrol");
 				}
+			}
+		} else if(accessCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				re = accessCtrl.getEntry();
+			}
+		} else if(descriptionCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				re = accessCtrl.getEntry();
 			}
 		}
 	}
