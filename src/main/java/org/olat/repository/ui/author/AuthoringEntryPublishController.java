@@ -166,8 +166,10 @@ public class AuthoringEntryPublishController extends FormBasicController {
 			} else if (publishedForUsers.getSelectedKey().equals(OAUG_KEY)) {
 				// further raise to guest level
 				access = RepositoryEntry.ACC_USERS_GUESTS;
-			}
+			} else if (publishedForUsers.getSelectedKey().equals(MEMBERSONLY_KEY)) {
 			// Members-only is either owner or owner-author level, never user level
+				access = RepositoryEntry.ACC_OWNERS;
+			}
 		}
 		return access;
 	}
@@ -176,10 +178,8 @@ public class AuthoringEntryPublishController extends FormBasicController {
 		return (usersSwitch.getSelectedKey().equals(YES_KEY) && publishedForUsers.getSelectedKey().equals(MEMBERSONLY_KEY));
 	}
 
-
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener,
-			UserRequest ureq) {
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("rentry.publish");
 		setFormContextHelp("org.olat.repository", "rep-meta-olatauthorEd.html", "help.hover.rep.detail");
 
@@ -260,6 +260,11 @@ public class AuthoringEntryPublishController extends FormBasicController {
 			publishedForUsers.select(MEMBERSONLY_KEY, true);
 			usersSwitch.select(YES_KEY, true);
 		} else {
+			if (LoginModule.isGuestLoginLinksEnabled()) {
+				publishedForUsers.select(OAUG_KEY, false);
+			} else {
+				publishedForUsers.select(OAU_KEY, true);
+			}
 			usersSwitch.select(NO_KEY, true);
 			userConfigLayout.setVisible(false);
 		}		
@@ -287,10 +292,9 @@ public class AuthoringEntryPublishController extends FormBasicController {
 			userConfigLayout.setVisible(false);
 		}
 	}
-	
+
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source,
-			FormEvent event) {
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		super.formInnerEvent(ureq, source, event);
 		// show and hide fields depending on selection
 		applyFormBusinessRules();
