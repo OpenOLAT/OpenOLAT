@@ -35,11 +35,17 @@
 			$(document).on("oo.dom.replacement.after", OPOL.themejs.addClientLinks);
 		}
 		
+		/**
+		 * Use the carrousel effect for background images on the login screen based 
+		 * on the ooBgCarrousel OpenOLAT jQuery plugin
+		 */
 		ThemeJS.prototype.initDmzCarrousel = function() {
 			this.dmzCarrousel = jQuery().ooBgCarrousel();
 			this.dmzCarrousel.initCarrousel({
 				query: "#o_body #o_bg", 
 				images: ['learn-bg.jpg', 'christian-bg.jpg', 'classroom-bg.jpg', 'holger-bg.jpg', 'oo-bg.jpg', 'florian-bg.jpg' ], 
+				shuffle: false,
+				shuffleFirst: false,
 				durationshow: 5000,
 				durationout: 500,
 				durationin: 500,

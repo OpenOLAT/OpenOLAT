@@ -43,6 +43,8 @@
     	this.settings = $.extend({
     		query: null,			// mandatory 
     		images: [], 			// mandatory
+    		shuffle: false,
+    		shuffleFirst: false,
     		durationshow: 5000,
     		durationout: 500,
     		durationin: 500,
@@ -50,9 +52,21 @@
     		easein : 'ease'
         }, params );
 		this.pos = null;
-    	
+		
+		// Query not defined? - stop right there
     	if (this.settings.query == null || this.settings.images.length == 0) return;    	
-    	// start rotation process
+    	// Keep reference to initial image to remember even when shuffled
+    	this.initialImage = this.settings.images[0];
+    	// Shuffle image array
+    	if (this.settings.shuffle) {
+    		var o = this.settings.images;
+    		for(var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+    	}
+    	// Replace the start image without animation right away when first image should also be shuffled
+    	if (this.settings.shuffleFirst) {
+    		this._replaceImage();    		
+    	}    	
+    	// Start rotation process
     	this.rotate();
 	}
 	
@@ -61,14 +75,28 @@
 	}
 	
 	BgCarrousel.prototype._hideCurrent = function() {
-		var bgElement = $(this.settings.query);
-		if (bgElement && bgElement.size() > 0) {
+		var el = $(this.settings.query);
+		if (el && el.size() > 0) {	
+			el.transition({
+					opacity:0, 
+					duration: this.settings.durationout, 
+					easing: this.settings.easeout
+				}, $.proxy(this._showNext, this)
+			);
+		}
+	}	
+	
+	BgCarrousel.prototype._replaceImage = function(el) {
+		if ( !el) {
+			el = $(this.settings.query);			
+		}
+		if (el && el.size() > 0) {
 			this.newImg = "";
 			this.oldImg = "";
 			if (this.pos == null) {
 				// initial value
 				this.pos = 1;
-				this.oldImg = this.settings.images[0];
+				this.oldImg = this.initialImage;
 			} else {
 				this.oldImg = this.settings.images[this.pos];
 				this.pos++;
@@ -78,26 +106,20 @@
 				}					
 			}
 			this.newImg = this.settings.images[this.pos];
-			
-			bgElement.transition({
-					opacity:0, 
-					duration: this.settings.durationout, 
-					easing: this.settings.easeout
-				}, $.proxy(this._showNext, this)
-			);
+			var css = el.css('background-image');
+			if (css.indexOf(this.oldImg) == -1) {
+				// abort, don't know what to do, show image again and exit
+				el.transition({ opacity:1, duration: 0 });	
+				return;
+			}
+			var newCss = css.replace(this.oldImg, this.newImg);
+			el.css('background-image', newCss);	
 		}
-	}	
+	}
 	
 	BgCarrousel.prototype._showNext = function() {
 		var el = $(this.settings.query);
-		var css = el.css('background-image');
-		if (css.indexOf(this.oldImg) == -1) {
-			// abort, don't know what to do, show image again and exit
-			el.transition({ opacity:1, duration: 0 });	
-			return;
-		}
-		var newCss = css.replace(this.oldImg, this.newImg);
-		el.css('background-image', newCss);
+		this._replaceImage(el);
 		el.transition({
 				opacity:1, 
 				duration: this.settings.durationin, 
