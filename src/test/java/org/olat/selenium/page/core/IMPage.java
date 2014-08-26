@@ -38,7 +38,6 @@ import com.google.common.base.Predicate;
  *
  */
 public class IMPage {
-	private static final By imModalBy = By.className("o_im_chat");
 	
 	private WebDriver browser;
 	
@@ -54,6 +53,9 @@ public class IMPage {
 		By openBy = By.className("o_sel_im_open_tool_chat");
 		WebElement openButton = browser.findElement(openBy);
 		openButton.click();
+		OOGraphene.waitBusy();
+		
+		By imModalBy = By.className("o_im_chat");
 		OOGraphene.waitElement(imModalBy);
 		return this;
 	}
