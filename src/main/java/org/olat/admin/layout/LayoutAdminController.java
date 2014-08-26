@@ -167,20 +167,26 @@ public class LayoutAdminController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
-		
-		String logoUrlValue = logoUrl.getValue();
-		if (logoUrlValue !="") {
+		allOk &= validateUrl(logoUrl);
+		allOk &= validateUrl(footerUrl);
+		return allOk & super.validateFormLogic(ureq);
+	}
+	
+	private boolean validateUrl(TextElement el) {
+		boolean allOk = true;
+		String value = el.getValue();
+		if (StringHelper.containsNonWhitespace(value)) {
 			try {
-				URL url = new URL(logoUrlValue);
+				URL url = new URL(value);
 				allOk &= StringHelper.containsNonWhitespace(url.getHost());
 			} catch (MalformedURLException e) {
-				logoUrl.setErrorKey("linkUrl.invalid", null);
+				el.setErrorKey("linkUrl.invalid", null);
 				showError("linkUrl.invalid");
 				allOk &= false;
 			}
-		}			
-		return allOk & super.validateFormLogic(ureq);
-	}	
+		}
+		return allOk;
+	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
