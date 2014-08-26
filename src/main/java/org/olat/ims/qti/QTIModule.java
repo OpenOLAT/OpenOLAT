@@ -58,7 +58,7 @@ public class QTIModule extends AbstractOLATModule {
 	@Override
 	public void init() {
 		for (RepositoryHandler qtiRepositoryHandler : qtiRepositoryHandlers) {
-			RepositoryHandlerFactory.registerHandler(qtiRepositoryHandler, 11);
+			RepositoryHandlerFactory.registerHandler(qtiRepositoryHandler, 10);
 		}
 	}
 

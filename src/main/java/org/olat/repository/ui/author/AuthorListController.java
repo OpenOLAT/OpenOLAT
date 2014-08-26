@@ -20,7 +20,6 @@
 package org.olat.repository.ui.author;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -37,6 +36,7 @@ import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -182,13 +182,21 @@ public class AuthorListController extends FormBasicController implements Activat
 			importLink.setIconLeftCSS("o_icon o_icon_import");
 			stackPanel.addTool(importLink, Align.left);
 			
-			Collection<String> types = repositoryHandlerFactory.getSupportedTypes();
+			List<OrderedRepositoryHandler> handlers = repositoryHandlerFactory.getOrderRepositoryHandlers();
 			createDropdown = new Dropdown("cmd.create.ressource", "cmd.create.ressource", false, getTranslator());
 			createDropdown.setElementCssClass("o_sel_author_create");
 			createDropdown.setIconCSS("o_icon o_icon_add");
-			for(String type:types) {
-				RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
+			int lastGroup = 0;
+			for(OrderedRepositoryHandler orderedHandler:handlers) {
+				RepositoryHandler handler = orderedHandler.getHandler();
+				
 				if(handler != null && handler.isCreate()) {
+					// for each 10-group, crate a separator
+					int group = orderedHandler.getOrder() / 10;
+					if (group > lastGroup) {
+						createDropdown.addComponent(new Spacer("spacer" + orderedHandler.getOrder()));
+						lastGroup = group;
+					}
 					addCreateLink(handler, createDropdown);
 				}
 			}
@@ -285,7 +293,14 @@ public class AuthorListController extends FormBasicController implements Activat
 	private List<FlexiTableFilter> getFilters() {
 		List<OrderedRepositoryHandler> supportedHandlers = repositoryHandlerFactory.getOrderRepositoryHandlers();
 		List<FlexiTableFilter> resources = new ArrayList<>(supportedHandlers.size() + 1);
+		int lastGroup = 0;
 		for(OrderedRepositoryHandler handler:supportedHandlers) {
+			// for each 10-group, crate a separator
+			int group = handler.getOrder() / 10;
+			if (group > lastGroup) {
+				resources.add(FlexiTableFilter.SPACER);
+				lastGroup = group;
+			}
 			String type = handler.getHandler().getSupportedType();
 			String inconLeftCss = RepositoyUIFactory.getIconCssClass(type);
 			resources.add(new FlexiTableFilter(translate(type), type, inconLeftCss));

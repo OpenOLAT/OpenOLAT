@@ -64,15 +64,20 @@ public class RepositoryHandlerFactory {
 		handlerMap = new HashMap<String, RepositoryHandler>(21);
 		handlerList = new ArrayList<OrderedRepositoryHandler>(21);
 
+		// 0-9 Most important resources = 0-9
 		registerHandler(new CourseHandler(), 0);
-		registerHandler(new SCORMCPHandler(), 10);
-		registerHandler(new ImsCPHandler(), 20);
-		registerHandler(new SharedFolderHandler(), 21);
-		registerHandler(new WikiHandler(), 21);
-		registerHandler(new PodcastHandler(), 22);
-		registerHandler(new BlogHandler(), 23);
-		registerHandler(new GlossaryHandler(), 24);
-		registerHandler(new PortfolioHandler(), 25);
+		// 10-19 Assessment modules
+		// 20-29 Content modules
+		registerHandler(new SCORMCPHandler(), 20);
+		registerHandler(new ImsCPHandler(), 21);
+		registerHandler(new WikiHandler(), 22);
+		// 30-39 Interactive modules
+		registerHandler(new PodcastHandler(), 31);
+		registerHandler(new BlogHandler(), 32);
+		// 40-49 Supporting resources
+		registerHandler(new SharedFolderHandler(), 40);
+		registerHandler(new GlossaryHandler(), 41);
+		registerHandler(new PortfolioHandler(), 42);
 		
 		registerHandler(new WebDocumentHandler(DocFileResource.TYPE_NAME), 10001);
 		registerHandler(new WebDocumentHandler(XlsFileResource.TYPE_NAME), 10002);
