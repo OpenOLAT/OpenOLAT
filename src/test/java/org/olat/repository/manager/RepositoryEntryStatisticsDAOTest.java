@@ -360,7 +360,6 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 	 * Thread 1 : call incrementDownloadCounter after 100ms
 	 * Thread 2 : call incrementDownloadCounter after 300ms
 	 * Thread 3 : update access-value on repository-entry directly after 200ms
-	 * Codepoint-breakpoint at IncrementDownloadCounterBackgroundTask in executeTask before update
 	 */
 	@Test
 	public void concurrentIncrementDownloadCounter() {

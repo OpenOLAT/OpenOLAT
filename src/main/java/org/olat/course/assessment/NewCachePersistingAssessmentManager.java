@@ -61,7 +61,6 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.properties.Property;
-import org.olat.testutils.codepoints.server.Codepoint;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 
@@ -862,12 +861,9 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 		// -: many entries (num of courses * visitors of given course) in the locktable.
 		// we could also sync on the assessedIdentity.
 		
-		Codepoint.codepoint(NewCachePersistingAssessmentManager.class, "beforeSyncUpdateUserEfficiencyStatement");
 		Long attempts = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(createOLATResourceableForLocking(assessedIdentity), new SyncerCallback<Long>(){
 			public Long execute() {
 				Long attempts = null;
-				Codepoint.codepoint(NewCachePersistingAssessmentManager.class, "doInSyncUpdateUserEfficiencyStatement");
-				log.debug("codepoint reached: doInSyncUpdateUserEfficiencyStatement by identity: " + identity.getName());
 				saveNodeScore(courseNode, assessedIdentity, scoreEvaluation.getScore(), cpm);
 				saveNodePassed(courseNode, assessedIdentity, scoreEvaluation.getPassed(), cpm);
 				saveAssessmentID(courseNode, assessedIdentity, scoreEvaluation.getAssessmentID(), cpm);				
@@ -882,10 +878,6 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 				}
 				return attempts;
 			}});
-    // here used to be a codepoint which lead to error (OLAT-3570) in AssessmentWithCodepointsTest.
-    // The reason for this error was that the AuditManager appendToUserNodeLog() is not synchronized, so could be called by several threads simultaneously.
-    // The end effect of this error is data inconsistency: the score/passed info is stored but the userNodeLog info is not updated and the AssessmentChangedEvent is not fired.
-    // This case is very seldom, but could be avoided if the test could be protected by a lock.
 		
 		
 		// node log
@@ -900,8 +892,6 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 			am.appendToUserNodeLog(courseNode, assessedIdentity, assessedIdentity, ASSESSMENT_ID + " set to: " + scoreEvaluation.getAssessmentID().toString());
 		}		
 
-		Codepoint.codepoint(NewCachePersistingAssessmentManager.class, "afterSyncUpdateUserEfficiencyStatement");
-		log.debug("codepoint reached: afterSyncUpdateUserEfficiencyStatement by identity: " + identity.getName());
 		// notify about changes
 		AssessmentChangedEvent ace = new AssessmentChangedEvent(AssessmentChangedEvent.TYPE_SCORE_EVAL_CHANGED, assessedIdentity);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
@@ -943,8 +933,6 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	private Long saveScoreEvaluationInSync(CourseNode courseNode, Identity identity, Identity assessedIdentity, ScoreEvaluation scoreEvaluation,
 			boolean incrementUserAttempts, final UserCourseEnvironment userCourseEnv, final CoursePropertyManager cpm) {
 		Long attempts = null;
-		Codepoint.codepoint(NewCachePersistingAssessmentManager.class, "doInSyncUpdateUserEfficiencyStatement");
-		log.debug("codepoint reached: doInSyncUpdateUserEfficiencyStatement by identity: " + identity.getName());
 		saveNodeScore(courseNode, assessedIdentity, scoreEvaluation.getScore(), cpm);
 		log.debug("successfully saved node score : " + scoreEvaluation.getScore());
 		saveNodePassed(courseNode, assessedIdentity, scoreEvaluation.getPassed(), cpm);

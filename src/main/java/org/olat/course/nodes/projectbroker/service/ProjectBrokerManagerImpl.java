@@ -68,7 +68,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.properties.Property;
-import org.olat.testutils.codepoints.server.Codepoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -171,7 +170,6 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 	public boolean enrollProjectParticipant(final Identity identity, final Project project, final ProjectBrokerModuleConfiguration moduleConfig, final int nbrSelectedProjects, final boolean isParticipantInAnyProject) {
 		OLATResourceable projectOres = OresHelper.createOLATResourceableInstance(Project.class, project.getKey());
 		logDebug("enrollProjectParticipant: start identity=" + identity + "  project=" + project);
-		Codepoint.codepoint(ProjectBrokerManagerImpl.class, "beforeDoInSync");
 		Boolean result = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(projectOres, new SyncerCallback<Boolean>(){
 			public Boolean execute() {
 				if ( existsProject( project.getKey() ) ) {
@@ -209,13 +207,11 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 				}
 			}				
 		});// end of doInSync
-		Codepoint.codepoint(ProjectBrokerManagerImpl.class, "afterDoInSync");
 		return result.booleanValue();
 	}
 
 	public boolean cancelProjectEnrollmentOf(final Identity identity, final Project project, final ProjectBrokerModuleConfiguration moduleConfig) {
 		OLATResourceable projectOres = OresHelper.createOLATResourceableInstance(Project.class, project.getKey());
-		Codepoint.codepoint(ProjectBrokerManagerImpl.class, "beforeDoInSync");
 		Boolean result = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(projectOres, new SyncerCallback<Boolean>(){
 			public Boolean execute() {
 				if ( existsProject( project.getKey() ) ) {
@@ -243,7 +239,6 @@ public class ProjectBrokerManagerImpl extends BasicManager implements ProjectBro
 				}					
 			}				
 		});// end of doInSync
-		Codepoint.codepoint(ProjectBrokerManagerImpl.class, "afterDoInSync");
 		return  result.booleanValue();
 	}
 

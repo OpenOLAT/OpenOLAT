@@ -54,7 +54,6 @@ import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
-import org.olat.testutils.codepoints.server.Codepoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -219,7 +218,6 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	}
 
 	public List<Identity> addCandidates(final List<Identity> addIdentities, final Project project) {
-		Codepoint.codepoint(ProjectBrokerManagerImpl.class, "beforeDoInSync");
 	//TODO gsync
 		List<Identity> addedIdentities = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<List<Identity>>(){
 			public List<Identity> execute() {
@@ -235,12 +233,10 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 				return addedIdentities;
 			}
 		});// end of doInSync
-		Codepoint.codepoint(ProjectBrokerManagerImpl.class, "afterDoInSync");
 		return addedIdentities;
 	}
 
 	public void removeCandidates(final List<Identity> addIdentities, final Project project) {
-		Codepoint.codepoint(ProjectBrokerManagerImpl.class, "beforeDoInSync");
 	//TODO gsync
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<Boolean>(){
 			public Boolean execute() {
@@ -253,11 +249,10 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 				return Boolean.TRUE;
 			}
 		});// end of doInSync
-		Codepoint.codepoint(ProjectBrokerManagerImpl.class, "afterDoInSync");
 	}
 
+	@Override
 	public BusinessGroupAddResponse acceptCandidates(final List<Identity> identities, final Project project, final Identity actionIdentity, final boolean autoSignOut, final boolean isAcceptSelectionManually) {
-		Codepoint.codepoint(ProjectBrokerManagerImpl.class, "beforeDoInSync");
 		final Project reloadedProject = (Project) dbInstance.loadObject(project, true);
 		final BusinessGroupAddResponse response = new BusinessGroupAddResponse();
 		final BusinessGroupService bgs = businessGroupService;
@@ -285,8 +280,6 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 			projectBrokerManager.setProjectState(reloadedProject, Project.STATE_ASSIGNED);
 			logInfo("ProjectBroker: Accept candidate, change project-state=" + Project.STATE_ASSIGNED);
 		}
-
-		Codepoint.codepoint(ProjectBrokerManagerImpl.class, "afterDoInSync");
 		return response;
 	}
 

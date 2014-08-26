@@ -212,10 +212,10 @@ public class ClusterAdminControllerCluster extends BasicController {
 	void updatePerfInfos() {
 		// collect performance information
 		
-		List<PerfItem> li = PerformanceMonitorHelper.getPerfItems();
-		li.addAll(clusBus.getPerfItems());
-		perfInfoVc.contextPut("perfs", li);
-		if (PerformanceMonitorHelper.isStarted()) {
+		
+		boolean started = true;
+		perfInfoVc.contextPut("perfs", null);
+		if (started) {
 			perfInfoVc.contextPut("started", "started");
 		} else {
 			perfInfoVc.contextPut("started", "notstarted");
@@ -319,14 +319,9 @@ public class ClusterAdminControllerCluster extends BasicController {
 				}
 			}
 		} else if (source == toggleStartStop) {
-			if (!PerformanceMonitorHelper.toggleStartStop()) {
-				getWindowControl().setInfo("Could not start PerformanceMonitor. CodepointServer not enabled in VM?");
-			} else {
-				clusBus.resetStats();
-				updatePerfInfos();
-			}
+			clusBus.resetStats();
+			updatePerfInfos();
 		} else if (source == resetStats) {
-			PerformanceMonitorHelper.resetStats();
 			clusBus.resetStats();
 			updatePerfInfos();
 		}

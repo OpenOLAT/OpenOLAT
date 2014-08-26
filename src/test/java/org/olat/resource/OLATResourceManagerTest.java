@@ -36,23 +36,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Assert;
 import org.junit.Test;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.test.JMSCodePointServerJunitHelper;
 import org.olat.test.OlatTestCase;
-import org.olat.testutils.codepoints.client.BreakpointStateException;
-import org.olat.testutils.codepoints.client.CodepointClient;
-import org.olat.testutils.codepoints.client.CodepointClientFactory;
-import org.olat.testutils.codepoints.client.CodepointRef;
-import org.olat.testutils.codepoints.client.CommunicationException;
-import org.olat.testutils.codepoints.client.TemporaryPausedThread;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * A <b>OLATResourceManagerTest </b> is used for SecurityResourceManager
@@ -61,162 +56,133 @@ import org.olat.testutils.codepoints.client.TemporaryPausedThread;
  * @author Andreas Ch. Kapp
  *  
  */
-public class OLATResourceManagerTest extends OlatTestCase implements OLATResourceable {
+public class OLATResourceManagerTest extends OlatTestCase {
 	private static final OLog log = Tracing.createLoggerFor(OLATResourceManagerTest.class);
-	private static final String CODEPOINT_SERVER_ID = "OLATResourceManagerTest";
 
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private OLATResourceManager rm;
 
 	/**
 	 * Test creation/insert/update and deletion of a resource
 	 */
-	@Test public void testCreateInsertUpdateDeleteResource() {
+	@Test
+	public void testCreateInsertUpdateDeleteResource() {
 		//create
-		OLATResourceManager rm = OLATResourceManager.getInstance();
-		OLATResource res = rm.createOLATResourceInstance(this);
+		String resName = UUID.randomUUID().toString();
+		TestResourceable resource = new TestResourceable(8213649l, resName);
+		OLATResource res = rm.createOLATResourceInstance( resource);
+		Assert.assertNotNull(res);
 		rm.saveOLATResource(res);
-		assertNotNull(res);
-		assertTrue(res.getResourceableId().equals(this.getResourceableId()));
-		//Insert
-		rm.saveOLATResource(res);
-		rm.deleteOLATResource(res);
+		
+		Assert.assertEquals(new Long(8213649l), res.getResourceableId());
+		Assert.assertEquals(resName, res.getResourceableTypeName());
+		Assert.assertNotNull(res.getCreationDate());
+		Assert.assertNotNull(res.getKey());
+		dbInstance.commit();
 	}
 
 	/**
 	 * Test find/persist of a resource
 	 */
-	@Test public void testFindOrPersistResourceable() {
-		OLATResourceManager rm = OLATResourceManager.getInstance();
+	@Test
+	public void testFindOrPersistResourceable() {
+		String resName = UUID.randomUUID().toString();
+		TestResourceable resource = new TestResourceable(8213650l, resName);
+		
 		//create by finding
-		OLATResource ores = rm.findOrPersistResourceable(this);
-		assertNotNull(ores);
+		OLATResource ores1 = rm.findOrPersistResourceable(resource);
+		Assert.assertNotNull(ores1);
 		//only find
-		ores = rm.findOrPersistResourceable(this);
-		assertNotNull(ores);
+		OLATResource ores2 = rm.findOrPersistResourceable(resource);
+		Assert.assertNotNull(ores2);
+		Assert.assertEquals(ores1, ores2);
 	}
 
 	/**
 	 * Test type-only resource
 	 */
-	@Test public void testInsertTypeOnly() {
-		OLATResourceManager rm = OLATResourceManager.getInstance();
-		OLATResourceable oresable = new OLATResourceable() {
-
-			public String getResourceableTypeName() {
-				return "typeonly";
-			}
-
-			public Long getResourceableId() {
-				return null;
-			}
-		};
-		OLATResource ores = rm.findOrPersistResourceable(oresable);
-		assertNotNull(ores);
-		assertNull(ores.getResourceableId());
-		//only find
-		ores = rm.findOrPersistResourceable(this);
-		assertNotNull(ores);
+	@Test
+	public void testInsertTypeOnly() {
+		TestResourceable resource = new TestResourceable(null, "typeonly");
+		OLATResource ores1 = rm.findOrPersistResourceable(resource);
+		Assert.assertNotNull(ores1);
+		Assert.assertNull(ores1.getResourceableId());
 	}
 
 	/**
 	 * Test deletion of a resource
 	 */
-	@Test public void testDeleteResourceable() {
-		OLATResourceManager rm = OLATResourceManager.getInstance();
+	@Test
+	public void testDeleteResourceable() {
+		String resName = UUID.randomUUID().toString();
+		TestResourceable resource = new TestResourceable(8213651l, resName);
+		
 		//delete on not persisted resourceable
-		rm.deleteOLATResourceable(this);
+		rm.deleteOLATResourceable(resource);
 		//delete persisted resourceable
-		OLATResource ores = rm.findOrPersistResourceable(this);
-		assertNotNull(ores);
-		rm.deleteOLATResourceable(this);
+		OLATResource ores = rm.findOrPersistResourceable(resource);
+		Assert.assertNotNull(ores);
+		rm.deleteOLATResourceable(resource);
+		dbInstance.commit();
+		
+		OLATResource deletedRes = rm.findResourceable(8213651l, resName);
+		Assert.assertNull(deletedRes);
 	}
 
 	/**
 	 * Test find/persist of a resource
 	 */
-	@Test public void testConcurrentFindOrPersistResourceable() {
-		OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(this);
-		assertNotNull(ores);
-		OLATResourceManager.getInstance().deleteOLATResource(ores);
-		DBFactory.getInstance().closeSession();
-		// now we are shure OLATResource is delete
-
+	@Test
+	public void testConcurrentFindOrPersistResourceable() {
 		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
 		final List<OLATResource> statusList = Collections.synchronizedList(new ArrayList<OLATResource>(1));
-
-		// enable breakpoint
-
-		CodepointClient codepointClient = null;
-		CodepointRef codepointRef = null;
-		try {
-			codepointClient = CodepointClientFactory.createCodepointClient("vm://localhost?broker.persistent=false", CODEPOINT_SERVER_ID);
-			codepointRef = codepointClient.getCodepoint("org.olat.commons.coordinate.cluster.ClusterSyncer.doInSync-in-sync.org.olat.resource.OLATResourceManager.findOrPersistResourceable");
-			codepointRef.enableBreakpoint();
-		} catch (Exception e) {
-			log.error("", e);
-			fail("Could not initialzed CodepointClient");
-		}
-		
 		final String resourceName = UUID.randomUUID().toString();
+		final CountDownLatch doneSignal = new CountDownLatch(2);
 		
-		// thread 1
-		new Thread(new Runnable() {
+		Thread thread1 = new Thread(new Runnable() {
 			public void run() {
 				try {
-					OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(new TestResourceable(resourceName));
-					assertNotNull(ores);
-					statusList.add(ores);
+					sleep(10);
+					OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(new TestResourceable(123123999l, resourceName));
+					assertNotNull(resource);
+					statusList.add(resource);
 					log.info("testConcurrentFindOrPersistResourceable thread1 finished");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
 				} finally {
 					DBFactory.getInstance().commitAndCloseSession();
+					doneSignal.countDown();
 				}
-			}}).start();
+			}});
 		
-		// thread 2
-		new Thread(new Runnable() {
+		Thread thread2 = new Thread(new Runnable() {
 			public void run() {
 				try {
-					sleep(1000);
-					OLATResource ores = OLATResourceManager.getInstance().findOrPersistResourceable(new TestResourceable(resourceName));
-					assertNotNull(ores);
-					statusList.add(ores);
+					sleep(10);
+					OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(new TestResourceable(123123999l, resourceName));
+					assertNotNull(resource);
+					statusList.add(resource);
 					log.info("testConcurrentFindOrPersistResourceable thread2 finished");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
 				} finally {
 					DBFactory.getInstance().commitAndCloseSession();
+					doneSignal.countDown();
 				}
-			}}).start();
+			}});
+		
+		thread1.start();
+		thread2.start();
 
-		sleep(2000);
-		// check thread 2 should not finished
-		assertEquals("Thread already finished => synchronization did not work",0,statusList.size());
 		try {
-			// to see all registered code-points: comment-in next 2 lines
-			// List<CodepointRef> codepointList = codepointClient.listAllCodepoints();
-			// log.info("codepointList=" + codepointList);
-			log.info("testConcurrentFindOrPersistResourceable start waiting for breakpoint reached");
-			TemporaryPausedThread[] threads = codepointRef.waitForBreakpointReached(1000);
-			assertTrue("Did not reach breakpoint", threads.length > 0);
-			log.info("threads[0].getCodepointRef()=" + threads[0].getCodepointRef());
-			codepointRef.disableBreakpoint(true);
-			log.info("testConcurrentFindOrPersistResourceable breakpoint reached => continue");
-		} catch (BreakpointStateException e) {
-			log.error("", e);
-			fail("Codepoints: BreakpointStateException=" + e.getMessage());
-		} catch (CommunicationException e) {
-			log.error("", e);
-			fail("Codepoints: CommunicationException=" + e.getMessage());
+			boolean interrupt = doneSignal.await(10, TimeUnit.SECONDS);
+			assertTrue("Test takes too long (more than 10s)", interrupt);
+		} catch (InterruptedException e) {
+			fail("" + e.getMessage());
 		}
 	
-		// sleep until t1 and t2 should have terminated/excepted
-		int loopCount = 0;
-		while ( (statusList.size()<2) && (exceptionHolder.size()<1) && (loopCount<5)) {
-			sleep(1000);
-			loopCount++;
-		}
-		assertTrue("Threads did not finish in 5sec", loopCount<5);
 		// if not -> they are in deadlock and the db did not detect it
 		for (Exception exception : exceptionHolder) {
 			log.error("exception: ", exception);
@@ -226,51 +192,15 @@ public class OLATResourceManagerTest extends OlatTestCase implements OLATResourc
 		}
 		assertEquals("Missing created OresResource in statusList",2, statusList.size());
 		assertEquals("Created OresResource has not same key",statusList.get(0).getKey(), statusList.get(1).getKey());
-		codepointClient.close();
 		log.info("testConcurrentFindOrPersistResourceable finish successful");
-		
-	}
-
-	/**
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	@Before public void setup() throws Exception {
-		try {
-			// Setup for code-points
-			JMSCodePointServerJunitHelper.startServer(CODEPOINT_SERVER_ID);
-		} catch (Exception e) {
-			log.error("Error while generating database tables or opening hibernate session", e);
-		}
-	}
-
-	/**
-	 * @see junit.framework.TestCase#tearDown()
-	 */
-	@After public void tearDown() throws Exception {
-		JMSCodePointServerJunitHelper.stopServer();
-	}
-
-
-	/**
-	 * @see org.olat.core.id.OLATResourceablegetResourceableId()
-	 */
-	public Long getResourceableId() {
-		return new Long(1234567890L);
-	}
-
-	/**
-	 * @see org.olat.core.id.OLATResourceablegetResourceableTypeName()
-	 */
-	public String getResourceableTypeName() {
-		return this.getClass().getName();
 	}
 
 	/**
 	 * Test resource for null values
 	 */
-	@Test public void testNULLVALUE() {
+	@Test
+	public void testNULLVALUE() {
 		NullTester ntester = new NullTester();
-		OLATResourceManager rm = OLATResourceManager.getInstance();
 		// Uncomment for testing:
 		OLATResource or = null;
 		try {
@@ -278,27 +208,19 @@ public class OLATResourceManagerTest extends OlatTestCase implements OLATResourc
 		} catch (RuntimeException re) {
 			assertNull(or);
 		}
-		try {
-			DBFactory.getInstance().closeSession();
-		} catch (DBRuntimeException e) {
-			//ignore
-		}
 	}
+	
 	/**
 	 * Resource with null value
 	 */
-	class NullTester implements OLATResourceable {
+	private static class NullTester implements OLATResourceable {
 
-		/**
-		 * @see org.olat.core.id.OLATResourceablegetResourceableId()
-		 */
+		@Override
 		public Long getResourceableId() {
 			return new Long(0);
 		}
 
-		/**
-		 * @see org.olat.core.id.OLATResourceablegetResourceableTypeName()
-		 */
+		@Override
 		public String getResourceableTypeName() {
 			return this.getClass().getName();
 		}
@@ -308,20 +230,22 @@ public class OLATResourceManagerTest extends OlatTestCase implements OLATResourc
 	// Inner class TestResourceable
 	///////////////////////////////
 	private static class TestResourceable implements OLATResourceable {
+		private final Long resId;
 		private final String resName;
 		
-		public TestResourceable(String resourceName) {
+		public TestResourceable(Long resId, String resourceName) {
+			this.resId = resId;
 			this.resName = resourceName;
 		}
 
+		@Override
 		public Long getResourceableId() {
-			return new Long(123123999);
+			return resId;
 		}
 
+		@Override
 		public String getResourceableTypeName() {
 			return resName;
 		}
-		
 	}
-	
 }

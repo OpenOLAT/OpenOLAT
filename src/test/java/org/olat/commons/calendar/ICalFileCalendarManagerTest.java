@@ -39,8 +39,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
@@ -48,29 +46,19 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.test.JMSCodePointServerJunitHelper;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
-import org.olat.testutils.codepoints.client.BreakpointStateException;
-import org.olat.testutils.codepoints.client.CodepointClient;
-import org.olat.testutils.codepoints.client.CodepointClientFactory;
-import org.olat.testutils.codepoints.client.CodepointRef;
-import org.olat.testutils.codepoints.client.CommunicationException;
-import org.olat.testutils.codepoints.client.TemporaryPausedThread;
 
 
-/**
- * 
- */
+
 public class ICalFileCalendarManagerTest extends OlatTestCase {
 
-	private static OLog log = Tracing.createLoggerFor(ICalFileCalendarManagerTest.class);
-	private static String  CODEPOINT_SERVER_ID = "ICalFileCalendarManagerTest";
-	private static Identity test = null;
-
-
+	private static final OLog log = Tracing.createLoggerFor(ICalFileCalendarManagerTest.class);
 	
-	@Test public void testAddChangeRemoveEvent() {
+	@Test
+	public void testAddChangeRemoveEvent() {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ical-1-");	
+
 		String TEST_EVENT_ID = "id-testAddEvent";
 		CalendarManager manager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
 		Kalendar cal = manager.getPersonalCalendar(test).getKalendar();
@@ -108,29 +96,16 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	 * Test concurrent add event with two threads and code-point to control concurrency.
 	 *
 	 */
-	@Test public void testConcurrentAddEvent() {
+	@Test
+	public void testConcurrentAddEvent() {
 		final String TEST_EVENT_ID_1 = "id-testConcurrentAddEvent-1";
 		final String TEST_EVENT_SUBJECT_1 = "testEvent1";
 		final String TEST_EVENT_ID_2 = "id-testConcurrentAddEvent-2";
 		final String TEST_EVENT_SUBJECT_2 = "testEvent2";
-
+		
+		final Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ical-2-");	
 		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
 		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
-
-		// enable breakpoint
-
-		CodepointClient codepointClient = null;
-		CodepointRef codepointRef = null;
-		try {
-			codepointClient = CodepointClientFactory.createCodepointClient("vm://embedded?broker.persistent=false", CODEPOINT_SERVER_ID);
-			codepointRef = codepointClient.getCodepoint("org.olat.commons.coordinate.cluster.ClusterSyncer.doInSync-in-sync.org.olat.commons.calendar.ICalFileCalendarManager.addEventTo");
-			codepointRef.enableBreakpoint();
-			System.out.println();
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Could not initialzed CodepointClient");
-		}
-		
 
 		final CountDownLatch doneSignal = new CountDownLatch(2);
 
@@ -143,9 +118,9 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 					Kalendar cal = calManager.getPersonalCalendar(test).getKalendar();
 					
 					// 2. add Event1 => breakpoint hit					
-					System.out.println("testConcurrentAddEvent thread1 addEvent1");
+					log.info("testConcurrentAddEvent thread1 addEvent1");
 					calManager.addEventTo(cal, new KalendarEvent(TEST_EVENT_ID_1,TEST_EVENT_SUBJECT_1, new Date(), 1));
-					System.out.println("testConcurrentAddEvent thread1 addEvent1 DONE");
+					log.info("testConcurrentAddEvent thread1 addEvent1 DONE");
 					// 3. check event1 exist
 					cal = calManager.getPersonalCalendar(test).getKalendar();
 					KalendarEvent event1 = cal.getEvent(TEST_EVENT_ID_1);
@@ -159,7 +134,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 					assertNotNull("Did not found event with id=" + TEST_EVENT_ID_1, event1);
 					assertEquals("Wrong calendar-event subject",event1.getSubject(), TEST_EVENT_SUBJECT_1);
 					statusList.add(Boolean.TRUE);
-					System.out.println("testConcurrentAddEvent thread1 finished");
+					log.info("testConcurrentAddEvent thread1 finished");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
 				} finally {
@@ -175,12 +150,11 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 					// 1. load calendar
 					CalendarManager calManager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
 					Kalendar cal = calManager.getPersonalCalendar(test).getKalendar();
-					// 2. sleep 1sec
-					sleep(1000);
+					
 					// 3. add Event2 (breakpoint of thread1 blocks)
-					System.out.println("testConcurrentAddEvent thread2 addEvent2");
+					log.info("testConcurrentAddEvent thread2 addEvent2");
 					calManager.addEventTo(cal, new KalendarEvent(TEST_EVENT_ID_2,TEST_EVENT_SUBJECT_2, new Date(), 1));
-					System.out.println("testConcurrentAddEvent thread1 addEvent2 DONE");
+					log.info("testConcurrentAddEvent thread1 addEvent2 DONE");
 					// 4. check event2 exist
 					cal = calManager.getPersonalCalendar(test).getKalendar();
 					KalendarEvent event2 = cal.getEvent(TEST_EVENT_ID_2);
@@ -192,7 +166,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 					assertNotNull("Did not found event with id=" + TEST_EVENT_ID_1, event1);
 					assertEquals("Wrong calendar-event subject",event1.getSubject(), TEST_EVENT_SUBJECT_1);
 					statusList.add(Boolean.TRUE);
-					System.out.println("testConcurrentAddEvent thread2 finished");
+					log.info("testConcurrentAddEvent thread2 finished");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
 				} finally {
@@ -204,25 +178,6 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		thread1.start();
 		thread2.start();
 
-		sleep(2000);
-		try {
-			// to see all registered code-points: comment-in next 2 lines
-			// List<CodepointRef> codepointList = codepointClient.listAllCodepoints();
-			// System.out.println("codepointList=" + codepointList);
-			System.out.println("testConcurrentAddEvent start waiting for breakpoint reached");
-			TemporaryPausedThread[] threads = codepointRef.waitForBreakpointReached(1000);
-			assertTrue("Did not reach breakpoint", threads.length > 0);
-			System.out.println("threads[0].getCodepointRef()=" + threads[0].getCodepointRef());
-			codepointRef.disableBreakpoint(true);
-			System.out.println("testConcurrentAddEvent breakpoint reached => continue");
-		} catch (BreakpointStateException e) {
-			e.printStackTrace();
-			fail("Codepoints: BreakpointStateException=" + e.getMessage());
-		} catch (CommunicationException e) {
-			e.printStackTrace();
-			fail("Codepoints: CommunicationException=" + e.getMessage());
-		}
-		
 		try {
 			boolean interrupt = doneSignal.await(10, TimeUnit.SECONDS);
 			assertTrue("Test takes too long (more than 10s)", interrupt);
@@ -232,26 +187,26 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		
 		// if not -> they are in deadlock and the db did not detect it
 		for (Exception exception : exceptionHolder) {
-			System.out.println("exception: "+exception.getMessage());
+			log.info("exception: "+exception.getMessage());
 			exception.printStackTrace();
 		}
 		assertTrue("It throws an exception in test => see sysout", exceptionHolder.isEmpty());	
-		codepointClient.close();
-		System.out.println("testConcurrentAddEvent finish successful");
+		log.info("testConcurrentAddEvent finish successful");
 	}
 	
 	/**
 	 * Test concurrent add/update event with two threads and code-point to control concurrency.
 	 *
 	 */
-	@Test public void testConcurrentAddUpdateEvent() {
+	@Test
+	public void testConcurrentAddUpdateEvent() {
 		final String TEST_EVENT_ID_1 = "id-testConcurrentAddUpdateEvent-1";
 		final String TEST_EVENT_SUBJECT_1 = "testEvent1";
 		final String TEST_EVENT_ID_2 = "id-testConcurrentAddUpdateEvent-2";
 		final String TEST_EVENT_SUBJECT_2 = "testEvent2";
 		final String TEST_EVENT_SUBJECT_2_UPDATED = "testUpdatedEvent2";
 		
-
+		final Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ical-3-");	
 		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
 		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
 
@@ -263,21 +218,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		KalendarEvent event2 = cal.getEvent(TEST_EVENT_ID_2);
 		assertNotNull("Did not found event with id=" + TEST_EVENT_ID_2, event2);
 		assertEquals("Wrong calendar-event subject",event2.getSubject(), TEST_EVENT_SUBJECT_2);
-		System.out.println("testConcurrentAddUpdateEvent thread2 addEvent2 DONE");
-
-		// enable breakpoint
-		CodepointClient codepointClient = null;
-		CodepointRef codepointRef = null;
-		try {
-			codepointClient = CodepointClientFactory.createCodepointClient("vm://embedded?broker.persistent=false", CODEPOINT_SERVER_ID);
-			codepointRef = codepointClient.getCodepoint("org.olat.commons.coordinate.cluster.ClusterSyncer.doInSync-in-sync.org.olat.commons.calendar.ICalFileCalendarManager.addEventTo");
-			codepointRef.enableBreakpoint();
-			System.out.println();
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Could not initialzed CodepointClient");
-		}
-		
+		log.info("testConcurrentAddUpdateEvent thread2 addEvent2 DONE");
 
 		final CountDownLatch doneSignal = new CountDownLatch(2);
 
@@ -286,27 +227,27 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 			public void run() {
 				try {
 					// 1. load calendar
-					CalendarManager calManager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
-					Kalendar cal = calManager.getPersonalCalendar(test).getKalendar();
+					CalendarManager calendarManager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+					Kalendar currentCalendar = calendarManager.getPersonalCalendar(test).getKalendar();
 					
 					// 2. add Event1 => breakpoint hit					
-					System.out.println("testConcurrentAddUpdateEvent thread1 addEvent1");
-					calManager.addEventTo(cal, new KalendarEvent(TEST_EVENT_ID_1,TEST_EVENT_SUBJECT_1, new Date(), 1));
-					System.out.println("testConcurrentAddUpdateEvent thread1 addEvent1 DONE");
+					log.info("testConcurrentAddUpdateEvent thread1 addEvent1");
+					calendarManager.addEventTo(currentCalendar, new KalendarEvent(TEST_EVENT_ID_1,TEST_EVENT_SUBJECT_1, new Date(), 1));
+					log.info("testConcurrentAddUpdateEvent thread1 addEvent1 DONE");
 					// 3. check event1 exist
-					cal = calManager.getPersonalCalendar(test).getKalendar();
-					KalendarEvent event1 = cal.getEvent(TEST_EVENT_ID_1);
+					currentCalendar = calendarManager.getPersonalCalendar(test).getKalendar();
+					KalendarEvent event1 = currentCalendar.getEvent(TEST_EVENT_ID_1);
 					assertNotNull("Did not found event with id=" + TEST_EVENT_ID_1, event1);
 					assertEquals("Wrong calendar-event subject",event1.getSubject(), TEST_EVENT_SUBJECT_1);
 					// 4. sleep 2sec
 					
 					// 5. check event1 still exist (event2 added in meantime)
-					cal = calManager.getPersonalCalendar(test).getKalendar();
-					event1 = cal.getEvent(TEST_EVENT_ID_1);
+					currentCalendar = calendarManager.getPersonalCalendar(test).getKalendar();
+					event1 = currentCalendar.getEvent(TEST_EVENT_ID_1);
 					assertNotNull("Did not found event with id=" + TEST_EVENT_ID_1, event1);
 					assertEquals("Wrong calendar-event subject",event1.getSubject(), TEST_EVENT_SUBJECT_1);
 					statusList.add(Boolean.TRUE);
-					System.out.println("testConcurrentAddUpdateEvent thread1 finished");
+					log.info("testConcurrentAddUpdateEvent thread1 finished");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
 				} finally {
@@ -319,29 +260,28 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Thread thread2 = new Thread() {
 			public void run() {
 				try {
-					CalendarManager calManager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
-					Kalendar cal = calManager.getPersonalCalendar(test).getKalendar();
-					// 2. sleep 1sec
-					sleep(1000);
+					CalendarManager calendarManager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+					Kalendar calendar = calendarManager.getPersonalCalendar(test).getKalendar();
+					
 					// 3. add Event2 (breakpoint of thread1 blocks)
-					System.out.println("testConcurrentAddUpdateEvent thread2 updateEvent2");
-					calManager.updateEventFrom(cal, new KalendarEvent(TEST_EVENT_ID_2,TEST_EVENT_SUBJECT_2_UPDATED, new Date(), 1));
-					System.out.println("testConcurrentAddUpdateEvent thread1 updateEvent2 DONE");
+					log.info("testConcurrentAddUpdateEvent thread2 updateEvent2");
+					calendarManager.updateEventFrom(calendar, new KalendarEvent(TEST_EVENT_ID_2,TEST_EVENT_SUBJECT_2_UPDATED, new Date(), 1));
+					log.info("testConcurrentAddUpdateEvent thread1 updateEvent2 DONE");
 					// 4. check event2 exist
-					cal = calManager.getPersonalCalendar(test).getKalendar();
-					KalendarEvent updatedEvent = cal.getEvent(TEST_EVENT_ID_2);
+					calendar = calendarManager.getPersonalCalendar(test).getKalendar();
+					KalendarEvent updatedEvent = calendar.getEvent(TEST_EVENT_ID_2);
 					assertNotNull("Did not found event with id=" + TEST_EVENT_ID_2, updatedEvent);
 					assertEquals("Wrong calendar-event subject",updatedEvent.getSubject(), TEST_EVENT_SUBJECT_2_UPDATED);
 					// 5. check event1 exist
-					cal = calManager.getPersonalCalendar(test).getKalendar();
-					KalendarEvent event1 = cal.getEvent(TEST_EVENT_ID_1);
+					calendar = calendarManager.getPersonalCalendar(test).getKalendar();
+					KalendarEvent event1 = calendar.getEvent(TEST_EVENT_ID_1);
 					assertNotNull("Did not found event with id=" + TEST_EVENT_ID_1, event1);
 					assertEquals("Wrong calendar-event subject",event1.getSubject(), TEST_EVENT_SUBJECT_1);
 					// Delete Event
-					boolean removed = calManager.removeEventFrom(cal, new KalendarEvent(TEST_EVENT_ID_2,TEST_EVENT_SUBJECT_2_UPDATED, new Date(), 1));
+					boolean removed = calendarManager.removeEventFrom(calendar, new KalendarEvent(TEST_EVENT_ID_2,TEST_EVENT_SUBJECT_2_UPDATED, new Date(), 1));
 					assertTrue(removed);
 					statusList.add(Boolean.TRUE);
-					System.out.println("testConcurrentAddUpdateEvent thread2 finished");
+					log.info("testConcurrentAddUpdateEvent thread2 finished");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
 				} finally {
@@ -352,25 +292,6 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 			
 		thread1.start();
 		thread2.start();
-		sleep(2000);
-		
-		try {
-			// to see all registered code-points: comment-in next 2 lines
-			// List<CodepointRef> codepointList = codepointClient.listAllCodepoints();
-			// System.out.println("codepointList=" + codepointList);
-			System.out.println("testConcurrentAddUpdateEvent start waiting for breakpoint reached");
-			TemporaryPausedThread[] threads = codepointRef.waitForBreakpointReached(1000);
-			assertTrue("Did not reach breakpoint", threads.length > 0);
-			System.out.println("threads[0].getCodepointRef()=" + threads[0].getCodepointRef());
-			codepointRef.disableBreakpoint(true);
-			System.out.println("testConcurrentAddUpdateEvent breakpoint reached => continue");
-		} catch (BreakpointStateException e) {
-			e.printStackTrace();
-			fail("Codepoints: BreakpointStateException=" + e.getMessage());
-		} catch (CommunicationException e) {
-			e.printStackTrace();
-			fail("Codepoints: CommunicationException=" + e.getMessage());
-		}
 	
 		try {
 			boolean interrupt = doneSignal.await(10, TimeUnit.SECONDS);
@@ -381,26 +302,26 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		
 		// if not -> they are in deadlock and the db did not detect it
 		for (Exception exception : exceptionHolder) {
-			System.out.println("exception: "+exception.getMessage());
+			log.info("exception: "+exception.getMessage());
 			exception.printStackTrace();
 		}
 		assertTrue("It throws an exception in test => see sysout", exceptionHolder.isEmpty());	
 
-		codepointClient.close();
-		System.out.println("testConcurrentAddUpdateEvent finish successful");
+		log.info("testConcurrentAddUpdateEvent finish successful");
 	}
 	
 	/**
 	 * Test concurrent add/delete event with two threads and code-point to control concurrency.
 	 *
 	 */
-	@Test public void testConcurrentAddRemoveEvent() {
+	@Test
+	public void testConcurrentAddRemoveEvent() {
 		final String TEST_EVENT_ID_1 = "id-testConcurrentAddRemoveEvent-1";
 		final String TEST_EVENT_SUBJECT_1 = "testEvent1";
 		final String TEST_EVENT_ID_2 = "id-testConcurrentAddRemoveEvent-2";
 		final String TEST_EVENT_SUBJECT_2 = "testEvent2";
 		
-
+		final Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ical-1-");
 		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
 		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
 
@@ -412,21 +333,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		KalendarEvent event2 = cal.getEvent(TEST_EVENT_ID_2);
 		assertNotNull("Did not found event with id=" + TEST_EVENT_ID_2, event2);
 		assertEquals("Wrong calendar-event subject",event2.getSubject(), TEST_EVENT_SUBJECT_2);
-		System.out.println("testConcurrentAddRemoveEvent thread2 addEvent2 DONE");
-
-		// enable breakpoint
-		CodepointClient codepointClient = null;
-		CodepointRef codepointRef = null;
-		try {
-			codepointClient = CodepointClientFactory.createCodepointClient("vm://embedded?broker.persistent=false", CODEPOINT_SERVER_ID);
-			codepointRef = codepointClient.getCodepoint("org.olat.commons.coordinate.cluster.ClusterSyncer.doInSync-in-sync.org.olat.commons.calendar.ICalFileCalendarManager.addEventTo");
-			codepointRef.enableBreakpoint();
-			System.out.println();
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Could not initialzed CoepointClient");
-		}
-		
+		log.info("testConcurrentAddRemoveEvent thread2 addEvent2 DONE");
 
 		final CountDownLatch doneSignal = new CountDownLatch(2);
 
@@ -435,27 +342,27 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 			public void run() {
 				try {
 					// 1. load calendar
-					CalendarManager calManager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
-					Kalendar cal = calManager.getPersonalCalendar(test).getKalendar();
+					CalendarManager calendarManager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+					Kalendar calendar = calendarManager.getPersonalCalendar(test).getKalendar();
 					
 					// 2. add Event1 => breakpoint hit					
-					System.out.println("testConcurrentAddRemoveEvent thread1 addEvent1");
-					calManager.addEventTo(cal, new KalendarEvent(TEST_EVENT_ID_1,TEST_EVENT_SUBJECT_1, new Date(), 1));
-					System.out.println("testConcurrentAddRemoveEvent thread1 addEvent1 DONE");
+					log.info("testConcurrentAddRemoveEvent thread1 addEvent1");
+					calendarManager.addEventTo(calendar, new KalendarEvent(TEST_EVENT_ID_1,TEST_EVENT_SUBJECT_1, new Date(), 1));
+					log.info("testConcurrentAddRemoveEvent thread1 addEvent1 DONE");
 					// 3. check event1 exist
-					cal = calManager.getPersonalCalendar(test).getKalendar();
-					KalendarEvent event1 = cal.getEvent(TEST_EVENT_ID_1);
+					calendar = calendarManager.getPersonalCalendar(test).getKalendar();
+					KalendarEvent event1 = calendar.getEvent(TEST_EVENT_ID_1);
 					assertNotNull("Did not found event with id=" + TEST_EVENT_ID_1, event1);
 					assertEquals("Wrong calendar-event subject",event1.getSubject(), TEST_EVENT_SUBJECT_1);
 					// 4. sleep 2sec
 					
 					// 5. check event1 still exist (event2 added in meantime)
-					cal = calManager.getPersonalCalendar(test).getKalendar();
-					event1 = cal.getEvent(TEST_EVENT_ID_1);
+					calendar = calendarManager.getPersonalCalendar(test).getKalendar();
+					event1 = calendar.getEvent(TEST_EVENT_ID_1);
 					assertNotNull("Did not found event with id=" + TEST_EVENT_ID_1, event1);
 					assertEquals("Wrong calendar-event subject",event1.getSubject(), TEST_EVENT_SUBJECT_1);
 					statusList.add(Boolean.TRUE);
-					System.out.println("testConcurrentAddRemoveEvent thread1 finished");
+					log.info("testConcurrentAddRemoveEvent thread1 finished");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
 				} finally {
@@ -468,26 +375,25 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Thread thread2 = new Thread() {
 			public void run() {
 				try {
-					CalendarManager calManager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
-					Kalendar cal = calManager.getPersonalCalendar(test).getKalendar();
-					// 2. sleep 1sec
-					sleep(1000);
+					CalendarManager calendarManager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+					Kalendar calendar = calendarManager.getPersonalCalendar(test).getKalendar();
+					
 					// 3. add Event2 (breakpoint of thread1 blocks)
-					System.out.println("testConcurrentAddRemoveEvent thread2 removeEvent2");
-					boolean removed = calManager.removeEventFrom(cal, new KalendarEvent(TEST_EVENT_ID_2,TEST_EVENT_SUBJECT_2, new Date(), 1));
+					log.info("testConcurrentAddRemoveEvent thread2 removeEvent2");
+					boolean removed = calendarManager.removeEventFrom(calendar, new KalendarEvent(TEST_EVENT_ID_2,TEST_EVENT_SUBJECT_2, new Date(), 1));
 					assertTrue(removed);
-					System.out.println("testConcurrentAddRemoveEvent thread1 removeEvent2 DONE");
+					log.info("testConcurrentAddRemoveEvent thread1 removeEvent2 DONE");
 					// 4. check event2 exist
-					cal = calManager.getPersonalCalendar(test).getKalendar();
-					KalendarEvent updatedEvent = cal.getEvent(TEST_EVENT_ID_2);
+					calendar = calendarManager.getPersonalCalendar(test).getKalendar();
+					KalendarEvent updatedEvent = calendar.getEvent(TEST_EVENT_ID_2);
 					assertNull("Still found deleted event with id=" + TEST_EVENT_ID_2, updatedEvent);
 					// 5. check event1 exist
-					cal = calManager.getPersonalCalendar(test).getKalendar();
-					KalendarEvent event1 = cal.getEvent(TEST_EVENT_ID_1);
+					calendar = calendarManager.getPersonalCalendar(test).getKalendar();
+					KalendarEvent event1 = calendar.getEvent(TEST_EVENT_ID_1);
 					assertNotNull("Did not found event with id=" + TEST_EVENT_ID_1, event1);
 					assertEquals("Wrong calendar-event subject",event1.getSubject(), TEST_EVENT_SUBJECT_1);
 					statusList.add(Boolean.TRUE);
-					System.out.println("testConcurrentAddRemoveEvent thread2 finished");
+					log.info("testConcurrentAddRemoveEvent thread2 finished");
 				} catch (Exception ex) {
 					exceptionHolder.add(ex);// no exception should happen
 				} finally {
@@ -498,25 +404,6 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 
 		thread1.start();
 		thread2.start();
-		sleep(2000);
-		
-		try {
-			// to see all registered code-points: comment-in next 2 lines
-			// List<CodepointRef> codepointList = codepointClient.listAllCodepoints();
-			// System.out.println("codepointList=" + codepointList);
-			System.out.println("testConcurrentAddRemoveEvent start waiting for breakpoint reached");
-			TemporaryPausedThread[] threads = codepointRef.waitForBreakpointReached(1000);
-			assertTrue("Did not reach breakpoint", threads.length > 0);
-			System.out.println("threads[0].getCodepointRef()=" + threads[0].getCodepointRef());
-			codepointRef.disableBreakpoint(true);
-			System.out.println("testConcurrentAddRemoveEvent breakpoint reached => continue");
-		} catch (BreakpointStateException e) {
-			e.printStackTrace();
-			fail("Codepoints: BreakpointStateException=" + e.getMessage());
-		} catch (CommunicationException e) {
-			e.printStackTrace();
-			fail("Codepoints: CommunicationException=" + e.getMessage());
-		}
 		
 		try {
 			boolean interrupt = doneSignal.await(10, TimeUnit.SECONDS);
@@ -527,38 +414,11 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 
 		// if not -> they are in deadlock and the db did not detect it
 		for (Exception exception : exceptionHolder) {
-			System.out.println("exception: "+exception.getMessage());
+			log.info("exception: "+exception.getMessage());
 			exception.printStackTrace();
 		}
 
 		assertTrue("It throws an exception in test => see sysout", exceptionHolder.isEmpty());	
-		codepointClient.close();
-		System.out.println("testConcurrentAddRemoveEvent finish successful");
+		log.info("testConcurrentAddRemoveEvent finish successful");
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	@Before public void setup() throws Exception {
-			test = JunitTestHelper.createAndPersistIdentityAsUser("test");	
-			// Setup for code-points
-			JMSCodePointServerJunitHelper.startServer(CODEPOINT_SERVER_ID);
-			DBFactory.getInstance().closeSession();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see junit.framework.TestCase#tearDown()
-	 */
-	@After public void tearDown() throws Exception {
-		try {
-			JMSCodePointServerJunitHelper.stopServer();
-		} catch (Exception e) {
-			log.error("tearDown failed: ", e);
-		}
-	}
-
 }

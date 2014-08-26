@@ -111,7 +111,6 @@ import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.model.ResourceReservation;
-import org.olat.testutils.codepoints.server.Codepoint;
 import org.olat.user.UserDataDeletable;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -758,8 +757,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	public MailerResult deleteBusinessGroupWithMail(BusinessGroup businessGroupTodelete, String businessPath, Identity deletedBy, Locale locale) {
-		Codepoint.codepoint(this.getClass(), "deleteBusinessGroupWithMail");
-
 		List<Identity> users = businessGroupRelationDAO.getMembers(businessGroupTodelete);
 		// now delete the group first
 		deleteBusinessGroup(businessGroupTodelete);

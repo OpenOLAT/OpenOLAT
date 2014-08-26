@@ -35,7 +35,6 @@ import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.coordinate.util.DerivedStringSyncer;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.resource.lock.pessimistic.PessimisticLockManager;
-import org.olat.testutils.codepoints.server.Codepoint;
 
 /**
  * Description:<br>
@@ -68,7 +67,6 @@ public class ClusterSyncer implements Syncer {
 	 * @see org.olat.core.util.coordinate.Syncer#doInSync(org.olat.core.id.OLATResourceable, org.olat.core.util.coordinate.SyncerCallback)
 	 */
 	public <T> T doInSync(OLATResourceable ores, SyncerCallback<T> callback) {
-		Codepoint.hierarchicalCodepoint(ClusterSyncer.class, "doInSync-before-sync", 3);
 		getData().setSyncObject(ores);// Store ores-object for assertAlreadyDoInSyncFor(ores)
 		String asset = OresHelper.createStringRepresenting(ores);
 		
@@ -92,7 +90,6 @@ public class ClusterSyncer implements Syncer {
 			// until the transaction is committed or rollbacked
 			try {
 				getPessimisticLockManager().findOrPersistPLock(asset);
-				Codepoint.hierarchicalCodepoint(ClusterSyncer.class, "doInSync-in-sync",3 );
 	
 				// now execute the task, which may or may not contain further db queries.
 				res = callback.execute();
@@ -121,7 +118,6 @@ public class ClusterSyncer implements Syncer {
 				log.warn("execution time exceeded limit of "+executionTimeThreshold+": "+(stop-start), new AssertException("generate stacktrace"));
 			}
 		}
-		Codepoint.hierarchicalCodepoint(ClusterSyncer.class, "doInSync-after-sync",3);
 		return res;
 	}
 	

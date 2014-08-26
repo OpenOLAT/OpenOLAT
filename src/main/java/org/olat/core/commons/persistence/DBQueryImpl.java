@@ -48,7 +48,6 @@ import org.hibernate.type.Type;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.testutils.codepoints.server.Codepoint;
 /**
  * A <b>DBQueryImpl</b> is a wrapper around a Hibernate Query object.
  * 
@@ -119,7 +118,6 @@ public class DBQueryImpl implements DBQuery {
 	 * @see org.olat.core.commons.persistence.DBQuery#list()
 	 */
 	public List list() {
-		Codepoint.codepoint(getClass(), "list-entry");
 		final long startTime = System.currentTimeMillis();
 		try{
 			boolean doLog = log.isDebug();
@@ -181,8 +179,6 @@ public class DBQueryImpl implements DBQuery {
 		catch (HibernateException he) {
 			String msg ="Error in list()" ; 
 			throw new DBRuntimeException(msg, he);
-		} finally {
-			Codepoint.codepoint(getClass(), "list-exit", query);
 		}
 	}
 

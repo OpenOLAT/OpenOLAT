@@ -76,7 +76,6 @@ import org.olat.modules.fo.archiver.ForumArchiveManager;
 import org.olat.modules.fo.archiver.formatters.ForumStreamedRTFFormatter;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
-import org.olat.testutils.codepoints.server.Codepoint;
 
 /**
  * Initial Date: Feb 9, 2004
@@ -162,8 +161,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		final CoursePropertyManager cpm = courseEnv.getCoursePropertyManager();
 		final CourseNode thisCourseNode = this;
 		Forum theForum = null;
-		
-		Codepoint.codepoint(FOCourseNode.class, "findCourseNodeProperty");	
+			
 		Property forumKeyProp = cpm.findCourseNodeProperty(thisCourseNode, null, null, FORUM_KEY);
 		//System.out.println("System.out.println - findCourseNodeProperty");
 		if(forumKeyProp!=null) {
@@ -176,15 +174,11 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		} else {
       //creates resourceable from FOCourseNode.class and the current node id as key
 			OLATResourceable courseNodeResourceable = OresHelper.createOLATResourceableInstance(FOCourseNode.class, new Long(this.getIdent()));
-			Codepoint.codepoint(FOCourseNode.class, "beforeDoInSync");		
-			//System.out.println("System.out.println - beforeDoInSync");
       //o_clusterOK by:ld 
 		  theForum = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(courseNodeResourceable, new SyncerCallback<Forum>(){
 			  public Forum execute() {
 			  Forum forum = null;
-			  Long forumKey;						  
-			  Codepoint.codepoint(FOCourseNode.class,"doInSync");
-			  //System.out.println("Codepoint - doInSync");
+			  Long forumKey;
 			  Property forumKeyProperty = cpm.findCourseNodeProperty(thisCourseNode, null, null, FORUM_KEY);			  
 			  if (forumKeyProperty == null) {
 				  // First call of forum, create new forum and save forum key as property			  	

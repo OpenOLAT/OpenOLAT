@@ -43,7 +43,6 @@ import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.ui.area.BGAreaFormController;
 import org.olat.resource.OLATResource;
-import org.olat.testutils.codepoints.server.Codepoint;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -128,7 +127,6 @@ public class NewAreaController extends BasicController {
 					allNames.add(this.areaCreateController.getAreaName());
 				}
 
-				Codepoint.codepoint(this.getClass(), "createArea");
 				// create bulkgroups only if there is no name which already exists. 
 				newAreas = new HashSet<BGArea>();
 				newAreaNames = new HashSet<String>();

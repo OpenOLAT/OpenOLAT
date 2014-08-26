@@ -1603,12 +1603,6 @@
 	<!-- check with mvn dependency:tree to see what other dep. get downloaded -->
 	<dependencies>
 		<dependency>
-			<groupId>org.openolat.testutils</groupId>
-			<artifactId>codepoints-full</artifactId>
-			<version>1.0.3</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-core</artifactId>
 			<version>5.3.2</version>
@@ -1963,11 +1957,6 @@
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>2.6</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openolat.testutils</groupId>
-			<artifactId>codepoints</artifactId>
-			<version>1.0.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.infinispan</groupId>

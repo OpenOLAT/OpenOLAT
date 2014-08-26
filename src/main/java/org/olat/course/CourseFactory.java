@@ -133,7 +133,6 @@ import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.OLATResource;
 import org.olat.resource.references.ReferenceImpl;
 import org.olat.resource.references.ReferenceManager;
-import org.olat.testutils.codepoints.server.Codepoint;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -427,8 +426,6 @@ public class CourseFactory extends BasicManager {
 			targetCourse.saveRunStructure();
 			targetCourse.setEditorTreeModel((CourseEditorTreeModel) XStreamHelper.xstreamClone(sourceCourse.getEditorTreeModel()));
 			targetCourse.saveEditorTreeModel();
-			
-			Codepoint.codepoint(CourseFactory.class, "copyCourseAfterSaveTreeModel");
 
 			// copy course folder
 			File fSourceCourseFolder = sourceCourse.getIsolatedCourseFolder().getBasefile();

@@ -86,7 +86,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.component.ComponentTraverser;
 import org.olat.core.util.component.ComponentVisitor;
-import org.olat.testutils.codepoints.server.Codepoint;
 
 /**
  * Description: <br>
@@ -1116,7 +1115,6 @@ public class Window extends AbstractComponent {
 		if (toDispatch) {
 			latestDispatchComponentInfo = target.getComponentName() + " :" + target.getExtendedDebugInfo();
 			latestDispatchedComp = target;
-			Codepoint.setThreadLocalLogDetails(latestDispatchComponentInfo);
 			
 			// dispatch
 			wbackofficeImpl.fireCycleEvent(Window.ABOUT_TO_DISPATCH);

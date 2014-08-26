@@ -109,7 +109,6 @@ import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryEntry;
-import org.olat.testutils.codepoints.server.Codepoint;
 
 /**
  * Description:<BR>
@@ -253,7 +252,6 @@ public class CollaborationTools implements Serializable {
 	 */
 	public Controller createForumController(UserRequest ureq, WindowControl wControl, boolean isAdmin, boolean isGuestOnly,
 			final SubscriptionContext subsContext) {
-		Codepoint.codepoint(CollaborationTools.class, "createForumController-init");
 		
 		final boolean isAdm = isAdmin;
 		final boolean isGuest = isGuestOnly;
@@ -303,12 +301,9 @@ public class CollaborationTools implements Serializable {
 		// TODO: is there a nicer solution without setting an instance variable
 		//final List<Forum> forumHolder = new ArrayList<Forum>();
 		
-		Codepoint.codepoint(CollaborationTools.class, "pre_sync_enter");
 	//TODO gsync
 		Forum forum = coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Forum>(){
 			public Forum execute() {
-				
-				Codepoint.codepoint(CollaborationTools.class, "sync_enter");
 				
 				//was: synchronized (CollaborationTools.class) {
 				Forum aforum;
@@ -335,7 +330,6 @@ public class CollaborationTools implements Serializable {
 								+ ores.getResourceableTypeName() + "/" + ores.getResourceableId());
 					}
 				}
-				Codepoint.codepoint(CollaborationTools.class, "sync_exit");
 				return aforum;
 			}});
 		return forum;
