@@ -434,6 +434,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_filetype_docx:before { content: $fa-var-file-word-o; }
 
 /* social share icons */
+.o_icon_share_social:before { content: $fa-var-share-square;}
 .o_icon_apple:before { content: $fa-var-apple;}
 .o_icon_facebook:before { content: $fa-var-facebook-square;}
 .o_icon_twitter:before { content: $fa-var-twitter-square;}

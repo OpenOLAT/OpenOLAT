@@ -8,104 +8,127 @@
 	background-color: $o-footer-outer-bg;
 	color: $o-footer-default-color;
 	line-height: $o-footer-line-height;
-	font-size: $o-footer-font-size;
+		font-size: $o-footer-font-size;
 	
 	a { 
 		color: $o-footer-default-link-color;
 		&:hover { color: $o-footer-default-link-hover-color;}
 	}
+}
+#o_footer_container {
+	position: relative;
+	padding-top: $o-footer-padding-top;
+	min-height: $o-footer-height;		
+	background: $o-footer-inner-bg;
+	z-index: 1;
+}
 
-	#o_footer_container {
-		position: relative;
-		padding-top: $o-footer-padding-top;
-		min-height: $o-footer-height;		
-		background: $o-footer-inner-bg;
+#o_footer_user { 
+	position: absolute;
+	left: ($grid-gutter-width / 2);
+	top: $o-footer-padding-top;
+	z-index: 1;
+	#o_counter { 
+		white-space:nowrap; 
+	}
+ 	#o_username { 
+ 		white-space:nowrap; 
+ 		margin-right: 1em;
+ 	}
+}
 
-		#o_footer_user { 
-			#o_counter { 
-				white-space:nowrap; 
-			}
-		 	#o_username { 
-		 		white-space:nowrap; 
-		 		margin-right: 1em;
-		 	}
-		}
-
-		#o_footer_version { 
-			position: absolute; 
-			right: ($grid-gutter-width / 2);
-			top: $o-footer-padding-top;
-			text-align: right;
-			/* align left on mobile, stacked view */
-			@media (max-width: $screen-xs-max) { 
-				padding-top: 10px;
-				text-align: left;
-			}
-		}
-
-		#o_footer_powered { 
-			position: absolute; 
-			top: ($line-height-computed + $o-footer-padding-top);
-			right: ($grid-gutter-width / 2);
-			/* make powerd-by buttons a bit less colorful to not distract user from learning */
-			img {	
-				@include opacity(.6);
-				&:hover { @include opacity(1); }	
-			}		
-			a {
-				@extend %o_undecorated; 
-			}
-		}
-		#o_footer_textline {
-			position: absolute; 
-			top: ($line-height-computed + $o-footer-padding-top);
-			left: 25%;
-			width:50%;
-			text-align: center;
-		}
-		
-		#o_footer_impressum {
-			position: absolute; 
-			top: $o-footer-padding-top;
-			left: 25%;
-			width:50%;
-			text-align: center;
-		}
-		
-		/* hide images on mobile */
-		@media (max-width: $screen-xs-max) { 
-			#o_counter, #o_footer_version {
-				display: none;
-			}
-			#o_footer_textline {
-				top: (35 + $o-footer-padding-top);
-			}
-			#o_footer_powered {
-				top: $o-footer-padding-top;
-				a:after { 
-					content:"\221E"; 
-					font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; 
-					font-weight: bold; 
-					font-size: $o-footer-share-font-size;
-				}
-				img { 
-					display: none
-				}
-			}
-		}
+#o_footer_version { 
+	position: absolute; 
+	right: ($grid-gutter-width / 2);
+	top: $o-footer-padding-top;
+	text-align: right;
+	z-index: 1;
+	/* align left on mobile, stacked view */
+	@media (max-width: $screen-xs-max) { 
+		padding-top: 10px;
+		text-align: left;
 	}
 }
 
+#o_footer_powered { 
+	position: absolute; 
+	top: ($line-height-computed + $o-footer-padding-top);
+	right: ($grid-gutter-width / 2);
+	z-index: 1;
+	/* make powerd-by buttons a bit less colorful to not distract user from learning */
+	img {	
+		@include opacity(.6);
+		&:hover { @include opacity(1); }	
+	}		
+	a {
+		@extend %o_undecorated; 
+	}
+}
+
+#o_footer_impressum {
+	position: absolute; 
+	top: $o-footer-padding-top;
+	width: 100%;
+	text-align: center;
+	z-index: -1;
+	i {
+		display: none;
+	}
+}
+#o_footer_textline {
+	position: absolute; 
+	top: ($line-height-computed + $o-footer-padding-top);
+	width: 100%;
+	text-align: center;
+	z-index: -1;
+}
+		
 /*  social links (FB, twitter, google) from SocialModule.java */
 #o_share { 
 	margin-top: 10px;
-	font-size: $o-footer-share-font-size;
 	a { 
-		margin: 0 3px 0 0; 
 		@include opacity(.6);
-		@extend %o_undecorated;
 	}
 	a:hover { 
 		@include opacity(1); 
+	}
+}
+
+#o_share, #o_share_social_container { 
+	a { 
+		color: $o-footer-default-link-color;
+		margin: 0 0.25em 0 0; 
+		@extend %o_undecorated;
+	}
+	a:hover { 
+		color: $o-footer-default-link-hover-color;
+	}
+}
+
+
+/* hide images and stuff on mobile */
+@media (max-width: $screen-xs-max) { 
+	#o_counter, #o_footer_version, #o_share {
+		display: none;
+	}
+	#o_footer_impressum {
+		top: ($line-height-computed + $o-footer-padding-top);
+		text-align: left;
+	}
+	#o_footer_textline {
+		top: ($line-height-computed *2 + $o-footer-padding-top);
+		text-align: left;
+	}
+	#o_footer_powered {
+		top: $o-footer-padding-top;
+		a:after { 
+			content:"\221E"; 
+			font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; 
+			font-weight: bold; 
+			font-size: $o-footer-share-font-size;
+		}
+		img { 
+			display: none
+		}
 	}
 }

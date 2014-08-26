@@ -21,32 +21,51 @@
 
 
 <div id="o_share">
-#foreach ($link in $shareLinks)
-	#if ($link == "twitter")
-		<a id="o_twitter" href="#" target="_blank" title="$r.translateInAttribute("share.twitter")" onclick="window.open('http://twitter.com/share?url='+o_shareSocialUrl()+'&amp;text='+o_shareSocialTitle());return false;">
-			<i class="o_icon o_icon_twitter o_icon-lg"></i>
-		</a>
-	#elseif ($link == "facebook")
-		<a id="o_facebook" href="#" target="_blank" title="$r.translateInAttribute("share.facebook")" onclick="window.open('http://www.facebook.com/sharer.php?u='+o_shareSocialUrl()+'&amp;t='+o_shareSocialTitle());return false;">
-			<i class="o_icon o_icon_facebook o_icon-lg"></i>
-		</a>
-	#elseif ($link == "google")
-		<a id="o_google" href="#" target="_blank" title="$r.translateInAttribute("share.google")" onclick="window.open('https://www.google.com/bookmarks/mark?op=add&amp;bkmk='+o_shareSocialUrl()+'&amp;title='+o_shareSocialTitle());return false;">
-			<i class="o_icon o_icon_google o_icon-lg"></i>
-		</a>
-	#elseif ($link == "delicious")
-		<a id="o_delicious" href="#" target="_blank" title="$r.translateInAttribute("share.delicious")" onclick="window.open('http://www.delicious.com/save?url='+o_shareSocialUrl()+'&amp;title='+o_shareSocialTitle());return false;">
-			<i class="o_icon o_icon_delicious o_icon-lg"></i>
-		</a>
-	#elseif ($link == "digg")
-		<a id="o_digg" href="#" title="$r.translateInAttribute("share.digg")" onclick="window.open('http://digg.com/submit?url='+o_shareSocialUrl()+'&amp;title='+o_shareSocialTitle());return false;">		
-			<i class="o_icon o_icon_digg o_icon-lg"></i>
-		</a>
-	#elseif ($link == "mail")	
-		<a id="o_mail" href="mailto:?body=$baseURL" title="$r.translateInAttribute("share.mail")">
-			<i class="o_icon o_icon_mailto o_icon-lg"></i>
-		</a>
-	#elseif ($link == "link")	
+#set($shareBPLink = $shareLinks.contains("link"))
+#set($hasShareLinks = $shareBPLink && $shareLinks.size() > 1)
+
+#if ($hasShareLinks)
+	<a id="o_share_social" href="javascript:;" title="$r.translateInAttribute("share.social")">
+		<i class="o_icon o_icon_share_social o_icon-lg"></i>
+	</a>
+	<div id="o_share_social_wrapper" class="hide"><div id="o_share_social_container">
+	#foreach ($link in $shareLinks)
+		#if ($link == "twitter")
+			<a id="o_twitter" href="#" target="_blank" title="$r.translateInAttribute("share.twitter")" onclick="window.open('http://twitter.com/share?url='+o_shareSocialUrl()+'&amp;text='+o_shareSocialTitle());return false;">
+				<i class="o_icon o_icon_twitter o_icon-lg"></i>
+			</a>
+		#elseif ($link == "facebook")
+			<a id="o_facebook" href="#" target="_blank" title="$r.translateInAttribute("share.facebook")" onclick="window.open('http://www.facebook.com/sharer.php?u='+o_shareSocialUrl()+'&amp;t='+o_shareSocialTitle());return false;">
+				<i class="o_icon o_icon_facebook o_icon-lg"></i>
+			</a>
+		#elseif ($link == "google")
+			<a id="o_google" href="#" target="_blank" title="$r.translateInAttribute("share.google")" onclick="window.open('https://www.google.com/bookmarks/mark?op=add&amp;bkmk='+o_shareSocialUrl()+'&amp;title='+o_shareSocialTitle());return false;">
+				<i class="o_icon o_icon_google o_icon-lg"></i>
+			</a>
+		#elseif ($link == "delicious")
+			<a id="o_delicious" href="#" target="_blank" title="$r.translateInAttribute("share.delicious")" onclick="window.open('http://www.delicious.com/save?url='+o_shareSocialUrl()+'&amp;title='+o_shareSocialTitle());return false;">
+				<i class="o_icon o_icon_delicious o_icon-lg"></i>
+			</a>
+		#elseif ($link == "digg")
+			<a id="o_digg" href="#" title="$r.translateInAttribute("share.digg")" onclick="window.open('http://digg.com/submit?url='+o_shareSocialUrl()+'&amp;title='+o_shareSocialTitle());return false;">		
+				<i class="o_icon o_icon_digg o_icon-lg"></i>
+			</a>
+		#elseif ($link == "mail")	
+			<a id="o_mail" href="mailto:?body=$baseURL" title="$r.translateInAttribute("share.mail")">
+				<i class="o_icon o_icon_mailto o_icon-lg"></i>
+			</a>
+		#end
+	#end
+	</div></div>
+	<script type="text/javascript">
+	/* <![CDATA[ */
+		jQuery(function() {
+			o_shareLinkPopup('o_share_social', jQuery('#o_share_social_wrapper').html());
+		});
+	/* ]]> */
+	</script>
+#end		
+	#if ($shareBPLink)	
 		<a id="o_link" href="javascript:;" title="$r.translateInAttribute("share.link")">
 			<i class="o_icon o_icon_link o_icon-lg"></i>
 		</a>
@@ -62,7 +81,6 @@
 		/* ]]> */
 		</script>
 	#end
-#end
 	## always show the 'set as landing page' button
 	#if ($isUser)
 	<a id="o_landingpage" href="$r.commandURIbg("setLandingPage")" $r.bgTarget() title="$r.translateInAttribute("landingpage.set.current")">
