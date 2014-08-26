@@ -35,7 +35,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.htmlsite.HtmlStaticPageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -323,19 +322,11 @@ public class IQRunController extends BasicController implements GenericEventList
 					showWarning("disclaimer.file.invalid", sDisclaimer);
 				} else {
 					//screenreader do not like iframes, display inline
-					if (getWindowControl().getWindowBackOffice().getWindowManager().isForScreenReader()) {
-						HtmlStaticPageComponent disclaimerComp = new HtmlStaticPageComponent("disc", baseContainer);
-						myContent.put("disc", disclaimerComp);
-						disclaimerComp.setCurrentURI(sDisclaimer);
-						myContent.contextPut("hasDisc", Boolean.TRUE);
-					} else {
-						iFrameCtr = new IFrameDisplayController(ureq, getWindowControl(), baseContainer);
-						listenTo(iFrameCtr);//dispose automatically
-						myContent.put("disc", iFrameCtr.getInitialComponent());
-						iFrameCtr.setCurrentURI(sDisclaimer);
-						myContent.contextPut("hasDisc", Boolean.TRUE);
-					}
-
+					iFrameCtr = new IFrameDisplayController(ureq, getWindowControl(), baseContainer);
+					listenTo(iFrameCtr);//dispose automatically
+					myContent.put("disc", iFrameCtr.getInitialComponent());
+					iFrameCtr.setCurrentURI(sDisclaimer);
+					myContent.contextPut("hasDisc", Boolean.TRUE);
 				}
 			}
 		}

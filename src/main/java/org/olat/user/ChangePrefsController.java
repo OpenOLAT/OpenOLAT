@@ -191,16 +191,10 @@ class SpecialPrefsForm extends FormBasicController {
 		useAjaxCheckbox = ureq.getUserSession().getRoles().isUserManager();
 		// initialize checkbox keys depending on useAjaxCheckbox flag
 		if (useAjaxCheckbox) {
-			keys = new String[]{"ajax", "web2a"}; 
+			keys = new String[]{"ajax"}; 
 			values = new String[] {
 					translate("ajaxon.label"),
-					translate("accessibility.web2aMode.label")
 			};			
-		} else {
-			keys = new String[]{"web2a"}; 
-			values = new String[] {
-					translate("accessibility.web2aMode.label")
-			};
 		}
 		
 		resumeKeys = new String[]{"none", "auto", "ondemand"}; 
@@ -229,7 +223,6 @@ class SpecialPrefsForm extends FormBasicController {
 		if (useAjaxCheckbox) {
 			prefs.put(WindowManager.class, "ajax-beta-on", prefsElement.getSelectedKeys().contains("ajax"));
 		}
-		prefs.put(WindowManager.class, "web2a-beta-on", prefsElement.getSelectedKeys().contains("web2a"));
 		
 		if(resumeElement != null) {
 			prefs.put(WindowManager.class, "resume-prefs", resumeElement.getSelectedKey());
@@ -268,8 +261,10 @@ class SpecialPrefsForm extends FormBasicController {
 		setFormTitle("title.prefs.special");
 		setFormContextHelp(this.getClass().getPackage().getName(), "home-prefs-special.html", "help.hover.home.prefs.special");
 		
-		prefsElement = uifactory.addCheckboxesVertical("prefs", "title.prefs.accessibility", formLayout, keys, values, 1);
-		prefsElement.setElementCssClass("o_sel_home_settings_accessibility");
+		if(keys != null) {
+			prefsElement = uifactory.addCheckboxesHorizontal("prefs", "title.prefs.accessibility", formLayout, keys, values);
+			prefsElement.setElementCssClass("o_sel_home_settings_accessibility");
+		}
 
 		if(historyModule.isResumeEnabled()) {
 			resumeElement = uifactory.addRadiosVertical("resume", "resume.label", formLayout, resumeKeys, resumeValues);
@@ -293,12 +288,10 @@ class SpecialPrefsForm extends FormBasicController {
 	}
 
 	private void update() {
-		Boolean web2a = (Boolean) prefs.get(WindowManager.class, "web2a-beta-on");
 		Boolean ajax  = (Boolean) prefs.get(WindowManager.class, "ajax-beta-on");
 		if (useAjaxCheckbox) {
 			prefsElement.select("ajax", ajax == null ? true: ajax.booleanValue());
 		}
-		prefsElement.select("web2a", web2a == null ? false: web2a.booleanValue());
 		boolean landingPageVisible = true;
 		if(resumeElement != null) {
 			String resumePrefs = (String)prefs.get(WindowManager.class, "resume-prefs");

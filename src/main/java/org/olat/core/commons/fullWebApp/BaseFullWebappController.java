@@ -276,7 +276,6 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		// out the correct value
 		mainVc.contextPut("theme", w.getGuiTheme());
 		mainVc.contextPut("globalSettings", winman.getGlobalSettings());
-		mainVc.contextPut("isScreenReader", winman.isForScreenReader());
 		// also add the optional theme javascript 
 		addThemeJS();
 

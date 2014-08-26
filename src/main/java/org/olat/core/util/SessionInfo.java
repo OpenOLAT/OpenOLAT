@@ -295,7 +295,6 @@ public class SessionInfo implements Serializable {
 		if (ureq != null) {
 			// calculate ajax delivery mode
 			if (Windows.getWindows(ureq).getWindowManager().isAjaxEnabled()) deliveryMode = "web 2.0";
-			if (Windows.getWindows(ureq).getWindowManager().isForScreenReader()) deliveryMode = "web 2.a";
 		}
 		this.webMode = deliveryMode;
 	}

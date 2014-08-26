@@ -78,7 +78,6 @@ public class DevelopmentController extends BasicController {
 	private Link web10Link;
 	private Link web20Link;
 	private Link web20hlLink;
-	private Link web21Link;
 	
 	private Link showJson;
 	private Link showComponentTree;
@@ -119,12 +118,9 @@ public class DevelopmentController extends BasicController {
 		modes.add(web10Link = LinkFactory.deAjaxify(LinkFactory.createLink("web10", myContent, this)));
 		modes.add(web20Link = LinkFactory.deAjaxify(LinkFactory.createLink("web20", myContent, this)));
 		modes.add(web20hlLink = LinkFactory.deAjaxify(LinkFactory.createLink("web20hl", myContent, this)));
-		modes.add(web21Link = LinkFactory.deAjaxify(LinkFactory.createLink("web21", myContent, this)));	
 		modes.add(debugLink = LinkFactory.deAjaxify(LinkFactory.createLink("debug", myContent, this)));		
 		modes.add(showJson = LinkFactory.deAjaxify(LinkFactory.createLink("showJson", myContent, this)));
-		if (winMgrImpl.isForScreenReader()) {
-			chosenMode = web21Link;
-		} else if (winMgrImpl.isAjaxEnabled()) {
+		if (winMgrImpl.isAjaxEnabled()) {
 			chosenMode = web20Link;			
 		} else {			
 			chosenMode = web10Link;			
@@ -196,7 +192,6 @@ public class DevelopmentController extends BasicController {
 			// choose regular mode
 			winMgrImpl.setShowDebugInfo(false);
 			winMgrImpl.setAjaxEnabled(false);
-			winMgrImpl.setForScreenReader(false);
 			winMgrImpl.setHighLightingEnabled(false);
 			winMgrImpl.setShowJSON(false);
 			winMgrImpl.setIdDivsForced(false);
@@ -206,7 +201,6 @@ public class DevelopmentController extends BasicController {
 			// enable ajax / generic-dom-replacement GDR mode
 			winMgrImpl.setShowDebugInfo(false);
 			winMgrImpl.setAjaxEnabled(true);
-			winMgrImpl.setForScreenReader(false);
 			winMgrImpl.setHighLightingEnabled(false);
 			winMgrImpl.setShowJSON(false);
 			winMgrImpl.setIdDivsForced(false);
@@ -216,31 +210,16 @@ public class DevelopmentController extends BasicController {
 			// ajax mode with highlighting
 			winMgrImpl.setShowDebugInfo(false);
 			winMgrImpl.setAjaxEnabled(true);
-			winMgrImpl.setForScreenReader(false);
 			winMgrImpl.setHighLightingEnabled(true);
 			winMgrImpl.setShowJSON(false);
 			//brasato:: setIdDivsForced is removed!! check if it works
 			winMgrImpl.setIdDivsForced(false);
 			chosenMode = web20hlLink;
 			updateUI();
-		} else if (source == web21Link) {
-			// enable screenreader support:
-			// - different html templates where appropriate.
-			// - different Component-renderers where appropriate.
-			// - mark changed components with jump-marker and allow usage of accesskey
-			winMgrImpl.setShowDebugInfo(false);
-			winMgrImpl.setAjaxEnabled(false);
-			winMgrImpl.setForScreenReader(true);
-			winMgrImpl.setHighLightingEnabled(false);
-			winMgrImpl.setShowJSON(false);
-			winMgrImpl.setIdDivsForced(false);
-			chosenMode = web21Link;
-			updateUI();
 		} else if (source == debugLink) {
 			// debug mode requires web 1.0 mode at the moment
 			winMgrImpl.setShowDebugInfo(true);
 			winMgrImpl.setAjaxEnabled(false);
-			winMgrImpl.setForScreenReader(false);
 			winMgrImpl.setHighLightingEnabled(false);
 			winMgrImpl.setShowJSON(false);
 			winMgrImpl.setIdDivsForced(false);
@@ -259,7 +238,6 @@ public class DevelopmentController extends BasicController {
 		} else if (source == showJson) {
 			winMgrImpl.setShowDebugInfo(false);
 			winMgrImpl.setAjaxEnabled(true);
-			winMgrImpl.setForScreenReader(false);
 			winMgrImpl.setHighLightingEnabled(true);
 			winMgrImpl.setShowJSON(true);
 			winMgrImpl.setIdDivsForced(false);
@@ -292,7 +270,7 @@ public class DevelopmentController extends BasicController {
 	private void updateComponentTree() {
 		Window win = wboImpl.getWindow();
 		StringOutput sb = new StringOutput();
-		renderDebugInfo(win.getContentPane(), sb, true);
+		renderDebugInfo(win.getContentPane(), sb);
 		myContent.contextPut("compdump", sb.toString());
 	}
 	
@@ -318,7 +296,7 @@ public class DevelopmentController extends BasicController {
 	 * used by velocityrenderdecorator
 	 * @param target
 	 */
-	private void renderDebugInfo(Component root, StringOutput target, boolean showDebugInfo) {
+	private void renderDebugInfo(Component root, StringOutput target) {
 		target.append("<div>");
 		int cnt = cntTree(root);
 		int size = DefaultController.getControllerCount();
@@ -410,17 +388,5 @@ public class DevelopmentController extends BasicController {
 			}
 		}
 		return cnt;
-	}
-}
-
-class ControllerInfo {
-	private List<Component> listeningTo;
-	
-	ControllerInfo(Controller controller) {
-		listeningTo = new ArrayList<Component>();
-	}
-	
-	void addListeningComponent(Component listener) {
-		listeningTo.add(listener);
 	}
 }

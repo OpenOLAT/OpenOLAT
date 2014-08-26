@@ -126,18 +126,11 @@ public class CPDisplayController extends BasicController implements Activateable
 		//TODO:gs:a
 		//may add an additional config for disabling, enabling IFrame style or not in CP mode
 		//but always disable IFrame display when in screenreader mode (no matter whether style gets ugly)
-		if (getWindowControl().getWindowBackOffice().getWindowManager().isForScreenReader()) {
-			cpComponent = new HtmlStaticPageComponent("", rootContainer);
-			cpComponent.addListener(this);
-			myContent.put("cpContent", cpComponent);
-			myContent.contextPut("isIframeDelivered", Boolean.FALSE);
-		} else {
-			cpContentCtr = new IFrameDisplayController(ureq, getWindowControl(),rootContainer, null, ores, deliveryOptions);
-			cpContentCtr.setAllowDownload(true);
-			listenTo(cpContentCtr);
-			myContent.put("cpContent", cpContentCtr.getInitialComponent());
-			myContent.contextPut("isIframeDelivered", Boolean.TRUE);
-		}
+		cpContentCtr = new IFrameDisplayController(ureq, getWindowControl(),rootContainer, null, ores, deliveryOptions);
+		cpContentCtr.setAllowDownload(true);
+		listenTo(cpContentCtr);
+		myContent.put("cpContent", cpContentCtr.getInitialComponent());
+		myContent.contextPut("isIframeDelivered", Boolean.TRUE);
 
 		// even if we do not show the menu, we need to build parse the manifest and
 		// find the first node to display at startup

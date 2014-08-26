@@ -33,8 +33,6 @@ import org.apache.lucene.document.Document;
 import org.apache.velocity.context.Context;
 import org.olat.core.commons.contextHelp.ContextHelpModule;
 import org.olat.core.gui.GlobalSettings;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.EmptyURLBuilder;
@@ -149,11 +147,6 @@ public class ContextHelpIndexer extends AbstractHierarchicalIndexer {
 		@Override
 		public AJAXFlags getAjaxFlags() {
 			return empty;
-		}
-
-		@Override
-		public ComponentRenderer getComponentRendererFor(Component source) {
-			return null;
 		}
 
 		@Override

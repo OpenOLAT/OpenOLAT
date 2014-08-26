@@ -65,19 +65,12 @@ public interface WindowManager extends Disposable {
 	
 	public void setAjaxEnabled(boolean enabled);
 	
-	public void setForScreenReader(boolean forScreenReader);
-	
 	public void setHighLightingEnabled(boolean enabled);
 
 	/**
 	 * @param fontSize relative to default font size
 	 */
 	public void setFontSize(int fontSize);
-
-	/**
-	 * @return
-	 */
-	public boolean isForScreenReader();
 	
 	/**
 	 * whether or not ajax mode ("web 2.0") is enabled. should only called by controllers to determine whether they can offer additional ui capabilites due to ajax turned on.

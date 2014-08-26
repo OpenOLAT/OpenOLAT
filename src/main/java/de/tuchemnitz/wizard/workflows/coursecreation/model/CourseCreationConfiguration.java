@@ -37,8 +37,6 @@ import org.apache.velocity.context.Context;
 import org.olat.catalog.CatalogEntry;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.gui.GlobalSettings;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
@@ -354,9 +352,6 @@ public class CourseCreationConfiguration {
 		GlobalSettings globalSettings = new GlobalSettings() {
 			public int getFontSize() { return 100;}
 			public AJAXFlags getAjaxFlags() { return new EmptyAJAXFlags();}
-			public ComponentRenderer getComponentRendererFor(Component source) {
-				return null;
-			}
 			public boolean isIdDivsForced() { return false; }
 		};
 		

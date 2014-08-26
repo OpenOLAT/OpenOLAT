@@ -38,7 +38,6 @@ import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.htmlsite.HtmlStaticPageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -380,19 +379,11 @@ public class OnyxRunController extends BasicController {
 			if (baseContainer == null || baseContainer.resolve(sDisclaimer) == null) {
 				showWarning("disclaimer.file.invalid", sDisclaimer);
 			} else {
-				// screenreader do not like iframes, display inline
-				if (getWindowControl().getWindowBackOffice().getWindowManager().isForScreenReader()) {
-					HtmlStaticPageComponent disclaimerComp = new HtmlStaticPageComponent("disc", baseContainer);
-					vc.put("disc", disclaimerComp);
-					disclaimerComp.setCurrentURI(sDisclaimer);
-					vc.contextPut("hasDisc", Boolean.TRUE);
-				} else {
-					iFrameCtr = new IFrameDisplayController(ureq, getWindowControl(), baseContainer);
-					listenTo(iFrameCtr);// dispose automatically
-					vc.put("disc", iFrameCtr.getInitialComponent());
-					iFrameCtr.setCurrentURI(sDisclaimer);
-					vc.contextPut("hasDisc", Boolean.TRUE);
-				}
+				iFrameCtr = new IFrameDisplayController(ureq, getWindowControl(), baseContainer);
+				listenTo(iFrameCtr);// dispose automatically
+				vc.put("disc", iFrameCtr.getInitialComponent());
+				iFrameCtr.setCurrentURI(sDisclaimer);
+				vc.contextPut("hasDisc", Boolean.TRUE);
 			}
 		}
 	}

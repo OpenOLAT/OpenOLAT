@@ -25,8 +25,6 @@
 */
 package org.olat.core.gui;
 
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 
 /**
@@ -42,19 +40,12 @@ public interface GlobalSettings {
 	/**
 	 * @return fontsize relative to applied theme
 	 */
-	public abstract int getFontSize();
+	public int getFontSize();
 
 	/**
 	 * @return Returns the ajaxFlags.
 	 */
-	public abstract AJAXFlags getAjaxFlags();
-	
-	/**
-	 * Get the renderer for a specific component
-	 * @param source
-	 * @return
-	 */
-	public ComponentRenderer getComponentRendererFor(Component source);
+	public AJAXFlags getAjaxFlags();
 
 	/**
 	 * only used by the renderer if in debug mode!
@@ -62,6 +53,5 @@ public interface GlobalSettings {
 	 * 
 	 */
 	public boolean isIdDivsForced();
-	
 	
 }

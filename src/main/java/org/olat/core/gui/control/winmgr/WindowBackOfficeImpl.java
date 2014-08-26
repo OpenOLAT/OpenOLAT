@@ -51,7 +51,6 @@ import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.guistack.GuiStack;
 import org.olat.core.gui.control.guistack.GuiStackNiceImpl;
-import org.olat.core.gui.control.guistack.GuiStackSimpleImpl;
 import org.olat.core.gui.control.pushpoll.WindowCommand;
 import org.olat.core.gui.control.util.ZIndexWrapper;
 import org.olat.core.gui.dev.controller.DevelopmentController;
@@ -114,20 +113,13 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 		linkedInterceptHandler = new InterceptHandler() {
 			public InterceptHandlerInstance createInterceptHandlerInstance() {
 				InterceptHandler debugH = debug_interceptHandler;
-				InterceptHandler screenReaderH = winmgrImpl.getScreenreader_interceptHandler();
 				InterceptHandler inlineTranslationH = inlineTranslation_interceptHandler;
-				
 				final InterceptHandlerInstance debugI = debugH == null? null: debugH.createInterceptHandlerInstance(); 
-				final InterceptHandlerInstance screenReaderI = screenReaderH == null? null: screenReaderH.createInterceptHandlerInstance();
 				final InterceptHandlerInstance inlineTranslationI = (inlineTranslationH == null ? null : inlineTranslationH.createInterceptHandlerInstance());
-				
 				return new InterceptHandlerInstance() {
-
 					public ComponentRenderer createInterceptComponentRenderer(ComponentRenderer originalRenderer) {
 						ComponentRenderer toUse = originalRenderer;
-						if (screenReaderI != null) {
-							toUse = screenReaderI.createInterceptComponentRenderer(toUse);
-						}
+
 						if (winmgrImpl.isShowDebugInfo() && debugI != null) {
 							toUse = debugI.createInterceptComponentRenderer(toUse);
 						}
@@ -137,9 +129,6 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 						return toUse;
 					}};
 			}};
-		
-		
-		
 	}
 
 	/* (non-Javadoc)
@@ -342,22 +331,15 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	/* (non-Javadoc)
 	 * @see org.olat.core.gui.control.WindowBackOffice#createGuiStack(org.olat.core.gui.components.Component)
 	 */
+	@Override
 	public GuiStack createGuiStack(Component initialComponent) {
-		// only needed for a on-screen mode change = only for demo purposes.
-		// normally the following code is appropriate:
-
-		GuiStack gsh;
-		if (winmgrImpl.isForScreenReader()) {
-			gsh = new GuiStackSimpleImpl(initialComponent);
-		} else {
-			gsh = new GuiStackNiceImpl(this, initialComponent);			
-		}
-		return gsh;
+		return new GuiStackNiceImpl(this, initialComponent);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.olat.core.gui.control.WindowBackOffice#invokeLater(java.lang.Runnable)
 	 */
+	@Override
 	public void invokeLater(Runnable runnable) {
 		// brasato:::: verify that this is now as it should be.
 		// improve by handling those tasks after a ongoing dispatch/render is finished,
@@ -382,10 +364,12 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 		
 	}
 
+	@Override
 	public void addCycleListener(GenericEventListener gel) {
 		cycleListeners.add(gel);
 	}
-	
+
+	@Override
 	public void removeCycleListener(GenericEventListener gel) {
 		// Since we use a CopyOnWriteArrayList it is save to remove an event
 		// listener even when we are in the fireCycleEvent() method at the same time

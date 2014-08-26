@@ -43,11 +43,11 @@ import org.olat.core.util.WebappHelper;
  */
 public class Renderer {
 
-	private URLBuilder urlBuilder;
-	private Translator translator;
-	private ComponentCollection renderContainer;
-	private RenderResult renderResult;
-	private GlobalSettings globalSettings;
+	private final URLBuilder urlBuilder;
+	private final Translator translator;
+	private final ComponentCollection renderContainer;
+	private final RenderResult renderResult;
+	private final GlobalSettings globalSettings;
 
 	/**
 	 * @param renderContainer is used as a starting node for searching a component
@@ -281,8 +281,7 @@ public class Renderer {
 	}
 
 	private ComponentRenderer findComponentRenderer(Component toRender) {
-		ComponentRenderer cr = globalSettings.getComponentRendererFor(toRender);
-		return cr;
+		return toRender.getHTMLRendererSingleton();
 	}
 	
 	/**

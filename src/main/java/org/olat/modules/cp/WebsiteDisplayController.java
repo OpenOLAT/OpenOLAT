@@ -27,7 +27,6 @@ package org.olat.modules.cp;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.htmlsite.HtmlStaticPageComponent;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -53,31 +52,20 @@ public class WebsiteDisplayController extends BasicController {
 	 */
 	public WebsiteDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, String startUri) {
 		super(ureq, wControl);
-		if (getWindowControl().getWindowBackOffice().getWindowManager().isForScreenReader()) {
-			HtmlStaticPageComponent display = new HtmlStaticPageComponent("display", rootContainer);
-			display.setCurrentURI(startUri);			
-			putInitialPanel(display);
-		} else {
-			IFrameDisplayController iframeCtr = new IFrameDisplayController(ureq, wControl, rootContainer);
-			iframeCtr.setCurrentURI(startUri);
-			listenTo(iframeCtr);
-			putInitialPanel(iframeCtr.getInitialComponent());
-		}
+		
+		IFrameDisplayController iframeCtr = new IFrameDisplayController(ureq, wControl, rootContainer);
+		iframeCtr.setCurrentURI(startUri);
+		listenTo(iframeCtr);
+		putInitialPanel(iframeCtr.getInitialComponent());
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		// auto disposed by basic controller
 	}
-
 }

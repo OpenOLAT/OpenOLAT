@@ -93,7 +93,6 @@ public class SinglePageController extends BasicController implements CloneableCo
 	private String g_curURI;
 	// save constructor args to remember if we open a site in a new window
 	private String g_fileName;
-	private boolean g_inIframe;
 	private boolean g_allowRelativeLinks;
 	private VFSContainer g_rootContainer;
 	private VFSContainer g_new_rootContainer;
@@ -152,7 +151,6 @@ public class SinglePageController extends BasicController implements CloneableCo
 		// g_fileName : initial file name given (no root correction), e.g. bla.html or f/g/blu.html
 		// always use non-iframe mode for screenreaders
 		this.deliveryOptions = config;
-		this.g_inIframe = !getWindowControl().getWindowBackOffice().getWindowManager().isForScreenReader();
 		this.g_allowRelativeLinks = allowRelativeLinks;
 		this.g_fileName = fileName;
 		this.g_rootContainer = rootContainer;
@@ -206,7 +204,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 		// a) configured as to be displayed in iframe and not in braille mode
 		// b) page is a direct jump in (unclear why not in this case, code was like that)
 		// c) when page type can not be inline rendered (e.g. when page is a pdf file)
-		if (g_inIframe || jumpIn || !HtmlStaticPageComponent.isFileTypeSupported(startURI)) {
+		if (jumpIn || !HtmlStaticPageComponent.isFileTypeSupported(startURI)) {
 			idc = new IFrameDisplayController(ureq, getWindowControl(), g_new_rootContainer, contextResourcable, deliveryOptions);
 			listenTo(idc);
 			
@@ -279,11 +277,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 						CoreLoggingResourceable.wrapSpUri(newUri));
 			}
 		} else if (source == htmlEditorController) {
-			if (g_inIframe) {
-				idc.setCurrentURI(g_curURI);
-			} else {	
-				cpc.setCurrentURI(g_curURI);
-			}
+			idc.setCurrentURI(g_curURI);
 			mainPanel.setContent(myContent);
 		} else if (source == cpc) {
 			if (event instanceof OlatCmdEvent) {
