@@ -14,7 +14,8 @@
 	</ol>
 	
 	## render category description
-	<div class="o_catalog"><div class="o_level o_level_${catalogLevel}">
+	<div class="o_catalog">
+		<div class="o_level o_level_${catalogLevel}">
 			<div class="o_visual">
 				#if($r.available("catThumbnail"))
 					$r.render("catThumbnail")
@@ -22,21 +23,14 @@
 					<div class="o_visual_not_available"></div>			
 				#end
 			</div>
-			<div class="o_meta o_withEllipsis clearfix">
+			<div class="o_meta clearfix">
 				<h2 class="o_title">$r.escapeHtml($currentCatalogEntry.getName())</h2>
 				#if($currentCatalogEntry.getDescription())	
 				<div class="o_desc">$r.xssScan($currentCatalogEntry.getDescription())</div>
 				#end
-				<div class="o_ellipsis_links">
-					<a href="#" onclick="javascript: OPOL.Ellipsis.showOverflow(this); return false;" class="o_morelink">
-						<i class="o_icon o_icon_show_more"></i> $r.translate("read.more")
-					</a>
-					<a href="#" onclick="javascript: OPOL.Ellipsis.hideOverflow(this); return false;" class="o_lesslink">
-						<i class="o_icon o_icon_show_less"></i> $r.translate("read.less")
-					</a>
-				</div>
 			</div>
-	</div></div>
+		</div>
+	</div>
 		
 	## calculate some temporary variables
 	#set($hasChildren = false)

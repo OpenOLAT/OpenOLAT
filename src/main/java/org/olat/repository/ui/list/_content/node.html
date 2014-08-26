@@ -9,7 +9,7 @@
 					<div class="o_visual_not_available"></div>			
 				#end
 			</div>
-			<div class="o_meta o_withEllipsis clearfix">
+			<div class="o_meta clearfix">
 				<h2 class="o_title">
 					$catalogEntryName
 				</h2>
@@ -18,14 +18,6 @@
 					$r.xssScan($catalogEntryDesc)
 				</div>
 				#end
-				<div class="o_ellipsis_links">
-					<a href="#" onclick="javascript: OPOL.Ellipsis.showOverflow(this); return false;" class="o_morelink">
-						<i class="o_icon o_icon_show_more"></i> $r.translate("read.more")
-					</a>
-					<a href="#" onclick="javascript: OPOL.Ellipsis.hideOverflow(this); return false;" class="o_lesslink">
-						<i class="o_icon o_icon_show_less"></i> $r.translate("read.less")
-					</a>
-				</div>
 			</div>
 		</div>
 		
@@ -43,7 +35,7 @@
 					#end
 					</a></div>
 					<div class="o_meta">
-						<h4 class="o_title o_withEllipsis">
+						<h4 class="o_title">
 							$r.render("cat_${id}")
 						</h4>
 					</div>
@@ -53,19 +45,9 @@
 	#end
 
 	</div>	## END o_catalog
-	
+
 	## Render course list component
 	#if($r.available("entries"))
 		$r.render("entries")
 	#end
-
-<script type="text/javascript">
-/* <![CDATA[ */ 
-## Initialize the ellipsis code to hide overlflowed text
-	jQuery(document).ready(function() {
-		OPOL.Ellipsis.initEllipsisElement("#${r.getCId()} .o_withEllipsis");
-	});
-/* ]]> */
-</script>
-
 </div>

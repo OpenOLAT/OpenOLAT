@@ -188,7 +188,6 @@
 												<include>${basedir}/target/jquery/jquery/openolat/jquery.bgcarrousel.min.js</include>
 												<include>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/jquery.tinymce.min.js</include>
 												<include>${basedir}/target/jquery/functions.min.js</include>
-												<include>${basedir}/target/jquery/jquery/openolat/jquery.ellipsis.min.js</include>
 												<include>${basedir}/target/jquery/jquery/transit/jquery.transit.min.js</include>
 												<include>${basedir}/target/bootstrap/bootstrap-openolat.min.js</include>
 											</includes>
