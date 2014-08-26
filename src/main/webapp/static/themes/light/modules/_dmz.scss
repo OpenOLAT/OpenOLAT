@@ -1,14 +1,23 @@
 body.o_dmz {
-	/* background gradient depending on login box positioning */
-	$o-login-bg-gradient-to : right;	
-	@if $o-login-form-align == left {
-		$o-login-bg-gradient-to : left;
+	background: transparent;
+	#o_bg {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+	
+		/* background gradient depending on login box positioning */
+		$o-login-bg-gradient-to : right;	
+		@if $o-login-form-align == left {
+			$o-login-bg-gradient-to : left;
+		}
+		@else if $o-login-form-align == center {
+			$o-login-bg-gradient-to : top;
+		}
+		background: linear-gradient(to $o-login-bg-gradient-to, rgba(255,255,255,.2) 0.2%,rgba(255,255,255,0.80) 60%,rgba(255,255,255,1) 100%), url('#{$o-login-form-bg-img}');
+		background-size: cover, cover;
 	}
-	@else if $o-login-form-align == center {
-		$o-login-bg-gradient-to : top;
-	}
-	background: linear-gradient(to $o-login-bg-gradient-to, rgba(255,255,255,.2) 0.2%,rgba(255,255,255,0.80) 60%,rgba(255,255,255,1) 100%), url('#{$o-login-form-bg-img}');
-	background-size: cover, cover;
 
 	#o_main_wrapper, #o_main_wrapper #o_main_container {
 		background: transparent;
@@ -141,7 +150,10 @@ body.o_dmz {
 
 @media (max-width: $screen-xs-max) { 
 	body.o_dmz {
-		background: none;
+		#o_bg {
+			background: none;
+			display: none;
+		}
 		.o_login {
 			padding: 0;
 			.o_login_intro {

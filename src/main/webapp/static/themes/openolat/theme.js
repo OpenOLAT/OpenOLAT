@@ -35,10 +35,24 @@
 			$(document).on("oo.dom.replacement.after", OPOL.themejs.addClientLinks);
 		}
 		
+		ThemeJS.prototype.initDmzCarrousel = function() {
+			this.dmzCarrousel = jQuery().ooBgCarrousel();
+			this.dmzCarrousel.initCarrousel({
+				query: "#o_body #o_bg", 
+				images: ['learn-bg.jpg', 'christian-bg.jpg', 'classroom-bg.jpg', 'holger-bg.jpg', 'oo-bg.jpg', 'florian-bg.jpg' ], 
+				durationshow: 5000,
+				durationout: 500,
+				durationin: 500,
+				easeout : 'ease',
+				easein : 'ease'
+			});
+		}
+		
 		//Execute when loading of page has been finished
 		$(document).ready(function() {
 			OPOL.themejs = new ThemeJS();
 			OPOL.themejs.execThemeJS();			
+			OPOL.themejs.initDmzCarrousel();
 		});
 		
 })(jQuery);
