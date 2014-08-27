@@ -147,6 +147,7 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 	 * @param type
 	 * @return
 	 */
+	@Override
 	public boolean calendarExists(String calendarType, String calendarID) {
 		return getCalendarFile(calendarType, calendarID).exists();
 	}
@@ -155,6 +156,7 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 	 * 
 	 * @see org.olat.calendar.CalendarManager#createClaendar(java.lang.String)
 	 */
+	@Override
 	public Kalendar createCalendar(String type, String calendarID) {
 		return new Kalendar(calendarID, type);
 	}
@@ -185,6 +187,7 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public OLATResourceable getOresHelperFor(Kalendar cal) {
 		return OresHelper.createOLATResourceableType(getKeyFor(cal.getType(), cal.getCalendarID()));
 	}
@@ -224,6 +227,7 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
   /**
    * Internal read calendar file from filesystem
    */
+	@Override
   public Calendar readCalendar(String type, String calendarID) {
   	log.debug("readCalendar from file, type=" + type + "  calendarID=" + calendarID);
 		File calendarFile = getCalendarFile(type, calendarID);
@@ -247,7 +251,8 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 		}
     return calendar;
   }
-  
+
+	@Override
   public Kalendar buildKalendarFrom(String calendarContent, String calType, String calId) {
   	Kalendar kalendar = null;
   	BufferedReader reader = new BufferedReader(new StringReader(calendarContent));
@@ -354,9 +359,13 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 			if(tz != null) {
 				dtBegin.setTimeZone(tz);
 			}
-			DateTime dtEnd = new DateTime(kEvent.getEnd());
-			if(tz != null) {
-				dtEnd.setTimeZone(tz);
+			DateTime dtEnd = null;
+			Date kEventEnd = kEvent.getEnd();
+			if(kEventEnd != null) {
+				dtEnd = new DateTime();
+				if(tz != null) {
+					dtEnd.setTimeZone(tz);
+				}
 			}
 			vEvent = new VEvent(dtBegin, dtEnd, kEvent.getSubject());
 		} else {
@@ -496,9 +505,9 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 		if (isAllDay) {
 			//Make sure the time of the dates are 00:00 localtime because DATE fields in iCal are GMT 00:00 
 			//Note that start date and end date can have different offset because of daylight saving switch
-			java.util.TimeZone tz = java.util.GregorianCalendar.getInstance().getTimeZone();
-			start = new Date(start.getTime() - tz.getOffset(start.getTime()));
-			end   = new Date(end.getTime()   - tz.getOffset(end.getTime()));
+			java.util.TimeZone timezone = java.util.GregorianCalendar.getInstance().getTimeZone();
+			start = new Date(start.getTime() - timezone.getOffset(start.getTime()));
+			end   = new Date(end.getTime()   - timezone.getOffset(end.getTime()));
 			
 			// adjust end date: ICal sets end dates to the next day
 			end = new Date(end.getTime() - (1000 * 60 * 60 * 24));

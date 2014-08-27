@@ -32,23 +32,29 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
+import org.jcodec.common.Assert;
 import org.junit.Test;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
-
 
 
 public class ICalFileCalendarManagerTest extends OlatTestCase {
@@ -63,7 +69,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		CalendarManager manager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
 		Kalendar cal = manager.getPersonalCalendar(test).getKalendar();
 		// 1. Test Add Event
-		KalendarEvent testEvent = new KalendarEvent(TEST_EVENT_ID,"testEvent", new Date(), 1);
+		KalendarEvent testEvent = new KalendarEvent(TEST_EVENT_ID, "testEvent", new Date(), 1);
 		manager.addEventTo(cal, testEvent);
 		// set manager null to force reload of calendar from file-system
 		manager = null;
@@ -91,7 +97,34 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		assertNull("Found removed event", removedEvent);
 	}
 
-
+	/**
+	 * Check a NPE
+	 * @throws IOException
+	 */
+	@Test
+	public void testPersistCalendarWithoutDTEndEvent() throws IOException {
+		//replace the standard calendar with a forged one
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cal-test-1-");
+		CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
+		File calendarFile = calManager.getCalendarFile("user", identity.getName());
+		if(calendarFile.exists()) {
+			calendarFile.delete();
+		}
+		File newCalendarFile = new File(calendarFile.getParentFile(), calendarFile.getName());
+		InputStream in = CalendarImportTest.class.getResourceAsStream("cal_without_dtend.ics");
+		FileUtils.copyInputStreamToFile(in, newCalendarFile);
+		
+		//load the calendar
+		KalendarRenderWrapper reloadCalWrapper = calManager.getPersonalCalendar(identity);
+		//check if its the right calendar
+		Collection<KalendarEvent> events = reloadCalWrapper.getKalendar().getEvents();
+		Assert.assertNotNull(events);
+		Assert.assertEquals(1, events.size());
+		
+		//persist
+		calManager.persistCalendar(reloadCalWrapper.getKalendar());
+	}
+	
 	/**
 	 * Test concurrent add event with two threads and code-point to control concurrency.
 	 *
