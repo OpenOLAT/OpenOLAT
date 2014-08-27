@@ -194,7 +194,7 @@ class UserBulkChangeStep00 extends BasicStep {
 
 		@Override
 		protected boolean validateFormLogic(UserRequest ureq) {
-			Boolean validChange = false;
+			boolean validChange = true;
 			UserManager um = UserManager.getInstance();
 
 			// loop through and check if any checkbox has been selected
@@ -255,7 +255,7 @@ class UserBulkChangeStep00 extends BasicStep {
 				i++;
 			} // for
 
-			addToRunContext("validChange", validChange);
+			addToRunContext("validChange", new Boolean(validChange));
 			return true;
 		}
 
