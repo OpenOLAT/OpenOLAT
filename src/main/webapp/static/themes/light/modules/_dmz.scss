@@ -27,76 +27,67 @@ body.o_dmz {
 	padding-bottom: $padding-large-vertical * 2;
 	padding-left: 10%;
 	padding-right: 10%;
+	
+	@if $o-login-form-align == left {
+		padding-right: 10%;
+	}
+	@else if $o-login-form-align == right {
+		text-align: right;
+		.o_login_intro {
+			padding-left: 10%;
+		}
 		
+	}		
+	@else {
+		text-align: center;
+	}
+	
+	/* header and lead message */	
 	.o_login_intro {
-		padding-bottom: $padding-large-vertical * 2;
 		h1 {
 			margin-bottom: $padding-large-vertical * 4;
 			color: $o-login-header-color;
 		}
-		.o_infomessage_wrapper {
-			background-color: #fff;
-			border: 1px solid $well-border;
-			border-radius: $border-radius-base;
-			padding: $padding-base-vertical $padding-base-horizontal;
-			
-			div.o_info, div.o_warning, div.o_note {
-				margin: 0;
-			}
-		}
 		.lead {
+			color: $o-login-lead-color;
 			// add more space since lead text is larger than normal
-			h2, h3, h4 {
+			h1, h2, h3, h4, h5 {
 				margin-bottom: 20px;
+				color: $o-login-lead-header-color;
 			}
-		}
-	}	
-	.o_login_footer_wrapper {
-		@extend %o_block_large;	
-	}
-	.o_login_footer {
-		display: inline-block;
-		text-align: left;
-	}
-	
-
-	@if $o-login-form-align == left {
-		.o_login_intro {
-			padding-right: 10%;
-		}		
-		.o_login_box_wrapper {
-		}
-	}
-	@else if $o-login-form-align == right {
-		.o_login_intro {
-			padding-left: 10%;
-			h1, .lead {
-				text-align: right
-			}			
-		}
-		.o_login_box_wrapper,
-		.o_login_footer_wrapper {
-			text-align: right;			
 		}
 	}		
-	@else {
-		.o_login_intro {
-			h1, .lead {
-				text-align: center
-			}
-		}
-		.o_login_box_wrapper,
-		.o_login_footer_wrapper {
-			text-align: center;			
-		}	
-	}
-		
+
+	/* content of messages and the login box itself are always left aligned */
+	.o_login_messages,
 	.o_login_box {
 		display: inline-block;
 		width: $o-login-form-width;
 		text-align: left;
 	}
 
+	.o_login_messages {
+		.o_infomessage_wrapper {
+			background: $o-login-infomessage-bg;
+			border: 1px solid $o-login-infomessage-border;
+			border-radius: $o-login-infomessage-radius; ;
+			padding: $padding-base-vertical $padding-base-horizontal;
+			
+			.o_info, .o_warning, .o_note {
+				/* remove unnecessary space */
+				margin: 0;
+			}
+		}
+	}
+
+	.o_login_footer_wrapper {
+		@extend %o_block_large;	
+	}
+	
+	.o_login_box {
+		padding-top: $padding-large-vertical;
+	}
+	
 	.o_login_providers {
 		margin-bottom: $padding-base-vertical;
 		border-radius: $border-radius-base;
@@ -154,26 +145,28 @@ body.o_dmz {
 			background: none;
 			display: none;
 		}
-		.o_login {
+	}
+	.o_login {
+		padding: 0;
+		.o_login_intro {
 			padding: 0;
-			.o_login_intro {
-				padding: 0;
-				h1 {
-					text-align: left;			
-				}
+			text-align: left;			
+		}
+		.o_login_box_wrapper {
+			text-align: center;
+			padding: 0;
+		}
+		.o_login_box {
+			padding-left: 0;
+			padding-right: 0;
+			.o_login_providers, .o_login_provider {	
+				@include box-shadow(none);
 			}
-			.o_login_box_wrapper {
-				text-align: center;
-				padding: 0;
-			}
-			.o_login_box {
-				width: 100%;
-				padding-left: 0;
-				padding-right: 0;
-				.o_login_providers, .o_login_provider {	
-					@include box-shadow(none);
-				}
-			}			
+		}			
+		.o_login_messages, 
+		.o_login_box {
+			width: 100%;
+			display: block;
 		}
 	}
 

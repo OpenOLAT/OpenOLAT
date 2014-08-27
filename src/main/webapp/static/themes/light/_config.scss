@@ -262,6 +262,11 @@ $o-login-form-bg-img			: $o-images-path + "learn-bg.jpg" !default;  	/* image CC
 $o-login-btn-register-color		: $btn-info-color !default;
 $o-login-btn-register-bg		: $btn-info-bg !default;
 $o-login-btn-register-border	: darken($o-login-btn-register-bg, 5%) !default; 
+$o-login-infomessage-border		: transparent !default;
+$o-login-infomessage-radius		: $border-radius-base !default;
+$o-login-infomessage-bg			: rgba(255,255,255,.5) !default;
+$o-login-lead-color				: $text-color !default;
+$o-login-lead-header-color		: $o-content-header-base-color !default;
 
 /* Course and catalog site */
 $o-coursesite-rowelem-width-md 	: 180px !default;
