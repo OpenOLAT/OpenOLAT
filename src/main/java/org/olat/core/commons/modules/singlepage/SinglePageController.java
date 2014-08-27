@@ -204,13 +204,13 @@ public class SinglePageController extends BasicController implements CloneableCo
 		// a) configured as to be displayed in iframe and not in braille mode
 		// b) page is a direct jump in (unclear why not in this case, code was like that)
 		// c) when page type can not be inline rendered (e.g. when page is a pdf file)
-		if (jumpIn || !HtmlStaticPageComponent.isFileTypeSupported(startURI)) {
+		//if (g_inFrame alwasytrue || jumpIn || !HtmlStaticPageComponent.isFileTypeSupported(startURI)) {
 			idc = new IFrameDisplayController(ureq, getWindowControl(), g_new_rootContainer, contextResourcable, deliveryOptions);
 			listenTo(idc);
 			
 			idc.setCurrentURI(startURI);
 			myContent.put("content", idc.getInitialComponent());
-		} else {	
+		/*} else {	
 			// in inline mode
 			// create single page root file now and start component for display dispathing
 			cpc = new HtmlStaticPageComponent("content", g_new_rootContainer);
@@ -229,7 +229,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 				setCurURI(startURI);
 				cpc.setCurrentURI(startURI);
 			}			
-		}	
+		}*/
 					
 		mainP.setContent(myContent);
 		mainPanel = putInitialPanel(mainP);
