@@ -1,6 +1,13 @@
 <div class="o_login clearfix">
 	<div class="o_login_intro">
 		<h1>$r.translate("login.header")</h1>
+		#if ($logincustommsg)
+		 <div class="lead">$logincustommsg</div>
+		#end
+	</div>
+
+	#if ($infomsg || $infomsgNode || $loginBlocked || $browserWarningOn)
+	<div class="o_login_messages">
 		#if ($infomsg)
 			<div class="o_infomessage_wrapper o_block_large o_scrollblock">
 				$infomsg
@@ -13,20 +20,17 @@
 			</div>
 		#end
 		#if($loginBlocked)
-			<div class="o_warning">
+			<div class="o_login_blocked o_warning">
 				$r.translate("login.blocked.forAll")
 			</div>
 		#end
 		#if($browserWarningOn)
-			<div class="o_warning">
+			<div class="o_login_browser o_warning">
 				$r.translate("login.browserswitch")
 			</div>
 		#end
-		
-		#if ($logincustommsg)
-		 <div class="lead">$logincustommsg</div>
-		#end
 	</div>
+	#end
 
 	<div class="o_login_box_wrapper">
 		<div class="o_login_box">
