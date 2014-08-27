@@ -76,9 +76,7 @@
 			they will get notified. The shortest interval is set to two hours. 	    	
 	    -->
 	    <property name="cronExpression" value="*/15 * * * * ?" />
-
-			<!-- OLAT-5093 start delay ensures there's no conflict with server startup and db not being ready yet -->
-	    <property name="startDelay" value="0" />
+	    <property name="startDelay" value="60000" />
 	</bean>
 	
 	<bean id="systemSamplerJob" class="org.springframework.scheduling.quartz.JobDetailBean">
