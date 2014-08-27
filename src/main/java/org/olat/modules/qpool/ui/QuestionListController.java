@@ -643,7 +643,7 @@ public class QuestionListController extends AbstractItemListController implement
 		String type = TestFileResource.TYPE_NAME;
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
 		addController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
-		addController.setUserObject(new QItemList(items));
+		addController.setCreateObject(new QItemList(items));
 		listenTo(addController);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), addController.getInitialComponent());
 		listenTo(cmc);

@@ -89,7 +89,7 @@ public class SharedFolderHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		SharedFolderFileResource folderResource = SharedFolderManager.getInstance().createSharedFolder();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(folderResource);

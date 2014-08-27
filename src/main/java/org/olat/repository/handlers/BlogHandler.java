@@ -84,7 +84,7 @@ public class BlogHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
 		OLATResourceable ores = FeedManager.getInstance().createBlogResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(ores);
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)

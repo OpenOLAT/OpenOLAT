@@ -89,7 +89,7 @@ public class ImsCPHandler extends FileHandler {
 	}
 	
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
 		OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance("FileResource.IMSCP");
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
 				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);

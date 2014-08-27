@@ -69,7 +69,7 @@ public interface RepositoryHandler {
 	
 	public String getCreateLabelI18nKey();
 	
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Locale locale);
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale);
 	
 	/**
 	 * Typically for course wizard

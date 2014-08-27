@@ -78,7 +78,7 @@ public class SCORMCPHandler extends FileHandler {
 	}
 	
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
 		return null;
 	}
 	

@@ -83,9 +83,9 @@ public class QTITestHandler extends QTIHandler {
 	}
 
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
 		TestFileResource ores = new TestFileResource();
-		return super.createResource(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS, ores, initialAuthor, displayname, description, locale);
+		return super.createResource(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS, ores, initialAuthor, displayname, description, createObject, locale);
 	}
 
 	@Override

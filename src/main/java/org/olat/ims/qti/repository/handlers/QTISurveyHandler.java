@@ -83,9 +83,9 @@ public class QTISurveyHandler extends QTIHandler {
 	}
 
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
 		SurveyFileResource ores = new SurveyFileResource();
-		return super.createResource(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY, ores, initialAuthor, displayname, description, locale);
+		return super.createResource(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY, ores, initialAuthor, displayname, description, createObject, locale);
 	}
 
 	@Override

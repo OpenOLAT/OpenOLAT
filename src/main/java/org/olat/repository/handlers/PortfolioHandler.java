@@ -95,7 +95,7 @@ public class PortfolioHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
 		EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		EPStructureManager eSTMgr = CoreSpringFactory.getImpl(EPStructureManager.class);
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);

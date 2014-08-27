@@ -134,7 +134,7 @@ public class CourseHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);

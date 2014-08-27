@@ -111,7 +111,7 @@ public class WikiHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Locale locale) {
+	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description, Object createObject, Locale locale) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		WikiResource wikiResource = WikiManager.getInstance().createWiki();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(wikiResource);

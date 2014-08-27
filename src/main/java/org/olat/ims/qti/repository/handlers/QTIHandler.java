@@ -46,6 +46,8 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.ims.qti.editor.QTIEditorPackageImpl;
+import org.olat.ims.qti.qpool.QTIQPoolServiceProvider;
+import org.olat.modules.qpool.model.QItemList;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -72,7 +74,7 @@ public abstract class QTIHandler extends FileHandler {
 	}
 
 	protected RepositoryEntry createResource(String type, FileResource ores, Identity initialAuthor,
-			String displayname, String description, Locale locale) {
+			String displayname, String description, Object object, Locale locale) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(ores);
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
@@ -80,6 +82,11 @@ public abstract class QTIHandler extends FileHandler {
 		
 		File fRepositoryQTI = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), "qti.zip");
 		QTIEditorPackageImpl qtiPackage = new QTIEditorPackageImpl(displayname, type, locale);
+		if(object instanceof QItemList) {
+			QItemList itemToImport = (QItemList)object;
+			QTIQPoolServiceProvider provider = (QTIQPoolServiceProvider)CoreSpringFactory.getBean("qtiPoolServiceProvider");
+			provider.exportToEditorPackage(qtiPackage, itemToImport.getItems(), true);
+		}
 		qtiPackage.savePackageTo(fRepositoryQTI);
 		return re;
 	}

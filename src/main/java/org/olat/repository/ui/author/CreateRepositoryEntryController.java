@@ -82,11 +82,11 @@ public class CreateRepositoryEntryController extends FormBasicController {
 		return addedEntry;
 	}
 
-	public Object getUserObject() {
+	public Object getCreateObject() {
 		return userObject;
 	}
 
-	public void setUserObject(Object userObject) {
+	public void setCreateObject(Object userObject) {
 		this.userObject = userObject;
 	}
 
@@ -166,7 +166,7 @@ public class CreateRepositoryEntryController extends FormBasicController {
 	private void doCreate() {
 		String displayname = displaynameEl.getValue();
 		
-		addedEntry = handler.createResource(getIdentity(), displayname, "", getLocale());
+		addedEntry = handler.createResource(getIdentity(), displayname, "", getCreateObject(), getLocale());
 
 		repositoryManager.triggerIndexer(addedEntry);
 
