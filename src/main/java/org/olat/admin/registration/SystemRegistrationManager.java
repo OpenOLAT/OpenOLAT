@@ -95,7 +95,7 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 	private BusinessGroupService businessGroupService;
 
 	private static final String REGISTRATION_SERVER = "http://registration.openolat.org/registration/restapi/registration/openolat";
-	//private static final String REGISTRATION_SERVER = "http://localhost:8081/registration/restapi/registration/openolat";
+	//private static final String REGISTRATION_SERVER = "http://localhost:8083/registration/restapi/registration/openolat";
 	
 	/**
 	 * [used by spring]
@@ -315,14 +315,14 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 		msgProperties.put("learningGroups", String.valueOf(groups));
 		msgProperties.put("rightGroups", String.valueOf(groups));
 		msgProperties.put("groups", String.valueOf(groups));
-			
-		if (website) {
-			// URL
-			msgProperties.put("url", Settings.getServerContextPathURI());
-			// Description
-			String desc = registrationModule.getWebsiteDescription();
-			msgProperties.put("description", desc);
-		}
+
+		// URL
+		msgProperties.put("url", Settings.getServerContextPathURI());
+		msgProperties.put("publishWebsite", String.valueOf(website));
+		// Description
+		String desc = registrationModule.getWebsiteDescription();
+		msgProperties.put("description", desc);
+	
 		if (notify) {
 			// Email
 			String email = registrationModule.getEmail();

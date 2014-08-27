@@ -393,7 +393,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			}
 		} else if(descriptionCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
-				re = accessCtrl.getEntry();
+				re = descriptionCtrl.getEntry();
 			}
 		}
 	}
