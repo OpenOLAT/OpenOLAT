@@ -1193,12 +1193,18 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		component.setDirty(true);
 		multiSelectedIndex = null;
 	}
+	
+	@Override
+	public void deselectAll() {
+		multiSelectedIndex = null;
+	}
 
 	@Override
 	public void reloadData() {
 		if(dataSource != null) {
 			dataSource.clear();
-			dataSource.load(getSearchText(), getConditionalQueries(), 0, getPageSize(), orderBy);//reload needed rows
+			int firstResult = currentPage * getPageSize();
+			dataSource.load(getSearchText(), getConditionalQueries(), firstResult, getPageSize(), orderBy);//reload needed rows
 		} else {
 			if(dataModel instanceof FilterableFlexiTableModel) {
 				if(isFilterEnabled()) {

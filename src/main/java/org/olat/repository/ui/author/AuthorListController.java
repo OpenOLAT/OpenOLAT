@@ -488,6 +488,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 	}
 	protected void reloadRows() {
+		tableEl.deselectAll();
 		tableEl.reloadData();
 		dirtyRows.clear();
 	}

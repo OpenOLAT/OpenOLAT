@@ -418,6 +418,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 				boolean withEmail = deleteDialogBox.isSendMail();
 				List<BusinessGroup> groupsToDelete = deleteDialogBox.getGroupsToDelete();
 				doDelete(ureq, withEmail, groupsToDelete);
+				tableEl.deselectAll();
 				reloadModel();
 			}
 			cmc.deactivate();
@@ -425,6 +426,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		} else if (source == leaveDialogBox) {
 			if (event != Event.CANCELLED_EVENT && DialogBoxUIFactory.isYesEvent(event)) {
 				doLeave((BusinessGroup)leaveDialogBox.getUserObject());
+				tableEl.deselectAll();
 				reloadModel();
 			}
 		} else if (source == groupCreateController) {
@@ -432,6 +434,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			if(event == Event.DONE_EVENT) {
 				group = groupCreateController.getCreatedGroup();
 				if(group != null) {
+					tableEl.deselectAll();
 					reloadModel();
 				}
 			}
@@ -480,6 +483,11 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			cleanUpPopups();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc) {
+		//
 	}
 	
 	/**
@@ -593,7 +601,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		Step start = new BGCopyPreparationStep(ureq, groups, enableCoursesCopy, enableAreasCopy, enableRightsCopy);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
-			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
 				@SuppressWarnings("unchecked")
 				List<BGCopyBusinessGroup> copies = (List<BGCopyBusinessGroup>)runContext.get("groupsCopy");
 				if(copies != null && !copies.isEmpty()) {
@@ -676,7 +684,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		Step start = new BGConfigToolsStep(ureq, isAuthor);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
-			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
 				//configuration
 				BGConfigBusinessGroup configuration = (BGConfigBusinessGroup)runContext.get("configuration");
 				if(!configuration.getToolsToEnable().isEmpty() || !configuration.getToolsToDisable().isEmpty()) {
@@ -735,7 +743,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		Step start = new BGEmailSelectReceiversStep(ureq, groups);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
-			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
 				//mails are send by the last controller of the wizard
 				return StepsMainRunController.DONE_MODIFIED;
 			}
@@ -898,7 +906,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		Step start = new BGMergeStep(ureq, groups);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
-			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
 				BusinessGroup targetGroup = (BusinessGroup)runContext.get("targetGroup");
 				groups.remove(targetGroup);
 				businessGroupService.mergeBusinessGroups(getIdentity(), targetGroup, groups, null);

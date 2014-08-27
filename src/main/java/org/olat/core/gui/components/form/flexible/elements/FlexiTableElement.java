@@ -284,6 +284,8 @@ public interface FlexiTableElement extends FormItem {
 	public void sort(String sortKey, boolean asc);
 	
 	public void reloadData();
+	
+	public void deselectAll();
 
 	/**
 	 * Set the message displayed when the table is empty and the table header
