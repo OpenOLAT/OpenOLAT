@@ -172,11 +172,11 @@ public class IQ12EditForm extends FormBasicController {
 		blockAfterSuccess = uifactory.addCheckboxesHorizontal("blockAfterSuccess", "qti.form.block.afterSuccess", formLayout, new String[]{"xx"}, new String[]{null});
 		Boolean block = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS);
 		blockAfterSuccess.select("xx", block == null ? false : block.booleanValue() );
-		
-		uifactory.addSpacerElement("s1", formLayout, true);
-		
+
 		// Only assessments have a limitation on number of attempts
 		if (isAssessment) {
+			uifactory.addSpacerElement("s1", formLayout, true);
+			
 			limitAttempts.select("xx", confAttempts>0);
 			limitAttempts.addActionListener(FormEvent.ONCLICK);
 		} else {

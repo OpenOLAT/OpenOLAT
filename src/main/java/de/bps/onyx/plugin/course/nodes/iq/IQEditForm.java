@@ -191,10 +191,10 @@ public class IQEditForm extends FormBasicController {
 		attempts.setMinValueCheck(1, null);
 		attempts.setMaxValueCheck(20, null);
 
-		uifactory.addSpacerElement("s1", formLayout, true);
-
 		// Only assessments have a limitation on number of attempts
 		if (isAssessment) {
+			uifactory.addSpacerElement("s1", formLayout, true);
+			
 			limitAttempts.select("xx", confAttempts > 0);
 			limitAttempts.addActionListener(FormEvent.ONCLICK);
 		} else {
@@ -222,8 +222,8 @@ public class IQEditForm extends FormBasicController {
 		Boolean confAllowSuspension = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_ALLOW_SUSPENSION_ALLOWED);
 		String[] allowSuspension = new String[] { ALLOW };
 		String[] valuesSuspesion = new String[] { "" };
-		allowSuspensionBox = uifactory.addCheckboxesVertical("allowSuspension", "qti.form.allowSuspension", formLayout, allowSuspension,
-				valuesSuspesion, 1);
+		allowSuspensionBox = uifactory.addCheckboxesHorizontal("allowSuspension", "qti.form.allowSuspension", formLayout, allowSuspension,
+				valuesSuspesion);
 		allowSuspensionBox.addActionListener(FormEvent.ONCLICK);
 		if (confAllowSuspension != null) {
 			allowSuspensionBox.select(ALLOW, confAllowSuspension);

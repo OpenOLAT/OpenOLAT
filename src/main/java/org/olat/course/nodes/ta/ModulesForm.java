@@ -92,11 +92,11 @@ public class ModulesForm extends FormBasicController {
 		setFormTitle("form.modules.title");
 		setFormContextHelp("org.olat.course.nodes.ta","ced-ta-select.html","help.hover.ta-module");
 		
-		task = uifactory.addCheckboxesVertical("task", "form.modules.task", formLayout, new String[]{"xx"}, new String[]{""}, 1);
-		dropbox = uifactory.addCheckboxesVertical("dropbox", "form.modules.dropbox", formLayout, new String[]{"xx"}, new String[]{""}, 1);
-		returnbox = uifactory.addCheckboxesVertical("returnbox", "form.modules.returnbox", formLayout, new String[]{"xx"}, new String[]{""}, 1);
-		scoring = uifactory.addCheckboxesVertical("scoring", "form.modules.scoring", formLayout, new String[]{"xx"}, new String[]{""}, 1);
-		solution = uifactory.addCheckboxesVertical("solution", "form.modules.sample", formLayout, new String[]{"xx"}, new String[]{""}, 1);
+		task = uifactory.addCheckboxesHorizontal("task", "form.modules.task", formLayout, new String[]{"xx"}, new String[]{""});
+		dropbox = uifactory.addCheckboxesHorizontal("dropbox", "form.modules.dropbox", formLayout, new String[]{"xx"}, new String[]{""});
+		returnbox = uifactory.addCheckboxesHorizontal("returnbox", "form.modules.returnbox", formLayout, new String[]{"xx"}, new String[]{""});
+		scoring = uifactory.addCheckboxesHorizontal("scoring", "form.modules.scoring", formLayout, new String[]{"xx"}, new String[]{""});
+		solution = uifactory.addCheckboxesHorizontal("solution", "form.modules.sample", formLayout, new String[]{"xx"}, new String[]{""});
 	
 		Boolean cv;
 		

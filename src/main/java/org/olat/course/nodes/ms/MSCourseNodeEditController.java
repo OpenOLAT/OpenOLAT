@@ -77,7 +77,7 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 		super(ureq, wControl);
 		this.msNode = msNode;
 		
-		configurationVC = this.createVelocityContainer("edit");
+		configurationVC = createVelocityContainer("edit");
 		editScoringConfigButton = LinkFactory.createButtonSmall("scoring.config.enable.button", configurationVC, this);
 		
 		UserNodeAuditManager auditManager = course.getCourseEnvironment().getAuditManager();

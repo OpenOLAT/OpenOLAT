@@ -1,19 +1,20 @@
 <fieldset>
-	<legend>$r.translate("form.configuration")</legend>
-	$r.contextHelpWithWrapper("org.olat.course.nodes.ms","ced-ms.html","help.hover.ms-conf")
+	<legend>$r.contextHelpWithWrapper("org.olat.course.nodes.ms","ced-ms.html","help.hover.ms-conf")
+	$r.translate("form.configuration")</legend>
+	
 	#if ($hasLogEntries)
 		#if ($isOverwriting)
-			<p>
+			<div class="o_warning">
 				<i>$r.translate("scoring.overwriting.note")</i>
-			</p>
+			</div>
 		#else
-			<p>
+			<div class="o_warning">
 				<i>$r.translate("scoring.overwriting")</i>
-			</p>
-			<p>
+			</div>
+			<div class="o_button_group">
 				$r.render("scoring.config.enable.button")			
-			</p>
+			</div>
 		#end		
 	#end
-	$r.render("scoringController")
 </fieldset>
+$r.render("scoringController")

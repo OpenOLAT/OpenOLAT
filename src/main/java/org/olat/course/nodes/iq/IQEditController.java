@@ -363,6 +363,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 			}
 
 			previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, myContent, this);
+			previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 			previewLink.setCustomEnabledLinkCSS("o_preview");
 			previewLink.setTitle(getTranslator().translate("command.preview"));
 		}
@@ -739,6 +740,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 
 				setIQReference(re, moduleConfiguration);
 				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", re.getDisplayname(), Link.NONTRANSLATED, myContent, this);
+				previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 				previewLink.setCustomEnabledLinkCSS("o_preview");
 				previewLink.setTitle(getTranslator().translate("command.preview"));
 				myContent.contextPut("dontRenderRepositoryButton", new Boolean(true));
