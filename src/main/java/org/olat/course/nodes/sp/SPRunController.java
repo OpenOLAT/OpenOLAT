@@ -180,7 +180,7 @@ public class SPRunController extends BasicController {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ICourse.class, userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 
 		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(SPEditController.CONFIG_KEY_DELIVERYOPTIONS);
-		spCtr = new SinglePageController(ureq, getWindowControl(), courseFolderContainer, fileName, null,
+		spCtr = new SinglePageController(ureq, getWindowControl(), courseFolderContainer, fileName,
 				allowRelativeLinks, ores, deliveryOptions);
 		spCtr.setAllowDownload(true);
 		
