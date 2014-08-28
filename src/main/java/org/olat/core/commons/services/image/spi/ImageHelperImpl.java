@@ -386,7 +386,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	 * @param maxheight the maximum height of the new scaled image
 	 * @return
 	 */
-	private static Size calcScaledSize(BufferedImage image, int maxWidth, int maxHeight) {
+	public static Size calcScaledSize(BufferedImage image, int maxWidth, int maxHeight) {
 		int width = image.getWidth();
 		int height = image.getHeight();
 		return computeScaledSize(width, height, maxWidth, maxHeight, false);
@@ -526,7 +526,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	 * @param scaledImage
 	 * @return
 	 */
-	private static boolean writeTo(BufferedImage image, File scaledImage, Size scaledSize, String outputFormat) {
+	public static boolean writeTo(BufferedImage image, File scaledImage, Size scaledSize, String outputFormat) {
 		try {
 			if(!StringHelper.containsNonWhitespace(outputFormat)) {
 				outputFormat = OUTPUT_FORMAT;

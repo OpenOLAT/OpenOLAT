@@ -15,6 +15,7 @@
 				<bean class="org.olat.core.commons.services.thumbnail.impl.PDFToThumbnail">
 					<property name="imageHelper" ref="imageHelper"/>
 				</bean>
+				<ref bean="movieService"/>
 			</list>
 		</property>
 	</bean>

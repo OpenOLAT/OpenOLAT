@@ -19,16 +19,25 @@
  */
 package org.olat.core.commons.services.video;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.jcodec.api.FrameGrab;
+import org.jcodec.api.JCodecException;
 import org.jcodec.common.FileChannelWrapper;
 import org.jcodec.containers.mp4.demuxer.MP4Demuxer;
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.image.spi.ImageHelperImpl;
+import org.olat.core.commons.services.thumbnail.CannotGenerateThumbnailException;
+import org.olat.core.commons.services.thumbnail.FinalSize;
+import org.olat.core.commons.services.thumbnail.ThumbnailSPI;
 import org.olat.core.commons.services.video.spi.FLVParser;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -42,10 +51,22 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Service
-public class MovieServiceImpl implements MovieService {
+@Service("movieService")
+public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 	
 	private static final OLog log = Tracing.createLoggerFor(MovieServiceImpl.class);
+
+	private static final List<String> extensions = new ArrayList<>();
+	static {
+		extensions.add("mp4");
+		extensions.add("mov");
+		extensions.add("m4v");
+	}
+	
+	@Override
+	public List<String> getExtensions() {
+		return extensions;
+	}
 
 	@Override
 	public Size getSize(VFSLeaf media, String suffix) {
@@ -77,7 +98,24 @@ public class MovieServiceImpl implements MovieService {
 		}
 		return null;
 	}
-	
-	
 
+	@Override
+	public FinalSize generateThumbnail(VFSLeaf file, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill)
+	throws CannotGenerateThumbnailException {
+		FinalSize size = null;
+		if(file instanceof LocalFileImpl && thumbnailFile instanceof LocalFileImpl) {
+			try {
+				File baseFile = ((LocalFileImpl)file).getBasefile();
+				File scaledImage = ((LocalFileImpl)thumbnailFile).getBasefile();
+				BufferedImage frame = FrameGrab.getFrame(baseFile, 20);
+				Size scaledSize = ImageHelperImpl.calcScaledSize(frame, maxWidth, maxHeight);
+				if(ImageHelperImpl.writeTo(frame, scaledImage, scaledSize, "jpeg")) {
+					size = new FinalSize(scaledSize.getWidth(), scaledSize.getHeight());
+				}
+			} catch (IOException | JCodecException e) {
+				log.error("", e);
+			}
+		}
+		return size;
+	}
 }
