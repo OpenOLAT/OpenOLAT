@@ -636,7 +636,9 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	}
 
 	private void pushAddEventController(KalendarGUIAddEvent addEvent, UserRequest ureq) {
-		if(editController != null) return;
+		if(editController != null || ureq.getUserSession().getRoles().isGuestOnly()) {
+			return;
+		}
 		
 		KalendarRenderWrapper calendarWrapper = weeklyCalendar.getKalendarRenderWrapper(addEvent.getCalendarID());
 		// create new KalendarEvent

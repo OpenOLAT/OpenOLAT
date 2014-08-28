@@ -1,18 +1,10 @@
-#if ($insideManager)
-  <div id="o_cal_manage_config">
-#else
-  <div id="o_cal_config">
-#end
-  <fieldset>
-	  <legend>$r.translate("cal.list")</legend>
-$r.contextHelpWithWrapper("org.olat.commons.calendar","personal-calendar-callist.html","help.hover.callist")
-
-#if ($calendars.size() > 5)
-	<div class="o_cal_config_scrollwrapper">
-#end
+<fieldset class="o_block_large">
+	<legend>
+	  $r.contextHelpWithWrapper("org.olat.commons.calendar","personal-calendar-callist.html","help.hover.callist")
+	  $r.translate("cal.list")</legend>
 
 #foreach ($calendarWrapper in $calendars)
-  <div class="o_block clearfix">
+	<div class="o_block_bottom clearfix">
 
   #if (!$insideManager)
 	  #if ($calendarWrapper.getKalendarConfig().isVis())
@@ -28,59 +20,43 @@ $r.contextHelpWithWrapper("org.olat.commons.calendar","personal-calendar-callist
     #end
   #end
 
-
 	<div class="o_cal_config_calendar $calendarWrapper.getKalendarConfig().getCss()">
 		$r.escapeHtml($calendarWrapper.getKalendarConfig().getDisplayName())
 	</div>
 
-	  <a id="colorchooser_$calendarWrapper.getKalendar().getCalendarID()" class="o_cal_config_chosecolor" 
-		  href="$r.commandURIbg("cc", "id", "$calendarWrapper.getKalendar().getCalendarID()")"
-  		$r.bgTarget() 
-	  	title="$r.translateInAttribute("cal.color.choose")"><i class="o_icon o_icon-lg o_icon_color_picker"> </i></a>
+	<a id="colorchooser_$calendarWrapper.getKalendar().getCalendarID()" class="o_cal_config_chosecolor" 
+	   href="$r.commandURIbg("cc", "id", "$calendarWrapper.getKalendar().getCalendarID()")" $r.bgTarget() 
+	   title="$r.translateInAttribute("cal.color.choose")"><i class="o_icon o_icon-lg o_icon_color_picker"> </i></a>
 
     #if ($calendarWrapper.getAccess() == 0)
-	    <a class="o_cal_config_addevent" 
-		    href="$r.commandURIbg("add", "id", "$calendarWrapper.getKalendar().getCalendarID()")"
-  		  $r.bgTarget() 
-	  	  title="$r.translateInAttribute("cal.add.event")"><i class="o_icon o_icon-lg o_icon_add"> </i></a>
-	  	<a class="o_cal_config_importevent" 
-		    href="$r.commandURIbg("import", "id", "$calendarWrapper.getKalendar().getCalendarID()")"
-  		  $r.bgTarget() 
-	  	  title="$r.translateInAttribute("cal.import.event")"><i class="o_icon o_icon-lg o_icon_import"> </i></a> 
-	  	  
+	<a class="o_cal_config_addevent" 
+	   href="$r.commandURIbg("add", "id", "$calendarWrapper.getKalendar().getCalendarID()")" $r.bgTarget() 
+	   title="$r.translateInAttribute("cal.add.event")"><i class="o_icon o_icon-lg o_icon_add"> </i></a>
+	<a class="o_cal_config_importevent" 
+	   href="$r.commandURIbg("import", "id", "$calendarWrapper.getKalendar().getCalendarID()")" $r.bgTarget() 
+	   title="$r.translateInAttribute("cal.import.event")"><i class="o_icon o_icon-lg o_icon_import"> </i></a>  
     #else
-	    <div class="o_cal_config_readonly" 		    
-	  	  title="$r.translateInAttribute("cal.add.readonly")"><i class="o_icon o_icon-lg o_icon_readonly"> </i></div>
+	<span class="o_cal_config_readonly" title="$r.translateInAttribute("cal.add.readonly")"><i class="o_icon o_icon-lg o_icon_readonly"> </i></span>
     #end
  
 	<a class="o_cal_config_subscribeical" 
-		href="$r.commandURIbg("if", "id", "$calendarWrapper.getKalendar().getCalendarID()")"
-		$r.bgTarget() 
-		title="$r.translateInAttribute("cal.icalfeed.subscribe")"><i class="o_icon o_icon-lg o_icon_rss"> </i></a>
+	   href="$r.commandURIbg("if", "id", "$calendarWrapper.getKalendar().getCalendarID()")" $r.bgTarget() 
+	   title="$r.translateInAttribute("cal.icalfeed.subscribe")"><i class="o_icon o_icon-lg o_icon_rss"> </i></a>
 
 	#if ($calendarWrapper.hasIcalFeed($identity))
 		<a class="o_cal_config_remove_subscribeical" 
-    		href="$r.commandURIbg("rmif", "id", "$calendarWrapper.getKalendar().getCalendarID()")"
-  			$r.bgTarget() 
+    		href="$r.commandURIbg("rmif", "id", "$calendarWrapper.getKalendar().getCalendarID()")" $r.bgTarget() 
 	  		title="$r.translateInAttribute("cal.icalfeed.subscribe.remove")"><i class="o_icon o_icon-lg o_icon_remove"> </i></a>
-  
 		<a class="o_cal_config_regenerate_link" 
-			href="$r.commandURIbg("rf", "id", "$calendarWrapper.getKalendar().getCalendarID()")"
-      		$r.bgTarget()
+			href="$r.commandURIbg("rf", "id", "$calendarWrapper.getKalendar().getCalendarID()")" $r.bgTarget()
 			title="$r.translateInAttribute("cal.icalfeed.regenerate.title")"><i class="o_icon o_icon-lg o_icon_refresh"> </i></a>
     #end
 
 	#if ($removeFromPersonalCalendar && $calendarWrapper.isSubscribed())
 		<a class="o_cal_config_unsubscribe" 
-			href="$r.commandURIbg("unsub", "id", "$calendarWrapper.getKalendar().getCalendarID()")"
-					$r.bgTarget() 
+			href="$r.commandURIbg("unsub", "id", "$calendarWrapper.getKalendar().getCalendarID()")" $r.bgTarget() 
 			title="$r.translate("cal.unsubscribe")"><i class="o_icon o_icon-lg o_icon_rss_unsubscribe"> </i></a>
 	#end
 	</div>
 #end
-
-#if ($calendars.size() > 5)
-	</div>
-#end
 </fieldset>
-</div>

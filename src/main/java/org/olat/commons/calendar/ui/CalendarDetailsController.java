@@ -57,18 +57,23 @@ public class CalendarDetailsController extends BasicController {
 	private final KalendarEvent calEvent;
 	private final KalendarRenderWrapper calWrapper;
 	
-	private final Link editButton;
+	private Link editButton;
 	private final VelocityContainer mainVC;
+	
+	private final boolean isGuestOnly;
 	
 	public CalendarDetailsController(UserRequest ureq, WindowControl wControl,
 			KalendarEvent event, KalendarRenderWrapper calWrapper) {
 		super(ureq, wControl, Util.createPackageTranslator(CalendarManager.class, ureq.getLocale()));
 		this.calEvent = event;
 		this.calWrapper = calWrapper;
+		isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		mainVC = createVelocityContainer("event_details");
 		
-		editButton = LinkFactory.createButton("edit", mainVC, this);
-		mainVC.put("edit", editButton);
+		if(!isGuestOnly) {
+			editButton = LinkFactory.createButton("edit", mainVC, this);
+			mainVC.put("edit", editButton);
+		}
 		mainVC.contextPut("date", formatDate());
 		mainVC.contextPut("subject", event.getSubject());
 		if(StringHelper.containsNonWhitespace(event.getLocation())) {
@@ -144,7 +149,9 @@ public class CalendarDetailsController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == editButton) {
-			fireEvent(ureq, new KalendarGUIEditEvent(calEvent, calWrapper));
+			if(!isGuestOnly) {
+				fireEvent(ureq, new KalendarGUIEditEvent(calEvent, calWrapper));
+			}
 		}
 	}
 	
