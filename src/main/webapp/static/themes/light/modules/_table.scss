@@ -10,8 +10,11 @@
 				margin: 0;
 			}
 		}
-	}	
-	&.o_table_edit {}
+	}
+	&.o_table_edit table tbody {
+		border-top:solid $o-table-edit-border 4px;
+		background-color: $o-table-edit-bg;
+	}
 
 	.o_table_filter {
 	}
