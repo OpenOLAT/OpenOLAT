@@ -206,7 +206,7 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
     }
     
 		// Modules config		
-    editModules = this.createVelocityContainer("editModules");
+		editModules = createVelocityContainer("editModules");
 		modulesForm = new ModulesFormController(ureq, wControl, config);
 		listenTo(modulesForm);
 		

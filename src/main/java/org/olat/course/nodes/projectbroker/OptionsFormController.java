@@ -101,12 +101,12 @@ public class OptionsFormController extends FormBasicController {
 		selectionLimitedAttendees.addActionListener(FormEvent.ONCLICK);
 		
 		final Boolean selectionAcceptValue = config.isAcceptSelectionManually();
-		selectionAccept = uifactory.addCheckboxesVertical("form.options.selection.accept", formLayout, keys, values, 1);
+		selectionAccept = uifactory.addCheckboxesHorizontal("form.options.selection.accept", formLayout, keys, values);
 		selectionAccept.select(keys[0], selectionAcceptValue);
 		selectionAccept.addActionListener(FormEvent.ONCLICK);
 
 		final Boolean autoSignOut = config.isAutoSignOut();
-		selectionAutoSignOut = uifactory.addCheckboxesVertical("form.options.auto.sign.out", formLayout, keys, values, 1);
+		selectionAutoSignOut = uifactory.addCheckboxesHorizontal("form.options.auto.sign.out", formLayout, keys, values);
 		selectionAutoSignOut.select(keys[0], autoSignOut);
 		// enable auto-sign-out only when 'accept-selection' is enabled
 		selectionAutoSignOut.setVisible(selectionAcceptValue);

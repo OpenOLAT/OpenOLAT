@@ -66,7 +66,7 @@ public class ModulesFormController extends FormBasicController {
 		
 		//create form elements
 		final Boolean dropboxEnabled = (Boolean)config.get(ProjectBrokerCourseNode.CONF_DROPBOX_ENABLED);
-		selectionDropbox = uifactory.addCheckboxesVertical("dropbox", "form.modules.dropbox", formLayout, keys, values, 1);
+		selectionDropbox = uifactory.addCheckboxesHorizontal("dropbox", "form.modules.dropbox", formLayout, keys, values);
 		selectionDropbox.select(keys[0], dropboxEnabled);
 		selectionDropbox.addActionListener(FormEvent.ONCLICK);
 
@@ -81,7 +81,7 @@ public class ModulesFormController extends FormBasicController {
 		if (returnboxEnabled == null) {
 			returnboxEnabled = Boolean.TRUE;
 		}
-		selectionReturnbox = uifactory.addCheckboxesVertical("returnbox", "form.modules.returnbox", formLayout, keys, values, 1);
+		selectionReturnbox = uifactory.addCheckboxesHorizontal("returnbox", "form.modules.returnbox", formLayout, keys, values);
 		selectionReturnbox.select(keys[0], returnboxEnabled);
 		selectionReturnbox.addActionListener(FormEvent.ONCLICK);
 	}

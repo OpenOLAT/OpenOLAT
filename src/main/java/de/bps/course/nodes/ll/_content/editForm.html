@@ -9,7 +9,7 @@
 
 
 	<div class="o_block_large_bottom row">
-		<div class="col-xs-12 col-md-10">
+		<div class="col-xs-12 col-md-10 form-inline">
 			#if ($f.hasError($target))
 				$r.render($targetErr)	
 			#end
@@ -52,13 +52,8 @@
 			</div>
 		</div>
 	</div>
-#end  
-
-	<div class="o_block_large_bottom row">
-		<div class="col-xs-12 col-md-10">
-			<div class="o_button_group">
-				$r.render("submit")
-			</div>
-		</div>
+#end
+	<div class="o_button_group">
+		$r.render("submit")
 	</div>
 </div>

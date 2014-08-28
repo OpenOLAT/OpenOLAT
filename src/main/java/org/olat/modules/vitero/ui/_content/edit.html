@@ -1,14 +1,17 @@
 <fieldset>
-	<legend>$r.translate("booking.admin.title")</legend>
-	$r.contextHelpWithWrapper("org.olat.modules.vitero.ui","ced-vitero-config.html","help.hover.vitero")
-	<table>
-		<tr>
-			<td>$r.translate("group.name")</td>
-			<td>$r.translate("booking.begin")</td>
-			<td>$r.translate("booking.end")</td>
-			<td colspan="3"></td>
-		</tr>
-		
+	<legend>$r.contextHelpWithWrapper("org.olat.modules.vitero.ui","ced-vitero-config.html","help.hover.vitero")
+	$r.translate("booking.admin.title")</legend>
+	
+	<table class="table">
+		<thead>
+			<tr>
+				<th>$r.translate("group.name")</th>
+				<th>$r.translate("booking.begin")</th>
+				<th>$r.translate("booking.end")</th>
+				<th colspan="3"></th>
+			</tr>
+		</thead>
+		<tbody>
 		#foreach($bookingDisplay in $bookingDisplays)
 			<tr>
 				<td>$bookingDisplay.groupName</td>
@@ -20,7 +23,9 @@
 				<td>$r.render($bookingDisplay.deleteButton.component.componentName)</td>
 			</tr>
 		#end
+		</tbody>
 	</table>
-
-	$r.render("buttons-cont")
+	<div class="o_button_group">
+		$r.render("buttons-cont")
+	</div>
 </fieldset>
