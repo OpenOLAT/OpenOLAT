@@ -35,8 +35,6 @@ import java.util.Stack;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -49,8 +47,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.course.groupsandrights.CourseGroupManager;
-import org.olat.course.nodes.COCourseNode;
-import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGAreaManager;
@@ -65,7 +61,6 @@ import org.olat.modules.co.ContactFormController;
  */
 public class CORunController extends BasicController {
 
-	private VelocityContainer myContent;
 	private ContactFormController coFoCtr;
 	private final CourseGroupManager cgm;
 	
@@ -81,7 +76,7 @@ public class CORunController extends BasicController {
 	 * @param coCourseNode
 	 */
 	public CORunController(ModuleConfiguration moduleConfiguration, UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, COCourseNode coCourseNode) {
+			UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 		cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
 		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
@@ -95,21 +90,8 @@ public class CORunController extends BasicController {
 		String mSubject = (String) moduleConfiguration.get(COEditController.CONFIG_KEY_MSUBJECT_DEFAULT);
 		String mBody = (String) moduleConfiguration.get(COEditController.CONFIG_KEY_MBODY_DEFAULT);
 
-		myContent = createVelocityContainer("run");
-
-		myContent.contextPut("menuTitle", coCourseNode.getShortTitle());
-		myContent.contextPut("displayTitle", coCourseNode.getLongTitle());
-
 		// Adding learning objectives using a consumable panel. Will only be
 		// displayed on the first page
-		String learningObj = coCourseNode.getLearningObjectives();
-		Panel panel = new Panel("panel");
-		myContent.put("learningObjectives", panel);
-		if (learningObj != null) {
-			Component learningObjectives = ObjectivesHelper.createLearningObjectivesComponent(learningObj, ureq);
-			panel.setContent(learningObjectives);
-		}
-
 		Boolean partipsConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS);
 		Boolean coachesConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES);
 
@@ -167,8 +149,7 @@ public class CORunController extends BasicController {
 			cmsg.setSubject(mSubject);
 			coFoCtr = new ContactFormController(ureq, getWindowControl(), false, false, false, cmsg);
 			listenTo(coFoCtr);//dispose as this controller is disposed
-			myContent.put("myCoForm", coFoCtr.getInitialComponent());
-			putInitialPanel(myContent);
+			putInitialPanel(coFoCtr.getInitialComponent());
 		} else { // no email adresses at all
 			String message = translate("error.msg.send.no.rcps");
 			Controller mCtr = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, message);

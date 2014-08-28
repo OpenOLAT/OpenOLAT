@@ -922,7 +922,7 @@ function o_popover(id, contentId, loc) {
     	html: true,
     	trigger: 'click',
     	container: 'body',
-    	content: function() { return jQuery('#' + contentId).clone().html(); },
+    	content: function() { return jQuery('#' + contentId).clone().html(); }
 	}).on('shown.bs.popover', function () {
 		var clickListener = function (e) {
 			jQuery('#' + id).popover('hide');

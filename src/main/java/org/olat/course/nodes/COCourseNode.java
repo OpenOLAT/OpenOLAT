@@ -104,7 +104,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
 			String message = trans.translate("guestnoaccess.message");
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
-			controller = new CORunController(getModuleConfiguration(), ureq, wControl, userCourseEnv, this);
+			controller = new CORunController(getModuleConfiguration(), ureq, wControl, userCourseEnv);
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_co_icon");
 		return new NodeRunConstructionResult(ctrl);

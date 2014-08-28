@@ -47,11 +47,15 @@
 			offCanvasWidth : 0
 		};
 		// get site of menu from css
-		this.state.offCanvasWidth = parseInt($('#o_offcanvas_right').css('width').replace(/[^\d.]/g,''));
+		var w = $('#o_offcanvas_right').css('width');
+		//no width in full screen mode
+		if(w) {
+			this.state.offCanvasWidth = parseInt(w.replace(/[^\d.]/g,''));
 		
-		this.initListners();
-		this.calculateWidth();
-		this.optimize();
+			this.initListners();
+			this.calculateWidth();
+			this.optimize();
+		}
 	}
 	
 	Navbar.prototype.initListners = function() {
