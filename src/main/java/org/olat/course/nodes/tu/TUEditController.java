@@ -96,8 +96,9 @@ public class TUEditController extends ActivateableTabbableDefaultController impl
 		this.course = course;
 		this.stackPanel = stackPanel;
 		
-		myContent = this.createVelocityContainer("edit");
+		myContent = createVelocityContainer("edit");
 		previewButton = LinkFactory.createButtonSmall("command.preview", myContent, this);
+		previewButton.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 		
 		tuConfigForm = new TUConfigForm(ureq, wControl, config);
 		listenTo(tuConfigForm);

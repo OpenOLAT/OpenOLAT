@@ -1,18 +1,27 @@
-<fieldset class="clearfix">
-	<legend>$r.translate("form.title.choose.feed")</legend>
-	$r.contextHelpWithWrapper("org.olat.course.nodes.feed","help_choose_feed.html","heip.hover.choose.feed")
+<fieldset class="o_form form-horizontal clearfix">
+	<legend>$r.contextHelpWithWrapper("org.olat.course.nodes.feed","help_choose_feed.html","heip.hover.choose.feed")
+	$r.translate("form.title.choose.feed")</legend>
+	
 	#if ($showPreviewLink)
-		<p>
-			<strong>$r.translate("chosen.feed"):</strong>&nbsp;$r.render("command.preview")
-		</p>
-		$r.render("button.change.feed")	 	
-		#if($r.available("edit"))
-			$r.render("edit")
-		#end
+		<div class="form-group">
+			<label class="control-label col-sm-3">$r.translate("chosen.feed")</label>
+			<div class="col-sm-9"><p class="form-control-static">$r.render("command.preview")</p></div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-offset-3 col-sm-9">
+			$r.render("button.change.feed")	 	
+			#if($r.available("edit"))
+				$r.render("edit")
+			#end
+			</div>
+		</div>
 	#else
-		<p>
-		<strong>$r.translate("chosen.feed"):</strong>&nbsp;&nbsp; $chosen_feed_name
-		</p>		
-	    $r.render("button.create.feed")	 	
+		<div class="form-group">
+			<label class="control-label col-sm-3">$r.translate("chosen.feed")</label>
+			<div class="col-sm-9"><p class="form-control-static">$chosen_feed_name</p></div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-offset-3 col-sm-9">$r.render("button.create.feed")</div>
+		</div>
 	#end	
 </fieldset>

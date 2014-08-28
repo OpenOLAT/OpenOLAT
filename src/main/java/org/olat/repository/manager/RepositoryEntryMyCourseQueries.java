@@ -170,11 +170,11 @@ public class RepositoryEntryMyCourseQueries {
 		} else {
 			sb.append("select v, ");
 			if(params.getMarked() != null && params.getMarked().booleanValue()) {
+				sb.append(" 1 as marks,");
+			} else {
 				sb.append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
 				  .append("   where mark.creator=ident and mark.resId=v.key and mark.resName='RepositoryEntry'")
 				  .append(" ) as marks,");
-			} else {
-				sb.append(" 1 as marks,");
 			}
 			sb.append(" (select count(offer.key) from ").append(OfferImpl.class.getName()).append(" as offer ")
 			  .append("   where offer.resource=res and offer.valid=true")

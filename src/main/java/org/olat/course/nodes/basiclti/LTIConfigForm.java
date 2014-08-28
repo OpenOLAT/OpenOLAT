@@ -249,10 +249,10 @@ public class LTIConfigForm extends FormBasicController {
 
 		uifactory.addSpacerElement("attributes", formLayout, false);
 
-		sendName = uifactory.addCheckboxesVertical("sendName", "display.config.sendName", formLayout, new String[]{"xx"}, new String[]{null}, 1);
+		sendName = uifactory.addCheckboxesHorizontal("sendName", "display.config.sendName", formLayout, new String[]{"xx"}, new String[]{null});
 		sendName.select("xx", sendNameConfig);
 		
-		sendEmail = uifactory.addCheckboxesVertical("sendEmail", "display.config.sendEmail", formLayout, new String[]{"xx"}, new String[]{null}, 1);
+		sendEmail = uifactory.addCheckboxesHorizontal("sendEmail", "display.config.sendEmail", formLayout, new String[]{"xx"}, new String[]{null});
 		sendEmail.select("xx", sendEmailConfig);
 		
 		String page = velocity_root + "/custom.html";
@@ -327,7 +327,7 @@ public class LTIConfigForm extends FormBasicController {
 		
 		uifactory.addSpacerElement("debug", formLayout, false);
 		
-		doDebug = uifactory.addCheckboxesVertical("doDebug", "display.config.doDebug", formLayout, new String[]{"xx"}, new String[]{null}, 1);
+		doDebug = uifactory.addCheckboxesHorizontal("doDebug", "display.config.doDebug", formLayout, new String[]{"xx"}, new String[]{null});
 		doDebug.select("xx", doDebugConfig);
 				
 		uifactory.addSpacerElement("buttons", formLayout, false);

@@ -414,19 +414,18 @@ public class COConfigForm extends FormBasicController {
 		setFormTitle("header", null);
 		setFormContextHelp("org.olat.course.nodes.co","ced-co.html","help.hover.co");
 		
-		wantGroup = uifactory.addCheckboxesVertical("wantGroup", "message.want.group", formLayout, new String[]{"xx"},new String[]{null}, 1);
+		wantGroup = uifactory.addCheckboxesHorizontal("wantGroup", "message.want.group", formLayout, new String[]{"xx"},new String[]{null});
 		wantGroup.addActionListener(FormEvent.ONCLICK);
 		
-		coaches = uifactory.addCheckboxesVertical("coaches", "form.message.chckbx.coaches", formLayout, new String[]{"xx"}, new String[]{null}, 1);
+		coaches = uifactory.addCheckboxesHorizontal("coaches", "form.message.chckbx.coaches", formLayout, new String[]{"xx"}, new String[]{null});
 		coaches.select("xx", config.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES));
-		partips = uifactory.addCheckboxesVertical("partips", "form.message.chckbx.partips", formLayout, new String[]{"xx"}, new String[]{null}, 1);
+		partips = uifactory.addCheckboxesHorizontal("partips", "form.message.chckbx.partips", formLayout, new String[]{"xx"}, new String[]{null});
 		partips.select("xx", config.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS));
 	
 		wantGroup.select("xx", coaches.isSelected(0) || partips.isSelected(0));
 		
-		coachesAndPartips = FormLayoutContainer.createHorizontalFormLayout(
-				"coachesAndPartips", getTranslator()
-		);
+		coachesAndPartips = FormLayoutContainer
+				.createHorizontalFormLayout("coachesAndPartips", getTranslator());
 		formLayout.add(coachesAndPartips);
 
 		//groups
@@ -468,7 +467,7 @@ public class COConfigForm extends FormBasicController {
 		
 		hasAreas = areaManager.countBGAreasInContext(cev.getCourseGroupManager().getCourseResource()) > 0;
 		
-		wantEmail = uifactory.addCheckboxesVertical("wantEmail", "message.want.email", formLayout, new String[]{"xx"},new String[]{null}, 1);
+		wantEmail = uifactory.addCheckboxesHorizontal("wantEmail", "message.want.email", formLayout, new String[]{"xx"}, new String[]{null});
 		wantEmail.addActionListener(FormEvent.ONCLICK);
 		
 		//recipients

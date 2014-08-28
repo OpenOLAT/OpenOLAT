@@ -169,7 +169,7 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 		// Number of rows (only available in system or peekview type)
 		SpacerElement spacerCols = formFact.addSpacerElement("spacerCols", formLayout, true);
 		displayTwoColumns = formFact
-				.addCheckboxesVertical("displayTwoColumns", formLayout, new String[] { "on" }, new String[] { "" }, 1);
+				.addCheckboxesHorizontal("displayTwoColumns", formLayout, new String[] { "on" }, new String[] { "" });
 		displayTwoColumns.setLabel("displayTwoColumns", null);
 		displayTwoColumns.addActionListener(FormEvent.ONCLICK);
 		if (columnsConfig == 2) {

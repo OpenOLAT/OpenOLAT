@@ -1,16 +1,23 @@
-<fieldset  class="clearfix">
-	<legend>$r.translate("header")</legend>
-	$r.contextHelpWithWrapper("org.olat.course.nodes.scorm","ced-scorm.html","help.hover.scorm-filename")
+<fieldset class="o_form form-horizontal clearfix">
+	<legend>$r.contextHelpWithWrapper("org.olat.course.nodes.scorm","ced-scorm.html","help.hover.scorm-filename")
+	$r.translate("header")</legend>
+	
 	#if ($showPreviewButton)
-		<p>
-			<strong>$r.translate("chosencp"):</strong>&nbsp;$r.render("command.preview")
-		</p>		
-		$r.render("command.changecp")		
+		<div class="form-group">
+			<label class="control-label col-sm-3">$r.translate("chosencp")</label>
+			<div class="col-sm-9"><p class="form-control-static">$r.render("command.preview")</p></div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-offset-3 col-sm-9">$r.render("command.changecp")</div>
+		</div>	
 	#else
-		<p>
-			<strong>$r.translate("chosencp"):</strong>&nbsp;&nbsp; $chosencp
-		</p>
-		$r.render("command.importcp")		
+		<div class="form-group">
+			<label class="control-label col-sm-3">$r.translate("chosencp")</label>
+			<div class="col-sm-9"><p class="form-control-static">$chosencp</p></div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-offset-3 col-sm-9">$r.render("command.importcp")</div>
+		</div>	
 	#end	
 </fieldset>
 

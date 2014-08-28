@@ -180,13 +180,15 @@ public class TUConfigForm extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
 		try {
-			new URL(thost.getValue());
+			URL url = new URL(thost.getValue());
+			allOk &= StringHelper.containsNonWhitespace(url.getHost());
 		} catch (MalformedURLException e) {
 			thost.setErrorKey("TUConfigForm.invalidurl", null);
-			return false;
+			allOk &= false;
 		}
-		return true;
+		return allOk & super.validateFormLogic(ureq);
 	}
 	
 	
@@ -273,7 +275,7 @@ public class TUConfigForm extends FormBasicController {
 		selectables.select(loadedConfig, true);
 		selectables.addActionListener(FormEvent.ONCLICK);
 		
-		checkboxPagePasswordProtected = uifactory.addCheckboxesVertical("checkbox", "TUConfigForm.protected", formLayout, new String[] { "ison" }, new String[] { "" }, 1);
+		checkboxPagePasswordProtected = uifactory.addCheckboxesHorizontal("checkbox", "TUConfigForm.protected", formLayout, new String[] { "ison" }, new String[] { "" });
 		
 		checkboxPagePasswordProtected.select("ison", (user != null) && !user.equals(""));
 		// register for on click event to hide/disable other elements

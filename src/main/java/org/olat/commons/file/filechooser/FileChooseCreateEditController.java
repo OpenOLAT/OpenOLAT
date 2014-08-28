@@ -199,6 +199,7 @@ public class FileChooseCreateEditController extends BasicController{
 		changeFileButtonTwo.setElementCssClass("o_sel_filechooser_create");
 		previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", getTranslator().translate(NLS_FOLDER_DISPLAYNAME) + chosenFile, Link.NONTRANSLATED, myContent, this);
 		previewLink.setElementCssClass("o_sel_filechooser_preview");
+		previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 		previewLink.setCustomEnabledLinkCSS("o_preview");
 		previewLink.setTitle(getTranslator().translate("command.preview"));
 		
@@ -719,7 +720,7 @@ class AllowRelativeLinksForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		allowRelativeLinks = uifactory.addCheckboxesVertical("allowRelativeLinks", "allowRelativeLinks", formLayout, new String[] {"xx"}, new String[] {null}, 1);
+		allowRelativeLinks = uifactory.addCheckboxesHorizontal("allowRelativeLinks", "allowRelativeLinks", formLayout, new String[] {"xx"}, new String[] {null});
 		allowRelativeLinks.select("xx", isOn);
 		allowRelativeLinks.addActionListener(FormEvent.ONCLICK);
 	}

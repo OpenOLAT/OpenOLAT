@@ -400,7 +400,7 @@ class CompMenuForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {	
-		cpMenu = uifactory.addCheckboxesVertical("cpMenu", "display.config.compMenu", formLayout, new String[]{"xx"}, new String[]{null}, 1);
+		cpMenu = uifactory.addCheckboxesHorizontal("cpMenu", "display.config.compMenu", formLayout, new String[]{"xx"}, new String[]{null});
 		cpMenu.select("xx",compMenuConfig);
 
 		uifactory.addFormSubmitButton("submit", formLayout);

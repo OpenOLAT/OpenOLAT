@@ -1,11 +1,7 @@
 #if ($isExpertMode)
-	<div class="o_button_group o_button_group_right">
-		$r.render("command.activate.easyMode")
-	</div>
+	<div class="o_button_group o_button_group_right">$r.render("command.activate.easyMode")</div>
 	$r.render("conditionExpertForm")
 #else
-	<div class="o_button_group o_button_group_right">
-		$r.render("command.activate.expertMode")
-	</div>
+	<div class="o_button_group o_button_group_right">$r.render("command.activate.expertMode")</div>
 	$r.render("conditionEasyForm")
 #end
