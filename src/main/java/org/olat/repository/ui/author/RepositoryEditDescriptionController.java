@@ -564,6 +564,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 				repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(), repositoryEntry.getExpenditureOfWork(),
 				repositoryEntry.getLifecycle());
 		
+		
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 

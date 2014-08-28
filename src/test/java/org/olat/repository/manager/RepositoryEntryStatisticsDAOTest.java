@@ -238,13 +238,11 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 						RepositoryEntry re = repositoryManager.lookupRepositoryEntry(keyRepo);
 						repositoryService.incrementLaunchCounter(re);
 						if (i % 20 == 0 ) {
-							int ACCESS_VALUE = 4;
-							re = repositoryManager.setAccess(re, ACCESS_VALUE, false);
-							assertEquals("Wrong access value", ACCESS_VALUE, re.getAccess());
+							re = repositoryManager.setAccess(re, 4, false);
+							assertEquals("Wrong access value", 4, re.getAccess());
 						} else if (i % 10 == 0 ) {
-							int ACCESS_VALUE = 1;
-							re = repositoryManager.setAccess(re, ACCESS_VALUE, false);
-							assertEquals("Wrong access value",ACCESS_VALUE,re.getAccess());
+							re = repositoryManager.setAccess(re, 1, false);
+							assertEquals("Wrong access value", 1,re.getAccess());
 						}
 						dbInstance.commitAndCloseSession();
 					}
@@ -304,12 +302,14 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 						RepositoryEntry re = repositoryManager.lookupRepositoryEntry(keyRepo);
 						repositoryService.incrementLaunchCounter(re);
 						if (i % 30 == 0 ) {
-							re = repositoryManager.setProperties(re, true, false, false);	
+							re = repositoryManager.setAccessAndProperties(re, 3, false, true, false, false);	
+							assertEquals("Wrong access value", 3, re.getAccess());
 							assertEquals("Wrong canCopy value", true, re.getCanCopy());
 							assertEquals("Wrong getCanReference value",false, re.getCanReference());
 							assertEquals("Wrong getCanDownload value", false, re.getCanDownload());
 						} else 	if (i % 15 == 0 ) {
-							re = repositoryManager.setProperties(re, false, true, true);	
+							re = repositoryManager.setAccessAndProperties(re, 2,false, false, true, true);	
+							assertEquals("Wrong access value", 2, re.getAccess());
 							assertEquals("Wrong canCopy value", false, re.getCanCopy());
 							assertEquals("Wrong getCanReference value", true, re.getCanReference());
 							assertEquals("Wrong getCanDownload value", true, re.getCanDownload());

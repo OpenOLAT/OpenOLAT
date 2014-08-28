@@ -106,9 +106,9 @@ public class AuthoringEditAccessController extends BasicController {
 			
 				int access = propPupForm.getAccess();
 				int numOfBookingConfigs = acCtr.getNumOfBookingConfigurations();
-
-				entry = repositoryManager.setProperties(entry, propPupForm.canCopy(), propPupForm.canReference(), propPupForm.canDownload());
-				entry = repositoryManager.setAccess(entry, access, propPupForm.isMembersOnly());		
+				entry = repositoryManager.setAccessAndProperties(entry,
+						access, propPupForm.isMembersOnly(),
+						propPupForm.canCopy(), propPupForm.canReference(), propPupForm.canDownload());		
 
 				boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
 				if(access == RepositoryEntry.ACC_USERS || access == RepositoryEntry.ACC_USERS_GUESTS) {

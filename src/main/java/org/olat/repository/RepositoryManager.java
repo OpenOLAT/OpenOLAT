@@ -618,7 +618,7 @@ public class RepositoryManager extends BasicManager {
 		return entry;
 	}
 
-	public RepositoryEntry setAccess(final RepositoryEntry re, int access, boolean membersOnly ) {
+	public RepositoryEntry setAccess(final RepositoryEntry re, int access, boolean membersOnly) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
 		reloadedRe.setAccess(access);
 		reloadedRe.setMembersOnly(membersOnly);
@@ -626,6 +626,30 @@ public class RepositoryManager extends BasicManager {
 		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();
 		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
+		return updatedRe;
+	}
+	
+	public RepositoryEntry setAccessAndProperties(final RepositoryEntry re,
+			int access, boolean membersOnly,
+			boolean canCopy, boolean canReference, boolean canDownload) {
+		RepositoryEntry reloadedRe = loadForUpdate(re);
+		//access
+		reloadedRe.setAccess(access);
+		reloadedRe.setMembersOnly(membersOnly);
+		reloadedRe.setLastModified(new Date());
+		//properties
+		reloadedRe.setCanCopy(canCopy);
+		reloadedRe.setCanReference(canReference);
+		reloadedRe.setCanDownload(canDownload);
+		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
+		
+		//fetch the values
+		updatedRe.getStatistics().getLaunchCounter();
+		if(updatedRe.getLifecycle() != null) {
+			updatedRe.getLifecycle().getKey();
+		}
+		
+		dbInstance.commit();
 		return updatedRe;
 	}
 
@@ -759,18 +783,14 @@ public class RepositoryManager extends BasicManager {
 			dbInstance.getCurrentEntityManager().remove(cycleToDelete);
 		}
 		
+		//fetch the values
+		updatedRe.getStatistics().getLaunchCounter();
+		if(updatedRe.getLifecycle() != null) {
+			updatedRe.getLifecycle().getKey();
+		}
+		
 		dbInstance.commit();
 		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
-		return updatedRe;
-	}
-
-	public RepositoryEntry setProperties(final RepositoryEntry re, boolean canCopy, boolean canReference, boolean canDownload) {
-		RepositoryEntry reloadedRe = loadForUpdate(re);
-		reloadedRe.setCanCopy(canCopy);
-		reloadedRe.setCanReference(canReference);
-		reloadedRe.setCanDownload(canDownload);
-		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
-		dbInstance.commit();
 		return updatedRe;
 	}
 	
