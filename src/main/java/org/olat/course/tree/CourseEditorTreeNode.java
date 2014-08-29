@@ -25,11 +25,8 @@
 
 package org.olat.course.tree;
 
-import java.util.List;
-
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.util.nodes.INode;
-import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
@@ -130,19 +127,21 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 			CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(cn.getType());
 			return cnConfig.getIconCSSClass();
 		}
-
 	}
 
 	@Override
-	public String getIconDecorator2CssClass() {
+	public String getIconDecorator1CssClass() {
 		StatusDescription sd = cn.isConfigValid();
-		//this one is deleted
-		if (deleted) return "o_middel";
-		//errors!
-		if (sd.isError()) return "o_miderr";
-		//ready for publish
-		if (!sd.isError() && dirty) return "o_midpub";
-		return null;
+		
+		String cssClass = null;
+		if (deleted) {
+			cssClass = "o_middel";
+		} else if (sd.isError()) {
+			cssClass = "o_miderr";
+		} else if (!sd.isError() && dirty) {
+			cssClass = "o_midpub";
+		}
+		return cssClass;
 	}
 
 	@Override
@@ -157,13 +156,15 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 	}
 
 	@Override
-	public String getIconDecorator4CssClass() {
+	public String getIconDecorator2CssClass() {
 		//do not show errors if marked for deletion
-		if(deleted) return null;
-		//
-		List<ConditionExpression> conditions = cn.getConditionExpressions();
-		if (conditions.size() > 0) return "o_midlock";
-		return null;
+		String cssClass = null;
+		if(deleted) {
+			cssClass = null;
+		} else if(cn.getConditionExpressions().size() > 0) {
+			cssClass = "o_midlock";
+		}
+		return cssClass;
 	}
 
 	/**

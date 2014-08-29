@@ -424,19 +424,18 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		public void setDrop(boolean drop) {
 			this.drop = drop;
 		}
-
 	}
 	
 	private void appendDecorators(TreeNode node, StringOutput sb) {
-		appendDecorator(node.getIconDecorator1CssClass(), sb);
-		appendDecorator(node.getIconDecorator2CssClass(), sb);
-		appendDecorator(node.getIconDecorator3CssClass(), sb);
-		appendDecorator(node.getIconDecorator4CssClass(), sb);
+		appendDecorator(node.getIconDecorator1CssClass(), sb, 1);
+		appendDecorator(node.getIconDecorator2CssClass(), sb, 2);
+		appendDecorator(node.getIconDecorator3CssClass(), sb, 3);
+		appendDecorator(node.getIconDecorator4CssClass(), sb, 4);
 	}
 
-	private void appendDecorator(String decorator, StringOutput sb) {
+	private void appendDecorator(String decorator, StringOutput sb, int num) {
 		if (decorator != null && decorator.length() > 0) {
-			sb.append("<span class='badge ").append(decorator).append("'><i class='o_icon ").append(decorator).append("'></i></span>");
+			sb.append("<span class='badge o_badge_").append(num).append(" ").append(decorator).append("'><i class='o_icon ").append(decorator).append("'></i></span>");
 		}
 	}
 	

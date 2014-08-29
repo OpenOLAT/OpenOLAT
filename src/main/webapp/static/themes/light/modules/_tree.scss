@@ -61,10 +61,26 @@
 		}
 		
 		li .badge {
-			float: right;
+			position: absolute;
 			font-size: 70%;
 			&:before { 
 				content: none; 
+			}
+			&.o_badge_1 {
+				top: 3px;
+				right:1px;
+			}
+			&.o_badge_2 {
+				bottom: 3px;
+				right:1px;
+			}
+			&.o_badge_3 {
+				top: 3px;
+				right:25px;
+			}
+			&.o_badge_4 {
+				bottom: 3px;
+				right:25px;
 			}
 		}
 		
