@@ -302,7 +302,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if(entries != null && entries.size() > 0) {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("Editor".equals(type)) {
-				doEdit(ureq);
+				if(handler.supportsEdit(re) == EditionSupport.yes) {
+					doEdit(ureq);
+				}
 			} else if("Catalog".equals(type)) {
 				doCatalog(ureq);
 			} else if("Infos".equals(type)) {
