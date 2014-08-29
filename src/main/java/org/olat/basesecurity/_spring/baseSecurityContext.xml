@@ -68,6 +68,7 @@
 						sysGroupUsermanager.accessToProperties=false
 						sysGroupUsermanager.accessToPolicies=false
 						sysGroupUsermanager.accessToAuthentications=false
+						sysGroupUsermanager.canManagePoolmanagers=true
 						sysGroupUsermanager.canManageGroupmanagers=true
 						sysGroupUsermanager.canManageInstitutionalResourceManager=true
 						sysGroupUsermanager.canManageAuthors=true
