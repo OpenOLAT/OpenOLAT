@@ -66,7 +66,6 @@ import org.olat.modules.cp.CPDisplayController;
 import org.olat.modules.cp.CPOfflineReadableManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
@@ -273,9 +272,5 @@ public class ImsCPHandler extends FileHandler {
 	 */
 	public boolean isLocked(OLATResourceable ores) {
 		return false;
-	}
-	
-	public WizardCloseResourceController createCloseResourceController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
-		throw new AssertException("not implemented");
 	}
 }

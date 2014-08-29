@@ -65,6 +65,10 @@ public abstract class BasicStep implements Step {
 		nextStep = Step.NOSTEP;
 	}
 	
+	public void setTranslator(Translator translator) {
+		this.translator = translator;
+	}
+	
 	public abstract PrevNextFinishConfig getInitialPrevNextFinishConfig();
 
 	public abstract StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form);

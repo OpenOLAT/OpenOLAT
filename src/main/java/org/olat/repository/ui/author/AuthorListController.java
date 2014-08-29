@@ -70,6 +70,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
@@ -96,7 +98,6 @@ import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
-import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.handlers.RepositoryHandlerFactory.OrderedRepositoryHandler;
@@ -104,6 +105,8 @@ import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.AuthoringEntryDataModel.Cols;
+import org.olat.repository.ui.author.wizard.CloseResourceCallback;
+import org.olat.repository.ui.author.wizard.Close_1_ExplanationStep;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -132,7 +135,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private UserSearchController userSearchCtr;
 	private DialogBoxController deleteDialogCtrl;
 	private CopyRepositoryEntryController copyCtrl;
-	private WizardCloseResourceController closeCtrl;
+	private StepsMainRunController closeCtrl;
 	private ImportRepositoryEntryController importCtrl;
 	private CreateRepositoryEntryController createCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
@@ -404,6 +407,15 @@ public class AuthorListController extends FormBasicController implements Activat
 				doCompleteDelete(ureq, row);
 				reloadRows();
 			}
+		} else if(closeCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				removeAsListenerAndDispose(closeCtrl);
+				closeCtrl = null;
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					reloadRows();
+				}
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -599,19 +611,16 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void doCloseResource(UserRequest ureq, AuthoringEntryRow row) {
-		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(closeCtrl);
 		
 		RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
-		RepositoryHandler repoHandler = repositoryHandlerFactory.getRepositoryHandler(entry);
-		closeCtrl = repoHandler.createCloseResourceController(ureq, getWindowControl(), entry);
+
+		Step start = new Close_1_ExplanationStep(ureq, entry);
+		StepRunnerCallback finish = new CloseResourceCallback(entry);
+		closeCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("wizard.closecourse.title"), "o_sel_checklist_wizard");
 		listenTo(closeCtrl);
-		closeCtrl.startWorkflow();
-		
-		String title = closeCtrl.getAndRemoveWizardTitle();
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), closeCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
+		getWindowControl().pushAsModalDialog(closeCtrl.getInitialComponent());
 	}
 	
 	private void doCopy(UserRequest ureq, AuthoringEntryRow row) {

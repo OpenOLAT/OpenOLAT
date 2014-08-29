@@ -51,7 +51,6 @@ import org.olat.modules.scorm.ScormPackageConfig;
 import org.olat.modules.scorm.ScormRuntimeController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
@@ -197,10 +196,5 @@ public class SCORMCPHandler extends FileHandler {
 	@Override
 	public void releaseLock(LockResult lockResult) {
 		//nothing to do since nothing locked
-	}
-
-	@Override
-	public WizardCloseResourceController createCloseResourceController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
-		throw new AssertException("not implemented");
 	}
 }

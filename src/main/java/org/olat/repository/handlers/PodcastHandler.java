@@ -55,7 +55,6 @@ import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
@@ -224,13 +223,6 @@ public class PodcastHandler implements RepositoryHandler {
 	@Override
 	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		throw new AssertException("Trying to get wizard where no creation wizard is provided for this type.");
-	}
-
-	@Override
-	public WizardCloseResourceController createCloseResourceController(UserRequest ureq, WindowControl control, RepositoryEntry repositoryEntry) {
-		// This was copied from WikiHandler. No specific close wizard is
-		// implemented.
-		throw new AssertException("not implemented");
 	}
 
 	@Override

@@ -100,8 +100,6 @@ import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.controllers.WizardCloseCourseController;
-import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
@@ -573,11 +571,6 @@ public class CourseHandler implements RepositoryHandler {
 	@Override
 	public boolean isLocked(OLATResourceable ores) {
 		return CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(ores, CourseFactory.COURSE_EDITOR_LOCK);
-	}
-
-	@Override
-	public WizardCloseResourceController createCloseResourceController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
-		return new WizardCloseCourseController(ureq, wControl, repositoryEntry);
 	}
 	
 	private static class IndexFileFilter extends SimpleFileVisitor<Path> {

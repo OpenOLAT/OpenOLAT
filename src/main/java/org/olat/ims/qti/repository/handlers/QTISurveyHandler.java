@@ -50,7 +50,6 @@ import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQPreviewSecurityCallback;
 import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
@@ -184,10 +183,5 @@ public class QTISurveyHandler extends QTIHandler {
 	@Override
 	protected String getDeletedFilePrefix() {
 		return "del_qtisurvey_"; 
-	}
-
-	@Override
-	public WizardCloseResourceController createCloseResourceController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
-		throw new AssertException("not implemented");
 	}
 }

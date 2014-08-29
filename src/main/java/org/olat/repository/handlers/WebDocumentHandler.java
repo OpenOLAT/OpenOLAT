@@ -59,7 +59,6 @@ import org.olat.fileresource.types.SoundFileResource;
 import org.olat.fileresource.types.XlsFileResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -236,10 +235,5 @@ public class WebDocumentHandler extends FileHandler {
 	@Override
 	public boolean isLocked(OLATResourceable ores) {
 		return false;
-	}
-
-	@Override
-	public WizardCloseResourceController createCloseResourceController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
-		throw new AssertException("not implemented");
 	}
 }

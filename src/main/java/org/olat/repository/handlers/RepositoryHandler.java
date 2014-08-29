@@ -42,7 +42,6 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.repository.model.RepositoryEntrySecurity;
 
 
@@ -163,15 +162,6 @@ public interface RepositoryHandler {
 	 * @return Controller that guides trough the creation workflow via wizard.
 	 */
 	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl);
-
-	/**
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param repositoryEntry
-	 * @return
-	 */
-	public WizardCloseResourceController createCloseResourceController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry);
 	
 	/**
 	 * Called if a user downloads a Resourceable that this handler can handle.

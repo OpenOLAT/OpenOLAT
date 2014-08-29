@@ -78,7 +78,6 @@ import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.controllers.WizardCloseResourceController;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
@@ -341,10 +340,5 @@ public class WikiHandler implements RepositoryHandler {
 	@Override
 	public boolean isLocked(OLATResourceable ores) {
 		return false;
-	}
-
-	@Override
-	public WizardCloseResourceController createCloseResourceController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
-		throw new AssertException("not implemented");
 	}
 }
