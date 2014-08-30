@@ -131,6 +131,8 @@
 		}
 		.o_navbar-nav {
    			a {
+   				color: $o-offcanvas-link-color;
+   				text-shadow: none;
       			&:hover,
       			&:focus {
         			background-color: $o-offcanvas-link-hover-bg;
