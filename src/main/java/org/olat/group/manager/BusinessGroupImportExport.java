@@ -294,7 +294,6 @@ public class BusinessGroupImportExport {
 					Long calendarAccess = group.calendarAccess;
 					ct.saveCalendarAccess(calendarAccess);
 				}
-				//fxdiff VCRP-8: collaboration tools folder access control
 				if(group.folderAccess != null) {
 				  ct.saveFolderAccess(group.folderAccess);				  
 				}
@@ -308,13 +307,13 @@ public class BusinessGroupImportExport {
 					Set<String> uniqueMemberships = new HashSet<>(memberships);
 					for (String membership : uniqueMemberships) {
 						BGArea area = areaManager.findBGArea(membership, re.getOlatResource());
-						if (area == null) {
-							throw new AssertException("Group-Area-Relationship in export, but area was not created during import.");
+						if (area != null) {
+							areaManager.addBGToBGArea(newGroup, area);
+						} else {
+							log.error("Area not found", null);
 						}
-						areaManager.addBGToBGArea(newGroup, area);
 					}
 				}
-
 				
 				boolean download = groupModule.isUserListDownloadDefaultAllowed();
 				newGroup = businessGroupService.updateDisplayMembers(newGroup, showOwners, showParticipants, showWaitingList, false, false, false, download);
