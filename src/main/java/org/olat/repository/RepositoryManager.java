@@ -548,7 +548,7 @@ public class RepositoryManager extends BasicManager {
 					}
 					case participant: {
 						boolean d = (def == null ? false : def.booleanValue());
-						if(!d) {
+						if(d) {
 							isCourseParticipant = true;
 						} else {
 							isGroupParticipant = true;
