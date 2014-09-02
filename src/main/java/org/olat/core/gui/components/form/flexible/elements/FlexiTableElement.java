@@ -47,6 +47,11 @@ public interface FlexiTableElement extends FormItem {
 	@Override
 	public FlexiTableComponent getComponent();
 	
+	
+	public FlexiTableStateEntry getStateEntry();
+	
+	public void setStateEntry(UserRequest ureq, FlexiTableStateEntry state);
+	
 	/**
 	 * @return the type of renderer used by  this table
 	 */
@@ -279,7 +284,11 @@ public interface FlexiTableElement extends FormItem {
 	
 	public void setPageSize(int pageSize);
 	
+	public int getPage();
+	
 	public void setPage(int page);
+	
+	public void quickSearch(UserRequest ureq, String search);
 	
 	public void sort(String sortKey, boolean asc);
 	

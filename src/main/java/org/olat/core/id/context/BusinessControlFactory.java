@@ -262,6 +262,14 @@ public class BusinessControlFactory {
 		}
 		return createFromContextEntries(ces);
 	}
+	
+	public BusinessControl createFromPoint(HistoryPoint point) {
+		final List<ContextEntry> ces = point.getEntries();
+		if (ces.isEmpty() || ces.get(0) == null) {
+			log.warn("OLAT-4103, OLAT-4047, empty or invalid business controll string. list is empty. string is " + point.getBusinessPath(), new Exception("stacktrace"));
+		}
+		return createFromContextEntries(ces);
+	}
 
 	//fxdiff BAKS-7 Resume function
 	public BusinessControl createFromContextEntries(final List<ContextEntry> ces) {

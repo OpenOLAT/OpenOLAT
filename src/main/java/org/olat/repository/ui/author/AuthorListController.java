@@ -52,6 +52,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellR
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
@@ -322,8 +323,16 @@ public class AuthorListController extends FormBasicController implements Activat
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
-		
+		if(state instanceof AuthorListState) {
+			AuthorListState se = (AuthorListState)state;
+			if(se.getTableState() != null) {
+				tableEl.setStateEntry(ureq, se.getTableState());
+			}
+			if(se.getSearchEvent() != null) {
+				searchCtrl.update(se.getSearchEvent());
+				doSearch(ureq, se.getSearchEvent());
+			}
+		}
 	}
 	
 	@Override
@@ -375,7 +384,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		} else if(searchCtrl == source) {
 			if(event instanceof SearchEvent) {
 				SearchEvent se = (SearchEvent)event;
-				doSearch(se);
+				doSearch(ureq, se);
 			} else if(event == Event.CANCELLED_EVENT) {
 				searchParams.setResourceTypes(null);
 				searchParams.setIdAndRefs(null);
@@ -484,6 +493,10 @@ public class AuthorListController extends FormBasicController implements Activat
 				} else if("select".equals(cmd)) {
 					launch(ureq, row);
 				}
+			} else if(event instanceof FlexiTableEvent) {
+				AuthorListState stateEntry = new AuthorListState();
+				stateEntry.setTableState(tableEl.getStateEntry());
+				addToHistory(ureq, stateEntry);
 			}
 		} 
 		super.formInnerEvent(ureq, source, event);
@@ -571,7 +584,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());
 	}
 	
-	private void doSearch(SearchEvent se) {
+	private void doSearch(UserRequest ureq, SearchEvent se) {
 		if(StringHelper.containsNonWhitespace(se.getType())) {
 			searchParams.setResourceTypes(Collections.singletonList(se.getType()));
 		} else {
@@ -584,6 +597,11 @@ public class AuthorListController extends FormBasicController implements Activat
 		searchParams.setDisplayname(se.getDisplayname());
 		searchParams.setDescription(se.getDescription());
 		tableEl.reset();
+		
+		AuthorListState stateEntry = new AuthorListState();
+		stateEntry.setSearchEvent(se);
+		stateEntry.setTableState(tableEl.getStateEntry());
+		addToHistory(ureq, stateEntry);
 	}
 	
 	private void doAddOwners(UserRequest ureq, List<AuthoringEntryRow> rows) {

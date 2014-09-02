@@ -153,7 +153,7 @@ public class OverviewRepositoryListController extends BasicController implements
 					segmentView.select(catalogLink);
 				}
 			} else if("Search".equalsIgnoreCase(segment) && searchCourseLink != null) {
-				doOpenSearchCourses(ureq);
+				doOpenSearchCourses(ureq).activate(ureq, subEntries, entry.getTransientState());
 				segmentView.select(searchCourseLink);
 			} else {
 				//default if the others fail

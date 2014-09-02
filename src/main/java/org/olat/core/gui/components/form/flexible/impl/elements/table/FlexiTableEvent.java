@@ -19,36 +19,23 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
-import java.util.List;
-
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 
 /**
+ * More informations as something usefull to update business path and history
  * 
- * Initial date: 11.06.2014<br>
+ * Initial date: 02.09.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FlexiTableSearchEvent extends FormEvent {
+public class FlexiTableEvent extends FormEvent {
+	private static final long serialVersionUID = -2681547518208218235L;
 
-	private static final long serialVersionUID = -1977791683080030187L;
-	public static final String CMD = "ftSearch";
+	public static final String QUICK_SEARCH = "ftQuickSearch";
 
-	private final String search;
-	private final List<String> condQueries;
+	public FlexiTableEvent(FormItem source, String cmd) {
+		super(cmd, source, FormEvent.ONCLICK);
 
-	public FlexiTableSearchEvent(FormItem source, String search, List<String> condQueries, int action) {
-		super(CMD, source, action);
-		this.search = search;
-		this.condQueries = condQueries;
-	}
-
-	public String getSearch() {
-		return search;
-	}
-
-	public List<String> getCondQueries() {
-		return condQueries;
 	}
 }

@@ -41,6 +41,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
@@ -485,6 +486,14 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	
 	protected WindowControl addToHistory(UserRequest ureq, OLATResourceable ores, StateEntry stateEntry, WindowControl wControl, boolean addToHistory) {
 		return BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, stateEntry, wControl, addToHistory);
+	}
+	
+	protected WindowControl addToHistory(UserRequest ureq, StateEntry stateEntry) {
+		ContextEntry currentEntry = getWindowControl().getBusinessControl().getCurrentContextEntry();
+		if(currentEntry != null) {
+			currentEntry.setTransientState(stateEntry);
+		}
+		return addToHistory(ureq, this);
 	}
 	
 	protected void removeHistory(UserRequest ureq) {

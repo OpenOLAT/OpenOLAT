@@ -116,7 +116,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private RepositoryEntry re;
 	private final RepositoryHandler handler;
 	
-	private String launchedFromBusinessPath;
+	private HistoryPoint launchedFromPoint;
 	
 	@Autowired
 	protected ACService acService;
@@ -158,7 +158,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				if(point.getEntries().size() > 0) {
 					OLATResourceable ores = point.getEntries().get(0).getOLATResourceable();
 					if(!OresHelper.equals(re, ores) && !OresHelper.equals(re.getOlatResource(), ores)) {
-						launchedFromBusinessPath = point.getBusinessPath();
+						launchedFromPoint = point;
 						break;
 					}
 				}
@@ -463,14 +463,14 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			}
 		}
 		// Now try to go back to place that is attacked to (optional) root back business path
-		if (StringHelper.containsNonWhitespace(launchedFromBusinessPath)) {
-			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(launchedFromBusinessPath);
+		if (launchedFromPoint != null && StringHelper.containsNonWhitespace(launchedFromPoint.getBusinessPath())) {
+			BusinessControl bc = BusinessControlFactory.getInstance().createFromPoint(launchedFromPoint);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 			try {
 				//make the resume secure. If something fail, don't generate a red screen
 				NewControllerFactory.getInstance().launch(ureq, bwControl);
 			} catch (Exception e) {
-				logError("Error while resuming with root leve back business path::" + launchedFromBusinessPath, e);
+				logError("Error while resuming with root leve back business path::" + launchedFromPoint.getBusinessPath(), e);
 			}
 		}
 	}

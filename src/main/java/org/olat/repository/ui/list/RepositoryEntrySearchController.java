@@ -101,6 +101,13 @@ public class RepositoryEntrySearchController extends FormBasicController impleme
 			uifactory.addFormCancelButton("quick.search", buttonLayout, ureq, getWindowControl());
 		}
 	}
+	
+	public void update(SearchEvent se) {
+		id.setValue(se.getId());
+		text.setValue(se.getDisplayname());
+		author.setValue(se.getAuthor());
+		membershipMandatoryEl.select("my", se.isMembershipMandatory());
+	}
 
 	@Override
 	protected void doDispose() {

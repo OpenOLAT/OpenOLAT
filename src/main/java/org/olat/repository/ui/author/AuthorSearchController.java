@@ -53,6 +53,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AuthorSearchController extends FormBasicController implements ExtendedFlexiTableSearchController {
 
+	private static final String[] keys = new String[]{ "my" };
+	
 	private TextElement id; // only for admins
 	private TextElement displayName;
 	private TextElement author;
@@ -61,6 +63,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	private MultipleSelectionElement ownedResourcesOnlyEl;
 	private FormSubmit searchButton;
 	
+	private String[] typeKeys;
 	private String[] limitTypes;
 	private boolean cancelAllowed;
 	private boolean enabled = true;
@@ -96,7 +99,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		description.setElementCssClass("o_sel_repo_search_description");
 
 		List<String> typeList = getResources();
-		String[] typeKeys = typeList.toArray(new String[typeList.size()]);
+		typeKeys = typeList.toArray(new String[typeList.size()]);
 		String[] typeValues = getTranslatedResources(typeList);
 		types = uifactory.addDropdownSingleselect("cif.type", "cif.type", leftContainer, typeKeys, typeValues, null);
 
@@ -110,7 +113,6 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		id = uifactory.addTextElement("cif_id", "cif.id", 128, "", rightContainer);
 		id.setElementCssClass("o_sel_repo_search_id");
 		
-		String[] keys = new String[]{ "my" };
 		ownedResourcesOnlyEl = uifactory.addCheckboxesHorizontal("cif_my", "cif.owned.resources.only", rightContainer, keys, new String[]{ "" });
 		ownedResourcesOnlyEl.select(keys[0], true);
 		
@@ -119,6 +121,23 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		searchButton = uifactory.addFormSubmitButton("search", buttonLayout);
 		if(cancelAllowed) {
 			uifactory.addFormCancelButton("quick.search", buttonLayout, ureq, getWindowControl());
+		}
+	}
+	
+	public void update(SearchEvent se) {
+		displayName.setValue(se.getDisplayname());
+		id.setValue(se.getId());
+		author.setValue(se.getAuthor());
+		ownedResourcesOnlyEl.select(keys[0], se.isOwnedResourcesOnly());
+		description.setValue(se.getDescription());
+		
+		String type = se.getType();
+		if(StringHelper.containsNonWhitespace(type)) {
+			for(String typeKey:typeKeys) {
+				if(type.equals(typeKey)) {
+					types.select(typeKey, true);
+				}
+			}
 		}
 	}
 

@@ -48,6 +48,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
@@ -248,7 +249,16 @@ public class RepositoryEntryListController extends FormBasicController
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(state instanceof RepositoryEntryListState) {
+			RepositoryEntryListState se = (RepositoryEntryListState)state;
+			if(se.getTableState() != null) {
+				tableEl.setStateEntry(ureq, se.getTableState());
+			}
+			if(se.getSearchEvent() != null) {
+				searchCtrl.update(se.getSearchEvent());
+				doSearch(ureq, se.getSearchEvent());
+			}
+		}
 	}
 
 	@Override
@@ -303,6 +313,10 @@ public class RepositoryEntryListController extends FormBasicController
 						doOpenDetails(ureq, row);
 					}
 				}
+			} else if(event instanceof FlexiTableEvent) {
+				RepositoryEntryListState state = new RepositoryEntryListState();
+				state.setTableState(tableEl.getStateEntry());
+				addToHistory(ureq, state);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -397,7 +411,7 @@ public class RepositoryEntryListController extends FormBasicController
 		} else if(searchCtrl == source) {
 			if(event instanceof SearchEvent) {
 				SearchEvent se = (SearchEvent)event;
-				doSearch(se);
+				doSearch(ureq, se);
 			} else if(event == Event.CANCELLED_EVENT) {
 				searchParams.setIdAndRefs(null);
 				searchParams.setAuthor(null);
@@ -419,12 +433,17 @@ public class RepositoryEntryListController extends FormBasicController
 		cmc = null;
 	}
 	
-	private void doSearch(SearchEvent se) {
+	private void doSearch(UserRequest ureq, SearchEvent se) {
 		searchParams.setIdAndRefs(se.getId());
 		searchParams.setAuthor(se.getAuthor());
 		searchParams.setText(se.getDisplayname());
 		searchParams.setMembershipMandatory(se.isMembershipMandatory());
 		tableEl.reset();
+		
+		RepositoryEntryListState state = new RepositoryEntryListState();
+		state.setTableState(tableEl.getStateEntry());
+		state.setSearchEvent(se);
+		addToHistory(ureq, state);
 	}
 	
 	protected void doFilter(List<Filter> filters) {

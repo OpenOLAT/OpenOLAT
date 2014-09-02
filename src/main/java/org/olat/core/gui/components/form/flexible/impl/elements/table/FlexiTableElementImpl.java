@@ -47,6 +47,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableStateEntry;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -505,10 +506,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		this.selectAllEnabled = enable;
 	}
 	
-	public void openDetails() {
-		
-	}
-	
 	@Override
 	public boolean isDetailsExpended(int row) {
 		if(detailsIndex == null) {
@@ -541,6 +538,26 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(detailsIndex != null && detailsIndex.size() > 0) {
 			detailsIndex = null;
 			component.setDirty(true);
+		}
+	}
+
+	@Override
+	public FlexiTableStateEntry getStateEntry() {
+		FlexiTableStateEntry entry = new FlexiTableStateEntry();
+		if(searchFieldEl != null && searchFieldEl.isVisible()) {
+			entry.setSearchString(searchFieldEl.getValue());
+		}
+		entry.setExpendedSearch(extendedSearchExpanded);
+		return entry;
+	}
+
+	@Override
+	public void setStateEntry(UserRequest ureq, FlexiTableStateEntry state) {
+		if(state.isExpendedSearch()) {
+			expandExtendedSearch(ureq);
+		}
+		if(StringHelper.containsNonWhitespace(state.getSearchString())) {
+			quickSearch(ureq, state.getSearchString());
 		}
 	}
 
@@ -586,6 +603,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		this.pageSize = pageSize;
 	}
 	
+	@Override
 	public int getPage() {
 		return currentPage;
 	}
@@ -1031,10 +1049,23 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		searchFieldEl.evalFormRequest(ureq);
 		String search = searchFieldEl.getValue();
+
 		if(StringHelper.containsNonWhitespace(search)) {
 			doSearch(ureq, search, null);
+			getRootForm().fireFormEvent(ureq, new FlexiTableEvent(this, search));
 		} else {
 			doResetSearch();
+		}
+	}
+	
+	@Override
+	public void quickSearch(UserRequest ureq, String search) {
+		if(searchFieldEl == null || !searchFieldEl.isEnabled() || !searchFieldEl.isVisible()){
+			return;//this a default behavior which can occur without the search configured
+		}
+		if(StringHelper.containsNonWhitespace(search)) {
+			searchFieldEl.setValue(search);
+			doSearch(ureq, search, null);
 		}
 	}
 	
