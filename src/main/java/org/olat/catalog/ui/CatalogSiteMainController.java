@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
@@ -31,8 +32,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Util;
 import org.olat.repository.ui.list.CatalogNodeController;
 
 /**
@@ -57,7 +60,9 @@ public class CatalogSiteMainController extends BasicController implements Activa
 		if(rootNodes.size() == 1) {
 			nodeController = new CatalogNodeController(ureq, getWindowControl(), getWindowControl(), rootNodes.get(0), stackPanel, true);
 		}
-		stackPanel.pushController("Katalog", nodeController);
+		// use same title as catalog site title
+		Translator catTrans = Util.createPackageTranslator(BaseChiefController.class, getLocale());
+		stackPanel.pushController(catTrans.translate("topnav.catalog"), nodeController);
 	}
 	
 	@Override

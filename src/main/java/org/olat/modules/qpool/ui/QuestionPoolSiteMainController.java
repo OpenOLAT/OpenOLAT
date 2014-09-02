@@ -49,7 +49,7 @@ public class QuestionPoolSiteMainController extends MainLayoutBasicController im
 		listenTo(qpoolMainController);
 		BreadcrumbPanel stackPanel = new BreadcrumbedStackedPanel("qpoolStackPanel", getTranslator(), this);
 		putInitialPanel(stackPanel);
-		stackPanel.pushController("Katalog", qpoolMainController);
+		stackPanel.pushController(translate("topnav.qpool"), qpoolMainController);
 		qpoolMainController.setBreadcrumbPanel(stackPanel);
 	}
 	
