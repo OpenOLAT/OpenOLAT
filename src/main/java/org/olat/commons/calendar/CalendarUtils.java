@@ -265,7 +265,9 @@ public class CalendarUtils {
 			for ( KalendarRecurEvent recurEvent : lstEvnt ) {
 				periodEvents.add(recurEvent);
 			}
-			if (event.getEnd().before(periodStart) || event.getBegin().after(periodEnd)) continue;
+			if ((event.getEnd() != null && event.getEnd().before(periodStart)) || event.getBegin().after(periodEnd)) {
+				continue;
+			}
 			periodEvents.add(event);
 		}
 		return periodEvents;

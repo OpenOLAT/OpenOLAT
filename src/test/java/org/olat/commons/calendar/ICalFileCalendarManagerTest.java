@@ -123,6 +123,11 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		
 		//persist
 		calManager.persistCalendar(reloadCalWrapper.getKalendar());
+		
+		//an other possible RS
+		Date periodStart = new Date();
+		Date periodEnd = new Date();
+		CalendarUtils.listEventsForPeriod(reloadCalWrapper.getKalendar(), periodStart, periodEnd);
 	}
 	
 	/**
