@@ -729,11 +729,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			//System.out.println("dispatchEvent (Controller): " + source);
 		} else if(source == extendedSearchCtrl) {
 			if(event == Event.CANCELLED_EVENT) {
-				if(callout != null) {
-					callout.deactivate();
-				} else {
-					collapseExtendedSearch();
-				}
+				collapseExtendedSearch();
 			} else if(event == Event.DONE_EVENT) {
 				evalExtendedSearch(ureq);
 			}
