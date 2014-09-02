@@ -71,7 +71,7 @@ public class RepositoryMembersController extends AbstractMemberListController {
 
 	public RepositoryMembersController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry) {
 		super(ureq, wControl, repoEntry, null, "all_member_list",
-				Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
+				Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(), Util.createPackageTranslator(AbstractMemberListController.class, ureq.getLocale())));
 		
 		this.repoEntry = repoEntry;
 		boolean managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);

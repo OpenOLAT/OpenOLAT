@@ -195,7 +195,7 @@ public abstract class AbstractMemberListController extends BasicController imple
 		memberListCtr.setTableDataModel(memberListModel);
 		memberListCtr.setMultiSelect(true);
 		if(!globallyManaged) {
-			memberListCtr.addMultiSelectAction("table.header.edit", TABLE_ACTION_EDIT);
+			memberListCtr.addMultiSelectAction("edit.members", TABLE_ACTION_EDIT);
 		}
 		memberListCtr.addMultiSelectAction("table.header.mail", TABLE_ACTION_MAIL);
 		if(!globallyManaged) {
