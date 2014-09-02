@@ -131,8 +131,10 @@ class PublishStep01 extends BasicStep {
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			Translator pt = Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator());
 			
-			FormItemContainer fic = FormLayoutContainer.createCustomFormLayout("access", pt, velocity_root + "/publish_courseaccess.html");
+			FormLayoutContainer fic = FormLayoutContainer.createCustomFormLayout("access", pt, velocity_root + "/publish_courseaccess.html");
 			formLayout.add(fic);
+			RepositoryModule repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
+			fic.contextPut("catalogEnabled", repositoryModule.isCatalogEnabled());
 
 			List<String> keyList = new ArrayList<String>();
 			keyList.add(Integer.toString(RepositoryEntry.ACC_OWNERS));

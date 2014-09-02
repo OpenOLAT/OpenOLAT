@@ -2,7 +2,9 @@
 <div class='o_important'>
 	$r.translate("pbl.access.warning")
 </div>
+#if($catalogEnabled)
 <div class='o_info'>
 	$r.translate("pbl.remind.catalog")
 </div>
+#end
 $r.render("accessBox")

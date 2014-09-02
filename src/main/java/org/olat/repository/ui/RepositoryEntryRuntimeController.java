@@ -56,6 +56,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -122,9 +123,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	@Autowired
 	protected MarkManager markManager;
 	@Autowired
-	protected RepositoryManager repositoryManager;
+	protected RepositoryModule repositoryModule;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	protected RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryHandlerFactory handlerFactory;
 	
@@ -251,6 +254,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			
 			catalogLink = LinkFactory.createToolLink("cat", translate("details.categoriesheader"), this, "o_icon_catalog");
 			catalogLink.setElementCssClass("o_sel_repo_add_to_catalog");
+			catalogLink.setVisible(repositoryModule.isCatalogEnabled());
 			settingsDropdown.addComponent(catalogLink);
 		}
 		
