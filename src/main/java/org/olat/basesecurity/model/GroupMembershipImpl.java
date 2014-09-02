@@ -150,8 +150,8 @@ public class GroupMembershipImpl implements GroupMembership, ModifiedInfo, Persi
 		if (this == obj) {
 			return true;
 		}
-		if (obj instanceof GroupImpl) {
-			GroupImpl other = (GroupImpl) obj;
+		if (obj instanceof GroupMembershipImpl) {
+			GroupMembershipImpl other = (GroupMembershipImpl)obj;
 			return getKey().equals(other.getKey());
 		}
 		return false;

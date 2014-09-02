@@ -46,7 +46,7 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Service
+@Service("groupDao")
 public class GroupDAO {
 	
 	@Autowired
@@ -132,6 +132,14 @@ public class GroupDAO {
 			em.remove(membership);
 		}
 		return memberships.size();
+	}
+	
+	public int removeMemberships(IdentityRef identity) {
+		String deleteQuery = "delete from bgroupmember as membership where membership.identity.key=:identityKey";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(deleteQuery).setParameter("identityKey", identity.getKey())
+				.executeUpdate();
 	}
 	
 	public int countMembers(Group group) {

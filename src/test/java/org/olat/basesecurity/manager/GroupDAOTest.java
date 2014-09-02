@@ -223,7 +223,7 @@ public class GroupDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void removeMemberships() {
+	public void removeMemberships_group() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-7-");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-8-");
 		Group group = groupDao.createGroup();
@@ -244,6 +244,42 @@ public class GroupDAOTest extends OlatTestCase {
 		//check 
 		List<GroupMembership> deletedMemberships = groupDao.getMemberships(group, "pilot");
 		Assert.assertTrue(deletedMemberships.isEmpty());
+	}
+	
+	@Test
+	public void removeMemberships_identity() {
+		//
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-9-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-10-");
+		Group group1 = groupDao.createGroup();
+		GroupMembership membership1 = groupDao.addMembership(group1, id1, "pilot");
+		GroupMembership membership2 = groupDao.addMembership(group1, id2, "pilot");
+		Assert.assertNotNull(membership1);
+		Assert.assertNotNull(membership2);
+		dbInstance.commitAndCloseSession();
+		Group group2 = groupDao.createGroup();
+		GroupMembership membership3 = groupDao.addMembership(group2, id1, "passanger");
+		GroupMembership membership4 = groupDao.addMembership(group2, id2, "passanger");
+		Assert.assertNotNull(membership3);
+		Assert.assertNotNull(membership4);
+		dbInstance.commitAndCloseSession();
+
+		//check
+		List<GroupMembership> memberships = groupDao.getMemberships(group1, "pilot");
+		Assert.assertEquals(2, memberships.size());
+		
+		//remove
+		groupDao.removeMemberships(id1);
+		dbInstance.commitAndCloseSession();
+		
+		//check 
+		List<GroupMembership> deletedMemberships1 = groupDao.getMemberships(group1, "pilot");
+		Assert.assertEquals(1, deletedMemberships1.size());
+		Assert.assertEquals(membership2, deletedMemberships1.get(0));
+		
+		List<GroupMembership> deletedMemberships2 = groupDao.getMemberships(group2, "passanger");
+		Assert.assertEquals(1, deletedMemberships2.size());
+		Assert.assertEquals(membership4, deletedMemberships2.get(0));
 	}
 	
 	@Test
