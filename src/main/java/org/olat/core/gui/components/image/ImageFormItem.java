@@ -83,11 +83,17 @@ public class ImageFormItem extends FormItemImpl {
 		float scalingFactor = imageComponent.getScalingFactor();
 		if(scalingFactor <= 0f ||  Float.isNaN(scalingFactor)) return null;
 		
+		int x = cropSelection.getX();
+		int y = cropSelection.getY();
+		int width = cropSelection.getWidth();
+		int height = cropSelection.getHeight();
+		//log.info("At: " + x + " : " + y + " size: " + width + " x" + height);
+		
 		Crop realCropSelection = new Crop();
-		realCropSelection.setWidth(Math.round(cropSelection.getWidth() / scalingFactor));
-		realCropSelection.setHeight(Math.round(cropSelection.getHeight() / scalingFactor));
-		realCropSelection.setX(Math.round(cropSelection.getX() / scalingFactor));
-		realCropSelection.setY(Math.round(cropSelection.getY() / scalingFactor));
+		realCropSelection.setWidth(width);
+		realCropSelection.setHeight(height);
+		realCropSelection.setX(x);
+		realCropSelection.setY(y);
 		return realCropSelection;
 	}
 
