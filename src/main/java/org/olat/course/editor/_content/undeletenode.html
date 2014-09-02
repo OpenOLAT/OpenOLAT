@@ -1,12 +1,8 @@
-<h4>$r.translate("undeletenode.header")</h4>
-<p>
-	$r.translate("undeletenode.message")
-</p>
-<p>
+<h2><i class="o_icon o_icon_delete_item"> </i> $r.translate("undeletenode.header")</h2>
+<div class="o_info">$r.translate("undeletenode.message")</div>
+<div class="o_button_group">
 	$r.render("undeletenode.button")
-</p>
-#if($targetSelection)
-	<p>
+	#if($targetSelection)
 		$r.render("insertTargetSelection")
-	</p>
-#end
+	#end
+</div>

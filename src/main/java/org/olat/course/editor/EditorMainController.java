@@ -228,7 +228,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			} else {
 				ICourse course = CourseFactory.openCourseEditSession(ores.getResourceableId());
 				main = createVelocityContainer("index");
-				main.setDomReplacementWrapperRequired(false);
+				//must be true for deleted course node
+				main.setDomReplacementWrapperRequired(true);
 				
 				OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", ores.getResourceableId());
 				RepositoryEntry repo = RepositoryManager.getInstance().lookupRepositoryEntry(courseOres, false);
