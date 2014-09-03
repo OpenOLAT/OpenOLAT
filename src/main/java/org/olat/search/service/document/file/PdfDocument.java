@@ -67,10 +67,10 @@ public class PdfDocument extends FileDocument {
 	}
 	
 	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException,DocumentException,DocumentAccessException {
-    PdfDocument textDocument = new PdfDocument();
-    textDocument.setFilePath(getPdfTextTmpFilePath(leafResourceContext));
-    textDocument.init(leafResourceContext,leaf);
-    textDocument.setFileType(FILE_TYPE);
+		PdfDocument textDocument = new PdfDocument();
+		textDocument.setFilePath(getPdfTextTmpFilePath(leafResourceContext));
+		textDocument.init(leafResourceContext,leaf);
+		textDocument.setFileType(FILE_TYPE);
 		textDocument.setCssIcon(CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
 		if (log.isDebug() ) log.debug(textDocument.toString());
 		return textDocument.getLuceneDocument();
@@ -98,7 +98,6 @@ public class PdfDocument extends FileDocument {
 		try {
 			String bean = externalIndexer ? "pdfExternalIndexer" : "pdfInternalIndexer";
 			PdfExtractor extractor = (PdfExtractor)CoreSpringFactory.getBean(bean);
-			
 			File pdfTextFile = new File(pdfTextBufferPath, getFilePath() + ".tmp");
 			if (isNewPdfFile(leaf, pdfTextFile)) {
 				//prepare dirs
@@ -114,7 +113,7 @@ public class PdfDocument extends FileDocument {
 			// pass exception
 			throw ex;
 		} catch (Exception ex) {
-			throw new DocumentException("Can not read PDF content. File=" + leaf.getName() + ";" + ex.getMessage() );
+			throw new DocumentException("Can not read PDF content. File=" + leaf.getName(), ex);
 		} 
 	}
 
