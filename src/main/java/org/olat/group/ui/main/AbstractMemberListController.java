@@ -145,12 +145,12 @@ public abstract class AbstractMemberListController extends BasicController imple
 	
 	public AbstractMemberListController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry,
 			String page) {
-		this(ureq, wControl, repoEntry, null, page, null);
+		this(ureq, wControl, repoEntry, null, page, Util.createPackageTranslator(AbstractMemberListController.class, ureq.getLocale()));
 	}
 	
 	public AbstractMemberListController(UserRequest ureq, WindowControl wControl, BusinessGroup group,
 			String page) {
-		this(ureq, wControl, null, group, page, null);
+		this(ureq, wControl, null, group, page, Util.createPackageTranslator(AbstractMemberListController.class, ureq.getLocale()));
 	}
 	
 	protected AbstractMemberListController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry, BusinessGroup group,
