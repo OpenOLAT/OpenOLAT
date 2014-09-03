@@ -806,7 +806,7 @@ public class BusinessGroupDAO {
 		if(StringHelper.containsNonWhitespace(params.getCourseTitle())) {
 			where = where(query, where);
 			query.append(" bgi.key in (")
-			     .append("   select bgRel.groupKey from ").append(BGRepositoryEntryRelation.class.getName()).append(" bgRel ")
+			     .append("   select bgRel.relationId.groupKey from ").append(BGRepositoryEntryRelation.class.getName()).append(" bgRel ")
 			     .append("     where ");
 			searchLikeAttribute(query, "bgRel", "repositoryEntryDisplayName", "displayName");
 			query.append(" )");
@@ -843,8 +843,8 @@ public class BusinessGroupDAO {
 		if(params.getMarked() != null) {
 			where = where(query, where);
 			query.append(" bgi.key ").append(params.getMarked().booleanValue() ? "" : "not").append(" in (")
-           .append("   select mark.resId from ").append(MarkImpl.class.getName()).append(" mark ")
-           .append("     where mark.resName='BusinessGroup' and mark.creator.key=:identId")
+			     .append("   select mark.resId from ").append(MarkImpl.class.getName()).append(" mark ")
+			     .append("     where mark.resName='BusinessGroup' and mark.creator.key=:identId")
 			     .append(" )");
 		}
 		
