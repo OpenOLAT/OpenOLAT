@@ -224,7 +224,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected void initToolbar(Dropdown toolsDropdown, Dropdown settingsDropdown) {
 		if (reSecurity.isEntryAdmin()) {
 			//tools
-			if(handler.supportsEdit(re) == EditionSupport.yes) {
+			if(handler.supportsEdit(re.getOlatResource()) == EditionSupport.yes) {
 				boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
 				editLink = LinkFactory.createToolLink("edit.cmd", translate("details.openeditor"), this, "o_sel_repository_editor");
 				editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
@@ -479,10 +479,12 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if(!reSecurity.isEntryAdmin()) return;
 		
 		Controller ctrl = handler.createEditorController(re, ureq, getWindowControl());
-		listenTo(ctrl);
-		editorCtrl = pushController(ureq, translate("resource.editor"), ctrl);
-		currentToolCtr = editorCtrl;
-		setActiveTool(editLink);
+		if(ctrl != null) {
+			listenTo(ctrl);
+			editorCtrl = pushController(ureq, translate("resource.editor"), ctrl);
+			currentToolCtr = editorCtrl;
+			setActiveTool(editLink);
+		}
 	}
 	
 	protected void doDetails(UserRequest ureq) {

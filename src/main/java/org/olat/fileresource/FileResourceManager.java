@@ -128,9 +128,10 @@ public class FileResourceManager extends BasicManager {
 	private File getFileResource(OLATResourceable res, String resourceFolderName) {
 		FileResource fr = getAsGenericFileResource(res);
 		File f = getFile(fr, resourceFolderName);
-		if (f == null) // folder not existing or no file in it
-		throw new OLATRuntimeException(FileResourceManager.class, "could not getFileResource for OLATResourceable " + res.getResourceableId()
+		if (f == null) {// folder not existing or no file in it
+			throw new OLATRuntimeException(FileResourceManager.class, "could not getFileResource for OLATResourceable " + res.getResourceableId()
 				+ ":" + res.getResourceableTypeName(), null);
+		}
 		return f;
 	}
 
@@ -230,19 +231,21 @@ public class FileResourceManager extends BasicManager {
 			// o_clusterOK by:ld
 			zipTargetDir = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(res, new SyncerCallback<File>() {
 				public File execute() {
-					File zipTargetDir = null;
+					File targetDir = null;
 					// now we are the only one unzipping. We
 					// only need to unzip when the previous
 					// threads that aquired this lock have not unzipped "our" version's
 					// resources yet
-					zipTargetDir = new File(dir, ZIPDIR);
-					if (!zipTargetDir.exists()) { // means I am the first to unzip this
+					targetDir = new File(dir, ZIPDIR);
+					if (!targetDir.exists()) { // means I am the first to unzip this
 						// version's resource
-						zipTargetDir.mkdir();
+						targetDir.mkdir();
 						File zipFile = getFileResource(res);
-						if (!ZipUtil.unzip(zipFile, zipTargetDir)) return null;
+						if (!ZipUtil.unzip(zipFile, targetDir)) {
+							return null;
+						}
 					}
-					return zipTargetDir;
+					return targetDir;
 				}
 			});
 		}

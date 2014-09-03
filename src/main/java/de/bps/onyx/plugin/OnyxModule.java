@@ -42,6 +42,7 @@ import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.PathUtils;
@@ -77,6 +78,13 @@ public class OnyxModule extends AbstractOLATModule implements ConfigOnOff {
 	private String assessmentPlugin;
 	
 	private static Map<Long,Boolean> onyxMap = new ConcurrentHashMap<Long,Boolean>();
+	
+	/**
+	 * [used by spring]
+	 */
+	private OnyxModule() {
+		//
+	}
 
 	@Override
 	public boolean isEnabled() {
@@ -143,13 +151,6 @@ public class OnyxModule extends AbstractOLATModule implements ConfigOnOff {
 		this.assessmentPlugin = assessmentPlugin;
 	}
 
-	/**
-	 * [used by spring]
-	 */
-	private OnyxModule() {
-		//
-	}
-
 	@Override
 	public void init() {
 		PLAYERTEMPLATES = new ArrayList<PlayerTemplate>();
@@ -161,14 +162,12 @@ public class OnyxModule extends AbstractOLATModule implements ConfigOnOff {
 
 	@Override
 	protected void initDefaultProperties() {
-		// TODO Auto-generated method stub
-
+		//
 	}
 
 	@Override
 	protected void initFromChangedProperties() {
-		// TODO Auto-generated method stub
-
+		//
 	}
 
 	@Override
@@ -196,12 +195,17 @@ public class OnyxModule extends AbstractOLATModule implements ConfigOnOff {
 			Long resourceId = res.getResourceableId();
 			Boolean onyx = onyxMap.get(resourceId);
 			if(onyx == null) {
-				final Resolver resolver = new ImsRepositoryResolver(res);
-				// search for qti.xml, it not exists for qti2
-				if (resolver.getQTIDocument() == null) {
-					onyx = Boolean.TRUE;
-				} else {
-					onyx = Boolean.FALSE;
+				onyx = Boolean.FALSE;
+				try {
+					final Resolver resolver = new ImsRepositoryResolver(res);
+					// search for qti.xml, it not exists for qti2
+					if (resolver.getQTIDocument() == null) {
+						onyx = Boolean.TRUE;
+					} else {
+						onyx = Boolean.FALSE;
+					}
+				} catch(OLATRuntimeException e) {
+					log.error("", e);
 				}
 				onyxMap.put(resourceId, onyx);
 			}
