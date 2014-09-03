@@ -757,7 +757,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	@Override
 	public MailerResult deleteBusinessGroupWithMail(BusinessGroup businessGroupTodelete, String businessPath, Identity deletedBy, Locale locale) {
-		List<Identity> users = businessGroupRelationDAO.getMembers(businessGroupTodelete);
+		List<Identity> users = businessGroupRelationDAO.getMembers(businessGroupTodelete,
+				GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
 		// now delete the group first
 		deleteBusinessGroup(businessGroupTodelete);
 		dbInstance.commit();
