@@ -86,8 +86,9 @@
 					</ul>
 				</div>
 				#end	
-	
-				$r.render("start")			
+				#if($r.available("start"))
+					$r.render("start")
+				#end
 			</div>
 
 			#if(!$guestOnly)
