@@ -140,10 +140,11 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 			}
 		} else if(source instanceof FormLink) {
 			FormLink button = (FormLink)source;
-			ConditionalQuery query = (ConditionalQuery)button.getUserObject();
 			if(button.getCmd().startsWith("add")) {
+				ConditionalQuery query = (ConditionalQuery)button.getUserObject();
 				addParameter(query);
 			} else if(button.getCmd().startsWith("remove")) {
+				ConditionalQuery query = (ConditionalQuery)button.getUserObject();
 				removeParameter(query);
 			}
 		}
