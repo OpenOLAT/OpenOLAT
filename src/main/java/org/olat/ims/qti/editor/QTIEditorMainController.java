@@ -313,10 +313,10 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		
 		if(notEditable) {		
 			//test not editable
-			VelocityContainer notEditable = createVelocityContainer("notEditable");
-			notEditableButton = LinkFactory.createButton("ok", notEditable, this);
+			VelocityContainer notEditableVc = createVelocityContainer("notEditable");
+			notEditableButton = LinkFactory.createButton("ok", notEditableVc, this);
 			Panel panel = new Panel("notEditable");
-			panel.setContent(notEditable);
+			panel.setContent(notEditableVc);
 			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, panel, null);
 			putInitialPanel(columnLayoutCtr.getInitialComponent());
 			return;
@@ -390,7 +390,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			String text = translate("qti.restricted.edit.warning") + "<br/><br/>" + createReferenceesMsg(ureq);
 			proceedRestricedEditDialog = DialogBoxUIFactory.createYesNoDialog(ureq, getWindowControl(), null, text);
 			listenTo(proceedRestricedEditDialog);
-			//activate is done by the activate method of the editor.
+			proceedRestricedEditDialog.activate();
 		}
 	}
 	
