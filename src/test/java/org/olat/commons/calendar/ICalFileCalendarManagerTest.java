@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -44,15 +45,19 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
-import org.jcodec.common.Assert;
+import org.infinispan.manager.EmbeddedCacheManager;
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.coordinate.Cacher;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 
@@ -60,6 +65,13 @@ import org.olat.test.OlatTestCase;
 public class ICalFileCalendarManagerTest extends OlatTestCase {
 
 	private static final OLog log = Tracing.createLoggerFor(ICalFileCalendarManagerTest.class);
+	
+	private final void emptyCalendarCache() {
+		CoordinatorManager coordinator = CoreSpringFactory.getImpl(CoordinatorManager.class);
+		Cacher cacher = coordinator.getCoordinator().getCacher();
+		EmbeddedCacheManager cm = cacher.getCacheContainer();
+		cm.getCache("CalendarManager@calendar").clear();
+	}
 	
 	@Test
 	public void testAddChangeRemoveEvent() {
@@ -69,10 +81,14 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		CalendarManager manager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
 		Kalendar cal = manager.getPersonalCalendar(test).getKalendar();
 		// 1. Test Add Event
-		KalendarEvent testEvent = new KalendarEvent(TEST_EVENT_ID, "testEvent", new Date(), 1);
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.MILLISECOND, 0);
+		Date start = calendar.getTime();
+
+		KalendarEvent testEvent = new KalendarEvent(TEST_EVENT_ID, "testEvent", start, 1);
 		manager.addEventTo(cal, testEvent);
 		// set manager null to force reload of calendar from file-system
-		manager = null;
+		emptyCalendarCache();
 		manager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
 		cal = manager.getPersonalCalendar(test).getKalendar();
 		KalendarEvent reloadedEvent = cal.getEvent(TEST_EVENT_ID);
@@ -82,7 +98,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		reloadedEvent.setSubject("testEvent changed");
 		manager.updateEventFrom(cal, reloadedEvent);
 		// set manager null to force reload of calendar from file-system
-		manager = null;
+		emptyCalendarCache();
 		manager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
 		cal = manager.getPersonalCalendar(test).getKalendar();
 		KalendarEvent updatedEvent = cal.getEvent(TEST_EVENT_ID);
@@ -90,11 +106,61 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		assertEquals("Added event has wrong subject", reloadedEvent.getSubject(),updatedEvent.getSubject());
 		// 3. Test Remove event
 		manager.removeEventFrom(cal, updatedEvent);
-		manager = null;
+		emptyCalendarCache();
 		manager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
 		cal = manager.getPersonalCalendar(test).getKalendar();
 		KalendarEvent removedEvent = cal.getEvent(TEST_EVENT_ID);
 		assertNull("Found removed event", removedEvent);
+	}
+	
+	@Test
+	public void testAddChangeEvent_v2() {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ical-1-");	
+
+		String TEST_EVENT_ID = "id-testAddEvent";
+		CalendarManager manager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+		Kalendar cal = manager.getPersonalCalendar(test).getKalendar();
+		
+		// 1. Test Add Event
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.MILLISECOND, 0);
+		Date start = calendar.getTime();
+		calendar.add(Calendar.HOUR, 1);
+		Date end = calendar.getTime();
+		KalendarEvent testEvent = new KalendarEvent(TEST_EVENT_ID, "testEvent", start, end);
+		manager.addEventTo(cal, testEvent);
+		
+		//empty the cache
+		emptyCalendarCache();
+		
+		manager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+		Kalendar reloadedCal = manager.getPersonalCalendar(test).getKalendar();
+		KalendarEvent reloadedEvent = reloadedCal.getEvent(TEST_EVENT_ID);
+		Assert.assertNotNull("Could not found added event", reloadedEvent);
+		Assert.assertEquals("Added event has wrong subject", testEvent.getSubject(), reloadedEvent.getSubject());
+		Assert.assertEquals(reloadedEvent.getBegin(), start);
+		Assert.assertEquals(reloadedEvent.getEnd(), end);
+		
+		// 2. Test Change event
+		calendar.add(Calendar.HOUR, 1);
+		Date updatedEnd = calendar.getTime();
+		calendar.add(Calendar.HOUR, -4);
+		Date updatedStart = calendar.getTime();
+		reloadedEvent.setSubject("testEvent changed");
+		reloadedEvent.setBegin(updatedStart);
+		reloadedEvent.setEnd(updatedEnd);
+		manager.updateEventFrom(cal, reloadedEvent);
+		
+		//empty the cache
+		emptyCalendarCache();
+
+		manager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+		Kalendar updatedCal = manager.getPersonalCalendar(test).getKalendar();
+		KalendarEvent updatedEvent = updatedCal.getEvent(TEST_EVENT_ID);
+		Assert.assertNotNull("Could not found updated event", updatedEvent);
+		Assert.assertEquals("Added event has wrong subject", "testEvent changed", updatedEvent.getSubject());
+		Assert.assertEquals(updatedStart, updatedEvent.getBegin());
+		Assert.assertEquals(updatedEnd, updatedEvent.getEnd());
 	}
 
 	/**

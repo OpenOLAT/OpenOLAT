@@ -362,7 +362,7 @@ public class ICalFileCalendarManager extends BasicManager implements CalendarMan
 			DateTime dtEnd = null;
 			Date kEventEnd = kEvent.getEnd();
 			if(kEventEnd != null) {
-				dtEnd = new DateTime();
+				dtEnd = new DateTime(kEventEnd);
 				if(tz != null) {
 					dtEnd.setTimeZone(tz);
 				}
