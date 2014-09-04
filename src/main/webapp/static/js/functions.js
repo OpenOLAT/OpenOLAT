@@ -1125,11 +1125,11 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt) {
 		}
 	}
 	
-	
 	var targetUrl = jQuery('#' + formNam).attr("action");
 	jQuery.ajax(targetUrl,{
 		type:'GET',
 		data: data,
+		cache: false,
 		dataType: 'json',
 		success: function(data, textStatus, jqXHR) {
 			o_ainvoke(data);
