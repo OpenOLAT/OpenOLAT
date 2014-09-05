@@ -436,7 +436,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		popToRoot(ureq).cleanUp();
 		toolbarPanel.pushController(name, controller);
 		if(controller instanceof ToolbarAware) {
-			((ToolbarAware)controller).initToolbar(toolbarPanel);
+			((ToolbarAware)controller).initToolbar();
 		}
 		return controller;
 	}
@@ -478,7 +478,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected void doEdit(UserRequest ureq) {
 		if(!reSecurity.isEntryAdmin()) return;
 		
-		Controller ctrl = handler.createEditorController(re, ureq, getWindowControl());
+		Controller ctrl = handler.createEditorController(re, ureq, getWindowControl(), toolbarPanel);
 		if(ctrl != null) {
 			listenTo(ctrl);
 			editorCtrl = pushController(ureq, translate("resource.editor"), ctrl);
@@ -600,6 +600,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	public interface ToolbarAware {
 		
-		public void initToolbar(TooledStackedPanel toolbar);
+		public void initToolbar();
+		
 	}
 }

@@ -456,7 +456,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 					//not found
 				} else {
 					RepositoryHandler typeToEdit = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
-					correctQTIcontroller = typeToEdit.createEditorController(re, ureq, getWindowControl());
+					correctQTIcontroller = typeToEdit.createEditorController(re, ureq, getWindowControl(), null);
 					getWindowControl().pushToMainArea(correctQTIcontroller.getInitialComponent());					
 					listenTo(correctQTIcontroller);
 				}

@@ -51,15 +51,17 @@ import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
  */
 public class CPEditMainController extends BasicController implements ToolbarAware {
 
+	private TooledStackedPanel stackPanel;
 	private CPContentController contentCtr;
 	private CPTreeController treeCtr;
 	private final ContentPackage cp;
 	private LockResult lock;
 	private DeliveryOptions deliveryOptions;
 
-	public CPEditMainController(UserRequest ureq, WindowControl wControl,
+	public CPEditMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar,
 			VFSContainer cpContainer, OLATResourceable ores) {
 		super(ureq, wControl);
+		this.stackPanel = toolbar;
 
 		// acquire lock for resource
 		lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(ores, ureq.getIdentity(), null);
@@ -106,7 +108,7 @@ public class CPEditMainController extends BasicController implements ToolbarAwar
 	}
 
 	@Override
-	public void initToolbar(TooledStackedPanel stackPanel) {
+	public void initToolbar() {
 		if(stackPanel != null && treeCtr != null) {
 			treeCtr.initToolbar(stackPanel);
 		}

@@ -173,7 +173,7 @@ public class SCORMCPHandler extends FileHandler {
 	}
 
 	@Override
-	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar) {
 		throw new AssertException("Trying to get editor for an SCORM CP type where no editor is provided for this type.");
 	}
 

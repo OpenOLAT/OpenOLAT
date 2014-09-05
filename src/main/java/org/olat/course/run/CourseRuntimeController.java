@@ -804,7 +804,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			ICourse course = CourseFactory.loadCourse(getRepositoryEntry().getOlatResource());
 			CourseNode currentCourseNode = getCurrentCourseNode();
-			EditorMainController ctrl = CourseFactory.createEditorController(ureq, getWindowControl(), course, currentCourseNode);
+			EditorMainController ctrl = CourseFactory.createEditorController(ureq, getWindowControl(), toolbarPanel, course, currentCourseNode);
 			//user activity logger which was initialized with course run
 			if(ctrl != null){
 				editorCtrl = pushController(ureq, "Editor", ctrl);

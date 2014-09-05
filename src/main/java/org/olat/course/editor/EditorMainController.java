@@ -198,9 +198,10 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	 * @param wControl The window controller
 	 * @param course The course
 	 */
-	public EditorMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, CourseNode selectedNode) {
+	public EditorMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar, OLATResourceable ores, CourseNode selectedNode) {
 		super(ureq,wControl);
-		this.ores = ores;		
+		this.ores = ores;	
+		this.stackPanel = toolbar;
 
 		// OLAT-4955: setting the stickyActionType here passes it on to any controller defined in the scope of the editor,
 		//            basically forcing any logging action called within the course editor to be of type 'admin'
@@ -335,14 +336,12 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	}
 
 	@Override
-	public void initToolbar(TooledStackedPanel toolbar) {
-		this.stackPanel = toolbar;
-		
-		toolbar.addTool(createNodeLink, Align.left);
-		toolbar.addTool(nodeTools, Align.left);
-		toolbar.addTool(statusLink, Align.right);
-		toolbar.addTool(previewLink, Align.right);
-		toolbar.addTool(publishLink, Align.right);
+	public void initToolbar() {
+		stackPanel.addTool(createNodeLink, Align.left);
+		stackPanel.addTool(nodeTools, Align.left);
+		stackPanel.addTool(statusLink, Align.right);
+		stackPanel.addTool(previewLink, Align.right);
+		stackPanel.addTool(publishLink, Align.right);
 	}
 	
 	/**

@@ -159,7 +159,7 @@ public class QTITestHandler extends QTIHandler {
 	}
 
 	@Override
-	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl) {
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar) {
 		OLATResource res = re.getOlatResource();
 		if(OnyxModule.isOnyxTest(res)) {
 			return null;
