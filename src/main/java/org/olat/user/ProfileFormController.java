@@ -151,11 +151,10 @@ public class ProfileFormController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
-		String currentGroup = null;
 		User user = identityToModify.getUser();
 
 		// show a form element for each property handler 
-		FormLayoutContainer groupContainer = null;
+		boolean first = true;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) {
 				continue;
@@ -163,15 +162,17 @@ public class ProfileFormController extends FormBasicController {
 			
 			// add spacer if necessary (i.e. when group name changes)
 			String group = userPropertyHandler.getGroup();
-			if (!group.equals(currentGroup)) {
-				groupContainer = FormLayoutContainer.createDefaultFormLayout("group." + group, getTranslator());
+			String formId = "group." + group;
+			FormLayoutContainer groupContainer = (FormLayoutContainer)formLayout.getFormComponent(formId);
+			if(groupContainer == null) {
+				groupContainer = FormLayoutContainer.createDefaultFormLayout(formId, getTranslator());
 				groupContainer.setFormTitle(translate("form.group." + group));
-				formItems.put("group." + group, groupContainer);
-				formLayout.add(groupContainer);
-				if(currentGroup == null) {
+				if(first) {
 					groupContainer.setFormContextHelp("org.olat.user","home-vcard.html","help.hover.vcard");
+					first = false;
 				}
-				currentGroup = group;
+				formItems.put(formId, groupContainer);
+				formLayout.add(groupContainer);
 			}
 			
 			// add input field to container
@@ -197,7 +198,6 @@ public class ProfileFormController extends FormBasicController {
 			
 			// special case for email field
 			if (userPropertyHandler.getName().equals("email")) {
-				RegistrationManager rm = RegistrationManager.getInstance();
 				String key = user.getProperty("emchangeKey", null);
 				TemporaryKeyImpl tempKey = rm.loadTemporaryKeyByRegistrationKey(key);
 				if (tempKey != null) {
@@ -210,7 +210,7 @@ public class ProfileFormController extends FormBasicController {
 		}
 		
 		// add the "about me" text field.
-		groupContainer = FormLayoutContainer.createDefaultFormLayout("group.about", getTranslator());
+		FormLayoutContainer groupContainer = FormLayoutContainer.createDefaultFormLayout("group.about", getTranslator());
 		groupContainer.setFormTitle(translate("form.group.about"));
 		formLayout.add(groupContainer);
 		
