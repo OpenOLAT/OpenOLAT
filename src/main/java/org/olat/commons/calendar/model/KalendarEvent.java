@@ -219,12 +219,18 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	
 	public boolean isToday() {
 		Calendar cal = Calendar.getInstance();
+		int todayDay = cal.get(Calendar.DAY_OF_YEAR);
+		
 		cal.setTime(begin);
 		int startDay = cal.get(Calendar.DAY_OF_YEAR);
-		cal.setTime(end);
-		int endDay = cal.get(Calendar.DAY_OF_YEAR);
-		int todayDay = Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
-		return (todayDay - startDay == 0) && ((todayDay - endDay == 0));
+		boolean today = (todayDay - startDay == 0);
+		if(end != null) {
+			cal.setTime(end);
+			int endDay = cal.get(Calendar.DAY_OF_YEAR);
+			today &= (todayDay - endDay == 0);
+		}
+		//an event without end date finish the same day (3.6.1. Event Component, https://tools.ietf.org/html/rfc5545#section-3.6.1)
+		return today;
 	}
 	
 	/**
@@ -232,12 +238,19 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	 * @return
 	 */
 	public boolean isWithinOneDay() {
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(begin);
-		int startDay = cal.get(Calendar.DAY_OF_YEAR);
-		cal.setTime(end);
-		int endDay = cal.get(Calendar.DAY_OF_YEAR);
-		return (endDay - startDay == 0);
+		boolean oneDay = false;
+		if(end == null) {
+			//an event without end date finish the same day (3.6.1. Event Component, https://tools.ietf.org/html/rfc5545#section-3.6.1)
+			oneDay = true; //if a duration, the constructor make it an end date
+		} else {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(begin);
+			int startDay = cal.get(Calendar.DAY_OF_YEAR);
+			cal.setTime(end);
+			int endDay = cal.get(Calendar.DAY_OF_YEAR);
+			oneDay = (endDay - startDay == 0);
+		}
+		return oneDay;
 	}
 
 	/**

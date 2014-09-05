@@ -47,15 +47,10 @@ public class CalendarManagerFactory {
 	
 	public static final CalendarManagerFactory getInstance() {
 		if (INSTANCE == null) {
-			INSTANCE = new CalendarManagerFactory(new File(WebappHelper.getUserDataRoot()));
+			File root = new File(WebappHelper.getUserDataRoot());
+			INSTANCE = new CalendarManagerFactory(root);
 		}
 		return INSTANCE;
-	}
-	
-	public static final CalendarManagerFactory getJUnitInstance() {
-		String tmpDir = System.getProperty("java.io.tmpdir");
-		System.out.println("CalendarManagerFactory initialized with temp directory at " + tmpDir);
-		return new CalendarManagerFactory(new File(tmpDir));
 	}
 	
 	public CalendarManager getCalendarManager() {

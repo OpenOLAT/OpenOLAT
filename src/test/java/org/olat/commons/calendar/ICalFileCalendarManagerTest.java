@@ -41,6 +41,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -78,36 +79,52 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ical-1-");	
 
 		String TEST_EVENT_ID = "id-testAddEvent";
-		CalendarManager manager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+		CalendarManager manager = CalendarManagerFactory.getInstance().getCalendarManager();
 		Kalendar cal = manager.getPersonalCalendar(test).getKalendar();
 		// 1. Test Add Event
 		Calendar calendar = Calendar.getInstance();
 		calendar.set(Calendar.MILLISECOND, 0);
 		Date start = calendar.getTime();
 
-		KalendarEvent testEvent = new KalendarEvent(TEST_EVENT_ID, "testEvent", start, 1);
+		KalendarEvent testEvent = new KalendarEvent(TEST_EVENT_ID, "testEvent", start, 60 * 60 * 1000);// 1 hour
 		manager.addEventTo(cal, testEvent);
+		
 		// set manager null to force reload of calendar from file-system
 		emptyCalendarCache();
-		manager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+		manager = CalendarManagerFactory.getInstance().getCalendarManager();
 		cal = manager.getPersonalCalendar(test).getKalendar();
 		KalendarEvent reloadedEvent = cal.getEvent(TEST_EVENT_ID);
-		assertNotNull("Could not found added event", reloadedEvent);
-		assertEquals("Added event has wrong subject", testEvent.getSubject(),reloadedEvent.getSubject());
+		Assert.assertNotNull("Could not found added event", reloadedEvent);
+		Assert.assertEquals("Added event has wrong subject", testEvent.getSubject(), reloadedEvent.getSubject());
+		Assert.assertEquals(start, reloadedEvent.getBegin());
+		//calculate and check end date
+		calendar.add(Calendar.HOUR_OF_DAY, 1);
+		Date end = calendar.getTime();
+		Assert.assertEquals(end, reloadedEvent.getEnd());
+		Assert.assertFalse(reloadedEvent.isAllDayEvent());
+		Assert.assertTrue(reloadedEvent.isToday());
+		
 		// 2. Test Change event
+		calendar.add(Calendar.HOUR_OF_DAY, 1);
+		Date updatedEnd = calendar.getTime();
 		reloadedEvent.setSubject("testEvent changed");
+		reloadedEvent.setEnd(updatedEnd);
 		manager.updateEventFrom(cal, reloadedEvent);
+		
 		// set manager null to force reload of calendar from file-system
 		emptyCalendarCache();
-		manager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+		manager = CalendarManagerFactory.getInstance().getCalendarManager();
 		cal = manager.getPersonalCalendar(test).getKalendar();
 		KalendarEvent updatedEvent = cal.getEvent(TEST_EVENT_ID);
-		assertNotNull("Could not found updated event", updatedEvent);
-		assertEquals("Added event has wrong subject", reloadedEvent.getSubject(),updatedEvent.getSubject());
+		Assert.assertNotNull("Could not found updated event", updatedEvent);
+		Assert.assertEquals("Added event has wrong subject", reloadedEvent.getSubject(), updatedEvent.getSubject());
+		Assert.assertEquals(start, reloadedEvent.getBegin());
+		Assert.assertEquals(updatedEnd, reloadedEvent.getEnd());
+		
 		// 3. Test Remove event
 		manager.removeEventFrom(cal, updatedEvent);
 		emptyCalendarCache();
-		manager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+		manager = CalendarManagerFactory.getInstance().getCalendarManager();
 		cal = manager.getPersonalCalendar(test).getKalendar();
 		KalendarEvent removedEvent = cal.getEvent(TEST_EVENT_ID);
 		assertNull("Found removed event", removedEvent);
@@ -118,14 +135,14 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ical-1-");	
 
 		String TEST_EVENT_ID = "id-testAddEvent";
-		CalendarManager manager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+		CalendarManager manager = CalendarManagerFactory.getInstance().getCalendarManager();
 		Kalendar cal = manager.getPersonalCalendar(test).getKalendar();
 		
 		// 1. Test Add Event
 		Calendar calendar = Calendar.getInstance();
 		calendar.set(Calendar.MILLISECOND, 0);
 		Date start = calendar.getTime();
-		calendar.add(Calendar.HOUR, 1);
+		calendar.add(Calendar.HOUR_OF_DAY, 1);
 		Date end = calendar.getTime();
 		KalendarEvent testEvent = new KalendarEvent(TEST_EVENT_ID, "testEvent", start, end);
 		manager.addEventTo(cal, testEvent);
@@ -133,7 +150,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		//empty the cache
 		emptyCalendarCache();
 		
-		manager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+		manager = CalendarManagerFactory.getInstance().getCalendarManager();
 		Kalendar reloadedCal = manager.getPersonalCalendar(test).getKalendar();
 		KalendarEvent reloadedEvent = reloadedCal.getEvent(TEST_EVENT_ID);
 		Assert.assertNotNull("Could not found added event", reloadedEvent);
@@ -142,9 +159,9 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Assert.assertEquals(reloadedEvent.getEnd(), end);
 		
 		// 2. Test Change event
-		calendar.add(Calendar.HOUR, 1);
+		calendar.add(Calendar.HOUR_OF_DAY, 1);
 		Date updatedEnd = calendar.getTime();
-		calendar.add(Calendar.HOUR, -4);
+		calendar.add(Calendar.HOUR_OF_DAY, -4);
 		Date updatedStart = calendar.getTime();
 		reloadedEvent.setSubject("testEvent changed");
 		reloadedEvent.setBegin(updatedStart);
@@ -154,13 +171,135 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		//empty the cache
 		emptyCalendarCache();
 
-		manager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+		manager = CalendarManagerFactory.getInstance().getCalendarManager();
 		Kalendar updatedCal = manager.getPersonalCalendar(test).getKalendar();
 		KalendarEvent updatedEvent = updatedCal.getEvent(TEST_EVENT_ID);
 		Assert.assertNotNull("Could not found updated event", updatedEvent);
 		Assert.assertEquals("Added event has wrong subject", "testEvent changed", updatedEvent.getSubject());
 		Assert.assertEquals(updatedStart, updatedEvent.getBegin());
 		Assert.assertEquals(updatedEnd, updatedEvent.getEnd());
+	}
+	
+	/**
+	 * Check a NPE
+	 * @throws IOException
+	 */
+	@Test
+	public void testTodayEvent() throws IOException {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ical-3-");	
+		CalendarManager manager = CalendarManagerFactory.getInstance().getCalendarManager();
+		Kalendar cal = manager.getPersonalCalendar(test).getKalendar();
+		
+		// 1. Test Today Event
+		String eventId = "today-" + UUID.randomUUID();
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.MILLISECOND, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.HOUR_OF_DAY, 8);
+		Date start = calendar.getTime();
+		calendar.set(Calendar.HOUR_OF_DAY, 12);
+		Date end = calendar.getTime();
+		KalendarEvent testEvent = new KalendarEvent(eventId, "Today Event", start, end);
+		manager.addEventTo(cal, testEvent);
+		
+		//Next days event
+		String nextEventId = "next-" + UUID.randomUUID();
+		calendar = Calendar.getInstance();
+		calendar.set(Calendar.MILLISECOND, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.add(Calendar.DATE, 3);
+		calendar.set(Calendar.HOUR_OF_DAY, 8);
+		Date nextStart = calendar.getTime();
+		calendar.set(Calendar.HOUR_OF_DAY, 12);
+		Date nextEnd = calendar.getTime();
+		KalendarEvent nextEvent = new KalendarEvent(nextEventId, "Next Event", nextStart, nextEnd);
+		manager.addEventTo(cal, nextEvent);
+		
+
+		//2. reload and test
+		emptyCalendarCache();		
+		manager = CalendarManagerFactory.getInstance().getCalendarManager();
+		KalendarEvent reloadedEvent = manager.getPersonalCalendar(test).getKalendar().getEvent(eventId);
+		Assert.assertNotNull(reloadedEvent);
+		Assert.assertEquals("Today Event", reloadedEvent.getSubject());
+		Assert.assertEquals(start, reloadedEvent.getBegin());
+		Assert.assertEquals(end, reloadedEvent.getEnd());
+		Assert.assertTrue(reloadedEvent.isToday());
+		Assert.assertTrue(reloadedEvent.isWithinOneDay());
+		Assert.assertFalse(reloadedEvent.isAllDayEvent());
+		
+		KalendarEvent reloadedNextEvent = manager.getPersonalCalendar(test).getKalendar().getEvent(nextEventId);
+		Assert.assertNotNull(reloadedNextEvent);
+		Assert.assertEquals("Next Event", reloadedNextEvent.getSubject());
+		Assert.assertEquals(nextStart, reloadedNextEvent.getBegin());
+		Assert.assertEquals(nextEnd, reloadedNextEvent.getEnd());
+		Assert.assertFalse(reloadedNextEvent.isToday());
+		Assert.assertTrue(reloadedNextEvent.isWithinOneDay());
+		Assert.assertFalse(reloadedNextEvent.isAllDayEvent());
+	}
+	
+	@Test
+	public void testWithinOneDay() throws IOException {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ical-4-");	
+		CalendarManager manager = CalendarManagerFactory.getInstance().getCalendarManager();
+		Kalendar cal = manager.getPersonalCalendar(test).getKalendar();
+		
+		// 1. Test Today Event
+		String eventId = "short-" + UUID.randomUUID();
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.MILLISECOND, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.HOUR_OF_DAY, 14);
+		Date start = calendar.getTime();
+		calendar.set(Calendar.HOUR_OF_DAY, 15);
+		Date end = calendar.getTime();
+		KalendarEvent testEvent = new KalendarEvent(eventId, "Short Event", start, end);
+		manager.addEventTo(cal, testEvent);
+		
+		//Next days event
+		String nextEventId = "long-" + UUID.randomUUID();
+		calendar = Calendar.getInstance();
+		calendar.set(Calendar.MILLISECOND, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.add(Calendar.DATE, 3);
+		calendar.set(Calendar.HOUR, 8);
+		Date nextStart = calendar.getTime();
+		
+		calendar = Calendar.getInstance();
+		calendar.set(Calendar.MILLISECOND, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.add(Calendar.DATE, 6);
+		calendar.set(Calendar.HOUR_OF_DAY, 18);
+		Date nextEnd = calendar.getTime();
+		KalendarEvent nextEvent = new KalendarEvent(nextEventId, "Long Event", nextStart, nextEnd);
+		manager.addEventTo(cal, nextEvent);
+		
+
+		//2. reload and test
+		emptyCalendarCache();		
+		manager = CalendarManagerFactory.getInstance().getCalendarManager();
+		KalendarEvent reloadedEvent = manager.getPersonalCalendar(test).getKalendar().getEvent(eventId);
+		Assert.assertNotNull(reloadedEvent);
+		Assert.assertEquals("Short Event", reloadedEvent.getSubject());
+		Assert.assertEquals(start, reloadedEvent.getBegin());
+		Assert.assertEquals(end, reloadedEvent.getEnd());
+		Assert.assertTrue(reloadedEvent.isToday());
+		Assert.assertTrue(reloadedEvent.isWithinOneDay());
+		Assert.assertFalse(reloadedEvent.isAllDayEvent());
+		
+		KalendarEvent reloadedNextEvent = manager.getPersonalCalendar(test).getKalendar().getEvent(nextEventId);
+		Assert.assertNotNull(reloadedNextEvent);
+		Assert.assertEquals("Long Event", reloadedNextEvent.getSubject());
+		Assert.assertEquals(nextStart, reloadedNextEvent.getBegin());
+		Assert.assertEquals(nextEnd, reloadedNextEvent.getEnd());
+		Assert.assertFalse(reloadedNextEvent.isToday());
+		Assert.assertFalse(reloadedNextEvent.isWithinOneDay());
+		Assert.assertFalse(reloadedNextEvent.isAllDayEvent());
 	}
 
 	/**
@@ -179,22 +318,26 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		File newCalendarFile = new File(calendarFile.getParentFile(), calendarFile.getName());
 		InputStream in = CalendarImportTest.class.getResourceAsStream("cal_without_dtend.ics");
 		FileUtils.copyInputStreamToFile(in, newCalendarFile);
-		
+		//to be sure
+		emptyCalendarCache();
 		//load the calendar
 		KalendarRenderWrapper reloadCalWrapper = calManager.getPersonalCalendar(identity);
 		//check if its the right calendar
 		Collection<KalendarEvent> events = reloadCalWrapper.getKalendar().getEvents();
 		Assert.assertNotNull(events);
 		Assert.assertEquals(1, events.size());
-		
-		//persist
-		calManager.persistCalendar(reloadCalWrapper.getKalendar());
-		
-		//an other possible RS
-		Date periodStart = new Date();
-		Date periodEnd = new Date();
-		CalendarUtils.listEventsForPeriod(reloadCalWrapper.getKalendar(), periodStart, periodEnd);
+		KalendarEvent event = events.iterator().next();
+		Assert.assertEquals("Arbeitszeit: 1-3h", event.getSubject());
+		Assert.assertNull(event.getEnd());
+		Assert.assertFalse(event.isToday());
+		Assert.assertTrue(event.isWithinOneDay());
+		Assert.assertFalse(event.isAllDayEvent());
+
+		//test persist
+		boolean allOk = calManager.persistCalendar(reloadCalWrapper.getKalendar());
+		Assert.assertTrue(allOk);
 	}
+	
 	
 	/**
 	 * Test concurrent add event with two threads and code-point to control concurrency.
@@ -218,7 +361,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 			public void run() {
 				try {
 					// 1. load calendar
-					CalendarManager calManager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+					CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
 					Kalendar cal = calManager.getPersonalCalendar(test).getKalendar();
 					
 					// 2. add Event1 => breakpoint hit					
@@ -252,7 +395,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 			public void run() {
 				try {
 					// 1. load calendar
-					CalendarManager calManager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+					CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
 					Kalendar cal = calManager.getPersonalCalendar(test).getKalendar();
 					
 					// 3. add Event2 (breakpoint of thread1 blocks)
@@ -315,7 +458,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
 
 		// Generate event for update
-		CalendarManager calManager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+		CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
 		Kalendar cal = calManager.getPersonalCalendar(test).getKalendar();
 		calManager.addEventTo(cal, new KalendarEvent(TEST_EVENT_ID_2,TEST_EVENT_SUBJECT_2, new Date(), 1));
 		cal = calManager.getPersonalCalendar(test).getKalendar();
@@ -331,7 +474,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 			public void run() {
 				try {
 					// 1. load calendar
-					CalendarManager calendarManager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+					CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
 					Kalendar currentCalendar = calendarManager.getPersonalCalendar(test).getKalendar();
 					
 					// 2. add Event1 => breakpoint hit					
@@ -364,7 +507,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Thread thread2 = new Thread() {
 			public void run() {
 				try {
-					CalendarManager calendarManager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+					CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
 					Kalendar calendar = calendarManager.getPersonalCalendar(test).getKalendar();
 					
 					// 3. add Event2 (breakpoint of thread1 blocks)
@@ -430,7 +573,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
 
 		// Generate event for update
-		CalendarManager calManager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+		CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
 		Kalendar cal = calManager.getPersonalCalendar(test).getKalendar();
 		calManager.addEventTo(cal, new KalendarEvent(TEST_EVENT_ID_2,TEST_EVENT_SUBJECT_2, new Date(), 1));
 		cal = calManager.getPersonalCalendar(test).getKalendar();
@@ -446,7 +589,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 			public void run() {
 				try {
 					// 1. load calendar
-					CalendarManager calendarManager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+					CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
 					Kalendar calendar = calendarManager.getPersonalCalendar(test).getKalendar();
 					
 					// 2. add Event1 => breakpoint hit					
@@ -479,7 +622,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Thread thread2 = new Thread() {
 			public void run() {
 				try {
-					CalendarManager calendarManager = CalendarManagerFactory.getJUnitInstance().getCalendarManager();
+					CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
 					Kalendar calendar = calendarManager.getPersonalCalendar(test).getKalendar();
 					
 					// 3. add Event2 (breakpoint of thread1 blocks)

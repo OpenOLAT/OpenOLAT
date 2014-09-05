@@ -29,6 +29,7 @@ import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.util.CompatibilityHints;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -82,7 +83,7 @@ public class CalendarImportTest {
         assertNotNull(calendar);
 	}
 	
-	@Test
+	@Test @Ignore
 	public void testImportFromFGiCal() throws IOException, ParserException {
 		//default settings in olat
 		System.setProperty(CompatibilityHints.KEY_RELAXED_UNFOLDING, "true");
