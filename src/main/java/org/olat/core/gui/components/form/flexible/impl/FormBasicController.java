@@ -78,6 +78,8 @@ public abstract class FormBasicController extends BasicController {
 	public static final int LAYOUT_CUSTOM = 3;
 	public static final int LAYOUT_BAREBONE = 4;
 	public static final int LAYOUT_PANEL = 5;
+	public static final int LAYOUT_DEFAULT_6_6 = 6;
+	public static final int LAYOUT_DEFAULT_9_3 = 6;
 
 	protected FormLayoutContainer flc;
 
@@ -160,7 +162,14 @@ public abstract class FormBasicController extends BasicController {
 			// init with panel layout
 			flc = FormLayoutContainer.createPanelFormLayout("ffo_panel", getTranslator());		
 			mainForm = Form.create(mainFormId, "ffo_main_panel", flc, this);
-		}  else if (layout == LAYOUT_CUSTOM) {
+		} else if (layout == LAYOUT_DEFAULT_6_6) {
+			flc = FormLayoutContainer.createDefaultFormLayout_6_6("ffo_default_6_6", getTranslator());
+			mainForm = Form.create(mainFormId, "ffo_main_default_6_6", flc, this);
+		} else if (layout == LAYOUT_DEFAULT_9_3) {
+			// init with panel layout
+			flc = FormLayoutContainer.createDefaultFormLayout_9_3("ffo_default_9_3", getTranslator());		
+			mainForm = Form.create(mainFormId, "ffo_main_default_9_3", flc, this);
+		} else if (layout == LAYOUT_CUSTOM) {
 			throw new AssertException("Use another constructor to work with a custom layout!");
 
 		} else {
@@ -189,6 +198,14 @@ public abstract class FormBasicController extends BasicController {
 			// init with panel layout
 			flc = FormLayoutContainer.createPanelFormLayout("ffo_panel", getTranslator());		
 
+		} else if (layout == LAYOUT_DEFAULT_6_6) {
+			// init with default layout
+			flc = FormLayoutContainer.createDefaultFormLayout_6_6("ffo_panel", getTranslator());
+		
+		} else if (layout == LAYOUT_DEFAULT_9_3) {
+			// init with default layout
+			flc = FormLayoutContainer.createDefaultFormLayout_9_3("ffo_panel", getTranslator());
+		
 		} else if (layout == LAYOUT_CUSTOM && customLayoutPageName != null) {
 			// init with provided layout
 			String vc_pageName = velocity_root + "/" + customLayoutPageName + ".html";

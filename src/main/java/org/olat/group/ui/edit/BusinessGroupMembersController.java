@@ -181,7 +181,7 @@ public class BusinessGroupMembersController extends BasicController {
 		Step start = new ImportMember_1b_ChooseMemberStep(ureq, null, businessGroup);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
-			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
 				addMembers(runContext);
 				return StepsMainRunController.DONE_MODIFIED;
 			}
@@ -199,7 +199,7 @@ public class BusinessGroupMembersController extends BasicController {
 		Step start = new ImportMember_1a_LoginListStep(ureq, null, businessGroup);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
-			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
 				addMembers(runContext);
 				if(runContext.containsKey("notFounds")) {
 					showWarning("user.notfound", runContext.get("notFounds").toString());
