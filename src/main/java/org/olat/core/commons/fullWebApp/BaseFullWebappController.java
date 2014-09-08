@@ -871,7 +871,9 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	 * @return the dtab at pos pos
 	 */
 	public DTab getDTabAt(int pos) {
-		return dtabs.get(pos);
+		synchronized (dtabs) {
+			return dtabs.get(pos);
+		}
 	}
 
 	public void removeDTab(UserRequest ureq, DTab delt) {
@@ -981,22 +983,25 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	 * @see org.olat.core.gui.control.generic.dtabs.DTabs#getDTab(org.olat.core.id.OLATResourceable
 	 */
 	public DTab getDTab(OLATResourceable ores) {
-		for (Iterator<DTab> it_dts = dtabs.iterator(); it_dts.hasNext();) {
-			DTab dtab = it_dts.next();
-			if (OresHelper.equals(dtab.getOLATResourceable(), ores)) return dtab;
-			//fxdiff BAKS-7 Resume function
-			if (OresHelper.equals(dtab.getInitialOLATResourceable(), ores)) return dtab;
+		synchronized (dtabs) {
+			for (Iterator<DTab> it_dts = dtabs.iterator(); it_dts.hasNext();) {
+				DTab dtab = it_dts.next();
+				if (OresHelper.equals(dtab.getOLATResourceable(), ores)) {
+					return dtab;
+				}
+				if (OresHelper.equals(dtab.getInitialOLATResourceable(), ores)) {
+					return dtab;
+				}
+			}
+			return null;
 		}
-		return null;
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.generic.dtabs.DTabs#createDTab(org.olat.core.id.OLATResourceable
 	 *      java.lang.String)
 	 */
-	//fxdiff BAKS-7 Resume function
 	public DTab createDTab(OLATResourceable ores, OLATResourceable repoOres, String title) {
-		// fxdiff: read from props
 		if (dtabs.size() >= getMaxTabs()) {
 			getWindowControl().setError(translate("warn.tabsfull"));
 			return null;
@@ -1208,7 +1213,9 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	 */
 	public boolean isCanCloseDTab() {
 		//can close
-		return (sites != null && !sites.isEmpty()) || (dtabs != null && dtabs.size() > 1);
+		synchronized (dtabs) {
+			return (sites != null && !sites.isEmpty()) || (dtabs != null && dtabs.size() > 1);
+		}
 	}
 	
 	private void setCurrent(SiteInstance site, DTab tab) {
