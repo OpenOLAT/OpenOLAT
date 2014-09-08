@@ -54,11 +54,20 @@ public class SearchServiceDisabled implements SearchService {
 	private SearchServiceDisabled() {
 		log.info("SearchService Disabled");
 	}
-	
+
+	@Override
 	public void startIndexing() {
+		//
 	}
 
+	@Override
 	public void stopIndexing() {
+		//
+	}
+	
+	@Override
+	public boolean refresh() {
+		return false;
 	}
 
 	public void init() {

@@ -227,6 +227,17 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 		log.info("init DONE");
 	}
 	
+	@Override
+	public boolean refresh() {
+		try {
+			createIndexSearcherManager();
+			return indexSearcherRefMgr != null;
+		} catch (Exception e) {
+			log.error("", e);
+			return false;
+		}
+	}
+
 	private void createIndexSearcherManager() {
 		try {
 			if(indexSearcherRefMgr == null) {
@@ -402,10 +413,12 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 	}
 	
 	protected void releaseIndexSearcher(IndexSearcher s) {
-		try {
-			indexSearcherRefMgr.release(s);
-		} catch (IOException e) {
-			log.error("Error while releasing index searcher", e);
+		if(indexSearcherRefMgr != null) {
+			try {
+				indexSearcherRefMgr.release(s);
+			} catch (IOException e) {
+				log.error("Error while releasing index searcher", e);
+			}
 		}
 	}
 	

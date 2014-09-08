@@ -54,8 +54,7 @@ public class SearchAdminController extends BasicController {
 	private SearchAdminForm searchAdminForm;
 	
 	Panel main;
-	private Link stopIndexingButton;
-	private Link startIndexingButton;
+	private Link stopIndexingButton, startIndexingButton, refreshIndexingButton;
 	
 	/**
 	 * @param ureq
@@ -68,6 +67,8 @@ public class SearchAdminController extends BasicController {
 		myContent = createVelocityContainer("index");
 		startIndexingButton = LinkFactory.createButtonSmall("button.startindexing", myContent, this);
 		stopIndexingButton = LinkFactory.createButtonSmall("button.stopindexing", myContent, this);
+		refreshIndexingButton = LinkFactory.createButtonSmall("button.refreshindexing", myContent, this);
+		
 		myContent.contextPut("searchstatus", SearchServiceFactory.getService().getStatus());
 		
 		IndexCronGenerator generator = (IndexCronGenerator)CoreSpringFactory.getBean("&searchIndexCronGenerator");
@@ -114,6 +115,8 @@ public class SearchAdminController extends BasicController {
 		} else if (source == stopIndexingButton) {
 			doStopIndexer();
 			myContent.setDirty(true);
+		} else if(source == refreshIndexingButton) {
+			doRefresh();
 		}
 	}
 	
@@ -132,6 +135,14 @@ public class SearchAdminController extends BasicController {
 				searchModule.setPdfFileEnabled(searchAdminForm.isPdfFileEnabled());
 				return;
 			}
+		}
+	}
+	
+	private void doRefresh() {
+		if(SearchServiceFactory.getService().refresh()) {
+			showInfo("refreshed");
+		} else {
+			showWarning("refresh.error");
 		}
 	}
 	

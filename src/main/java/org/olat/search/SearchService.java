@@ -92,6 +92,8 @@ public interface SearchService {
 	 */
 	public void stopIndexing();
 	
+	public boolean refresh();
+	
 	/**
 	 * Initializes service.
 	 */

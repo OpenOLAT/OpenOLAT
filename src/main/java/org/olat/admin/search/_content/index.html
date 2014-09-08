@@ -18,9 +18,6 @@
 <fieldset>
 	<legend>$r.translate("index.status.title")</legend>
 	$r.translate("index.label.exist") : $searchstatus.IndexExists<br />
-	#if ($searchstatus.IndexExists == true)
-	  $r.translate("search.label.index.creation.date") : $searchstatus.indexCreationDate<br />
-	#end
 	#if ($cronExpression == false)
 		$r.translate("index.cron") : $r.translate("index.cron.disabled")<br />
 	#else
@@ -34,13 +31,14 @@
 	<br />
 	<br />
 	$r.translate("search.label.query") : $searchstatus.queryCount<br />
-	<br />
-	<br />
-	#if (($searchstatus.fullIndexerStatus.status == "running") || ($searchstatus.fullIndexerStatus.status == "sleeping"))
-	  $r.render("button.stopindexing")
-	#else
-	  $r.render("button.startindexing")
-	#end
+	<div class="o_button_group">
+		#if (($searchstatus.fullIndexerStatus.status == "running") || ($searchstatus.fullIndexerStatus.status == "sleeping"))
+		  $r.render("button.stopindexing")
+		#else
+		  $r.render("button.startindexing")
+		#end
+		  $r.render("button.refreshindexing")
+	</div>
 </fieldset>
 
 $r.render("searchAdminForm")
