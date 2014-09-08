@@ -233,10 +233,6 @@ public class OlatFullIndexer {
 			indexWriter.close();
 			indexWriter = null;
 			indexWriterWorkers = null;
-			
-			//created because the index is deleted and copied
-			IndexerEvent event = new IndexerEvent(IndexerEvent.INDEX_CREATED);
-			coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, IndexerEvent.INDEX_ORES);
 		} catch (IOException e) {
 			log.warn("Can not create IndexWriter, indexname=" + tempIndexPath, e);
 		} finally {
@@ -280,6 +276,10 @@ public class OlatFullIndexer {
 			index.indexingIsDone();
 			fullIndexerStatus.indexingFinished();
 			log.info("full indexing done in " + fullIndexerStatus.getIndexingTime() + "ms");
+			
+			//created because the index is deleted and copied
+			IndexerEvent event = new IndexerEvent(IndexerEvent.INDEX_CREATED);
+			coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, IndexerEvent.INDEX_ORES);
 			
 			//OLAT-5630 - dump more infos about the indexer run - for analysis later
 			FullIndexerStatus status = getStatus();
