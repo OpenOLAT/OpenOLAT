@@ -209,9 +209,6 @@ public abstract class AbstractItemListController extends FormBasicController
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == extendedSearchCtrl) {
-			itemsTable.collapseExtendedSearch();
-		}
 		super.event(ureq, source, event);
 	}
 

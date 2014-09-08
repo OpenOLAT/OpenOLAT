@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -53,6 +52,7 @@ import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.admin.TaxonomyTreeModel;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
 import org.olat.search.model.AbstractOlatDocument;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -71,14 +71,12 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 	private final String prefsKey;
 	private ExtendedSearchPrefs prefs;
 	private boolean enabled = true;
-	
-	private final QPoolService qpoolService;
+	@Autowired
+	private QPoolService qpoolService;
 
 	public ExtendedSearchController(UserRequest ureq, WindowControl wControl, String prefsKey, Form mainForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "extended_search", mainForm);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
-		
-		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		
 		this.prefsKey = prefsKey;
 		prefs = (ExtendedSearchPrefs) ureq.getUserSession().getGuiPreferences()
@@ -232,7 +230,26 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 			}
 
 			attributeChoice = uifactory.addDropdownSingleselect("attr-" + id, null, flc, attrKeys, attrValues, null);
-			attributeChoice.select(attrKeys[0], true);
+			if(pref == null) {
+				selectAttributeType(attrKeys[0], null);
+			} else {
+				selectAttributeType(pref.getAttribute(), pref.getValue());
+			}
+			
+			boolean found = false;
+			if(pref != null && StringHelper.containsNonWhitespace(pref.getAttribute())) {
+				String attr = pref.getAttribute();
+				for(String attrKey:attrKeys) {
+					if(attr.equals(attrKey)) {
+						attributeChoice.select(attrKey, true);
+						found = true;
+					}
+				}
+			}
+			if(!found) {
+				attributeChoice.select(attrKeys[0], true);
+			}
+			
 			if(pref == null) {
 				selectAttributeType(attrKeys[0], null);
 			} else {
