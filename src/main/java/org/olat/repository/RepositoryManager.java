@@ -47,6 +47,7 @@ import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.catalog.CatalogEntry;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -168,6 +169,9 @@ public class RepositoryManager extends BasicManager {
 	public void deleteImage(RepositoryEntry re) {
 		VFSLeaf imgFile =  getImage(re);
 		if (imgFile != null) {
+			if(imgFile instanceof MetaInfo) {
+				((MetaInfo)imgFile).clearThumbnails();
+			}
 			imgFile.delete();
 		}
 	}
@@ -190,6 +194,9 @@ public class RepositoryManager extends BasicManager {
 	public boolean setImage(VFSLeaf newImageFile, RepositoryEntry re) {
 		VFSLeaf currentImage = getImage(re);
 		if(currentImage != null) {
+			if(currentImage instanceof MetaInfo) {
+				((MetaInfo)currentImage).clearThumbnails();
+			}
 			currentImage.delete();
 		}
 

@@ -157,7 +157,7 @@ class EntryForm extends FormBasicController {
 			}
 		} else if (source == deleteImage) {
 			VFSLeaf img = catalogManager.getImage(catalogEntry);
-			if(fileUpload.getUploadFile() != null) {
+			if(fileUpload.getUploadFile() != null && fileUpload.getUploadFile() != fileUpload.getInitialFile()) {
 				fileUpload.reset();
 				
 				if(img == null) {
@@ -170,7 +170,8 @@ class EntryForm extends FormBasicController {
 			} else if(img != null) {
 				catalogManager.deleteImage(catalogEntry);
 				deleteImage.setVisible(false);
-				fileUpload.setLabel("rentry.pic", null);
+				fileUpload.setLabel("entry.pic", null);
+				fileUpload.setInitialFile(null);
 			}
 
 			flc.setDirty(true);

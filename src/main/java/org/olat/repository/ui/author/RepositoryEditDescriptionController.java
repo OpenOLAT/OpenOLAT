@@ -423,7 +423,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			}
 		} else if (source == deleteImage) {
 			VFSLeaf img = repositoryManager.getImage(repositoryEntry);
-			if(fileUpload.getUploadFile() != null) {
+			if(fileUpload.getUploadFile() != null && fileUpload.getUploadFile() != fileUpload.getInitialFile()) {
 				fileUpload.reset();
 				if(img == null) {
 					deleteImage.setVisible(false);
@@ -439,7 +439,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			flc.setDirty(true);
 		} else if (source == deleteMovie) {
 			VFSLeaf movie = repositoryService.getIntroductionMovie(repositoryEntry);
-			if(movieUpload.getUploadFile() != null) {
+			if(movieUpload.getUploadFile() != null && movieUpload.getUploadFile() != movieUpload.getInitialFile()) {
 				movieUpload.reset();
 				if(movie == null) {
 					deleteMovie.setVisible(false);

@@ -190,8 +190,8 @@ public class FileElementImpl extends FormItemImpl implements FileElement, FormIt
 	public void reset() {
 		if (tempUploadFile != null && tempUploadFile.exists()) {
 			tempUploadFile.delete();
-			tempUploadFile = null;
 		}
+		tempUploadFile = null;
 		if(previewEl != null) {
 			if(initialFile != null) {
 				VFSLeaf media = new LocalFileImpl(initialFile);
