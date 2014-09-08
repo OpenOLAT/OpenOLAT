@@ -131,7 +131,7 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		String mapperUrl = ic.getMapperUrl();
 		String name = ic.getMedia().getName();
 		if(name.lastIndexOf('.') > 0) {
-			mapperUrl += "/" + name;
+			mapperUrl += "/" + name + "?" + System.nanoTime();
 		} else {
 			mapperUrl += "/?" + System.nanoTime();
 		}
