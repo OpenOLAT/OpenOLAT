@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<bean id="courseLayoutHelper" class="org.olat.course.config.ui.courselayout.CourseLayoutHelper" depends-on="courseModule">
 		<property name="logoMaxHeight" value="100"/>
@@ -16,11 +16,11 @@
 	<bean id="courseConfigManager" class="org.olat.course.config.ui.courselayout.CustomConfigManager" depends-on="courseModule">
 		<property name="availableLayoutElements">
 			<list>
-				<bean class="org.olat.course.config.ui.courselayout.elements.TextLE" lazy-init="true"/>
-				<bean class="org.olat.course.config.ui.courselayout.elements.HeaderLE" lazy-init="true"/>
-				<bean class="org.olat.course.config.ui.courselayout.elements.LinkLE" lazy-init="true"/>
-				<bean class="org.olat.course.config.ui.courselayout.elements.MenuLE" lazy-init="true"/>
-				<bean class="org.olat.course.config.ui.courselayout.elements.ToolboxLE" lazy-init="true"/>		
+				<bean class="org.olat.course.config.ui.courselayout.elements.TextLE" />
+				<bean class="org.olat.course.config.ui.courselayout.elements.HeaderLE" />
+				<bean class="org.olat.course.config.ui.courselayout.elements.LinkLE" />
+				<bean class="org.olat.course.config.ui.courselayout.elements.MenuLE" />
+				<bean class="org.olat.course.config.ui.courselayout.elements.ToolboxLE" />		
 			</list>
 		</property>
 		<property name="availableLayoutAttributes">

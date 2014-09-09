@@ -38,6 +38,7 @@ import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.GlobalMapperRegistry;
 import org.olat.core.dispatcher.mapper.MapperDispatcher;
+import org.olat.core.extensions.ExtManager;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -116,6 +117,9 @@ public class OpenOLATServlet extends HttpServlet {
 				legacyContext += "/";
 			}
 		}
+		
+		//preload extensions
+		ExtManager.getInstance().getExtensions();
 	}
 
 	@Override

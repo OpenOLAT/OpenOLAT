@@ -824,11 +824,11 @@ public class I18nManager extends BasicManager {
 			}
 			//
 			// 2) Try to load from classpath
-			String fileName = (locale == null ? METADATA_FILENAME : buildI18nFilename(locale));
-			String relPath = bundleName.replace('.', '/') + "/" + I18N_DIRNAME + "/" + fileName;
 			// No "/" at the beginning of the resource! since the
 			// resource will not be found within jars
 			if (is == null) {
+				String fileName = (locale == null ? METADATA_FILENAME : buildI18nFilename(locale));
+				String relPath = bundleName.replace('.', '/') + "/" + I18N_DIRNAME + "/" + fileName;
 				ClassLoader classLoader = this.getClass().getClassLoader();
 				is = classLoader.getResourceAsStream(relPath);
 				if (logDebug && is != null) logDebug("loading LocalStrings from classpath relpath::" + relPath, null);

@@ -858,6 +858,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		List<SecurityGroup> group = this.dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), SecurityGroup.class)
 				.setParameter("groupName", securityGroupName)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
 
 		int size = group.size();
