@@ -1131,7 +1131,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			myTool.addComponent(glossaryToolCtr.getInitialComponent());
 		}
 		if (showCourseConfigLink) {
-			ChiefController chief = (ChiefController) Windows.getWindows(ureq).getAttribute("AUTHCHIEFCONTROLLER");
+			ChiefController chief = (ureq != null) ? (ChiefController) Windows.getWindows(ureq).getAttribute("AUTHCHIEFCONTROLLER") : null;
 			if (chief == null || chief.hasStaticSite(RepositorySite.class)) {
 				myTool.addLink(TOOLBOX_LINK_COURSECONFIG, translate("command.courseconfig"));
 			}
