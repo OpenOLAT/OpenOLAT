@@ -155,16 +155,17 @@ abstract public class AbstractExtension extends AbstractConfigOnOff implements E
 	 * if there is a security-callback provided, go and check access for user
 	 * @see org.olat.core.extensions.Extension#getExtensionFor(java.lang.String, org.olat.core.gui.UserRequest)
 	 */
+	@Override
 	public ExtensionElement getExtensionFor(String extensionPoint, UserRequest ureq) {
-		if (isSecCallbackNameSet()){
+		ExtensionElement extEl = getExtensionFor(extensionPoint);
+		if (extEl != null && isSecCallbackNameSet()) {
 			// no session on dmz!
 			boolean isDMZ = ureq.getUserSession() == null || ureq.getUserSession().getIdentityEnvironment().getRoles() == null;
-			boolean launchOK = isDMZ || getActionExtensionSecurityCallback().isAllowedToLaunchActionController(ureq);
-			if (isDMZ || !launchOK){
+			if (isDMZ || !getActionExtensionSecurityCallback().isAllowedToLaunchActionController(ureq)) {
 				return null;
 			}
 		}
-		return getExtensionFor(extensionPoint);
+		return extEl;
 	}
 	
 	protected abstract ExtensionElement getExtensionFor(String extensionPoint);
