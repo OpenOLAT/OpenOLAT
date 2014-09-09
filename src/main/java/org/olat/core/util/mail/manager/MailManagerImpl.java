@@ -704,6 +704,8 @@ public class MailManagerImpl extends BasicManager implements MailManager {
 		String body = content.getBody();
 		boolean htmlContent =  isHtmlEmail(body);
 		if(htmlTemplate && !htmlContent) {
+			body = body.replace("&", "&amp;");
+			body = body.replace("<", "&lt;");
 			body = body.replace("\n", "<br />");
 		}
 		VelocityContext context = new VelocityContext();
