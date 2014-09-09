@@ -27,7 +27,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.zip.ZipEntry;
@@ -45,8 +52,11 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.PathUtils.CopyVisitor;
+import org.olat.core.util.PathUtils.YesMatcher;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
+import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XMLParser;
@@ -56,9 +66,9 @@ import org.olat.ims.qti.editor.beecom.parser.ItemParser;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionType;
-import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
+import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
@@ -112,19 +122,30 @@ class QTIImportProcessor {
 	public List<QuestionItem> process() {
 		List<QuestionItem> qItems = new ArrayList<QuestionItem>();
 		try {
-			DocInfos docInfos = getDocInfos();
-			if(docInfos != null && docInfos.doc != null) {
-				List<ItemInfos> itemInfos = getItemList(docInfos);
-				for(ItemInfos itemInfo:itemInfos) {
-					QuestionItemImpl qItem = processItem(docInfos, itemInfo);
-					if(qItem != null) {
-						processFiles(qItem, itemInfo);
-						qItems.add(qItem);
-					}
+			List<DocInfos> docInfoList = getDocInfos();
+			if(docInfoList != null) {
+				for(DocInfos docInfos:docInfoList) {
+					List<QuestionItem> processdItems = process(docInfos);
+					qItems.addAll(processdItems);
 				}
 			}
 		} catch (IOException e) {
 			log.error("", e);
+		}
+		return qItems;
+	}
+	
+	private List<QuestionItem> process(DocInfos docInfos) {
+		List<QuestionItem> qItems = new ArrayList<>();
+		if(docInfos.doc != null) {
+			List<ItemInfos> itemInfos = getItemList(docInfos);
+			for(ItemInfos itemInfo:itemInfos) {
+				QuestionItemImpl qItem = processItem(docInfos, itemInfo);
+				if(qItem != null) {
+					processFiles(qItem, itemInfo, docInfos);
+					qItems.add(qItem);
+				}
+			}
 		}
 		return qItems;
 	}
@@ -181,6 +202,7 @@ class QTIImportProcessor {
 		if(!StringHelper.containsNonWhitespace(title)) {
 			title = importedFilename;
 		}
+
 		QuestionItemImpl poolItem = questionItemDao.create(title, QTIConstants.QTI_12_FORMAT, dir, filename);
 		//description
 		poolItem.setDescription(comment);
@@ -284,9 +306,9 @@ class QTIImportProcessor {
 	 * @param item
 	 * @param itemEl
 	 */
-	protected void processFiles(QuestionItemImpl item, ItemInfos itemInfos) {
+	protected void processFiles(QuestionItemImpl item, ItemInfos itemInfos, DocInfos docInfos) {
 		if(itemInfos.originalItem) {
-			processItemFiles(item);
+			processItemFiles(item, docInfos);
 		} else {
 			//an assessment package
 			processAssessmentFiles(item, itemInfos);
@@ -469,12 +491,22 @@ class QTIImportProcessor {
 	 * @param item
 	 * @param itemInfos
 	 */
-	protected void processItemFiles(QuestionItemImpl item) {
+	protected void processItemFiles(QuestionItemImpl item, DocInfos docInfos) {
 	//a package with an item
 		String dir = item.getDirectory();
 		String rootFilename = item.getRootFilename();
 		VFSContainer container = qpoolFileStorage.getContainer(dir);
-		if(importedFilename.toLowerCase().endsWith(".zip")) {
+		
+		if(docInfos != null && docInfos.root != null) {
+			try {
+				Path destDir = ((LocalImpl)container).getBasefile().toPath();
+				//unzip to container
+				Path path = docInfos.root;
+				Files.walkFileTree(path, new CopyVisitor(path, destDir, new YesMatcher()));
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		} else if(importedFilename.toLowerCase().endsWith(".zip")) {
 			ZipUtil.unzipStrict(importedFile, container);
 		} else {
 			VFSLeaf endFile = container.createChildLeaf(rootFilename);
@@ -545,12 +577,13 @@ class QTIImportProcessor {
 		return el.getText();
 	}
 	
-	protected DocInfos getDocInfos() throws IOException {
-		DocInfos doc;
+	protected List<DocInfos> getDocInfos() throws IOException {
+		List<DocInfos> doc;
 		if(importedFilename.toLowerCase().endsWith(".zip")) {
-			doc = traverseZip(importedFile);
+			//doc = traverseZip(importedFile);
+			doc = traverseZip_nio(importedFile);
 		} else {
-			doc = traverseFile(importedFile);
+			doc = Collections.singletonList(traverseFile(importedFile));
 		}
 		return doc;
 	}
@@ -574,31 +607,80 @@ class QTIImportProcessor {
 		}
 	}
 	
-	private DocInfos traverseZip(File file) throws IOException {
+	/*
+	private List<DocInfos> traverseZip(File file) throws IOException {
 		InputStream in = new FileInputStream(file);
 		ZipInputStream zis = new ZipInputStream(in);
+		List<DocInfos> docInfos = new ArrayList<>();
 
 		ZipEntry entry;
 		try {
 			while ((entry = zis.getNextEntry()) != null) {
 				String name = entry.getName();
 				if(name != null && name.toLowerCase().endsWith(".xml")) {
-					Document doc = readXml(zis);
+					Document doc = readXml(new ShieldInputStream(zis));
 					if(doc != null) {
 						DocInfos d = new DocInfos();
 						d.doc = doc;
 						d.filename = name;
-						return d;
+						docInfos.add(d);
 					}
 				}
 			}
-			return null;
 		} catch(Exception e) {
 			log.error("", e);
-			return null;
 		} finally {
 			IOUtils.closeQuietly(zis);
 			IOUtils.closeQuietly(in);
+		}
+		return docInfos;
+	}
+	*/
+	
+	private List<DocInfos> traverseZip_nio(File file) throws IOException {
+		List<DocInfos> docInfos = new ArrayList<>();
+		
+		Path fPath = FileSystems.newFileSystem(file.toPath(), null).getPath("/");
+		if(fPath != null) {
+			DocInfosVisitor visitor = new DocInfosVisitor();
+		    Files.walkFileTree(fPath, visitor);
+		    
+		    List<Path> xmlFiles = visitor.getXmlFiles();
+		    for(Path xmlFile:xmlFiles) {
+		    	InputStream in = Files.newInputStream(xmlFile);
+		    	
+		    	Document doc = readXml(in);
+				if(doc != null) {
+					DocInfos d = new DocInfos();
+					d.doc = doc;
+					d.root = xmlFile.getParent();
+					d.filename = xmlFile.getFileName().toString();
+					docInfos.add(d);
+				}
+		    	
+		    }
+		}
+		
+		
+		return docInfos;
+	}
+	
+	public static class DocInfosVisitor extends SimpleFileVisitor<Path> {
+		
+		private final List<Path> xmlFiles = new ArrayList<>();
+		
+		public List<Path> getXmlFiles() {
+			return xmlFiles;
+		}
+
+		@Override
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+		throws IOException {
+			String name = file.getFileName().toString();
+			if(name != null && name.toLowerCase().endsWith(".xml")) {
+				xmlFiles.add(file);
+			}
+	        return FileVisitResult.CONTINUE;
 		}
 	}
 	
@@ -643,6 +725,7 @@ class QTIImportProcessor {
 	public static class DocInfos {
 		private Document doc;
 		private String filename;
+		private Path root;
 		private String qtiComment;
 		
 		public String getFilename() {
@@ -659,6 +742,14 @@ class QTIImportProcessor {
 		
 		public void setDocument(Document doc) {
 			this.doc = doc;
+		}
+
+		public Path getRoot() {
+			return root;
+		}
+
+		public void setRoot(Path root) {
+			this.root = root;
 		}
 
 		public String getQtiComment() {

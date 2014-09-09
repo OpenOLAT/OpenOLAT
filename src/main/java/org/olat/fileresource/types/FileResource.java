@@ -32,15 +32,15 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
-import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.PathUtils.CopyVisitor;
+import org.olat.core.util.PathUtils.YesMatcher;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -186,45 +186,5 @@ public class FileResource implements OLATResourceable {
 		}
 	}
 	
-	public static class YesMatcher implements PathMatcher {
-		@Override
-		public boolean matches(Path path) {
-			return true;
-		}
-	}
-	
-	public static class CopyVisitor extends SimpleFileVisitor<Path> {
 
-		private final Path source;
-		private final Path destDir;
-		private final PathMatcher filter;
-		
-		public CopyVisitor(Path source, Path destDir, PathMatcher filter) {
-			this.source = source;
-			this.destDir = destDir;
-			this.filter = filter;
-		}
-		
-		@Override
-		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-	    throws IOException {
-			Path relativeFile = source.relativize(file);
-	        final Path destFile = Paths.get(destDir.toString(), relativeFile.toString());
-	        if(filter.matches(file)) {
-	        	Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
-	        }
-	        return FileVisitResult.CONTINUE;
-		}
-	 
-		@Override
-		public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
-		throws IOException {
-			Path relativeDir = source.relativize(dir);
-	        final Path dirToCreate = Paths.get(destDir.toString(), relativeDir.toString());
-	        if(Files.notExists(dirToCreate)){
-	        	Files.createDirectory(dirToCreate);
-	        }
-	        return FileVisitResult.CONTINUE;
-		}
-	}
 }

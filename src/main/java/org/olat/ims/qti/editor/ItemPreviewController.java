@@ -78,7 +78,7 @@ public class ItemPreviewController extends DefaultController implements Controll
 		this.mediaBaseUrl = mediaBaseUrl;
 		renderInstructions = new RenderInstructions();
 		if(mediaBaseUrl != null && !mediaBaseUrl.startsWith("http")) {
-			mediaBaseUrl = Settings.getServerContextPathURI() + mediaBaseUrl;
+			mediaBaseUrl = Settings.createServerURI() + mediaBaseUrl;
 		}
 		renderInstructions.put(RenderInstructions.KEY_STATICS_PATH, mediaBaseUrl + "/");
 		renderInstructions.put(RenderInstructions.KEY_LOCALE, translator.getLocale());

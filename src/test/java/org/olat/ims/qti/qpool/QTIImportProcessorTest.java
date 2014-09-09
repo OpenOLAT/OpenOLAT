@@ -101,7 +101,11 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		
 		//get the document informations
 		QTIImportProcessor proc = new QTIImportProcessor(owner, Locale.ENGLISH, itemFile.getName(), itemFile, questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
-		DocInfos docInfos = proc.getDocInfos();
+		List<DocInfos> docInfoList = proc.getDocInfos();
+		Assert.assertNotNull(docInfoList);
+		Assert.assertEquals(1, docInfoList.size());
+		
+		DocInfos docInfos = docInfoList.get(0);
 		Assert.assertNotNull(docInfos);
 		Assert.assertNotNull(docInfos.getFilename());
 		Assert.assertNotNull(docInfos.getDocument());
@@ -116,7 +120,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		QuestionItemImpl item = proc.processItem(docInfos, itemInfos.get(0));
 		Assert.assertNotNull(item);
 		dbInstance.commitAndCloseSession();
-		proc.processFiles(item, itemInfos.get(0));
+		proc.processFiles(item, itemInfos.get(0), null);
 		
 		//reload and check what is saved
 		QuestionItemFull reloadItem = questionItemDao.loadById(item.getKey());
@@ -184,7 +188,11 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		
 		//get the document informations
 		QTIImportProcessor proc = new QTIImportProcessor(owner, Locale.ENGLISH, testFile.getName(), testFile, questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
-		DocInfos docInfos = proc.getDocInfos();
+		List<DocInfos> docInfoList = proc.getDocInfos();
+		Assert.assertNotNull(docInfoList);
+		Assert.assertEquals(1, docInfoList.size());
+		
+		DocInfos docInfos = docInfoList.get(0);
 		Assert.assertNotNull(docInfos);
 		Assert.assertNotNull(docInfos.getFilename());
 		Assert.assertNotNull(docInfos.getDocument());
@@ -358,6 +366,50 @@ public class QTIImportProcessorTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void testImport_QTI12_multipleItems() throws IOException, URISyntaxException {
+		URL itemsUrl = QTIImportProcessorTest.class.getResource("multiple_items.zip");
+		Assert.assertNotNull(itemsUrl);
+		File itemFile = new File(itemsUrl.toURI());
+		
+		//get the document informations
+		QTIImportProcessor proc = new QTIImportProcessor(owner, Locale.ENGLISH, itemFile.getName(), itemFile, questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
+		List<QuestionItem> items = proc.process();
+		Assert.assertNotNull(items);
+		Assert.assertEquals(2, items.size());
+		dbInstance.commitAndCloseSession();
+		
+		//check the files
+		for(QuestionItem item:items) {
+			QuestionItemFull itemFull = (QuestionItemFull)item;
+			String dir = itemFull.getDirectory();
+			String file = itemFull.getRootFilename();
+			VFSContainer itemContainer = qpoolFileStorage.getContainer(dir);
+			Assert.assertNotNull(itemContainer);
+			VFSItem itemLeaf = itemContainer.resolve(file);
+			Assert.assertNotNull(itemLeaf);
+			Assert.assertTrue(itemLeaf instanceof VFSLeaf);
+			
+			//try to parse it
+			InputStream is = ((VFSLeaf)itemLeaf).getInputStream();
+			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
+			Document doc = xmlParser.parse(is, false);
+			Node itemNode = doc.selectSingleNode("questestinterop/item");
+			Assert.assertNotNull(itemNode);
+			
+			//check the attachments
+			if("Export (blue)".equals(itemFull.getTitle())) {
+				Assert.assertTrue(exists(itemFull, "media/blue.png"));
+				Assert.assertFalse(exists(itemFull, "media/purple.png"));
+			} else if("Export (purple)".equals(itemFull.getTitle())) {
+				Assert.assertFalse(exists(itemFull, "media/blue.png"));
+				Assert.assertTrue(exists(itemFull, "media/purple.png"));
+			} else {
+				Assert.fail();
+			}
+		}
+	}
+	
+	@Test
 	public void testImport_QTI12_metadata() throws IOException, URISyntaxException {
 		URL itemUrl = QTIImportProcessorTest.class.getResource("mchc_i_001.xml");
 		Assert.assertNotNull(itemUrl);
@@ -392,7 +444,11 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		List<QuestionItem> items = proc.process();
 		Assert.assertNotNull(items);
 		
-		DocInfos docInfos = proc.getDocInfos();
+		List<DocInfos> docInfoList = proc.getDocInfos();
+		Assert.assertNotNull(docInfoList);
+		Assert.assertEquals(1, docInfoList.size());
+		
+		DocInfos docInfos = docInfoList.get(0);
 		List<ItemInfos> itemInfos = proc.getItemList(docInfos);
 		Assert.assertNotNull(itemInfos);
 		Assert.assertEquals(1, itemInfos.size());
