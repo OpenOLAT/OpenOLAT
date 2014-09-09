@@ -115,11 +115,15 @@ public class RepositoryEntryAuthorQueries {
 			  .append(" inner join v.olatResource as res")
 			  .append(" left join v.lifecycle as lifecycle");
 		} else {
-			sb.append("select v, ")
-			  .append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
-			  .append("   where mark.creator=ident and mark.resId=v.key and mark.resName='RepositoryEntry'")
-			  .append(" ) as marks,")
-			  .append(" (select count(offer.key) from ").append(OfferImpl.class.getName()).append(" as offer ")
+			sb.append("select v, ");
+			if(params.getMarked() != null && params.getMarked().booleanValue()) {
+				sb.append(" 1 as marks,");
+			} else {
+				sb.append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
+				  .append("   where mark.creator=ident and mark.resId=v.key and mark.resName='RepositoryEntry'")
+				  .append(" ) as marks,");
+			}
+			sb.append(" (select count(offer.key) from ").append(OfferImpl.class.getName()).append(" as offer ")
 			  .append("   where offer.resource=res and offer.valid=true")
 			  .append(" ) as offers")
 			  .append(" from repositoryentry as v, ").append(IdentityImpl.class.getName()).append(" as ident ")
