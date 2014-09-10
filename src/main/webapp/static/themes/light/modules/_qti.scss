@@ -15,6 +15,19 @@ div.o_qti_menu_section {
 	margin-top: $padding-large-vertical;
 }
 
+div.o_qti_menu_item a, div.o_qti_menu_section a {
+	text-decoration:none;
+}
+
+div.o_qti_menu_item {
+	padding:.1em;
+}
+
+div.o_qti_menu_item_active {
+	padding:.1em;
+	font-weight:bold;
+}
+
 div.o_qti_item_itemfeedback {
 	@extend %o_info;
 	background-color: #ffffff;
