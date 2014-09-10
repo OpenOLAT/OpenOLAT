@@ -1,14 +1,13 @@
 <fieldset>
-	<legend>$r.translate("rest.title")</legend>
-	$r.contextHelpWithWrapper("org.olat.admin.restapi","rest.html","help.hover.rest")
-	<p>$r.translate("rest.intro")</p>
+	<legend>$r.contextHelpWithWrapper("org.olat.admin.restapi","rest.html","help.hover.rest")
+	$r.translate("rest.title")</legend>
+	<div class="o_info">$r.translate("rest.intro")</div>
 	$r.render("doc_link")
 	$r.render("flc_access_data")
 </fieldset>
-
 <fieldset>
-	<legend>$r.translate("managed.objects")</legend>
-	$r.contextHelpWithWrapper("org.olat.admin.restapi","managed.html","help.hover.managed")
-	<p>$r.translate("managed.intro")</p>
+	<legend>$r.contextHelpWithWrapper("org.olat.admin.restapi","managed.html","help.hover.managed")
+	$r.translate("managed.objects")</legend>
+	<div class="o_info">$r.translate("managed.intro")</div>
 	$r.render("flc_managed")
 </fieldset>

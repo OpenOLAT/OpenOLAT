@@ -94,14 +94,14 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 		
 		orphanSizeEl = uifactory.addStaticTextElement("version.orphan.size", "version.orphan.size", "???", formLayout);
 		
-		FormLayoutContainer buttonsLayout = FormLayoutContainer.createHorizontalFormLayout("buttons", getTranslator());
+		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsLayout);
 		
 		orphanSize = uifactory.addFormLink("version.orphan.size.calc", buttonsLayout, Link.BUTTON);
 		showOrphanLink = uifactory.addFormLink("version.show.orphans", buttonsLayout, Link.BUTTON);
 		cleanUpLink = uifactory.addFormLink("version.clean.up", buttonsLayout, Link.BUTTON);
 		
-		FormLayoutContainer buttons2Layout = FormLayoutContainer.createHorizontalFormLayout("buttons2", getTranslator());
+		FormLayoutContainer buttons2Layout = FormLayoutContainer.createButtonLayout("buttons2", getTranslator());
 		formLayout.add(buttons2Layout);
 		
 		pruneLink = uifactory.addFormLink("version.prune.history", buttons2Layout, Link.BUTTON);
