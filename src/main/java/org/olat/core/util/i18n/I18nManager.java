@@ -135,6 +135,7 @@ public class I18nManager extends BasicManager {
 
 	// keys: bundlename ":" locale.toString() (e.g. "org.olat.admin:de_DE");
 	// values: PropertyFile
+	private ConcurrentMap<String,String> cachedLangTranslated = new ConcurrentHashMap<String, String>();
 	private ConcurrentMap<String, Properties> cachedBundles = new ConcurrentHashMap<String, Properties>();
 	private ConcurrentMap<String, String> cachedJSTranslatorData = new ConcurrentHashMap<String, String>();
 	private ConcurrentMap<String, Deque<String>> referencingBundlesIndex = new ConcurrentHashMap<String, Deque<String>>();
@@ -1232,10 +1233,18 @@ public class I18nManager extends BasicManager {
 	 * @return
 	 */
 	public Map<String, String> getEnabledLanguagesTranslated() {
-		Map<String, String> translatedLangs = new HashMap<String, String>();
 		Set<String> enabledLangs = I18nModule.getEnabledLanguageKeys();
+		Map<String, String> translatedLangs = new HashMap<String, String>(11);
 		for (String langKey : enabledLangs) {
-			translatedLangs.put(langKey, getLanguageTranslated(langKey, I18nModule.isOverlayEnabled()));
+			String translated = cachedLangTranslated.get(langKey);
+			if(translated == null) {
+				String newTranslated = getLanguageTranslated(langKey, I18nModule.isOverlayEnabled());
+				translated = cachedLangTranslated.putIfAbsent(langKey, newTranslated);
+				if(translated == null) {
+					translated = newTranslated;
+				}
+			}
+			translatedLangs.put(langKey, translated);
 		}
 		return translatedLangs;
 	}
@@ -1568,10 +1577,12 @@ public class I18nManager extends BasicManager {
 	 */
 	public void setCachingEnabled(boolean useCache) {
 		if (useCache) {
+			cachedLangTranslated = new ConcurrentHashMap<String, String>(); 
 			cachedBundles = new ConcurrentHashMap<String, Properties>();
 			cachedJSTranslatorData = new ConcurrentHashMap<String, String>();
 			referencingBundlesIndex = new ConcurrentHashMap<String, Deque<String>>();
 		} else {
+			cachedLangTranslated = new AlwaysEmptyMap<String, String>();
 			cachedBundles = new AlwaysEmptyMap<String, Properties>();
 			cachedJSTranslatorData = new AlwaysEmptyMap<String, String>();
 			referencingBundlesIndex = new AlwaysEmptyMap<String, Deque<String>>();

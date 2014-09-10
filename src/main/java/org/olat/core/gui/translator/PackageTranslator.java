@@ -33,18 +33,22 @@ import java.util.Locale;
 
 import org.apache.log4j.Level;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.LogDelegator;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 
 /**
  * @author Felix Jost
  */
-public class PackageTranslator extends LogDelegator implements Translator {
-	private boolean fallBack;
+public class PackageTranslator implements Translator {
+	
+	private static final OLog log = Tracing.createLoggerFor(PackageTranslator.class);
+	
+	private final boolean fallBack;
 	private Translator fallBackTranslator;
-	private String packageName;
+	private final String packageName;
 	private Locale locale;
 	private int fallBackLevel = 0;
 
@@ -122,8 +126,6 @@ public class PackageTranslator extends LogDelegator implements Translator {
 	public PackageTranslator(String packageName, Locale locale) {
 		this(packageName, locale, true);
 	}
-	
-	
 
 	/**
 	 * Translates the string from the packageName localization file.
@@ -131,6 +133,7 @@ public class PackageTranslator extends LogDelegator implements Translator {
 	 * @param key The key to translate
 	 * @return The internationalized strings
 	 */
+	@Override
 	public String translate(String key) {
 		String val = translate(key, null);
 		return val;
@@ -145,6 +148,7 @@ public class PackageTranslator extends LogDelegator implements Translator {
 	 * @see org.olat.core.gui.translator.Translator#translate(java.lang.String,
 	 *      java.lang.String[])
 	 */
+	@Override
 	public String translate(String key, String[] args, Level missingTranslationLogLevel) {
 		String val = translate(key,args,false );		
 		// if still null -> fallback to default locale (if not in debug mode)
@@ -170,11 +174,11 @@ public class PackageTranslator extends LogDelegator implements Translator {
 			if (!packageName.startsWith("org.olat.course.condition")) {
 				if (missingTranslationLogLevel!=null && !missingTranslationLogLevel.equals(Level.OFF)) {
 					if (missingTranslationLogLevel.equals(Level.ERROR)) {
-						logError(val, null);
+						log.error(val);
 					} else if (missingTranslationLogLevel.equals(Level.WARN)) {
-						logWarn(val, null);
+						log.warn(val);
 					} else if (missingTranslationLogLevel.equals(Level.INFO)) {
-						logInfo(val, null);
+						log.info(val);
 					}
 				}
 			}
@@ -187,20 +191,18 @@ public class PackageTranslator extends LogDelegator implements Translator {
 	}
 
   /**
-   * Recoursive lookup for a key. Used in translate(String key, String[] args). 
+   * Recursive lookup for a key. Used in translate(String key, String[] args). 
    * Should not be called directly, use translate(String key, String[] args).
    * Must be public, because the definition is in an interface. 
    * @see org.olat.core.gui.translator.Translator#translate(java.lang.String, java.lang.String[], boolean)
    */
+	@Override
 	public String translate(String key, String[] args, boolean fallBackToDefaultLocale) {
 		I18nManager i18n = I18nManager.getInstance();
 		boolean overlayEnabled = I18nModule.isOverlayEnabled();
 		String val = i18n.getLocalizedString(packageName, key, args, locale, overlayEnabled, fallBackToDefaultLocale);
 		if (val == null) {
 			// if not found, try the fallBackTranslator
-			if (isLogDebugEnabled()) {
-				logDebug("could not translate key: " + key + " in package: " + packageName + " with actual translator at level: " + fallBackLevel + " -> try with fallback");
-			}
 			if (fallBackTranslator != null && fallBackLevel < 10) {
 				fallBackLevel++;
 				val = fallBackTranslator.translate(key, args, fallBackToDefaultLocale);
@@ -268,6 +270,7 @@ public class PackageTranslator extends LogDelegator implements Translator {
 	 * 
 	 * @param locale The locale to set
 	 */
+	@Override
 	public void setLocale(Locale locale) {
 		this.locale = locale;
 		if (fallBackTranslator != null) {
