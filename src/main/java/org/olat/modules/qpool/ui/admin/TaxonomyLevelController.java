@@ -102,6 +102,7 @@ public class TaxonomyLevelController extends FormBasicController {
 			pathEl.setValue(parentLine);
 			fieldEl.setValue(taxonomyLevel.getField());
 		}
+		initialPanel.setDirty(true);
 	}
 	
 	@Override
