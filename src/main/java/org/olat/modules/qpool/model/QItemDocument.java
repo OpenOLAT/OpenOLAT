@@ -35,6 +35,7 @@ public class QItemDocument extends OlatDocument {
 	public static final String OWNER_FIELD = "owner";
 	public static final String SHARE_FIELD = "share";
 	public static final String POOL_FIELD = "pool";
+	public static final String TAXONOMIC_FIELD = "taxonomyid";
 	public static final String TAXONOMIC_PATH_FIELD = "taxonomy";
 	
 
