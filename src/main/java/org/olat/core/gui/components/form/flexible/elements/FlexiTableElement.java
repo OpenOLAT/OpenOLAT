@@ -159,12 +159,6 @@ public interface FlexiTableElement extends FormItem {
 	public void setSelectAllEnable(boolean enable);
 	
 	/**
-	 * All rows are selected
-	 * @return
-	 */
-	public boolean isAllSelectedIndex();
-	
-	/**
 	 * Set all selecteds rows
 	 * @return
 	 */

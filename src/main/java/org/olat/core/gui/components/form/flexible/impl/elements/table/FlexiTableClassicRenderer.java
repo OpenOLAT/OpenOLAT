@@ -143,7 +143,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 		if(ftE.isMultiSelect()) {
 			target.append("<td>")
 			      .append("<input type='checkbox' name='tb_ms' value='").append(rowIdPrefix).append(row).append("'");
-			if(ftE.isAllSelectedIndex() || ftE.isMultiSelectedIndex(row)) {
+			if(ftE.isMultiSelectedIndex(row)) {
 				target.append(" checked='checked'");
 			}   
 			target.append("/></td>");

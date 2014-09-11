@@ -183,7 +183,7 @@ public abstract class DefaultFlexiTableDataSourceModel<U> implements FlexiTableD
 
 		if(!force && rows.size() > 0) {
 			correctMaxResults = maxResults <= 0 ? rowCount : maxResults;
-			int maxRowsResults = maxResults <= 0 ? rows.size() : maxResults;
+			int maxRowsResults = maxResults <= 0 ? (rowCount - firstResult) : maxResults;
 			for(int i=firstResult; i<maxRowsResults && i<rows.size(); i++) {
 				if(rows.get(i) == null) {
 					break;
@@ -213,8 +213,9 @@ public abstract class DefaultFlexiTableDataSourceModel<U> implements FlexiTableD
 			rowCount = sourceDelegate.getRowCount();
 		}
 		
-		for(int i=0; i<newRows.getObjects().size(); i++) {
-			int rowIndex = i + firstResult;
+		int numOfNewRows = newRows.getObjects().size();
+		for(int i=0; i<numOfNewRows; i++) {
+			int rowIndex = i + correctedFirstResult;
 			if(rowIndex < rows.size()) {
 				rows.set(rowIndex, newRows.getObjects().get(i));
 			} else {

@@ -90,7 +90,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private int rowCount = -1;
 	
 	private int currentPage;
-	private int currentFirstResult;
 	private int pageSize;
 	private boolean editMode;
 	private boolean exportEnabled;
@@ -123,7 +122,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private FlexiTableSortOptions sortOptions;
 	private List<FlexiTableFilter> filters;
 	private Object selectedObj;
-	private boolean allSelectedIndex;
+	private boolean allSelectedNeedLoadOfWholeModel = false;
 	private Set<Integer> multiSelectedIndex;
 	private Set<Integer> detailsIndex;
 	private List<String> conditionalQueries;
@@ -623,14 +622,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		component.setDirty(true);
 	}
 
-	public int getCurrentFirstResult() {
-		return currentFirstResult;
-	}
-
-	public void setCurrentFirstResult(int currentFirstResult) {
-		this.currentFirstResult = currentFirstResult;
-	}
-
 	@Override
 	public Iterable<FormItem> getFormItems() {
 		List<FormItem> items = new ArrayList<>(components.values());
@@ -819,12 +810,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(dataModel instanceof FilterableFlexiTableModel) {
 			rowCount = -1;
 			currentPage = 0;
-			currentFirstResult = 0;
 			((FilterableFlexiTableModel)dataModel).filter(selectedFilterKey);
 		} else if(dataSource != null) {
 			rowCount = -1;
 			currentPage = 0;
-			currentFirstResult = 0;
 
 			List<String> addQueries = Collections.singletonList(selectedFilterKey);
 			dataSource.clear();
@@ -1070,14 +1059,20 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	protected void doSelectAll() {
-		allSelectedIndex = true;
 		if(multiSelectedIndex != null) {
 			multiSelectedIndex.clear();
+		} else {
+			multiSelectedIndex = new HashSet<>();
 		}
+		
+		int numOfRows = getRowCount();
+		for(int i=0; i<numOfRows;i++) {
+			multiSelectedIndex.add(new Integer(i));
+		}
+		allSelectedNeedLoadOfWholeModel = true;
 	}
 	
 	protected void doUnSelectAll() {
-		allSelectedIndex = false;
 		if(multiSelectedIndex != null) {
 			multiSelectedIndex.clear();
 		}
@@ -1137,23 +1132,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	@Override
-	public boolean isAllSelectedIndex() {
-		return allSelectedIndex;
-	}
-
-	public void setAllSelectedIndex(boolean allSelectedIndex) {
-		this.allSelectedIndex = allSelectedIndex;
-	}
-
-	@Override
 	public Set<Integer> getMultiSelectedIndex() {
-		if(allSelectedIndex && dataSource != null) {
+		if(allSelectedNeedLoadOfWholeModel && dataSource != null) {
 			//ensure the whole data model is loaded
 			dataSource.load(getSearchText(), getConditionalQueries(), 0, -1);
 			Set<Integer> allIndex = new HashSet<Integer>();
 			for(int i=dataModel.getRowCount(); i-->0; ) {
 				allIndex.add(new Integer(i));
 			}
+			allSelectedNeedLoadOfWholeModel = false;
 			return allIndex;
 		}
 		return multiSelectedIndex == null ? Collections.<Integer>emptySet() : multiSelectedIndex;
@@ -1161,17 +1148,21 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	public boolean isMultiSelectedIndex(int index) {
-		return allSelectedIndex
-				|| (multiSelectedIndex != null && multiSelectedIndex.contains(new Integer(index)));
+		return multiSelectedIndex != null && multiSelectedIndex.contains(new Integer(index));
 	}
 	
 	protected void setMultiSelectIndex(String[] selections) {
 		if(multiSelectedIndex == null) {
 			multiSelectedIndex = new HashSet<Integer>();
 		}
-		multiSelectedIndex.clear();
 		//selection format row_{formDispId}-{index}
 		if(selections != null && selections.length > 0) {
+			int firstIndex = getPageSize() * getPage();
+			int lastResult = firstIndex + getPageSize() -1;
+			for(int i=firstIndex; i<lastResult; i++) {
+				multiSelectedIndex.remove(new Integer(i));
+			}
+
 			for(String selection:selections) {	
 				int index = selection.lastIndexOf('-');
 				if(index > 0 && index+1 < selection.length()) {
@@ -1179,24 +1170,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 					int row = Integer.parseInt(rowStr);
 					multiSelectedIndex.add(new Integer(row));
 				}
-			}
-		}
-		
-		// allSelectedIndex is a flag which is not updated if someone
-		// deselect a row. check if the num of selected rows is equal
-		// to the number of loaded rows
-		if(allSelectedIndex) {
-			int manuallySelectedRows = multiSelectedIndex.size();
-			int modelCount = dataModel.getRowCount();
-			int loadedRows = 0;
-			for(int i=0; i<modelCount; i++) {
-				if(dataModel.isRowLoaded(i)) {
-					loadedRows++;
-				}
-			}
-			
-			if(manuallySelectedRows != loadedRows) {
-				allSelectedIndex = false;
 			}
 		}
 	}
