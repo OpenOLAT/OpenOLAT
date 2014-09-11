@@ -30,6 +30,7 @@ import java.io.StringReader;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -544,14 +545,19 @@ class QTIImportProcessor {
 	private boolean processSidecarMetadata(QuestionItemImpl item, DocInfos docInfos) {
 		try {
 			Path path = docInfos.root;
-			Path metadata = path.resolve(path.getFileName().toString() + "_metadata.xml");
-			InputStream metadataIn = Files.newInputStream(metadata);
-			SAXReader reader = new SAXReader();
-	        Document document = reader.read(metadataIn);
-	        Element rootElement = document.getRootElement();
-	        QTIMetadata enricher = new QTIMetadata(rootElement, qItemTypeDao, taxonomyLevelDao, qEduContextDao);
-	        enricher.toQuestion(item);
+			if(path != null) {
+				Path metadata = path.resolve(path.getFileName().toString() + "_metadata.xml");
+				InputStream metadataIn = Files.newInputStream(metadata);
+				SAXReader reader = new SAXReader();
+		        Document document = reader.read(metadataIn);
+		        Element rootElement = document.getRootElement();
+		        QTIMetadata enricher = new QTIMetadata(rootElement, qItemTypeDao, taxonomyLevelDao, qEduContextDao);
+		        enricher.toQuestion(item);
+			}
 	        return true;
+		} catch(NoSuchFileException e) {
+			//nothing to do
+			return true;
 		} catch (Exception e) {
 			log.error("", e);
 			return false;
