@@ -77,7 +77,7 @@
 	<bean id="olatsites_catalogadmin" class="org.olat.repository.site.CatalogAdminSiteDef">
 	   <property name="order" value="11" />
 	   <property name="enabled" value="${site.catalogadmin.enable}"/>
-	   	<property name="defaultSiteSecurityCallbackBeanId" value="restrictToInstResourceManagerSiteSecurityCallback"/>
+	   	<property name="defaultSiteSecurityCallbackBeanId" value="catalogManagerSiteSecurityCallback"/>
 	</bean>
 	<bean id="olatsites_useradmin" class="org.olat.admin.site.UserAdminSiteDef">
 	   <property name="order" value="12" />
@@ -138,6 +138,11 @@
 	<bean id="restrictToInstResourceManagerSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
 		<property name="limitToRole" value="institutionalresourcemanager,administrator"/>
 	</bean>
+	
+	<bean id="catalogManagerSiteSecurityCallback" class="org.olat.repository.site.CatalogManagerSecurityCallback">
+		<property name="catalogManager" ref="catalogManager" />
+	</bean>
+	
 	
 	<!-- Alternative controllers -->
 	<bean id="courseSiteForbiddenAlt" class="org.olat.core.gui.control.navigation.SiteAlternativeControllerCreator">

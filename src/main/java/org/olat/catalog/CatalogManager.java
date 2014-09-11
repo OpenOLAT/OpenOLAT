@@ -38,6 +38,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.persistence.DB;
@@ -460,6 +461,20 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 				.createQuery(sqlQuery, CatalogEntry.class)
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
+	}
+	
+	public boolean isOwner(Identity identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(cei.key) from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
+		  .append(" where exists (select sgmsi.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi ")
+		  .append("   where  cei.ownerGroup=sgmsi.securityGroup and sgmsi.identity.key=:identityKey")
+		  .append(" )");
+
+		Number count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("identityKey", identity.getKey())
+				.getSingleResult();
+		return count == null ? false : count.intValue() > 0;
 	}
 	
 	public List<Identity> getOwnersOfParentLine(CatalogEntry entry) {
