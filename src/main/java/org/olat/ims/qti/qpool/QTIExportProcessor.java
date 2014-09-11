@@ -83,8 +83,8 @@ public class QTIExportProcessor {
 
 		String rootDir = "qitem_" + fullItem.getKey();
 		List<VFSItem> items = container.getItems();
+		addMetadata(fullItem, rootDir, zout);
 		for(VFSItem item:items) {
-			addMetadata(fullItem, rootDir, zout);
 			ZipUtil.addToZip(item, rootDir, zout);
 		}
 	}
@@ -404,8 +404,10 @@ public class QTIExportProcessor {
 	
 	private void enrichWithMetadata(QuestionItemFull fullItem, Element item) {
 		Element qtimetadata = (Element)item.selectSingleNode("./itemmetadata/qtimetadata");
-		QTIMetadata enricher = new QTIMetadata(qtimetadata);
-		enricher.toXml(fullItem);
+		if(qtimetadata != null) {
+			QTIMetadata enricher = new QTIMetadata(qtimetadata);
+			enricher.toXml(fullItem);
+		}
 	}
 	
 	private static final class HTMLHandler extends DefaultHandler {
