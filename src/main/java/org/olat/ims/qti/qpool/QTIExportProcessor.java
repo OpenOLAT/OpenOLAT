@@ -36,6 +36,7 @@ import org.dom4j.Attribute;
 import org.dom4j.CDATA;
 import org.dom4j.Document;
 import org.dom4j.DocumentFactory;
+import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.Node;
 import org.dom4j.io.OutputFormat;
@@ -83,7 +84,23 @@ public class QTIExportProcessor {
 		String rootDir = "qitem_" + fullItem.getKey();
 		List<VFSItem> items = container.getItems();
 		for(VFSItem item:items) {
+			addMetadata(fullItem, rootDir, zout);
 			ZipUtil.addToZip(item, rootDir, zout);
+		}
+	}
+	
+	private void addMetadata(QuestionItemFull fullItem, String dir, ZipOutputStream zout) {
+		try {
+			Document document = DocumentHelper.createDocument();
+			Element qtimetadata = document.addElement("qtimetadata");
+			QTIMetadata enricher = new QTIMetadata(qtimetadata);
+			enricher.toXml(fullItem);
+			zout.putNextEntry(new ZipEntry(dir + "/" + "qitem_" + fullItem.getKey() + "_metadata.xml"));
+			OutputFormat format = OutputFormat.createPrettyPrint();
+			XMLWriter writer = new XMLWriter(zout, format);
+			writer.write(document);
+		} catch (IOException e) {
+			log.error("",  e);
 		}
 	}
 	
@@ -294,7 +311,7 @@ public class QTIExportProcessor {
 		//metadata
 		/*
 		<qtimetadata>
-      <qtimetadatafield>
+      	<qtimetadatafield>
         <fieldlabel>qmd_assessmenttype</fieldlabel>
         <fieldentry>Assessment</fieldentry>
       </qtimetadatafield>
@@ -318,6 +335,14 @@ public class QTIExportProcessor {
 		Element order = selectionOrdering.addElement("order");
 		order.addAttribute("order_type", "Sequential");
 		return section;
+	}
+	
+	private void addMetadataField(String label, String entry, Element qtimetadata) {
+		if(entry != null) {
+			Element qtimetadatafield = qtimetadata.addElement("qtimetadatafield");
+			qtimetadatafield.addElement("fieldlabel").setText(label);
+			qtimetadatafield.addElement("fieldentry").setText(entry);
+		}
 	}
 	
 	private Element readItemXml(VFSLeaf leaf) {
@@ -379,99 +404,9 @@ public class QTIExportProcessor {
 	
 	private void enrichWithMetadata(QuestionItemFull fullItem, Element item) {
 		Element qtimetadata = (Element)item.selectSingleNode("./itemmetadata/qtimetadata");
-		String path = fullItem.getTaxonomicPath();
+		QTIMetadata enricher = new QTIMetadata(qtimetadata);
+		enricher.toXml(fullItem);
 	}
-	
-	private void addMetadataField(String label, String entry, Element qtimetadata) {
-		Element qtimetadatafield = qtimetadata.addElement("qtimetadatafield");
-		qtimetadatafield.addElement("fieldlabel").setText(label);
-		qtimetadatafield.addElement("fieldentry").setText(entry);
-	}
-	
-	/*
-	 * 
-	 * <itemmetadata>
-					<qtimetadata>
-						<qtimetadatafield>
-							<fieldlabel>qmd_levelofdifficulty</fieldlabel>
-							<fieldentry>basic</fieldentry>
-						</qtimetadatafield>
-						<qtimetadatafield>
-							<fieldlabel>qmd_topic</fieldlabel>
-							<fieldentry>qtiv1p2test</fieldentry>
-						</qtimetadatafield>
-					</qtimetadata>
-				</itemmetadata>
-
-				<qtimetadata>
-            <vocabulary uri="imsqtiv1p2_metadata.txt" vocab_type="text/plain"/>
-            <qtimetadatafield>
-               <fieldlabel>qmd_weighting</fieldlabel>
-               <fieldentry>2</fieldentry>
-            </qtimetadatafield>
-            ...
-         </qtimetadata>
-
-         
-         
-         http://qtimigration.googlecode.com/svn-history/r29/trunk/pyslet/unittests/data_imsqtiv1p2p1/input/
-
-
-<qtimetadatafield>
-                    <fieldlabel>name</fieldlabel>
-                    <fieldentry>Metadata New-Style</fieldentry>
-                </qtimetadatafield>
-                <qtimetadatafield>
-                    <fieldlabel>marks</fieldlabel>
-                    <fieldentry>50.0</fieldentry>
-                </qtimetadatafield>
-                <qtimetadatafield>
-                    <fieldlabel>syllabusarea</fieldlabel>
-                    <fieldentry>Migration</fieldentry>
-                </qtimetadatafield>
-                <qtimetadatafield>
-                    <fieldlabel>author</fieldlabel>
-                    <fieldentry>Steve Author</fieldentry>
-                </qtimetadatafield>
-                <qtimetadatafield>
-                    <fieldlabel>creator</fieldlabel>
-                    <fieldentry>Steve Creator</fieldentry>
-                </qtimetadatafield>
-                <qtimetadatafield>
-                    <fieldlabel>owner</fieldlabel>
-                    <fieldentry>Steve Owner</fieldentry>
-                </qtimetadatafield>
-                <qtimetadatafield>
-                    <fieldlabel>item type</fieldlabel>
-                    <fieldentry>MCQ</fieldentry>
-                </qtimetadatafield>
-                <qtimetadatafield>
-                    <fieldlabel>status</fieldlabel>
-                    <fieldentry>Experimental</fieldentry>
-                </qtimetadatafield>
-                <qtimetadatafield>
-                    <fieldlabel>qmd_levelofdifficulty</fieldlabel>
-                    <fieldentry>Professional Development</fieldentry>
-                </qtimetadatafield>
-                <qtimetadatafield>
-                    <fieldlabel>qmd_toolvendor</fieldlabel>
-                    <fieldentry>Steve Lay</fieldentry>
-                </qtimetadatafield>
-                <qtimetadatafield>
-                    <fieldlabel>description</fieldlabel>
-                    <fieldentry>General Description Extension</fieldentry>
-                </qtimetadatafield>
-                
-                
-                <itemmetadata>
-            <qmd_itemtype>MCQ</qmd_itemtype>
-            <qmd_levelofdifficulty>Professional Development</qmd_levelofdifficulty>
-            <qmd_maximumscore>50.0</qmd_maximumscore>
-            <qmd_status>Experimental</qmd_status>
-            <qmd_toolvendor>Steve Lay</qmd_toolvendor>
-            <qmd_topic>Migration</qmd_topic>
-        </itemmetadata>
-	 */
 	
 	private static final class HTMLHandler extends DefaultHandler {
 		private final List<String> materialPath = new ArrayList<String>();

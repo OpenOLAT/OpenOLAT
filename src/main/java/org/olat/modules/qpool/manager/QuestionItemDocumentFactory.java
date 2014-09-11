@@ -37,6 +37,7 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.model.QItemDocument;
+import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.resource.OLATResource;
 import org.olat.search.model.AbstractOlatDocument;
 import org.olat.search.model.OlatDocument;
@@ -177,6 +178,13 @@ public class QuestionItemDocumentFactory {
 			for(StringTokenizer tokenizer = new StringTokenizer(path, "/"); tokenizer.hasMoreTokens(); ) {
 				String nextToken = tokenizer.nextToken();
 				document.add(new TextField(QItemDocument.TAXONOMIC_PATH_FIELD, nextToken, Field.Store.NO));
+			}
+			if(item instanceof QuestionItemImpl) {
+				Long key = ((QuestionItemImpl)item).getTaxonomyLevel().getKey();
+
+				TextField field = new TextField(QItemDocument.TAXONOMIC_FIELD, key.toString(), Field.Store.YES);
+				field.setBoost(3.0f);
+				document.add(field);
 			}
 		}
 		return document;

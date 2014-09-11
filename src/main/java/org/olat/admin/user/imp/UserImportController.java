@@ -36,6 +36,7 @@ import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -87,7 +88,8 @@ public class UserImportController extends BasicController {
 	private final BaseSecurity securityManager;
 	private final OLATAuthManager olatAuthManager;
 	private final BusinessGroupService businessGroupService;
-	private final UserManager um ;
+	private final UserManager um;
+	private final DB dbInstance;
 
 	/**
 	 * @param ureq
@@ -98,6 +100,7 @@ public class UserImportController extends BasicController {
 	public UserImportController(UserRequest ureq, WindowControl wControl, boolean canCreateOLATPassword) {
 		super(ureq, wControl);
 		um = UserManager.getInstance();
+		dbInstance = CoreSpringFactory.getImpl(DB.class);
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		olatAuthManager = CoreSpringFactory.getImpl(OLATAuthManager.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -242,11 +245,17 @@ public class UserImportController extends BasicController {
 				try {
 					if (runContext.containsKey("validImport") && ((Boolean) runContext.get("validImport")).booleanValue()) {
 						// create new users and persist
+						int count = 0;
+
 						@SuppressWarnings("unchecked")
 						List<TransientIdentity> newIdents = (List<TransientIdentity>) runContext.get("newIdents");
 						for (TransientIdentity newIdent:newIdents) {
 							doCreateAndPersistIdentity(newIdent, report);
+							if(++count % 10 == 0) {
+								dbInstance.commitAndCloseSession();
+							}
 						}
+						dbInstance.commitAndCloseSession();
 
 						Boolean updateUsers = (Boolean)runContext.get("updateUsers");
 						Boolean updatePasswords = (Boolean)runContext.get("updatePasswords");
@@ -254,7 +263,11 @@ public class UserImportController extends BasicController {
 						List<UpdateIdentity> updateIdents = (List<UpdateIdentity>) runContext.get("updateIdents");
 						for (UpdateIdentity updateIdent:updateIdents) {
 							doUpdateIdentity(updateIdent, updateUsers, updatePasswords, report);
+							if(++count % 10 == 0) {
+								dbInstance.commitAndCloseSession();
+							}
 						}
+						dbInstance.commitAndCloseSession();
 
 						@SuppressWarnings("unchecked")
 						List<Long> ownGroups = (List<Long>) runContext.get("ownerGroups");

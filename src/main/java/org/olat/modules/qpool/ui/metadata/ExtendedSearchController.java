@@ -389,7 +389,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 	public class TaxonomicPathQueryParameter extends SingleChoiceQueryParameter {
 		
 		public TaxonomicPathQueryParameter() {
-			super(QItemDocument.TAXONOMIC_PATH_FIELD);
+			super(QItemDocument.TAXONOMIC_FIELD);
 		}
 		
 		@Override
@@ -411,7 +411,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 					GenericTreeNode gChild = (GenericTreeNode)child;
 					TaxonomyLevel level = (TaxonomyLevel)gChild.getUserObject();
 					String field = level.getField();
-					keys.add(field);
+					keys.add(level.getKey().toString());
 					values.add(path + "" + field);
 					flatTree(gChild, path + "\u00A0\u00A0\u00A0\u00A0", keys, values);
 				}

@@ -47,7 +47,9 @@ import org.dom4j.Document;
 import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
+import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -70,6 +72,7 @@ import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
+import org.olat.modules.qpool.manager.TaxonomyLevelDAO;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QuestionItemImpl;
@@ -96,20 +99,25 @@ class QTIImportProcessor {
 	private final String importedFilename;
 	private final File importedFile;
 
+	private final DB dbInstance;
 	private final QItemTypeDAO qItemTypeDao;
 	private final QPoolFileStorage qpoolFileStorage;
 	private final QuestionItemDAO questionItemDao;
+	private final TaxonomyLevelDAO taxonomyLevelDao;
 	private final QEducationalContextDAO qEduContextDao;
 	
 	public QTIImportProcessor(Identity owner, Locale defaultLocale, QuestionItemDAO questionItemDao,
-			QItemTypeDAO qItemTypeDao, QEducationalContextDAO qEduContextDao, QPoolFileStorage qpoolFileStorage) {
-		this(owner, defaultLocale, null, null, questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
+			QItemTypeDAO qItemTypeDao, QEducationalContextDAO qEduContextDao,
+			TaxonomyLevelDAO taxonomyLevelDao, QPoolFileStorage qpoolFileStorage, DB dbInstance) {
+		this(owner, defaultLocale, null, null, questionItemDao, qItemTypeDao, qEduContextDao,
+				taxonomyLevelDao, qpoolFileStorage, dbInstance);
 	}
 
 	public QTIImportProcessor(Identity owner, Locale defaultLocale, String importedFilename, File importedFile,
 			QuestionItemDAO questionItemDao, QItemTypeDAO qItemTypeDao, QEducationalContextDAO qEduContextDao,
-			QPoolFileStorage qpoolFileStorage) {
+			TaxonomyLevelDAO taxonomyLevelDao, QPoolFileStorage qpoolFileStorage, DB dbInstance) {
 		this.owner = owner;
+		this.dbInstance = dbInstance;
 		this.defaultLocale = defaultLocale;
 		this.importedFilename = importedFilename;
 		this.importedFile = importedFile;
@@ -117,6 +125,7 @@ class QTIImportProcessor {
 		this.questionItemDao = questionItemDao;
 		this.qEduContextDao = qEduContextDao;
 		this.qpoolFileStorage = qpoolFileStorage;
+		this.taxonomyLevelDao = taxonomyLevelDao;
 	}
 	
 	public List<QuestionItem> process() {
@@ -127,6 +136,7 @@ class QTIImportProcessor {
 				for(DocInfos docInfos:docInfoList) {
 					List<QuestionItem> processdItems = process(docInfos);
 					qItems.addAll(processdItems);
+					dbInstance.commit();
 				}
 			}
 		} catch (IOException e) {
@@ -143,6 +153,7 @@ class QTIImportProcessor {
 				QuestionItemImpl qItem = processItem(docInfos, itemInfo);
 				if(qItem != null) {
 					processFiles(qItem, itemInfo, docInfos);
+					qItem = questionItemDao.merge(qItem);
 					qItems.add(qItem);
 				}
 			}
@@ -178,10 +189,11 @@ class QTIImportProcessor {
 		if(itemInfos.isOriginalItem()) {
 			originalFilename = docInfos.filename;
 		}
-		return processItem(itemEl, comment, originalFilename, null, null);
+		return processItem(itemEl, comment, originalFilename, null, null, docInfos);
 	}
 	
-	protected QuestionItemImpl processItem(Element itemEl, String comment, String originalItemFilename, String editor, String editorVersion) {
+	protected QuestionItemImpl processItem(Element itemEl, String comment, String originalItemFilename,
+			String editor, String editorVersion, DocInfos docInfos) {
 		//filename
 		String filename;
 		String ident = getAttributeValue(itemEl, "ident");
@@ -221,6 +233,9 @@ class QTIImportProcessor {
 		if(poolItem.getType() == null) {
 			QItemType defType = qItemTypeDao.loadByType(QuestionType.UNKOWN.name());
 			poolItem.setType(defType);
+		}
+		if(docInfos != null) {
+			processSidecarMetadata(poolItem, docInfos);
 		}
 		questionItemDao.persist(owner, poolItem);
 		return poolItem;
@@ -497,11 +512,11 @@ class QTIImportProcessor {
 		String rootFilename = item.getRootFilename();
 		VFSContainer container = qpoolFileStorage.getContainer(dir);
 		
-		if(docInfos != null && docInfos.root != null) {
+		if(docInfos != null && docInfos.getRoot() != null) {
 			try {
 				Path destDir = ((LocalImpl)container).getBasefile().toPath();
 				//unzip to container
-				Path path = docInfos.root;
+				Path path = docInfos.getRoot();
 				Files.walkFileTree(path, new CopyVisitor(path, destDir, new YesMatcher()));
 			} catch (IOException e) {
 				log.error("", e);
@@ -523,6 +538,23 @@ class QTIImportProcessor {
 				IOUtils.closeQuietly(out);
 				IOUtils.closeQuietly(in);
 			}
+		}
+	}
+	
+	private boolean processSidecarMetadata(QuestionItemImpl item, DocInfos docInfos) {
+		try {
+			Path path = docInfos.root;
+			Path metadata = path.resolve(path.getFileName().toString() + "_metadata.xml");
+			InputStream metadataIn = Files.newInputStream(metadata);
+			SAXReader reader = new SAXReader();
+	        Document document = reader.read(metadataIn);
+	        Element rootElement = document.getRootElement();
+	        QTIMetadata enricher = new QTIMetadata(rootElement, qItemTypeDao, taxonomyLevelDao, qEduContextDao);
+	        enricher.toQuestion(item);
+	        return true;
+		} catch (Exception e) {
+			log.error("", e);
+			return false;
 		}
 	}
 	
@@ -652,9 +684,9 @@ class QTIImportProcessor {
 		    	Document doc = readXml(in);
 				if(doc != null) {
 					DocInfos d = new DocInfos();
-					d.doc = doc;
-					d.root = xmlFile.getParent();
-					d.filename = xmlFile.getFileName().toString();
+					d.setDocument(doc);
+					d.setRoot(xmlFile.getParent());
+					d.setFilename(xmlFile.getFileName().toString());
 					docInfos.add(d);
 				}
 		    	
@@ -726,6 +758,7 @@ class QTIImportProcessor {
 		private Document doc;
 		private String filename;
 		private Path root;
+		private Path metadata;
 		private String qtiComment;
 		
 		public String getFilename() {
@@ -742,6 +775,14 @@ class QTIImportProcessor {
 		
 		public void setDocument(Document doc) {
 			this.doc = doc;
+		}
+
+		public Path getMetadata() {
+			return metadata;
+		}
+
+		public void setMetadata(Path metadata) {
+			this.metadata = metadata;
 		}
 
 		public Path getRoot() {
