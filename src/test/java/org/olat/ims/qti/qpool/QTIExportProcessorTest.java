@@ -40,10 +40,11 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemFull;
-import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
+import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
+import org.olat.modules.qpool.manager.TaxonomyLevelDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +68,8 @@ public class QTIExportProcessorTest extends OlatTestCase {
 	@Autowired
 	private QuestionItemDAO questionItemDao;
 	@Autowired
+	private TaxonomyLevelDAO taxonomyLevelDao;
+	@Autowired
 	private QEducationalContextDAO qEduContextDao;
 	
 	@Before
@@ -83,7 +86,8 @@ public class QTIExportProcessorTest extends OlatTestCase {
 		URL itemUrl = QTIExportProcessorTest.class.getResource("mchc_asmimr_106.zip");
 		Assert.assertNotNull(itemUrl);
 		File itemFile = new File(itemUrl.toURI());
-		QTIImportProcessor proc = new QTIImportProcessor(owner, Locale.ENGLISH, itemFile.getName(), itemFile, questionItemDao, qItemTypeDao, qEduContextDao, qpoolFileStorage);
+		QTIImportProcessor proc = new QTIImportProcessor(owner, Locale.ENGLISH, itemFile.getName(), itemFile,
+				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qpoolFileStorage, dbInstance);
 		List<QuestionItem> items = proc.process();
 		Assert.assertNotNull(items);
 		dbInstance.commitAndCloseSession();

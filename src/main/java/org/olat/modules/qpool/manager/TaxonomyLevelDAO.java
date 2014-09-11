@@ -22,6 +22,8 @@ package org.olat.modules.qpool.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.model.TaxonomyLevelImpl;
@@ -125,6 +127,28 @@ public class TaxonomyLevelDAO {
 				.createNamedQuery("loadTaxonomyDescendants", TaxonomyLevel.class)
 				.setParameter("path", path + "%")
 				.getResultList();
+	}
+	
+	public TaxonomyLevel loadLevelBy(TaxonomyLevel parent, String field) {
+		TypedQuery<TaxonomyLevel> query;
+		if(parent == null) {
+			String q = "select f from qtaxonomylevel f where f.field=:field and f.parentField is null";
+			query = dbInstance.getCurrentEntityManager()
+				.createQuery(q, TaxonomyLevel.class);
+				
+		} else {
+			String q = "select f from qtaxonomylevel f where f.field=:field and f.parentField=:parent";
+			query = dbInstance.getCurrentEntityManager()
+				.createQuery(q, TaxonomyLevel.class)
+				.setParameter("parent", parent);
+		}
+		List<TaxonomyLevel> fields = query
+				.setParameter("field", field)
+				.getResultList();
+		if(fields.isEmpty()) {
+			return null;
+		}
+		return fields.get(0);
 	}
 
 	
