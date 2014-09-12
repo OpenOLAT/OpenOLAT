@@ -1095,6 +1095,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		
 		if(dataSource != null) {
+			currentPage = 0;
 			resetInternComponents();
 			dataSource.clear();
 			dataSource.load(search, conditionalQueries, 0, getPageSize(), orderBy);
@@ -1124,6 +1125,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	protected void doResetSearch() {
+		conditionalQueries = null;
+		currentPage = 0;
 		if(dataSource != null) {
 			resetInternComponents();
 			dataSource.clear();
