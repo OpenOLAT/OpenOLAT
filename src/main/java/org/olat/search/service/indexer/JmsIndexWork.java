@@ -20,6 +20,9 @@
 package org.olat.search.service.indexer;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * 
@@ -35,7 +38,7 @@ public class JmsIndexWork implements Serializable {
 	public static final String DELETE = "delete";
 	
 	private String indexType;
-	private Long key;
+	private List<Long> keyList;
 	private String action;
 	
 	public JmsIndexWork() {
@@ -45,7 +48,13 @@ public class JmsIndexWork implements Serializable {
 	public JmsIndexWork(String action, String indexType, Long key) {
 		this.action = action;
 		this.indexType = indexType;
-		this.key = key;
+		this.keyList = Collections.singletonList(key);
+	}
+	
+	public JmsIndexWork(String action, String indexType, List<Long> keyList) {
+		this.action = action;
+		this.indexType = indexType;
+		this.keyList = new ArrayList<>(keyList);
 	}
 	
 	public String getIndexType() {
@@ -56,12 +65,12 @@ public class JmsIndexWork implements Serializable {
 		this.indexType = indexType;
 	}
 	
-	public Long getKey() {
-		return key;
+	public List<Long> getKeyList() {
+		return keyList;
 	}
 	
-	public void setKey(Long key) {
-		this.key = key;
+	public void setKeyList(List<Long> keyList) {
+		this.keyList = keyList;
 	}
 
 	public String getAction() {

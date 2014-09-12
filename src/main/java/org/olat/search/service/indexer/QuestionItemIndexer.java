@@ -19,6 +19,7 @@
  */
 package org.olat.search.service.indexer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
@@ -48,12 +49,16 @@ public class QuestionItemIndexer implements LifeIndexer {
 	}
 
 	@Override
-	public void indexDocument(Long key, LifeFullIndexer indexWriter) {
+	public void indexDocument(List<Long> keyList, LifeFullIndexer indexWriter) {
 		QuestionItemDocumentFactory docFactory = CoreSpringFactory.getImpl(QuestionItemDocumentFactory.class);
 		
-		SearchResourceContext ctxt = new SearchResourceContext();
-		Document doc = docFactory.createDocument(ctxt, key);
-		indexWriter.addDocument(doc);	
+		List<Document> docs = new ArrayList<>(keyList.size());
+		for(Long key:keyList) {
+			SearchResourceContext ctxt = new SearchResourceContext();
+			Document doc = docFactory.createDocument(ctxt, key);
+			docs.add(doc);
+		}
+		indexWriter.addDocuments(docs);	
 	}
 
 	@Override

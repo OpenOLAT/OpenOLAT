@@ -20,6 +20,7 @@
 package org.olat.search.service.indexer;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
@@ -47,6 +48,14 @@ public interface LifeFullIndexer {
 	public void indexDocument(String type, Long key);
 	
 	/**
+	 * Ask to index a batch of documents by their keys
+	 * @param type
+	 * @param keyList
+	 */
+	public void indexDocument(String type, List<Long> keyList);
+	
+	
+	/**
 	 * Delete a document
 	 * @param type
 	 * @param key
@@ -70,7 +79,7 @@ public interface LifeFullIndexer {
 	 * Add a document to the index
 	 * @param doc
 	 */
-	public void addDocument(Document doc);
+	public void addDocuments(List<Document> doc);
 	
 	/**
 	 * 

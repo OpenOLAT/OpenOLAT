@@ -19,6 +19,8 @@
  */
 package org.olat.search.service.indexer;
 
+import java.util.List;
+
 /**
  * 
  * Initial date: 05.03.2013<br>
@@ -39,7 +41,7 @@ public interface LifeIndexer {
 	 * @param key
 	 * @param indexWriter
 	 */
-	public void indexDocument(Long key, LifeFullIndexer indexWriter);
+	public void indexDocument(List<Long> key, LifeFullIndexer indexWriter);
 	
 	public void deleteDocument(Long key, LifeFullIndexer indexWriter);
 	

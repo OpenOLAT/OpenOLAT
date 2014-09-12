@@ -19,6 +19,7 @@
  */
 package org.olat.repository.manager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -64,10 +65,14 @@ public class RepositoryEntryLifeIndexer implements LifeIndexer {
 	}
 
 	@Override
-	public void indexDocument(Long key, LifeFullIndexer indexWriter) {
+	public void indexDocument(List<Long> keyList, LifeFullIndexer indexWriter) {
 		SearchResourceContext ctxt = new SearchResourceContext();
-		Document doc = documentFactory.createDocument(ctxt, key);
-		indexWriter.addDocument(doc);	
+		List<Document> docs = new ArrayList<>(keyList.size());
+		for(Long key:keyList) {
+			Document doc = documentFactory.createDocument(ctxt, key);
+			docs.add(doc);
+		}
+		indexWriter.addDocuments(docs);	
 	}
 
 	@Override

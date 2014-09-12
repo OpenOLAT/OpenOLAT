@@ -368,14 +368,23 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			return;//nothing to do
 		}
 		
+		List<Long> keys = new ArrayList<>(items.size());
 		for(QuestionItemShort item:items) {
 			poolDao.addItemToPool(item, pools, editable);
+			keys.add(item.getKey());
 		}
+		lifeIndexer.indexDocument(QItemDocument.TYPE, keys);
 	}
 
 	@Override
 	public void removeItemsInPool(List<QuestionItemShort> items, Pool pool) {
 		poolDao.removeFromPool(items, pool);
+		
+		List<Long> keys = new ArrayList<>(items.size());
+		for(QuestionItemShort item:items) {
+			keys.add(item.getKey());
+		}
+		lifeIndexer.indexDocument(QItemDocument.TYPE, keys);
 	}
 
 	@Override
@@ -576,9 +585,12 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	@Override
 	public QuestionItemCollection createCollection(Identity owner, String collectionName, List<QuestionItemShort> initialItems) {
 		QuestionItemCollection coll = collectionDao.createCollection(collectionName, owner);
+		List<Long> keys = new ArrayList<>(initialItems.size());
 		for(QuestionItemShort item:initialItems) {
 			collectionDao.addItemToCollection(item.getKey(), Collections.singletonList(coll));
+			keys.add(item.getKey());
 		}
+		lifeIndexer.indexDocument(QItemDocument.TYPE, keys);
 		return coll;
 	}
 
@@ -594,9 +606,12 @@ public class QuestionPoolServiceImpl implements QPoolService {
 
 	@Override
 	public void addItemToCollection(List<? extends QuestionItemShort> items, List<QuestionItemCollection> collections) {
+		List<Long> keys = new ArrayList<>(items.size());
 		for(QuestionItemShort item:items) {
 			collectionDao.addItemToCollection(item.getKey(), collections);
+			keys.add(item.getKey());
 		}
+		lifeIndexer.indexDocument(QItemDocument.TYPE, keys);
 	}
 
 	@Override

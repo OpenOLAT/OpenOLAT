@@ -22,6 +22,7 @@ package org.olat.search.service.indexer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.jms.ConnectionFactory;
@@ -264,11 +265,11 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 	}
 
 	@Override
-	public void deleteDocument(String type, Long key) {
+	public void indexDocument(String type, List<Long> keyList) {
 		QueueSender sender;
 		QueueSession session;
 		try {
-			JmsIndexWork workUnit = new JmsIndexWork(JmsIndexWork.DELETE, type, key);
+			JmsIndexWork workUnit = new JmsIndexWork(JmsIndexWork.INDEX, type, keyList);
 			session = connection.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE );
 			ObjectMessage message = session.createObjectMessage();
 			message.setObject(workUnit);
@@ -279,6 +280,11 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 		} catch (JMSException e) {
 			log.error("", e );
 		}
+	}
+
+	@Override
+	public void deleteDocument(String type, Long key) {
+		indexDocument(type, Collections.singletonList(key));
 	}
 
 	@Override
@@ -306,7 +312,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 			String type = workUnit.getIndexType();
 			List<LifeIndexer> lifeIndexers = getIndexerByType(type);
 			for(LifeIndexer indexer:lifeIndexers) {
-				indexer.indexDocument(workUnit.getKey(), this);
+				indexer.indexDocument(workUnit.getKeyList(), this);
 			}
 		}
 	}
@@ -316,7 +322,11 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 			String type = workUnit.getIndexType();
 			List<LifeIndexer> lifeIndexers = getIndexerByType(type);
 			for(LifeIndexer indexer:lifeIndexers) {
-				indexer.deleteDocument(workUnit.getKey(), this);
+				if(workUnit.getKeyList() != null && workUnit.getKeyList().size() > 0) {
+					for(Long key:workUnit.getKeyList()) {
+						indexer.deleteDocument(key, this);
+					}
+				}
 			}
 		}
 	}
@@ -359,22 +369,24 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 	 * @param document
 	 */
 	@Override
-	public void addDocument(Document document) {
-		if(document == null) return;//nothing to do
+	public void addDocuments(List<Document> documents) {
+		if(documents == null || documents.isEmpty()) return;//nothing to do
 		
 		IndexWriter writer = null;
 		try {
-			String resourceUrl = document.get(AbstractOlatDocument.RESOURCEURL_FIELD_NAME);
-			Term uuidTerm = new Term(AbstractOlatDocument.RESOURCEURL_FIELD_NAME, resourceUrl);
-
 			DirectoryReader currentReader = getReader();
 			IndexSearcher searcher = new IndexSearcher(currentReader);
-			TopDocs hits = searcher.search(new TermQuery(uuidTerm), 10);
 			writer = permanentIndexWriter.getAndLock();
-			if(hits.totalHits > 0) {
-				writer.updateDocument(uuidTerm, document);
-			} else {
-				writer.addDocument(document);
+			
+			for(Document document:documents) {
+				String resourceUrl = document.get(AbstractOlatDocument.RESOURCEURL_FIELD_NAME);
+				Term uuidTerm = new Term(AbstractOlatDocument.RESOURCEURL_FIELD_NAME, resourceUrl);
+				TopDocs hits = searcher.search(new TermQuery(uuidTerm), 10);
+				if(hits.totalHits > 0) {
+					writer.updateDocument(uuidTerm, document);
+				} else {
+					writer.addDocument(document);
+				}
 			}
 		} catch (IOException e) {
 			log.error("", e);
