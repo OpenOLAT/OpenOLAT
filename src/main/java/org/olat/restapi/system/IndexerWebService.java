@@ -67,8 +67,13 @@ public class IndexerWebService {
 	@Path("status")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getStatus() {
+		String status;
 		SearchServiceStatus serviceStatus = SearchServiceFactory.getService().getStatus();
-		String status = serviceStatus.getStatus();
+		if(serviceStatus instanceof SearchServiceStatusImpl) {
+			status = serviceStatus.getStatus();
+		} else {
+			status = "disabled";
+		}
 		return Response.ok(new IndexerStatus(status)).build();
 	}
 	
@@ -83,8 +88,14 @@ public class IndexerWebService {
 	@Path("status")
 	@Produces({MediaType.TEXT_PLAIN})
 	public Response getPlainTextStatus() {
+		String status;
 		SearchServiceStatus serviceStatus = SearchServiceFactory.getService().getStatus();
-		return Response.ok(serviceStatus.getStatus()).build();
+		if(serviceStatus instanceof SearchServiceStatusImpl) {
+			status = serviceStatus.getStatus();
+		} else {
+			status = "disabled";
+		}
+		return Response.ok(status).build();
 	}
 	
 	/**
@@ -121,8 +132,10 @@ public class IndexerWebService {
 			stats.setRunningFolderIndexerCount(fStatus.getNumberRunningFolderIndexer());
 			stats.setAvailableFolderIndexerCount(fStatus.getNumberAvailableFolderIndexer());
 			stats.setLastFullIndexTime(fStatus.getLastFullIndexTime());
+			stats.setStatus(status.getStatus());
+		} else {
+			stats.setStatus("disabled");
 		}
-		stats.setStatus(status.getStatus());
 		return stats;
 	}
 }
