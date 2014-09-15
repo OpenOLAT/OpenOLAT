@@ -290,8 +290,8 @@ $fa-css-prefix: "o_icon" !default;
 
 /* question pool */
 .o_icon_qpool:before { content: $fa-var-bank; }
-.o_icon_pool_private:before { content: $fa-var-times; }
-.o_icon_pool_public:before { content: $fa-var-check; }
+.o_icon_pool_private:before { content: $fa-var-square-o; }
+.o_icon_pool_public:before { content: $fa-var-check-square-o; }
 .o_icon_pool_my_items:before { content: $fa-var-user; }
 .o_icon_pool_favorits:before { content: $fa-var-bookmark; }
 .o_icon_pool_collection:before { content: $fa-var-list; }
