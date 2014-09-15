@@ -377,28 +377,28 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		boolean disabled = (page <= 0);
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		Form theForm = ftE.getRootForm();
-		sb.append("<li").append(" class='disabled'", disabled).append("><a href='");
+		sb.append("<li").append(" class='disabled'", disabled).append("><a href=\"");
 		if(disabled) {
 			sb.append("#");
 		} else {
 			sb.append("javascript:")
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("page", Integer.toString(page - 1))));
 		}
-		sb.append("'>").append("&laquo;").append("</a></li>");
+		sb.append("\">").append("&laquo;").append("</a></li>");
 	}
 	
 	private void renderPageNextLink(StringOutput sb, FlexiTableComponent ftC, int page, int maxPage) {
 		boolean disabled = (page >= maxPage);
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		Form theForm = ftE.getRootForm();
-		sb.append("<li ").append(" class='disabled'", disabled).append("><a href='");
+		sb.append("<li ").append(" class='disabled'", disabled).append("><a href=\"");
 		if(disabled) {
 			sb.append("#");
 		} else {
 			sb.append("javascript:")
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("page", Integer.toString(page + 1)))); 
 		}
-		sb.append("'>").append("&raquo;").append("</li></a>");
+		sb.append("\">").append("&raquo;").append("</li></a>");
 	}
 	
 	private void renderPageNumberLinks(StringOutput sb, FlexiTableComponent ftC, int page, int maxPage) {
