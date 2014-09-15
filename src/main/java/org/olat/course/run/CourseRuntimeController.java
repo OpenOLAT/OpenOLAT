@@ -595,11 +595,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		} else if (event instanceof AssessmentChangedEvent) {
 			String assessmentChangeType = event.getCommand();
 			AssessmentChangedEvent ace = (AssessmentChangedEvent) event;
-			if(!isGuestOnly && ace.getIdentityKey().equals(getIdentity().getKey())
+			if(!isGuestOnly && efficiencyStatementsLink != null && ace.getIdentityKey().equals(getIdentity().getKey())
 					&& assessmentChangeType.equals(AssessmentChangedEvent.TYPE_EFFICIENCY_STATEMENT_CHANGED)) {
 				// update tools, maybe efficiency statement link has changed
 				UserEfficiencyStatement es = efficiencyStatementManager
-					.getUserEfficiencyStatementLight(this.getRepositoryEntry().getKey(), this.getIdentity());
+					.getUserEfficiencyStatementLight(getRepositoryEntry().getKey(), this.getIdentity());
 				efficiencyStatementsLink.setEnabled(es != null);
 			}
 		} else if (event instanceof EntryChangedEvent ) {
