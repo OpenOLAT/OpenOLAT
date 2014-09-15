@@ -520,7 +520,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 			 ************************************************************************/
 			if (event instanceof RequestPageEvent) {
 				RequestPageEvent pageEvent = (RequestPageEvent) event;
-				openPage(ureq, pageEvent.getCommand(), wiki);
+				page = openPage(ureq, pageEvent.getCommand(), wiki);
 			} else if (event instanceof RequestNewPageEvent) {
 				page = handleRequestNewPageEvent(ureq, (RequestNewPageEvent)event, wiki);
 			} else  if (event instanceof ErrorEvent) {
@@ -605,7 +605,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 			tryToSetEditLock(page, ureq, ores);
 		} else if(source instanceof Link && "select-page".equals(command)) {
 			String name = source.getComponentName();
-			openPage(ureq, name, wiki);
+			page = openPage(ureq, name, wiki);
 		}
 		
 		//set recent page id to the page currently used
