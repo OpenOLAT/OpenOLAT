@@ -133,8 +133,13 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		} else if (source instanceof SingleSelection) {
 			SingleSelection attrEl = (SingleSelection)source;
 			if(attrEl.isOneSelected()) {
-				ConditionalQuery query = (ConditionalQuery)attrEl.getUserObject();
-				query.selectAttributeType(attrEl.getSelectedKey(), null);
+				Object uObject = attrEl.getUserObject();
+				if(uObject instanceof ConditionalQuery) {
+					ConditionalQuery query = (ConditionalQuery)uObject;
+					query.selectAttributeType(attrEl.getSelectedKey(), null);
+				} else {
+					System.out.println("Check");
+				}
 			}
 		} else if(source instanceof FormLink) {
 			FormLink button = (FormLink)source;
