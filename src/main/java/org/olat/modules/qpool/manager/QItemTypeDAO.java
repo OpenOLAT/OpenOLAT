@@ -115,6 +115,7 @@ public class QItemTypeDAO implements ApplicationListener<ContextRefreshedEvent> 
 	public List<QItemType> getItemTypes() {
 		return dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadQItemTypes", QItemType.class)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
 	}
 }

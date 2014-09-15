@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool;
 
+
 /**
  * 
  * Initial date: 21.03.2013<br>
@@ -41,6 +42,25 @@ public interface QuestionItemView extends QuestionItemShort {
 	//life cycle
 	public String getItemVersion();
 	
-	
-
+	public enum OrderBy {
+		key,
+		identifier,
+		title,
+		creationDate,
+		lastModified,
+		keywords,
+		coverage,
+		additionalInformations,
+		taxonomyLevel,
+		difficulty,
+		stdevDifficulty,
+		differentiation,
+		numOfAnswerAlternatives,
+		usage,
+		itemType,
+		format,
+		rating,
+		itemVersion,
+		status
+	}
 }

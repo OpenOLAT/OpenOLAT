@@ -21,7 +21,6 @@ package org.olat.modules.qpool.manager;
 
 import static java.util.Collections.singletonList;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -59,6 +58,8 @@ public class CollectionDAOTest extends OlatTestCase {
 	private QItemTypeDAO qItemTypeDao;
 	@Autowired
 	private QuestionItemDAO questionDao;
+	@Autowired
+	private QItemQueriesDAO qItemQueriesDao;
 	
 	@Test
 	public void createCollection() {
@@ -96,39 +97,6 @@ public class CollectionDAOTest extends OlatTestCase {
 		//add the item to the collection
 		collectionDao.addItemToCollection(item.getKey(), singletonList(coll));
 		dbInstance.commit();//check if it's alright
-	}
-	
-	@Test
-	public void getItemsOfCollection() {
-		//create a collection with 2 items
-		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-3-" + UUID.randomUUID().toString());
-		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 3", id);
-		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
-		QuestionItem item2 = questionDao.createAndPersist(null, "NGC 97", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
-		collectionDao.addItemToCollection(item1.getKey(), singletonList(coll));
-		collectionDao.addItemToCollection(item2.getKey(), singletonList(coll));
-		dbInstance.commit();//check if it's alright
-		
-		//load the items of the collection
-		List<QuestionItemView> items = collectionDao.getItemsOfCollection(id, coll, null, 0, -1);
-		List<Long> itemKeys = new ArrayList<Long>();
-		for(QuestionItemView item:items) {
-			itemKeys.add(item.getKey());
-		}
-		Assert.assertNotNull(items);
-		Assert.assertEquals(2, items.size());
-		Assert.assertTrue(itemKeys.contains(item1.getKey()));
-		Assert.assertTrue(itemKeys.contains(item2.getKey()));
-		//count them
-		int numOfItems = collectionDao.countItemsOfCollection(coll);
-		Assert.assertEquals(2, numOfItems);
-		
-		//load limit sub set
-		List<QuestionItemView> limitedItems = collectionDao.getItemsOfCollection(id, coll, Collections.singletonList(item1.getKey()), 0, -1);
-		Assert.assertNotNull(limitedItems);
-		Assert.assertEquals(1, limitedItems.size());
-		Assert.assertEquals(item1.getKey(), limitedItems.get(0).getKey());
 	}
 	
 	@Test
@@ -196,7 +164,7 @@ public class CollectionDAOTest extends OlatTestCase {
 		Assert.assertEquals(2, numOfStayingItems_1);
 		int numOfStayingItems_2 = collectionDao.countItemsOfCollection(coll2);
 		Assert.assertEquals(1, numOfStayingItems_2);
-		List<QuestionItemView> items_2 = collectionDao.getItemsOfCollection(id, coll2, null, 0, -1);
+		List<QuestionItemView> items_2 = qItemQueriesDao.getItemsOfCollection(id, coll2, null, 0, -1);
 		Assert.assertEquals(1, items_2.size());
 		Assert.assertEquals(item2.getKey(), items_2.get(0).getKey());
 	}
@@ -224,7 +192,7 @@ public class CollectionDAOTest extends OlatTestCase {
 		//check if the item has been removed
 		int numOfStayingItems = collectionDao.countItemsOfCollection(coll);
 		Assert.assertEquals(1, numOfStayingItems);
-		List<QuestionItemView> items_2 = collectionDao.getItemsOfCollection(id, coll, null, 0, -1);
+		List<QuestionItemView> items_2 = qItemQueriesDao.getItemsOfCollection(id, coll, null, 0, -1);
 		Assert.assertEquals(1, items_2.size());
 		Assert.assertEquals(item2.getKey(), items_2.get(0).getKey());
 	}

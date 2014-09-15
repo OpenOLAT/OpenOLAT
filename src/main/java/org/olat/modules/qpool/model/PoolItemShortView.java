@@ -46,8 +46,8 @@ public class PoolItemShortView implements QuestionItem2Pool {
 	private static final long serialVersionUID = 2434091642402984803L;
 	
 	@Id
-  @GeneratedValue(generator = "system-uuid")
-  @GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
 	@Column(name="item_to_pool_id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
 	@Temporal(TemporalType.TIMESTAMP)

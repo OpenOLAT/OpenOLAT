@@ -102,7 +102,7 @@ public abstract class AbstractExportTestResource implements MediaResource {
 		}
 	}
 	
-	protected abstract void exportTest(List<QuestionItemShort> items, ZipOutputStream zout);
+	protected abstract void exportTest(List<QuestionItemShort> itesmToExport, ZipOutputStream zout);
 
 	@Override
 	public void release() {

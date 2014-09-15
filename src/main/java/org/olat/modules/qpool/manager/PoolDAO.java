@@ -20,7 +20,6 @@
 package org.olat.modules.qpool.manager;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -30,14 +29,11 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.PersistenceHelper;
-import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItem2Pool;
 import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.model.PoolImpl;
 import org.olat.modules.qpool.model.PoolToItem;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
@@ -134,7 +130,8 @@ public class PoolDAO {
 	
 	public List<Pool> getPools(int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select pool from qpool pool");
+		sb.append("select pool from qpool pool")
+		  .append(" inner join fetch pool.ownerGroup ownerGroup ");
 		
 		TypedQuery<Pool> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Pool.class);
@@ -212,33 +209,6 @@ public class PoolDAO {
 				.createQuery(sb.toString(), Number.class)
 				.setParameter("poolKey", params.getPoolKey())
 				.getSingleResult().intValue();
-	}
-	
-	public List<QuestionItemView> getItemsOfPool(SearchQuestionItemParams params, Collection<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select item from qpoolitem item where item.poolKey=:poolKey")
-	    .append(" and (item.markCreatorKey=:ureqIdentityKey or item.markCreatorKey is null)");;
-		if(inKeys != null && inKeys.size() > 0) {
-			sb.append(" and item.key in (:inKeys)");
-		}
-		if(!PersistenceHelper.appendGroupBy(sb, "item", orderBy)) {
-			sb.append(" order by item.key asc ");
-		}
-		
-		TypedQuery<QuestionItemView> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QuestionItemView.class)
-				.setParameter("poolKey", params.getPoolKey())
-				.setParameter("ureqIdentityKey", params.getIdentity().getKey());
-		if(inKeys != null && inKeys.size() > 0) {
-			query.setParameter("inKeys", inKeys);
-		}
-		if(firstResult >= 0) {
-			query.setFirstResult(firstResult);
-		}
-		if(maxResults > 0) {
-			query.setMaxResults(maxResults);
-		}
-		return query.getResultList();
 	}
 	
 	public List<QuestionItem2Pool> getQuestionItem2Pool(QuestionItemShort item) {

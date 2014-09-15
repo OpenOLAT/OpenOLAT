@@ -157,6 +157,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.qpool.manager.QItemTypeDAOTest.class,
 	org.olat.modules.qpool.manager.QEducationalContextDAOTest.class,
 	org.olat.modules.qpool.manager.PoolDAOTest.class,
+	org.olat.modules.qpool.manager.QItemQueriesDAOTest.class,
 	org.olat.modules.qpool.manager.TaxonomyLevelDAOTest.class,
 	org.olat.modules.qpool.manager.QuestionPoolServiceTest.class,
 	org.olat.ldap.LDAPLoginTest.class,

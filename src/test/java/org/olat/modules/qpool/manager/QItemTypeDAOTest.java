@@ -120,19 +120,4 @@ public class QItemTypeDAOTest extends OlatTestCase {
 		List<QItemType> allTypes = qpoolItemTypeDao.getItemTypes();
 		Assert.assertTrue(allTypes.contains(type));
 	}
-	
-	/*@Test
-	public void testUnique() {
-		String typeStr = "unique-" + UUID.randomUUID().toString();
-		QItemType type = qpoolItemTypeDao.create(typeStr, false);
-		dbInstance.commitAndCloseSession();
-		Assert.assertNotNull(type);
-		
-		
-		//create the same as above
-		QItemType duplicateType = qpoolItemTypeDao.create(typeStr, true);
-		dbInstance.commitAndCloseSession();
-		Assert.assertNull(duplicateType);
-	}*/
-	
 }

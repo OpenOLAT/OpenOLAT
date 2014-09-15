@@ -20,19 +20,15 @@
 package org.olat.modules.qpool.manager;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.PersistenceHelper;
-import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.model.CollectionToItem;
 import org.olat.modules.qpool.model.ItemCollectionImpl;
 import org.olat.modules.qpool.model.QuestionItemImpl;
@@ -125,36 +121,6 @@ public class CollectionDAO {
 				.createQuery(sb.toString(), Number.class)
 				.setParameter("collectionKey", collection.getKey())
 				.getSingleResult().intValue();
-	}
-	
-	public List<QuestionItemView> getItemsOfCollection(Identity ureqIdentity, QuestionItemCollection collection, Collection<Long> inKeys,
-			int firstResult, int maxResults, SortKey... orderBy) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select item from qitemview item ")
-		  .append(" where item in (select coll2item.item from qcollection2item coll2item where coll2item.collection.key=:collectionKey)")
-		  .append(" and (item.markCreatorKey=:ureqIdentityKey or item.markCreatorKey is null)")
-		  .append(" and (item.ownerKey=:ureqIdentityKey or item.ownerKey is null)");
-		if(inKeys != null && !inKeys.isEmpty()) {
-			sb.append(" and item.key in (:itemKeys)");
-		}
-		if(!PersistenceHelper.appendGroupBy(sb, "item", orderBy)) {
-			sb.append(" order by item.key asc ");
-		}
-		
-		TypedQuery<QuestionItemView> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), QuestionItemView.class)
-				.setParameter("collectionKey", collection.getKey())
-				.setParameter("ureqIdentityKey", ureqIdentity.getKey());
-		if(inKeys != null && !inKeys.isEmpty()) {
-			query.setParameter("itemKeys", inKeys);
-		}
-		if(firstResult >= 0) {
-			query.setFirstResult(firstResult);
-		}
-		if(maxResults > 0) {
-			query.setMaxResults(maxResults);
-		}
-		return query.getResultList();
 	}
 	
 	public List<Long> getItemKeysOfCollection(QuestionItemCollection collection) {
