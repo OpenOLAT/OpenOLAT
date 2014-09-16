@@ -34,6 +34,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemView;
+import org.olat.modules.qpool.QuestionItemView.OrderBy;
 import org.olat.modules.qpool.model.ItemWrapper;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
@@ -99,7 +100,10 @@ public class QItemQueriesDAO {
 		if(inKeys != null && inKeys.size() > 0) {
 			sb.append(" and item.key in (:inKeys)");
 		}
-		appendOrderBy(sb, "item", orderBy);
+		
+		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null && !OrderBy.marks.name().equals(orderBy[0].getKey())) {
+			appendOrderBy(sb, "item", orderBy);
+		}
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
@@ -348,6 +352,7 @@ public class QItemQueriesDAO {
 			sb.append(" order by ");
 			switch(sortKey) {
 				case "itemType": sb.append(dbRef).append(".type.type"); break;
+				case "marks": sb.append("marks"); break;
 				case "rating": sb.append("rating"); break;
 				default: sb.append(dbRef).append(".").append(sortKey); break;
 			}

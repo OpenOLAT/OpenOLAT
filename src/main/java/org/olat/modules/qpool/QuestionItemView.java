@@ -43,6 +43,7 @@ public interface QuestionItemView extends QuestionItemShort {
 	public String getItemVersion();
 	
 	public enum OrderBy {
+		marks,
 		key,
 		identifier,
 		title,
