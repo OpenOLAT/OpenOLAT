@@ -22,19 +22,15 @@ package org.olat.upgrade;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.admin.layout.LayoutModule;
+import javax.persistence.PersistenceException;
+
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Policy;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.right.BGRightsRole;
-import org.olat.properties.PropertyManager;
-import org.olat.repository.RepositoryManager;
-import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.upgrade.model.BusinessGroupUpgrade;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -49,29 +45,15 @@ public class OLATUpgrade_10_0_3 extends OLATUpgrade {
 	private static final int BATCH_SIZE = 50;
 	private static final String TASK_BUSINESS_GROUPS = "Upgrade rights groups";
 	private static final String VERSION = "OLAT_10.0.3";
-	
-
 
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
-	private GroupDAO groupDao;
-	@Autowired
-	private RepositoryManager repositoryManager;
-	@Autowired
 	private BGRightManager bgRightManager;
 	@Autowired
-	private BusinessGroupRelationDAO businessGroupRelationDao;
-	@Autowired
-	private RepositoryEntryRelationDAO repositoryEntryToGroupDAO;
-	@Autowired
 	private BusinessGroupService businessGroupService;
-	@Autowired
-	private PropertyManager propertyManager;
-	@Autowired
-	private LayoutModule layoutModule;
 	
 	public OLATUpgrade_10_0_3() {
 		super();
@@ -98,7 +80,19 @@ public class OLATUpgrade_10_0_3 extends OLATUpgrade {
 		}
 		
 		boolean allOk = true;
-		allOk &= upgradeBusinessGroups(upgradeManager, uhd);
+		try {
+			allOk &= upgradeBusinessGroups(upgradeManager, uhd);
+		} catch (PersistenceException e) {
+			String msg = e.getMessage();
+			//old database schema, cannot update
+			if(msg.contains("could not extract ResultSet")) {
+				dbInstance.rollbackAndCloseSession();
+				allOk &= true;
+			} else {
+				log.error("", e);
+				allOk &= false;
+			}
+		}
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
