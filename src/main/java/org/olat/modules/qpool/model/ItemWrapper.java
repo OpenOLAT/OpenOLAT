@@ -89,6 +89,11 @@ public class ItemWrapper implements QuestionItemView {
 		numOfAnswerAlternatives = item.getNumOfAnswerAlternatives();
 		usage = item.getUsage();
 		
+		itemVersion = item.getItemVersion();
+		status = item.getStatus();
+
+		format = item.getFormat();
+		
 		this.editable = editable;
 		this.marked = marked;
 		this.rating = rating;
