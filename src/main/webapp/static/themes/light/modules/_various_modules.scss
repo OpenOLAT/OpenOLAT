@@ -105,9 +105,15 @@ a.o_chelp {
 }
 .o_bc_meta, .tooltip {
 	@extend %o_small;
+	h5, .o_author, .o_comment {
+		color: #fff;
+		margin: 5px 0;
+	}
 	.o_thumbnail{
 		width:200px; 
 		height:200px;
+		background-color: #fff;
+		margin: 0 -5px; /* remove ugly border */
 	}
 }
 
