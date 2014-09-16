@@ -106,9 +106,11 @@ public class CPDisplayController extends BasicController implements Activateable
 	 * @param showMenu
 	 * @param showNavigation Show the next/previous link
 	 * @param activateFirstPage
+	 * @param identPrefix In a course, set a unique prefix per node, if someone set 2x the same CPs in the course, the node identifiers
+	 * of the CP elements must be different but predictable
 	 */
 	public CPDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, boolean showMenu, boolean showNavigation,
-			boolean activateFirstPage, boolean showPrint, DeliveryOptions deliveryOptions, String initialUri, OLATResourceable ores) {
+			boolean activateFirstPage, boolean showPrint, DeliveryOptions deliveryOptions, String initialUri, OLATResourceable ores, String identPrefix) {
 		super(ureq, wControl);
 		this.rootContainer = rootContainer;
 
@@ -141,7 +143,7 @@ public class CPDisplayController extends BasicController implements Activateable
 		}
 		// initialize tree model in any case
 		try {
-			ctm = new CPManifestTreeModel((VFSLeaf) mani);
+			ctm = new CPManifestTreeModel((VFSLeaf) mani, identPrefix);
 		} catch (IOException e) {
 			showError("error.manifest.corrupted");
 			return;

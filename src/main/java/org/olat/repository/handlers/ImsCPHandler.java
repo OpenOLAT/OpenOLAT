@@ -187,46 +187,19 @@ public class ImsCPHandler extends FileHandler {
 		final LocalFolderImpl vfsWrapper = new LocalFolderImpl(cpRoot);
 		CPPackageConfig packageConfig = CPManager.getInstance().getCPPackageConfig(res);
 		final DeliveryOptions deliveryOptions = (packageConfig == null ? null : packageConfig.getDeliveryOptions());
-		
-		// jump to either the forum or the folder if the business-launch-path says so.
-		/*
-		BusinessControl bc = wControl.getBusinessControl();
-		ContextEntry ce = bc.popLauncherContextEntry();
-		MainLayoutController layoutCtr;
-		if ( ce != null ) { // a context path is left for me
-			log.debug("businesscontrol (for further jumps) would be:"+bc);
-			OLATResourceable ores = ce.getOLATResourceable();
-			log.debug("OLATResourceable=" + ores);
-			String typeName = ores.getResourceableTypeName();
-			// typeName format: 'path=/test1/test2/readme.txt'
-			// First remove prefix 'path='
-			String path = typeName.substring("path=".length());
-			if  (path.length() > 0) {
-			  log.debug("direct navigation to container-path=" + path);
-			  layoutCtr = CPUIFactory.getInstance().createMainLayoutResourceableListeningWrapperController(res, ureq, wControl, vfsWrapper, true, false, deliveryOptions, path);
-			} else {
-				layoutCtr = CPUIFactory.getInstance().createMainLayoutResourceableListeningWrapperController(res, ureq, wControl, vfsWrapper, deliveryOptions);
-			}
-		} else {
-			layoutCtr = CPUIFactory.getInstance().createMainLayoutResourceableListeningWrapperController(res, ureq, wControl, vfsWrapper, deliveryOptions);
-		}
-		*/
-		
-		CPRuntimeController runtime = new CPRuntimeController(ureq, wControl, re, reSecurity,
+		return new CPRuntimeController(ureq, wControl, re, reSecurity,
 				new RuntimeControllerCreator() {
 					@Override
 					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry, RepositoryEntrySecurity security) {
 						boolean activateFirstPage = true;
 						String initialUri = null;
 						
-						CPDisplayController cpCtr = new CPDisplayController(uureq, wwControl, vfsWrapper, true, true, activateFirstPage, true, deliveryOptions, initialUri, entry.getOlatResource());
+						CPDisplayController cpCtr = new CPDisplayController(uureq, wwControl, vfsWrapper, true, true, activateFirstPage, true, deliveryOptions, initialUri, entry.getOlatResource(), "");
 						MainLayout3ColumnsController ctr = new LayoutMain3ColsController(uureq, wwControl, cpCtr.getMenuComponent(), cpCtr.getInitialComponent(), vfsWrapper.getName());
 						ctr.addDisposableChildController(cpCtr);
 						return ctr;
 					}
 			});
-
-		return runtime;
 	}
 
 	@Override

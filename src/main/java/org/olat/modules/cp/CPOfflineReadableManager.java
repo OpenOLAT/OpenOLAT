@@ -193,7 +193,7 @@ public class CPOfflineReadableManager {
 		/* first, we do the menu-tree */
 		File mani = new File(unzippedDir, FILENAME_IMSMANIFEST);
 		LocalFileImpl vfsMani = new LocalFileImpl(mani);
-		CPManifestTreeModel ctm = new CPManifestTreeModel(vfsMani);
+		CPManifestTreeModel ctm = new CPManifestTreeModel(vfsMani, "");
 		TreeNode root = ctm.getRootNode();
 		// let's take the rootnode title as  page title
 		this.rootTitle = root.getTitle(); 
@@ -227,7 +227,7 @@ public class CPOfflineReadableManager {
 	public String getOfflineCPStartHTMLFile(String manifest, String indexSrc)
 	throws IOException {
 
-		CPManifestTreeModel ctm = new CPManifestTreeModel(manifest);
+		CPManifestTreeModel ctm = new CPManifestTreeModel(manifest, "");
 		TreeNode root = ctm.getRootNode();
 		// let's take the rootnode title as  page title
 

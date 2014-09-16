@@ -31,7 +31,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.controller.OLATResourceableListeningWrapperController;
 import org.olat.core.util.vfs.VFSContainer;
 
 /**
@@ -73,32 +72,8 @@ public class CPUIFactory {
 	 * @return a CPDisplayController
 	 */
 	public CPDisplayController createContentOnlyCPDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer,
-			boolean activateFirstPage, boolean showNavigation, DeliveryOptions deliveryOptions, String initialUri, OLATResourceable ores) {
-		return new CPDisplayController(ureq, wControl, rootContainer, false, showNavigation, activateFirstPage, true, deliveryOptions, initialUri, ores);		
-	}
-
-	/**
-	 * Creates a main layout controller. The layout uses one or two columns
-	 * depending the the showMenu flag.
-	 * <p>
-	 * Use this where you have no main layout present, e.g. in a pop up in a
-	 * stand-alone view
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param rootContainer The VFS root container where the CP is found on disk
-	 * @param showMenu true to display the menu, false to hide the menu
-	 * @param activateFirstPage true to automatically activate the first node with
-	 *          content
-	 * @param initialUri can be NULL, will use first page then
-	 * @return A main layout controller
-	 */
-	public MainLayout3ColumnsController createMainLayoutController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer,
-			boolean showMenu, boolean activateFirstPage, DeliveryOptions deliveryOptions, String initialUri, OLATResourceable ores) {
-		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, true, activateFirstPage, true, deliveryOptions, initialUri, ores);
-		MainLayout3ColumnsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, cpCtr.getMenuComponent(), cpCtr.getInitialComponent(), rootContainer.getName());
-		layoutCtr.addDisposableChildController(cpCtr); // cascade disposing requests
-		return layoutCtr;
+			boolean activateFirstPage, boolean showNavigation, DeliveryOptions deliveryOptions, String initialUri, OLATResourceable ores, String identPrefix) {
+		return new CPDisplayController(ureq, wControl, rootContainer, false, showNavigation, activateFirstPage, true, deliveryOptions, initialUri, ores, identPrefix);		
 	}
 	
 	/**
@@ -116,57 +91,10 @@ public class CPUIFactory {
 	 */
 	public MainLayout3ColumnsController createMainLayoutController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer,
 			boolean showMenu, DeliveryOptions deliveryOptions) {
-		return createMainLayoutController(ureq, wControl, rootContainer, showMenu, true, deliveryOptions, null, null);
-	}
-
-	/**
-	 * Creates a main layout controller that is wrapped with a resource listener
-	 * that automatically disposes the controller whenever something changes on
-	 * the resource. The layout uses one or two columns depending the the showMenu
-	 * flag.
-	 * <p>
-	 * Use this where you have no main layout present, e.g. in a pop up in a
-	 * stand-alone view
-	 * 
-	 * @param res The OLAT resource to listen to
-	 * @param ureq
-	 * @param rootContainer The VFS root container where the CP is found on disk
-	 * @param showMenu true to display the menu, false to hide the menu
-	 * @param activateFirstPage true to automatically activate the first node with
-	 *          content
-	 * @param initialUri can be NULL, will use first page then
-	 * @return A main layout controller
-	 * @return the resource listening wrapper
-	 */
-	public OLATResourceableListeningWrapperController createMainLayoutResourceableListeningWrapperController(OLATResourceable res, UserRequest ureq, WindowControl wControl,
-			VFSContainer rootContainer, boolean showMenu, boolean activateFirstPage, DeliveryOptions deliveryOptions, String initialUri) {
-
-		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, true, activateFirstPage, true, deliveryOptions, initialUri, res);
+		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, true, true, true, deliveryOptions, null, null, "");
 		MainLayout3ColumnsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, cpCtr.getMenuComponent(), cpCtr.getInitialComponent(), rootContainer.getName());
-		layoutCtr.addDisposableChildController(cpCtr);
-		return new OLATResourceableListeningWrapperController(ureq, wControl, res, layoutCtr, cpCtr, ureq.getIdentity());
-	}
-
-
-	/**
-	 * Creates a main layout controller that is wrapped with a resource listener
-	 * that automatically disposes the controller whenever something changes on
-	 * the resource. The layout uses one or two columns depending the the showMenu
-	 * flag.
-	 * <p>
-	 * Use this where you have no main layout present, e.g. in a pop up in a
-	 * stand-alone view
-	 * 
-	 * @param res The OLAT resource to listen to
-	 * @param ureq
-	 * @param rootContainer The VFS root container where the CP is found on disk
-	 * @param showMenu true to display the menu, false to hide the menu
-	 * @return A main layout controller
-	 * @return the resource listening wrapper
-	 */
-	public OLATResourceableListeningWrapperController createMainLayoutResourceableListeningWrapperController(OLATResourceable res, UserRequest ureq, WindowControl wControl,
-			VFSContainer rootContainer, DeliveryOptions deliveryOptions) {
-		return createMainLayoutResourceableListeningWrapperController(res, ureq, wControl, rootContainer, true, true, deliveryOptions, null);
+		layoutCtr.addDisposableChildController(cpCtr); // cascade disposing requests
+		return layoutCtr;
 	}
 
 	/**
@@ -184,7 +112,7 @@ public class CPUIFactory {
 	 */
 	public LayoutMain3ColsPreviewController createMainLayoutPreviewController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer,
 			boolean showMenu, DeliveryOptions deliveryOptions) {
-		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, true, true, true, deliveryOptions, null, null);		
+		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, true, true, true, deliveryOptions, null, null, "");		
 		LayoutMain3ColsPreviewController layoutCtr = new LayoutMain3ColsPreviewController(ureq, wControl, cpCtr.getMenuComponent(), cpCtr.getInitialComponent(), rootContainer.getName());
 		layoutCtr.addDisposableChildController(cpCtr); // cascade disposing requests
 		return layoutCtr;
@@ -205,7 +133,7 @@ public class CPUIFactory {
 	 */
 	public LayoutMain3ColsController createMainLayoutPreviewController_v2(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer,
 			boolean showMenu, DeliveryOptions deliveryOptions) {
-		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, true, true, true, deliveryOptions, null, null);		
+		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, true, true, true, deliveryOptions, null, null, "");		
 		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, cpCtr.getMenuComponent(), cpCtr.getInitialComponent(), rootContainer.getName());
 		layoutCtr.addDisposableChildController(cpCtr); // cascade disposing requests
 		layoutCtr.addCssClassToMain("o_preview");

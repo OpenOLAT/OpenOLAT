@@ -61,17 +61,20 @@ public class CPManifestTreeModel extends GenericTreeModel {
 	private final Map<String,TreeNode> hrefToTreeNode = new HashMap<String,TreeNode>();
 	private Map<String,String> resources; // keys: resource att 'identifier'; values: resource att 'href'
 	private final List<TreeNode> treeNodes = new ArrayList<TreeNode>();
+	private final String identPrefix;
 
 	/**
 	 * Constructor of the content packaging tree model
 	 * @param manifest the imsmanifest.xml file
 	 */
-	CPManifestTreeModel(VFSLeaf manifest) throws IOException {
+	CPManifestTreeModel(VFSLeaf manifest, String identPrefix) throws IOException {
+		this.identPrefix = identPrefix;
 		Document doc = loadDocument(manifest);
 		initDocument(doc);
 	}
 	
-	CPManifestTreeModel(String manifest) throws IOException {
+	CPManifestTreeModel(String manifest,  String identPrefix) throws IOException {
+		this.identPrefix = identPrefix;
 		Document doc = loadDocument(manifest);
 		initDocument(doc);
 	}
@@ -199,7 +202,7 @@ public class CPManifestTreeModel extends GenericTreeModel {
 			//set resolved file path directly
 			String identifierref = item.attributeValue("identifierref");
 			if(identifierref != null) {
-				gtn.setIdent("cp" + Encoder.md5hash(identifierref));
+				gtn.setIdent("cp" + Encoder.md5hash(identPrefix + identifierref));
 			}
 			XPath meta = rootElement.createXPath("//ns:resource[@identifier='" + identifierref + "']");
 			meta.setNamespaceURIs(nsuris);

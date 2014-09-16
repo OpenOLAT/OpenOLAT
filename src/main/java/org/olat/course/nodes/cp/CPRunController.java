@@ -137,6 +137,7 @@ public class CPRunController extends BasicController implements ControllerEventL
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == showCPButton) { // those must be links
 			fireEvent(ureq, Event.CHANGED_EVENT);
@@ -148,6 +149,7 @@ public class CPRunController extends BasicController implements ControllerEventL
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == null) { // external source (from the course at this time being)
 			if (event instanceof TreeEvent) {
@@ -161,7 +163,6 @@ public class CPRunController extends BasicController implements ControllerEventL
 	}
 	
 	@Override
-	// Resume function
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
@@ -202,7 +203,7 @@ public class CPRunController extends BasicController implements ControllerEventL
  		  activateFirstPage = false; 
 		}
 		cpDispC = CPUIFactory.getInstance().createContentOnlyCPDisplayController(ureq, getWindowControl(), new LocalFolderImpl(cpRoot),
-				activateFirstPage, false, deliveryOptions, nodecmd, courseResource);
+				activateFirstPage, false, deliveryOptions, nodecmd, courseResource, cpNode.getIdent());
 		cpDispC.setContentEncoding(deliveryOptions.getContentEncoding());
 		cpDispC.setJSEncoding(deliveryOptions.getJavascriptEncoding());
 		cpDispC.addControllerListener(this);
@@ -234,6 +235,7 @@ public class CPRunController extends BasicController implements ControllerEventL
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		if (cpDispC != null) {
 			cpDispC.dispose();

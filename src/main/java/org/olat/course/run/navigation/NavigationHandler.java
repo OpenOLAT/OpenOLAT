@@ -44,6 +44,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.gui.control.generic.title.TitledWrapperController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -186,6 +187,10 @@ public class NavigationHandler implements Disposable {
 				internCourseNode = prevEval.getCourseNode();
 				SubTree subTree = externalTreeModels.get(internCourseNode.getIdent());
 				subtreemodelListener = subTree.getTreeModelListener();
+				
+				if (currentNodeController instanceof TitledWrapperController) {
+					currentNodeController = ((TitledWrapperController)currentNodeController).getContentController();
+				}
 				if(subtreemodelListener != currentNodeController) {
 					if(subtreemodelListener instanceof CPRunController) {
 						nrcr =  ((CPRunController)subtreemodelListener).createNodeRunConstructionResult(ureq);
