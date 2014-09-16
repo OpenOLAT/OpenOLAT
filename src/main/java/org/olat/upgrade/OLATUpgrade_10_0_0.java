@@ -21,7 +21,6 @@ package org.olat.upgrade;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -46,7 +45,6 @@ import org.olat.core.util.WebappHelper;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.right.BGRightManager;
-import org.olat.group.right.BGRightsRole;
 import org.olat.portfolio.manager.EPMapPolicy;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
@@ -195,8 +193,7 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 			do {
 				businessGroups = findBusinessGroups(counter, BATCH_SIZE);
 				for(BusinessGroupUpgrade businessGroup:businessGroups) {
-					BusinessGroupUpgrade up = processBusinessGroup(businessGroup);
-					processRightGroup(up); 
+					processBusinessGroup(businessGroup); 
 				}
 				counter += businessGroups.size();
 				log.audit("Business groups processed: " + businessGroups.size() + ", total processed (" + counter + ")");
@@ -229,38 +226,6 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 		
 		dbInstance.commit();
 		return businessGroup;
-	}
-
-	private void processRightGroup(BusinessGroupUpgrade businessGroup) {
-		boolean commit = false;
-		
-		List<String> tutorRights = findBGRights(businessGroup.getOwnerGroup());
-		for(String right:tutorRights) {
-			bgRightManager.addBGRight(right, businessGroup, BGRightsRole.tutor);
-			commit = true;
-		}
-		
-		List<String> participantsRights = findBGRights(businessGroup.getPartipiciantGroup());
-		for(String right:participantsRights) {
-			bgRightManager.addBGRight(right, businessGroup, BGRightsRole.participant);
-			commit = true;
-		}
-		
-		if(commit) {
-			dbInstance.commit();
-		}
-	}
-	
-	private List<String> findBGRights(SecurityGroup secGroup) {
-		List<Policy> results = securityManager.getPoliciesOfSecurityGroup(secGroup);
-		// filter all business group rights permissions. group right permissions
-		// start with bgr.
-		List<String> rights = new ArrayList<String>();
-		for (Policy rightPolicy:results) {
-			String right = rightPolicy.getPermission();
-			if (right.indexOf("bgr.") == 0) rights.add(right);
-		}
-		return rights;
 	}
 	
 	private boolean upgradeRepositoryEntries(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
