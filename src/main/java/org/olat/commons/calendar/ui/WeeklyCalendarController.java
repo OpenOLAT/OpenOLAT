@@ -369,7 +369,9 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				pushAddEventController((KalendarGUIAddEvent)event, ureq);
 			} else if (event instanceof KalendarGUISelectEvent) {
 				KalendarGUISelectEvent selectEvent = (KalendarGUISelectEvent)event;
-				doOpenEventCallout(ureq, selectEvent.getKalendarEvent(), selectEvent.getKalendarRenderWrapper(), selectEvent.getTargetDomId());
+				if(selectEvent.getKalendarEvent() != null) {
+					doOpenEventCallout(ureq, selectEvent.getKalendarEvent(), selectEvent.getKalendarRenderWrapper(), selectEvent.getTargetDomId());
+				}
 			} else if (event instanceof KalendarGUIMoveEvent) {
 				KalendarGUIMoveEvent moveEvent = (KalendarGUIMoveEvent)event;
 				doMove(moveEvent.getKalendarEvent(), moveEvent.getDayDelta(),
