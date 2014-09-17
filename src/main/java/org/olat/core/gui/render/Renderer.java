@@ -233,9 +233,6 @@ public class Renderer {
 			
 			try {
 				int preRenderLength = sb.length();
-				if(cr == null) {
-					System.out.println(cr);
-				}
 				cr.render(this, sb, source, cubu, componentTranslator, renderResult, args);
 				if (preRenderLength == sb.length()) {
 					// Add bugfix for IE min-height on empty div problem: min-height does

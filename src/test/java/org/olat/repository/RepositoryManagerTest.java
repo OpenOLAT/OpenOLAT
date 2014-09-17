@@ -209,16 +209,22 @@ public class RepositoryManagerTest extends OlatTestCase {
 	@Test
 	public void queryByEditor() {
 		//create a repository entry with an owner
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("re-owner-la-" + UUID.randomUUID().toString());
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("re-owner-la-" + UUID.randomUUID().toString());
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsUser("re-participant-la-" + UUID.randomUUID().toString());
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
-		repositoryEntryRelationDao.addRole(id, re, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(owner, re, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(participant, re, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
-		List<RepositoryEntry> entries = repositoryManager.queryByEditor(id);
+		List<RepositoryEntry> entries = repositoryManager.queryByEditor(owner);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		Assert.assertTrue(entries.contains(re));
+		
+		List<RepositoryEntry> partEntries = repositoryManager.queryByEditor(participant);
+		Assert.assertNotNull(partEntries);
+		Assert.assertEquals(0, partEntries.size());
 	}
 	
 	@Test

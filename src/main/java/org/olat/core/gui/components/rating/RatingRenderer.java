@@ -123,7 +123,11 @@ public class RatingRenderer extends DefaultComponentRenderer {
 			String label = rating.getRatingLabel(i); 
 			if (label != null) {
 				if (rating.isTranslateRatingLabels()) {
-					label = translator.translate(label);
+					if(translator != null) {
+						label = translator.translate(label);
+					} else {
+						label = "";
+					}
 				}
 				StringBuilder escapedLabel = new StringBuilder();
 				escapedLabel.append(StringEscapeUtils.escapeHtml(label));
