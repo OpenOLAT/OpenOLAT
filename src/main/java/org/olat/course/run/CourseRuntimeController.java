@@ -214,7 +214,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		// group rights
 		UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
 		if(uce != null) {
-			uce.setUserRoles(security.isEntryAdmin(), security.isCourseCoach());
+			uce.setUserRoles(security.isEntryAdmin(), security.isCourseCoach() || security.isGroupCoach());
 		}
 		
 		courseRightsCache = new HashMap<String, Boolean>();
