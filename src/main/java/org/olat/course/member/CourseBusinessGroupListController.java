@@ -90,7 +90,6 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		
 		tableEl.setMultiSelect(true);
 		
-		RepositoryEntry re = (RepositoryEntry)getUserObject();
 		boolean managed = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);
 		if(!managed) {
 			duplicateButton = uifactory.addFormLink("table.duplicate", TABLE_ACTION_DUPLICATE, "table.duplicate", null, formLayout, Link.BUTTON);
@@ -114,7 +113,6 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 
 	@Override
 	protected FlexiTableColumnModel initColumnModel() {
-		RepositoryEntry re = (RepositoryEntry)getUserObject();
 		boolean managed = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

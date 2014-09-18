@@ -34,6 +34,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -51,6 +52,7 @@ import org.olat.group.model.BusinessGroupMembershipViewImpl;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.model.Offer;
 import org.olat.test.JunitTestHelper;
@@ -141,6 +143,25 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertEquals("gdco-desc", reloadedGroup.getDescription());
 		Assert.assertTrue(reloadedGroup.getWaitingListEnabled());
 		Assert.assertTrue(reloadedGroup.getAutoCloseRanksEnabled());
+	}
+	
+	@Test
+	public void loadBusinessGroup_fetch() {
+		//create business group
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "gd-fetch", "gd-fetch-desc", 0, 10, true, true, false, false, false);
+		dbInstance.commitAndCloseSession();
+		
+		BusinessGroup reloadedGroup = businessGroupDao.load(group.getKey());
+		Assert.assertNotNull(reloadedGroup);
+		dbInstance.commitAndCloseSession();
+		
+		//check lazy
+		Group baseGroup = reloadedGroup.getBaseGroup();
+		Assert.assertNotNull(baseGroup);
+		Assert.assertNotNull(baseGroup.getKey());
+		OLATResource resource = reloadedGroup.getResource();
+		Assert.assertNotNull(resource);
+		Assert.assertNotNull(resource.getKey());
 	}
 	
 	@Test

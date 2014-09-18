@@ -140,10 +140,17 @@ public class BusinessGroupDAO {
 		return businessgroup;
 	}
 	
-	public BusinessGroup load(Long id) {
-		EntityManager em = dbInstance.getCurrentEntityManager();
-		BusinessGroup group = em.find(BusinessGroupImpl.class, id);
-		return group;
+	public BusinessGroup load(Long key) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select bgi from ").append(BusinessGroupImpl.class.getName()).append(" bgi ")
+		  .append(" left join fetch bgi.baseGroup baseGroup")
+		  .append(" left join fetch bgi.resource resource")
+		  .append(" where bgi.key=:key");
+		List<BusinessGroup> groups = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BusinessGroup.class)
+				.setParameter("key", key)
+				.getResultList();
+		return groups == null || groups.isEmpty() ? null : groups.get(0);
 	}
 	
 	public List<BusinessGroupShort> loadShort(Collection<Long> ids) {
