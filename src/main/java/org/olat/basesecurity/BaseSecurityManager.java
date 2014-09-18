@@ -65,6 +65,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.group.BusinessGroupImpl;
 import org.olat.login.LoginModule;
 import org.olat.portfolio.manager.InvitationDAO;
 import org.olat.resource.OLATResource;
@@ -1006,6 +1007,33 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			count += batch;
 		} while(count < names.size());
 		return shortIdentities;
+	}
+	
+	public List<Identity> findIdentitiesWithoutBusinessGroup(Integer status) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident ")
+		  .append(" where not exists (")
+		  .append("   select bgroup from ").append(BusinessGroupImpl.class.getName()).append(" bgroup, bgroupmember as me")
+		  .append("   where  me.group=bgroup.baseGroup and me.identity=ident")
+		  .append(" )");
+		if (status != null) {
+			if (status.equals(Identity.STATUS_VISIBLE_LIMIT)) {
+				// search for all status smaller than visible limit 
+				sb.append(" and ident.status < :status ");
+			} else {
+				// search for certain status
+				sb.append(" and ident.status = :status ");
+			}
+		} else {
+			sb.append(" and ident.status < ").append(Identity.STATUS_DELETED);
+		}
+		
+		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class);
+		if (status != null) {
+			query.setParameter("status", status);
+		}
+		return query.getResultList();
 	}
 
 	/**

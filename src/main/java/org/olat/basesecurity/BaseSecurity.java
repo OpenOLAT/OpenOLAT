@@ -200,6 +200,13 @@ public interface BaseSecurity {
 	 * @return The identities
 	 */
 	public List<IdentityShort> findShortIdentitiesByKey(Collection<Long> identityKeys);
+	
+	/**
+	 * Find identities which are not in a business group
+	 * @param status
+	 * @return
+	 */
+	public List<Identity> findIdentitiesWithoutBusinessGroup(Integer status);
 
 	/**
 	 * find an identity by the key instead of the username. Prefer this method as

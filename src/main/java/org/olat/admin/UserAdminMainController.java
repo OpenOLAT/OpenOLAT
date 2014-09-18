@@ -401,6 +401,14 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
 		}
+		else if (uobject.equals("userswithoutgroup")) {
+			activatePaneInDetailView = "edit.withoutgroup";
+			List<Identity> usersWithoutGroup = BaseSecurityManager.getInstance().findIdentitiesWithoutBusinessGroup(null);
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, usersWithoutGroup, null, true, true);
+			addToHistory(ureq, bwControl);
+			listenTo(contentCtr);
+			return contentCtr.getInitialComponent();
+		}
 		else if (uobject.equals("logondeniedgroup")) {
 			activatePaneInDetailView = "edit.uroles";
 			//fxdiff BAKS-7 Resume function
@@ -683,6 +691,12 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		gtn3.setUserObject("menuqueries");
 		gtn3.setAltText(translator.translate("menu.menuqueries.alt"));
 		admin.addChild(gtn3);
+		
+		gtnChild = new GenericTreeNode();		
+		gtnChild.setTitle(translator.translate("menu.userswithoutgroup"));
+		gtnChild.setUserObject("userswithoutgroup");
+		gtnChild.setAltText(translator.translate("menu.userswithoutgroup.alt"));
+		gtn3.addChild(gtnChild);
 		
 		gtnChild = new GenericTreeNode();		
 		gtnChild.setTitle(translator.translate("menu.created.lastweek"));
