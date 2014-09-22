@@ -186,10 +186,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_sort_desc:before { content: $fa-var-sort-desc;}
 .o_icon_sort_menu:before { content: $fa-var-sort-amount-asc;}
 .o_icon_start:before { content: $fa-var-chevron-right; }
-.o_icon_status_available:before { content: $fa-var-circle; color: #006633; }
+.o_icon_status_available:before { content: $fa-var-circle; color: $o-im-status-available-color; }
 .o_icon_status_chat:before { content: $fa-var-comment; }
-.o_icon_status_dnd:before { content: $fa-var-dot-circle-o; color: #CCCC33; }
-.o_icon_status_unavailable:before { content: $fa-var-times-circle-o; color: #996633; }
+.o_icon_status_dnd:before { content: $fa-var-dot-circle-o; color: $o-im-status-dnd-color; }
+.o_icon_status_unavailable:before { content: $fa-var-times-circle-o; color: $o-im-status-unavailable-color; }
 .o_icon_statistics_tool:before { content: $fa-var-bar-chart-o;}
 .o_icon_table:before { content: $fa-var-table; }
 .o_icon_table_large:before { content: $fa-var-th-large; }

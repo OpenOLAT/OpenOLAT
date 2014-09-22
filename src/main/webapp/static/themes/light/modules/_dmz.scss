@@ -17,7 +17,7 @@ body.o_dmz {
 		@else if $o-login-form-align == center {
 			$o-login-bg-gradient-to : top;
 		}
-		background: linear-gradient(to $o-login-bg-gradient-to, rgba(255,255,255,.1) 0.2%,rgba(255,255,255,0.80) 60%,rgba(255,255,255,1) 100%), url('#{$o-login-form-bg-img}');
+		background: linear-gradient(to $o-login-bg-gradient-to, $o-login-form-bg-gradient-steps...), url('#{$o-login-form-bg-img}');
 		background-size: cover, cover;
 	}
 

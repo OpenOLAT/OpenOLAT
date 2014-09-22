@@ -261,6 +261,7 @@ $o-button-dirty-border			: darken($o-button-dirty-bg	, 5%) !default;
 $o-login-header-color			: $brand-primary !default;
 $o-login-form-width				: 400px !default;
 $o-login-form-align				: right !default; 								/* left, center or right */
+$o-login-form-bg-gradient-steps	: rgba(255,255,255,.1) 0.2%, rgba(255,255,255,0.8) 60%, rgba(255,255,255,0.1) 100% !default;
 $o-login-form-bg-img			: $o-images-path + "learn-bg.jpg" !default;  	/* image CC by Thomas Leuthard https://www.flickr.com/photos/thomasleuthard/8587724648/ */
 $o-login-btn-register-color		: $btn-info-color !default;
 $o-login-btn-register-bg		: $btn-info-bg !default;
@@ -338,6 +339,11 @@ $o-im-groupchat-anonymous-color : $state-info-text !default;
 $o-im-buddies-font-size			: floor($font-size-base * 0.9) !default;
 $o-im-buddies-link-color		: $link-color !default;
 $o-im-buddies-link-hover-color	: $link-hover-color !default;
+$o-im-summary-color				: $badge-color !default;
+$o-im-summary-bg				: $badge-bg !default;
+$o-im-status-available-color	: #006633 !default;
+$o-im-status-dnd-color			: #CCCC33 !default;
+$o-im-status-unavailable-color	: #996633 !default;
 
 /* Forum module */
 $o-forum-quote-author-color 	: $text-muted !default;
