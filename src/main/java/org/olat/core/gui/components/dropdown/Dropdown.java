@@ -20,10 +20,8 @@
 package org.olat.core.gui.components.dropdown;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
@@ -161,11 +159,6 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 	@Override
 	public Iterable<Component> getComponents() {
 		return components;
-	}
-
-	@Override
-	public Map<String, Component> getComponentMap() {
-		return Collections.emptyMap();
 	}
 
 	@Override

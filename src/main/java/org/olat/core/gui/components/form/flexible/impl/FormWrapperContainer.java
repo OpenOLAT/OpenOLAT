@@ -26,7 +26,6 @@
 package org.olat.core.gui.components.form.flexible.impl;
 
 import java.util.Collections;
-import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
@@ -87,11 +86,6 @@ class FormWrapperContainer extends AbstractComponent implements ComponentCollect
 	@Override
 	public Iterable<Component> getComponents() {
 		return Collections.<Component>singletonList(form.getFormLayout());
-	}
-
-	@Override
-	public Map<String, Component> getComponentMap() {
-		return Collections.<String, Component>singletonMap(form.getFormLayout().getComponentName(), form.getFormLayout());
 	}
 
 	/**

@@ -15,18 +15,12 @@
 	</script>
 
 	#if($showNavButtons)
-	<div class="o_scorm_navigation" >
-		$r.render("previousScoTop")
-		$r.render("nextScoTop")
-	</div>
+		$r.render("scoTopButtons")
 	#end
 	<div class="o_scorm_content">
 		$r.render("contentpackage")
 	</div>
 	#if($showNavButtons && $r.visible("contentpackage"))
-	<div class="o_scorm_navigation" >
-		$r.render("previousScoBottom")
-		$r.render("nextScoBottom")
-	</div>
+		$r.render("scoBottomButtons")
 	#end
 </div>

@@ -21,7 +21,6 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.util.Collections;
-import java.util.Map;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
@@ -76,15 +75,6 @@ public class FileElementComponent extends FormBaseComponentImpl implements Compo
 			return Collections.emptyList();
 		}
 		return Collections.singletonList(element.getPreviewFormItem().getComponent());
-	}
-
-	@Override
-	public Map<String, Component> getComponentMap() {
-		if(element.getPreviewFormItem() == null) {
-			return Collections.emptyMap();
-		}
-		Component previewCmp = element.getPreviewFormItem().getComponent();
-		return Collections.singletonMap(previewCmp.getComponentName(), previewCmp);
 	}
 
 	/* (non-Javadoc)

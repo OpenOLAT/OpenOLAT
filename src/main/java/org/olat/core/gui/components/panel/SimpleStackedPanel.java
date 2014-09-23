@@ -29,7 +29,6 @@ package org.olat.core.gui.components.panel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
@@ -88,14 +87,6 @@ public class SimpleStackedPanel extends AbstractComponent implements StackedPane
 			return Collections.emptyList();
 		}
 		return Collections.singletonList(curContent);
-	}
-
-	@Override
-	public Map<String, Component> getComponentMap() {
-		if(curContent == null) {
-			return Collections.emptyMap();
-		}
-		return Collections.singletonMap(curContent.getComponentName(), curContent);
 	}
 
 	/**

@@ -19,7 +19,8 @@
  */
 package org.olat.core.gui.components.panel;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
@@ -30,18 +31,28 @@ import org.olat.core.logging.AssertException;
 
 /**
  * 
+ * Initial date: 23.09.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class Panel extends AbstractComponent implements ComponentCollection {
-	private static final ComponentRenderer RENDERER = new PanelRenderer();
-
-	private Component curContent;
+public class ListPanel extends AbstractComponent implements ComponentCollection {
+	
+	private static final ComponentRenderer RENDERER = new ListPanelRenderer();
+	private final List<Component> content = new ArrayList<>(3);
+	
+	private String cssClass;
+	
 	/**
+	 * By default is domReplacementWrapperRequired set to false.
+	 * 
+	 * 
 	 * @param name
+	 * @param cssClass
 	 */
-	public Panel(String name) {
+	public ListPanel(String name, String cssClass) {
 		super(name);
+		this.cssClass = cssClass;
+		setDomReplacementWrapperRequired(false);
 	}
 
 	/**
@@ -50,52 +61,48 @@ public class Panel extends AbstractComponent implements ComponentCollection {
 	 * delegate
 	 * @param ureq
 	 */
+	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		throw new AssertException("a panel should never dispatch a request (unless it has droppables, which it has not), ureq = "+ureq);
 	}
 
-	/**
-	 * @return
-	 */
-	public Component getContent() {
-		return curContent;
+	public String getCssClass() {
+		return cssClass;
 	}
-	
-	/**
-	 * clears the stack and sets the base content anew.
-	 * 
-	 * @param newContent the newContent. if null, then the panel will be empty
-	 */
-	public void setContent(Component newContent) {
-		curContent = newContent;
+
+	public void setCssClass(String cssClass) {
+		this.cssClass = cssClass;
+	}
+
+	public void addContent(Component newContent) {
+		content.add(newContent);
 		setDirty(true);
 	}
 
 	@Override
-	public Component getComponent(String name) {
-		if(curContent != null && curContent.getComponentName().equals(name)) {
-			return curContent;
+	public boolean isDirty() {
+		boolean dirty = false;
+		for(Component cmp:content) {
+			dirty |= cmp.isDirty();
 		}
-		return null;
+		System.out.println("List: " + dirty);
+		return dirty || super.isDirty();
+	}
+
+	@Override
+	public Component getComponent(String name) {
+		Component curContent = null;
+		for(Component cmp:content) {
+			if(cmp.getComponentName().equals(name)) {
+				curContent = cmp;
+			}
+		}
+		return curContent;
 	}
 
 	@Override
 	public Iterable<Component> getComponents() {
-		if(curContent == null) {
-			return Collections.emptyList();
-		}
-		return Collections.singletonList(curContent);
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.Component#getExtendedDebugInfo()
-	 */
-	@Override
-	public String getExtendedDebugInfo() {
-		StringBuilder sb = new StringBuilder();
-		String compName = (curContent == null ? "NULL" : curContent.getComponentName());
-		sb.append(compName).append(" | ");
-		return "stacksize:1, active:" + sb.toString();
+		return content;
 	}
 
 	public ComponentRenderer getHTMLRendererSingleton() {

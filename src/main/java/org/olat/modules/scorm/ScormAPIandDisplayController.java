@@ -40,6 +40,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.ListPanel;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
@@ -91,6 +92,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	private OLATApiAdapter scormAdapter;
 	private String username;
 	private Link nextScoTop, nextScoBottom, previousScoTop, previousScoBottom;
+	private ListPanel scoTopButtons, scoBottomButtons;
 
 	/**
 	 * @param ureq
@@ -192,8 +194,19 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		previousScoBottom = LinkFactory.createCustomLink("previousScoBottom", "previoussco", "", Link.NONTRANSLATED | Link.BUTTON, myContent, this);
 		previousScoBottom.setIconLeftCSS("o_icon o_icon_previous_page");
 		
+		scoTopButtons = new ListPanel("scoTopButtons", "o_scorm_navigation");
+		scoTopButtons.addContent(previousScoTop);
+		scoTopButtons.addContent(nextScoTop);
+		scoBottomButtons = new ListPanel("scoBottomButtons", "o_scorm_navigation");
+		scoBottomButtons.addContent(previousScoBottom);
+		scoBottomButtons.addContent(nextScoBottom);
+		
+		
 		// show the buttons, default. use setter method to change default behaviour
 		myContent.contextPut("showNavButtons", Boolean.TRUE);
+		
+		myContent.put("scoTopButtons", scoTopButtons);
+		myContent.put("scoBottomButtons", scoBottomButtons);
 		
 		// bootId is the item the user left the sco last time or the first one
 		String bootId = scormAdapter.getScormLastAccessedItemId();

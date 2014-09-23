@@ -97,6 +97,7 @@ public abstract class Container extends AbstractComponent implements ComponentCo
 	 * @param name
 	 * @return
 	 */
+	@Override
 	public Component getComponent(String name) {
 		return components.get(name);
 	}
@@ -110,10 +111,6 @@ public abstract class Container extends AbstractComponent implements ComponentCo
 		return components.values();
 	}
 	
-	public Map<String,Component> getComponentMap() {
-		return components;
-	}
-	
 	public void clear() {
 		components.clear();
 	}
@@ -125,6 +122,7 @@ public abstract class Container extends AbstractComponent implements ComponentCo
 	/**
 	 * @see org.olat.core.gui.components.Component#getExtendedDebugInfo()
 	 */
+	@Override
 	public String getExtendedDebugInfo() {
 		return "";
 	}

@@ -19,7 +19,6 @@
  */
 package org.olat.core.gui.components;
 
-import java.util.Map;
 
 /**
  * 
@@ -32,7 +31,5 @@ public interface ComponentCollection extends Component {
 	public Component getComponent(String name);
 	
 	public Iterable<Component> getComponents();
-	
-	public Map<String, Component> getComponentMap();
 
 }
