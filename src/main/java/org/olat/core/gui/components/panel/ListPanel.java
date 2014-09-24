@@ -85,7 +85,6 @@ public class ListPanel extends AbstractComponent implements ComponentCollection 
 		for(Component cmp:content) {
 			dirty |= cmp.isDirty();
 		}
-		System.out.println("List: " + dirty);
 		return dirty || super.isDirty();
 	}
 
