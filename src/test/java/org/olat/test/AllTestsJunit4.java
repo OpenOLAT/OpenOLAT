@@ -144,6 +144,7 @@ import org.junit.runners.Suite;
 	org.olat.ims.qti.QTIResultManagerTest.class,
 	org.olat.ims.qti.qpool.QTIImportProcessorTest.class,
 	org.olat.ims.qti.qpool.QTIExportProcessorTest.class,
+	org.olat.ims.qti.questionimport.CSVToQuestionConverterTest.class,
 	org.olat.ims.qti.statistics.manager.QTIStatisticsManagerLargeTest.class,
 	org.olat.ims.qti.statistics.manager.QTIStatisticsManagerTest.class,
 	org.olat.ims.qti.statistics.manager.StatisticsTest.class,
@@ -162,7 +163,6 @@ import org.junit.runners.Suite;
 	org.olat.modules.qpool.manager.QuestionPoolServiceTest.class,
 	org.olat.ldap.LDAPLoginTest.class,
 	org.olat.core.commons.services.mark.MarksTest.class,
-//	org.olat.test.OlatJerseyTestCase.class, // NO TEST METHODS 
 	org.olat.test.SpringInitDestroyVerficationTest.class,
 	//org.olat.course.statistic.weekly.TestWeeklyStatisticManager_fillGaps.class, don't know what it tests
 	org.olat.core.commons.services.commentAndRating.UserCommentsTest.class,

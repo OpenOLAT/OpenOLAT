@@ -223,39 +223,39 @@ class QTIMetadata {
 		addMetadataField("oo_usage", fullItem.getUsage(), qtimetadata);
 	}
 	
-	private void addMetadataField(String label, int entry, Element qtimetadata) {
+	private void addMetadataField(String label, int entry, Element metadata) {
 		if(entry >=  0) {
-			addMetadataField(label, Integer.toString(entry), qtimetadata);
+			addMetadataField(label, Integer.toString(entry), metadata);
 		}
 	}
 	
-	private void addMetadataField(String label, QLicense entry, Element qtimetadata) {
+	private void addMetadataField(String label, QLicense entry, Element metadata) {
 		if(entry != null) {
-			addMetadataField(label, entry.getLicenseText(), qtimetadata);
+			addMetadataField(label, entry.getLicenseText(), metadata);
 		}
 	}
 	
-	private void addMetadataField(String label, QEducationalContext entry, Element qtimetadata) {
+	private void addMetadataField(String label, QEducationalContext entry, Element metadata) {
 		if(entry != null) {
-			addMetadataField(label, entry.getLevel(), qtimetadata);
+			addMetadataField(label, entry.getLevel(), metadata);
 		}
 	}
 	
-	private void addMetadataField(String label, QuestionStatus entry, Element qtimetadata) {
+	private void addMetadataField(String label, QuestionStatus entry, Element metadata) {
 		if(entry != null) {
-			addMetadataField(label, entry.name(), qtimetadata);
+			addMetadataField(label, entry.name(), metadata);
 		}
 	}
 	
-	private void addMetadataField(String label, BigDecimal entry, Element qtimetadata) {
+	private void addMetadataField(String label, BigDecimal entry, Element metadata) {
 		if(entry != null) {
-			addMetadataField(label, entry.toPlainString(), qtimetadata);
+			addMetadataField(label, entry.toPlainString(), metadata);
 		}
 	}
 	
-	private void addMetadataField(String label, String entry, Element qtimetadata) {
+	private void addMetadataField(String label, String entry, Element metadata) {
 		if(entry != null) {
-			Element qtimetadatafield = qtimetadata.addElement("qtimetadatafield");
+			Element qtimetadatafield = metadata.addElement("qtimetadatafield");
 			qtimetadatafield.addElement("fieldlabel").setText(label);
 			qtimetadatafield.addElement("fieldentry").setText(entry);
 		}

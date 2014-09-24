@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class CodeHelper {
   //o_clusterNOK: Review: Done by cg (add factor 1000000000000), What happens in clustermode, same ID on different VM ?
 	// with factor 1000000000000 each node can use 0-999999999999 unique ram id's 
-	private static AtomicLong ramid;
+	private static AtomicLong ramid = new AtomicLong( 1000000000 );
 	private static final AtomicLong timeuniqueId = new AtomicLong(System.currentTimeMillis() * 64);
 	private static Integer nodeId;
 	

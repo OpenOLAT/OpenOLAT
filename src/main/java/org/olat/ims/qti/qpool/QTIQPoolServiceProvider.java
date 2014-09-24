@@ -250,13 +250,26 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		VFSLeaf leaf = baseDir.createChildLeaf(qitem.getRootFilename());
 		QTIEditHelper.serialiazeDoc(doc, leaf);
 		//process materials
-		List<String> materials = processor.getMaterials(itemEl);
-		//copy materials
-		for(String material:materials) {
-			VFSItem sourceItem = sourceDir.resolve(material);
-			if(sourceItem instanceof VFSLeaf) {
-				VFSLeaf targetItem = baseDir.createChildLeaf(material);
-				VFSManager.copyContent((VFSLeaf)sourceItem, targetItem);
+		
+		if(sourceDir != null) {
+			List<String> materials = processor.getMaterials(itemEl);
+			//copy materials
+			for(String material:materials) {
+				VFSItem sourceItem = sourceDir.resolve(material);
+				if(sourceItem instanceof VFSLeaf) {
+					VFSLeaf targetItem = baseDir.createChildLeaf(material);
+					VFSManager.copyContent((VFSLeaf)sourceItem, targetItem);
+				}
+			}
+		}
+	}
+	
+	public void importBeecomItem(Identity owner, List<Item> items, Locale defaultLocale) {
+		int count = 0;
+		for(Item item:items) {
+			importBeecomItem(owner, item, null, defaultLocale);
+			if(++count % 10 == 0) {
+				dbInstance.commitAndCloseSession();
 			}
 		}
 	}
