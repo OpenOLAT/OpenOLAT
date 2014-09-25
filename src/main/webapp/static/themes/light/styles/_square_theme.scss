@@ -1,0 +1,82 @@
+/*
+	The square style can be added to the light theme to remove any round borders
+	from the light theme.
+	
+	To use this style, include both square_config and square_theme.
+	Config must be loaded before the light theme. Theme must be loaded after.
+	See the theme boilerplate for an example.
+*/
+
+/* bootstrap theme overrides */
+.carousel-indicators {
+  li {
+    border-radius: 0px;
+  }
+}
+
+.label {
+  border-radius: 0px;
+}
+
+.navbar-toggle {
+  .icon-bar {
+    border-radius: 0px;
+  }
+}
+
+/* light theme overrides */
+a.o_dev { 
+	border-radius: 0px;
+}
+
+.o_button_toggle {
+	border-radius: 0px;
+}
+
+.o_navbar-toggle {
+  	.icon-bar {
+		border-radius: 0px;
+  	}
+}
+
+.o_eportfolio_maps {
+	h4 {
+		border-radius: 0px;
+	}
+}
+
+.o_eportfolio_map {
+	border-radius: 0px;
+}
+
+.o_eportfolio_map ul.nav-tabs li:not(.active) a {
+	border-radius: 0px;
+}
+
+.o_eportfolio_edit {
+	border-radius: 0px;
+}
+
+span.o_translation_i18nitem a.o_translation_i18nitem_launcher {
+	border-radius: 0px;
+}
+
+wizard {
+	border-radius: 0px;
+	ul {
+		li:first-child {
+			border-radius: 0px;
+		}
+	}
+}
+
+/* Load font-awesome variables to change the icon used for the toggle button */
+@import "../../../font-awesome/scss/variables";
+.o_icon_toggle:before { content: $fa-var-stop; }
+.o_button_toggle {
+	line-height: $o-toggle-size + 1;
+	font-size: $o-toggle-size;
+	span {
+		line-height: $o-toggle-size + 1;
+	}
+}

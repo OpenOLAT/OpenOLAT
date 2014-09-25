@@ -1,0 +1,37 @@
+/*
+	The square style can be added to the light theme to remove any round borders
+	from the light theme.
+	
+	To use this style, include both square_config and square_theme.
+	Config must be loaded before the light theme. Theme must be loaded after.
+	See the theme boilerplate for an example.
+*/
+
+/* bootstrap _variables overrides */
+$border-radius-base:        0px !default;
+$border-radius-large:       0px !default;
+$border-radius-small:       0px !default;
+
+$input-border-radius:         $border-radius-base !default;
+$navbar-border-radius:        $border-radius-base !default;
+$nav-pills-border-radius:     $border-radius-base !default;
+$pager-border-radius:         0px !default;
+$alert-border-radius:         $border-radius-base !default;
+$list-group-border-radius:    $border-radius-base !default;
+$panel-border-radius:         $border-radius-base !default;
+$thumbnail-border-radius:     $border-radius-base !default;
+$badge-border-radius:         0px !default;
+
+
+/* light theme _config overrides */
+$o-content-border-box-radius	: $border-radius-small !default;
+$o-content-border-img-radius	: $thumbnail-border-radius !default;
+$o-navbar-toggle-border-radius	: $border-radius-base !default;
+$o-toolbar-border-radius		: $navbar-border-radius !default;
+$o-toolbar-nav-border-radius	: 0px !default; 
+$o-tree-border-radius			: $list-group-border-radius !default;
+$o-autocomplete-border-radius	: $input-border-radius !default;
+$o-login-infomessage-radius		: $border-radius-base !default;
+$o-portlet-border-radius		: $panel-border-radius !default;
+$o-chelp-border-radius			: 0px !default;
+$o-portrait-radius				: 0px !default;
