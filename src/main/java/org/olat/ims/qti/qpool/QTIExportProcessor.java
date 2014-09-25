@@ -93,7 +93,7 @@ public class QTIExportProcessor {
 		try {
 			Document document = DocumentHelper.createDocument();
 			Element qtimetadata = document.addElement("qtimetadata");
-			QTIMetadata enricher = new QTIMetadata(qtimetadata);
+			QTIMetadataConverter enricher = new QTIMetadataConverter(qtimetadata);
 			enricher.toXml(fullItem);
 			zout.putNextEntry(new ZipEntry(dir + "/" + "qitem_" + fullItem.getKey() + "_metadata.xml"));
 			OutputFormat format = OutputFormat.createPrettyPrint();
@@ -405,7 +405,7 @@ public class QTIExportProcessor {
 	private void enrichWithMetadata(QuestionItemFull fullItem, Element item) {
 		Element qtimetadata = (Element)item.selectSingleNode("./itemmetadata/qtimetadata");
 		if(qtimetadata != null) {
-			QTIMetadata enricher = new QTIMetadata(qtimetadata);
+			QTIMetadataConverter enricher = new QTIMetadataConverter(qtimetadata);
 			enricher.toXml(fullItem);
 		}
 	}

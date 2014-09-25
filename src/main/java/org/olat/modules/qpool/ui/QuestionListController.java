@@ -51,11 +51,11 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
-import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.qpool.QTIQPoolServiceProvider;
-import org.olat.ims.qti.questionimport.ImportedItems;
+import org.olat.ims.qti.questionimport.ItemAndMetadata;
+import org.olat.ims.qti.questionimport.ItemsPackage;
 import org.olat.ims.qti.questionimport.QImport_1_InputStep;
 import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.Pool;
@@ -575,12 +575,12 @@ public class QuestionListController extends AbstractItemListController implement
 	private void doOpenExcelImport(UserRequest ureq) {
 		removeAsListenerAndDispose(excelImportWizard);
 		
-		final ImportedItems importPackage = new ImportedItems();
+		final ItemsPackage importPackage = new ItemsPackage();
 		Step start = new QImport_1_InputStep(ureq, importPackage);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
-				List<Item> itemsToImport = importPackage.getItems();
+				List<ItemAndMetadata> itemsToImport = importPackage.getItems();
 				QTIQPoolServiceProvider spi
 					= (QTIQPoolServiceProvider)CoreSpringFactory.getBean("qtiPoolServiceProvider");
 				spi.importBeecomItem(getIdentity(), itemsToImport, getLocale());

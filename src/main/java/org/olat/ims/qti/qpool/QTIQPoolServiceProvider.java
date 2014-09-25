@@ -60,6 +60,7 @@ import org.olat.ims.qti.editor.beecom.objects.Section;
 import org.olat.ims.qti.editor.beecom.parser.ParserManager;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.qpool.QTI12ItemFactory.Type;
+import org.olat.ims.qti.questionimport.ItemAndMetadata;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.ExportFormatOptions.Outcome;
@@ -223,7 +224,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		
 		Document doc = QTIEditHelper.itemToXml(item);
 		Element itemEl = (Element)doc.selectSingleNode("questestinterop/item");
-		QuestionItemImpl qitem = processor.processItem(itemEl, "", null, "OpenOLAT", Settings.getVersion(), null);
+		QuestionItemImpl qitem = processor.processItem(itemEl, "", null, "OpenOLAT", Settings.getVersion(), null, null);
 		//save to file System
 		VFSContainer baseDir = qpoolFileStorage.getContainer(qitem.getDirectory());
 		VFSLeaf leaf = baseDir.createChildLeaf(qitem.getRootFilename());
@@ -231,12 +232,13 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		return qitem;
 	}
 	
-	public void importBeecomItem(Identity owner, Item item, VFSContainer sourceDir, Locale defaultLocale) {
+	public void importBeecomItem(Identity owner, ItemAndMetadata itemAndMetadata, VFSContainer sourceDir, Locale defaultLocale) {
 		QTIImportProcessor processor = new QTIImportProcessor(owner, defaultLocale,
 				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qpoolFileStorage, dbInstance);
 		
 		String editor = null;
 		String editorVersion = null;
+		Item item = itemAndMetadata.getItem();
 		if(!item.isAlient()) {
 			editor = "OpenOLAT";
 			editorVersion = Settings.getVersion();
@@ -244,7 +246,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		
 		Document doc = QTIEditHelper.itemToXml(item);
 		Element itemEl = (Element)doc.selectSingleNode("questestinterop/item");
-		QuestionItemImpl qitem = processor.processItem(itemEl, "", null, editor, editorVersion, null);
+		QuestionItemImpl qitem = processor.processItem(itemEl, "", null, editor, editorVersion, null, itemAndMetadata);
 		//save to file System
 		VFSContainer baseDir = qpoolFileStorage.getContainer(qitem.getDirectory());
 		VFSLeaf leaf = baseDir.createChildLeaf(qitem.getRootFilename());
@@ -264,9 +266,9 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		}
 	}
 	
-	public void importBeecomItem(Identity owner, List<Item> items, Locale defaultLocale) {
+	public void importBeecomItem(Identity owner, List<ItemAndMetadata> items, Locale defaultLocale) {
 		int count = 0;
-		for(Item item:items) {
+		for(ItemAndMetadata item:items) {
 			importBeecomItem(owner, item, null, defaultLocale);
 			if(++count % 10 == 0) {
 				dbInstance.commitAndCloseSession();
@@ -342,9 +344,9 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		QTIExportProcessor processor = new QTIExportProcessor(qpoolFileStorage);
 		QuestionItemFull fullItem = questionItemDao.loadById(qitem.getKey());
 		Element itemEl = processor.exportToQTIEditor(fullItem, editorContainer);
-	  Item exportedItem = (Item)new ParserManager().parse(itemEl);
-	  exportedItem.setIdent(QTIEditHelper.generateNewIdent(exportedItem.getIdent()));
-	  return exportedItem;
+		Item exportedItem = (Item)new ParserManager().parse(itemEl);
+		exportedItem.setIdent(QTIEditHelper.generateNewIdent(exportedItem.getIdent()));
+		return exportedItem;
 	}
 
 	@Override

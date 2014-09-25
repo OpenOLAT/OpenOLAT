@@ -30,7 +30,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.ims.qti.editor.beecom.objects.Item;
 
 /**
  * 
@@ -43,11 +42,11 @@ public class TextInputController extends StepFormBasicController {
 	private String validatedInp;
 	private TextElement inputElement;
 	
-	private List<Item> parsedItems;
-	private final ImportedItems importedItems;
+	private List<ItemAndMetadata> parsedItems;
+	private final ItemsPackage importedItems;
 	
 	public TextInputController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm,
-			ImportedItems importedItems) {
+			ItemsPackage importedItems) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		this.importedItems = importedItems;
 		initForm(ureq);

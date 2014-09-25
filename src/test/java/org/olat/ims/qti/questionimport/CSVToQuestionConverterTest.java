@@ -60,11 +60,12 @@ public class CSVToQuestionConverterTest {
 		CSVToQuestionConverter converter = new CSVToQuestionConverter(translator);
 		converter.parse(input);
 		
-		List<Item> items = converter.getItems();
+		List<ItemAndMetadata> items = converter.getItems();
 		Assert.assertNotNull(items);
 		Assert.assertEquals(1, items.size());
 		
-		Item item = items.get(0);
+		ItemAndMetadata importedItem = items.get(0);
+		Item item = importedItem.getItem();
 		Assert.assertNotNull(item);
 		Assert.assertEquals("Fussball: Austragungsort", item.getTitle());
 		Assert.assertEquals("Die Fussball WM wird alle vier Jahre von einem anderen Land ausgerichtet.", item.getObjectives());
@@ -114,11 +115,12 @@ public class CSVToQuestionConverterTest {
 		CSVToQuestionConverter converter = new CSVToQuestionConverter(translator);
 		converter.parse(input);
 		
-		List<Item> items = converter.getItems();
+		List<ItemAndMetadata> items = converter.getItems();
 		Assert.assertNotNull(items);
 		Assert.assertEquals(1, items.size());
 		
-		Item item = items.get(0);
+		ItemAndMetadata importedItem = items.get(0);
+		Item item = importedItem.getItem();
 		Assert.assertNotNull(item);
 		Assert.assertEquals(Question.TYPE_FIB, item.getQuestion().getType());
 		Assert.assertTrue(item.getQuestion() instanceof FIBQuestion);

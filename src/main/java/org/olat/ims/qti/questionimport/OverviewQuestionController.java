@@ -48,10 +48,10 @@ import org.olat.ims.qti.editor.beecom.objects.Question;
  */
 public class OverviewQuestionController extends StepFormBasicController {
 	
-	private final ImportedItems importedItems;
+	private final ItemsPackage importedItems;
 	
 	public OverviewQuestionController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm,
-			ImportedItems importedItems) {
+			ItemsPackage importedItems) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		this.importedItems = importedItems;
 		initForm(ureq);
@@ -60,11 +60,11 @@ public class OverviewQuestionController extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.status.i18n(), Cols.status.ordinal(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.hasError.i18n(), Cols.hasError.ordinal(),
 				false, null, FlexiColumnModel.ALIGNMENT_LEFT,
 				new BooleanCellRenderer(
-						new CSSIconFlexiCellRenderer("o_icon_accept"),
-						new CSSIconFlexiCellRenderer("o_icon_failed"))
+						new CSSIconFlexiCellRenderer("o_icon_failed"),
+						new CSSIconFlexiCellRenderer("o_icon_accept"))
 		));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.type.i18n(), Cols.type.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.title.i18n(), Cols.title.ordinal()));
@@ -83,18 +83,19 @@ public class OverviewQuestionController extends StepFormBasicController {
 		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
 	}
 	
-	private class ItemsTableDataModel extends DefaultFlexiTableDataModel<Item> {
+	private class ItemsTableDataModel extends DefaultFlexiTableDataModel<ItemAndMetadata> {
 		private FlexiTableColumnModel columnModel;
 		
-		public ItemsTableDataModel(List<Item> options, FlexiTableColumnModel columnModel) {
+		public ItemsTableDataModel(List<ItemAndMetadata> options, FlexiTableColumnModel columnModel) {
 			super(options, columnModel);
 		}
 
 		@Override
 		public Object getValueAt(int row, int col) {
-			Item item = getObject(row);
+			ItemAndMetadata importedItem = getObject(row);
+			Item item = importedItem.getItem();
 			switch(Cols.values()[col]) {
-				case status: return item.getQuestion() != null;
+				case hasError: return importedItem.isHasError();
 				case type: {
 					String typeLabel;
 					int type = item.getQuestion().getType();
@@ -130,12 +131,12 @@ public class OverviewQuestionController extends StepFormBasicController {
 
 		@Override
 		public ItemsTableDataModel createCopyWithEmptyList() {
-			return new ItemsTableDataModel(new ArrayList<Item>(), columnModel);
+			return new ItemsTableDataModel(new ArrayList<ItemAndMetadata>(), columnModel);
 		}
 	}
 	
 	public static enum Cols {
-		status("table.header.status"),
+		hasError("table.header.status"),
 		type("table.header.type"),
 		title("table.header.title"),
 		points("table.header.points");

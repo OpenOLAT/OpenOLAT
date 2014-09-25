@@ -122,7 +122,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		Assert.assertEquals(1, itemInfos.size());
 		
 		//process item, files...
-		QuestionItemImpl item = proc.processItem(docInfos, itemInfos.get(0));
+		QuestionItemImpl item = proc.processItem(docInfos, itemInfos.get(0), null);
 		Assert.assertNotNull(item);
 		dbInstance.commitAndCloseSession();
 		proc.processFiles(item, itemInfos.get(0), null);

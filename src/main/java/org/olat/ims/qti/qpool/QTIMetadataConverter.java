@@ -38,11 +38,14 @@ import org.olat.modules.qpool.model.QuestionItemImpl;
 
 /**
  * 
+ * This is an helper class to convert metadata, retrieve specific type
+ * of metadatas...
+ * 
  * Initial date: 10.09.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class QTIMetadata {
+class QTIMetadataConverter {
 	
 	private Element qtimetadata;
 	
@@ -50,11 +53,11 @@ class QTIMetadata {
 	private TaxonomyLevelDAO taxonomyLevelDao;
 	private QEducationalContextDAO educationalContextDao;
 	
-	QTIMetadata(Element qtimetadata) {
+	QTIMetadataConverter(Element qtimetadata) {
 		this.qtimetadata = qtimetadata;
 	}
 	
-	QTIMetadata(Element qtimetadata, QItemTypeDAO itemTypeDao,
+	QTIMetadataConverter(Element qtimetadata, QItemTypeDAO itemTypeDao,
 			TaxonomyLevelDAO taxonomyLevelDao, QEducationalContextDAO educationalContextDao) {
 		this.qtimetadata = qtimetadata;
 		this.itemTypeDao = itemTypeDao;
@@ -62,7 +65,14 @@ class QTIMetadata {
 		this.educationalContextDao = educationalContextDao;
 	}
 	
-	private QItemType toType(String itemType) {
+	QTIMetadataConverter(QItemTypeDAO itemTypeDao,
+			TaxonomyLevelDAO taxonomyLevelDao, QEducationalContextDAO educationalContextDao) {
+		this.itemTypeDao = itemTypeDao;
+		this.taxonomyLevelDao = taxonomyLevelDao;
+		this.educationalContextDao = educationalContextDao;
+	}
+	
+	public QItemType toType(String itemType) {
 		QItemType type = itemTypeDao.loadByType(itemType);
 		if(type == null) {
 			type = itemTypeDao.create(itemType, true);
@@ -74,7 +84,7 @@ class QTIMetadata {
 		return null;
 	}
 	
-	private TaxonomyLevel toTaxonomy(String str) {
+	public TaxonomyLevel toTaxonomy(String str) {
 		String[] path = str.split("/");
 		List<String> cleanedPath = new ArrayList<>(path.length);
 		for(String segment:path) {
@@ -105,7 +115,7 @@ class QTIMetadata {
 	}
 	
 	protected void toQuestion(QuestionItemImpl fullItem) {
-		String addInfos = this.getMetadataEntry("additional_informations");
+		String addInfos = getMetadataEntry("additional_informations");
 		if(StringHelper.containsNonWhitespace(addInfos)) {
 			fullItem.setAdditionalInformations(addInfos);
 		}

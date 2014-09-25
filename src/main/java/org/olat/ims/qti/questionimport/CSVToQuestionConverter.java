@@ -32,7 +32,6 @@ import org.olat.ims.qti.editor.beecom.objects.ChoiceQuestion;
 import org.olat.ims.qti.editor.beecom.objects.ChoiceResponse;
 import org.olat.ims.qti.editor.beecom.objects.FIBQuestion;
 import org.olat.ims.qti.editor.beecom.objects.FIBResponse;
-import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.editor.beecom.objects.Material;
 import org.olat.ims.qti.editor.beecom.objects.Mattext;
 import org.olat.ims.qti.editor.beecom.objects.QTIObject;
@@ -49,15 +48,15 @@ public class CSVToQuestionConverter {
 	
 	private static final OLog log = Tracing.createLoggerFor(CSVToQuestionConverter.class);
 
-	private Item currentItem;
-	private final List<Item> items = new ArrayList<>();
+	private ItemAndMetadata currentItem;
+	private final List<ItemAndMetadata> items = new ArrayList<>();
 	private Translator translator;
 	
 	public CSVToQuestionConverter(Translator translator) {
 		this.translator = translator;
 	}
 	
-	public List<Item> getItems() {
+	public List<ItemAndMetadata> getItems() {
 		return items;
 	}
 	
@@ -100,6 +99,15 @@ public class CSVToQuestionConverter {
 			case "question": processQuestion(parts); break;
 			case "punkte":
 			case "points": processPoints(parts); break;
+			case "fachbereich":
+			case "subject": processTaxonomyPath(parts); break;
+			case "schlagworte":
+			case "keywords": processKeywords(parts); break;
+			case "abdeckung":
+			case "coverage": processCoverage(parts); break;
+			case "level": break;
+			case "sprache":
+			case "language": processLanguage(parts); break;
 			default: processChoice(parts);
 		}
 	}
@@ -112,18 +120,18 @@ public class CSVToQuestionConverter {
 		String type = parts[1].toLowerCase();
 		switch(type) {
 			case "fib": {
-				currentItem = QTIEditHelper.createFIBItem(translator);
-				((FIBQuestion)currentItem.getQuestion()).getResponses().clear();
+				currentItem = new ItemAndMetadata(QTIEditHelper.createFIBItem(translator));
+				((FIBQuestion)currentItem.getItem().getQuestion()).getResponses().clear();
 				break;
 			}
 			case "mc": {
-				currentItem = QTIEditHelper.createMCItem(translator);
-				((ChoiceQuestion)currentItem.getQuestion()).getResponses().clear();
+				currentItem = new ItemAndMetadata(QTIEditHelper.createMCItem(translator));
+				((ChoiceQuestion)currentItem.getItem().getQuestion()).getResponses().clear();
 				break;
 			}
 			case "sc": {
-				currentItem = QTIEditHelper.createSCItem(translator);
-				((ChoiceQuestion)currentItem.getQuestion()).getResponses().clear();
+				currentItem = new ItemAndMetadata(QTIEditHelper.createSCItem(translator));
+				((ChoiceQuestion)currentItem.getItem().getQuestion()).getResponses().clear();
 				break;
 			}
 			default: {
@@ -131,6 +139,34 @@ public class CSVToQuestionConverter {
 				currentItem = null;
 			}
 		}
+	}
+	
+	private void processCoverage(String[] parts) {
+		if(currentItem == null) return;
+		
+		String coverage = parts[1];
+		currentItem.setCoverage(coverage);
+	}
+	
+	private void processKeywords(String[] parts) {
+		if(currentItem == null) return;
+		
+		String keywords = parts[1];
+		currentItem.setKeywords(keywords);
+	}
+	
+	private void processTaxonomyPath(String[] parts) {
+		if(currentItem == null) return;
+		
+		String taxonomyPath = parts[1];
+		currentItem.setTaxonomyPath(taxonomyPath);
+	}
+	
+	private void processLanguage(String[] parts) {
+		if(currentItem == null) return;
+		
+		String language = parts[1];
+		currentItem.setLanguage(language);
 	}
 	
 	private void processTitle(String[] parts) {
@@ -141,12 +177,16 @@ public class CSVToQuestionConverter {
 	}
 	
 	private void processDescription(String[] parts) {
-		String objectives = parts[1];
-		currentItem.setObjectives(objectives);
+		if(currentItem == null) return;
+		
+		String description = parts[1];
+		currentItem.setDescription(description);
 	}
 	
 	private void processQuestion(String[] parts) {
-		Question question = currentItem.getQuestion();
+		if(currentItem == null) return;
+		
+		Question question = currentItem.getItem().getQuestion();
 		Material mat = question.getQuestion();
 		
 		String content = parts[1];
@@ -157,11 +197,13 @@ public class CSVToQuestionConverter {
 	}
 	
 	private void processPoints(String[] parts) {
+		if(currentItem == null) return;
+		
 		String pointsStr = parts[1];
 		float points = Float.parseFloat(pointsStr);
-		
-		int type = currentItem.getQuestion().getType();
-		Question question = currentItem.getQuestion();
+
+		Question question = currentItem.getItem().getQuestion();
+		int type = question.getType();
 		if (type == Question.TYPE_MC) {
 			question.setMinValue(0.0f);
 			question.setMaxValue(points);
@@ -184,13 +226,14 @@ public class CSVToQuestionConverter {
 		}
 		
 		try {
-			int type = currentItem.getQuestion().getType();
+			Question question = currentItem.getItem().getQuestion();
+			int type = question.getType();
 			if (type == Question.TYPE_MC || type == Question.TYPE_SC) {
 				float point = Float.parseFloat(parts[0]);
 				String content = parts[1];
 
-				ChoiceQuestion question = (ChoiceQuestion)currentItem.getQuestion();
-				List<Response> choices = question.getResponses();
+				ChoiceQuestion choice = (ChoiceQuestion)question;
+				List<Response> choices = choice.getResponses();
 				ChoiceResponse newChoice = new ChoiceResponse();
 				newChoice.getContent().add(createMattext(content));
 				newChoice.setCorrect(point > 0.0f);
@@ -198,7 +241,7 @@ public class CSVToQuestionConverter {
 				choices.add(newChoice);
 			} else if(type == Question.TYPE_FIB) {
 				String firstPart = parts[0].toLowerCase();
-				FIBQuestion fib = (FIBQuestion)currentItem.getQuestion();
+				FIBQuestion fib = (FIBQuestion)question;
 				if("text".equals(firstPart) || "texte".equals(firstPart)) {
 					String text = parts[1];
 					

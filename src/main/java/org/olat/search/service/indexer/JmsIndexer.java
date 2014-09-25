@@ -379,13 +379,15 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer {
 			writer = permanentIndexWriter.getAndLock();
 			
 			for(Document document:documents) {
-				String resourceUrl = document.get(AbstractOlatDocument.RESOURCEURL_FIELD_NAME);
-				Term uuidTerm = new Term(AbstractOlatDocument.RESOURCEURL_FIELD_NAME, resourceUrl);
-				TopDocs hits = searcher.search(new TermQuery(uuidTerm), 10);
-				if(hits.totalHits > 0) {
-					writer.updateDocument(uuidTerm, document);
-				} else {
-					writer.addDocument(document);
+				if(document != null) {
+					String resourceUrl = document.get(AbstractOlatDocument.RESOURCEURL_FIELD_NAME);
+					Term uuidTerm = new Term(AbstractOlatDocument.RESOURCEURL_FIELD_NAME, resourceUrl);
+					TopDocs hits = searcher.search(new TermQuery(uuidTerm), 10);
+					if(hits.totalHits > 0) {
+						writer.updateDocument(uuidTerm, document);
+					} else {
+						writer.addDocument(document);
+					}
 				}
 			}
 		} catch (IOException e) {

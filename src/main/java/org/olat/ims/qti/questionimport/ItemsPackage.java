@@ -21,23 +21,21 @@ package org.olat.ims.qti.questionimport;
 
 import java.util.List;
 
-import org.olat.ims.qti.editor.beecom.objects.Item;
-
 /**
  * 
  * Initial date: 24.09.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ImportedItems {
+public class ItemsPackage {
 	
-	private List<Item> items;
+	private List<ItemAndMetadata> items;
 
-	public List<Item> getItems() {
+	public List<ItemAndMetadata> getItems() {
 		return items;
 	}
 
-	public void setItems(List<Item> items) {
+	public void setItems(List<ItemAndMetadata> items) {
 		this.items = items;
 	}
 	

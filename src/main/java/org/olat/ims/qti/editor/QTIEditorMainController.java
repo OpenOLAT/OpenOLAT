@@ -119,7 +119,8 @@ import org.olat.ims.qti.export.QTIWordExport;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.QTIEditorResolver;
 import org.olat.ims.qti.qpool.QTIQPoolServiceProvider;
-import org.olat.ims.qti.questionimport.ImportedItems;
+import org.olat.ims.qti.questionimport.ItemAndMetadata;
+import org.olat.ims.qti.questionimport.ItemsPackage;
 import org.olat.ims.qti.questionimport.QImport_1_InputStep;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.iq.IQDisplayController;
@@ -821,7 +822,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				doSelectInsertionPoint(CMD_TOOLS_ADD_QPOOL, items);
 			}
 		} else if(source == importTableWizard) {
-			ImportedItems importPackage = (ImportedItems)importTableWizard.getRunContext().get("importPackage");
+			ItemsPackage importPackage = (ItemsPackage)importTableWizard.getRunContext().get("importPackage");
 			getWindowControl().pop();
 			cleanUp();
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -875,12 +876,12 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				GenericQtiNode insertNode = doConvertItemToQtiNode(item);
 				doInsert(parentTargetNode, insertNode, position++);
 			}
-		} else if(toInsert instanceof ImportedItems) {
-			ImportedItems itemsToImport = (ImportedItems)toInsert;
-			List<Item> items = itemsToImport.getItems();
+		} else if(toInsert instanceof ItemsPackage) {
+			ItemsPackage itemsToImport = (ItemsPackage)toInsert;
+			List<ItemAndMetadata> items = itemsToImport.getItems();
 			int pos = tp.getChildpos();
-			for(Item item:items) {
-				GenericQtiNode insertNode = new ItemNode(item, qtiPackage);
+			for(ItemAndMetadata item:items) {
+				GenericQtiNode insertNode = new ItemNode(item.getItem(), qtiPackage);
 				doInsert(parentTargetNode, insertNode, pos++);
 			}
 		}
@@ -1027,7 +1028,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			ItemNode itemNode = (ItemNode)selectedNode;
 			QTIObject qtiObject = itemNode.getUnderlyingQTIObject();
 			if(qtiObject instanceof Item) {
-				Item item = (Item)qtiObject;
+				ItemAndMetadata item = new ItemAndMetadata((Item)qtiObject);
 				VFSContainer editorContainer = qtiPackage.getBaseDir();
 				qtiQpoolServiceProvider.importBeecomItem(getIdentity(), item, editorContainer, getLocale());
 				showInfo("export.qpool.successful", "1");
@@ -1064,7 +1065,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		if(section.getItems() != null) {
 			VFSContainer editorContainer = qtiPackage.getBaseDir();
 			for(Item item:section.getItems()) {
-				qtiQpoolServiceProvider.importBeecomItem(getIdentity(), item, editorContainer, getLocale());
+				ItemAndMetadata itemAndMetadata = new ItemAndMetadata(item);
+				qtiQpoolServiceProvider.importBeecomItem(getIdentity(), itemAndMetadata, editorContainer, getLocale());
 			}
 			return section.getItems().size();
 		}
@@ -1074,7 +1076,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private void doImportTable(UserRequest ureq) {
 		removeAsListenerAndDispose(importTableWizard);
 
-		final ImportedItems importPackage = new ImportedItems();
+		final ItemsPackage importPackage = new ItemsPackage();
 		Step start = new QImport_1_InputStep(ureq, importPackage);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override

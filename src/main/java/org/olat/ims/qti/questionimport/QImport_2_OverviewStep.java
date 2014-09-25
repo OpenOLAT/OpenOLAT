@@ -35,9 +35,9 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  */
 public class QImport_2_OverviewStep extends BasicStep {
 	
-	private final ImportedItems importedItems;
+	private final ItemsPackage importedItems;
 	
-	public QImport_2_OverviewStep(UserRequest ureq, ImportedItems importedItems) {
+	public QImport_2_OverviewStep(UserRequest ureq, ItemsPackage importedItems) {
 		super(ureq);
 		this.importedItems = importedItems;
 		setNextStep(NOSTEP);
