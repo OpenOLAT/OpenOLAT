@@ -332,6 +332,28 @@ a.o_chelp {
 	}
 }
 
+/* Glossary */
+.o_glossary {
+	.o_register {
+		text-align: center;
+	}
+	.o_meta {
+		font-size: 90%;
+		color: $text-muted;
+		font-style: italic;
+	}
+	dl {
+		dt {
+			&:first-letter { 
+    			font-size: ceil(($font-size-base * 1.5));;
+    		}
+			small {
+				color: $text-muted;
+			}
+		}
+	}
+}
+
 /* Segmented view wrapper */
 .o_segments_content {
 	margin-top: $line-height-computed;
