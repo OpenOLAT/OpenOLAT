@@ -37,8 +37,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.textmarker.GlossaryMarkupItemController;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.modules.glossary.GlossaryManager;
 import org.olat.repository.RepositoryEntry;
@@ -88,7 +88,7 @@ public class CourseGlossaryFactory {
 	 * @param course
 	 * @return
 	 */
-	public static String createGuiPrefsKey(ICourse course) {
+	public static String createGuiPrefsKey(OLATResourceable course) {
 		return "glossary.enabled.course." + course.getResourceableId();
 	}
 

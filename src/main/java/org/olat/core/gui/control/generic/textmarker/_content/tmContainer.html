@@ -1,47 +1,45 @@
-##tmContainer <a href="javascript:o_tm_highlightFromArray(glossaryId, '$domId');">start highlighting</a>
-
 #if ($glossaryEnabled)
-	<script type="text/javascript">
+<script type="text/javascript">
 	var b_glossaryDefinitionMapperPath = "$glossaryDefinitionMapperPath"
 	var b_glossaryTermMapperPath = "$glossaryTermMapperPath"
 	var domID = '$domId';
 	var b_glossaryId = "$glossaryId";
-	</script>
+</script>
 #end
-
-<div id="$domId">
-$r.render("tmComponent")
-</div>
-
+<div id="$domId">$r.render("tmComponent")</div>
 <script type="text/javascript">
-	#if ($glossaryEnabled)
-		jQuery(function() {
-			var glossaryId = "$glossaryId";
-		
-			//loads the terms via ajax-call from GlossaryTermMapper
-			var glossaries;
-			if(jQuery(document).data("o_glossaries") == undefined) {
-				jQuery(document).data("o_glossaries", new Object()); 
-		 	}
-			glossaries = jQuery(document).data("o_glossaries");
-			var terms = glossaries[glossaryId];
-			if (terms == null) {
-				// do load
-				var url = b_glossaryTermMapperPath + "/" + glossaryId + "/terms.js";
-				jQuery.ajax(url, {
-					async: false, 
-					encoding : 'UTF-8',
-					method : 'get', 
-				 	success: function(data, textStatus, jqXHR) {
-				 		jQuery(document).data("o_glossaries")[glossaryId] = eval(jqXHR.responseText);
-				  }
-				});
-			}
-			//  now let highlighter run
+#if ($glossaryEnabled)
+	jQuery(function() {
+		var glossaryId = "$glossaryId";
+		//loads the terms via ajax-call from GlossaryTermMapper
+		var glossaries;
+		if(jQuery(document).data("o_glossaries") == undefined) {
+			jQuery(document).data("o_glossaries", new Object()); 
+		}
+		glossaries = jQuery(document).data("o_glossaries");
+		var terms = glossaries[glossaryId];
+		if (terms == null) {
+			// do load
+			var url = b_glossaryTermMapperPath + "/" + glossaryId + "/terms.js";
+			jQuery.ajax(url, {
+				encoding : 'UTF-8',
+				method : 'GET', 
+				success: function(data, textStatus, jqXHR) {
+					jQuery(document).data("o_glossaries")[glossaryId] = eval(data);
+					o_tm_highlightFromArray(glossaryId, "$domId");
+				}
+			});
+		} else {
 			o_tm_highlightFromArray(glossaryId, "$domId");
-		});
-	#else
-		// clear glossary
-		jQuery(document).data("o_glossaries", null);	
-	#end
+		}
+		
+		jQuery(document).on("oo.dom.replacement.after", function() {
+			jQuery('.tooltip').remove();
+			o_tm_highlightFromArray(glossaryId, "$domId");
+		});	
+	});
+#else
+	// clear glossary
+	jQuery(document).data("o_glossaries", null);
+#end
 </script>

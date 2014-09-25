@@ -986,10 +986,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private void toggleGlossary(UserRequest ureq) {
 		// enable / disable glossary highlighting according to user prefs
 		Preferences prefs = ureq.getUserSession().getGuiPreferences();
-		ICourse course = CourseFactory.loadCourse(getOlatResourceable());
-		Boolean state = (Boolean) prefs.get(CourseGlossaryToolLinkController.class, CourseGlossaryFactory.createGuiPrefsKey(course));
+		String guiPrefsKey = CourseGlossaryFactory.createGuiPrefsKey(getOlatResourceable());
+		Boolean state = (Boolean) prefs.get(CourseGlossaryToolLinkController.class, guiPrefsKey);
 		Boolean newState = state == null ? Boolean.TRUE : new Boolean(!state.booleanValue());
 		setGlossaryLinkTitle(ureq, newState);
+		prefs.putAndSave(CourseGlossaryToolLinkController.class, guiPrefsKey, newState);
 	}
 	
 	private void setGlossaryLinkTitle(UserRequest ureq, Boolean state) {
@@ -999,12 +1000,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(oresName, courseID);
 		if (state == null || !state.booleanValue()) {
 			enableGlossaryLink.setCustomDisplayText(translate("command.glossary.on.alt"));
-			enableGlossaryLink.setUserObject(Boolean.TRUE);
 			setTextMarkingEnabled(false);
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(new MultiUserEvent("glossaryOff"), ores);
 		} else {
 			enableGlossaryLink.setCustomDisplayText(translate("command.glossary.off.alt"));
-			enableGlossaryLink.setUserObject(Boolean.FALSE);
 			setTextMarkingEnabled(true);
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(new MultiUserEvent("glossaryOn"), ores);
 		}

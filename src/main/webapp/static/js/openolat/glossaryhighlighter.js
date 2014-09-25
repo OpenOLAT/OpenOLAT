@@ -74,19 +74,14 @@ function o_gloss_getGlossaryId(){
  */
 function o_tm_highlightFromArray(glossaryId, domId) {
 	//primitive semaphore
-	if (!isExecuting){
+	if (isExecuting) return;
+	
 	isExecuting = true;
-	if ( workedOnDom.indexOf(domId) != -1){
-//		return;
-	} workedOnDom.push(domId);
-	
+	workedOnDom.push(domId);
 	setLastActiveGlossary(glossaryId);
-	debug ? console.log("running highlightFromArray(" + glossaryId + ", " + domId + ")") : null;
-	
 	try {
 		markerArray = new Array();
 		markerArray = eval(jQuery(document).data("o_glossaries")[glossaryId]);
-	
 		// do the highlighting on the given dom element
 		o_tm_doHighlightAll(document, markerArray, domId);
 	} catch (e) {
@@ -94,24 +89,10 @@ function o_tm_highlightFromArray(glossaryId, domId) {
 	  	// something unexpected happens, make sure the text marker code does not break
 	  	// any other javascript code
 	}
-
-	//var domID = domId;
-	var GlossaryHighlightCallback = {
-		highlightAfterDomReplace : function(){
-			o_tm_highlightFromArray(glossaryId, domID);
-		}
-	}
-	  
-	setTimeout(function() {
-		b_AddOnDomReplacementFinishedUniqueCallback( new Array("glosshighlighter", GlossaryHighlightCallback.highlightAfterDomReplace) );
-	},0);
-
-
-	isExecuting = false;	
-	}//isExecuting
+	isExecuting = false;
 }
  
- /*
+/*
  * Searches for Terms given in markerArray. Highlights them for domId in currentDocument.
  * Adds all found occurrences of all terms to a stack for later processing with ext-js. 
  *
@@ -127,67 +108,63 @@ function o_tm_highlightFromArray(glossaryId, domId) {
  */
 function o_tm_doHighlightAll(currentDocument, markerArray, domId) {
 	//primitive semaphore
-	if (!isHighlighting){
-		isHighlighting = true;
-		debug ? console.log("Higlighting in " + currentDocument) : null;
-		try {
-	//		if (B_AjaxLogger.isDebugEnabled()) jQuery(document).ooLog('debug',"running doHighlightAll(" + Object.toHTML(currentDocument) + ", " + domId + ")" ,"glossarymarker.js");
-			var searchNode;
-			if (domId == null || domId == "null" || domId == "") {
-		  		// search over whole body
-				searchNode = currentDocument.getElementsByTagName("body")[0];
-			} else {
-		  		// search only in given dom ID
-		   		searchNode = jQuery('#' + domId);
-		  	}
-		  	if (searchNode == null || typeof(searchNode.innerHTML) == "undefined") {
-				// do access to innerHTML, we have to exit here
-				isHighlighting = false;
-		    	return false;
-		  	}
-		  	// get the text we have to search through
-		  	var searchText = searchNode.innerHTML;
-		  	
-		  	// go through the array and parse the search text for each glossary term/synonym/flexion
-		  	// reset already found Term-array
-		  	foundTerms = [];
-		  	foundTerms = new Array();
-		  	workedOnSpans = [];
+	if (isHighlighting) return;
+	
+	isHighlighting = true;
+	try {
+		var searchNode;
+		if (domId == null || domId == "null" || domId == "") {
+	  		// search over whole body
+			searchNode = currentDocument.getElementsByTagName("body")[0];
+		} else {
+	  		// search only in given dom ID
+	   		searchNode = jQuery('#' + domId);
+	   		if(searchNode && searchNode.length > 0) {
+	   			searchNode = searchNode[0];
+	   		}
+	  	}
 
-		  	var highlightString = ""; 
-		  	for (var i = 0; i < markerArray.length; i++) {
-		  		var allTerms = markerArray[i];
-		  		var glossaryMainTerm = markerArray[i][0];
-		  		for (var j = 0; j < allTerms.length; j++) {
-		  			highlightString = allTerms[j];
-			   		searchText = o_tm_doHighlightSingle(searchText, glossaryMainTerm, highlightString);
-		  		}
+	  	if (searchNode == null || typeof(searchNode.innerHTML) == "undefined") {
+			// do access to innerHTML, we have to exit here
+			isHighlighting = false;
+	    	return false;
+	  	}
+
+	  	// get the text we have to search through
+	  	var searchText = searchNode.innerHTML;
+	  	// go through the array and parse the search text for each glossary term/synonym/flexion
+	  	// reset already found Term-array
+	  	foundTerms = [];
+	  	foundTerms = new Array();
+	  	workedOnSpans = [];
+
+	  	var highlightString = ""; 
+	  	for (var i = 0; i < markerArray.length; i++) {
+	  		var allTerms = markerArray[i];
+	  		var glossaryMainTerm = markerArray[i][0];
+	  		for (var j = 0; j < allTerms.length; j++) {
+	  			highlightString = allTerms[j];
+		   		searchText = o_tm_doHighlightSingle(searchText, glossaryMainTerm, highlightString);
+	  		}
+	  	}
+  	
+	  	// replace original text with highlighted text
+	  	if (foundTerms.length != 0) {
+		  	searchNode.innerHTML = searchText;  	
+		  	for (var j=0; j < foundTerms.length; j++){
+		  		var glossaryMainTerm = foundTerms[j][0];
+		  		var highlightString = foundTerms[j][1];
+		  		var occurrence = foundTerms[j][2];
+		   		o_tm_addExtToolTip(glossaryMainTerm,highlightString,occurrence);			
 		  	}
-	  	
-		  	// replace original text with highlighted text
-		  	if (foundTerms.length != 0) {
-		  		//Ext.DomHelper.overwrite(Ext.get(domId),searchText,true);
-			  	searchNode.innerHTML = searchText;  	
-			  	
-			  	//add tooltips after inserting spans with ids for each Term
-			  	debug ? console.log("# element in foundTerms: " + foundTerms.length) : null;
-			  	for (var j=0; j < foundTerms.length; j++){
-			  		var glossaryMainTerm = foundTerms[j][0];
-			  		var highlightString = foundTerms[j][1];
-			  		var occurrence = foundTerms[j][2];
-			   		o_tm_addExtToolTip(glossaryMainTerm,highlightString,occurrence);			
-			  	}			  			  	
-			  	debug ? console.log("fertig") : null;
-		  	}  
-		  	
-		  }
-		  catch(e) {
-		  	// catch any exception that might happen and do nothing. just in case
-		  	// something unexpected happens, make sure the text marker code does not break
-		  	// any other javascript code
-		  }
-	isHighlighting = false;
-	} //if isHighlighting
+	  	}  
+	} catch(e) {
+	  	// catch any exception that might happen and do nothing. just in case
+	  	// something unexpected happens, make sure the text marker code does not break
+	  	// any other javascript code
+	} finally {
+		isHighlighting = false;
+	}
 }
  
 /**
@@ -206,14 +183,27 @@ function o_tm_addExtToolTip(glossaryMainTerm, highlightString, occurrence){
 		if (workedOnSpans.indexOf(targetId) == -1){
 			workedOnSpans.push(targetId);
 			
-			var tip = jQuery('#' + targetId + '_tip');
 			var targetChk = jQuery('#' + targetId);
 			if (targetChk) {
-
 				var glossUrl = mapperPath + glossaryMainTerm + '.html';
 				targetChk.tooltip({
+					//bootstrap tooltip
 					html: true,
-					title: function(evt, ui) {
+					container:'body',
+					title: function() {
+				        var elem = jQuery(this);
+				        jQuery.ajax(glossUrl).always(function(data, textStatus, jqXHR) {
+				        	if(data != null && data != "" &&
+				        			(elem.attr('data-original-title') == null || elem.attr('data-original-title') == "")) {
+				        		jQuery('.tooltip').remove();
+				        		elem.attr('data-original-title', data);
+				        		elem.tooltip('show');
+				        	}
+				         });
+				    },
+				    //jquery tooltip
+					items: '#' + targetId,
+					content: function(evt, ui) {
 				        var elem = jQuery(this);
 				        jQuery.ajax(glossUrl).always(function(data, textStatus, jqXHR) {
 				        	elem.tooltip('option', 'content', data).tooltip('open');
@@ -223,7 +213,7 @@ function o_tm_addExtToolTip(glossaryMainTerm, highlightString, occurrence){
 		    }
 		}
     } catch(e) {
-    	console.log("error: " + e);
+    	//console.log("error: " + e);
     }
 } 
  

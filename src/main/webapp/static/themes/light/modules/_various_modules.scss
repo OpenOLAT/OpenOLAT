@@ -354,6 +354,12 @@ a.o_chelp {
 	}
 }
 
+.o_tm_glossary { border-bottom: 1px dotted #666699 !important; }
+.o_tm_yellow { background-color: #FFFF66; }
+.o_tm_blue { background-color: #33FFFF; }
+.o_tm_red { background-color: #FF3333; }
+.o_tm_green { background-color: #99FF00; }
+
 /* Segmented view wrapper */
 .o_segments_content {
 	margin-top: $line-height-computed;
