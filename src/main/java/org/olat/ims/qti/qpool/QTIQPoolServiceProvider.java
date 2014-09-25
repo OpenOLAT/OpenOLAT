@@ -71,6 +71,7 @@ import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
+import org.olat.modules.qpool.manager.QLicenseDAO;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
 import org.olat.modules.qpool.manager.TaxonomyLevelDAO;
@@ -100,6 +101,8 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	private DB dbInstance;
 	@Autowired
 	private QPoolFileStorage qpoolFileStorage;
+	@Autowired
+	private QLicenseDAO qLicenseDao;
 	@Autowired
 	private QItemTypeDAO qItemTypeDao;
 	@Autowired
@@ -190,7 +193,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	@Override
 	public List<QuestionItem> importItems(Identity owner, Locale defaultLocale, String filename, File file) {
 		QTIImportProcessor processor = new QTIImportProcessor(owner, defaultLocale, filename, file,
-				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qpoolFileStorage, dbInstance);
+				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, dbInstance);
 		return processor.process();
 	}
 	
@@ -220,7 +223,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		item.setTitle(title);
 		
 		QTIImportProcessor processor = new QTIImportProcessor(owner, defaultLocale,
-				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qpoolFileStorage, dbInstance);
+				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, dbInstance);
 		
 		Document doc = QTIEditHelper.itemToXml(item);
 		Element itemEl = (Element)doc.selectSingleNode("questestinterop/item");
@@ -234,7 +237,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	
 	public void importBeecomItem(Identity owner, ItemAndMetadata itemAndMetadata, VFSContainer sourceDir, Locale defaultLocale) {
 		QTIImportProcessor processor = new QTIImportProcessor(owner, defaultLocale,
-				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qpoolFileStorage, dbInstance);
+				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, dbInstance);
 		
 		String editor = null;
 		String editorVersion = null;

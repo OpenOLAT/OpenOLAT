@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti.questionimport;
 
+import java.math.BigDecimal;
+
 import org.olat.ims.qti.editor.beecom.objects.Item;
 
 /**
@@ -35,6 +37,15 @@ public class ItemAndMetadata {
 	private String taxonomyPath;
 	private String keywords;
 	private String coverage;
+	private String level;
+	private String typicalLearningTime;
+	private String license;
+	private String editor;
+	private String editorVersion;
+	private int numOfAnswerAlternatives;
+	private BigDecimal difficulty;
+	private BigDecimal differentiation;
+	private BigDecimal stdevDifficulty;
 
 	private boolean hasError;
 	
@@ -46,6 +57,78 @@ public class ItemAndMetadata {
 		return item;
 	}
 	
+	public BigDecimal getDifficulty() {
+		return difficulty;
+	}
+
+	public void setDifficulty(BigDecimal difficulty) {
+		this.difficulty = difficulty;
+	}
+
+	public BigDecimal getStdevDifficulty() {
+		return stdevDifficulty;
+	}
+
+	public void setStdevDifficulty(BigDecimal stdevDifficulty) {
+		this.stdevDifficulty = stdevDifficulty;
+	}
+
+	public BigDecimal getDifferentiation() {
+		return differentiation;
+	}
+
+	public void setDifferentiation(BigDecimal differentiation) {
+		this.differentiation = differentiation;
+	}
+
+	public int getNumOfAnswerAlternatives() {
+		return numOfAnswerAlternatives;
+	}
+
+	public void setNumOfAnswerAlternatives(int numOfAnswerAlternatives) {
+		this.numOfAnswerAlternatives = numOfAnswerAlternatives;
+	}
+
+	public String getEditor() {
+		return editor;
+	}
+
+	public void setEditor(String editor) {
+		this.editor = editor;
+	}
+
+	public String getEditorVersion() {
+		return editorVersion;
+	}
+
+	public void setEditorVersion(String editorVersion) {
+		this.editorVersion = editorVersion;
+	}
+
+	public String getLicense() {
+		return license;
+	}
+
+	public void setLicense(String license) {
+		this.license = license;
+	}
+
+	public String getLevel() {
+		return level;
+	}
+
+	public void setLevel(String level) {
+		this.level = level;
+	}
+
+	public String getTypicalLearningTime() {
+		return typicalLearningTime;
+	}
+
+	public void setTypicalLearningTime(String typicalLearningTime) {
+		this.typicalLearningTime = typicalLearningTime;
+	}
+
 	public String getCoverage() {
 		return coverage;
 	}

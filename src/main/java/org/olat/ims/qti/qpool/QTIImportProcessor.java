@@ -74,11 +74,13 @@ import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
+import org.olat.modules.qpool.manager.QLicenseDAO;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
 import org.olat.modules.qpool.manager.TaxonomyLevelDAO;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
+import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -104,6 +106,7 @@ class QTIImportProcessor {
 	private final File importedFile;
 
 	private final DB dbInstance;
+	private final QLicenseDAO qLicenseDao;
 	private final QItemTypeDAO qItemTypeDao;
 	private final QPoolFileStorage qpoolFileStorage;
 	private final QuestionItemDAO questionItemDao;
@@ -112,19 +115,22 @@ class QTIImportProcessor {
 	
 	public QTIImportProcessor(Identity owner, Locale defaultLocale, QuestionItemDAO questionItemDao,
 			QItemTypeDAO qItemTypeDao, QEducationalContextDAO qEduContextDao,
-			TaxonomyLevelDAO taxonomyLevelDao, QPoolFileStorage qpoolFileStorage, DB dbInstance) {
+			TaxonomyLevelDAO taxonomyLevelDao, QLicenseDAO qLicenseDao, QPoolFileStorage qpoolFileStorage,
+			DB dbInstance) {
 		this(owner, defaultLocale, null, null, questionItemDao, qItemTypeDao, qEduContextDao,
-				taxonomyLevelDao, qpoolFileStorage, dbInstance);
+				taxonomyLevelDao, qLicenseDao, qpoolFileStorage, dbInstance);
 	}
 
 	public QTIImportProcessor(Identity owner, Locale defaultLocale, String importedFilename, File importedFile,
 			QuestionItemDAO questionItemDao, QItemTypeDAO qItemTypeDao, QEducationalContextDAO qEduContextDao,
-			TaxonomyLevelDAO taxonomyLevelDao, QPoolFileStorage qpoolFileStorage, DB dbInstance) {
+			TaxonomyLevelDAO taxonomyLevelDao, QLicenseDAO qLicenseDao, QPoolFileStorage qpoolFileStorage,
+			DB dbInstance) {
 		this.owner = owner;
 		this.dbInstance = dbInstance;
 		this.defaultLocale = defaultLocale;
 		this.importedFilename = importedFilename;
 		this.importedFile = importedFile;
+		this.qLicenseDao = qLicenseDao;
 		this.qItemTypeDao = qItemTypeDao;
 		this.questionItemDao = questionItemDao;
 		this.qEduContextDao = qEduContextDao;
@@ -285,9 +291,47 @@ class QTIImportProcessor {
 		
 		String taxonomyPath = metadata.getTaxonomyPath();
 		if(StringHelper.containsNonWhitespace(taxonomyPath)) {
-			QTIMetadataConverter converter = new QTIMetadataConverter(null, taxonomyLevelDao, null);
+			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, taxonomyLevelDao, qEduContextDao);
 			TaxonomyLevel taxonomyLevel = converter.toTaxonomy(taxonomyPath);
 			poolItem.setTaxonomyLevel(taxonomyLevel);
+		}
+		
+		String level = metadata.getLevel();
+		if(StringHelper.containsNonWhitespace(level)) {
+			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, taxonomyLevelDao, qEduContextDao);
+			QEducationalContext educationalContext = converter.toEducationalContext(level);
+			poolItem.setEducationalContext(educationalContext);
+		}
+		
+		String time = metadata.getTypicalLearningTime();
+		if(StringHelper.containsNonWhitespace(time)) {
+			poolItem.setEducationalLearningTime(time);
+		}
+		
+		String editor = metadata.getEditor();
+		if(StringHelper.containsNonWhitespace(editor)) {
+			poolItem.setEditor(editor);
+		}
+		
+		String editorVersion = metadata.getEditorVersion();
+		if(StringHelper.containsNonWhitespace(editorVersion)) {
+			poolItem.setEditorVersion(editorVersion);
+		}
+		
+		int numOfAnswerAlternatives = metadata.getNumOfAnswerAlternatives();
+		if(numOfAnswerAlternatives > 0) {
+			poolItem.setNumOfAnswerAlternatives(numOfAnswerAlternatives);
+		}
+		
+		poolItem.setDifficulty(metadata.getDifficulty());
+		poolItem.setDifferentiation(metadata.getDifferentiation());
+		poolItem.setStdevDifficulty(metadata.getStdevDifficulty());
+		
+		String license = metadata.getLicense();
+		if(StringHelper.containsNonWhitespace(license)) {
+			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, taxonomyLevelDao, qEduContextDao);
+			QLicense qLicense = converter.toLicense(license);
+			poolItem.setLicense(qLicense);
 		}
 	}
 	
@@ -600,7 +644,7 @@ class QTIImportProcessor {
 				SAXReader reader = new SAXReader();
 		        Document document = reader.read(metadataIn);
 		        Element rootElement = document.getRootElement();
-		        QTIMetadataConverter enricher = new QTIMetadataConverter(rootElement, qItemTypeDao, taxonomyLevelDao, qEduContextDao);
+		        QTIMetadataConverter enricher = new QTIMetadataConverter(rootElement, qItemTypeDao, qLicenseDao, taxonomyLevelDao, qEduContextDao);
 		        enricher.toQuestion(item);
 			}
 	        return true;

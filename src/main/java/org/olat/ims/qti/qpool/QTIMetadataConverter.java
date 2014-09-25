@@ -24,12 +24,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.dom4j.Element;
+import org.jgroups.util.UUID;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
+import org.olat.modules.qpool.manager.QLicenseDAO;
 import org.olat.modules.qpool.manager.TaxonomyLevelDAO;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
@@ -48,7 +50,8 @@ import org.olat.modules.qpool.model.QuestionItemImpl;
 class QTIMetadataConverter {
 	
 	private Element qtimetadata;
-	
+
+	private QLicenseDAO licenseDao;
 	private QItemTypeDAO itemTypeDao;
 	private TaxonomyLevelDAO taxonomyLevelDao;
 	private QEducationalContextDAO educationalContextDao;
@@ -57,16 +60,18 @@ class QTIMetadataConverter {
 		this.qtimetadata = qtimetadata;
 	}
 	
-	QTIMetadataConverter(Element qtimetadata, QItemTypeDAO itemTypeDao,
+	QTIMetadataConverter(Element qtimetadata, QItemTypeDAO itemTypeDao, QLicenseDAO licenseDao,
 			TaxonomyLevelDAO taxonomyLevelDao, QEducationalContextDAO educationalContextDao) {
 		this.qtimetadata = qtimetadata;
+		this.licenseDao = licenseDao;
 		this.itemTypeDao = itemTypeDao;
 		this.taxonomyLevelDao = taxonomyLevelDao;
 		this.educationalContextDao = educationalContextDao;
 	}
 	
-	QTIMetadataConverter(QItemTypeDAO itemTypeDao,
+	QTIMetadataConverter(QItemTypeDAO itemTypeDao, QLicenseDAO licenseDao,
 			TaxonomyLevelDAO taxonomyLevelDao, QEducationalContextDAO educationalContextDao) {
+		this.licenseDao = licenseDao;
 		this.itemTypeDao = itemTypeDao;
 		this.taxonomyLevelDao = taxonomyLevelDao;
 		this.educationalContextDao = educationalContextDao;
@@ -80,8 +85,16 @@ class QTIMetadataConverter {
 		return type;
 	}
 	
-	private QLicense toLicense(String str) {
-		return null;
+	public QLicense toLicense(String license) {
+		QLicense qLicense = null;
+		if(StringHelper.containsNonWhitespace(license)) {
+			qLicense = licenseDao.searchLicense(license);
+			if(qLicense == null) {
+				String key = "perso-" + UUID.randomUUID().toString();
+				qLicense = licenseDao.create(key, license, false);
+			}
+		}
+		return qLicense;
 	}
 	
 	public TaxonomyLevel toTaxonomy(String str) {
@@ -106,7 +119,7 @@ class QTIMetadataConverter {
 		return lowerLevel;
 	}
 	
-	private QEducationalContext toEducationalContext(String txt) {
+	public QEducationalContext toEducationalContext(String txt) {
 		QEducationalContext context = educationalContextDao.loadByLevel(txt);
 		if(context == null) {
 			context = educationalContextDao.create(txt, true);

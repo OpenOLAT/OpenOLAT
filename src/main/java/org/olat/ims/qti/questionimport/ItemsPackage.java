@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti.questionimport;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 /**
@@ -39,6 +40,20 @@ public class ItemsPackage {
 		this.items = items;
 	}
 	
-	
-
+	public boolean hasField(String field) {
+		boolean found = false;
+		try {
+			Method method = ItemAndMetadata.class.getDeclaredMethod(field);
+			for(ItemAndMetadata item:items) {
+				Object value = method.invoke(item);
+				if(value != null) {
+					found = true;
+					break;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return found;
+	}
 }

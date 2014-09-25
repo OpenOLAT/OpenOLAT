@@ -42,6 +42,7 @@ import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
+import org.olat.modules.qpool.manager.QLicenseDAO;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
 import org.olat.modules.qpool.manager.TaxonomyLevelDAO;
@@ -66,6 +67,8 @@ public class QTIExportProcessorTest extends OlatTestCase {
 	@Autowired
 	private QItemTypeDAO qItemTypeDao;
 	@Autowired
+	private QLicenseDAO qLicenseDao;
+	@Autowired
 	private QuestionItemDAO questionItemDao;
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
@@ -87,7 +90,7 @@ public class QTIExportProcessorTest extends OlatTestCase {
 		Assert.assertNotNull(itemUrl);
 		File itemFile = new File(itemUrl.toURI());
 		QTIImportProcessor proc = new QTIImportProcessor(owner, Locale.ENGLISH, itemFile.getName(), itemFile,
-				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qpoolFileStorage, dbInstance);
+				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, dbInstance);
 		List<QuestionItem> items = proc.process();
 		Assert.assertNotNull(items);
 		dbInstance.commitAndCloseSession();

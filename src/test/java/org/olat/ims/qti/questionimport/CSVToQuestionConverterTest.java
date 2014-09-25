@@ -153,4 +153,44 @@ public class CSVToQuestionConverterTest {
 		Assert.assertEquals(2, ((FIBResponse)responses.get(3)).getMaxLength());
 		Assert.assertEquals(2, ((FIBResponse)responses.get(5)).getMaxLength());
 	}
+	
+	@Test
+	public void importFillInBlanck_en_metadata() throws IOException, URISyntaxException {
+		URL importTxtUrl = CSVToQuestionConverterTest.class.getResource("question_import_fib_en_metadata.txt");
+		Assert.assertNotNull(importTxtUrl);
+		File importTxt = new File(importTxtUrl.toURI());
+		String input = FileUtils.readFileToString(importTxt);
+		
+		Translator translator = new KeyTranslator(Locale.ENGLISH);
+		CSVToQuestionConverter converter = new CSVToQuestionConverter(translator);
+		converter.parse(input);
+		
+		List<ItemAndMetadata> items = converter.getItems();
+		Assert.assertNotNull(items);
+		Assert.assertEquals(1, items.size());
+		
+		ItemAndMetadata importedItem = items.get(0);
+		Item item = importedItem.getItem();
+		Assert.assertNotNull(item);
+		Assert.assertEquals(Question.TYPE_FIB, item.getQuestion().getType());
+		Assert.assertTrue(item.getQuestion() instanceof FIBQuestion);
+
+		FIBQuestion question = (FIBQuestion)item.getQuestion();
+		List<Response> responses = question.getResponses();
+		Assert.assertNotNull(responses);
+		Assert.assertEquals(2, responses.size());
+		//check java type
+		for(Response response:responses) {
+			Assert.assertTrue(response instanceof FIBResponse);
+		}
+		
+		//check type
+		Assert.assertEquals(FIBResponse.TYPE_CONTENT, ((FIBResponse)responses.get(0)).getType());
+		Assert.assertEquals(FIBResponse.TYPE_BLANK, ((FIBResponse)responses.get(1)).getType());
+		//check size
+		Assert.assertEquals(20, ((FIBResponse)responses.get(1)).getSize());
+		//check max length
+		Assert.assertEquals(50, ((FIBResponse)responses.get(1)).getMaxLength());
+	}
+		
 }

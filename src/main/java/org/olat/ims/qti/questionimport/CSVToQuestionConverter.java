@@ -19,12 +19,14 @@
  */
 package org.olat.ims.qti.questionimport;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti.editor.QTIEditHelper;
@@ -105,10 +107,131 @@ public class CSVToQuestionConverter {
 			case "keywords": processKeywords(parts); break;
 			case "abdeckung":
 			case "coverage": processCoverage(parts); break;
-			case "level": break;
+			case "level": processLevel(parts); break;
 			case "sprache":
 			case "language": processLanguage(parts); break;
+			case "durchschnittliche bearbeitungszeit":
+			case "typical learning time": processTypicalLearningTime(parts); break;
+			case "itemschwierigkeit":
+			case "difficulty index": processDifficultyIndex(parts); break;
+			case "standardabweichung itemschwierigkeit":
+			case "standard deviation": processStandardDeviation(parts); break;
+			case "trennsch\u00E4rfe":
+			case "discrimination index": processDiscriminationIndex(parts); break;
+			case "anzahl distraktoren":
+			case "distractors": processDistractors(parts); break;
+			case "editor": processEditor(parts); break;
+			case "editor version": processEditorVersion(parts); break;
+			case "lizenz":
+			case "license": processLicense(parts); break;
 			default: processChoice(parts);
+		}
+	}
+
+	private void processLevel(String[] parts) {
+		if(currentItem == null || parts.length < 2) return;
+		
+		String level = parts[1];
+		if(StringHelper.containsNonWhitespace(level)) {
+			currentItem.setLevel(level.trim());
+		}
+	}
+	
+	private void processTypicalLearningTime(String[] parts) {
+		if(currentItem == null || parts.length < 2) return;
+		
+		String time = parts[1];
+		if(StringHelper.containsNonWhitespace(time)) {
+			currentItem.setTypicalLearningTime(time.trim());
+		}
+	}
+	
+	private void processLicense(String[] parts) {
+		if(currentItem == null || parts.length < 2) return;
+		
+		String license = parts[1];
+		if(StringHelper.containsNonWhitespace(license)) {
+			currentItem.setLicense(license.trim());
+		}
+	}
+	
+	private void processEditor(String[] parts) {
+		if(currentItem == null || parts.length < 2) return;
+		
+		String editor = parts[1];
+		if(StringHelper.containsNonWhitespace(editor)) {
+			currentItem.setEditor(editor.trim());
+		}
+	}
+	
+	private void processEditorVersion(String[] parts) {
+		if(currentItem == null || parts.length < 2) return;
+		
+		String editorVersion = parts[1];
+		if(StringHelper.containsNonWhitespace(editorVersion)) {
+			currentItem.setEditorVersion(editorVersion.trim());
+		}
+	}
+	
+	private void processDistractors(String[] parts) {
+		if(currentItem == null || parts.length < 2) return;
+		
+		String distractors = parts[1];
+		if(StringHelper.containsNonWhitespace(distractors)) {
+			try {
+				currentItem.setNumOfAnswerAlternatives(Integer.parseInt(distractors.trim()));
+			} catch (NumberFormatException e) {
+				log.warn("", e);
+			}
+		}
+	}
+	
+	private void processDiscriminationIndex(String[] parts) {
+		if(currentItem == null || parts.length < 2) return;
+		
+		String discriminationIndex = parts[1];
+		if(StringHelper.containsNonWhitespace(discriminationIndex)) {
+			try {
+				currentItem.setDifferentiation(new BigDecimal(discriminationIndex.trim()));
+			} catch (Exception e) {
+				log.warn("", e);
+			}
+		}
+	}
+	
+	private void processDifficultyIndex(String[] parts) {
+		if(currentItem == null || parts.length < 2) return;
+		
+		String difficulty = parts[1];
+		if(StringHelper.containsNonWhitespace(difficulty)) {
+			try {
+				BigDecimal dif = new BigDecimal(difficulty.trim());
+				if(dif.doubleValue() >= 0.0d && dif.doubleValue() <= 1.0d) {
+					currentItem.setDifficulty(dif);
+				} else {
+					currentItem.setHasError(true);
+				}
+			} catch (Exception e) {
+				log.warn("", e);
+			}
+		}
+	}
+	
+	private void processStandardDeviation(String[] parts) {
+		if(currentItem == null || parts.length < 2) return;
+		
+		String stddev = parts[1];
+		if(StringHelper.containsNonWhitespace(stddev)) {
+			try {
+				BigDecimal dev = new BigDecimal(stddev.trim());
+				if(dev.doubleValue() >= 0.0d && dev.doubleValue() <= 1.0d) {
+					currentItem.setStdevDifficulty(dev);
+				} else {
+					currentItem.setHasError(true);
+				}
+			} catch (Exception e) {
+				log.warn("", e);
+			}
 		}
 	}
 	
@@ -117,70 +240,84 @@ public class CSVToQuestionConverter {
 			items.add(currentItem);
 		}
 		
-		String type = parts[1].toLowerCase();
-		switch(type) {
-			case "fib": {
-				currentItem = new ItemAndMetadata(QTIEditHelper.createFIBItem(translator));
-				((FIBQuestion)currentItem.getItem().getQuestion()).getResponses().clear();
-				break;
-			}
-			case "mc": {
-				currentItem = new ItemAndMetadata(QTIEditHelper.createMCItem(translator));
-				((ChoiceQuestion)currentItem.getItem().getQuestion()).getResponses().clear();
-				break;
-			}
-			case "sc": {
-				currentItem = new ItemAndMetadata(QTIEditHelper.createSCItem(translator));
-				((ChoiceQuestion)currentItem.getItem().getQuestion()).getResponses().clear();
-				break;
-			}
-			default: {
-				log.warn("Question type not supported: " + type);
-				currentItem = null;
+		if(parts.length > 1) {
+			String type = parts[1].toLowerCase();
+			switch(type) {
+				case "fib": {
+					currentItem = new ItemAndMetadata(QTIEditHelper.createFIBItem(translator));
+					((FIBQuestion)currentItem.getItem().getQuestion()).getResponses().clear();
+					break;
+				}
+				case "mc": {
+					currentItem = new ItemAndMetadata(QTIEditHelper.createMCItem(translator));
+					((ChoiceQuestion)currentItem.getItem().getQuestion()).getResponses().clear();
+					break;
+				}
+				case "sc": {
+					currentItem = new ItemAndMetadata(QTIEditHelper.createSCItem(translator));
+					((ChoiceQuestion)currentItem.getItem().getQuestion()).getResponses().clear();
+					break;
+				}
+				default: {
+					log.warn("Question type not supported: " + type);
+					currentItem = null;
+				}
 			}
 		}
 	}
 	
 	private void processCoverage(String[] parts) {
-		if(currentItem == null) return;
+		if(currentItem == null || parts.length < 2) return;
 		
 		String coverage = parts[1];
-		currentItem.setCoverage(coverage);
+		if(StringHelper.containsNonWhitespace(coverage)) {
+			currentItem.setCoverage(coverage);
+		}
 	}
 	
 	private void processKeywords(String[] parts) {
-		if(currentItem == null) return;
+		if(currentItem == null || parts.length < 2) return;
 		
 		String keywords = parts[1];
-		currentItem.setKeywords(keywords);
+		if(StringHelper.containsNonWhitespace(keywords)) {
+			currentItem.setKeywords(keywords);
+		}
 	}
 	
 	private void processTaxonomyPath(String[] parts) {
-		if(currentItem == null) return;
+		if(currentItem == null || parts.length < 2) return;
 		
 		String taxonomyPath = parts[1];
-		currentItem.setTaxonomyPath(taxonomyPath);
+		if(StringHelper.containsNonWhitespace(taxonomyPath)) {
+			currentItem.setTaxonomyPath(taxonomyPath);
+		}
 	}
 	
 	private void processLanguage(String[] parts) {
-		if(currentItem == null) return;
+		if(currentItem == null || parts.length < 2) return;
 		
 		String language = parts[1];
-		currentItem.setLanguage(language);
+		if(StringHelper.containsNonWhitespace(language)) {
+			currentItem.setLanguage(language);
+		}
 	}
 	
 	private void processTitle(String[] parts) {
-		if(currentItem == null) return;
+		if(currentItem == null || parts.length < 2) return;
 		
 		String title = parts[1];
-		currentItem.setTitle(title);
+		if(StringHelper.containsNonWhitespace(title)) {
+			currentItem.setTitle(title);
+		}
 	}
 	
 	private void processDescription(String[] parts) {
-		if(currentItem == null) return;
+		if(currentItem == null || parts.length < 2) return;
 		
 		String description = parts[1];
-		currentItem.setDescription(description);
+		if(StringHelper.containsNonWhitespace(description)) {
+			currentItem.setDescription(description);
+		}
 	}
 	
 	private void processQuestion(String[] parts) {

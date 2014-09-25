@@ -52,6 +52,7 @@ import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
+import org.olat.modules.qpool.manager.QLicenseDAO;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
 import org.olat.modules.qpool.manager.TaxonomyLevelDAO;
@@ -79,6 +80,8 @@ public class QTIImportProcessorTest extends OlatTestCase {
 	@Autowired
 	private QItemTypeDAO qItemTypeDao;
 	@Autowired
+	private QLicenseDAO qLicenseDao;
+	@Autowired
 	private QuestionItemDAO questionItemDao;
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
@@ -105,7 +108,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		
 		//get the document informations
 		QTIImportProcessor proc = new QTIImportProcessor(owner, Locale.ENGLISH, itemFile.getName(), itemFile,
-				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qpoolFileStorage, dbInstance);
+				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao,qpoolFileStorage, dbInstance);
 		List<DocInfos> docInfoList = proc.getDocInfos();
 		Assert.assertNotNull(docInfoList);
 		Assert.assertEquals(1, docInfoList.size());
@@ -160,7 +163,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		
 		//get the document informations
 		QTIImportProcessor proc = new QTIImportProcessor(owner, Locale.ENGLISH, itemFile.getName(), itemFile,
-				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qpoolFileStorage, dbInstance);
+				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, dbInstance);
 		List<QuestionItem> items = proc.process();
 		Assert.assertNotNull(items);
 		Assert.assertEquals(1, items.size());
@@ -194,7 +197,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		
 		//get the document informations
 		QTIImportProcessor proc = new QTIImportProcessor(owner, Locale.ENGLISH, testFile.getName(), testFile,
-				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qpoolFileStorage, dbInstance);
+				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, dbInstance);
 		List<DocInfos> docInfoList = proc.getDocInfos();
 		Assert.assertNotNull(docInfoList);
 		Assert.assertEquals(1, docInfoList.size());
@@ -219,7 +222,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		
 		//get the document informations
 		QTIImportProcessor proc = new QTIImportProcessor(owner, Locale.ENGLISH, itemFile.getName(), itemFile,
-				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qpoolFileStorage, dbInstance);
+				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, dbInstance);
 		List<QuestionItem> items = proc.process();
 		Assert.assertNotNull(items);
 		Assert.assertEquals(4, items.size());
@@ -282,7 +285,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		
 		//get the document informations
 		QTIImportProcessor proc = new QTIImportProcessor(owner, Locale.ENGLISH, itemFile.getName(), itemFile,
-				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qpoolFileStorage, dbInstance);
+				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, dbInstance);
 		List<QuestionItem> items = proc.process();
 		Assert.assertNotNull(items);
 		Assert.assertEquals(2, items.size());
@@ -329,7 +332,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		
 		//get the document informations
 		QTIImportProcessor proc = new QTIImportProcessor(owner, Locale.ENGLISH, itemFile.getName(), itemFile,
-				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qpoolFileStorage, dbInstance);
+				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, dbInstance);
 		List<QuestionItem> items = proc.process();
 		Assert.assertNotNull(items);
 		Assert.assertEquals(3, items.size());
@@ -383,7 +386,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		
 		//get the document informations
 		QTIImportProcessor proc = new QTIImportProcessor(owner, Locale.ENGLISH, itemFile.getName(), itemFile,
-				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qpoolFileStorage, dbInstance);
+				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, dbInstance);
 		List<QuestionItem> items = proc.process();
 		Assert.assertNotNull(items);
 		Assert.assertEquals(2, items.size());
@@ -428,7 +431,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		
 		//get the document informations
 		QTIImportProcessor proc = new QTIImportProcessor(owner, Locale.ENGLISH, itemFile.getName(), itemFile,
-				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qpoolFileStorage, dbInstance);
+				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, dbInstance);
 		List<QuestionItem> items = proc.process();
 		Assert.assertNotNull(items);
 		Assert.assertEquals(1, items.size());
@@ -453,7 +456,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		
 		//get the document informations
 		QTIImportProcessor proc = new QTIImportProcessor(owner, Locale.ENGLISH, itemFile.getName(), itemFile,
-				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qpoolFileStorage, dbInstance);
+				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, dbInstance);
 		List<QuestionItem> items = proc.process();
 		Assert.assertNotNull(items);
 		Assert.assertEquals(1, items.size());
@@ -496,7 +499,7 @@ public class QTIImportProcessorTest extends OlatTestCase {
 		
 		//get the document informations
 		QTIImportProcessor proc = new QTIImportProcessor(owner, Locale.ENGLISH, itemFile.getName(), itemFile,
-				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qpoolFileStorage, dbInstance);
+				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, dbInstance);
 		List<QuestionItem> items = proc.process();
 		Assert.assertNotNull(items);
 		
