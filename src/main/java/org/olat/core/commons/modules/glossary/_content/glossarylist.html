@@ -46,7 +46,7 @@
 					#end
 				#end  
 			</dt>
-				#if(!$userAllowToEditEnabled && ($glossaryItem.hasAuthor() || $glossaryItem.hasModifier()))
+				#if($userAllowToEditEnabled && ($glossaryItem.hasAuthor() || $glossaryItem.hasModifier()))
 					<div class="o_meta">
 					#if($glossaryItem.hasAuthor())
 						<span class="o_author">$r.translate("glossary.item.published.by")
