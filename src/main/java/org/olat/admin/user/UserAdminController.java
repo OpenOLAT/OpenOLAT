@@ -57,6 +57,7 @@ import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.QuotaManager;
+import org.olat.modules.coach.ui.StudentOverviewController;
 import org.olat.properties.Property;
 import org.olat.user.ChangePrefsController;
 import org.olat.user.DisplayPortraitController;
@@ -90,6 +91,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private static final String NLS_EDIT_UQUOTA			= "edit.uquota";
 	private static final String NLS_VIEW_GROUPS 		= "view.groups";
 	private static final String NLS_VIEW_COURSES		= "view.courses";
+	private static final String NLS_VIEW_EFF_STATEMENTS 		= "view.effStatements";
 	private static final String NLS_VIEW_SUBSCRIPTIONS 		= "view.subscriptions";
 	
 	private VelocityContainer myContent;
@@ -105,6 +107,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private ProfileAndHomePageEditController userProfileCtr;
 	private CourseOverviewController courseCtr;
 	private GroupOverviewController grpCtr;
+	private StudentOverviewController efficicencyCtrl;
 
 
 	/**
@@ -216,7 +219,9 @@ public class UserAdminController extends BasicController implements Activateable
 		Identity editor = ureq.getUserSession().getIdentity();
 		SecurityGroup frentixSuperAdminGroup =  BaseSecurityManager.getInstance().findSecurityGroupByName("fxadmins");
 		if(BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, frentixSuperAdminGroup)){
-			if(editor.equals(identity)) return true;
+			if(editor.equals(identity) || BaseSecurityManager.getInstance().isIdentityInSecurityGroup(editor, frentixSuperAdminGroup)) {
+				return true;
+			}
 			return false;
 		}
 		
@@ -307,6 +312,11 @@ public class UserAdminController extends BasicController implements Activateable
 		courseCtr = new CourseOverviewController(ureq, getWindowControl(), identity);
 		listenTo(courseCtr);
 		userTabP.addTab(translate(NLS_VIEW_COURSES), courseCtr.getInitialComponent());
+		
+		if (isOlatAdmin) {
+			efficicencyCtrl = new StudentOverviewController(ureq, getWindowControl(), identity);
+			userTabP.addTab(translate(NLS_VIEW_EFF_STATEMENTS), efficicencyCtrl.getInitialComponent());
+		}
 
 		Boolean canSubscriptions = BaseSecurityModule.USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS;
 		if (canSubscriptions.booleanValue() || isOlatAdmin) {

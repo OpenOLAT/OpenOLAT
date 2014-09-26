@@ -23,10 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.table.TableDataModel;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
-import org.olat.modules.coach.ui.ProgressValue;
 
 /**
  * 
@@ -64,7 +62,7 @@ public class UserEfficiencyStatementTableDataModel implements TableDataModel<Use
 			}
 			case score: {
 				UserEfficiencyStatement s = entry;
-				return s == null ? null : AssessmentHelper.getRoundedScore(s.getScore());
+				return s == null ? null : s.getScore();
 			}
 			case passed: {
 				UserEfficiencyStatement s = entry;
