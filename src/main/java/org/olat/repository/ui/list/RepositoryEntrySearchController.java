@@ -25,14 +25,15 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -50,7 +51,7 @@ public class RepositoryEntrySearchController extends FormBasicController impleme
 	private TextElement id; // only for admins
 	private TextElement text;
 	private TextElement author;
-	private FormSubmit searchButton;
+	private FormLink searchButton;
 	private MultipleSelectionElement membershipMandatoryEl;
 	
 	private boolean cancelAllowed;
@@ -95,8 +96,9 @@ public class RepositoryEntrySearchController extends FormBasicController impleme
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
-		searchButton = uifactory.addFormSubmitButton("search", buttonLayout);
+		searchButton = uifactory.addFormLink("search", buttonLayout, Link.BUTTON);
 		searchButton.setElementCssClass("o_sel_repo_search_button");
+		searchButton.setCustomEnabledLinkCSS("btn btn-primary");
 		if(cancelAllowed) {
 			uifactory.addFormCancelButton("quick.search", buttonLayout, ureq, getWindowControl());
 		}

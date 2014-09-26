@@ -26,6 +26,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -33,8 +34,8 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -61,7 +62,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	private TextElement description;
 	private SingleSelection types;
 	private MultipleSelectionElement ownedResourcesOnlyEl;
-	private FormSubmit searchButton;
+	private FormLink searchButton;
 	
 	private String[] typeKeys;
 	private String[] limitTypes;
@@ -118,7 +119,8 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
-		searchButton = uifactory.addFormSubmitButton("search", buttonLayout);
+		searchButton = uifactory.addFormLink("search", buttonLayout, Link.BUTTON);
+		searchButton.setCustomEnabledLinkCSS("btn btn-primary");
 		if(cancelAllowed) {
 			uifactory.addFormCancelButton("quick.search", buttonLayout, ureq, getWindowControl());
 		}
