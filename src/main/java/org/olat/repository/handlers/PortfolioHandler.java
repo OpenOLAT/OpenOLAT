@@ -227,11 +227,6 @@ public class PortfolioHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public Controller createDetailsForm(UserRequest ureq, WindowControl wControl, OLATResourceable res) {
-		return null;
-	}
-
-	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl control, TooledStackedPanel toolbar) {
 		return null;
 	}

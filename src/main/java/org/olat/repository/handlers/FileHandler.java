@@ -28,9 +28,6 @@ package org.olat.repository.handlers;
 import java.io.File;
 import java.util.Locale;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -61,11 +58,6 @@ public abstract class FileHandler implements RepositoryHandler {
 	@Override
 	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
 		return FileResourceManager.getInstance().getAsDownloadeableMediaResource(res);
-	}
-
-	@Override
-	public Controller createDetailsForm(UserRequest ureq, WindowControl wControl, OLATResourceable res) {
-		return FileResourceManager.getInstance().getDetailsForm(ureq, wControl, res);
 	}
 	
 	@Override

@@ -224,11 +224,6 @@ public class GlossaryHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public Controller createDetailsForm(UserRequest ureq, WindowControl wControl, OLATResourceable res) {
-		return null;
-	}
-
-	@Override
 	public boolean cleanupOnDelete(OLATResourceable res) {
 		// FIXME fg
 		// do not need to notify all current users of this resource, since the only

@@ -205,11 +205,6 @@ public class SharedFolderHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public Controller createDetailsForm(UserRequest ureq, WindowControl wControl, OLATResourceable res) {
-		return null;
-	}
-
-	@Override
 	public boolean cleanupOnDelete(OLATResourceable res) {
 		// do not need to notify all current users of this resource, since the only
 		// way to access this resource

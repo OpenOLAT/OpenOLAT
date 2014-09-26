@@ -29,9 +29,6 @@ import java.io.File;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
@@ -263,14 +260,6 @@ public class FileResourceManager extends BasicManager {
 		if (!dir.exists()) return false;
 		File zipTargetDir = new File(dir, ZIPDIR);
 		return FileUtils.deleteDirsAndFiles(zipTargetDir, true, true);
-	}
-
-	/**
-	 * @param res
-	 * @return FormBasicController
-	 */
-	public Controller getDetailsForm(UserRequest ureq, WindowControl wControl, OLATResourceable res) {
-		return new FileDetailsForm(ureq, wControl, res);
 	}
 
 	private FileResource getAsGenericFileResource(OLATResourceable res) {

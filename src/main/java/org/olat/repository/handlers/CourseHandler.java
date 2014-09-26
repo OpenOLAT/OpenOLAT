@@ -495,11 +495,6 @@ public class CourseHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public Controller createDetailsForm(UserRequest ureq, WindowControl wControl, OLATResourceable res) {
-		return null;
-	}
-
-	@Override
 	public boolean cleanupOnDelete(OLATResourceable res) {
 		// notify all current users of this resource (course) that it will be deleted now.
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new OLATResourceableJustBeforeDeletedEvent(res), res);

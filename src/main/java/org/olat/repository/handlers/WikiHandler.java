@@ -300,11 +300,6 @@ public class WikiHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public Controller createDetailsForm( UserRequest ureq, WindowControl wControl, OLATResourceable res) {
-		return FileResourceManager.getInstance().getDetailsForm(ureq, wControl, res);
-	}
-
-	@Override
 	public String archive(Identity archiveOnBehalfOf, String archivFilePath, RepositoryEntry repoEntry) {
 		VFSContainer rootContainer = FileResourceManager.getInstance().getFileResourceRootImpl(repoEntry.getOlatResource());
 		VFSLeaf wikiZip = WikiToZipUtils.getWikiAsZip(rootContainer);

@@ -159,11 +159,6 @@ public class PodcastHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public Controller createDetailsForm(UserRequest ureq, WindowControl wControl, OLATResourceable res) {
-		return FileResourceManager.getInstance().getDetailsForm(ureq, wControl, res);
-	}
-
-	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl control, TooledStackedPanel toolbar) {
 		return null;
 	}
