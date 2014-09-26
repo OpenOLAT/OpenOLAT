@@ -33,6 +33,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.StreamedMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -67,8 +68,6 @@ import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.references.ReferenceManager;
-
-import de.bps.onyx.plugin.StreamMediaResource;
 
 /**
  * 
@@ -220,7 +219,7 @@ public class PortfolioHandler implements RepositoryHandler {
 		PortfolioStructure structure = ePFMgr.loadPortfolioStructure(res);
 		try {
 			InputStream inOut = EPXStreamHandler.toStream(structure);
-			mr = new StreamMediaResource(inOut, null, 0l, 0l);
+			mr = new StreamedMediaResource(inOut, null, null, null);
 		} catch (IOException e) {
 			log.error("Cannot export this map: " + structure, e);
 		}

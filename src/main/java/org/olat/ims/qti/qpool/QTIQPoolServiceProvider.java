@@ -235,7 +235,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		return qitem;
 	}
 	
-	public void importBeecomItem(Identity owner, ItemAndMetadata itemAndMetadata, VFSContainer sourceDir, Locale defaultLocale) {
+	public QuestionItemImpl importBeecomItem(Identity owner, ItemAndMetadata itemAndMetadata, VFSContainer sourceDir, Locale defaultLocale) {
 		QTIImportProcessor processor = new QTIImportProcessor(owner, defaultLocale,
 				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, dbInstance);
 		
@@ -267,16 +267,20 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 				}
 			}
 		}
+		return qitem;
 	}
 	
-	public void importBeecomItem(Identity owner, List<ItemAndMetadata> items, Locale defaultLocale) {
+	public List<QuestionItem> importBeecomItem(Identity owner, List<ItemAndMetadata> items, Locale defaultLocale) {
 		int count = 0;
+		List<QuestionItem> qItems = new ArrayList<>(items.size());
 		for(ItemAndMetadata item:items) {
-			importBeecomItem(owner, item, null, defaultLocale);
+			QuestionItem qItem = importBeecomItem(owner, item, null, defaultLocale);
+			qItems.add(qItem);
 			if(++count % 10 == 0) {
 				dbInstance.commitAndCloseSession();
 			}
 		}
+		return qItems;
 	}
 	
 	public void exportToEditorPackage(QTIEditorPackageImpl editorPackage, List<QuestionItemShort> items, boolean newTest) {

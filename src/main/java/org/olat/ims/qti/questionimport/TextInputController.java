@@ -19,17 +19,24 @@
  */
 package org.olat.ims.qti.questionimport;
 
+import java.io.InputStream;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.StreamedMediaResource;
 
 /**
  * 
@@ -54,9 +61,17 @@ public class TextInputController extends StepFormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormDescription("wizard.import.input.description");
+		setFormContextHelp("org.olat.ims.qti.questionimport", "text-input.html", "chelp.text-input.title");
+		
+		FormLayoutContainer textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), velocity_root + "/example.html");
+		formLayout.add(textContainer);
+		String mapperURI = registerMapper(ureq, new ExampleMapper());
+		textContainer.contextPut("mapperURI", mapperURI);
+		
 		inputElement = uifactory.addTextAreaElement("importform", "form.importdata", -1, 10, 100, false, "", formLayout);
 		inputElement.setMandatory(true);
-		inputElement.setNotEmptyCheck("error.emptyform");
+		inputElement.setNotEmptyCheck("form.legende.mandatory");
 	}
 
 	@Override
@@ -91,5 +106,13 @@ public class TextInputController extends StepFormBasicController {
 		parsedItems = converter.getItems();
 
 		return importDataError;
+	}
+	
+	private static class ExampleMapper implements Mapper {
+		@Override
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+			InputStream in = TextInputController.class.getResourceAsStream("qti-import-metadata.xlsx");
+			return new StreamedMediaResource(in, "ImportExample.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		}
 	}
 }

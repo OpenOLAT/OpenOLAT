@@ -427,7 +427,6 @@ class ImportStep00 extends BasicStep {
 					setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));
 					String headerLine = translate("table.user.login") + " *";
 					String dataLine = "demo";
-					UserManager um = UserManager.getInstance();
 					if (canCreateOLATPassword) {
 						headerLine += "\t" + translate("table.user.pwd");
 						dataLine += "\t" + "olat4you";

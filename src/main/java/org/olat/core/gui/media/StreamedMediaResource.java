@@ -1,4 +1,3 @@
-
 /**
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
@@ -15,86 +14,81 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * BPS Bildungsportal Sachsen GmbH, http://www.bps-system.de
+ * frentix GmbH, http://www.frentix.com
  * <p>
  */
-
-package de.bps.onyx.plugin;
+package org.olat.core.gui.media;
 
 import java.io.InputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.util.StringHelper;
 
 /**
- * @author Ingmar Kroll
+ * 
+ * Initial date: 26.09.2014<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
+public class StreamedMediaResource implements MediaResource {
 
-public class StreamMediaResource implements MediaResource {
+	private final InputStream is;
+	private final String filename;
+	private final Long size;
+	private final Long lastModified;
+	private final String contentType;
 
-	private InputStream is;
-	private String fileName;
-	private Long size;
-	private Long lastModified;
 
-	/**
-	 * file assumed to exist, but if it does not exist or cannot be read,
-	 * getInputStream() will return null and the class will behave properly.
-	 *
-	 * @param file
-	 */
-	public StreamMediaResource(InputStream is, String fileName, Long size, Long lastModified) {
+	public StreamedMediaResource(InputStream is, String filename, String contentType) {
+		this(is, filename, contentType, null, null);
+	}
+	
+	public StreamedMediaResource(InputStream is, String filename, Long size, Long lastModified) {
+		this(is, filename, "application/octet-stream", size, lastModified);
+	}
+	
+	public StreamedMediaResource(InputStream is, String filename, String contentType, Long size, Long lastModified) {
 		this.is = is;
-		this.fileName = fileName;
 		this.size = size;
+		this.filename = filename;
 		this.lastModified = lastModified;
+		this.contentType = contentType;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getContentType()
-	 */
+	@Override
 	public String getContentType() {
-		return "application/octet-stream";
+		return contentType;
+		
 	}
 
-	/**
-	 * @return
-	 * @see org.olat.core.gui.media.MediaRequest#getSize()
-	 */
 	@Override
 	public Long getSize() {
 		return size;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getInputStream()
-	 */
 	@Override
 	public InputStream getInputStream() {
 		return is;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getLastModified()
-	 */
+	@Override
 	public Long getLastModified() {
 		return lastModified;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#release()
-	 */
+	@Override
 	public void release() {
-	// void
+		IOUtils.closeQuietly(is);
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#prepare(javax.servlet.http.HttpServletResponse)
-	 */
+	@Override
 	public void prepare(HttpServletResponse hres) {
-		hres.setHeader("Content-Disposition", "attachment; filename=" + this.fileName);
+		String encodedFileName = StringHelper.urlEncodeUTF8(filename);
+		hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + encodedFileName);
+		hres.setHeader("Content-Description", encodedFileName);
 	}
-
 }
 

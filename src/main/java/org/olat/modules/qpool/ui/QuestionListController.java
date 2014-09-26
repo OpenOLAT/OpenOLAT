@@ -583,7 +583,11 @@ public class QuestionListController extends AbstractItemListController implement
 				List<ItemAndMetadata> itemsToImport = importPackage.getItems();
 				QTIQPoolServiceProvider spi
 					= (QTIQPoolServiceProvider)CoreSpringFactory.getBean("qtiPoolServiceProvider");
-				spi.importBeecomItem(getIdentity(), itemsToImport, getLocale());
+				List<QuestionItem> importItems = spi.importBeecomItem(getIdentity(), itemsToImport, getLocale());
+				int postImported = getSource().postImport(importItems);
+				if(postImported > 0) {
+					getItemsTable().reset();
+				}
 				return StepsMainRunController.DONE_MODIFIED;
 			}
 		};
