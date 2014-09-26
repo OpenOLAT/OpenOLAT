@@ -652,9 +652,12 @@ public class CatalogController extends BasicController implements Activateable2 
 			}
 			cleanUp();
 		} else if (source == groupController) {
-			cmc.deactivate();
-			doAddOwners(event);
-			cleanUp();
+			if(event instanceof IdentitiesAddEvent || event instanceof IdentitiesRemoveEvent) {
+				doAddOwners(event);
+			} else {
+				cmc.deactivate();
+				cleanUp();
+			}
 		} else if(source == catEntryMoveController){
 			cmc.deactivate();
 			if(event.equals(Event.DONE_EVENT)){

@@ -478,14 +478,14 @@ public class GroupController extends BasicController {
 		Step start = new UsersToGroupWizardStep00(ureq, addUserMailDefaultTempl, mandatoryEmail);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
-			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
 				@SuppressWarnings("unchecked")
 				List<Identity> choosenIdentities = (List<Identity>)runContext.get("members");
 				MailTemplate customTemplate = (MailTemplate)runContext.get("mailTemplate");
 				if (choosenIdentities == null || choosenIdentities.size() == 0) {
 					showError("msg.selectionempty");
 				} else {
-					doAddIdentitiesToGroup(ureq, choosenIdentities, customTemplate);
+					doAddIdentitiesToGroup(uureq, choosenIdentities, customTemplate);
 				}
 				return StepsMainRunController.DONE_MODIFIED;
 			}
@@ -604,16 +604,16 @@ public class GroupController extends BasicController {
 	 * Init GroupList-table-controller for non-waitinglist (participant-list,
 	 * owner-list).
 	 */
-	protected void initGroupTable(TableController tableCtr, UserRequest ureq, boolean enableTablePreferences, boolean enableUserSelection) {			
+	protected void initGroupTable(TableController tableController, UserRequest ureq, boolean enableTablePreferences, boolean enableUserSelection) {			
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		if (isAdministrativeUser) {
 			// first the login name, but only if administrative user
 			DefaultColumnDescriptor cd0 = new DefaultColumnDescriptor("table.user.login", 0, COMMAND_VCARD, ureq.getLocale());
 			cd0.setIsPopUpWindowAction(true, "height=700, width=900, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
-			tableCtr.addColumnDescriptor(cd0);
+			tableController.addColumnDescriptor(cd0);
 		}
 		if(chatEnabled) {
-			tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.online", 1, COMMAND_IM, getLocale(),
+			tableController.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.online", 1, COMMAND_IM, getLocale(),
 					ColumnDescriptor.ALIGNMENT_LEFT, new OnlineIconRenderer()));
 		}
 		
@@ -629,7 +629,7 @@ public class GroupController extends BasicController {
 				dcd.setIsPopUpWindowAction(true, "height=700, width=900, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
 				
 			}
-			tableCtr.addColumnDescriptor(visible, cd);
+			tableController.addColumnDescriptor(visible, cd);
 			if (visible) {
 				visibleColId++;
 			}
@@ -639,15 +639,15 @@ public class GroupController extends BasicController {
 		if (enableTablePreferences) {
 			DefaultColumnDescriptor dcd =  new DefaultColumnDescriptor("table.subject.addeddate", 2, COMMAND_VCARD, ureq.getLocale());
 			dcd.setIsPopUpWindowAction(true, "height=700, width=900, location=no, menubar=no, resizable=yes, status=no, scrollbars=yes, toolbar=no");
-			tableCtr.addColumnDescriptor(true, dcd);
-			tableCtr.setSortColumn(++visibleColId,true);	
+			tableController.addColumnDescriptor(true, dcd);
+			tableController.setSortColumn(++visibleColId,true);	
 		}
 		if (enableUserSelection) {
-			tableCtr.addColumnDescriptor(new StaticColumnDescriptor(COMMAND_SELECTUSER, "table.subject.action", myTrans.translate("action.general")));
+			tableController.addColumnDescriptor(new StaticColumnDescriptor(COMMAND_SELECTUSER, "table.subject.action", myTrans.translate("action.general")));
 		}
 		if (mayModifyMembers) {
-			tableCtr.addMultiSelectAction("action.remove", COMMAND_REMOVEUSER);
-			tableCtr.setMultiSelect(true);
+			tableController.addMultiSelectAction("action.remove", COMMAND_REMOVEUSER);
+			tableController.setMultiSelect(true);
 		}
 	}
 
