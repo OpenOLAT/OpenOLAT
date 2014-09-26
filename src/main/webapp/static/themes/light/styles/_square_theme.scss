@@ -24,6 +24,15 @@
   }
 }
 
+/* buttons */
+.btn {
+	&:active,
+	&.active {
+		box-shadow: none;
+	}	
+}
+
+
 /* light theme overrides */
 a.o_dev { 
 	border-radius: 0px;
@@ -78,4 +87,27 @@ wizard {
 	span {
 		line-height: $o-toggle-size + 1;
 	}
+}
+
+/* fullcalendar */
+
+/* 
+ * fullcalendar bootstrapify
+ */
+.fc-button {
+	box-shadow: none;
+	border-radius: none;
+	
+	&.fc-state-default {
+		background-image: none;
+	}
+	&.fc-state-active {
+	}
+	&.fc-corner-left, &.fc-corner-right {
+		border-radius: 0px;
+	}
+}
+
+.fc-ltr .fc-event-hori.fc-event-start, .fc-ltr .fc-event-hori.fc-event-end {
+	border-radius: 0px;
 }
