@@ -22,6 +22,11 @@ $panel-border-radius:         $border-radius-base !default;
 $thumbnail-border-radius:     $border-radius-base !default;
 $badge-border-radius:         0px !default;
 
+/* buttons */
+$btn-default-color:              #333 !default;
+$btn-default-bg:                 #e6e6e6 !default;
+$btn-default-border:             transparent !default;
+
 
 /* light theme _config overrides */
 $o-content-border-box-radius	: $border-radius-small !default;
