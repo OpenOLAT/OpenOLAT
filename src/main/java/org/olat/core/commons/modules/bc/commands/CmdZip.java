@@ -147,8 +147,13 @@ public class CmdZip extends FormBasicController implements FolderCommand {
 	 * 
 	 * @see org.olat.core.commons.modules.bc.commands.AbstractCreateItemForm#formOK(org.olat.core.gui.UserRequest)
 	 */
+	@Override
 	protected void formOK(UserRequest ureq) {
 		String name = textElement.getValue();
+		if(!name.toLowerCase().endsWith(".zip")) {
+			name += ".zip";
+		}
+
 		VFSItem zipFile = currentContainer.createChildLeaf(name);
 		if (zipFile == null) {
 			fireEvent(ureq, Event.FAILED_EVENT);
