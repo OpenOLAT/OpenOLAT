@@ -75,7 +75,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_content_popup:before { content: $fa-var-external-link; }
 .o_icon_correct_answer:before { content: $fa-var-check; color: $brand-success; }
 .o_icon_customize:before { content: $fa-var-gear;}
-.o_icon_delete_item:before { content: $fa-var-trash-o;}
+.o_icon_delete_item:before { content: $fa-var-trash;}
 .o_icon_delete:before { content: $fa-var-minus-circle; color: #A87E7E;}
 .o_icon_details:before { content: $fa-var-lightbulb-o; }
 .o_icon_dev:before { content: $fa-var-bug;}
@@ -135,12 +135,12 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_next:before { content: $fa-var-chevron-circle-right; }
 .o_icon_next_page:before { content: $fa-var-angle-double-right; }
 .o_icon_next_toolbar:before { content: $fa-var-caret-right; }
-.o_icon_notes:before { content: $fa-var-pencil; }
+.o_icon_notes:before { content: $fa-var-twitch; }
 .o_icon_notification:before { content: $fa-var-rss;}
 .o_icon_open_tree:before { content: $fa-var-caret-right;}
 .o_icon_open_togglebox:before { content: $fa-var-caret-right;}
 .o_icon_openolat:before, %o_icon_openolat {content:"\221E"; font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; font-weight: bold;}
-.o_icon_options:before { content: $fa-var-check-square; }
+.o_icon_options:before { content: $fa-var-toggle-on; }
 .o_icon_passed:before { content: $fa-var-check-circle;}
 .o_icon_password:before { content: $fa-var-lock;}
 .o_icon_phone:before { content: $fa-var-phone;}
@@ -331,7 +331,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_ac_free_icon:before { content: $fa-var-gift;}
 .o_ac_group_icon:before { content: $fa-var-group;}
 .o_ac_membersonly_icon:before { content: $fa-var-lock;}
-.o_ac_paypal_icon:before { content: $fa-var-credit-card;}
+.o_ac_paypal_icon:before { content: $fa-var-cc-paypal;}
 .o_ac_status_canceled_icon:before { content: $fa-var-minus; color: $brand-warning;}
 .o_ac_status_error_icon:before { content: $fa-var-times; color: $brand-danger;}
 .o_ac_status_new_icon:before { content: $fa-var-asterisk; color: $brand-primary;}
