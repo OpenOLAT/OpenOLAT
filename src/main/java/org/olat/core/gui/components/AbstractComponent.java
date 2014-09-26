@@ -256,6 +256,7 @@ public abstract class AbstractComponent implements Component {
 	 * 
 	 * @return a list of the controllers listening (normally only one)
 	 */
+	@Override
 	public List<ComponentEventListener> debuginfoGetListeners() {
 		return listeners;
 	}
@@ -263,6 +264,7 @@ public abstract class AbstractComponent implements Component {
 	/**
 	 * @param controller
 	 */
+	@Override
 	public void addListener(ComponentEventListener controller) {
 		// tests if the same controller was already registered to avoid
 		// double-firing.
@@ -272,7 +274,8 @@ public abstract class AbstractComponent implements Component {
 				+ "', controller was: " + controller.toString());
 		listeners.add(controller);
 	}
-	
+
+	@Override
 	public void removeListener(ComponentEventListener controller) {
 		listeners.remove(controller);
 	}

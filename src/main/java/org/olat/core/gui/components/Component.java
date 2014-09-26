@@ -78,6 +78,8 @@ public interface Component {
 	
 	public void addListener(ComponentEventListener controller);
 	
+	public void removeListener(ComponentEventListener controller);
+	
 	public List<ComponentEventListener> debuginfoGetListeners();
 	
 	public void dispatchRequest(UserRequest ureq);

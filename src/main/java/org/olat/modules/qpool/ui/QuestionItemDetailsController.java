@@ -32,6 +32,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -71,6 +72,7 @@ public class QuestionItemDetailsController extends BasicController implements Br
 	private CloseableModalController cmc;
 	private final VelocityContainer mainVC;
 	private DialogBoxController confirmDeleteBox;
+	private LayoutMain3ColsController editMainCtrl;
 	private SelectBusinessGroupController selectGroupCtrl;
 	private final MetadatasController metadatasCtrl;
 	private final UserCommentsAndRatingsController commentsAndRatingCtr;
@@ -141,11 +143,16 @@ public class QuestionItemDetailsController extends BasicController implements Br
 	
 	@Override
 	protected void doDispose() {
-		//
+		if(stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
 	}
 
 	@Override
 	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
+		if(stackPanel != null) {
+			stackPanel.addListener(this);
+		}
 		this.stackPanel = stackPanel;
 	}
 
@@ -167,6 +174,13 @@ public class QuestionItemDetailsController extends BasicController implements Br
 			fireEvent(ureq, new QItemEvent("next", metadatasCtrl.getItem()));
 		} else if(source == previousItem) {
 			fireEvent(ureq, new QItemEvent("previous", metadatasCtrl.getItem()));
+		} else if(source == stackPanel) {
+			if(event instanceof PopEvent) {
+				PopEvent pop = (PopEvent)event;
+				if(pop.getController() == editMainCtrl) {
+					doContentChanged(ureq);
+				}
+			}
 		}
 	}
 	
@@ -222,8 +236,8 @@ public class QuestionItemDetailsController extends BasicController implements Br
 		editCtrl = spi.getEditableController(ureq, getWindowControl(), item);
 		listenTo(editCtrl);
 		
-		LayoutMain3ColsController mainCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), editCtrl);
-		stackPanel.pushController("Edition", mainCtrl);
+		editMainCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), editCtrl);
+		stackPanel.pushController("Edition", editMainCtrl);
 	}
 	
 	private void doContentChanged(UserRequest ureq) {
