@@ -68,7 +68,11 @@ public class RatingRenderer extends DefaultComponentRenderer {
 		if (title != null) {
 			sb.append("<div class='o_rating_title'>");
 			if (rating.isTranslateTitle()) {
-				title = translator.translate(title);
+				if(translator != null) {
+					title = translator.translate(title);
+				} else {
+					title = "";
+				}
 			}
 			sb.append(title);				
 			sb.append("</div>"); //o_rating_title
@@ -149,7 +153,11 @@ public class RatingRenderer extends DefaultComponentRenderer {
 		if (expl != null) {
 			sb.append("<div class='o_rating_explanation'>");
 			if (rating.isTranslateExplanation()) {
-				expl = translator.translate(expl);
+				if(translator != null) {
+					expl = translator.translate(expl);
+				} else {
+					expl = "";
+				}
 			}
 			sb.append(expl);				
 			sb.append("</div>"); //o_rating_explanation
