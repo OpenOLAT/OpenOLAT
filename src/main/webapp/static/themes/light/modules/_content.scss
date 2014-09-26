@@ -59,6 +59,10 @@ h5 {
 h5 { 
 	color: $o-content-h5-color;
 }
+hr {
+	border-top: $o-content-hr-size solid $o-content-hr-color;
+}
+
 
 /* 2) OpenOLAT specific styles /* 
 
@@ -93,6 +97,7 @@ h5 {
 	@include border-top-radius($o-content-border-box-radius); 
 	@include border-bottom-radius($o-content-border-box-radius); 
 }
+
 .b_copy_code, p.b_copy_code, div.b_copy_code, code, pre { 
 	@extend %o_copy_code;
 }
@@ -106,6 +111,7 @@ table {
 		vertical-align: top;	
 	}
 	&.b_grid {
+		width: 99.5%; 
 		background: transparent;
 		border-collapse: separate;
 		td, th { 
@@ -117,12 +123,25 @@ table {
 		}	
 	}
 	&.b_border {
+		width: 99.5%; 
 		background: transparent;
 		border-collapse: collapse;
 		td, th { 
 			padding: $padding-xs-vertical $padding-xs-horizontal;
 			border: 1px solid $o-content-table-border;
 		}	
+		th {
+			background: $gray-lighter;
+		}	
+	}
+	&.b_borderless {
+		width: 99.5%; 
+		background: transparent;
+		border-collapse: separate;
+		td, th { 
+			padding: $padding-xs-vertical $padding-xs-horizontal;
+			border: 0;
+		}
 	}
 	&.b_full { 
 		width: 99.5%; 
@@ -211,22 +230,27 @@ img {
 	@extend %o_image;
 } 
 img.b_float_left {
+	clear: both;
 	float: left; 
 	margin: 0 2em 2em 0;
 }
 img.b_float_left_clear {
+	clear: both;
 	margin: 0 2em 2em 0;
 	display: block;
 }
 img.b_float_right {
+	clear: both;
 	float: right; 
 	margin: 0 0 2em 2em;
 }
 img.b_float_right_clear { 
+	clear: both;
 	display: block; 
 	margin: 0 0 2em auto;
 }
 img.b_centered {
+	clear: both;
 	display: block; 
 	margin: 0 auto 2em auto;
 }
@@ -239,3 +263,9 @@ img.b_with_border {
 	@include border-top-radius($o-content-border-img-radius); 
 	@include border-bottom-radius($o-content-border-img-radius); 
 }
+
+/* float clear classes */
+.b_clear_float, p.b_clear_float, div.b_clear_float { 
+	clear: both;
+}
+
