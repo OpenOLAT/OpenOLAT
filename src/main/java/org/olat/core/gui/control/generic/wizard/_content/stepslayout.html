@@ -36,5 +36,9 @@
 </div></div></div><div class="modal-backdrop in"></div>
 ## always show top of modal dialog when on long pages
 <script type="text/javascript">
-	o_scrollToElement('#o_top');
+/* <![CDATA[ */	
+jQuery(function() {
+	o_scrollToElement('.o_wizard.modal.show.in');
+});
+/* ]]> */
 </script>

@@ -911,7 +911,7 @@ jQuery().ready(OPOL.adjustHeight);
 function o_scrollToElement(elem) {
 	jQuery('html, body').animate({
 		scrollTop: jQuery(elem).offset().top
-	}, 1000);
+	}, 333);
 }
 
 function o_popover(id, contentId, loc) {
@@ -1187,7 +1187,8 @@ function showInfoBox(title, content){
     		});    	
     };
     // Show info box now
-    jQuery('#' + uuid).show().transition({ top: 0 });
+    jQuery('#' + uuid).show();
+	o_scrollToElement('#o_top');
     
     // Visually remove message box immediately when user clicks on it
     jQuery('#' + uuid).click(function(e) {
@@ -1232,9 +1233,12 @@ function showMessageBox(type, title, message, buttonCallback) {
 		content += '"><p>' + message + '</p></div></div></div></div>';
 		jQuery('#myFunctionalModal').remove();
 		jQuery('body').append(content);
-		return jQuery('#myFunctionalModal').modal('show').on('hidden.bs.modal', function (e) {
+		               
+		var msg = jQuery('#myFunctionalModal').modal('show').on('hidden.bs.modal', function (e) {
 			jQuery('#myFunctionalModal').remove();
 		});
+		o_scrollToElement('#o_top');
+		return msg;
 	}
 }
 
