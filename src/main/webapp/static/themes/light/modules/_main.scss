@@ -105,3 +105,13 @@
 
 } 
 
+
+/* special wrapper classes for preview and back main containers */
+#o_back_wrapper,
+#o_preview_wrapper {
+	margin-top: 10px;
+	&.o_toolbar .o_breadcrumb .breadcrumb {
+		font-size: $font-size-base;
+	}
+}
+
