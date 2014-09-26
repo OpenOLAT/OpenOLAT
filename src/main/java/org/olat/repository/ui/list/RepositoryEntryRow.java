@@ -133,10 +133,6 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		return isMembersOnly;
 	}
 	
-	public String getCssClass() {
-		return "o_CourseModule_icon";
-	}
-	
 	public Long getKey() {
 		return key;
 	}

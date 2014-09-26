@@ -204,7 +204,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		cleanUp();
 		
 		SearchMyRepositoryEntryViewParams searchParams
-			= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles(), "CourseModule");
+			= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 		searchParams.setMarked(Boolean.TRUE);
 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Favorits", 0l);
@@ -224,7 +224,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		cleanUp();
 	
 		SearchMyRepositoryEntryViewParams searchParams
-			= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles(), "CourseModule");
+			= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 		searchParams.setMembershipMandatory(true);
 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("My", 0l);
@@ -269,7 +269,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		cleanUp();
 
 		SearchMyRepositoryEntryViewParams searchParams
-			= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles(), "CourseModule");
+			= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 		searchParams.setMembershipMandatory(false);
 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);

@@ -134,7 +134,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 
 		//catalog resources
 		SearchMyRepositoryEntryViewParams searchParams
-			= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles(), "CourseModule");
+			= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 		searchParams.setParentEntry(catalogEntry);
 		entryListController = new RepositoryEntryListController(ureq, wControl, searchParams, true, false, "catalog", stackPanel);
 		if(!entryListController.isEmpty()) {
