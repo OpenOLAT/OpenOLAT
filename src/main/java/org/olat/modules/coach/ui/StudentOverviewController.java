@@ -148,7 +148,7 @@ public class StudentOverviewController extends BasicController implements Activa
 		next.setEnabled(statements.size() > 1);
 		
 		backLink = toolbar.addToolbarLink("back", this, Position.left);
-		backLink.setIconLeftCSS("o_icon");
+		backLink.setIconLeftCSS("o_icon o_icon_back");
 
 		contactLink = LinkFactory.createButton("contact.link", detailsVC, this);
 		contactLink.setIconLeftCSS("o_icon o_icon_mail");
