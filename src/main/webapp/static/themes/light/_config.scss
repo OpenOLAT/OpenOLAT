@@ -159,7 +159,8 @@ $o-footer-inner-bg 					: #f5f5f5 !default;
 $o-footer-default-color 			: #999 !default;
 $o-footer-default-link-color 		: #999 !default;
 $o-footer-default-link-hover-color 	: #000 !default;
-$o-footer-position-absolute 		: true !default; 
+$o-footer-position-absolute 		: true !default;
+$o-footer-margin-top				: $padding-large-vertical !default;
 
 /* Toolbar in course, editor etc */
 $o-toolbar-bg-color				: $navbar-default-bg !default;
@@ -262,7 +263,7 @@ $o-button-dirty-border			: darken($o-button-dirty-bg	, 5%) !default;
 $o-login-header-color			: $brand-primary !default;
 $o-login-form-width				: 400px !default;
 $o-login-form-align				: right !default; 								/* left, center or right */
-$o-login-form-bg-gradient-steps	: rgba(255,255,255,.1) 0.2%, rgba(255,255,255,0.8) 60%, rgba(255,255,255,0.1) 100% !default;
+$o-login-form-bg-gradient-steps	: rgba(255,255,255,0.1) 0.2%, rgba(255,255,255,0.6) 60%, rgba(255,255,255,0.8) 100% !default;
 $o-login-form-bg-img			: $o-images-path + "learn-bg.jpg" !default;  	/* image CC by Thomas Leuthard https://www.flickr.com/photos/thomasleuthard/8587724648/ */
 $o-login-btn-register-color		: $btn-info-color !default;
 $o-login-btn-register-bg		: $btn-info-bg !default;

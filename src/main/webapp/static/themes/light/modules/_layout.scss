@@ -7,6 +7,6 @@ body {
 	min-height: 100%;
 	
 	@if $o-footer-position-absolute == true {
-		margin-bottom: $o-footer-height;
+		margin-bottom: $o-footer-height + $o-footer-margin-top;
 	}
 }

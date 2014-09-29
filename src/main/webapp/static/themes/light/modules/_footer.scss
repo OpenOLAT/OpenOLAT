@@ -2,6 +2,9 @@
 	@if $o-footer-position-absolute == true {
 		position: absolute; bottom: 0;
 	}
+	@else {
+		margin-top: $o-footer-margin-top;
+	}
 	width: 100%;
 	height: $o-footer-height;
 	overflow: hidden;
