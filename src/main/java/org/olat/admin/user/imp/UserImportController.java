@@ -171,7 +171,7 @@ public class UserImportController extends BasicController {
 		newUser.getPreferences().setInformSessionTimeout(true);
 		// Save everything in database
 		Identity ident;
-		if(pwd.startsWith(SHIBBOLETH_MARKER) && ShibbolethModule.isEnableShibbolethLogins()) {
+		if(pwd != null && pwd.startsWith(SHIBBOLETH_MARKER) && ShibbolethModule.isEnableShibbolethLogins()) {
 			String uniqueID = pwd.substring(SHIBBOLETH_MARKER.length());
 			ident = AuthHelper.createAndPersistIdentityAndUserWithUserGroup(login, ShibbolethDispatcher.PROVIDER_SHIB, uniqueID, newUser);
 			report.incrementCreatedUser();
