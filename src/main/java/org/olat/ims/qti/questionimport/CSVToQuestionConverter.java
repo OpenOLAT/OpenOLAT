@@ -251,11 +251,13 @@ public class CSVToQuestionConverter {
 				case "mc": {
 					currentItem = new ItemAndMetadata(QTIEditHelper.createMCItem(translator));
 					((ChoiceQuestion)currentItem.getItem().getQuestion()).getResponses().clear();
+					((ChoiceQuestion)currentItem.getItem().getQuestion()).setShuffle(true);
 					break;
 				}
 				case "sc": {
 					currentItem = new ItemAndMetadata(QTIEditHelper.createSCItem(translator));
 					((ChoiceQuestion)currentItem.getItem().getQuestion()).getResponses().clear();
+					((ChoiceQuestion)currentItem.getItem().getQuestion()).setShuffle(true);
 					break;
 				}
 				default: {
