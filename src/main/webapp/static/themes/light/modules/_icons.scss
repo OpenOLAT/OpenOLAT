@@ -141,6 +141,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_open_togglebox:before { content: $fa-var-caret-right;}
 .o_icon_openolat:before, %o_icon_openolat {content:"\221E"; font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; font-weight: bold;}
 .o_icon_options:before { content: $fa-var-toggle-on; }
+.o_icon_pageing:before { content: $fa-var-ellipsis-h;}
 .o_icon_passed:before { content: $fa-var-check-circle;}
 .o_icon_password:before { content: $fa-var-lock;}
 .o_icon_phone:before { content: $fa-var-phone;}
@@ -274,7 +275,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_portlet_quickstart_icon:before {content: $fa-var-paper-plane-o; }
 .o_portlet_bookmark_icon:before {content: $fa-var-bookmark; }	
 .o_portlet_groups_icon:before {content: $fa-var-users; }
-.o_portlet_notes_icon:before {content: $fa-var-pencil; }
+.o_portlet_notes_icon:before {content: $fa-var-twitch; }
 .o_portlet_noti_icon:before {content: $fa-var-rss; }
 .o_portlet_eff_icon:before {content: $fa-var-certificate; }
 .o_portlet_repository_student_icon:before {content: $fa-var-cubes; }

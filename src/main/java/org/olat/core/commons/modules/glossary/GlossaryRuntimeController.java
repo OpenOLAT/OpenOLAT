@@ -53,9 +53,11 @@ public class GlossaryRuntimeController extends RepositoryEntryRuntimeController 
 		
 		if (reSecurity.isEntryAdmin()) {
 			registerLink = LinkFactory.createToolLink("register", translate("tab.glossary.register"), this, "o_sel_glossary_register");
+			registerLink.setIconLeftCSS("o_icon o_icon_pageing o_icon-fw");
 			settingsDropdown.addComponent(registerLink);
 			
 			permissionLink = LinkFactory.createToolLink("permissions", translate("tab.glossary.edit"), this, "o_sel_glossary_permission");
+			permissionLink.setIconLeftCSS("o_icon o_icon_edit o_icon-fw");
 			settingsDropdown.addComponent(permissionLink);
 		}
 	}
