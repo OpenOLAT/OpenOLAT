@@ -101,6 +101,7 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 	private SearchSpellChecker searchSpellChecker;
 	private String indexPath;
 	private String permanentIndexPath;
+	private String indexerCron;
 	
 	/** Counts number of search queries since last restart. */
 	private long queryCount = 0;
@@ -152,6 +153,14 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 		this.lifeIndexer = lifeIndexer;
 	}
 	
+	/**
+	 * [used by Spring]
+	 * @param indexerCron
+	 */
+	public void setIndexerCron(String indexerCron) {
+		this.indexerCron = indexerCron;
+	}
+
 	protected MainIndexer getMainIndexer() {
 		return mainIndexer;
 	}
@@ -169,7 +178,13 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 		
 		try {
 			JobDetail detail = scheduler.getJobDetail("org.olat.search.job.enabled", Scheduler.DEFAULT_GROUP);
-			scheduler.triggerJob(detail.getName(), detail.getGroup());
+			if(detail == null) {
+				if("disabled".equals(indexerCron)) {
+					indexer.startFullIndex();
+				}
+			} else {
+				scheduler.triggerJob(detail.getName(), detail.getGroup());
+			}
 			log.info("startIndexing...");
 		} catch (SchedulerException e) {
 			log.error("Error trigerring the indexer job: ", e);
@@ -185,7 +200,13 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 
 		try {
 			JobDetail detail = scheduler.getJobDetail("org.olat.search.job.enabled", Scheduler.DEFAULT_GROUP);
-			scheduler.interrupt(detail.getName(), detail.getGroup());
+			if(detail == null) {
+				if("disabled".equals(indexerCron)) {
+					indexer.stopFullIndex();
+				}
+			} else {
+				scheduler.interrupt(detail.getName(), detail.getGroup());
+			}
 			log.info("stopIndexing.");
 		} catch (SchedulerException e) {
 			log.error("Error interrupting the indexer job: ", e);

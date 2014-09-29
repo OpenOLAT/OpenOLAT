@@ -25,6 +25,7 @@
 		<property name="lifeIndexer" ref="jmsIndexer"/>
 		<property name="metadataFields" ref="SearchMetadataFieldsProvider" />
 		<property name="searchExecutor" ref="searchExecutor" />
+		<property name="indexerCron" value="${search.indexing.cronjob}" />
 	</bean>
 	
 		<bean id="searchExecutor" class="org.springframework.core.task.support.ExecutorServiceAdapter">
