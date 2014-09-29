@@ -210,14 +210,16 @@ public class ItemMetadataFormController extends FormBasicController {
 			layout.select(((ChoiceQuestion) q).getFlowLabelClass().equals(ChoiceQuestion.BLOCK) ? "h" : "v", true);
 		}
 
-		if (!isSurvey && !isRestrictedEditMode) {
+		if (!isSurvey) {
 			String[] yesnoKeys = new String[] { "y", "n" };
 			String[] yesnoValues = new String[] { translate("yes"), translate("no") };
 
 			// Attempts
 			limitAttempts = uifactory.addRadiosHorizontal("form.imd.limittries", formLayout, yesnoKeys, yesnoValues);
+			limitAttempts.setEnabled(!isRestrictedEditMode);
 			limitAttempts.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 			attempts = uifactory.addIntegerElement("form.imd.tries", 0, formLayout);
+			attempts.setEnabled(!isRestrictedEditMode);
 			attempts.setDisplaySize(3);
 			if (item.getMaxattempts() > 0) {
 				limitAttempts.select("y", true);
@@ -230,9 +232,12 @@ public class ItemMetadataFormController extends FormBasicController {
 			// Time Limit
 			limitTime = uifactory.addRadiosHorizontal("form.imd.limittime", formLayout, yesnoKeys, yesnoValues);
 			limitTime.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
+			limitTime.setEnabled(!isRestrictedEditMode);
 			timeMin = uifactory.addIntegerElement("form.imd.time.min", 0, formLayout);
+			timeMin.setEnabled(!isRestrictedEditMode);
 			timeMin.setDisplaySize(3);
 			timeSec = uifactory.addIntegerElement("form.imd.time.sek", 0, formLayout);
+			timeSec.setEnabled(!isRestrictedEditMode);
 			timeSec.setDisplaySize(3);
 			if (item.getDuration() != null && item.getDuration().isSet()) {
 				limitTime.select("y", true);
@@ -246,6 +251,7 @@ public class ItemMetadataFormController extends FormBasicController {
 
 			// Shuffle Answers
 			shuffle = uifactory.addRadiosHorizontal("shuffle", "form.imd.shuffle", formLayout, yesnoKeys, yesnoValues);
+			shuffle.setEnabled(!isRestrictedEditMode);
 			if (item.getQuestion().isShuffle()) {
 				shuffle.select("y", true);
 			} else {
@@ -255,10 +261,12 @@ public class ItemMetadataFormController extends FormBasicController {
 			// Hints
 			Control itemControl = item.getItemcontrols().get(0);
 			showHints = uifactory.addRadiosHorizontal("showHints", "form.imd.solutionhints.show", formLayout, yesnoKeys, yesnoValues);
+			showHints.setEnabled(!isRestrictedEditMode);
 			showHints.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 			
 			hint = uifactory.addRichTextElementForStringData("hint", "form.imd.solutionhints", item.getQuestion().getHintText(), 8, -1, 
 					true, qti.getBaseDir(), null, formLayout, ureq.getUserSession(), getWindowControl());
+			hint.setEnabled(!isRestrictedEditMode);
 			// set upload dir to the media dir
 			hint.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			if (itemControl.isHint()) {
@@ -270,12 +278,14 @@ public class ItemMetadataFormController extends FormBasicController {
 
 			// Solution
 			showSolution = uifactory.addRadiosHorizontal("showSolution", "form.imd.correctsolution.show", formLayout, yesnoKeys, yesnoValues);
+			showSolution.setEnabled(!isRestrictedEditMode);
 			showSolution.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 			
 			boolean essay = (q.getType() == Question.TYPE_ESSAY);
 			String solLabel = essay ? "form.imd.correctsolution.word" : "form.imd.correctsolution";
 			solution = uifactory.addRichTextElementForStringData("solution", solLabel, item.getQuestion().getSolutionText(), 8,
 					-1, true, qti.getBaseDir(), null, formLayout, ureq.getUserSession(), getWindowControl());
+			solution.setEnabled(!isRestrictedEditMode);
 			// set upload dir to the media dir
 			solution.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			if (itemControl.isSolution()) {

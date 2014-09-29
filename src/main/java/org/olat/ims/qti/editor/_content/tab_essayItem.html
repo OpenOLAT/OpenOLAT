@@ -38,11 +38,15 @@
 			</div>
 		</div>
 
-#if($isSurveyMode.equals("false") && !$isRestrictedEdit)
+#if($isSurveyMode.equals("false"))
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("score")</label>
 			<div class="col-sm-9">
-				<input type="text" name="single_score" value="$question.getMaxValue()" class="form-control" size="4" onchange="return setFormDirty('ofo_tab_scitem')" onclick="return setFormDirty('ofo_tab_scitem')"/>
+				#if($isRestrictedEdit)
+					<p class="form-control-static">$question.getMaxValue()</p>
+				#else
+					<input type="text" name="single_score" value="$question.getMaxValue()" class="form-control" size="4" onchange="return setFormDirty('ofo_tab_scitem')" onclick="return setFormDirty('ofo_tab_scitem')"/>
+				#end
 			</div>
 		</div>
 #end		

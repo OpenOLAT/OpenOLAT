@@ -81,8 +81,10 @@ public class AssessmentController extends TabbableDefaultController implements C
 		surveyMode = qtiPackage.getQTIDocument().isSurvey();
 		main.contextPut("isSurveyMode", surveyMode ? "true" : "false");
 
-		if (!surveyMode && !restrictedEdit) {
-			if (assessment.getDuration() != null) main.contextPut("duration", assessment.getDuration());
+		if (!surveyMode) {
+			if (assessment.getDuration() != null) {
+				main.contextPut("duration", assessment.getDuration());
+			}
 		}
 
 		// Adding outcomes processing parameters

@@ -34,7 +34,7 @@
 			<thead><tr>
 				<th width="5">Pos</th>
 				<th>$r.translate("fieldset.legend.answers")</th>
-#if($isSurveyMode.equals("false") && !$isRestrictedEdit)
+#if($isSurveyMode.equals("false"))
 				<th width="15%">$r.translate("questionform_correct")</th>
 #end
 				<th width="15%">$r.translate("questionform_actions")</th>
@@ -55,13 +55,21 @@
 				#end
 				</td><td>$r.formatLatexFormulas($content.getContent().renderAsHtml($mediaBaseURL))</td>
 
-#if($isSurveyMode.equals("false") && !$isRestrictedEdit)
+#if($isSurveyMode.equals("false"))
 				<td valign="middle" align="center">
+				#if($isRestrictedEdit)
+					#if($content.isCorrect())
+						<input type="radio" name="cc" value="value_q" disabled="disabled" checked="checked" />
+					#else
+						<input type="radio" name="cc" value="value_q" disabled="disabled" />
+					#end
+				#else
 					#if($content.isCorrect())
 					<input type="radio" name="correctChoice" value="value_q$count" checked onchange="return setFormDirty('ofo_tab_scitem')" onclick="return setFormDirty('ofo_tab_scitem')"/>
 					#else
 					<input type="radio" name="correctChoice" value="value_q$count" onchange="return setFormDirty('ofo_tab_scitem')" onclick="return setFormDirty('ofo_tab_scitem')"/>
-					#end					
+					#end
+				#end				
 				</td>
 #end
 
@@ -81,14 +89,18 @@
 		<a href='$r.commandURI("addchoice")' onclick="return o2cl()"  onkeypress="return o2cl()" class="btn btn-default">$r.translate("add_answer")</a>
 #end	
 
-#if($isSurveyMode.equals("false") && !$isRestrictedEdit)
-		<br /><br />
-		<div class="form-group">
-			<label class="control-label col-sm-3">$r.translate("score")</label>
-			<div class="col-sm-9">
-				<input type="text" class="form-control" name="single_score" value="$!question.getSingleCorrectScore()" size="4" onchange="return setFormDirty('ofo_tab_scitem')" onclick="return setFormDirty('ofo_tab_scitem')"/>
-			</div>
+#if($isSurveyMode.equals("false"))
+	<br /><br />
+	<div class="form-group">
+		<label class="control-label col-sm-3">$r.translate("score")</label>
+		<div class="col-sm-9">
+			#if($isRestrictedEdit)
+			<p class="form-control-static">$!question.getSingleCorrectScore()</p>
+			#else
+			<input type="text" class="form-control" name="single_score" value="$!question.getSingleCorrectScore()" size="4" onchange="return setFormDirty('ofo_tab_scitem')" onclick="return setFormDirty('ofo_tab_scitem')"/>
+			#end
 		</div>
+	</div>
 #end
 
 #if($isSurveyMode.equals("false"))

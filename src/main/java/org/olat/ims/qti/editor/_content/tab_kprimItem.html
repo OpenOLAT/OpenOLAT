@@ -38,7 +38,7 @@
 			<tr>
 				<th width="5">Pos</th>
 				<th>$r.translate("fieldset.legend.answers")</th>
-#if($isSurveyMode.equals("false") && !$isRestrictedEdit)
+#if($isSurveyMode.equals("false"))
 				<th width="15%" align="center">$r.translate("questionform_correct_kprim")</th>
 				<th width="15%" align="center">$r.translate("questionform_wrong_kprim")</th>
 #else
@@ -60,8 +60,15 @@
 				</td>
 				<td>$r.formatLatexFormulas($content.getContent().renderAsHtml($mediaBaseURL))</td>
 
-#if($isSurveyMode.equals("false") && !$isRestrictedEdit)
-
+#if($isSurveyMode.equals("false"))
+			#if($isRestrictedEdit)
+				<td valign="middle" align="center">
+					<input type="radio" name="correctChoice_qro$count" value="correct" #if($content.isCorrect()) checked="checked" #end disabled="disabled" />	
+				</td>
+				<td valign="middle" align="center">
+					<input type="radio" name="correctChoice_qro$count" value="wrong" #if(!$content.isCorrect()) checked="checked" #end disabled="disabled" />
+				</td>
+			#else
 				<td valign="middle" align="center">
 					#if($content.isCorrect())
 					<input type="radio" name="correctChoice_q$count" value="correct" checked onchange="return setFormDirty('ofo_tab_kprimitem')" onclick="return setFormDirty('ofo_tab_kprimitem')"/>
@@ -76,6 +83,7 @@
 					<input type="radio" name="correctChoice_q$count" value="wrong" checked onchange="return setFormDirty('ofo_tab_kprimitem')" onclick="return setFormDirty('ofo_tab_kprimitem')"/>
 					#end					
 				</td>
+			#end
 #else
 				<td >&nbsp;</td>
 #end
@@ -89,18 +97,24 @@
 		</table>
 #end
 
-#if($isSurveyMode.equals("false") && !$isRestrictedEdit)
+#if($isSurveyMode.equals("false"))
 		<div class="row"><div class="col-sm-offset-3 col-sm-9">
 			<div class="o_desc">$r.translate("kprim_info")</div>
 		</div></div>
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("max_value")</label>
 			<div class="col-sm-9">
-				<input type="text" name="max_value" class="form-control" value="$!question.getMaxValue()" size="4" onchange="return setFormDirty('ofo_tab_kprimitem')" onclick="return setFormDirty('ofo_tab_kprimitem')"/>
+				#if($isRestrictedEdit)
+					<p class="form-control-static">$!question.getMaxValue()</p>
+				#else
+					<input type="text" name="max_value" class="form-control" value="$!question.getMaxValue()" size="4" onchange="return setFormDirty('ofo_tab_kprimitem')" onclick="return setFormDirty('ofo_tab_kprimitem')"/>
+				#end
 			</div>
 		</div>
+	#if(!$isRestrictedEdit)
 		<div class="col-sm-offset-3 col-sm-9 "><div class="btn-group">
 			<input type="submit" value="$r.translateInAttribute("submit")" class="btn btn-primary" name="olat_fosm" />
 		</div></div>
+	#end
 #end
 </form></fieldset>

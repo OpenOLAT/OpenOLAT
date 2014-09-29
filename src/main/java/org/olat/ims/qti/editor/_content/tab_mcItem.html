@@ -35,7 +35,7 @@
 		<thead><tr>
 				<th width="5">Pos</th>
 				<th>$r.translate("fieldset.legend.answers")</th>
-#if($isSurveyMode.equals("false") && !$isRestrictedEdit)
+#if($isSurveyMode.equals("false"))
 			#if (!$question.isSingleCorrect())
 				<th width="15%">$r.translate("questionform_score")</th>
 			#else				
@@ -58,16 +58,24 @@
 				</td>
 				<td>$r.formatLatexFormulas($content.getContent().renderAsHtml($mediaBaseURL))</td>
 				
-#if($isSurveyMode.equals("false") && !$isRestrictedEdit)
-				#if(!$question.isSingleCorrect())
+#if($isSurveyMode.equals("false"))
+			#if(!$question.isSingleCorrect())
 				<td>
-				#if(!$isRestrictedEdit)
-					<input type="text" name="points_q$count" value="$content.getPoints()" size="5" onchange="return setFormDirty('ofo_tab_mcitem')" onclick="return setFormDirty('ofo_tab_mcitem')"/>
-				#end
+					#if($isRestrictedEdit)
+						$content.getPoints()
+					#else
+						<input type="text" name="points_q$count" value="$content.getPoints()" size="5" onchange="return setFormDirty('ofo_tab_mcitem')" onclick="return setFormDirty('ofo_tab_mcitem')"/>
+					#end
 				</td>
-				#else	
+			#else	
 				<td valign="middle" align="center">
-				#if(!$isRestrictedEdit)
+				#if($isRestrictedEdit)
+					#if($content.isCorrect())
+					<input type="checkbox" class="o_checkbox" name="value_q" value="true" disabled="disabled" checked="checked"/>
+					#else
+					<input type="checkbox" class="o_checkbox" name="value_q" value="true" disabled="disabled" />
+					#end
+				#else
 					#if($content.isCorrect())
 					<input type="checkbox" class="o_checkbox" name="value_q$count" value="true" checked onchange="return setFormDirty('ofo_tab_mcitem')" onclick="return setFormDirty('ofo_tab_mcitem')"/>
 					#else
@@ -75,7 +83,7 @@
 					#end
 				#end
 				</td>
-				#end
+			#end
 #end
 				<td valign="middle" align="center">
 					<a href="$r.commandURI("editr", "posid", "$count")" onclick="return o2cl()"  onkeypress="return o2cl()" title="$r.translateInAttribute("mat.edit.response")">
@@ -96,11 +104,19 @@
 		<a href="$r.commandURI("addchoice")" onclick="return o2cl()"  onkeypress="return o2cl()" class="btn btn-default"><span>$r.translate("add_answer")</span></a>
 		#end
 
-#if($isSurveyMode.equals("false") && !$isRestrictedEdit)
+#if($isSurveyMode.equals("false"))
 		<br /><br />
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("valuation_method")</label>
-			<div class="col-sm-9"><select id="valmethod" name="valuation_method" class="form-control" onchange="if(this.form.valmethod.options.selectedIndex==0){shadeFormElement('single');}else{unShadeFormElement('single');}return setFormDirty('ofo_tab_mcitem')" onclick="return setFormDirty('ofo_tab_mcitem')">
+			<div class="col-sm-9">
+				#if($isRestrictedEdit)
+					#if(!$question.isSingleCorrect())
+						<p class="form-control-static">$r.translate("valuation_method_multi")</p>
+					#else
+						<p class="form-control-static">$r.translate("valuation_method_single")</p>
+					#end
+				#else
+				<select id="valmethod" name="valuation_method" class="form-control" onchange="if(this.form.valmethod.options.selectedIndex==0){shadeFormElement('single');}else{unShadeFormElement('single');}return setFormDirty('ofo_tab_mcitem')" onclick="return setFormDirty('ofo_tab_mcitem')">
 					<option value="multi"
 					#if(!$question.isSingleCorrect())
 						selected
@@ -115,28 +131,48 @@
 						#set ($css = "")
 					#end
 					>$r.translate("valuation_method_single")</option>
-			</select></div>
+				</select>
+				#end
+			</div>
 		</div>
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("single_score") <i>$r.translate("valuation_method_single")</i></label>
 			<div class="col-sm-9">
-				<input id="single" type="text" name="single_score" value="$!question.getSingleCorrectScore()" size="4" class="form-control $css" $readonly onchange="return setFormDirty('ofo_tab_mcitem')" onclick="return setFormDirty('ofo_tab_mcitem')"/>
+				#if($isRestrictedEdit)
+					#if($question.isSingleCorrect())
+						<p class="form-control-static">$!question.getSingleCorrectScore()</p>
+					#else
+						<p class="form-control-static"><i>$!question.getSingleCorrectScore()</i></p>
+					#end
+				#else
+					<input id="single" type="text" name="single_score" value="$!question.getSingleCorrectScore()" size="4" class="form-control $css" $readonly onchange="return setFormDirty('ofo_tab_mcitem')" onclick="return setFormDirty('ofo_tab_mcitem')"/>
+				#end
 			</div>
 		</div>
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("min_value")</label>
 			<div class="col-sm-9">
-				<input type="text" name="min_value" value="$!question.getMinValue()" size="4" class="form-control" onchange="return setFormDirty('ofo_tab_mcitem')" onclick="return setFormDirty('ofo_tab_mcitem')"/>
+				#if($isRestrictedEdit)
+					<p class="form-control-static">$!question.getMinValue()</p>
+				#else
+					<input type="text" name="min_value" value="$!question.getMinValue()" size="4" class="form-control" onchange="return setFormDirty('ofo_tab_mcitem')" onclick="return setFormDirty('ofo_tab_mcitem')"/>
+				#end
 			</div>
 		</div>
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("max_value")</label>
 			<div class="col-sm-9">
-				<input type="text" name="max_value" value="$!question.getMaxValue()" size="4" class="form-control" onchange="return setFormDirty('ofo_tab_mcitem')" onclick="return setFormDirty('ofo_tab_mcitem')"/>
+				#if($isRestrictedEdit)
+					<p class="form-control-static">$!question.getMaxValue()</p>
+				#else
+					<input type="text" name="max_value" value="$!question.getMaxValue()" size="4" class="form-control" onchange="return setFormDirty('ofo_tab_mcitem')" onclick="return setFormDirty('ofo_tab_mcitem')"/>
+				#end
 			</div>
 		</div>
+	#if(!$isRestrictedEdit)
 		<div class="col-sm-offset-3 col-sm-9 "><div class="btn-group">
 			<input type="submit" value="$r.translateInAttribute("submit")" class="btn btn-primary" name="olat_fosm" />
 		</div></div>
+	#end
 #end
 </form></fieldset>

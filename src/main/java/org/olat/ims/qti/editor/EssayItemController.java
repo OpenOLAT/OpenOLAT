@@ -121,22 +121,6 @@ public class EssayItemController extends DefaultController implements Controller
 					iRows = 5;
 					getWindowControl().setWarning(trnsltr.translate("error.rows"));
 				}
-				
-				
-				try {
-					String score = ureq.getParameter("single_score");
-					float sc = Float.parseFloat(score);
-					if(sc <= 0.0001f && !qtiPackage.getQTIDocument().isSurvey()) {
-						getWindowControl().setWarning(trnsltr.translate("editor.info.mc.zero.points"));
-					}
-					essayQuestion.setMinValue(0.0f);
-					essayQuestion.setMaxValue(sc);
-					essayQuestion.setSingleCorrectScore(sc);
-				} catch(Exception e) {
-					if(!qtiPackage.getQTIDocument().isSurvey()) {
-						getWindowControl().setWarning(trnsltr.translate("editor.info.mc.zero.points"));
-					}
-				}
 
 				if (restrictedEdit) {
 					boolean hasChange = false;
@@ -147,6 +131,21 @@ public class EssayItemController extends DefaultController implements Controller
 						nce.setItemIdent(item.getIdent());
 						nce.setResponseIdent(essayQuestion.getEssayResponse().getIdent());
 						fireEvent(ureq, nce);
+					}
+				} else {
+					try {
+						String score = ureq.getParameter("single_score");
+						float sc = Float.parseFloat(score);
+						if(sc <= 0.0001f && !qtiPackage.getQTIDocument().isSurvey()) {
+							getWindowControl().setWarning(trnsltr.translate("editor.info.mc.zero.points"));
+						}
+						essayQuestion.setMinValue(0.0f);
+						essayQuestion.setMaxValue(sc);
+						essayQuestion.setSingleCorrectScore(sc);
+					} catch(Exception e) {
+						if(!qtiPackage.getQTIDocument().isSurvey()) {
+							getWindowControl().setWarning(trnsltr.translate("editor.info.mc.zero.points"));
+						}
 					}
 				}
 
