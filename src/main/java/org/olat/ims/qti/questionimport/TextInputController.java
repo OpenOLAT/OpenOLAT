@@ -62,7 +62,7 @@ public class TextInputController extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("wizard.import.input.description");
-		setFormContextHelp("org.olat.ims.qti.questionimport", "text-input.html", "chelp.text-input.title");
+		setFormContextHelp("org.olat.ims.qti.questionimport", "text-input.html", "chelp.text-input.hover");
 		
 		FormLayoutContainer textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), velocity_root + "/example.html");
 		formLayout.add(textContainer);

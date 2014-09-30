@@ -43,6 +43,7 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -1105,28 +1106,23 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	
 	private void populateToolC() {
 		//tools
-		Dropdown editTools = new Dropdown("editTools", "tools.tools.header", false, getTranslator());
-		editTools.setIconCSS("o_icon o_icon_tools");
-		stackedPanel.addTool(editTools, Align.left);
+		Dropdown exportTools = new Dropdown("exportTools", "tools.export.header", false, getTranslator());
+		exportTools.setIconCSS("o_icon o_icon_export");
+		stackedPanel.addTool(exportTools, Align.left);
 		
-		editTools.addComponent(previewLink);
+		exportTools.addComponent(previewLink);
 		exportPoolLink = LinkFactory.createToolLink(CMD_TOOLS_EXPORT_QPOOL, translate("tools.export.qpool"), this, "o_mi_qpool_export");
 		exportPoolLink.setIconLeftCSS("o_icon o_icon_download");
-		editTools.addComponent(exportPoolLink);
+		exportTools.addComponent(exportPoolLink);
 		exportDocLink = LinkFactory.createToolLink(CMD_TOOLS_EXPORT_DOCX, translate("tools.export.docx"), this, "o_mi_docx_export");
 		exportDocLink.setIconLeftCSS("o_icon o_icon_download");
-		editTools.addComponent(exportDocLink);
-		importTableLink = LinkFactory.createToolLink(CMD_TOOLS_IMPORT_TABLE, translate("tools.import.table"), this, "o_mi_table_import");
-		importTableLink.setIconLeftCSS("o_icon o_icon_table");
-		editTools.addComponent(importTableLink);
+		exportTools.addComponent(exportDocLink);
 
 		//add
 		Dropdown addItemTools = new Dropdown("editTools", "tools.add.header", false, getTranslator());
 		addItemTools.setIconCSS("o_icon o_icon-fw o_icon_add");
 		stackedPanel.addTool(addItemTools, Align.left);
-
-		addPoolLink = LinkFactory.createToolLink(CMD_TOOLS_ADD_QPOOL, translate("tools.import.qpool"), this, "o_mi_qpool_import");
-		addItemTools.addComponent(addPoolLink);
+		
 		addSectionLink = LinkFactory.createToolLink(CMD_TOOLS_ADD_SECTION, translate("tools.add.section"), this, "o_mi_qtisection");
 		addItemTools.addComponent(addSectionLink);
 		addSCLink = LinkFactory.createToolLink(CMD_TOOLS_ADD_SINGLECHOICE, translate("tools.add.singlechoice"), this, "o_mi_qtisc");
@@ -1141,6 +1137,14 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		addItemTools.addComponent(addFIBLink);
 		addEssayLink = LinkFactory.createToolLink(CMD_TOOLS_ADD_FREETEXT, translate("tools.add.freetext"), this, "o_mi_qtiessay");
 		addItemTools.addComponent(addEssayLink);
+
+		addItemTools.addComponent(new Spacer(""));
+		addPoolLink = LinkFactory.createToolLink(CMD_TOOLS_ADD_QPOOL, translate("tools.import.qpool"), this, "o_mi_qpool_import");
+		addItemTools.addComponent(addPoolLink);
+
+		importTableLink = LinkFactory.createToolLink(CMD_TOOLS_IMPORT_TABLE, translate("tools.import.table"), this, "o_mi_table_import");
+		importTableLink.setIconLeftCSS("o_icon o_icon_table o_icon-fw");
+		addItemTools.addComponent(importTableLink);
 		
 		// delete / move / copy 
 		Dropdown customizeTools = new Dropdown("customizeTools", "tools.change.header", false, getTranslator());
