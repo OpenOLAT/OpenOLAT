@@ -104,6 +104,12 @@
 	.o_tool, .o_text {
 		position: relative;
 		margin: 0 10px;	
+		&:first-child {
+			margin-left: 0;	
+		}
+		&:last-child {
+			margin-right: 0;	
+		}
 		a, .o_disabled {
 			i {
 				font-size: $o-toolbar-size-icon-md;
@@ -202,6 +208,13 @@
 				
 	.o_tool_dropdown {
 		position: relative;
+		margin: 0 10px;	
+		&:first-child {
+			margin-left: 0;	
+		}
+		&:last-child {
+			margin-right: 0;	
+		}
 		a.dropdown-toggle {
 			i {
 				font-size: $o-toolbar-size-icon-md;
@@ -267,6 +280,9 @@
 			max-width: 10em;
 			@include text-overflow();	
 		}
+		.o_tool, .o_text, .o_tool_dropdown {
+			margin: 0 5px;	
+		}
 	}
 	@media (max-width: $screen-xs-max) { 
 		.o_tools {
@@ -280,6 +296,10 @@
 		.o_tools_right, .o_tools_right, .o_tools_center {
 			float: left;
 		}		
+		.o_tool, .o_text, .o_tool_dropdown {
+			margin: 0 0;	
+		}
+		
 	}
 	
 }
