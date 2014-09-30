@@ -561,7 +561,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	public String getSearchText() {
-		return searchFieldEl == null ? null : searchFieldEl.getValue();
+		return searchFieldEl == null || !searchFieldEl.isVisible() || !searchFieldEl.isEnabled() ? null : searchFieldEl.getValue();
 	}
 	
 	public List<String> getConditionalQueries() {
