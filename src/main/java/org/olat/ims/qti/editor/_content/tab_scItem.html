@@ -106,7 +106,7 @@
 		<input type="text" name="single_score" value="$!question.getSingleCorrectScore()" size="4" onchange="return setFormDirty('ofo_tab_scitem')" onclick="return setFormDirty('ofo_tab_scitem')"/>
 #end
 
-#if($isSurveyMode.equals("false"))
+#if($isSurveyMode.equals("false") && !$isRestrictedEdit)
 		<br />
 		<div class="b_button_group"><input type="submit" value="$r.translateInAttribute("submit")" class="b_button" name="olat_fosm" /></div>
 #end

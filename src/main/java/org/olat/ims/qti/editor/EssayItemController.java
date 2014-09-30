@@ -122,19 +122,20 @@ public class EssayItemController extends DefaultController implements Controller
 					getWindowControl().setWarning(trnsltr.translate("error.rows"));
 				}
 				
-				
-				try {
-					String score = ureq.getParameter("single_score");
-					float sc = Float.parseFloat(score);
-					if(sc <= 0.0001f && !qtiPackage.getQTIDocument().isSurvey()) {
-						getWindowControl().setWarning(trnsltr.translate("editor.info.mc.zero.points"));
-					}
-					essayQuestion.setMinValue(0.0f);
-					essayQuestion.setMaxValue(sc);
-					essayQuestion.setSingleCorrectScore(sc);
-				} catch(Exception e) {
-					if(!qtiPackage.getQTIDocument().isSurvey()) {
-						getWindowControl().setWarning(trnsltr.translate("editor.info.mc.zero.points"));
+				if(!restrictedEdit) {
+					try {
+						String score = ureq.getParameter("single_score");
+						float sc = Float.parseFloat(score);
+						if(sc <= 0.0001f && !qtiPackage.getQTIDocument().isSurvey()) {
+							getWindowControl().setWarning(trnsltr.translate("editor.info.mc.zero.points"));
+						}
+						essayQuestion.setMinValue(0.0f);
+						essayQuestion.setMaxValue(sc);
+						essayQuestion.setSingleCorrectScore(sc);
+					} catch(Exception e) {
+						if(!qtiPackage.getQTIDocument().isSurvey()) {
+							getWindowControl().setWarning(trnsltr.translate("editor.info.mc.zero.points"));
+						}
 					}
 				}
 
