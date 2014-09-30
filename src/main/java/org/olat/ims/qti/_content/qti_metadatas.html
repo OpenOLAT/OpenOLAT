@@ -11,12 +11,27 @@
 			<table class="table table-condensed"><tbody>
 				<tr><th>$r.translate("form.imd.shuffle")</th><td>$r.render("form.imd.shuffle", "form")</td></tr>
 				<tr><th>$r.translate("form.metadata.duration")</th><td>$r.render("form.metadata.duration", "form")</td></tr>
-				#if($responses.size() > 0)
+				#if(($responses && $responses.size() > 0) || ($responsesAndPoints && $responsesAndPoints.size() > 0) || ($kprimResponsesAndPoints && $kprimResponsesAndPoints.size() > 0)) 
 				<tr>
 					<th>$r.translate("ans.correct")</th>
 					<td>
 					#foreach($response in $responses)
 						<div><i class="o_icon o_icon_correct_answer"> </i> $response</div>
+					#end
+					#foreach($responseAndPoints in $responsesAndPoints)
+						<div>#if($responseAndPoints.correct)<i class="o_icon o_icon_correct_answer"> </i> #end( $responseAndPoints.points ) $responseAndPoints.responseSummary</div>
+					#end
+					#if($kprimResponsesAndPoints && $kprimResponsesAndPoints.size() > 0)
+						<div class="o_qti_statistics"><ul class="list-unstyled">
+						#foreach($responseAndPoints in $kprimResponsesAndPoints)
+							#if($responseAndPoints.correct)
+								<li class="o_qti_statistics-kplus">
+							#else
+								<li class="o_qti_statistics-kminus">
+							#end
+							( $responseAndPoints.points ) $responseAndPoints.responseSummary</li>
+						#end
+						</ul></div>
 					#end
 					</td>
 				</tr>

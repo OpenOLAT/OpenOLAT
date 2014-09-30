@@ -91,30 +91,11 @@ public class QTI12MetadataController extends FormBasicController  {
 			
 			//correct responses
 			List<Response> responses = question.getResponses();
-			List<String> responesNames = new ArrayList<>();
-			if(responses != null && responses.size() > 0) {
-				FormLayoutContainer correctResponsesCont = FormLayoutContainer.createVerticalFormLayout("correctResponses", getTranslator());
-				correctResponsesCont.setRootForm(mainForm);
-				correctResponsesCont.setLabel("ans.correct", null);
-				formLayout.add(correctResponsesCont);
-
-				for(Response response:responses) {
-					boolean correct = response.isCorrect();
-					if(correct && response.getContent() != null) {
-						String responseSummary = response.getContent().renderAsText();
-						if(responseSummary.length() > 128) {
-							responseSummary = new NekoHTMLFilter().filter(responseSummary);
-							if(responseSummary.length() > 128) {
-								responseSummary = responseSummary.substring(0, 125) + "...";
-							}
-						}
-						if(StringHelper.containsNonWhitespace(responseSummary)) {
-							responesNames.add(responseSummary);
-						}
-					}
-				}
+			if(question.getType() == Question.TYPE_MC || question.getType() == Question.TYPE_SC) {
+				setMCAndSCCorrectResponses(question, responses, layoutCont);
+			} else if(question.getType() == Question.TYPE_KPRIM) {
+				setKPrimCorrectResponses(responses, layoutCont);
 			}
-			layoutCont.contextPut("responses", responesNames);
 		}
 		
 		//feedbacks
@@ -147,6 +128,77 @@ public class QTI12MetadataController extends FormBasicController  {
 		layoutCont.contextPut("hasFeedbacks", new Boolean(hasFeedbacks));
 	}
 	
+	private void setKPrimCorrectResponses(List<Response> responses, FormLayoutContainer layoutCont) {
+		List<ResponseAndPoints> responsesPoints = new ArrayList<>();
+		if(responses != null && responses.size() > 0) {
+			for(Response response:responses) {
+				String responseSummary = getResponseSummary(response);
+				if(responseSummary != null) {
+					boolean correct =  response.isCorrect();
+					String points = Float.toString(response.getPoints());
+					ResponseAndPoints responseInfos = new ResponseAndPoints(responseSummary, points, correct);
+					responsesPoints.add(responseInfos);
+				}
+			}
+		}
+		layoutCont.contextPut("kprimResponsesAndPoints", responsesPoints);
+	}
+	
+	private void setMCAndSCCorrectResponses(Question question, List<Response> responses, FormLayoutContainer layoutCont) {
+		List<String> correctResponseNames = new ArrayList<>();
+		List<ResponseAndPoints> responsesPoints = new ArrayList<>();
+		if(responses != null && responses.size() > 0) {
+
+			if(question.isSingleCorrect()) {
+				for(Response response:responses) {
+					if(response.isCorrect()) {
+						String responseSummary = getResponseSummary(response);
+						if(responseSummary != null) {
+							correctResponseNames.add(responseSummary);
+						}
+					}
+				}
+			} else {
+				boolean hasNegative = false;
+				for(Response response:responses) {
+					if(response.getPoints() < 0.0f) {
+						hasNegative = true;
+					}
+				}
+				
+				for(Response response:responses) {
+					String responseSummary = getResponseSummary(response);
+					if(responseSummary != null &&
+							((hasNegative && response.getPoints() >= 0.0f) 
+							 || (!hasNegative && response.getPoints() > 0.0f))) {
+						boolean correct =  response.getPoints() > 0.0f;
+						String points = Float.toString(response.getPoints());
+						ResponseAndPoints responseInfos = new ResponseAndPoints(responseSummary, points, correct);
+						responsesPoints.add(responseInfos);
+					}
+				}
+			}
+		}
+		layoutCont.contextPut("responses", correctResponseNames);
+		layoutCont.contextPut("responsesAndPoints", responsesPoints);
+	}
+	
+	private String getResponseSummary(Response response) {
+		String responseSummary;
+		if(response.getContent() == null) {
+			responseSummary = null;
+		} else {
+			responseSummary = response.getContent().renderAsText();
+			if(responseSummary.length() > 128) {
+				responseSummary = new NekoHTMLFilter().filter(responseSummary);
+				if(responseSummary.length() > 128) {
+					responseSummary = responseSummary.substring(0, 125) + "...";
+				}
+			}
+		}
+		return StringHelper.containsNonWhitespace(responseSummary) ? responseSummary : null;
+	}
+	
 	@Override
 	protected void doDispose() {
 		//
@@ -155,5 +207,30 @@ public class QTI12MetadataController extends FormBasicController  {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	public static class ResponseAndPoints {
+		
+		private final String point;
+		private final boolean correct;
+		private final String responseSummary;
+		
+		public ResponseAndPoints(String responseSummary, String point, boolean correct) {
+			this.point = point;
+			this.correct = correct;
+			this.responseSummary = responseSummary;
+		}
+
+		public String getPoints() {
+			return point;
+		}
+
+		public boolean isCorrect() {
+			return correct;
+		}
+
+		public String getResponseSummary() {
+			return responseSummary;
+		}
 	}
 }
