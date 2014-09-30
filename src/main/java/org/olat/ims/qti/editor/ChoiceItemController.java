@@ -148,78 +148,85 @@ public class ChoiceItemController extends BasicController implements ControllerE
 				delYesNoCtrl.setUserObject(new Integer(posid));
 				delYesNoCtrl.activate();
 			} else if (cmd.equals("ssc")) { // submit sc
-				ChoiceQuestion question = (ChoiceQuestion) item.getQuestion();
-				List<Response> q_choices = question.getResponses();
-				String correctChoice = ureq.getParameter("correctChoice");
-				for (int i = 0; i < q_choices.size(); i++) {
-					ChoiceResponse choice = (ChoiceResponse) q_choices.get(i);
-					if (correctChoice != null && correctChoice.equals("value_q" + i)) {
-						choice.setCorrect(true);
-					} else {
-						choice.setCorrect(false);
+				if(!restrictedEdit) {
+					ChoiceQuestion question = (ChoiceQuestion) item.getQuestion();
+					List<Response> q_choices = question.getResponses();
+					String correctChoice = ureq.getParameter("correctChoice");
+					for (int i = 0; i < q_choices.size(); i++) {
+						ChoiceResponse choice = (ChoiceResponse) q_choices.get(i);
+						if (correctChoice != null && correctChoice.equals("value_q" + i)) {
+							choice.setCorrect(true);
+						} else {
+							choice.setCorrect(false);
+						}
+						choice.setPoints(ureq.getParameter("points_q" + i));
 					}
-					choice.setPoints(ureq.getParameter("points_q" + i));
-				}
-				
-				String score = ureq.getParameter("single_score");
-				float sc;
-				try {
-					sc = Float.parseFloat(score);
-					if(sc <= 0.0001f) {
+					
+					String score = ureq.getParameter("single_score");
+					float sc;
+					try {
+						sc = Float.parseFloat(score);
+						if(sc <= 0.0001f) {
+							getWindowControl().setWarning(translate("editor.info.mc.zero.points"));
+						}
+					} catch(Exception e) {
 						getWindowControl().setWarning(translate("editor.info.mc.zero.points"));
+						sc = 1.0f;
 					}
-				} catch(Exception e) {
-					getWindowControl().setWarning(translate("editor.info.mc.zero.points"));
-					sc = 1.0f;
+					question.setSingleCorrectScore(sc);
 				}
-				question.setSingleCorrectScore(sc);
-				
 			} else if (cmd.equals("smc")) { // submit mc
-				ChoiceQuestion question = (ChoiceQuestion) item.getQuestion();
-				List<Response> choices = question.getResponses();
-				boolean hasZeroPointChoice = false;
-				for (int i = 0; i < choices.size(); i++) {
-					ChoiceResponse choice = (ChoiceResponse) choices.get(i);
-					if (ureq.getParameter("value_q" + i) != null && ureq.getParameter("value_q" + i).equalsIgnoreCase("true")) {
-						choice.setCorrect(true);
-					} else {
-						choice.setCorrect(false);
+				if(!restrictedEdit) {
+					ChoiceQuestion question = (ChoiceQuestion) item.getQuestion();
+					List<Response> choices = question.getResponses();
+					boolean hasZeroPointChoice = false;
+					for (int i = 0; i < choices.size(); i++) {
+						ChoiceResponse choice = (ChoiceResponse) choices.get(i);
+						if (ureq.getParameter("value_q" + i) != null && ureq.getParameter("value_q" + i).equalsIgnoreCase("true")) {
+							choice.setCorrect(true);
+						} else {
+							choice.setCorrect(false);
+						}
+						choice.setPoints(ureq.getParameter("points_q" + i));
+						if (choice.getPoints() == 0) hasZeroPointChoice = true;
 					}
-					choice.setPoints(ureq.getParameter("points_q" + i));
-					if (choice.getPoints() == 0) hasZeroPointChoice = true;
+					if (hasZeroPointChoice && !question.isSingleCorrect()) {
+						getWindowControl().setInfo(translate("editor.info.mc.zero.points"));
+					}
+	
+					// set min/max before single_correct score
+					// will be corrected by single_correct score afterwards
+					question.setMinValue(ureq.getParameter("min_value"));
+					question.setMaxValue(ureq.getParameter("max_value"));
+					question.setSingleCorrect(ureq.getParameter("valuation_method").equals("single"));
+					if (question.isSingleCorrect()) {
+						question.setSingleCorrectScore(ureq.getParameter("single_score"));
+					} else {
+						question.setSingleCorrectScore(0);
+					}
 				}
-				if (hasZeroPointChoice && !question.isSingleCorrect()) {
-					getWindowControl().setInfo(translate("editor.info.mc.zero.points"));
-				}
-
-				// set min/max before single_correct score
-				// will be corrected by single_correct score afterwards
-				question.setMinValue(ureq.getParameter("min_value"));
-				question.setMaxValue(ureq.getParameter("max_value"));
-				question.setSingleCorrect(ureq.getParameter("valuation_method").equals("single"));
-				if (question.isSingleCorrect()) question.setSingleCorrectScore(ureq.getParameter("single_score"));
-				else question.setSingleCorrectScore(0);
-
 			} else if (cmd.equals("skprim")) { // submit kprim
-				float maxValue = 0;
-				try {
-					maxValue = Float.parseFloat(ureq.getParameter("max_value"));
-				} catch (NumberFormatException e) {
-					// invalid input, set maxValue 0
-				}
-				ChoiceQuestion question = (ChoiceQuestion) item.getQuestion();
-				List<Response> q_choices = question.getResponses();
-				for (int i = 0; i < q_choices.size(); i++) {
-					String correctChoice = ureq.getParameter("correctChoice_q" + i);
-					ChoiceResponse choice = (ChoiceResponse) q_choices.get(i);
-					choice.setPoints(maxValue / 4);
-					if ("correct".equals(correctChoice)) {
-						choice.setCorrect(true);
-					} else {
-						choice.setCorrect(false);
+				if(!restrictedEdit) {
+					float maxValue = 0;
+					try {
+						maxValue = Float.parseFloat(ureq.getParameter("max_value"));
+					} catch (NumberFormatException e) {
+						// invalid input, set maxValue 0
 					}
+					ChoiceQuestion question = (ChoiceQuestion) item.getQuestion();
+					List<Response> q_choices = question.getResponses();
+					for (int i = 0; i < q_choices.size(); i++) {
+						String correctChoice = ureq.getParameter("correctChoice_q" + i);
+						ChoiceResponse choice = (ChoiceResponse) q_choices.get(i);
+						choice.setPoints(maxValue / 4);
+						if ("correct".equals(correctChoice)) {
+							choice.setCorrect(true);
+						} else {
+							choice.setCorrect(false);
+						}
+					}
+					question.setMaxValue(maxValue);
 				}
-				question.setMaxValue(maxValue);
 			}
 			qtiPackage.serializeQTIDocument();
 		}

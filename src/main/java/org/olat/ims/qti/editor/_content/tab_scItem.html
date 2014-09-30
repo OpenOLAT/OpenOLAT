@@ -103,7 +103,7 @@
 	</div>
 #end
 
-#if($isSurveyMode.equals("false"))
+#if($isSurveyMode.equals("false") && !$isRestrictedEdit)
 		<div class="col-sm-offset-3 col-sm-9 "><div class="btn-group">
 			<input type="submit" value="$r.translateInAttribute("submit")" class="btn btn-primary" name="olat_fosm" />
 		</div></div>

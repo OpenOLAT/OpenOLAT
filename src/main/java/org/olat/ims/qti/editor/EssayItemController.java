@@ -121,18 +121,8 @@ public class EssayItemController extends DefaultController implements Controller
 					iRows = 5;
 					getWindowControl().setWarning(trnsltr.translate("error.rows"));
 				}
-
-				if (restrictedEdit) {
-					boolean hasChange = false;
-					hasChange = iColumns != essayQuestion.getEssayResponse().getColumns();
-					hasChange = hasChange || (iRows != essayQuestion.getEssayResponse().getRows());
-					if (hasChange) {
-						NodeBeforeChangeEvent nce = new NodeBeforeChangeEvent();
-						nce.setItemIdent(item.getIdent());
-						nce.setResponseIdent(essayQuestion.getEssayResponse().getIdent());
-						fireEvent(ureq, nce);
-					}
-				} else {
+				
+				if (!restrictedEdit) {
 					try {
 						String score = ureq.getParameter("single_score");
 						float sc = Float.parseFloat(score);
@@ -146,6 +136,18 @@ public class EssayItemController extends DefaultController implements Controller
 						if(!qtiPackage.getQTIDocument().isSurvey()) {
 							getWindowControl().setWarning(trnsltr.translate("editor.info.mc.zero.points"));
 						}
+					}
+				}
+
+				if (restrictedEdit) {
+					boolean hasChange = false;
+					hasChange = iColumns != essayQuestion.getEssayResponse().getColumns();
+					hasChange = hasChange || (iRows != essayQuestion.getEssayResponse().getRows());
+					if (hasChange) {
+						NodeBeforeChangeEvent nce = new NodeBeforeChangeEvent();
+						nce.setItemIdent(item.getIdent());
+						nce.setResponseIdent(essayQuestion.getEssayResponse().getIdent());
+						fireEvent(ureq, nce);
 					}
 				}
 
