@@ -832,7 +832,7 @@ public class PortfolioTest {
 		String pageTitle = "Page-Template-" + UUID.randomUUID();
 		String structureElementTitle = "Struct-Template-" + UUID.randomUUID();
 		template
-			.openEditor()
+			.openResourceEditor()
 			.selectMapInEditor(portfolioTitle)
 			.selectFirstPageInEditor()
 			.setPage(pageTitle, "With a little description")

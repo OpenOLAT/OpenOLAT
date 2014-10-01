@@ -188,6 +188,33 @@ public class PortfolioPage {
 		return this;
 	}
 	
+	/**
+	 * Open the editor of a template
+	 * @return
+	 */
+	public PortfolioPage openResourceEditor() {
+		By toolsMenu = By.cssSelector("ul.o_sel_repository_tools");
+		if(!browser.findElement(toolsMenu).isDisplayed()) {
+			openToolsMenu();
+		}
+		By editTemplateBy = By.className("o_sel_ep_edit_map");
+		browser.findElement(editTemplateBy).click();
+		OOGraphene.waitBusy();
+		return this;
+	}
+	
+	/**
+	 * Open the tools drop-down
+	 * @return
+	 */
+	public PortfolioPage openToolsMenu() {
+		By toolsMenuCaretBy = By.cssSelector("a.o_sel_repository_tools");
+		browser.findElement(toolsMenuCaretBy).click();
+		By toolsMenuBy = By.cssSelector("ul.o_sel_repository_tools");
+		OOGraphene.waitElement(toolsMenuBy);
+		return this;
+	}
+	
 	public PortfolioPage openMap(String mapTitle) {
 		By mapBy = By.cssSelector("div.o_eportfolio_maps div.o_map-default");
 		By headingBy = By.cssSelector("div.panel-heading h4");
