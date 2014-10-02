@@ -6,4 +6,10 @@ $r.render("table")
 	#if($r.available("tools.add.owners"))
 		$r.render("tools.add.owners")
 	#end
+	#if($r.available("details.copy"))
+		$r.render("details.copy")
+	#end
+	#if($r.available("details.delete"))
+		$r.render("details.delete")
+	#end
 </div>

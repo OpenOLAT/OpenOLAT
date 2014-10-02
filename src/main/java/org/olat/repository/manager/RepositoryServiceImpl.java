@@ -41,6 +41,9 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.logging.activity.LearningResourceLoggingAction;
+import org.olat.core.logging.activity.OlatResourceableType;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -55,6 +58,7 @@ import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -66,6 +70,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.search.service.document.RepositoryEntryDocument;
 import org.olat.search.service.indexer.LifeFullIndexer;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -177,6 +182,27 @@ public class RepositoryServiceImpl implements RepositoryService {
 		
 		dbInstance.getCurrentEntityManager().persist(re);
 		return re;	
+	}
+
+	@Override
+	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname, String description) {
+		OLATResource sourceResource = sourceEntry.getOlatResource();
+		OLATResource copyResource = resourceManager.createOLATResourceInstance(sourceResource.getResourceableTypeName());
+		RepositoryEntry copyEntry = create(author, null, sourceEntry.getResourcename(), displayname,
+				description, copyResource, RepositoryEntry.ACC_OWNERS);
+	
+		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(sourceEntry);
+		copyEntry = handler.copy(sourceEntry, copyEntry);
+		
+		//copy the image
+		RepositoryManager.getInstance().copyImage(sourceEntry, copyEntry);
+
+		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
+				LoggingResourceable.wrap(copyEntry, OlatResourceableType.genRepoEntry));
+		
+		
+		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, copyEntry.getKey());
+		return copyEntry;
 	}
 
 	@Override

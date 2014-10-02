@@ -50,6 +50,8 @@ public interface RepositoryService {
 	public RepositoryEntry create(String initialAuthor, String resourceName,
 			String displayname, String description, OLATResource resource);
 	
+	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname, String description);
+	
 	public RepositoryEntry loadByKey(Long key);
 	
 	public VFSLeaf getIntroductionImage(RepositoryEntry re);

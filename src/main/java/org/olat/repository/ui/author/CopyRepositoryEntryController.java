@@ -82,7 +82,6 @@ public class CopyRepositoryEntryController extends FormBasicController {
 		descriptionEl = uifactory.addRichTextElementForStringData("cif.description", "cif.description",
 				"", 10, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		descriptionEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
-		descriptionEl.setMandatory(true);
 		
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);

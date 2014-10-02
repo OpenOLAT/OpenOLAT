@@ -134,9 +134,11 @@ public class AuthorListController extends FormBasicController implements Activat
 	private StepsMainRunController wizardCtrl;
 	private AuthorSearchController searchCtrl;
 	private UserSearchController userSearchCtr;
+	private DialogBoxController copyDialogCtrl;
 	private DialogBoxController deleteDialogCtrl;
 	private CopyRepositoryEntryController copyCtrl;
 	private StepsMainRunController closeCtrl;
+	private ConfirmDeleteController confirmDeleteCtrl;
 	private ImportRepositoryEntryController importCtrl;
 	private CreateRepositoryEntryController createCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
@@ -145,7 +147,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	
 	private Link importLink;
 	private Dropdown createDropdown;
-	private FormLink addOwnersButton;
+	private FormLink addOwnersButton, deleteButton, copyButton;
 
 	private LockResult lockResult;
 	private final AtomicInteger counter = new AtomicInteger();
@@ -161,6 +163,8 @@ public class AuthorListController extends FormBasicController implements Activat
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public AuthorListController(UserRequest ureq, WindowControl wControl, String i18nName,
@@ -174,6 +178,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		hasAuthorRight = roles.isAuthor() || roles.isInstitutionalResourceManager() || roles.isOLATAdmin();
+		
 
 		dataSource = new AuthoringEntryDataSource(searchParams, this);
 		initForm(ureq);
@@ -291,6 +296,8 @@ public class AuthorListController extends FormBasicController implements Activat
 		
 		if(hasAuthorRight) {
 			addOwnersButton = uifactory.addFormLink("tools.add.owners", formLayout, Link.BUTTON);
+			copyButton = uifactory.addFormLink("details.copy", formLayout, Link.BUTTON);
+			deleteButton = uifactory.addFormLink("details.delete", formLayout, Link.BUTTON);
 		}
 	}
 	
@@ -425,11 +432,27 @@ public class AuthorListController extends FormBasicController implements Activat
 					reloadRows();
 				}
 			}
+		} else if(confirmDeleteCtrl == source) {
+			cmc.deactivate();
+			if(event == Event.DONE_EVENT) {
+				List<AuthoringEntryRow> rows = confirmDeleteCtrl.getRows();
+				doCompleteDelete(ureq, rows);
+				reloadRows();
+			}
+			cleanUp();
+		} else if(copyDialogCtrl == source) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				@SuppressWarnings("unchecked")
+				List<AuthoringEntryRow> rows = (List<AuthoringEntryRow>)copyDialogCtrl.getUserObject();
+				doCompleteCopy(rows);
+				reloadRows();
+			}
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(userSearchCtr);
 		removeAsListenerAndDispose(createCtrl);
@@ -437,6 +460,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		removeAsListenerAndDispose(wizardCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
+		confirmDeleteCtrl = null;
 		toolsCalloutCtrl = null;
 		userSearchCtr = null;
 		createCtrl = null;
@@ -454,18 +478,19 @@ public class AuthorListController extends FormBasicController implements Activat
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addOwnersButton == source) {
-			Set<Integer> selections = tableEl.getMultiSelectedIndex();
-			if(selections.isEmpty()) {
-				//get rows
-			} else {
-				List<AuthoringEntryRow> rows = new ArrayList<>();
-				for(Integer i:selections) {
-					AuthoringEntryRow row = model.getObject(i.intValue());
-					if(row != null) {
-						rows.add(row);
-					}
-				}
+			List<AuthoringEntryRow> rows = getMultiSelectedRows();
+			if(!rows.isEmpty()) {
 				doAddOwners(ureq, rows);
+			}
+		} else if(copyButton == source) {
+			List<AuthoringEntryRow> rows = getMultiSelectedRows();
+			if(!rows.isEmpty()) {
+				doConfirmCopy(ureq, rows);
+			}
+		} else if(deleteButton == source) {
+			List<AuthoringEntryRow> rows = getMultiSelectedRows();
+			if(!rows.isEmpty()) {
+				doConfirmDelete(ureq, rows);
 			}
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
@@ -498,7 +523,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				stateEntry.setTableState(tableEl.getStateEntry());
 				addToHistory(ureq, stateEntry);
 			}
-		} 
+		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
@@ -604,6 +629,22 @@ public class AuthorListController extends FormBasicController implements Activat
 		addToHistory(ureq, stateEntry);
 	}
 	
+	private List<AuthoringEntryRow> getMultiSelectedRows() {
+		Set<Integer> selections = tableEl.getMultiSelectedIndex();
+		List<AuthoringEntryRow> rows = new ArrayList<>(selections.size());
+		if(selections.isEmpty()) {
+			
+		} else {
+			for(Integer i:selections) {
+				AuthoringEntryRow row = model.getObject(i.intValue());
+				if(row != null) {
+					rows.add(row);
+				}
+			}
+		}
+		return rows;
+	}
+	
 	private void doAddOwners(UserRequest ureq, List<AuthoringEntryRow> rows) {
 		if(userSearchCtr != null) return;
 		
@@ -625,6 +666,80 @@ public class AuthorListController extends FormBasicController implements Activat
 			for(Identity futureOwner:futureOwners) {
 				repositoryService.addRole(futureOwner, re, GroupRoles.owner.name());
 			}
+		}
+	}
+	
+	private void doConfirmCopy(UserRequest ureq, List<AuthoringEntryRow> rows) {
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		List<AuthoringEntryRow> copyableRows = new ArrayList<>(rows.size());
+		for(AuthoringEntryRow row:rows) {
+			RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
+			boolean isInstitutionalResourceManager = repositoryManager.isInstitutionalRessourceManagerFor(getIdentity(), roles, row);
+			boolean isOwner = roles.isOLATAdmin()
+					|| repositoryService.hasRole(ureq.getIdentity(), row, GroupRoles.owner.name())
+					|| isInstitutionalResourceManager;
+
+			boolean isAuthor = roles.isOLATAdmin() || roles.isAuthor() || isInstitutionalResourceManager;
+			
+			boolean copyManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.copy);
+			boolean canCopy = (isAuthor || isOwner) && (entry.getCanCopy() || isOwner) && !copyManaged;
+			if(canCopy) {
+				copyableRows.add(row);
+			}
+		}
+		
+		if(copyableRows.isEmpty()) {
+			showWarning("bulk.update.nothing.selected");
+		} else {
+			StringBuilder sb = new StringBuilder();
+			for(AuthoringEntryRow row:copyableRows) {
+				if(sb.length() > 0) sb.append(", ");
+				sb.append(row.getDisplayname());
+			}
+			
+			String dialogText = (copyableRows.size() != rows.size())
+					? translate("details.copy.confirm.warning", sb.toString()) : translate("details.copy.confirm", sb.toString());
+			copyDialogCtrl = activateYesNoDialog(ureq, translate("details.copy"), dialogText, copyDialogCtrl);
+			copyDialogCtrl.setUserObject(copyableRows);
+		}
+	}
+	
+	private void doCompleteCopy(List<AuthoringEntryRow> rows) {
+		for(AuthoringEntryRow row:rows) {
+			RepositoryEntry sourceEntry = repositoryService.loadByKey(row.getKey());
+			String displayname = "Copy of " + sourceEntry.getDisplayname();
+			String description = sourceEntry.getDescription();
+			repositoryService.copy(sourceEntry, getIdentity(), displayname, description);
+		}
+		
+		showInfo("details.copy.success", new String[]{ Integer.toString(rows.size()) });
+	}
+	
+	private void doConfirmDelete(UserRequest ureq, List<AuthoringEntryRow> rows) {
+		Roles roles = ureq.getUserSession().getRoles();
+		List<AuthoringEntryRow> deleteableRows = new ArrayList<>(rows.size());
+		for(AuthoringEntryRow row:rows) {
+			boolean managed = RepositoryEntryManagedFlag.isManaged(row.getManagedFlags(), RepositoryEntryManagedFlag.copy);
+			boolean canDelete = roles.isOLATAdmin() || repositoryService.hasRole(ureq.getIdentity(), row, GroupRoles.owner.name())
+					|| repositoryManager.isInstitutionalRessourceManagerFor(getIdentity(), roles, row);
+			if(canDelete && !managed) {
+				deleteableRows.add(row);
+			}
+		}
+		if(deleteableRows.isEmpty()) {
+			showWarning("bulk.update.nothing.selected");
+		} else {
+			removeAsListenerAndDispose(confirmDeleteCtrl);
+			removeAsListenerAndDispose(cmc);
+			
+			confirmDeleteCtrl = new ConfirmDeleteController(ureq, getWindowControl(), deleteableRows, rows.size() != deleteableRows.size());
+			listenTo(confirmDeleteCtrl);
+			
+			String title = translate("details.delete");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
 		}
 	}
 	
@@ -685,6 +800,29 @@ public class AuthorListController extends FormBasicController implements Activat
 			}
 		}
 	}
+	private void doCompleteDelete(UserRequest ureq, List<AuthoringEntryRow> rows) {
+		boolean allOk = true;
+		Roles roles = ureq.getUserSession().getRoles();
+		for(AuthoringEntryRow row:rows) {
+			RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
+			if(entry != null) {
+				ErrorList errors = repositoryService.delete(entry, getIdentity(), roles, getLocale());
+				if (errors.hasErrors()) {
+					showInfo("info.could.not.delete.entry");
+					allOk = false;
+					break;
+				} else {
+					fireEvent(ureq, new EntryChangedEvent(entry, getIdentity(), Change.deleted));
+				}
+			}
+			
+		}
+		
+		if(allOk) {
+			showInfo("info.entry.deleted");
+		}
+	}
+	
 	
 	private void doDownload(UserRequest ureq, AuthoringEntryRow row) {
 		RepositoryHandler typeToDownload = repositoryHandlerFactory.getRepositoryHandler(row.getResourceType());

@@ -26,9 +26,9 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryLight;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.PriceMethod;
@@ -59,6 +59,7 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 	private String externalId;
 	private String externalRef;
 	private boolean managed;
+	private RepositoryEntryManagedFlag[] managedFlags;
 	
 	private String lifecycleLabel;
 	private String lifecycleSoftKey;
@@ -94,6 +95,7 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 		externalId = view.getExternalId();
 		externalRef = view.getExternalRef();
 		managed = view.getManagedFlags() != null && view.getManagedFlags().length > 0;
+		managedFlags = view.getManagedFlags();
 		
 		membersOnly = view.isMembersOnly();
 		access = view.getAccess();
@@ -102,44 +104,6 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 		olatResource = OresHelper.clone(view.getOlatResource());
 		
 		RepositoryEntryLifecycle lifecycle = view.getLifecycle();
-		if(lifecycle != null) {
-			lifecycleStart = lifecycle.getValidFrom();
-			lifecycleEnd = lifecycle.getValidTo();
-			if(!lifecycle.isPrivateCycle()) {
-				lifecycleLabel = lifecycle.getLabel();
-				lifecycleSoftKey = lifecycle.getSoftKey();
-			}
-		}
-	}
-	
-	public AuthoringEntryRow(RepositoryEntry entry, String fullnameAuthor) {
-		key = entry.getKey();
-		name = entry.getDisplayname();
-		author = fullnameAuthor;
-		authors = entry.getAuthors();
-		if(entry.getDescription() != null) {
-			String shortDesc = FilterFactory.getHtmlTagsFilter().filter(entry.getDescription());
-			if(shortDesc.length() > 255) {
-				shortenedDescription = shortDesc.substring(0, 255);
-			} else {
-				shortenedDescription = shortDesc;
-			}
-		} else {
-			shortenedDescription = "";
-		}
-
-		creationDate = entry.getCreationDate();
-		
-		externalId = entry.getExternalId();
-		externalRef = entry.getExternalRef();
-		
-		membersOnly = entry.isMembersOnly();
-		access = entry.getAccess();
-		statusCode = entry.getStatusCode();
-		
-		olatResource = OresHelper.clone(entry.getOlatResource());
-		
-		RepositoryEntryLifecycle lifecycle = entry.getLifecycle();
 		if(lifecycle != null) {
 			lifecycleStart = lifecycle.getValidFrom();
 			lifecycleEnd = lifecycle.getValidTo();
@@ -206,6 +170,10 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 	
 	public boolean isManaged() {
 		return managed;
+	}
+	
+	public RepositoryEntryManagedFlag[] getManagedFlags() {
+		return managedFlags;
 	}
 
 	public String getLifecycleLabel() {
