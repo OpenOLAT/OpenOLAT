@@ -148,11 +148,13 @@ public class OlatTopNavController extends BasicController implements GenericEven
 		impressumLink.setTarget("_blank");
 
 		
-		if(search && ureq.getIdentity() != null && !isGuest && !isInvitee) {
-			SearchServiceUIFactory searchUIFactory = (SearchServiceUIFactory)CoreSpringFactory.getBean(SearchServiceUIFactory.class);
-			searchC = searchUIFactory.createInputController(ureq, wControl, DisplayOption.STANDARD, null);
-			searchC.setResourceContextEnable(false);
-			topNavVC.put("search_input", searchC.getInitialComponent());
+		if(ureq.getIdentity() != null && !isGuest && !isInvitee) {
+			if(search) {
+				SearchServiceUIFactory searchUIFactory = (SearchServiceUIFactory)CoreSpringFactory.getBean(SearchServiceUIFactory.class);
+				searchC = searchUIFactory.createInputController(ureq, wControl, DisplayOption.STANDARD, null);
+				searchC.setResourceContextEnable(false);
+				topNavVC.put("search_input", searchC.getInitialComponent());
+			}
 
 			ass = OresHelper.createOLATResourceableType(AssessmentEvent.class);
 			singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();

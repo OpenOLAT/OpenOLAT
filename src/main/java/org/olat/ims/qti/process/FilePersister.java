@@ -156,7 +156,7 @@ public class FilePersister implements Persister {
 			}
 			is = new FileInputStream(new File(fSerialDir, QTI_FILE));
 			BufferedInputStream bis = new BufferedInputStream(is, 262144);
-			ObjectInputStream oistream = new ObjectInputStream(bis);
+			ObjectInputStream oistream = new DecompressibleInputStream(bis);
 			o = oistream.readObject();
 			oistream.close();
 			is.close();
@@ -166,6 +166,7 @@ public class FilePersister implements Persister {
 			}
 
 		} catch (Exception e) {
+			log.error("", e);
 			try {
 				if (is != null) is.close();
 			} catch (IOException e1) {
