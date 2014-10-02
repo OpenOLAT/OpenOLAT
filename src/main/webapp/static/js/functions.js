@@ -1182,12 +1182,12 @@ function showInfoBox(title, content){
     // Callback to remove after reading
     var cleanup = function() {
     	jQuery('#' + uuid)
-    		.transition({top : '-100%'}, function() {
+    		.transition({top : '-100%'}, 333, function() {
     			jQuery('#' + uuid).remove();
     		});    	
     };
     // Show info box now
-    jQuery('#' + uuid).show();
+    jQuery('#' + uuid).show().transition({ top: 0 }, 333);
 	o_scrollToElement('#o_top');
     
     // Visually remove message box immediately when user clicks on it
