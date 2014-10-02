@@ -72,11 +72,10 @@
 		<org.postgresql.version>9.3-1102-jdbc41</org.postgresql.version>
 		<org.infinispan.version>6.0.2.Final</org.infinispan.version>
 		<lucene.version>4.8.0</lucene.version>
+		<version.selenium>2.43.1</version.selenium>
 
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
-	    <skipTests>true</skipTests>
-	    <skipITs>true</skipITs>
 	    <!-- properties to define the testing environment -->
 	    <test.env>mysql</test.env>
 	    <!-- olat.local.properties to distinguish multiple single and cluster olat instances on a single machine-->
@@ -89,7 +88,8 @@
 	    <test.env.db.postgresql.host.port>5432</test.env.db.postgresql.host.port>
 	    <test.env.instance.id>myolat</test.env.instance.id>
 	    <test.env.jmx.rmi.port.0>3000</test.env.jmx.rmi.port.0>
-
+	    <skipTests>true</skipTests>
+		<skipSeleniumTests>false</skipSeleniumTests>
 	</properties>
 	<profiles>
 		<profile>
@@ -600,529 +600,456 @@
 				</plugins>
 			</build>
 		</profile>
-
-    <profile>
-      <id>mysqlunittests</id>
-      <activation>
-        <property>
-          <name>with-mysql</name>
-        </property>
-      </activation>
-      <properties>
-        <skipTests>false</skipTests>
-        <skipITs>true</skipITs>
-        <testFailureIgnore>false</testFailureIgnore>
-        <test.env>mysql</test.env>
-      </properties>
-      <build>
-        <plugins>
-          <plugin>
-            <!-- Documentation: http://maven.apache.org/plugins/maven-surefire-plugin/ -->
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <version>2.8.1</version>
-            <configuration>
-              <argLine>-XX:MaxPermSize=128m -Xmx512m -Xms256m -Djava.awt.headless=true</argLine>
-            	<systemPropertyVariables>
-								<java.io.tmpdir>${project.build.directory}/olatdata</java.io.tmpdir>
-							</systemPropertyVariables>
-              <testNGArtifactName>none:none</testNGArtifactName>
-              <includes>
-                <include>org/olat/test/AllTestsJunit4.java</include>
-              </includes>
-            </configuration>
-          </plugin>
-          <plugin>
-            <artifactId>maven-resources-plugin</artifactId>
-            <version>2.4.3</version>
-            <executions>
-              <execution>
-                <id>copy-resources-4-mysqlunittests</id>
-                <!-- hook in to copy maven.build.properties to allow test and integration-test phase run properly -->
-                <phase>generate-test-resources</phase>
-                <goals>
-                  <goal>copy-resources</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${basedir}/target/test-classes</outputDirectory>
-                  <resources>
-                    <resource>
-                      <!-- place resources you like to get filtered an copied -->
-                      <directory>src/test/profile/${test.env}</directory>
-                      <includes>
-                        <include>olat.local.properties</include>
-                      </includes>
-                      <filtering>true</filtering>
-                    </resource>
-                    <resource>
-                      <!-- place resources you like to get filtered an copied -->
-                      <directory>src/main/resources/database/mysql</directory>
-                      <includes>
-                        <include>setupDatabase.sql</include>
-                      </includes>
-                      <filtering>true</filtering>
-                    </resource>
-                  </resources>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <profile>
-      <id>clean-mysql-dbsetup</id>
-      <activation>
-        <property>
-          <name>with-mysql</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-resources-plugin</artifactId>
-            <version>2.4.3</version>
-            <executions>
-              <execution>
-                <id>copy-resources-4-clean-mysql-dbsetup</id>
-                <phase>generate-test-resources</phase>
-                <goals>
-                  <goal>copy-resources</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${basedir}/target/test-classes</outputDirectory>
-                  <resources>
-                    <resource>
-                      <!-- place resources you like to get filtered an copied -->
-                      <directory>src/main/resources/database/mysql</directory>
-                      <includes>
-                        <include>setupDatabase.sql</include>
-                      </includes>
-                      <filtering>true</filtering>
-                    </resource>
-                  </resources>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>sql-maven-plugin</artifactId>
-            <version>1.4</version>
-
-            <dependencies>
-              <dependency>
-                <!-- DO NOT UPDATE! -->
-                <!-- Due to our special setup where we use the jdbc driver to convert 
-				          from utf-8 to iso we cannot update this lib at the moment. -->
-                <groupId>mysql</groupId>
-                <artifactId>mysql-connector-java</artifactId>
-                <version>${org.mysql.version}</version>
-              </dependency>
-            </dependencies>
-
-            <!-- common configuration shared by all executions -->
-            <configuration>
-              <driver>com.mysql.jdbc.Driver</driver>
-              <url>jdbc:mysql://localhost:${test.env.db.host.port}/${test.env.db.name}</url>
-              <username>${test.env.db.user}</username>
-              <password>${test.env.db.pass}</password>
-              <!-- You can comment out username/password configurations and
-                   have maven to look them up in your settings.xml using ${settingsKey}
-              
-              <settingsKey>sensibleKey</settingsKey>-->
-              <!--all executions are ignored if -Dmaven.test.skip=true-->
-              <skip>${maven.test.skip}</skip>
-            </configuration>
-
-            <executions>
-              <execution>
-                <id>drop-db-before-test</id>
-                <phase>process-test-resources</phase>
-                <goals>
-                  <goal>execute</goal>
-                </goals>
-                <configuration>
-                  <!-- need another database to drop the targeted one -->
-                  <url>jdbc:mysql://localhost:${test.env.db.host.port}/olat</url>
-                  <autocommit>true</autocommit>
-                  <sqlCommand>drop database ${test.env.db.name}</sqlCommand>
-                  <!-- ignore error when database is not avaiable -->
-                  <onError>continue</onError>
-                </configuration>
-              </execution>
-
-              <execution>
-                <id>create-db</id>
-                <phase>process-test-resources</phase>
-                <goals>
-                  <goal>execute</goal>
-                </goals>
-                <configuration>
-                  <url>jdbc:mysql://localhost:${test.env.db.host.port}/olat</url>
-                  <!-- no transaction -->
-                  <autocommit>true</autocommit>
-                  <sqlCommand>create database ${test.env.db.name} default character set utf8</sqlCommand>
-                </configuration>
-              </execution>
-
-              <execution>
-                <id>create-schema</id>
-                <phase>process-test-resources</phase>
-                <goals>
-                  <goal>execute</goal>
-                </goals>
-                <configuration>
-                  <autocommit>true</autocommit>
-                  <srcFiles>
-                    <srcFile>target/test-classes/setupDatabase.sql</srcFile>
-                  </srcFiles>
-                </configuration>
-              </execution>
-              <!-- drop db after test -->
-              <execution>
-                <id>drop-db-after-test</id>
-                <!-- there is no post-test phase, the next phase after "test" is "prepare-package"
-                     for integration tests running against mysql generated via setupDatabase.sql there is need
-                     to bind a similar drop/create/schema/drop to pre-integration-test and post-integration-test -->
-                <phase>prepare-package</phase>
-                <goals>
-                  <goal>execute</goal>
-                </goals>
-                <configuration>
-                  <autocommit>true</autocommit>
-                  <sqlCommand>drop database ${test.env.db.name}</sqlCommand>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    
-    <profile>
-      <id>postgresqlunittests</id>
-      <activation>
-        <property>
-          <name>with-postgresql</name>
-        </property>
-      </activation>
-      <properties>
-        <skipTests>false</skipTests>
-        <skipITs>true</skipITs>
-        <testFailureIgnore>false</testFailureIgnore>
-        <test.env>postgresql</test.env>
-      </properties>
-      <build>
-        <plugins>
-          <plugin>
-            <!-- Documentation: http://maven.apache.org/plugins/maven-surefire-plugin/ -->
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <version>2.8.1</version>
-            <configuration>
-              <argLine>-XX:MaxPermSize=128m -Xmx512m -Xms256m -Djava.awt.headless=true</argLine>
-            	<systemPropertyVariables>
-								<java.io.tmpdir>${project.build.directory}/olatdata</java.io.tmpdir>
-							</systemPropertyVariables>
-              <testNGArtifactName>none:none</testNGArtifactName>
-              <includes>
-                <include>org/olat/test/AllTestsJunit4.java</include>
-              </includes>
-            </configuration>
-          </plugin>
-          <plugin>
-            <artifactId>maven-resources-plugin</artifactId>
-            <version>2.4.3</version>
-            <executions>
-              <execution>
-                <id>copy-resources-4-postgresqlunittests</id>
-                <!-- hook in to copy maven.build.properties to allow test and integration-test phase run properly -->
-                <phase>generate-test-resources</phase>
-                <goals>
-                  <goal>copy-resources</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${basedir}/target/test-classes</outputDirectory>
-                  <resources>
-                    <resource>
-                      <!-- place resources you like to get filtered an copied -->
-                      <directory>src/test/profile/${test.env}</directory>
-                      <includes>
-                        <include>olat.local.properties</include>
-                      </includes>
-                      <filtering>true</filtering>
-                    </resource>
-                    <resource>
-                      <!-- place resources you like to get filtered an copied -->
-                      <directory>src/main/resources/database/postgresql</directory>
-                      <includes>
-                        <include>setupDatabase.sql</include>
-                      </includes>
-                      <filtering>true</filtering>
-                    </resource>
-                  </resources>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <profile>
-      <id>clean-postgresql-dbsetup</id>
-      <activation>
-        <property>
-          <name>with-postgresql</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-resources-plugin</artifactId>
-            <version>2.4.3</version>
-            <executions>
-              <execution>
-                <id>copy-resources-4-clean-postgresql-dbsetup</id>
-                <phase>generate-test-resources</phase>
-                <goals>
-                  <goal>copy-resources</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${basedir}/target/test-classes</outputDirectory>
-                  <resources>
-                    <resource>
-                      <!-- place resources you like to get filtered an copied -->
-                      <directory>src/main/resources/database/postgresql</directory>
-                      <includes>
-                        <include>setupDatabase.sql</include>
-                      </includes>
-                      <filtering>true</filtering>
-                    </resource>
-                  </resources>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>sql-maven-plugin</artifactId>
-            <version>1.5</version>
-
-            <dependencies>
-              <dependency>
-			          <groupId>postgresql</groupId>
-			          <artifactId>postgresql</artifactId>
-			          <version>8.4-701.jdbc4</version>
-		          </dependency>
-            </dependencies>
-
-            <!-- common configuration shared by all executions -->
-            <configuration>
-              <driver>org.postgresql.Driver</driver>
-              <url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/${test.env.db.name}</url>
-              <username>${test.env.db.postgresql.user}</username>
-              <password>${test.env.db.postgresql.pass}</password>
-              <!-- You can comment out username/password configurations and
-                   have maven to look them up in your settings.xml using ${settingsKey}
-              
-              <settingsKey>sensibleKey</settingsKey>-->
-              <!--all executions are ignored if -Dmaven.test.skip=true-->
-              <skip>${maven.test.skip}</skip>
-            </configuration>
-
-            <executions>
-              <execution>
-                <id>drop-db-before-test</id>
-                <phase>process-test-resources</phase>
-                <goals>
-                  <goal>execute</goal>
-                </goals>
-                <configuration>
-                  <!-- need another database to drop the targeted one -->
-                  <url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/postgres</url>
-                  <autocommit>true</autocommit>
-                  <sqlCommand>drop database ${test.env.db.name}</sqlCommand>
-                  <!-- ignore error when database is not avaiable -->
-                  <onError>continue</onError>
-                </configuration>
-              </execution>
-
-              <execution>
-                <id>create-db</id>
-                <phase>process-test-resources</phase>
-                <goals>
-                  <goal>execute</goal>
-                </goals>
-                <configuration>
-                  <url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/postgres</url>
-                  <!-- no transaction -->
-                  <autocommit>true</autocommit>
-                  <sqlCommand>create database ${test.env.db.name}</sqlCommand>
-                </configuration>
-              </execution>
-
-              <execution>
-                <id>create-schema</id>
-                <phase>process-test-resources</phase>
-                <goals>
-                  <goal>execute</goal>
-                </goals>
-                <configuration>
-                  <autocommit>true</autocommit>
-                  <srcFiles>
-                    <srcFile>target/test-classes/setupDatabase.sql</srcFile>
-                  </srcFiles>
-                </configuration>
-              </execution>
-
-              <!-- drop db after test -->
-              <execution>
-                <id>drop-db-after-test</id>
-                <!-- there is no post-test phase, the next phase after "test" is "prepare-package"
-                     for integration tests running against mysql generated via setupDatabase.sql there is need
-                     to bind a similar drop/create/schema/drop to pre-integration-test and post-integration-test -->
-                <phase>prepare-package</phase>
-                <goals>
-                  <goal>execute</goal>
-                </goals>
-                <configuration>
-                  <url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/postgres</url>
-                  <autocommit>true</autocommit>
-                  <sqlCommand>drop database ${test.env.db.name}</sqlCommand>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-
-        </plugins>
-      </build>
-    </profile>
-    
-	<profile>
-		<id>oracleunittests</id>
-		<activation>
-			<property>
-				<name>with-oracle</name>
-			</property>
-		</activation>
-		<properties>
-			<skipTests>false</skipTests>
-			<skipITs>true</skipITs>
-			<testFailureIgnore>false</testFailureIgnore>
-			<test.env>oracle</test.env>
-		</properties>
-		<build>
-			<plugins>
-				<plugin>
-					<!-- Documentation: http://maven.apache.org/plugins/maven-surefire-plugin/ -->
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-surefire-plugin</artifactId>
-					<version>2.8.1</version>
-					<configuration>
-						<argLine>-XX:MaxPermSize=128m -Xmx512m -Xms256m -Djava.awt.headless=true</argLine>
-						<systemPropertyVariables>
-							<java.io.tmpdir>${project.build.directory}/olatdata</java.io.tmpdir>
-						</systemPropertyVariables>
-						<testNGArtifactName>none:none</testNGArtifactName>
-						<includes>
-							<include>org/olat/test/AllTestsJunit4.java</include>
-						</includes>
-					</configuration>
-				</plugin>
-				<plugin>
-					<artifactId>maven-resources-plugin</artifactId>
-					<version>2.4.3</version>
-					<executions>
-						<execution>
-							<id>copy-resources-4-postgresqlunittests</id>
-							<!-- hook in to copy maven.build.properties to allow test and integration-test 
-								phase run properly -->
-							<phase>generate-test-resources</phase>
-							<goals>
-								<goal>copy-resources</goal>
-							</goals>
-							<configuration>
-								<outputDirectory>${basedir}/target/test-classes</outputDirectory>
-								<resources>
-									<resource>
-										<!-- place resources you like to get filtered an copied -->
-										<directory>src/test/profile/${test.env}</directory>
-										<includes>
-											<include>olat.local.properties</include>
-										</includes>
-										<filtering>true</filtering>
-									</resource>
-									<resource>
-										<!-- place resources you like to get filtered an copied -->
-										<directory>src/main/resources/database/oracle</directory>
-										<includes>
-											<include>setupDatabase.sql</include>
-										</includes>
-										<filtering>true</filtering>
-									</resource>
-								</resources>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
-			</plugins>
-		</build>
-		<dependencies>
-			<dependency>
-				<groupId>com.oracle</groupId>
-				<artifactId>ojdbc6</artifactId>
-				<version>11.0</version>
-				<optional>true</optional>
-			</dependency>
-		</dependencies>
-	</profile>
-
-	    <profile>
-	    	<id>arquillian</id>
-	    	<properties>
-	    		<skipTests>false</skipTests>
-	    	</properties>
-	    	<build>
-	    		<plugins>
-		    		<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-		                <artifactId>maven-antrun-plugin</artifactId>
-						<version>1.7</version>
-		                <executions>
-		                    <execution>
-		                        <phase>generate-test-resources</phase>
-		                        <configuration>
-		                            <tasks>
-		                                <mkdir dir="${project.build.directory}/downloads" />
-		                                <get src="http://nexus.openolat.org/nexus/content/repositories/openolat/org/apache/tomcat/apache-tomcat-arq/7.0.27/apache-tomcat-arq-7.0.27.zip" dest="${project.build.directory}/downloads" verbose="true" skipexisting="true" />
-		                                <unzip src="${project.build.directory}/downloads/apache-tomcat-arq-7.0.27.zip" dest="${project.build.directory}" />
-		                            </tasks>
-		                        </configuration>
-		                        <goals>
-		                            <goal>run</goal>
-		                        </goals>
-		                    </execution>
-		                </executions>
-		            </plugin>
+	
+		<profile>
+			<id>mysqlunittests</id>
+			<activation>
+				<property>
+					<name>with-mysql</name>
+				</property>
+			</activation>
+			<properties>
+				<testFailureIgnore>false</testFailureIgnore>
+				<test.env>mysql</test.env>
+				<skipTests>false</skipTests>
+			</properties>
+			<build>
+				<plugins>
 					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<version>2.12</version>
+						<artifactId>maven-resources-plugin</artifactId>
+						<version>2.4.3</version>
+						<executions>
+							<execution>
+								<id>copy-resources-4-mysqlunittests</id>
+								<!-- hook in to copy maven.build.properties to allow test and integration-test 
+									phase run properly -->
+								<phase>generate-test-resources</phase>
+								<goals>
+									<goal>copy-resources</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${basedir}/target/test-classes</outputDirectory>
+									<resources>
+										<resource>
+											<!-- place resources you like to get filtered an copied -->
+											<directory>src/test/profile/${test.env}</directory>
+											<includes>
+												<include>olat.local.properties</include>
+											</includes>
+											<filtering>true</filtering>
+										</resource>
+										<resource>
+											<!-- place resources you like to get filtered an copied -->
+											<directory>src/main/resources/database/mysql</directory>
+											<includes>
+												<include>setupDatabase.sql</include>
+											</includes>
+											<filtering>true</filtering>
+										</resource>
+									</resources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>sql-maven-plugin</artifactId>
+						<version>1.5</version>
+						<dependencies>
+							<dependency>
+								<groupId>mysql</groupId>
+								<artifactId>mysql-connector-java</artifactId>
+								<version>${org.mysql.version}</version>
+							</dependency>
+						</dependencies>
+	
+						<!-- common configuration shared by all executions -->
 						<configuration>
-							<forkMode>always</forkMode>
-							<systemProperties>
-								<arquillian.launch>tomcat-7-managed</arquillian.launch>
-							</systemProperties>
-							<testNGArtifactName>none:none</testNGArtifactName>
-              				<test>org/olat/selenium/*Test.java</test>
+							<driver>com.mysql.jdbc.Driver</driver>
+							<url>jdbc:mysql://localhost:${test.env.db.host.port}/${test.env.db.name}</url>
+							<username>${test.env.db.user}</username>
+							<password>${test.env.db.pass}</password>
 						</configuration>
+	
+						<executions>
+							<execution>
+								<id>drop-mysql-db-before-test</id>
+								<phase>process-test-resources</phase>
+								<goals>
+									<goal>execute</goal>
+								</goals>
+								<configuration>
+									<!-- need another database to drop the targeted one -->
+									<url>jdbc:mysql://localhost:${test.env.db.host.port}/olat</url>
+									<autocommit>true</autocommit>
+									<sqlCommand>drop database ${test.env.db.name}</sqlCommand>
+									<!-- ignore error when database is not avaiable -->
+									<onError>continue</onError>
+								</configuration>
+							</execution>
+	
+							<execution>
+								<id>create-mysql-db</id>
+								<phase>process-test-resources</phase>
+								<goals>
+									<goal>execute</goal>
+								</goals>
+								<configuration>
+									<url>jdbc:mysql://localhost:${test.env.db.host.port}/olat</url>
+									<!-- no transaction -->
+									<autocommit>true</autocommit>
+									<sqlCommand>create database ${test.env.db.name} default character set utf8</sqlCommand>
+								</configuration>
+							</execution>
+	
+							<execution>
+								<id>create-mysql-schema</id>
+								<phase>process-test-resources</phase>
+								<goals>
+									<goal>execute</goal>
+								</goals>
+								<configuration>
+									<autocommit>true</autocommit>
+									<srcFiles>
+										<srcFile>target/test-classes/setupDatabase.sql</srcFile>
+									</srcFiles>
+								</configuration>
+							</execution>
+							<!-- drop db after test -->
+							<execution>
+								<id>drop-mysql-db-after-test</id>
+								<!-- there is no post-test phase, the next phase after "test" is "prepare-package" 
+									for integration tests running against mysql generated via setupDatabase.sql 
+									there is need to bind a similar drop/create/schema/drop to pre-integration-test 
+									and post-integration-test -->
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>execute</goal>
+								</goals>
+								<configuration>
+									<autocommit>true</autocommit>
+									<sqlCommand>drop database ${test.env.db.name}</sqlCommand>
+								</configuration>
+							</execution>
+							
+							<!-- Same for integration-test -->
+							<execution>
+								<id>drop-mysql-db-before-integration</id>
+								<phase>pre-integration-test</phase>
+								<goals>
+									<goal>execute</goal>
+								</goals>
+								<configuration>
+									<!-- need another database to drop the targeted one -->
+									<url>jdbc:mysql://localhost:${test.env.db.host.port}/olat</url>
+									<autocommit>true</autocommit>
+									<sqlCommand>drop database ${test.env.db.name}</sqlCommand>
+									<!-- ignore error when database is not avaiable -->
+									<onError>continue</onError>
+								</configuration>
+							</execution>
+							<execution>
+								<id>create-mysql-db-before-integration-test</id>
+								<phase>pre-integration-test</phase>
+								<goals>
+									<goal>execute</goal>
+								</goals>
+								<configuration>
+									<url>jdbc:mysql://localhost:${test.env.db.host.port}/olat</url>
+									<!-- no transaction -->
+									<autocommit>true</autocommit>
+									<sqlCommand>create database ${test.env.db.name} default character set utf8</sqlCommand>
+								</configuration>
+							</execution>
+							<execution>
+								<id>create-mysql-schema-before-integration-test</id>
+								<phase>pre-integration-test</phase>
+								<goals>
+									<goal>execute</goal>
+								</goals>
+								<configuration>
+									<autocommit>true</autocommit>
+									<srcFiles>
+										<srcFile>target/test-classes/setupDatabase.sql</srcFile>
+									</srcFiles>
+								</configuration>
+							</execution>
+							<!-- drop db after test -->
+							<execution>
+								<id>drop-mysql-db-after-integration-test</id>
+								<phase>post-integration-test</phase>
+								<goals>
+									<goal>execute</goal>
+								</goals>
+								<configuration>
+									<autocommit>true</autocommit>
+									<sqlCommand>drop database ${test.env.db.name}</sqlCommand>
+								</configuration>
+							</execution>
+						</executions>
 					</plugin>
 				</plugins>
-	    	</build>
-	    </profile>
+			</build>
+		</profile>
+	
+		<profile>
+			<id>postgresqlunittests</id>
+			<activation>
+				<property>
+					<name>with-postgresql</name>
+				</property>
+			</activation>
+			<properties>
+				<testFailureIgnore>false</testFailureIgnore>
+				<test.env>postgresql</test.env>
+				<skipTests>false</skipTests>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-resources-plugin</artifactId>
+						<version>2.4.3</version>
+						<executions>
+							<execution>
+								<id>copy-resources-4-postgresqlunittests</id>
+								<!-- hook in to copy maven.build.properties to allow test and integration-test 
+									phase run properly -->
+								<phase>generate-test-resources</phase>
+								<goals>
+									<goal>copy-resources</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${basedir}/target/test-classes</outputDirectory>
+									<resources>
+										<resource>
+											<!-- place resources you like to get filtered an copied -->
+											<directory>src/test/profile/${test.env}</directory>
+											<includes>
+												<include>olat.local.properties</include>
+											</includes>
+											<filtering>true</filtering>
+										</resource>
+										<resource>
+											<!-- place resources you like to get filtered an copied -->
+											<directory>src/main/resources/database/postgresql</directory>
+											<includes>
+												<include>setupDatabase.sql</include>
+											</includes>
+											<filtering>true</filtering>
+										</resource>
+									</resources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>sql-maven-plugin</artifactId>
+						<version>1.5</version>
+	
+						<dependencies>
+							<dependency>
+								<groupId>org.postgresql</groupId>
+								<artifactId>postgresql</artifactId>
+								<version>${org.postgresql.version}</version>
+							</dependency>
+						</dependencies>
+	
+						<!-- common configuration shared by all executions -->
+						<configuration>
+							<driver>org.postgresql.Driver</driver>
+							<url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/${test.env.db.name}</url>
+							<username>${test.env.db.postgresql.user}</username>
+							<password>${test.env.db.postgresql.pass}</password>
+						</configuration>
+	
+						<executions>
+							<execution>
+								<id>drop-postgresql-db-before-test</id>
+								<phase>process-test-resources</phase>
+								<goals>
+									<goal>execute</goal>
+								</goals>
+								<configuration>
+									<!-- need another database to drop the targeted one -->
+									<url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/postgres</url>
+									<autocommit>true</autocommit>
+									<sqlCommand>drop database ${test.env.db.name}</sqlCommand>
+									<!-- ignore error when database is not avaiable -->
+									<onError>continue</onError>
+								</configuration>
+							</execution>
+	
+							<execution>
+								<id>create-postgresql-db</id>
+								<phase>process-test-resources</phase>
+								<goals>
+									<goal>execute</goal>
+								</goals>
+								<configuration>
+									<url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/postgres</url>
+									<!-- no transaction -->
+									<autocommit>true</autocommit>
+									<sqlCommand>create database ${test.env.db.name}</sqlCommand>
+								</configuration>
+							</execution>
+	
+							<execution>
+								<id>create-postgresql-schema</id>
+								<phase>process-test-resources</phase>
+								<goals>
+									<goal>execute</goal>
+								</goals>
+								<configuration>
+									<autocommit>true</autocommit>
+									<srcFiles>
+										<srcFile>target/test-classes/setupDatabase.sql</srcFile>
+									</srcFiles>
+								</configuration>
+							</execution>
+	
+							<!-- drop db after test -->
+							<execution>
+								<id>drop-postgresql-db-after-test</id>
+								<!-- there is no post-test phase, the next phase after "test" is "prepare-package" 
+									for integration tests running against mysql generated via setupDatabase.sql 
+									there is need to bind a similar drop/create/schema/drop to pre-integration-test 
+									and post-integration-test -->
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>execute</goal>
+								</goals>
+								<configuration>
+									<url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/postgres</url>
+									<autocommit>true</autocommit>
+									<sqlCommand>drop database ${test.env.db.name}</sqlCommand>
+								</configuration>
+							</execution>
+	
+							<!-- Same for integration tests -->
+							<execution>
+								<id>drop-postgresql-db-before-integtration-test</id>
+								<phase>pre-integration-test</phase>
+								<goals>
+									<goal>execute</goal>
+								</goals>
+								<configuration>
+									<!-- need another database to drop the targeted one -->
+									<url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/postgres</url>
+									<autocommit>true</autocommit>
+									<sqlCommand>drop database ${test.env.db.name}</sqlCommand>
+									<!-- ignore error when database is not avaiable -->
+									<onError>continue</onError>
+								</configuration>
+							</execution>
+	
+							<execution>
+								<id>create-postgresql-db-before-integration-test</id>
+								<phase>pre-integration-test</phase>
+								<goals>
+									<goal>execute</goal>
+								</goals>
+								<configuration>
+									<url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/postgres</url>
+									<!-- no transaction -->
+									<autocommit>true</autocommit>
+									<sqlCommand>create database ${test.env.db.name}</sqlCommand>
+								</configuration>
+							</execution>
+	
+							<execution>
+								<id>create-postgresql-schema-before-integration-test</id>
+								<phase>pre-integration-test</phase>
+								<goals>
+									<goal>execute</goal>
+								</goals>
+								<configuration>
+									<autocommit>true</autocommit>
+									<srcFiles>
+										<srcFile>target/test-classes/setupDatabase.sql</srcFile>
+									</srcFiles>
+								</configuration>
+							</execution>
+	
+							<!-- drop db after test -->
+							<execution>
+								<id>drop-postgresql-db-after-integration-test</id>
+								<phase>post-integration-test</phase>
+								<goals>
+									<goal>execute</goal>
+								</goals>
+								<configuration>
+									<url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/postgres</url>
+									<autocommit>true</autocommit>
+									<sqlCommand>drop database ${test.env.db.name}</sqlCommand>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	
+		<profile>
+			<id>oracleunittests</id>
+			<activation>
+				<property>
+					<name>with-oracle</name>
+				</property>
+			</activation>
+			<properties>
+				<testFailureIgnore>false</testFailureIgnore>
+				<test.env>oracle</test.env>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-resources-plugin</artifactId>
+						<version>2.4.3</version>
+						<executions>
+							<execution>
+								<id>copy-resources-4-oracleunittests</id>
+								<!-- hook in to copy maven.build.properties to allow test and integration-test 
+									phase run properly -->
+								<phase>generate-test-resources</phase>
+								<goals>
+									<goal>copy-resources</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${basedir}/target/test-classes</outputDirectory>
+									<resources>
+										<resource>
+											<!-- place resources you like to get filtered an copied -->
+											<directory>src/test/profile/${test.env}</directory>
+											<includes>
+												<include>olat.local.properties</include>
+											</includes>
+											<filtering>true</filtering>
+										</resource>
+										<resource>
+											<!-- place resources you like to get filtered an copied -->
+											<directory>src/main/resources/database/oracle</directory>
+											<includes>
+												<include>setupDatabase.sql</include>
+											</includes>
+											<filtering>true</filtering>
+										</resource>
+									</resources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+			<dependencies>
+				<dependency>
+					<groupId>com.oracle</groupId>
+					<artifactId>ojdbc6</artifactId>
+					<version>11.0</version>
+					<optional>true</optional>
+				</dependency>
+			</dependencies>
+		</profile>
 	</profiles>
 	<repositories>
 		<repository>
@@ -1234,14 +1161,6 @@
 					<exclude>log4j.xml</exclude>
 				</excludes>
 			</resource>
-			<!-- 
-			<resource>
-				<directory>src/../</directory>
-				<includes>
-					<include>NOTICE.TXT</include>
-				</includes>
-			</resource>
-			-->
 		</resources>
 		<testResources>
 			<!-- Same comment as for src/main/java also applies to src/test/java -->
@@ -1258,6 +1177,7 @@
 			</testResource>
 		</testResources>
 		<plugins>
+			<!-- Set the build number from mercurial -->
 			<plugin>
 				<groupId>org.openolat.mojo</groupId>
 				<artifactId>buildnumber-maven-plugin</artifactId>
@@ -1280,6 +1200,7 @@
 				<artifactId>maven-antrun-plugin</artifactId>
 				<version>1.7</version>
 				<executions>
+					<!-- Copy the notice.txt file -->
 					<execution>
 						<id>copy-notices-txt</id>
 						<phase>compile</phase>
@@ -1287,18 +1208,78 @@
 							<goal>run</goal>
 						</goals>
 						<configuration>
-							<target name="copy notice.tx to web project">      
+							<target name="copy notice.txt to web project">      
 								<copy file="${project.basedir}/NOTICE.TXT"
 									tofile="${project.build.outputDirectory}/NOTICE.TXT"/>
 							</target>
 						</configuration>                       
-					</execution> 
+					</execution>
+					<!-- Download tomcat for integration test -->
+					<execution>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                        	<goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <mkdir dir="${project.build.directory}/downloads" />
+                                <get src="http://nexus.openolat.org/nexus/content/repositories/openolat/org/apache/tomcat/apache-tomcat-arq/7.0.27/apache-tomcat-arq-7.0.27.zip" dest="${project.build.directory}/downloads" verbose="true" skipexisting="true" />
+                                <unzip src="${project.build.directory}/downloads/apache-tomcat-arq-7.0.27.zip" dest="${project.build.directory}" />
+                            </tasks>
+                        </configuration>
+                    </execution> 
+				</executions>
+			</plugin>
+            <!-- Unit tests -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.8.1</version>
+				<configuration>
+					<skipTests>${skipTests}</skipTests>
+					<argLine>-XX:MaxPermSize=128m -Xmx512m -Xms256m -Djava.awt.headless=true</argLine>
+					<systemPropertyVariables>
+						<java.io.tmpdir>${project.build.directory}/olatdata</java.io.tmpdir>
+					</systemPropertyVariables>
+					<testNGArtifactName>none:none</testNGArtifactName>
+					<includes>
+						<include>org/olat/test/AllTestsJunit4.java</include>
+					</includes>
+				</configuration>
+			</plugin>
+			<!-- Selenium tests -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>2.9</version>
+				<configuration>
+					<skipITs>${skipSeleniumTests}</skipITs>
+					<skipTests>${skipSeleniumTests}</skipTests>
+					<forkMode>always</forkMode>
+					<systemProperties>
+						<arquillian.launch>tomcat-7-managed</arquillian.launch>
+					</systemProperties>
+					<testNGArtifactName>none:none</testNGArtifactName>
+					<test>org/olat/selenium/*Test.java</test>
+				</configuration>
+				<executions>
+					<execution>
+						<id>selenium-test</id>
+						<goals>
+							<goal>integration-test</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>selenium-verify</id>
+						<goals>
+							<goal>verify</goal>
+						</goals>
+					</execution>
 				</executions>
 			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
-
 				<!-- OLAT requires JDK 1.7 or later ! -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -1344,7 +1325,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-eclipse-plugin</artifactId>
-					<version>2.8</version>
+					<version>2.9</version>
 					<configuration>
 				        <linkedResources>
 			               	<linkedResource>
@@ -1355,11 +1336,9 @@
                 			<linkedResource>
 		                        <name>/src/test/java/olat.local.properties</name>
 		                        <type>1</type>
-		                        <location>${basedir}/src/test/profile/mysql/olat.eclipse.properties</location>
+		                        <location>${basedir}/src/test/profile/mysql/olat.local.properties</location>
                 			</linkedResource>
 				        </linkedResources>				        
-				        
-                        
 						<wtpversion>2.0</wtpversion>
 						<!-- context name for servlet container e.g. localhost:8080/olat -->
 						<wtpContextName>olat</wtpContextName>
@@ -1739,7 +1718,7 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
-			<version>1.8.5</version>
+			<version>1.8.6</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -2265,7 +2244,7 @@
 		<dependency>
             <groupId>org.jboss.arquillian.extension</groupId>
             <artifactId>arquillian-drone-webdriver-depchain</artifactId>
-            <version>1.3.0.Final</version>
+            <version>1.3.1.Final</version>
             <type>pom</type>
             <scope>test</scope>
         </dependency>
@@ -2304,16 +2283,23 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
+				<groupId>org.jboss.arquillian.selenium</groupId>
+				<artifactId>selenium-bom</artifactId>
+				<version>${version.selenium}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
 				<groupId>org.jboss.arquillian</groupId>
 				<artifactId>arquillian-bom</artifactId>
-				<version>1.1.4.Final</version>
+				<version>1.1.5.Final</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.extension</groupId>
 				<artifactId>arquillian-drone-bom</artifactId>
-				<version>1.3.0.Final</version>
+				<version>1.3.1.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -2336,56 +2322,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-report-plugin</artifactId>
 				<version>2.9</version>
-			</plugin>
-			<!-- Javadoc -->
-			<!-- <reportSets> <reportSet> <reports> <report>javadoc</report> -->
-			<!-- Note: leave this line commented out if unit tests are not to be documented 
-				<report>test-javadoc</report>report> -->
-			<!-- </reports> </reportSet> </reportSets> </plugin> -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jxr-plugin</artifactId>
-				<version>2.3</version>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>cobertura-maven-plugin</artifactId>
-				<version>2.5.1</version>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>2.6</version>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-pmd-plugin</artifactId>
-				<version>2.5</version>
-				<configuration>
-					<rulesets>
-						<ruleset>/rulesets/basic.xml</ruleset>
-						<ruleset>/rulesets/controversial.xml</ruleset>
-					</rulesets>
-					<format>xml</format>
-					<linkXref>true</linkXref>
-					<sourceEncoding>utf-8</sourceEncoding>
-					<minimumTokens>100</minimumTokens>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>taglist-maven-plugin</artifactId>
-				<version>2.4</version>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>findbugs-maven-plugin</artifactId>
-				<version>2.3.1</version>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>jdepend-maven-plugin</artifactId>
-				<version>2.0-beta-2</version>
 			</plugin>
 		</plugins>
 	</reporting>

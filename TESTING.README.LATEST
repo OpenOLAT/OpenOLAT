@@ -45,7 +45,7 @@ junit and integration tests in OpenOLAT 8
 
 * Execute jUnit integration tests
 -----------------------------------------
-- junit integration tests that load the framework to execute (execution time ca. 10-15m)
+- junit integration tests that load the framework to execute (execution time ca. 10m)
   - MySQL
 	  mvn clean test -Dwith-mysql -Ptomcat
   - PostgreSQL
@@ -68,21 +68,19 @@ junit and integration tests in OpenOLAT 8
 
 * Execute selenium functional integration tests
 -----------------------------------------
-- First build the application without tests (arquillian need the library before mvn give them)
-    mvn -DskipTests=true -Parquillian,tomcat clean package
-    
-- Run the tests
-	mvn -Parquillian,tomcat surefire:test
+- selenium integration tests which started the whole web application in Tomcat (execution time ca. 10m)
+  - MySQL
+	mvn clean verify -DskipTests=true -Dwith-mysql -Ptomcat
+  - PostgreSQL
+	mvn clean verify -DskipTests=true -Dwith-postgresql -Ptomcat
 
-You can add "clean-mysql-dbsetup" to the profils to drop / restore the database
 The Selenium tests can be run with different browser but with some limitations:
-- Chrome cannot do an upload
-- Selenium need Firefox version 17
+- Chrome/Safari cannot do an upload (tests which need an upload are ignored)
 
 * Execute a single selenium functional integration test in Eclipse
 -----------------------------------------
 - First build the application without tests as before
-    mvn -DskipTests=true -Parquillian,tomcat clean package
- 
+	mvn clean verify -DskipTests=true -DskipSeleniumTests=true -Ptomcat
+
 - Run single test as JUnit Test in Eclipse
 

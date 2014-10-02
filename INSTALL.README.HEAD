@@ -48,7 +48,7 @@ Preconditions:
   6.2 Write the OpenOLAT database schema to the OpenOLAT database. Example for MySQL:
 	mysql -u openolat -p openolat < src/main/resources/database/mysql/setupDatabase.sql
   6.3 Optional: if you want to run the jUnit tests, make sure you also create and initialize the test database
-      that you configured in src/test/profile/mysql/olat.eclipse.properties
+      that you configured in src/test/profile/mysql/olat.local.properties
 
 7. In Eclipse: setup tomcat server by clicking on olat->Run As->"Run on Server". 
   7.1 The Run on Server wizard will pop up and check: manually define a new server
