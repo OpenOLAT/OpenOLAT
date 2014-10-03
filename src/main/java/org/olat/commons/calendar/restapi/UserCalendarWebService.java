@@ -49,6 +49,7 @@ import org.olat.collaboration.CollaborationManager;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.KalendarConfig;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
@@ -164,12 +165,18 @@ public class UserCalendarWebService {
 		int typeIndex = calendarId.indexOf('_');
 		if(typeIndex <= 0 || (typeIndex + 1 >= calendarId.length())) {
 			return null;
-		} 
+		}
+		
+		CalendarModule calendarModule = CoreSpringFactory.getImpl(CalendarModule.class);
+		if(!calendarModule.isEnabled()) {
+			return null;
+		}
+		
 		String type = calendarId.substring(0, typeIndex);
 		String id = calendarId.substring(typeIndex + 1);
 		
 		KalendarRenderWrapper wrapper = null;
-		if("group".equals(type)) {
+		if("group".equals(type) && calendarModule.isEnableGroupCalendar()) {
 			Long groupId = Long.parseLong(id);
 			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 			BusinessGroup group = bgs.loadBusinessGroup(groupId);
@@ -177,11 +184,11 @@ public class UserCalendarWebService {
 				CollaborationManager collaborationManager = CoreSpringFactory.getImpl(CollaborationManager.class);
 				wrapper = collaborationManager.getCalendar(group, ureq, false);
 			}
-		} else if("course".equals(type)) {
+		} else if("course".equals(type) && (calendarModule.isEnableCourseElementCalendar() || calendarModule.isEnableCourseToolCalendar())) {
 			Long courseId = Long.parseLong(id);
 			ICourse course = CourseFactory.loadCourse(courseId);
 			wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, course, null);
-		} else if("user".equals(type)) {
+		} else if("user".equals(type) && calendarModule.isEnablePersonalCalendar()) {
 			List<String> identityName = Collections.singletonList(id);
 			List<IdentityShort> shorts = BaseSecurityManager.getInstance().findShortIdentitiesByName(identityName);
 			if(shorts.size() == 1 && shorts.get(0).getKey().equals(ureq.getIdentity().getKey())) {
@@ -209,49 +216,59 @@ public class UserCalendarWebService {
 		Roles roles = ureq.getUserSession().getRoles();
 		Identity retrievedUser = ureq.getIdentity();
 
-		KalendarRenderWrapper personalWrapper = getPersonalCalendar(ureq);
-		calVisitor.visit(personalWrapper);
-		
-		RepositoryManager rm = RepositoryManager.getInstance();
-		ACService acManager = CoreSpringFactory.getImpl(ACService.class);
-		SearchRepositoryEntryParameters repoParams = new SearchRepositoryEntryParameters(retrievedUser, roles, "CourseModule");
-		repoParams.setOnlyExplicitMember(true);
-		repoParams.setIdentity(retrievedUser);
-		List<RepositoryEntry> entries = rm.genericANDQueryWithRolesRestriction(repoParams, 0, -1, true);
-		for(RepositoryEntry entry:entries) {
-			AccessResult result = acManager.isAccessible(entry, retrievedUser, false);
-			if(result.isAccessible()) {
-				try {
-					final ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
-					CourseConfig config = course.getCourseEnvironment().getCourseConfig();
-					if(config.isCalendarEnabled()) {
-						KalendarRenderWrapper wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, entry.getOlatResource(), null);
-						calVisitor.visit(wrapper);
-					} else {
-						IdentityEnvironment ienv = new IdentityEnvironment(retrievedUser, roles);
-						CalCourseNodeVisitor visitor = new CalCourseNodeVisitor();
-						new CourseTreeVisitor(course, ienv).visit(visitor);
-						if(visitor.isFound()) {
-							KalendarRenderWrapper wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, entry.getOlatResource(), null);
-							calVisitor.visit(wrapper);
+		CalendarModule calendarModule = CoreSpringFactory.getImpl(CalendarModule.class);
+		if(calendarModule.isEnabled()) {
+			
+			if(calendarModule.isEnablePersonalCalendar()) {
+				KalendarRenderWrapper personalWrapper = getPersonalCalendar(ureq);
+				calVisitor.visit(personalWrapper);
+			}
+			
+			if(calendarModule.isEnableCourseToolCalendar() || calendarModule.isEnableCourseElementCalendar()) {
+				RepositoryManager rm = RepositoryManager.getInstance();
+				ACService acManager = CoreSpringFactory.getImpl(ACService.class);
+				SearchRepositoryEntryParameters repoParams = new SearchRepositoryEntryParameters(retrievedUser, roles, "CourseModule");
+				repoParams.setOnlyExplicitMember(true);
+				repoParams.setIdentity(retrievedUser);
+				List<RepositoryEntry> entries = rm.genericANDQueryWithRolesRestriction(repoParams, 0, -1, true);
+				for(RepositoryEntry entry:entries) {
+					AccessResult result = acManager.isAccessible(entry, retrievedUser, false);
+					if(result.isAccessible()) {
+						try {
+							final ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+							CourseConfig config = course.getCourseEnvironment().getCourseConfig();
+							if(config.isCalendarEnabled()) {
+								KalendarRenderWrapper wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, entry.getOlatResource(), null);
+								calVisitor.visit(wrapper);
+							} else {
+								IdentityEnvironment ienv = new IdentityEnvironment(retrievedUser, roles);
+								CalCourseNodeVisitor visitor = new CalCourseNodeVisitor();
+								new CourseTreeVisitor(course, ienv).visit(visitor);
+								if(visitor.isFound()) {
+									KalendarRenderWrapper wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, entry.getOlatResource(), null);
+									calVisitor.visit(wrapper);
+								}
+							}
+						} catch (Exception e) {
+							log.error("", e);
 						}
 					}
-				} catch (Exception e) {
-					log.error("", e);
 				}
 			}
-		}
-		
-		CollaborationManager collaborationManager = CoreSpringFactory.getImpl(CollaborationManager.class);
-		
-		//start found forums in groups
-		BusinessGroupService bgm = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		SearchBusinessGroupParams params = new SearchBusinessGroupParams(retrievedUser, true, true);
-		params.addTools(CollaborationTools.TOOL_CALENDAR);
-		List<BusinessGroup> groups = bgm.findBusinessGroups(params, null, 0, -1);
-		for(BusinessGroup group:groups) {
-			KalendarRenderWrapper wrapper = collaborationManager.getCalendar(group, ureq, false);
-			calVisitor.visit(wrapper);
+			
+			if(calendarModule.isEnableGroupCalendar()) {
+				CollaborationManager collaborationManager = CoreSpringFactory.getImpl(CollaborationManager.class);
+				
+				//start found forums in groups
+				BusinessGroupService bgm = CoreSpringFactory.getImpl(BusinessGroupService.class);
+				SearchBusinessGroupParams params = new SearchBusinessGroupParams(retrievedUser, true, true);
+				params.addTools(CollaborationTools.TOOL_CALENDAR);
+				List<BusinessGroup> groups = bgm.findBusinessGroups(params, null, 0, -1);
+				for(BusinessGroup group:groups) {
+					KalendarRenderWrapper wrapper = collaborationManager.getCalendar(group, ureq, false);
+					calVisitor.visit(wrapper);
+				}
+			}
 		}
 	}
 	

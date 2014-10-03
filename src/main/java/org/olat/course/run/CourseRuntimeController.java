@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.NewControllerFactory;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -161,6 +162,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private int currentUserCount;
 	private Map<String, Boolean> courseRightsCache;
 
+	@Autowired
+	private CalendarModule calendarModule;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -542,7 +545,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			detailsLink = LinkFactory.createToolLink("courseconfig",translate("command.courseconfig"), this, "o_icon_details");
 			toolbarPanel.addTool(detailsLink);
 		}		
-		if (!isGuestOnly) {
+		if (!isGuestOnly && calendarModule.isEnabled() && calendarModule.isEnableCourseToolCalendar()) {
 			calendarLink = LinkFactory.createToolLink("calendar",translate("command.calendar"), this, "o_icon_calendar");
 			calendarLink.setPopup(new LinkPopupSettings(950, 750, "cal"));
 			calendarLink.setVisible(cc.isCalendarEnabled());
@@ -1151,7 +1154,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				if(calendarLink != null) {
 					ICourse course = CourseFactory.loadCourse(getOlatResourceable());
 					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
-					calendarLink.setVisible(cc.isCalendarEnabled());
+					calendarLink.setVisible(cc.isCalendarEnabled() && calendarModule.isEnabled() && calendarModule.isEnableCourseToolCalendar());
 					toolbarPanel.setDirty(true);
 				}
 				break;

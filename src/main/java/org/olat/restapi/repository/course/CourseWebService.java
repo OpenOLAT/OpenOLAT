@@ -54,6 +54,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.restapi.CalWebService;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
@@ -142,7 +143,10 @@ public class CourseWebService {
 	
 	@Path("calendar")
 	public CalWebService getCourseCalendarWebService(@Context HttpServletRequest request) {
-		if(course.getCourseConfig().isCalendarEnabled()) {
+		CalendarModule calendarModule = CoreSpringFactory.getImpl(CalendarModule.class);
+		if(calendarModule.isEnabled()
+				&& (calendarModule.isEnableCourseToolCalendar() || calendarModule.isEnableCourseElementCalendar())
+				&& course.getCourseConfig().isCalendarEnabled()) {
 			UserRequest ureq = getUserRequest(request);
 			KalendarRenderWrapper wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, courseOres, null);
 			return new CalWebService(wrapper);

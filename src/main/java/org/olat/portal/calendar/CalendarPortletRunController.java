@@ -156,6 +156,7 @@ public class CalendarPortletRunController extends BasicController {
 	 *      org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == showAllLink) {
 			// activate homes tab in top navigation and active calendar menu item
@@ -173,6 +174,7 @@ public class CalendarPortletRunController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == tableController) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
@@ -192,14 +194,10 @@ public class CalendarPortletRunController extends BasicController {
 		}
 	}
 
+	@Override
 	protected void doDispose() {
 		//
 	}
-
-	public void event(Event event) {
-		dirty = true;
-	}
-
 }
 
 class EventsModel extends DefaultTableDataModel<KalendarEvent> {
@@ -211,10 +209,12 @@ class EventsModel extends DefaultTableDataModel<KalendarEvent> {
 		super(events);
 	}
 
+	@Override
 	public int getColumnCount() {
 		return COLUMNS;
 	}
 
+	@Override
 	public Object getValueAt(int row, int col) {
 		KalendarEvent event = getObject(row);
 		switch (col) {

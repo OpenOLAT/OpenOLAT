@@ -22,6 +22,7 @@ package org.olat.course.config.ui;
 import java.util.List;
 
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.ui.events.KalendarModifiedEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -100,6 +101,8 @@ public class CourseOptionsController extends FormBasicController {
 	private DialogBoxController enableEfficiencyDC, disableEfficiencyDC;
 
 	@Autowired
+	private CalendarModule calendarModule;
+	@Autowired
 	private ReferenceManager referenceManager;
 	@Autowired
 	private RepositoryManager repositoryService;
@@ -170,19 +173,21 @@ public class CourseOptionsController extends FormBasicController {
 		efficencyEl.addActionListener(FormEvent.ONCHANGE);
 		efficencyEl.select("xx", effEnabled);
 		efficencyEl.setEnabled(editable && !managedEff);
-		
-		//calendar
-		FormLayoutContainer calCont = FormLayoutContainer.createDefaultFormLayout("cal", getTranslator());
-		calCont.setRootForm(mainForm);
-		formLayout.add(calCont);
-		calCont.setFormContextHelp("org.olat.course.config.ui","course-calendar.html","help.hover.coursecal");
-		
-		boolean calendarEnabled = courseConfig.isCalendarEnabled();
-		boolean managedCal = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.calendar);
-		calendarEl = uifactory.addCheckboxesHorizontal("calIsOn", "chkbx.calendar.onoff", calCont, new String[] {"xx"}, new String[] {""});
-		calendarEl.addActionListener(FormEvent.ONCHANGE);
-		calendarEl.select("xx", calendarEnabled);
-		calendarEl.setEnabled(editable && !managedCal);
+
+		if(calendarModule.isEnabled() && calendarModule.isEnableCourseToolCalendar()) {
+			//calendar
+			FormLayoutContainer calCont = FormLayoutContainer.createDefaultFormLayout("cal", getTranslator());
+			calCont.setRootForm(mainForm);
+			formLayout.add(calCont);
+			calCont.setFormContextHelp("org.olat.course.config.ui","course-calendar.html","help.hover.coursecal");
+			
+			boolean calendarEnabled = courseConfig.isCalendarEnabled();
+			boolean managedCal = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.calendar);
+			calendarEl = uifactory.addCheckboxesHorizontal("calIsOn", "chkbx.calendar.onoff", calCont, new String[] {"xx"}, new String[] {""});
+			calendarEl.addActionListener(FormEvent.ONCHANGE);
+			calendarEl.select("xx", calendarEnabled);
+			calendarEl.setEnabled(editable && !managedCal);
+		}
 		
 		//chat
 		FormLayoutContainer chatCont = FormLayoutContainer.createDefaultFormLayout("chat", getTranslator());
@@ -355,8 +360,8 @@ public class CourseOptionsController extends FormBasicController {
 		boolean updateChat = courseConfig.isChatEnabled() != enableChat;
 		courseConfig.setChatIsEnabled(enableChat);
 		
-		boolean enableCalendar = calendarEl.isSelected(0);
-		boolean updateCalendar = courseConfig.isCalendarEnabled() != enableCalendar;
+		boolean enableCalendar = calendarEl == null ? false : calendarEl.isSelected(0);
+		boolean updateCalendar = courseConfig.isCalendarEnabled() != enableCalendar && calendarModule.isEnableCourseToolCalendar();
 		courseConfig.setCalendarEnabled(enableCalendar);
 		
 		String currentGlossarySoftKey = courseConfig.getGlossarySoftKey();

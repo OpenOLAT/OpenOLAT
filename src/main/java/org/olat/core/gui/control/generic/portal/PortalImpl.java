@@ -330,21 +330,23 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 			int rowcount = 0;
 			while (rowIter.hasNext()) {
 				String portletName = rowIter.next();
-				PortletContainer pc = this.portletContainers.get(portletName);
-				// up command
-				if(rowcount == 0) pc.setCanMoveUp(false);
-				else pc.setCanMoveUp(true);
-				// down command
-				if (rowIter.hasNext()) pc.setCanMoveDown(true);
-				else pc.setCanMoveDown(false);
-				// left command
-				if(colcount == 0) pc.setCanMoveLeft(false); 
-				else pc.setCanMoveLeft(true);
-				// right command
-				if (colIter.hasNext()) pc.setCanMoveRight(true); 
-				else pc.setCanMoveRight(false);
-				
-				rowcount++;
+				PortletContainer pc = portletContainers.get(portletName);
+				if(pc != null) {
+					// up command
+					if(rowcount == 0) pc.setCanMoveUp(false);
+					else pc.setCanMoveUp(true);
+					// down command
+					if (rowIter.hasNext()) pc.setCanMoveDown(true);
+					else pc.setCanMoveDown(false);
+					// left command
+					if(colcount == 0) pc.setCanMoveLeft(false); 
+					else pc.setCanMoveLeft(true);
+					// right command
+					if (colIter.hasNext()) pc.setCanMoveRight(true); 
+					else pc.setCanMoveRight(false);
+					
+					rowcount++;
+				}
 			}
 			colcount++;
 		}

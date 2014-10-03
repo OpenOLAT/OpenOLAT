@@ -43,6 +43,7 @@ import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarComparator;
 import org.olat.commons.calendar.model.KalendarConfig;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
@@ -217,29 +218,31 @@ public class ImportCalendarManager extends BasicManager {
 	public static List<KalendarRenderWrapper> getImportedCalendarsForIdentity(UserRequest ureq) {
 		// initialize the calendars list
 		List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
-		
-		// read all the entries from the database
-		PropertyManager pm = PropertyManager.getInstance();
-		List<Property> properties = pm.listProperties(ureq.getIdentity(), null, null, PROP_CATEGORY, null);
-		
-		// return the list of calendar objects
-		Iterator<Property> propertyIter = properties.iterator();
-		CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
-		while (propertyIter.hasNext()) {
-			Property calendarProperty = propertyIter.next();
-			String calendarName = calendarProperty.getName();
-			KalendarRenderWrapper calendarWrapper = calManager.getImportedCalendar(ureq.getIdentity(), calendarName);
-			calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
-			calendarWrapper.setImported(true);
-			KalendarConfig importedKalendarConfig = calManager.findKalendarConfigForIdentity(
-					calendarWrapper.getKalendar(), ureq);
-			if (importedKalendarConfig != null) {
-				calendarWrapper.getKalendarConfig().setCss(importedKalendarConfig.getCss());
-				calendarWrapper.getKalendarConfig().setVis(importedKalendarConfig.isVis());
+		CalendarModule calendarModule = CoreSpringFactory.getImpl(CalendarModule.class);
+		if(calendarModule.isEnabled() && calendarModule.isEnablePersonalCalendar()) {
+			// read all the entries from the database
+			PropertyManager pm = PropertyManager.getInstance();
+			List<Property> properties = pm.listProperties(ureq.getIdentity(), null, null, PROP_CATEGORY, null);
+			
+			// return the list of calendar objects
+			Iterator<Property> propertyIter = properties.iterator();
+			CalendarManager calManager = CalendarManagerFactory.getInstance().getCalendarManager();
+			while (propertyIter.hasNext()) {
+				Property calendarProperty = propertyIter.next();
+				String calendarName = calendarProperty.getName();
+				KalendarRenderWrapper calendarWrapper = calManager.getImportedCalendar(ureq.getIdentity(), calendarName);
+				calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
+				calendarWrapper.setImported(true);
+				KalendarConfig importedKalendarConfig = calManager.findKalendarConfigForIdentity(
+						calendarWrapper.getKalendar(), ureq);
+				if (importedKalendarConfig != null) {
+					calendarWrapper.getKalendarConfig().setCss(importedKalendarConfig.getCss());
+					calendarWrapper.getKalendarConfig().setVis(importedKalendarConfig.isVis());
+				}
+				calendars.add(calendarWrapper);
 			}
-			calendars.add(calendarWrapper);
+			Collections.sort(calendars, KalendarComparator.getInstance());
 		}
-		Collections.sort(calendars, KalendarComparator.getInstance());
 		return calendars;
 	}
 

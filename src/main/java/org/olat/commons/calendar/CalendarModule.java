@@ -24,10 +24,14 @@ import net.fortuna.ical4j.model.TimeZoneRegistry;
 import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
 import net.fortuna.ical4j.util.CompatibilityHints;
 
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -38,12 +42,35 @@ import org.olat.core.logging.Tracing;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class CalendarModule extends AbstractOLATModule {
+@Service("calendarModule")
+public class CalendarModule extends AbstractSpringModule {
 	
 	private static final OLog log = Tracing.createLoggerFor(CalendarModule.class);
 	
+	private static final String CALENDAR_ENABLED = "calendar.enable";
+	private static final String CALENDAR_PERSONAL_ENABLED = "calendar.personal.enabled";
+	private static final String CALENDAR_GROUP_ENABLED = "calendar.group.enabled";
+	private static final String CALENDAR_COURSE_TOOL_ENABLED = "calendar.course.tool.enabled";
+	private static final String CALENDAR_COURSE_ELEMENT_ENABLED = "calendar.course.element.enabled";
+	
 	private TimeZone defaultTimeZone;
 	private TimeZoneRegistry timeZoneRegistry;
+	
+	@Value("${calendar.enabled:true}")
+	private boolean enabled;
+	@Value("${calendar.personal.enabled:true}")
+	private boolean enablePersonalCalendar;
+	@Value("${calendar.group.enabled:true}")
+	private boolean enableGroupCalendar;
+	@Value("${calendar.course.tool.enabled:true}")
+	private boolean enableCourseToolCalendar;
+	@Value("${calendar.course.element.enabled:true}")
+	private boolean enableCourseElementCalendar;
+	
+	@Autowired
+	public CalendarModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
+	}
 	
 	@Override
 	public void init() {
@@ -58,24 +85,87 @@ public class CalendarModule extends AbstractOLATModule {
 		if(defaultTimeZone == null) {
 			log.error("Cannot match the JVM default time zone to an ical4j time zone: " + defaultTimeZoneID);
 		}
-	}
-
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
-	}
-
-	@Override
-	protected void initDefaultProperties() {
-		//
+		updateProperties();
 	}
 
 	@Override
 	protected void initFromChangedProperties() {
-		init();
+		updateProperties();
+	}
+	
+	private void updateProperties() {
+		String enabledObj = getStringPropertyValue(CALENDAR_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(enabledObj)) {
+			enabled = "true".equals(enabledObj);
+		}
+		
+		String personalEnabledObj = getStringPropertyValue(CALENDAR_PERSONAL_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(personalEnabledObj)) {
+			enablePersonalCalendar = "true".equals(personalEnabledObj);
+		}
+		
+		String groupEnabledObj = getStringPropertyValue(CALENDAR_GROUP_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(groupEnabledObj)) {
+			enableGroupCalendar = "true".equals(groupEnabledObj);
+		}
+		
+		String courseToolEnabledObj = getStringPropertyValue(CALENDAR_COURSE_TOOL_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(courseToolEnabledObj)) {
+			enableCourseToolCalendar = "true".equals(courseToolEnabledObj);
+		}
+		
+		String courseElementEnabledObj = getStringPropertyValue(CALENDAR_COURSE_ELEMENT_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(courseElementEnabledObj)) {
+			enableCourseElementCalendar = "true".equals(courseElementEnabledObj);
+		}
 	}
 	
 	public TimeZone getDefaultTimeZone() {
 		return defaultTimeZone;
+	}
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+		setStringProperty(CALENDAR_ENABLED, Boolean.toString(enabled), true);
+	}
+
+	public boolean isEnablePersonalCalendar() {
+		return enablePersonalCalendar;
+	}
+
+	public void setEnablePersonalCalendar(boolean enablePersonalCalendar) {
+		this.enablePersonalCalendar = enablePersonalCalendar;
+		setStringProperty(CALENDAR_PERSONAL_ENABLED, Boolean.toString(enablePersonalCalendar), true);
+	}
+
+	public boolean isEnableGroupCalendar() {
+		return enableGroupCalendar;
+	}
+
+	public void setEnableGroupCalendar(boolean enableGroupCalendar) {
+		this.enableGroupCalendar = enableGroupCalendar;
+		setStringProperty(CALENDAR_GROUP_ENABLED, Boolean.toString(enableGroupCalendar), true);
+	}
+
+	public boolean isEnableCourseToolCalendar() {
+		return enableCourseToolCalendar;
+	}
+
+	public void setEnableCourseToolCalendar(boolean enableCourseToolCalendar) {
+		this.enableCourseToolCalendar = enableCourseToolCalendar;
+		setStringProperty(CALENDAR_COURSE_TOOL_ENABLED, Boolean.toString(enableCourseToolCalendar), true);
+	}
+
+	public boolean isEnableCourseElementCalendar() {
+		return enableCourseElementCalendar;
+	}
+
+	public void setEnableCourseElementCalendar(boolean enableCourseElementCalendar) {
+		this.enableCourseElementCalendar = enableCourseElementCalendar;
+		setStringProperty(CALENDAR_COURSE_ELEMENT_ENABLED, Boolean.toString(enableCourseElementCalendar), true);
 	}
 }

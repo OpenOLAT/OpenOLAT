@@ -35,6 +35,7 @@ import org.olat.collaboration.CollaborationManager;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarManagerFactory;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.ImportCalendarManager;
 import org.olat.commons.calendar.model.KalendarConfig;
 import org.olat.commons.calendar.ui.CalendarController;
@@ -78,6 +79,7 @@ public class HomeCalendarController extends BasicController implements Activatea
 	
 	private UserSession userSession;
 	private CalendarController calendarController;
+
 	
 	public HomeCalendarController(UserRequest ureq, WindowControl windowControl) {
 		super(ureq, windowControl);
@@ -104,92 +106,104 @@ public class HomeCalendarController extends BasicController implements Activatea
 	public static List<KalendarRenderWrapper> getListOfCalendarWrappers(UserRequest ureq, WindowControl wControl) {
 		List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
 		
+		CalendarModule calendarModule = CoreSpringFactory.getImpl(CalendarModule.class);
+		if(!calendarModule.isEnabled()) {
+			return calendars;
+		}
+		
 		// get the personal calendar
 		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
-		KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(ureq.getIdentity());
-		calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
-		KalendarConfig personalKalendarConfig = calendarManager.findKalendarConfigForIdentity(
-				calendarWrapper.getKalendar(), ureq);
-		if (personalKalendarConfig != null) {
-			calendarWrapper.getKalendarConfig().setCss(personalKalendarConfig.getCss());
-			calendarWrapper.getKalendarConfig().setVis(personalKalendarConfig.isVis());
+		if(calendarModule.isEnablePersonalCalendar()) {
+			KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(ureq.getIdentity());
+			calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
+			KalendarConfig personalKalendarConfig = calendarManager.findKalendarConfigForIdentity(
+					calendarWrapper.getKalendar(), ureq);
+			if (personalKalendarConfig != null) {
+				calendarWrapper.getKalendarConfig().setCss(personalKalendarConfig.getCss());
+				calendarWrapper.getKalendarConfig().setVis(personalKalendarConfig.isVis());
+			}
+			calendars.add(calendarWrapper);
 		}
-		calendars.add(calendarWrapper);
 		
 		// get group calendars
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-
-		SearchBusinessGroupParams groupParams = new SearchBusinessGroupParams(ureq.getIdentity(), true, false);
-		groupParams.addTools(CollaborationTools.TOOL_CALENDAR);
-		List<BusinessGroup> ownerGroups = bgs.findBusinessGroups(groupParams, null, 0, -1);
-		addCalendars(ureq, ownerGroups, true, calendars);
-		
-		SearchBusinessGroupParams groupParams2 = new SearchBusinessGroupParams(ureq.getIdentity(), false, true);
-		groupParams2.addTools(CollaborationTools.TOOL_CALENDAR);
-		List<BusinessGroup> attendedGroups = bgs.findBusinessGroups(groupParams2, null, 0, -1);
-		for (Iterator<BusinessGroup> ownerGroupsIterator = ownerGroups.iterator(); ownerGroupsIterator.hasNext();) {
-			BusinessGroup ownerGroup = ownerGroupsIterator.next();
-			if (attendedGroups.contains(ownerGroup)) {
-				attendedGroups.remove(ownerGroup);
-			}
-		}
-		addCalendars(ureq, attendedGroups, false, calendars);
-		
-		// add course calendars
-		List<String> subscribedCourseCalendarIDs = CourseCalendarSubscription.getSubscribedCourseCalendarIDs(
-				ureq.getUserSession().getGuiPreferences());
-		
-		RepositoryManager repoManager = RepositoryManager.getInstance();
-		List<String> calendarIDsToBeRemoved = new ArrayList<String>();
-		for (Iterator<String> iter = subscribedCourseCalendarIDs.iterator(); iter.hasNext();) {
-			String courseCalendarID = iter.next();
-			final long courseResourceableID = Long.parseLong(courseCalendarID);
+		if(calendarModule.isEnableGroupCalendar()) {
+			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+	
+			SearchBusinessGroupParams groupParams = new SearchBusinessGroupParams(ureq.getIdentity(), true, false);
+			groupParams.addTools(CollaborationTools.TOOL_CALENDAR);
+			List<BusinessGroup> ownerGroups = bgs.findBusinessGroups(groupParams, null, 0, -1);
+			addCalendars(ureq, ownerGroups, true, calendars);
 			
-			RepositoryEntry repoEntry = repoManager.lookupRepositoryEntry(new OLATResourceable() {
-
-				public Long getResourceableId() { return new Long(courseResourceableID); }
-				public String getResourceableTypeName() { return CourseModule.getCourseTypeName(); }
-			}, false);
-			if (repoEntry == null) {
-				// mark calendar ID for cleanup
-				calendarIDsToBeRemoved.add(courseCalendarID);
-				continue;
-			}
-			try {
-				ICourse course = CourseFactory.loadCourse(new Long(courseResourceableID));
-				//calendar course aren't enabled per default but course node of type calendar are always possible
-				//REVIEW if (!course.getCourseEnvironment().getCourseConfig().isCalendarEnabled()) continue;
-				// add course calendar
-				KalendarRenderWrapper courseCalendarWrapper = calendarManager.getCourseCalendar(course);
-				CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-				boolean isPrivileged = cgm.isIdentityCourseAdministrator(ureq.getIdentity())
-					|| cgm.hasRight(ureq.getIdentity(), CourseRights.RIGHT_COURSEEDITOR);
-				if (isPrivileged) {
-					courseCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
-				} else {
-					courseCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
+			SearchBusinessGroupParams groupParams2 = new SearchBusinessGroupParams(ureq.getIdentity(), false, true);
+			groupParams2.addTools(CollaborationTools.TOOL_CALENDAR);
+			List<BusinessGroup> attendedGroups = bgs.findBusinessGroups(groupParams2, null, 0, -1);
+			for (Iterator<BusinessGroup> ownerGroupsIterator = ownerGroups.iterator(); ownerGroupsIterator.hasNext();) {
+				BusinessGroup ownerGroup = ownerGroupsIterator.next();
+				if (attendedGroups.contains(ownerGroup)) {
+					attendedGroups.remove(ownerGroup);
 				}
-				KalendarConfig courseKalendarConfig = calendarManager.findKalendarConfigForIdentity(courseCalendarWrapper.getKalendar(), ureq);
-				if (courseKalendarConfig != null) {
-					courseCalendarWrapper.getKalendarConfig().setCss(courseKalendarConfig.getCss());
-					courseCalendarWrapper.getKalendarConfig().setVis(courseKalendarConfig.isVis());
-				}
-				courseCalendarWrapper.setLinkProvider(new CourseLinkProviderController(course, Collections.singletonList(course), ureq, wControl));
-				calendars.add(courseCalendarWrapper);
-			} catch (CorruptedCourseException e) {
-				log.error("Corrupted course: " + courseResourceableID, null);
 			}
+			addCalendars(ureq, attendedGroups, false, calendars);
 		}
-
-		// do calendar ID cleanup
-		if (!calendarIDsToBeRemoved.isEmpty()) {
-			subscribedCourseCalendarIDs = CourseCalendarSubscription.getSubscribedCourseCalendarIDs(
+		
+		if(calendarModule.isEnableCourseElementCalendar() || calendarModule.isEnableCourseToolCalendar()) {
+			// add course calendars
+			List<String> subscribedCourseCalendarIDs = CourseCalendarSubscription.getSubscribedCourseCalendarIDs(
 					ureq.getUserSession().getGuiPreferences());
-			for (Iterator<String> iter = calendarIDsToBeRemoved.iterator(); iter.hasNext();) {
-				subscribedCourseCalendarIDs.remove(iter.next());
+			
+			RepositoryManager repoManager = RepositoryManager.getInstance();
+			List<String> calendarIDsToBeRemoved = new ArrayList<String>();
+			for (Iterator<String> iter = subscribedCourseCalendarIDs.iterator(); iter.hasNext();) {
+				String courseCalendarID = iter.next();
+				final long courseResourceableID = Long.parseLong(courseCalendarID);
+				
+				RepositoryEntry repoEntry = repoManager.lookupRepositoryEntry(new OLATResourceable() {
+	
+					public Long getResourceableId() { return new Long(courseResourceableID); }
+					public String getResourceableTypeName() { return CourseModule.getCourseTypeName(); }
+				}, false);
+				if (repoEntry == null) {
+					// mark calendar ID for cleanup
+					calendarIDsToBeRemoved.add(courseCalendarID);
+					continue;
+				}
+				try {
+					ICourse course = CourseFactory.loadCourse(new Long(courseResourceableID));
+					//calendar course aren't enabled per default but course node of type calendar are always possible
+					//REVIEW if (!course.getCourseEnvironment().getCourseConfig().isCalendarEnabled()) continue;
+					// add course calendar
+					KalendarRenderWrapper courseCalendarWrapper = calendarManager.getCourseCalendar(course);
+					CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
+					boolean isPrivileged = cgm.isIdentityCourseAdministrator(ureq.getIdentity())
+						|| cgm.hasRight(ureq.getIdentity(), CourseRights.RIGHT_COURSEEDITOR);
+					if (isPrivileged) {
+						courseCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
+					} else {
+						courseCalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
+					}
+					KalendarConfig courseKalendarConfig = calendarManager.findKalendarConfigForIdentity(courseCalendarWrapper.getKalendar(), ureq);
+					if (courseKalendarConfig != null) {
+						courseCalendarWrapper.getKalendarConfig().setCss(courseKalendarConfig.getCss());
+						courseCalendarWrapper.getKalendarConfig().setVis(courseKalendarConfig.isVis());
+					}
+					courseCalendarWrapper.setLinkProvider(new CourseLinkProviderController(course, Collections.singletonList(course), ureq, wControl));
+					calendars.add(courseCalendarWrapper);
+				} catch (CorruptedCourseException e) {
+					log.error("Corrupted course: " + courseResourceableID, null);
+				}
 			}
-			CourseCalendarSubscription.persistSubscribedCalendarIDs(subscribedCourseCalendarIDs, ureq.getUserSession().getGuiPreferences());
+			
+			// do calendar ID cleanup
+			if (!calendarIDsToBeRemoved.isEmpty()) {
+				subscribedCourseCalendarIDs = CourseCalendarSubscription.getSubscribedCourseCalendarIDs(
+						ureq.getUserSession().getGuiPreferences());
+				for (Iterator<String> iter = calendarIDsToBeRemoved.iterator(); iter.hasNext();) {
+					subscribedCourseCalendarIDs.remove(iter.next());
+				}
+				CourseCalendarSubscription.persistSubscribedCalendarIDs(subscribedCourseCalendarIDs, ureq.getUserSession().getGuiPreferences());
+			}
 		}
+
 		return calendars;
 	}
 	

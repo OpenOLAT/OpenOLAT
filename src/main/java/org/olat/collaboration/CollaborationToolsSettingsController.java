@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.ui.events.KalendarModifiedEvent;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -49,6 +50,7 @@ import org.olat.core.util.vfs.QuotaManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.instantMessaging.InstantMessagingModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description: <BR>
@@ -71,6 +73,9 @@ public class CollaborationToolsSettingsController extends BasicController {
 	private final String[] availableTools; 
 	private final boolean managed;
 	private final BusinessGroup businessGroup;
+	
+	@Autowired
+	private CalendarModule calendarModule;
 
 	/**
 	 * @param ureq
@@ -110,20 +115,22 @@ public class CollaborationToolsSettingsController extends BasicController {
 		}
 
 		// update calendar form: only show when enabled
-		if (collabTools.isToolEnabled(CollaborationTools.TOOL_CALENDAR)) {
-			lastCalendarEnabledState = true;
-			vc_collabtools.contextPut("calendarToolEnabled", Boolean.TRUE);
-			int iCalendarAccess = CollaborationTools.CALENDAR_ACCESS_OWNERS;
-			Long lCalendarAccess = collabTools.lookupCalendarAccess();
-			if (lCalendarAccess != null) iCalendarAccess = lCalendarAccess.intValue();
-			calendarForm = new CalendarToolSettingsController(ureq, getWindowControl(), iCalendarAccess);
-			calendarForm.setEnabled(!managed);
-			listenTo(calendarForm);
-			
-			vc_collabtools.put("calendarform", calendarForm.getInitialComponent());
-		} else {
-			lastCalendarEnabledState = false;
-			vc_collabtools.contextPut("calendarToolEnabled", Boolean.FALSE);
+		if(calendarModule.isEnabled() && calendarModule.isEnableGroupCalendar()) {
+			if (collabTools.isToolEnabled(CollaborationTools.TOOL_CALENDAR)) {
+				lastCalendarEnabledState = true;
+				vc_collabtools.contextPut("calendarToolEnabled", Boolean.TRUE);
+				int iCalendarAccess = CollaborationTools.CALENDAR_ACCESS_OWNERS;
+				Long lCalendarAccess = collabTools.lookupCalendarAccess();
+				if (lCalendarAccess != null) iCalendarAccess = lCalendarAccess.intValue();
+				calendarForm = new CalendarToolSettingsController(ureq, getWindowControl(), iCalendarAccess);
+				calendarForm.setEnabled(!managed);
+				listenTo(calendarForm);
+				
+				vc_collabtools.put("calendarform", calendarForm.getInitialComponent());
+			} else {
+				lastCalendarEnabledState = false;
+				vc_collabtools.contextPut("calendarToolEnabled", Boolean.FALSE);
+			}
 		}
 		
 		// update quota form: only show when enabled

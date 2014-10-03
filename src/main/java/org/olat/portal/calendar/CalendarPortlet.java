@@ -31,6 +31,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.commons.calendar.CalendarModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -63,6 +65,16 @@ public class CalendarPortlet extends AbstractPortlet {
 		p.setLocale(ureq.getLocale());
 		return p;
 	}
+	
+	
+
+	@Override
+	public boolean isEnabled() {
+		CalendarModule calendarModule = CoreSpringFactory.getImpl(CalendarModule.class);
+		return calendarModule.isEnabled() && super.isEnabled();
+	}
+
+
 
 	/**
 	 * @see org.olat.gui.control.generic.portal.Portlet#getTitle()

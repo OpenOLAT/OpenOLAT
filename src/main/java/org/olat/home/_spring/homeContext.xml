@@ -8,7 +8,7 @@
 	<bean class="org.olat.home.HomeModule" init-method="init"/>
 	
 	<!--  the weekly calendar -->
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+	<bean class="org.olat.home.HomeCalendarExtension" init-method="initExtensionPoints">
 		<property name="order" value="102" />
 		<property name="enabled" value="${minimalhome.ext.calendar}"></property>
 		<property name="navigationKey" value="calendar" />

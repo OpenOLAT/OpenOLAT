@@ -37,6 +37,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.ui.GroupController;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -200,6 +201,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private ACService acService;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private CalendarModule calendarModule;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	private EventBus singleUserEventBus;
@@ -992,11 +995,10 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setAltText(translate("menutree.news.alt"));
 			gtnChild.setIconCssClass("o_icon_news");
 			root.addChild(gtnChild);
-			//fxdiff BAKS-7 Resume function
 			nodeInformation = gtnChild;
 		}
 
-		if (collabTools.isToolEnabled(CollaborationTools.TOOL_CALENDAR)) {
+		if (calendarModule.isEnabled() && calendarModule.isEnableGroupCalendar() && collabTools.isToolEnabled(CollaborationTools.TOOL_CALENDAR)) {
 			gtnChild = new GenericTreeNode();
 			gtnChild.setTitle(translate("menutree.calendar"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_CALENDAR);

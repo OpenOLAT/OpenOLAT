@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="
-  http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans.xsd">
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context.xsd">
+  
+	<context:component-scan base-package="org.olat.commons.calendar" />
   
 	<bean id="calendarImportTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
 	    <property name="jobDetail" ref="calendarImportJob" />
@@ -21,19 +26,8 @@
 			they will get notified. The shortest interval is set to two hours. 	    	
 	    -->
 	    <property name="cronExpression" value="0 22 */4 * * ?" />
-
-			<!-- OLAT-5093 start delay ensures there's no conflict with server startup and db not being ready yet -->
+		<!-- OLAT-5093 start delay ensures there's no conflict with server startup and db not being ready yet -->
 	    <property name="startDelay" value="40000" />
-	</bean>
-
-	<bean id="calendarModule" class="org.olat.commons.calendar.CalendarModule" init-method="init">
-		<property name="persistedProperties">
-	  	<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
-	  		depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
-	    	<constructor-arg index="0" ref="coordinatorManager"/>
-	    	<constructor-arg index="1" ref="calendarModule" />
-	  	</bean>
-	  </property>
 	</bean>
 	
 	<bean id="calendarImportJob" class="org.springframework.scheduling.quartz.JobDetailBean">
@@ -42,5 +36,24 @@
 	
 	<bean id="calendarNotificationManager" class="org.olat.commons.calendar.notification.CalendarNotificationManagerImpl"/>
 	<bean id="calendarUserDataDeleteManager" class="org.olat.commons.calendar.ICalFileCalendarUserDeleteManager"/>
+	
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="7207" />
+		<property name="navigationKey" value="usertools" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.commons.calendar.ui.CalendarAdminController"/>
+			</bean>
+		</property>
+		<property name="i18nActionKey" value="menu.admin.calendar"/>
+		<property name="i18nDescriptionKey" value="menu.admin.calendar.alt"/>
+		<property name="translationPackage" value="org.olat.commons.calendar"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
+	</bean>	
 	
 </beans>

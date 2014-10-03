@@ -28,6 +28,7 @@ package org.olat.collaboration;
 import java.util.ArrayList;
 
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.commons.calendar.CalendarModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
@@ -82,7 +83,10 @@ public class CollaborationToolsFactory {
 		ArrayList<String> toolArr = new ArrayList<String>();
 		toolArr.add(CollaborationTools.TOOL_NEWS);
 		toolArr.add(CollaborationTools.TOOL_CONTACT);
-		toolArr.add(CollaborationTools.TOOL_CALENDAR);
+		CalendarModule calendarModule = CoreSpringFactory.getImpl(CalendarModule.class);
+		if(calendarModule.isEnabled() && calendarModule.isEnableGroupCalendar()) {
+			toolArr.add(CollaborationTools.TOOL_CALENDAR);
+		}
 		toolArr.add(CollaborationTools.TOOL_FOLDER);
 		toolArr.add(CollaborationTools.TOOL_FORUM);
 		if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()) {

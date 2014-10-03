@@ -22,6 +22,8 @@ package org.olat.course.nodes.cal;
 
 import java.util.Locale;
 
+import org.olat.commons.calendar.CalendarModule;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
@@ -69,5 +71,11 @@ public class CalCourseNodeConfiguration extends AbstractCourseNodeConfiguration 
 	@Override
 	public String getGroup() {
 		return CourseNodeGroup.management.name();
+	}
+
+	@Override
+	public boolean isEnabled() {
+		CalendarModule calendarModule = CoreSpringFactory.getImpl(CalendarModule.class);
+		return calendarModule.isEnabled() && calendarModule.isEnableCourseElementCalendar() && super.isEnabled();
 	}
 }
