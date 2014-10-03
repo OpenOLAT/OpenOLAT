@@ -44,7 +44,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
-import org.olat.group.BusinessGroupLazy;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupShort;
@@ -380,26 +379,30 @@ public class BusinessGroupDAO {
 		return res;
 	}
 	
-	public List<BusinessGroupLazy> findBusinessGroup(Identity identity, int maxResults, BusinessGroupOrder... ordering) {
+	public List<BusinessGroup> findBusinessGroup(Identity identity, int maxResults, BusinessGroupOrder... ordering) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select gp from lazybusinessgroup gp where gp.memberId=:identityKey)");
-
+		sb.append("select bgi from ").append(BusinessGroupImpl.class.getName()).append(" as bgi ")
+		  .append(" inner join bgi.baseGroup as baseGroup")
+		  .append(" where exists (select bmember from bgroupmember as bmember")
+		  .append("   where bmember.identity.key=:identKey and bmember.group=baseGroup and bmember.role in ('").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')")
+		  .append(" )");
+		
 		if(ordering != null && ordering.length > 0 && ordering[0] != null) {
 			sb.append(" order by ");
 			for(BusinessGroupOrder o:ordering) {
 				switch(o) {
-					case nameAsc: sb.append("gp.name");break;
-					case nameDesc: sb.append("gp.name desc");break;
-					case creationDateAsc: sb.append("gp.creationDate");break;
-					case creationDateDesc: sb.append("gp.creationDate desc");break;
+					case nameAsc: sb.append("bgi.name");break;
+					case nameDesc: sb.append("bgi.name desc");break;
+					case creationDateAsc: sb.append("bgi.creationDate");break;
+					case creationDateDesc: sb.append("bgi.creationDate desc");break;
 				}
 			}
 			//sb.append(" gp.key ");
 		}
 
-		TypedQuery<BusinessGroupLazy> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), BusinessGroupLazy.class)
-				.setParameter("identityKey", identity.getKey());
+		TypedQuery<BusinessGroup> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BusinessGroup.class)
+				.setParameter("identKey", identity.getKey());
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}

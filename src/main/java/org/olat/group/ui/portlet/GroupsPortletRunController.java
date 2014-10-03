@@ -61,7 +61,6 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupLazy;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -146,9 +145,9 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 		return convertedList;
 	}
 	
-	private List<PortletEntry<BusinessGroupEntry>> convertShortBusinessGroupToPortletEntryList(List<BusinessGroupLazy> groups, boolean withDescription) {
+	private List<PortletEntry<BusinessGroupEntry>> convertShortBusinessGroupToPortletEntryList(List<BusinessGroup> groups, boolean withDescription) {
 		List<PortletEntry<BusinessGroupEntry>> convertedList = new ArrayList<PortletEntry<BusinessGroupEntry>>();
-		for(BusinessGroupLazy group:groups) {
+		for(BusinessGroup group:groups) {
 			GroupPortletEntry entry = new GroupPortletEntry(group);
 			if(withDescription) {
 				entry.getValue().setDescription(group.getDescription());
@@ -158,20 +157,21 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 		return convertedList;
 	}
 	
-	protected void reloadModel(SortingCriteria sortingCriteria) {
-		if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
+	@Override
+	protected void reloadModel(SortingCriteria sortCriteria) {
+		if (sortCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
 			BusinessGroupOrder order = null;
-			if(sortingCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {
-				order = sortingCriteria.isAscending() ? BusinessGroupOrder.nameAsc : BusinessGroupOrder.nameDesc;
-			} else if(sortingCriteria.getSortingTerm()==SortingCriteria.DATE_SORTING) {
-				order = sortingCriteria.isAscending() ? BusinessGroupOrder.creationDateAsc : BusinessGroupOrder.creationDateDesc;
+			if(sortCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {
+				order = sortCriteria.isAscending() ? BusinessGroupOrder.nameAsc : BusinessGroupOrder.nameDesc;
+			} else if(sortCriteria.getSortingTerm()==SortingCriteria.DATE_SORTING) {
+				order = sortCriteria.isAscending() ? BusinessGroupOrder.creationDateAsc : BusinessGroupOrder.creationDateDesc;
 			}
 			
-			int maxEntries = sortingCriteria.getMaxEntries();
-			List<BusinessGroupLazy> groupList = businessGroupService.findBusinessGroups(getIdentity(), maxEntries * 2, order);
-			Set<BusinessGroupLazy> removeDuplicates = new HashSet<BusinessGroupLazy>(maxEntries);
-			for(Iterator<BusinessGroupLazy> it=groupList.iterator(); it.hasNext(); ) {
-				BusinessGroupLazy group = it.next();
+			int maxEntries = sortCriteria.getMaxEntries();
+			List<BusinessGroup> groupList = businessGroupService.findBusinessGroups(getIdentity(), maxEntries * 2, order);
+			Set<BusinessGroup> removeDuplicates = new HashSet<BusinessGroup>(maxEntries);
+			for(Iterator<BusinessGroup> it=groupList.iterator(); it.hasNext(); ) {
+				BusinessGroup group = it.next();
 				if(removeDuplicates.contains(group)) {
 					it.remove();
 				} else {
@@ -179,7 +179,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 				}
 			}
 			
-			List<BusinessGroupLazy> uniqueList = groupList.subList(0, Math.min(maxEntries, groupList.size())); 
+			List<BusinessGroup> uniqueList = groupList.subList(0, Math.min(maxEntries, groupList.size())); 
 			List<PortletEntry<BusinessGroupEntry>> entries = convertShortBusinessGroupToPortletEntryList(uniqueList, false);
 			groupListModel.setObjects(entries);
 			tableCtr.modelChanged();
@@ -261,7 +261,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 	 */
 	protected PortletToolSortingControllerImpl<BusinessGroupEntry> createSortingTool(UserRequest ureq, WindowControl wControl) {
 		if(portletToolsController==null) {
-			List<BusinessGroupLazy> groupList = businessGroupService.findBusinessGroups(getIdentity(), -1);
+			List<BusinessGroup> groupList = businessGroupService.findBusinessGroups(getIdentity(), -1);
 			List<PortletEntry<BusinessGroupEntry>> portletEntryList = convertShortBusinessGroupToPortletEntryList(groupList, true);
 			GroupsManualSortingTableDataModel tableDataModel = new GroupsManualSortingTableDataModel(portletEntryList);
 			List<PortletEntry<BusinessGroupEntry>> sortedItems = getPersistentManuallySortedItems();
@@ -290,7 +290,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
 			portletEntryList = convertBusinessGroupToPortletEntryList(groups, false);
 		} else {
-			List<BusinessGroupLazy> groups = new ArrayList<BusinessGroupLazy>();
+			List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
 			portletEntryList = convertShortBusinessGroupToPortletEntryList(groups, false);
 		}
 		return getPersistentManuallySortedItems(portletEntryList);
@@ -300,19 +300,19 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 	 * Comparator implementation used for sorting BusinessGroup entries according with the
 	 * input sortingCriteria.
 	 * <p>
-	 * @param sortingCriteria
+	 * @param sortCriteria
 	 * @return a Comparator for the input sortingCriteria
 	 */
-  protected Comparator<BusinessGroupEntry> getComparator(final SortingCriteria sortingCriteria) {
+  protected Comparator<BusinessGroupEntry> getComparator(final SortingCriteria sortCriteria) {
 		return new Comparator<BusinessGroupEntry>(){			
 			public int compare(final BusinessGroupEntry group1, final BusinessGroupEntry group2) {
 				int comparisonResult = 0;
-			  if(sortingCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	
+			  if(sortCriteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	
 			  	comparisonResult = collator.compare(group1.getName(), group2.getName());			  		  	
-			  } else if(sortingCriteria.getSortingTerm()==SortingCriteria.DATE_SORTING) {
+			  } else if(sortCriteria.getSortingTerm()==SortingCriteria.DATE_SORTING) {
 			  	comparisonResult = group1.getCreationDate().compareTo(group2.getCreationDate());
 			  }
-			  if(!sortingCriteria.isAscending()) {
+			  if(!sortCriteria.isAscending()) {
 			  	//if not isAscending return (-comparisonResult)			  	
 			  	return -comparisonResult;
 			  }
@@ -400,11 +400,6 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 	  	private Long key;
 	  	
 	  	public GroupPortletEntry(BusinessGroup group) {
-	  		value = new BusinessGroupEntry(group);
-	  		key = group.getKey();
-	  	}
-	  	
-	  	public GroupPortletEntry(BusinessGroupLazy group) {
 	  		value = new BusinessGroupEntry(group);
 	  		key = group.getKey();
 	  	}

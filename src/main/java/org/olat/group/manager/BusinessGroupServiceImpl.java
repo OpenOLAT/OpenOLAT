@@ -70,7 +70,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupImpl;
-import org.olat.group.BusinessGroupLazy;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupModule;
@@ -629,7 +628,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	public List<BusinessGroupLazy> findBusinessGroups(Identity identity, int maxResults, BusinessGroupOrder... orderBy) {
+	public List<BusinessGroup> findBusinessGroups(Identity identity, int maxResults, BusinessGroupOrder... orderBy) {
 		return businessGroupDAO.findBusinessGroup(identity, maxResults, orderBy);
 	}
 

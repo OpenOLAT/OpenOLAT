@@ -1400,18 +1400,6 @@ create view o_bs_gp_membership_v as (
    inner join o_gp_business as gp on (gp.fk_group_id=membership.fk_group_id)
 );
 
-create view o_gp_member_v as (
-   select
-      gp.group_id as bg_id,
-      gp.groupname as bg_name,
-      gp.creationdate as bg_creationdate,
-      gp.managed_flags as bg_managed_flags,
-      gp.descr as bg_desc,
-      membership.fk_identity_id as member_id
-   from o_gp_business as gp
-   inner join o_bs_group_member as membership on (membership.fk_group_id = gp.fk_group_id and membership.g_role in ('coach','participant'))
-);
-
 create or replace view o_gp_business_v  as (
    select
       gp.group_id as group_id,

@@ -248,7 +248,7 @@ public interface BusinessGroupService {
 	 */
 	public List<BusinessGroup> findBusinessGroupsAttendedBy(Identity identity);
 	
-	public List<BusinessGroupLazy> findBusinessGroups(Identity identity, int maxResults, BusinessGroupOrder... order);
+	public List<BusinessGroup> findBusinessGroups(Identity identity, int maxResults, BusinessGroupOrder... order);
 	
 	/**
 	 * Find all business-groups where the identity is on the waiting-list.

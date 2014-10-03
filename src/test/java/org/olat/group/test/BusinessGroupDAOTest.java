@@ -41,7 +41,6 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupLazy;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupShort;
@@ -1099,7 +1098,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//check
-		List<BusinessGroupLazy> myLazyGroups = businessGroupDao.findBusinessGroup(id, 0);
+		List<BusinessGroup> myLazyGroups = businessGroupDao.findBusinessGroup(id, 0);
 		Assert.assertNotNull(myLazyGroups);
 		Assert.assertEquals(2, myLazyGroups.size());
 		List<Long> originalKeys = PersistenceHelper.toKeys(myLazyGroups);
