@@ -909,9 +909,13 @@ jQuery().ready(OPOL.adjustHeight);
 
 
 function o_scrollToElement(elem) {
-	jQuery('html, body').animate({
-		scrollTop: jQuery(elem).offset().top
-	}, 333);
+	try {
+		jQuery('html, body').animate({
+			scrollTop : jQuery(elem).offset().top
+		}, 333);
+	} catch (e) {
+		//console.log(e);
+	}
 }
 
 function o_popover(id, contentId, loc) {
@@ -1188,12 +1192,11 @@ function showInfoBox(title, content){
     };
     // Show info box now
     jQuery('#' + uuid).show().transition({ top: 0 }, 333);
-	o_scrollToElement('#o_top');
-    
     // Visually remove message box immediately when user clicks on it
     jQuery('#' + uuid).click(function(e) {
     	cleanup();
     });
+	o_scrollToElement('#o_top');
 	
     // Help GC, prevent cyclic reference from on-click closure
     title = null;
