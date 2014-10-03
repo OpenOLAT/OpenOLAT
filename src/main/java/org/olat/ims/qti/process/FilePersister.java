@@ -149,22 +149,15 @@ public class FilePersister implements Persister {
 		Object o = null;
 		InputStream is = null;
 		try {
-			long start = -1;
-			boolean debugOn = log.isDebug();
-			if (debugOn) {
-				start = System.currentTimeMillis();
+			File fSerialFile = new File(fSerialDir, QTI_FILE);
+			if(fSerialDir.exists()) {
+				is = new FileInputStream(fSerialFile);
+				BufferedInputStream bis = new BufferedInputStream(is, 262144);
+				ObjectInputStream oistream = new DecompressibleInputStream(bis);
+				o = oistream.readObject();
+				oistream.close();
+				is.close();
 			}
-			is = new FileInputStream(new File(fSerialDir, QTI_FILE));
-			BufferedInputStream bis = new BufferedInputStream(is, 262144);
-			ObjectInputStream oistream = new DecompressibleInputStream(bis);
-			o = oistream.readObject();
-			oistream.close();
-			is.close();
-			if (debugOn) {
-				long stop = System.currentTimeMillis();
-				log.debug("time in ms to load ims qti ser file:"+(stop-start));
-			}
-
 		} catch (Exception e) {
 			log.error("", e);
 			try {
