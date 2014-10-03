@@ -22,19 +22,18 @@ package org.olat.user;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Performance test for check if email exist
@@ -51,22 +50,24 @@ public class EmailCheckPerformanceTest extends OlatTestCase {
 	private static long createUserTime;
 	private static long testExistEmailAddressTime;
 	
-	/**
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	@Before
-	public void setup()throws Exception {
-			createUsers();
-	}
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
 
-
-	@Test public void testUserManger() throws Exception {
-		System.out.println("testUserManger start...");
+	@Test
+	public void testUserManger() throws Exception {
+		createUsers();
+		dbInstance.commitAndCloseSession();
+		
+		log.info("testUserManger start...");
 		int MAX_LOOP = 100;
 		long startTime = System.currentTimeMillis();
 		for (int i = 1; i<MAX_LOOP; i++) {
 			Identity test = UserManager.getInstance().findIdentityByEmail(i+USERNAME_CONSTANT+ TEST_DOMAIN);
-			if (test == null) System.out.println("user with email not found: "+i+USERNAME_CONSTANT+ TEST_DOMAIN);
+			if (test == null) log.info("user with email not found: "+i+USERNAME_CONSTANT+ TEST_DOMAIN);
 			assertNotNull(test);
 		}
 		long endTime = System.currentTimeMillis();
@@ -85,23 +86,21 @@ public class EmailCheckPerformanceTest extends OlatTestCase {
 	
 	
 	private void createUsers() {
-		int numberUsers = 10000;
+		int numberUsers = 1000;
 		String username;
 		String institution;
 		String gender;
 		
 		long startTime = System.currentTimeMillis();
 
-		UserManager um = UserManager.getInstance();
-		BaseSecurity sm = BaseSecurityManager.getInstance();
 		//only create users if not yet done
-		if (um.findIdentityByEmail("1"+USERNAME_CONSTANT+TEST_DOMAIN) == null) {
+		if (userManager.findIdentityByEmail("1"+USERNAME_CONSTANT+TEST_DOMAIN) == null) {
 			// create users group
-			if (sm.findSecurityGroupByName(Constants.GROUP_OLATUSERS) == null) {
-				sm.createAndPersistNamedSecurityGroup(Constants.GROUP_OLATUSERS);
+			if (securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS) == null) {
+				securityManager.createAndPersistNamedSecurityGroup(Constants.GROUP_OLATUSERS);
 			}
 			
-			System.out.println("TEST start creating " + numberUsers + " testusers");
+			log.info("TEST start creating " + numberUsers + " testusers");
 			for (int i = 1; i < numberUsers+1; i++) {
 				username = i + USERNAME_CONSTANT;
 				if (i % 2 == 0) {
@@ -111,7 +110,7 @@ public class EmailCheckPerformanceTest extends OlatTestCase {
 					institution = "yourinst";
 					gender = "f";
 				}
-				User user = um.createUser(username + "first", username + "last", username + TEST_DOMAIN);
+				User user = userManager.createUser(username + "first", username + "last", username + TEST_DOMAIN);
 				user.setProperty(UserConstants.GENDER, gender);
 				user.setProperty(UserConstants.BIRTHDAY, "24.07.3007");
 				user.setProperty(UserConstants.STREET, "Zähringerstrasse 26");
@@ -129,13 +128,12 @@ public class EmailCheckPerformanceTest extends OlatTestCase {
 	
 				if (i % 10 == 0) {
 					// flush now to obtimize performance
-					DBFactory.getInstance().closeSession();
-					System.out.print(".");
+					dbInstance.commitAndCloseSession();
 				}
 			}
 			long endTime = System.currentTimeMillis();
 			createUserTime = (endTime - startTime);
-			System.out.println("TEST created " + numberUsers + " testusers in createUserTime=" + createUserTime);
+			log.info("TEST created " + numberUsers + " testusers in createUserTime=" + createUserTime);
 		}
 	}
 }

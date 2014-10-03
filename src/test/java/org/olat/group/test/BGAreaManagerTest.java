@@ -628,7 +628,7 @@ public class BGAreaManagerTest extends OlatTestCase {
 	@Test
 	public void testSynchronisationCreateBGArea() {
 
-		final int maxLoop = 400; // => 400 x 100ms => 40sec => finished in 50sec
+		final int maxLoop = 75; // => 400 x 100ms => 40sec => finished in 50sec
 		final String areaName = "BGArea_1";
 
 		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
@@ -710,7 +710,7 @@ public class BGAreaManagerTest extends OlatTestCase {
 	@Test
 	public void testSynchronisationUpdateBGArea() {
 
-		final int maxLoop = 400; // => 400 x 100ms => 40sec => finished in 50sec
+		final int maxLoop = 75; // => 400 x 100ms => 40sec => finished in 50sec
 		final String areaName = "BGArea_2";
 
 		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
