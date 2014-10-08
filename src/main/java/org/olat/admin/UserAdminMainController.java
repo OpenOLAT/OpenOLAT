@@ -403,7 +403,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		}
 		else if (uobject.equals("userswithoutgroup")) {
 			activatePaneInDetailView = "edit.withoutgroup";
-			List<Identity> usersWithoutGroup = BaseSecurityManager.getInstance().findIdentitiesWithoutBusinessGroup(null);
+			List<Identity> usersWithoutGroup = BaseSecurityManager.getInstance().findIdentitiesWithoutBusinessGroup(Identity.STATUS_VISIBLE_LIMIT);
 			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, usersWithoutGroup, null, true, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
