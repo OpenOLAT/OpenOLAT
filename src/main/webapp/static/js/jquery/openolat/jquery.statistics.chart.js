@@ -29,7 +29,7 @@
         		horizontalBarMultipleChoiceSurvey(this, settings);
         	}
     	} catch(e) {
-    		if(console) console.log(e);
+    		if(window.console) console.log(e);
     	}
         return this;
     };

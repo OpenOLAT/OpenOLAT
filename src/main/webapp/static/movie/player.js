@@ -48,34 +48,34 @@ var BPlayer = {
 			flashplayer:playerUrl
 		};
 		
-		if(provider != undefined) {
+		if(typeof provider != 'undefined') {
 			args.provider = provider;
 		}
 		if(provider == "rtmp" || provider == "http") {
 			args.streamer = streamer;
 		}
-		if(start != undefined) {
+		if(typeof start != 'undefined') {
 			var startInSec = BPlayer.convertInSeconds(start);
 			if(startInSec > 0) {
 				args.start = startInSec;
 			}
 		}
-		if(duration != undefined) {
+		if(typeof duration != 'undefined') {
 			var durationInSec = BPlayer.convertInSeconds(duration);
 			if(durationInSec > 0) {
 				args.duration = durationInSec;
 			}
 		}
-		if(autostart) {
+		if(typeof autostart != 'undefined' && autostart) {
 			args.autostart = true;
 		}
-		if(repeat) {
+		if(typeof repeat != 'undefined' && repeat) {
 			args.repeat = "single";
 		}
-		if(controlbar != undefined && !controlbar) {
+		if(typeof controlbar != 'undefined' && !controlbar) {
 			args.controlbar = "none";
 		}
-		if(poster) {
+		if(typeof poster != 'undefined') {
 			args.image = poster;
 		}
 		
@@ -128,7 +128,7 @@ var BPlayer = {
 	},
 	
 	convertInSeconds: function (time) {
-		if(time == null || typeof(time) == undefined) return 0;//default
+		if(typeof time != 'undefined' || time == null) return 0;//default
 		if(!time.length) return time;//already a number
 		if(time.length == 0) return 0;
 		if(time.indexOf('.') > 0){

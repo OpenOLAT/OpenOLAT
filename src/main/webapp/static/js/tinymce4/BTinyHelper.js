@@ -66,7 +66,7 @@ var BTinyHelper = {
 					BTinyHelper.currentWindow.tinymce.activeEditor.windowManager.windows[0].find('#height')[0].fire('change');
 				}
 			} catch(e) {
-				if(console) console.log(e);
+				if(window.console) console.log(e);
 			}
 		}
 	},
