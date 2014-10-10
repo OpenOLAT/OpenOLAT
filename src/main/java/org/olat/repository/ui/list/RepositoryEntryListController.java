@@ -286,14 +286,14 @@ public class RepositoryEntryListController extends FormBasicController
 				row.setMarked(marked);
 			} else if ("start".equals(cmd)){
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
-				doOpen(ureq, row);
+				doOpen(ureq, row, null);
 			} else if ("details".equals(cmd)){
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
 				doOpenDetails(ureq, row);
 			} else if ("select".equals(cmd)) {
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
 				if (row.isMember()) {
-					doOpen(ureq, row);					
+					doOpen(ureq, row, null);					
 				} else {
 					doOpenDetails(ureq, row);
 				}
@@ -308,7 +308,7 @@ public class RepositoryEntryListController extends FormBasicController
 				RepositoryEntryRow row = model.getObject(se.getIndex());
 				if("select".equals(cmd)) {
 					if (row.isMember()) {
-						doOpen(ureq, row);					
+						doOpen(ureq, row, null);					
 					} else {
 						doOpenDetails(ureq, row);
 					}
@@ -357,7 +357,7 @@ public class RepositoryEntryListController extends FormBasicController
 						for(RepositoryEntryRow row:rows) {
 							if(row.getKey().equals(rowKey)) {
 								if (row.isMember()) {
-									doOpen(ureq, row);					
+									doOpen(ureq, row, null);					
 								} else {
 									doOpenDetails(ureq, row);
 								}
@@ -461,9 +461,12 @@ public class RepositoryEntryListController extends FormBasicController
 		userRatingsDao.updateRating(getIdentity(), ores, null, Math.round(rating));
 	}
 	
-	protected void doOpen(UserRequest ureq, RepositoryEntryRow row) {
+	protected void doOpen(UserRequest ureq, RepositoryEntryRow row, String subPath) {
 		try {
 			String businessPath = "[RepositoryEntry:" + row.getKey() + "]";
+			if (subPath != null) {
+				businessPath += subPath;
+			}
 			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 		} catch (CorruptedCourseException e) {
 			logError("Course corrupted: " + row.getKey() + " (" + row.getOLATResourceable().getResourceableId() + ")", e);
@@ -472,13 +475,18 @@ public class RepositoryEntryListController extends FormBasicController
 	}
 	
 	protected void doOpenDetails(UserRequest ureq, RepositoryEntryRow row) {
-		removeAsListenerAndDispose(detailsCtrl);
-		
-		detailsCtrl = new RepositoryEntryDetailsController(ureq, getWindowControl(), row);
-		listenTo(detailsCtrl);
-		
-		String displayName = row.getDisplayName();
-		stackPanel.pushController(displayName, detailsCtrl);
+		// to be more consistent: course members see info page within the course, non-course members see it outside the course
+		if (row.isMember()) {
+			doOpen(ureq, row, "[Infos:0]");
+		} else {
+			removeAsListenerAndDispose(detailsCtrl);
+			
+			detailsCtrl = new RepositoryEntryDetailsController(ureq, getWindowControl(), row);
+			listenTo(detailsCtrl);
+			
+			String displayName = row.getDisplayName();
+			stackPanel.pushController(displayName, detailsCtrl);			
+		}
 	}
 	
 	protected void doOpenComments(UserRequest ureq, RepositoryEntryRow row) {
