@@ -79,7 +79,7 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 										
 				} else {
 					// disabled panels can not be clicked, but for layout reason needs still a a href
-					sb.append("><a href='javascript:;' title='").append(StringEscapeUtils.escapeHtml(translator.translate("disabled"))).append("'>").append(tabName).append("</a></li>");
+					sb.append(" class='disabled'><a href='javascript:;' title='").append(StringEscapeUtils.escapeHtml(translator.translate("disabled"))).append("'>").append(tabName).append("</a></li>");
 				}
 			}
 			else {
