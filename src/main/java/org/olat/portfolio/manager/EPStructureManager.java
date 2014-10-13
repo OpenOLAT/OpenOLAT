@@ -1014,7 +1014,7 @@ public class EPStructureManager extends BasicManager {
 		
 		// remove structure itself
 		struct = (EPStructureElement) dbInstance.loadObject((EPStructureElement)struct);
-		dbInstance.deleteObject(struct);		
+		dbInstance.deleteObject(struct);
 		if (struct instanceof EPAbstractMap){
 			removeBaseGroup((EPAbstractMap)struct);
 		}
@@ -1026,10 +1026,11 @@ public class EPStructureManager extends BasicManager {
 		Set<EPStructureElementToGroupRelation> relations = map.getGroups();
 		if (relations != null) {
 			for(EPStructureElementToGroupRelation relation:relations) {
+				Group group = relation.getGroup();
 				if(relation.isDefaultGroup()) {
-					groupDao.removeGroup(relation.getGroup());
+					groupDao.removeMemberships(group);
+					groupDao.removeGroup(group);
 				}
-				dbInstance.getCurrentEntityManager().remove(relation);
 			}
 		}
 	}

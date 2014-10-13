@@ -34,12 +34,23 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Before;
+import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
+import org.olat.portfolio.manager.EPFrontendManager;
+import org.olat.portfolio.manager.EPStructureManager;
+import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.portfolio.model.structel.ElementType;
+import org.olat.portfolio.model.structel.PortfolioStructure;
+import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description: <br>
@@ -47,28 +58,78 @@ import org.olat.test.OlatTestCase;
  * @author Christian Guretzki
  */
 public class UserDeletionManagerTest extends OlatTestCase {
-	private static boolean isInitialized = false;
-	private static Identity ident;
+	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private EPFrontendManager epFrontendManager;
+	@Autowired
+	private EPStructureManager epStructureManager;
+	@Autowired
+	private UserDeletionManager userDeletionManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	
+	@Test
+	public void testDeleteIdentity() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("anIdentityToDelete");
+		dbInstance.commit();
+		// add some stuff
+		
+		//a default map
+		PortfolioStructureMap map = epFrontendManager.createAndPersistPortfolioDefaultMap(identity, "A map to delete", "This map must be deleted");
+		Assert.assertNotNull(map);
+		//a template
+		PortfolioStructureMap template = epStructureManager.createPortfolioMapTemplate(identity, "A template to delete", "This template must be deleted");
+		epStructureManager.savePortfolioStructure(template);
+		//an artefact
+		AbstractArtefact artefact = epFrontendManager.createAndPersistArtefact(identity, "Forum");
+		dbInstance.commit();
+		Assert.assertNotNull(artefact);
 
-	@Before
-	public void setUp() throws Exception {
-		if (isInitialized == false) {
-			ident = JunitTestHelper.createAndPersistIdentityAsUser("anIdentity");
-			DBFactory.getInstance().closeSession();
-			isInitialized = true;
-		}
+		//a group
+		BusinessGroup group = businessGroupService.createBusinessGroup(identity, "Group", "Group", -1, -1, false, false, null);
+		Assert.assertNotNull(group);
+		dbInstance.commitAndCloseSession();
+		
+		//delete the identity
+		userDeletionManager.deleteIdentity(identity);
+		dbInstance.commit();
+
+		//check
+		Identity deletedIdentity = securityManager.loadIdentityByKey(identity.getKey());
+		Assert.assertNotNull(deletedIdentity);
+		
+		//check that the artefacts are deleted
+		List<AbstractArtefact> artefacts = epFrontendManager.getArtefactPoolForUser(deletedIdentity);
+		Assert.assertNull(artefacts);
+		//check that the maps are deleted (1)
+		List<PortfolioStructure> maps = epFrontendManager.getStructureElementsForUser(deletedIdentity, ElementType.DEFAULT_MAP);
+		Assert.assertNotNull(maps);
+		Assert.assertEquals(0, maps.size());
+		//check that the maps are deleted (2)
+		PortfolioStructure deletedMap = epStructureManager.loadPortfolioStructureByKey(map.getKey());
+		Assert.assertNull(deletedMap);
+		
+		//check membership of group
+		boolean isMember = businessGroupService.isIdentityInBusinessGroup(deletedIdentity, group);
+		Assert.assertFalse(isMember);
 	}
 
 	@Test
 	public void testSetIdentityAsActiv() {
-		final int maxLoop = 2000; // => 4000 x 11ms => 44sec => finished in 50sec
+		Identity ident = JunitTestHelper.createAndPersistIdentityAsUser("anIdentity");
+		
+		final int maxLoop = 2000; // => 2000 x 11ms => 22sec => finished in 120sec
 		// Let two thread call UserDeletionManager.setIdentityAsActiv
 		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
 
 		CountDownLatch latch = new CountDownLatch(4);
 		ActivThread[] threads = new ActivThread[4];
 		for(int i=0; i<threads.length;i++) {
-			threads[i] = new ActivThread(maxLoop, latch, exceptionHolder);
+			threads[i] = new ActivThread(ident, maxLoop, latch, exceptionHolder);
 		}
 
 		for(int i=0; i<threads.length;i++) {
@@ -92,10 +153,12 @@ public class UserDeletionManagerTest extends OlatTestCase {
 	private static class ActivThread extends Thread {
 		
 		private final int maxLoop;
+		private final Identity identity;
 		private final CountDownLatch countDown;
 		private final List<Exception> exceptionHolder;
 		
-		public ActivThread(int maxLoop, CountDownLatch countDown, List<Exception> exceptionHolder) {
+		public ActivThread(Identity identity, int maxLoop, CountDownLatch countDown, List<Exception> exceptionHolder) {
+			this.identity = identity;
 			this.maxLoop = maxLoop;
 			this.countDown = countDown;
 			this.exceptionHolder = exceptionHolder;
@@ -106,7 +169,7 @@ public class UserDeletionManagerTest extends OlatTestCase {
 				sleep(10);
 				for (int i=0; i<maxLoop; i++) {
 					try {
-						UserDeletionManager.getInstance().setIdentityAsActiv(ident);
+						UserDeletionManager.getInstance().setIdentityAsActiv(identity);
 					} catch (Exception e) {
 						exceptionHolder.add(e);
 					} finally {
