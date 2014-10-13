@@ -671,11 +671,10 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * 
 	 * @param re
 	 */
-	public void updateReferencedRepositoryEntry(RepositoryEntry re) {
-		RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(re, re.getDisplayname(), re.getDescription());
+	public void notifyReferencedRepositoryEntryChanges(RepositoryEntry re) {
 		// inform anybody interested about this change
-		MultiUserEvent modifiedEvent = new EntryChangedEvent(reloaded, null, Change.modifiedDescription);
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, reloaded);
+		MultiUserEvent modifiedEvent = new EntryChangedEvent(re, null, Change.modifiedDescription);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, re);
 	}
 	
 	public VFSLeaf getImage(CatalogEntryRef entry) {

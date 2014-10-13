@@ -659,29 +659,19 @@ public class RepositoryManager extends BasicManager {
 		dbInstance.commit();
 		return updatedRe;
 	}
-
+	
 	/**
-	 * 
+	 * This method doesn't update empty and null values! ( Reserved to unit tests
+	 * and REST API)
 	 * @param re
-	 * @param displayName If null, nothing happen
-	 * @param description If null, nothing happen
+	 * @param displayName
+	 * @param description
+	 * @param externalId
+	 * @param externalRef
+	 * @param managedFlags
+	 * @param cycle
 	 * @return
 	 */
-	public RepositoryEntry setDescriptionAndName(final RepositoryEntry re, String displayName, String description) {
-		RepositoryEntry reloadedRe = loadForUpdate(re);
-		if(StringHelper.containsNonWhitespace(displayName)) {
-			reloadedRe.setDisplayname(displayName);
-		}
-		if(StringHelper.containsNonWhitespace(description)) {
-			reloadedRe.setDescription(description);
-		}
-		reloadedRe.setLastModified(new Date());
-		RepositoryEntry updatedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
-		dbInstance.commit();
-		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, updatedRe.getKey());
-		return updatedRe;
-	}
-	
 	public RepositoryEntry setDescriptionAndName(final RepositoryEntry re, String displayName, String description,
 			String externalId, String externalRef, String managedFlags, RepositoryEntryLifecycle cycle) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
@@ -725,7 +715,7 @@ public class RepositoryManager extends BasicManager {
 	}
 	
 	/**
-	 * The method doesn't update empty or null values!
+	 * The method updates empty and null values!
 	 * @param re
 	 * @param displayName
 	 * @param externalRef
@@ -744,34 +734,16 @@ public class RepositoryManager extends BasicManager {
 			String objectives, String requirements, String credits,
 			String mainLanguage, String expenditureOfWork, RepositoryEntryLifecycle cycle) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
-		if(StringHelper.containsNonWhitespace(displayName)) {
-			reloadedRe.setDisplayname(displayName);
-		}
-		if(StringHelper.containsNonWhitespace(authors)) {
-			reloadedRe.setAuthors(authors);
-		}
-		if(StringHelper.containsNonWhitespace(description)) {
-			reloadedRe.setDescription(description);
-		}
-		if(StringHelper.containsNonWhitespace(externalRef)) {
-			reloadedRe.setExternalRef(externalRef);
-		}
-		if(StringHelper.containsNonWhitespace(objectives)) {
-			reloadedRe.setObjectives(objectives);
-		}
-		if(StringHelper.containsNonWhitespace(requirements)) {
-			reloadedRe.setRequirements(requirements);
-		}
-		if(StringHelper.containsNonWhitespace(credits)) {
-			reloadedRe.setCredits(credits);
-		}
-		if(StringHelper.containsNonWhitespace(mainLanguage)) {
-			reloadedRe.setMainLanguage(mainLanguage);
-		}
-		if(StringHelper.containsNonWhitespace(expenditureOfWork)) {
-			reloadedRe.setExpenditureOfWork(expenditureOfWork);
-		}
-		
+		reloadedRe.setDisplayname(displayName);
+		reloadedRe.setAuthors(authors);
+		reloadedRe.setDescription(description);
+		reloadedRe.setExternalRef(externalRef);
+		reloadedRe.setObjectives(objectives);
+		reloadedRe.setRequirements(requirements);
+		reloadedRe.setCredits(credits);
+		reloadedRe.setMainLanguage(mainLanguage);
+		reloadedRe.setExpenditureOfWork(expenditureOfWork);
+
 		RepositoryEntryLifecycle cycleToDelete = null;
 		RepositoryEntryLifecycle currentCycle = reloadedRe.getLifecycle();
 		if(currentCycle != null) {
