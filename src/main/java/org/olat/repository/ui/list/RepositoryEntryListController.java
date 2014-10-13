@@ -157,6 +157,12 @@ public class RepositoryEntryListController extends FormBasicController
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName.i18nKey(), Cols.select.ordinal(),
 				true, OrderBy.displayname.name()));
+		if(repositoryModule.isManagedRepositoryEntries()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalId.i18nKey(), Cols.externalId.ordinal(),
+				true, OrderBy.externalId.name()));
+		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalRef.i18nKey(), Cols.externalRef.ordinal(),
+				true, OrderBy.externalRef.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lifecycleLabel.i18nKey(), Cols.lifecycleLabel.ordinal(),
 				true, OrderBy.lifecycleLabel.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lifecycleSoftkey.i18nKey(), Cols.lifecycleSoftkey.ordinal(),

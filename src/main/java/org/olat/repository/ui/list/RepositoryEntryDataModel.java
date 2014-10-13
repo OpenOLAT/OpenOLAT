@@ -60,6 +60,8 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 		switch(Cols.values()[col]) {
 			case key: return item.getKey();
 			case displayName: return item.getDisplayName();
+			case externalId: return item.getExternalId();
+			case externalRef: return item.getExternalRef();
 			case lifecycleLabel: return item.getLifecycle();
 			case lifecycleSoftkey: return item.getLifecycleSoftKey();
 			case lifecycleStart: return item.getLifecycleStart();
@@ -77,6 +79,8 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 	public enum Cols {
 		key("table.header.key"),
 		displayName("cif.displayname"),
+		externalId("table.header.externalid"),
+		externalRef("table.header.externalref"),
 		lifecycleLabel("table.header.lifecycle.label"),
 		lifecycleSoftkey("table.header.lifecycle.softkey"),
 		lifecycleStart("table.header.lifecycle.start"),

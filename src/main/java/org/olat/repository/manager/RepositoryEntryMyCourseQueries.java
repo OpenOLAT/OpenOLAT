@@ -492,6 +492,14 @@ public class RepositoryEntryMyCourseQueries {
 					sb.append(" order by lower(v.displayname)");
 					appendAsc(sb, asc);	
 					break;
+				case externalRef:
+					sb.append(" order by lower(v.externalRef)");
+					appendAsc(sb, asc);	
+					break;
+				case externalId:
+					sb.append(" order by lower(v.externalId)");
+					appendAsc(sb, asc);	
+					break;
 				case lifecycleLabel:
 					if(asc) {
 						sb.append(" order by lifecycle.label nulls last, lower(v.displayname) asc");
