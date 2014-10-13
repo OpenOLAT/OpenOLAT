@@ -1088,15 +1088,19 @@ public class RepositoryManager extends BasicManager {
 		List<RepositoryEntry> results = new ArrayList<RepositoryEntry>();
 		if(!roles.isOLATAdmin() && institution != null && institution.length() > 0 && roles.isInstitutionalResourceManager()) {
 			StringBuilder query = new StringBuilder(400);
-			query.append("select distinct v from org.olat.repository.RepositoryEntry v"
-			    + " inner join fetch v.olatResource as res"
-					+ ", org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi"
+			query.append("select distinct v from org.olat.repository.RepositoryEntry v")
+			     .append(" inner join fetch v.olatResource as res")
+			     .append(" inner join fetch v.ownerGroup as ownerGroup")
+				 .append(" left join fetch v.lifecycle as lifecycle")
+				 .append(" left join fetch v.participantGroup as participantGroup")
+				 .append(" left join fetch v.tutorGroup as tutorGroup")
+				 .append(", org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi"
 					+ ", org.olat.basesecurity.IdentityImpl identity"
 					+ ", org.olat.user.UserImpl user "
 					+ " where sgmsi.securityGroup = v.ownerGroup"
 					+ " and sgmsi.identity = identity"
 					+ " and identity.user = user"
-					+" and user.properties['institutionalName']= :institutionCourseManager "
+					+ " and user.properties['institutionalName']= :institutionCourseManager "
 					+ " and res.resName in (:restrictedType) and v.access = 1");
 			
 			List<RepositoryEntry> institutionalResults = dbInstance.getCurrentEntityManager()
