@@ -69,12 +69,14 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
@@ -425,7 +427,7 @@ public class FolderRunController extends BasicController implements Activateable
 						else if ( ! cmd.equals(FolderCommandFactory.COMMAND_SERV)) {
 							folderComponent.updateChildren();
 						}
-					}//TODO review 
+					}
 				}
 				
 				if(FolderCommandStatus.STATUS_FAILED == folderCommand.getStatus()) {
@@ -433,14 +435,14 @@ public class FolderRunController extends BasicController implements Activateable
 					folderComponent.updateChildren();
 				}	
 			}
-			//fxdiff BAKS-7 Resume function
+			
 			if(FolderCommandFactory.COMMAND_BROWSE.equals(cmd)) {
 				updatePathResource(ureq);
 			}
 			enableDisableQuota(ureq);
 		}
 	}
-	//fxdiff BAKS-7 Resume function
+	
 	private void updatePathResource(UserRequest ureq) {
 		final String path = "path=" + folderComponent.getCurrentContainerPath();
 		OLATResourceable ores = OresHelper.createOLATResourceableTypeWithoutCheck(path);
@@ -509,18 +511,8 @@ public class FolderRunController extends BasicController implements Activateable
 
 	public void activatePath(UserRequest ureq, String path) {
 		if (path != null && path.length() > 0) {
-			// Check if there is something after path= e.g. '/test1/test2/readme.txt'
-			if (path.lastIndexOf("/") > 0) {
-				// ok there is file e.g. /readme.txt => navigate only to folder =>
-				// remove file name
-				String dirPath = path.substring(0, path.lastIndexOf("/"));
-				if (!path.equals("")) {
-					if (log.isDebug()) log.debug("direct navigation to container-path=" + dirPath);
-					folderComponent.setCurrentContainerPath(dirPath);
-				}
-			}
 			VFSItem vfsItem = folderComponent.getRootContainer().resolve(path.endsWith("/") ? path.substring(0, path.length()-1) : path);
-			if (vfsItem != null && !(vfsItem instanceof VFSContainer)) {
+			if (vfsItem instanceof VFSLeaf) {
 				// could be a file - create the mapper - otherwise don't create one if it's a directory
 				
 				// Create a mapper to deliver the auto-download of the file. We have to
@@ -530,13 +522,22 @@ public class FolderRunController extends BasicController implements Activateable
 				// Mapper is cleaned up automatically by basic controller
 				String baseUrl = registerMapper(ureq, new VFSContainerMapper(folderComponent.getRootContainer()));
 				// Trigger auto-download
-				DisplayOrDownloadComponent dordc = new DisplayOrDownloadComponent("downloadcomp",baseUrl + path);
+				DisplayOrDownloadComponent dordc = new DisplayOrDownloadComponent("downloadcomp", baseUrl + path);
 				folderContainer.put("autoDownloadComp", dordc);
+				
+				if (path.lastIndexOf("/") > 0) {
+					String dirPath = path.substring(0, path.lastIndexOf("/"));
+					if (StringHelper.containsNonWhitespace(dirPath)) {
+						folderComponent.setCurrentContainerPath(dirPath);
+					}
+				}
+			} else if(vfsItem instanceof VFSContainer) {
+				if (StringHelper.containsNonWhitespace(path)) {
+					folderComponent.setCurrentContainerPath(path);
+				}
 			}
-			//fxdiff BAKS-7 Resume function
+			
 			updatePathResource(ureq);
 		}
 	}
-	
-
 }
