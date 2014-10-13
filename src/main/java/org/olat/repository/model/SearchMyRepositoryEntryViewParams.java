@@ -193,6 +193,8 @@ public class SearchMyRepositoryEntryViewParams {
 		rating,
 		key,
 		displayname,
+		externalRef,
+		externalId,
 		lifecycleLabel,
 		lifecycleSoftkey,
 		lifecycleStart,

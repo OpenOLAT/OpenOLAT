@@ -45,6 +45,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private boolean selected;
 	
 	private Long key;
+	private String externalId;
 	private String externalRef;
 	private String name;
 	private String authors;
@@ -86,6 +87,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	
 	public RepositoryEntryRow(RepositoryEntryMyView entry) {
 		setKey(entry.getKey());
+		setExternalId(entry.getExternalId());
 		setExternalRef(entry.getExternalRef());
 		setDisplayName(entry.getDisplayname());
 		setShortenedDescription(entry.getDescription());
@@ -140,7 +142,14 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	public void setKey(Long key) {
 		this.key = key;
 	}
-	
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
+	}
 
 	public String getExternalRef() {
 		return externalRef;

@@ -300,6 +300,14 @@ public class RepositoryEntryAuthorQueries {
 					sb.append(" order by v.statistics.lastUsage ");
 					appendAsc(sb, asc).append(", lower(v.displayname) asc");
 					break;
+				case externalId:
+					sb.append(" order by lower(v.externalId)");
+					appendAsc(sb, asc).append(", lower(v.displayname) asc");
+					break;
+				case externalRef:
+					sb.append(" order by lower(v.externalRef)");
+					appendAsc(sb, asc).append(", lower(v.displayname) asc");
+					break;
 				case lifecycleLabel:
 					if(asc) {
 						sb.append(" order by lifecycle.label nulls last, lower(v.displayname) asc");

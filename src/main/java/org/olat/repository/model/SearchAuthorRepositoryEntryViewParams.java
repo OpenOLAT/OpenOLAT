@@ -167,6 +167,8 @@ public class SearchAuthorRepositoryEntryViewParams {
 		ac,
 		creationDate,
 		lastUsage,
+		externalId,
+		externalRef,
 		lifecycleLabel,
 		lifecycleSoftkey,
 		lifecycleStart,

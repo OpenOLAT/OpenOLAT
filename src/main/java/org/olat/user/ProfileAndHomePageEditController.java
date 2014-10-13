@@ -137,6 +137,9 @@ public class ProfileAndHomePageEditController extends BasicController implements
 			if(homePageController != null) {
 				homePageController.updateIdentityToModify(ureq, identityToModify);
 			}
+			if(event == Event.DONE_EVENT) {
+				fireEvent(ureq, event);
+			}
 		}
 		super.event(ureq, source, event);
 	}

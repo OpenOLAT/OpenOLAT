@@ -68,7 +68,7 @@ public class ProgressRenderer extends CustomCssCellRenderer {
 			String[] values = new String[]{ Integer.toString(progress.getGreen()), Integer.toString(progress.getTotal()) };
 			String tooltip = translator.translate("tooltip.of", values);
 			sb.append("<div class='progress' title='").append(tooltip).append("'>")
-			  .append("<div class='progress-bar' role='progressbar' aria-valuenow='").append(green)
+			  .append("<div class='progress-bar' role='progressbar' aria-valuenow='").append(progress.getGreen())
 			  .append("' aria-valuemin='0' aria-valuemax='").append(progress.getTotal())
 			  .append("' style='width: ").append(green).append("%;'/>")
 			  .append("<span class='sr-only'>").append(green).append("%</span></div></div>");
