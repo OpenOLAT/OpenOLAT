@@ -82,10 +82,15 @@ wizard {
 /* Change the round icon used for the toggle button to square one */
 .o_icon_toggle:before { content: $fa-var-stop; }
 .o_button_toggle {
-	line-height: $o-toggle-size + 1;
-	font-size: $o-toggle-size;
+	padding-left: 2px;
+	i {
+		line-height: $o-toggle-size + 1px;
+	}
 	span {
-		line-height: $o-toggle-size + 1;
+		line-height: $o-toggle-size + 1px;
+	}
+	&.o_on {
+		padding-right: 2px;
 	}
 }
 
