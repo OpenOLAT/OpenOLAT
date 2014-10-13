@@ -90,3 +90,10 @@ body .progress {
 .btn.btn-primary.o_disabled {
 	color: $btn-primary-color !important;
 }
+
+
+body .progress-bar {
+	&[aria-valuenow="1"], &[aria-valuenow="2"] {
+		min-width: 1px;
+	}
+}
