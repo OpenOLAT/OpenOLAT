@@ -355,7 +355,9 @@ public class CatalogController extends BasicController implements Activateable2 
 				if (s.startsWith(CATENTRY_LEAF)) {
 					int pos = Integer.parseInt(s.substring(CATENTRY_LEAF.length()));
 					linkMarkedToBeEdited = childCe.get(pos);
-					repositoryEditDescriptionController = new RepositoryEditDescriptionController(ureq, getWindowControl(), linkMarkedToBeEdited.getRepositoryEntry(), false);
+					RepositoryEntry re = linkMarkedToBeEdited.getRepositoryEntry();
+					RepositoryEntry reloaded = repositoryService.loadByKey(re.getKey());
+					repositoryEditDescriptionController = new RepositoryEditDescriptionController(ureq, getWindowControl(), reloaded, false);
 					listenTo(repositoryEditDescriptionController);
 					// open form in dialog
 					removeAsListenerAndDispose(cmc);
@@ -680,7 +682,7 @@ public class CatalogController extends BasicController implements Activateable2 
 			if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				linkMarkedToBeEdited.setRepositoryEntry(repositoryEditDescriptionController.getRepositoryEntry());
 				updateContent(ureq, currentCatalogEntry, currentCatalogEntryLevel);
-				cm.updateReferencedRepositoryEntry(repositoryEditDescriptionController.getRepositoryEntry());
+				cm.notifyReferencedRepositoryEntryChanges(repositoryEditDescriptionController.getRepositoryEntry());
 			}
 			cmc.deactivate();
 		} else if (source == addEntryForm) {

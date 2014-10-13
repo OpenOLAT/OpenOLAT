@@ -26,28 +26,17 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.collaboration.CollaborationTools;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
-import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.group.BusinessGroup;
-import org.olat.group.DeletableGroupData;
-import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
-import org.olat.portfolio.model.structel.ElementType;
-import org.olat.portfolio.model.structel.PortfolioStructure;
-import org.olat.properties.NarrowedPropertyManager;
-import org.olat.properties.Property;
-import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -62,7 +51,7 @@ import org.springframework.stereotype.Service;
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
 @Service("portfolioModule")
-public class PortfolioModule extends AbstractSpringModule implements ConfigOnOff, UserDataDeletable, DeletableGroupData {
+public class PortfolioModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	private static final OLog log = Tracing.createLoggerFor(PortfolioModule.class);
 	
@@ -274,35 +263,6 @@ public class PortfolioModule extends AbstractSpringModule implements ConfigOnOff
 		return offerPublicMapList;
 	}
 
-	// used for user deletion
-	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName) {
-		EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
-		ePFMgr.deleteUsersArtefacts(identity);
-		
-		List<PortfolioStructure> userPersonalMaps = ePFMgr.getStructureElementsForUser(identity, ElementType.DEFAULT_MAP, ElementType.STRUCTURED_MAP);
-		for (PortfolioStructure portfolioStructure : userPersonalMaps) {
-			
-			ePFMgr.deletePortfolioStructure(portfolioStructure);
-		}
-		
-	}
-
-	// used for group deletion
-	@Override
-	public boolean deleteGroupDataFor(BusinessGroup group) {
-		EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
-		final NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(group);
-		final Property mapKeyProperty = npm.findProperty(null, null, CollaborationTools.PROP_CAT_BG_COLLABTOOLS, CollaborationTools.KEY_PORTFOLIO);
-		if (mapKeyProperty != null) {
-			final Long mapKey = mapKeyProperty.getLongValue();
-			final PortfolioStructure map = ePFMgr.loadPortfolioStructureByKey(mapKey);
-			ePFMgr.deletePortfolioStructure(map);
-			return true;
-		}
-		return false;
-	}
-	
 	/**
 	 * should the artefact collect wizard contain a step to collect a reflexion
 	 * @return

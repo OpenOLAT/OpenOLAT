@@ -30,6 +30,7 @@ import java.util.Set;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.collaboration.CollaborationTools;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tagging.manager.TaggingManager;
 import org.olat.core.commons.services.tagging.model.Tag;
@@ -38,7 +39,8 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.coordinate.SyncerCallback;
@@ -50,6 +52,8 @@ import org.olat.course.assessment.AssessmentNotificationsHandler;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.group.BusinessGroup;
+import org.olat.group.DeletableGroupData;
 import org.olat.modules.webFeed.portfolio.LiveBlogArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.model.EPFilterSettings;
@@ -62,12 +66,15 @@ import org.olat.portfolio.model.structel.EPTargetResource;
 import org.olat.portfolio.model.structel.ElementType;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
+import org.olat.properties.NarrowedPropertyManager;
+import org.olat.properties.Property;
 import org.olat.resource.OLATResource;
 import org.olat.search.SearchResults;
 import org.olat.search.model.AbstractOlatDocument;
 import org.olat.search.model.ResultDocument;
 import org.olat.search.service.indexer.identity.PortfolioArtefactIndexer;
 import org.olat.search.service.searcher.SearchClient;
+import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -85,7 +92,9 @@ import org.springframework.stereotype.Service;
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
 @Service("epFrontendManager")
-public class EPFrontendManager extends BasicManager {
+public class EPFrontendManager implements UserDataDeletable, DeletableGroupData {
+	
+	private static final OLog log = Tracing.createLoggerFor(EPFrontendManager.class);
 
 	@Autowired
 	private Coordinator coordinator;
@@ -147,6 +156,29 @@ public class EPFrontendManager extends BasicManager {
 		// load again as session might be closed between
 		artefact = artefactManager.loadArtefactByKey(artefact.getKey());
 		artefactManager.deleteArtefact(artefact);
+	}
+	
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName) {
+		deleteUsersArtefacts(identity);
+
+		List<PortfolioStructure> userPersonalMaps = getStructureElementsForUser(identity, ElementType.DEFAULT_MAP, ElementType.STRUCTURED_MAP);
+		for (PortfolioStructure portfolioStructure : userPersonalMaps) {
+			deletePortfolioStructure(portfolioStructure);
+		}
+	}
+	
+	@Override
+	public boolean deleteGroupDataFor(BusinessGroup group) {
+		final NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(group);
+		final Property mapKeyProperty = npm.findProperty(null, null, CollaborationTools.PROP_CAT_BG_COLLABTOOLS, CollaborationTools.KEY_PORTFOLIO);
+		if (mapKeyProperty != null) {
+			final Long mapKey = mapKeyProperty.getLongValue();
+			final PortfolioStructure map = loadPortfolioStructureByKey(mapKey);
+			deletePortfolioStructure(map);
+			return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -487,7 +519,7 @@ public class EPFrontendManager extends BasicManager {
 								try {
 									keys.add(Long.parseLong(keyStr));
 								} catch (Exception e) {
-									logError("Not a primary key: " + keyStr, e);
+									log.error("Not a primary key: " + keyStr, e);
 								}
 							}
 						}
@@ -495,7 +527,7 @@ public class EPFrontendManager extends BasicManager {
 				}
 				return keys;
 			} catch (Exception e) {
-				logError("", e);
+				log.error("", e);
 				return Collections.emptyList();
 			}
 		} else return Collections.emptyList();
@@ -1115,7 +1147,7 @@ public class EPFrontendManager extends BasicManager {
 				}
 			}
 			assessmentNotificationsHandler.markPublisherNews(owner, course.getResourceableId());
-			logAudit("Map " + map + " from " + owner.getName() + " has been submitted.");
+			log.audit("Map " + map + " from " + owner.getName() + " has been submitted.");
 		}
 	}
 	
