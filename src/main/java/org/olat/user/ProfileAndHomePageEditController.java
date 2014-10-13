@@ -64,7 +64,7 @@ public class ProfileAndHomePageEditController extends BasicController implements
 	private boolean isAdministrativeUser;
 
 	public ProfileAndHomePageEditController(UserRequest ureq, WindowControl wControl) {		
-		this(ureq,wControl, ureq.getIdentity(), ureq.getUserSession().getRoles().isOLATAdmin());
+		this(ureq,wControl, ureq.getIdentity(), false);
 	}
 	
 	/**
