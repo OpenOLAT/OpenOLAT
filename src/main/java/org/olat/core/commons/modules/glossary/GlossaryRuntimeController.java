@@ -48,9 +48,8 @@ public class GlossaryRuntimeController extends RepositoryEntryRuntimeController 
 	}
 
 	@Override
-	protected void initToolbar(Dropdown toolsDropdown, Dropdown settingsDropdown) {
-		super.initToolbar(toolsDropdown, settingsDropdown);
-		
+	protected void initSettingsTools(Dropdown settingsDropdown) {
+		super.initSettingsTools(settingsDropdown);
 		if (reSecurity.isEntryAdmin()) {
 			registerLink = LinkFactory.createToolLink("register", translate("tab.glossary.register"), this, "o_sel_glossary_register");
 			registerLink.setIconLeftCSS("o_icon o_icon_pageing o_icon-fw");

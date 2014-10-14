@@ -28,6 +28,7 @@ import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -38,10 +39,17 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
@@ -49,23 +57,35 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseModule;
+import org.olat.course.run.RunMainController;
+import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.author.AuthoringEditAccessController;
 import org.olat.repository.ui.author.CatalogSettingsController;
+import org.olat.repository.ui.author.CopyRepositoryEntryController;
 import org.olat.repository.ui.author.RepositoryEditDescriptionController;
 import org.olat.repository.ui.author.RepositoryMembersController;
+import org.olat.repository.ui.author.wizard.CloseResourceCallback;
+import org.olat.repository.ui.author.wizard.Close_1_ExplanationStep;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
@@ -73,6 +93,7 @@ import org.olat.resource.accesscontrol.ui.AccessEvent;
 import org.olat.resource.accesscontrol.ui.AccessListController;
 import org.olat.resource.accesscontrol.ui.AccessRefusedController;
 import org.olat.resource.accesscontrol.ui.OrdersAdminController;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -89,9 +110,13 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected Controller editorCtrl;
 	protected Controller currentToolCtr;
+	private CloseableModalController cmc;
 	protected Controller accessController;
 	private OrdersAdminController ordersCtlr;
+	private StepsMainRunController closeCtrl;
+	private DialogBoxController deleteDialogCtrl;
 	private CatalogSettingsController catalogCtlr;
+	private CopyRepositoryEntryController copyCtrl;
 	protected AuthoringEditAccessController accessCtrl;
 	private RepositoryEntryDetailsController detailsCtrl;
 	private RepositoryMembersController membersEditController;
@@ -101,10 +126,12 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private Dropdown settings;
 	protected Link editLink, membersLink, ordersLink,
 				 editDescriptionLink, accessLink, catalogLink,
-				 detailsLink, bookmarkLink;
+				 detailsLink, bookmarkLink,
+				 copyLink, downloadLink, closeLink, deleteLink;
 	
 	protected final boolean isOlatAdmin;
 	protected final boolean isGuestOnly;
+	protected final boolean isAuthor;
 	
 	protected RepositoryEntrySecurity reSecurity;
 	protected final Roles roles;
@@ -114,12 +141,15 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected boolean corrupted;
 	private RepositoryEntry re;
+	private LockResult lockResult;
 	private final RepositoryHandler handler;
 	
 	private HistoryPoint launchedFromPoint;
 	
 	@Autowired
 	protected ACService acService;
+	@Autowired
+	protected UserManager userManager;
 	@Autowired
 	protected MarkManager markManager;
 	@Autowired
@@ -170,6 +200,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		roles = ureq.getUserSession().getRoles();
 		isOlatAdmin = roles.isOLATAdmin();
 		isGuestOnly = roles.isGuestOnly();
+		isAuthor = roles.isAuthor();
 		this.reSecurity = reSecurity;
 
 		// set up the components
@@ -214,11 +245,21 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		tools.setElementCssClass("o_sel_repository_tools");
 		tools.setIconCSS("o_icon o_icon_tools");
 		
-		settings = new Dropdown("settings", "details.chprop", false, getTranslator());
+		String resourceType = re.getOlatResource().getResourceableTypeName();
+		String name = NewControllerFactory.translateResourceableTypeName(resourceType, getLocale());
+		settings = new Dropdown("settings", "toolbox.settings", false, getTranslator());
+		settings.setTranslatedLabel(name);
 		settings.setElementCssClass("o_sel_course_settings");
-		settings.setIconCSS("o_icon o_icon_customize");
+		settings.setIconCSS("o_icon o_icon_actions");
 		
 		initToolbar(tools, settings);
+		
+		if(tools.size() > 0) {
+			toolbarPanel.addTool(tools, Align.left, true);
+		}
+		if(settings.size() > 0) {
+			toolbarPanel.addTool(settings, Align.left, true);
+		}
 	}
 	
 	protected void initToolbar(Dropdown toolsDropdown, Dropdown settingsDropdown) {
@@ -240,10 +281,30 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			ordersLink.setIconLeftCSS("o_icon o_icon-fw o_icon_booking");
 			boolean booking = acService.isResourceAccessControled(re.getOlatResource(), null);
 			ordersLink.setEnabled(booking);
-			toolsDropdown.addComponent(ordersLink);
-			
+			toolsDropdown.addComponent(ordersLink);	
+		}
+		
+		initSettingsTools(settingsDropdown);
+		initEditionTools(settingsDropdown);
+
+		detailsLink = LinkFactory.createToolLink("details", translate("details.header"), this, "o_sel_repo_details");
+		detailsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_details");
+		detailsLink.setElementCssClass("o_sel_author_details");
+		detailsLink.setVisible(showInfos);
+		toolbarPanel.addTool(detailsLink);
+		
+		boolean marked = markManager.isMarked(re, getIdentity(), null);
+		String css = marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON;
+		bookmarkLink = LinkFactory.createToolLink("bookmark", translate("details.bookmark.label"), this, css);
+		bookmarkLink.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
+		bookmarkLink.setVisible(allowBookmark);
+		toolbarPanel.addTool(bookmarkLink, Align.right);
+	}
+	
+	protected void initSettingsTools(Dropdown settingsDropdown) {
+		if (reSecurity.isEntryAdmin()) {
 			//settings
-			editDescriptionLink = LinkFactory.createToolLink("settings.cmd", translate("details.chprop"), this, "o_icon_settings");
+			editDescriptionLink = LinkFactory.createToolLink("settings.cmd", translate("details.chprop"), this, "o_icon_details");
 			editDescriptionLink.setElementCssClass("o_sel_course_settings");
 			editDescriptionLink.setEnabled(!corrupted);
 			settingsDropdown.addComponent(editDescriptionLink);
@@ -257,26 +318,59 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			catalogLink.setVisible(repositoryModule.isCatalogEnabled());
 			settingsDropdown.addComponent(catalogLink);
 		}
+	}
+	
+	protected void initEditionTools(Dropdown settingsDropdown) {
+		boolean copyManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.copy);
+		boolean canCopy = (isAuthor || reSecurity.isEntryAdmin()) && (re.getCanCopy() || reSecurity.isEntryAdmin()) && !copyManaged;
 		
-		if(toolsDropdown.size() > 0) {
-			toolbarPanel.addTool(toolsDropdown, Align.left, true);
+		boolean canDownload = re.getCanDownload() && handler.supportsDownload();
+		// disable download for courses if not author or owner
+		if (re.getOlatResource().getResourceableTypeName().equals(CourseModule.getCourseTypeName()) && !(reSecurity.isEntryAdmin() || isAuthor)) {
+			canDownload = false;
 		}
-		if(settingsDropdown.size() > 0) {
-			toolbarPanel.addTool(settingsDropdown, Align.left, true);
+		// always enable download for owners
+		if (reSecurity.isEntryAdmin() && handler.supportsDownload()) {
+			canDownload = true;
 		}
 		
-		detailsLink = LinkFactory.createToolLink("details", translate("details.header"), this, "o_sel_repo_details");
-		detailsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_details");
-		detailsLink.setElementCssClass("o_sel_author_details");
-		detailsLink.setVisible(showInfos);
-		toolbarPanel.addTool(detailsLink);
+		if(canCopy || canDownload) {
+			if(settingsDropdown.size() > 0) {
+				settingsDropdown.addComponent(new Spacer("copy-download"));
+			}
+			if (canCopy) {
+				copyLink = LinkFactory.createToolLink("copy", translate("details.copy"), this, "o_icon o_icon-fw o_icon_copy");
+				copyLink.setElementCssClass("o_sel_repo_copy");
+				settingsDropdown.addComponent(copyLink);
+			}
+			if(canDownload) {
+				downloadLink = LinkFactory.createToolLink("download", translate("details.download"), this, "o_icon o_icon-fw o_icon_download");
+				downloadLink.setElementCssClass("o_sel_repo_download");
+				settingsDropdown.addComponent(downloadLink);
+			}
+		}
 		
-		boolean marked = markManager.isMarked(re, getIdentity(), null);
-		String css = marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON;
-		bookmarkLink = LinkFactory.createToolLink("bookmark", translate("details.bookmark.label"), this, css);
-		bookmarkLink.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
-		bookmarkLink.setVisible(allowBookmark);
-		toolbarPanel.addTool(bookmarkLink, Align.right);
+		boolean canClose = OresHelper.isOfType(re.getOlatResource(), CourseModule.class)
+				&& !RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.close)
+				&& !RepositoryManager.getInstance().createRepositoryEntryStatus(re.getStatusCode()).isClosed();
+		
+		if(reSecurity.isEntryAdmin()) {
+			boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.delete);
+			if(settingsDropdown.size() > 0 && (canClose || !deleteManaged)) {
+				settingsDropdown.addComponent(new Spacer("close-delete"));
+			}
+
+			if(canClose) {
+				closeLink = LinkFactory.createToolLink("close", translate("details.close.ressoure"), this, "o_icon o_icon-fw o_icon_close_resource");
+				closeLink.setElementCssClass("o_sel_repo_close");
+				settingsDropdown.addComponent(closeLink);
+			}
+			if(!deleteManaged) {
+				deleteLink = LinkFactory.createToolLink("delete", translate("details.delete"), this, "o_icon o_icon-fw o_icon_delete_item");
+				deleteLink.setElementCssClass("o_sel_repo_close");
+				settingsDropdown.addComponent(deleteLink);
+			}
+		}
 	}
 	
 	public void setActiveTool(Link tool) {
@@ -369,6 +463,14 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			String css = "o_icon " + (marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON);
 			bookmarkLink.setIconLeftCSS(css);
 			bookmarkLink.setTitle( translate(marked ? "details.bookmark.remove" : "details.bookmark"));
+		} else if(copyLink == source) {
+			doCopy(ureq);
+		} else if(downloadLink == source) {
+			doDownload(ureq);
+		} else if(closeLink == source) {
+			doCloseResource(ureq);
+		} else if(deleteLink == source) {
+			doDelete(ureq);
 		} else if(source == toolbarPanel) {
 			if (event == Event.CLOSE_EVENT) {
 				doClose(ureq);
@@ -380,7 +482,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == accessController) {
+		if(cmc == source) {
+			cleanUp();
+		} else if (source == accessController) {
 			if(event.equals(AccessEvent.ACCESS_OK_EVENT)) {
 				reSecurity = repositoryManager.isAllowed(ureq, getRepositoryEntry());
 				launchContent(ureq, reSecurity);
@@ -401,6 +505,27 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			if(event == Event.CHANGED_EVENT) {
 				re = descriptionCtrl.getEntry();
 			}
+		} else if(closeCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				removeAsListenerAndDispose(closeCtrl);
+				closeCtrl = null;
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					closeLink.setVisible(false);
+				}
+			}
+		} else if(deleteDialogCtrl == source) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				doCompleteDelete(ureq);
+			}
+		} else if(copyCtrl == source) {
+			cmc.deactivate();
+			if (event == Event.DONE_EVENT) {
+				RepositoryEntryRef copy = copyCtrl.getCopiedEntry();
+				String businessPath = "[RepositoryEntry:" + copy.getKey() + "][EditDescription:0]";
+				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			}
+			cleanUp();
 		}
 	}
 	
@@ -417,6 +542,10 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		removeAsListenerAndDispose(detailsCtrl);
 		removeAsListenerAndDispose(editorCtrl);
 		removeAsListenerAndDispose(ordersCtlr);
+		removeAsListenerAndDispose(closeCtrl);
+		removeAsListenerAndDispose(copyCtrl);
+		removeAsListenerAndDispose(cmc);
+		
 		membersEditController = null;
 		accessController = null;
 		descriptionCtrl = null;
@@ -424,6 +553,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		detailsCtrl = null;
 		editorCtrl = null;
 		ordersCtlr = null;
+		closeCtrl = null;
+		copyCtrl = null;
+		cmc = null;
 	}
 	
 	/**
@@ -580,6 +712,104 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 	}
 	
+	private void doCopy(UserRequest ureq) {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(copyCtrl);
+
+		copyCtrl = new CopyRepositoryEntryController(ureq, getWindowControl(), re);
+		listenTo(copyCtrl);
+		
+		String title = translate("details.copy");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), copyCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doDownload(UserRequest ureq) {
+		if (handler == null) {
+			StringBuilder sb = new StringBuilder(translate("error.download"));
+			sb.append(": No download handler for repository entry: ").append(
+					re.getKey());
+			showError(sb.toString());
+			return;
+		}
+
+		RepositoryEntry entry = repositoryService.loadByKey(re.getKey());
+		OLATResourceable ores = entry.getOlatResource();
+		if (ores == null) {
+			showError("error.download");
+			return;
+		}
+
+		boolean isAlreadyLocked = handler.isLocked(ores);
+		try {
+			lockResult = handler.acquireLock(ores, ureq.getIdentity());
+			if (lockResult == null
+					|| (lockResult != null && lockResult.isSuccess() && !isAlreadyLocked)) {
+				MediaResource mr = handler.getAsMediaResource(ores, false);
+				if (mr != null) {
+					repositoryService.incrementDownloadCounter(entry);
+					ureq.getDispatchResult().setResultingMediaResource(mr);
+				} else {
+					showError("error.export");
+					fireEvent(ureq, Event.FAILED_EVENT);
+				}
+			} else if (lockResult != null && lockResult.isSuccess()
+					&& isAlreadyLocked) {
+				String fullName = userManager.getUserDisplayName(lockResult
+						.getOwner());
+				showInfo("warning.course.alreadylocked.bySameUser", fullName);
+				lockResult = null; // invalid lock, it was already locked
+			} else {
+				String fullName = userManager.getUserDisplayName(lockResult
+						.getOwner());
+				showInfo("warning.course.alreadylocked", fullName);
+			}
+		} finally {
+			if ((lockResult != null && lockResult.isSuccess() && !isAlreadyLocked)) {
+				handler.releaseLock(lockResult);
+				lockResult = null;
+			}
+		}
+	}
+	
+	private void doCloseResource(UserRequest ureq) {
+		removeAsListenerAndDispose(closeCtrl);
+
+		Step start = new Close_1_ExplanationStep(ureq, re);
+		StepRunnerCallback finish = new CloseResourceCallback(re);
+		closeCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("wizard.closecourse.title"), "o_sel_checklist_wizard");
+		listenTo(closeCtrl);
+		getWindowControl().pushAsModalDialog(closeCtrl.getInitialComponent());
+	}
+	
+	private void doDelete(UserRequest ureq) {
+		boolean isOwner = true;
+		if (!isOwner) throw new OLATSecurityException("Trying to delete, but not allowed: user = " + ureq.getIdentity());
+
+		//show how many users are currently using this resource
+		String dialogTitle = translate("del.header", re.getDisplayname());
+		Long resId = re.getResourceableId();
+		OLATResourceable courseRunOres = OresHelper.createOLATResourceableInstance(RunMainController.ORES_TYPE_COURSE_RUN, resId);
+		int cnt = CoordinatorManager.getInstance().getCoordinator().getEventBus().getListeningIdentityCntFor(courseRunOres);
+
+		String dialogText = translate(corrupted ? "del.confirm.corrupted" : "del.confirm", String.valueOf(cnt));
+		deleteDialogCtrl = activateYesNoDialog(ureq, dialogTitle, dialogText, deleteDialogCtrl);
+		deleteDialogCtrl.setUserObject(re);
+	}
+	
+	private void doCompleteDelete(UserRequest ureq) {
+		ErrorList errors = repositoryService.delete(re, getIdentity(), roles, getLocale());
+		if (errors.hasErrors()) {
+			showInfo("info.could.not.delete.entry");
+		} else {
+			fireEvent(ureq, new EntryChangedEvent(re, getIdentity(), Change.deleted));
+			showInfo("info.entry.deleted");
+		}
+		doClose(ureq);
+	}
+	
 	protected void launchContent(UserRequest ureq, RepositoryEntrySecurity security) {
 		if(security.canLaunch()) {
 			runtimeController = runtimeControllerCreator.create(ureq, getWindowControl(), toolbarPanel, re, reSecurity);
@@ -591,7 +821,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			toolbarPanel.rootController(re.getDisplayname(), runtimeController);
 		}
 	}
-	
+
 	public interface RuntimeControllerCreator {
 		
 		public Controller create(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry, RepositoryEntrySecurity reSecurity);

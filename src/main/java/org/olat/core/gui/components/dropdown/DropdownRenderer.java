@@ -60,7 +60,13 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		}
 		String i18nKey = dropdown.getI18nKey();
 		if(StringHelper.containsNonWhitespace(i18nKey)) {
-			sb.append("<span>").append(dropdown.getTranslator().translate(dropdown.getI18nKey())).append("</span>");
+			String label;
+			if(dropdown.isTranslated()) {
+				label = i18nKey;
+			} else {
+				label = dropdown.getTranslator().translate(dropdown.getI18nKey());
+			}
+			sb.append("<span>").append(label).append("</span>");
 		}
 		sb.append(" <i class='o_icon o_icon_caret'> </i>");
 		

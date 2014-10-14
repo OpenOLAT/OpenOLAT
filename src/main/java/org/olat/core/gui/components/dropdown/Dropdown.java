@@ -44,6 +44,7 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 	private String i18nKey;
 	private boolean button = false;
 	private boolean embbeded = false;
+	private boolean translated = false;
 	private String iconCSS;
 	private List<Component> components = new ArrayList<>();
 	
@@ -59,6 +60,15 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 
 	public void setI18nKey(String i18nKey) {
 		this.i18nKey = i18nKey;
+	}
+	
+	public void setTranslatedLabel(String label) {
+		this.i18nKey = label;
+		this.translated = true;
+	}
+	
+	public boolean isTranslated() {
+		return translated;
 	}
 
 	public boolean isButton() {

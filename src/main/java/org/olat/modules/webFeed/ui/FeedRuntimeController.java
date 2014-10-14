@@ -57,8 +57,8 @@ public class FeedRuntimeController extends RepositoryEntryRuntimeController {
 	}
 
 	@Override
-	protected void initToolbar(Dropdown toolsDropdown, Dropdown settingsDropdown) {
-		super.initToolbar(toolsDropdown, settingsDropdown);
+	protected void initSettingsTools(Dropdown settingsDropdown) {
+		super.initSettingsTools(settingsDropdown);
 		if (reSecurity.isEntryAdmin()) {
 			if (quotaManager.hasQuotaEditRights(getIdentity())) {
 				settingsDropdown.addComponent(new Spacer(""));

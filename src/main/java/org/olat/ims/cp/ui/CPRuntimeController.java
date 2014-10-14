@@ -64,8 +64,8 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 	}
 
 	@Override
-	protected void initToolbar(Dropdown toolsDropdown, Dropdown settingsDropdown) {
-		super.initToolbar(toolsDropdown, settingsDropdown);
+	protected void initSettingsTools(Dropdown settingsDropdown) {
+		super.initSettingsTools(settingsDropdown);
 		if (reSecurity.isEntryAdmin()) {
 			settingsDropdown.addComponent(new Spacer(""));
 			

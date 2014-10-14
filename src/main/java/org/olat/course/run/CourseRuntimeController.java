@@ -321,7 +321,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		toolbarPanel.removeAllTools();
 		
 		initTools(toolsDropdown, course, uce);
-		initSettings(settingsDropdown);
+		initSettingsTools(settingsDropdown);
+		initEditionTools(settingsDropdown);
 		initToolsMyCourse(course, uce);
 		initGeneralTools(course);
 		
@@ -337,9 +338,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				|| hasCourseRight(CourseRights.RIGHT_STATISTICS) || hasCourseRight(CourseRights.RIGHT_DB)
 				|| hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
 
-			tools = new Dropdown("editTools", "header.tools", false, getTranslator());
+			tools.setI18nKey("header.tools");
 			tools.setElementCssClass("o_sel_course_tools");
-			tools.setIconCSS("o_icon o_icon_tools");
 
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 				boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
@@ -367,7 +367,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				tools.addComponent(archiverLink);
 			}
 			tools.addComponent(new Spacer(""));
-			
 			
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_STATISTICS)) {
 				courseStatisticLink = LinkFactory.createToolLink("statistic",translate("command.openstatistic"), this, "o_icon_statistics_tool");
@@ -413,20 +412,17 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			boolean booking = acService.isResourceAccessControled(getRepositoryEntry().getOlatResource(), null);
 			ordersLink.setVisible(!corrupted && booking);
 			tools.addComponent(ordersLink);
-			
-			toolbarPanel.addTool(tools, Align.left, true);
 		}
 	}
 	
-	private void initSettings(Dropdown settings) {
+	@Override
+	protected void initSettingsTools(Dropdown settings) {
 		if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 			boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
 			
-			settings = new Dropdown("settings", "header.settings", false, getTranslator());
 			settings.setElementCssClass("o_sel_course_settings");
-			settings.setIconCSS("o_icon o_icon_customize");
 			
-			editDescriptionLink = LinkFactory.createToolLink("settings.cmd", translate("command.settings"), this, "o_icon_settings");
+			editDescriptionLink = LinkFactory.createToolLink("settings.cmd", translate("command.settings"), this, "o_icon_details");
 			editDescriptionLink.setElementCssClass("o_sel_course_settings");
 			editDescriptionLink.setEnabled(!managed);
 			settings.addComponent(editDescriptionLink);
@@ -452,8 +448,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			optionsLink = LinkFactory.createToolLink("access.cmd", translate("command.options"), this, "o_icon_options");
 			optionsLink.setElementCssClass("o_sel_course_options");
 			settings.addComponent(optionsLink);
-
-			toolbarPanel.addTool(settings, Align.left, true);
 		}
 	}
 	
