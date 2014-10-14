@@ -19,9 +19,7 @@
    
 	<extension qualifier="webdriver">
 		<property name="browser">firefox</property>
-		<!-- 
-		<property name="dimensions">800x600</property>
-		 -->
+		<property name="dimensions">1024x800</property>
 	</extension>
 
 </arquillian>
