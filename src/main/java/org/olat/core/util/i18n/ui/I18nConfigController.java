@@ -100,9 +100,8 @@ class I18nConfigController extends FormBasicController {
 			defaultLangValues[i] = all;
 		}
 		ArrayHelper.sort(defaultlangKeys, defaultLangValues, false, true, false);
-		String[] defaultLangCssClasses = i18nMgr.createLanguageFlagsCssClasses(defaultlangKeys, "o_flag");
 		defaultLangSelection = uifactory.addDropdownSingleselect("configuration.defaultLangSelection", formLayout, defaultlangKeys,
-				defaultLangValues, defaultLangCssClasses);
+				defaultLangValues, null);
 		defaultLangSelection.addActionListener(FormEvent.ONCHANGE);
 		// Enable the current default language
 		Locale defaultLocale = I18nModule.getDefaultLocale();
