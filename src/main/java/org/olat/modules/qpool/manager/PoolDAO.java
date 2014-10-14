@@ -26,6 +26,8 @@ import java.util.List;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
@@ -142,6 +144,34 @@ public class PoolDAO {
 			query.setMaxResults(maxResults);
 		}
 		return query.getResultList();
+	}
+	
+	public boolean isMemberOfPrivatePools(IdentityRef identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(pool.key) from qpool pool")
+		  .append("  where exists (from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as vmember ")
+		  .append("    where vmember.identity.key=:identityKey and vmember.securityGroup=pool.ownerGroup)");
+
+		Number countPool = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("identityKey", identity.getKey())
+				.getSingleResult();
+		Number countShared = null;
+		if(countPool == null || countPool.intValue() <= 0) {
+			StringBuilder sc = new StringBuilder();
+			sc.append("select count(bgi.key) from ").append(org.olat.group.BusinessGroupImpl.class.getName()).append(" as bgi ")
+			  .append(" inner join bgi.baseGroup as baseGroup")
+			  .append(" inner join baseGroup.members as membership")
+			  .append(" where membership.identity.key=:identityKey")
+			  .append(" and membership.role in ('").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')")
+			  .append(" and exists (select share from qshareitem share where share.resource=bgi.resource)");
+
+			countShared = dbInstance.getCurrentEntityManager()
+					.createQuery(sc.toString(), Number.class)
+					.setParameter("identityKey", identity.getKey())
+					.getSingleResult();
+		}
+		return (countPool != null && countPool.intValue() > 0) || (countShared != null && countShared.intValue() > 0);
 	}
 	
 	public List<Pool> getPools(Identity identity, int firstResult, int maxResults) {

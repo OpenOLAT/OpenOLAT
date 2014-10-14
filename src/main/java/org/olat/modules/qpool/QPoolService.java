@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.zip.ZipOutputStream;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.media.MediaResource;
@@ -107,6 +108,8 @@ public interface QPoolService {
 
 	//pools
 	public List<Pool> getPools(Identity identity, Roles roles);
+	
+	public boolean isMemberOfPrivatePools(IdentityRef identity);
 	
 	public boolean isOwner(Identity owner, Pool pool);
 	

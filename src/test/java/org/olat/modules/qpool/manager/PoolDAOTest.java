@@ -28,8 +28,12 @@ import java.util.UUID;
 import junit.framework.Assert;
 
 import org.junit.Test;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.group.BusinessGroup;
+import org.olat.group.manager.BusinessGroupDAO;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
@@ -58,9 +62,15 @@ public class PoolDAOTest extends OlatTestCase {
 	@Autowired
 	private QItemTypeDAO qItemTypeDao;
 	@Autowired
+	private QuestionItemDAO questionDao;
+	@Autowired
 	private QItemQueriesDAO qItemQueriesDao;
 	@Autowired
 	private QuestionItemDAO questionItemDao;
+	@Autowired
+	private BusinessGroupDAO businessGroupDao;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 	
 	@Test
 	public void createPool() {
@@ -124,6 +134,55 @@ public class PoolDAOTest extends OlatTestCase {
 		//quidam has only public pools
 		List<Pool> quidamPoolList = poolDao.getPools(quidam, 0, -1);
 		Assert.assertFalse(quidamPoolList.contains(pool));
+	}
+	
+	@Test
+	public void isMemberOfPrivatePools_poolOnly() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Pool-owner-" + UUID.randomUUID().toString());
+		Pool pool = poolDao.createPool(id, "NGC owned", false);
+		Assert.assertNotNull(pool);
+		dbInstance.commitAndCloseSession();
+		
+		boolean isMember = poolDao.isMemberOfPrivatePools(id);
+		Assert.assertTrue(isMember);
+	}
+	
+	@Test
+	public void isMemberOfPrivatePools_groupOnly() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("Group-owner-" + UUID.randomUUID().toString());
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsUser("Group-participant-" + UUID.randomUUID().toString());
+		//create a group to share 2 items
+		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
+		BusinessGroup group = businessGroupDao.createAndPersist(owner, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		QuestionItem item = questionDao.createAndPersist(owner, "Shared-Item-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		questionDao.share(item, group.getResource());
+
+		businessGroupRelationDao.addRole(participant, group, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(item);
+		Assert.assertNotNull(group);
+
+		//retrieve them
+		boolean isOwnerMember = poolDao.isMemberOfPrivatePools(owner);
+		Assert.assertTrue(isOwnerMember);
+		boolean isParticipantMember = poolDao.isMemberOfPrivatePools(participant);
+		Assert.assertTrue(isParticipantMember);
+	}
+	
+	@Test
+	public void isMemberOfPrivatePools_negativeTest() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("Pool-owner-" + UUID.randomUUID().toString());
+		Identity somebody = JunitTestHelper.createAndPersistIdentityAsUser("Somebody-" + UUID.randomUUID().toString());
+		//pool
+		Pool pool = poolDao.createPool(owner, "NGC owned", false);
+		Assert.assertNotNull(pool);
+		//group without item
+		BusinessGroup group = businessGroupDao.createAndPersist(owner, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRole(somebody, group, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		boolean isMember = poolDao.isMemberOfPrivatePools(somebody);
+		Assert.assertFalse(isMember);
 	}
 	
 	@Test

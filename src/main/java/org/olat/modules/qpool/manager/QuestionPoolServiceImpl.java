@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DefaultResultInfos;
@@ -319,6 +320,11 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			return poolDao.getPools(0, -1);
 		}
 		return poolDao.getPools(identity, 0, -1);
+	}
+	
+	@Override
+	public boolean isMemberOfPrivatePools(IdentityRef identity) {
+		return poolDao.isMemberOfPrivatePools(identity);
 	}
 
 	@Override

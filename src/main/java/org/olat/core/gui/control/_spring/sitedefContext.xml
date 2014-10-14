@@ -143,6 +143,16 @@
 		<property name="catalogManager" ref="catalogManager" />
 	</bean>
 	
+	<bean id="poolPrivateMembersSiteSecurityCallback" class="org.olat.modules.qpool.site.PoolPrivateMembersSecurityCallback">
+		<property name="qPoolService" ref="qpoolService" />
+		<property name="questionPoolModule" ref="qpoolModule" />
+	</bean>
+	
+	<bean id="authorAndPoolPrivateMembersSiteSecurityCallback" class="org.olat.modules.qpool.site.AuthorAndPoolPrivateMembersSecurityCallback">
+		<property name="qPoolService" ref="qpoolService" />
+		<property name="questionPoolModule" ref="qpoolModule" />
+	</bean>
+	
 	
 	<!-- Alternative controllers -->
 	<bean id="courseSiteForbiddenAlt" class="org.olat.core.gui.control.navigation.SiteAlternativeControllerCreator">
