@@ -46,6 +46,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Read only variant to show the meta datas of a file
@@ -56,12 +57,15 @@ import org.olat.user.UserManager;
 public class MetaInfoController extends FormBasicController {
 	private VFSItem item;
 	private FormLink moreMetaDataLink;
-	private StaticTextElement  publisher, creator, source, city, pages, language, url;
+	private StaticTextElement  publisher, creator, sourceEl, city, pages, language, url;
 	private SingleSelection locked;
 	private Set<FormItem> metaFields;
+	private String resourceUrl;
 	
-	private final UserManager userManager;
-	private final VFSLockManager vfsLockManager;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private VFSLockManager vfsLockManager;
 
 	/**
 	 * Use this controller for editing meta data of an existing file.
@@ -69,11 +73,10 @@ public class MetaInfoController extends FormBasicController {
 	 * @param ureq
 	 * @param control
 	 */
-	public MetaInfoController(UserRequest ureq, WindowControl control, VFSItem item) {
+	public MetaInfoController(UserRequest ureq, WindowControl control, VFSItem item, String resourceUrl) {
 		super(ureq, control);
 		this.item = item;
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
+		this.resourceUrl = resourceUrl;
 		initForm(ureq);
 	}
 	
@@ -150,7 +153,7 @@ public class MetaInfoController extends FormBasicController {
 
 		// source/origin
 		String sourceVal = StringHelper.escapeHtml(meta != null ? meta.getSource() : null);
-		source = uifactory.addStaticTextElement("mf.source", sourceVal, formLayout);
+		sourceEl = uifactory.addStaticTextElement("mf.source", sourceVal, formLayout);
 
 		// city
 		String cityVal = StringHelper.escapeHtml(meta != null ? meta.getCity() : null);
@@ -192,7 +195,7 @@ public class MetaInfoController extends FormBasicController {
 		metaFields = new HashSet<FormItem>();
 		metaFields.add(creator);
 		metaFields.add(publisher);
-		metaFields.add(source);
+		metaFields.add(sourceEl);
 		metaFields.add(city);
 		metaFields.add(publicationDate);
 		metaFields.add(pages);
@@ -259,6 +262,15 @@ public class MetaInfoController extends FormBasicController {
 			if (moreMetaDataLink != null) {
 				moreMetaDataLink.setVisible(false);
 			}
+		}
+		
+		if(StringHelper.containsNonWhitespace(resourceUrl)) {
+			String externalUrlPage = velocity_root + "/external_url.html";
+			FormLayoutContainer extUrlCont = FormLayoutContainer.createCustomFormLayout("external.url", getTranslator(), externalUrlPage);
+			extUrlCont.setLabel("external.url", null);
+			extUrlCont.contextPut("resourceUrl", resourceUrl);
+			extUrlCont.setRootForm(mainForm);
+			formLayout.add(extUrlCont);
 		}
 
 		// cancel buttons

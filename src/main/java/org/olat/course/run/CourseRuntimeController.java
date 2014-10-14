@@ -782,7 +782,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						//the wrong link to the wrong person
 					}
 				}
-			} 
+			} else if(type != null && type.startsWith("path=")) {
+				if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
+					String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
+					doCourseFolder(ureq).activatePath(ureq, path);
+				}
+			}
 		}
 
 		if(getRunMainController() != null) {
@@ -889,7 +894,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	private void doCourseFolder(UserRequest ureq) {
+	private FolderRunController doCourseFolder(UserRequest ureq) {
 		removeCustomCSS(ureq);
 		// Folder for course with custom link model to jump to course nodes
 		ICourse course = CourseFactory.loadCourse(getOlatResourceable());
@@ -901,6 +906,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		courseFolderCtrl = pushController(ureq, translate("command.coursefolder"), ctrl);
 		setActiveTool(folderLink);
 		currentToolCtr = courseFolderCtrl;
+		return courseFolderCtrl;
 	}
 	
 	private void doCourseAreas(UserRequest ureq) {

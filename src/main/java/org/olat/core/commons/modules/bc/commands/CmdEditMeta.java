@@ -42,8 +42,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -75,10 +78,11 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 	 * 
 	 * @see org.olat.core.commons.modules.bc.commands.FolderCommand#execute(org.olat.core.commons.modules.bc.components.FolderComponent, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl, org.olat.core.gui.translator.Translator)
 	 */
-	public Controller execute(FolderComponent folderComponent,
+	@Override
+	public Controller execute(FolderComponent fComponent,
 			UserRequest ureq, WindowControl wControl, Translator trans) {
 		this.translator = trans;
-		this.folderComponent = folderComponent;
+		this.folderComponent = fComponent;
 		String pos = ureq.getParameter(ListRenderer.PARAM_EDTID);
 		if (!StringHelper.containsNonWhitespace(pos)) {
 			// somehow parameter did not make it to us
@@ -87,9 +91,9 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 			return null;
 		}
 		
-		status = FolderCommandHelper.sanityCheck(wControl, folderComponent);
+		status = FolderCommandHelper.sanityCheck(wControl, fComponent);
 		if(status == FolderCommandStatus.STATUS_SUCCESS) {
-			currentItem = folderComponent.getCurrentContainerChildren().get(Integer.parseInt(pos));
+			currentItem = fComponent.getCurrentContainerChildren().get(Integer.parseInt(pos));
 		}
 		if(status == FolderCommandStatus.STATUS_FAILED) {
 			return null;
@@ -97,18 +101,29 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 
 		removeAsListenerAndDispose(metaCtr);
 		removeAsListenerAndDispose(metaInfoCtr);
-
 		if(vfsLockManager.isLockedForMe(currentItem, getIdentity(), ureq.getUserSession().getRoles())) {
 			//readonly
-			metaCtr = new MetaInfoController(ureq, wControl, currentItem);
+			String resourceUrl = getResourceURL(wControl);
+			metaCtr = new MetaInfoController(ureq, wControl, currentItem, resourceUrl);
 			listenTo(metaCtr);
 			putInitialPanel(metaCtr.getInitialComponent());
 		} else {
-			metaInfoCtr = new MetaInfoFormController(ureq, wControl, currentItem);
+			String resourceUrl = getResourceURL(wControl);
+			metaInfoCtr = new MetaInfoFormController(ureq, wControl, currentItem, resourceUrl);
 			listenTo(metaInfoCtr);
 			putInitialPanel(metaInfoCtr.getInitialComponent());
 		}
 		return this;
+	}
+	
+	private String getResourceURL(WindowControl wControl) {
+		String path = "path=" + folderComponent.getCurrentContainerPath();
+		if(currentItem != null) {
+			path += "/" + currentItem.getName();
+		}
+		OLATResourceable ores = OresHelper.createOLATResourceableTypeWithoutCheck(path);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, wControl);
+		return BusinessControlFactory.getInstance().getAsURIString(bwControl.getBusinessControl(), false);
 	}
 
 	@Override

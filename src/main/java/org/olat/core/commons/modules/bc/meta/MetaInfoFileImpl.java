@@ -844,9 +844,9 @@ public class MetaInfoFileImpl extends DefaultHandler implements MetaInfo {
 		String name = originFile.getName();
 		String extension = FileUtils.getFileSuffix(name);
 		String nameOnly = name.substring(0, name.length() - extension.length() - 1);
-		String uuid = UUID.randomUUID().toString();
+		String randuuid = UUID.randomUUID().toString();
 		String thumbnailExtension = preferedThumbnailType(extension);
-		File thumbnailFile = new File(metaLoc, nameOnly + "_" + uuid + "_" + maxHeight + "x" + maxWidth + (fill ? "xfill" : "") + "." + thumbnailExtension);
+		File thumbnailFile = new File(metaLoc, nameOnly + "_" + randuuid + "_" + maxHeight + "x" + maxWidth + (fill ? "xfill" : "") + "." + thumbnailExtension);
 		
 		//generate thumbnail
 		long start = 0l;
