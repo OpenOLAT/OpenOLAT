@@ -454,6 +454,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private void initToolsMyCourse(ICourse course, UserCourseEnvironmentImpl uce) {
 
 		myCourse = new Dropdown("myCourse", "header.tools.mycourse", false, getTranslator());
+		myCourse.setElementCssClass("dropdown-menu-right");
 		myCourse.setIconCSS("o_icon o_icon_user");
 
 		// Personal tools on right side
@@ -501,6 +502,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			if (uce.getCoachedGroups().size() > 0) {
 				for (BusinessGroup group:uce.getCoachedGroups()) {
 					Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", StringHelper.escapeHtml(group.getName()), this);
+					link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 					link.setUserObject(group);
 					myCourse.addComponent(link);
 					
@@ -511,6 +513,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			if (uce.getParticipatingGroups().size() > 0) {
 				for (BusinessGroup group: uce.getParticipatingGroups()) {
 					Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", StringHelper.escapeHtml(group.getName()), this);
+					link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 					link.setUserObject(group);
 					myCourse.addComponent(link);
 				}
@@ -522,6 +525,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					int pos = businessGroupService.getPositionInWaitingListFor(getIdentity(), group);
 					String name = StringHelper.escapeHtml(group.getName()) + " (" + pos + ")";
 					Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", name, this);
+					link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 					link.setUserObject(group);
 					link.setEnabled(false);
 					myCourse.addComponent(link);
