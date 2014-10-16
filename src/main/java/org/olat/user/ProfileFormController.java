@@ -112,6 +112,17 @@ public class ProfileFormController extends FormBasicController {
 	private HomePageConfigManager hpcm;
 	@Autowired
 	private DisplayPortraitManager dps;
+	
+	/**
+	 * Create this controller with the request's identity as none administrative
+	 * user. This constructor can be use in after login interceptor.
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 */
+	public ProfileFormController(UserRequest ureq, WindowControl wControl) {
+		this(ureq, wControl, ureq.getIdentity(), false);
+	}
 
 	/**
 	 * Creates this controller.
