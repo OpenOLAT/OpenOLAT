@@ -58,7 +58,7 @@
 		        <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
 	        </props>            
 		</constructor-arg>
-		<property name="addMoreProperties" ref="c3p0HibernateProperties" />
+		<property name="addMoreProperties" ref="hikariHibernateProperties" />
 	</bean>
 	
 	<bean id="mysql_jndi_HibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
@@ -82,7 +82,7 @@
 		        <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
 	        </props>            
 		</constructor-arg>
-		<property name="addMoreProperties" ref="c3p0HibernateProperties" />
+		<property name="addMoreProperties" ref="hikariHibernateProperties" />
 	</bean>
 	
 	<bean id="postgresql_jndi_HibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
@@ -107,7 +107,7 @@
 				<prop key="hibernate.default_schema">${db.default.schema}</prop>
 	        </props>            
 		</constructor-arg>
-		<property name="addMoreProperties" ref="c3p0HibernateProperties" />
+		<property name="addMoreProperties" ref="hikariHibernateProperties" />
 	</bean>
 	
 	<bean id="oracle_jndi_HibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
@@ -191,75 +191,24 @@
 		</constructor-arg>        
 	</bean>
 	
-	<bean id="c3p0HibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
+	<bean id="hikariHibernateProperties" class="org.olat.core.commons.persistence.DBVendorHibernatePropertiesSimplification">
 		<constructor-arg>
 			<props>
-	            <prop key="hibernate.connection.provider_class">org.hibernate.connection.C3P0ConnectionProvider</prop>
+	            <prop key="hibernate.connection.provider_class">com.zaxxer.hikari.hibernate.HikariConnectionProvider</prop>
 	            <!-- Min pool size -->
-	            <prop key="hibernate.c3p0.min_size">${db.hibernate.c3p0.minsize}</prop>
+	            <prop key="hibernate.hikari.minimumPoolSize">${db.hibernate.hikari.minsize}</prop>
 	            <!-- Max pool size , mysql-default value is 100, If you need to support more connections, you should set a larger value for this variable in mysql config -->
-	            <prop key="hibernate.c3p0.max_size">${db.hibernate.c3p0.maxsize}</prop>
-	            <!-- Connection timeout in sec -->
-	            <prop key="hibernate.c3p0.timeout">1800</prop>
-	            <!-- Size of prepared statements -->
-	            <prop key="hibernate.c3p0.max_statements">10000</prop>
-	            <!-- Commit on connection close --> 
-	            <prop key="hibernate.c3p0.autoCommitOnClose">false</prop>
-	            <!-- Number of connection acquired when pool is exhausted -->
-	            <prop key="hibernate.c3p0.acquire_increment">2</prop>
-	            <!-- Idle time (in sec) before pooled connection is validated -->
-	            <prop key="hibernate.c3p0.idle_test_period">500</prop>
-	            <!-- for debug purposes -->
-	            <prop key="hibernate.c3p0.debugUnreturnedConnectionStackTraces">${db.hibernate.c3p0.debugUnreturnedConnectionStackTraces}</prop>
-            	<prop key="hibernate.c3p0.unreturnedConnectionTimeout">${db.hibernate.c3p0.unreturnedConnectionTimeout}</prop>
-
-	            <!--  OLAT-5528: under heavy load situations threads have been seen to deadlock on acquire/release of a connection.
-	                             increasing number of helper threads from 3 to 10 plus limiting the max time for administrative tasks to 2min
-	                             is expected to allow these situations to resolve themselves -->
-	            <!-- Number of c3p0 helper threads - default is 3 --> 
-	            <prop key="hibernate.c3p0.numHelperThreads">10</prop>
-	            <!-- Maximum time spent by c3p0 for administrative tasks in seconds - default infinity=0 --> 
-	            <prop key="hibernate.c3p0.maxAdministrativeTaskTime">120</prop>
+	            <prop key="hibernate.hikari.maximumPoolSize">${db.hibernate.hikari.maxsize}</prop>
+	            <prop key="hibernate.hikari.minimumIdle">4</prop>
+	            <prop key="hibernate.hikari.idleTimeout">1800000</prop>
+	            <prop key="hibernate.hikari.autoCommit">false</prop>
+	            <prop key="hibernate.hikari.leakDetectionThreshold">120000</prop>
+	            <prop key="hibernate.hikari.transactionIsolation">TRANSACTION_READ_COMMITTED</prop>
+	            <prop key="hibernate.hikari.registerMbeans">true</prop>
 	        </props>
 		</constructor-arg>
 		<property name="addMoreProperties" ref="hibernateProps" />
 	</bean>
-
-	<!-- c3p0 pooled JDBC connection
-	<bean id="mysql_local_DataSource"
-		class="com.mchange.v2.c3p0.ComboPooledDataSource" lazy-init="true" destroy-method="close">
-    	<property name="driverClass"><value>com.mysql.jdbc.Driver</value></property>
-		<property name="jdbcUrl"><value>jdbc:mysql://${db.host}:${db.host.port}/${db.name}?useUnicode=true&amp;characterEncoding=UTF-8</value></property>
-		<property name="user" value="${db.user}" />
-		<property name="password" value="${db.pass}" />
-		<property name="minPoolSize" value="${db.hibernate.c3p0.minsize}" />
-		<property name="maxPoolSize" value="${db.hibernate.c3p0.maxsize}" />
-		<property name="maxIdleTime" value="1800" />
-		<property name="maxStatements" value="10000" />
-		<property name="autoCommitOnClose" value="false" />
-		<property name="acquireIncrement" value="2" />
-		<property name="idleConnectionTestPeriod" value="500" />
-		<property name="hibernate.c3p0.numHelperThreads" value="10">
-		<property name="maxAdministrativeTaskTime" value="120" />
-	</bean> -->
-	
-	<!-- c3p0 pooled JDBC connection 
-	<bean id="postgresql_local_DataSource"
-		class="com.mchange.v2.c3p0.ComboPooledDataSource" lazy-init="true" destroy-method="close">
-    	<property name="driverClass"><value>org.postgresql.Driver</value></property>
-		<property name="jdbcUrl"><value>jdbc:postgresql://${db.host}:${db.host.port}/${db.name}</value></property>
-		<property name="user" value="${db.user}" />
-		<property name="password" value="${db.pass}" />
-		<property name="minPoolSize" value="${db.hibernate.c3p0.minsize}" />
-		<property name="maxPoolSize" value="${db.hibernate.c3p0.maxsize}" />
-		<property name="maxIdleTime" value="1800" />
-		<property name="maxStatements" value="10000" />
-		<property name="autoCommitOnClose" value="false" />
-		<property name="acquireIncrement" value="2" />
-		<property name="idleConnectionTestPeriod" value="500" />
-		< property name="hibernate.c3p0.numHelperThreads" value="10">
-		<property name="maxAdministrativeTaskTime" value="120" />
-	</bean> -->
 
 	<!-- The following dataresources are referenced from the statisticContext.xml and upgradeContext.xml, but are not used in the SessionFactory!
 		 The SessionFactory's DB Connection is configured with the bean "${db.vendor}HibernateProperties".-->

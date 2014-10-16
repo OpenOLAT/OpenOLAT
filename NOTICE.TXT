@@ -111,6 +111,7 @@ This product uses software based on the Apache Software License like
 * fmath (Apache Software License, Version 2.0) [http://www.fmath.info]
 * undertow (Apache Software License, Version 2.0) [http://undertow.io]
 * jshashtable (Apache Software License, Version 2.0) [http://www.timdown.co.uk/jshashtable]
+* Hikari CP (Apache Software License, Version 2.0) [https://github.com/brettwooldridge/HikariCP]
 
 -----------------------------------------------------------------------
 This produce uses software based on the MIT License
@@ -148,7 +149,6 @@ This product uses software based on the Common Public License Version
 This product uses software based on the Lesser General Public License (LGPL)
 * JGraphT (GNU Lesser General Public License Version 2.1) [http://www.jgrapht.org]
 * Hibernate (GNU Lesser General Public License Version 2.1) [http://www.hibernate.org]
-* c3p0 (GNU Lesser General Public License) [http://sourceforge.net/projects/c3p0]
 * BeanShell (GNU LESSER GENERAL PUBLIC LICENSE) [http://www.beanshell.org]
 * Jmep (GNU Lesser Public License) [http://jmep.tigris.org]
 * gnu-regexp (GNU Lesser General Public License) [http://savannah.gnu.org/projects/gnu-regexp]

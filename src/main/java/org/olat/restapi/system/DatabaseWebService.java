@@ -97,7 +97,7 @@ public class DatabaseWebService {
 		try {
 			JMXManager jmxManager = CoreSpringFactory.getImpl(JMXManager.class);
 			MBeanServer mBeanServer = jmxManager.getMBeanServer();
-			boolean found = searchC3P0DataSources(mBeanServer, vo) || searchTomcatDataSources(mBeanServer, vo);
+			boolean found = searchHikariDataSources(mBeanServer, vo) || searchTomcatDataSources(mBeanServer, vo) || searchC3P0DataSources(mBeanServer, vo);
 			if(log.isDebug()) {
 				log.debug("MBean for datasource found: " + found);
 			}	
@@ -117,19 +117,53 @@ public class DatabaseWebService {
 
 				for(ObjectName name:names) {
 					String cName = name.getCanonicalName();
-					System.out.println("cName: " + cName);
 					if(cName.startsWith("com.mchange.v2.c3p0:") && cName.indexOf("type=PooledDataSource") > 0) {
 						MBeanInfo info = mBeanServer.getMBeanInfo(name);
 						MBeanAttributeInfo[] attrs = info.getAttributes();
 
 						for(MBeanAttributeInfo attr:attrs) {
 							String attrName = attr.getName();
-							System.out.println(attrName);
 							if("numBusyConnectionsAllUsers".equals(attrName)) {
 								Number obj = (Number)mBeanServer.getAttribute(name, "numBusyConnectionsAllUsers");
 								activeConnectionCount += obj.intValue();
 							} else if("numConnectionsAllUsers".equals(attrName)) {
 								Number obj = (Number)mBeanServer.getAttribute(name, "numConnectionsAllUsers");
+								currentConnectionCount += obj.intValue();
+							}
+						}
+					}
+				}
+
+				vo.setActiveConnectionCount(activeConnectionCount);
+				vo.setCurrentConnectionCount(currentConnectionCount);
+				return true;
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return false;
+	}
+	
+	private boolean searchHikariDataSources(MBeanServer mBeanServer, DatabaseConnectionVO vo) {
+		try {
+			ObjectName poolName = new ObjectName("com.zaxxer.hikari:type=*");
+			Set<ObjectName> names = mBeanServer.queryNames(poolName, null);
+			if(names.size() > 0) {
+				int activeConnectionCount = 0;
+				int currentConnectionCount = 0;
+
+				for(ObjectName name:names) {
+					String cName = name.getCanonicalName();
+					if(cName.startsWith("com.zaxxer.hikari:") && cName.indexOf("type=Pool") > 0 && cName.indexOf("type=PoolConfig") <= 0) {
+						MBeanInfo info = mBeanServer.getMBeanInfo(name);
+						MBeanAttributeInfo[] attrs = info.getAttributes();
+						for(MBeanAttributeInfo attr:attrs) {
+							String attrName = attr.getName();
+							if("ActiveConnections".equals(attrName)) {
+								Number obj = (Number)mBeanServer.getAttribute(name, "ActiveConnections");
+								activeConnectionCount += obj.intValue();
+							} else if("TotalConnections".equals(attrName)) {
+								Number obj = (Number)mBeanServer.getAttribute(name, "TotalConnections");
 								currentConnectionCount += obj.intValue();
 							}
 						}
