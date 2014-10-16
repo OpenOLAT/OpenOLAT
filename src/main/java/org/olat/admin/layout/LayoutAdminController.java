@@ -69,10 +69,13 @@ public class LayoutAdminController extends FormBasicController {
 		imageMimeTypes.add("image/png");
 	}
 	private FormLink deleteLogo;
-	private TextElement logoAlt, logoUrl; 
+	private TextElement logoAltEl, logoUrlEl;
+	private SingleSelection logoLinkTypeEl;
 	private TextElement footerLine, footerUrl;
 	private SingleSelection themeSelection;
 	private FileElement logoUpload;
+	
+	private static final String[] logoUrlTypeKeys = new String[]{ LogoURLType.landingpage.name(), LogoURLType.custom.name() };
 
 	@Autowired
 	private LayoutModule layoutModule;
@@ -131,15 +134,36 @@ public class LayoutAdminController extends FormBasicController {
 			logoUpload.setInitialFile(logo);
 		}
 		logoUpload.limitToMimeType(imageMimeTypes, null, null);
-
 		
-		String oldLogoUrl = layoutModule.getLogoLinkUri();
-		logoUrl = uifactory.addTextElement("linkUrl", "linkUrl.description", 256, oldLogoUrl, logoCont);
-		logoUrl.setPlaceholderKey("linkUrl.default", null);
+		String[] logoUrlTypeValues = new String[]{
+			translate("customizing.logo.link.landingpage"),
+			translate("customizing.logo.link.custom")
+		};
+		logoLinkTypeEl = uifactory.addDropdownSingleselect("logo.url.type", "customizing.logo.link.type", logoCont,
+				logoUrlTypeKeys, logoUrlTypeValues, null);
+		logoLinkTypeEl.addActionListener(FormEvent.ONCHANGE);
+		String linkType = layoutModule.getLogoLinkType();
+		if(StringHelper.containsNonWhitespace(linkType)) {
+			for(String key:logoUrlTypeKeys) {
+				if(key.equals(linkType)) {
+					logoLinkTypeEl.select(key, true);
+				}
+			}
+		}
+		
+		String customUrl = layoutModule.getLogoLinkUri();
+		if(StringHelper.containsNonWhitespace(customUrl) && !StringHelper.containsNonWhitespace(linkType)) {
+			logoLinkTypeEl.select(LogoURLType.custom.name(), true);
+		}
+		
+		logoUrlEl = uifactory.addTextElement("linkUrl", "linkUrl.description", 256, customUrl, logoCont);
+		logoUrlEl.setPlaceholderKey("linkUrl.default", null);
+		boolean custom = logoLinkTypeEl.isOneSelected() && "custom".equals(logoLinkTypeEl.getSelectedKey());
+		logoUrlEl.setVisible(custom);
 		
 		String oldLogoAlt = layoutModule.getLogoAlt();
-		logoAlt = uifactory.addTextElement("logoAlt", "logoAlt.description", 256, oldLogoAlt, logoCont);
-		logoAlt.setPlaceholderKey("logoAlt.default", null);
+		logoAltEl = uifactory.addTextElement("logoAlt", "logoAlt.description", 256, oldLogoAlt, logoCont);
+		logoAltEl.setPlaceholderKey("logoAlt.default", null);
 
 		//footer
 		FormLayoutContainer footerCont = FormLayoutContainer.createDefaultFormLayout("customizing", getTranslator());
@@ -167,7 +191,7 @@ public class LayoutAdminController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
-		allOk &= validateUrl(logoUrl);
+		allOk &= validateUrl(logoUrlEl);
 		allOk &= validateUrl(footerUrl);
 		return allOk & super.validateFormLogic(ureq);
 	}
@@ -201,6 +225,9 @@ public class LayoutAdminController extends FormBasicController {
 				Windows.getWindows(ureq).getChiefController().wishReload(true);
 				
 			}
+		} else if(logoLinkTypeEl == source) {
+			boolean custom = logoLinkTypeEl.isOneSelected() && "custom".equals(logoLinkTypeEl.getSelectedKey());
+			logoUrlEl.setVisible(custom);
 		} else if(deleteLogo == source) {
 			layoutModule.removeLogo();
 			logoUpload.reset();
@@ -222,10 +249,17 @@ public class LayoutAdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(logoLinkTypeEl.isOneSelected()) {
+			layoutModule.setLogoLinkType(logoLinkTypeEl.getSelectedKey());
+		}
 		//Logo-Link URI
-		layoutModule.setLogoLinkUri(logoUrl.getValue());
+		if(logoUrlEl.isVisible()) {
+			layoutModule.setLogoLinkUri(logoUrlEl.getValue());
+		} else {
+			layoutModule.setLogoLinkUri("");
+		}
 		//Logo Alternative Text
-		layoutModule.setLogoAlt(logoAlt.getValue());
+		layoutModule.setLogoAlt(logoAltEl.getValue());
 		//FooterLine (large property -> text)
 		layoutModule.setFooterLinkUri(footerUrl.getValue());
 		layoutModule.setFooterLine(footerLine.getValue());

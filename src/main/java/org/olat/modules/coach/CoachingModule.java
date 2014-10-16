@@ -60,6 +60,8 @@ public class CoachingModule  extends AbstractOLATModule implements ConfigOnOff {
 		// Add controller factory extension point to launch groups
 		NewControllerFactory.getInstance().addContextEntryControllerCreator("coaching",
 				new CoachContextEntryControllerCreator());
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("CoachSite",
+				new CoachContextEntryControllerCreator());
 
 		//portfolio enabled/disabled
 		String enabledObj = getStringPropertyValue("coaching.enabled", true);

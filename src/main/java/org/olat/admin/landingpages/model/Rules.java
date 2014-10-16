@@ -23,10 +23,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
-import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 
 /**
@@ -47,23 +47,26 @@ public class Rules {
 		this.rules = rules;
 	}
 	
-	public Rule matchRule(UserRequest ureq) {
-		Roles roles = ureq.getUserSession().getRoles();
-		if(roles.isGuestOnly() || roles.isInvitee() || rules == null || rules.isEmpty()) {
+	public Rule matchRule(UserSession userSession) {
+		if(userSession == null) {
+			return null;
+		}
+		Roles roles =  userSession.getRoles();
+		if(roles == null || roles.isGuestOnly() || roles.isInvitee() || rules == null || rules.isEmpty()) {
 			return null;
 		}
 		
 		for(Rule rule:rules) {
-			if(rule.match(ureq)) {
+			if(rule.match(userSession)) {
 				return rule;
 			}
 		}
 		return null;
 	}
 	
-	public String match(UserRequest ureq) {
+	public String match(UserSession userSession) {
 		String bc = null;
-		Rule rule = matchRule(ureq);
+		Rule rule = matchRule(userSession);
 		if(rule != null && StringHelper.containsNonWhitespace(rule.getLandingPath())) {
 			String path = cleanUpLandingPath(rule.getLandingPath());
 			if(StringHelper.containsNonWhitespace(path)) {

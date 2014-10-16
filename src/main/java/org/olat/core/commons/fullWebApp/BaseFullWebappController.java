@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.admin.landingpages.LandingPagesModule;
 import org.olat.admin.layout.LayoutModule;
 import org.olat.admin.layout.LogoInformations;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -340,7 +341,8 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		mainVc.contextPut("screenMode", screenMode);
 
 		LayoutModule layoutModule = CoreSpringFactory.getImpl(LayoutModule.class);
-		LogoInformations logoInfos = new LogoInformations(layoutModule);
+		LandingPagesModule landingPagesModule = CoreSpringFactory.getImpl(LandingPagesModule.class);
+		LogoInformations logoInfos = new LogoInformations(ureq, layoutModule, landingPagesModule);
 		mainVc.contextPut("logoInfos", logoInfos);
 		
 		// use separate container for navigation to prevent full page refresh in ajax mode on site change

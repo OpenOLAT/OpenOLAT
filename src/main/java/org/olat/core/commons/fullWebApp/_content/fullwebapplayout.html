@@ -208,8 +208,8 @@ $r.renderForce("development")
 		  <span class="icon-bar"></span>
 		  <span class="icon-bar"></span>
 		  <span class="icon-bar"></span>
-		</button>
-		<a class="o_navbar-brand #if($logoInfos.logo) o_custom_navbar-brand #end" href="$logoInfos.logoLinkUri" title="$logoInfos.logoAlt"></a>
+		</button>#set($logoLinkUri = $logoInfos.logoLinkUri)
+		<a class="o_navbar-brand #if($logoInfos.logo) o_custom_navbar-brand #end" href="$logoLinkUri.uri" title="$logoInfos.logoAlt" #if($logoLinkUri.target) target="$logoLinkUri.target" #end></a>
 		
 		<div class="o_collapse o_navbar-collapse">
 			## sites and tabs
