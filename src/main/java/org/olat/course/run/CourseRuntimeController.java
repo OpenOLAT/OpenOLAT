@@ -721,17 +721,19 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		entries = removeRepositoryEntry(entries);
 		if(entries != null && entries.size() > 0) {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-			if("Editor".equals(type)) {
+			if("Editor".equalsIgnoreCase(type)) {
 				if (!isInEditor() && !RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent)) {
 					doEdit(ureq);
 				}
-			} else if("Catalog".equals(type)) {
+			} else if("Catalog".equalsIgnoreCase(type)) {
 				doCatalog(ureq);
-			} else if("Infos".equals(type)) {
+			} else if("Infos".equalsIgnoreCase(type)) {
 				doDetails(ureq);	
-			} else if("EditDescription".equals(type)) {
+			} else if("EditDescription".equalsIgnoreCase(type)) {
 				doEditSettings(ureq);
-			} else if("MembersMgmt".equals(type)) {
+			} else if("Settings".equalsIgnoreCase(type)) {
+				doOptions(ureq);
+			} else if("MembersMgmt".equalsIgnoreCase(type)) {
 				Activateable2 members = doMembers(ureq);
 				if(members != null) {
 					try {

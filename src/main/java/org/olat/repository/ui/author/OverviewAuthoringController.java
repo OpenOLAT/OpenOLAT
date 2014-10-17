@@ -133,6 +133,9 @@ public class OverviewAuthoringController extends BasicController implements Acti
 			} else if("Search".equals(segment)) {
 				doSearchEntries(ureq).activate(ureq, subEntries, entry.getTransientState());
 				segmentView.select(searchLink);
+			} else {
+				doOpenMyEntries(ureq).activate(ureq, subEntries, entry.getTransientState());
+				segmentView.select(myEntriesLink);
 			}
 		}
 	}
