@@ -676,7 +676,7 @@
 									<!-- need another database to drop the targeted one -->
 									<url>jdbc:mysql://localhost:${test.env.db.host.port}/olat</url>
 									<autocommit>true</autocommit>
-									<sqlCommand>drop database ${test.env.db.name}</sqlCommand>
+									<sqlCommand>drop database if exists ${test.env.db.name}</sqlCommand>
 									<!-- ignore error when database is not avaiable -->
 									<onError>continue</onError>
 								</configuration>
@@ -722,7 +722,7 @@
 								</goals>
 								<configuration>
 									<autocommit>true</autocommit>
-									<sqlCommand>drop database ${test.env.db.name}</sqlCommand>
+									<sqlCommand>drop database if exists ${test.env.db.name}</sqlCommand>
 								</configuration>
 							</execution>
 							
@@ -737,7 +737,7 @@
 									<!-- need another database to drop the targeted one -->
 									<url>jdbc:mysql://localhost:${test.env.db.host.port}/olat</url>
 									<autocommit>true</autocommit>
-									<sqlCommand>drop database ${test.env.db.name}</sqlCommand>
+									<sqlCommand>drop database if exists ${test.env.db.name}</sqlCommand>
 									<!-- ignore error when database is not avaiable -->
 									<onError>continue</onError>
 								</configuration>
@@ -777,7 +777,7 @@
 								</goals>
 								<configuration>
 									<autocommit>true</autocommit>
-									<sqlCommand>drop database ${test.env.db.name}</sqlCommand>
+									<sqlCommand>drop database if exists ${test.env.db.name}</sqlCommand>
 								</configuration>
 							</execution>
 						</executions>
@@ -868,7 +868,7 @@
 									<!-- need another database to drop the targeted one -->
 									<url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/postgres</url>
 									<autocommit>true</autocommit>
-									<sqlCommand>drop database ${test.env.db.name}</sqlCommand>
+									<sqlCommand>drop database if exists ${test.env.db.name}</sqlCommand>
 									<!-- ignore error when database is not avaiable -->
 									<onError>continue</onError>
 								</configuration>
@@ -916,7 +916,7 @@
 								<configuration>
 									<url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/postgres</url>
 									<autocommit>true</autocommit>
-									<sqlCommand>drop database ${test.env.db.name}</sqlCommand>
+									<sqlCommand>drop database if exists ${test.env.db.name}</sqlCommand>
 								</configuration>
 							</execution>
 	
@@ -931,7 +931,7 @@
 									<!-- need another database to drop the targeted one -->
 									<url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/postgres</url>
 									<autocommit>true</autocommit>
-									<sqlCommand>drop database ${test.env.db.name}</sqlCommand>
+									<sqlCommand>drop database if exists ${test.env.db.name}</sqlCommand>
 									<!-- ignore error when database is not avaiable -->
 									<onError>continue</onError>
 								</configuration>
@@ -975,7 +975,7 @@
 								<configuration>
 									<url>jdbc:postgresql://localhost:${test.env.db.postgresql.host.port}/postgres</url>
 									<autocommit>true</autocommit>
-									<sqlCommand>drop database ${test.env.db.name}</sqlCommand>
+									<sqlCommand>drop database if exists ${test.env.db.name}</sqlCommand>
 								</configuration>
 							</execution>
 						</executions>
