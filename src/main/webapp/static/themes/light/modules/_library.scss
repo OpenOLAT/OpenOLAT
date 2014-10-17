@@ -12,6 +12,11 @@
 	}
 }
 
+.o_library_overview .o_library_newest_files ul li {
+	float:left;
+	margin-right: 15px;
+}
+
 .o_library_item {
 	position: relative;
 	border: 1px solid $o-coursesite-rowelem-border;

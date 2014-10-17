@@ -2,16 +2,16 @@
 	text-align:center;
 }
 
-.o_bcard.o_visitingcard {
-	
-	.o_visitingcard_content {
-		position:relative;
-	}
+.o_visitingcard .o_portrait_avatar,
+.o_visitingcard .o_portrait_dummy,
+.o_visitingcard .o_portrait_dummy_female_big,
+.o_visitingcard .o_portrait_dummy_male_big,
+.o_visitingcard .o_portrait_anonymous { width: 66px; height: 66px; margin-right: 10px;}
 
-	.o_visitingcard_props {
-		position: absolute;
-		top:0px;
-		left:120px;
-	}
-	
+@media (max-width: $screen-xs-max) { 
+	.o_visitingcard .o_portrait_avatar,
+	.o_visitingcard .o_portrait_dummy,
+	.o_visitingcard .o_portrait_dummy_female_big,
+	.o_visitingcard .o_portrait_dummy_male_big,
+	.o_visitingcard .o_portrait_anonymous { width: 50px; height: 50px; margin: 5px 5px 0 0;}
 }

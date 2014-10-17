@@ -19,10 +19,10 @@
  */
 package org.olat.admin.landingpages.model;
 
-import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 
 /**
  * 
@@ -76,12 +76,12 @@ public class Rule {
 		this.landingPath = landingPath;
 	}
 	
-	public boolean match(UserRequest ureq) {
+	public boolean match(UserSession userSession) {
 		boolean match = true;
 		
 		//match the role?
 		if(!"none".equals(role) && StringHelper.containsNonWhitespace(role)) {
-			Roles roles = ureq.getUserSession().getRoles();
+			Roles roles = userSession.getRoles();
 			switch(role) {
 				case AUTHOR: match &= roles.isAuthor(); break;
 				case USER_MGR: match &= roles.isUserManager(); break;
@@ -96,7 +96,7 @@ public class Rule {
 		}
 		
 		if(StringHelper.containsNonWhitespace(userAttributeKey)) {
-			User user = ureq.getUserSession().getIdentity().getUser();
+			User user = userSession.getIdentity().getUser();
 			String value = user.getProperty(userAttributeKey, null);
 			if(!StringHelper.containsNonWhitespace(value) && !StringHelper.containsNonWhitespace(userAttributeValue)) {
 				// ok, both are null or empty

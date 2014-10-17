@@ -210,7 +210,7 @@ public class ResumeController extends FormBasicController implements SupportsAft
 				return BusinessControlFactory.getInstance().formatFromURI(path);
 			}
 		}
-		return lpModule.getRules().match(ureq);
+		return lpModule.getRules().match(ureq.getUserSession());
 	}
 	
 	private void launch(UserRequest ureq, BusinessControl bc) {

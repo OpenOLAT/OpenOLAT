@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.NewControllerFactory;
+import org.olat.admin.restapi.RestapiAdminController;
 import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
@@ -139,31 +140,29 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	private final boolean guestOnly;
 	
 	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntryRow row) {
-		super(ureq, wControl, Util.getPackageVelocityRoot(RepositoryEntryDetailsController.class) + "/details.html");
-		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
-
+		this(ureq, wControl);
 		this.row = row;
 		entry = repositoryService.loadByKey(row.getKey());
-		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		initForm(ureq);
 	}
 	
 	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntryRef ref) {
-		super(ureq, wControl, Util.getPackageVelocityRoot(RepositoryEntryDetailsController.class) + "/details.html");
-		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
-
+		this(ureq, wControl);
 		entry = repositoryService.loadByKey(ref.getKey());
-		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		initForm(ureq);
 	}
 	
 	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+		this(ureq, wControl);
+		this.entry = entry;
+		initForm(ureq);
+	}
+	
+	private RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, Util.getPackageVelocityRoot(RepositoryEntryDetailsController.class) + "/details.html");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
-
-		this.entry = entry;
+		setTranslator(Util.createPackageTranslator(RestapiAdminController.class, getLocale(), getTranslator()));
 		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
-		initForm(ureq);
 	}
 	
 	public Integer getIndex() {
