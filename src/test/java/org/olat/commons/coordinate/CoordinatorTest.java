@@ -26,14 +26,16 @@
 
 package org.olat.commons.coordinate;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
-import org.junit.Before;
+import org.jgroups.util.UUID;
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
@@ -63,11 +65,6 @@ public class CoordinatorTest extends OlatTestCase {
 	@Autowired
 	private RepositoryService repositoryService;
 	
-	@Before
-	public void setUp() throws Exception {
-		DBFactory.getInstance().closeSession();
-	}
-	
 
 	/**
 	 * Test with 2 threads T1 & T2.
@@ -89,7 +86,9 @@ public class CoordinatorTest extends OlatTestCase {
 		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
 		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
 	
+		final CountDownLatch finishCount = new CountDownLatch(2);
 		final OLATResourceable ores = OresHelper.createOLATResourceableInstance("testDoInSync", new Long("123"));
+		
 		// thread 1
 		new Thread(new Runnable() {
 			public void run() {
@@ -102,7 +101,7 @@ public class CoordinatorTest extends OlatTestCase {
 					});//end syncerCallback
 					
 					// sleep
-					sleep(10000);
+					sleep(1000);
 					
 					// do again do something in sync
 					CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor(){
@@ -119,7 +118,8 @@ public class CoordinatorTest extends OlatTestCase {
 						DBFactory.getInstance().closeSession();
 					} catch (Exception e) {
 						// ignore
-					};
+					}
+					finishCount.countDown();
 				}	
 			}}).start();
 		
@@ -128,7 +128,7 @@ public class CoordinatorTest extends OlatTestCase {
 			public void run() {
 				try {
 					// sleep
-					sleep(5000);
+					sleep(500);
 
 					// do something in sync
 					CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor(){
@@ -138,7 +138,7 @@ public class CoordinatorTest extends OlatTestCase {
 					});//end syncerCallback
 					
 					// sleep
-					sleep(10000);
+					sleep(1000);
 					
 					// do again do something in sync
 					CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor(){
@@ -155,25 +155,23 @@ public class CoordinatorTest extends OlatTestCase {
 						DBFactory.getInstance().closeSession();
 					} catch (Exception e) {
 						// ignore
-					};
+					}
+					finishCount.countDown();
 				}	
 			}}).start();
 		
 		// sleep until t1 and t2 should have terminated/excepted
-		int loopCount = 0;
-		while ( (statusList.size()<2) && (exceptionHolder.size()<1) && (loopCount<90)) {
-			sleep(1000);
-			loopCount++;
+		try {
+			finishCount.await(10, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			Assert.fail("Threads did not finish in 10sec");
 		}
-		assertTrue("Threads did not finish in 90sec", loopCount<90);
+
 		// if not -> they are in deadlock and the db did not detect it
 		for (Exception exception : exceptionHolder) {
-			log.info("exception: "+exception.getMessage());
-			exception.printStackTrace();
+			log.error("exception: ", exception);
 		}
-		if (exceptionHolder.size() > 0) {
-			assertTrue("It throws an exception in test => see sysout exception[0]=" + exceptionHolder.get(0).getMessage(), exceptionHolder.size() == 0);	
-		}
+		Assert.assertEquals("It throws an exception in test", 0, exceptionHolder.size());	
 	}
 
 	/**
@@ -197,6 +195,8 @@ public class CoordinatorTest extends OlatTestCase {
 		final List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
 	
 		final OLATResourceable ores = OresHelper.createOLATResourceableInstance("testDoInSync", new Long("123"));
+		final CountDownLatch finishCount = new CountDownLatch(2);
+		
 		// thread 1
 		new Thread(new Runnable() {
 			public void run() {
@@ -210,7 +210,7 @@ public class CoordinatorTest extends OlatTestCase {
 					});//end syncerCallback
 					
 					// sleep
-					sleep(10000);
+					sleep(1000);
 					
 					// do again do something in sync
 					CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Boolean>(){
@@ -228,7 +228,8 @@ public class CoordinatorTest extends OlatTestCase {
 						DBFactory.getInstance().closeSession();
 					} catch (Exception e) {
 						// ignore
-					};
+					}
+					finishCount.countDown();
 				}	
 			}}).start();
 		
@@ -237,7 +238,7 @@ public class CoordinatorTest extends OlatTestCase {
 			public void run() {
 				try {
 					// sleep
-					sleep(5000);
+					sleep(500);
 
 					// do something in sync
 					CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Boolean>(){
@@ -248,7 +249,7 @@ public class CoordinatorTest extends OlatTestCase {
 					});//end syncerCallback
 					
 					// sleep
-					sleep(10000);
+					sleep(1000);
 					
 					// do again do something in sync
 					CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Boolean>(){
@@ -266,52 +267,46 @@ public class CoordinatorTest extends OlatTestCase {
 						DBFactory.getInstance().closeSession();
 					} catch (Exception e) {
 						// ignore
-					};
+					}
+					finishCount.countDown();
 				}	
 			}}).start();
 		
 		// sleep until t1 and t2 should have terminated/excepted
-		int loopCount = 0;
-		while ( (statusList.size()<2) && (exceptionHolder.size()<1) && (loopCount<90)) {
-			sleep(1000);
-			loopCount++;
+		try {
+			finishCount.await(10, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			Assert.fail("Test takes too long (more than 10s)");
 		}
-		assertTrue("Threads did not finish in 90sec", loopCount<90);
+
 		// if not -> they are in deadlock and the db did not detect it
 		for (Exception exception : exceptionHolder) {
-			log.info("exception: "+exception.getMessage());
-			exception.printStackTrace();
+			log.error("exception: ", exception);
 		}
-		if (exceptionHolder.size() > 0) {
-			assertTrue("It throws an exception in test => see sysout exception[0]=" + exceptionHolder.get(0).getMessage(), exceptionHolder.size() == 0);	
-		}
-	}
-	
 
-	@Test
+		Assert.assertEquals("It throws an exception in test", 0, exceptionHolder.size());	
+	}
+
+	@Test(expected = AssertException.class) 
 	public void testNestedAssertExceptionInDoInSync() {
 		final OLATResourceable ores = OresHelper.createOLATResourceableInstance("testNestedAssertExceptionInDoInSync", new Long("123"));
 		
-		try {
-			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Boolean>(){
-				public Boolean execute() {
-					log.info("testNestedAssertExceptionInDoInSync: execute doInSync 1");
-					
-					// Do agin in sync => nested => no allowed!
-					CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Boolean>(){
-						public Boolean execute() {
-							log.info("testNestedAssertExceptionInDoInSync: execute doInSync 2");
-							fail("No NestedAssertException thrown");
-							return Boolean.TRUE;
-						}
-					});//end syncerCallback
-	
-					return Boolean.TRUE;
-				}
-			});//end syncerCallback
-		}catch(AssertException aex) {
-			log.info("testNestedAssertExceptionInDoInSync: Ok, got a AssertException=" + aex);
-		}
+		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Boolean>(){
+			public Boolean execute() {
+				log.info("testNestedAssertExceptionInDoInSync: execute doInSync 1");
+				
+				// Do agin in sync => nested => no allowed!
+				CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Boolean>(){
+					public Boolean execute() {
+						log.info("testNestedAssertExceptionInDoInSync: execute doInSync 2");
+						fail("No NestedAssertException thrown");
+						return Boolean.TRUE;
+					}
+				});//end syncerCallback
+
+				return Boolean.TRUE;
+			}
+		});//end syncerCallback
 	}
 	
 	@Test
@@ -345,9 +340,9 @@ public class CoordinatorTest extends OlatTestCase {
 
 	@Test
 	public void testDoInSyncPerformance() {
-		final OLATResourceable ores = OresHelper.createOLATResourceableInstance("testDoInSyncPerformance", new Long("123989456"));
+		final OLATResourceable ores = OresHelper.createOLATResourceableInstance(UUID.randomUUID().toString(), new Long("123989456"));
 		OLATResource r =  CoreSpringFactory.getImpl(OLATResourceManager.class).findOrPersistResourceable(ores);
-		int maxLoop = 1000;
+		int maxLoop = 500;
 
 		final RepositoryEntry re = repositoryService.create("test", "perfTest", "testPerf", "perfTest description", r);
 		// create security group

@@ -64,7 +64,6 @@ public class MailManagerTest extends OlatTestCase {
 		inbox = mailModule.isInternSystem();
 		if(!inbox) {
 			mailModule.setInterSystem(true);
-			sleep(500);//set of properties on module are async
 		}
 	}
 	
@@ -72,7 +71,6 @@ public class MailManagerTest extends OlatTestCase {
 	public void resetInternalInbox() {
 		if(!inbox) {
 			mailModule.setInterSystem(inbox);
-			sleep(500);//set of properties on module are async
 		}
 	}
 	

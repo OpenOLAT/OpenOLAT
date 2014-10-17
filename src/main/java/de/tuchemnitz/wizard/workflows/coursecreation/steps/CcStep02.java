@@ -155,8 +155,7 @@ public class CcStep02 extends BasicStep {
 			formLayout.add(formItems);
 
 			// create access limit checkbox
-			publishCheckbox = FormUIFactory.getInstance().addCheckboxesVertical("publishCheckbox", formItems, new String[] {"ison"}, new String[] {""}, 1);
-			publishCheckbox.setLabel("car.makepublic", null);
+			publishCheckbox = FormUIFactory.getInstance().addCheckboxesHorizontal("car.makepublic", formItems, new String[] {"ison"}, new String[] {""});
 			publishCheckbox.select("ison", true);
 
 			publishCheckbox.addActionListener(FormEvent.ONCHANGE);
@@ -180,9 +179,7 @@ public class CcStep02 extends BasicStep {
 				values[2] = translator.translate("car.university", new String[] { institution });
 			}
 			
-			accessChooser = FormUIFactory.getInstance().addDropdownSingleselect("accessChooser", formItems, keys, values, null);
-			accessChooser.setLabel("car.label", null);
-
+			accessChooser = FormUIFactory.getInstance().addDropdownSingleselect("car.label", formItems, keys, values, null);
 			accessChooser.select(CourseCreationConfiguration.ACL_OLAT, true);
 			accessChooser.addActionListener(FormEvent.ONCHANGE);
 

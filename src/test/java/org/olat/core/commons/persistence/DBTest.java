@@ -136,8 +136,7 @@ public class DBTest extends OlatTestCase {
 		try {
 			latch.await(20, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
-			log.error("", e);
-			fail("Takes too long");
+			fail("Takes too long (more than 20sec)");
 		}
 		
 		Assert.assertFalse(test.hasError());
@@ -146,11 +145,11 @@ public class DBTest extends OlatTestCase {
  	private class TestThread extends Thread {
  		private boolean error;
  		private final CountDownLatch latch;
- 		private final RepositoryManager repositoryManager;
+ 		private final RepositoryManager repoManager;
  		
  		public TestThread(RepositoryManager repositoryManager, CountDownLatch latch) {
  			this.latch = latch;
- 			this.repositoryManager = repositoryManager;
+ 			this.repoManager = repositoryManager;
  		}
  		
  		public boolean hasError() {
@@ -161,7 +160,7 @@ public class DBTest extends OlatTestCase {
  			try {
 				EntityManager em1 = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
 				Assert.assertNull(em1);
-				repositoryManager.lookupRepositoryEntry(27l, false);
+				repoManager.lookupRepositoryEntry(27l, false);
 				EntityManager em2 = EntityManagerFactoryUtils.getTransactionalEntityManager(emf);
 				//Transactional annotation must clean-up the entity manager
 				Assert.assertNull(em2);
@@ -401,8 +400,7 @@ public class DBTest extends OlatTestCase {
 		try {
 			latch.await(20, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
-			log.error("", e);
-			fail("Takes too long");
+			fail("Takes too long (more than 20sec)");
 		}
 
 		for (int i=0; i<maxWorkers; i++) {

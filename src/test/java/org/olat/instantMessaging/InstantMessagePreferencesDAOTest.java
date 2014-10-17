@@ -146,7 +146,7 @@ public class InstantMessagePreferencesDAOTest extends OlatTestCase {
 		try {
 			finishCount.await(20, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
-			log.error("", e);
+			Assert.fail("Takes too long (mote than 20sec)");
 		}
 		
 		boolean allOk = true;

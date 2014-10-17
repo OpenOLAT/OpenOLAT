@@ -136,21 +136,21 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	public void init() { // called only once at startup and only from one thread
 		// init the system level groups and its policies
 		initSysGroupAdmin();
-		DBFactory.getInstance(false).intermediateCommit();
+		dbInstance.commit();
 		initSysGroupAuthors();
-		DBFactory.getInstance(false).intermediateCommit();
+		dbInstance.commit();
 		initSysGroupGroupmanagers();
-		DBFactory.getInstance(false).intermediateCommit();
+		dbInstance.commit();
 		initSysGroupPoolsmanagers();
-		DBFactory.getInstance(false).intermediateCommit();
+		dbInstance.commit();
 		initSysGroupUsermanagers();
-		DBFactory.getInstance(false).intermediateCommit();
+		dbInstance.commit();
 		initSysGroupUsers();
-		DBFactory.getInstance(false).intermediateCommit();
+		dbInstance.commit();
 		initSysGroupAnonymous();
-		DBFactory.getInstance(false).intermediateCommit();
+		dbInstance.commit();
 		initSysGroupInstitutionalResourceManager();
-		DBFactory.getInstance(false).intermediateCommit();
+		dbInstance.commitAndCloseSession();
 	}
 
 	/**

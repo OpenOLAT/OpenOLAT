@@ -180,9 +180,11 @@ public class RestConnection {
 		if(200 == response.getStatusLine().getStatusCode()) {
 			HttpEntity entity = response.getEntity();
 			return parse(entity.getContent(), cl);
+		} else {
+			EntityUtils.consume(response.getEntity());
+			log.error("get return: " + response.getStatusLine().getStatusCode());
+			return null;
 		}
-		log.error("get return: " + response.getStatusLine().getStatusCode());
-		return null;
 	}
 	
 	public void addEntity(HttpEntityEnclosingRequestBase put, NameValuePair... pairs)

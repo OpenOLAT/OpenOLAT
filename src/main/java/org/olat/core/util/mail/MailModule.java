@@ -21,16 +21,11 @@ package org.olat.core.util.mail;
 
 import java.io.File;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.PersistedProperties;
-import org.olat.core.extensions.action.GenericActionExtension;
-import org.olat.core.gui.control.Event;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.event.FrameworkStartedEvent;
-import org.olat.core.util.event.FrameworkStartupEventChannel;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 
@@ -59,7 +54,6 @@ public class MailModule extends AbstractOLATModule {
 	
 	public MailModule() {
 		//make Spring happy
-		FrameworkStartupEventChannel.registerForStartupEvent(this);
 	}
 	
 	/**
@@ -115,28 +109,9 @@ public class MailModule extends AbstractOLATModule {
 	 * @param internSystem
 	 */
 	public void setInterSystem(boolean internSystem) {
+		this.internSystem = internSystem;
 		String internSystemStr = internSystem ? "true" : "false";
-		enableExtensions(internSystem);
 		setStringProperty(INTERN_MAIL_SYSTEM, internSystemStr, true);
-	}
-	
-	private void enableExtensions(boolean enabled){
-		try {
-			((GenericActionExtension)CoreSpringFactory.getBean("mailAEparent")).setEnabled(enabled);
-			((GenericActionExtension)CoreSpringFactory.getBean("mailAEinbox")).setEnabled(enabled);
-			((GenericActionExtension)CoreSpringFactory.getBean("mailAEoutbox")).setEnabled(enabled);			
-		} catch (Exception e) {
-			// do nothing when extension don't exist.
-		}
-	}
-	
-	@Override
-	public void event(Event event) {
-		if(event instanceof FrameworkStartedEvent) {
-			enableExtensions(isInternSystem());
-		} else {
-			super.event(event);
-		}
 	}
 	
 	/**

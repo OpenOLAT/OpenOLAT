@@ -143,7 +143,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		HttpResponse response = conn.head(publicUri);
 		Header lengthHeader = response.getFirstHeader("Content-Length");
 		Assert.assertNotNull(lengthHeader);
-		Assert.assertEquals("0", lengthHeader.getValue());
+		Assert.assertEquals("10", lengthHeader.getValue());
 		Header typeHeader = response.getFirstHeader("Content-Type");
 		Assert.assertNotNull(typeHeader);
 		Assert.assertEquals("text/plain", typeHeader.getValue());

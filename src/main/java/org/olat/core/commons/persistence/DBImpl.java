@@ -660,11 +660,11 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		}
 	}
 	
-	private void evict(EntityManager em, Object object, ThreadLocalData data) {
+	private void evict(EntityManager em, Object object, ThreadLocalData localData) {
 		try {
 			getSession(em).evict(object);			
 		} catch (Exception e) {
-			data.setError(e);
+			localData.setError(e);
 			throw new DBRuntimeException("Error in evict() Object from Database. ", e);
 		}
 	}
@@ -693,12 +693,6 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		} finally {
 			closeSession();
 		}
-	}
-
-	@Override
-	public void begin() {
-		//this will begin a new transaction
-		getCurrentEntityManager();
 	}
 
 	/**

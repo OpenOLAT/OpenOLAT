@@ -40,11 +40,6 @@ public interface DB {
 	 * Close the database session.
 	 */
 	public void closeSession();
-	
-	/**
-	 * Close the database session, clean threadlocal but only if necessary
-	 */
-	//public void cleanUpSession();
 
 	/**
 	 * Create a DBQuery
@@ -162,11 +157,6 @@ public interface DB {
 	 */
 	public Persistable loadObject(Persistable persistable, boolean forceReloadFromDB);
 
-
-	/**
-	 * Begin a new transaction (don't forget to commit the last one)
-	 */
-	public void begin();
 	
 	/**
 	 * Call this to commit current changes.

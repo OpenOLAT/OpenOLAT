@@ -25,8 +25,6 @@ import java.util.concurrent.TimeUnit;
 import junit.framework.Assert;
 
 import org.junit.Test;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -37,8 +35,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class TaskExecutorManagerTest extends OlatTestCase {
-	
-	private static final OLog log = Tracing.createLoggerFor(TaskExecutorManagerTest.class);
 	
 	@Autowired
 	private TaskExecutorManager taskExecutorManager;
@@ -52,8 +48,7 @@ public class TaskExecutorManagerTest extends OlatTestCase {
 			boolean zero = finishCount.await(10, TimeUnit.SECONDS);
 			Assert.assertTrue(zero);
 		} catch (InterruptedException e) {
-			log.error("", e);
-			Assert.fail();
+			Assert.fail("Takes too long (more than 10sec)");
 		}
 	}
 	

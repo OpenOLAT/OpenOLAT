@@ -100,7 +100,7 @@ import org.junit.runners.Suite;
 	org.olat.resource.OLATResourceManagerTest.class,//ok
 	org.olat.basesecurity.manager.GroupDAOTest.class,//ok
 	org.olat.basesecurity.SecurityManagerTest.class,//ok
-	org.olat.basesecurity.BaseSecurityTest.class,//ok
+	org.olat.basesecurity.GetIdentitiesByPowerSearchTest.class,//ok
 	org.olat.basesecurity.BaseSecurityManagerTest.class,//ok
 	org.olat.user.UserManagerTest.class,//ok
 	org.olat.user.UserNameAndPasswordSyntaxCheckerWithRegexpTest.class,//ok

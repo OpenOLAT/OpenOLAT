@@ -192,7 +192,7 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 		try {
 			latch.await(120, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
-			log.error("", e);
+			Assert.fail("Takes too long (more than 120sec)");
 		}
 		
 		int countErrors = 0;
