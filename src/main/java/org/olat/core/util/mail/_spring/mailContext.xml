@@ -72,8 +72,9 @@
 	</bean>
 	
 	<!--  the email-parent-menu  -->
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" name="mailBox" init-method="initExtensionPoints" >
+	<bean class="org.olat.core.util.mail.MailToolExtension" name="mailBox" init-method="initExtensionPoints" >
 		<property name="order" value="404" />
+		<property name="mailModule" ref="mailModule" />
 		<property name="navigationKey" value="Mail" />
 		<property name="alternativeNavigationKeys" value="Inbox,Outbox" />
 		<property name="iconCssClass" value="o_icon o_icon-fw o_icon_mail" />
