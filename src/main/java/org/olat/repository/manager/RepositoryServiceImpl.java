@@ -280,6 +280,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 		
 		//delete all policies
 		securityManager.deletePolicies(resource);
+		dbInstance.commit();
 		
 		// inform handler to do any cleanup work... handler must delete the
 		// referenced resourceable a swell.
@@ -302,13 +303,17 @@ public class RepositoryServiceImpl implements RepositoryService {
 	public void deleteRepositoryEntryAndBaseGroups(RepositoryEntry entry) {
 		RepositoryEntry reloadedEntry = dbInstance.getCurrentEntityManager()
 				.getReference(RepositoryEntry.class, entry.getKey());
-		
+		OLATResource resource = reloadedEntry.getOlatResource();
+
 		Group defaultGroup = reToGroupDao.getDefaultGroup(reloadedEntry);
 		groupDao.removeMemberships(defaultGroup);
 		reToGroupDao.removeRelations(reloadedEntry);
 		dbInstance.commit();
 		dbInstance.getCurrentEntityManager().remove(reloadedEntry);
 		groupDao.removeGroup(defaultGroup);
+		dbInstance.commit();
+
+		dbInstance.getCurrentEntityManager().remove(resource);
 		dbInstance.commit();
 	}
 

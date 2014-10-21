@@ -257,6 +257,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		List<BusinessGroupModifiedEvent.Deferred> events = new ArrayList<BusinessGroupModifiedEvent.Deferred>();
 		autoRankCheck(ureqIdentity, bg, previousMaxParticipants, events);
 		BusinessGroup mergedGroup = businessGroupDAO.merge(bg);
+		//prevents lazy loading issues
+		mergedGroup.getBaseGroup().getKey();
 		dbInstance.commit();
 		BusinessGroupModifiedEvent.fireDeferredEvents(events);
 		return mergedGroup;
@@ -298,6 +300,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			reloadedBusinessGroup.setWaitingListVisiblePublic(waitingListPublic);
 			reloadedBusinessGroup.setDownloadMembersLists(download);
 			mergedGroup = businessGroupDAO.merge(reloadedBusinessGroup);
+			//prevent lazy loading issues
+			mergedGroup.getBaseGroup().getKey();
 		}
 		dbInstance.commit();
 		return mergedGroup;
