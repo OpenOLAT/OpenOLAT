@@ -233,12 +233,15 @@ public class OlatTopNavController extends BasicController implements GenericEven
 			}
 		}
 		
+		Set<String> availableToolSet = userToolsModule.getAvailableUserToolSet();
+
 		for (Extension anExt : extManager.getExtensions()) {
 			// check for sites
 			ExtensionElement ae = anExt.getExtensionFor(HomeMainController.class.getName(), ureq);
-			if (ae != null && ae instanceof GenericActionExtension) {
-				if(anExt.isEnabled()){
-					GenericActionExtension gAe = (GenericActionExtension) ae;
+			if (anExt.isEnabled() && ae instanceof GenericActionExtension) {
+				GenericActionExtension gAe = (GenericActionExtension) ae;
+				String extensionId = gAe.getUniqueExtensionID();
+				if(availableToolSet.contains(extensionId)) {
 					GenericTreeNode node = gAe.createMenuNode(ureq);
 					String linkName = "personal.tool." + node.getIdent();
 					Link link = LinkFactory.createLink(linkName, container, this);
@@ -255,7 +258,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 						configLinksName.add(linkName);
 					}
 					
-					if(selectedToolSet.contains(gAe.getUniqueExtensionID())) {
+					if(selectedToolSet.contains(extensionId)) {
 						String linkAltName = "personal.tool.alt." + node.getIdent();
 						Link linkAlt = LinkFactory.createLink(linkAltName, topNavVC, this);
 						linkAlt.setUserObject(gAe);
@@ -267,7 +270,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 						linkAlt.setIconLeftCSS(iconCssClass + " o_icon-lg");
 						toolSetLinksName.add(linkAltName);
 					}
-				}	
+				}
 			}
 		}
 		
