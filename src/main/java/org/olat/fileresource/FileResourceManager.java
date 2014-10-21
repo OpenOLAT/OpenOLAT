@@ -40,8 +40,6 @@ import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.fileresource.types.FileResource;
-import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
 
 /**
  * Initial Date: Apr 8, 2004
@@ -74,10 +72,6 @@ public class FileResourceManager extends BasicManager {
 		// delete resources
 		File fResourceFileroot = getFileResourceRoot(res);
 		FileUtils.deleteDirsAndFiles(fResourceFileroot, true, true);
-		// delete resourceable
-		OLATResourceManager rm = OLATResourceManager.getInstance();
-		OLATResource ores = rm.findResourceable(res);
-		if (ores != null) rm.deleteOLATResource(ores);
 	}
 
 	/**
