@@ -140,7 +140,7 @@ public class CourseOptionsController extends FormBasicController {
 		//shared folder
 		boolean managedFolder = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.resourcefolder);
 		if (courseConfig.hasCustomSharedFolder()) {
-			RepositoryEntry repoEntry = repositoryService.lookupRepositoryEntryBySoftkey(courseConfig.getGlossarySoftKey(), false);
+			RepositoryEntry repoEntry = repositoryService.lookupRepositoryEntryBySoftkey(courseConfig.getSharedFolderSoftkey(), false);
 			if (repoEntry == null) {
 				// Something is wrong here, maybe the glossary has been deleted.
 				// Try to remove shared folder from configuration
