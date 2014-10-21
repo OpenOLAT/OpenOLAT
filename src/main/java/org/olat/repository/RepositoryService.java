@@ -101,6 +101,14 @@ public interface RepositoryService {
 	 */
 	public List<Long> getAuthors(RepositoryEntryRef re);
 	
+	/**
+	 * Get the members of the repository entry (the method doesn't
+	 * follow the business groups).
+	 * 
+	 * @param re
+	 * @param roles
+	 * @return
+	 */
 	public List<Identity> getMembers(RepositoryEntryRef re, String... roles);
 	
 	public List<String> getRoles(Identity identity, RepositoryEntryRef re);

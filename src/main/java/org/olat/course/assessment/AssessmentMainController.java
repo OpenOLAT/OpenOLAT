@@ -27,9 +27,11 @@ package org.olat.course.assessment;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -674,9 +676,16 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	private List<Identity> getAllAssessableIdentities() {
 
 		List<Identity> participants = businessGroupService.getMembers(coachedGroups, GroupRoles.participant.name());
+		Set<Identity> duplicateKiller = new HashSet<>(participants);
+		
 		if((repoTutor && coachedGroups.isEmpty()) || (callback.mayAssessAllUsers() || callback.mayViewAllUsersAssessments())) {
 			List<Identity> courseParticipants = repositoryService.getMembers(re, GroupRoles.participant.name());
-			participants.addAll(courseParticipants);
+			for(Identity courseParticipant:courseParticipants) {
+				if(!duplicateKiller.contains(courseParticipant)) {
+					participants.add(courseParticipant);
+					duplicateKiller.add(courseParticipant);
+				}
+			}
 		}
 
 		if(callback.mayViewAllUsersAssessments() && participants.size() < 500) {
@@ -684,7 +693,11 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			ICourse course = CourseFactory.loadCourse(ores);
 			CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
 			List<Identity> assessedRsers = pm.getAllIdentitiesWithCourseAssessmentData(participants);
-			participants.addAll(assessedRsers);
+			for(Identity assessedRser:assessedRsers) {
+				if(!duplicateKiller.contains(assessedRser)) {
+					participants.add(assessedRser);
+				}
+			}
 		}
 		return participants;
 	}
