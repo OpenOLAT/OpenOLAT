@@ -119,9 +119,11 @@ public class CustomConfigManager extends BasicManager {
 			sb.append("\tbackground-position: left top; \n");
 			sb.append("\tbackground-repeat: no-repeat; \n");
 			LocalFileImpl leaf = (LocalFileImpl) vfsItem;
-			String size[] = getImageSize(leaf.getBasefile());
-			sb.append("\twidth: ").append(size[0]).append("px; \n");
-			sb.append("\theight: ").append(size[1]).append("px; \n");
+			int[] size = getImageSize(leaf.getBasefile());
+			if(size != null) {
+				sb.append("\twidth: ").append(size[0]).append("px; \n")
+				  .append("\theight: ").append(size[1]).append("px; \n");
+			}
 			sb.append("\tfloat: left; \n}\n");
 			sb.append("#o_logo { \n\t float: left; \n}");
 		}
@@ -142,18 +144,22 @@ public class CustomConfigManager extends BasicManager {
 	 * @param image
 	 * @return array[width, height]
 	 */
-	public String[] getImageSize(File image){
+	public int[] getImageSize(File image){
 		int height = 0;
 		int width = 0;
 		try {
 			BufferedImage imageSrc = ImageIO.read(image);
-			height = imageSrc.getHeight();
-			width = imageSrc.getWidth();
+			if(imageSrc != null) {
+				height = imageSrc.getHeight();
+				width = imageSrc.getWidth();
+			} else {
+				return null;
+			}
 		} catch (IOException e) {
 			logError("Problem reading uploaded image", e);
 			return null;
 		}
-		return new String[] { String.valueOf(width), String.valueOf(height) };
+		return new int[] { width, height };
 	}
 	
 	/**

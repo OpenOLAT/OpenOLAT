@@ -281,11 +281,13 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	private boolean processUploadedImage(File image){
 		int height = 0;
 		int width = 0;
-		String size[] = customCMgr.getImageSize(image);
+		int[] size = customCMgr.getImageSize(image);
 		if (size != null) {
-			width = Integer.parseInt(size[0]);
-			height = Integer.parseInt(size[1]);
-		} else return false;
+			width = size[0];
+			height = size[1];
+		} else {
+			return false;
+		}
 		// target file:
 		String fileType = logoUpl.getUploadFileName().substring(logoUpl.getUploadFileName().lastIndexOf("."));
 		VFSContainer base = (VFSContainer) courseEnvironment.getCourseBaseContainer().resolve(CourseLayoutHelper.LAYOUT_COURSE_SUBFOLDER);

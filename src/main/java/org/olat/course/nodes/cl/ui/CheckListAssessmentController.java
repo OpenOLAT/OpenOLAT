@@ -291,8 +291,9 @@ public class CheckListAssessmentController extends FormBasicController implement
 		if(courseTutor || courseAdmin) {
 			List<RepositoryEntryMembership> repoMemberships = repositoryManager.getRepositoryEntryMembership(re);
 			for(RepositoryEntryMembership repoMembership:repoMemberships) {
-				if(repoMembership.isParticipant()) continue;
-				missingIdentityKeys.add(repoMembership.getIdentityKey());
+				if(repoMembership.isParticipant()) {
+					missingIdentityKeys.add(repoMembership.getIdentityKey());
+				}
 			}
 		}
 
