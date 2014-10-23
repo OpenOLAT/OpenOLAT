@@ -674,16 +674,23 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	 * @return List of identities
 	 */
 	private List<Identity> getAllAssessableIdentities() {
-
+		Set<Identity> duplicateKiller = new HashSet<>();
+		List<Identity> assessableIdentities = new ArrayList<>();
+		
 		List<Identity> participants = businessGroupService.getMembers(coachedGroups, GroupRoles.participant.name());
-		Set<Identity> duplicateKiller = new HashSet<>(participants);
+		for(Identity participant:participants) {
+			if(!duplicateKiller.contains(participant)) {
+				assessableIdentities.add(participant);
+				duplicateKiller.add(participant);
+			}
+		}
 		
 		if((repoTutor && coachedGroups.isEmpty()) || (callback.mayAssessAllUsers() || callback.mayViewAllUsersAssessments())) {
 			List<Identity> courseParticipants = repositoryService.getMembers(re, GroupRoles.participant.name());
-			for(Identity courseParticipant:courseParticipants) {
-				if(!duplicateKiller.contains(courseParticipant)) {
-					participants.add(courseParticipant);
-					duplicateKiller.add(courseParticipant);
+			for(Identity participant:courseParticipants) {
+				if(!duplicateKiller.contains(participant)) {
+					assessableIdentities.add(participant);
+					duplicateKiller.add(participant);
 				}
 			}
 		}
@@ -692,14 +699,16 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			mayViewAllUsersAssessments = true;
 			ICourse course = CourseFactory.loadCourse(ores);
 			CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
-			List<Identity> assessedRsers = pm.getAllIdentitiesWithCourseAssessmentData(participants);
-			for(Identity assessedRser:assessedRsers) {
-				if(!duplicateKiller.contains(assessedRser)) {
-					participants.add(assessedRser);
+			List<Identity> assessedUsers = pm.getAllIdentitiesWithCourseAssessmentData(participants);
+			for(Identity assessedUser:assessedUsers) {
+				if(!duplicateKiller.contains(assessedUser)) {
+					assessableIdentities.add(assessedUser);
+					duplicateKiller.add(assessedUser);
 				}
 			}
 		}
-		return participants;
+		
+		return assessableIdentities;
 	}
 	
 	private void fillAlternativeToAssessableIdentityList(AssessmentToolOptions options) {
