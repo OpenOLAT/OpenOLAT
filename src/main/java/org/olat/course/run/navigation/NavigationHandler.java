@@ -220,8 +220,8 @@ public class NavigationHandler implements Disposable {
 					dispatch = false;
 				} else if(TreeEvent.COMMAND_TREENODE_CLOSE.equals(treeEvent.getSubCommand())) {
 					removeChildrenFromOpenNodes(selTN);
-					openCourseNodeIds.remove((String)userObject);
-					openTreeNodeIds.remove((String)userObject);
+					openCourseNodeIds.remove(userObject);
+					openTreeNodeIds.remove(userObject);
 					dispatch = false;
 				}
 			}
