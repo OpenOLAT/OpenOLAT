@@ -171,10 +171,10 @@ public class UserBulkChangePasswordController extends BasicController {
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {			
 			
-			userListTextArea = FormUIFactory.getInstance().addTextAreaElement("bulk.psw.users", 10, 2, null, formLayout);
-			olatPasswordAuthentication = FormUIFactory.getInstance().addTextElement("pswtextfield", "bulk.psw.newpsw", 255, "", formLayout);
-			acceptDisclaimer = FormUIFactory.getInstance().addCheckboxesVertical("bulk.auto.disc", formLayout, new String[]{"xx"}, new String[]{null}, 1);
-			langGerman = FormUIFactory.getInstance().addCheckboxesVertical("bulk.lang.german", formLayout, new String[]{"xx"}, new String[]{null}, 1);
+			userListTextArea = uifactory.addTextAreaElement("bulk.psw.users", 10, 2, null, formLayout);
+			olatPasswordAuthentication = uifactory.addTextElement("pswtextfield", "bulk.psw.newpsw", 255, "", formLayout);
+			acceptDisclaimer = uifactory.addCheckboxesHorizontal("bulk.auto.disc", formLayout, new String[]{"xx"}, new String[]{null});
+			langGerman = uifactory.addCheckboxesHorizontal("bulk.lang.german", formLayout, new String[]{"xx"}, new String[]{null});
 			
 			final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 			formLayout.add(buttonLayout);

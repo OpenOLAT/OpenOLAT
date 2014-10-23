@@ -250,7 +250,7 @@ public class GroupSearchController extends StepFormBasicController {
 	}
 	
 	private MultipleSelectionElement createSelection(String name) {
-		MultipleSelectionElement selection = new MultipleSelectionElementImpl(name, Layout.vertical);
+		MultipleSelectionElement selection = new MultipleSelectionElementImpl(name, Layout.horizontal);
 		selection.setKeysAndValues(new String[]{"on"}, new String[]{""});
 		tableCont.add(name, selection);
 		return selection;

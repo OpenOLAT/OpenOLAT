@@ -93,12 +93,12 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		formLayout.add(resourceAssignmentContainer);
 		
 		String[] courseValues = new String[]{ translate("module.resource.courses.grant") };
-		assignCoursesEl = uifactory.addCheckboxesVertical("module.resource.courses", resourceAssignmentContainer, assignKeys, courseValues, 1);
+		assignCoursesEl = uifactory.addCheckboxesHorizontal("module.resource.courses", resourceAssignmentContainer, assignKeys, courseValues);
 		assignCoursesEl.select(assignKeys[0], module.isGroupManagersAllowedToLinkCourses());
 		assignCoursesEl.addActionListener(FormEvent.ONCHANGE);
 		
 		String[] groupValues = new String[]{ translate("module.resource.groups.grant") };
-		assignGroupsEl = uifactory.addCheckboxesVertical("module.resource.groups", resourceAssignmentContainer, assignKeys, groupValues, 1);
+		assignGroupsEl = uifactory.addCheckboxesHorizontal("module.resource.groups", resourceAssignmentContainer, assignKeys, groupValues);
 		assignGroupsEl.select(assignKeys[0], module.isResourceManagersAllowedToLinkGroups());
 		assignGroupsEl.addActionListener(FormEvent.ONCHANGE);
 		
