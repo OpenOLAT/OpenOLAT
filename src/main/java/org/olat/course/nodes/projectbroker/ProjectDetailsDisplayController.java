@@ -34,7 +34,6 @@ import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.download.DisplayOrDownloadComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -45,13 +44,16 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.vfs.VFSContainerMapper;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.projectbroker.datamodel.CustomField;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
@@ -184,7 +186,8 @@ public class ProjectDetailsDisplayController extends BasicController {
 			myContent.contextPut("projectPlaces", placesValue);
 		}
 		
-		attachedFileLink = LinkFactory.createCustomLink("attachedFileLink", "cmd.donwload.attachment", project.getAttachmentFileName(), Link.NONTRANSLATED, myContent, this);
+		attachedFileLink = LinkFactory.createCustomLink("attachedFileLink", "cmd.download.attachment", project.getAttachmentFileName(), Link.NONTRANSLATED, myContent, this);
+		attachedFileLink.setTarget("_blank");
 		putInitialPanel(myContent);
 	}
 
@@ -285,14 +288,12 @@ public class ProjectDetailsDisplayController extends BasicController {
 		// Mapper is cleaned up automatically by basic controller
 
 		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(projectBrokerManager.getAttamchmentRelativeRootPath(project,courseEnv,cNode),null);
-		String baseUrl = registerMapper(ureq, new VFSContainerMapper(rootFolder));
-
-		// Trigger auto-download
-		if(isLogDebugEnabled()) {
-			logDebug("baseUrl=" + baseUrl, null);
+		VFSItem item = rootFolder.resolve(project.getAttachmentFileName());
+		if(item instanceof VFSLeaf) {
+			VFSLeaf attachment = (VFSLeaf)item;
+			MediaResource resource = new VFSMediaResource(attachment);
+			ureq.getDispatchResult().setResultingMediaResource(resource);
 		}
-		DisplayOrDownloadComponent dordc = new DisplayOrDownloadComponent("downloadcomp",baseUrl + "/" + project.getAttachmentFileName());
-		myContent.put("autoDownloadComp", dordc);
 	}
 	
 }
