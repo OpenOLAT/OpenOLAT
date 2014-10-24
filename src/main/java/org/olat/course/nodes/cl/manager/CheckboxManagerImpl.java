@@ -36,7 +36,6 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityImpl;
-import org.olat.basesecurity.model.GroupMembershipImpl;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
@@ -450,12 +449,34 @@ public class CheckboxManagerImpl implements CheckboxManager {
 		if(StringHelper.containsNonWhitespace(resSubPath)) {
 			sb.append(" and box.resSubPath=:resSubPath");
 		}
-		if(businessGroups != null && businessGroups.size() > 0) {
-			sb.append(" and check.identity.key in ( select membership.identity.key from ").append(GroupMembershipImpl.class.getName()).append(" membership ")
+
+		boolean hasBusinessGroups = businessGroups != null && businessGroups.size() > 0;
+		if(hasBusinessGroups) {
+			sb.append(" and ");
+			if(re != null) {
+				sb.append(" ( ");
+			}
+			
+			sb.append(" check.identity.key in ( select membership.identity.key from bgroupmember membership ")
 			  .append("   where membership.group in (:baseGroups) and membership.role='").append(GroupRole.participant).append("'")
 			  .append(" )");
 		}
-		
+		if(re != null) {
+			if(hasBusinessGroups) {
+				sb.append(" or ");
+			} else {
+				sb.append(" and ");
+			}
+			
+			sb.append(" check.identity.key in ( select membership.identity.key from repoentrytogroup as rel, bgroup as reBaseGroup, bgroupmember membership ")
+			  .append("   where rel.entry.key=:repoKey and rel.group=reBaseGroup and membership.group=reBaseGroup and membership.role='").append(GroupRole.participant).append("'")
+			  .append(" )");
+
+			if(hasBusinessGroups) {
+				sb.append(" ) ");
+			} 
+		}
+
 		TypedQuery<DBCheck> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), DBCheck.class)
 				.setParameter("resName", ores.getResourceableTypeName())
@@ -463,14 +484,17 @@ public class CheckboxManagerImpl implements CheckboxManager {
 		if(StringHelper.containsNonWhitespace(resSubPath)) {
 			query.setParameter("resSubPath", resSubPath);
 		}
-		if(businessGroups != null && businessGroups.size() > 0) {
+
+		if(hasBusinessGroups) {
 			List<Group> groups = new ArrayList<>(businessGroups.size());
 			for(BusinessGroup businessGroup:businessGroups) {
 				groups.add(businessGroup.getBaseGroup());
 			}
 			query.setParameter("baseGroups", groups);
 		}
-		//TODO group exists student where i'm coach?
+		if(re != null) {
+			query.setParameter("repoKey", re.getKey());
+		}
 		
 		List<DBCheck> checks = query.getResultList();
 		Map<Long, AssessmentData> identToBox = new HashMap<Long,AssessmentData>();
