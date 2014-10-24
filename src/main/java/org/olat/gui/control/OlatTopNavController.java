@@ -229,7 +229,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 		if(StringHelper.containsNonWhitespace(selectedTools)) {
 			String[] selectedToolArr = selectedTools.split(",");
 			for(String selectedTool:selectedToolArr) {
-				selectedToolSet.add(selectedTool);
+				selectedToolSet.add(UserToolsModule.stripToolKey(selectedTool));
 			}
 		}
 		
@@ -240,7 +240,7 @@ public class OlatTopNavController extends BasicController implements GenericEven
 			ExtensionElement ae = anExt.getExtensionFor(HomeMainController.class.getName(), ureq);
 			if (anExt.isEnabled() && ae instanceof GenericActionExtension) {
 				GenericActionExtension gAe = (GenericActionExtension) ae;
-				String extensionId = gAe.getUniqueExtensionID();
+				String extensionId = UserToolsModule.stripToolKey(gAe.getUniqueExtensionID());
 				if(availableToolSet.isEmpty() || availableToolSet.contains(extensionId)) {
 					GenericTreeNode node = gAe.createMenuNode(ureq);
 					String linkName = "personal.tool." + node.getIdent();

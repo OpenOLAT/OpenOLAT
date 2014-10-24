@@ -112,10 +112,21 @@ public class UserToolsModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(availableUserTools)) {
 			String[] tools = availableUserTools.split(",");
 			for(String tool:tools) {
-				toolSet.add(tool);
+				toolSet.add(stripToolKey(tool));
 			}
 		}
 		return toolSet;
+	}
+	
+	public static String stripToolKey(String uniqueExtensionId) {
+		String toolKey = uniqueExtensionId;
+		if(toolKey.startsWith("org.olat.home.HomeMainController")) {
+			int nextIndex = toolKey.indexOf(":", "org.olat.home.HomeMainController".length() + 2);
+			if(nextIndex > 0) {
+				toolKey = toolKey.substring(0, nextIndex);
+			}
+		}
+		return toolKey;
 	}
 
 	public void setAvailableUserTools(String tools) {
@@ -132,7 +143,7 @@ public class UserToolsModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(defaultPresetOfUserTools)) {
 			String[] tools = defaultPresetOfUserTools.split(",");
 			for(String tool:tools) {
-				toolSet.add(tool);
+				toolSet.add(stripToolKey(tool));
 			}
 		}
 		return toolSet;

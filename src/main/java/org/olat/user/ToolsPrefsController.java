@@ -161,6 +161,7 @@ public class ToolsPrefsController extends FormBasicController {
 			String[] selectedToolArr = selectedTools.split(",");
 			keyloop: for (String toolKey:presetEl.getKeys()) {
 				for(String selectedTool:selectedToolArr) {
+					selectedTool = UserToolsModule.stripToolKey(selectedTool);
 					if(toolKey.equals(selectedTool)) {
 						presetEl.select(toolKey, true);
 						continue keyloop;
