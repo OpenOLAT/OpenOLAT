@@ -54,6 +54,8 @@ public interface RepositoryService {
 	
 	public RepositoryEntry loadByKey(Long key);
 	
+	public RepositoryEntry loadByResourceKey(Long key);
+	
 	public VFSLeaf getIntroductionImage(RepositoryEntry re);
 
 	public VFSLeaf getIntroductionMovie(RepositoryEntry re);

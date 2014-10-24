@@ -263,8 +263,16 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	 * @return Map containing a list of maps that contain the nodeData for this user and course using the
 	 * keys defined in the AssessmentHelper and the title of the course
 	 */
-	public EfficiencyStatement getUserEfficiencyStatement(Long courseRepoEntryKey, Identity identity){
+	public EfficiencyStatement getUserEfficiencyStatementByCourseRepoKey(Long courseRepoEntryKey, Identity identity){
 		UserEfficiencyStatementImpl s = getUserEfficiencyStatementFull(courseRepoEntryKey, identity);
+		if(s == null || s.getStatementXml() == null) {
+			return null;
+		}
+		return (EfficiencyStatement)xstream.fromXML(s.getStatementXml());
+	}
+	
+	public EfficiencyStatement getUserEfficiencyStatementByResourceKey(Long resourceKey, Identity identity){
+		UserEfficiencyStatementImpl s = getUserEfficiencyStatementFull(resourceKey, identity);
 		if(s == null || s.getStatementXml() == null) {
 			return null;
 		}
@@ -289,6 +297,27 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 			return statement.get(0);
 		} catch (Exception e) {
 			logError("Cannot retrieve efficiency statement: " + courseRepoEntryKey + " from " + identity, e);
+			return null;
+		}
+	}
+	
+	public UserEfficiencyStatementImpl getUserEfficiencyStatementFullByResourceKey(Long resourceKey, Identity identity) {
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select statement from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as statement ")
+			  .append(" where statement.identity.key=:identityKey and statement.archivedResourceKey=:resourceKey");
+
+			List<UserEfficiencyStatementImpl> statement = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), UserEfficiencyStatementImpl.class)
+					.setParameter("identityKey", identity.getKey())
+					.setParameter("resourceKey", resourceKey)
+					.getResultList();
+			if(statement.isEmpty()) {
+				return null;
+			}
+			return statement.get(0);
+		} catch (Exception e) {
+			logError("Cannot retrieve efficiency statement: " + resourceKey + " from " + identity, e);
 			return null;
 		}
 	}
@@ -334,6 +363,20 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 		}
 	}
 	
+	public UserEfficiencyStatementLight getUserEfficiencyStatementLightByKey(Long key) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select statement from ").append(UserEfficiencyStatementLight.class.getName()).append(" as statement ")
+		  .append(" where statement.key=:key");
+
+		List<UserEfficiencyStatementLight> statement = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), UserEfficiencyStatementLight.class)
+				.setParameter("key", key)
+				.getResultList();
+		if(statement.isEmpty()) {
+			return null;
+		}
+		return statement.get(0);
+	}
 
 	/**
 	 * Get the passed value of a course node of a specific efficiency statment
@@ -445,7 +488,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 		return efficiencyStatements;
 	}
 	
-	protected List<UserEfficiencyStatementLight> findEfficiencyStatementsLight(Identity identity) {
+	public List<UserEfficiencyStatementLight> findEfficiencyStatementsLight(Identity identity) {
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("select statement from ").append(UserEfficiencyStatementLight.class.getName()).append(" as statement ")
@@ -528,7 +571,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	protected void deleteEfficiencyStatement(Identity identity, EfficiencyStatement efficiencyStatement) {
 		UserEfficiencyStatement s = getUserEfficiencyStatementLight(efficiencyStatement.getCourseRepoEntryKey(), identity);
 		if(s != null) {
-			dbInstance.deleteObject(s);
+			dbInstance.getCurrentEntityManager().remove(s);
 		}
 	}
 	
@@ -537,8 +580,8 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	 * @param identity
 	 * @param efficiencyStatement
 	 */
-	protected void deleteEfficiencyStatement(UserEfficiencyStatementLight efficiencyStatement) {
-		dbInstance.deleteObject(efficiencyStatement);
+	public void deleteEfficiencyStatement(UserEfficiencyStatementLight efficiencyStatement) {
+		dbInstance.getCurrentEntityManager().remove(efficiencyStatement);
 	}
 
 	/**

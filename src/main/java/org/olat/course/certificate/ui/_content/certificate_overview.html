@@ -1,0 +1,11 @@
+<div class="panel panel-default">
+	<ul class="list-group">
+		<li class="list-group-item"><span><i class="o_icon o_icon_certificate"> </i> $r.translate("certificate")</span></li>
+		<li class="list-group-item">
+			#foreach($certificate in $certificates)
+				$r.render($certificate.getComponentName())
+			#end
+			<div class="o_button_group">$r.render("generate.certificate")</div>
+		</li>
+	</ul>
+</div>

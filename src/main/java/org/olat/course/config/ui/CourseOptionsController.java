@@ -38,9 +38,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -50,11 +47,9 @@ import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.event.EventBus;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.config.CourseConfigEvent.CourseConfigType;
@@ -82,7 +77,7 @@ public class CourseOptionsController extends FormBasicController {
 	private static final String COMMAND_REMOVE = "command.glossary.remove";
 	private static final String COMMAND_ADD = "command.glossary.add";
 
-	private SelectionElement efficencyEl, calendarEl, chatEl;
+	private SelectionElement calendarEl, chatEl;
 	private FormLink addGlossaryCommand, removeGlossaryCommand;
 	private StaticTextElement glossaryNameEl;
 	private FormLink saveButton;
@@ -98,7 +93,6 @@ public class CourseOptionsController extends FormBasicController {
 
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController glossarySearchCtr, folderSearchCtr;
-	private DialogBoxController enableEfficiencyDC, disableEfficiencyDC;
 
 	@Autowired
 	private CalendarModule calendarModule;
@@ -161,19 +155,7 @@ public class CourseOptionsController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		//efficiency statement
-		FormLayoutContainer effCont = FormLayoutContainer.createDefaultFormLayout("eff", getTranslator());
-		effCont.setRootForm(mainForm);
-		formLayout.add(effCont);
-		effCont.setFormContextHelp("org.olat.course.config.ui","course-efficiency.html","help.hover.course-eff");
 		
-		boolean effEnabled = courseConfig.isEfficencyStatementEnabled();
-		boolean managedEff = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.efficencystatement);
-		efficencyEl = uifactory.addCheckboxesHorizontal("effIsOn", "chkbx.efficency.onoff", effCont, new String[] {"xx"}, new String[] {""});
-		efficencyEl.addActionListener(FormEvent.ONCHANGE);
-		efficencyEl.select("xx", effEnabled);
-		efficencyEl.setEnabled(editable && !managedEff);
-
 		if(calendarModule.isEnabled() && calendarModule.isEnableCourseToolCalendar()) {
 			//calendar
 			FormLayoutContainer calCont = FormLayoutContainer.createDefaultFormLayout("cal", getTranslator());
@@ -252,17 +234,7 @@ public class CourseOptionsController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == disableEfficiencyDC) {
-			if (DialogBoxUIFactory.isOkEvent(event)) {
-				doChangeConfig(ureq);
-				saveButton.setCustomEnabledLinkCSS("btn btn-primary");
-			}
-		} else if (source == enableEfficiencyDC) {
-			if (DialogBoxUIFactory.isOkEvent(event)) {				
-				doChangeConfig(ureq);
-				saveButton.setCustomEnabledLinkCSS("btn btn-primary");
-			}
-		} else if (source == glossarySearchCtr) {
+		if (source == glossarySearchCtr) {
 			cmc.deactivate();
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 				RepositoryEntry repoEntry = glossarySearchCtr.getSelectedEntry();
@@ -332,19 +304,8 @@ public class CourseOptionsController extends FormBasicController {
 	}
 	
 	private void doSave(UserRequest ureq) {
-		boolean confirmUpdateStatement = courseConfig.isEfficencyStatementEnabled() != efficencyEl.isSelected(0);
-		if(confirmUpdateStatement) {
-			if (courseConfig.isEfficencyStatementEnabled()) {
-				// a change from enabled Efficiency to disabled
-				disableEfficiencyDC = activateYesNoDialog(ureq, null, translate("warning.change.todisabled"), disableEfficiencyDC);
-			} else {
-				// a change from disabled Efficiency
-				enableEfficiencyDC = activateYesNoDialog(ureq, null, translate("warning.change.toenable"), enableEfficiencyDC);
-			}
-		} else {
-			doChangeConfig(ureq);
-			saveButton.setCustomEnabledLinkCSS("btn btn-primary");
-		}
+		doChangeConfig(ureq);
+		saveButton.setCustomEnabledLinkCSS("btn btn-primary");
 	}
 	
 	private void doChangeConfig(UserRequest ureq) {
@@ -352,9 +313,7 @@ public class CourseOptionsController extends FormBasicController {
 		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
 		courseConfig = course.getCourseEnvironment().getCourseConfig();
 		
-		boolean enableEfficiencyStatment = efficencyEl.isSelected(0);
-		boolean updateStatement = courseConfig.isEfficencyStatementEnabled() != enableEfficiencyStatment;
-		courseConfig.setEfficencyStatementIsEnabled(enableEfficiencyStatment);
+
 		
 		boolean enableChat = chatEl.isSelected(0);
 		boolean updateChat = courseConfig.isChatEnabled() != enableChat;
@@ -455,28 +414,6 @@ public class CourseOptionsController extends FormBasicController {
 				ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_SHARED_FOLDER_ADDED,
 						getClass(), LoggingResourceable.wrapBCFile(""));
 			}
-		}
-		
-		if(updateStatement) {
-			if(enableEfficiencyStatment) {
-	            // first create the efficiencies, send event to agency (all courses add link)
-				List<Identity> identitiesWithData = course.getCourseEnvironment().getCoursePropertyManager().getAllIdentitiesWithCourseAssessmentData(null);
-				EfficiencyStatementManager.getInstance().updateEfficiencyStatements(course, identitiesWithData);							
-			} else {
-	            // delete really the efficiencies of the users.
-				RepositoryEntry courseRepoEntry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
-				EfficiencyStatementManager.getInstance().deleteEfficiencyStatementsFromCourse(courseRepoEntry.getKey());						
-			}
-			
-			//inform everybody else		
-			EventBus eventBus = CoordinatorManager.getInstance().getCoordinator().getEventBus();
-			CourseConfigEvent courseConfigEvent = new CourseConfigEvent(CourseConfigType.efficiencyStatement, course.getResourceableId());
-			eventBus.fireEventToListenersOf(courseConfigEvent, course);
-			
-			ILoggingAction loggingAction = enableEfficiencyStatment ?
-					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_EFFICIENCY_STATEMENT_ENABLED :
-					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_EFFICIENCY_STATEMENT_DISABLED;
-			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
 		}
 		
 		fireEvent(ureq, Event.CHANGED_EVENT);

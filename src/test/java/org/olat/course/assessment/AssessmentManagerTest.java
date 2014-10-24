@@ -236,7 +236,7 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		//delete the efficiencyStatements for the current course
 		efficiencyStatementManager.deleteEfficiencyStatementsFromCourse(courseRepositoryEntry.getKey());
 		DBFactory.getInstance().closeSession();
-		efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatement(courseRepositoryEntry.getKey(), student);
+		efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementByCourseRepoKey(courseRepositoryEntry.getKey(), student);
 		DBFactory.getInstance().closeSession();
 		assertNull(efficiencyStatement);
 		
@@ -252,7 +252,7 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		//delete the efficiencyStatement of the student
 		efficiencyStatementManager.deleteUserData(student, "deleted_" + student.getName());
 		DBFactory.getInstance().closeSession();
-		efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatement(courseRepositoryEntry.getKey(), student);
+		efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementByCourseRepoKey(courseRepositoryEntry.getKey(), student);
 		DBFactory.getInstance().closeSession();
 		assertNull(efficiencyStatement);
 	}
@@ -266,7 +266,7 @@ public class AssessmentManagerTest extends OlatTestCase  {
 	private EfficiencyStatement checkEfficiencyStatement(RepositoryEntry courseRepositoryEntry) {
 		//check the stored EfficiencyStatement		
 		EfficiencyStatement efficiencyStatement = efficiencyStatementManager
-				.getUserEfficiencyStatement(courseRepositoryEntry.getKey(), student);
+				.getUserEfficiencyStatementByCourseRepoKey(courseRepositoryEntry.getKey(), student);
 		assertNotNull(efficiencyStatement);
 		List<Map<String,Object>> assessmentNodes = efficiencyStatement.getAssessmentNodes();
 		Iterator<Map<String,Object>> listIterator = assessmentNodes.iterator();

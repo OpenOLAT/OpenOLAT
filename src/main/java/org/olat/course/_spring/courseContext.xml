@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans.xsd">
+  http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context.xsd">
+	
+	<context:component-scan base-package="org.olat.course.certificate.manager" />
 
 	<import resource="classpath:/org/olat/course/assessment/_spring/assessmentContext.xml"/>
 	<import resource="classpath:/org/olat/course/config/ui/courselayout/_spring/courseLayoutContext.xml"/>
@@ -18,60 +23,59 @@
 	<import resource="classpath:/org/olat/course/statistic/_spring/statisticContext.xml"/>
 	<import resource="classpath:/org/olat/course/statistic/_spring/statisticsJobContext.xml"/>
 
-<bean id="courseModule" class="org.olat.course.CourseModule" 
-	depends-on="userModule, triggerUserModuleInit, org.olat.core.util.WebappHelper, metaInfoFactory, fileresourceManager">
+	<bean id="courseModule" class="org.olat.course.CourseModule" 
+		depends-on="userModule, triggerUserModuleInit, org.olat.core.util.WebappHelper, metaInfoFactory, fileresourceManager">
 		
-	<constructor-arg index="0" ref="coordinatorManager" />
-	<constructor-arg index="1" ref="propertyManager" />
-	<constructor-arg index="2" ref="courseFactory" />
-	<constructor-arg index="3" ref="repositoryService" />
-	<constructor-arg index="4" ref="resourceManager" />
+		<constructor-arg index="0" ref="coordinatorManager" />
+		<constructor-arg index="1" ref="propertyManager" />
+		<constructor-arg index="2" ref="courseFactory" />
+		<constructor-arg index="3" ref="repositoryService" />
+		<constructor-arg index="4" ref="resourceManager" />
 	
-	<property name="persistedProperties">
-	  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
-	    <constructor-arg index="0" ref="coordinatorManager"/>
-	    <constructor-arg index="1" ref="courseModule" />
-	  </bean>
-	</property>
-
-	<!-- Select exported courses to be deployed automatically.  See property (DeployCourseExportsEnabled) below.
-		Default access is 4:
-			value=1 : Access only for owners (B)
-			value=2 : Access only for owners and authors (BA)
-			value=3 : Access for all registered users (BAR)
-			value=4 : Access for all registered users and anonymous guests
-		
-		Be increasing the version with the same identifier, the repo entry gets deleted and the new version gets deployed
-		If you changing the identifier there will be a new course deployed and the old one will stay.
-	-->
-	<property name="courseExportFiles">
-		<ref bean="deployedCourseList"/>
-	</property>
+		<property name="persistedProperties">
+			<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
+				<constructor-arg index="0" ref="coordinatorManager"/>
+				<constructor-arg index="1" ref="courseModule" />
+			</bean>
+		</property>
 	
-	
-	<!-- Three Logs are available within a course:
-		- Adminlog, logs administrative activity in the course
-		- Userlog, logs the course user activity, where the user is identifiable
-		- Statisticlog, logs the course user activity, where the user is anonymized
-		The following switches define which of the above mentioned log files are
-		visible to the course author. Hence she can configure log levels or delete the
-		respective log file(s).
-		
-		It is clear, that disabling the course logging overrides these settings.
-		
-		Possible values are VISIBLE, INVISIBLE
-		
-		In the case of absent configuration values default to INVISIBLE.
+		<!-- Select exported courses to be deployed automatically.  See property (DeployCourseExportsEnabled) below.
+			Default access is 4:
+				value=1 : Access only for owners (B)
+				value=2 : Access only for owners and authors (BA)
+				value=3 : Access for all registered users (BAR)
+				value=4 : Access for all registered users and anonymous guests
+			
+			Be increasing the version with the same identifier, the repo entry gets deleted and the new version gets deployed
+			If you changing the identifier there will be a new course deployed and the old one will stay.
 		-->
-	<property name="logVisibilityForCourseAuthor">
-		<map >
-			<entry key="AdminLog" value="VISIBLE" />
-			<entry key="UserLog" value="INVISIBLE" />
-			<entry key="StatisticLog" value="VISIBLE" />
-		</map>
-	</property>
+		<property name="courseExportFiles">
+			<ref bean="deployedCourseList"/>
+		</property>
+
 	
-</bean>
+		<!-- Three Logs are available within a course:
+			- Adminlog, logs administrative activity in the course
+			- Userlog, logs the course user activity, where the user is identifiable
+			- Statisticlog, logs the course user activity, where the user is anonymized
+			The following switches define which of the above mentioned log files are
+			visible to the course author. Hence she can configure log levels or delete the
+			respective log file(s).
+			
+			It is clear, that disabling the course logging overrides these settings.
+			
+			Possible values are VISIBLE, INVISIBLE
+			
+			In the case of absent configuration values default to INVISIBLE.
+			-->
+		<property name="logVisibilityForCourseAuthor">
+			<map >
+				<entry key="AdminLog" value="VISIBLE" />
+				<entry key="UserLog" value="INVISIBLE" />
+				<entry key="StatisticLog" value="VISIBLE" />
+			</map>
+		</property>
+	</bean>
 				
 	<bean id="courseFactory" class="org.olat.course.CourseFactory"
 		depends-on="businessGroupService,resourceManager,baseSecurityManager,glossaryManager">
@@ -80,34 +84,28 @@
 		<constructor-arg index="2" ref="repositoryService" />
 		<constructor-arg index="3" ref="referenceManager" />
 	</bean>
-
                 
-<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-	<property name="targetObject" ref="courseModule" />
-	<property name="targetMethod" value="init" />
-	<property name="arguments">
+	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="courseModule" />
+		<property name="targetMethod" value="init" />
+		<property name="arguments">
 		<value>
-		<!--
-			If the Instant Messaging is enabled you can switch here the availability of the course chat.
-			So chatting can be used generally and in groups but disabled in the course.
-		-->
-		enableCourseChat=true
-		
-		<!-- Select exported demo courses to be deployed automatically. -->
-		deployCourseExportsEnabled=${deploy.course.exports}
-		
-		<!-- whether the toolbox should display the current participant count or not -->
-		displayParticipantsCount=${course.display.participants.count}
-
-		<!-- Show or hide the help course in the top navigation -->		
-		helpCourseEnabled = ${help.course.enabled}
-
-		<!-- The soft-key of the repository entry of the help course, empty to disable help course -->
-		helpCourseSoftKey = ${help.course.softkey}
-		
-		</value>
-	</property>
-</bean>
+			<!--
+				If the Instant Messaging is enabled you can switch here the availability of the course chat.
+				So chatting can be used generally and in groups but disabled in the course.
+			-->
+			enableCourseChat=true
+			<!-- Select exported demo courses to be deployed automatically. -->
+			deployCourseExportsEnabled=${deploy.course.exports}
+			<!-- whether the toolbox should display the current participant count or not -->
+			displayParticipantsCount=${course.display.participants.count}
+			<!-- Show or hide the help course in the top navigation -->		
+			helpCourseEnabled = ${help.course.enabled}
+			<!-- The soft-key of the repository entry of the help course, empty to disable help course -->
+			helpCourseSoftKey = ${help.course.softkey}
+			</value>
+		</property>
+	</bean>
 
 	<bean id="deployedCourseList" class="java.util.ArrayList">
 	    <constructor-arg>
@@ -123,6 +121,7 @@
 		<property name="identifier" value="Demo Kurs" />
 		<property name="version" value="7.1" />
 	</bean>
+	
 	<!-- this one is the help course which will server as the online help, helpAsser flag is TRUE! -->
 	<bean id="deployedCourse_OpenOLATHelp" class="org.olat.course.DeployableCourseExport">
 		<property name="courseUrl" value="http://nexus.openolat.org/nexus/content/repositories/openolat/org/openolat/help/OpenOLAT-Help/8.1/OpenOLAT-Help-8.1.zip" />
@@ -136,6 +135,26 @@
 			To disable the help course feature, leave the helpCourseFile configuration empty.
 			Have also a look at the ContextHelpModule configuration.
 		--> 
+	</bean>
+	
+	<!-- Business group admin. panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="8206" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.course.certificate.ui.CertificatesAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="certificates" />
+		<property name="i18nActionKey" value="admin.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.course.certificate.ui"/>
+		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
 	</bean>
 
 </beans>

@@ -128,7 +128,7 @@ class MultiSelectColumnDescriptor implements ColumnDescriptor {
 	}
 
 	public int getAlignment() {
-		return ColumnDescriptor.ALIGNMENT_CENTER;
+		return ColumnDescriptor.ALIGNMENT_LEFT;
 	}
 
 	public String getAction(final int row) {

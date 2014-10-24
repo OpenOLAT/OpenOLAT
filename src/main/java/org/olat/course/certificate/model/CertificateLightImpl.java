@@ -1,0 +1,145 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.course.certificate.model;
+
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.olat.core.id.Persistable;
+import org.olat.course.certificate.CertificateLight;
+
+/**
+ * 
+ * Initial date: 21.10.2014<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+@Entity(name="certificatelight")
+@Table(name="o_cer_certificate")
+public class CertificateLightImpl implements CertificateLight, Persistable {
+
+	private static final long serialVersionUID = 2360631986446191873L;
+
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+
+	@Column(name="c_uuid", nullable=false, insertable=true, updatable=false)
+	private String uuid;
+	@Column(name="c_name", nullable=false, insertable=true, updatable=false)
+	private String name;
+	@Column(name="c_last", nullable=false, insertable=true, updatable=true)
+	private boolean last;
+	@Column(name="c_archived_resource_id", nullable=false, insertable=true, updatable=false)
+	private Long olatResourceKey;
+	
+	@Column(name="fk_identity", nullable=false, insertable=true, updatable=false)
+	private Long identityKey;
+
+	@Override
+	public Long getKey() {
+		return key;
+	}
+	
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
+	@Override
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
+	}
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Long getOlatResourceKey() {
+		return olatResourceKey;
+	}
+
+	public void setOlatResourceKey(Long olatResourceKey) {
+		this.olatResourceKey = olatResourceKey;
+	}
+
+	public Long getIdentityKey() {
+		return identityKey;
+	}
+
+	public void setIdentityKey(Long identityKey) {
+		this.identityKey = identityKey;
+	}
+
+	@Override
+	public int hashCode() {
+		return key == null ? -23984 : key.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof CertificateLightImpl) {
+			CertificateLightImpl prefs = (CertificateLightImpl)obj;
+			return key != null && key.equals(prefs.key);
+		}
+		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
+	}
+	
+
+}

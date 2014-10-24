@@ -52,6 +52,9 @@
 				<entry key="/blog/">
 					<ref bean="blogMediaBean" />
 				</entry>
+				<entry key="/certificate/">
+					<ref bean="certificateBean" />
+				</entry>
 			</map>
 		</property>
 	</bean>
@@ -135,7 +138,11 @@
 		<constructor-arg index="0">
 			<value>false</value>
 		</constructor-arg>
-	</bean>	
+	</bean>
+	
+	<bean id="certificateBean" class="org.olat.course.certificate.CertificateDispatcher">
+		<property name="certificatesManager" ref="certificatesManager" />
+	</bean>
 	
 	<!--  provides the possibility to log in using a remote loginform, e.g. from a portal.
 		The follwing requirements are given:

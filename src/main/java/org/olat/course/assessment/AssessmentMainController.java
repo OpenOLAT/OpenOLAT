@@ -26,7 +26,10 @@
 package org.olat.course.assessment;
 
 import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -43,6 +46,9 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -60,6 +66,7 @@ import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
+import org.olat.core.gui.components.table.TableMultiSelectEvent;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
@@ -72,6 +79,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -84,6 +93,7 @@ import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
@@ -92,6 +102,11 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.NodeTableDataModel.Cols;
 import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.course.certificate.CertificateLight;
+import org.olat.course.certificate.CertificateTemplate;
+import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.PDFCertificatesOptions;
+import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.OnlyGroupConditionInterpreter;
@@ -104,6 +119,7 @@ import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
@@ -111,7 +127,9 @@ import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import de.bps.onyx.plugin.OnyxModule;
 import de.bps.webservices.clients.onyxreporter.OnyxReporterConnector;
@@ -167,6 +185,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 
 	// Course assessment notification support fields	
 	private Controller csc;
+	private Controller certificateSubscriptionCtrl;
 	
 	// Hash map to keep references to already created user course environments
 	// Serves as a local cache to reduce database access - not shared by multiple threads
@@ -201,7 +220,8 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	private boolean isFiltering = true;
 	private Link showAllCourseNodesButton;
 	private Link filterCourseNodesButton;
-	
+
+	private DialogBoxController confirmCertificateCtrl;
 	private EfficiencyStatementAssessmentController esac;
 	private BulkAssessmentOverviewController bulkAssOverviewCtrl;
 	private final TooledStackedPanel stackPanel;
@@ -209,9 +229,16 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	private RepositoryEntry re;
 	private OLATResourceable ores;
 	
-	private final OnyxModule onyxModule;
-	private final RepositoryService repositoryService;
-	private final BusinessGroupService businessGroupService;
+	@Autowired
+	private OnyxModule onyxModule;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
+	private CertificatesManager certificatesManager;
 	
 	/**
 	 * Constructor for the assessment tool controller. 
@@ -223,11 +250,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	public AssessmentMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			OLATResourceable ores, IAssessmentCallback assessmentCallback) {
 		super(ureq, wControl);	
-		
-		onyxModule = CoreSpringFactory.getImpl(OnyxModule.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		
+
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
 		this.stackPanel = stackPanel;
 		this.ores = ores;
@@ -270,7 +293,18 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 				listenTo(csc); // cleanup on dispose
 				index.put("assessmentSubscription", csc.getInitialComponent());
 			}
+		}
+		
+		SubscriptionContext subsContext = certificatesManager.getSubscriptionContext(course);
+		if (subsContext != null) {
+			String businessPath = wControl.getBusinessControl().getAsString();
+			PublisherData pData = certificatesManager.getPublisherData(course, businessPath);
+			certificateSubscriptionCtrl = new ContextualSubscriptionController(ureq, wControl, subsContext, pData);
+			listenTo(certificateSubscriptionCtrl);
+			index.put("certificationSubscription", certificateSubscriptionCtrl.getInitialComponent());
+		}
 			
+		if (hasAssessableNodes) {
 			// Wrapper container: adds header
 			wrapper = createVelocityContainer("wrapper");
 			
@@ -328,7 +362,6 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			//fill the user list for the 
 			this.mode = MODE_USERFOCUS;
 			this.identitiesList = getAllAssessableIdentities();
-			//fxdiff FXOLAT-108: improve results table of tests
 			doUserChooseWithData(ureq, identitiesList, null, null);
 			
 			GenericTreeModel menuTreeModel = (GenericTreeModel)menuTree.getTreeModel();
@@ -527,6 +560,27 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 					currentCourseNode = null;
 				}
 				doUserChooseWithData(ureq, identitiesList, currentGroup, currentCourseNode);
+			} else if (event instanceof  TableMultiSelectEvent) {
+				TableMultiSelectEvent tms = (TableMultiSelectEvent)event;
+				BitSet selectedUsers = tms.getSelection();
+				if(selectedUsers.isEmpty()) {
+					showWarning("select.one.user.warning");
+				} else {
+					ICourse course = CourseFactory.loadCourse(ores);
+					CourseNode rootNode = course.getRunStructure().getRootNode();
+					List<CertificateInfos> futureCertififedList = new ArrayList<>();
+					for (int i=selectedUsers.nextSetBit(0); i >= 0; i=selectedUsers.nextSetBit(i+1)) {
+						Object row = userListCtr.getTableDataModel().getObject(i);
+						if(row instanceof AssessedIdentityWrapper) {
+							AssessedIdentityWrapper wrapper = (AssessedIdentityWrapper)row;
+							ScoreEvaluation scoreEval = wrapper.getUserCourseEnvironment().getScoreAccounting().getScoreEvaluation(rootNode);
+							Float score = scoreEval == null ? null : scoreEval.getScore();
+							Boolean passed = scoreEval == null ? null : scoreEval.getPassed();
+							futureCertififedList.add(new CertificateInfos(wrapper.getIdentity(), score, passed));
+						}
+					}
+					doGenerateCertificate(ureq, futureCertififedList);
+				}
 			}
 		}
 		else if (source == nodeListCtr) {
@@ -585,12 +639,20 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 				}
 			} // else nothing special to do
 			setContent(userChoose);
-		}
-		else if (source == identityAssessmentController) {
+		} else if (source == identityAssessmentController) {
 			if (event.equals(Event.CANCELLED_EVENT)) {
 				setContent(userChoose);
 			}
-	  }
+		} else if(source == confirmCertificateCtrl) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				@SuppressWarnings("unchecked")
+				List<CertificateInfos> assessedIdentitiesInfos = (List<CertificateInfos>)confirmCertificateCtrl.getUserObject();
+				doGenerateCertificates(assessedIdentitiesInfos);
+				Map<Long, CertificateLight> certificates = getCertificates(CourseFactory.loadCourse(ores));
+				((AssessedIdentitiesTableDataModel)userListCtr.getTableDataModel()).setCertificates(certificates);
+				userListCtr.modelChanged();
+			}
+		}
 	}
 
 	/**
@@ -844,9 +906,18 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			return;
 		}
 		
+		Map<Long, CertificateLight> certificates;
+		boolean certificateEnabled = PDFCertificatesOptions.none != course.getCourseConfig().getPdfCertificateOption();
+		boolean showCertificate = certificateEnabled && mode == MODE_USERFOCUS;
+		if(showCertificate) {
+			certificates = getCertificates(course);
+		} else {
+			certificates = Collections.emptyMap();
+		}
+		
 		// Add the wrapped identities to the table data model
-		AssessedIdentitiesTableDataModel tdm = new AssessedIdentitiesTableDataModel(wrappedIdentities, courseNode, getLocale(), isAdministrativeUser);
-		tdm.addColumnDescriptors(userListCtr, CMD_CHOOSE_USER, mode == MODE_NODEFOCUS || mode == MODE_GROUPFOCUS || mode == MODE_USERFOCUS);
+		AssessedIdentitiesTableDataModel tdm = new AssessedIdentitiesTableDataModel(wrappedIdentities, certificates,  courseNode, getLocale(), isAdministrativeUser);
+		tdm.addColumnDescriptors(userListCtr, CMD_CHOOSE_USER, mode == MODE_NODEFOCUS || mode == MODE_GROUPFOCUS || mode == MODE_USERFOCUS, showCertificate);
 		userListCtr.setTableDataModel(tdm);
 		
 		List<String> toolCmpNames = new ArrayList<>(3);
@@ -869,6 +940,12 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 				if(tool instanceof BreadcrumbPanelAware) {
 					((BreadcrumbPanelAware)tool).setBreadcrumbPanel(stackPanel);
 				}
+			}
+		}
+		if(certificateEnabled) {
+			if(courseNode == null || courseNode == course.getRunStructure().getRootNode()) {
+				userListCtr.addMultiSelectAction("create.certificate", "create.certificate");
+				userListCtr.setMultiSelect(true);
 			}
 		}
 		userChoose.contextPut("toolCmpNames", toolCmpNames);
@@ -904,6 +981,19 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		userChoose.put("userlisttable", userListCtr.getInitialComponent());
 		// set main vc to userchoose
 		setContent(userChoose);
+	}
+	
+	private Map<Long, CertificateLight> getCertificates(ICourse course) {
+		Map<Long, CertificateLight> certificates = new HashMap<>();
+		OLATResource resource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		List<CertificateLight> certificateList = certificatesManager.getCertificates(resource);
+		for(CertificateLight certificate:certificateList) {
+			CertificateLight currentCertificate = certificates.get(certificate.getIdentityKey());
+			if(currentCertificate == null || currentCertificate.getCreationDate().before(certificate.getCreationDate())) {
+				certificates.put(certificate.getIdentityKey(), certificate);
+			}
+		}
+		return certificates;
 	}
 
 	private void doNodeChoose(UserRequest ureq) {
@@ -983,6 +1073,30 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		esac = new EfficiencyStatementAssessmentController(ureq, getWindowControl(), ores);
 		listenTo(esac);
 		main.setContent(esac.getInitialComponent());
+	}
+	
+	private void doGenerateCertificates(List<CertificateInfos> assessedIdentitiesInfos) {
+		ICourse course = CourseFactory.loadCourse(ores);
+		RepositoryEntry resource = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		String templateKey = course.getCourseConfig().getPdfCertificateTemplate();
+		if(StringHelper.isLong(templateKey)) {
+			CertificateTemplate template = certificatesManager.getTemplateById(new Long(templateKey));
+			certificatesManager.generateCertificates(assessedIdentitiesInfos, resource, template);
+		}
+	}
+	
+	private void doGenerateCertificate(UserRequest ureq, List<CertificateInfos> assessedIdentitiesInfos) {
+		StringBuilder sb = new StringBuilder();
+		for(CertificateInfos infos:assessedIdentitiesInfos) {
+			String name = userManager.getUserDisplayName(infos.getAssessedIdentity());
+			if(sb.length() > 0) sb.append(", ");
+			sb.append(name);
+		}
+		
+		String title = translate("confirm.certificate.title");
+		String text = translate("confirm.certificate.description", new String[]{ sb.toString() });
+		confirmCertificateCtrl = activateYesNoDialog(ureq, title, text, confirmCertificateCtrl);
+		confirmCertificateCtrl.setUserObject(assessedIdentitiesInfos);
 	}
 
 	/**

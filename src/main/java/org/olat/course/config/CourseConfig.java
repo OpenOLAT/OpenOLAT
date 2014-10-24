@@ -29,6 +29,12 @@ import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Map;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.course.certificate.PDFCertificatesOptions;
+import org.olat.course.certificate.RecertificationTimeUnit;
+
 /**
  * Description: <br>
  * The CourseConfig class represents a configuration for a course. It is
@@ -55,6 +61,8 @@ import java.util.Map;
  * @author patrick
  */
 public class CourseConfig implements Serializable, Cloneable {
+	
+	private static final OLog log = Tracing.createLoggerFor(CourseConfig.class);
 
 	private static final long serialVersionUID = -1158707796830204185L;
 	/**
@@ -90,6 +98,12 @@ public class CourseConfig implements Serializable, Cloneable {
 	 * efficency statement
 	 */
 	transient public static final String KEY_EFFICENCY_ENABLED = "KEY_EFFICENCY_ENABLED";
+	transient public static final String PDF_CERTIFICATE_ENABLED = "PDF_CERTIFICATE_OPT";
+	transient public static final String PDF_CERTIFICATE_TEMPLATE = "PDF_CERTIFICATE_TEMPLATE";
+	transient public static final String RECERTIFICATION_ENABLED = "RECERTIFICATION_ENABLED";
+	transient public static final String RECERTIFICATION_TIMELAPSE = "RECERTIFICATION_TIMELAPSE";
+	transient public static final String RECERTIFICATION_TIMELAPSE_UNIT = "RECERTIFICATION_TIMELAPSE_UNIT";
+	
 	/**
 	 * course calendar
 	 */
@@ -221,6 +235,14 @@ public class CourseConfig implements Serializable, Cloneable {
 				if (configuration.containsKey(KEY_LOGLEVEL_USER)) configuration.remove(KEY_LOGLEVEL_USER);
 				if (configuration.containsKey(KEY_LOGLEVEL_STATISTIC)) configuration.remove(KEY_LOGLEVEL_STATISTIC);
 				this.version = 9;
+			}
+			
+			if (version == 9) {
+				if (!configuration.containsKey(PDF_CERTIFICATE_ENABLED)) configuration.put(PDF_CERTIFICATE_ENABLED, Boolean.FALSE);
+				if (!configuration.containsKey(PDF_CERTIFICATE_TEMPLATE)) configuration.put(PDF_CERTIFICATE_TEMPLATE, "");
+				if (!configuration.containsKey(RECERTIFICATION_ENABLED)) configuration.put(RECERTIFICATION_ENABLED, Boolean.FALSE);
+				if (!configuration.containsKey(RECERTIFICATION_TIMELAPSE)) configuration.put(RECERTIFICATION_TIMELAPSE, "");
+				this.version = 10;
 			}
 
 			/*
@@ -361,6 +383,88 @@ public class CourseConfig implements Serializable, Cloneable {
 		Boolean bool = (Boolean) configuration.get(KEY_EFFICENCY_ENABLED);
 		return bool.booleanValue();
 	}
+	
+	
+	/**
+	 * @return true if the efficency statement is enabled
+	 */
+	public String getPdfCertificateTemplate() {
+		String templateId = (String) configuration.get(PDF_CERTIFICATE_TEMPLATE);
+		return templateId;
+	}
+	
+	/**
+	 * @param b
+	 */
+	public void setPdfCertificateTemplate(String templateId ) {
+		if(StringHelper.containsNonWhitespace(templateId)) {
+			configuration.put(PDF_CERTIFICATE_TEMPLATE, templateId);
+		} else {
+			configuration.remove(PDF_CERTIFICATE_TEMPLATE);
+		}
+	}
+	
+	public PDFCertificatesOptions getPdfCertificateOption() {
+		PDFCertificatesOptions option;
+		String opt = (String)configuration.get(PDF_CERTIFICATE_ENABLED);
+		if(StringHelper.containsNonWhitespace(opt)) {
+			try {
+				option = PDFCertificatesOptions.valueOf(opt);
+			} catch (Exception e) {
+				log.error("", e);
+				option = PDFCertificatesOptions.none;
+			}
+		} else {
+			option = PDFCertificatesOptions.none;
+		}
+
+		return option;
+	}
+	
+	public void setPdfCertificateOption(PDFCertificatesOptions option) {
+		configuration.put(PDF_CERTIFICATE_ENABLED, option.name());
+	}
+
+	/**
+	 * @return true if the efficency statement is enabled
+	 */
+	public boolean isRecertificationEnabled() {
+		Boolean bool = (Boolean) configuration.get(RECERTIFICATION_ENABLED);
+		return bool == null ? false : bool.booleanValue();
+	}
+	
+	/**
+	 * @param b
+	 */
+	public void setRecertificationEnabled(boolean b) {
+		configuration.put(RECERTIFICATION_ENABLED, new Boolean(b));
+	}
+	
+	public int getRecertificationTimelapse() {
+		Integer timelapse = (Integer)configuration.get(RECERTIFICATION_TIMELAPSE);
+		return timelapse == null ? 0 : timelapse.intValue();
+	}
+	
+	public void setRecertificationTimelapse(int timelapse) {
+		configuration.put(RECERTIFICATION_TIMELAPSE, new Integer(timelapse));
+	}
+	
+	public RecertificationTimeUnit getRecertificationTimelapseUnit() {
+		String timelapseUnit = (String)configuration.get(RECERTIFICATION_TIMELAPSE_UNIT);
+		RecertificationTimeUnit timeUnit = null;
+		if(StringHelper.containsNonWhitespace(timelapseUnit)) {
+			timeUnit = RecertificationTimeUnit.valueOf(timelapseUnit);
+		}
+		return timeUnit;
+	}
+	
+	public void setRecertificationTimelapseUnit(RecertificationTimeUnit timeUnit) {
+		if(timeUnit == null) {
+			configuration.remove(RECERTIFICATION_TIMELAPSE_UNIT);
+		} else {
+			configuration.put(RECERTIFICATION_TIMELAPSE_UNIT, timeUnit.name());
+		}
+	}
 
 	/**
 	 * @return true if calendar is enabled
@@ -382,6 +486,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	 * 
 	 * @see java.lang.Object#clone()
 	 */
+	@Override
 	public CourseConfig clone() {
 		CourseConfig clone = new CourseConfig();
 		clone.setCalendarEnabled(((Boolean) configuration.get(KEY_CALENDAR_ENABLED)).booleanValue());
@@ -390,6 +495,11 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setEfficencyStatementIsEnabled(isEfficencyStatementEnabled());
 		clone.setGlossarySoftKey(getGlossarySoftKey());
 		clone.setSharedFolderSoftkey(getSharedFolderSoftkey());
+		clone.setPdfCertificateOption(getPdfCertificateOption());
+		clone.setPdfCertificateTemplate(getPdfCertificateTemplate());
+		clone.setRecertificationEnabled(isRecertificationEnabled());
+		clone.setRecertificationTimelapse(getRecertificationTimelapse());
+		clone.setRecertificationTimelapseUnit(getRecertificationTimelapseUnit());
 		return clone;
 	}
 
@@ -397,6 +507,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		try {
 			CourseConfig aCourseConfig = (CourseConfig) obj;

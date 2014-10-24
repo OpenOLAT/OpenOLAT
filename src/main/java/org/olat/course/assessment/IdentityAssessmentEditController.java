@@ -49,6 +49,8 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.course.certificate.PDFCertificatesOptions;
+import org.olat.course.certificate.ui.AssessedIdentityCertificatesController;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -78,6 +80,7 @@ public class IdentityAssessmentEditController extends BasicController {
 	private Link backLink;
 	private final BreadcrumbPanel stackPanel;
 	private final AssessedIdentityInfosController identityInfosCtrl;
+	private AssessedIdentityCertificatesController certificateCtrl;
 	
 	private OLATResourceable ores;
 
@@ -113,6 +116,12 @@ public class IdentityAssessmentEditController extends BasicController {
 		identityInfosCtrl = new AssessedIdentityInfosController(ureq, wControl, assessedIdentity);
 		identityAssessmentVC.put("identityInfos", identityInfosCtrl.getInitialComponent());
 		doIdentityAssessmentOverview(ureq, true);
+		
+		PDFCertificatesOptions certificateOption = course.getCourseConfig().getPdfCertificateOption();
+		if(certificateOption == PDFCertificatesOptions.manual || certificateOption == PDFCertificatesOptions.auto) {
+			certificateCtrl = new AssessedIdentityCertificatesController(ureq, wControl, assessedUserCourseEnvironment);
+			identityAssessmentVC.put("certificateInfos", certificateCtrl.getInitialComponent());
+		}
 		
 		BusinessControl bc = getWindowControl().getBusinessControl();
 		ContextEntry ce = bc.popLauncherContextEntry();

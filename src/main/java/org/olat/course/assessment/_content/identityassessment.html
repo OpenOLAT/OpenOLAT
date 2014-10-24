@@ -6,5 +6,8 @@
 #if($r.available("identityInfos"))
 	$r.render("identityInfos")
 #end
+#if($r.available("certificateInfos"))
+	$r.render("certificateInfos")
+#end
 $r.render("assessmentOverviewTable")
 </div>

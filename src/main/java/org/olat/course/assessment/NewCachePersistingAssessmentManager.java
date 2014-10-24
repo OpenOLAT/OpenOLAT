@@ -36,6 +36,7 @@ import java.util.Map;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
@@ -55,12 +56,17 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.auditing.UserNodeAuditManager;
+import org.olat.course.certificate.CertificateTemplate;
+import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.PDFCertificatesOptions;
+import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.properties.Property;
+import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 
@@ -854,8 +860,9 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 	 */
 	public void saveScoreEvaluation(final CourseNode courseNode, final Identity identity, final Identity assessedIdentity, final ScoreEvaluation scoreEvaluation, 
 			final UserCourseEnvironment userCourseEnv, final boolean incrementUserAttempts) {
-		ICourse course = CourseFactory.loadCourse(ores);
+		final ICourse course = CourseFactory.loadCourse(ores);
 		final CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
+		final RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		// o_clusterREVIEW we could sync on a element finer than course, e.g. the composite course+assessIdentity.
 		// +: concurrency would be higher
 		// -: many entries (num of courses * visitors of given course) in the locktable.
@@ -864,8 +871,11 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 		Long attempts = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(createOLATResourceableForLocking(assessedIdentity), new SyncerCallback<Long>(){
 			public Long execute() {
 				Long attempts = null;
-				saveNodeScore(courseNode, assessedIdentity, scoreEvaluation.getScore(), cpm);
-				saveNodePassed(courseNode, assessedIdentity, scoreEvaluation.getPassed(), cpm);
+				Float score = scoreEvaluation.getScore();
+				Boolean passed = scoreEvaluation.getPassed();
+				
+				saveNodeScore(courseNode, assessedIdentity, score, cpm);
+				saveNodePassed(courseNode, assessedIdentity, passed, cpm);
 				saveAssessmentID(courseNode, assessedIdentity, scoreEvaluation.getAssessmentID(), cpm);				
 				if(incrementUserAttempts) {
 					attempts = incrementNodeAttemptsProperty(courseNode, assessedIdentity, cpm);
@@ -876,6 +886,21 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 				  EfficiencyStatementManager esm =	EfficiencyStatementManager.getInstance();
 				  esm.updateUserEfficiencyStatement(userCourseEnv);
 				}
+				
+				if(scoreEvaluation.getPassed()) {
+					PDFCertificatesOptions options = course.getCourseConfig().getPdfCertificateOption();
+					if(options == PDFCertificatesOptions.auto) {
+						String templateId = course.getCourseConfig().getPdfCertificateTemplate();
+						CertificateTemplate template = null;
+						CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
+						if(StringHelper.isLong(templateId)) {
+							template = certificatesManager.getTemplateById(new Long(templateId));
+						}
+						CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, passed);
+						certificatesManager.generateCertificate(certificateInfos, courseEntry, template);
+					}
+				}
+				
 				return attempts;
 			}});
 		

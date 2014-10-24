@@ -218,7 +218,12 @@ public class RepositoryServiceImpl implements RepositoryService {
 	public RepositoryEntry loadByKey(Long key) {
 		return repositoryEntryDAO.loadByKey(key);
 	}
-	
+
+	@Override
+	public RepositoryEntry loadByResourceKey(Long resourceKey) {
+		return repositoryEntryDAO.loadByResourceKey(resourceKey);
+	}
+
 	@Override
 	public VFSLeaf getIntroductionImage(RepositoryEntry re) {
 		VFSContainer repositoryHome = new LocalFolderImpl(new File(FolderConfig.getCanonicalRepositoryHome()));

@@ -82,10 +82,11 @@ import org.olat.course.area.CourseAreasController;
 import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.CoachingGroupAccessAssessmentCallback;
-import org.olat.course.assessment.EfficiencyStatementController;
 import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.FullAccessAssessmentCallback;
 import org.olat.course.assessment.UserEfficiencyStatement;
+import org.olat.course.certificate.ui.CertificatesOptionsController;
+import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.config.ui.CourseOptionsController;
@@ -120,6 +121,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
+import org.olat.resource.OLATResource;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -140,7 +142,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		courseStatisticLink, surveyStatisticLink, testStatisticLink,
 		areaLink, dbLink,
 		//settings
-		layoutLink, optionsLink,
+		layoutLink, optionsLink, certificatesOptionsLink,
 		//my course
 		efficiencyStatementsLink, calendarLink, noteLink, chatLink,
 		//glossary
@@ -158,6 +160,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private MembersManagementMainController membersCtrl;
 	private StatisticCourseNodesController statsToolCtr;
 	private CourseLayoutGeneratorController courseLayoutCtrl;
+	private CertificatesOptionsController certificatesOptionsCtrl;
 
 	private int currentUserCount;
 	private Map<String, Boolean> courseRightsCache;
@@ -448,6 +451,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			optionsLink = LinkFactory.createToolLink("access.cmd", translate("command.options"), this, "o_icon_options");
 			optionsLink.setElementCssClass("o_sel_course_options");
 			settings.addComponent(optionsLink);
+			
+			certificatesOptionsLink = LinkFactory.createToolLink("certificates.cmd", translate("command.options.certificates"), this, "o_icon_certificate");
+			certificatesOptionsLink.setElementCssClass("o_sel_course_options_certificates");
+			settings.addComponent(certificatesOptionsLink);
 		}
 	}
 	
@@ -622,6 +629,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doLayout(ureq);
 		} else if(optionsLink == source) {
 			doOptions(ureq);
+		} else if(certificatesOptionsLink == source) {
+			doCertificatesOptions(ureq);
 		} else if(archiverLink == source) {
 			doArchive(ureq);
 		} else if(folderLink == source) {
@@ -882,6 +891,18 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
+	private void doCertificatesOptions(UserRequest ureq) {
+		if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
+			removeCustomCSS(ureq);
+			ICourse course = CourseFactory.loadCourse(getOlatResourceable());
+			CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
+			CertificatesOptionsController ctrl = new CertificatesOptionsController(ureq, getWindowControl(), getRepositoryEntry(), courseConfig, true);
+			certificatesOptionsCtrl = pushController(ureq, translate("command.options"), ctrl);
+			setActiveTool(certificatesOptionsLink);
+			currentToolCtr = certificatesOptionsCtrl;
+		}
+	}
+	
 	private void doArchive(UserRequest ureq) {
 		if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_ARCHIVING)) {
 			removeCustomCSS(ureq);
@@ -1060,8 +1081,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		// will not be disposed on course run dispose, popus up as new browserwindow
 		ControllerCreator ctrlCreator = new ControllerCreator() {
 			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				ICourse course = CourseFactory.loadCourse(getRepositoryEntry().getOlatResource());
-				EfficiencyStatementController efficiencyStatementController = new EfficiencyStatementController(lwControl, lureq, getRepositoryEntry().getKey());
+				OLATResource resource = getRepositoryEntry().getOlatResource();
+				ICourse course = CourseFactory.loadCourse(resource);
+				CertificateAndEfficiencyStatementController efficiencyStatementController = new CertificateAndEfficiencyStatementController(lwControl, lureq, resource.getKey());
 				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, getWindowControl(), efficiencyStatementController);
 				layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), course.getCourseEnvironment()));
 				return layoutCtr;

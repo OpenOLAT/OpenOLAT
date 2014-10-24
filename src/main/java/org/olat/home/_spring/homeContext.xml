@@ -115,14 +115,15 @@
 	</bean>
 	
 	<!--  the users assessments ("Leistungsnachweise") -->
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+	<bean class="org.olat.admin.user.tools.UserToolExtension" init-method="initExtensionPoints">
 		<property name="order" value="107" />
+		<property name="uniqueExtensionID" value="org.olat.home.HomeMainController:org.olat.course.assessment.EfficiencyStatementsListController:Evidences of achievement:107:effstatements" />
 		<property name="enabled" value="${minimalhome.ext.efficiencystatement}"></property>
 		<property name="navigationKey" value="effstatements" />
 		<property name="iconCssClass" value="o_icon o_icon-fw o_icon_certificate" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.course.assessment.EfficiencyStatementsListController"/>
+				<property name="className" value="org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController"/>
 			</bean>
 		</property>
 		<property name="securityCallbackClassName" value="org.olat.core.extensions.security.UserOnlyExtensionSecurityCallback" />

@@ -61,6 +61,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
+import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 
 
 /**
@@ -205,11 +206,11 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 				String actionid = te.getActionId();
 				if (actionid.equals(CMD_LAUNCH)) {
 					int rowid = te.getRowId();
-					final UserEfficiencyStatementLight efficiencyStatement = efficiencyStatementsListModel.getEfficiencyStatementAt(rowid);
+					final UserEfficiencyStatementLight statement = efficiencyStatementsListModel.getEfficiencyStatementAt(rowid);
 					// will not be disposed on course run dispose, popus up as new browserwindow
 					ControllerCreator ctrlCreator = new ControllerCreator() {
 						public Controller createController(UserRequest lureq, WindowControl lwControl) {
-							EfficiencyStatementController efficiencyCtrl = new EfficiencyStatementController(lwControl, lureq, efficiencyStatement.getCourseRepoKey());
+							CertificateAndEfficiencyStatementController efficiencyCtrl = new CertificateAndEfficiencyStatementController(lwControl, lureq, statement.getArchivedResourceKey());
 							return new LayoutMain3ColsController(lureq, getWindowControl(), efficiencyCtrl);
 						}					
 					};

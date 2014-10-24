@@ -1059,6 +1059,30 @@ create table o_as_user_course_infos (
    primary key (id)
 );
 
+create table o_cer_template (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   c_name varchar(256) not null,
+   c_path varchar(1024) not null,
+   c_public boolean not null,
+   primary key (id)
+);
+
+create table o_cer_certificate (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   c_uuid varchar(36) not null,
+   c_name varchar(256) not null,
+   c_path varchar(1024) not null,
+   c_last boolean not null default 1,
+   c_archived_resource_id bigint not null,
+   fk_olatresource bigint,
+   fk_identity bigint not null,
+   primary key (id)
+);
+
 -- instant messaging
 create table if not exists o_im_message (
    id bigint not null,
@@ -1702,7 +1726,8 @@ alter table o_ex_task_modifier ENGINE = InnoDB;
 alter table o_checklist ENGINE = InnoDB;
 alter table o_cl_checkbox ENGINE = InnoDB;
 alter table o_cl_check ENGINE = InnoDB;
-
+alter table o_cer_template ENGINE = InnoDB;
+alter table o_cer_certificate ENGINE = InnoDB;
 
 -- rating
 alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);
@@ -2016,6 +2041,12 @@ alter table o_qp_item_type add unique (q_type(200));
 alter table o_lti_outcome add constraint idx_lti_outcome_ident_id foreign key (fk_identity_id) references o_bs_identity(id);
 alter table o_lti_outcome add constraint idx_lti_outcome_rsrc_id foreign key (fk_resource_id) references o_olatresource(resource_id);
 
+-- certificate
+alter table o_cer_certificate add constraint cer_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+alter table o_cer_certificate add constraint cer_to_resource_idx foreign key (fk_olatresource) references o_olatresource (resource_id);
+
+create index cer_archived_resource_idx on o_cer_certificate (c_archived_resource_id);
+create index cer_uuid_idx on o_cer_certificate (c_uuid);
 
 
 insert into hibernate_unique_key values ( 0 );

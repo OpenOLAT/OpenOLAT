@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.ColumnDescriptor;
@@ -39,6 +40,8 @@ import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
+import org.olat.course.certificate.CertificateLight;
+import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.ta.StatusForm;
@@ -69,6 +72,7 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 	private static final String COL_STATUS = "status";
 	private static final String COL_INITIAL_LAUNCH = "initialLaunch";
 	private static final String COL_LAST_SCORE_DATE = "lastScoreDate";
+	private static final String COL_CERTIFICATE = "certificate";
 
 	private List<String> colMapping;	
 	private List<String> userPropertyNameList;
@@ -76,6 +80,8 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private static final String usageIdentifyer = AssessedIdentitiesTableDataModel.class.getCanonicalName();
 	private final Translator translator;
+	
+	private Map<Long, CertificateLight> certificates;
 
 
 	/**
@@ -85,11 +91,13 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 	 * @param locale
 	 * @param isAdministrativeUser
 	 */
-	public AssessedIdentitiesTableDataModel(List<AssessedIdentityWrapper> objects, AssessableCourseNode courseNode, Locale locale, boolean isAdministrativeUser) {
+	public AssessedIdentitiesTableDataModel(List<AssessedIdentityWrapper> objects, Map<Long, CertificateLight> certificates,
+			AssessableCourseNode courseNode, Locale locale, boolean isAdministrativeUser) {
 		super(objects);
 		this.courseNode = courseNode;		
 		this.setLocale(locale);
 		this.translator = Util.createPackageTranslator(this.getClass(), locale);
+		this.certificates = certificates;
 		
 		this.isAdministrativeUser = isAdministrativeUser;
 		userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
@@ -118,7 +126,6 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 			}
 			if (courseNode.hasScoreConfigured()) {
 				colMapping.add(colCount++, COL_SCORE);
-				//fxdiff VCRP-4: assessment overview with max score
 				colMapping.add(colCount++, COL_MINSCORE);
 				colMapping.add(colCount++, COL_MAXSCORE);
 			}
@@ -128,9 +135,15 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 			if (courseNode.hasPassedConfigured()) {
 				colMapping.add(colCount++, COL_PASSED);			
 			}
-			colMapping.add(colCount++, COL_INITIAL_LAUNCH);		
-			colMapping.add(colCount++, COL_LAST_SCORE_DATE);		
+			colMapping.add(colCount++, COL_INITIAL_LAUNCH);
+			colMapping.add(colCount++, COL_LAST_SCORE_DATE);
 		}
+
+		colMapping.add(colCount++, COL_CERTIFICATE);
+	}
+	
+	public void setCertificates(Map<Long, CertificateLight> certificates) {
+		this.certificates = certificates;
 	}
 
 	/**
@@ -152,28 +165,29 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 		// lookup the column name first and 
 		// deliver value based on the column name
 		String colName = colMapping.get(col);
-		if (colName.equals(COL_NAME)) return identity.getName();
-		else if (userPropertyNameList.contains(colName)) return identity.getUser().getProperty(colName, getLocale());		
-		else if (colName.equals(COL_DETAILS)) return wrappedIdentity.getDetailsListView();
-		else if (colName.equals(COL_ATTEMPTS)) return wrappedIdentity.getNodeAttempts();
-  	else if (colName.equals(COL_SCORE)) {
+		if (colName.equals(COL_NAME)) {
+			return identity.getName();
+		} else if (userPropertyNameList.contains(colName)) {
+			return identity.getUser().getProperty(colName, getLocale());
+		} else if (colName.equals(COL_DETAILS)) {
+			return wrappedIdentity.getDetailsListView();
+		} else if (colName.equals(COL_ATTEMPTS)) {
+			return wrappedIdentity.getNodeAttempts();
+		} else if (colName.equals(COL_SCORE)) {
 			ScoreEvaluation scoreEval = wrappedIdentity.getUserCourseEnvironment().getScoreAccounting().evalCourseNode(courseNode);
 			if (scoreEval == null) scoreEval = new ScoreEvaluation(null, null);
-		//fxdiff VCRP-4: assessment overview with max score
 			return scoreEval.getScore();
-  	} else if (colName.equals(COL_MINSCORE)) {
-  	//fxdiff VCRP-4: assessment overview with max score
+		} else if (colName.equals(COL_MINSCORE)) {
 			if(!(courseNode instanceof STCourseNode)) {
 				return courseNode.getMinScoreConfiguration();
 			}
 			return "";
-  	} else if (colName.equals(COL_MAXSCORE)) {
-  	//fxdiff VCRP-4: assessment overview with max score
+		} else if (colName.equals(COL_MAXSCORE)) {
 			if(!(courseNode instanceof STCourseNode)) {
 				return courseNode.getMaxScoreConfiguration();
 			}
 			return "";
-  	}	else if (colName.equals(COL_STATUS)) {
+		}	else if (colName.equals(COL_STATUS)) {
 			return getStatusFor(courseNode, wrappedIdentity);
 		} else if (colName.equals(COL_PASSED)) {
 			ScoreEvaluation scoreEval = wrappedIdentity.getUserCourseEnvironment().getScoreAccounting().evalCourseNode(courseNode);
@@ -183,7 +197,15 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 			return wrappedIdentity.getInitialLaunchDate();
 		} else if (colName.equals(COL_LAST_SCORE_DATE)) {
 			return wrappedIdentity.getLastModified();
-		} else return "error";
+		} else if(colName.equals(COL_CERTIFICATE)) {
+			CertificateLight certificate = null;
+			if(certificates != null) {
+				certificate = certificates.get(identity.getKey());
+			}
+			return certificate;
+		} else {
+			return "error";
+		}
 	}
 
 	/**
@@ -213,7 +235,7 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 	 * @param actionCommand
 	 * @param isNodeOrGroupFocus
 	 */
-	public void addColumnDescriptors(TableController userListCtr, String actionCommand, boolean isNodeOrGroupFocus) {
+	public void addColumnDescriptors(TableController userListCtr, String actionCommand, boolean isNodeOrGroupFocus, boolean certificate) {
 		String editCmd = null;
 		if (courseNode == null || courseNode.isEditableConfigured()) {
 			editCmd = actionCommand; // only selectable if editable
@@ -226,13 +248,11 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 		
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
-			//fxdiff FXOLAT-108: improve results table of tests
 			boolean visible = UserManager.getInstance().isMandatoryUserProperty(usageIdentifyer , userPropertyHandler);
 			userListCtr.addColumnDescriptor(visible, userPropertyHandler.getColumnDescriptor(colCount++, editCmd, getLocale()));	
 		}		
 		if ( (courseNode != null) && isNodeOrGroupFocus) {			
 			if (courseNode.hasDetails()) {
-			//fxdiff VCRP-4: assessment overview with max score
 				String headerKey = courseNode.getDetailsListViewHeaderKey();
 				userListCtr.addColumnDescriptor((headerKey == null ? false : true), 
 						new DefaultColumnDescriptor(headerKey == null ? "table.header.details" : headerKey, colCount++, null, getLocale()));
@@ -243,7 +263,6 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 			if (courseNode.hasScoreConfigured()) {				
 				userListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.score", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT,
 						new ScoreCellRenderer()));
-			//fxdiff VCRP-4: assessment overview with max score
 				userListCtr.addColumnDescriptor(false, new CustomRenderColumnDescriptor("table.header.min", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT,
 						new ScoreCellRenderer()));
 				userListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.max", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT,
@@ -258,6 +277,12 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 			}
 			userListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.initialLaunchDate", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
 			userListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.lastScoreDate", colCount++, null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT));
+		}
+		
+		if(certificate) {
+			CustomRenderColumnDescriptor statColdesc = new CustomRenderColumnDescriptor("table.header.certificate", colCount++, null, getLocale(),
+					ColumnDescriptor.ALIGNMENT_LEFT, new DownloadCertificateCellRenderer());
+			userListCtr.addColumnDescriptor(statColdesc);
 		}
 	}
 }

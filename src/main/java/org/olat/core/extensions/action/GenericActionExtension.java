@@ -97,7 +97,7 @@ public class GenericActionExtension extends AbstractExtension implements ActionE
 		return node;
 	}
 	
-	
+	@Override
 	public String getUniqueExtensionID(){
 		StringBuilder sb = new StringBuilder();
 		if (extensionPoints != null){

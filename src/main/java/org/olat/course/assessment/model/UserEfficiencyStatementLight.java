@@ -50,6 +50,7 @@ public class UserEfficiencyStatementLight extends PersistentObject implements Us
 
 	private String shortTitle;
 	private Long courseRepoKey;
+	private Long archivedResourceKey;
 	
 	private Date lastModified;
 		
@@ -123,6 +124,14 @@ public class UserEfficiencyStatementLight extends PersistentObject implements Us
 
 	public void setShortTitle(String shortTitle) {
 		this.shortTitle = shortTitle;
+	}
+
+	public Long getArchivedResourceKey() {
+		return archivedResourceKey;
+	}
+
+	public void setArchivedResourceKey(Long archivedResourceKey) {
+		this.archivedResourceKey = archivedResourceKey;
 	}
 
 	public Long getCourseRepoKey() {

@@ -43,10 +43,10 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.EfficiencyStatement;
-import org.olat.course.assessment.EfficiencyStatementController;
 import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.IdentityAssessmentEditController;
 import org.olat.course.assessment.UserEfficiencyStatement;
+import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.repository.RepositoryEntry;
@@ -68,7 +68,7 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 	
 	private boolean hasChanged;
 	private EfficiencyStatementEntry statementEntry;
-	private EfficiencyStatementController statementCtrl;
+	private CertificateAndEfficiencyStatementController statementCtrl;
 	private IdentityAssessmentEditController assessmentCtrl;
 	
 	private final Identity assessedIdentity;
@@ -159,14 +159,14 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 		//
 	}
 	
-	private EfficiencyStatementController createEfficiencyStatementController(UserRequest ureq) {
+	private CertificateAndEfficiencyStatementController createEfficiencyStatementController(UserRequest ureq) {
 		RepositoryEntry entry = statementEntry.getCourse();
 		UserEfficiencyStatement statement = statementEntry.getUserEfficencyStatement();
 		EfficiencyStatement efficiencyStatement = null;
 		if(statement != null) {
-			efficiencyStatement = EfficiencyStatementManager.getInstance().getUserEfficiencyStatement(statement.getCourseRepoKey(), assessedIdentity);
+			efficiencyStatement = EfficiencyStatementManager.getInstance().getUserEfficiencyStatementByCourseRepoKey(statement.getCourseRepoKey(), assessedIdentity);
 		}
-		return new EfficiencyStatementController(getWindowControl(), ureq, assessedIdentity, group, entry, efficiencyStatement, true);
+		return new CertificateAndEfficiencyStatementController(getWindowControl(), ureq, assessedIdentity, null, entry.getOlatResource().getKey(), entry, efficiencyStatement, true);
 	}
 	
 	private void efficiencyStatementChanged() {
