@@ -27,11 +27,11 @@ package org.olat.basesecurity;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpSession;
@@ -210,7 +210,7 @@ public class AuthHelper {
 	 * @return true if login was successful, false otherwise
 	 */
 	public static int doAnonymousLogin(UserRequest ureq, Locale locale) {
-		Set<String> supportedLanguages = I18nModule.getEnabledLanguageKeys();
+		Collection<String> supportedLanguages = I18nModule.getEnabledLanguageKeys();
 		if ( locale == null || ! supportedLanguages.contains(locale.toString()) ) {
 			locale = I18nModule.getDefaultLocale();
 		} 
@@ -257,7 +257,7 @@ public class AuthHelper {
 			}
 		}
 		
-		Set<String> supportedLanguages = I18nModule.getEnabledLanguageKeys();
+		Collection<String> supportedLanguages = I18nModule.getEnabledLanguageKeys();
 		if ( locale == null || ! supportedLanguages.contains(locale.toString()) ) {
 			locale = I18nModule.getDefaultLocale();
 		} 

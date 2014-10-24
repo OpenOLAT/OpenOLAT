@@ -513,9 +513,9 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	 *         de_CH, en, ...). those are the languages which can be chosen by the
 	 *         user
 	 */
-	public static Set<String> getEnabledLanguageKeys() {
+	public static Collection<String> getEnabledLanguageKeys() {
 		synchronized (enabledLanguagesKeys) {
-			return enabledLanguagesKeys;
+			return new HashSet<String>(enabledLanguagesKeys);
 		}
 	}
 

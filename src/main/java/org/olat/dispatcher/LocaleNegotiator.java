@@ -19,10 +19,10 @@
  */
 package org.olat.dispatcher;
 
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.util.i18n.I18nModule;
@@ -99,7 +99,7 @@ public class LocaleNegotiator {
  */
 	public static Locale getNegotiatedLocale(Locale loc) {
 		Map<String,Locale> allLocales = I18nModule.getAllLocales();
-		Set<String> enabledLanguageKeys = I18nModule.getEnabledLanguageKeys();
+		Collection<String> enabledLanguageKeys = I18nModule.getEnabledLanguageKeys();
 		
 		String lang = loc.getLanguage();
 		//search a direct match first de_CH_bs...

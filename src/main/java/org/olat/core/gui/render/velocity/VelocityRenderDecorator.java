@@ -29,12 +29,12 @@ package org.olat.core.gui.render.velocity;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
@@ -769,7 +769,7 @@ public class VelocityRenderDecorator implements Closeable {
 	
 	public Languages getLanguages() {
 		I18nManager i18nMgr = I18nManager.getInstance();
-		Set<String> enabledKeysSet = I18nModule.getEnabledLanguageKeys();
+		Collection<String> enabledKeysSet = I18nModule.getEnabledLanguageKeys();
 		Map<String, String> langNames = new HashMap<String, String>();
 		Map<String, String> langTranslators = new HashMap<String, String>();
 		String[] enabledKeys = ArrayHelper.toArray(enabledKeysSet);

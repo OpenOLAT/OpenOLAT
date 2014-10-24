@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.olat.admin.sysinfo.InfoMessageManager;
@@ -267,7 +266,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		aboutVC.contextPut("version", Settings.getFullVersionInfo());
 		// Add translator and languages info
 		I18nManager i18nMgr = I18nManager.getInstance();
-		Set<String> enabledKeysSet = I18nModule.getEnabledLanguageKeys();
+		Collection<String> enabledKeysSet = I18nModule.getEnabledLanguageKeys();
 		Map<String, String> langNames = new HashMap<String, String>();
 		Map<String, String> langTranslators = new HashMap<String, String>();
 		String[] enabledKeys = ArrayHelper.toArray(enabledKeysSet);

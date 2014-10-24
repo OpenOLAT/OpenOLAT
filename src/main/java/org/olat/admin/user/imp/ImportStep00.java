@@ -25,6 +25,7 @@
 package org.olat.admin.user.imp;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -173,7 +174,7 @@ class ImportStep00 extends BasicStep {
 			// org.olat.admin.user.imp.UserImportController
 			// are required and have to be submitted in the right order
 			// - pwd can be enabled / disabled by configuration
-			Set<String> languages = I18nModule.getEnabledLanguageKeys();
+			Collection<String> languages = I18nModule.getEnabledLanguageKeys();
 			String[] lines = inp.split("\r?\n");
 			for (int i = 0; i < lines.length; i++) {
 				if(i % 25 == 0) {
@@ -396,7 +397,6 @@ class ImportStep00 extends BasicStep {
 
 			// get mandatory user-properties and set as text
 			setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));
-			UserManager um = UserManager.getInstance();
 			UserPropertyHandler userPropertyHandler;
 			String mandatoryProperties = "";
 			for (int i = 0; i < userPropertyHandlers.size(); i++) {

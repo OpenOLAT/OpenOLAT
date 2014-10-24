@@ -21,11 +21,11 @@
 package org.olat.core.util.i18n.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -99,7 +99,7 @@ public class SingleKeyTranslatorController extends FormBasicController {
 
 		Map<Locale, Locale> allOverlays = I18nModule.getOverlayLocales();
 
-		Set<String> enabledKeys = I18nModule.getEnabledLanguageKeys();
+		Collection<String> enabledKeys = I18nModule.getEnabledLanguageKeys();
 		bundles = new ArrayList<I18nRowBundle>();
 		for (String key : enabledKeys) {
 			Locale loc = i18nMng.getLocaleOrNull(key);

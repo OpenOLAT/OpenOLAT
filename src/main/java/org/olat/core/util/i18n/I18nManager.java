@@ -1233,7 +1233,7 @@ public class I18nManager extends BasicManager {
 	 * @return
 	 */
 	public Map<String, String> getEnabledLanguagesTranslated() {
-		Set<String> enabledLangs = I18nModule.getEnabledLanguageKeys();
+		Collection<String> enabledLangs = I18nModule.getEnabledLanguageKeys();
 		Map<String, String> translatedLangs = new HashMap<String, String>(11);
 		for (String langKey : enabledLangs) {
 			String translated = cachedLangTranslated.get(langKey);
@@ -1965,7 +1965,7 @@ public class I18nManager extends BasicManager {
 			newProperties.store(fileStream, null);
 			fileStream.flush();
 			// Now set new language as enabled to allow user to translate the language. 
-			Set<String> enabledLangKeys = I18nModule.getEnabledLanguageKeys();
+			Collection<String> enabledLangKeys = I18nModule.getEnabledLanguageKeys();
 			enabledLangKeys.add(localeKey);
 			// Reinitialize languages with new language
 			I18nModule.reInitializeAndFlushCache();

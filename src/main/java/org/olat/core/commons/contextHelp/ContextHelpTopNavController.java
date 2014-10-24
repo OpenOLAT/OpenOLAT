@@ -19,8 +19,8 @@
  */
 package org.olat.core.commons.contextHelp;
 
+import java.util.Collection;
 import java.util.Locale;
-import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.LanguageChangedEvent;
@@ -101,7 +101,7 @@ public class ContextHelpTopNavController extends FormBasicController {
 		
 		// Add target languages without overlays
 		I18nManager i18nMgr = I18nManager.getInstance();
-		Set<String> availableLangKeys = I18nModule.getEnabledLanguageKeys();
+		Collection<String> availableLangKeys = I18nModule.getEnabledLanguageKeys();
 		String[] targetlangKeys = ArrayHelper.toArray(availableLangKeys);
 		String[] targetLangValues = new String[targetlangKeys.length];
 		for (int i = 0; i < targetlangKeys.length; i++) {

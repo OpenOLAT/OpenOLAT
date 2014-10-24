@@ -25,6 +25,7 @@
 package org.olat.search.service.indexer;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Locale;
 import java.util.Set;
 
@@ -93,7 +94,7 @@ public class ContextHelpIndexer extends AbstractHierarchicalIndexer {
   		}
 		
 		Set<String> helpPageIdentifyers = ContextHelpModule.getAllContextHelpPages();		
-		Set<String> languages = I18nModule.getEnabledLanguageKeys();
+		Collection<String> languages = I18nModule.getEnabledLanguageKeys();
 		GlobalSettings globalSettings = new HelpSettings();
 		
 		if (log.isDebug()) log.debug("ContextHelpIndexer helpPageIdentifyers.size::" + helpPageIdentifyers.size() + " and languages.size::" + languages.size());
