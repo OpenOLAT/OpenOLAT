@@ -34,7 +34,7 @@ public class UserTool {
 	private final String label;
 	
 	public UserTool(GenericActionExtension gAe, Locale locale) {
-		key = gAe.getUniqueExtensionID();
+		key = UserToolsModule.stripToolKey(gAe.getUniqueExtensionID());
 		label = gAe.getActionText(locale);
 	}
 

@@ -59,7 +59,7 @@ class UserBulkChangeStep01a extends BasicStep {
 	 */
 	@Override
 	public StepFormController getStepController(final UserRequest ureq, final WindowControl windowControl, final StepsRunContext stepsRunContext, final Form form) {
-		StepFormController stepI = new GroupSearchController(ureq, windowControl, form, stepsRunContext);
+		StepFormController stepI = new GroupSearchController(ureq, windowControl, form, stepsRunContext, false);
 		return stepI;
 	}
 

@@ -90,6 +90,8 @@ public class GroupSearchController extends StepFormBasicController {
 	private String lastSearchValue;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	
+	private boolean finishByFinish;
 
 	// constructor to be used like a normal FormBasicController
 	public GroupSearchController(UserRequest ureq, WindowControl wControl) {
@@ -100,9 +102,10 @@ public class GroupSearchController extends StepFormBasicController {
 	}	
 	
 	// constructor for use in steps-wizzard
-	public GroupSearchController(UserRequest ureq, WindowControl wControl, Form form, StepsRunContext stepsRunContext) {
+	public GroupSearchController(UserRequest ureq, WindowControl wControl, Form form, StepsRunContext stepsRunContext, boolean finishByFinish) {
 		super(ureq, wControl, form, stepsRunContext, LAYOUT_VERTICAL, "resulttable");
 		Translator pT = Util.createPackageTranslator(BusinessGroupFormController.class, ureq.getLocale(), getTranslator());
+		this.finishByFinish = finishByFinish;
 		flc.setTranslator(pT);
 		initForm(ureq);
 	}
@@ -165,7 +168,10 @@ public class GroupSearchController extends StepFormBasicController {
 
 	@Override
 	protected void formFinish(UserRequest ureq) {
-		//do nothing
+		if(finishByFinish) {
+			doSave(ureq);
+			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+		}
 	}
 
 	@Override

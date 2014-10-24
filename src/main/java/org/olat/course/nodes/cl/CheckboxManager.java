@@ -83,6 +83,17 @@ public interface CheckboxManager {
 	
 	public float calculateScore(Identity identity, OLATResourceable ores, String resSubPath);
 	
+	/**
+	 * Return the assessment data of the participants of the repository entry and or the business groups
+	 * specified. If the repository entry and the business groups are omitted, all the assessment data
+	 * are returned.
+	 * 
+	 * @param ores
+	 * @param resSubPath
+	 * @param re
+	 * @param groups
+	 * @return
+	 */
 	public List<AssessmentData> getAssessmentDatas(OLATResourceable ores, String resSubPath, RepositoryEntry re, List<BusinessGroup> groups);
 	
 	public VFSContainer getFileContainer(CourseEnvironment courseEnv, CheckListCourseNode cNode, Checkbox checkbox);
