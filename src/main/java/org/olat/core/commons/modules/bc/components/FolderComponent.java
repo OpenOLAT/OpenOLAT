@@ -52,7 +52,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.version.Versionable;
@@ -349,7 +348,7 @@ public class FolderComponent extends AbstractComponent {
 	public void updateChildren() {
 		setDirty(true);
 		//check if the container is still up-to-date, if not -> return to root
-		if(!VFSManager.exists(currentContainer)) {
+		if(!currentContainer.exists()) {
 			currentContainer = rootContainer;
 			currentContainerPath = "/";
 		}

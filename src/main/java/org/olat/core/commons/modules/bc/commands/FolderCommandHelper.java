@@ -29,7 +29,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
 
 /**
  * 
@@ -112,7 +111,7 @@ public class FolderCommandHelper {
 	 * @return
 	 */
 	public static final int sanityCheck2(WindowControl wControl, FolderComponent fc, VFSItem currentItem) {
-		if(!VFSManager.exists(currentItem)) {
+		if(currentItem == null || !currentItem.exists()) {
 			wControl.setError(fc.getTranslator().translate("FileDoesNotExist"));
 			return FolderCommandStatus.STATUS_FAILED;
 		}

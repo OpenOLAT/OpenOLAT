@@ -21,12 +21,16 @@ package org.olat.course;
 
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.commons.services.webdav.servlets.RequestUtil;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.NamedContainerImpl;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
+import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -42,7 +46,7 @@ public class MergedCourseContainer extends MergeSource {
 	
 	private static final OLog log = Tracing.createLoggerFor(MergedCourseContainer.class);
 	
-	private Long courseId;
+	private final Long courseId;
 	
 	public MergedCourseContainer(Long courseId, String name) {
 		super(null, name);
@@ -89,21 +93,46 @@ public class MergedCourseContainer extends MergeSource {
 	 * @param course
 	 * @param nodesContainer
 	 * @param courseNode
+	 * @return container for the current course node
 	 */
 	private void addFolderBuildingBlocks(PersistingCourseImpl course, MergeSource nodesContainer, CourseNode courseNode) {
 		for (int i = 0; i < courseNode.getChildCount(); i++) {
 			CourseNode child = (CourseNode) courseNode.getChildAt(i);
+			String folderName = RequestUtil.normalizeFilename(child.getShortTitle());
+			MergeSource courseNodeContainer;
 			if (child instanceof BCCourseNode) {
-				BCCourseNode bcNode = (BCCourseNode) child;
+				final BCCourseNode bcNode = (BCCourseNode) child;
 				// add folder not to merge source. Use name and node id to have unique name
 				String path = BCCourseNode.getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), bcNode);
 				OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(path, null);
-				String folderName = bcNode.getShortTitle() + " (" + bcNode.getIdent() + ")";
-				OlatNamedContainerImpl BCFolder = new OlatNamedContainerImpl(folderName, rootFolder);
-				nodesContainer.addContainer(BCFolder);				
+
+				// add node ident if multiple files have same name
+				if (nodesContainer.getItems(new VFSItemFilter() {
+					@Override
+					public boolean accept(VFSItem vfsItem) {
+						return (bcNode.getShortTitle().equals(RequestUtil.normalizeFilename(bcNode.getShortTitle())));
+					}
+				}).size() > 0) {
+					folderName = folderName + " (" + bcNode.getIdent() + ")";
+				}
+				
+				// Create a container for this node content and wrap it with a merge source which is attached to tree
+				VFSContainer nodeContentContainer = new OlatNamedContainerImpl(folderName, rootFolder);
+				courseNodeContainer = new MergeSource(nodesContainer, folderName);
+				courseNodeContainer.addContainersChildren(nodeContentContainer, true);
+				nodesContainer.addContainer(courseNodeContainer);	
+				// Do recursion for all children
+				addFolderBuildingBlocks(course, courseNodeContainer, child);
+			} else {
+				// For non-folder course nodes, add merge source (no files to show) ...
+				courseNodeContainer = new MergeSource(null, folderName);
+				// , then do recursion for all children ...
+				addFolderBuildingBlocks(course, courseNodeContainer, child);
+				// ... but only add this container if it contains any children with at least one BC course node
+				if (courseNodeContainer.getItems().size() > 0) {
+					nodesContainer.addContainer(courseNodeContainer);
+				}
 			}
-			// recursion for all childrenØ
-			addFolderBuildingBlocks(course, nodesContainer, child);
 		}
 	}
 

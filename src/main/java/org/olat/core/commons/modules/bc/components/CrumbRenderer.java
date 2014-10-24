@@ -67,6 +67,9 @@ public class CrumbRenderer {
 		StringTokenizer st = new StringTokenizer(path, "/", false);
 		while (st.hasMoreElements()) {
 			String token = st.nextToken();
+			if(pathLink.length() > 0) {
+				pathLink.append("/");
+			}
 			pathLink.append(ubu.encodeUrl(token));
 			if (st.hasMoreElements()) {
 				sb.append("<li><a href='").append(pathLink).append("'");
