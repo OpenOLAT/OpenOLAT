@@ -27,8 +27,8 @@
 package org.olat.core.gui.components.image;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 
 import javax.imageio.ImageIO;
@@ -141,7 +141,7 @@ public class ImageComponent extends Component {
 	 * @param maxHeight
 	 */
 	public void setMaxWithAndHeightToFitWithin(int maxWidth, int maxHeight) {
-		if (mediaResource == null || mediaResource.getInputStream() == null) {
+		if (mediaResource == null) {
 			throw new AssertException("Set media resource to a valid value befor calling scaleToFit::" + mediaResource);
 		}
 
@@ -196,24 +196,28 @@ public class ImageComponent extends Component {
 	}
 	
 	private Size getImageSizeFallback() {
-		BufferedInputStream fileStrean = null;
+		InputStream fileStream = null;
 		BufferedImage imageSrc = null;
 		try {
-			fileStrean = new BufferedInputStream(mediaResource.getInputStream());
-			imageSrc = ImageIO.read(fileStrean);
-			if (imageSrc == null) {
-				// happens with faulty Java implementation, e.g. on MacOSX
+			fileStream = mediaResource.getInputStream();
+			if(fileStream != null) {
+				imageSrc = ImageIO.read(fileStream);
+				if (imageSrc == null) {
+					// happens with faulty Java implementation, e.g. on MacOSX
+					return null;
+				}
+				double realWidth = imageSrc.getWidth();
+				double realHeight = imageSrc.getHeight();
+				return new Size((int)realWidth, (int)realHeight, false);
+			} else {
 				return null;
 			}
-			double realWidth = imageSrc.getWidth();
-			double realHeight = imageSrc.getHeight();
-			return new Size((int)realWidth, (int)realHeight, false);
 		} catch (IOException e) {
 			// log error, don't do anything else
 			log.error("Problem while setting image size to fit for resource::" + mediaResource, e);
 			return null;
 		} finally {
-			IOUtils.closeQuietly(fileStrean);
+			IOUtils.closeQuietly(fileStream);
 			if (imageSrc != null) {
 				imageSrc.flush();
 			}
@@ -224,18 +228,25 @@ public class ImageComponent extends Component {
 		Size result = null;
 		Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
 		if (iter.hasNext()) {
+			InputStream mediaStream = null;
+			ImageInputStream stream = null;
 			ImageReader reader = iter.next();
 			try {
-				ImageInputStream stream = new MemoryCacheImageInputStream(mediaResource.getInputStream());
-				reader.setInput(stream);
-				int readerMinIndex = reader.getMinIndex();
-				int width = reader.getWidth(readerMinIndex);
-				int height = reader.getHeight(readerMinIndex);
-				result = new Size(width, height, false);
+				mediaStream = mediaResource.getInputStream();
+				if(mediaStream != null) {
+					stream = new MemoryCacheImageInputStream(mediaStream);
+					reader.setInput(stream);
+					int readerMinIndex = reader.getMinIndex();
+					int width = reader.getWidth(readerMinIndex);
+					int height = reader.getHeight(readerMinIndex);
+					result = new Size(width, height, false);
+				}
 			} catch (IOException e) {
 				log.error(e.getMessage());
 			} finally {
 				reader.dispose();
+				IOUtils.closeQuietly(mediaStream);
+				IOUtils.closeQuietly(stream);
 			}
 		} else {
 			log.error("No reader found for given format: " + suffix);
