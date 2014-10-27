@@ -500,7 +500,11 @@ public class ProfileFormController extends FormBasicController {
 		cal.add(Calendar.DAY_OF_WEEK, ChangeEMailController.TIME_OUT);
 		String time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ureq.getLocale()).format(cal.getTime());
 		// create body and subject for email
-		body = translate("email.change.body", new String[] { serverpath + "/dmz/emchange/index.html?key=" + tk.getRegistrationKey() + "&lang=" + ureq.getLocale().getLanguage(), time, currentEmail, changedEmail })
+		String link = serverpath + "/dmz/emchange/index.html?key=" + tk.getRegistrationKey() + "&lang=" + ureq.getLocale().getLanguage();
+		if(Settings.isDebuging()) {
+			logInfo(link, null);
+		}
+		body = translate("email.change.body", new String[] { link, time, currentEmail, changedEmail })
 				+ SEPARATOR + translate("email.change.wherefrom", new String[] { serverpath, today, ip });
 		subject = translate("email.change.subject");
 		// send email

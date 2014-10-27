@@ -79,11 +79,11 @@ public class ChangeEMailExecuteController extends ChangeEMailController implemen
 				if (isLinkClicked()) {
 					changeEMail(getWindowControl());
 				} else {
-	    		Boolean alreadySeen = ((Boolean)ureq.getUserSession().getEntry(PRESENTED_EMAIL_CHANGE_REMINDER));
-	    		if (alreadySeen == null) {
-	    			getWindowControl().setWarning(getPackageTranslator().translate("email.change.reminder"));
-	    			ureq.getUserSession().putEntry(PRESENTED_EMAIL_CHANGE_REMINDER, Boolean.TRUE);
-	    		}
+		    		Boolean alreadySeen = ((Boolean)ureq.getUserSession().getEntry(PRESENTED_EMAIL_CHANGE_REMINDER));
+		    		if (alreadySeen == null) {
+		    			getWindowControl().setWarning(getPackageTranslator().translate("email.change.reminder"));
+		    			ureq.getUserSession().putEntry(PRESENTED_EMAIL_CHANGE_REMINDER, Boolean.TRUE);
+		    		}
 				}
 			}
 		} else {
