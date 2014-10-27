@@ -300,7 +300,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		List<BusinessGroup> coachedGroups = courseAdmin ?
 				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups()
 				: env.getCoachedGroups();
-		List<AssessmentData> dataList = checkboxManager.getAssessmentDatas(courseOres, courseNode.getIdent(), courseTutor ? re : null, coachedGroups);
+		List<AssessmentData> dataList = checkboxManager.getAssessmentDatas(courseOres, courseNode.getIdent(), courseTutor || courseAdmin ? re : null, coachedGroups);
 		List<CheckListAssessmentRow> boxList = getAssessmentDataViews(dataList, checkboxColl);
 		Map<Long,CheckListAssessmentRow> identityToView = new HashMap<>();
 		for(CheckListAssessmentRow box:boxList) {
