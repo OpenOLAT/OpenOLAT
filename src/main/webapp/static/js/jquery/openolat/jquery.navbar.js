@@ -36,7 +36,8 @@
 			staticOffCanvas : false,
 			staticDirty : false,
 			sitesW : 0,
-			sitesOffCanvas : false,
+			sitesCollapsed : false,
+			sitesExtended: true,
 			sitesDirty : false,
 			tabsW : 0,
 			tabsOffCanvas : false,
@@ -102,6 +103,8 @@
 	Navbar.prototype.onDOMreplacementCallback = function() {
 		if (!this.state.busy && (this.state.staticDirty || this.state.sitesDirty || this.state.tabsDirty || this.state.personalToolsDirty)) {			
 			this.state.busy = true;
+			//offcanvas sites need to be cleared, otherwise they are duplicated
+			$('.o_sites_offcanvas').empty();
 			this.calculateWidth();
 			this.optimize();		
 			this.state.sitesDirty = false;
@@ -119,19 +122,19 @@
 	    this.state.toggleW = $('#o_navbar_right-toggle').outerWidth(true);
 	    this.state.brandW = $('.o_navbar-brand').outerWidth(true);
 	    // the permanent tools. only the personal tools are put to offsite
-	    this.state.permanentToolW = $('#o_navbar_tools_permanent').outerWidth(true);
+	    //don't include margin, because right margin on this element is negative
+	    this.state.permanentToolW = $('#o_navbar_tools_permanent').outerWidth(false);
 	    // the real content: sites, tabs and tools
 	    if (!this.state.staticOffCanvas) {
 	    	this.state.staticW = $('.o_navbar_static').outerWidth(true);
 	    }
-	    if (!this.state.sitesOffCanvas) {
-	    	this.state.sitesW = $('.o_navbar_sites').outerWidth(true);
-	    }
+	    this.state.sitesW = $('.o_navbar_sites').outerWidth(true);
 	    if (!this.state.tabsOffCanvas) {
 	    	this.state.tabsW = $('.o_navbar_tabs').outerWidth(true);	    	
 	    }
 	    if (!this.state.personalToolsOffCanvas) {
-	    	this.state.personalToolsW = $('#o_navbar_tools_personal').outerWidth(true) + 15;	    	
+		    //don't include margin, because left and right margins on this element are negative
+	    	this.state.personalToolsW = $('#o_navbar_tools_personal').outerWidth(false);	    	
 	    }
 	    
 //	    console.log('calculateWidth w:' + this.state.navbarW + ' s:'+this.state.sitesW + ' d:'+this.state.tabsW + ' t:'+this.state.personalToolsW + ' o:'+this.getOverflow() );
@@ -140,19 +143,17 @@
 	Navbar.prototype.getOverflow = function(e) {
 		// Calculate if more space is used in navbar than available. Get total width and substract feature by feature
 		var o = this.state.navbarW;
-		if (!this.state.sitaticOffCanvas) {
+		if (!this.state.staticOffCanvas) {
 			o -= this.state.staticW;
 		}
-		if (!this.state.sitesOffCanvas) {
-			o -= this.state.sitesW;
-		}
+		o -= this.state.sitesW;
 		if (!this.state.tabsOffCanvas) {
 			o -= this.state.tabsW;
 		}
 		if (!this.state.personalToolsOffCanvas) {
 			o -= this.state.personalToolsW;
 		}
-		if (this.state.personalToolsOffCanvas || this.state.tabsOffCanvas || this.state.sitesOffCanvas || this.state.staticOffCanvas) {
+		if (this.state.personalToolsOffCanvas || this.state.tabsOffCanvas || this.state.staticOffCanvas) {
 			// subtract the space used for toggle only when toggle is actually used
 			o -= this.state.toggleW;
 		}
@@ -166,93 +167,149 @@
 		var o = this.getOverflow();
 //		console.log('optimize o:' + o);
 		// Move from toolbar to offcanvas
-		while (o > 0 && (!this.state.personalToolsOffCanvas || !this.state.tabsOffCanvas || !this.state.sitesOffCanvas || !this.state.staticOffCanvas)) {
+		//outerWidth can be off by 1px, so we need a small buffer on o
+		while (o + 20 > 0 && (!this.state.personalToolsOffCanvas || !this.state.tabsOffCanvas || !this.state.sitesCollapsed || !this.state.staticOffCanvas)) {
 			if (!this.state.personalToolsOffCanvas) {	
 //				console.log('collapse tools ' + o);
 				$('#o_navbar_tools_personal').prependTo('#o_offcanvas_right_container'); 
 				this.state.personalToolsOffCanvas = true;
-				o = this.getOverflow();	
-				continue;
 			}			
-			if (!this.state.tabsOffCanvas) {
+			else if (!this.state.tabsOffCanvas) {
 //				console.log('collapse tabs ' + o);
 				$('.o_navbar_tabs').prependTo('#o_offcanvas_right_container'); 
 				this.state.tabsOffCanvas = true;
-				o = this.getOverflow();				
-				continue;
 			}
-			if (!this.state.sitesOffCanvas) {
+			else if (!this.state.sitesCollapsed) {
 //				console.log('collapse sites ' + o);
-				$('.o_navbar_sites').prependTo('#o_offcanvas_right_container'); 
-				this.state.sitesOffCanvas = true;
-				o = this.getOverflow();				
-				continue;
+				this.collapseSites();
 			}
-			if (!this.state.siaticOffCanvas) {
+			else if (!this.state.staticOffCanvas) {
 //				console.log('collapse static ' + o);
 				$('.o_navbar_static').prependTo('#o_offcanvas_right_container'); 
 				this.state.staticOffCanvas = true;
-				o = this.getOverflow();				
-				continue;
 			}
-			
-			break;
+
+			this.calculateWidth();
+			o = this.getOverflow();
 		}
 		// Move from offcanvas to toolbar
-		while (o < 0 && (this.state.personalToolsOffCanvas || this.state.tabsOffCanvas || this.state.sitesOffCanvas || this.state.staticOffCanvas)) {
+		while (o < 0 && (this.state.personalToolsOffCanvas || this.state.tabsOffCanvas || !this.state.sitesExtended || this.state.staticOffCanvas)) {
 			if (this.state.staticOffCanvas) {
-				if (-o >= this.state.staticW) {
-//					console.log('uncollapse static ' + o);
-					$('.o_navbar_static').appendTo('#o_navbar_container .o_navbar-collapse'); 
-					this.state.staticOffCanvas = false;
-					o = this.getOverflow();				
-					continue;
-				} else {
+				if (-o < this.state.staticW) {
 					break;
 				}
+				
+//				console.log('uncollapse static ' + o);
+				$('.o_navbar_static').appendTo('#o_navbar_container .o_navbar-collapse'); 
+				this.state.staticOffCanvas = false;
 			}
-			if (this.state.sitesOffCanvas) {
-				if (-o >= this.state.sitesW) {
-//					console.log('uncollapse sites ' + o);
-					$('.o_navbar_sites').appendTo('#o_navbar_container .o_navbar-collapse'); 
-					this.state.sitesOffCanvas = false;
-					o = this.getOverflow();				
-					continue;
-				} else {
+			else if (!this.state.sitesExtended) {
+				if(triedToExtend){
 					break;
 				}
+			
+//				console.log('extend sites ' + o);
+				this.extendSites();
+				var triedToExtend = true;
 			}
-			if (this.state.tabsOffCanvas) {
-				if (-o >= this.state.tabsW) {
-//					console.log('uncollapse tabs ' + o);
-					$('.o_navbar_tabs').appendTo('#o_navbar_container .o_navbar-collapse'); 
-					this.state.tabsOffCanvas = false;
-					o = this.getOverflow();				
-					continue;
-				} else {
+			else if (this.state.tabsOffCanvas) {
+				if (-o < this.state.tabsW) {
 					break;
 				}
+				
+//				console.log('uncollapse tabs ' + o);
+				$('.o_navbar_tabs').appendTo('#o_navbar_container .o_navbar-collapse'); 
+				this.state.tabsOffCanvas = false;
 			}
-			if (this.state.personalToolsOffCanvas) {
-				if (-o >= this.state.personalToolsW) {	
-//					console.log('uncollapse tools ' + o);
-					$('#o_navbar_tools_personal').prependTo('#o_navbar_container .o_navbar-collapse .o_navbar_tools'); 
-					this.state.personalToolsOffCanvas = false;
-					o = this.getOverflow();	
-					continue;
-				} else {
+			else if (this.state.personalToolsOffCanvas) {
+				if (-o < this.state.personalToolsW) {
 					break;
 				}
+
+//				console.log('uncollapse tools ' + o);
+				$('#o_navbar_tools_personal').prependTo('#o_navbar_container .o_navbar-collapse .o_navbar_tools'); 
+				this.state.personalToolsOffCanvas = false;
 			}
-			break;
+
+			this.calculateWidth();
+			o = this.getOverflow();
 		}
-		if (this.state.personalToolsOffCanvas || this.state.tabsOffCanvas || this.state.sitesOffCanvas) {
+		
+		if (this.state.personalToolsOffCanvas || this.state.tabsOffCanvas || !this.state.sitesExtended) {
 			this.showToggle();
 		} else {
 			this.hideToggle();
 			this.hideRight();
 		}
 		
+	}
+
+	/*
+	 * Collapse sites into 'more' one by one
+	 */
+	Navbar.prototype.collapseSites = function(e) {
+		var sites = $('.o_navbar_sites');
+		var sitesOffcanvas = $('.o_sites_offcanvas');
+		var more = $('.o_site_more');
+		if(more.length == 0){
+			/* as long as 'more' has no function, don't display it
+			 */
+			more = $('<li class=" o_site_more" style="display:none;"><a href=""><span>More</span></a></li>');
+			more.appendTo(sites);
+			more.bind('click', this.showMoreSites);
+		}
+		
+		if(sitesOffcanvas.length == 0){
+			sitesOffcanvas = $('<ul>', {
+				'class': 'nav o_navbar-nav o_sites_offcanvas'
+			});
+			sitesOffcanvas.prependTo('#o_offcanvas_right_container');
+		}
+
+		var secondLast = sites.find('li:nth-last-child(2)');
+		if(secondLast.length){
+//			console.log('collapsing site '+secondLast.attr('class').match('o_site_[a-z]*'));
+			secondLast.appendTo(sitesOffcanvas);
+		}
+
+		if(sites.children().length == 1){
+			//only 'more' button left
+			this.state.sitesCollapsed = true;
+		}
+		
+		this.state.sitesExtended = false;
+	}
+
+	/*
+	 * Extend sites by taking them out of 'more' one by one
+	 */
+	Navbar.prototype.extendSites = function(e) {
+		var sites = $('.o_navbar_sites');
+		var sitesOffcanvas = $('.o_sites_offcanvas');
+		var more = $('.o_site_more');
+		
+		var site = sitesOffcanvas.find('li:last-child');
+		if(site.length){
+//			console.log('extending site '+site.attr('class').match('o_site_[a-z]*'));
+			site.insertBefore(more);
+			//if site doesn't fit move it back
+			var o = this.getOverflow();
+			if(-o < site.outerWidth(true)){
+//				console.log('site doesn\'t fit');
+				site.appendTo(sitesOffcanvas);
+			}
+		}
+
+		if(sitesOffcanvas.children().length == 0){
+			this.state.sitesExtended = true;
+			sitesOffcanvas.remove();
+			more.remove();
+		}
+		
+		this.state.sitesCollapsed = false;
+	}
+
+	Navbar.prototype.showMoreSites = function(e) {
 		
 	}
 	
