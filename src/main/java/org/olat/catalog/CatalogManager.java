@@ -41,6 +41,7 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
+import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.image.ImageService;
@@ -691,8 +692,11 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	public void deleteImage(CatalogEntryRef entry) {
 		VFSLeaf imgFile =  getImage(entry);
 		if (imgFile != null) {
-			if(imgFile instanceof MetaInfo) {
-				((MetaInfo)imgFile).clearThumbnails();
+			if(imgFile instanceof MetaTagged) {
+				MetaInfo info = ((MetaTagged)imgFile).getMetaInfo();
+				if(info != null) {
+					info.clearThumbnails();
+				}
 			}
 			imgFile.delete();
 		}
@@ -701,8 +705,11 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	public boolean setImage(VFSLeaf newImageFile, CatalogEntryRef re) {
 		VFSLeaf currentImage = getImage(re);
 		if(currentImage != null) {
-			if(currentImage instanceof MetaInfo) {
-				((MetaInfo)currentImage).clearThumbnails();
+			if(currentImage instanceof MetaTagged) {
+				MetaInfo info = ((MetaTagged)currentImage).getMetaInfo();
+				if(info != null) {
+					info.clearThumbnails();
+				}
 			}
 			currentImage.delete();
 		}

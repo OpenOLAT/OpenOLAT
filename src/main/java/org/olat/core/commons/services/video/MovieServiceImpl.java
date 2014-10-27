@@ -43,6 +43,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.ims.cp.ui.VFSCPNamedItem;
 import org.springframework.stereotype.Service;
 
 /**
@@ -70,7 +71,17 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 
 	@Override
 	public Size getSize(VFSLeaf media, String suffix) {
-		File file = ((LocalFileImpl)media).getBasefile();
+		File file = null;
+		if(media instanceof VFSCPNamedItem) {
+			media = ((VFSCPNamedItem)media).getDelegate();
+		}
+		if(media instanceof LocalFileImpl) {
+			file = ((LocalFileImpl)media).getBasefile();
+		}
+		if(file == null) {
+			return null;
+		}
+
 		if(suffix.equals("mp4") || suffix.equals("m4v")) {
 			try(RandomAccessFile accessFile = new RandomAccessFile(file, "r")) {
 				FileChannel ch = accessFile.getChannel();
@@ -96,6 +107,7 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 				log.error("Cannot extract size of: " + media, e);
 			}
 		}
+
 		return null;
 	}
 

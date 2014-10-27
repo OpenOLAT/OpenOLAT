@@ -32,7 +32,6 @@ import org.olat.core.util.vfs.VFSLeaf;
  * Initial Date:  5 mai 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-//fxdiff FXOLAT-125: virtual file system for CP
 public class VFSCPNamedItem extends NamedLeaf {
 	
 	public VFSCPNamedItem(String name, VFSLeaf delegate) {

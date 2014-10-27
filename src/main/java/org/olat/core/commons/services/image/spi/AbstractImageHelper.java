@@ -20,8 +20,8 @@
 package org.olat.core.commons.services.image.spi;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 
 import javax.imageio.ImageIO;
@@ -60,24 +60,28 @@ public abstract class AbstractImageHelper implements ImageHelperSPI {
 	}
 	
 	private Size getImageSizeFallback(VFSLeaf media) {
-		BufferedInputStream fileStrean = null;
+		InputStream fileStream = null;
 		BufferedImage imageSrc = null;
 		try {
-			fileStrean = new BufferedInputStream(media.getInputStream());
-			imageSrc = ImageIO.read(fileStrean);
-			if (imageSrc == null) {
-				// happens with faulty Java implementation, e.g. on MacOSX
+			fileStream = media.getInputStream();
+			if(fileStream != null) {
+				imageSrc = ImageIO.read(fileStream);
+				if (imageSrc == null) {
+					// happens with faulty Java implementation, e.g. on MacOSX
+					return null;
+				}
+				double realWidth = imageSrc.getWidth();
+				double realHeight = imageSrc.getHeight();
+				return new Size((int)realWidth, (int)realHeight, 0, 0, false);
+			} else {
 				return null;
 			}
-			double realWidth = imageSrc.getWidth();
-			double realHeight = imageSrc.getHeight();
-			return new Size((int)realWidth, (int)realHeight, 0, 0, false);
 		} catch (IOException e) {
 			// log error, don't do anything else
 			log.error("Problem while setting image size to fit for resource::" + media, e);
 			return null;
 		} finally {
-			IOUtils.closeQuietly(fileStrean);
+			IOUtils.closeQuietly(fileStream);
 			if (imageSrc != null) {
 				imageSrc.flush();
 			}
@@ -88,17 +92,24 @@ public abstract class AbstractImageHelper implements ImageHelperSPI {
 		Size result = null;
 		Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
 		if (iter.hasNext()) {
+			ImageInputStream stream = null;
+			InputStream mediaStream = null;
 			ImageReader reader = iter.next();
 			try {
-				ImageInputStream stream = new MemoryCacheImageInputStream(media.getInputStream());
-				reader.setInput(stream);
-				int readerMinIndex = reader.getMinIndex();
-				int width = reader.getWidth(readerMinIndex);
-				int height = reader.getHeight(readerMinIndex);
-				result = new Size(width, height, 0, 0, false);
+				mediaStream = media.getInputStream();
+				if(mediaStream != null) {
+					stream = new MemoryCacheImageInputStream(mediaStream);
+					reader.setInput(stream);
+					int readerMinIndex = reader.getMinIndex();
+					int width = reader.getWidth(readerMinIndex);
+					int height = reader.getHeight(readerMinIndex);
+					result = new Size(width, height, 0, 0, false);
+				}
 			} catch (IOException e) {
 				log.error(e.getMessage());
 			} finally {
+				IOUtils.closeQuietly(stream);
+				IOUtils.closeQuietly(mediaStream);
 				reader.dispose();
 			}
 		} else {
