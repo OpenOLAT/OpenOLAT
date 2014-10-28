@@ -82,7 +82,12 @@ public class UserCommentsDAO {
 
 	public UserComment reloadComment(UserComment comment) {
 		try {
-			return (UserComment)dbInstance.loadObject(comment);			
+			String q = "select comment from usercomment as comment where comment.key=:commentKey";
+			List<UserComment> comments = dbInstance.getCurrentEntityManager()
+			 		.createQuery(q, UserComment.class)
+			 		.setParameter("commentKey", comment.getKey())
+			 		.getResultList();
+			return comments.isEmpty() ? null : comments.get(0);
 		} catch (Exception e) {
 			// Huh, most likely the given object does not exist anymore on the
 			// db, probably deleted by someone else

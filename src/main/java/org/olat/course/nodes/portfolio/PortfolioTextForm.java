@@ -133,17 +133,17 @@ public class PortfolioTextForm extends FormBasicController {
 		deadlineLayout.setLabel("map.deadline." + DeadlineType.relative.name() + ".label", null);
 
 		String[] monthKeys = getTimeKeys(24);
-		deadlineMonth = uifactory.addDropdownSingleselect("deadline-month", deadlineLayout, monthKeys, monthKeys, null);
+		deadlineMonth = uifactory.addDropdownSingleselect("deadline-month", null, deadlineLayout, monthKeys, monthKeys, null);
 		deadlineMonth.addActionListener(FormEvent.ONCHANGE);
 		select(deadlineMonth, PortfolioCourseNodeConfiguration.DEADLINE_MONTH, monthKeys);
 		
 		String[] weekKeys = getTimeKeys(4);
-		deadlineWeek = uifactory.addDropdownSingleselect("deadline-week", deadlineLayout, weekKeys, weekKeys, null);
+		deadlineWeek = uifactory.addDropdownSingleselect("deadline-week", null, deadlineLayout, weekKeys, weekKeys, null);
 		deadlineWeek.addActionListener(FormEvent.ONCHANGE);
 		select(deadlineWeek, PortfolioCourseNodeConfiguration.DEADLINE_WEEK, weekKeys);
 		
 		String[] dayKeys = getTimeKeys(7);
-		deadlineDay = uifactory.addDropdownSingleselect("deadline-day", deadlineLayout, dayKeys, dayKeys, null);
+		deadlineDay = uifactory.addDropdownSingleselect("deadline-day", null, deadlineLayout, dayKeys, dayKeys, null);
 		deadlineDay.addActionListener(FormEvent.ONCHANGE);
 		select(deadlineDay, PortfolioCourseNodeConfiguration.DEADLINE_DAY, dayKeys);
 		formLayout.add(deadlineLayout);

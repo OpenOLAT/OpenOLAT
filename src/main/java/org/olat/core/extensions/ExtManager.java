@@ -156,11 +156,13 @@ public class ExtManager extends LogDelegator {
 		int count_duplid = 0;
 		AtomicInteger count_duplnavkey = new AtomicInteger(0);
 		
+		boolean debug = isLogDebugEnabled();
+		
 		// first build ordered list
 		for (Extension extension : extensionValues) {
-			if (!extension.isEnabled()){
+			if (!extension.isEnabled()) {
 				count_disabled++;
-				logWarn("* Disabled Extension got loaded :: " + extension + ".  Check yourself that you don't use it or that extension returns null for getExtensionFor() when disabled, resp. overwrite isEnabled().",null);
+				logInfo("* Disabled Extension got loaded :: " + extension + ".  Check that you don't use it or that extension returns null for getExtensionFor() when disabled, resp. overwrite isEnabled().",null);
 			}
 			int orderKey = extension.getOrder();
 			
@@ -173,7 +175,7 @@ public class ExtManager extends LogDelegator {
 			}
 			if (orderKeys.containsKey(orderKey)) {
 				Extension occupant = orderKeys.get(orderKey);
-				logDebug("Extension-Configuration Problem: Dublicate order-value ("+extension.getOrder()+") for extension=" + extension + ", orderKey already occupied by "+occupant,null);
+				if(debug) logDebug("Extension-Configuration Problem: Dublicate order-value ("+extension.getOrder()+") for extension=" + extension + ", orderKey already occupied by "+occupant,null);
 			} else {
 				orderKeys.put(orderKey, extension);
 			}
@@ -203,7 +205,7 @@ public class ExtManager extends LogDelegator {
 					}
 				}
 			}
-			logDebug("Created unique-id "+uid+" for extension:: "+extension);
+			if(debug) logDebug("Created unique-id "+uid+" for extension:: "+extension);
 		}
 		logInfo("Devel-Info :: initExtensions done. :: "+count_disabled+" disabled Extensions, "+count_duplid+" extensions with duplicate ids, "+count_duplnavkey+ " extensions with duplicate navigationKeys");
 		Collections.sort(extensionsList);

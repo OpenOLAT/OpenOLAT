@@ -56,7 +56,7 @@
 				<property name="className" value="org.olat.core.commons.controllers.impressum.ImpressumAdminController"/>
 			</bean>
 		</property>
-		<property name="navigationKey" value="layout" />
+		<property name="navigationKey" value="impressum" />
 		<property name="translationPackage" value="org.olat.core.commons.controllers.impressum"/>
 		<property name="i18nActionKey" value="menu.impressum"/>
 		<property name="i18nDescriptionKey" value="menu.impressum.alt"/>
