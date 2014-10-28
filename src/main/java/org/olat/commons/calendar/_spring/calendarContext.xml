@@ -39,7 +39,7 @@
 	
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="7207" />
-		<property name="navigationKey" value="usertools" />
+		<property name="navigationKey" value="calendaradmin" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.commons.calendar.ui.CalendarAdminController"/>
