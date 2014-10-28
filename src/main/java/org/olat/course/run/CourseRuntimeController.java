@@ -176,6 +176,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		super(ureq, wControl, re, reSecurity, runtimeControllerCreator, offerBookmark, showCourseConfigLink);
 		
 		ICourse course = CourseFactory.loadCourse(getOlatResourceable());
+		addLoggingResourceable(LoggingResourceable.wrap(course));
 
 		coordinatorManager.getCoordinator().getEventBus().registerFor(this, getIdentity(), getOlatResourceable());
 		// - group modification events
