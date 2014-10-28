@@ -52,13 +52,13 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
-import org.olat.course.certificate.PDFCertificatesOptions;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -887,17 +887,17 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 				  esm.updateUserEfficiencyStatement(userCourseEnv);
 				}
 				
-				if(scoreEvaluation.getPassed()) {
-					PDFCertificatesOptions options = course.getCourseConfig().getPdfCertificateOption();
-					if(options == PDFCertificatesOptions.auto) {
-						String templateId = course.getCourseConfig().getPdfCertificateTemplate();
+				if(scoreEvaluation.getPassed() && course.getCourseConfig().isAutomaticCertificationEnabled()) {
+					CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
+					if(certificatesManager.isRecertificationAllowed(assessedIdentity, courseEntry)) {
 						CertificateTemplate template = null;
-						CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
-						if(StringHelper.isLong(templateId)) {
+						Long templateId = course.getCourseConfig().getCertificateTemplate();
+						if(templateId != null) {
 							template = certificatesManager.getTemplateById(new Long(templateId));
 						}
 						CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, passed);
-						certificatesManager.generateCertificate(certificateInfos, courseEntry, template);
+						MailerResult result = new MailerResult();
+						certificatesManager.generateCertificate(certificateInfos, courseEntry, template, result);
 					}
 				}
 				

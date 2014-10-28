@@ -93,8 +93,8 @@ import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.CourseFactory;
@@ -105,11 +105,11 @@ import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
-import org.olat.course.certificate.PDFCertificatesOptions;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.OnlyGroupConditionInterpreter;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.AssessmentToolOptions;
@@ -274,18 +274,21 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		Identity focusOnIdentity = null;
 		ICourse course = CourseFactory.loadCourse(ores);
 		boolean hasAssessableNodes = course.hasAssessableNodes();
-		if (hasAssessableNodes) {
-			BusinessControl bc = getWindowControl().getBusinessControl();
-			ContextEntry ceIdentity = bc.popLauncherContextEntry();
-			if (ceIdentity != null) {
-				OLATResourceable oresIdentity = ceIdentity.getOLATResourceable();
-				if (OresHelper.isOfType(oresIdentity, Identity.class)) {
-					Long identityKey = oresIdentity.getResourceableId();
-					focusOnIdentity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey);
-				}
+		boolean hasCertificates = course.getCourseConfig().isAutomaticCertificationEnabled()
+				|| course.getCourseConfig().isManualCertificationEnabled();
+		
+		BusinessControl bc = getWindowControl().getBusinessControl();
+		ContextEntry ceIdentity = bc.popLauncherContextEntry();
+		if (ceIdentity != null) {
+			OLATResourceable oresIdentity = ceIdentity.getOLATResourceable();
+			if (OresHelper.isOfType(oresIdentity, Identity.class)) {
+				Long identityKey = oresIdentity.getResourceableId();
+				focusOnIdentity = BaseSecurityManager.getInstance().loadIdentityByKey(identityKey);
 			}
-
-			index.contextPut("hasAssessableNodes", Boolean.TRUE);
+		}
+			
+		if (hasAssessableNodes) {
+			index.contextPut("hasAssessableNodes", new Boolean(hasAssessableNodes));
 			
 			// --- assessment notification subscription ---
 			csc = AssessmentUIFactory.createContextualSubscriptionController(ureq, wControl, course);
@@ -304,50 +307,47 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			index.put("certificationSubscription", certificateSubscriptionCtrl.getInitialComponent());
 		}
 			
-		if (hasAssessableNodes) {
-			// Wrapper container: adds header
-			wrapper = createVelocityContainer("wrapper");
-			
-			// Init the group and the user chooser view velocity container
-			groupChoose = createVelocityContainer("groupchoose");
-			allUsersButton = LinkFactory.createButtonSmall("cmd.all.users", groupChoose, this);
-			groupChoose.contextPut("isFiltering", Boolean.TRUE);
-			backLinkGC = LinkFactory.createLinkBack(groupChoose, this);
-			backLinkGC.setIconLeftCSS("o_icon o_icon_back");
-	
-			userChoose = createVelocityContainer("userchoose");
+		
+		// Wrapper container: adds header
+		wrapper = createVelocityContainer("wrapper");
+		
+		// Init the group and the user chooser view velocity container
+		groupChoose = createVelocityContainer("groupchoose");
+		allUsersButton = LinkFactory.createButtonSmall("cmd.all.users", groupChoose, this);
+		groupChoose.contextPut("isFiltering", Boolean.TRUE);
+		backLinkGC = LinkFactory.createLinkBack(groupChoose, this);
+		backLinkGC.setIconLeftCSS("o_icon o_icon_back");
 
-			showAllCourseNodesButton = LinkFactory.createButtonSmall("cmd.showAllCourseNodes", userChoose, this);
-			filterCourseNodesButton  = LinkFactory.createButtonSmall("cmd.filterCourseNodes", userChoose, this);
-			userChoose.contextPut("isFiltering", Boolean.TRUE);
-			backLinkUC = LinkFactory.createLinkBack(userChoose, this);
-			backLinkUC.setIconLeftCSS("o_icon o_icon_back");
-			
-			onyxReporterVC = createVelocityContainer("onyxreporter");
-			backLinkOR = LinkFactory.createLinkBack(onyxReporterVC, this);
-			backLinkOR.setIconLeftCSS("o_icon o_icon_back");
+		userChoose = createVelocityContainer("userchoose");
 
-			nodeChoose = createVelocityContainer("nodechoose");
+		showAllCourseNodesButton = LinkFactory.createButtonSmall("cmd.showAllCourseNodes", userChoose, this);
+		filterCourseNodesButton  = LinkFactory.createButtonSmall("cmd.filterCourseNodes", userChoose, this);
+		userChoose.contextPut("isFiltering", Boolean.TRUE);
+		backLinkUC = LinkFactory.createLinkBack(userChoose, this);
+		backLinkUC.setIconLeftCSS("o_icon o_icon_back");
+		
+		onyxReporterVC = createVelocityContainer("onyxreporter");
+		backLinkOR = LinkFactory.createLinkBack(onyxReporterVC, this);
+		backLinkOR.setIconLeftCSS("o_icon o_icon_back");
 
-			// Initialize all groups that the user is allowed to coach
-			coachedGroups = getAllowedGroupsFromGroupmanagement(ureq.getIdentity());
-			
-			re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, true);
-			repoTutor = repositoryService.hasRole(getIdentity(), re, GroupRoles.coach.name());
+		nodeChoose = createVelocityContainer("nodechoose");
 
-			// preload the assessment cache to speed up everything as background thread
-			// the thread will terminate when finished
-			assessmentCachPreloaderThread = new AssessmentCachePreloadThread("assessmentCachPreloader-" + course.getResourceableId());
-			assessmentCachPreloaderThread.setDaemon(true); 
-			assessmentCachPreloaderThread.start();
-			
-		} else {
-			index.contextPut("hasAssessableNodes", Boolean.FALSE);			
-		}
+		// Initialize all groups that the user is allowed to coach
+		coachedGroups = getAllowedGroupsFromGroupmanagement(ureq.getIdentity());
+		
+		re = RepositoryManager.getInstance().lookupRepositoryEntry(ores, true);
+		repoTutor = repositoryService.hasRole(getIdentity(), re, GroupRoles.coach.name());
+
+		// preload the assessment cache to speed up everything as background thread
+		// the thread will terminate when finished
+		assessmentCachPreloaderThread = new AssessmentCachePreloadThread("assessmentCachPreloader-" + course.getResourceableId());
+		assessmentCachPreloaderThread.setDaemon(true); 
+		assessmentCachPreloaderThread.start();
+
 			
 		// Navigation menu
 		menuTree = new MenuTree("menuTree");
-		TreeModel tm = buildTreeModel(hasAssessableNodes);
+		TreeModel tm = buildTreeModel(hasAssessableNodes, hasCertificates);
 		menuTree.setTreeModel(tm);
 		menuTree.setSelectedNodeId(tm.getRootNode().getIdent());
 		menuTree.addListener(this);
@@ -907,8 +907,8 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		}
 		
 		Map<Long, CertificateLight> certificates;
-		boolean certificateEnabled = PDFCertificatesOptions.none != course.getCourseConfig().getPdfCertificateOption();
-		boolean showCertificate = certificateEnabled && mode == MODE_USERFOCUS;
+		CourseConfig courseConfig = course.getCourseConfig();
+		boolean showCertificate =  mode == MODE_USERFOCUS && (courseConfig.isAutomaticCertificationEnabled() || courseConfig.isManualCertificationEnabled());
 		if(showCertificate) {
 			certificates = getCertificates(course);
 		} else {
@@ -942,7 +942,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 				}
 			}
 		}
-		if(certificateEnabled) {
+		if(courseConfig.isManualCertificationEnabled()) {
 			if(courseNode == null || courseNode == course.getRunStructure().getRootNode()) {
 				userListCtr.addMultiSelectAction("create.certificate", "create.certificate");
 				userListCtr.setMultiSelect(true);
@@ -1078,11 +1078,14 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	private void doGenerateCertificates(List<CertificateInfos> assessedIdentitiesInfos) {
 		ICourse course = CourseFactory.loadCourse(ores);
 		RepositoryEntry resource = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		String templateKey = course.getCourseConfig().getPdfCertificateTemplate();
-		if(StringHelper.isLong(templateKey)) {
-			CertificateTemplate template = certificatesManager.getTemplateById(new Long(templateKey));
-			certificatesManager.generateCertificates(assessedIdentitiesInfos, resource, template);
+		Long templateKey = course.getCourseConfig().getCertificateTemplate();
+		CertificateTemplate template = null;
+		if(templateKey != null) {
+			template = certificatesManager.getTemplateById(templateKey);
 		}
+		
+		MailerResult result = new MailerResult();
+		certificatesManager.generateCertificates(assessedIdentitiesInfos, resource, template, result);
 	}
 	
 	private void doGenerateCertificate(UserRequest ureq, List<CertificateInfos> assessedIdentitiesInfos) {
@@ -1093,8 +1096,27 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			sb.append(name);
 		}
 		
+		boolean recertificationAllowed = true;
+		StringBuilder sbConfirm = new StringBuilder();
+		ICourse course = CourseFactory.loadCourse(ores);
+		RepositoryEntry resource = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		for(CertificateInfos infos:assessedIdentitiesInfos) {
+			boolean allowed = certificatesManager.isRecertificationAllowed(infos.getAssessedIdentity(), resource);
+			recertificationAllowed &= allowed;
+			if(!allowed) {
+				String name = userManager.getUserDisplayName(infos.getAssessedIdentity());
+				if(sbConfirm.length() > 0) sbConfirm.append(", ");
+				sbConfirm.append(name);
+			}
+		}
+		
 		String title = translate("confirm.certificate.title");
-		String text = translate("confirm.certificate.description", new String[]{ sb.toString() });
+		String text;
+		if(recertificationAllowed) {
+			text = translate("confirm.certificate.description", new String[]{ sb.toString() });
+		} else {
+			text = translate("confirm.certificate.description.warning", new String[]{ sb.toString(), sbConfirm.toString() });
+		}
 		confirmCertificateCtrl = activateYesNoDialog(ureq, title, text, confirmCertificateCtrl);
 		confirmCertificateCtrl.setUserObject(assessedIdentitiesInfos);
 	}
@@ -1284,7 +1306,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	 * @param hasAssessableNodes true: show menu, false: hide menu
 	 * @return The tree model
 	 */
-	private TreeModel buildTreeModel(boolean hasAssessableNodes) {
+	private TreeModel buildTreeModel(boolean hasAssessableNodes, boolean certificate) {
 		GenericTreeNode root, gtn;
 
 		GenericTreeModel gtm = new GenericTreeModel();
@@ -1295,7 +1317,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		gtm.setRootNode(root);
 
 		// show real menu only when there are some assessable nodes
-		if (hasAssessableNodes) {	
+		if (hasAssessableNodes) {
 			gtn = new GenericTreeNode();
 			gtn.setTitle(translate("menu.groupfocus"));
 			gtn.setUserObject(CMD_GROUPFOCUS);
@@ -1307,13 +1329,17 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			gtn.setUserObject(CMD_NODEFOCUS);
 			gtn.setAltText(translate("menu.nodefocus.alt"));
 			root.addChild(gtn);
-			
+		}
+		
+		if (hasAssessableNodes || certificate) {
 			gtn = new GenericTreeNode();
 			gtn.setTitle(translate("menu.userfocus"));
 			gtn.setUserObject(CMD_USERFOCUS);
 			gtn.setAltText(translate("menu.userfocus.alt"));
 			root.addChild(gtn);
+		}
 
+		if (hasAssessableNodes) {
 			gtn = new GenericTreeNode();
 			gtn.setTitle(translate("menu.bulkfocus"));
 			gtn.setUserObject(CMD_BULKFOCUS);

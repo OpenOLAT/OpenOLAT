@@ -5,7 +5,12 @@
 			#foreach($certificate in $certificates)
 				$r.render($certificate.getComponentName())
 			#end
-			<div class="o_button_group">$r.render("generate.certificate")</div>
+			#if($certificates.isEmpty())
+				$r.translate("no.certificate")
+			#end
+			#if($r.available("generate.certificate"))
+				<div class="o_button_group">$r.render("generate.certificate")</div>
+			#end
 		</li>
 	</ul>
 </div>

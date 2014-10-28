@@ -27,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -44,25 +45,35 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.FileStorage;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.RecertificationTimeUnit;
 import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.certificate.model.CertificateTemplateImpl;
+import org.olat.course.certificate.ui.CertificateController;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -92,6 +103,10 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private I18nManager i18nManager;
+	@Autowired
+	private MailManager mailManager;
+	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
@@ -100,7 +115,8 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 	@Autowired
 	private NotificationsManager notificationsManager;
 	@Autowired
-	private BusinessGroupService businessGroupService; 
+	private BusinessGroupService businessGroupService;
+	
 
 	private FileStorage usersStorage;
 	private FileStorage templatesStorage;
@@ -308,10 +324,46 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 	}
 
 	@Override
-	public void generateCertificates(List<CertificateInfos> certificateInfos, RepositoryEntry entry, CertificateTemplate template) {
+	public boolean isRecertificationAllowed(Identity identity, RepositoryEntry entry) {
+		boolean allowed = false;
+		try {
+			ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
+			CourseConfig config = course.getCourseEnvironment().getCourseConfig();
+			if(config.isRecertificationEnabled()) {
+				int time = config.getRecertificationTimelapse();
+				RecertificationTimeUnit timeUnit = config.getRecertificationTimelapseUnit();
+				Certificate certificate =  getLastCertificate(identity, entry.getOlatResource().getKey());
+				if(certificate == null) {
+					allowed = true;
+				} else {
+					Date date = certificate.getCreationDate();
+					Calendar cal = Calendar.getInstance();
+					Date now = cal.getTime();
+					cal.setTime(date);
+					switch(timeUnit) {
+						case day: cal.add(Calendar.DATE, time); break;
+						case week: cal.add(Calendar.DATE, time * 7); break;
+						case month: cal.add(Calendar.MONTH, time); break;
+						case year: cal.add(Calendar.YEAR, time); break;
+					}
+					Date nextCertification = cal.getTime();
+					allowed = nextCertification.before(now);
+				}
+			} else {
+				allowed = true;
+			}
+		} catch (CorruptedCourseException e) {
+			log.error("", e);
+		}
+		return allowed;
+	}
+
+	@Override
+	public void generateCertificates(List<CertificateInfos> certificateInfos, RepositoryEntry entry,
+			CertificateTemplate template, MailerResult result) {
 		int count = 0;
 		for(CertificateInfos certificateInfo:certificateInfos) {
-			generateCertificate(certificateInfo, entry, template);
+			generateCertificate(certificateInfo, entry, template, result);
 			if(++count % 10 == 0) {
 				dbInstance.commitAndCloseSession();
 			}
@@ -320,13 +372,15 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 	}
 
 	@Override
-	public Certificate generateCertificate(CertificateInfos certificateInfos, RepositoryEntry entry, CertificateTemplate template) {
-		Certificate certificate = peristCertificate(certificateInfos, entry, template);
+	public Certificate generateCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
+			CertificateTemplate template, MailerResult result) {
+		Certificate certificate = peristCertificate(certificateInfos, entry, template, result);
 		markPublisherNews(null, entry.getOlatResource());
 		return certificate;
 	}
 
-	private Certificate peristCertificate(CertificateInfos certificateInfos, RepositoryEntry entry, CertificateTemplate template) {
+	private Certificate peristCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
+			CertificateTemplate template, MailerResult result) {
 		OLATResource resource = entry.getOlatResource();
 		Identity identity = certificateInfos.getAssessedIdentity();
 		
@@ -378,12 +432,38 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 			}
 			
 			dbInstance.getCurrentEntityManager().persist(certificate);
+			
+			
+			MailerResult newResult = sendCertificate(identity, entry, certificateFile);
+			if(result != null) {
+				result.append(newResult);
+			}
+			
 		} catch (Exception e) {
 			log.error("", e);
 		} finally {
 			IOUtils.closeQuietly(templateStream);
 		}
 		return certificate;
+	}
+	
+	private MailerResult sendCertificate(Identity to, RepositoryEntry entry, File certificateFile) {
+		MailBundle bundle = new MailBundle();
+		bundle.setToId(to);
+		bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
+		
+		String[] args = new String[] {
+			entry.getDisplayname(),
+			userManager.getUserDisplayName(to)
+		};
+		
+		String userLanguage = to.getUser().getPreferences().getLanguage();
+		Locale locale = i18nManager.getLocaleOrDefault(userLanguage);
+		Translator translator = Util.createPackageTranslator(CertificateController.class, locale);
+		String subject = translator.translate("certification.email.subject", args);
+		String body = translator.translate("certification.email.body", args);
+		bundle.setContent(subject, body, certificateFile);
+		return mailManager.sendMessage(bundle);
 	}
 	
 	private Date getDateFirstCertification(Identity identity, OLATResource resource) {

@@ -49,8 +49,8 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
-import org.olat.course.certificate.PDFCertificatesOptions;
 import org.olat.course.certificate.ui.AssessedIdentityCertificatesController;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -117,8 +117,8 @@ public class IdentityAssessmentEditController extends BasicController {
 		identityAssessmentVC.put("identityInfos", identityInfosCtrl.getInitialComponent());
 		doIdentityAssessmentOverview(ureq, true);
 		
-		PDFCertificatesOptions certificateOption = course.getCourseConfig().getPdfCertificateOption();
-		if(certificateOption == PDFCertificatesOptions.manual || certificateOption == PDFCertificatesOptions.auto) {
+		CourseConfig courseConfig = course.getCourseConfig();
+		if(courseConfig.isAutomaticCertificationEnabled() || courseConfig.isManualCertificationEnabled()) {
 			certificateCtrl = new AssessedIdentityCertificatesController(ureq, wControl, assessedUserCourseEnvironment);
 			identityAssessmentVC.put("certificateInfos", certificateCtrl.getInitialComponent());
 		}

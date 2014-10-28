@@ -27,6 +27,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.ICourse;
@@ -80,8 +81,10 @@ public interface CertificatesManager {
 	
 	public List<Certificate> getCertificates(IdentityRef identity, OLATResource resource);
 	
-	public void generateCertificates(List<CertificateInfos> identities, RepositoryEntry entry, CertificateTemplate template);
+	public boolean isRecertificationAllowed(Identity identity, RepositoryEntry entry);
+	
+	public void generateCertificates(List<CertificateInfos> identities, RepositoryEntry entry, CertificateTemplate template, MailerResult result);
 
-	public Certificate generateCertificate(CertificateInfos identity, RepositoryEntry entry, CertificateTemplate template);
+	public Certificate generateCertificate(CertificateInfos identity, RepositoryEntry entry, CertificateTemplate template, MailerResult result);
 
 }

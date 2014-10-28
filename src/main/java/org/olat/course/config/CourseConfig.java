@@ -29,10 +29,7 @@ import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Map;
 
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.course.certificate.PDFCertificatesOptions;
 import org.olat.course.certificate.RecertificationTimeUnit;
 
 /**
@@ -61,8 +58,6 @@ import org.olat.course.certificate.RecertificationTimeUnit;
  * @author patrick
  */
 public class CourseConfig implements Serializable, Cloneable {
-	
-	private static final OLog log = Tracing.createLoggerFor(CourseConfig.class);
 
 	private static final long serialVersionUID = -1158707796830204185L;
 	/**
@@ -98,8 +93,9 @@ public class CourseConfig implements Serializable, Cloneable {
 	 * efficency statement
 	 */
 	transient public static final String KEY_EFFICENCY_ENABLED = "KEY_EFFICENCY_ENABLED";
-	transient public static final String PDF_CERTIFICATE_ENABLED = "PDF_CERTIFICATE_OPT";
-	transient public static final String PDF_CERTIFICATE_TEMPLATE = "PDF_CERTIFICATE_TEMPLATE";
+	transient public static final String CERTIFICATE_AUTO_ENABLED = "CERTIFICATE_AUTO";
+	transient public static final String CERTIFICATE_MANUAL_ENABLED = "CERTIFICATE_MANUAL";
+	transient public static final String CERTIFICATE_TEMPLATE = "CERTIFICATE_TEMPLATE";
 	transient public static final String RECERTIFICATION_ENABLED = "RECERTIFICATION_ENABLED";
 	transient public static final String RECERTIFICATION_TIMELAPSE = "RECERTIFICATION_TIMELAPSE";
 	transient public static final String RECERTIFICATION_TIMELAPSE_UNIT = "RECERTIFICATION_TIMELAPSE_UNIT";
@@ -238,8 +234,9 @@ public class CourseConfig implements Serializable, Cloneable {
 			}
 			
 			if (version == 9) {
-				if (!configuration.containsKey(PDF_CERTIFICATE_ENABLED)) configuration.put(PDF_CERTIFICATE_ENABLED, Boolean.FALSE);
-				if (!configuration.containsKey(PDF_CERTIFICATE_TEMPLATE)) configuration.put(PDF_CERTIFICATE_TEMPLATE, "");
+				if (!configuration.containsKey(CERTIFICATE_AUTO_ENABLED)) configuration.put(CERTIFICATE_AUTO_ENABLED, Boolean.FALSE);
+				if (!configuration.containsKey(CERTIFICATE_MANUAL_ENABLED)) configuration.put(CERTIFICATE_MANUAL_ENABLED, Boolean.FALSE);
+				if (!configuration.containsKey(CERTIFICATE_TEMPLATE)) configuration.put(CERTIFICATE_TEMPLATE, "");
 				if (!configuration.containsKey(RECERTIFICATION_ENABLED)) configuration.put(RECERTIFICATION_ENABLED, Boolean.FALSE);
 				if (!configuration.containsKey(RECERTIFICATION_TIMELAPSE)) configuration.put(RECERTIFICATION_TIMELAPSE, "");
 				this.version = 10;
@@ -388,25 +385,46 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * @return true if the efficency statement is enabled
 	 */
-	public String getPdfCertificateTemplate() {
-		String templateId = (String) configuration.get(PDF_CERTIFICATE_TEMPLATE);
+	public Long getCertificateTemplate() {
+		Long templateId = (Long)configuration.get(CERTIFICATE_TEMPLATE);
 		return templateId;
 	}
 	
 	/**
 	 * @param b
 	 */
-	public void setPdfCertificateTemplate(String templateId ) {
-		if(StringHelper.containsNonWhitespace(templateId)) {
-			configuration.put(PDF_CERTIFICATE_TEMPLATE, templateId);
+	public void setCertificateTemplate(Long templateId ) {
+		if(templateId != null) {
+			configuration.put(CERTIFICATE_TEMPLATE, templateId);
 		} else {
-			configuration.remove(PDF_CERTIFICATE_TEMPLATE);
+			configuration.remove(CERTIFICATE_TEMPLATE);
 		}
 	}
 	
-	public PDFCertificatesOptions getPdfCertificateOption() {
+	public boolean isAutomaticCertificationEnabled() {
+		Boolean bool = (Boolean) configuration.get(CERTIFICATE_AUTO_ENABLED);
+		return bool == null ? false : bool.booleanValue();
+	}
+	
+	public void setAutomaticCertificationEnabled(boolean enabled) {
+		configuration.put(CERTIFICATE_AUTO_ENABLED, new Boolean(enabled));
+	}
+	
+	public boolean isManualCertificationEnabled() {
+		Boolean bool = (Boolean) configuration.get(CERTIFICATE_MANUAL_ENABLED);
+		return bool == null ? false : bool.booleanValue();
+	}
+	
+	public void setManualCertificationEnabled(boolean enabled) {
+		configuration.put(CERTIFICATE_MANUAL_ENABLED, new Boolean(enabled));
+	}
+	
+	
+	
+	/*
+	public PDFCertificatesOptions getPdfCertificateOption2() {
 		PDFCertificatesOptions option;
-		String opt = (String)configuration.get(PDF_CERTIFICATE_ENABLED);
+		String opt = (String)configuration.get(CERTIFICATE_ENABLED);
 		if(StringHelper.containsNonWhitespace(opt)) {
 			try {
 				option = PDFCertificatesOptions.valueOf(opt);
@@ -423,7 +441,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	
 	public void setPdfCertificateOption(PDFCertificatesOptions option) {
 		configuration.put(PDF_CERTIFICATE_ENABLED, option.name());
-	}
+	}*/
 
 	/**
 	 * @return true if the efficency statement is enabled
@@ -495,8 +513,9 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setEfficencyStatementIsEnabled(isEfficencyStatementEnabled());
 		clone.setGlossarySoftKey(getGlossarySoftKey());
 		clone.setSharedFolderSoftkey(getSharedFolderSoftkey());
-		clone.setPdfCertificateOption(getPdfCertificateOption());
-		clone.setPdfCertificateTemplate(getPdfCertificateTemplate());
+		clone.setAutomaticCertificationEnabled(isAutomaticCertificationEnabled());
+		clone.setManualCertificationEnabled(isManualCertificationEnabled());
+		clone.setCertificateTemplate(getCertificateTemplate());
 		clone.setRecertificationEnabled(isRecertificationEnabled());
 		clone.setRecertificationTimelapse(getRecertificationTimelapse());
 		clone.setRecertificationTimelapseUnit(getRecertificationTimelapseUnit());

@@ -19,6 +19,7 @@
  */
 package org.olat.course.certificate;
 
+
 /**
  * 
  * Initial date: 20.10.2014<br>
@@ -26,10 +27,8 @@ package org.olat.course.certificate;
  *
  */
 public enum RecertificationTimeUnit {
-	
 	day,
 	week,
 	month,
 	year
-
 }

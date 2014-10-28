@@ -27,12 +27,15 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
-import org.olat.core.util.StringHelper;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseFactory;
@@ -41,6 +44,7 @@ import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.model.CertificateInfos;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -56,8 +60,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssessedIdentityCertificatesController extends BasicController {
 	
-	private final Link generateLink;
+	private Link generateLink;
 	private final VelocityContainer mainVC;
+	private DialogBoxController confirmCertificateCtrl;
 	
 	private final OLATResource resource;
 	private final UserCourseEnvironment assessedUserCourseEnv;
@@ -74,7 +79,11 @@ public class AssessedIdentityCertificatesController extends BasicController {
 		
 		mainVC = createVelocityContainer("certificate_overview");
 		loadList();
-		generateLink = LinkFactory.createLink("generate.certificate", "generate", getTranslator(), mainVC, this, Link.BUTTON);
+		
+		CourseConfig courseConfig = assessedUserCourseEnv.getCourseEnvironment().getCourseConfig();
+		if(courseConfig.isManualCertificationEnabled()) {
+			generateLink = LinkFactory.createLink("generate.certificate", "generate", getTranslator(), mainVC, this, Link.BUTTON);
+		}
 		putInitialPanel(mainVC);
 	}
 	
@@ -103,7 +112,7 @@ public class AssessedIdentityCertificatesController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(generateLink == source) {
-			doGenerateCertificate() ;
+			doConfirmGenerateCertificate(ureq) ;
 		} else if(source instanceof Link) {
 			Link link = (Link)source;
 			String cmd = link.getCommand();
@@ -113,29 +122,55 @@ public class AssessedIdentityCertificatesController extends BasicController {
 			}
 		}
 	}
-	
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(confirmCertificateCtrl == source) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				doGenerateCertificate();
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
 	private void doDownload(UserRequest ureq, Certificate certificate) {
 		VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
 		MediaResource resource = new VFSMediaResource(certificateLeaf);
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	
-	private void doGenerateCertificate() {
-		CertificateTemplate template = null;
+	private void doConfirmGenerateCertificate(UserRequest ureq) {
 		ICourse course = CourseFactory.loadCourse(resource);
-		String templateKey = course.getCourseConfig().getPdfCertificateTemplate();
+		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		if(StringHelper.isLong(templateKey)) {
-			template = certificatesManager.getTemplateById(new Long(templateKey));
+		if(certificatesManager.isRecertificationAllowed(assessedIdentity, courseEntry)) {
+			//don't need to confirm
+			doGenerateCertificate();
+		} else {
+			String title = translate("confirm.certificate.title");
+			String text = translate("confirm.certificate.text");
+			confirmCertificateCtrl = activateYesNoDialog(ureq, title, text, confirmCertificateCtrl);
 		}
-
+	}
+	
+	private void doGenerateCertificate() {
+		ICourse course = CourseFactory.loadCourse(resource);
 		CourseNode rootNode = course.getRunStructure().getRootNode();
 		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
 		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().getScoreEvaluation(rootNode);
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+
+		CertificateTemplate template = null;
+		Long templateKey = course.getCourseConfig().getCertificateTemplate();
+		if(templateKey != null) {
+			template = certificatesManager.getTemplateById(templateKey);
+		}
+
 		Float score = scoreEval == null ? null : scoreEval.getScore();
 		Boolean passed = scoreEval == null ? null : scoreEval.getPassed();
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, passed);
-		certificatesManager.generateCertificate(certificateInfos, courseEntry, template);
+		MailerResult result = new MailerResult();
+		certificatesManager.generateCertificate(certificateInfos, courseEntry, template, result);
 		loadList();
 	}
 }

@@ -19,6 +19,7 @@
  */
 package org.olat.course.certificate.ui;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -49,7 +50,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
@@ -79,7 +79,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CertificatesOptionsController extends FormBasicController {
 
-	private SingleSelection pdfCertificatesEl;
+	private MultipleSelectionElement pdfCertificatesEl;
 	private MultipleSelectionElement efficencyEl;
 	private MultipleSelectionElement reCertificationEl;
 	private IntegerElement reCertificationTimelapseEl;
@@ -97,7 +97,6 @@ public class CertificatesOptionsController extends FormBasicController {
 	private DialogBoxController enableEfficiencyDC, disableEfficiencyDC;
 
 	private static final String[] pdfCertificatesOptionsKeys = new String[] {
-		PDFCertificatesOptions.none.name(),
 		PDFCertificatesOptions.auto.name(),
 		PDFCertificatesOptions.manual.name()
 	};
@@ -145,17 +144,14 @@ public class CertificatesOptionsController extends FormBasicController {
 		efficencyEl.setEnabled(editable && !managedEff);
 		
 		
-		PDFCertificatesOptions pdfCertificateOpt = courseConfig.getPdfCertificateOption();
 		String[] pdfCertificatesOptionsValues = new String[] {
-				translate("pdf.certificates.none"),
 				translate("pdf.certificates.auto"),
 				translate("pdf.certificates.manual")
 		};
-		pdfCertificatesEl = uifactory.addDropdownSingleselect("pdf.certificates", formLayout, pdfCertificatesOptionsKeys, pdfCertificatesOptionsValues, null);
+		pdfCertificatesEl = uifactory.addCheckboxesVertical("pdf.certificates", formLayout, pdfCertificatesOptionsKeys, pdfCertificatesOptionsValues, 1);
 		pdfCertificatesEl.addActionListener(FormEvent.ONCHANGE);
-		if(pdfCertificateOpt != null) {
-			pdfCertificatesEl.select(pdfCertificateOpt.name(), true);
-		}
+		pdfCertificatesEl.select(PDFCertificatesOptions.auto.name(), courseConfig.isAutomaticCertificationEnabled());
+		pdfCertificatesEl.select(PDFCertificatesOptions.manual.name(), courseConfig.isManualCertificationEnabled());
 		pdfCertificatesEl.setEnabled(editable && !managedEff);
 		
 		String templatePage = velocity_root + "/select_certificate.html";
@@ -166,9 +162,9 @@ public class CertificatesOptionsController extends FormBasicController {
 		templateCont.setLabel("pdf.certificates.template", null);
 
 		selectTemplateLink = uifactory.addFormLink("select", templateCont, Link.BUTTON);
-		String templateId = courseConfig.getPdfCertificateTemplate();
-		if(StringHelper.isLong(templateId)) {
-			selectedTemplate = certificatesManager.getTemplateById(new Long(templateId));
+		Long templateId = courseConfig.getCertificateTemplate();
+		if(templateId != null && templateId.longValue() > 0) {
+			selectedTemplate = certificatesManager.getTemplateById(templateId);
 			if(selectedTemplate != null) {
 				templateCont.contextPut("templateName", selectedTemplate.getName());
 			}
@@ -215,7 +211,7 @@ public class CertificatesOptionsController extends FormBasicController {
 	}
 	
 	private void updateUI() {
-		boolean none = pdfCertificatesEl.isSelected(PDFCertificatesOptions.none.ordinal());
+		boolean none = !pdfCertificatesEl.isAtLeastSelected(1);
 		
 		templateCont.setVisible(!none);
 		selectTemplateLink.setEnabled(!none);
@@ -334,20 +330,14 @@ public class CertificatesOptionsController extends FormBasicController {
 		boolean updateStatement = courseConfig.isEfficencyStatementEnabled() != enableEfficiencyStatment;
 		courseConfig.setEfficencyStatementIsEnabled(enableEfficiencyStatment);
 		
-		
-		PDFCertificatesOptions pdfCertificateOption;
-		if(pdfCertificatesEl.isOneSelected()) {
-			pdfCertificateOption = PDFCertificatesOptions.valueOf(pdfCertificatesEl.getSelectedKey());
-		} else {
-			pdfCertificateOption = PDFCertificatesOptions.none;
-		}
-		courseConfig.setPdfCertificateOption(pdfCertificateOption);
-		
+		Collection<String> certificationOptions = pdfCertificatesEl.getSelectedKeys();
+		courseConfig.setAutomaticCertificationEnabled(certificationOptions.contains(PDFCertificatesOptions.auto.name()));
+		courseConfig.setManualCertificationEnabled(certificationOptions.contains(PDFCertificatesOptions.manual.name()));
 		if(selectedTemplate != null) {
 			Long templateId = selectedTemplate.getKey();
-			courseConfig.setPdfCertificateTemplate(templateId.toString());
+			courseConfig.setCertificateTemplate(templateId);
 		} else {
-			courseConfig.setPdfCertificateTemplate("");
+			courseConfig.setCertificateTemplate(null);
 		}
 
 		boolean recertificationEnabled = reCertificationEl.isEnabled() && reCertificationEl.isAtLeastSelected(1);
@@ -410,7 +400,5 @@ public class CertificatesOptionsController extends FormBasicController {
 			}
 			return resource;
 		}
-		
-		
 	}
 }
