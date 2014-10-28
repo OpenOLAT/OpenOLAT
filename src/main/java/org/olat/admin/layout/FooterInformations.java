@@ -51,7 +51,7 @@ public class FooterInformations {
 		return convertFooterLine(line);
 	}
 	
-	public String getLogoAlt() {
+	public String getFooterUrl() {
 		String uri = layoutModule.getFooterLinkUri();
 		if(!StringHelper.containsNonWhitespace(uri)) {
 			uri = Settings.getApplicationName();
@@ -71,6 +71,4 @@ public class FooterInformations {
 		parsedFooterLine = parsedFooterLine.replaceAll(urlregex, "<a href=\"http$3://$4$5\" target=\"_blank\">$2$4$5</a>");
 		return parsedFooterLine;
 	}
-	
-	
 }
