@@ -19,7 +19,7 @@
 				<property name="factoryMethod" value="createLifecylceAdminController"/>
 			</bean>
 		</property>
-		<property name="navigationKey" value="vitero" />
+		<property name="navigationKey" value="lifecycles" />
 		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
 		<property name="i18nActionKey" value="admin.menu.lifecycle.title"/>
 		<property name="i18nDescriptionKey" value="admin.lifecycles.title"/>
