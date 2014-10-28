@@ -29,7 +29,6 @@ import java.util.Set;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -61,6 +60,7 @@ import org.olat.core.util.Util;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.EmailProperty;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -109,8 +109,10 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	private FormLayoutContainer searchFormContainer;
 
 	private boolean isAdministrativeUser;
-	private final BaseSecurityModule securityModule;
-	private final UserManager userManager;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
 
 	/**
 	 * @param ureq
@@ -121,10 +123,9 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	 */
 	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "usersearchext", rootForm);
-		
-		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
-		userManager = UserManager.getInstance();
-		
+		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(UserSearchFlexiController.class, getLocale(), getTranslator()));
+
 		ListProvider provider = new UserSearchListProvider();
 		setListProvider(provider);
 		setAllowNewValues(false);
@@ -166,17 +167,13 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 			loginEl = uifactory.addTextElement("login", "search.form.login", 128, "", searchFormContainer);
 			loginEl.setVisible(isAdministrativeUser);
 
-			UserManager um = UserManager.getInstance();
-			Translator tr = Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator());
-			
-			userPropertyHandlers = um.getUserPropertyHandlersFor(UserSearchForm.class.getCanonicalName(), isAdministrativeUser);
+			userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserSearchForm.class.getCanonicalName(), isAdministrativeUser);
 			
 			propFormItems = new HashMap<String,FormItem>();
 			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 				if (userPropertyHandler == null) continue;
 				
 				FormItem fi = userPropertyHandler.addFormItem(getLocale(), null, UserSearchForm.class.getCanonicalName(), false, searchFormContainer);
-				fi.setTranslator(tr);
 				
 				// DO NOT validate email field => see OLAT-3324, OO-155, OO-222
 				if (userPropertyHandler instanceof EmailProperty && fi instanceof TextElement) {

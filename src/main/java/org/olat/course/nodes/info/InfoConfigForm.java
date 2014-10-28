@@ -93,7 +93,8 @@ public class InfoConfigForm extends FormBasicController {
 			durationSelection.select("30", true);
 		}
 
-		lengthSelection = uifactory.addDropdownSingleselect("pane.tab.infos_config.max_shown", showLayout, maxLengthValues, maxLengthValues, null);
+		lengthSelection = uifactory.addDropdownSingleselect("pane.tab.infos_config.max_shown", null, showLayout, maxLengthValues, maxLengthValues, null);
+
 		lengthSelection.setLabel("pane.tab.infos_config.max", null);
 		String lengthStr = (String)config.get(InfoCourseNodeConfiguration.CONFIG_LENGTH);
 		if(StringHelper.containsNonWhitespace(lengthStr)) {
