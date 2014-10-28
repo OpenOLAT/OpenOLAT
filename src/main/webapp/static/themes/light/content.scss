@@ -33,7 +33,7 @@
 	Icon font includes. everyhting necessary to load the font and have the variables. 
    	Use our own mixins to add the fonts to content styles 
 */
-$fa-font-path		: "../../../font-awesome/fonts" !default;
+$fa-font-path		: "../../font-awesome/fonts" !default;
 $fa-css-prefix		: "o_icon" !default;
 @import "../../../font-awesome/scss/variables";
 @import "../../../font-awesome/scss/path";
