@@ -478,3 +478,43 @@ body.o_dmz {
       margin-right: 0;
     }
 }
+
+
+/* styles for 'more' button and dropdown */
+
+.o_navbar .o_tab_dropdown {
+  position: relative;
+  .o_navbar_tab_close {
+    position: absolute;
+    top: 0px; 
+    right: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+    margin-right: 15px;
+    background-color: inherit;
+  }
+}
+
+@media (max-width: $screen-xs-max) { 
+    #o_navbar_more {
+      > li {
+        position: inherit;
+      }
+      #o_navbar_more_dropdown {
+        left: 0px;
+        right: 0px;
+
+        a {
+          line-height: 2;
+        }
+      }
+    }
+}
+
+#o_navbar_more_dropdown {
+  @media (max-width: $screen-xs-max) { 
+    width:100%;
+  }
+}
+
+/* --- */

@@ -25,7 +25,9 @@
 +function ($) {
 	'use strict';
 	var Navbar = function() {
-		var tabsExist = !!$('#o_navbar_container .o_navbar_tabs li:last-child').length;
+		this.createMoreButton();
+		
+		var tabsExist = this.doTabsExist();
 		this.state = {
 			rightVisible: false,
 			toggleVisible: false,
@@ -47,8 +49,13 @@
 			personalToolsW : 0,
 			personalToolsOffCanvas : false,
 			personalToolsDirty : false,
-			offCanvasWidth : 0
+			offCanvasWidth : 0,
+			moreW: 0
 		};
+		
+		//hide 'more' button before it is used
+		this.hideMoreButton();
+		
 		// get site of menu from css
 		var w = $('#o_offcanvas_right').css('width');
 		//no width in full screen mode
@@ -105,9 +112,7 @@
 	Navbar.prototype.onDOMreplacementCallback = function() {
 		if (!this.state.busy && (this.state.staticDirty || this.state.sitesDirty || this.state.tabsDirty || this.state.personalToolsDirty)) {			
 			this.state.busy = true;
-			//offcanvas sites and tabs need to be cleared, otherwise they are duplicated
-			$('.o_sites_offcanvas').empty();
-			$('.o_tabs_offcanvas').empty();
+			this.cleanupMoreDropdown();
 			this.calculateWidth();
 			this.optimize();		
 			this.state.sitesDirty = false;
@@ -137,6 +142,7 @@
 		    //don't include margin, because left and right margins on this element are negative
 	    	this.state.personalToolsW = $('#o_navbar_tools_personal').outerWidth(false);	    	
 	    }
+	    this.state.moreW = $('#o_navbar_more:visible').outerWidth(true);
 	    
 //	    console.log('calculateWidth w:' + this.state.navbarW + ' s:'+this.state.sitesW + ' d:'+this.state.tabsW + ' t:'+this.state.personalToolsW + ' o:'+this.getOverflow() );
 	}
@@ -159,15 +165,22 @@
 		// always subtract the space used by brand and the permanent tools
 		o -= this.state.brandW;
 		o -= this.state.permanentToolW;
+		
+		//take width of 'more' button into account
+		o -= this.state.moreW;
 
 		//element widths can sometimes be off by 1px, so we need a small buffer on o
-		o -= 20;
+		o -= 15;
 		
 		return -o;
 	}
 	    
 	Navbar.prototype.optimize = function(e) {
 		var o = this.getOverflow();
+		//check state of tabs
+		var tabsExist = this.doTabsExist();
+		this.state.tabsCollapsed = !tabsExist;
+		this.state.tabsExtended = tabsExist;
 //		console.log('optimize o:' + o);
 		// Move from toolbar to offcanvas
 		while (o > 0 && (!this.state.personalToolsOffCanvas || !this.state.tabsCollapsed || !this.state.sitesCollapsed || !this.state.staticOffCanvas)) {
@@ -246,19 +259,12 @@
 	 */
 	Navbar.prototype.collapseSites = function(e) {
 		var sites = $('#o_navbar_container .o_navbar_sites');
-		var sitesOffcanvas = $('.o_sites_offcanvas');
-		
-		if(sitesOffcanvas.length == 0){
-			sitesOffcanvas = $('<ul>', {
-				'class': 'nav o_navbar-nav o_navbar_sites o_sites_offcanvas'
-			});
-			sitesOffcanvas.prependTo('#o_offcanvas_right_container');
-		}
+		var morePulldown = $('#o_navbar_more_dropdown');
 
 		var site = sites.find('li:last-child');
 		if(site.length){
 //			console.log('collapsing site '+site.attr('class').match('o_site_[a-z]*'));
-			site.appendTo(sitesOffcanvas);
+			site.prependTo(morePulldown);
 		}
 
 		if(sites.children().length == 0){
@@ -266,6 +272,7 @@
 		}
 		
 		this.state.sitesExtended = false;
+		this.showMoreButton();
 	}
 
 	/*
@@ -273,25 +280,25 @@
 	 */
 	Navbar.prototype.extendSites = function(e) {
 		var sites = $('#o_navbar_container .o_navbar_sites');
-		var sitesOffcanvas = $('.o_sites_offcanvas');
+		var morePulldown = $('#o_navbar_more_dropdown');
 		var siteFit = true;
 		
-		var site = sitesOffcanvas.find('li:last-child');
+		var site = morePulldown.find('li:first-child');
 		if(site.length){
 			site.appendTo(sites);
 			//if site doesn't fit move it back
 			var o = this.getOverflow();
 			if(-o < site.outerWidth(true)){
-				site.appendTo(sitesOffcanvas);
+				site.prependTo(morePulldown);
 				siteFit = false;
 			} else {
 //				console.log('extending site '+site.attr('class').match('o_site_[a-z]*'));
 			}
 		}
 
-		if(sitesOffcanvas.children().length == 0){
+		if(morePulldown.children().length == 0){
 			this.state.sitesExtended = true;
-			sitesOffcanvas.remove();
+			this.hideMoreButton();
 		}
 		
 		this.state.sitesCollapsed = false;
@@ -304,19 +311,13 @@
 	 */
 	Navbar.prototype.collapseTabs = function(e) {
 		var tabs = $('#o_navbar_container .o_navbar_tabs');
-		var tabsOffcanvas = $('.o_tabs_offcanvas');
-		
-		if(tabsOffcanvas.length == 0){
-			tabsOffcanvas = $('<ul>', {
-				'class': 'nav o_navbar-nav o_navbar_tabs o_tabs_offcanvas'
-			});
-			tabsOffcanvas.prependTo('#o_offcanvas_right_container');
-		}
+		var morePulldown = $('#o_navbar_more_dropdown');
 
-		var tab = tabs.find('li:last-child');
+		var tab = tabs.find('li:first-child');
 		if(tab.length){
 //			console.log('collapsing tab '+tab.children(0).attr('title'));
-			tab.appendTo(tabsOffcanvas);
+			tab.addClass('o_tab_dropdown');
+			tab.prependTo(morePulldown);
 		}
 
 		if(tabs.children().length == 0){
@@ -324,6 +325,7 @@
 		}
 		
 		this.state.tabsExtended = false;
+		this.showMoreButton();
 	}
 
 	/*
@@ -331,25 +333,26 @@
 	 */
 	Navbar.prototype.extendTabs = function(e) {
 		var tabs = $('#o_navbar_container .o_navbar_tabs');
-		var tabsOffcanvas = $('.o_tabs_offcanvas');
+		var morePulldown = $('#o_navbar_more_dropdown');
 		var tabFit = true;
 		
-		var tab = tabsOffcanvas.find('li:last-child');
+		var tab = morePulldown.find('li:last-child');
 		if(tab.length){
 			tab.appendTo(tabs);
 			//if tab doesn't fit move it back
 			var o = this.getOverflow();
 			if(-o < tab.outerWidth(true)){
-				tab.appendTo(tabsOffcanvas);
+				tab.prependTo(morePulldown);
 				tabFit = false;
 			} else {
 //				console.log('extending tab '+tab.children(0).attr('title'));
+				tab.removeClass('o_tab_dropdown');
 			}
 		}
 
-		if(tabsOffcanvas.children().length == 0){
+		if(morePulldown.children().length == 0){
 			this.state.tabsExtended = true;
-			tabsOffcanvas.remove();
+			this.hideMoreButton();
 		}
 		
 		this.state.tabsCollapsed = false;
@@ -361,21 +364,47 @@
 	 * Get or create the 'more' navbar element.
 	 * A button to display collapsed elements.
 	 */
-	Navbar.prototype.getOrCreateMoreButton = function() {
+	Navbar.prototype.createMoreButton = function() {
 		var collapse = $('#o_navbar_container .o_navbar-collapse');
-		var more = $('.o_navbar_more');
+		var more = $('#o_navbar_more');
 		if(more.length == 0){
-			/* as long as 'more' has no function, don't display it:
-			 * style="display:none;"
-			 */
-			more = $('<ul class="o_navbar_more nav o_navbar-nav" style="display:none;"><li><a href="">more</a></li></ul>');
+			more = $('<ul id="o_navbar_more" class="nav o_navbar-nav"><li>'
+						+ '<a class="dropdown-toggle" data-toggle="dropdown" href="#"">More <b class="caret"></b></a>'
+						+ '<ul id="o_navbar_more_dropdown" class="dropdown-menu dropdown-menu-right"></ul>'
+					+ '</li></ul>');
 			more.appendTo(collapse);
-			more.bind('click', this.showMoreSites);
 		}
 	}
 
-	Navbar.prototype.showMoreSites = function(e) {
-		console.log('more');
+	Navbar.prototype.showMoreButton = function() {
+		var more = $('#o_navbar_more');
+		more.css('display', 'block');
+	}
+
+	Navbar.prototype.hideMoreButton = function() {
+		var more = $('#o_navbar_more');
+		more.css('display', 'none');
+	}
+	
+	/*
+	 * Dropdown needs to be cleared after dom refresh, otherwise items are duplicated
+	 */
+	Navbar.prototype.cleanupMoreDropdown = function() {
+		//restore state of non-dirty elements
+		if(!this.state.sitesDirty){
+			//move sites back to navbar, so they can be correctly collapsed again
+			var sites = $('#o_navbar_container .o_navbar_sites');
+			var _sites = $('#o_navbar_more_dropdown').children().not('.o_tab_dropdown');
+			_sites.appendTo(sites);
+		}
+		if(!this.state.tabsDirty){
+			//move tabs back to navbar, so they can be correctly collapsed again
+			var tabs = $('#o_navbar_container .o_navbar_tabs');
+			var _tabs = $('#o_navbar_more_dropdown').children('.o_tab_dropdown');
+			_tabs.prependTo(tabs);
+		}
+		//clear the rest (all dirty elements)
+		$('#o_navbar_more_dropdown').empty();
 	}
 	
 	Navbar.prototype.showToggle = function() {
@@ -424,6 +453,10 @@
 		} else {
 			this.showRight();
 		}
+	}
+	
+	Navbar.prototype.doTabsExist = function() {
+		return !!$('#o_navbar_container .o_navbar_tabs li:last-child').length;
 	}
 	
 	// Initialize navbar
