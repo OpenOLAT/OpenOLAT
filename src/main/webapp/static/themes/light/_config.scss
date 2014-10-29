@@ -347,6 +347,8 @@ $o-im-summary-bg				: $badge-bg !default;
 $o-im-status-available-color	: #006633 !default;
 $o-im-status-dnd-color			: #CCCC33 !default;
 $o-im-status-unavailable-color	: #996633 !default;
+$o-im-newmessage-color			: $brand-danger !default;
+$o-im-newmessage-hover-color	: lighten($brand-warning, 10%) !default;
 
 /* Forum module */
 $o-forum-quote-author-color 	: $text-muted !default;

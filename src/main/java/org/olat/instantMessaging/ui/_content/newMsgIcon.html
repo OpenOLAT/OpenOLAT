@@ -1,13 +1,12 @@
 $r.render("chats")
 #if($iconsHolder.size() > 0)
 	<div id="o_im_message">	
-		<div id="o_sel_im_play_sound" style="display:none; width:1px; height:1px;"></div>
 		<script type="text/javascript">
 		/* <![CDATA[ */
 			## Play sound using scriptaculous library. 
 			## Use jQuery.ready to deferre execution and prevent errors in IE
 			jQuery(function() {
-				BPlayer.playSound('$newMessageSoundURL','o_sel_im_play_sound');
+				BPlayer.playSound('$newMessageSoundURL');
 			});
 			document.title = "$r.translate('im.new.message.short')";
 		/* ]]> */ 

@@ -946,7 +946,7 @@ function o_shareLinkPopup(id, text, loc) {
     	html: true,
     	trigger: 'click',
     	container: 'body',
-    	content: text,
+    	content: text
 	}).on('shown.bs.popover', function () {
 		var clickListener = function (e) {	
 			if (jQuery(e.target).data('toggle') !== 'popover' && jQuery(e.target).parents('.popover.in').length === 0) { 
