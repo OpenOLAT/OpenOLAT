@@ -17,6 +17,13 @@
 	#o_im_status div.o_chelp_wrapper {
 		right: 0.5em;
 	}
+	#o_im_message .o_icon_message {
+		color: $o-im-newmessage-color;
+		&:hover {
+			color: $o-im-newmessage-hover-color;		
+		}		
+	}
+	
 }
 
 .o_im_load_history {
