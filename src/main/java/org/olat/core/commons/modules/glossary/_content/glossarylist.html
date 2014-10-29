@@ -21,9 +21,9 @@
 	#end
 	<dl>
 	#foreach($glossaryItem in $editAndDelButtonList )
-		<div class="o_entry o_block clearfix">
 		#set ($glossaryItemIndex = $glossaryItem.getIndex())
 		#if ( $filterIndex == $glossaryItemIndex || $filterIndex == "all" )
+		<div class="o_entry o_block clearfix">
 			#if ($editModeEnabled)
 				<div class="pull-right">
 					<div class="btn-group">
@@ -71,8 +71,8 @@
 			<dd>
 				$r.xssScan($glossaryItem.getGlossDef())
 			</dd>
-		#end
 		</div>
+		#end
 	#end
 	</dl>
 </div>
