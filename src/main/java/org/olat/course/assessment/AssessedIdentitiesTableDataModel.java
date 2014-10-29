@@ -78,7 +78,7 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 	private List<String> userPropertyNameList;
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private static final String usageIdentifyer = AssessedIdentitiesTableDataModel.class.getCanonicalName();
+	public static final String usageIdentifyer = AssessedIdentitiesTableDataModel.class.getCanonicalName();
 	private final Translator translator;
 	
 	private Map<Long, CertificateLight> certificates;

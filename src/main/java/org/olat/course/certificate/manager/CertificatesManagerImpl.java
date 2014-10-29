@@ -432,8 +432,7 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 			}
 			
 			dbInstance.getCurrentEntityManager().persist(certificate);
-			
-			
+
 			MailerResult newResult = sendCertificate(identity, entry, certificateFile);
 			if(result != null) {
 				result.append(newResult);

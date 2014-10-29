@@ -320,7 +320,7 @@ public class CourseController extends BasicController implements Activateable2 {
 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, entry.getStudentKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, entry, null);
+		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, entry);
 		listenTo(statementCtrl);
 		mainVC.put("efficiencyDetails", statementCtrl.getInitialComponent());
 		

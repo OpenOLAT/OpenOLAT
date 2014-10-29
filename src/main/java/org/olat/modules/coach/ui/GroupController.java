@@ -305,7 +305,7 @@ public class GroupController extends BasicController implements Activateable2 {
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, entry.getStudentKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, entry, group);
+		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, entry);
 		listenTo(statementCtrl);
 		mainVC.put("efficiencyDetails", statementCtrl.getInitialComponent());
 		

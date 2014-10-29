@@ -157,7 +157,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		certificate = certificatesManager.getLastCertificate(statementOwner, resourceKey);
 		
 		mainVC = createVelocityContainer("certificate_efficiencystatement");
-		populateAssessedIdentityInfos(ureq, statementOwner, courseRepo, businessGroup, links);
+		populateAssessedIdentityInfos(ureq, courseRepo, businessGroup, links);
 		
 		if(efficiencyStatement != null && certificate != null) {
 			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -195,7 +195,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		//
 	}
 
-	private void populateAssessedIdentityInfos(UserRequest ureq, Identity statementOwner, RepositoryEntry courseRepo, BusinessGroup group, boolean links) { 
+	private void populateAssessedIdentityInfos(UserRequest ureq, RepositoryEntry courseRepo, BusinessGroup group, boolean links) { 
 		if(efficiencyStatement != null) {
 			mainVC.contextPut("courseTitle", StringHelper.escapeHtml(efficiencyStatement.getCourseTitle()));
 			mainVC.contextPut("date", StringHelper.formatLocaleDateTime(efficiencyStatement.getLastUpdated(), ureq.getLocale()));

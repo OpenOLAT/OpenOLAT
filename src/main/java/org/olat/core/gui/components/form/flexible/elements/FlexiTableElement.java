@@ -159,10 +159,16 @@ public interface FlexiTableElement extends FormItem {
 	public void setSelectAllEnable(boolean enable);
 	
 	/**
-	 * Set all selecteds rows
+	 * Return all selected rows
 	 * @return
 	 */
 	public Set<Integer> getMultiSelectedIndex();
+	
+	/**
+	 * Set a list of selected index (don't sort after this point)
+	 * @param set
+	 */
+	public void setMultiSelectedIndex(Set<Integer> set);
 	
 	/**
 	 * 

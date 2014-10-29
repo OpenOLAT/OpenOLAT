@@ -135,8 +135,8 @@ public class AssessedIdentityCertificatesController extends BasicController {
 
 	private void doDownload(UserRequest ureq, Certificate certificate) {
 		VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
-		MediaResource resource = new VFSMediaResource(certificateLeaf);
-		ureq.getDispatchResult().setResultingMediaResource(resource);
+		MediaResource certificateResource = new VFSMediaResource(certificateLeaf);
+		ureq.getDispatchResult().setResultingMediaResource(certificateResource);
 	}
 	
 	private void doConfirmGenerateCertificate(UserRequest ureq) {

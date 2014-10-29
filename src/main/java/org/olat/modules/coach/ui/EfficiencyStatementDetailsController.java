@@ -47,7 +47,6 @@ import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.IdentityAssessmentEditController;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
-import org.olat.group.BusinessGroup;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.repository.RepositoryEntry;
 
@@ -73,19 +72,17 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 	
 	private final Identity assessedIdentity;
 	
-	private final BusinessGroup group;
 	private final BaseSecurity securityManager;
 	private final EfficiencyStatementManager efficiencyStatementManager;
 	
 	public EfficiencyStatementDetailsController(UserRequest ureq, WindowControl wControl,
-			EfficiencyStatementEntry statementEntry, BusinessGroup group) {
+			EfficiencyStatementEntry statementEntry) {
 		super(ureq, wControl);
 		
 		efficiencyStatementManager = EfficiencyStatementManager.getInstance();
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 
 		mainVC = createVelocityContainer("efficiency_details");
-		this.group = group;
 		this.statementEntry = statementEntry;
 
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);

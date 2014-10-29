@@ -289,7 +289,7 @@ public class StudentOverviewController extends BasicController implements Activa
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(RepositoryEntry.class, statement.getCourseRepoKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, entry, null);
+		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, entry);
 		listenTo(statementCtrl);
 		detailsCmp.setText(statement.getShortTitle());
 

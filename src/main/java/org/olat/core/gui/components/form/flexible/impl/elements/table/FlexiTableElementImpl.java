@@ -1150,6 +1150,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	@Override
+	public void setMultiSelectedIndex(Set<Integer> set) {
+		if(multiSelectedIndex == null) {
+			multiSelectedIndex = new HashSet<Integer>();
+		}
+		multiSelectedIndex.addAll(set);
+	}
+
+	@Override
 	public boolean isMultiSelectedIndex(int index) {
 		return multiSelectedIndex != null && multiSelectedIndex.contains(new Integer(index));
 	}

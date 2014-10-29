@@ -26,7 +26,6 @@
 package org.olat.course.assessment;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -66,7 +65,6 @@ import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
-import org.olat.core.gui.components.table.TableMultiSelectEvent;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
@@ -79,8 +77,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -94,7 +90,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.CourseFactory;
@@ -103,9 +98,8 @@ import org.olat.course.assessment.NodeTableDataModel.Cols;
 import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.certificate.CertificateLight;
-import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
-import org.olat.course.certificate.model.CertificateInfos;
+import org.olat.course.certificate.ui.CertificatesWizardController;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.OnlyGroupConditionInterpreter;
@@ -119,7 +113,6 @@ import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
@@ -186,6 +179,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	// Course assessment notification support fields	
 	private Controller csc;
 	private Controller certificateSubscriptionCtrl;
+	private CertificatesWizardController certificateWizardCtrl;
 	
 	// Hash map to keep references to already created user course environments
 	// Serves as a local cache to reduce database access - not shared by multiple threads
@@ -221,13 +215,13 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	private Link showAllCourseNodesButton;
 	private Link filterCourseNodesButton;
 
-	private DialogBoxController confirmCertificateCtrl;
 	private EfficiencyStatementAssessmentController esac;
 	private BulkAssessmentOverviewController bulkAssOverviewCtrl;
 	private final TooledStackedPanel stackPanel;
 
 	private RepositoryEntry re;
 	private OLATResourceable ores;
+	private final boolean hasAssessableNodes;
 	
 	@Autowired
 	private OnyxModule onyxModule;
@@ -273,7 +267,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		
 		Identity focusOnIdentity = null;
 		ICourse course = CourseFactory.loadCourse(ores);
-		boolean hasAssessableNodes = course.hasAssessableNodes();
+		hasAssessableNodes = course.hasAssessableNodes();
 		boolean hasCertificates = course.getCourseConfig().isAutomaticCertificationEnabled()
 				|| course.getCourseConfig().isManualCertificationEnabled();
 		
@@ -560,27 +554,6 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 					currentCourseNode = null;
 				}
 				doUserChooseWithData(ureq, identitiesList, currentGroup, currentCourseNode);
-			} else if (event instanceof  TableMultiSelectEvent) {
-				TableMultiSelectEvent tms = (TableMultiSelectEvent)event;
-				BitSet selectedUsers = tms.getSelection();
-				if(selectedUsers.isEmpty()) {
-					showWarning("select.one.user.warning");
-				} else {
-					ICourse course = CourseFactory.loadCourse(ores);
-					CourseNode rootNode = course.getRunStructure().getRootNode();
-					List<CertificateInfos> futureCertififedList = new ArrayList<>();
-					for (int i=selectedUsers.nextSetBit(0); i >= 0; i=selectedUsers.nextSetBit(i+1)) {
-						Object row = userListCtr.getTableDataModel().getObject(i);
-						if(row instanceof AssessedIdentityWrapper) {
-							AssessedIdentityWrapper wrapper = (AssessedIdentityWrapper)row;
-							ScoreEvaluation scoreEval = wrapper.getUserCourseEnvironment().getScoreAccounting().getScoreEvaluation(rootNode);
-							Float score = scoreEval == null ? null : scoreEval.getScore();
-							Boolean passed = scoreEval == null ? null : scoreEval.getPassed();
-							futureCertififedList.add(new CertificateInfos(wrapper.getIdentity(), score, passed));
-						}
-					}
-					doGenerateCertificate(ureq, futureCertififedList);
-				}
 			}
 		}
 		else if (source == nodeListCtr) {
@@ -643,14 +616,13 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			if (event.equals(Event.CANCELLED_EVENT)) {
 				setContent(userChoose);
 			}
-		} else if(source == confirmCertificateCtrl) {
-			if(DialogBoxUIFactory.isYesEvent(event)) {
-				@SuppressWarnings("unchecked")
-				List<CertificateInfos> assessedIdentitiesInfos = (List<CertificateInfos>)confirmCertificateCtrl.getUserObject();
-				doGenerateCertificates(assessedIdentitiesInfos);
-				Map<Long, CertificateLight> certificates = getCertificates(CourseFactory.loadCourse(ores));
-				((AssessedIdentitiesTableDataModel)userListCtr.getTableDataModel()).setCertificates(certificates);
-				userListCtr.modelChanged();
+		} else if(source == certificateWizardCtrl) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				if(userListCtr != null) {
+					Map<Long, CertificateLight> certificates = getCertificates(CourseFactory.loadCourse(ores));
+					((AssessedIdentitiesTableDataModel)userListCtr.getTableDataModel()).setCertificates(certificates);
+					userListCtr.modelChanged();
+				}
 			}
 		}
 	}
@@ -920,6 +892,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		tdm.addColumnDescriptors(userListCtr, CMD_CHOOSE_USER, mode == MODE_NODEFOCUS || mode == MODE_GROUPFOCUS || mode == MODE_USERFOCUS, showCertificate);
 		userListCtr.setTableDataModel(tdm);
 		
+		int count = 0;
 		List<String> toolCmpNames = new ArrayList<>(3);
 		if(courseNode != null) {
 			CourseEnvironment courseEnv = course.getCourseEnvironment();
@@ -931,7 +904,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 				options.setGroup(group);
 			}
 			List<Controller> tools = courseNode.createAssessmentTools(ureq, getWindowControl(), stackPanel, courseEnv, options);
-			int count = 0;
+			
 			for(Controller tool:tools) {
 				listenTo(tool);
 				String toolCmpName = "ctrl_" + (count++);
@@ -944,8 +917,13 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		}
 		if(courseConfig.isManualCertificationEnabled()) {
 			if(courseNode == null || courseNode == course.getRunStructure().getRootNode()) {
-				userListCtr.addMultiSelectAction("create.certificate", "create.certificate");
-				userListCtr.setMultiSelect(true);
+				removeAsListenerAndDispose(certificateWizardCtrl);
+				certificateWizardCtrl = new CertificatesWizardController(ureq, getWindowControl(), tdm, ores, hasAssessableNodes);
+				listenTo(certificateWizardCtrl);
+
+				String toolCmpName = "ctrl_" + (count++);
+				userChoose.put(toolCmpName, certificateWizardCtrl.getInitialComponent());
+				toolCmpNames.add(toolCmpName);
 			}
 		}
 		userChoose.contextPut("toolCmpNames", toolCmpNames);
@@ -1073,52 +1051,6 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		esac = new EfficiencyStatementAssessmentController(ureq, getWindowControl(), ores);
 		listenTo(esac);
 		main.setContent(esac.getInitialComponent());
-	}
-	
-	private void doGenerateCertificates(List<CertificateInfos> assessedIdentitiesInfos) {
-		ICourse course = CourseFactory.loadCourse(ores);
-		RepositoryEntry resource = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		Long templateKey = course.getCourseConfig().getCertificateTemplate();
-		CertificateTemplate template = null;
-		if(templateKey != null) {
-			template = certificatesManager.getTemplateById(templateKey);
-		}
-		
-		MailerResult result = new MailerResult();
-		certificatesManager.generateCertificates(assessedIdentitiesInfos, resource, template, result);
-	}
-	
-	private void doGenerateCertificate(UserRequest ureq, List<CertificateInfos> assessedIdentitiesInfos) {
-		StringBuilder sb = new StringBuilder();
-		for(CertificateInfos infos:assessedIdentitiesInfos) {
-			String name = userManager.getUserDisplayName(infos.getAssessedIdentity());
-			if(sb.length() > 0) sb.append(", ");
-			sb.append(name);
-		}
-		
-		boolean recertificationAllowed = true;
-		StringBuilder sbConfirm = new StringBuilder();
-		ICourse course = CourseFactory.loadCourse(ores);
-		RepositoryEntry resource = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		for(CertificateInfos infos:assessedIdentitiesInfos) {
-			boolean allowed = certificatesManager.isRecertificationAllowed(infos.getAssessedIdentity(), resource);
-			recertificationAllowed &= allowed;
-			if(!allowed) {
-				String name = userManager.getUserDisplayName(infos.getAssessedIdentity());
-				if(sbConfirm.length() > 0) sbConfirm.append(", ");
-				sbConfirm.append(name);
-			}
-		}
-		
-		String title = translate("confirm.certificate.title");
-		String text;
-		if(recertificationAllowed) {
-			text = translate("confirm.certificate.description", new String[]{ sb.toString() });
-		} else {
-			text = translate("confirm.certificate.description.warning", new String[]{ sb.toString(), sbConfirm.toString() });
-		}
-		confirmCertificateCtrl = activateYesNoDialog(ureq, title, text, confirmCertificateCtrl);
-		confirmCertificateCtrl.setUserObject(assessedIdentitiesInfos);
 	}
 
 	/**
