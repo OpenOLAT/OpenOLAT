@@ -124,7 +124,8 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 				if(ImageHelperImpl.writeTo(frame, scaledImage, scaledSize, "jpeg")) {
 					size = new FinalSize(scaledSize.getWidth(), scaledSize.getHeight());
 				}
-			} catch (IOException | JCodecException e) {
+			//NullPointerException can be thrown if the jcodec cannot handle the codec of the movie
+			} catch (IOException | JCodecException | NullPointerException e) {
 				log.error("", e);
 			}
 		}
