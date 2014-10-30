@@ -100,6 +100,7 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.gui.control.UserToolsMenuController;
 import org.olat.home.HomeSite;
 
 /**
@@ -137,6 +138,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 
 	// NEW FROM FullChiefController
 	private Controller topnavCtr, footerCtr;
+	private UserToolsMenuController userToolsMenuCtrl;
 	private SiteInstance curSite;
 	private DTab curDTab;
 	
@@ -424,8 +426,11 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		topnavCtr = baseFullWebappControllerParts.createTopNavController(ureq, getWindowControl());
 		if (topnavCtr != null) {
 			listenTo(topnavCtr); // cleanup on dispose
-			Component topNavCmp = topnavCtr.getInitialComponent();
-			mainVc.put("topnavComponent", topNavCmp);
+			mainVc.put("topnavComponent", topnavCtr.getInitialComponent());
+			
+			userToolsMenuCtrl = new UserToolsMenuController(ureq, getWindowControl());
+			listenTo(userToolsMenuCtrl);
+			mainVc.put("menuComponent", userToolsMenuCtrl.getInitialComponent());
 		}
 
 		// panel for modal overlays, placed right after the olat-header-div

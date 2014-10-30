@@ -24,7 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.admin.user.tools.UserTool;
+import org.olat.admin.user.tools.UserToolExtension;
 import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.core.extensions.ExtManager;
 import org.olat.core.gui.UserRequest;
@@ -55,7 +55,7 @@ public class ToolsPrefsController extends FormBasicController {
 	private final boolean enabled;
 	private final Preferences prefs;
 	private final Identity tobeChangedIdentity;
-	private final List<UserTool> userTools;
+	private final List<UserToolExtension> userTools;
 	
 	private MultipleSelectionElement presetEl;
 	
@@ -76,10 +76,11 @@ public class ToolsPrefsController extends FormBasicController {
 		
 		if(enabled) {
 			Set<String> aToolSet = userToolsModule.getAvailableUserToolSet();
-			userTools = userToolsModule.getAllUserTools(ureq);
+			userTools = userToolsModule.getAllUserToolExtensions(ureq);
 			if(aToolSet.size() > 0) {
-				for(Iterator<UserTool> it=userTools.iterator(); it.hasNext(); ) {
-					if(!aToolSet.contains(it.next().getKey())) {
+				for(Iterator<UserToolExtension> it=userTools.iterator(); it.hasNext(); ) {
+					UserToolExtension userToolExt = it.next();
+					if(!aToolSet.contains(userToolExt.getUniqueExtensionID()) || userToolExt.isShortCutOnly()) {
 						it.remove();
 					}
 				}
@@ -104,9 +105,9 @@ public class ToolsPrefsController extends FormBasicController {
 			toolKeys = new String[numOfTools];
 			toolValues = new String[numOfTools];
 			for(int i=0; i<numOfTools; i++) {
-				UserTool userTool = userTools.get(i);
-				toolKeys[i] = userTool.getKey();
-				toolValues[i] = userTool.getLabel();
+				UserToolExtension userTool = userTools.get(i);
+				toolKeys[i] = userTool.getUniqueExtensionID();
+				toolValues[i] = userTool.getLabel(getLocale());
 			}
 		} else {
 			toolKeys = new String[0];

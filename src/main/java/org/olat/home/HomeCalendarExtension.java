@@ -19,9 +19,9 @@
  */
 package org.olat.home;
 
+import org.olat.admin.user.tools.UserToolExtension;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.extensions.action.GenericActionExtension;
 
 /**
  * 
@@ -29,7 +29,7 @@ import org.olat.core.extensions.action.GenericActionExtension;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class HomeCalendarExtension extends GenericActionExtension {
+public class HomeCalendarExtension extends UserToolExtension {
 
 	@Override
 	public boolean isEnabled() {

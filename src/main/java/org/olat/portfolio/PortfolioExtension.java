@@ -19,8 +19,8 @@
  */
 package org.olat.portfolio;
 
+import org.olat.admin.user.tools.UserToolExtension;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.extensions.action.GenericActionExtension;
 
 /**
  * 
@@ -28,7 +28,7 @@ import org.olat.core.extensions.action.GenericActionExtension;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PortfolioExtension extends GenericActionExtension {
+public class PortfolioExtension extends UserToolExtension {
 
 	@Override
 	public boolean isEnabled() {

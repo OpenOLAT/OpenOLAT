@@ -19,15 +19,10 @@
  */
 package org.olat.gui.control;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.AutoCreator;
-import org.olat.core.id.Identity;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryService;
 
 /**
  * 
@@ -41,51 +36,9 @@ import org.olat.repository.RepositoryService;
  */
 public class TopNavCreator extends AutoCreator {
 	
-	private boolean search;
-	private String internalSiteSoftKey;
-	private boolean searchOnlyHasInternalSiteMember;
-	
 	@Override
 	public Controller createController(UserRequest ureq, WindowControl wControl) {
-		boolean canSearch = canSearch(ureq.getIdentity());
-		return new OlatTopNavController(ureq, wControl, canSearch);
+		return new OlatTopNavController(ureq, wControl);
 	}
 
-	public boolean isSearch() {
-		return search;
-	}
-
-	public void setSearch(boolean search) {
-		this.search = search;
-	}
-	
-	public String getInternalSiteSoftKey() {
-		return internalSiteSoftKey;
-	}
-
-	public void setInternalSiteSoftKey(String internalSiteSoftKey) {
-		this.internalSiteSoftKey = internalSiteSoftKey;
-	}
-
-	public boolean isSearchOnlyHasInternalSiteMember() {
-		return searchOnlyHasInternalSiteMember;
-	}
-
-	public void setSearchOnlyHasInternalSiteMember(
-			boolean searchOnlyHasInternalSiteMember) {
-		this.searchOnlyHasInternalSiteMember = searchOnlyHasInternalSiteMember;
-	}
-
-	public boolean canSearch(Identity identity) {
-		boolean canSearch = search;
-		if(isSearchOnlyHasInternalSiteMember()) {
-			String softKey = getInternalSiteSoftKey();
-			RepositoryEntry repoEntry = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(softKey, false);
-			if(repoEntry != null) {
-				RepositoryService contextManager = CoreSpringFactory.getImpl(RepositoryService.class);
-				canSearch = contextManager.isMember(identity, repoEntry);
-			}
-		}
-		return canSearch;
-	}
 }

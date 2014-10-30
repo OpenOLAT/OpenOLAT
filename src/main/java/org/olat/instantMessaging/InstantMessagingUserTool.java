@@ -17,46 +17,44 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.home;
+package org.olat.instantMessaging;
 
+import org.olat.admin.user.tools.UserTool;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
+import org.olat.instantMessaging.ui.InstantMessagingMainController;
 
 /**
  * 
- * Description:<br>
- * this controller displays a header and a message (used for guest-info in minimalHome for guests)
- * header and message are set in translation-properties
- * 
- * 
- * <P>
- * Initial Date:  12.09.2011 <br>
- * @author strentini, sergio.trentini@frentix.com,   www.frentix.com
+ * Initial date: 29.10.2014<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class GuestHomeInfoController extends BasicController {
-
-	private VelocityContainer vc;
-
-	public GuestHomeInfoController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-		vc = createVelocityContainer("guestinfo");
-		putInitialPanel(vc);
+public class InstantMessagingUserTool implements UserTool {
+	
+	private WindowControl wControl;
+	private InstantMessagingMainController imController;
+	
+	public InstantMessagingUserTool(WindowControl wControl) {
+		this.wControl = wControl;
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		// TODO Auto-generated method stub
-
+	public Component getMenuComponent(UserRequest ureq, VelocityContainer container) {
+		if(imController == null) {
+			imController = new InstantMessagingMainController(ureq, wControl);
+		}
+		Component cmp = imController.getInitialComponent();
+		container.put(cmp.getComponentName(), cmp);
+		return cmp;
 	}
 
 	@Override
-	protected void doDispose() {
-		// TODO Auto-generated method stub
-
+	public void dispose() {
+		if(imController != null) {
+			imController.dispose();
+		}
 	}
-
 }

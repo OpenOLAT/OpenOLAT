@@ -211,17 +211,15 @@ $r.renderForce("development")
 <div id="o_offcanvas_right" class="o_navbar o_navbar-offcanvas " role="navigation">
 	<a href="#" class="o_offcanvas_close" title="$r.translate("close")"><i class='o_icon o_icon_close o_icon-lg'></i></a>
 	<div id="o_offcanvas_right_container" class="o_navbar-collapse">
+		#if($r.available("menuComponent"))
+			$r.render("menuComponent")
+		#end
 	</div>
 </div>
 <a id='o_top'></a>
 <div id="o_navbar_wrapper" class="o_navbar" role="navigation">
 	<div id="o_navbar_container" class="o_container_offcanvas container-fluid">
-		<button id="o_navbar_right-toggle" type="button" class="o_navbar-toggle" style="display: none;">
-		  <span class="sr-only">Toggle main navigation</span>
-		  <span class="icon-bar"></span>
-		  <span class="icon-bar"></span>
-		  <span class="icon-bar"></span>
-		</button>#set($logoLinkUri = $logoInfos.logoLinkUri)
+		#set($logoLinkUri = $logoInfos.logoLinkUri)
 		<a class="o_navbar-brand #if($logoInfos.logo) o_custom_navbar-brand #end" href="$logoLinkUri.uri" title="$logoInfos.logoAlt" #if($logoLinkUri.target) target="$logoLinkUri.target" #end></a>
 		
 		<div class="o_collapse o_navbar-collapse">

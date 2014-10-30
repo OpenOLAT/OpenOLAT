@@ -50,11 +50,17 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.RedirectMediaResource;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.event.EventBus;
+import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.course.nodes.iq.AssessmentEvent;
+import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.search.QueryException;
 import org.olat.search.SearchResults;
 import org.olat.search.SearchServiceUIFactory;
@@ -73,7 +79,8 @@ import org.olat.search.service.searcher.SearchClient;
  * Initial Date:  3 dec. 2009 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public class SearchInputController extends FormBasicController {
+public class SearchInputController extends FormBasicController implements GenericEventListener {
+	
 	private static final OLog log = Tracing.createLoggerFor(SearchInputController.class);
 	
 	private static final String FUZZY_SEARCH = "~0.7";
@@ -159,6 +166,29 @@ public class SearchInputController extends FormBasicController {
 
 	public void setResourceContextEnable(boolean resourceContextEnable) {
 		this.resourceContextEnable = resourceContextEnable;
+	}
+	
+	private EventBus singleUserEventCenter;
+	private static final OLATResourceable ass = OresHelper.createOLATResourceableType(AssessmentEvent.class);
+	
+	public void setAssessmentListener(UserRequest ureq) {
+		singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
+		singleUserEventCenter.registerFor(this, getIdentity(), ass);
+	}
+
+	@Override
+	public void event(Event event) {
+		if (event instanceof AssessmentEvent) {
+			AssessmentEvent ae = (AssessmentEvent)event;
+			if(ae.getEventType().equals(AssessmentEvent.TYPE.STARTED)) {
+				flc.setVisible(false);
+			} else if(ae.getEventType().equals(AssessmentEvent.TYPE.STOPPED)) {
+				OLATResourceable a = OresHelper.createOLATResourceableType(AssessmentInstance.class);
+				if (singleUserEventCenter.getListeningIdentityCntFor(a)<1) {
+					flc.setVisible(true);
+				}
+			} 
+		}
 	}
 
 	public String getSearchString() {

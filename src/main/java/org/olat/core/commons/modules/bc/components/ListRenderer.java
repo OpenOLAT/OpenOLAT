@@ -202,7 +202,7 @@ public class ListRenderer {
 	private void appendRenderedFile(FolderComponent fc, VFSItem child, String currentContainerPath, StringOutput sb, URLBuilder ubu, Translator translator,
 			boolean iframePostEnabled, boolean canContainerVersion, int pos) {
 	
-		// asume full access unless security callback tells us something different.
+		// assume full access unless security callback tells us something different.
 		boolean canWrite = child.getParentContainer().canWrite() == VFSConstants.YES;
 		boolean canDelete = child.getParentContainer().canDelete() == VFSConstants.YES;
 		boolean canMail = fc.isCanMail();

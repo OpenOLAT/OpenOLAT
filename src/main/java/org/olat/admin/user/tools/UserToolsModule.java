@@ -22,14 +22,12 @@ package org.olat.admin.user.tools;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.extensions.ExtManager;
 import org.olat.core.extensions.Extension;
 import org.olat.core.extensions.ExtensionElement;
-import org.olat.core.extensions.action.GenericActionExtension;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -78,17 +76,30 @@ public class UserToolsModule extends AbstractSpringModule {
 		init();
 	}
 	
-	public List<UserTool> getAllUserTools(UserRequest ureq) {
-		List<UserTool> userTools = new ArrayList<>();
-		
-		Locale locale = ureq.getLocale();
+	public List<UserToolExtension> getUserToolExtensions(UserRequest ureq) {
+		List<UserToolExtension> tools = new ArrayList<>();
+		if(!isUserToolsDisabled()) {
+			List<UserToolExtension> extensions = getAllUserToolExtensions(ureq);
+			Set<String> availableToolSet = getAvailableUserToolSet();
+			for(UserToolExtension extension:extensions) {
+				if(extension.isEnabled() &&
+						(availableToolSet.isEmpty() || availableToolSet.contains(extension.getUniqueExtensionID()))) {
+					tools.add(extension);
+				}
+			}
+		}
+		return tools;
+	}
+	
+	public List<UserToolExtension> getAllUserToolExtensions(UserRequest ureq) {
+		List<UserToolExtension> userTools = new ArrayList<>();
 		for (Extension anExt : extManager.getExtensions()) {
-			ExtensionElement ae = anExt.getExtensionFor(HomeMainController.class.getName(), ureq);
-			if (ae != null && ae instanceof GenericActionExtension) {
-				if(anExt.isEnabled()){
-					GenericActionExtension gAe = (GenericActionExtension) ae;
-					userTools.add(new UserTool(gAe, locale));
-				}	
+			if(anExt.isEnabled()){
+				ExtensionElement ae = anExt.getExtensionFor(HomeMainController.class.getName(), ureq);
+				if (ae != null && ae instanceof UserToolExtension) {
+					UserToolExtension gAe = (UserToolExtension) ae;
+					userTools.add(gAe);
+				}
 			}
 		}
 		

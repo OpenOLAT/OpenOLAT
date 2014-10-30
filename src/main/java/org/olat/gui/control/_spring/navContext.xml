@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                        http://www.springframework.org/schema/beans/spring-beans.xsd ">
+
+	<!-- Help -->
+	<bean class="org.olat.gui.control.HelpUserToolExtension" init-method="initExtensionPoints">
+		<property name="order" value="118" />
+		<property name="navigationKey" value="help" />
+		<property name="translationPackage" value="org.olat.gui.control" />
+		<property name="i18nActionKey" value="topnav.help"/>
+		<property name="i18nDescriptionKey" value="topnav.help.alt"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.home.HomeMainController</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean class="org.olat.gui.control.PrintUserToolExtension" init-method="initExtensionPoints">
+		<property name="order" value="119" />
+		<property name="navigationKey" value="print" />
+		<property name="translationPackage" value="org.olat.gui.control" />
+		<property name="i18nActionKey" value="topnav.printview"/>
+		<property name="i18nDescriptionKey" value="topnav.printview.alt"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.home.HomeMainController</value>
+			</list>
+		</property>
+	</bean>
+	
+</beans>

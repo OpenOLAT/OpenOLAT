@@ -17,31 +17,46 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.util.mail;
+package org.olat.gui.control;
 
+import java.util.Locale;
+
+import org.olat.admin.user.tools.UserTool;
+import org.olat.admin.user.tools.UserToolCategory;
 import org.olat.admin.user.tools.UserToolExtension;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.WindowControl;
 
 /**
  * 
- * Initial date: 20.10.2014<br>
+ * Initial date: 29.10.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MailToolExtension extends UserToolExtension {
-	
-	private MailModule module;
-	
-	/**
-	 * [used by Spring]
-	 * @param module
-	 */
-	public void setMailModule(MailModule module) {
-		this.module = module;
+public class PrintUserToolExtension extends UserToolExtension {
+
+	@Override
+	public String getShortCutCssId() {
+		return "o_navbar_print";
 	}
 	
 	@Override
-	public boolean isEnabled() {
-		return module.isInternSystem() && super.isEnabled();
+	public String getShortCutCssClass() {
+		return null;
+	}
+	
+	@Override
+	public UserToolCategory getUserToolCategory() {
+		return UserToolCategory.system;
 	}
 
+	@Override
+	public String getUniqueExtensionID() {
+		return "org.olat.home.HomeMainController:org.olat.gui.control.PrintUserToolExtension";
+	}
+
+	@Override
+	public UserTool createUserTool(UserRequest ureq, WindowControl wControl, Locale locale) {
+		return new PrintUserTool();
+	}
 }

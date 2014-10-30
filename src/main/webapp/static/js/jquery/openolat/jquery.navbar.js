@@ -409,13 +409,13 @@
 	
 	Navbar.prototype.showToggle = function() {
 		if (!this.state.toggleVisible) {
-			$('#o_navbar_right-toggle').show();	    	
+			//$('#o_navbar_right-toggle').show();	    	
 			this.state.toggleVisible = true;			
 		}
 	}
 	Navbar.prototype.hideToggle = function() {
 		if (this.state.toggleVisible) {
-			$('#o_navbar_right-toggle').hide();	    	
+			//$('#o_navbar_right-toggle').hide();	    	
 			this.state.toggleVisible = false;			
 		}
 	}
@@ -428,10 +428,15 @@
 				that.state.rightVisible = true;			
 			} );
 			// hide menu when clicking anywhere in content (timeout to pass the event in IE8/9 which hide the navbar)
-			var listener = $.proxy(this.hideRight, this);
+			var listener = $.proxy(this.hideRightOnClick, this);
 			setTimeout(function() {
 				$('html').on('click', listener);
 			}, 10);			
+		}
+	}
+	Navbar.prototype.hideRightOnClick = function(e) {
+		if("INPUT" != e.target.nodeName) {
+			this.hideRight();
 		}
 	}
 	Navbar.prototype.hideRight = function() {

@@ -43,9 +43,7 @@
 	<bean id="fullWebApp.GuestTopNavControllerCreator" class="org.olat.gui.control.GuestTopNavCreator" />
 
 	<!-- Authenticated -->
-	<bean id="fullWebApp.TopNavControllerCreator" class="org.olat.gui.control.TopNavCreator">
-		<property name="search" value="${topnav.search}" />
-	</bean>
+	<bean id="fullWebApp.TopNavControllerCreator" class="org.olat.gui.control.TopNavCreator"/>
 
 	<!--
 		******************************************

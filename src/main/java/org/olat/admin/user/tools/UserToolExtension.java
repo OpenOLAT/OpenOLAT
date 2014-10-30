@@ -19,7 +19,11 @@
  */
 package org.olat.admin.user.tools;
 
+import java.util.Locale;
+
 import org.olat.core.extensions.action.GenericActionExtension;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -30,7 +34,20 @@ import org.olat.core.util.StringHelper;
  */
 public class UserToolExtension extends GenericActionExtension {
 	
+	private String category;
 	private String uniqueExtensionID;
+	
+	public boolean isShortCutOnly() {
+		return false;
+	}
+	
+	public String getShortCutCssId() {
+		return null;
+	}
+	
+	public String getShortCutCssClass() {
+		return null;
+	}
 
 	@Override
 	public String getUniqueExtensionID() {
@@ -40,10 +57,37 @@ public class UserToolExtension extends GenericActionExtension {
 		} else {
 			id = super.getUniqueExtensionID();
 		}
-		return id;
+		return UserToolsModule.stripToolKey(id);
 	}
-
+	
 	public void setUniqueExtensionID(String uniqueExtensionID) {
 		this.uniqueExtensionID = uniqueExtensionID;
+	}
+	
+	public String getLabel(Locale locale) {
+		return getActionText(locale);
+	}
+	
+	public UserToolCategory getUserToolCategory() {
+		UserToolCategory cat;
+		if(StringHelper.containsNonWhitespace(category)) {
+			cat = UserToolCategory.valueOf(category);
+		} else {
+			cat = UserToolCategory.personal;
+		}
+		return cat;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
+	public UserTool createUserTool(@SuppressWarnings("unused") UserRequest ureq,
+			WindowControl wControl, Locale locale) {
+		return new UserToolImpl(this, wControl, locale);
 	}
 }

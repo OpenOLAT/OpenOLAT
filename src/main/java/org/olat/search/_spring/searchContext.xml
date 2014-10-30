@@ -15,6 +15,20 @@
 	  <constructor-arg index="0" ref="org.olat.search.service.${search.service}" />
    	</bean>
    	
+   	<bean class="org.olat.search.SearchUserToolExtension" init-method="initExtensionPoints">
+		<property name="order" value="120" />
+		<property name="search" value="${topnav.search}" />
+		<property name="navigationKey" value="search" />
+		<property name="translationPackage" value="org.olat.gui.control" />
+		<property name="i18nActionKey" value="topnav.search"/>
+		<property name="i18nDescriptionKey" value="topnav.search.alt"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.home.HomeMainController</value>
+			</list>
+		</property>
+	</bean>
+   	
 	<bean id="org.olat.search.service.enabled" class="org.olat.search.service.SearchServiceImpl"
 		init-method="init" destroy-method="stop" depends-on="searchModuleInit" lazy-init="true">
 		<constructor-arg index="0" ref="searchModule" />
