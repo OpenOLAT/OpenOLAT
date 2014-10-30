@@ -121,9 +121,22 @@ $r.render("jsCssRawHtmlHeader", "pre-theme")
 <!--[if lte IE 7]>
 <link href="${theme.getBaseURI()}patches.css" rel="stylesheet" type="text/css" />
 <![endif]-->
-## 4) Dynamic overriding of CSS rules
+## 4) IE 8 fix for icon fonts (see: http://stackoverflow.com/questions/9809351/ie8-css-font-face-fonts-only-working-for-before-content-on-over-and-sometimes/10557782#10557782)
+<!--[if IE 8]>
+<script type="text/javascript">
+jQuery(document).ready(function() {
+  var style;
+  style = jQuery('<style type="text/css">:before,:after{content:none !important}</style>');
+  jQuery('head').append(style);
+  return setTimeout((function() {
+    return style.remove();
+  }), 0);
+});
+</script>
+<![endif]-->
+## 5) Dynamic overriding of CSS rules
 $r.render("jsCssRawHtmlHeader", "post-theme")
-## 5) Add user font size (id o_fontSize_css used to place on demand css)
+## 6) Add user font size (id o_fontSize_css used to place on demand css)
 #if (${globalSettings.getFontSize()} != "100")
 <style id="o_fontSize_css" type="text/css">#o_body{zoom:${globalSettings.getFontSize()}%; -moz-transform: scale(${globalSettings.getFontSize()}%)}</style>
 #else
