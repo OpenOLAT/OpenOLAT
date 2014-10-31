@@ -232,6 +232,12 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 					target.append("\" />");
 				}
 				
+				target.append("<input type=\"submit\" class='btn btn-default' name=\"");
+				target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_DOWNLOAD_ZIP);
+				target.append("\" value=\"");
+				target.append(StringHelper.escapeHtml(translator.translate("download")));
+				target.append("\" />");
+				
 				if (canDelete) {
 					// delete
 					target.append("<input type=\"submit\" class='btn btn-default' name=\"");

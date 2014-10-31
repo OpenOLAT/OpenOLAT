@@ -204,8 +204,6 @@ public class ListRenderer {
 	
 		// assume full access unless security callback tells us something different.
 		boolean canWrite = child.getParentContainer().canWrite() == VFSConstants.YES;
-		boolean canDelete = child.getParentContainer().canDelete() == VFSConstants.YES;
-		boolean canMail = fc.isCanMail();
 		boolean isAbstract = (child instanceof AbstractVirtualContainer);
 
 		Versions versions = null;
@@ -234,24 +232,22 @@ public class ListRenderer {
 		
 		String name = child.getName();
 		String pathAndName = currentContainerPath;
-		if (pathAndName.length() > 0 && !pathAndName.endsWith("/"))
+		if (pathAndName.length() > 0 && !pathAndName.endsWith("/")) {
 			pathAndName = pathAndName + "/";
+		}
 		pathAndName = pathAndName + name;
 				
 		// tr begin
-		sb.append("<tr><td>");
-
+		sb.append("<tr><td>")
 		// add checkbox for actions if user can write, delete or email this directory
-		if (canWrite || canDelete || canMail) {
-			sb.append("<input type=\"checkbox\" name=\"");
-			sb.append(FileSelection.FORM_ID);
-			sb.append("\" value=\"");
-			sb.append(StringHelper.escapeHtml(name));
-			sb.append("\" /> ");
-		}		
-		
+		  .append("<input type=\"checkbox\" name=\"")
+		  .append(FileSelection.FORM_ID)
+		  .append("\" value=\"")
+		  .append(StringHelper.escapeHtml(name))
+		  .append("\" /> ")
 		// browse link pre
-		sb.append("<a id='o_sel_doc_").append(pos).append("' href=\"");
+		  .append("<a id='o_sel_doc_").append(pos).append("' href=\"");
+		
 		if (isContainer) { // for directories... normal module URIs
 			ubu.buildURI(sb, null, null, pathAndName, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 			sb.append("\"");

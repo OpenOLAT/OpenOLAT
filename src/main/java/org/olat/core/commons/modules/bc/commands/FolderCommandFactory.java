@@ -54,6 +54,7 @@ public class FolderCommandFactory {
 	public static final String COMMAND_COPY = "copy";
 	public static final String COMMAND_DEL = "del";
 	public static final String COMMAND_MAIL = "mail";
+	public static final String COMMAND_DOWNLOAD_ZIP = "dzip";
 	public static final String COMMAND_ZIP = "zip";
 	public static final String COMMAND_UNZIP = "unzip";
 
@@ -87,6 +88,7 @@ public class FolderCommandFactory {
 		else if (command.equals(COMMAND_MOVE)) cmd = new CmdMoveCopy(wControl, true);
 		else if (command.equals(COMMAND_COPY)) cmd = new CmdMoveCopy(wControl, false);
 		else if (command.equals(COMMAND_ZIP)) cmd = new CmdZip(ureq,wControl);
+		else if (command.equals(COMMAND_DOWNLOAD_ZIP)) cmd = new CmdDownloadZip();
 		else if (command.equals(COMMAND_UNZIP)) cmd = new CmdUnzip(ureq,wControl);
 		else if (command.equals(COMMAND_VIEW_VERSION)) cmd = new CmdViewRevisions(ureq,wControl);
 		else if (command.equals(COMMAND_ADD_EPORTFOLIO)) {
