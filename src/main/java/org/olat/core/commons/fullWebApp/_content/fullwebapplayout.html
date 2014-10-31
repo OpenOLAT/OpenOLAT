@@ -117,6 +117,9 @@ $r.render("jsCssRawHtmlHeader", "pre-theme")
 <link rel="icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
 <link rel="shortcut icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
 <link id="o_theme_css" href="${theme.getBaseURI()}theme.css" rel="stylesheet" type="text/css" />
+<!--[if IE 9]>
+<link id="o_theme_css_ie" href="${theme.getBaseURI()}theme_ie_completions.css" rel="stylesheet" type="text/css" />
+<![endif]-->
 ## 3) IE specific bugfixes for current theme
 <!--[if lte IE 7]>
 <link href="${theme.getBaseURI()}patches.css" rel="stylesheet" type="text/css" />
