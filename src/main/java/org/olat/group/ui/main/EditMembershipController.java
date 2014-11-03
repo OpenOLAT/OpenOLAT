@@ -29,12 +29,14 @@ import java.util.UUID;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -203,6 +205,7 @@ public class EditMembershipController extends FormBasicController {
 	private MultipleSelectionElement createSelection(boolean selected, boolean enabled) {
 		String name = "cb" + UUID.randomUUID().toString().replace("-", "");
 		MultipleSelectionElement selection = new MultipleSelectionElementImpl(name, Layout.horizontal);
+		selection.addActionListener(FormEvent.ONCHANGE);
 		selection.setKeysAndValues(keys, values);
 		flc.add(name, selection);
 		selection.select(keys[0], selected);
@@ -284,6 +287,30 @@ public class EditMembershipController extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source instanceof MultipleSelectionElement) {
+			MultipleSelectionElement selectEl = (MultipleSelectionElement)source;
+			if(selectEl.isSelected(0)) {
+				for(MemberOption option:tableDataModel.getObjects()) {
+					if(option.getWaiting() == selectEl) {
+						if(option.getParticipant().isSelected(0)) {
+							option.getParticipant().select(keys[0], false);
+						}
+						if(option.getTutor().isSelected(0)) {
+							option.getTutor().select(keys[0], false);
+						}
+					} else if(option.getParticipant() == selectEl || option.getTutor() == selectEl) {
+						if(option.getWaiting() != null && option.getWaiting().isSelected(0)) {
+							option.getWaiting().select(keys[0], false);
+						}
+					}
+				}
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	public void collectRepoChanges(MemberPermissionChangeEvent e) {

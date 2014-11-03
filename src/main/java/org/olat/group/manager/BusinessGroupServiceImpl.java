@@ -1317,6 +1317,9 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				response.getAddedIdentities().add(identity);
 				// notification mail is handled in controller
 			} else {
+				if (businessGroupRelationDAO.hasRole(identity, currBusinessGroup, GroupRoles.waiting.name()) ) {
+					removeFromWaitingList(ureqIdentity, identity, currBusinessGroup, mailing, events);
+				}
 				response.getIdentitiesAlreadyInGroup().add(identity);
 			}
 		}
