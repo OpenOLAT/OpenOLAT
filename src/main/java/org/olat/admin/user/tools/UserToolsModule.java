@@ -29,8 +29,10 @@ import org.olat.core.extensions.ExtManager;
 import org.olat.core.extensions.Extension;
 import org.olat.core.extensions.ExtensionElement;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.WindowManager;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.home.HomeMainController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -74,6 +76,39 @@ public class UserToolsModule extends AbstractSpringModule {
 	@Override
 	protected void initFromChangedProperties() {
 		init();
+	}
+	
+	public String getUserTools(Preferences prefs) {
+		String selectedToolV2s = (String)prefs.get(WindowManager.class, "user-tools-v2");
+		if(!StringHelper.containsNonWhitespace(selectedToolV2s)) {
+			String selectedTools = (String)prefs.get(WindowManager.class, "user-tools");
+			if(StringHelper.containsNonWhitespace(selectedTools)) {
+				//upgrade
+				
+				StringBuilder selectedToolSb = new StringBuilder(selectedTools);
+				String[] newPresets = new String[]{
+						"org.olat.home.HomeMainController:org.olat.gui.control.PrintUserToolExtension",
+						"org.olat.home.HomeMainController:org.olat.gui.control.HelpUserToolExtension",
+						"org.olat.home.HomeMainController:org.olat.instantMessaging.ui.ImpressumMainController"
+				};
+				
+				for(String newPreset:newPresets) {
+					if(selectedToolSb.indexOf(newPreset) < 0) {
+						if(selectedToolSb.length() > 0) selectedToolSb.append(",");
+						selectedToolSb.append(newPreset);
+					}
+				}
+				prefs.put(WindowManager.class, "user-tools-v2", selectedToolSb.toString());
+				prefs.save();
+				selectedToolV2s = selectedToolSb.toString();
+			}
+		}
+		return selectedToolV2s;
+	}
+	
+	public void setUserTools(Preferences prefs, String settings) {
+		prefs.put(WindowManager.class, "user-tools-v2", settings);
+		prefs.save();
 	}
 	
 	public List<UserToolExtension> getUserToolExtensions(UserRequest ureq) {

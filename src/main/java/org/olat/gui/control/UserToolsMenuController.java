@@ -30,7 +30,6 @@ import org.olat.admin.user.tools.UserToolExtension;
 import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Disposable;
@@ -79,7 +78,7 @@ public class UserToolsMenuController extends BasicController  {
 		List<String> systemLinksName = new ArrayList<String>();
 		
 		Preferences prefs = ureq.getUserSession().getGuiPreferences();
-		String selectedTools = (String)prefs.get(WindowManager.class, "user-tools");
+		String selectedTools = userToolsModule.getUserTools(prefs);
 		if(!StringHelper.containsNonWhitespace(selectedTools)) {
 			selectedTools = userToolsModule.getDefaultPresetOfUserTools();
 		}
