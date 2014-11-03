@@ -507,6 +507,19 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void countAuthors() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("auth-" + UUID.randomUUID().toString());
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("not-auth");
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", 0, 10, true, false, false, false, false);
+		businessGroupRelationDao.addRole(author, group, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(test, group, GroupRoles.coach.name());
+		dbInstance.commitAndCloseSession();
+		
+		int numOfAuthors = businessGroupRelationDao.countAuthors(group);
+		Assert.assertEquals(1, numOfAuthors);
+	}
+	
+	@Test
 	public void loadForUpdate() {
 		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", 0, 10, true, false, false, false, false);
 		dbInstance.commitAndCloseSession();

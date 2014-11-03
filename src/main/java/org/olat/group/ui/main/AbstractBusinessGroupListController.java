@@ -66,11 +66,14 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.mail.ContactList;
+import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
@@ -90,6 +93,7 @@ import org.olat.group.manager.BusinessGroupMailing;
 import org.olat.group.manager.BusinessGroupMailing.MailType;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BusinessGroupSelectionEvent;
+import org.olat.group.model.LeaveOption;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.right.BGRightManager;
@@ -104,6 +108,7 @@ import org.olat.group.ui.wizard.BGMailNotificationEditController;
 import org.olat.group.ui.wizard.BGMergeStep;
 import org.olat.group.ui.wizard.BGUserMailTemplate;
 import org.olat.group.ui.wizard.BGUserManagementController;
+import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryShort;
@@ -142,6 +147,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	protected FormLink createButton, deleteButton, duplicateButton,
 		configButton, emailButton, usersButton, mergeButton, selectButton;
 	
+	private ContactFormController contactCtrl;
 	private NewBGController groupCreateController;
 	private BGUserManagementController userManagementController;
 	private BGMailNotificationEditController userManagementSendMailController;
@@ -352,9 +358,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 				} else if(TABLE_ACTION_ACCESS.equals(cmd)) {
 					doAccess(ureq, businessGroup);
 				} else if(TABLE_ACTION_LEAVE.equals(cmd)) {
-					String groupName = StringHelper.escapeHtml(businessGroup.getName());
-					leaveDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.leave.text", groupName), leaveDialogBox);
-					leaveDialogBox.setUserObject(businessGroup);
+					doConfirmLeaving(ureq, businessGroup);
 				}
 			}
 		} else if(source == tableEl) {
@@ -378,9 +382,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 				} else if(TABLE_ACTION_EDIT.equals(cmd)) {
 					doEdit(ureq, businessGroup);
 				} else if(TABLE_ACTION_LEAVE.equals(cmd)) {
-					String groupName = StringHelper.escapeHtml(businessGroup.getName());
-					leaveDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.leave.text", groupName), leaveDialogBox);
-					leaveDialogBox.setUserObject(businessGroup);
+					doConfirmLeaving(ureq, businessGroup);
 				} else if (TABLE_ACTION_ACCESS.equals(cmd)) {
 					doAccess(ureq, businessGroup);
 				} else if (TABLE_ACTION_SELECT.equals(cmd)) {
@@ -479,6 +481,9 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			if(event instanceof SearchEvent) {
 				doSearch(ureq, (SearchEvent)event);
 			}
+		} else if(source == contactCtrl) {
+			cmc.deactivate();
+			cleanUpPopups();
 		} else if (source == cmc) {
 			cleanUpPopups();
 		}
@@ -495,11 +500,13 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	 */
 	protected void cleanUpPopups() {
 		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(contactCtrl);
 		removeAsListenerAndDispose(deleteDialogBox);
 		removeAsListenerAndDispose(groupCreateController);
 		removeAsListenerAndDispose(businessGroupWizard);
 		removeAsListenerAndDispose(leaveDialogBox);
 		cmc = null;
+		contactCtrl = null;
 		leaveDialogBox = null;
 		deleteDialogBox = null;
 		groupCreateController = null;
@@ -534,6 +541,47 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	protected void doEdit(UserRequest ureq, BusinessGroup group) {
 		String businessPath = "[BusinessGroup:" + group.getKey() + "][tooladmin:0]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+	
+	private void doConfirmLeaving(UserRequest ureq, BusinessGroup businessGroup) {
+		if (businessGroupService.hasRoles(getIdentity(), businessGroup, GroupRoles.coach.name())
+				|| businessGroupService.hasRoles(getIdentity(), businessGroup, GroupRoles.waiting.name()) ) {
+			doOpenConfirmLeavingDialog(ureq, businessGroup);
+		} else {
+			LeaveOption option = businessGroupService.isAllowToLeaveBusinessGroup(getIdentity(), businessGroup);
+			if(option.isAllowToLeave()) {
+				doOpenConfirmLeavingDialog(ureq, businessGroup);
+			} else {
+				doAskToLeaveGroup(ureq, businessGroup, option.getContacts());
+			}
+		}	
+	}
+	
+	private void doOpenConfirmLeavingDialog(UserRequest ureq, BusinessGroup businessGroup) {
+		String groupName = StringHelper.escapeHtml(businessGroup.getName());
+		leaveDialogBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.leave.text", groupName), leaveDialogBox);
+		leaveDialogBox.setUserObject(businessGroup);
+	}
+	
+	private void doAskToLeaveGroup(UserRequest ureq, BusinessGroup businessGroup, ContactList contacts) {
+		String[] args = new String[]{
+				businessGroup.getName(),
+				businessGroup.getKey().toString(),
+				"",//courses
+				getIdentity().getUser().getProperty(UserConstants.FIRSTNAME, getLocale()),
+				getIdentity().getUser().getProperty(UserConstants.LASTNAME, getLocale())
+		};
+		ContactMessage msg = new ContactMessage(getIdentity());
+		msg.setSubject(translate("request.leaving.subject", args));
+		msg.setBodyText(translate("request.leaving.body", args));
+		msg.addEmailTo(contacts);
+		
+		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, true, msg);
+		listenTo(contactCtrl);
+		cmc = new CloseableModalController(getWindowControl(), "close", contactCtrl.getInitialComponent(),
+				true, translate("dialog.modal.bg.asktoleave.title"));
+		cmc.activate();
+		listenTo(cmc);
 	}
 	
 	/**

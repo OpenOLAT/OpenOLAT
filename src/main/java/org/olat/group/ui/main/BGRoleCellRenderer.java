@@ -38,10 +38,10 @@ import org.olat.group.model.BGMembership;
  */
 public class BGRoleCellRenderer implements CustomCellRenderer, FlexiCellRenderer {
 	
-	private final Translator translator;
+	private final Translator trans;
 	
 	public BGRoleCellRenderer(Locale locale) {
-		translator = Util.createPackageTranslator(BGRoleCellRenderer.class, locale);
+		trans = Util.createPackageTranslator(BGRoleCellRenderer.class, locale);
 	}
 
 	@Override
@@ -62,22 +62,22 @@ public class BGRoleCellRenderer implements CustomCellRenderer, FlexiCellRenderer
 			boolean and = false;
 			if(membership.isOwner()) {
 				and = and(sb, and);
-				sb.append(translator.translate("owned.groups"));
+				sb.append(trans.translate("owned.groups"));
 			}
 			if(membership.isParticipant()) {
 				and = and(sb, and);
-				sb.append(translator.translate("search.attendee"));
+				sb.append(trans.translate("search.attendee"));
 			}
 			if(membership.isWaiting()) {
 				and = and(sb, and);
-				sb.append(translator.translate("search.waiting"));
+				sb.append(trans.translate("search.waiting"));
 			}
 		} else if (val instanceof BGMembership) {
 			BGMembership membership = (BGMembership)val;
 			switch(membership) {
-				case owner: sb.append(translator.translate("owned.groups")); break;
-				case participant: sb.append(translator.translate("search.attendee")); break;
-				case waiting: sb.append(translator.translate("search.waiting")); break;
+				case owner: sb.append(trans.translate("owned.groups")); break;
+				case participant: sb.append(trans.translate("search.attendee")); break;
+				case waiting: sb.append(trans.translate("search.waiting")); break;
 			}
 		}
 	}

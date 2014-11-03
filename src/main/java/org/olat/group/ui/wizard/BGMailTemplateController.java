@@ -96,17 +96,17 @@ public class BGMailTemplateController extends FormBasicController {
 
 	/**
 	 * Update the given templates with the values entered in the form
-	 * @param template 
+	 * @param mailTemplate 
 	 */
-	public void updateTemplateFromForm(MailTemplate template) {
+	public void updateTemplateFromForm(MailTemplate mailTemplate) {
 		if(subjectElem != null) {
-			template.setSubjectTemplate(subjectElem.getValue());
+			mailTemplate.setSubjectTemplate(subjectElem.getValue());
 		}
 		if(bodyElem != null) {
-			template.setBodyTemplate(bodyElem.getValue());
+			mailTemplate.setBodyTemplate(bodyElem.getValue());
 		}
 		if(ccSender != null) {
-			template.setCpfrom(ccSender.isSelected(0));
+			mailTemplate.setCpfrom(ccSender.isSelected(0));
 		}
 	}
 

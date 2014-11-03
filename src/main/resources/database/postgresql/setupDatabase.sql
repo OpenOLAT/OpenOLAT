@@ -76,6 +76,7 @@ create table o_gp_business (
    participantspublic bool not null default false,
    waitingpublic bool not null default false,
    downloadmembers bool not null default false,
+   allowtoleave bool not null default true,
    fk_resource int8 unique,
    fk_group_id int8 unique,
    primary key (group_id)

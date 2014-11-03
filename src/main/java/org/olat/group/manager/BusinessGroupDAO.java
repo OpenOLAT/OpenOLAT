@@ -41,10 +41,12 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupMembership;
+import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.BusinessGroupView;
@@ -76,11 +78,13 @@ public class BusinessGroupDAO {
 	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
-	private BusinessGroupRelationDAO businessGroupRelationDao;
-	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private OLATResourceManager olatResourceManager;
+	@Autowired
+	private BusinessGroupModule businessGroupModule;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 	
 	public BusinessGroup createAndPersist(Identity creator, String name, String description,
 			Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
@@ -117,6 +121,17 @@ public class BusinessGroupDAO {
 		businessgroup.setParticipantsVisiblePublic(false);
 		businessgroup.setWaitingListVisiblePublic(false);
 		businessgroup.setDownloadMembersLists(false);
+		
+		if(creator == null) {
+			businessgroup.setAllowToLeave(businessGroupModule.isAllowLeavingGroupCreatedByAuthors());
+		} else {
+			Roles roles = securityManager.getRoles(creator);
+			if(roles.isAuthor()) {
+				businessgroup.setAllowToLeave(businessGroupModule.isAllowLeavingGroupCreatedByAuthors());
+			} else {
+				businessgroup.setAllowToLeave(businessGroupModule.isAllowLeavingGroupCreatedByLearners());
+			}
+		}
 		
 		businessgroup.setWaitingListEnabled(waitingListEnabled);
 		businessgroup.setAutoCloseRanksEnabled(autoCloseRanksEnabled);

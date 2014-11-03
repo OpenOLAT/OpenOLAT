@@ -27,9 +27,12 @@ import java.util.List;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.NamedGroupImpl;
+import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.basesecurity.model.GroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
@@ -132,6 +135,29 @@ public class BusinessGroupRelationDAO {
 			countQuery.setParameter("roles", roleList);
 		}		
 		Number count = countQuery.getSingleResult();
+		return count == null ? 0 : count.intValue();
+	}
+	
+	/**
+	 * Return the number of coaches with author rights.
+	 * @param group
+	 * @return
+	 */
+	public int countAuthors(BusinessGroup group) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(membership) from ").append(BusinessGroupImpl.class.getName()).append(" as bgroup ")
+		  .append(" inner join bgroup.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where bgroup.key=:businessGroupKey and membership.role='").append(GroupRoles.coach.name()).append("'")
+		  .append(" and exists (")
+		  .append("   select sgmsi from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi, ").append(NamedGroupImpl.class.getName()).append(" as ngroup ")
+		  .append("     where sgmsi.identity=membership.identity and sgmsi.securityGroup=ngroup.securityGroup")
+		  .append("     and ngroup.groupName in ('").append(Constants.GROUP_AUTHORS).append("')")
+		  .append(" )");
+	
+		Number count = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class)
+				.setParameter("businessGroupKey", group.getKey())
+				.getSingleResult();
 		return count == null ? 0 : count.intValue();
 	}
 	

@@ -194,15 +194,15 @@ public class BGRightManagerTest extends OlatTestCase {
 	@Test
 	public void hasBGRightWithResource_tutor_participant() {
 		//create 2 rights for the three identities
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("tp-rights-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("tp-rights-" + UUID.randomUUID().toString());
-		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("tp-rights-" + UUID.randomUUID().toString());
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsUser("tp-rights-" + UUID.randomUUID().toString());
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsUser("tp-rights-" + UUID.randomUUID().toString());
+		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsUser("tp-rights-" + UUID.randomUUID().toString());
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "tpBGRight", null, -1, -1, false, false, resource);
-		businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
-	    businessGroupRelationDao.addRole(id2, group, GroupRoles.coach.name());
-		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
-	    businessGroupRelationDao.addRole(id3, group, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(identity1, group, GroupRoles.participant.name());
+	    businessGroupRelationDao.addRole(identity2, group, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(identity2, group, GroupRoles.participant.name());
+	    businessGroupRelationDao.addRole(identity3, group, GroupRoles.coach.name());
 		rightManager.addBGRight("bgr.right1", group, resource.getOlatResource(), BGRightsRole.tutor);
 		rightManager.addBGRight("bgr.right2", group, resource.getOlatResource(), BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
@@ -216,14 +216,14 @@ public class BGRightManagerTest extends OlatTestCase {
 		Assert.assertEquals("bgr.right2", participantRights.get(0));
 		
 		//id1 -> right2
-		Assert.assertFalse(rightManager.hasBGRight("bgr.right1", id1, resource.getOlatResource()));
-		Assert.assertTrue(rightManager.hasBGRight("bgr.right2", id1, resource.getOlatResource()));
+		Assert.assertFalse(rightManager.hasBGRight("bgr.right1", identity1, resource.getOlatResource()));
+		Assert.assertTrue(rightManager.hasBGRight("bgr.right2", identity1, resource.getOlatResource()));
 		//id2 -> right1 and right2
-		Assert.assertTrue(rightManager.hasBGRight("bgr.right1", id2, resource.getOlatResource()));
-		Assert.assertTrue(rightManager.hasBGRight("bgr.right2", id2, resource.getOlatResource()));
+		Assert.assertTrue(rightManager.hasBGRight("bgr.right1", identity2, resource.getOlatResource()));
+		Assert.assertTrue(rightManager.hasBGRight("bgr.right2", identity2, resource.getOlatResource()));
 		//id3 -> right2
-		Assert.assertTrue(rightManager.hasBGRight("bgr.right1", id3, resource.getOlatResource()));
-		Assert.assertFalse(rightManager.hasBGRight("bgr.right2", id3, resource.getOlatResource()));
+		Assert.assertTrue(rightManager.hasBGRight("bgr.right1", identity3, resource.getOlatResource()));
+		Assert.assertFalse(rightManager.hasBGRight("bgr.right2", identity3, resource.getOlatResource()));
 	}
 	
 	@Test

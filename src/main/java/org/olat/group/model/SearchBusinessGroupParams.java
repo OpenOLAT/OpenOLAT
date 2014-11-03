@@ -78,11 +78,11 @@ public class SearchBusinessGroupParams {
 		this.tools = tools;
 	}
 	
-	public void addTools(String... tools) {
+	public void addTools(String... toolsToAdd) {
 		if(this.tools == null) {
 			this.tools = new ArrayList<String>();
 		}
-		for(String tool:tools) {
+		for(String tool:toolsToAdd) {
 			this.tools.add(tool);
 		}
 	}

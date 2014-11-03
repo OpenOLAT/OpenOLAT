@@ -55,6 +55,7 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 	private MultipleSelectionElement membershipEl;
 	private MultipleSelectionElement assignCoursesEl;
 	private MultipleSelectionElement assignGroupsEl;
+	private MultipleSelectionElement allowLeavingGroupsEl;
 
 	private Panel mainPopPanel;
 	private CloseableModalController cmc;
@@ -68,6 +69,10 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 			"users","authors", "usermanagers", "groupmanagers", "administrators"
 	};
 	private String[] assignKeys = new String[]{"granted"};
+	private String[] allowLeavingKeys = new String[]{
+			"groupMadeByLearners", "groupMadeByAuthors", "groupOverride"
+	};
+	
 	
 	public BusinessGroupModuleAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "bg_admin");
@@ -133,7 +138,18 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		membershipEl.select("groupmanagers", "true".equals(module.getAcceptMembershipForGroupmanagers()));
 		membershipEl.select("administrators", "true".equals(module.getAcceptMembershipForAdministrators()));
 		membershipEl.addActionListener(FormEvent.ONCHANGE);
-
+		
+		String[] allowLeavingValues = new String[]{
+				translate("leaving.group.learners"),
+				translate("leaving.group.authors"),
+				translate("leaving.group.override"),
+		};
+		allowLeavingGroupsEl = uifactory.addCheckboxesVertical("leaving.group", privacyOptionsContainer, allowLeavingKeys, allowLeavingValues, 1);
+		allowLeavingGroupsEl.select("groupMadeByLearners", module.isAllowLeavingGroupCreatedByLearners());
+		allowLeavingGroupsEl.select("groupMadeByAuthors", module.isAllowLeavingGroupCreatedByAuthors());
+		allowLeavingGroupsEl.select("groupOverride", module.isAllowLeavingGroupOverride());
+		allowLeavingGroupsEl.addActionListener(FormEvent.ONCHANGE);
+				
 		FormLayoutContainer dedupCont = FormLayoutContainer.createDefaultFormLayout("dedup", getTranslator());
 		formLayout.add(dedupCont);
 		dedupLink = uifactory.addFormLink("dedup.members", dedupCont, Link.BUTTON);
@@ -169,8 +185,6 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		dedupCtrl = null;
 		cmc = null;
 	}
-	
-	
 
 	@Override
 	public void setMax(float max) {
@@ -220,6 +234,11 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 			module.setMandatoryEnrolmentEmailForUsermanagers(enrolmentSelectedKeys.contains("usermanagers") ? "true" : "false");
 			module.setMandatoryEnrolmentEmailForGroupmanagers(enrolmentSelectedKeys.contains("groupmanagers") ? "true" : "false");
 			module.setMandatoryEnrolmentEmailForAdministrators(enrolmentSelectedKeys.contains("administrators") ? "true" : "false");
+		} else if(source == allowLeavingGroupsEl) {
+			Collection<String> leavingSelectedKeys = allowLeavingGroupsEl.getSelectedKeys();
+			module.setAllowLeavingGroupCreatedByLearners(leavingSelectedKeys.contains("groupMadeByLearners"));
+			module.setAllowLeavingGroupCreatedByAuthors(leavingSelectedKeys.contains("groupMadeByAuthors"));
+			module.setAllowLeavingGroupOverride(leavingSelectedKeys.contains("groupOverride"));
 		} else if(assignCoursesEl == source) {
 			module.setGroupManagersAllowedToLinkCourses(assignCoursesEl.isSelected(0));
 		} else if(assignGroupsEl == source) {

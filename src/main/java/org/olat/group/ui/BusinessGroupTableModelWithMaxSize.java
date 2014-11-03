@@ -187,12 +187,12 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 	/**
 	 * Check if an identity is in certain security-group.
 	 * @param businessGroup
-	 * @param identity
+	 * @param ident
 	 * @return true: Found identity in PartipiciantGroup or WaitingGroup.
 	 */
-	private boolean isEnrolledIn(BusinessGroup businessGroup, Identity identity) {
-		if (businessGroupService.hasRoles(identity, businessGroup, GroupRoles.participant.name())
-				|| businessGroupService.hasRoles(identity, businessGroup, GroupRoles.waiting.name())) {
+	private boolean isEnrolledIn(BusinessGroup businessGroup, Identity ident) {
+		if (businessGroupService.hasRoles(ident, businessGroup, GroupRoles.participant.name())
+				|| businessGroupService.hasRoles(ident, businessGroup, GroupRoles.waiting.name())) {
 			return true;
 		} 
 		return false;
@@ -200,13 +200,13 @@ public class BusinessGroupTableModelWithMaxSize extends DefaultTableDataModel<Bu
 	
 	/**
 	 * Check if an identity is in any security-group.
-	 * @param identity
+	 * @param ident
 	 * @return true: Found identity in any security-group of this table model.
 	 */		
-	private boolean isEnrolledInAnyGroup(Identity identity) {
+	private boolean isEnrolledInAnyGroup(Identity ident) {
 		// loop over all business-groups
 		for (BusinessGroup businessGroup:objects) {
-			if (isEnrolledIn(businessGroup, identity) ) {
+			if (isEnrolledIn(businessGroup, ident) ) {
 				return true;
 			}
 		}

@@ -8,47 +8,7 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
 
-	<context:component-scan base-package="org.olat.group.manager,org.olat.group.area,org.olat.group.right" />
-
-	<bean id="businessGroupModule" class="org.olat.group.BusinessGroupModule" init-method="init">
-		<property name="persistedProperties">
-	  		<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
-	  				depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
-	    		<constructor-arg index="0" ref="coordinatorManager"/>
-	    		<constructor-arg index="1" ref="businessGroupModule" />
-	  		</bean>
-		</property>
-	</bean>
-	
-	<!-- default configuration -->
-	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject" ref="businessGroupModule" />
-		<property name="targetMethod" value="init" />
-		<property name="arguments">
-			<value>
-				user.allowed.create=${group.user.create}
-				author.allowed.create=${group.author.create}
-				<!-- Show the contact form in the business group card.
-				     Values are: never,always,groupconfig -->
-				contact.business.card=${group.card.contact}
-				userlist.download.default.allowed=${group.userlist.download.default.allowed}
-
-				mandatoryEnrolmentEmailForUsers=${group.mandatory.enrolment.email.users}
-				mandatoryEnrolmentEmailForAuthors=${group.mandatory.enrolment.email.authors}
-				mandatoryEnrolmentEmailForUsermanagers=${group.mandatory.enrolment.email.usermanagers}
-				mandatoryEnrolmentEmailForGroupmanagers=${group.mandatory.enrolment.email.groupmanagers}
-				mandatoryEnrolmentEmailForAdministrators=${group.mandatory.enrolment.email.administrators}
-
-				acceptMembershipForUsers=${group.accept.membership.users}
-				acceptMembershipForAuthors=${group.accept.membership.authors}
-				acceptMembershipForUsermanagers=${group.accept.membership.usermanagers}
-				acceptMembershipForGroupmanagers=${group.accept.membership.groupmanagers}
-				acceptMembershipForAdministrators=${group.accept.membership.administrators}
-				
-				managedBusinessGroups=${group.managed}
-			</value>
-		</property>
-	</bean>
+	<context:component-scan base-package="org.olat.group" />
 	
 	<!-- Login interceptor -->
 	<bean id="reservation.AfterLogin.Injection" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">

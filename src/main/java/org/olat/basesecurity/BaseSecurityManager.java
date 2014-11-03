@@ -358,7 +358,6 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 */
 	@Override
 	public Roles getRoles(Identity identity) {
-		
 		boolean isGuestOnly = false;
 		boolean isInvitee = false;
 
@@ -382,9 +381,9 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	public List<String> getRolesAsString(Identity identity) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ngroup.groupName from ").append(NamedGroupImpl.class.getName()).append(" as ngroup ")
-		  .append(" inner join ngroup.securityGroup sgi ")
 		  .append(" where exists (")
-		  .append("   select sgmsi from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmsi where sgmsi.identity.key=:identityKey and sgmsi.securityGroup=sgi")
+		  .append("   select sgmsi from ").append(SecurityGroupMembershipImpl.class.getName())
+		  .append("      as sgmsi where sgmsi.identity.key=:identityKey and sgmsi.securityGroup=ngroup.securityGroup")
 		  .append(" )");
 		
 		return dbInstance.getCurrentEntityManager()

@@ -144,6 +144,10 @@ public interface BusinessGroup extends BusinessGroupShort, Persistable, CreateIn
 	public boolean isDownloadMembersLists();
 
 	public void setDownloadMembersLists(boolean downloadMembersLists);
+	
+	public boolean isAllowToLeave();
+	
+	public void setAllowToLeave(boolean allow);
 
 	/**
 	 * @return the maximal number of participants

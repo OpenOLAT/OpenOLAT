@@ -157,7 +157,7 @@ public class EditMembershipController extends FormBasicController {
 		loadModel(member);
 	}
 	
-	private void loadModel(Identity member) {
+	private void loadModel(Identity memberToLoad) {
 		RepositoryEntryRef resource = null;
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		if(repoEntry == null) {
@@ -168,7 +168,7 @@ public class EditMembershipController extends FormBasicController {
 		List<BusinessGroupView> groups = businessGroupService.findBusinessGroupViews(params, resource, 0, -1);
 	
 		boolean defaultMembership = false;
-		if(member == null) {
+		if(memberToLoad == null) {
 			if(repoEntry != null && groups.isEmpty()) {
 				boolean managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
 				if(!managed) {
@@ -183,13 +183,13 @@ public class EditMembershipController extends FormBasicController {
 		}
 
 		List<Long> businessGroupKeys = PersistenceHelper.toKeys(groups);
-		groupMemberships = member == null ?
-				Collections.<BusinessGroupMembership>emptyList() : businessGroupService.getBusinessGroupMembership(businessGroupKeys, member);
+		groupMemberships = memberToLoad == null ?
+				Collections.<BusinessGroupMembership>emptyList() : businessGroupService.getBusinessGroupMembership(businessGroupKeys, memberToLoad);
 		List<MemberOption> options = new ArrayList<MemberOption>();
 		for(BusinessGroupView group:groups) {
 			boolean managed = BusinessGroupManagedFlag.isManaged(group.getManagedFlags(), BusinessGroupManagedFlag.membersmanagement);
 			MemberOption option = new MemberOption(group);
-			BGPermission bgPermission = PermissionHelper.getPermission(group.getKey(), member, groupMemberships);
+			BGPermission bgPermission = PermissionHelper.getPermission(group.getKey(), memberToLoad, groupMemberships);
 			option.setTutor(createSelection(bgPermission.isTutor(), !managed));
 			option.setParticipant(createSelection(bgPermission.isParticipant() || defaultMembership, !managed));
 			boolean waitingListEnable = !managed && group.getWaitingListEnabled() != null && group.getWaitingListEnabled().booleanValue();
