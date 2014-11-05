@@ -228,8 +228,7 @@ public class OpenXMLDocument {
 		margins.setAttribute("w:gutter", "0");
 		
 		if(StringHelper.containsNonWhitespace(documentHeader)) {
-			try {
-				InputStream headerIn = OpenXMLDocument.class.getResourceAsStream("_resources/header.xml");
+			try(InputStream headerIn = OpenXMLDocument.class.getResourceAsStream("_resources/header.xml")) {
 				String headerTemplate = IOUtils.toString(headerIn);
 				String header = headerTemplate.replace("[oodocumentitlte]", documentHeader);
 

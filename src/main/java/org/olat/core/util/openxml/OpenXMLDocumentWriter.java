@@ -124,20 +124,21 @@ public class OpenXMLDocumentWriter {
 	protected void appendMedias(ZipOutputStream out, OpenXMLDocument document)
 	throws IOException {
 		for(DocReference img:document.getImages()) {
-			FileInputStream in = new FileInputStream(img.getFile());
-			ZipEntry wordDocument = new ZipEntry("word/media/" + img.getFile().getName());
-			out.putNextEntry(wordDocument);
-
-			IOUtils.copy(in, out);
-			OpenXMLUtils.writeTo(document.getDocument(), out, false);
-			out.closeEntry();
+			try(FileInputStream in = new FileInputStream(img.getFile())) {
+				ZipEntry wordDocument = new ZipEntry("word/media/" + img.getFile().getName());
+				out.putNextEntry(wordDocument);
+	
+				IOUtils.copy(in, out);
+				OpenXMLUtils.writeTo(document.getDocument(), out, false);
+				out.closeEntry();
+			} catch(Exception e) {
+				log.error("", e);
+			}
 		}
 	}
 	
 	private void appendPredefinedStyles(ZipOutputStream out, OpenXMLStyles styles) {
-		InputStream in = null;
-		try {
-			in = OpenXMLDocumentWriter.class.getResourceAsStream("_resources/styles.xml");
+		try(InputStream in = OpenXMLDocumentWriter.class.getResourceAsStream("_resources/styles.xml")) {
 			if(styles != null) {
 				Document stylesDoc = OpenXMLUtils.createDocument(in);
 				NodeList stylesElList = stylesDoc.getElementsByTagName("w:styles");
@@ -151,8 +152,6 @@ public class OpenXMLDocumentWriter {
 			}
 		} catch (IOException e) {
 			log.error("", e);
-		} finally {
-			IOUtils.closeQuietly(in);
 		}
 	}
 	
