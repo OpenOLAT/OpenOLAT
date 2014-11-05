@@ -18,14 +18,40 @@
 	// Prevent floats from breaking the navbar
 	@include clearfix();
 
-	.o_navbar_tabs {
-		li a {
-			padding-right: $grid-gutter-width;
+  .o_navbar_tabs {
+    li {
+      max-width: $o-navbar-tab-max-width;
+      a {
+        @if $o-navbar-tab-enable-icons == true {
+          padding-left: $grid-gutter-width;
+        }
+        padding-right: $grid-gutter-width;
+        &:first-child {
+          span {
+            display: block;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+          }
+        }
+      }
 		}
+    .o_icon-fw {
+      position: absolute;
+      top: floor($grid-gutter-width / 2); 
+      left: 0.5em;
+      padding-top: 3px;
+      width: 1em; height: 1em;
+      @if $o-navbar-tab-enable-icons == true {
+        display: inline-block;
+      } @else {
+        display: none;
+      }
+    }
 		.o_navbar_tab_close {
 			position: absolute;
 			top: floor($grid-gutter-width / 2); 
-			right:0.5em;
+			right: 0.5em;
 			padding: 0;
 			width: 1em; height: 1em;
 			i {
@@ -34,7 +60,7 @@
 			&:hover { 
 				i:before { color: $o-navbar-tab-close-hover-color; }
 			}
-		}
+    }
 	}
 	
 	.o_custom_navbar-brand {
@@ -96,9 +122,6 @@
 			top: 10px; 
 			right: 10px; // Win8 issue with overlapping scrollbar
 		}
-		.o_navbar_tool {
-			display: none;
-		}	
 		.o_navbar-right {
 			a {
 				padding: 3px 20px;
@@ -502,38 +525,81 @@ body.o_dmz {
 
 /* styles for 'more' button and dropdown */
 
-.o_navbar .o_tab_dropdown {
+//tab styles and icons
+.o_dropdown_tab {
   position: relative;
+  > a:first-child {
+    padding-right: $grid-gutter-width; // some extra space for the close button
+    @if $o-navbar-more-dropdown-enable-icons {
+      padding-left: $grid-gutter-width + 10px; // some extra space for the icon
+    }
+    .o_icon-fw {
+      @if $o-navbar-more-dropdown-enable-icons{
+        display: inline-block;
+      } @else {
+        display: none;
+      }
+      position: absolute;
+      top: 0;
+      left: 10px;
+      padding-top: 3px;
+      line-height: $line-height-computed;
+    }
+    span {
+      display: block;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
   .o_navbar_tab_close {
     position: absolute;
     top: 0px; 
-    right: 0px;
+    right: 10px;
     padding-left: 0px;
     padding-right: 0px;
-    margin-right: 15px;
+    color: $o-navbar-tab-close-color;
     background-color: inherit;
+
+    &:focus, &:hover {
+      color: $o-navbar-tab-close-hover-color;
+      background-color: inherit;
+    }
   }
 }
 
-@media (max-width: $screen-xs-max) { 
-    #o_navbar_more {
-      > li {
-        position: inherit;
-      }
-      #o_navbar_more_dropdown {
-        left: 0px;
-        right: 0px;
-
-        a {
-          line-height: 2;
-        }
-      }
-    }
+// don't display a divider in the dropdown if no elements follow it
+#o_navbar_more .dropdown-menu {
+  .divider:last-child {
+    display: none;
+  }
 }
 
-#o_navbar_more_dropdown {
-  @media (max-width: $screen-xs-max) { 
-    width:100%;
+// for small screens stretch the dropdown menu to full width, otherwise set a max-width
+@media (min-width: $screen-xs-max + 1) {
+  #o_navbar_more {
+    .dropdown-menu {
+        max-width: $o-navbar-more-dropdown-max-width;
+    }
+  }
+}
+
+@media (max-width: $screen-xs-max) {
+  #o_navbar_more {
+    > li {
+      position: inherit;
+    }
+    .dropdown-menu {
+      left: 0px;
+      right: 0px;
+
+      a, i {
+        line-height: $line-height-computed * 1.5;
+      }
+      .o_navbar_tab_close {
+        line-height: inherit;
+      }
+    }
   }
 }
 

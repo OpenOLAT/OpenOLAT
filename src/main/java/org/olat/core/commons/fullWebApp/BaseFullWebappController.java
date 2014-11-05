@@ -1050,6 +1050,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			dtabsLinkNames.add(dtabCreateCounter);
 			Link link = LinkFactory.createCustomLink("a" + dtabCreateCounter, "a" + dtabCreateCounter, "", Link.NONTRANSLATED, navTabsVc, this);
 			link.setCustomDisplayText(StringHelper.escapeHtml(dt.getNavElement().getTitle()));
+			link.setIconLeftCSS("o_icon o_icon-fw " + dt.getNavElement().getIconCSSClass());
 			link.setTitle(dt.getTitle());
 			link.setUserObject(dt);
 			// Set accessibility access key using the 's' key. You can loop through all opened tabs by

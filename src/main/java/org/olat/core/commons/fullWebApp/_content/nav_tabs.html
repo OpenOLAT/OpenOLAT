@@ -5,7 +5,7 @@
 	#set ($pos=${velocityCount} - 1)
 	#set ($postfix=$dtabsLinkNames.get(${pos}))
 	
-	<li class="#if($tabhelper.isDTabActive($dtab)) active #end $!navel.getIconCSSClass()">
+	<li class="#if($tabhelper.isDTabActive($dtab)) active #end">
 		$r.render("a$postfix")
 		#if($tabhelper.isCanCloseDTab())
 			$r.render("c$postfix")	 ## close link has class o_nav_tab_close

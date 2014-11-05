@@ -39,6 +39,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.StackedBusinessControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.repository.ui.RepositoyUIFactory;
 
 /**
  * Description: <br>
@@ -48,7 +49,6 @@ import org.olat.core.util.i18n.I18nManager;
 public class DTabImpl implements Disposable, DTab {
 	
 	private OLATResourceable ores;
-	//fxdiff BAKS-7 Resume function
 	private OLATResourceable initialOres;
 	private Controller controller;
 	private GuiStack guiStackHandle;
@@ -69,18 +69,9 @@ public class DTabImpl implements Disposable, DTab {
 		//Root the JumpInPath - typically all resources are opened in tabs
 		StackedBusinessControl businessControl = new StackedBusinessControl(null, wOrigControl.getBusinessControl());
 		wControl = BusinessControlFactory.getInstance().createBusinessWindowControl(businessControl, wOrigControl);
-		
-		String shortTitle;
-		if(title == null) {
-			shortTitle = "???";
-		} else if (!title.startsWith(I18nManager.IDENT_PREFIX)) {
-			// don't truncate titles when in inline translation mode (OLAT-3811)
-			shortTitle = Formatter.truncate(title,15);
-		} else {
-			shortTitle = title;
-		}
-		String iconCSSClass = "";//"o_" + ores.getResourceableTypeName().replace(".", "-") + "_icon";
-		navElement = new DefaultNavElement(shortTitle, title, iconCSSClass);
+
+		String iconCSSClass = RepositoyUIFactory.getIconCssClass(ores.getResourceableTypeName());
+		navElement = new DefaultNavElement(title, title, iconCSSClass);
 	}
 
 	/**

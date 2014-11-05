@@ -37,7 +37,7 @@ searchThemes () {
 # Helper method to split files with too many selectors for ie <= 9
 ie9ify () {
 	css="$TARGET/theme.css"
-	[ -e $css  ] && { printf "ie9ify $TARGET:\n  "; blessc --no-imports $css "$TARGET/theme_ie_completions.css"; rm "$TARGET/theme_ie_completions-blessed1.css"; }
+	[ -e $css  ] && { printf "ie9ify $TARGET:\n  "; blessc --no-imports $css "$TARGET/theme_ie_completions.css"; rm -f "$TARGET/theme_ie_completions-blessed1.css"; }
 	echo "  done"
 }
 

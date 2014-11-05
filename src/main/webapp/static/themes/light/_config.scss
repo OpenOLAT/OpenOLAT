@@ -133,6 +133,13 @@ $o-navbar-brand-hover-color			: $navbar-inverse-brand-hover-color ;
 $o-navbar-brand-hover-bg			: $navbar-inverse-brand-hover-bg ;
 */
 
+$o-navbar-tab-max-width				: 150px !default;
+$o-navbar-tab-enable-icons			: false !default;
+
+/* More button and dropdown menu */
+$o-navbar-more-dropdown-max-width	: 300px !default;
+$o-navbar-more-dropdown-enable-icons: false !default;
+
 /* Right off-canvas menu, part of navbar */
 $o-offcanvas-width 					: 250px !default;
 $o-offcanvas-padding-horizontal		: $navbar-padding-horizontal !default;
