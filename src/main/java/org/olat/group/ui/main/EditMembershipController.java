@@ -29,12 +29,14 @@ import java.util.UUID;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -157,7 +159,7 @@ public class EditMembershipController extends FormBasicController {
 		loadModel(member);
 	}
 	
-	private void loadModel(Identity member) {
+	private void loadModel(Identity memberToLoad) {
 		RepositoryEntryRef resource = null;
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		if(repoEntry == null) {
@@ -168,7 +170,7 @@ public class EditMembershipController extends FormBasicController {
 		List<BusinessGroupView> groups = businessGroupService.findBusinessGroupViews(params, resource, 0, -1);
 	
 		boolean defaultMembership = false;
-		if(member == null) {
+		if(memberToLoad == null) {
 			if(repoEntry != null && groups.isEmpty()) {
 				boolean managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
 				if(!managed) {
@@ -183,13 +185,13 @@ public class EditMembershipController extends FormBasicController {
 		}
 
 		List<Long> businessGroupKeys = PersistenceHelper.toKeys(groups);
-		groupMemberships = member == null ?
-				Collections.<BusinessGroupMembership>emptyList() : businessGroupService.getBusinessGroupMembership(businessGroupKeys, member);
+		groupMemberships = memberToLoad == null ?
+				Collections.<BusinessGroupMembership>emptyList() : businessGroupService.getBusinessGroupMembership(businessGroupKeys, memberToLoad);
 		List<MemberOption> options = new ArrayList<MemberOption>();
 		for(BusinessGroupView group:groups) {
 			boolean managed = BusinessGroupManagedFlag.isManaged(group.getManagedFlags(), BusinessGroupManagedFlag.membersmanagement);
 			MemberOption option = new MemberOption(group);
-			BGPermission bgPermission = PermissionHelper.getPermission(group.getKey(), member, groupMemberships);
+			BGPermission bgPermission = PermissionHelper.getPermission(group.getKey(), memberToLoad, groupMemberships);
 			option.setTutor(createSelection(bgPermission.isTutor(), !managed));
 			option.setParticipant(createSelection(bgPermission.isParticipant() || defaultMembership, !managed));
 			boolean waitingListEnable = !managed && group.getWaitingListEnabled() != null && group.getWaitingListEnabled().booleanValue();
@@ -203,6 +205,7 @@ public class EditMembershipController extends FormBasicController {
 	private MultipleSelectionElement createSelection(boolean selected, boolean enabled) {
 		String name = "cb" + UUID.randomUUID().toString().replace("-", "");
 		MultipleSelectionElement selection = new MultipleSelectionElementImpl(name, Layout.horizontal);
+		selection.addActionListener(FormEvent.ONCHANGE);
 		selection.setKeysAndValues(keys, values);
 		flc.add(name, selection);
 		selection.select(keys[0], selected);
@@ -284,6 +287,30 @@ public class EditMembershipController extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source instanceof MultipleSelectionElement) {
+			MultipleSelectionElement selectEl = (MultipleSelectionElement)source;
+			if(selectEl.isSelected(0)) {
+				for(MemberOption option:tableDataModel.getObjects()) {
+					if(option.getWaiting() == selectEl) {
+						if(option.getParticipant().isSelected(0)) {
+							option.getParticipant().select(keys[0], false);
+						}
+						if(option.getTutor().isSelected(0)) {
+							option.getTutor().select(keys[0], false);
+						}
+					} else if(option.getParticipant() == selectEl || option.getTutor() == selectEl) {
+						if(option.getWaiting() != null && option.getWaiting().isSelected(0)) {
+							option.getWaiting().select(keys[0], false);
+						}
+					}
+				}
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	public void collectRepoChanges(MemberPermissionChangeEvent e) {

@@ -310,8 +310,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		Object wildcard = ureq.getUserSession().getEntry("wild_card_" + businessGroup.getKey());
 		if(wildcard == null) {
 			//check managed
-			//fxdiff VCRP-1,2: access control of resources
-			ACService acService = CoreSpringFactory.getImpl(ACService.class);
 			AccessResult acResult = acService.isAccessible(businessGroup, getIdentity(), false);
 			if(acResult.isAccessible()) {
 				needActivation = false;

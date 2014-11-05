@@ -76,6 +76,7 @@ public class BusinessGroupUpgrade extends PersistentObject implements BusinessGr
 	private boolean participantsVisiblePublic;
 	private boolean waitingListVisiblePublic;
 	private boolean downloadMembersLists;
+	private boolean allowToLeave;
 
 	/**
 	 * constructs an unitialised BusinessGroup, use setXXX for setting attributes
@@ -207,6 +208,14 @@ public class BusinessGroupUpgrade extends PersistentObject implements BusinessGr
 
 	public void setDownloadMembersLists(boolean visible) {
 		this.downloadMembersLists = visible;
+	}
+
+	public boolean isAllowToLeave() {
+		return allowToLeave;
+	}
+
+	public void setAllowToLeave(boolean allow) {
+		this.allowToLeave = allow;
 	}
 
 	public OLATResource getResource() {

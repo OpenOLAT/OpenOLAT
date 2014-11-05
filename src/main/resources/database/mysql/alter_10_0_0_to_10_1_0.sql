@@ -30,6 +30,9 @@ create index cer_archived_resource_idx on o_cer_certificate (c_archived_resource
 create index cer_uuid_idx on o_cer_certificate (c_uuid);
 
 
+alter table o_gp_business add column allowtoleave boolean default 1;
+
+
 drop view o_qp_item_shared_v;
 drop view o_qp_item_pool_v;
 drop view o_qp_item_author_v;

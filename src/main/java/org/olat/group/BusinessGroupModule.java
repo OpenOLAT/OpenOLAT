@@ -20,13 +20,16 @@
 package org.olat.group;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.site.GroupsSite;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Description:<br>
@@ -37,7 +40,8 @@ import org.olat.group.site.GroupsSite;
  * 
  * @author gnaegi
  */
-public class BusinessGroupModule extends AbstractOLATModule {
+@Service("businessGroupModule")
+public class BusinessGroupModule extends AbstractSpringModule {
 
 	public static String ORES_TYPE_GROUP = OresHelper.calculateTypeName(BusinessGroup.class);
 	
@@ -62,39 +66,61 @@ public class BusinessGroupModule extends AbstractOLATModule {
 	private static final String ACCEPT_MEMBERSHIP_GROUPMANAGERS = "acceptMembershipForGroupmanagers";
 	private static final String ACCEPT_MEMBERSHIP_ADMINISTRATORS = "acceptMembershipForAdministrators";
 	
+	private static final String ALLOW_LEAVING_GROUP_BY_LEARNERS = "allowLeavingGroupCreatedByLearners";
+	private static final String ALLOW_LEAVING_GROUP_BY_AUTHORS = "allowLeavingGroupCreatedByAuthors";
+	private static final String ALLOW_LEAVING_GROUP_OVERRIDE = "allowLeavingGroupOverride";
+	
 	private static final String GROUP_MGR_LINK_COURSE_ALLOWED = "groupManagersAllowedToLinkCourses";
 	private static final String RESOURCE_MGR_LINK_GROUP_ALLOWED = "resourceManagersAllowedToLinkGroups";
 	
 	private static final String MANAGED_GROUPS_ENABLED = "managedBusinessGroups";
 	
-
+	@Value("${group.user.create:true}")
 	private boolean userAllowedCreate;
+	@Value("${group.author.create}")
 	private boolean authorAllowedCreate;
+	@Value("${group.userlist.download.default.allowed}")
 	private boolean userListDownloadDefaultAllowed;
+	@Value("${group.card.contact}")
 	private String contactBusinessCard;
 	
+	@Value("${group.mandatory.enrolment.email.users}")
 	private String mandatoryEnrolmentEmailForUsers;
+	@Value("${group.mandatory.enrolment.email.authors}")
 	private String mandatoryEnrolmentEmailForAuthors;
+	@Value("${group.mandatory.enrolment.email.usermanagers}")
 	private String mandatoryEnrolmentEmailForUsermanagers;
+	@Value("${group.mandatory.enrolment.email.groupmanagers}")
 	private String mandatoryEnrolmentEmailForGroupmanagers;
+	@Value("${group.mandatory.enrolment.email.administrators}")
 	private String mandatoryEnrolmentEmailForAdministrators;
-	
+
+	@Value("${group.accept.membership.users}")
 	private String acceptMembershipForUsers;
+	@Value("${group.accept.membership.authors}")
 	private String acceptMembershipForAuthors;
+	@Value("${group.accept.membership.usermanagers}")
 	private String acceptMembershipForUsermanagers;
+	@Value("${group.accept.membership.groupmanagers}")
 	private String acceptMembershipForGroupmanagers;
+	@Value("${group.accept.membership.administrators}")
 	private String acceptMembershipForAdministrators;
 	
+	@Value("${group.leaving.group.created.by.learners:true}")
+	private boolean allowLeavingGroupCreatedByLearners;
+	@Value("${group.leaving.group.created.by.authors:true}")
+	private boolean allowLeavingGroupCreatedByAuthors;
+	@Value("${group.leaving.group.override:true}")
+	private boolean allowLeavingGroupOverride;
+
 	private boolean groupManagersAllowedToLinkCourses;
 	private boolean resourceManagersAllowedToLinkGroups;
-	
+	@Value("${group.managed}")
 	private boolean managedBusinessGroups;
 
-	/**
-	 * [used by spring]
-	 */
-	private BusinessGroupModule() {
-		//
+	@Autowired
+	public BusinessGroupModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
 	}
 
 	/**
@@ -111,34 +137,6 @@ public class BusinessGroupModule extends AbstractOLATModule {
 				new SiteContextEntryControllerCreator(GroupsSite.class));
 		
 		updateProperties();
-	}
-
-	/**
-	 * @see org.olat.core.configuration.AbstractOLATModule#initDefaultProperties()
-	 */
-	@Override
-	protected void initDefaultProperties() {
-		userAllowedCreate = getBooleanConfigParameter(USER_ALLOW_CREATE_BG, true);
-		authorAllowedCreate = getBooleanConfigParameter(AUTHOR_ALLOW_CREATE_BG, true);
-		contactBusinessCard = getStringConfigParameter(CONTACT_BUSINESS_CARD, CONTACT_BUSINESS_CARD_NEVER, true);
-		userListDownloadDefaultAllowed = getBooleanConfigParameter(USER_LIST_DOWNLOAD, true);
-		
-		mandatoryEnrolmentEmailForUsers = getStringConfigParameter(MANDATORY_ENROLMENT_EMAIL_USERS, "false", true);
-		mandatoryEnrolmentEmailForAuthors = getStringConfigParameter(MANDATORY_ENROLMENT_EMAIL_AUTHORS, "false", true);
-		mandatoryEnrolmentEmailForUsermanagers = getStringConfigParameter(MANDATORY_ENROLMENT_EMAIL_USERMANAGERS, "false", true);
-		mandatoryEnrolmentEmailForGroupmanagers = getStringConfigParameter(MANDATORY_ENROLMENT_EMAIL_GROUPMANAGERS, "false", true);
-		mandatoryEnrolmentEmailForAdministrators = getStringConfigParameter(MANDATORY_ENROLMENT_EMAIL_ADMINISTRATORS, "false", true);
-		
-		acceptMembershipForUsers = getStringConfigParameter(ACCEPT_MEMBERSHIP_USERS, "false", true);
-		acceptMembershipForAuthors = getStringConfigParameter(ACCEPT_MEMBERSHIP_AUTHORS, "false", true);
-		acceptMembershipForUsermanagers = getStringConfigParameter(ACCEPT_MEMBERSHIP_USERMANAGERS, "false", true);
-		acceptMembershipForGroupmanagers = getStringConfigParameter(ACCEPT_MEMBERSHIP_GROUPMANAGERS, "false", true);
-		acceptMembershipForAdministrators = getStringConfigParameter(ACCEPT_MEMBERSHIP_ADMINISTRATORS, "false", true);
-		
-		groupManagersAllowedToLinkCourses = getBooleanConfigParameter(GROUP_MGR_LINK_COURSE_ALLOWED, false);
-		resourceManagersAllowedToLinkGroups = getBooleanConfigParameter(RESOURCE_MGR_LINK_GROUP_ALLOWED, false);
-		
-		managedBusinessGroups = getBooleanConfigParameter(MANAGED_GROUPS_ENABLED, false);
 	}
 
 	@Override
@@ -218,17 +216,25 @@ public class BusinessGroupModule extends AbstractOLATModule {
 			resourceManagersAllowedToLinkGroups = "true".equals(linkGroupAllowed);
 		}
 		
+		String allowLeavingIfCreatedByLearners = getStringPropertyValue(ALLOW_LEAVING_GROUP_BY_LEARNERS, true);
+		if(StringHelper.containsNonWhitespace(allowLeavingIfCreatedByLearners)) {
+			allowLeavingGroupCreatedByLearners = "true".equals(allowLeavingIfCreatedByLearners);
+		}
+		String allowLeavingIfCreatedByAuthors = getStringPropertyValue(ALLOW_LEAVING_GROUP_BY_AUTHORS, true);
+		if(StringHelper.containsNonWhitespace(allowLeavingIfCreatedByAuthors)) {
+			allowLeavingGroupCreatedByAuthors = "true".equals(allowLeavingIfCreatedByAuthors);
+		}
+		String allowLeavingOverride = getStringPropertyValue(ALLOW_LEAVING_GROUP_OVERRIDE, true);
+		if(StringHelper.containsNonWhitespace(allowLeavingOverride)) {
+			allowLeavingGroupOverride = "true".equals(allowLeavingOverride);
+		}
+		
 		String managedGroups = getStringPropertyValue(MANAGED_GROUPS_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(managedGroups)) {
 			managedBusinessGroups = "true".equals(managedGroups);
 		}
 	}
-	
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
-	}
-	
+
 	public boolean isAllowedCreate(Roles roles) {
 		if(roles.isOLATAdmin() || roles.isGroupManager()
 				|| (roles.isAuthor() && isAuthorAllowedCreate())
@@ -404,6 +410,33 @@ public class BusinessGroupModule extends AbstractOLATModule {
 
 	public void setResourceManagersAllowedToLinkGroups(boolean enabled) {
 		setStringProperty(RESOURCE_MGR_LINK_GROUP_ALLOWED, Boolean.toString(enabled), true);
+	}
+
+	public boolean isAllowLeavingGroupCreatedByLearners() {
+		return allowLeavingGroupCreatedByLearners;
+	}
+
+	public void setAllowLeavingGroupCreatedByLearners(boolean allow) {
+		this.allowLeavingGroupCreatedByLearners = allow;
+		setStringProperty(ALLOW_LEAVING_GROUP_BY_LEARNERS, Boolean.toString(allow), true);
+	}
+
+	public boolean isAllowLeavingGroupCreatedByAuthors() {
+		return allowLeavingGroupCreatedByAuthors;
+	}
+
+	public void setAllowLeavingGroupCreatedByAuthors(boolean allow) {
+		this.allowLeavingGroupCreatedByAuthors = allow;
+		setStringProperty(ALLOW_LEAVING_GROUP_BY_AUTHORS, Boolean.toString(allow), true);
+	}
+
+	public boolean isAllowLeavingGroupOverride() {
+		return allowLeavingGroupOverride;
+	}
+
+	public void setAllowLeavingGroupOverride(boolean allow) {
+		this.allowLeavingGroupOverride = allow;
+		setStringProperty(ALLOW_LEAVING_GROUP_OVERRIDE, Boolean.toString(allow), true);
 	}
 
 	public boolean isManagedBusinessGroups() {

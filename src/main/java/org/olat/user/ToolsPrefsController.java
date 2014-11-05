@@ -28,7 +28,6 @@ import org.olat.admin.user.tools.UserToolExtension;
 import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.core.extensions.ExtManager;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -153,7 +152,7 @@ public class ToolsPrefsController extends FormBasicController {
 	}
 
 	private void initPresetElementUserData() {
-		String selectedTools = (String)prefs.get(WindowManager.class, "user-tools");
+		String selectedTools = userToolsModule.getUserTools(prefs);
 		if(!StringHelper.containsNonWhitespace(selectedTools)) {
 			// use presets when user has not yet any values
 			selectedTools = userToolsModule.getDefaultPresetOfUserTools();
@@ -184,7 +183,6 @@ public class ToolsPrefsController extends FormBasicController {
 		} else {
 			sb.append("none");
 		}
-		prefs.put(WindowManager.class, "user-tools", sb.toString());
-		prefs.save();
+		userToolsModule.setUserTools(prefs, sb.toString());
 	}
 }

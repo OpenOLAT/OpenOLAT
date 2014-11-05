@@ -267,8 +267,8 @@ public class MembersOverviewController extends BasicController implements Activa
 		Step start = new ImportMember_1b_ChooseMemberStep(ureq, repoEntry, null);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
-			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-				addMembers(ureq, runContext);
+			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
+				addMembers(uureq, runContext);
 				return StepsMainRunController.DONE_MODIFIED;
 			}
 		};
@@ -285,8 +285,8 @@ public class MembersOverviewController extends BasicController implements Activa
 		Step start = new ImportMember_1a_LoginListStep(ureq, repoEntry, null);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
-			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
-				addMembers(ureq, runContext);
+			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
+				addMembers(uureq, runContext);
 				if(runContext.containsKey("notFounds")) {
 					showWarning("user.notfound", runContext.get("notFounds").toString());
 				}

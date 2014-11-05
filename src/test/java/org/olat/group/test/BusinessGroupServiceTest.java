@@ -24,12 +24,14 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 import junit.framework.Assert;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
@@ -43,11 +45,14 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
+import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.BusinessGroupMembershipChange;
+import org.olat.group.model.LeaveOption;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
@@ -81,6 +86,8 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	private BaseSecurity securityManager;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
+	@Autowired
+	private BusinessGroupModule businessGroupModule;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
@@ -173,6 +180,13 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 			initialize = true;
 	}
 	
+	@After
+	public void resetBusinessGroupModule() {
+		businessGroupModule.setAllowLeavingGroupCreatedByAuthors(true);
+		businessGroupModule.setAllowLeavingGroupCreatedByLearners(true);
+		businessGroupModule.setAllowLeavingGroupOverride(true);
+	}
+	
 	@Test
 	public void should_service_present() {
 		Assert.assertNotNull(businessGroupService);
@@ -252,24 +266,24 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	@Test
 	public void testUpdateBusinessGroupAndAutoRank_v1() {
 		//create a group with 1 participant and 2 users in waiting list
-		Identity id0 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-0-" + UUID.randomUUID().toString());
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-1-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-2-" + UUID.randomUUID().toString());
-		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-3-" + UUID.randomUUID().toString());
-		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-4-" + UUID.randomUUID().toString());
+		Identity ident0 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-0-" + UUID.randomUUID().toString());
+		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-1-" + UUID.randomUUID().toString());
+		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-2-" + UUID.randomUUID().toString());
+		Identity ident3 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-3-" + UUID.randomUUID().toString());
+		Identity ident4 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-4-" + UUID.randomUUID().toString());
 
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupService.createBusinessGroup(id0, "auto-1", "auto-1-desc", new Integer(0), new Integer(1), true, true, resource);
+		BusinessGroup group = businessGroupService.createBusinessGroup(ident0, "auto-1", "auto-1-desc", new Integer(0), new Integer(1), true, true, resource);
 		Assert.assertNotNull(group);
 
-		businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
-		businessGroupRelationDao.addRole(id2, group, GroupRoles.waiting.name());
-		businessGroupRelationDao.addRole(id3, group, GroupRoles.waiting.name());
-		businessGroupRelationDao.addRole(id4, group, GroupRoles.waiting.name());
+		businessGroupRelationDao.addRole(ident1, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(ident2, group, GroupRoles.waiting.name());
+		businessGroupRelationDao.addRole(ident3, group, GroupRoles.waiting.name());
+		businessGroupRelationDao.addRole(ident4, group, GroupRoles.waiting.name());
 		dbInstance.commitAndCloseSession();
 
 		//update max participants
-		BusinessGroup updateGroup = businessGroupService.updateBusinessGroup(id0, group, "auto-1", "auto-1-desc", null, null, new Integer(0), new Integer(3));
+		BusinessGroup updateGroup = businessGroupService.updateBusinessGroup(ident0, group, "auto-1", "auto-1-desc", null, null, new Integer(0), new Integer(3));
 		Assert.assertNotNull(updateGroup);
 		dbInstance.commitAndCloseSession();
 		
@@ -277,7 +291,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		List<Identity> participants = businessGroupRelationDao.getMembers(group, GroupRoles.participant.name());
 		Assert.assertNotNull(participants);
 		Assert.assertEquals(3, participants.size());
-		Assert.assertTrue(participants.contains(id1));
+		Assert.assertTrue(participants.contains(ident1));
 		
 		List<Identity> waitingList = businessGroupRelationDao.getMembers(group, GroupRoles.waiting.name());
 		Assert.assertNotNull(waitingList);
@@ -287,24 +301,24 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	@Test
 	public void testUpdateBusinessGroupAndAutoRank_v2() {
 		//create a group with 1 participant and 2 users in waiting list
-		Identity id0 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-0-" + UUID.randomUUID().toString());
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-1-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-2-" + UUID.randomUUID().toString());
-		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-3-" + UUID.randomUUID().toString());
-		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-4-" + UUID.randomUUID().toString());
+		Identity ident0 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-0-" + UUID.randomUUID().toString());
+		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-1-" + UUID.randomUUID().toString());
+		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-2-" + UUID.randomUUID().toString());
+		Identity ident3 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-3-" + UUID.randomUUID().toString());
+		Identity ident4 = JunitTestHelper.createAndPersistIdentityAsUser("grp-auto-4-" + UUID.randomUUID().toString());
 
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group = businessGroupService.createBusinessGroup(id0, "auto-1", "auto-1-desc", new Integer(0), new Integer(1), false, false, resource);
+		BusinessGroup group = businessGroupService.createBusinessGroup(ident0, "auto-1", "auto-1-desc", new Integer(0), new Integer(1), false, false, resource);
 		Assert.assertNotNull(group);
 
-		businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
-		businessGroupRelationDao.addRole(id2, group, GroupRoles.waiting.name());
-		businessGroupRelationDao.addRole(id3, group, GroupRoles.waiting.name());
-		businessGroupRelationDao.addRole(id4, group, GroupRoles.waiting.name());
+		businessGroupRelationDao.addRole(ident1, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(ident2, group, GroupRoles.waiting.name());
+		businessGroupRelationDao.addRole(ident3, group, GroupRoles.waiting.name());
+		businessGroupRelationDao.addRole(ident4, group, GroupRoles.waiting.name());
 		dbInstance.commitAndCloseSession();
 
 		//update max participants
-		BusinessGroup updateGroup = businessGroupService.updateBusinessGroup(id0, group, "auto-1", "auto-1-desc", new Integer(0), new Integer(3), Boolean.TRUE, Boolean.TRUE);
+		BusinessGroup updateGroup = businessGroupService.updateBusinessGroup(ident0, group, "auto-1", "auto-1-desc", new Integer(0), new Integer(3), Boolean.TRUE, Boolean.TRUE);
 		Assert.assertNotNull(updateGroup);
 		dbInstance.commitAndCloseSession();
 		
@@ -312,7 +326,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		List<Identity> participants = businessGroupRelationDao.getMembers(group, GroupRoles.participant.name());
 		Assert.assertNotNull(participants);
 		Assert.assertEquals(3, participants.size());
-		Assert.assertTrue(participants.contains(id1));
+		Assert.assertTrue(participants.contains(ident1));
 		
 		List<Identity> waitingList = businessGroupRelationDao.getMembers(group, GroupRoles.waiting.name());
 		Assert.assertNotNull(waitingList);
@@ -352,24 +366,24 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	@Test
 	public void mergeGroups() {
 		//create some identities
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("merge-1-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("merge-2-" + UUID.randomUUID().toString());
-		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("merge-3-" + UUID.randomUUID().toString());
-		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("merge-4-" + UUID.randomUUID().toString());
-		Identity id5 = JunitTestHelper.createAndPersistIdentityAsUser("merge-5-" + UUID.randomUUID().toString());
-		Identity id6 = JunitTestHelper.createAndPersistIdentityAsUser("merge-6-" + UUID.randomUUID().toString());
+		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsUser("merge-1-" + UUID.randomUUID().toString());
+		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsUser("merge-2-" + UUID.randomUUID().toString());
+		Identity ident3 = JunitTestHelper.createAndPersistIdentityAsUser("merge-3-" + UUID.randomUUID().toString());
+		Identity ident4 = JunitTestHelper.createAndPersistIdentityAsUser("merge-4-" + UUID.randomUUID().toString());
+		Identity ident5 = JunitTestHelper.createAndPersistIdentityAsUser("merge-5-" + UUID.randomUUID().toString());
+		Identity ident6 = JunitTestHelper.createAndPersistIdentityAsUser("merge-6-" + UUID.randomUUID().toString());
 		//create groups and memberships
 		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "old-1", null, 0, 10, false, false, null);
-		businessGroupRelationDao.addRole(id1, g1, GroupRoles.participant.name());
-		businessGroupRelationDao.addRole(id2, g1, GroupRoles.participant.name());
-		businessGroupRelationDao.addRole(id3, g1, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(ident1, g1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(ident2, g1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(ident3, g1, GroupRoles.coach.name());
 		BusinessGroup g2 = businessGroupService.createBusinessGroup(null, "old-2", null, 0, 10, false, false, null);
-		businessGroupRelationDao.addRole(id2, g2, GroupRoles.participant.name());
-		businessGroupRelationDao.addRole(id4, g2, GroupRoles.waiting.name());
-		businessGroupRelationDao.addRole(id5, g2, GroupRoles.participant.name());
-		businessGroupRelationDao.addRole(id6, g2, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(ident2, g2, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(ident4, g2, GroupRoles.waiting.name());
+		businessGroupRelationDao.addRole(ident5, g2, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(ident6, g2, GroupRoles.coach.name());
 		BusinessGroup g3 = businessGroupService.createBusinessGroup(null, "target", null, 0, 10, false, false, null);
-		businessGroupRelationDao.addRole(id1, g3, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(ident1, g3, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
 		//merge
@@ -386,18 +400,18 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		List<Identity> owners = businessGroupRelationDao.getMembers(mergedGroup, GroupRoles.coach.name());
 		Assert.assertNotNull(owners);
 		Assert.assertEquals(2, owners.size());
-		Assert.assertTrue(owners.contains(id3));
-		Assert.assertTrue(owners.contains(id6));
+		Assert.assertTrue(owners.contains(ident3));
+		Assert.assertTrue(owners.contains(ident6));
 		List<Identity> participants = businessGroupRelationDao.getMembers(mergedGroup, GroupRoles.participant.name());
 		Assert.assertNotNull(participants);
 		Assert.assertEquals(3, participants.size());
-		Assert.assertTrue(participants.contains(id1));
-		Assert.assertTrue(participants.contains(id2));
-		Assert.assertTrue(participants.contains(id5));
+		Assert.assertTrue(participants.contains(ident1));
+		Assert.assertTrue(participants.contains(ident2));
+		Assert.assertTrue(participants.contains(ident5));
 		List<Identity> waitingList = businessGroupRelationDao.getMembers(mergedGroup, GroupRoles.waiting.name());
 		Assert.assertNotNull(waitingList);
 		Assert.assertEquals(1, waitingList.size());
-		Assert.assertTrue(waitingList.contains(id4));
+		Assert.assertTrue(waitingList.contains(ident4));
 	}
 
 	/**
@@ -454,24 +468,24 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	throws Exception {
 		//add 2 identities in waiting group and 1 in as participant
 		Identity admin = JunitTestHelper.createAndPersistIdentityAsUser("move-w1-0-" + UUID.randomUUID().toString());
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("move-w1-1-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("move-w1-2-" + UUID.randomUUID().toString());
-		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("move-w1-3-" + UUID.randomUUID().toString());
+		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsUser("move-w1-1-" + UUID.randomUUID().toString());
+		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsUser("move-w1-2-" + UUID.randomUUID().toString());
+		Identity ident3 = JunitTestHelper.createAndPersistIdentityAsUser("move-w1-3-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "move-bg-1", "move-desc", 0, 10, true, false, null);
-		businessGroupService.addToWaitingList(admin, Collections.singletonList(id1), group, null);
-		businessGroupService.addToWaitingList(admin, Collections.singletonList(id2), group, null);
-		businessGroupService.addParticipants(admin, JunitTestHelper.getAdminRoles(), Collections.singletonList(id3), group, null);
+		businessGroupService.addToWaitingList(admin, Collections.singletonList(ident1), group, null);
+		businessGroupService.addToWaitingList(admin, Collections.singletonList(ident2), group, null);
+		businessGroupService.addParticipants(admin, JunitTestHelper.getAdminRoles(), Collections.singletonList(ident3), group, null);
 		
 		dbInstance.commitAndCloseSession();
 		
 		//move id1 from waiting-list to participant
-		List<Identity> identities = Collections.singletonList(id1);
+		List<Identity> identities = Collections.singletonList(ident1);
 		businessGroupService.moveIdentityFromWaitingListToParticipant(admin, identities, group, null);
 		//check position of 'id2'
-		int pos = businessGroupService.getPositionInWaitingListFor(id2, group);
+		int pos = businessGroupService.getPositionInWaitingListFor(ident2, group);
 		Assert.assertEquals("pos must be 1, bit is=" + pos, 1, pos);
 		//check if 'id3' is in participant-list
-		boolean negatifCheck = businessGroupService.isIdentityInBusinessGroup(id3, group);
+		boolean negatifCheck = businessGroupService.isIdentityInBusinessGroup(ident3, group);
 		assertTrue("Identity is not in participant-list", negatifCheck);
 	}
 	
@@ -481,29 +495,29 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	@Test
 	public void testAddToWaitingListAndFireEventAndCheckPosition() throws Exception {
 		//add 2 identities in waiting group and 1 in as participant
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("move-w2-1-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("move-w2-2-" + UUID.randomUUID().toString());
-		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("move-w2-3-" + UUID.randomUUID().toString());
+		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsUser("move-w2-1-" + UUID.randomUUID().toString());
+		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsUser("move-w2-2-" + UUID.randomUUID().toString());
+		Identity ident3 = JunitTestHelper.createAndPersistIdentityAsUser("move-w2-3-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "move-bg-1", "move-desc", 0, 10, true, false, null);
 		//add id1
-		businessGroupService.addToWaitingList(id1, Collections.singletonList(id1), group, null);
+		businessGroupService.addToWaitingList(ident1, Collections.singletonList(ident1), group, null);
 		dbInstance.commitAndCloseSession();
 		//add id2
-		businessGroupService.addToWaitingList(id2, Collections.singletonList(id2), group, null);
+		businessGroupService.addToWaitingList(ident2, Collections.singletonList(ident2), group, null);
 		dbInstance.commitAndCloseSession();
 		//add id3
-		businessGroupService.addToWaitingList(id3, Collections.singletonList(id3), group, null);
+		businessGroupService.addToWaitingList(ident3, Collections.singletonList(ident3), group, null);
 		dbInstance.commitAndCloseSession();
 		
 
 		// Check position of 'id1'
-		int pos1 = businessGroupService.getPositionInWaitingListFor(id1, group);
+		int pos1 = businessGroupService.getPositionInWaitingListFor(ident1, group);
 		Assert.assertEquals("pos must be 1, bit is=" + pos1, 1, pos1);
 		// Check position of 'id2'
-		int pos2 = businessGroupService.getPositionInWaitingListFor(id2, group);
+		int pos2 = businessGroupService.getPositionInWaitingListFor(ident2, group);
 		Assert.assertEquals("pos must be 2, bit is=" + pos2, 2, pos2);
 		// Check position of 'id3'
-		int pos3 = businessGroupService.getPositionInWaitingListFor(id3, group);
+		int pos3 = businessGroupService.getPositionInWaitingListFor(ident3, group);
 		Assert.assertEquals("pos must be 3, bit is=" + pos3, 3, pos3);
 	}
 	
@@ -514,49 +528,49 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	@Test
 	public void testRemoveFromWaitingListAndFireEvent() throws Exception {
 		//add 3 identities in waiting group
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("move-w3-1-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("move-w3-2-" + UUID.randomUUID().toString());
-		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("move-w3-3-" + UUID.randomUUID().toString());
+		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsUser("move-w3-1-" + UUID.randomUUID().toString());
+		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsUser("move-w3-2-" + UUID.randomUUID().toString());
+		Identity ident3 = JunitTestHelper.createAndPersistIdentityAsUser("move-w3-3-" + UUID.randomUUID().toString());
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "move-bg-3", "move-desc", 0, 10, true, false, null);
-		businessGroupService.addToWaitingList(id1, Collections.singletonList(id1), group, null);
-		businessGroupService.addToWaitingList(id2, Collections.singletonList(id2), group, null);
-		businessGroupService.addToWaitingList(id3, Collections.singletonList(id3), group, null);
+		businessGroupService.addToWaitingList(ident1, Collections.singletonList(ident1), group, null);
+		businessGroupService.addToWaitingList(ident2, Collections.singletonList(ident2), group, null);
+		businessGroupService.addToWaitingList(ident3, Collections.singletonList(ident3), group, null);
 		dbInstance.commitAndCloseSession();
 		
 		//remove id2
-		businessGroupService.removeFromWaitingList(wg1, Collections.singletonList(id2), group, null);
+		businessGroupService.removeFromWaitingList(wg1, Collections.singletonList(ident2), group, null);
 		dbInstance.commitAndCloseSession();
 		
 		//check position of 'id1'
-		int pos1 = businessGroupService.getPositionInWaitingListFor(id1, group);
+		int pos1 = businessGroupService.getPositionInWaitingListFor(ident1, group);
 		Assert.assertEquals("pos must be 1, bit is=" + pos1, 1, pos1);
 		//check position of 'id3'
-		int pos3 = businessGroupService.getPositionInWaitingListFor(id3, group);
+		int pos3 = businessGroupService.getPositionInWaitingListFor(ident3, group);
 		Assert.assertEquals("pos must be 2, bit is=" + pos3, 2, pos3);
 		//check position of id2
-		int pos2 = businessGroupService.getPositionInWaitingListFor(id2, group);
+		int pos2 = businessGroupService.getPositionInWaitingListFor(ident2, group);
 		Assert.assertEquals("pos must be -1, not in list bit is=" + pos2, -1, pos2);
 	}
 	
 	@Test
 	public void testRemoveMembers() {
 		Identity admin = JunitTestHelper.createAndPersistIdentityAsUser("rm-w3-0-" + UUID.randomUUID().toString());
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("rm-w3-1-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("rm-w3-2-" + UUID.randomUUID().toString());
-		Identity id3 = JunitTestHelper.createAndPersistIdentityAsUser("rm-w3-3-" + UUID.randomUUID().toString());
-		Identity id4 = JunitTestHelper.createAndPersistIdentityAsUser("rm-w3-4-" + UUID.randomUUID().toString());
+		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsUser("rm-w3-1-" + UUID.randomUUID().toString());
+		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsUser("rm-w3-2-" + UUID.randomUUID().toString());
+		Identity ident3 = JunitTestHelper.createAndPersistIdentityAsUser("rm-w3-3-" + UUID.randomUUID().toString());
+		Identity ident4 = JunitTestHelper.createAndPersistIdentityAsUser("rm-w3-4-" + UUID.randomUUID().toString());
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(id1, "move-bg-3", "move-desc", 0, 10, true, false, resource);
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(id2, "move-bg-3", "move-desc", 0, 10, true, false, resource);
-		BusinessGroup group3 = businessGroupService.createBusinessGroup(id3, "move-bg-3", "move-desc", 0, 10, true, false, resource);
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(ident1, "move-bg-3", "move-desc", 0, 10, true, false, resource);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(ident2, "move-bg-3", "move-desc", 0, 10, true, false, resource);
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(ident3, "move-bg-3", "move-desc", 0, 10, true, false, resource);
 
-		businessGroupRelationDao.addRole(id2, group1, GroupRoles.waiting.name());
-		businessGroupRelationDao.addRole(id3, group1, GroupRoles.participant.name());
-		businessGroupRelationDao.addRole(id3, group2, GroupRoles.waiting.name());
-		businessGroupRelationDao.addRole(id2, group2, GroupRoles.participant.name());
-		businessGroupRelationDao.addRole(id1, group3, GroupRoles.coach.name());
-		businessGroupRelationDao.addRole(id2, group3, GroupRoles.participant.name());
-		businessGroupRelationDao.addRole(id4, group3, GroupRoles.waiting.name());
+		businessGroupRelationDao.addRole(ident2, group1, GroupRoles.waiting.name());
+		businessGroupRelationDao.addRole(ident3, group1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(ident3, group2, GroupRoles.waiting.name());
+		businessGroupRelationDao.addRole(ident2, group2, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(ident1, group3, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(ident2, group3, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(ident4, group3, GroupRoles.waiting.name());
 		dbInstance.commitAndCloseSession();
 		//this groups and relations have been created
 		//group1: id1, id2, id3
@@ -566,8 +580,8 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		
 		//-> remove id1, id3 from the resource
 		List<Identity> identitiesToRemove = new ArrayList<Identity>();
-		identitiesToRemove.add(id1);
-		identitiesToRemove.add(id3);
+		identitiesToRemove.add(ident1);
+		identitiesToRemove.add(ident3);
 		businessGroupService.removeMembers(admin, identitiesToRemove, resource.getOlatResource(), null);
 		dbInstance.commitAndCloseSession();
 
@@ -581,17 +595,17 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		List<Identity> waitingGroup1 = businessGroupRelationDao.getMembers(group1, GroupRoles.waiting.name());
 		Assert.assertNotNull(waitingGroup1);
 		Assert.assertEquals(1, waitingGroup1.size());
-		Assert.assertEquals(id2, waitingGroup1.get(0));
+		Assert.assertEquals(ident2, waitingGroup1.get(0));
 		
 		//check in group2 id2 as owner and participant
 		List<Identity> ownerGroup2 = businessGroupService.getMembers(group2, GroupRoles.coach.name());
 		Assert.assertNotNull(ownerGroup2);
 		Assert.assertEquals(1, ownerGroup2.size());
-		Assert.assertEquals(id2, ownerGroup2.get(0));
+		Assert.assertEquals(ident2, ownerGroup2.get(0));
 		List<Identity> participantGroup2 = businessGroupRelationDao.getMembers(group2, GroupRoles.participant.name());
 		Assert.assertNotNull(participantGroup2);
 		Assert.assertEquals(1, participantGroup2.size());
-		Assert.assertEquals(id2, participantGroup2.get(0));
+		Assert.assertEquals(ident2, participantGroup2.get(0));
 		List<Identity> waitingGroup2 = businessGroupRelationDao.getMembers(group2, GroupRoles.waiting.name());
 		Assert.assertNotNull(waitingGroup2);
 		Assert.assertTrue(waitingGroup2.isEmpty());
@@ -603,57 +617,57 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		List<Identity> participantGroup3 = businessGroupRelationDao.getMembers(group3, GroupRoles.participant.name());
 		Assert.assertNotNull(participantGroup3);
 		Assert.assertEquals(1, participantGroup3.size());
-		Assert.assertEquals(id2, participantGroup3.get(0));
+		Assert.assertEquals(ident2, participantGroup3.get(0));
 		List<Identity> waitingGroup3 = businessGroupRelationDao.getMembers(group3, GroupRoles.waiting.name());
 		Assert.assertNotNull(waitingGroup3);
 		Assert.assertEquals(1, waitingGroup3.size());
-		Assert.assertEquals(id4, waitingGroup3.get(0));
+		Assert.assertEquals(ident4, waitingGroup3.get(0));
 	}
 	
 	@Test
 	public void testMoveRegisteredIdentityFromWaitingToParticipant() throws Exception {
 		//add 1 identity as participant
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("move-w4-1-" + UUID.randomUUID().toString());
-		Roles rolesId1 = securityManager.getRoles(id1);
+		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsUser("move-w4-1-" + UUID.randomUUID().toString());
+		Roles rolesId1 = securityManager.getRoles(ident1);
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "move-bg-4", "move-desc", 0, 10, true, false, null);
-		businessGroupService.addParticipants(id1, rolesId1, Collections.singletonList(id1), group, null);
+		businessGroupService.addParticipants(ident1, rolesId1, Collections.singletonList(ident1), group, null);
 		dbInstance.commitAndCloseSession();
 
 		//add a user to waiting-list which is already in participant-list 
-		businessGroupService.addToWaitingList(id1, Collections.singletonList(id1), group, null);
+		businessGroupService.addToWaitingList(ident1, Collections.singletonList(ident1), group, null);
 		dbInstance.commitAndCloseSession();
 		//try to move this user => user will be removed from waiting-list
-		businessGroupService.moveIdentityFromWaitingListToParticipant(id1, Collections.singletonList(id1), group, null);
+		businessGroupService.moveIdentityFromWaitingListToParticipant(ident1, Collections.singletonList(ident1), group, null);
 		dbInstance.commitAndCloseSession();
 
 		//check position of 'id1'
-		int pos = businessGroupService.getPositionInWaitingListFor(id1, group);
+		int pos = businessGroupService.getPositionInWaitingListFor(ident1, group);
 		Assert.assertEquals("pos must be -1, bit is=" + pos, -1, pos);
 		//check if 'id1' is still in participant-list
-		boolean member = businessGroupService.isIdentityInBusinessGroup(id1, group);
+		boolean member = businessGroupService.isIdentityInBusinessGroup(ident1, group);
 		Assert.assertTrue("Identity is not in participant-list", member);
 	}
 	
 	@Test
 	public void testAutoTransferFromWaitingListToParticipants() {
 		//add 1 identity as participant, 1 in waiting list
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("move-w5-1-" + UUID.randomUUID().toString());
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("move-w5-2-" + UUID.randomUUID().toString());;
-		Roles rolesId1 = securityManager.getRoles(id1);
+		Identity ident1 = JunitTestHelper.createAndPersistIdentityAsUser("move-w5-1-" + UUID.randomUUID().toString());
+		Identity ident2 = JunitTestHelper.createAndPersistIdentityAsUser("move-w5-2-" + UUID.randomUUID().toString());;
+		Roles rolesId1 = securityManager.getRoles(ident1);
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "move-bg-5", "move-desc", 0, 1, true, true, null);
-		businessGroupService.addParticipants(id1, rolesId1, Collections.singletonList(id1), group, null);
-		businessGroupService.addToWaitingList(id2, Collections.singletonList(id2), group, null);
+		businessGroupService.addParticipants(ident1, rolesId1, Collections.singletonList(ident1), group, null);
+		businessGroupService.addToWaitingList(ident2, Collections.singletonList(ident2), group, null);
 		dbInstance.commitAndCloseSession();
 
 		//add a user to waiting-list which is already in participant-list 
-		businessGroupService.removeParticipants(id1, Collections.singletonList(id1), group, null);
+		businessGroupService.removeParticipants(ident1, Collections.singletonList(ident1), group, null);
 		dbInstance.commitAndCloseSession();
 
 		//check position of 'id2'
-		int pos = businessGroupService.getPositionInWaitingListFor(id2, group);
+		int pos = businessGroupService.getPositionInWaitingListFor(ident2, group);
 		Assert.assertEquals("pos must be -1, bit is=" + pos, -1, pos);
 		//check if 'id1' is still in participant-list
-		boolean member = businessGroupService.isIdentityInBusinessGroup(id2, group);
+		boolean member = businessGroupService.isIdentityInBusinessGroup(ident2, group);
 		Assert.assertTrue("Identity is in participant-list", member);
 	}
 
@@ -940,5 +954,187 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		List<ResourceReservation> reservations = reservationDao.loadReservations(id);
 		Assert.assertNotNull(reservations);
 		Assert.assertTrue(reservations.isEmpty());
+	}
+	
+	/**
+	 * Test the default settings. Participants are allowed to leave business groups.
+	 */
+	@Test
+	public void allowToLeavingBusinessGroup_defaultSettings() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("leave-auth-1-" + UUID.randomUUID().toString());
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("leave-bg-1-");
+		BusinessGroup group = businessGroupService.createBusinessGroup(author, "Leaving group", "But you cannot leave :-(", new Integer(0), new Integer(2), false, false, null);
+		businessGroupRelationDao.addRole(participant, group, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		LeaveOption optionToLeave = businessGroupService.isAllowToLeaveBusinessGroup(participant, group);
+		Assert.assertNotNull(optionToLeave);
+		Assert.assertTrue(optionToLeave.isAllowToLeave());
+	}
+	
+	/**
+	 * Test the default settings but the author set the business group to "leaving not allowed".
+	 */
+	@Test
+	public void allowToLeavingBusinessGroup_defaultSettings_groupOverride() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("leave-auth-2-" + UUID.randomUUID().toString());
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("leave-bg-2-");
+		BusinessGroup group = businessGroupService.createBusinessGroup(author, "Leaving group", "But you cannot leave :-(", new Integer(0), new Integer(2), false, false, null);
+		businessGroupRelationDao.addRole(participant, group, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//set to not allowed to leave
+		group = businessGroupService.updateAllowToLeaveBusinessGroup(group, false);
+		dbInstance.commitAndCloseSession();
+
+		LeaveOption optionToLeave = businessGroupService.isAllowToLeaveBusinessGroup(participant, group);
+		Assert.assertNotNull(optionToLeave);
+		Assert.assertFalse(optionToLeave.isAllowToLeave());
+		
+		ContactList contacts = optionToLeave.getContacts();
+		Assert.assertNotNull(contacts);
+		Collection<Identity> contactList = contacts.getIdentiEmails().values();
+		Assert.assertNotNull(contactList);
+		Assert.assertEquals(1, contactList.size());
+		Assert.assertTrue(contactList.contains(author));
+	}
+	
+	/**
+	 * Override of allow is forbidden system-wide. If a group have the settings not "not allowed to leave",
+	 * the setting must be ignored and the participants allowed to leave the group.
+	 */
+	@Test
+	public void allowToLeavingBusinessGroup_overrideForbidden() {
+		businessGroupModule.setAllowLeavingGroupOverride(false);
+
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("leave-auth-3-" + UUID.randomUUID().toString());
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("leave-bg-3-");
+		BusinessGroup group = businessGroupService.createBusinessGroup(author, "Leaving group", "But you cannot leave :-(", new Integer(0), new Integer(2), false, false, null);
+		businessGroupRelationDao.addRole(participant, group, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//set to not allowed to leave
+		group = businessGroupService.updateAllowToLeaveBusinessGroup(group, false);
+		dbInstance.commitAndCloseSession();
+
+		LeaveOption optionToLeave = businessGroupService.isAllowToLeaveBusinessGroup(participant, group);
+		Assert.assertNotNull(optionToLeave);
+		Assert.assertTrue(optionToLeave.isAllowToLeave());
+	}
+	
+	/**
+	 * Override of allow is forbidden system-wide. If a group have the settings not "not allowed to leave",
+	 * the setting must be ignored for learners group but not for authors group.
+	 */
+	@Test
+	public void allowToLeavingBusinessGroup_overrideForbidden_notAllowForAuthorsGroups_butForLearnersGroup() {
+		businessGroupModule.setAllowLeavingGroupOverride(false);
+		businessGroupModule.setAllowLeavingGroupCreatedByAuthors(false);
+		businessGroupModule.setAllowLeavingGroupCreatedByLearners(true);
+		
+		//authors group
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("leave-auth-4-" + UUID.randomUUID().toString());
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("leave-bg-4-");
+		BusinessGroup authorsGroup = businessGroupService.createBusinessGroup(author, "Leaving group", "But you cannot leave :-(", new Integer(0), new Integer(2), false, false, null);
+		businessGroupRelationDao.addRole(participant, authorsGroup, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//set to not allowed to leave
+		authorsGroup = businessGroupService.updateAllowToLeaveBusinessGroup(authorsGroup, false);
+		dbInstance.commitAndCloseSession();
+
+		//check the authors group leaving option
+		LeaveOption optionToLeaveAuthorsGroup = businessGroupService.isAllowToLeaveBusinessGroup(participant, authorsGroup);
+		Assert.assertNotNull(optionToLeaveAuthorsGroup);
+		Assert.assertFalse(optionToLeaveAuthorsGroup.isAllowToLeave());
+		
+		//learners group
+		Identity learner = JunitTestHelper.createAndPersistIdentityAsRndUser("leave-learn-4-" + UUID.randomUUID().toString());
+		BusinessGroup learnersGroup = businessGroupService.createBusinessGroup(learner, "Leaving group", "But you cannot leave :-(", new Integer(0), new Integer(2), false, false, null);
+		businessGroupRelationDao.addRole(participant, learnersGroup, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		//set to not allowed to leave
+		learnersGroup = businessGroupService.updateAllowToLeaveBusinessGroup(learnersGroup, false);
+		dbInstance.commitAndCloseSession();
+		
+		//check the learners group leaving option
+		LeaveOption optionToLeaveLearnersGroup = businessGroupService.isAllowToLeaveBusinessGroup(participant, learnersGroup);
+		Assert.assertNotNull(optionToLeaveLearnersGroup);
+		Assert.assertTrue(optionToLeaveLearnersGroup.isAllowToLeave());
+	}
+	
+	/**
+	 * Override of allow is forbidden system-wide. If a group have the settings not "not allowed to leave",
+	 * the setting must be ignored for learners group but not for authors group.
+	 */
+	@Test
+	public void allowToLeavingBusinessGroup_overrideForbidden_notAllowForAuthorsAndLearnersGroups() {
+		businessGroupModule.setAllowLeavingGroupOverride(false);
+		businessGroupModule.setAllowLeavingGroupCreatedByAuthors(false);
+		businessGroupModule.setAllowLeavingGroupCreatedByLearners(false);
+		
+		//authors group
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("leave-auth-5-" + UUID.randomUUID().toString());
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("leave-bg-5-");
+		BusinessGroup authorsGroup = businessGroupService.createBusinessGroup(author, "Leaving group", "But you cannot leave :-(", new Integer(0), new Integer(2), false, false, null);
+		businessGroupRelationDao.addRole(participant, authorsGroup, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//set to not allowed to leave
+		authorsGroup = businessGroupService.updateAllowToLeaveBusinessGroup(authorsGroup, false);
+		dbInstance.commitAndCloseSession();
+
+		//check the authors group leaving option
+		LeaveOption optionToLeaveAuthorsGroup = businessGroupService.isAllowToLeaveBusinessGroup(participant, authorsGroup);
+		Assert.assertNotNull(optionToLeaveAuthorsGroup);
+		Assert.assertFalse(optionToLeaveAuthorsGroup.isAllowToLeave());
+		
+		//learners group
+		Identity learner = JunitTestHelper.createAndPersistIdentityAsRndUser("leave-learn-5-" + UUID.randomUUID().toString());
+		BusinessGroup learnersGroup = businessGroupService.createBusinessGroup(learner, "Leaving group", "But you cannot leave :-(", new Integer(0), new Integer(2), false, false, null);
+		businessGroupRelationDao.addRole(participant, learnersGroup, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		//set to not allowed to leave
+		learnersGroup = businessGroupService.updateAllowToLeaveBusinessGroup(learnersGroup, false);
+		dbInstance.commitAndCloseSession();
+		
+		//check the learners group leaving option
+		LeaveOption optionToLeaveLearnersGroup = businessGroupService.isAllowToLeaveBusinessGroup(participant, learnersGroup);
+		Assert.assertNotNull(optionToLeaveLearnersGroup);
+		Assert.assertFalse(optionToLeaveLearnersGroup.isAllowToLeave());
+	}
+	
+	/**
+	 * 
+	 */
+	@Test
+	public void allowToLeavingBusinessGroup_withCourse() {
+		//authors group
+		RepositoryEntry resource = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("leave-bg-5-");
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Leaving group", "But you cannot leave :-(", new Integer(0), new Integer(2), false, false, resource);
+		businessGroupRelationDao.addRole(participant, group, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//set to not allowed to leave
+		group = businessGroupService.updateAllowToLeaveBusinessGroup(group, false);
+		dbInstance.commitAndCloseSession();
+
+		//check the authors group leaving option
+		LeaveOption optionToLeave = businessGroupService.isAllowToLeaveBusinessGroup(participant, group);
+		Assert.assertNotNull(optionToLeave);
+		Assert.assertFalse(optionToLeave.isAllowToLeave());
+		ContactList contacts = optionToLeave.getContacts();
+		Collection<Identity> contactList = contacts.getIdentiEmails().values();
+		Assert.assertNotNull(contactList);
+		Assert.assertFalse(contactList.isEmpty());
+		
+		for(Identity contact:contactList) {
+			Roles roles = securityManager.getRoles(contact);
+			Assert.assertNotNull(roles);
+			Assert.assertTrue(roles.isOLATAdmin());
+		}
 	}
 }

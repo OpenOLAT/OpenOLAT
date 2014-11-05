@@ -69,6 +69,7 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 	private boolean participantsVisiblePublic;
 	private boolean waitingListVisiblePublic;
 	private boolean downloadMembersLists;
+	private boolean allowToLeave;
 
 	/**
 	 * constructs an unitialised BusinessGroup, use setXXX for setting attributes
@@ -203,6 +204,16 @@ public class BusinessGroupImpl extends PersistentObject implements BusinessGroup
 
 	public void setDownloadMembersLists(boolean visible) {
 		this.downloadMembersLists = visible;
+	}
+
+	@Override
+	public boolean isAllowToLeave() {
+		return allowToLeave;
+	}
+
+	@Override
+	public void setAllowToLeave(boolean allow) {
+		this.allowToLeave = allow;
 	}
 
 	public OLATResource getResource() {

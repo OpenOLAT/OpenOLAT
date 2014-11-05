@@ -17,18 +17,36 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.admin.user.tools;
+package org.olat.group.model;
+
+import org.olat.core.util.mail.ContactList;
 
 /**
  * 
- * Initial date: 28.10.2014<br>
+ * Initial date: 31.10.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum UserToolCategory {
-	search,
-	personal,
-	config,
-	system
+public class LeaveOption {
+	
+	private final boolean allowToLeave;
+	private final ContactList contacts;
+	
+	public LeaveOption() {
+		 this(true, null);
+	}
+	
+	public LeaveOption(boolean allowToLeave, ContactList contacts) {
+		this.allowToLeave = allowToLeave;
+		this.contacts = contacts;
+		 
+	}
 
+	public boolean isAllowToLeave() {
+		return allowToLeave;
+	}
+
+	public ContactList getContacts() {
+		return contacts;
+	}
 }

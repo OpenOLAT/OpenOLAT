@@ -36,6 +36,7 @@ import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.EnrollState;
+import org.olat.group.model.LeaveOption;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
@@ -118,6 +119,8 @@ public interface BusinessGroupService {
 			boolean ownersIntern, boolean participantsIntern, boolean waitingListIntern,
 			boolean ownersPublis, boolean participantsPublic, boolean waitingListPublic,
 			boolean download);
+	
+	public BusinessGroup updateAllowToLeaveBusinessGroup(BusinessGroup group, boolean allowLeaving);
 	
 	/**
 	 * Delete a business group from the persistence store
@@ -408,6 +411,9 @@ public interface BusinessGroupService {
 	public void acceptPendingParticipation(Identity ureqIdentity, Identity reservationOwner, OLATResource resource);
 	
 	public void cancelPendingParticipation(Identity ureqIdentity, ResourceReservation reservation);
+	
+	
+	public LeaveOption isAllowToLeaveBusinessGroup(Identity identity, BusinessGroup group);
 	
 	/**
 	 * Remove a list of users from a group as participant and does all the magic that needs

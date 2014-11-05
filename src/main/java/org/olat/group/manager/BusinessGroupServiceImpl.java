@@ -42,6 +42,7 @@ import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.SecurityGroup;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
@@ -58,6 +59,7 @@ import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.async.ProgressDelegate;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -92,6 +94,7 @@ import org.olat.group.model.BusinessGroupMembershipViewImpl;
 import org.olat.group.model.BusinessGroupMembershipsChanges;
 import org.olat.group.model.EnrollState;
 import org.olat.group.model.IdentityGroupKey;
+import org.olat.group.model.LeaveOption;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.right.BGRightManager;
@@ -104,6 +107,7 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
@@ -132,6 +136,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	private BusinessGroupModule groupModule;
 	@Autowired
 	private BusinessGroupDAO businessGroupDAO;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -299,6 +305,20 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			reloadedBusinessGroup.setWaitingListVisibleIntern(waitingListIntern);
 			reloadedBusinessGroup.setWaitingListVisiblePublic(waitingListPublic);
 			reloadedBusinessGroup.setDownloadMembersLists(download);
+			mergedGroup = businessGroupDAO.merge(reloadedBusinessGroup);
+			//prevent lazy loading issues
+			mergedGroup.getBaseGroup().getKey();
+		}
+		dbInstance.commit();
+		return mergedGroup;
+	}
+
+	@Override
+	public BusinessGroup updateAllowToLeaveBusinessGroup(BusinessGroup group, boolean allow) {
+		BusinessGroup reloadedBusinessGroup = businessGroupDAO.loadForUpdate(group.getKey());
+		BusinessGroup mergedGroup = null;
+		if(reloadedBusinessGroup != null) {
+			reloadedBusinessGroup.setAllowToLeave(allow);
 			mergedGroup = businessGroupDAO.merge(reloadedBusinessGroup);
 			//prevent lazy loading issues
 			mergedGroup.getBaseGroup().getKey();
@@ -996,6 +1016,84 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 	
 	@Override
+	public LeaveOption isAllowToLeaveBusinessGroup(Identity identity, BusinessGroup group) {
+		LeaveOption opt;
+		if(groupModule.isAllowLeavingGroupOverride()) {
+			if(group.isAllowToLeave()) {
+				opt = new LeaveOption();
+			} else {
+				ContactList list = getAdminContactList(group);
+				opt = new LeaveOption(false, list);
+			}
+		} else if(groupModule.isAllowLeavingGroupCreatedByAuthors() && groupModule.isAllowLeavingGroupCreatedByLearners()) {
+			opt = new LeaveOption();
+		} else if(!groupModule.isAllowLeavingGroupCreatedByAuthors() && !groupModule.isAllowLeavingGroupCreatedByLearners()) {
+			ContactList list = getAdminContactList(group);
+			opt = new LeaveOption(false, list);
+		} else {
+			int numOfCoaches = countMembers(group, GroupRoles.coach.name());
+			if(numOfCoaches == 0) {
+				int numOfResources = businessGroupRelationDAO.countResources(group);
+				if(numOfResources > 0) {
+					//author group
+					if(groupModule.isAllowLeavingGroupCreatedByAuthors()) {
+						opt = new LeaveOption();
+					} else {
+						ContactList list = getAdminContactList(group);
+						opt = new LeaveOption(false, list);
+					}
+
+				//learner group
+				} else if(groupModule.isAllowLeavingGroupCreatedByLearners()) {
+					opt = new LeaveOption();
+				} else {
+					ContactList list = getAdminContactList(group);
+					opt = new LeaveOption(false, list);
+				}
+			} else {
+				int numOfAuthors = businessGroupRelationDAO.countAuthors(group);
+				if(numOfAuthors > 0) {
+					if(groupModule.isAllowLeavingGroupCreatedByAuthors()) {
+						opt = new LeaveOption();
+					} else {
+						ContactList list = getAdminContactList(group);
+						opt = new LeaveOption(false, list);
+					}
+				} else if(groupModule.isAllowLeavingGroupCreatedByLearners()) {
+					opt = new LeaveOption();
+				} else {
+					ContactList list = getAdminContactList(group);
+					opt = new LeaveOption(false, list);
+				}	
+			}
+		}
+		return opt;
+	}
+	
+	public ContactList getAdminContactList(BusinessGroup group) {
+		ContactList list = new ContactList("Contact");
+		List<Identity> coaches = getMembers(group, GroupRoles.coach.name());
+		if(coaches.isEmpty()) {
+			Collection<BusinessGroup> groups = Collections.singletonList(group);
+			List<RepositoryEntry> entries = businessGroupRelationDAO.findRepositoryEntries(groups, 0, -1);
+			for(RepositoryEntry re:entries) {
+				coaches.addAll(repositoryService.getMembers(re, GroupRoles.coach.name()));
+			}
+			
+			if(coaches.isEmpty()) {
+				//get system administrators
+				SecurityGroup adminSecGroup = securityManager.findSecurityGroupByName(Constants.GROUP_ADMIN);
+				List<Identity> admins = securityManager.getIdentitiesByPowerSearch(null, null, false, new SecurityGroup[]{ adminSecGroup },
+						null, null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
+				coaches.addAll(admins);
+			}
+		}
+		
+		list.addAllIdentites(coaches);
+		return list;
+	}
+
+	@Override
 	public void removeParticipants(Identity ureqIdentity, List<Identity> identities, BusinessGroup group, MailPackage mailing) {
 		group = businessGroupDAO.loadForUpdate(group.getKey());
 		List<BusinessGroupModifiedEvent.Deferred> events = new ArrayList<BusinessGroupModifiedEvent.Deferred>();
@@ -1219,6 +1317,9 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				response.getAddedIdentities().add(identity);
 				// notification mail is handled in controller
 			} else {
+				if (businessGroupRelationDAO.hasRole(identity, currBusinessGroup, GroupRoles.waiting.name()) ) {
+					removeFromWaitingList(ureqIdentity, identity, currBusinessGroup, mailing, events);
+				}
 				response.getIdentitiesAlreadyInGroup().add(identity);
 			}
 		}

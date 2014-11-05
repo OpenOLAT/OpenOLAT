@@ -78,6 +78,7 @@ create table if not exists o_gp_business (
    participantspublic bit not null default 0,
    waitingpublic bit not null default 0,
    downloadmembers bit not null default 0,
+   allowtoleave bit not null default 1,
    fk_resource bigint unique,
    fk_group_id bigint unique,
    primary key (group_id)

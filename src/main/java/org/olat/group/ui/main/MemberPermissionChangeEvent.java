@@ -83,15 +83,15 @@ public class MemberPermissionChangeEvent extends RepositoryEntryPermissionChange
 		if(members == null || members.isEmpty()) {
 			return Collections.emptyList();
 		}
-		List<BusinessGroupMembershipChange> groupChanges = getGroupChanges();
-		if(groupChanges == null || groupChanges.isEmpty()) {
+		List<BusinessGroupMembershipChange> grChanges = getGroupChanges();
+		if(grChanges == null || grChanges.isEmpty()) {
 			return Collections.emptyList();
 		}
 		
 		List<BusinessGroupMembershipChange> allModifications = new ArrayList<BusinessGroupMembershipChange>();
-		for(BusinessGroupMembershipChange groupChange:groupChanges) {
+		for(BusinessGroupMembershipChange grChange:grChanges) {
 			for(Identity member:members) {
-				allModifications.add(new BusinessGroupMembershipChange(member, groupChange));
+				allModifications.add(new BusinessGroupMembershipChange(member, grChange));
 			}
 		}
 		return allModifications;

@@ -30,7 +30,6 @@ import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.extensions.ExtManager;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -121,7 +120,7 @@ public class OlatTopNavController extends BasicController {
 		List<Tool> toolSetLinksName = new ArrayList<Tool>();
 		
 		Preferences prefs = ureq.getUserSession().getGuiPreferences();
-		String selectedTools = (String)prefs.get(WindowManager.class, "user-tools");
+		String selectedTools = userToolsModule.getUserTools(prefs);
 		if(!StringHelper.containsNonWhitespace(selectedTools)) {
 			selectedTools = userToolsModule.getDefaultPresetOfUserTools();
 		}

@@ -59,6 +59,7 @@ public class BusinessGroupMembersController extends BasicController {
 	private final VelocityContainer mainVC;
 
 	private final DisplayMemberSwitchForm dmsForm;
+	private final MembershipConfigurationForm configForm;
 	private MemberListController membersController;
 	private final Link importMemberLink, addMemberLink;
 	private StepsMainRunController importMembersWizard;
@@ -87,6 +88,12 @@ public class BusinessGroupMembersController extends BasicController {
 		// set if the checkboxes are checked or not.
 		dmsForm.setDisplayMembers(businessGroup);
 		mainVC.put("displayMembers", dmsForm.getInitialComponent());
+		
+		configForm = new MembershipConfigurationForm (ureq, getWindowControl());
+		configForm.setEnabled(!BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.membersmanagement));
+		listenTo(configForm);
+		configForm.setMembershipConfiguration(businessGroup);
+		mainVC.put("configMembers", configForm.getInitialComponent());
 		
 		boolean managed = BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.membersmanagement);
 		SearchMembersParams searchParams = new SearchMembersParams(false, false, false, true, true, true, true);
@@ -127,8 +134,8 @@ public class BusinessGroupMembersController extends BasicController {
 		}
 	}
 	
-	protected void updateBusinessGroup(BusinessGroup businessGroup) {
-		this.businessGroup = businessGroup;
+	protected void updateBusinessGroup(BusinessGroup bGroup) {
+		this.businessGroup = bGroup;
 		
 		boolean hasWaitingList = businessGroup.getWaitingListEnabled().booleanValue();	
 		Boolean waitingFlag = (Boolean)mainVC.getContext().get("hasWaitingGrp");
@@ -156,6 +163,16 @@ public class BusinessGroupMembersController extends BasicController {
 						ownersIntern, participantsIntern, waitingIntern,
 						ownersPublic, participantsPublic, waitingPublic,
 						download);
+				// notify current active users of this business group
+				BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT, businessGroup, null);
+				// do loggin
+				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CONFIGURATION_CHANGED, getClass());
+				fireEvent(ureq, event);
+			}
+		} else if (source == configForm) {
+			if(event == Event.CHANGED_EVENT) {
+				boolean allow = configForm.isAllowToLeaveBusinessGroup();
+				businessGroup = businessGroupService.updateAllowToLeaveBusinessGroup(businessGroup, allow);
 				// notify current active users of this business group
 				BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT, businessGroup, null);
 				// do loggin
