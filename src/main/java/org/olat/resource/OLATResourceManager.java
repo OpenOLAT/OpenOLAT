@@ -200,7 +200,7 @@ public class OLATResourceManager extends BasicManager {
 		List<OLATResource> resources = dbInstance.getCurrentEntityManager()
 				.createQuery(s, OLATResource.class)
 				.setParameter("resname", type)
-				.setParameter("resid", resourceableId.longValue())
+				.setParameter("resid", resourceableId)
 				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
 
@@ -209,5 +209,16 @@ public class OLATResourceManager extends BasicManager {
 			return null;
 		}
 		return resources.get(0);
+	}
+	
+	public OLATResource findResourceById(Long key) {
+		if (key == null) return null;
+
+		String s = "select ori from org.olat.resource.OLATResourceImpl ori where ori.key=:resourceKey";
+		List<OLATResource> resources = dbInstance.getCurrentEntityManager()
+				.createQuery(s, OLATResource.class)
+				.setParameter("resourceKey", key)
+				.getResultList();
+		return resources.isEmpty() ? null : resources.get(0);
 	}
 }

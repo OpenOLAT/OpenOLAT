@@ -173,14 +173,12 @@ public class LocalizedXSLTransformer {
 	 * Helper to create XSLT transformer for this instance
 	 */
 	private void initTransformer() {
-		// build new transformer
-		InputStream xslin = getClass().getResourceAsStream("/org/olat/ims/resources/xsl/" + XSLFILENAME);
 		// translate xsl with velocity
 		Context vcContext = new VelocityContext();
 		vcContext.put("t", pT);
 		vcContext.put("staticPath", StaticMediaDispatcher.createStaticURIFor(""));
 		String xslAsString = "";
-		try {
+		try(InputStream xslin = getClass().getResourceAsStream("/org/olat/ims/resources/xsl/" + XSLFILENAME)) {
 			xslAsString = slurp(xslin);
 		} catch (IOException e) {
 			log.error("Could not convert xsl to string!", e);
