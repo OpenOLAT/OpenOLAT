@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans.xsd">
+  http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:component-scan base-package="org.olat.login.oauth" />
+  
 
 <bean id="loginModule" class="org.olat.login.LoginModule">
 	<property name="persistedProperties">
@@ -53,20 +59,19 @@
 			</bean>
 		</entry>
 		<!-- The LDAP authentication provider -->
-		<entry key="LDAP">
-			<bean id="LDAPAuthenticationProvider" class="org.olat.login.auth.AuthenticationProvider" >
-					<constructor-arg index="0" value="LDAP"/>
-					<constructor-arg index="1" value="org.olat.ldap.ui.LDAPAuthenticationController"/>
-					<constructor-arg index="2" value="${ldap.enable}"/>
-					<constructor-arg index="3" value="${ldap.default}"/>
-					<constructor-arg index="4" value="o_icon_provider_ldap"/>
-			</bean>
-		</entry>
+			<entry key="OAuth">
+				<bean id="OAuthAuthenticationProvider" class="org.olat.login.oauth.OAuthAuthenticationProvider" >
+					<constructor-arg index="0" value="OAuth"/>
+					<constructor-arg index="1" value="org.olat.login.oauth.ui.OAuthAuthenticationController"/>
+					<constructor-arg index="2" value="false"/>
+					<constructor-arg index="3" value="o_icon_provider_oauth"/>
+				</bean>
+			</entry>
 		</map>
 	</property>
 </bean>
 
-<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="targetObject" ref="loginModule" />
         <property name="targetMethod" value="init" />
         <property name="arguments">
@@ -88,11 +93,29 @@
 						allowLoginUsingEmail=${login.using.username.or.email.enabled}
                     </value>
           </property>
-</bean>
+	</bean>
 
-<bean id="afterLoginInterceptionManager" class="org.olat.login.AfterLoginInterceptionManager" />
-<bean id="olatAuthenticationSpi" class="org.olat.login.auth.OLATAuthManager" />
+	<bean id="afterLoginInterceptionManager" class="org.olat.login.AfterLoginInterceptionManager" />
+	<bean id="olatAuthenticationSpi" class="org.olat.login.auth.OLATAuthManager" />
 
-
+	<!-- OAuth admin. panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="8206" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.login.oauth.ui.OAuthAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="oauth" />
+		<property name="i18nActionKey" value="admin.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.login.oauth.ui"/>
+		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+	</bean>
 
 </beans>

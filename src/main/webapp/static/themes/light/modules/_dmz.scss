@@ -137,7 +137,42 @@ body.o_dmz {
 		small {
 			font-size: $font-size-base;
 		}
-	}	
+	}
+	
+	.o_login_social {
+		position: relative;
+		padding: $padding-large-vertical $padding-base-horizontal;
+	
+		li {
+			padding: $padding-large-vertical $padding-base-horizontal;
+		}
+		
+		li>a {
+			color: white;
+			display: block;
+			line-height: 2em;
+			text-align: center;
+			font-size: floor($font-size-base * 1.3);
+			border-radius: $border-radius-base;
+			padding: $padding-large-vertical $padding-base-horizontal;
+		}
+		
+		a.o_sel_auth_facebook {
+			background-color: #4568b2;
+		}
+		
+		a.o_sel_auth_twitter {
+			background-color: #2cc5ff;
+		}
+		
+		a.o_sel_auth_google {
+			background-color: #e15f4f;
+		}
+		
+		a.o_sel_auth_linkedin {
+			background-color: #0181bd;
+		}
+	}
 }
 
 @media (max-width: $screen-xs-max) { 

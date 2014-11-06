@@ -153,10 +153,15 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_previous_toolbar:before { content: $fa-var-caret-left; }
 .o_icon_print:before { content: $fa-var-print;}
 .o_icon_private:before { content: $fa-var-print;}
+.o_icon_provider_facebook:before { content: $fa-var-facebook;}
+.o_icon_provider_google:before { content: $fa-var-google;}
 .o_icon_provider_guest:before { content: $fa-var-child;}
 .o_icon_provider_ldap:before { content: $fa-var-university;}
+.o_icon_provider_linkedin:before { content: $fa-var-linkedin;}
+.o_icon_provider_oauth:before { content: $fa-var-cloud;}
 .o_icon_provider_olat:before { @extend %o_icon_openolat; }
 .o_icon_provider_shibboleth:before { content: $fa-var-university;}
+.o_icon_provider_twitter:before { content: $fa-var-twitter;}
 .o_icon_publish:before { content: $fa-var-share;}
 .o_icon_qrcode:before { content: $fa-var-qrcode;}
 .o_icon_quickview:before { content: $fa-var-eye;}

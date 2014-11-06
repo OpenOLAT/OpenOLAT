@@ -54,6 +54,10 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 		moduleConfigProperties = new PersistedProperties(coordinatorManager, this);
 	}
 	
+	public AbstractSpringModule(CoordinatorManager coordinatorManager, boolean secured) {
+		moduleConfigProperties = new PersistedProperties(coordinatorManager, this, secured);
+	}
+	
 	@Value("${userdata.dir}")
 	private String userDataDirectory;
 
@@ -115,6 +119,18 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 		// delegate to new property based config style
 		moduleConfigProperties.setStringProperty(propertyName, value, saveConfiguration);
 		log.audit("change system property: " + propertyName, value);
+	}
+	
+	/**
+	 * Set a string which must not be logged
+	 * @param propertyName
+	 * @param value
+	 * @param saveConfiguration
+	 */
+	protected void setSecretStringProperty(String propertyName, String value, boolean saveConfiguration) {
+		// delegate to new property based config style
+		moduleConfigProperties.setStringProperty(propertyName, value, saveConfiguration);
+		log.audit("change system property: " + propertyName, "*********");
 	}
 	/**
 	 * Retrun an int value for a certain propertyName

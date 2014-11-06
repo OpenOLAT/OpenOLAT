@@ -59,16 +59,17 @@ public class AuthenticationProvider implements ControllerCreator{
 	 * Authentication provider implementation. Gets its config from spring config file.
 	 * @param providerConfig
 	 */
-	private AuthenticationProvider(String name, String clazz, boolean enabled, boolean isDefault, String iconCssClass) {
+	protected AuthenticationProvider(String name, String clazz, boolean enabled, boolean isDefault, String iconCssClass) {
 		this.name = name;
 		this.clazz = clazz;
 		this.enabled = enabled;
 		this.isDefault = isDefault;
 		this.iconCssClass = iconCssClass;
 		// double check config
-		if (name == null || clazz == null)
+		if (name == null || clazz == null) {
 			throw new StartupException("Invalid AuthProvider: " + name + ". Please fix!");
 		}
+	}
 	
 	/**
 	 * @return True if this auth provider is enabled.

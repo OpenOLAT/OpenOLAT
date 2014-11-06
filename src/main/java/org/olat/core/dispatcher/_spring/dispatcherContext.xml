@@ -55,6 +55,9 @@
 				<entry key="/certificate/">
 					<ref bean="certificateBean" />
 				</entry>
+				<entry key="/oauthcallback">
+					<ref bean="oauthcallback" />
+				</entry>
 			</map>
 		</property>
 	</bean>
@@ -62,7 +65,7 @@
 	
 	<bean id="restdispatcher" class="org.olat.dispatcher.RESTDispatcher" />
 	
-	
+	<bean id="oauthcallback" class="org.olat.login.oauth.OAuthDispatcher" />
 	
 	<!-- send bug report dispatcher -->
 	<bean id="errorMailBean" class="org.olat.core.dispatcher.ErrorFeedbackMailer" />
@@ -117,6 +120,15 @@
 						</property>
 					</bean>
 				</entry>
+				<!-- triggers oauth registration workflow -->
+				<entry key="/oauthregister/">
+					<bean class="org.olat.core.gui.control.ChiefControllerCreator">
+						<property name="contentControllerCreator">
+							<bean class="org.olat.login.oauth.ui.OAuthRegistrationCreator" />
+						</property>
+					</bean>
+				</entry>
+				
 				<!-- triggers email change workflow -->
 				<entry key="/emchange/">
 					<bean

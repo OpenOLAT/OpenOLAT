@@ -398,6 +398,18 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	}
 	
 	/**
+	 * Set an icon to thte title
+	 * @param iconCss
+	 */
+	public void setFormTitleIconCss(String iconCss) {
+		if (iconCss == null) {
+			formLayoutContainer.contextRemove("off_icon");
+		} else {
+			formLayoutContainer.contextPut("off_icon", iconCss);
+		}
+	}
+	
+	/**
 	 * Set the translated description
 	 * @param description
 	 */

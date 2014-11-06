@@ -363,6 +363,26 @@
 					</bean>
 				</entry>
 				
+				<!--  OAuthRegistrationController is used in the OAuth registration process -->
+				<entry key="org.olat.login.oauth.ui.OAuthRegistrationController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Registration form for OAuth users (LinkedIn...)" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+							</list>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+							</set>
+						</property>
+					</bean>
+				</entry>
 				
 				
 				<!-- 
