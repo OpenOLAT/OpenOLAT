@@ -180,30 +180,28 @@ public class PortfolioHandler implements RepositoryHandler {
 
 	@Override
 	public boolean readyToDelete(OLATResourceable res, Identity identity, Roles roles, Locale locale, ErrorList errors) {
-		EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
+		EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		PortfolioStructure map = ePFMgr.loadPortfolioStructure(res);
-		if(map != null) {
-			//owner group has its constraints shared beetwen the repository entry and the template
-			((EPAbstractMap)map).setGroups(null);
-		}
 		if(map instanceof EPStructuredMapTemplate) {
 			EPStructuredMapTemplate exercise = (EPStructuredMapTemplate)map;
-			if (ePFMgr.isTemplateInUse(exercise, null, null, null)) return false;
+			if (ePFMgr.isTemplateInUse(exercise, null, null, null)) {
+				return false;
+			}
 		}
+
 		ReferenceManager refM = ReferenceManager.getInstance();
 		String referencesSummary = refM.getReferencesToSummary(res, locale);
 		if (referencesSummary != null) {
 			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
 			errors.setError(translator.translate("details.delete.error.references", new String[] { referencesSummary }));
 			return false;
-		}		
+		}
 		return true;
 	}
 
 	@Override
 	public boolean cleanupOnDelete(OLATResourceable res) {
-		EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
-		ePFMgr.deletePortfolioMapTemplate(res);
+		CoreSpringFactory.getImpl(EPFrontendManager.class).deletePortfolioMapTemplate(res);
 		return true;
 	}
 
@@ -215,7 +213,7 @@ public class PortfolioHandler implements RepositoryHandler {
 	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
 		MediaResource mr = null;
 
-		EPFrontendManager ePFMgr = (EPFrontendManager)CoreSpringFactory.getBean("epFrontendManager");
+		EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		PortfolioStructure structure = ePFMgr.loadPortfolioStructure(res);
 		try {
 			InputStream inOut = EPXStreamHandler.toStream(structure);

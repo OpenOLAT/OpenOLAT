@@ -277,7 +277,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 	public void deleteRepositoryEntryAndBaseGroups(RepositoryEntry entry) {
 		RepositoryEntry reloadedEntry = dbInstance.getCurrentEntityManager()
 				.getReference(RepositoryEntry.class, entry.getKey());
-		OLATResource resource = reloadedEntry.getOlatResource();
+		Long resourceKey = reloadedEntry.getOlatResource().getKey();
 
 		Group defaultGroup = reToGroupDao.getDefaultGroup(reloadedEntry);
 		groupDao.removeMemberships(defaultGroup);
@@ -286,8 +286,11 @@ public class RepositoryServiceImpl implements RepositoryService {
 		dbInstance.getCurrentEntityManager().remove(reloadedEntry);
 		groupDao.removeGroup(defaultGroup);
 		dbInstance.commit();
-
-		dbInstance.getCurrentEntityManager().remove(resource);
+		
+		OLATResource reloadedResource = resourceManager.findResourceById(resourceKey);
+		if(reloadedResource != null) {
+			dbInstance.getCurrentEntityManager().remove(reloadedResource);
+		}
 		dbInstance.commit();
 	}
 
