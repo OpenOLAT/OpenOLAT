@@ -37,8 +37,6 @@ import org.olat.core.gui.control.navigation.NavElement;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.StackedBusinessControl;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.i18n.I18nManager;
 import org.olat.repository.ui.RepositoyUIFactory;
 
 /**

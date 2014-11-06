@@ -3,20 +3,20 @@
 	#foreach($search in $searchs)
 	 	<li>$r.render($search)</li>
 	#end
-	#if($personalTools.size() > 0)
+	#if($personalTools && $personalTools.size() > 0)
 		<li role="presentation" class="dropdown-header">$r.translate("topnav.my.menu.tools")</li>
 		#foreach($personalTool in $personalTools)
 		 	<li>$r.render($personalTool)</li>
 		#end
 	#end
-	#if($configs.size() > 0)
+	#if($configs && $configs.size() > 0)
 		<li role="presentation" class="divider"></li>
 		<li role="presentation" class="dropdown-header">$r.translate("topnav.my.menu.configurations")</li>
 		#foreach($config in $configs)
 		 	<li>$r.render($config)</li>
 		#end
 	#end
-	#if($systems.size() > 0)
+	#if($systems && $systems.size() > 0)
 		<li role="presentation" class="divider"></li>
 		<li role="presentation" class="dropdown-header">$r.translate("topnav.my.menu.systems")</li>
 		#foreach($system in $systems)
