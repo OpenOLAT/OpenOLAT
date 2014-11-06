@@ -53,7 +53,6 @@ import org.olat.portfolio.EPTemplateMapResource;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.manager.EPStructureManager;
 import org.olat.portfolio.manager.EPXStreamHandler;
-import org.olat.portfolio.model.structel.EPAbstractMap;
 import org.olat.portfolio.model.structel.EPStructuredMapTemplate;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
