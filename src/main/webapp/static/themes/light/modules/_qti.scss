@@ -98,6 +98,25 @@ div.o_qti_metadatas .panel-body {
 	border-top:none;
 }
 
+.o_qti_menu_item_attempts:after, .o_qti_menu_item_attempts_marked:after {
+	display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale
+} 
+
+.o_qti_menu_item_attempts:after {
+	content: $fa-var-flag-o;
+}
+
+.o_qti_menu_item_attempts_marked:after {
+	content: $fa-var-flag;
+	color: $brand-primary;
+} 
+	
+
 /* onyx   */
 .onyx_iframe {
 	width: 100%;

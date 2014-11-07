@@ -230,13 +230,12 @@ public class IQComponentRenderer implements ComponentRenderer {
 			sb.append("\"");
 			if (!displayForm) sb.append(" style=\"display: none;\"");
 			sb.append(" />")
-			  .append("</div><div class='col-md-8'>");
+			  .append("</div><div class='col-md-10'>");
 
 			if (memo && memoId != null) {
-				sb.append("<div class=\"o_qti_item_note_box_title\">");
-				sb.append(translator.translate("qti.memofield"));
 				sb.append("<div class=\"o_qti_item_note_box\">");
-				sb.append("<textarea id=\"o_qti_item_note\" rows=\"2\" spellcheck=\"false\" onchange=\"memo('");
+				sb.append("<label class=\"control-label\" for=\"o_qti_item_note\">").append(translator.translate("qti.memofield")).append("</label>");
+				sb.append("<textarea id=\"o_qti_item_note\" class=\"form-control\" rows=\"4\" spellcheck=\"false\" onchange=\"memo('");
 				sb.append(memoId);
 				sb.append("', this.value);\" onkeyup=\"resize(this);\" onmouseup=\"resize(this);\"");
 				if (isDefaultMemo) {
@@ -245,7 +244,6 @@ public class IQComponentRenderer implements ComponentRenderer {
 				sb.append(">")
 				  .append(memoTx)
 				  .append("</textarea>")
-				  .append("</div>")
 				  .append("</div>");
 			}
 			
@@ -395,8 +393,7 @@ public class IQComponentRenderer implements ComponentRenderer {
 		sb.append(ai.isMarked(itc.getIdent()) ? m : n);
 		sb.append("\">");
 		sb.append(t);
-		sb.append("</div>");
-		sb.append("</td>");
+		sb.append(" </div></td>");
 		
 		return sb;
 	}
