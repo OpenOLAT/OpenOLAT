@@ -12,6 +12,7 @@
 # ./compiletheme.sh /path/to/your/custom/themedir		# compile all themes in the given directory
 #
 ####
+export SASS_PATH=.
 
 # Configuration
 STYLE=compressed
