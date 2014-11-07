@@ -285,6 +285,9 @@ function o_tm_doHighlightSingle(bodyText, glossaryMainTerm, searchTerm) {
 	// Prevent to highlight twice, by looking after highlight-tags
 	junkBefore = lcBodyText.substring(0,i);
 	if ( junkBefore.lastIndexOf("</textarea") < junkBefore.lastIndexOf("<textarea")
+		//only a because aside, abbr, adress tags breaks the glossary
+		|| junkBefore.lastIndexOf("</a") < junkBefore.lastIndexOf("<a")
+		|| junkBefore.lastIndexOf("</button") < junkBefore.lastIndexOf("<button")
 		|| junkBefore.lastIndexOf("</embed") < junkBefore.lastIndexOf("<embed")
 		|| junkBefore.lastIndexOf("</object") < junkBefore.lastIndexOf("<object")
 		|| junkBefore.lastIndexOf("</option") < junkBefore.lastIndexOf("<option") 
