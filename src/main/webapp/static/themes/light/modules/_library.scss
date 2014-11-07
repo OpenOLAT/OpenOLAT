@@ -17,53 +17,146 @@
 	margin-right: 15px;
 }
 
+
+$thumbnail-size: 150px;
+$extra-size: 200px;
+
 .o_library_item {
+	margin-bottom: 10px;
 	position: relative;
-	border: 1px solid $o-coursesite-rowelem-border;
-	margin-bottom: floor($line-height-computed / 2);
-	min-height:202px;
-	
-	.o_library_visual {
-		border-right: 1px solid $o-coursesite-rowelem-border;
-		width: 200px;
-		height:	200px;
-		position:absolute;
-		top:0;
-		left:0;
+
+	.o_library_visual, .o_library_extra, .o_library_meta {
+		margin-top: 15px;
 	}
-	
+
+	.o_library_visual {
+		float: left;
+		background-color: #fff;
+		border-radius: $thumbnail-border-radius;
+		border: 1px solid $thumbnail-border;
+
+		.o_thumbnail_available {
+			background-size: ($thumbnail-size - $thumbnail-padding) auto;
+			width: $thumbnail-size !important;
+			height: $thumbnail-size !important;
+		}
+	}
+
+	.o_library_extra {
+		float: right;
+		width: $extra-size;
+	}
+
 	.o_library_meta {
-		margin: 0 0 0 199px;
-		padding: 1em 0.5em 0.25em 1em;
-		border-left: 1px solid $o-coursesite-rowelem-border;
+		clear: both;
+
+		.o_library_desc {
+			padding-bottom: 10px;
+		}
+
+		 small {
+		 	display: block;
+			word-wrap: break-word;
+		}
+	}
+
+	h4 {
+		margin: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		line-height: normal;
+	}
+
+	.btn {
+		display: block;
+		margin-bottom: 0.5em;
+	}
+
+	.o_comments {
+		display: inline-block;
 	}
 	
 	.table {
+		table-layout: fixed;
+		word-wrap: break-word;
 		margin-bottom: 0;
 	}
 	
-	p.o_library_more {
+	p.o_library_show_more {
 		text-align: right;
+		margin: 0;
+		padding-top: 20px;
 	}
 	
-	tr.o_library_more {
-		display:none;
+	.o_library_more {
+		padding-top: 20px;
+		display: none;
 	}
 }
 
-.o_library_without_thumbnails {
+.o_library_folder {
+	margin-top: -20px;
+}
+
+.o_ratings_and_comments {
+	.o_rating_title, .o_rating_explanation {
+		display: none;
+	}
+}
+
+@media (min-width: $screen-sm-min) {
 	.o_library_item {
-		.o_library_visual {
-			display:none;
-		}
-		
 		.o_library_meta {
-			margin: 0;
-			border: none;
+			clear: none;
+			margin-left: $thumbnail-size;
+			margin-right: $extra-size;
+			padding: 0 10px;
+		}
+	
+		.o_library_more {
+			display: none;
+
+			//two-column table
+			table {
+				tbody { vertical-align: top; }
+				tr, th, td { display: inline-block; }
+				tr { width: 49%; }
+				th { width: 30%; }
+				td { width: 70%; }
+			}
 		}
 	}
 }
 
-			
-			
-			
+
+
+/* compact view without thumbnail */
+.o_library_item_compact {
+	.o_library_extra {
+		width: auto;
+	}
+	.o_library_meta {
+		padding: 0 10px 0 0;
+		margin: 0;
+		overflow: hidden;
+	}
+	.btn {
+		display: inline-block;
+	}
+	h4 {
+		overflow: hidden;
+		margin-right: 70px; //space for 'more' button
+		a {
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	}
+	p.o_library_show_more {
+		padding: 20px;
+		position: absolute;
+		top: 0;
+		right: 0;
+	}
+}
+
