@@ -58,7 +58,17 @@
 					<constructor-arg index="4" value="o_icon_provider_shibboleth"/>
 			</bean>
 		</entry>
-		<!-- The LDAP authentication provider -->
+			<!-- The LDAP authentication provider -->
+			<entry key="LDAP">
+				<bean id="LDAPAuthenticationProvider" class="org.olat.login.auth.AuthenticationProvider" >
+					<constructor-arg index="0" value="LDAP"/>
+					<constructor-arg index="1" value="org.olat.ldap.ui.LDAPAuthenticationController"/>
+					<constructor-arg index="2" value="${ldap.enable}"/>
+					<constructor-arg index="3" value="${ldap.default}"/>
+					<constructor-arg index="4" value="o_icon_provider_ldap"/>
+				</bean>
+			</entry>
+			<!-- The OAuth authentication providers -->
 			<entry key="OAuth">
 				<bean id="OAuthAuthenticationProvider" class="org.olat.login.oauth.OAuthAuthenticationProvider" >
 					<constructor-arg index="0" value="OAuth"/>
