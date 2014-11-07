@@ -50,6 +50,7 @@ import org.olat.core.util.event.FrameworkStartupEventChannel;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.threadlog.RequestBasedLogLevelManager;
 import org.olat.core.util.threadlog.UserBasedLogLevelManager;
+import org.olat.login.oauth.OAuthLoginModule;
 
 public class OpenOLATServlet extends HttpServlet {
 
@@ -66,6 +67,7 @@ public class OpenOLATServlet extends HttpServlet {
     
 	private String legacyContext;
 	
+	private OAuthLoginModule oauthModule;
 	private DispatcherModule dispatcherModule;
 	private SessionStatsManager sessionStatsManager;
 	private RequestBasedLogLevelManager requestBasedLogLevelManager;
@@ -105,6 +107,7 @@ public class OpenOLATServlet extends HttpServlet {
 		
 		webDAVDispatcher = CoreSpringFactory.getImpl(WebDAVDispatcher.class);
 		dispatchers.put(DispatcherModule.WEBDAV_PATH, webDAVDispatcher);
+		oauthModule = CoreSpringFactory.getImpl(OAuthLoginModule.class);
 		
 		Settings settings = CoreSpringFactory.getImpl(Settings.class);
 		if(StringHelper.containsNonWhitespace(settings.getLegacyContext())) {
@@ -269,9 +272,14 @@ public class OpenOLATServlet extends HttpServlet {
 			dispatcher.execute(request, response);
 		} else {
 			//root -> redirect to dmz
-			if("/".equals(dispatcherName) || "/dmz".equals(dispatcherName)) {
-				String dmzUri = WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault();
-				response.sendRedirect(dmzUri);
+			if("/".equals(dispatcherName)) {
+				if(oauthModule.isRoot()) {
+					redirectToDmz(response);//TODO
+				} else {
+					redirectToDmz(response);
+				}
+			} else if("/dmz".equals(dispatcherName)) {
+				redirectToDmz(response);
 			} else {
 				String uri = request.getRequestURI();
 				if(uri != null && uri.contains("/raw/_noversion_/")) {
@@ -288,5 +296,11 @@ public class OpenOLATServlet extends HttpServlet {
 				}
 			}
 		}
+	}
+	
+	private void redirectToDmz(HttpServletResponse response)
+	throws IOException {
+		String dmzUri = WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault();
+		response.sendRedirect(dmzUri);
 	}
 }

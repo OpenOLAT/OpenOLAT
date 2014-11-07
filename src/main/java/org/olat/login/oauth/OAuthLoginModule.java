@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.login.oauth.spi.ADFSProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +36,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class OAuthLoginModule extends AbstractSpringModule {
+	
+	private boolean allowUserCreation;
 	
 	private boolean linkedInEnabled;
 	private String linkedInApiKey;
@@ -52,6 +55,12 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	private boolean facebookEnabled;
 	private String facebookApiKey;
 	private String facebookApiSecret;
+	
+	private boolean adfsEnabled;
+	private boolean adfsRootEnabled;
+	private String adfsApiKey;
+	private String adfsOAuth2Endpoint;
+	
 	
 	@Autowired
 	private List<OAuthSPI> oauthSPIs;
@@ -72,6 +81,9 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	}
 
 	private void updateProperties() {
+		String allowUserCreationObj = getStringPropertyValue("allowUserCreation", true);
+		allowUserCreation = "true".equals(allowUserCreationObj);
+		
 		//linkedin
 		String linkedInEnabledObj = getStringPropertyValue("linkedInEnabled", true);
 		linkedInEnabled = "true".equals(linkedInEnabledObj);
@@ -96,6 +108,14 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		facebookEnabled = "true".equals(facebookEnabledObj);
 		facebookApiKey = getStringPropertyValue("facebookApiKey", false);
 		facebookApiSecret = getStringPropertyValue("facebookApiSecret", false);
+		
+		//adfs
+		String adfsEnabledObj = getStringPropertyValue("adfsEnabled", true);
+		adfsEnabled = "true".equals(adfsEnabledObj);
+		String adfsRootEnabledObj = getStringPropertyValue("adfsRootEnabled", true);
+		adfsRootEnabled = "true".equals(adfsRootEnabledObj);
+		adfsApiKey = getStringPropertyValue("adfsApiKey", false);
+		adfsOAuth2Endpoint = getStringPropertyValue("adfsOAuth2Endpoint", false);
 	}
 	
 	public List<OAuthSPI> getEnableSPIs() {
@@ -108,6 +128,33 @@ public class OAuthLoginModule extends AbstractSpringModule {
 			}
 		}
 		return enabledSpis;
+	}
+	
+	public boolean isRoot() {
+		return getRootProvider() != null;
+	}
+	
+	public OAuthSPI getRootProvider() {
+		OAuthSPI rootSpi = null;
+		if(oauthSPIs != null) {
+			for(OAuthSPI spi:oauthSPIs) {
+				if(spi.isEnabled() && spi instanceof ADFSProvider) {
+					if(adfsRootEnabled) {
+						rootSpi = spi;
+					}
+				}
+			}
+		}
+		return rootSpi;
+	}
+
+	public boolean isAllowUserCreation() {
+		return allowUserCreation;
+	}
+
+	public void setAllowUserCreation(boolean allowUserCreation) {
+		this.allowUserCreation = allowUserCreation;
+		setStringProperty("allowUserCreation", allowUserCreation ? "true" : "false", true);
 	}
 
 	public boolean isLinkedInEnabled() {
@@ -225,5 +272,41 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	public void setFacebookApiSecret(String facebookApiSecret) {
 		this.facebookApiSecret = facebookApiSecret;
 		setSecretStringProperty("facebookApiSecret", facebookApiSecret, true);
+	}
+
+	public boolean isAdfsEnabled() {
+		return adfsEnabled;
+	}
+
+	public void setAdfsEnabled(boolean adfsEnabled) {
+		this.adfsEnabled = adfsEnabled;
+		setStringProperty("adfsEnabled", adfsEnabled ? "true" : "false", true);
+	}
+
+	public boolean isAdfsRootEnabled() {
+		return adfsRootEnabled;
+	}
+
+	public void setAdfsRootEnabled(boolean adfsRootEnabled) {
+		this.adfsRootEnabled = adfsRootEnabled;
+		setStringProperty("adfsRootEnabled", adfsRootEnabled ? "true" : "false", true);
+	}
+
+	public String getAdfsApiKey() {
+		return adfsApiKey;
+	}
+
+	public void setAdfsApiKey(String adfsApiKey) {
+		this.adfsApiKey = adfsApiKey;
+		setStringProperty("adfsApiKey", adfsApiKey, true);
+	}
+
+	public String getAdfsOAuth2Endpoint() {
+		return adfsOAuth2Endpoint;
+	}
+
+	public void setAdfsOAuth2Endpoint(String adfsOAuth2Endpoint) {
+		this.adfsOAuth2Endpoint = adfsOAuth2Endpoint;
+		setStringProperty("adfsOAuth2Endpoint", adfsOAuth2Endpoint, true);
 	}
 }

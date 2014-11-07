@@ -46,7 +46,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
-import org.olat.login.oauth.OAuthConstants;
 import org.olat.login.oauth.model.OAuthRegistration;
 import org.olat.login.oauth.model.OAuthUser;
 import org.olat.registration.DisclaimerController;
@@ -213,7 +212,7 @@ public class OAuthRegistrationController extends FormBasicController {
 		} else {
 			id = username;
 		}
-		authenticatedIdentity = securityManager.createAndPersistIdentityAndUser(username, newUser, OAuthConstants.PROVIDER_OAUTH, id, null);
+		authenticatedIdentity = securityManager.createAndPersistIdentityAndUser(username, newUser, registration.getAuthProvider(), id, null);
 		// Add user to system users group
 		SecurityGroup olatuserGroup = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
 		securityManager.addIdentityToSecurityGroup(authenticatedIdentity, olatuserGroup);
@@ -231,7 +230,7 @@ public class OAuthRegistrationController extends FormBasicController {
 	
 	private void doLoginAndRegister(Identity authenticatedIdentity, UserRequest ureq) {
 		// prepare redirects to home etc, set status
-		int loginStatus = AuthHelper.doLogin(authenticatedIdentity, OAuthConstants.PROVIDER_OAUTH, ureq);
+		int loginStatus = AuthHelper.doLogin(authenticatedIdentity, registration.getAuthProvider(), ureq);
 		if (loginStatus == AuthHelper.LOGIN_OK) {
 			//update last login date and register active user
 			UserDeletionManager.getInstance().setIdentityAsActiv(authenticatedIdentity);

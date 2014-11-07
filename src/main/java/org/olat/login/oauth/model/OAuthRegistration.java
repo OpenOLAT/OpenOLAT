@@ -31,11 +31,17 @@ public class OAuthRegistration {
 	
 	private OAuthUser oauthUser;
 	private Identity identity;
+	private final String authProvider;
 	
-	public OAuthRegistration(OAuthUser oauthUser) {
+	public OAuthRegistration(String authProvider, OAuthUser oauthUser) {
+		this.authProvider = authProvider;
 		this.oauthUser = oauthUser;
 	}
 	
+	public String getAuthProvider() {
+		return authProvider;
+	}
+
 	public OAuthUser getOauthUser() {
 		return oauthUser;
 	}

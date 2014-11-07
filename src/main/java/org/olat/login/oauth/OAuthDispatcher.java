@@ -31,21 +31,27 @@ import javax.servlet.http.HttpSession;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.fullWebApp.MessageWindowController;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.login.oauth.model.OAuthRegistration;
 import org.olat.login.oauth.model.OAuthUser;
+import org.olat.login.oauth.ui.OAuthAuthenticationController;
 import org.olat.user.UserManager;
 import org.scribe.model.Token;
 import org.scribe.model.Verifier;
@@ -74,21 +80,6 @@ public class OAuthDispatcher implements Dispatcher {
 	public void execute(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
 		
-		String error = request.getParameter("error"); 
-		if ((null != error) && ("access_denied".equals(error.trim()))) { 
-			HttpSession sess = request.getSession(); 
-			sess.invalidate(); 
-			response.sendRedirect(request.getContextPath()); 
-			return; 
-		}
-		String problem = request.getParameter("oauth_problem");
-		if(problem != null && "token_rejected".equals(problem.trim())) {
-			HttpSession sess = request.getSession(); 
-			sess.invalidate(); 
-			response.sendRedirect(request.getContextPath()); 
-			return; 
-		}
-		
 		String uri = request.getRequestURI();
 		try {
 			uri = URLDecoder.decode(uri, "UTF-8");
@@ -109,6 +100,17 @@ public class OAuthDispatcher implements Dispatcher {
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
 			return;
 		}
+
+		String error = request.getParameter("error"); 
+		if(null != error) { 
+			error(ureq, translateOauthError(ureq, error));
+			return; 
+		}
+		String problem = request.getParameter("oauth_problem");
+		if(problem != null && "token_rejected".equals(problem.trim())) {
+			error(ureq, translateOauthError(ureq, error));
+			return; 
+		}
 		
 		try {
 			HttpSession sess = request.getSession();
@@ -120,15 +122,23 @@ public class OAuthDispatcher implements Dispatcher {
 			if(verifier == null) {//OAuth 2.0 as a code
 				verifier = request.getParameter("code"); 
 			}
-			
+
 			Token accessToken = service.getAccessToken(requestToken, new Verifier(verifier));
 			OAuthUser infos = provider.getUser(service, accessToken);
-			OAuthRegistration registration = new OAuthRegistration(infos);
+			if(infos == null || !StringHelper.containsNonWhitespace(infos.getId())) {
+				error(ureq, translate(ureq, "error.no.id"));
+				return;
+			}
 
+			OAuthRegistration registration = new OAuthRegistration(provider.getProviderName(), infos);
 			login(infos, registration);
 			
 			if(registration.getIdentity() == null) {
-				register(request, response, registration);
+				if(CoreSpringFactory.getImpl(OAuthLoginModule.class).isAllowUserCreation()) {
+					register(request, response, registration);
+				} else {
+					error(ureq, translate(ureq, "error.account.creation"));
+				}
 			} else {
 				if(ureq.getUserSession() != null) {
 					//re-init the activity logger
@@ -136,7 +146,7 @@ public class OAuthDispatcher implements Dispatcher {
 				}
 			
 				Identity identity = registration.getIdentity();
-				int loginStatus = AuthHelper.doLogin(identity, OAuthConstants.PROVIDER_OAUTH, ureq);
+				int loginStatus = AuthHelper.doLogin(identity, provider.getProviderName(), ureq);
 				if (loginStatus != AuthHelper.LOGIN_OK) {
 					if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
 						DispatcherModule.redirectToServiceNotAvailable(response);
@@ -156,31 +166,55 @@ public class OAuthDispatcher implements Dispatcher {
 			}
 		} catch (Exception e) {
 			log.error("", e);
+			error(ureq, translate(ureq, "error.generic"));
 		}
 	}
 	
 	private void login(OAuthUser infos, OAuthRegistration registration) {
 		String id = infos.getId();
 		//has an identifier
-		
 		Authentication auth = null;
 		if(StringHelper.containsNonWhitespace(id)) {
-			auth = securityManager.findAuthenticationByAuthusername(id, OAuthConstants.PROVIDER_OAUTH);
+			auth = securityManager.findAuthenticationByAuthusername(id, registration.getAuthProvider());
 			if(auth == null) {
 				String email = infos.getEmail();
 				if(StringHelper.containsNonWhitespace(email)) {
 					Identity identity = userManager.findIdentityByEmail(email);
 					if(identity != null) {
-						auth = securityManager.createAndPersistAuthentication(identity, OAuthConstants.PROVIDER_OAUTH, id, null, null);
+						auth = securityManager.createAndPersistAuthentication(identity, registration.getAuthProvider(), id, null, null);
 						registration.setIdentity(identity);
 					}
-				} else {
-					//TODO error
 				}
 			} else {
 				registration.setIdentity(auth.getIdentity());
 			}
 		}
+	}
+	
+	private String translate(UserRequest ureq, String i18nKey) {
+		Translator trans = Util.createPackageTranslator(OAuthAuthenticationController.class, ureq.getLocale());
+		return trans.translate(i18nKey);
+	}
+	
+	private String translateOauthError(UserRequest ureq, String error) {
+		error = error == null ? null : error.trim();
+		String message;
+		if("access_denied".equals(error)) {
+			message = translate(ureq, "error.access.denied");
+		} else if("token_rejected".equals(error)) {
+			message = translate(ureq, "error.token.rejected");
+		} else if("invalid_grant".equals(error)) {
+			message = translate(ureq, "error.invalid.grant");
+			
+		} else {
+			message = translate(ureq, "error.generic");
+		}
+		return message;
+	}
+	
+	private void error(UserRequest ureq, String message) {
+		ChiefController msgcc = new MessageWindowController(ureq, message);
+		msgcc.getWindow().dispatchRequest(ureq, true);
 	}
 	
 	private void register(HttpServletRequest request, HttpServletResponse response, OAuthRegistration registration) {

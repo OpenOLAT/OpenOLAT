@@ -67,8 +67,13 @@ public class TwitterProvider implements OAuthSPI {
 	}
 
 	@Override
+	public String getProviderName() {
+		return "TWITTER";
+	}
+
+	@Override
 	public String getIconCSS() {
-		return "o_icon _icon-lg o_icon_provider_twitter";
+		return "o_icon o_icon_provider_twitter";
 	}
 
 	@Override

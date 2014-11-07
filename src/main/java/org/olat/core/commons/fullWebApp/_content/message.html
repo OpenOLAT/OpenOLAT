@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="$r.getLanguageCode()" lang="$r.getLanguageCode()">
+<head>
+<meta name="dcterms.creator" content="OpenOLAT - http://www.openolat.org" />
+<meta name="dcterms.subject" content="OpenOLAT - infinite learning - Your Open Source Learning Management System" />
+<meta name="dcterms.contributor" content="see http://www.openolat.org" />
+<meta name="dcterms.date" content="2010-03-16" />
+<meta name="dcterms.type" content="Interactive Resource" />
+<meta name="dcterms.identifier" content="http://www.openolat.org" />
+<meta name="dcterms.rights" content="http://www.openolat.org" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+## <!-- IE cache -->
+<script type="text/javascript">
+#if($enforceTopFrame)
+if (top!=self){top.location=self.location+"?o_winrndo=1";}
+#end
+var o_info = new Object();
+</script>
+## CSS theme inclusion: first the standard css and second the IE bugfixes
+<link rel="icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
+<link rel="shortcut icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
+<link id="o_theme_css" href="${theme.getBaseURI()}theme.css" rel="stylesheet" type="text/css" />
+<title>$r.translate("error.head")</title>
+</head>
+<body>
+	<div id="o_header_wrapper"> 
+		<div id="o_header_container"> 
+			<div id="o_logo"></div>
+			<div id="o_right_logo"></div>
+		</div>
+	</div>
+	
+	<div id="o_main_wrapper">
+		<div id="o_main_container">
+			<div id="o_main" class="row o_loginscreen">
+				<div id="o_main_center" class="split-pane" style="min-height: 655px; width:480px; margin:100px auto;">
+					<div id="o_main_center_content" class="clearfix">
+						<a id="o_content"></a> 
+						<div id="o_main_center_content_inner">
+## START ERROR AREA	
+<center>
+	<div class="o_important">$detailedmessage</div>
+	#if ($supportEmail)
+		<div class="o_note">
+			$r.translate("support.email")
+			$supportEmail
+		</div>
+	#end
+	<div class="o_button_group">
+		<a class="btn btn-primary" href="$r.relLink('')"><span>Login</span></a>
+	</div>
+</center>		
+## END ERROR AREA	
+						</div>			
+					</div>
+				</div>	
+			</div>
+		</div>
+	</div>
+	
+</body></html>

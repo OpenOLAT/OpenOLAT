@@ -37,6 +37,12 @@ public interface OAuthSPI extends ConfigOnOff {
 	
 	public String getName();
 	
+	/**
+	 * Limit of 8 characters
+	 * @return
+	 */
+	public String getProviderName();
+	
 	public String getIconCSS();
 	
 	public String getAppKey();

@@ -43,6 +43,9 @@ public class OAuthAdminController extends FormBasicController {
 	private static final String[] keys = new String[]{ "on" };
 	private static final String[] values = new String[] { "" };
 	
+
+	private MultipleSelectionElement userCreationEl;
+	
 	private MultipleSelectionElement linkedInEl;
 	private TextElement linkedInApiKeyEl;
 	private TextElement linkedInApiSecretEl;
@@ -59,6 +62,12 @@ public class OAuthAdminController extends FormBasicController {
 	private TextElement facebookApiKeyEl;
 	private TextElement facebookApiSecretEl;
 	
+	private MultipleSelectionElement adfsEl;
+	private MultipleSelectionElement adfsDefaultEl;
+	private TextElement adfsApiKeyEl;
+	private TextElement adfsApiSecretEl;
+	private TextElement adfsOAuth2EndpointEl;
+	
 	@Autowired
 	private OAuthLoginModule oauthModule;
 	
@@ -70,10 +79,18 @@ public class OAuthAdminController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FormLayoutContainer oauthCont = FormLayoutContainer.createDefaultFormLayout("oauth", getTranslator());
+		oauthCont.setFormTitle(translate("oauth.admin.title"));
+		oauthCont.setRootForm(mainForm);
+		formLayout.add(oauthCont);
+
+		userCreationEl = uifactory.addCheckboxesHorizontal("user.creation.enabled", oauthCont, keys, values);
+		userCreationEl.addActionListener(FormEvent.ONCHANGE);
+		
 		//linkedin
 		FormLayoutContainer linkedinCont = FormLayoutContainer.createDefaultFormLayout("linkedin", getTranslator());
 		linkedinCont.setFormTitle(translate("linkedin.admin.title"));
-		linkedinCont.setFormTitleIconCss("o_icon _icon-lg o_icon_provider_linkedin");
+		linkedinCont.setFormTitleIconCss("o_icon o_icon_provider_linkedin");
 		linkedinCont.setRootForm(mainForm);
 		formLayout.add(linkedinCont);
 		
@@ -93,7 +110,7 @@ public class OAuthAdminController extends FormBasicController {
 		//twitter
 		FormLayoutContainer twitterCont = FormLayoutContainer.createDefaultFormLayout("twitter", getTranslator());
 		twitterCont.setFormTitle(translate("twitter.admin.title"));
-		twitterCont.setFormTitleIconCss("o_icon _icon-lg o_icon_provider_twitter");
+		twitterCont.setFormTitleIconCss("o_icon o_icon_provider_twitter");
 		twitterCont.setRootForm(mainForm);
 		formLayout.add(twitterCont);
 		
@@ -113,7 +130,7 @@ public class OAuthAdminController extends FormBasicController {
 		//google
 		FormLayoutContainer googleCont = FormLayoutContainer.createDefaultFormLayout("google", getTranslator());
 		googleCont.setFormTitle(translate("google.admin.title"));
-		googleCont.setFormTitleIconCss("o_icon _icon-lg o_icon_provider_google");
+		googleCont.setFormTitleIconCss("o_icon o_icon_provider_google");
 		googleCont.setRootForm(mainForm);
 		formLayout.add(googleCont);
 		
@@ -133,7 +150,7 @@ public class OAuthAdminController extends FormBasicController {
 		//facebook
 		FormLayoutContainer facebookCont = FormLayoutContainer.createDefaultFormLayout("facebook", getTranslator());
 		facebookCont.setFormTitle(translate("facebook.admin.title"));
-		facebookCont.setFormTitleIconCss("o_icon _icon-lg o_icon_provider_facebook");
+		facebookCont.setFormTitleIconCss("o_icon o_icon_provider_facebook");
 		facebookCont.setRootForm(mainForm);
 		formLayout.add(facebookCont);
 		
@@ -149,6 +166,31 @@ public class OAuthAdminController extends FormBasicController {
 			facebookApiKeyEl.setVisible(false);
 			facebookApiSecretEl.setVisible(false);
 		}
+		
+		//adfs
+		FormLayoutContainer adfsCont = FormLayoutContainer.createDefaultFormLayout("adfs", getTranslator());
+		adfsCont.setFormTitle(translate("adfs.admin.title"));
+		adfsCont.setFormTitleIconCss("o_icon o_icon_provider_adfs");
+		adfsCont.setRootForm(mainForm);
+		formLayout.add(adfsCont);
+		
+		adfsEl = uifactory.addCheckboxesHorizontal("adfs.enabled", adfsCont, keys, values);
+		adfsEl.addActionListener(FormEvent.ONCHANGE);
+		
+		adfsDefaultEl = uifactory.addCheckboxesHorizontal("adfs.default.enabled", adfsCont, keys, values);
+		adfsDefaultEl.addActionListener(FormEvent.ONCHANGE);
+		
+		String adfsOAuth2Endpoint = oauthModule.getAdfsOAuth2Endpoint();
+		adfsOAuth2EndpointEl = uifactory.addTextElement("adfs.oauth2.endpoint", "adfs.oauth2.endpoint", 256, adfsOAuth2Endpoint, adfsCont);
+		String adfsApiKey = oauthModule.getAdfsApiKey();
+		adfsApiKeyEl = uifactory.addTextElement("adfs.id", "adfs.api.id", 256, adfsApiKey, adfsCont);
+		if(oauthModule.isAdfsEnabled()) {
+			adfsEl.select(keys[0], true);
+		} else {
+			adfsApiKeyEl.setVisible(false);
+			adfsApiSecretEl.setVisible(false);
+		}
+		
 		
 		//buttons
 		FormLayoutContainer buttonBonesCont = FormLayoutContainer.createDefaultFormLayout("button_bones", getTranslator());
@@ -179,12 +221,19 @@ public class OAuthAdminController extends FormBasicController {
 		} else if(source == facebookEl) {
 			facebookApiKeyEl.setVisible(facebookEl.isAtLeastSelected(1));
 			facebookApiSecretEl.setVisible(facebookEl.isAtLeastSelected(1));
+		} else if(source == adfsEl) {
+			adfsApiKeyEl.setVisible(adfsEl.isAtLeastSelected(1));
+			adfsApiSecretEl.setVisible(adfsEl.isAtLeastSelected(1));
+			adfsDefaultEl.setVisible(adfsEl.isAtLeastSelected(1));
+			adfsOAuth2EndpointEl.setVisible(adfsEl.isAtLeastSelected(1));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		oauthModule.setAllowUserCreation(userCreationEl.isAtLeastSelected(1));
+		
 		if(linkedInEl.isAtLeastSelected(1)) {
 			oauthModule.setLinkedInEnabled(true);
 			oauthModule.setLinkedInApiKey(linkedInApiKeyEl.getValue());
@@ -223,6 +272,18 @@ public class OAuthAdminController extends FormBasicController {
 			oauthModule.setFacebookEnabled(false);
 			oauthModule.setFacebookApiKey("");
 			oauthModule.setFacebookApiSecret("");
+		}
+		
+		if(adfsEl.isAtLeastSelected(1)) {
+			oauthModule.setAdfsEnabled(true);
+			oauthModule.setAdfsApiKey(adfsApiKeyEl.getValue());
+			oauthModule.setAdfsRootEnabled(adfsDefaultEl.isAtLeastSelected(1));
+			oauthModule.setAdfsOAuth2Endpoint(adfsOAuth2EndpointEl.getValue());
+		} else {
+			oauthModule.setAdfsEnabled(false);
+			oauthModule.setAdfsApiKey("");
+			oauthModule.setAdfsRootEnabled(false);
+			oauthModule.setAdfsOAuth2Endpoint("");
 		}
 	}
 }

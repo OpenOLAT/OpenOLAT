@@ -24,7 +24,7 @@
 */
 
 
-package org.olat.shibboleth;
+package org.olat.core.commons.fullWebApp;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
@@ -35,7 +35,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.DefaultChiefController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowBackOffice;
@@ -45,6 +44,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 
 /**
  * 
@@ -53,37 +53,35 @@ import org.olat.core.util.Util;
  * <P>
  * Initial Date:  05.11.2007 <br>
  * @author Lavinia Dumitrescu
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class MessageWindowController extends DefaultChiefController {
 	private static final OLog log = Tracing.createLoggerFor(MessageWindowController.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(MessageWindowController.class);
 
-	public MessageWindowController(UserRequest ureq, String message, String supportEmail) {
-		this(ureq, null, message, supportEmail);
+
+	public MessageWindowController(UserRequest ureq, String message) {
+		this(ureq, message, WebappHelper.getMailConfig("mailSupport"));
+		
 	}
 	
 	/**
 	 * 
 	 * @param ureq
-	 * @param th
-	 * @param detailedmessage
+	 * @param message
 	 * @param supportEmail
 	 */
-	public MessageWindowController(UserRequest ureq, Throwable th, String detailedmessage, String supportEmail) {
+	public MessageWindowController(UserRequest ureq, String message, String supportEmail) {
+		log.error(message);
+	
 		Translator trans = Util.createPackageTranslator(MessageWindowController.class, ureq.getLocale());
 		VelocityContainer msg = new VelocityContainer("olatmain", VELOCITY_ROOT + "/message.html", trans, this);
-		
 		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		msg.contextPut("enforceTopFrame", new Boolean(securityModule.isForceTopFrame()));
-		
-		if(th != null) {
-			log.warn(th.getMessage() + " *** User info: " + detailedmessage);
-		}
-		
 		msg.contextPut("buildversion", Settings.getVersion());
-		msg.contextPut("detailedmessage", detailedmessage);					
-		if(supportEmail!=null) {
-		  msg.contextPut("supportEmail",supportEmail);
+		msg.contextPut("detailedmessage", message);					
+		if(supportEmail == null) {
+			msg.contextPut("supportEmail", supportEmail);
 		}
 
 		Windows ws = Windows.getWindows(ureq);
@@ -137,17 +135,5 @@ public class MessageWindowController extends DefaultChiefController {
 	@Override
 	protected void doDispose() {
 		//
-	}
-	
-	/**
-	 * Provides a simple <code>MessageWindowController</code> for avoiding the famous REDSCREENs.
-	 * @param ureq
-	 * @param th
-	 * @param message
-	 * @param supportEmail
-	 * @return
-	 */
-	public static ChiefController createMessageChiefController(UserRequest ureq, Throwable th, String message, String supportEmail) {
-		return new MessageWindowController(ureq, th, message, supportEmail);
 	}
 }

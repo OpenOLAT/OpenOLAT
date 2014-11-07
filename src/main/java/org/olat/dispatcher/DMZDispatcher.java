@@ -32,6 +32,7 @@ import java.util.Map;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
@@ -46,13 +47,18 @@ import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.ChiefControllerCreator;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.exception.MsgFactory;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.session.UserSessionManager;
+import org.olat.login.oauth.OAuthLoginModule;
+import org.olat.login.oauth.OAuthResource;
+import org.olat.login.oauth.OAuthSPI;
 
 /**
  * Initial Date: 28.11.2003
@@ -193,31 +199,6 @@ public class DMZDispatcher implements Dispatcher {
 					}					
 				}
 			}//else a /olat/dmz/ request
-			/*
-			 * create content as it is defined in config.xml in he dmzbean
-			 */
-
-			/*
-			 * solve this with a predispatcher action
-			 */
-			
-//			// convenience method to jump immediatly to AAI (Shibboleth) home
-//			// organisation for login without selecting home organisation manually
-//			if (ShibbolethModule.isEnableShibbolethLogins()) {
-//				String preSelIdp = request.getParameter("preselection");
-//				String redirect = request.getParameter("redirect");
-//				if (preSelIdp != null && redirect != null && redirect.equalsIgnoreCase("true")) {
-//					preSelIdp = preSelIdp.toLowerCase();
-//					Collection sites = IdPSite.getIdPSites(ShibbolethModule.getMetadata());
-//					for (Iterator iter = sites.iterator(); iter.hasNext();) {
-//						IdPSite site = (IdPSite) iter.next();
-//						if (site.getName().toLowerCase().indexOf(preSelIdp) > -1) {
-//							response.sendRedirect(AssertionConsumerService.buildRequest(request.getLocale(), site));
-//							break;
-//						}
-//					}
-//				}
-//			}
 
 			UserSession usess = ureq.getUserSession();
 			Windows ws = Windows.getWindows(usess);
@@ -241,13 +222,24 @@ public class DMZDispatcher implements Dispatcher {
 					// request new windows since it is a new usersession, the old one was purged
 					ws = Windows.getWindows(usess);
 				} else if (validDispatchUri) {
-						window = ws.getWindow(ureq);
+					window = ws.getWindow(ureq);
 				} else if (dmzOnly) {
 					// e.g. /dmz/ -> start screen, clear previous session data
 					window = null; 
 					CoreSpringFactory.getImpl(UserSessionManager.class).signOffAndClear(usess);
 					usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
 					I18nManager.updateLocaleInfoToThread(usess);//update locale infos
+					
+					ServletUtil.printOutRequestParameters(request);
+					
+					OAuthLoginModule oauthModule = CoreSpringFactory.getImpl(OAuthLoginModule.class);
+					if(canRedirectOAuth(request, oauthModule)) {
+						OAuthSPI oauthSpi = oauthModule.getRootProvider();
+						HttpSession session = request.getSession();
+						OAuthResource.redirect(oauthSpi, response, session);
+						return;
+					}
+					
 					// request new windows since it is a new usersession, the old one was purged
 					ws = Windows.getWindows(usess);
 				} else {
@@ -293,6 +285,22 @@ public class DMZDispatcher implements Dispatcher {
 				log.error("An exception occured while handling the exception...", t);
 			}
 		}
+	}
+	
+	private boolean canRedirectOAuth(HttpServletRequest request, OAuthLoginModule oauthModule) {
+		boolean canRedirect;
+		if(StringHelper.containsNonWhitespace(request.getParameter("logout"))) {
+			canRedirect = false;
+		} else if(oauthModule.isAdfsRootEnabled()) {
+			if(oauthModule.getRootProvider() != null) {
+				canRedirect = true;
+			} else {
+				canRedirect = false;
+			}
+		} else {
+			canRedirect = false;
+		}
+		return canRedirect;
 	}
 
 	/**

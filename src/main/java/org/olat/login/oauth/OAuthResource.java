@@ -72,15 +72,24 @@ public class OAuthResource implements MediaResource {
 
 	@Override
 	public void prepare(HttpServletResponse hres) {
+		redirect(provider, hres, session);
+	}
+
+	@Override
+	public void release() {
+		//
+	}
+	
+	public static void redirect(OAuthSPI oauthProvider, HttpServletResponse httpResponse, HttpSession httpSession) {
 		//Configure
 		try {
 			ServiceBuilder builder= new ServiceBuilder(); 
-			builder.provider(provider.getScribeProvider())
-					.apiKey(provider.getAppKey())
-					.apiSecret(provider.getAppSecret());
-			String[] scopes = provider.getScopes();
+			builder.provider(oauthProvider.getScribeProvider())
+					.apiKey(oauthProvider.getAppKey())
+					.apiSecret(oauthProvider.getAppSecret());
+			String[] scopes = oauthProvider.getScopes();
 			for(String scope:scopes) {
-				builder = builder.scope(scope);
+				builder.scope(scope);
 			}
 
 			String callbackUrl = Settings.getServerContextPathURI() + "/oauthcallback";
@@ -88,25 +97,20 @@ public class OAuthResource implements MediaResource {
 					.callback(callbackUrl)
 					.build(); //Now build the call
 			
-			session.setAttribute(OAuthConstants.OAUTH_SERVICE, service);
-			session.setAttribute(OAuthConstants.OAUTH_SPI, provider);
+			httpSession.setAttribute(OAuthConstants.OAUTH_SERVICE, service);
+			httpSession.setAttribute(OAuthConstants.OAUTH_SPI, oauthProvider);
 			
 			if("2.0".equals(service.getVersion())) {
 				String redirectUrl = service.getAuthorizationUrl(null);
-				hres.sendRedirect(redirectUrl);
+				httpResponse.sendRedirect(redirectUrl);
 			} else {
 				Token token = service.getRequestToken();
-				session.setAttribute(OAuthConstants.REQUEST_TOKEN, token);
+				httpSession.setAttribute(OAuthConstants.REQUEST_TOKEN, token);
 				String redirectUrl = service.getAuthorizationUrl(token);
-				hres.sendRedirect(redirectUrl);
+				httpResponse.sendRedirect(redirectUrl);
 			}
 		} catch (Exception e) {
 			log.error("", e);
 		}
-	}
-
-	@Override
-	public void release() {
-		//
 	}
 }

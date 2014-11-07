@@ -23,13 +23,18 @@ import java.io.IOException;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.login.oauth.model.OAuthUser;
+import org.olat.login.oauth.spi.ADFSApi;
 import org.olat.login.oauth.spi.FacebookProvider;
 import org.olat.login.oauth.spi.Google2Provider;
+import org.olat.login.oauth.spi.JSONWebToken;
 import org.olat.login.oauth.spi.LinkedInProvider;
 import org.olat.login.oauth.spi.TwitterProvider;
+import org.scribe.model.Token;
 
 /**
  * 
@@ -93,5 +98,31 @@ public class OAuthDispatcherTest {
 		Assert.assertEquals("John", infos.getFirstName());
 		Assert.assertEquals("Smith", infos.getLastName());
 		Assert.assertEquals("en_US", infos.getLang()); 
+	}
+	
+	@Test
+	public void parseADFSToken() throws JSONException {
+		String response = "{\"access_token\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkhnbmtjOVBMd0E3ampHMjlWbndpQk43WnlaYyJ9.eyJhdWQiOiJodHRwczovL2tpdmlrLmZyZW50aXguY29tL29sYXQiLCJpc3MiOiJodHRwOi8vYWRmcy5oYW1pbHRvbi5jaC9hZGZzL3NlcnZpY2VzL3RydXN0IiwiaWF0IjoxNDE1MzQ3MDE0LCJleHAiOjE0MTUzNTA2MTQsIlNuIjoiT3Blbk9sYXQiLCJkaXNwbGF5TmFtZVByaW50YWJsZSI6IlRlc3R1c2VyIiwiU0FNQWNjb3VudE5hbWUiOiJ0ZXN0X29wZW5vbGF0IiwiYXV0aF90aW1lIjoiMjAxNC0xMS0wN1QwNzo1Njo1NC4zOTFaIiwiYXV0aG1ldGhvZCI6InVybjpvYXNpczpuYW1lczp0YzpTQU1MOjIuMDphYzpjbGFzc2VzOlBhc3N3b3JkUHJvdGVjdGVkVHJhbnNwb3J0IiwidmVyIjoiMS4wIiwiYXBwaWQiOiIyNWU1M2VmNC02NTllLTExZTQtYjExNi0xMjNiOTNmNzVjYmEifQ.l17qB7LWkODD66OuRbhjDEdKEQWrEfaeR7hBpbdN8XqGIOMS2sc2xQNYJH9Lh061XOJt9WPqrAW8sHSu2eaR1qpw8o6LcWksKvh0LJbCmVPqQggLDj8Q4kSFIzbs9YAQautTAvobdb_hsoGT9rhGN4SDIcpJA8Uq8JWwYDjWfDCpCVRHZPmyZiOmh-5rBT8SxSiV0QgFexhmbvLAZhaEmsZGzSaj2r39cyK0dlt7OuR_1KjQeB86ycOMP1PT1OAGWJc1lgGP12gDo-FkcK5mOY6mgC8za7OOwgTUkE4pbXwygi4nPBXHQVPku-bWtigLZWfTln4Ght3fqMIzJOQXag\",\"token_type\":\"bearer\",\"expires_in\":3600}";
+		Token accessToken = new ADFSApi().getAccessTokenExtractor().extract(response);
+		Assert.assertNotNull(accessToken);
+		
+		String token = accessToken.getToken();
+		Assert.assertNotNull(token);
+		
+		//get JSON Web Token
+		JSONWebToken jwt = JSONWebToken.parse(accessToken);
+		String header = jwt.getHeader();
+		Assert.assertNotNull(header);
+		String payload = jwt.getPayload();
+		System.out.println(payload);
+		Assert.assertNotNull(payload);
+		JSONObject payloadObj = jwt.getJsonPayload();
+		Assert.assertNotNull(payloadObj);
+		Assert.assertEquals("test_openolat", payloadObj.opt("SAMAccountName"));
+		Assert.assertEquals("OpenOlat", payloadObj.opt("Sn"));
+		Assert.assertEquals("Testuser", payloadObj.opt("displayNamePrintable"));
+		
+		
+		
 	}
 }

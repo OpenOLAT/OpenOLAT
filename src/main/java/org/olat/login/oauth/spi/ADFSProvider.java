@@ -28,62 +28,58 @@ import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.oauth.model.OAuthUser;
 import org.scribe.builder.api.Api;
-import org.scribe.builder.api.FacebookApi;
-import org.scribe.model.OAuthRequest;
-import org.scribe.model.Response;
 import org.scribe.model.Token;
-import org.scribe.model.Verb;
 import org.scribe.oauth.OAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 05.11.2014<br>
+ * Initial date: 06.11.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 @Service
-public class FacebookProvider implements OAuthSPI {
+public class ADFSProvider implements OAuthSPI {
 	
-	private static final OLog log = Tracing.createLoggerFor(FacebookProvider.class);
-	
+	private static final OLog log = Tracing.createLoggerFor(ADFSProvider.class);
+
 	@Autowired
 	private OAuthLoginModule oauthModule;
-
+	
 	@Override
 	public boolean isEnabled() {
-		return oauthModule.isFacebookEnabled();
+		return oauthModule.isAdfsEnabled();
 	}
 
 	@Override
 	public Class<? extends Api> getScribeProvider() {
-		return FacebookApi.class;
+		return ADFSApi.class;
 	}
 
 	@Override
 	public String getName() {
-		return "facebook";
+		return "adfs";
 	}
 	
 	@Override
 	public String getProviderName() {
-		return "FACEBOOK";
+		return "ADFS";
 	}
 
 	@Override
 	public String getIconCSS() {
-		return "o_icon o_icon_provider_facebook";
+		return "o_icon o_icon_provider_adfs";
 	}
 
 	@Override
 	public String getAppKey() {
-		return oauthModule.getFacebookApiKey();
+		return oauthModule.getAdfsApiKey();
 	}
 
 	@Override
 	public String getAppSecret() {
-		return oauthModule.getFacebookApiSecret();
+		return "n/A";
 	}
 
 	@Override
@@ -93,26 +89,22 @@ public class FacebookProvider implements OAuthSPI {
 
 	@Override
 	public OAuthUser getUser(OAuthService service, Token accessToken) {
-		OAuthRequest request = new OAuthRequest(Verb.GET, "https://graph.facebook.com/me");
-	    service.signRequest(accessToken, request);
-	    Response oauthResponse = request.send();
-	    String body = oauthResponse.getBody();
-		return parseInfos(body);
-	}
-	
-	public OAuthUser parseInfos(String body) {
 		OAuthUser user = new OAuthUser();
-		
 		try {
-			JSONObject obj = new JSONObject(body);
-			user.setId(getValue(obj, "id"));
-			user.setFirstName(getValue(obj, "first_name"));
-			user.setLastName(getValue(obj, "last_name"));
-			user.setLang(getValue(obj, "locale"));
+			JSONWebToken jwt = JSONWebToken.parse(accessToken);
+			JSONObject obj = jwt.getJsonPayload();
+			user.setId(getValue(obj, "employeeNumber"));
+			user.setFirstName(getValue(obj, "displayNamePrintable"));
+			user.setLastName(getValue(obj, "Sn"));
+			user.setEmail(getValue(obj, "mail"));
+			user.setInstitutionalUserIdentifier(getValue(obj, "SAMAccountName"));
+			if(!StringHelper.containsNonWhitespace(user.getId())) {
+				user.setId(user.getInstitutionalUserIdentifier());
+			}
+			
 		} catch (JSONException e) {
 			log.error("", e);
 		}
-		
 		return user;
 	}
 	

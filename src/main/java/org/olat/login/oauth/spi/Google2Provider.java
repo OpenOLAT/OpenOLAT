@@ -66,8 +66,13 @@ public class Google2Provider implements OAuthSPI {
 	}
 
 	@Override
+	public String getProviderName() {
+		return "GOOGLE2";
+	}
+
+	@Override
 	public String getIconCSS() {
-		return "o_icon _icon-lg o_icon_provider_google";
+		return "o_icon o_icon_provider_google";
 	}
 
 	@Override

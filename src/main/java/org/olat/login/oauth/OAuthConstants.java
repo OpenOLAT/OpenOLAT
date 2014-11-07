@@ -26,8 +26,7 @@ package org.olat.login.oauth;
  *
  */
 public interface OAuthConstants {
-	
-	public static final String PROVIDER_OAUTH = "OAuth";
+
 	public static final String REQUEST_TOKEN = "oauthToken";
 	public static final String OAUTH_SERVICE = "oauthService";
 	public static final String OAUTH_REGISTER_PATH = "oauthregister";

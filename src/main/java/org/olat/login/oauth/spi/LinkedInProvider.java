@@ -73,8 +73,13 @@ public class LinkedInProvider implements OAuthSPI {
 	}
 
 	@Override
+	public String getProviderName() {
+		return "LINKEDIN";
+	}
+
+	@Override
 	public String getIconCSS() {
-		return "o_icon _icon-lg o_icon_provider_linkedin";
+		return "o_icon o_icon_provider_linkedin";
 	}
 
 	@Override
