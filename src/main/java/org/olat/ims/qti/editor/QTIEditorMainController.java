@@ -1125,26 +1125,29 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			// FIXME:discuss:possible performance/cache problem
 			if ("CourseModule".equals(element.getSource().getResourceableTypeName())) {
 				ICourse course = CourseFactory.loadCourse(element.getSource().getResourceableId());
-
-				// the course owners
-
-				RepositoryEntry entry = rm.lookupRepositoryEntry(course, false);
+				if(course == null) {
+					continue;
+				}
 				String courseTitle = course.getCourseTitle();
-				SecurityGroup owners = entry.getOwnerGroup();
-				List<Identity> stakeHoldersIds = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(owners);
-
-				// add stakeholders as group
-				cl = new ContactList(courseTitle);
-				cl.addAllIdentites(stakeHoldersIds);
-				changeEmail.addEmailTo(cl);
-
 				StringBuilder stakeHolders = new StringBuilder();
-				User user = ((Identity) stakeHoldersIds.get(0)).getUser();
-				Locale loc = ureq.getLocale();
-				stakeHolders.append(user.getProperty(UserConstants.FIRSTNAME, loc)).append(" ").append(user.getProperty(UserConstants.LASTNAME, loc));
-				for (int i = 1; i < stakeHoldersIds.size(); i++) {
-					user = ((Identity) stakeHoldersIds.get(i)).getUser();
-					stakeHolders.append(", ").append(user.getProperty(UserConstants.FIRSTNAME, loc)).append(" ").append(user.getProperty(UserConstants.LASTNAME, loc));
+				
+				// the course owners
+				RepositoryEntry entry = rm.lookupRepositoryEntry(course, false);
+				if(entry != null) {//OO-1300
+					SecurityGroup owners = entry.getOwnerGroup();
+					List<Identity> stakeHoldersIds = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(owners);
+					// add stakeholders as group
+					cl = new ContactList(courseTitle);
+					cl.addAllIdentites(stakeHoldersIds);
+					changeEmail.addEmailTo(cl);
+	
+					User user = ((Identity) stakeHoldersIds.get(0)).getUser();
+					Locale loc = ureq.getLocale();
+					stakeHolders.append(user.getProperty(UserConstants.FIRSTNAME, loc)).append(" ").append(user.getProperty(UserConstants.LASTNAME, loc));
+					for (int i = 1; i < stakeHoldersIds.size(); i++) {
+						user = ((Identity) stakeHoldersIds.get(i)).getUser();
+						stakeHolders.append(", ").append(user.getProperty(UserConstants.FIRSTNAME, loc)).append(" ").append(user.getProperty(UserConstants.LASTNAME, loc));
+					}
 				}
 
 				CourseNode cn = course.getEditorTreeModel().getCourseNode(element.getUserdata());
