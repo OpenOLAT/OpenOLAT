@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -65,7 +66,6 @@ public class OAuthAdminController extends FormBasicController {
 	private MultipleSelectionElement adfsEl;
 	private MultipleSelectionElement adfsDefaultEl;
 	private TextElement adfsApiKeyEl;
-	private TextElement adfsApiSecretEl;
 	private TextElement adfsOAuth2EndpointEl;
 	
 	@Autowired
@@ -182,13 +182,19 @@ public class OAuthAdminController extends FormBasicController {
 		
 		String adfsOAuth2Endpoint = oauthModule.getAdfsOAuth2Endpoint();
 		adfsOAuth2EndpointEl = uifactory.addTextElement("adfs.oauth2.endpoint", "adfs.oauth2.endpoint", 256, adfsOAuth2Endpoint, adfsCont);
+		adfsOAuth2EndpointEl.setExampleKey("adfs.oauth2.endpoint.example", null);
+		
 		String adfsApiKey = oauthModule.getAdfsApiKey();
 		adfsApiKeyEl = uifactory.addTextElement("adfs.id", "adfs.api.id", 256, adfsApiKey, adfsCont);
 		if(oauthModule.isAdfsEnabled()) {
 			adfsEl.select(keys[0], true);
 		} else {
 			adfsApiKeyEl.setVisible(false);
-			adfsApiSecretEl.setVisible(false);
+			adfsDefaultEl.setVisible(false);
+		}
+		
+		if(oauthModule.isAdfsRootEnabled()) {
+			adfsDefaultEl.select(keys[0], true);
 		}
 		
 		
@@ -205,6 +211,46 @@ public class OAuthAdminController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		//linkedin
+		allOk &= mandatory(linkedInEl, linkedInApiKeyEl, linkedInApiSecretEl);
+		//twitter
+		allOk &= mandatory(twitterEl, twitterApiKeyEl, twitterApiSecretEl);
+		//google
+		allOk &= mandatory(googleEl, googleApiKeyEl, googleApiSecretEl);
+		//facebook
+		allOk &= mandatory(facebookEl, facebookApiKeyEl, facebookApiSecretEl);
+		//adfs
+		allOk &= mandatory(adfsEl, adfsApiKeyEl, adfsOAuth2EndpointEl);
+
+		return allOk & super.validateFormLogic(ureq);
+	}
+	
+	private boolean mandatory(MultipleSelectionElement selectEl, TextElement... textEls) {
+		boolean allOk = true;
+		
+		if(textEls != null) {
+			for(int i=textEls.length; i-->0; ) {
+				TextElement textEl = textEls[i];
+				if(textEl != null) {
+					textEl.clearError();
+					if(selectEl.isAtLeastSelected(1)) {
+						if(!StringHelper.containsNonWhitespace(textEl.getValue())) {
+							textEl.setErrorKey("form.legende.mandatory", null);
+							allOk = false;
+						}
+					}
+				}
+			}
+		}
+		
+		return allOk;
 	}
 
 	@Override
@@ -223,7 +269,6 @@ public class OAuthAdminController extends FormBasicController {
 			facebookApiSecretEl.setVisible(facebookEl.isAtLeastSelected(1));
 		} else if(source == adfsEl) {
 			adfsApiKeyEl.setVisible(adfsEl.isAtLeastSelected(1));
-			adfsApiSecretEl.setVisible(adfsEl.isAtLeastSelected(1));
 			adfsDefaultEl.setVisible(adfsEl.isAtLeastSelected(1));
 			adfsOAuth2EndpointEl.setVisible(adfsEl.isAtLeastSelected(1));
 		}
