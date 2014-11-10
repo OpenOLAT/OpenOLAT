@@ -228,12 +228,12 @@ public class OAuthRegistrationController extends FormBasicController {
 		listenTo(cmc);
 	}
 	
-	private void doLoginAndRegister(Identity authenticatedIdentity, UserRequest ureq) {
+	private void doLoginAndRegister(Identity authIdentity, UserRequest ureq) {
 		// prepare redirects to home etc, set status
-		int loginStatus = AuthHelper.doLogin(authenticatedIdentity, registration.getAuthProvider(), ureq);
+		int loginStatus = AuthHelper.doLogin(authIdentity, registration.getAuthProvider(), ureq);
 		if (loginStatus == AuthHelper.LOGIN_OK) {
 			//update last login date and register active user
-			UserDeletionManager.getInstance().setIdentityAsActiv(authenticatedIdentity);
+			UserDeletionManager.getInstance().setIdentityAsActiv(authIdentity);
 		} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
 			DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
 		} else {

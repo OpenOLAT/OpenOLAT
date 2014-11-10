@@ -26,6 +26,7 @@
 package org.olat.dispatcher;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -68,8 +69,9 @@ import org.olat.login.oauth.OAuthSPI;
 public class DMZDispatcher implements Dispatcher {
 	private static final OLog log = Tracing.createLoggerFor(DMZDispatcher.class);
 	
-	//fxdiff FXOLAT-113: business path in DMZ
 	public static final String DMZDISPATCHER_BUSINESSPATH =  "DMZDispatcher:businessPath";
+	
+	private final boolean maintenance;
 	
 	/**
 	 * set by spring to create the starting workflow for /dmz/
@@ -79,7 +81,11 @@ public class DMZDispatcher implements Dispatcher {
 	/**
 	 * set by spring
 	 */
-	private Map<String, ChiefControllerCreator> dmzServicesByPath;
+	private final Map<String, ChiefControllerCreator> dmzServicesByPath = new HashMap<>();
+	
+	public DMZDispatcher(boolean maintenance) {
+		this.maintenance = maintenance;
+	}
 
 	/**
 	 * OLAT-5165: check whether we are currently rejecting all dmz requests and if
@@ -289,7 +295,9 @@ public class DMZDispatcher implements Dispatcher {
 	
 	private boolean canRedirectOAuth(HttpServletRequest request, OAuthLoginModule oauthModule) {
 		boolean canRedirect;
-		if(StringHelper.containsNonWhitespace(request.getParameter("logout"))) {
+		if(maintenance) {
+			canRedirect = false;
+		} else if(StringHelper.containsNonWhitespace(request.getParameter("logout"))) {
 			canRedirect = false;
 		} else if(oauthModule.isAdfsRootEnabled()) {
 			if(oauthModule.getRootProvider() != null) {
@@ -308,8 +316,10 @@ public class DMZDispatcher implements Dispatcher {
 	 * 
 	 * @param subdispatchers The subdispatchers to set.
 	 */
-	public void setDmzServicesByPath(Map<String, ChiefControllerCreator> dmzServicesByPath) {
-		this.dmzServicesByPath = dmzServicesByPath;
+	public void setDmzServicesByPath(Map<String, ChiefControllerCreator> servicesByPath) {
+		if(servicesByPath != null) {
+			dmzServicesByPath.putAll(servicesByPath);
+		}
 	}
 
 	/**
