@@ -54,7 +54,7 @@ public class UserToolsPage {
 	 * @return
 	 */
 	public UserToolsPage assertOnUserTools() {
-		By personnalToolsBy = By.id("o_navbar_tools_personal");
+		By personnalToolsBy = By.className("o_sel_menu_tools");
 		List<WebElement> personnalTools = browser.findElements(personnalToolsBy);
 		Assert.assertEquals(1, personnalTools.size());
 		Assert.assertTrue(personnalTools.get(0).isDisplayed());
@@ -71,18 +71,11 @@ public class UserToolsPage {
 		if(mySettingsLinks.isEmpty() || !mySettingsLinks.get(0).isDisplayed()) {
 			By toolbarCaretBy = By.id("o_sel_navbar_my_menu_caret");
 			List<WebElement> toolbarCaretLinks = browser.findElements(toolbarCaretBy);
-			WebElement toolbarCaretLink = null;
-			//if window is too small > toggle the right navigation
-			if(toolbarCaretLinks.isEmpty() || !toolbarCaretLinks.get(0).isDisplayed()) {
-				By navbarToogleBy = By.id("o_navbar_right-toggle");
-				List<WebElement> navbarToogleButtons = browser.findElements(navbarToogleBy);
-				Assert.assertEquals(1, navbarToogleButtons.size());
-				toolbarCaretLink = navbarToogleButtons.get(0);
-			} else {
-				toolbarCaretLink = toolbarCaretLinks.get(0);
-			}
+			Assert.assertFalse(toolbarCaretLinks.isEmpty());
+			WebElement toolbarCaretLink = toolbarCaretLinks.get(0);
 			Assert.assertNotNull(toolbarCaretLink);
 			toolbarCaretLink.click();
+			OOGraphene.waitingTransition();
 			OOGraphene.waitElement(mySettingsClassName);
 		}
 		assertOnUserTools();

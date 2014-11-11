@@ -236,7 +236,7 @@ public class PortfolioTest {
 			.selectMap(mapTitle, pageTitle, structureElementTitle)
 			.finish();
 
-		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
 		//open the portfolio
 		portfolio = userTools
@@ -405,7 +405,7 @@ public class PortfolioTest {
 			.selectMap(mapTitle, pageTitle, structureElementTitle)
 			.finish();
 
-		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
 		//open the portfolio
 		portfolio = userTools
@@ -470,7 +470,7 @@ public class PortfolioTest {
 			.selectMap(mapTitle, pageTitle, structureElementTitle)
 			.finish();
 
-		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
 		//reopen the portfolio
 		portfolio = userTools
@@ -536,7 +536,7 @@ public class PortfolioTest {
 			.selectMap(mapTitle, pageTitle, structureElementTitle)
 			.finish();
 
-		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
 		//open the portfolio
 		portfolio = userTools
@@ -614,7 +614,7 @@ public class PortfolioTest {
 			.selectMap(mapTitle, pageTitle, structureElementTitle)
 			.finish();
 
-		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
 		//open the portfolio
 		portfolio = userTools
@@ -701,7 +701,7 @@ public class PortfolioTest {
 			.selectMap(mapTitle, pageTitle, structureElementTitle)
 			.finish();
 
-		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
 		//open the portfolio
 		portfolio = userTools
@@ -837,6 +837,8 @@ public class PortfolioTest {
 			.selectFirstPageInEditor()
 			.setPage(pageTitle, "With a little description")
 			.createStructureElement(structureElementTitle, "Structure description");
+		
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
 		//open course
 		navBar.openCourse(courseTitle);

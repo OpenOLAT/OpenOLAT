@@ -119,11 +119,12 @@ public class NavigationPage {
 	private void navigate(By linkBy) {
 		OOGraphene.closeBlueMessageWindow(browser);
 		List<WebElement> links = browser.findElements(linkBy);
-		Assert.assertFalse(links.isEmpty());
-
-		if(!links.get(0).isDisplayed()) {
-			 openNavigationSites();
+		if(links.isEmpty() || !links.get(0).isDisplayed()) {
+			//try to open the more menu
+			openMoreMenu();
+			links = browser.findElements(linkBy);
 		}
+		Assert.assertFalse(links.isEmpty());
 
 		links = browser.findElements(linkBy);
 		Assert.assertFalse(links.isEmpty());
@@ -133,22 +134,25 @@ public class NavigationPage {
 		OOGraphene.waitingTransition();
 	}
 	
-	private void openNavigationSites() {
-		List<WebElement> openNavigations = browser.findElements(By.id("o_navbar_right-toggle"));
-		if(openNavigations.size() > 0 || openNavigations.get(0).isDisplayed()) {
-			//too small, open the black panel
-			openNavigations.get(0).click();
-			OOGraphene.waitingTransition();
-		} 
-	}
-	
 	public void openCourse(String title) {
 		By courseTab = By.xpath("//li/a[@title='" + title + "']");
-		WebElement courseLink = browser.findElement(courseTab);
+		List<WebElement> courseLinks = browser.findElements(courseTab);
+		if(courseLinks.isEmpty() || !courseLinks.get(0).isDisplayed()) {
+			openMoreMenu();
+			courseLinks = browser.findElements(courseTab);
+		}
+		Assert.assertFalse(courseLinks.isEmpty());
 		
-		courseLink.click();
+		courseLinks.get(0).click();
 		OOGraphene.waitBusy();
 		OOGraphene.closeBlueMessageWindow(browser);
+	}
+	
+	private void openMoreMenu() {
+		By openMoreBy = By.cssSelector("#o_navbar_more a.dropdown-toggle");
+		List<WebElement> openMoreLinks = browser.findElements(openMoreBy);
+		Assert.assertFalse(openMoreLinks.isEmpty());
+		openMoreLinks.get(0).click();
 	}
 	
 	public NavigationPage backToTheTop() {

@@ -63,6 +63,7 @@ public class UserPasswordPage {
 		WebElement saveButton = browser.findElement(saveButtonBy);
 		saveButton.click();
 		OOGraphene.waitBusy();
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
 

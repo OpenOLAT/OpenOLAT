@@ -299,7 +299,7 @@ public class UserSettingsTest {
 		String newPassword = UUID.randomUUID().toString();
 		UserPasswordPage password = UserPasswordPage.getUserPasswordPage(browser);
 		password.setNewPassword(user.getPassword(), newPassword);
-		
+
 		userTools.logout();
 		
 		loginPage

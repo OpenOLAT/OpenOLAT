@@ -37,7 +37,7 @@ public class TransitionPredicate implements Predicate<WebDriver> {
 	@Override
 	public boolean apply(WebDriver driver) {
         Object busy = ((JavascriptExecutor)driver)
-        		.executeScript("return (window.OPOL.navbar.state.sitesDirty || window.OPOL.navbar.state.sitesDirty || window.OPOL.navbar.state.personalToolsDirty)");
+        		.executeScript("return (window.OPOL.navbar.state.sitesDirty || window.OPOL.navbar.state.tabsDirty || window.OPOL.navbar.state.toolsDirty)");
         return Boolean.FALSE.equals(busy);
     }
 }

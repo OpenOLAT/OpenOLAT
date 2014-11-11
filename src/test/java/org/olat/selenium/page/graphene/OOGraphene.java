@@ -76,6 +76,15 @@ public class OOGraphene {
 		input.sendKeys(file.getAbsolutePath());
 	}
 	
+	public static final void waitAndCloseBlueMessageWindow(WebDriver browser) {
+		try {
+			Thread.sleep(350);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		closeBlueMessageWindow(browser);
+	}
+	
 	public static final void closeBlueMessageWindow(WebDriver browser) {
 		By closeButtonBy = By.cssSelector("div.o_alert_info div.o_sel_info_message i.o_icon.o_icon_close");
 		List<WebElement> closeButtons = browser.findElements(closeButtonBy);
