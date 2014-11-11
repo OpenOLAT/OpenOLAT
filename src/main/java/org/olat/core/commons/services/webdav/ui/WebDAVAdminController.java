@@ -37,7 +37,9 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class WebDAVAdminController extends FormBasicController {
 	
-	private MultipleSelectionElement enableModuleEl, enableLinkEl, enableDigestEl, enableTermsFoldersEl;
+	private MultipleSelectionElement enableModuleEl, enableLinkEl, enableDigestEl, enableTermsFoldersEl,
+			learnersAsParticipantEl, learnersBookmarkEl;
+	
 	private final WebDAVModule webDAVModule;
 	
 	public WebDAVAdminController(UserRequest ureq, WindowControl wControl) {
@@ -76,8 +78,18 @@ public class WebDAVAdminController extends FormBasicController {
 		enableTermsFoldersEl.select("xx", webDAVModule.isTermsFoldersEnabled());
 		enableTermsFoldersEl.addActionListener(FormEvent.ONCHANGE);
 		enableTermsFoldersEl.setEnabled(enabled);
+
+		uifactory.addSpacerElement("spacer2", formLayout, false);
 		
+		learnersAsParticipantEl = uifactory.addCheckboxesHorizontal("learnersParticipants", "webdav.for.learners.participants", formLayout, new String[]{"xx"}, values);
+		learnersAsParticipantEl.select("xx", webDAVModule.isEnableLearnersParticipatingCourses());
+		learnersAsParticipantEl.addActionListener(FormEvent.ONCHANGE);
+		learnersAsParticipantEl.setEnabled(enabled);
 		
+		learnersBookmarkEl = uifactory.addCheckboxesHorizontal("learnerBookmarks", "webdav.for.learners.bookmarks", formLayout, new String[]{"xx"}, values);
+		learnersBookmarkEl.select("xx", webDAVModule.isEnableLearnersBookmarksCourse());
+		learnersBookmarkEl.addActionListener(FormEvent.ONCHANGE);
+		learnersBookmarkEl.setEnabled(enabled);
 	}
 
 	@Override
@@ -93,6 +105,8 @@ public class WebDAVAdminController extends FormBasicController {
 			enableLinkEl.setEnabled(enabled);
 			enableDigestEl.setEnabled(enabled);
 			enableTermsFoldersEl.setEnabled(enabled);
+			learnersAsParticipantEl.setEnabled(enabled);
+			learnersBookmarkEl.setEnabled(enabled);
 		} else if(source == enableLinkEl) {
 			boolean enabled = enableLinkEl.isAtLeastSelected(1);
 			webDAVModule.setLinkEnabled(enabled);
@@ -102,6 +116,12 @@ public class WebDAVAdminController extends FormBasicController {
 		} else if(source == enableTermsFoldersEl) {
 			boolean enabled = enableTermsFoldersEl.isAtLeastSelected(1);
 			webDAVModule.setTermsFoldersEnabled(enabled);
+		} else if(source == learnersAsParticipantEl) {
+			boolean enabled = learnersAsParticipantEl.isAtLeastSelected(1);
+			webDAVModule.setEnableLearnersParticipatingCourses(enabled);
+		} else if(source == learnersBookmarkEl) {
+			boolean enabled = learnersBookmarkEl.isAtLeastSelected(1);
+			webDAVModule.setEnableLearnersBookmarksCourse(enabled);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

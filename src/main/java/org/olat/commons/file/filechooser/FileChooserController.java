@@ -179,7 +179,7 @@ public class FileChooserController extends BasicController {
 					}
 					selectedContainer = null;
 					if (selectedFolder == 0) { // personal folder
-						selectedContainer = PersonalFolderManager.getInstance().getContainer(ureq.getIdentity());
+						selectedContainer = PersonalFolderManager.getInstance().getContainer(ureq.getUserSession().getIdentityEnvironment());
 					} else { // process other folders
 						selectedContainer = containerRefs.get(selectedFolder - 1);
 					}

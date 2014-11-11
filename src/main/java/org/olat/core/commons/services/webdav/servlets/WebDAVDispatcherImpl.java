@@ -59,6 +59,8 @@ import org.olat.core.util.vfs.QuotaExceededException;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.core.util.vfs.lock.VFSLockManagerImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -130,7 +132,7 @@ import org.xml.sax.SAXException;
  * @author Remy Maucherat
  * @version $Id$
  */
-
+@Service("webDAVDispatcher")
 public class WebDAVDispatcherImpl
     extends DefaultDispatcher implements WebDAVDispatcher, Dispatcher {
 
@@ -225,37 +227,16 @@ public class WebDAVDispatcherImpl
      */
     private boolean allowSpecialPaths = false;
     
+    @Autowired
     private VFSLockManagerImpl lockManager;
+    @Autowired
     private WebDAVManager webDAVManager;
+    @Autowired
     private WebDAVModule webDAVModule;
 
     public WebDAVDispatcherImpl() {
     	//
     }
-    
-    /**
-     * [used by Spring]
-     * @param lockManager
-     */
-    public void setLockManager(VFSLockManagerImpl lockManager) {
-		this.lockManager = lockManager;
-	}
-
-    /**
-     * [used by Spring]
-     * @param webDAVManager
-     */
-	public void setWebDAVManager(WebDAVManager webDAVManager) {
-		this.webDAVManager = webDAVManager;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param webDAVModule
-	 */
-	public void setWebDAVModule(WebDAVModule webDAVModule) {
-		this.webDAVModule = webDAVModule;
-	}
 
 	@Override
 	protected WebResourceRoot getResources(HttpServletRequest req) {

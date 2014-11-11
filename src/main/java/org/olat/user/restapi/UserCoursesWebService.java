@@ -78,7 +78,7 @@ public class UserCoursesWebService {
 		
 		RepositoryManager rm = RepositoryManager.getInstance();
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {
-			List<RepositoryEntry> repoEntries = rm.getLearningResourcesAsStudent(identity, start, limit, RepositoryEntryOrder.nameAsc);
+			List<RepositoryEntry> repoEntries = rm.getLearningResourcesAsStudent(identity, null, start, limit, RepositoryEntryOrder.nameAsc);
 			int totalCount= rm.countLearningResourcesAsStudent(identity);
 
 			CourseVO[] vos = toCourseVo(repoEntries);
@@ -87,7 +87,7 @@ public class UserCoursesWebService {
 			voes.setTotalCount(totalCount);
 			return Response.ok(voes).build();
 		} else {
-			List<RepositoryEntry> repoEntries = rm.getLearningResourcesAsStudent(identity, 0, -1, RepositoryEntryOrder.nameAsc);
+			List<RepositoryEntry> repoEntries = rm.getLearningResourcesAsStudent(identity, null, 0, -1, RepositoryEntryOrder.nameAsc);
 			CourseVO[] vos = toCourseVo(repoEntries);
 			return Response.ok(vos).build();
 		}

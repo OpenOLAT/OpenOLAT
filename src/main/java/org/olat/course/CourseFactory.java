@@ -429,7 +429,7 @@ public class CourseFactory extends BasicManager {
 			targetCourse.saveEditorTreeModel();
 
 			// copy course folder
-			File fSourceCourseFolder = sourceCourse.getIsolatedCourseFolder().getBasefile();
+			File fSourceCourseFolder = sourceCourse.getIsolatedCourseBaseFolder();
 			if (fSourceCourseFolder.exists()) FileUtils.copyDirToDir(fSourceCourseFolder, fTargetCourseBasePath, false, "copy course folder");
 			
 			// copy folder nodes directories

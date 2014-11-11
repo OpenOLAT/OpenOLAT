@@ -42,6 +42,7 @@ import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
 import org.apache.poi.util.IOUtils;
+import org.junit.After;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
@@ -60,6 +61,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.restapi.CoursePublishTest;
 import org.olat.test.JunitTestHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,11 +78,21 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private WebDAVModule webDAVModule;
+	@Autowired
+	private VFSLockManager lockManager;
+	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
-	private VFSLockManager lockManager;
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	
+	@After
+	public void resetWebDAVModule() {
+		webDAVModule.setEnableLearnersBookmarksCourse(false);
+		webDAVModule.setEnableLearnersParticipatingCourses(false);
+	}
 	
 	/**
 	 * Check the DAV, Ms-Author and Allow header
@@ -587,6 +599,71 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		IOUtils.closeQuietly(conn);
 	}
 	
+	@Test
+	public void coursePermissions_participant()
+	throws IOException, URISyntaxException {
+		webDAVModule.setEnableLearnersBookmarksCourse(true);
+		webDAVModule.setEnableLearnersParticipatingCourses(true);
+		
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("auth-webdav");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-webdav");
+		URL courseWithForumsUrl = WebDAVCommandsTest.class.getResource("webdav_course.zip");
+		RepositoryEntry course = deployTestCourse(author, null, courseWithForumsUrl);
+		repositoryEntryRelationDao.addRole(participant, course, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		WebDAVConnection conn = new WebDAVConnection();
+		conn.setCredentials(participant.getName(), "A6B7C8");
+
+		URI courseUri = conn.getBaseURI().path("webdav").path("coursefolders").build();
+		String publicXml = conn.propfind(courseUri, 2);
+		//cannot access course storage
+		Assert.assertFalse(publicXml.contains("<D:href>/webdav/coursefolders/other/WebDAV%20course/Course%20storage/</D:href>"));
+		//can access course elements
+		Assert.assertTrue(publicXml.contains("<D:href>/webdav/coursefolders/other/WebDAV%20course/_courseelementdata/</D:href>"));
+
+		URI courseElementUri = conn.getBaseURI().path("webdav").path("coursefolders")
+				.path("other").path("WebDAV%20course").path("_courseelementdata").build();
+		String publicElementXml = conn.propfind(courseElementUri, 2);
+		Assert.assertTrue(publicElementXml.contains("<D:href>/webdav/coursefolders/other/WebDAV%20course/_courseelementdata/Folder%20for%20all/</D:href>"));
+		Assert.assertFalse(publicElementXml.contains("<D:href>/webdav/coursefolders/other/WebDAV%20course/_courseelementdata/Student%20read-only%20%2890600786058954%29/Readonly%20students/</D:href>"));
+		Assert.assertFalse(publicElementXml.contains("<D:href>/webdav/coursefolders/other/WebDAV%20course/_courseelementdata/Not%20for%20students%20%2890600786058958%29/Not%20for%20students/</D:href>"));
+
+		conn.close();
+	}
+	
+	@Test
+	public void coursePermissions_owner()
+	throws IOException, URISyntaxException {
+		webDAVModule.setEnableLearnersBookmarksCourse(true);
+		webDAVModule.setEnableLearnersParticipatingCourses(true);
+		
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("auth-webdav");
+		URL courseWithForumsUrl = WebDAVCommandsTest.class.getResource("webdav_course.zip");
+		deployTestCourse(author, null, courseWithForumsUrl);
+		dbInstance.commitAndCloseSession();
+		
+		WebDAVConnection conn = new WebDAVConnection();
+		conn.setCredentials(author.getName(), "A6B7C8");
+
+		URI courseUri = conn.getBaseURI().path("webdav").path("coursefolders").build();
+		String publicXml = conn.propfind(courseUri, 2);
+		//cane access course storage
+		Assert.assertTrue(publicXml.contains("<D:href>/webdav/coursefolders/other/WebDAV%20course/Course%20storage/</D:href>"));
+		//can access course elements
+		Assert.assertTrue(publicXml.contains("<D:href>/webdav/coursefolders/other/WebDAV%20course/_courseelementdata/</D:href>"));
+
+		URI courseElementUri = conn.getBaseURI().path("webdav").path("coursefolders")
+				.path("other").path("WebDAV%20course").path("_courseelementdata").build();
+		String publicElementXml = conn.propfind(courseElementUri, 2);
+		//can access all 3 course nodes
+		Assert.assertTrue(publicElementXml.contains("<D:href>/webdav/coursefolders/other/WebDAV%20course/_courseelementdata/Folder%20for%20all/</D:href>"));
+		Assert.assertTrue(publicElementXml.contains("<D:href>/webdav/coursefolders/other/WebDAV%20course/_courseelementdata/Student%20read-only%20%2890600786058954%29/Readonly%20students/</D:href>"));
+		Assert.assertTrue(publicElementXml.contains("<D:href>/webdav/coursefolders/other/WebDAV%20course/_courseelementdata/Not%20for%20students%20%2890600786058958%29/Not%20for%20students/</D:href>"));
+
+		conn.close();
+	}
+	
 	private VFSItem createFile(VFSContainer container, String filename) throws IOException {
 		VFSLeaf testLeaf = container.createChildLeaf(filename);
 		InputStream in = WebDAVCommandsTest.class.getResourceAsStream("text.txt");
@@ -598,8 +675,14 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		return container.resolve(filename);
 	}
 	
-	private RepositoryEntry deployTestCourse(Identity author, Identity coAuthor) throws URISyntaxException {
+	private RepositoryEntry deployTestCourse(Identity author, Identity coAuthor)
+	throws URISyntaxException {
 		URL courseWithForumsUrl = CoursePublishTest.class.getResource("myCourseWS.zip");
+		return deployTestCourse(author, coAuthor, courseWithForumsUrl);
+	}
+	
+	private RepositoryEntry deployTestCourse(Identity author, Identity coAuthor, URL courseWithForumsUrl)
+	throws URISyntaxException {
 		Assert.assertNotNull(courseWithForumsUrl);
 		File courseWithForums = new File(courseWithForumsUrl.toURI());
 		String softKey = UUID.randomUUID().toString().replace("-", "").substring(0, 30);

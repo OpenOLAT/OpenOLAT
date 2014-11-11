@@ -26,22 +26,23 @@
 package org.olat.course;
 
 import org.olat.core.commons.services.webdav.WebDAVProvider;
-import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.vfs.VFSContainer;
 /**
  * 
  * Description:<br>
- * TODO: guido Class Description for CoursefolderWebDAVProvider
  */
 public class CoursefolderWebDAVProvider implements WebDAVProvider {
 
 	private static final String MOUNTPOINT = "coursefolders";
 
+	@Override
 	public String getMountPoint() {
 		return MOUNTPOINT;
 	}
 
-	public VFSContainer getContainer(Identity identity) {
-		return new CoursefolderWebDAVMergeSource(identity);
+	@Override
+	public VFSContainer getContainer(IdentityEnvironment identityEnv) {
+		return new CoursefolderWebDAVMergeSource(identityEnv);
 	}
 }

@@ -25,6 +25,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.test.OlatTestCase;
@@ -41,9 +42,13 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private MarkManager markManager;
+	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	
 	@Test
 	public void loadByKey() {
@@ -69,4 +74,6 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 		Assert.assertFalse(allRes.isEmpty());
 		Assert.assertTrue(allRes.size() < 26);
 	}
+	
+
 }

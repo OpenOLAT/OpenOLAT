@@ -120,5 +120,4 @@ public class RepositoryEntryDAO {
 				.setMaxResults(maxResults)
 				.getResultList();
 	}
-
 }

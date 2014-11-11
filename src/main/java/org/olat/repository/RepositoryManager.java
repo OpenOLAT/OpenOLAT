@@ -1766,7 +1766,7 @@ public class RepositoryManager extends BasicManager {
 	 * @param identity
 	 * @return list of RepositoryEntries
 	 */
-	public List<RepositoryEntry> getLearningResourcesAsStudent(Identity identity, int firstResult, int maxResults, RepositoryEntryOrder... orderby) {
+	public List<RepositoryEntry> getLearningResourcesAsStudent(Identity identity, String type, int firstResult, int maxResults, RepositoryEntryOrder... orderby) {
 		StringBuilder sb = new StringBuilder(1200);
 		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
 		  .append(" inner join fetch v.olatResource as res ")
@@ -1777,6 +1777,10 @@ public class RepositoryManager extends BasicManager {
 		  .append(" inner join baseGroup.members as membership")
 		  .append(" where (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
 		  .append(" and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.participant.name()).append("'");
+		if(StringHelper.containsNonWhitespace(type)) {
+			sb.append(" and res.resName=:resourceType");
+		}
+		
 		appendOrderBy(sb, "v", orderby);
 
 		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
@@ -1785,6 +1789,56 @@ public class RepositoryManager extends BasicManager {
 				.setFirstResult(firstResult);
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
+		}
+		if(StringHelper.containsNonWhitespace(type)) {
+			query.setParameter("resourceType", type);
+		}
+		List<RepositoryEntry> repoEntries = query.getResultList();
+		return repoEntries;
+	}
+	
+	public List<RepositoryEntry> getLearningResourcesAsBookmark(Identity identity, Roles roles, String type, int firstResult, int maxResults, RepositoryEntryOrder... orderby) {
+		if(roles.isGuestOnly()) {
+			return Collections.emptyList();
+		}
+
+		StringBuilder sb = new StringBuilder(1200);
+		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		  .append(" inner join fetch v.olatResource as res ")
+		  .append(" inner join fetch v.statistics as statistics")
+		  .append(" left join fetch v.lifecycle as lifecycle")
+		  .append(" where exists (select mark.key from ").append(MarkImpl.class.getName()).append(" as mark ")
+		  .append("   where mark.creator.key=:identityKey and mark.resId=v.key and mark.resName='RepositoryEntry'")
+		  .append(" ) ");
+		if(StringHelper.containsNonWhitespace(type)) {
+			sb.append(" and res.resName=:resourceType");
+		}
+		sb.append(" and (v.access >= ");
+		if (roles.isAuthor()) {
+			sb.append(RepositoryEntry.ACC_OWNERS_AUTHORS);
+		} else {
+			sb.append(RepositoryEntry.ACC_USERS);
+		}
+		sb.append(" or (")
+		  .append("  v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true")
+		  .append("  and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
+		  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey")
+		  .append("      and membership.role in ('").append(GroupRoles.owner.name()).append("','").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')")
+		  .append("  )")
+		  .append(" )")
+		  .append(")");
+
+		appendOrderBy(sb, "v", orderby);
+
+		TypedQuery<RepositoryEntry> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("identityKey", identity.getKey())
+				.setFirstResult(firstResult);
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		if(StringHelper.containsNonWhitespace(type)) {
+			query.setParameter("resourceType", type);
 		}
 		List<RepositoryEntry> repoEntries = query.getResultList();
 		return repoEntries;
@@ -1795,10 +1849,10 @@ public class RepositoryManager extends BasicManager {
 		sb.append("select v from repoentrylight as v ")
 		  .append(" inner join fetch v.olatResource as res ")
 		  .append(" where exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership  ")
-			     .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey ")
-			     .append("      and membership.role='").append(GroupRoles.participant.name()).append("')")
-			     .append("  )")
-			     .append(" )")
+		  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey ")
+		  .append("      and membership.role='").append(GroupRoles.participant.name()).append("')")
+		  .append("  )")
+		  .append(" )")
 		  .append(" and (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))");
 		appendOrderBy(sb, "v", orderby);
 		

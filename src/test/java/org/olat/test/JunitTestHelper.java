@@ -219,4 +219,30 @@ public class JunitTestHelper {
 		}
 		return re;
 	}
+	
+	/**
+	 * Deploy a course with only a single page.
+	 * @param initialAuthor
+	 * @return
+	 */
+	public static RepositoryEntry deployBasicCourse(Identity initialAuthor) {		
+		String displayname = "Basic course (" + CodeHelper.getForeverUniqueID() + ")";
+		String description = "A course with only a single page";
+
+		RepositoryEntry re = null;
+		try {
+			URL courseUrl = JunitTestHelper.class.getResource("file_resources/Basic_course.zip");
+			File courseFile = new File(courseUrl.toURI());
+			
+			RepositoryHandler courseHandler = RepositoryHandlerFactory.getInstance()
+					.getRepositoryHandler(CourseModule.getCourseTypeName());
+			re = courseHandler.importResource(initialAuthor, null, displayname, description, true, Locale.ENGLISH, courseFile, null);
+			
+			ICourse course = CourseFactory.loadCourse(re.getOlatResource());
+			CourseFactory.publishCourse(course, RepositoryEntry.ACC_USERS, false,  initialAuthor, Locale.ENGLISH);
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return re;
+	}
 }

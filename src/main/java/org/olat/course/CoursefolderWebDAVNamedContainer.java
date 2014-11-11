@@ -19,6 +19,7 @@
  */
 package org.olat.course;
 
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -37,10 +38,12 @@ class CoursefolderWebDAVNamedContainer extends NamedContainerImpl {
 	
 	private OLATResourceable res;
 	private VFSContainer parentContainer;
+	private IdentityEnvironment identityEnv;
 	
-	public CoursefolderWebDAVNamedContainer(String courseTitle, OLATResourceable res) {
+	public CoursefolderWebDAVNamedContainer(String courseTitle, OLATResourceable res, IdentityEnvironment identityEnv) {
 		super(courseTitle, null);
 		this.res = OresHelper.clone(res);
+		this.identityEnv = identityEnv;
 	}
 
 	@Override
@@ -53,7 +56,7 @@ class CoursefolderWebDAVNamedContainer extends NamedContainerImpl {
 		if(super.getDelegate() == null) {
 			try {
 				ICourse course = CourseFactory.loadCourse(res.getResourceableId());
-				VFSContainer courseFolder = course.getCourseFolderContainer();
+				VFSContainer courseFolder = course.getCourseFolderContainer(identityEnv);
 				setDelegate(courseFolder);
 				if(parentContainer != null) {
 					super.setParentContainer(parentContainer);

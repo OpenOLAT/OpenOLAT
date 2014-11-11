@@ -43,6 +43,7 @@ import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.commons.services.webdav.servlets.WebResourceRoot;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
@@ -56,6 +57,9 @@ import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VirtualContainer;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Initial Date:  16.04.2003
@@ -66,50 +70,29 @@ import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
  * Comment:  
  * 
  */
-public class WebDAVManagerImpl implements WebDAVManager {
+@Service("webDAVManager")
+public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 	private static boolean enabled = true;
 	
 	public static final String BASIC_AUTH_REALM = "OLAT WebDAV Access";
 	private CoordinatorManager coordinatorManager;
 
 	private CacheWrapper<CacheKey,UserSession> timedSessionCache;
-	
+
+	@Autowired
 	private UserSessionManager sessionManager;
+	@Autowired
 	private WebDAVAuthManager webDAVAuthManager;
+	@Autowired
 	private WebDAVModule webdavModule;
 
-	/**
-	 * [spring]
-	 */
-	private WebDAVManagerImpl(CoordinatorManager coordinatorManager) {
+	@Autowired
+	public WebDAVManagerImpl(CoordinatorManager coordinatorManager) {
 		this.coordinatorManager = coordinatorManager;
 	}
 
-	/**
-	 * [used by Spring]
-	 * @param sessionManager
-	 */
-	public void setSessionManager(UserSessionManager sessionManager) {
-		this.sessionManager = sessionManager;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param webDAVAuthManager
-	 */
-	public void setWebDAVAuthManager(WebDAVAuthManager webDAVAuthManager) {
-		this.webDAVAuthManager = webDAVAuthManager;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param webdavModule
-	 */
-	public void setWebDAVModule(WebDAVModule webdavModule) {
-		this.webdavModule = webdavModule;
-	}
-	
-	public void init() {
+	@Override
+	public void afterPropertiesSet() throws Exception {
 		timedSessionCache = coordinatorManager.getCoordinator().getCacher().getCache(WebDAVManager.class.getSimpleName(), "webdav");
 	}
 	
@@ -126,15 +109,15 @@ public class WebDAVManagerImpl implements WebDAVManager {
 			return fdc;
 		}
 		
-		Identity identity = usess.getIdentity();
-		VFSContainer webdavContainer = getMountableRoot(identity);
+		IdentityEnvironment identityEnv = usess.getIdentityEnvironment();
+		VFSContainer webdavContainer = getMountableRoot(identityEnv);
 		
 		//create the / folder
 		VirtualContainer rootContainer = new VirtualContainer("");
 		rootContainer.addItem(webdavContainer);
 		rootContainer.setLocalSecurityCallback(new ReadOnlyCallback());
 
-		fdc = new VFSResourceRoot(identity, rootContainer);
+		fdc = new VFSResourceRoot(identityEnv.getIdentity(), rootContainer);
 		usess.putEntry("_DIRCTX", fdc);
 		return fdc;
 	}
@@ -143,11 +126,11 @@ public class WebDAVManagerImpl implements WebDAVManager {
 	 * Returns a mountable root containing all entries which will be exposed to the webdav mount.
 	 * @return
 	 */
-	private VFSContainer getMountableRoot(Identity identity) {
+	private VFSContainer getMountableRoot(IdentityEnvironment identityEnv) {
 		MergeSource vfsRoot = new MergeSource(null, "webdav");
 		for (Map.Entry<String, WebDAVProvider> entry : webdavModule.getWebDAVProviders().entrySet()) {
 			WebDAVProvider provider = entry.getValue();
-			vfsRoot.addContainer(new WebDAVProviderNamedContainer(identity, provider));
+			vfsRoot.addContainer(new WebDAVProviderNamedContainer(identityEnv, provider));
 		}
 		return vfsRoot;
 	}

@@ -26,34 +26,47 @@
 
 package org.olat.core.commons.services.webdav;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.configuration.AbstractOLATModule;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
-import org.olat.core.configuration.PersistedProperties;
-import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
-public class WebDAVModule extends AbstractOLATModule implements ConfigOnOff {
-	
-	private static final OLog log = Tracing.createLoggerFor(WebDAVModule.class);
+@Service("webdavModule")
+public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 
 	private static final String WEBDAV_ENABLED = "webdav.enabled";
 	private static final String WEBDAV_LINKS_ENABLED = "webdav.links.enabled";
 	private static final String DIGEST_AUTH_ENABLED = "auth.digest.enabled";
 	private static final String TERMS_FOLDERS_ENABLED = "webdav.termsfolders.enabled";
+	private static final String LEARNERS_BOOKMARKS_COURSE = "webdav.learners.bookmarks.courses";
+	private static final String LEARNERS_PARTICIPATING_COURSES = "webdav.learners.participating.courses";
 	
-	private Map<String, WebDAVProvider> webdavProviders;
+	@Autowired
+	private List<WebDAVProvider> webdavProviders;
 
+	@Value("${webdav.enabled:true}")
 	private boolean enabled;
+	@Value("${webdav.links.enabled:true}")
 	private boolean linkEnabled;
+	@Value("${auth.digest.enabled:true}")
 	private boolean digestAuthenticationEnabled;
+	@Value("${webdav.termsfolders.enabled:true}")
 	private boolean termsFoldersEnabled;
+
+	private boolean enableLearnersBookmarksCourse;
+	private boolean enableLearnersParticipatingCourses;
+	
+	@Autowired
+	public WebDAVModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
+	}
 	
 	@Override
 	public void init() {
@@ -77,33 +90,25 @@ public class WebDAVModule extends AbstractOLATModule implements ConfigOnOff {
 		if(StringHelper.containsNonWhitespace(termsFoldersEnabledObj)) {
 			termsFoldersEnabled = "true".equals(termsFoldersEnabledObj);
 		}
-
+		
+		String learnersBookmarksCourseObj = getStringPropertyValue(LEARNERS_BOOKMARKS_COURSE, true);
+		enableLearnersBookmarksCourse = "true".equals(learnersBookmarksCourseObj);
+		String learnersParticipatingCoursesObj = getStringPropertyValue(LEARNERS_PARTICIPATING_COURSES, true);
+		enableLearnersParticipatingCourses = "true".equals(learnersParticipatingCoursesObj);
 	}
 	
-	@Override
-	protected void initDefaultProperties() {
-		enabled = getBooleanConfigParameter(WEBDAV_ENABLED, true);
-		linkEnabled = getBooleanConfigParameter(WEBDAV_LINKS_ENABLED, true);
-		digestAuthenticationEnabled = getBooleanConfigParameter(DIGEST_AUTH_ENABLED, true);
-		termsFoldersEnabled = getBooleanConfigParameter(TERMS_FOLDERS_ENABLED, true);
-	}
-
 	@Override
 	protected void initFromChangedProperties() {
 		init();
 	}
-
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
-	}
-
+	
 	@Override
 	public boolean isEnabled() {
 		return enabled;
 	}
 	
 	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
 		String enabledStr = enabled ? "true" : "false";
 		setStringProperty(WEBDAV_ENABLED, enabledStr, true);
 	}
@@ -113,6 +118,7 @@ public class WebDAVModule extends AbstractOLATModule implements ConfigOnOff {
 	}
 
 	public void setLinkEnabled(boolean linkEnabled) {
+		this.linkEnabled = linkEnabled;
 		String enabledStr = linkEnabled ? "true" : "false";
 		setStringProperty(WEBDAV_LINKS_ENABLED, enabledStr, true);
 	}
@@ -122,52 +128,50 @@ public class WebDAVModule extends AbstractOLATModule implements ConfigOnOff {
 	}
 	
 	public void setDigestAuthenticationEnabled(boolean digestAuthenticationEnabled) {
+		this.digestAuthenticationEnabled = digestAuthenticationEnabled;
 		String enabledStr = digestAuthenticationEnabled ? "true" : "false";
 		setStringProperty(DIGEST_AUTH_ENABLED, enabledStr, true);
 	}
 	
-
-	public void setTermsFoldersEnabled(boolean termsFoldersEnabled) {
-		String enabledStr = termsFoldersEnabled ? "true" : "false";
-		setStringProperty(TERMS_FOLDERS_ENABLED, enabledStr, true);
-	}
-
 	public boolean isTermsFoldersEnabled() {
 		return termsFoldersEnabled;
 	}
 
+	public void setTermsFoldersEnabled(boolean termsFoldersEnabled) {
+		this.termsFoldersEnabled = termsFoldersEnabled;
+		String enabledStr = termsFoldersEnabled ? "true" : "false";
+		setStringProperty(TERMS_FOLDERS_ENABLED, enabledStr, true);
+	}
+
+	public boolean isEnableLearnersBookmarksCourse() {
+		return enableLearnersBookmarksCourse;
+	}
+
+	public void setEnableLearnersBookmarksCourse(boolean enabled) {
+		this.enableLearnersBookmarksCourse = enabled;
+		setStringProperty(LEARNERS_BOOKMARKS_COURSE, enabled ? "true" : "false", true);
+	}
+
+	public boolean isEnableLearnersParticipatingCourses() {
+		return enableLearnersParticipatingCourses;
+	}
+
+	public void setEnableLearnersParticipatingCourses(boolean enabled) {
+		this.enableLearnersParticipatingCourses = enabled;
+		setStringProperty(LEARNERS_PARTICIPATING_COURSES, enabled ? "true" : "false", true);
+	}
 
 	/**
 	 * Return an unmodifiable map
 	 * @return
 	 */
 	public Map<String, WebDAVProvider> getWebDAVProviders() {
-		return Collections.unmodifiableMap(webdavProviders); 
-	}
-	
-	/**
-	 * Set the list of webdav providers.
-	 * @param webdavProviders
-	 */
-	public void setWebdavProviderList(List<WebDAVProvider> webdavProviders) {
-		if (webdavProviders == null) return;//nothing to do
-		
-		for (WebDAVProvider provider : webdavProviders) {
-			addWebdavProvider(provider);
+		Map<String,WebDAVProvider> providerMap = new HashMap<>();
+		if(webdavProviders != null) {
+			for(WebDAVProvider webdavProvider:webdavProviders) {
+				providerMap.put(webdavProvider.getMountPoint(), webdavProvider);
+			}
 		}
-	}
-	
-	/**
-	 * Add a new webdav provider.
-	 * @param provider
-	 */
-	public void addWebdavProvider(WebDAVProvider provider) {
-		if (webdavProviders == null) {
-			webdavProviders = new HashMap<String, WebDAVProvider>();
-		}
-		if (webdavProviders.containsKey(provider.getMountPoint()))
-			throw new AssertException("May not add two providers with the same mount point.");
-		webdavProviders.put(provider.getMountPoint(), provider);
-		log.info("Adding webdav mountpoint '" + provider.getMountPoint() + "'.");
+		return providerMap; 
 	}
 }

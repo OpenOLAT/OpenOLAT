@@ -26,7 +26,7 @@
 
 package org.olat.core.commons.services.webdav;
 
-import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.vfs.VFSContainer;
 
 public interface WebDAVProvider {
@@ -41,6 +41,6 @@ public interface WebDAVProvider {
 	 * @param identity
 	 * @return
 	 */
-	public VFSContainer getContainer(Identity identity);
+	public VFSContainer getContainer(IdentityEnvironment identityEnv);
 	
 }

@@ -24,6 +24,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.AutoCreator;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.user.PersonalFolderManager;
 
 /**
@@ -54,6 +55,7 @@ public class PersonalFolderControllerCreator extends AutoCreator  {
 	 */
 	@Override
 	public Controller createController(UserRequest ureq, WindowControl lwControl) {
-		return new FolderRunController(PersonalFolderManager.getInstance().getContainer(ureq.getIdentity()), true, true, true, ureq, lwControl);
+		IdentityEnvironment identityEnv = ureq.getUserSession().getIdentityEnvironment();
+		return new FolderRunController(PersonalFolderManager.getInstance().getContainer(identityEnv), true, true, true, ureq, lwControl);
 	}
 }

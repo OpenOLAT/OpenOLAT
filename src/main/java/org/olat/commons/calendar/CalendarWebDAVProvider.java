@@ -28,7 +28,7 @@ package org.olat.commons.calendar;
 import java.io.File;
 
 import org.olat.core.commons.services.webdav.WebDAVProvider;
-import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VirtualContainer;
@@ -38,12 +38,12 @@ public class CalendarWebDAVProvider implements WebDAVProvider {
 
 	private static final String MOUNT_POINT = "calendars";
 	
-	public VFSContainer getContainer(Identity identity) {
+	public VFSContainer getContainer(IdentityEnvironment identityEnv) {
 		VirtualContainer calendars = new VirtualContainer("calendars");
 		calendars.setLocalSecurityCallback(new ReadOnlyCallback());
 		// get private calendar
 		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
-		File fPersonalCalendar = calendarManager.getCalendarICalFile(CalendarManager.TYPE_USER, identity.getName());
+		File fPersonalCalendar = calendarManager.getCalendarICalFile(CalendarManager.TYPE_USER, identityEnv.getIdentity().getName());
 		calendars.addItem(new LocalFileImpl(fPersonalCalendar));
 		return calendars;
 	}

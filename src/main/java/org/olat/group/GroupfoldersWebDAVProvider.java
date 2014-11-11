@@ -27,7 +27,7 @@ package org.olat.group;
 
 import org.olat.collaboration.CollaborationManager;
 import org.olat.core.commons.services.webdav.WebDAVProvider;
-import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.vfs.VFSContainer;
 /**
  * 
@@ -47,12 +47,14 @@ public class GroupfoldersWebDAVProvider implements WebDAVProvider {
 		this.collaborationManager = collaborationManager;
 	}
 
+	@Override
 	public String getMountPoint() {
 		return MOUNTPOINT;
 	}
 
-	public VFSContainer getContainer(Identity identity) {
-		return new GroupfoldersWebDAVMergeSource(identity, collaborationManager);
+	@Override
+	public VFSContainer getContainer(IdentityEnvironment identityEnv) {
+		return new GroupfoldersWebDAVMergeSource(identityEnv.getIdentity(), collaborationManager);
 	}
 }
 

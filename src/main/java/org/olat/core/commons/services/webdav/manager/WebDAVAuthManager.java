@@ -32,6 +32,8 @@ import org.olat.core.util.Encoder.Algorithm;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationSPI;
 import org.olat.login.auth.OLATAuthManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
 /**
@@ -43,6 +45,7 @@ import org.olat.login.auth.OLATAuthManager;
  * Initial Date:  13 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
+@Service("webDAVAuthenticationSpi")
 public class WebDAVAuthManager implements AuthenticationSPI {
 	
 	public static final String PROVIDER_WEBDAV = "WEBDAV";
@@ -50,33 +53,12 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 	
 	private static final OLog log = Tracing.createLoggerFor(WebDAVAuthManager.class);
 
+	@Autowired
 	private WebDAVModule webDAVModule;
+	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
 	private OLATAuthManager olatAuthenticationSpi;
-	
-	/**
-	 * [used by Spring]
-	 * @param webDAVModule
-	 */
-	public void setWebDAVModule(WebDAVModule webDAVModule) {
-		this.webDAVModule = webDAVModule;
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param securityManager
-	 */
-	public void setSecurityManager(BaseSecurity securityManager) {
-		this.securityManager = securityManager;
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param olatAuthenticationSpi
-	 */
-	public void setOlatAuthenticationSpi(OLATAuthManager olatAuthenticationSpi) {
-		this.olatAuthenticationSpi = olatAuthenticationSpi;
-	}
 	
 	public Identity digestAuthentication(String httpMethod, DigestAuthentication digestAuth) {
 		String username = digestAuth.getUsername();

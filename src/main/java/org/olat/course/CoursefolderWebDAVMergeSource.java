@@ -21,14 +21,16 @@ package org.olat.course;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.commons.services.webdav.manager.WebDAVMergeSource;
 import org.olat.core.commons.services.webdav.servlets.RequestUtil;
-import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VirtualContainer;
@@ -42,21 +44,27 @@ import org.olat.repository.model.RepositoryEntryLifecycle;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {	
-	public CoursefolderWebDAVMergeSource(Identity identity) {
-		super(identity);
+class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
+	
+	private final IdentityEnvironment identityEnv;
+	
+	private final WebDAVModule webDAVModule;
+	private final RepositoryManager repositoryManager;
+	
+	public CoursefolderWebDAVMergeSource(IdentityEnvironment identityEnv) {
+		super(identityEnv.getIdentity());
+		this.identityEnv = identityEnv;
+		webDAVModule = CoreSpringFactory.getImpl(WebDAVModule.class);
+		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 	}
 	
 	@Override
 	protected List<VFSContainer> loadMergedContainers() {
-		RepositoryManager rm = RepositoryManager.getInstance();
-		List<RepositoryEntry> courseEntries = rm.queryByEditor(getIdentity(), CourseModule.getCourseTypeName());
 		List<VFSContainer> containers = new ArrayList<>();
 		
 		Map<String, VFSContainer> terms = null;
 		VirtualContainer noTermContainer = null;
 		
-		WebDAVModule webDAVModule = CoreSpringFactory.getImpl(WebDAVModule.class);
 		boolean useTerms = webDAVModule.isTermsFoldersEnabled();
 		if (useTerms) {
 			// prepare no-terms folder for all resources without semester term info or private date
@@ -64,10 +72,45 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 			noTermContainer = new VirtualContainer("other");
 		}
 		
+		Set<RepositoryEntry> duplicates = new HashSet<>();
+		List<RepositoryEntry> editorEntries = repositoryManager.queryByEditor(getIdentity(), "CourseModule");
+		appendCourses(editorEntries, true, containers, useTerms,  terms, noTermContainer, duplicates);
+		
+		//add courses as participant
+		if(webDAVModule.isEnableLearnersParticipatingCourses()) {
+			List<RepositoryEntry> participantEntries = repositoryManager.getLearningResourcesAsStudent(getIdentity(), "CourseModule", 0, -1);
+			appendCourses(participantEntries, false, containers, useTerms,  terms, noTermContainer, duplicates);
+		}
+		
+		//add bookmarked courses
+		if(webDAVModule.isEnableLearnersBookmarksCourse()) {
+			List<RepositoryEntry> bookmarkedEntries = repositoryManager.getLearningResourcesAsBookmark(getIdentity(), identityEnv.getRoles(), "CourseModule", 0, -1);
+			appendCourses(bookmarkedEntries, false, containers, useTerms,  terms, noTermContainer, duplicates);
+		}
+
+		if (useTerms) {
+			// add no-terms folder if any have been found
+			if (noTermContainer.getItems().size() > 0) {
+				addContainerToList(noTermContainer, containers);
+			}
+		}
+
+		return containers;
+	}
+	
+	private void appendCourses(List<RepositoryEntry> courseEntries, boolean editor, List<VFSContainer> containers,
+			boolean useTerms, Map<String, VFSContainer> terms, VirtualContainer noTermContainer,
+			Set<RepositoryEntry> duplicates) {	
+		
 		// Add all found repo entries to merge source
 		for (RepositoryEntry re:courseEntries) {
+			if(duplicates.contains(re)) {
+				continue;
+			}
+			duplicates.add(re);
+			
 			String courseTitle = RequestUtil.normalizeFilename(re.getDisplayname());
-			NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(courseTitle, re.getOlatResource());
+			NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(courseTitle, re.getOlatResource(), editor ? null : identityEnv);
 			
 			if (useTerms) {
 				RepositoryEntryLifecycle lc = re.getLifecycle();
@@ -92,14 +135,5 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 				addContainerToList(cfContainer, containers);				
 			}
 		}
-
-		if (useTerms) {
-			// add no-terms folder if any have been found
-			if (noTermContainer.getItems().size() > 0) {
-				addContainerToList(noTermContainer, containers);
-			}
-		}
-
-		return containers;
 	}
 }

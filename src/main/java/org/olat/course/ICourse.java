@@ -28,6 +28,7 @@ package org.olat.course;
 import java.io.File;
 
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.config.CourseConfig;
@@ -87,6 +88,8 @@ public interface ICourse extends OLATResourceable {
 	 * @return the container to the coursefolder of this course
 	 */
 	public VFSContainer getCourseFolderContainer();
+	
+	public VFSContainer getCourseFolderContainer(IdentityEnvironment identityEnv);
 	
 	public OlatRootFolderImpl getCourseExportDataDir();
 

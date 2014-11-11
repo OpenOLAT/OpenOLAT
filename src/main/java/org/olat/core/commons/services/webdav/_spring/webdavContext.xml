@@ -1,64 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans.xsd">
-
-	<!-- WebDAV module -->
-	<bean id="webdavModule" class="org.olat.core.commons.services.webdav.WebDAVModule" depends-on="org.olat.core.util.WebappHelper">
-		<property name="persistedProperties">
-	  		<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
-	  			depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
-	    		<constructor-arg index="0" ref="coordinatorManager"/>
-	    		<constructor-arg index="1" ref="webdavModule" />
-	  		</bean>
-		</property>
-		<property name="webdavProviderList">
-			<list>
-				<ref bean="webdav_briefcase"/>
-				<ref bean="webdav_coursefolders"/>
-				<ref bean="webdav_sharedfolders"/>
-				<ref bean="webdav_groupfolders"/>
-			</list>
-		</property>
-	</bean>
+  http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context.xsd">
 	
-	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject" ref="webdavModule" />
-		<property name="targetMethod" value="init" />
-		<property name="arguments">
-			<value>
-				webdav.enabled=${webdav.enabled}
-				webdav.links.enabled=${webdav.links.enabled}
-				auth.digest.enabled=${auth.digest.enabled}
-				webdav.termsfolders.enabled=${webdav.termsfolders.enabled}
-			</value>
-		</property>
-	</bean>
-
-	<bean id="webDAVManager" class="org.olat.core.commons.services.webdav.manager.WebDAVManagerImpl" init-method="init">
-		<constructor-arg ref="coordinatorManager"/>
-		<property name="sessionManager" ref="userSessionManager" />
-		<property name="webDAVAuthManager" ref="webDAVAuthenticationSpi" />
-		<property name="webDAVModule" ref="webdavModule" />
-	</bean>
+	<context:component-scan base-package="org.olat.core.commons.services.webdav" />
 	
-	<bean id="webDAVDispatcher" class="org.olat.core.commons.services.webdav.servlets.WebDAVDispatcherImpl">
-		<property name="lockManager" ref="vfsLockManager" />
-		<property name="webDAVManager" ref="webDAVManager" />
-		<property name="webDAVModule" ref="webdavModule" />
-	</bean>
-	
-	<bean id="webDAVAuthenticationSpi" class="org.olat.core.commons.services.webdav.manager.WebDAVAuthManager" >
-		<property name="securityManager" ref="baseSecurityManager" />
-		<property name="olatAuthenticationSpi" ref="olatAuthenticationSpi" />
-		<property name="webDAVModule" ref="webdavModule" />
-	</bean>
-	
-	<bean id="webdav_briefcase" class="org.olat.core.commons.modules.bc.BriefcaseWebDAVProvider" scope="prototype" />
-	<bean id="webdav_coursefolders" class="org.olat.course.CoursefolderWebDAVProvider" scope="prototype" />
-	<bean id="webdav_sharedfolders" class="org.olat.modules.sharedfolder.SharedFolderWebDAVProvider" scope="prototype" >
+	<bean id="webdav_briefcase" class="org.olat.core.commons.modules.bc.BriefcaseWebDAVProvider" />
+	<bean id="webdav_coursefolders" class="org.olat.course.CoursefolderWebDAVProvider" />
+	<bean id="webdav_sharedfolders" class="org.olat.modules.sharedfolder.SharedFolderWebDAVProvider" >
 				<!-- 
 					Optional configuration: specify shared folder that should be visible to normal users. 
 					By default, shared folders are only mounted for shared folder owners (read/write). By
@@ -84,7 +38,7 @@
 					</property>
 				-->
 	</bean> 
-	<bean id="webdav_groupfolders" class="org.olat.group.GroupfoldersWebDAVProvider" scope="prototype">
+	<bean id="webdav_groupfolders" class="org.olat.group.GroupfoldersWebDAVProvider">
 		<property name="collaborationManager" ref="collaborationManager" />
 	</bean>
 	

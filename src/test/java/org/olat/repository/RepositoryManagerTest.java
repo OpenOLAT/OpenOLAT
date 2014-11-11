@@ -276,7 +276,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		repositoryEntryRelationDao.addRole(id, re, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
-		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsStudent(id, 0, -1, RepositoryEntryOrder.nameAsc);
+		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsStudent(id, null, 0, -1, RepositoryEntryOrder.nameAsc);
 		Assert.assertNotNull(entries);
 		Assert.assertFalse(entries.isEmpty());
 		Assert.assertTrue(entries.contains(re));
@@ -298,7 +298,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 	    businessGroupRelationDao.addRole(id, group, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
-		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsStudent(id, 0, -1);
+		List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsStudent(id, null, 0, -1);
 		Assert.assertNotNull(entries);
 		Assert.assertFalse(entries.isEmpty());
 		Assert.assertTrue(entries.contains(re));
@@ -310,6 +310,41 @@ public class RepositoryManagerTest extends OlatTestCase {
 				Assert.assertTrue(entry.getAccess() >= RepositoryEntry.ACC_USERS);
 			}
 		}
+	}
+
+	@Test
+	public void getLearningResourcesAsBookmark() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-courses-1");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-courses-2");
+		RepositoryEntry course = JunitTestHelper.deployBasicCourse(owner);
+		markManager.setMark(course, participant, null, "[RepositoryEntry:" + course.getKey() + "]");
+		dbInstance.commitAndCloseSession();
+		
+		//participant bookmarks
+		Roles roles = new Roles(false, false, false, false, false, false, false);
+		List<RepositoryEntry> courses = repositoryManager.getLearningResourcesAsBookmark(participant, roles, "CourseModule", 0, -1);
+		Assert.assertNotNull(courses);
+		Assert.assertEquals(1, courses.size());
+	}
+	
+	/**
+	 * Check that the method return only courses within the permissions of the user.
+	 */
+	@Test
+	public void getLearningResourcesAsBookmark_noPermissions() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-courses-1");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("webdav-courses-2");
+		RepositoryEntry course = JunitTestHelper.deployBasicCourse(owner);
+		markManager.setMark(course, participant, null, "[RepositoryEntry:" + course.getKey() + "]");
+		dbInstance.commitAndCloseSession();
+		repositoryManager.setAccess(course, RepositoryEntry.ACC_OWNERS, false);
+		dbInstance.commitAndCloseSession();
+		
+		//participant bookmarks
+		Roles roles = new Roles(false, false, false, false, false, false, false);
+		List<RepositoryEntry> courses = repositoryManager.getLearningResourcesAsBookmark(participant, roles, "CourseModule", 0, -1);
+		Assert.assertNotNull(courses);
+		Assert.assertEquals(0, courses.size());
 	}
 	
 	@Test

@@ -141,5 +141,4 @@ public interface RepositoryService {
 	public int countAuthorView(SearchAuthorRepositoryEntryViewParams params);
 	
 	public List<RepositoryEntryAuthorView> searchAuthorView(SearchAuthorRepositoryEntryViewParams params, int firstResult, int maxResults);
-
 }

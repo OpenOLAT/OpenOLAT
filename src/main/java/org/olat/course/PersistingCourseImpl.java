@@ -31,6 +31,7 @@ import java.io.Serializable;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
@@ -163,9 +164,18 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	/**
 	 * @see org.olat.course.ICourse#getCourseFolderPath()
 	 */
+	@Override
 	public VFSContainer getCourseFolderContainer() {
 		// add local course folder's children as read/write source and any sharedfolder as subfolder
 		MergedCourseContainer courseFolderContainer = new MergedCourseContainer(resourceableId, getCourseTitle());
+		courseFolderContainer.init();
+		return courseFolderContainer;
+	}
+
+	@Override
+	public VFSContainer getCourseFolderContainer(IdentityEnvironment identityEnv) {
+		// add local course folder's children as read/write source and any sharedfolder as subfolder
+		MergedCourseContainer courseFolderContainer = new MergedCourseContainer(resourceableId, getCourseTitle(), identityEnv);
 		courseFolderContainer.init();
 		return courseFolderContainer;
 	}
@@ -173,6 +183,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	/**
 	 * @see org.olat.course.ICourse#getCourseEnvironment()
 	 */
+	@Override
 	public CourseEnvironment getCourseEnvironment() {
 		return courseEnvironment;
 	}
@@ -207,18 +218,26 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		OlatRootFolderImpl isolatedCourseFolder = new OlatRootFolderImpl(courseRootContainer.getRelPath() + File.separator + COURSEFOLDER, null);
 		// generate course folder
 		File fCourseFolder = isolatedCourseFolder.getBasefile();
-		if (!fCourseFolder.exists() && !fCourseFolder.mkdirs()) throw new OLATRuntimeException(this.getClass(),
-				"could not create course's coursefolder path:" + fCourseFolder.getAbsolutePath(), null);
+		if (!fCourseFolder.exists() && !fCourseFolder.mkdirs()) {
+			throw new OLATRuntimeException(this.getClass(),
+					"could not create course's coursefolder path:" + fCourseFolder.getAbsolutePath(), null);
+		}
 		
 		QuotaManager qm = QuotaManager.getInstance();
 		Quota q = qm.getCustomQuota(isolatedCourseFolder.getRelPath());
 		if (q == null){
 			Quota defQuota = qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_COURSE);
-			q = QuotaManager.getInstance().createQuota(isolatedCourseFolder.getRelPath(), defQuota.getQuotaKB(), defQuota.getUlLimitKB());
+			q = qm.createQuota(isolatedCourseFolder.getRelPath(), defQuota.getQuotaKB(), defQuota.getUlLimitKB());
 		}
 		FullAccessWithQuotaCallback secCallback = new FullAccessWithQuotaCallback(q);
 		isolatedCourseFolder.setLocalSecurityCallback(secCallback);
 		return isolatedCourseFolder;
+	}
+	
+	protected File getIsolatedCourseBaseFolder() {
+		// create local course folder
+		OlatRootFolderImpl isolatedCourseFolder = new OlatRootFolderImpl(courseRootContainer.getRelPath() + File.separator + COURSEFOLDER, null);
+		return isolatedCourseFolder.getBasefile();
 	}
 	
 	/**
@@ -283,7 +302,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		// fxdiff: export layout-folder
 		FileUtils.copyDirToDir(new OlatRootFolderImpl(courseRootContainer.getRelPath() + File.separator + "layout", null).getBasefile(), exportDirectory, "course export layout folder");
 		// export course folder
-		FileUtils.copyDirToDir(getIsolatedCourseFolder().getBasefile(), exportDirectory, "course export folder");
+		FileUtils.copyDirToDir(getIsolatedCourseBaseFolder(), exportDirectory, "course export folder");
 		// export any node data
 		log.info("exportToFilesystem: exporting course "+this+": exporting all nodes...");
 		Visitor visitor = new NodeExportVisitor(fExportedDataDir, this);
