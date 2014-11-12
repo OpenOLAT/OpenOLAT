@@ -84,12 +84,13 @@ public class OutcomeMapper implements Mapper, Serializable {
 
 		String contentType = request.getContentType();
 		log.audit("LTI outcome for: " + identityKey);
-		if (contentType != null && contentType.startsWith("application/xml") ) {
+		// test on equals of content type, done the same way later on in IMSPOXRequest code 
+		if (contentType != null && contentType.equals("application/xml") ) {
 			String xmlResponse = doPostXml(request);
 			return createMediaResource(xmlResponse, "application/xml");
 		}
 
-		return createMediaResource("Outcome service error: wrong content type. Must be 'application/xml' but was '" + (contentType == null ? "NULL" : contentType) + "'", "text/plain");
+		return createMediaResource("Outcome service error: wrong content type. Must match 'application/xml' but was '" + (contentType == null ? "NULL" : contentType) + "'", "text/plain");
 	}
 	
 	public Identity getIdentity() {
