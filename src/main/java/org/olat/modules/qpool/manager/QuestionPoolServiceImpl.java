@@ -750,6 +750,11 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
+	public QLicense updateLicense(QLicense license) {
+		return qpoolLicenseDao.update(license);
+	}
+
+	@Override
 	public List<TaxonomyLevel> getTaxonomyLevels() {
 		return taxonomyLevelDao.loadAllLevels();
 	}
