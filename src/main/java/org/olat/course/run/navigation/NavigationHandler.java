@@ -426,8 +426,12 @@ public class NavigationHandler implements Disposable {
 						GenericTreeModel subTreeModel = (GenericTreeModel)ncr.getSubTreeModel();
 						externalTreeModels.put(courseNode.getIdent(), new SubTree(ncr.getRunController(), subTreeModel, subtreemodelListener));
 						if(!newSelectedNodeId.equals(ncr.getSelectedTreeNodeId())) {
-							TreeNode selectedNode = subTreeModel.getNodeById(ncr.getSelectedTreeNodeId());
-							openCourseNodeIds.add((String)selectedNode.getUserObject());
+							if(ncr.getSelectedTreeNodeId() != null) {
+								TreeNode selectedNode = subTreeModel.getNodeById(ncr.getSelectedTreeNodeId());
+								if(selectedNode != null && selectedNode.getUserObject() instanceof String) {
+									openCourseNodeIds.add((String)selectedNode.getUserObject());
+								}
+							}
 						}
 					}
 				}
