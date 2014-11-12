@@ -163,7 +163,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private StepsMainRunController checklistWizard;
 	private PreviewConfigController previewController;
 	private MoveCopySubtreeController moveCopyController;
-	private InsertNodeController insertNodeController;
 	private DialogBoxController deleteDialogController;		
 	private LayoutMain3ColsController columnLayoutCtr;
 	private AlternativeCourseNodeController alternateCtr;
@@ -653,21 +652,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			removeAsListenerAndDispose(cmc);
 			moveCopyController = null;
 			cmc = null;
-		} else if (source == insertNodeController) {     			
-			cmc.deactivate();
-			if (event == Event.DONE_EVENT) {
-				// Activate new node in menu and create necessary edit controllers
-				// necessary if previous action was a delete node action				
-				tabbedNodeConfig.setVisible(true);
-				main.setPage(VELOCITY_ROOT + "/index.html");				
-				CourseNode newNode = insertNodeController.getInsertedNode();		
-				doInsert(ureq, newNode);
-			}
-			// in all cases:
-			removeAsListenerAndDispose(insertNodeController);
-			removeAsListenerAndDispose(cmc);
-			insertNodeController = null;
-			cmc = null;
 		} else if (source == deleteDialogController){
 			removeAsListenerAndDispose(deleteDialogController);
 			deleteDialogController = null;
@@ -714,7 +698,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	 * Aggressive clean-up of popup controllers
 	 */
 	private void cleanUp() {
-		removeAsListenerAndDispose(insertNodeController);
 		removeAsListenerAndDispose(moveCopyController);
 		removeAsListenerAndDispose(multiSPChooserCtr);
 		removeAsListenerAndDispose(chooseNodeTypeCtr);
@@ -722,7 +705,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(statusCtr);
 		removeAsListenerAndDispose(cmc);
-		insertNodeController = null;
 		moveCopyController = null;
 		chooseNodeTypeCtr = null;
 		multiSPChooserCtr = null;
@@ -1137,11 +1119,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		deleteDialogController = null;
 		cmc = null;
 		moveCopyController = null;
-		insertNodeController = null;
 		previewController = null;
 		//toolC = null;
 		columnLayoutCtr = null;
-		insertNodeController = null;
 		moveCopyController = null;
 		
 		doReleaseEditLock();

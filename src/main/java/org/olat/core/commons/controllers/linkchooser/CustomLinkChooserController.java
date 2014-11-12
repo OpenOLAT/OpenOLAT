@@ -29,14 +29,12 @@ package org.olat.core.commons.controllers.linkchooser;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.tree.SelectionTree;
-import org.olat.core.gui.components.tree.TreeEvent;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
+import org.olat.core.gui.control.controller.BasicController;
 
 
 /**
@@ -51,73 +49,43 @@ import org.olat.core.util.Util;
 
  * @author Christian Guretzki
  */
-public class CustomLinkChooserController extends DefaultController {
+public class CustomLinkChooserController extends BasicController {
 
-	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(CustomLinkChooserController.class);
-	
-	private Translator trans;
-	private VelocityContainer mainVC;
-
-	private SelectionTree jumpInSelectionTree;
-	private CustomLinkTreeModel customLinkTreeModel;
-
-	private Link chooseLink, cancelLink;
-	private String selectedAjaxTreePath;
+	private final MenuTree jumpInSelectionTree;
+	private final Link selectButton, cancelButton;
+	private final CustomLinkTreeModel customLinkTreeModel;
 	
 	/**
 	 * Constructor
 	 */
 	public CustomLinkChooserController(UserRequest ureq, WindowControl wControl, CustomLinkTreeModel customLinkTreeModel) {
-		super(wControl);
-		trans = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
-		mainVC = new VelocityContainer("mainVC", VELOCITY_ROOT + "/internallinkchooser.html", trans, this);
-
+		super(ureq, wControl);
 		this.customLinkTreeModel = customLinkTreeModel;
-
-		jumpInSelectionTree = new SelectionTree("internalLinkTree", trans);
+		
+		VelocityContainer mainVC = createVelocityContainer("internallinkchooser");
+		jumpInSelectionTree = new MenuTree(null, "internalLinkTree", this);
 		jumpInSelectionTree.setTreeModel(customLinkTreeModel);
-		jumpInSelectionTree.addListener(this);
-		jumpInSelectionTree.setFormButtonKey("select");
 		mainVC.put("internalLinkTree", jumpInSelectionTree);
-		setInitialComponent(mainVC);
+
+		selectButton = LinkFactory.createButton("selectfile", mainVC, this);
+		selectButton.setElementCssClass("btn btn-primary");
+		cancelButton = LinkFactory.createButton("cancel", mainVC, this);
+		
+		putInitialPanel(mainVC);
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
-	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == jumpInSelectionTree) { // Events from the legacy selection tree
-			TreeEvent te = (TreeEvent) event;
-			if (te.getCommand().equals(TreeEvent.COMMAND_TREENODE_CLICKED)) {
-				// create something like imagepath="javascript:parent.gotonode(<nodeId>)"
-				// notify parent controller
-				String url = customLinkTreeModel.getInternalLinkUrlFor(jumpInSelectionTree.getSelectedNode().getIdent());
-				fireEvent(ureq, new URLChoosenEvent(url));
-				
-			} else if (te.getCommand().equals(TreeEvent.COMMAND_CANCELLED)) {
-				fireEvent(ureq, Event.CANCELLED_EVENT);
-			} 
-		} else // Events from ajax tree view
-			if (source == chooseLink) {
-				if (selectedAjaxTreePath != null) {
-					String url = customLinkTreeModel.getInternalLinkUrlFor(selectedAjaxTreePath);
-					fireEvent(ureq, new URLChoosenEvent(url));
-				} else {
-					fireEvent(ureq, Event.FAILED_EVENT);
-				}
-			} else if (source == cancelLink) {
-				fireEvent(ureq, Event.CANCELLED_EVENT);
-			}
- 
-
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	
+	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(source == cancelButton) {
+			fireEvent(ureq, Event.CANCELLED_EVENT);
+		} else if(selectButton == source) {
+			String url = customLinkTreeModel.getInternalLinkUrlFor(jumpInSelectionTree.getSelectedNode().getIdent());
+			fireEvent(ureq, new URLChoosenEvent(url));
+		}
 	}
 }
