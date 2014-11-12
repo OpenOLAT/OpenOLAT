@@ -200,5 +200,7 @@ public interface QPoolService {
 	
 	public QLicense getLicense(String licenseKey);
 	
+	public QLicense updateLicense(QLicense license);
+	
 	
 }

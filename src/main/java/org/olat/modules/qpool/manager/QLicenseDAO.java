@@ -99,6 +99,10 @@ public class QLicenseDAO implements ApplicationListener<ContextRefreshedEvent> {
 		return licenses.get(0);
 	}
 	
+	public QLicense update(QLicense license) {
+		return dbInstance.getCurrentEntityManager().merge(license);
+	}
+	
 	public QLicense searchLicense(String license) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select license from qlicense license")

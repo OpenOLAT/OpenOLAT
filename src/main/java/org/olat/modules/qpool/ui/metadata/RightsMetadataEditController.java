@@ -29,6 +29,7 @@ import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -39,6 +40,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -64,7 +67,7 @@ import org.olat.user.UserManager;
 public class RightsMetadataEditController extends FormBasicController {
 	
 	private FormSubmit okButton;
-	private FormLink managerOwners;
+	private Link managerOwners;
 	private SingleSelection copyrightEl;
 	private TextElement descriptionEl;
 	private FormLayoutContainer authorCont;
@@ -100,8 +103,10 @@ public class RightsMetadataEditController extends FormBasicController {
 		authorCont.setRootForm(mainForm);
 		reloadAuthors();
 		
-		managerOwners = uifactory.addFormLink("manage.owners", formLayout, Link.BUTTON_SMALL);
-		
+		VelocityContainer vc = authorCont.getFormItemComponent();
+		managerOwners = LinkFactory.createButton("manage.owners", vc, this);
+		authorCont.put("manage.owners", managerOwners);
+
 		licenseKeys = MetaUIFactory.getQLicenseKeyValues(qpoolService);
 
 		copyrightEl = uifactory.addDropdownSingleselect("rights.copyright", "rights.copyright", formLayout,
@@ -191,6 +196,14 @@ public class RightsMetadataEditController extends FormBasicController {
 	}
 	
 	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(source == managerOwners) {
+			doOpenAuthorManager(ureq);
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == copyrightEl) {
 			String selectedKey = copyrightEl.getSelectedKey();
@@ -234,6 +247,7 @@ public class RightsMetadataEditController extends FormBasicController {
 			if (itemImpl.getLicense() != null && itemImpl.getLicense().isDeletable()) {
 				String licenseText = descriptionEl.getValue();
 				itemImpl.getLicense().setLicenseText(licenseText);
+				qpoolService.updateLicense(itemImpl.getLicense());
 			} else {
 				String licenseText = descriptionEl.getValue();
 				QLicense license = qpoolService.createLicense("perso-" + UUID.randomUUID().toString(), licenseText);

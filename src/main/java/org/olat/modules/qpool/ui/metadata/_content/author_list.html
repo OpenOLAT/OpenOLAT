@@ -3,3 +3,6 @@
 		$r.render(${author})
 	</div>
 #end
+#if($r.available("manage.owners"))
+	<br/>$r.render("manage.owners")
+#end
