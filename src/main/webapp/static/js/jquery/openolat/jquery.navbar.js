@@ -175,10 +175,9 @@
 		
 		this.updateState();
 		
-		console.log('optimize o:' + o);
+//		console.log('optimize o:' + o);
 		// Move from toolbar to offcanvas
 		while (o > 0 && (!this.state.tabs.collapsed || !this.state.sites.collapsed || !this.state.tools.collapsed)) {
-			console.log('foo: '+o);
 			if (!this.state.tabs.collapsed) {
 //				console.log('collapse tabs ' + o);
 				this.collapse(tabs, moreDropdown, 'li', 'o_dropdown_tab');
@@ -198,7 +197,6 @@
 		}
 		// Move from offcanvas to toolbar
 		while (o < 0 && (!this.state.tabs.extended || !this.state.sites.extended || !this.state.tools.extended)) {
-			console.log('bar: '+o);
 			if (!this.state.tools.extended) {
 //				console.log('uncollapse static ' + o);
 				var toolFit = this.extend(offcanvasRight, tools.children('#o_navbar_imclient, #o_navbar_search_opener, #o_navbar_my_menu').first(), '.o_tool_right', 'o_tool_right', true);
