@@ -268,6 +268,9 @@ public class ConditionInterpreter {
 			// messages (translation keys)
 			msg = "error.undefined.variable.at";
 			params = new String[]{};
+		} catch(ArithmeticException aex) {
+			msg = "error.divide.by.zero";
+			params = new String[]{};
 		} catch (Exception ex) {
 			// this must not happen!
 			throw new OLATRuntimeException(ex.getMessage(), ex);
