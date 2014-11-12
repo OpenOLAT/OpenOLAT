@@ -39,7 +39,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -48,13 +47,12 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.tree.GenericTreeNode;
-import org.olat.core.gui.components.tree.SelectionTree;
-import org.olat.core.gui.components.tree.TreeEvent;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
@@ -64,7 +62,6 @@ import org.olat.modules.qpool.manager.MetadataConverterHelper;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.QuestionsController;
-import org.olat.modules.qpool.ui.admin.TaxonomyTreeModel;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
 
 /**
@@ -79,9 +76,8 @@ public class MetadataBulkChangeController extends FormBasicController {
 	
 	//general
 	private TextElement titleEl, keywordsEl, coverageEl, addInfosEl, languageEl;
-	private FormLink selectContext;
+	private Link selectContext;
 	private FormLayoutContainer selectContextCont;
-	private SelectionTree selectPathCmp;
 	private CloseableModalController cmc;
 	//educational
 	private SingleSelection contextEl;
@@ -101,6 +97,8 @@ public class MetadataBulkChangeController extends FormBasicController {
 	private SingleSelection copyrightEl;
 	private TextElement descriptionEl;
 	private FormLayoutContainer rightsWrapperCont;
+
+	private TaxonomySelectionController selectionCtrl;
 
 	private Map<MultipleSelectionElement,FormLayoutContainer> checkboxContainer
 		= new HashMap<MultipleSelectionElement,FormLayoutContainer>();
@@ -167,7 +165,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		selectContextCont.contextPut("path", "");
 		generalCont.add(selectContextCont);
 		selectContextCont.setRootForm(mainForm);
-		selectContext = uifactory.addFormLink("select", selectContextCont, Link.BUTTON_SMALL);
+		selectContext = LinkFactory.createButton("select", selectContextCont.getFormItemComponent(), this);
 		decorate(selectContextCont, generalCont);
 	}
 	
@@ -311,29 +309,39 @@ public class MetadataBulkChangeController extends FormBasicController {
 		} else if(copyrightEl == source) {
 			descriptionEl.setVisible(copyrightEl.isVisible() && copyrightEl.getSelectedKey().equals(licenseKeys.getLastKey()));
 			rightsWrapperCont.setDirty(true);
-		} else if(source == selectContext) {
-			doOpenSelection();
 		} else {
 			super.formInnerEvent(ureq, source, event);
 		}
 	}
 	
 	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(source == selectContext) {
+			doOpenSelection(ureq);
+		} else {
+			super.event(ureq, source, event);
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == cmc) {
 			cleanUp();
-		}
-		super.event(ureq, source, event);
-	}
-	
-	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		if(source == selectPathCmp) {
-			TreeEvent te = (TreeEvent) event;
-			if (te.getCommand().equals(TreeEvent.COMMAND_TREENODE_CLICKED)) {
-				GenericTreeNode node = (GenericTreeNode)selectPathCmp.getSelectedNode();
-				selectedTaxonomicPath = (TaxonomyLevel)node.getUserObject();
-				selectContextCont.contextPut("path", selectedTaxonomicPath.getMaterializedPathNames());
+		} else if(selectionCtrl == source) {
+			if(Event.DONE_EVENT == event) {
+				selectedTaxonomicPath = selectionCtrl.getSelectedLevel();
+				if(selectedTaxonomicPath == null) {
+					selectContextCont.contextPut("path", "");
+				} else {
+					String path = selectedTaxonomicPath.getMaterializedPathNames();
+					if(StringHelper.containsNonWhitespace(path)) {
+						if(!path.endsWith("/")) {
+							path += "/";
+						}
+						path +=  selectedTaxonomicPath.getField();
+					}
+					selectContextCont.contextPut("path", path);
+				}
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -342,20 +350,17 @@ public class MetadataBulkChangeController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(selectionCtrl);
 		removeAsListenerAndDispose(cmc);
+		selectionCtrl = null;
 		cmc = null;
 	}
 
-	private void doOpenSelection() {
-		selectPathCmp = new SelectionTree("taxPathSelection", getTranslator());
-		selectPathCmp.addListener(this);
-		selectPathCmp.setFormButtonKey("select");
-		selectPathCmp.setShowCancelButton(true);
-		TaxonomyTreeModel treeModel = new TaxonomyTreeModel("");
-		selectPathCmp.setTreeModel(treeModel);
-
+	private void doOpenSelection(UserRequest ureq) {
+		selectionCtrl = new TaxonomySelectionController(ureq, getWindowControl());
+		listenTo(selectionCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				selectPathCmp, true, translate("classification.taxonomic.path"));
+				selectionCtrl.getInitialComponent(), true, translate("classification.taxonomic.path"));
 		cmc.activate();
 		listenTo(cmc);
 	}
