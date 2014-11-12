@@ -333,7 +333,8 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		}
 	}
 	
-	protected Component getFormItemComponent() {
+	@Override
+	public VelocityContainer getFormItemComponent() {
 		return formLayoutContainer;
 	}
 	
