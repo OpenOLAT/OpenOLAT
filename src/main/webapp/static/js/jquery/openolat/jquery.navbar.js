@@ -222,6 +222,8 @@
 			var more = $('#o_navbar_more');
 			more.css('display', 'none');
 		}
+		
+		this.checkToolsOrder();
 	}
 	
 	Navbar.prototype.updateState = function() {
@@ -333,6 +335,19 @@
 		}
 		//clear the rest (all dirty elements)
 		this.getMoreDropdown().empty();
+	}
+	
+	Navbar.prototype.checkToolsOrder = function() {
+		var tools = this.getTools();
+		var help = tools.find('#o_navbar_help');
+		var print = tools.find('#o_navbar_print');
+		var im = tools.find('#o_navbar_imclient');
+		if(im && print){
+			im.after(print);
+		}
+		if(im && help){
+			im.after(help);
+		}
 	}
 	
 	Navbar.prototype.showRight = function() {
