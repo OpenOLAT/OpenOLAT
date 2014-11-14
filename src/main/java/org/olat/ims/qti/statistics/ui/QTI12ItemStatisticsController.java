@@ -119,7 +119,10 @@ public class QTI12ItemStatisticsController extends BasicController {
 		StatisticsItem itemStats = qtiStatisticsManager
 				.getItemStatistics(item.getIdent(), maxScore, searchParams);
 
-		if(!survey) {
+		if(survey) {
+			long notAnswered = numOfParticipants - itemStats.getNumOfResults();
+			mainVC.contextPut("notAnswered", notAnswered);
+		} else {
 			long rightAnswers = itemStats.getNumOfCorrectAnswers();
 			long wrongAnswers = itemStats.getNumOfIncorrectAnswers();
 			long notAnswered = numOfParticipants - rightAnswers - wrongAnswers;

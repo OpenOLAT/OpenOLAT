@@ -95,11 +95,13 @@ public class SeriesFactory {
 		int numOfParticipants = resourceResult.getQTIStatisticAssessment().getNumOfParticipants();
 
 		int i = 0;
+		long numOfResults = 0;
 		BarSeries d1 = new BarSeries();
 		List<ResponseInfos> responseInfos = new ArrayList<>();
 		for (StatisticChoiceOption statisticResponse:statisticResponses) {
 			Response response = statisticResponse.getResponse();
 			double ans_count = statisticResponse.getCount();
+			numOfResults += statisticResponse.getCount();
 
 			Float points;
 			String cssColor;
@@ -116,6 +118,16 @@ public class SeriesFactory {
 
 			String text = response.getContent().renderAsHtml(mediaBaseURL);
 			responseInfos.add(new ResponseInfos(label, text, points, response.isCorrect(), survey, false));
+		}
+		
+		if(numOfResults != numOfParticipants) {
+			long notAnswered = numOfParticipants - numOfResults;
+			if(notAnswered > 0) {
+				String label = Integer.toString(++i);
+				String text = translate("user.not.answer");
+				responseInfos.add(new ResponseInfos(label, text, null, false, survey, false));
+				d1.add(notAnswered, label, "bar_grey");
+			}
 		}
 
 		List<BarSeries> serieList = Collections.singletonList(d1);

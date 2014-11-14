@@ -191,8 +191,8 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 		return new QTI12ItemStatisticsController(ureq, wControl, section, item, this, printMode);
 	}
 	
-	private void buildQTICourseNodeSubTree(QTIDocument qtiDocument, GenericTreeNode rootNode) {	
-		for(Section section:qtiDocument.getAssessment().getSections()) {
+	private void buildQTICourseNodeSubTree(QTIDocument qtiDoc, GenericTreeNode rootNode) {	
+		for(Section section:qtiDoc.getAssessment().getSections()) {
 			GenericTreeNode sectionNode = new SectionNode(section, null);
 			sectionNode.setUserObject(section);
 			rootNode.addChild(sectionNode);
