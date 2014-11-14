@@ -35,10 +35,24 @@ $extra-size: 200px;
 		border-radius: $thumbnail-border-radius;
 		border: 1px solid $thumbnail-border;
 
-		.o_thumbnail_available {
+		.o_thumbnail_available, .o_thumbnail_unavailable {
 			background-size: ($thumbnail-size - $thumbnail-padding) auto;
 			width: $thumbnail-size !important;
 			height: $thumbnail-size !important;
+			background-repeat: no-repeat;
+			background-position: 50% 50%;
+			&:before {
+				//override file type icons
+				content: none;
+			}
+		}
+
+		.o_thumbnail_available {
+			background-size: ($thumbnail-size - $thumbnail-padding) auto;
+		}
+
+		.o_thumbnail_unavailable {
+			display: none;
 		}
 	}
 
