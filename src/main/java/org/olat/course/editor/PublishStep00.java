@@ -25,6 +25,7 @@
 package org.olat.course.editor;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.olat.catalog.CatalogManager;
@@ -32,11 +33,13 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.tree.MenuTreeEvent;
+import org.olat.core.gui.components.tree.MenuTreeItem;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -46,11 +49,13 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.StatusDescriptionHelper;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.tree.CourseEditorTreeModel;
+import org.olat.course.tree.PublishTreeModel;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -76,7 +81,6 @@ class PublishStep00 extends BasicStep {
 		this.ores = course;
 		publishProcess = PublishProcess.getInstance(course, cetm, ureq.getLocale());
 		
-		//VCRP-3: add catalog entry in publish wizard
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		CourseNode rootNode = course.getRunStructure().getRootNode();
 		
@@ -147,7 +151,7 @@ class PublishStep00 extends BasicStep {
 	class PublishStep00Form extends StepFormBasicController {
 
 		private PublishProcess publishManager2;
-		private MultipleSelectionElement multiSelectTree;
+		private MenuTreeItem multiSelectTree;
 		private StatusDescription[] sds;
 		private List<StatusDescription> updateNotes;
 		private FormLayoutContainer fic;
@@ -180,11 +184,20 @@ class PublishStep00 extends BasicStep {
 			}
 			if(createPublishSet && publishManager2.hasPublishableChanges()){
 				//only add selection if changes were possible
-				List<String> asList = new ArrayList<String>(multiSelectTree.getSelectedKeys());
+				List<String> selectedKeys = new ArrayList<>(multiSelectTree.getSelectedKeys());
+				for(Iterator<String> selectionIt=selectedKeys.iterator(); selectionIt.hasNext(); ) {
+					String ident = selectionIt.next();
+					TreeNode node = publishManager2.getPublishTreeModel().getNodeById(ident);
+					if(!publishManager2.getPublishTreeModel().isSelectable(node)) {
+						selectionIt.remove();
+					}
+				}
+				
+				List<String> asList = new ArrayList<String>(selectedKeys);
 				publishManager2.createPublishSetFor(asList);
-				addToRunContext("publishSetCreatedFor", multiSelectTree.getSelectedKeys());
+				addToRunContext("publishSetCreatedFor", selectedKeys);
 				//
-				PublishSetInformations set = publishProcess.testPublishSet(ureq.getLocale());
+				PublishSetInformations set = publishProcess.testPublishSet(getLocale());
 				sds = set.getWarnings();
 				updateNotes = set.getUpdateInfos();
 				addToRunContext("updateNotes", updateNotes);
@@ -257,7 +270,7 @@ class PublishStep00 extends BasicStep {
 					addToRunContext("STEP00.warningMessage", warningTxt);
 					return true;
 				}
-			}else{
+			} else {
 				// no new publish set to be calculated
 				// check if some error was detected before.
 				boolean retVal = !containsRunContextKey("STEP00.generalErrorText");
@@ -275,7 +288,6 @@ class PublishStep00 extends BasicStep {
 		protected void formNOK(UserRequest ureq) {
 			addToRunContext("validPublish",Boolean.FALSE);
 		}
-		
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -286,8 +298,12 @@ class PublishStep00 extends BasicStep {
 				errorElement = uifactory.addStaticTextElement("errorElement", null, null, fic);//null > no label, null > no value
 				errorElement.setVisible(false);
 				//publish treemodel is tree model and INodeFilter at the same time
-				multiSelectTree = uifactory.addTreeMultiselect("seltree", null, fic, publishManager2.getPublishTreeModel(), publishManager2.getPublishTreeModel());
-				multiSelectTree.selectAll();
+				multiSelectTree = uifactory.addTreeMultiselect("seltree", null, fic, publishManager2.getPublishTreeModel(), this);
+				multiSelectTree.setFilter(publishManager2.getPublishTreeModel());
+				multiSelectTree.setRootVisible(false);
+				multiSelectTree.setMultiSelect(true);
+				selectableAll();
+				
 				selectAllLink = uifactory.addFormLink("checkall", fic);
 				selectAllLink.setElementCssClass("o_sel_course_publish_selectall_cbb");
 				selectAllLink.addActionListener(FormEvent.ONCLICK);
@@ -300,16 +316,58 @@ class PublishStep00 extends BasicStep {
 						+ "/nothingtopublish.html"));
 			}
 		}
-		
+
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 			if (source == selectAllLink) {
-				multiSelectTree.selectAll();
+				selectableAll();
 			} else if (source == uncheckallLink) {
-				multiSelectTree.uncheckAll();
+				deselectRec(publishManager2.getPublishTreeModel().getRootNode());
+			} else if (source == multiSelectTree) {
+				if(event instanceof MenuTreeEvent) {
+					MenuTreeEvent mte = (MenuTreeEvent)event;
+					TreeNode selectedNode = publishManager2.getPublishTreeModel()
+							.getNodeById(mte.getIdent());
+					if(MenuTreeEvent.SELECT.equals(mte.getCommand())) {	
+						selectRec(selectedNode, publishManager2.getPublishTreeModel());
+					} else if(MenuTreeEvent.DESELECT.equals(mte.getCommand())) {
+						deselectRec(selectedNode);
+					}
+				}
+			} else {
+				super.formInnerEvent(ureq, source, event);
 			}
 		}
 		
-	}// endclass
-
-}// endclass
+		private void selectableAll() {
+			selectableRec(publishManager2.getPublishTreeModel().getRootNode(), publishManager2.getPublishTreeModel());
+		}
+		
+		private void selectableRec(TreeNode node, PublishTreeModel model) {
+			if(model.isSelectable(node)) {
+				multiSelectTree.select(node.getIdent(), true);
+				multiSelectTree.open(node);
+			}
+			
+			for(int i=node.getChildCount(); i-->0; ) {
+				selectableRec((TreeNode)node.getChildAt(i), model);
+			}
+		}
+		
+		private void selectRec(INode node, PublishTreeModel model) {
+			if(model.isVisible(node)) {
+				multiSelectTree.select(node.getIdent(), true);
+			}
+			for(int i=node.getChildCount(); i-->0; ) {
+				selectRec(node.getChildAt(i), model);
+			}
+		}
+		
+		private void deselectRec(INode node) {
+			multiSelectTree.select(node.getIdent(), false);
+			for(int i=node.getChildCount(); i-->0; ) {
+				deselectRec(node.getChildAt(i));
+			}
+		}
+	}
+}

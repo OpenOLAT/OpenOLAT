@@ -89,7 +89,7 @@ public class MultiSelectionTreeImpl extends MultipleSelectionElementImpl impleme
 				String cssClass = tn.getCssClass();
 				String checkName = getName() + "_" + keys[i];
 				CheckboxElement ssec = new CheckboxElement(checkName, this, i, null, cssClass);
-				ssec.setEnabled(selectableFilter.isSelectable(tn));
+				//ssec.setEnabled(selectableFilter.isSelectable(tn));
 				checkboxitems.put(keys[i], ssec);
 			}
 		}

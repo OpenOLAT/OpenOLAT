@@ -19,45 +19,29 @@
  */
 package org.olat.core.gui.components.tree;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 
 /**
  * 
- * Initial date: 13.03.2013<br>
+ * Initial date: 14.11.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TreeItem extends FormItemImpl {
+public class MenuTreeEvent extends FormEvent {
+
+	private static final long serialVersionUID = -9180938864452149371L;
+	public static final String SELECT  = "select";
+	public static final String DESELECT = "deselect";
 	
-	private final MenuTree treeCmp;
+	private String ident;
 	
-	public TreeItem(String name) {
-		super(name);
-		treeCmp = new MenuTree(name + "_CMP");
+	public MenuTreeEvent(String command, FormItem source, String ident) {
+		super(command, source, FormEvent.ONCLICK);
+		this.ident = ident;
 	}
-
-	@Override
-	protected Component getFormItemComponent() {
-		return treeCmp;
+	
+	public String getIdent() {
+		return ident;
 	}
-
-	@Override
-	protected void rootFormAvailable() {
-		//
-	}
-
-	@Override
-	public void evalFormRequest(UserRequest ureq) {
-		//
-	}
-
-	@Override
-	public void reset() {
-		//
-	}
-
-
-
 }

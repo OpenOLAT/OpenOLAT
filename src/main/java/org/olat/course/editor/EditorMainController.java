@@ -26,11 +26,11 @@
 package org.olat.course.editor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
@@ -1020,7 +1020,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				PublishEvents publishEvents = publishManager.getPublishEvents();
 				if (runContext.containsKey("validPublish") && ((Boolean)runContext.get("validPublish")).booleanValue()) {
 					@SuppressWarnings("unchecked")
-					Set<String> selectedNodeIds = (Set<String>) runContext.get("publishSetCreatedFor");
+					Collection<String> selectedNodeIds = (Collection<String>) runContext.get("publishSetCreatedFor");
 					hasChanges = (selectedNodeIds != null) && (selectedNodeIds.size() > 0);
 					if (hasChanges) {
 						publishManager.applyPublishSet(ureq1.getIdentity(), ureq1.getLocale());

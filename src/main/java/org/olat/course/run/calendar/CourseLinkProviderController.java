@@ -37,12 +37,11 @@ import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.ui.LinkProvider;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
+import org.olat.core.gui.components.tree.MenuTreeItem;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -53,7 +52,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.tree.INodeFilter;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.repository.RepositoryEntry;
@@ -67,11 +65,11 @@ public class CourseLinkProviderController extends FormBasicController implements
 	private FormSubmit saveButton;
 	private final OLATResourceable ores;
 	private final List<ICourse> availableCourses;
-	private MultipleSelectionElement multiSelectTree;
+	private MenuTreeItem multiSelectTree;
 	private final CourseNodeSelectionTreeModel courseNodeTreeModel;
 
 	public CourseLinkProviderController(ICourse course, List<ICourse> courses, UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+		super(ureq, wControl, "course_elements");
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, ureq.getLocale(), getTranslator()));
 
 		this.ores = course;
@@ -79,16 +77,20 @@ public class CourseLinkProviderController extends FormBasicController implements
 		courseNodeTreeModel = new CourseNodeSelectionTreeModel(courses);
 
 		initForm(ureq);
+		
+		TreeNode rootNode = courseNodeTreeModel.getRootNode();
+		for(int i=rootNode.getChildCount(); i-->0; ) {
+			multiSelectTree.open((TreeNode)rootNode.getChildAt(i));
+		}
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		multiSelectTree = uifactory.addTreeMultiselect("seltree", null, formLayout, courseNodeTreeModel, courseNodeTreeModel);
+		multiSelectTree = uifactory.addTreeMultiselect("seltree", null, formLayout, courseNodeTreeModel, this);
+		multiSelectTree.setRootVisible(false);
+		multiSelectTree.setMultiSelect(true);
 
-		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonsContainer.setRootForm(mainForm);
-		formLayout.add(buttonsContainer);
-		saveButton = uifactory.addFormSubmitButton("ok", "cal.links.submit", buttonsContainer);
+		saveButton = uifactory.addFormSubmitButton("ok", "cal.links.submit", formLayout);
 	}
 
 	@Override
@@ -168,6 +170,7 @@ public class CourseLinkProviderController extends FormBasicController implements
 				if (node != null) {
 					node.setSelected(true);
 					multiSelectTree.select(node.getIdent(), true);
+					multiSelectTree.open(node);
 				}
 			}
 		}
@@ -175,7 +178,7 @@ public class CourseLinkProviderController extends FormBasicController implements
 	
 	@Override
 	public void setDisplayOnly(boolean displayOnly) {
-		courseNodeTreeModel.setReadOnly(displayOnly);
+		multiSelectTree.setEnabled(!displayOnly);
 		multiSelectTree.reset();
 		saveButton.setVisible(!displayOnly);
 	}
@@ -188,11 +191,8 @@ public class CourseLinkProviderController extends FormBasicController implements
 		}
 	}
 	
-	private static class CourseNodeSelectionTreeModel extends GenericTreeModel implements INodeFilter {
+	private static class CourseNodeSelectionTreeModel extends GenericTreeModel {
 		private static final long serialVersionUID = -7863033366847344767L;
-		
-		private boolean readOnly;
-		
 
 
 		public CourseNodeSelectionTreeModel(List<ICourse> courses) {
@@ -230,20 +230,6 @@ public class CourseLinkProviderController extends FormBasicController implements
 				node.addChild(buildTree(course, childNode));
 			}
 			return node;
-		}
-		
-		public void setReadOnly(boolean readOnly) {
-			this.readOnly = readOnly;
-		}
-
-		@Override
-		public boolean isSelectable(INode node) {
-			return !readOnly;
-		}
-
-		@Override
-		public boolean isVisible(INode node) {
-			return true;
 		}
 	}
 	

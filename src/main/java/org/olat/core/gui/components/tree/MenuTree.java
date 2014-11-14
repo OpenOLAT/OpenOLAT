@@ -35,13 +35,14 @@ import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
+import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.tree.InsertionPoint.Position;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
+import org.olat.core.util.tree.INodeFilter;
 import org.olat.course.tree.TreePosition;
 
 /**
@@ -60,14 +61,12 @@ public class MenuTree extends AbstractComponent {
 	/**
 	 * Comment for <code>NODE_IDENT</code>
 	 */
-	//fxdiff VCRP-9: drag and drop in menu tree
 	public static final String TARGET_NODE_IDENT = "tnidle";
 	
 	
 	/**
 	 * Comment for <code>NODE_IDENT</code>
 	 */
-	//fxdiff VCRP-9: drag and drop in menu tree
 	public static final String SIBLING_NODE = "sne";
 	
 	/**
@@ -107,11 +106,14 @@ public class MenuTree extends AbstractComponent {
 	 * event fired when a treenode is dropper
 	 */
 	public static final String COMMAND_TREENODE_DROP = "ctdrop";
+	
+	protected static final DefaultFilter DEF_FILTER = new DefaultFilter();
 
 	private TreeModel treeModel;
 	private InsertionPoint insertionPoint;
 	private String selectedNodeId = null;
-	private Set<String> openNodeIds = new HashSet<String>();
+	private final Set<String> selectedNodeIds = new HashSet<>();
+	private final Set<String> openNodeIds = new HashSet<>();
 	private boolean expandServerOnly = true; // default is serverside menu
 	private boolean dragEnabled = false;
 	private boolean dropEnabled = false;
@@ -120,9 +122,13 @@ public class MenuTree extends AbstractComponent {
 	private boolean rootVisible = true;
 	private boolean unselectNodes;
 	private boolean showInsertTool;
+	private boolean multiSelect;
 	private String dndAcceptJSMethod = "treeAcceptDrop_notWithChildren";
 
 	private boolean dirtyForUser = false;
+	
+	private INodeFilter filter = DEF_FILTER;
+	private MenuTreeItem menuTreeItem;
 	
 	/**
 	 * @param name
@@ -144,9 +150,14 @@ public class MenuTree extends AbstractComponent {
 	 * @param name
 	 * @param eventListener
 	 */
-	public MenuTree(String id, String name, Controller eventListener) {
+	public MenuTree(String id, String name, ComponentEventListener eventListener) {
 		this(id, name);
 		addListener(eventListener);
+	}
+	
+	public MenuTree(String id, String name, ComponentEventListener eventListener, MenuTreeItem menuTreeItem) {
+		this(id, name, eventListener);
+		this.menuTreeItem = menuTreeItem;
 	}
 	
 	@Override
@@ -353,21 +364,57 @@ public class MenuTree extends AbstractComponent {
 		setDirty(true);
 	}
 
+	public Set<String> getSelectedNodeIds() {
+		return selectedNodeIds;
+	}
+
+	public void setSelectedNodeIds(Collection<String> newSelectedNodeIds) {
+		selectedNodeIds.clear();
+		selectedNodeIds.addAll(newSelectedNodeIds);
+	}
+	
+	public boolean isSelected(TreeNode node) {
+		return node != null && selectedNodeIds.contains(node.getIdent());
+	}
+	
+	public void select(String id, boolean select) {
+		if(select) {
+			selectedNodeIds.add(id);
+		} else {
+			selectedNodeIds.remove(id);
+		}
+	}
+	
+	public boolean isOpen(TreeNode node) {
+		return openNodeIds.contains(node.getIdent());
+	}
+	
+	public void open(TreeNode node) {
+		for(INode iteratorNode=node;
+				node.getParent() != null && iteratorNode != null && !openNodeIds.contains(iteratorNode.getIdent());
+				iteratorNode=iteratorNode.getParent()) {
+			openNodeIds.add(iteratorNode.getIdent());
+		}
+	}
+
 	public Collection<String> getOpenNodeIds() {
 		return openNodeIds;
 	}
 
 	public void setOpenNodeIds(Collection<String> nodeIds) {
-		if(nodeIds == null) {
-			openNodeIds.clear();
-		} else {
-			openNodeIds = new HashSet<String>(nodeIds);
+		openNodeIds.clear();
+		if(nodeIds != null) {
+			openNodeIds.addAll(nodeIds);
 		}
 		setDirty(true);
 	}
 
 	public void clearSelection() {
 		selectedNodeId = null;
+	}
+
+	public MenuTreeItem getMenuTreeItem() {
+		return menuTreeItem;
 	}
 
 	public InsertionPoint getInsertionPoint() {
@@ -438,6 +485,26 @@ public class MenuTree extends AbstractComponent {
 	 */
 	public void enableInsertTool(boolean showInsertTool) {
 		this.showInsertTool = showInsertTool;
+	}
+
+	protected boolean isMultiSelect() {
+		return multiSelect;
+	}
+
+	protected void setMultiSelect(boolean multiSelect) {
+		this.multiSelect = multiSelect;
+	}
+
+	public INodeFilter getFilter() {
+		return filter;
+	}
+
+	public void setFilter(INodeFilter filter) {
+		if(filter == null) {
+			this.filter = DEF_FILTER;
+		} else {
+			this.filter = filter;
+		}
 	}
 
 	public boolean isDragEnabled() {
@@ -524,5 +591,13 @@ public class MenuTree extends AbstractComponent {
 
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
+	}
+	
+	private static class DefaultFilter implements INodeFilter {
+
+		@Override
+		public boolean isVisible(INode node) {
+			return true;
+		}
 	}
 }

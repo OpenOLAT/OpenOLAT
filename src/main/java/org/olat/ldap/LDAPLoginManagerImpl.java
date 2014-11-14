@@ -781,7 +781,7 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 			try {
 				if(paging) {
 					byte[] cookie = null;
-					ctx.setRequestControls(new Control[] { new PagedResultsControl(PAGE_SIZE, Control.CRITICAL) });
+					ctx.setRequestControls(new Control[] { new PagedResultsControl(PAGE_SIZE, Control.NONCRITICAL) });
 					do {
 						NamingEnumeration<SearchResult> enm = ctx.search(ldapBase, filter, ctls);
 						while (enm.hasMore()) {
@@ -823,7 +823,7 @@ public class LDAPLoginManagerImpl extends LDAPLoginManager implements GenericEve
 		  }
 		}
 		// Re-activate paged results
-		ctx.setRequestControls(new Control[] { new PagedResultsControl(PAGE_SIZE, cookie, Control.CRITICAL) });
+		ctx.setRequestControls(new Control[] { new PagedResultsControl(PAGE_SIZE, cookie, Control.NONCRITICAL) });
 		return cookie;
 	}
 	

@@ -43,6 +43,8 @@ import java.util.List;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.tree.InsertionPoint.Position;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
@@ -79,6 +81,9 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		MenuTree tree = (MenuTree) source;
+		if(tree.getMenuTreeItem() != null) {
+			tree.getMenuTreeItem().clearVisibleNodes();
+		}
 		
 		TreeNode root = tree.getTreeModel().getRootNode();
 		if (root == null) return; // tree is completely empty
@@ -140,8 +145,10 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		}
 		
 		boolean selected = (!selPath.isEmpty() && selPath.get(selPath.size() - 1) == curRoot);
+		boolean hasInsertionPoint = isInsertionPointUnderNode(curRoot, tree);
+		boolean hasChildren = hasVisibleChildren(curRoot, tree);
 		boolean renderChildren = isRenderChildren(curSel, curRoot, selected, tree, openNodeIds)
-				|| isInsertionPointUnderNode(curRoot, tree);
+				|| hasInsertionPoint;
 
 		renderInsertionPoint(target, Position.up, level, curRoot, ubu, flags, tree);
 
@@ -170,8 +177,9 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 			appendDragAndDropElement(curRoot, tree, dndElements, ubu, flags);
 		}
 
-		renderOpenClose(curRoot, target, level, renderChildren, ubu, flags, tree);
-		
+		if(hasChildren || hasInsertionPoint) {
+			renderOpenClose(curRoot, target, level, renderChildren, ubu, flags, tree);
+		}
 		// Render menu item as link, also for active elements
 		// mark active item as strong for accessibility reasons
 		renderLink(curRoot, level, selected, renderChildren, curSel, target, ubu, flags, tree);
@@ -202,6 +210,39 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		renderInsertionPoint(target, Position.down, level, curRoot, ubu, flags, tree);
 	}
 	
+	private void renderCheckbox(StringOutput sb, TreeNode node, MenuTree tree) {
+		MenuTreeItem treeItem = tree.getMenuTreeItem();
+		if(treeItem != null) {
+			boolean enabled = treeItem.isEnabled();
+			boolean selected = tree.isSelected(node);
+			boolean intermediate = treeItem.isIndeterminate(node);
+			String groupingName = "tcb_ms";
+			String id = "cb" + node.getIdent();
+			sb.append("<input type='checkbox' id='").append(id).append("' ")
+			  .append(" name='").append(groupingName).append("'")
+			  .append(" value='").append(node.getIdent()).append("'");
+			if (selected) {
+				sb.append(" checked='checked' ");
+			}
+			if(enabled){
+				//use the selection form dispatch id and not the one of the element!
+				sb.append(FormJSHelper.getRawJSFor(treeItem.getRootForm(), treeItem.getFormDispatchId(), FormEvent.ONCLICK));
+			} else {
+				sb.append(" disabled='disabled' ");
+			}
+			sb.append(" />");
+			if(intermediate) {
+				sb.append("<script type='text/javascript'>\n")
+				  .append("/* <![CDATA[ */\n")
+				  .append("jQuery(function() {\n")
+				  .append("  jQuery('#").append(id).append("').prop('indeterminate', true);")
+				  .append("});\n")
+				  .append("/* ]]> */")
+				  .append("</script>\n");
+			}
+		}
+	}
+	
 	private void renderInsertionPoint(StringOutput sb, Position positionToRender, int level, TreeNode node,
 			URLBuilder ubu, AJAXFlags flags, MenuTree tree) {
 		if(tree.getInsertionPoint() != null
@@ -210,7 +251,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 			
 			sb.append("<li><div class='o_tree_l").append(level).append("'>")
 			  .append("<span class=\"o_tree_leaf o_tree_oc_l").append(level).append("\">&nbsp;</span>")
-			  .append("<a class='o_tree_link o_tree_l").append(level).append(" o_insertion_point' href=\"");
+			  .append("<span class='o_tree_link o_tree_l").append(level).append(" o_insertion_point'><a href=\"");
 			
 			// Build menu item URI
 			boolean iframePostEnabled = flags.isIframePostEnabled();
@@ -227,7 +268,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 			Translator pointTranslator = Util.createPackageTranslator(MenuTreeRenderer.class, tree.getTranslator().getLocale());
 			String pointTranslation = pointTranslator.translate("insertion.point");
 			sb.append("'><span>").append(pointTranslation).append(" <i class='o_icon o_icon_remove'> </i></span>")
-			  .append("</a></div></li>");
+			  .append("</a></span></div></li>");
 		}	
 	}
 	
@@ -263,7 +304,11 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		int chdCnt = curRoot.getChildCount();
 		boolean iframePostEnabled = flags.isIframePostEnabled();
 		
-		target.append("<a class='o_tree_link o_tree_l").append(level);
+		if(tree.getMenuTreeItem() != null) {
+			tree.getMenuTreeItem().trackVisibleNode(curRoot);
+		}
+		
+		target.append("<span class='o_tree_link o_tree_l").append(level);
 		
 		// add icon css class
 		if (selected) {
@@ -290,9 +335,14 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		} else if (level != 0 && chdCnt == 0) {
 			target.append(" o_tree_level_label_leaf");
 		}
+		target.append("'>");
+		
+		if(tree.isMultiSelect() && tree.getMenuTreeItem() != null) {
+			renderCheckbox(target, curRoot, tree);
+		}
 		
 		// add css class to identify level, FireFox script
-		target.append("' onclick='o2cl_secure()' href=\"");					
+		target.append("<a onclick='o2cl_secure()' href=\"");					
 		
 		// Build menu item URI
 		if (iframePostEnabled) {
@@ -324,7 +374,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		// display title and close menu item
 		
 		appendDecorators(curRoot, target);
-		target.append("</a>");
+		target.append("</a></span>");
 	}
 	
 	private void renderDisplayTitle(StringOutput target, TreeNode node, MenuTree tree) {
@@ -408,7 +458,9 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		// render all the nodes from this level
 		for (int i = 0; i < chdCnt; i++) {
 			TreeNode curChd = (TreeNode) curRoot.getChildAt(i);
-			renderLevel(target, level + 1, curChd, selPath, openNodeIds, dndElements, ubu, flags, tree);
+			if(tree.getFilter().isVisible(curChd)) {
+				renderLevel(target, level + 1, curChd, selPath, openNodeIds, dndElements, ubu, flags, tree);
+			}
 		}
 		target.append("</ul>");
 	}
@@ -551,8 +603,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 	}
 	
 	private boolean isRenderChildren(INode curSel, TreeNode curRoot, boolean selected, MenuTree tree, Collection<String> openNodeIds) {
-		if(curRoot.getChildCount() == 0) {
-			//nothing to do
+		if(!hasVisibleChildren(curRoot, tree)) {
 			return false;
 		}
 		
@@ -571,6 +622,22 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		}
 		//open the path of the selected node
 		return (curSel == curRoot);
+	}
+	
+	private boolean hasVisibleChildren(TreeNode curRoot, MenuTree tree) {
+		boolean hasVisibleChild = false;
+		if(curRoot.getChildCount() == 0) {
+			//nothing to do
+		} else if(tree.getFilter() != MenuTree.DEF_FILTER) {
+			for(int i=curRoot.getChildCount(); i-->0 && !hasVisibleChild; ) {
+				if(tree.getFilter().isVisible(curRoot.getChildAt(i))) {
+					hasVisibleChild = true;
+				}
+			}
+		} else {
+			hasVisibleChild = true;
+		}
+		return hasVisibleChild;
 	}
 	
 	private boolean isInsertionPointUnderNode(TreeNode curRoot, MenuTree tree) {

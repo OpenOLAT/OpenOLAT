@@ -33,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -85,10 +84,6 @@ public class DeletStep01 extends BasicStep {
 	}
 
 	private final class DeletStepForm01 extends StepFormBasicController {
-		private FormLayoutContainer textContainer;
-		boolean hasIdentitesToDelete;
-		private FlexiTableDataModel<List<String>> tableDataModel;
-		private List<Identity> identitiesToDelete;
 
 		public DeletStepForm01(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -99,8 +94,7 @@ public class DeletStep01 extends BasicStep {
 
 		@Override
 		protected void doDispose() {
-		// TODO Auto-generated method stub
-
+			//
 		}
 
 		@Override
@@ -110,11 +104,11 @@ public class DeletStep01 extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			hasIdentitesToDelete = (Boolean) getFromRunContext("hasIdentitiesToDelete");
-			textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), this.velocity_root + "/delet_step01.html");
+			Boolean hasIdentitesToDelete = (Boolean) getFromRunContext("hasIdentitiesToDelete");
+			FormLayoutContainer textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), velocity_root + "/delet_step01.html");
 			formLayout.add(textContainer);
 			textContainer.contextPut("hasIdentitesToDelete", hasIdentitesToDelete);
-			if (!hasIdentitesToDelete) {
+			if (hasIdentitesToDelete != null && !hasIdentitesToDelete.booleanValue()) {
 				setNextStep(Step.NOSTEP);
 				return;
 			}
@@ -122,34 +116,33 @@ public class DeletStep01 extends BasicStep {
 			Map<String, String> reqProbertyMap = new HashMap<String,String>(LDAPLoginModule.getUserAttributeMapper());
 			Collection<String> reqProberty = reqProbertyMap.values();
 			reqProberty.remove(LDAPConstants.LDAP_USER_IDENTIFYER);
-			List<List<String>> mergedDataChanges = new ArrayList<List<String>>();
 
-			identitiesToDelete = (List<Identity>) getFromRunContext("identitiesToDelete");
+			@SuppressWarnings("unchecked")
+			List<Identity> identitiesToDelete = (List<Identity>) getFromRunContext("identitiesToDelete");
 			for (Identity identityToDelete : identitiesToDelete) {
 				List<String> rowData = new ArrayList<>();
 				rowData.add(identityToDelete.getName());
 				for (String property : reqProberty) {
 					rowData.add(identityToDelete.getUser().getProperty(property, null));
 				}
-				mergedDataChanges.add(rowData);
 			}
 
 			FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 			int colPos = 0;
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("username", colPos++));
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("username", 10000));
+			List<UserPropertyHandler> handlers = new ArrayList<>();
 			for (String property : reqProberty) {
 				List<UserPropertyHandler> properHandlerList = UserManager.getInstance().getAllUserPropertyHandlers();
 				for (UserPropertyHandler userProperty : properHandlerList) {
 					if (userProperty.getName().equals(property)) {
 						tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(userProperty.i18nColumnDescriptorLabelKey(), colPos++));
+						handlers.add(userProperty);
 					}
 				}
 			}
 
-			tableDataModel = new FlexiTableDataModelImpl<List<String>>(new IdentityFlexiTableModel(mergedDataChanges, colPos + 1), tableColumnModel);
+			FlexiTableDataModel<Identity> tableDataModel = new IdentityFlexiTableModel(identitiesToDelete, tableColumnModel, handlers, getLocale());
 			uifactory.addTableElement(getWindowControl(), "newUsers", tableDataModel, formLayout);
 		}
-
 	}
-
 }

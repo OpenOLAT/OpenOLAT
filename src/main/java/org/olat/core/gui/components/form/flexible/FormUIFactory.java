@@ -32,6 +32,7 @@ import java.util.Map;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -72,6 +73,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTex
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.tree.MenuTreeItem;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
@@ -286,6 +288,14 @@ public class FormUIFactory {
 	 */
 	public MultipleSelectionElement addTreeMultiselect(String name, String i18nLabel, FormItemContainer formLayout, TreeModel treemodel, INodeFilter selectableFilter){
 		MultipleSelectionElement mse = new MultiSelectionTreeImpl(name, treemodel, selectableFilter);
+		setLabelIfNotNull(i18nLabel, mse);
+		formLayout.add(mse);
+		return mse;
+	}
+	
+	public MenuTreeItem addTreeMultiselect(String name, String i18nLabel, FormItemContainer formLayout, TreeModel treemodel, ComponentEventListener listener){
+		MenuTreeItem mse = new MenuTreeItem(name, listener);
+		mse.setTreeModel(treemodel);
 		setLabelIfNotNull(i18nLabel, mse);
 		formLayout.add(mse);
 		return mse;

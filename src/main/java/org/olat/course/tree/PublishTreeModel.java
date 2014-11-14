@@ -135,7 +135,6 @@ public class PublishTreeModel extends GenericTreeModel implements INodeFilter {
 		return false;
 	}
 
-	@Override
 	public boolean isSelectable(INode node) {
 		TreeNode tn = (TreeNode)node;
 		return tn.isAccessible();

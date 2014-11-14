@@ -19,28 +19,48 @@
  */
 package org.olat.ldap.ui;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
-import org.olat.core.gui.components.table.DefaultTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.id.Identity;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
-public class IdentityFlexiTableModel extends DefaultTableDataModel<List<String>> {
-		private int columnCount = 0;
+/**
+ * 
+ * Initial date: 14.11.2014<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class IdentityFlexiTableModel extends DefaultFlexiTableDataModel<Identity> {
 		
-		public IdentityFlexiTableModel(List<List<String>> objects, int columnCount){
-			super(objects);
-			this.columnCount = columnCount;
-		}
-		
-		public int getColumnCount() {
-			return columnCount;
-		}
-
-
-		public Object getValueAt(int row, int col) {
-			List<String> entry = objects.get(row);
-			Object value = entry.get(col);
-			return (value == null ? "n/a" : value);
-		}
+	protected static final int USERNAME_COL_INDEX = 10000;
+	
+	private final Locale locale;
+	private final List<UserPropertyHandler> handlers;
+	
+	public IdentityFlexiTableModel(List<Identity> identities, FlexiTableColumnModel columnModel, List<UserPropertyHandler> handlers, Locale locale) {
+		super(identities, columnModel);
+		this.handlers = handlers;
+		this.locale = locale;
+	}
+	
+	@Override
+	public DefaultFlexiTableDataModel<Identity> createCopyWithEmptyList() {
+		return new IdentityFlexiTableModel(new ArrayList<Identity>(), getTableColumnModel(), handlers, locale);
 	}
 
-
+	@Override
+	public Object getValueAt(int row, int col) {
+		Identity identity = getObject(row);
+		if(col == USERNAME_COL_INDEX) {
+			return identity.getName();
+		}
+		
+		UserPropertyHandler userPropertyHandler = handlers.get(col);
+		String value = userPropertyHandler.getUserProperty(identity.getUser(), locale);
+		return (value == null ? "n/a" : value);
+	}
+}
