@@ -128,7 +128,7 @@ public class ScormCPFileResource extends FileResource {
 			
 			Map<String, Object> nsuris = new HashMap<>(5);
 			nsuris.put("ns", nsuri);
-			nsuris.put("adluri", adluri);
+			//nsuris.put("adluri", adluri);
 			//we might have a scorm 2004 which we do not yet support
 			if (seqencingUri != null) nsuris.put("adlseq", seqencingUri);
 			if (simpleSeqencingUri != null) nsuris.put("imsss", simpleSeqencingUri);
