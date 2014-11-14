@@ -34,6 +34,8 @@ import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 
@@ -46,6 +48,8 @@ import org.olat.core.util.resource.OresHelper;
  * @author gnaegi, Felix Jost
  */
 public class TreeHelper {
+	
+	private static final OLog log = Tracing.createLoggerFor(TreeHelper.class);
 	
 	/**
 	 * Depth-first traversal.
@@ -95,6 +99,14 @@ public class TreeHelper {
 		}
 		return -1;
 	}
+	
+	public static int totalNodeCount(TreeNode node) {
+		int nodeCnt = 1;//me
+		for(int i=0; i<node.getChildCount(); i++) {
+			nodeCnt += totalNodeCount((TreeNode)node.getChildAt(i));
+		}
+		return nodeCnt;
+	}
 
 	public static TreeNode resolveTreeNode(String treePath, TreeModel treeModel) {
 		// even for the root node, our parameter may not be the empty string, therefore the prefix to be chopped here
@@ -130,7 +142,6 @@ public class TreeHelper {
 		return conPath.toString();
 	}
 	
-	//fxdiff FXOLAT-163: back/resume
 	public static List<TreeNode> getTreePath(TreeNode node) {
 		List<TreeNode> conPath = new ArrayList<TreeNode>();
 		for (TreeNode cur = node; cur != null; cur = (TreeNode) cur.getParent()) {
@@ -138,6 +149,19 @@ public class TreeHelper {
 		}
 		Collections.reverse(conPath);
 		return conPath;
+	}
+	
+	public static boolean isInParentLine(INode node, INode potentialParent) {
+		try {
+			for(INode iteratorNode=node; node.getParent() != null && iteratorNode != null; iteratorNode=iteratorNode.getParent()) {
+				if(iteratorNode.getIdent().equals(potentialParent.getIdent())) {
+					return true;
+				}
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return false;
 	}
 	
 	/**

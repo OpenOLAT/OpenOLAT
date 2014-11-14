@@ -17,19 +17,49 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.catalog.ui;
-
-import org.olat.catalog.CatalogEntry;
-import org.olat.core.gui.control.Controller;
+package org.olat.core.gui.components.tree;
 
 /**
  * 
- * Initial date: 22.11.2012<br>
+ * Initial date: 13.11.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface CatalogMoveController extends Controller {
+public class InsertionPoint {
 	
-	public CatalogEntry getMovedCatalogEntry();
+	private final String nodeId;
+	private final Position position;
+	
+	
+	public InsertionPoint(String nodeId, Position position) {
+		this.nodeId = nodeId;
+		this.position = position;
+	}
+	
+	public String getNodeId() {
+		return nodeId;
+	}
 
+	public Position getPosition() {
+		return position;
+	}
+
+	public enum Position {
+		up,
+		down,
+		under;
+		
+		public static boolean hasPosition(Position pos, Position[] arr) {
+			if(arr.length > 0) {
+				if(arr[0] == pos) return true;
+			}
+			if(arr.length > 1) {
+				if(arr[1] == pos) return true;
+			}
+			if(arr.length > 2) {
+				if(arr[2] == pos) return true;
+			}
+			return false;
+		}
+	}
 }

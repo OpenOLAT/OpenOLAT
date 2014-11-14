@@ -14,10 +14,14 @@
 	$invalidFileNames
 </p>
 #end
-
-<p>
-	<b>$r.translate("mc.to")</b>
-</p>
-<p>
-	$r.render("seltree")
-</p>
+<p><b>$r.translate("mc.to")</b></p>
+<p>$r.render("seltree")</p>
+<div class="o_button_group">
+	#if($r.available("copy"))
+		$r.render("copy")
+	#end
+	#if($r.available("move"))
+		$r.render("move")
+	#end
+	$r.render("cancel")
+</div>

@@ -27,17 +27,19 @@ package org.olat.ims.qti.editor.tree;
 
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
+import org.olat.core.gui.components.tree.InsertionPoint.Position;
+import org.olat.core.gui.components.tree.InsertionTreeModel;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
-import org.olat.course.tree.TreePosition;
 
 /**
  * Initial Date: Jan 05, 2005 <br>
  * 
  * @author mike
  */
-public class InsertItemTreeModel extends GenericTreeModel {
+public class InsertItemTreeModel extends GenericTreeModel implements InsertionTreeModel {
 
+	private static final long serialVersionUID = 8416409302317405234L;
 	/**
 	 * Comment for <code>INSTANCE_ASSESSMENT</code>
 	 */
@@ -51,63 +53,53 @@ public class InsertItemTreeModel extends GenericTreeModel {
 	 */
 	public static final int INSTANCE_ITEM = 2;
 
-	private int appendToInstancesOf;
+	private final Object source;
+	private final int appendToInstancesOf;
 
 	/**
 	 * @param treeModel
 	 * @param appendToInstancesOf
 	 */
-	public InsertItemTreeModel(TreeModel treeModel, int appendToInstancesOf) {
+	public InsertItemTreeModel(TreeModel treeModel,  Object source, int appendToInstancesOf) {
+		this.source = source;
 		this.appendToInstancesOf = appendToInstancesOf;
 		GenericQtiNode cnRoot = (GenericQtiNode) treeModel.getRootNode();
 		TreeNode ctn = buildNode(cnRoot);
 		setRootNode(ctn);
 	}
 
-	private TreeNode buildNode(GenericQtiNode parent) {
-		int parentInstance = INSTANCE_ASSESSMENT;
-		if (parent instanceof SectionNode) parentInstance = INSTANCE_SECTION;
-		if (parent instanceof ItemNode) parentInstance = INSTANCE_ITEM;
-
-		GenericTreeNode ctn = new GenericTreeNode(parent.getTitle(), parent);
-		ctn.setIconCssClass(parent.getIconCssClass());
-		ctn.setAccessible(false);
-
-		int childcnt = parent.getChildCount();
-		for (int i = 0; i < childcnt; i++) {
-			if (parentInstance == appendToInstancesOf) { // add insert pos
-				GenericTreeNode gtn = new GenericTreeNode();
-				gtn.setAccessible(true);
-				gtn.setTitle("");
-				gtn.setAltText("");
-				gtn.setUserObject(new TreePosition(parent, i));
-				ctn.addChild(gtn);
-			}
-			// add child itself
-			GenericQtiNode cchild = (GenericQtiNode) parent.getChildAt(i);
-			TreeNode ctchild = buildNode(cchild);
-			ctn.addChild(ctchild);
-		}
-		if (parentInstance == appendToInstancesOf) {
-			// add last insert position
-			GenericTreeNode gtn = new GenericTreeNode();
-			gtn.setAccessible(true);
-			gtn.setTitle("");
-			gtn.setAltText("");
-			gtn.setUserObject(new TreePosition(parent, childcnt));
-			ctn.addChild(gtn);
-		}
-		return ctn;
+	@Override
+	public boolean isSource(TreeNode node) {
+		return source == node.getUserObject();
 	}
 
-	/**
-	 * @param nodeId
-	 * @return TreePosition
-	 */
-	public TreePosition getTreePosition(String nodeId) {
-		TreeNode n = getNodeById(nodeId);
-		GenericTreeNode gtn = (GenericTreeNode) n;
-		TreePosition tp = (TreePosition) gtn.getUserObject();
-		return tp;
+	@Override
+	public Position[] getInsertionPosition(TreeNode node) {
+		if(INSTANCE_ASSESSMENT == appendToInstancesOf) {
+			if(node.getUserObject() instanceof AssessmentNode) {
+				return new Position[] { Position.under };
+			} else if(node.getUserObject() instanceof SectionNode) {
+				return new Position[] { Position.up, Position.down };
+			}
+		} else if(INSTANCE_SECTION == appendToInstancesOf) {
+			if(node.getUserObject() instanceof SectionNode) {
+				return new Position[] { Position.under };
+			} else if(node.getUserObject() instanceof ItemNode) {
+				return new Position[] { Position.up, Position.down };
+			}
+		} 
+		return new Position[0];
+	}
+
+	private TreeNode buildNode(TreeNode parent) {
+		GenericTreeNode ctn = new GenericTreeNode(parent.getTitle(), parent);
+		ctn.setIconCssClass(parent.getIconCssClass());
+		int childcnt = parent.getChildCount();
+		for (int i = 0; i < childcnt; i++) {
+			// add child itself
+			TreeNode ctchild = buildNode((TreeNode)parent.getChildAt(i));
+			ctn.addChild(ctchild);
+		}
+		return ctn;
 	}
 }

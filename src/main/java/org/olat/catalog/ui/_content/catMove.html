@@ -3,15 +3,8 @@
 		<h4>$r.translate("cat.move.title")</h4>
 	#end
 	$r.render("tree")
-	
-	#if($r.available("ok") || $r.available("cancel"))
 	<div class="o_button_group">
-		#if($r.available("ok"))
-			$r.render("ok")
-		#end
-		#if($r.available("cancel"))
-			$r.render("cancel")
-		#end
+		$r.render("cat.move.submit")
+		$r.render("cancel")
 	</div>
-	#end
 </div>

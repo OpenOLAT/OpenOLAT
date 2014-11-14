@@ -29,6 +29,10 @@ package org.olat.core.gui.components.tree;
 import static org.olat.core.gui.components.tree.MenuTree.COMMAND_TREENODE;
 import static org.olat.core.gui.components.tree.MenuTree.COMMAND_TREENODE_CLICKED;
 import static org.olat.core.gui.components.tree.MenuTree.COMMAND_TREENODE_DROP;
+import static org.olat.core.gui.components.tree.MenuTree.COMMAND_TREENODE_INSERT_DOWN;
+import static org.olat.core.gui.components.tree.MenuTree.COMMAND_TREENODE_INSERT_REMOVE;
+import static org.olat.core.gui.components.tree.MenuTree.COMMAND_TREENODE_INSERT_UNDER;
+import static org.olat.core.gui.components.tree.MenuTree.COMMAND_TREENODE_INSERT_UP;
 import static org.olat.core.gui.components.tree.MenuTree.NODE_IDENT;
 import static org.olat.core.gui.components.velocity.VelocityContainer.COMMAND_ID;
 
@@ -39,6 +43,7 @@ import java.util.List;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.tree.InsertionPoint.Position;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -46,6 +51,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 
 /**
@@ -133,17 +139,15 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 			curSel = selPath.get(level);
 		}
 		
-		int chdCnt = curRoot.getChildCount();
-		boolean iframePostEnabled = flags.isIframePostEnabled();
 		boolean selected = (!selPath.isEmpty() && selPath.get(selPath.size() - 1) == curRoot);
-		boolean renderChildren = isRenderChildren(curSel, curRoot, selected, tree, openNodeIds);
+		boolean renderChildren = isRenderChildren(curSel, curRoot, selected, tree, openNodeIds)
+				|| isInsertionPointUnderNode(curRoot, tree);
 
-		// get css class
+		renderInsertionPoint(target, Position.up, level, curRoot, ubu, flags, tree);
 
 		// item icon css class and icon decorator (for each icon quadrant a div, eclipse style)
-		// open menu item
 		String cssClass = curRoot.getCssClass();
-		target.append("\n<li class='");
+		target.append("<li class='");
 		// add custom css class
 		target.append(cssClass, cssClass != null);
 		if(selected) {
@@ -166,6 +170,70 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 			appendDragAndDropElement(curRoot, tree, dndElements, ubu, flags);
 		}
 
+		renderOpenClose(curRoot, target, level, renderChildren, ubu, flags, tree);
+		
+		// Render menu item as link, also for active elements
+		// mark active item as strong for accessibility reasons
+		renderLink(curRoot, level, selected, renderChildren, curSel, target, ubu, flags, tree);
+		
+		if(selected && tree.isInsertToolEnabled()) {
+			renderInsertCallout(target, curRoot, ubu, flags, tree);
+		}
+		target.append("</div>");
+		
+		//append div to drop as sibling
+		if(!renderChildren && (tree.isDragEnabled() || tree.isDropSiblingEnabled())) {
+			appendSiblingDropObj(curRoot, level, tree, target, false);
+		}
+		
+		if (renderChildren) {
+			//open / close ul
+			renderChildren(target, level, curRoot, selPath, openNodeIds, dndElements, ubu, flags, tree);
+			
+			//append div to drop as sibling after the children
+			if(tree.isDragEnabled() || tree.isDropSiblingEnabled()) {
+				appendSiblingDropObj(curRoot, level, tree, target, true);
+			}
+		}
+		
+		//	 close item level
+		target.append("</li>");
+		
+		renderInsertionPoint(target, Position.down, level, curRoot, ubu, flags, tree);
+	}
+	
+	private void renderInsertionPoint(StringOutput sb, Position positionToRender, int level, TreeNode node,
+			URLBuilder ubu, AJAXFlags flags, MenuTree tree) {
+		if(tree.getInsertionPoint() != null
+				&& tree.getInsertionPoint().getPosition() == positionToRender
+				&& tree.getInsertionPoint().getNodeId().equals(node.getIdent())) {
+			
+			sb.append("<li><div class='o_tree_l").append(level).append("'>")
+			  .append("<span class=\"o_tree_leaf o_tree_oc_l").append(level).append("\">&nbsp;</span>")
+			  .append("<a class='o_tree_link o_tree_l").append(level).append(" o_insertion_point' href=\"");
+			
+			// Build menu item URI
+			boolean iframePostEnabled = flags.isIframePostEnabled();
+			if (iframePostEnabled) {
+				ubu.buildURI(sb, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { COMMAND_TREENODE_INSERT_REMOVE, node.getIdent() }, AJAXFlags.MODE_TOBGIFRAME);
+			} else {
+				ubu.buildURI(sb, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { COMMAND_TREENODE_INSERT_REMOVE, node.getIdent() });
+			}
+			sb.append("\"");
+			if(iframePostEnabled) {
+				ubu.appendTarget(sb);
+			}
+			
+			Translator pointTranslator = Util.createPackageTranslator(MenuTreeRenderer.class, tree.getTranslator().getLocale());
+			String pointTranslation = pointTranslator.translate("insertion.point");
+			sb.append("'><span>").append(pointTranslation).append(" <i class='o_icon o_icon_remove'> </i></span>")
+			  .append("</a></div></li>");
+		}	
+	}
+	
+	private void renderOpenClose(TreeNode curRoot, StringOutput target, int level, boolean renderChildren, URLBuilder ubu, AJAXFlags flags, MenuTree tree) {
+		int chdCnt = curRoot.getChildCount();
+		boolean iframePostEnabled = flags.isIframePostEnabled();
 		// expand icon
 		// add ajax support and real open/close function
 		if (((tree.isRootVisible() && level != 0) || !tree.isRootVisible()) && chdCnt > 0) { // root has not open/close icon,  append open / close icon only if there is children
@@ -188,11 +256,13 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		} else if (level != 0 && chdCnt == 0) {
 			target.append("<span class=\"o_tree_leaf o_tree_oc_l").append(level).append("\">&nbsp;</span>");
 		}
+	}
+	
+	private void renderLink(TreeNode curRoot, int level, boolean selected, boolean renderChildren, INode curSel,
+			StringOutput target, URLBuilder ubu, AJAXFlags flags, MenuTree tree) {
+		int chdCnt = curRoot.getChildCount();
+		boolean iframePostEnabled = flags.isIframePostEnabled();
 		
-		// Render menu item as link, also for active elements
-		// mark active item as strong for accessablity reasons
-		
-		target.append("<strong>", selected);
 		target.append("<a class='o_tree_link o_tree_l").append(level);
 		
 		// add icon css class
@@ -202,6 +272,12 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		} else if (curSel == curRoot) {
 			// add css class to identify parents of active element
 			target.append(" active_parent");			
+		}
+		
+		boolean insertionSource = (tree.getTreeModel() instanceof InsertionTreeModel
+				&& ((InsertionTreeModel)tree.getTreeModel()).isSource(curRoot));
+		if(insertionSource) {
+			target.append(" o_insertion_source");
 		}
 		
 		//reapply the same rules to the second link
@@ -244,46 +320,78 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		if (iconCssClass != null) {
 			target.append("<i class='o_icon ").append(iconCssClass).append("'></i> ");			
 		}
-		
+		renderDisplayTitle(target, curRoot, tree);
 		// display title and close menu item
-		target.append("<span");
+		
+		appendDecorators(curRoot, target);
+		target.append("</a>");
+	}
+	
+	private void renderDisplayTitle(StringOutput target, TreeNode node, MenuTree tree) {
+		target.append("<span ");
 		if(tree.isDragEnabled() || tree.isDropEnabled()) {
 			if(tree.isDragEnabled()) {
 				target.append(" class='o_dnd_item'");
+			} else {
+				target.append(" class='o_tree_item'");
 			}
-			target.append(" id='da").append(ident).append("'");
+			target.append(" id='da").append(node.getIdent()).append("'");
+		} else {
+			target.append(" class='o_tree_item'");
 		}
 		target.append(">");
 
 		// render link
-		String title = curRoot.getTitle();
+		String title = node.getTitle();
 		if(title != null && title.equals("")) {
 			target.append("&nbsp;");
 		} else {
 			StringHelper.escapeHtml(target, title);
 		}
 		target.append("</span>");
-		appendDecorators(curRoot, target);
-		target.append("</a>").append("</strong>", selected)
-		      .append("</div>");
-		
-		//append div to drop as sibling
-		if(!renderChildren && (tree.isDragEnabled() || tree.isDropSiblingEnabled())) {
-			appendSiblingDropObj(curRoot, level, tree, target, false);
+	}
+	
+	private void renderInsertCallout(StringOutput sb, TreeNode node, URLBuilder ubu, AJAXFlags flags, MenuTree tree) {
+		Position[] positionArr;
+		if(tree.getTreeModel() instanceof InsertionTreeModel) {
+			positionArr = ((InsertionTreeModel)tree.getTreeModel()).getInsertionPosition(node);
+		} else if(tree.getTreeModel().getRootNode() != node) {
+			positionArr = new Position[] { Position.under };
+		} else {
+			positionArr = new Position[] { Position.up, Position.down, Position.under };
 		}
-		
-		if (renderChildren) {
-			//open / close ul
-			renderChildren(target, level, curRoot, selPath, openNodeIds, dndElements, ubu, flags, tree);
-			
-			//append div to drop as sibling after the children
-			if(tree.isDragEnabled() || tree.isDropSiblingEnabled()) {
-				appendSiblingDropObj(curRoot, level, tree, target, true);
+		if(positionArr.length > 0) {
+			sb.append("<div class='popover right show'>")
+			  .append("<div class='arrow'></div>")
+			  .append("<div class='popover-content btn-group'>");
+
+			if(Position.hasPosition(Position.up, positionArr)) {
+				renderInsertCalloutButton(COMMAND_TREENODE_INSERT_UP, "o_icon_node_before", sb, node, ubu, flags);
 			}
+			if(Position.hasPosition(Position.down, positionArr)) {
+				renderInsertCalloutButton(COMMAND_TREENODE_INSERT_DOWN, "o_icon_node_after", sb, node, ubu, flags);
+			}
+			if(Position.hasPosition(Position.under, positionArr)) {
+				renderInsertCalloutButton(COMMAND_TREENODE_INSERT_UNDER, "o_icon_node_under o_icon-rotate-180", sb, node, ubu, flags);
+			}
+			
+			sb.append("</div></div>");
 		}
-		
-		//	 close item level
-		target.append("</li>");
+	}
+	
+	private void renderInsertCalloutButton(String cmd, String cssClass,  StringOutput sb, TreeNode node, URLBuilder ubu, AJAXFlags flags) {
+		boolean iframePostEnabled = flags.isIframePostEnabled();
+		sb.append("<a class='btn btn-default small' onclick='o2cl_secure()' href=\"");
+		if (iframePostEnabled) {
+			ubu.buildURI(sb, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { cmd, node.getIdent() }, AJAXFlags.MODE_TOBGIFRAME);
+		} else {
+			ubu.buildURI(sb, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { cmd, node.getIdent() });
+		}
+		sb.append("\"");
+		if (iframePostEnabled) {
+			ubu.appendTarget(sb);
+		}
+		sb.append("><i class='o_icon ").append(cssClass).append("'> </i></a>");
 	}
 	
 	private void renderChildren(StringOutput target, int level, TreeNode curRoot, List<INode> selPath, Collection<String> openNodeIds,
@@ -292,8 +400,11 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		// render children as new level
 		target.append("\n<ul class=\"");
 		// add css class to identify level
-		target.append(" o_tree_l").append(level + 1);		
-		target.append("\">");
+		target.append(" o_tree_l").append(level + 1)
+		      .append("\">");
+
+		renderInsertionPoint(target, Position.under, level + 1, curRoot, ubu, flags, tree);
+
 		// render all the nodes from this level
 		for (int i = 0; i < chdCnt; i++) {
 			TreeNode curChd = (TreeNode) curRoot.getChildAt(i);
@@ -460,5 +571,11 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		}
 		//open the path of the selected node
 		return (curSel == curRoot);
+	}
+	
+	private boolean isInsertionPointUnderNode(TreeNode curRoot, MenuTree tree) {
+		return tree.getInsertionPoint() != null
+				&& tree.getInsertionPoint().getPosition() == Position.under
+				&& tree.getInsertionPoint().getNodeId().equals(curRoot.getIdent());
 	}
 }

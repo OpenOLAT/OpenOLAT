@@ -49,6 +49,7 @@ public class GenericTreeModel implements TreeModel {
 	/**
 	 * @see org.olat.core.gui.components.tree.TreeModel#getRootNode()
 	 */
+	@Override
 	public TreeNode getRootNode() {
 		return rootNode;
 	}
@@ -56,6 +57,7 @@ public class GenericTreeModel implements TreeModel {
 	/**
 	 * @see org.olat.core.gui.components.tree.TreeModel#getNodeById(java.lang.String)
 	 */
+	@Override
 	public TreeNode getNodeById(String nodeId) {
 		return findNode(nodeId, rootNode);
 	}

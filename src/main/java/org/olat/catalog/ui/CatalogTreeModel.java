@@ -26,6 +26,9 @@ import java.util.Map;
 import org.olat.catalog.CatalogEntry;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
+import org.olat.core.gui.components.tree.InsertionPoint.Position;
+import org.olat.core.gui.components.tree.InsertionTreeModel;
+import org.olat.core.gui.components.tree.TreeNode;
 
 /**
  * Description:<br>
@@ -38,13 +41,13 @@ import org.olat.core.gui.components.tree.GenericTreeNode;
  * 
  * @author BPS
  */
-public class CatalogTreeModel extends GenericTreeModel {
+public class CatalogTreeModel extends GenericTreeModel implements InsertionTreeModel {
 
 	private static final long serialVersionUID = 2893877155919419400L;
-	private Map<Long, GenericTreeNode> entryMap = new HashMap<Long, GenericTreeNode>();
-	private CatalogEntry entryToMove;
-	private List<CatalogEntry> ownedEntries;
-	private final String chooseableTitle;
+	
+	private final Map<Long, GenericTreeNode> entryMap = new HashMap<Long, GenericTreeNode>();
+	private final CatalogEntry entryToMove;
+	private final List<CatalogEntry> ownedEntries;
 
 	/**
 	 * Constructor
@@ -57,9 +60,20 @@ public class CatalogTreeModel extends GenericTreeModel {
 	public CatalogTreeModel(List<CatalogEntry> catEntryList, CatalogEntry entryToMove, List<CatalogEntry> ownedEntries) {
 		this.entryToMove = entryToMove;
 		this.ownedEntries = ownedEntries;
-		chooseableTitle = ""; // trans.translate("catalog.tree.choosable.title");
-		// otherwise the tree is confusing
 		setRootNode(buildTree(catEntryList));
+	}
+
+	@Override
+	public boolean isSource(TreeNode node) {
+		return entryToMove == node.getUserObject();
+	}
+
+	@Override
+	public Position[] getInsertionPosition(TreeNode node) {
+		if(getRootNode() == node || node.isAccessible()) {
+			return new Position[] { Position.under };
+		}
+		return new Position[0];
 	}
 
 	/**
@@ -72,7 +86,7 @@ public class CatalogTreeModel extends GenericTreeModel {
 		node.setAccessible(false);
 		node.setIdent(catEntry.getKey().toString());
 		node.setTitle(catEntry.getName());
-		//
+		node.setUserObject(catEntry);
 		entryMap.put(catEntry.getKey(), node);
 		return node;
 	}
@@ -196,19 +210,9 @@ public class CatalogTreeModel extends GenericTreeModel {
 	 * @param accessible
 	 */
 	private void changeAccessibility(GenericTreeNode node, boolean accessible) {
-
-		if (accessible && !node.getTitle().equals(chooseableTitle)) {
+		if (accessible) {
 			if(ownedEntries != null) {
-				GenericTreeNode chooseable = new GenericTreeNode();
-				chooseable.setAccessible(accessible);
-				chooseable.setTitle(chooseableTitle);
-				chooseable.setIdent(node.getIdent());
-				node.addChild(chooseable);
-			}
-		} else {
-			if (node.getTitle().equals(chooseableTitle)) {
-				if (!accessible) node.removeFromParent();
-				return;
+				node.setAccessible(accessible);
 			}
 		}
 		//

@@ -36,11 +36,13 @@ import java.util.Set;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.tree.InsertionPoint.Position;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
+import org.olat.course.tree.TreePosition;
 
 /**
  * Description: <br>
@@ -89,6 +91,14 @@ public class MenuTree extends AbstractComponent {
 	public static final String COMMAND_TREENODE_CLICKED = "ctncl";
 	
 	/**
+	 * Command to insert new in the tree
+	 */
+	public static final String COMMAND_TREENODE_INSERT_UP = "iup";
+	public static final String COMMAND_TREENODE_INSERT_DOWN = "idown";
+	public static final String COMMAND_TREENODE_INSERT_UNDER = "iunder";
+	public static final String COMMAND_TREENODE_INSERT_REMOVE = "irm";
+	
+	/**
 	 * event fired when a treenode was expanded (all nodes except leafs)
 	 */
 	public static final String COMMAND_TREENODE_EXPANDED = "ctnex";
@@ -99,6 +109,7 @@ public class MenuTree extends AbstractComponent {
 	public static final String COMMAND_TREENODE_DROP = "ctdrop";
 
 	private TreeModel treeModel;
+	private InsertionPoint insertionPoint;
 	private String selectedNodeId = null;
 	private Set<String> openNodeIds = new HashSet<String>();
 	private boolean expandServerOnly = true; // default is serverside menu
@@ -108,6 +119,7 @@ public class MenuTree extends AbstractComponent {
 	private boolean expandSelectedNode = true;
 	private boolean rootVisible = true;
 	private boolean unselectNodes;
+	private boolean showInsertTool;
 	private String dndAcceptJSMethod = "treeAcceptDrop_notWithChildren";
 
 	private boolean dirtyForUser = false;
@@ -137,8 +149,6 @@ public class MenuTree extends AbstractComponent {
 		addListener(eventListener);
 	}
 	
-	
-
 	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);
@@ -171,6 +181,18 @@ public class MenuTree extends AbstractComponent {
 			boolean sibling = StringHelper.containsNonWhitespace(sneValue);
 			boolean atTheEnd = "end".equals(sneValue);
 			handleDropped(ureq, targetNodeId, nodeId, sibling, atTheEnd);
+		} else if(COMMAND_TREENODE_INSERT_UP.equals(cmd)) {
+			insertionPoint = new InsertionPoint(nodeId, InsertionPoint.Position.up);
+			setDirty(true);
+		} else if(COMMAND_TREENODE_INSERT_DOWN.equals(cmd)) {
+			insertionPoint = new InsertionPoint(nodeId, InsertionPoint.Position.down);
+			setDirty(true);
+		} else if(COMMAND_TREENODE_INSERT_UNDER.equals(cmd)) {
+			insertionPoint = new InsertionPoint(nodeId, InsertionPoint.Position.under);
+			setDirty(true);
+		} else if(COMMAND_TREENODE_INSERT_REMOVE.equals(cmd)) {
+			insertionPoint = null;
+			setDirty(true);
 		}
 	}
 	
@@ -344,11 +366,33 @@ public class MenuTree extends AbstractComponent {
 		setDirty(true);
 	}
 
-	/**
-	 * 
-	 */
 	public void clearSelection() {
 		selectedNodeId = null;
+	}
+
+	public InsertionPoint getInsertionPoint() {
+		return insertionPoint;
+	}
+	
+	public TreePosition getInsertionPosition() {
+		if(insertionPoint == null) return null;
+
+		int position;
+		TreeNode parent;
+		TreeNode node = treeModel.getNodeById(insertionPoint.getNodeId());
+		if(insertionPoint.getPosition() == Position.under) {
+			parent = node;
+			position = 0;
+		} else if(insertionPoint.getPosition() == Position.up) {
+			parent = (TreeNode)node.getParent();
+			position = node.getPosition();
+		} else if(insertionPoint.getPosition() == Position.down) {
+			parent = (TreeNode)node.getParent();
+			position = node.getPosition() + 1;
+		} else {
+			return null;
+		}
+		return new TreePosition(parent, position);
 	}
 
 	/**
@@ -384,6 +428,18 @@ public class MenuTree extends AbstractComponent {
 		this.expandServerOnly = expandServerOnly;
 	}
 	
+	public boolean isInsertToolEnabled() {
+		return showInsertTool;
+	}
+
+	/**
+	 * Use the insert tool
+	 * @param showInsertTool
+	 */
+	public void enableInsertTool(boolean showInsertTool) {
+		this.showInsertTool = showInsertTool;
+	}
+
 	public boolean isDragEnabled() {
 		return dragEnabled;
 	}

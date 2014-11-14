@@ -26,14 +26,16 @@ import org.olat.catalog.CatalogEntry;
 import org.olat.catalog.CatalogManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.tree.GenericTreeNode;
-import org.olat.core.gui.components.tree.SelectionTree;
-import org.olat.core.gui.components.tree.TreeEvent;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.course.tree.TreePosition;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -51,10 +53,14 @@ import org.olat.core.gui.translator.Translator;
  * 
  * @author BPS
  */
-public class CatalogEntryMoveController extends BasicController implements CatalogMoveController {
-	private SelectionTree selectionTree;
-	private VelocityContainer mainVC;
+public class CatalogEntryMoveController extends BasicController {
+	
+	private Link selectButton, cancelButton;
+	private final MenuTree selectionTree;
 	private final CatalogEntry moveMe;
+	
+	@Autowired
+	private CatalogManager catalogManager;
 
 	/**
 	 * Constructor
@@ -70,49 +76,37 @@ public class CatalogEntryMoveController extends BasicController implements Catal
 		List<CatalogEntry> ownedEntries = getOwnedEntries(ureq);
 		List<CatalogEntry> catEntryList = fetchChildren(ownedEntries);
 
-		mainVC = createVelocityContainer("catMove");
-		selectionTree = new SelectionTree("catSelection", trans);
-		selectionTree.addListener(this);
-		selectionTree.setFormButtonKey("cat.move.submit");
-		selectionTree.setShowCancelButton(true);
+		VelocityContainer mainVC = createVelocityContainer("catMove");
+		selectionTree = new MenuTree(null, "catSelection", this);
+		selectionTree.enableInsertTool(true);
 		selectionTree.setTreeModel(new CatalogTreeModel(catEntryList, moveMe, ownedEntries));
+		
+		selectButton = LinkFactory.createButton("cat.move.submit", mainVC, this);
+		cancelButton = LinkFactory.createButton("cancel", mainVC, this);
+		
 		mainVC.put("tree", selectionTree);
-
 		putInitialPanel(mainVC);
-
-	}
-
-	@Override
-	public CatalogEntry getMovedCatalogEntry() {
-		return moveMe;
 	}
 
 	@Override
 	protected void doDispose() {
-		this.mainVC = null;
-		this.selectionTree = null;
+		//
 	}
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == selectionTree) {
-			TreeEvent te = (TreeEvent) event;
-			if (te.getCommand().equals(TreeEvent.COMMAND_TREENODE_CLICKED)) {
-
-				GenericTreeNode node = (GenericTreeNode) selectionTree.getSelectedNode();
-				CatalogManager cm = CatalogManager.getInstance();
-				Long newParentId = Long.parseLong(node.getIdent());
-				CatalogEntry newParent = cm.loadCatalogEntry(newParentId);
-				if (!cm.moveCatalogEntry(moveMe, newParent)) {
-					fireEvent(ureq, Event.FAILED_EVENT);
-				} else {
-					fireEvent(ureq, Event.DONE_EVENT);
-				}
-			} else if (te.getCommand().equals(TreeEvent.COMMAND_CANCELLED)) {
-				fireEvent(ureq, Event.CANCELLED_EVENT);
+		if(cancelButton == source) {
+			fireEvent(ureq, Event.CANCELLED_EVENT);
+		} else if(selectButton == source) {
+			TreePosition tp = selectionTree.getInsertionPosition();
+			Long newParentId = Long.parseLong(tp.getParentTreeNode().getIdent());
+			CatalogEntry newParent = catalogManager.loadCatalogEntry(newParentId);
+			if (!catalogManager.moveCatalogEntry(moveMe, newParent)) {
+				fireEvent(ureq, Event.FAILED_EVENT);
+			} else {
+				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		}
-
 	}
 
 	/**
@@ -125,7 +119,7 @@ public class CatalogEntryMoveController extends BasicController implements Catal
 		for (CatalogEntry child : parents) {
 			tmp.add(child);
 			if (child.getType() == CatalogEntry.TYPE_NODE) {
-				tmp.addAll(fetchChildren(CatalogManager.getInstance().getChildrenOf(child)));
+				tmp.addAll(fetchChildren(catalogManager.getChildrenOf(child)));
 			}
 		}
 		return tmp;
@@ -140,9 +134,9 @@ public class CatalogEntryMoveController extends BasicController implements Catal
 	 */
 	private List<CatalogEntry> getOwnedEntries(UserRequest ureq) {
 		if (ureq.getUserSession().getRoles().isOLATAdmin()) {
-			return CatalogManager.getInstance().getRootCatalogEntries();
+			return catalogManager.getRootCatalogEntries();
 		} else {
-			return CatalogManager.getInstance().getCatalogEntriesOwnedBy(ureq.getIdentity());
+			return catalogManager.getCatalogEntriesOwnedBy(getIdentity());
 		}
 	}
 }

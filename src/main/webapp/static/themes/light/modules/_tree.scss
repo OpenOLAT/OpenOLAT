@@ -17,6 +17,18 @@
 			background-color : $o-tree-link-hover-bg;
 		}
 	}
+	
+	.o_insertion_point>span {
+		padding: 5px;
+		border: 1px solid $o-tree-border-color;
+		@include border-top-radius($o-tree-border-radius);
+		@include border-bottom-radius($o-tree-border-radius);
+	}
+	
+	.o_insertion_source>span.o_tree_item, .o_insertion_source>span.o_dnd_item {
+		border-bottom:solid $o-table-edit-border 4px;
+		background-color: $o-table-edit-bg;
+	}
 
 	ul {
 		margin: 0;
@@ -33,6 +45,12 @@
 				position: relative;
 				margin-bottom: -1px;
 				border-bottom: 1px solid $o-tree-border-color;
+		}
+		
+		li div.popover {
+				position: absolute;
+				left: auto;
+				right: 0;
 		}
 		
 		@for $i from 0 through 11 {
