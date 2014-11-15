@@ -124,9 +124,9 @@ public class ArtefactWizardPage {
 	 * @return this
 	 */
 	public ArtefactWizardPage selectMap(String mapTitle, String pageTitle, String structureTitle) {
-		select(mapTitle, By.cssSelector("a.o_tree_l1"));
-		select(pageTitle, By.cssSelector("a.o_tree_l2"));
-		select(structureTitle, By.cssSelector("a.o_tree_l3"));
+		select(mapTitle, By.cssSelector("span.o_tree_l1>a"));
+		select(pageTitle, By.cssSelector("span.o_tree_l2>a"));
+		select(structureTitle, By.cssSelector("span.o_tree_l3>a"));
 		return this;
 	}
 	

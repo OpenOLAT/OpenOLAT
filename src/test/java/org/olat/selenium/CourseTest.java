@@ -197,7 +197,7 @@ public class CourseTest {
 			.assertOnTitle(title);
 		
 		//assert the 5 nodes are there and click them
-		By nodeBy = By.cssSelector("a.o_tree_link.o_tree_l1.o_tree_level_label_leaf");
+		By nodeBy = By.cssSelector("span.o_tree_link.o_tree_l1.o_tree_level_label_leaf>a");
 		List<WebElement> nodes = browser.findElements(nodeBy);
 		Assert.assertEquals(5, nodes.size());
 		for(WebElement node:nodes) {

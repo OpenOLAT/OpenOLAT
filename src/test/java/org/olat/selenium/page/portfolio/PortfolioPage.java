@@ -243,7 +243,7 @@ public class PortfolioPage {
 	 * @return
 	 */
 	public PortfolioPage selectMapInEditor(String mapTitle) {
-		By mapNodeBy = By.cssSelector("div.o_ep_toc_editor a.o_tree_level_label_open.o_tree_l1");
+		By mapNodeBy = By.cssSelector("div.o_ep_toc_editor span.o_tree_level_label_open.o_tree_l1>a");
 		WebElement selectedNode = null;
 		List<WebElement> level1Nodes = browser.findElements(mapNodeBy);
 		for(WebElement level1Node:level1Nodes) {
@@ -279,7 +279,7 @@ public class PortfolioPage {
 	 * @return
 	 */
 	public PortfolioPage selectFirstPageInEditor() {
-		By pageNodeBy = By.cssSelector("div.o_ep_toc_editor a.o_tree_level_label_leaf.o_tree_l2");
+		By pageNodeBy = By.cssSelector("div.o_ep_toc_editor span.o_tree_level_label_leaf.o_tree_l2>a");
 		List<WebElement> level2Nodes = browser.findElements(pageNodeBy);
 		Assert.assertFalse(level2Nodes.isEmpty());
 		level2Nodes.get(0).click();

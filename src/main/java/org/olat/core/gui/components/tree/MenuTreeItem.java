@@ -68,6 +68,13 @@ public class MenuTreeItem extends FormItemImpl {
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		String[] selectedIndexArr = getRootForm().getRequestParameterValues("tcb_ms");
+		if(selectedIndexArr == null) {
+			//be suspicious
+			if(getFormDispatchId().equals(getRootForm().getRequestParameter("dispatchuri"))) {
+				selectedIndexArr = new String[0];
+			}
+		}
+		
 		if(selectedIndexArr != null) {
 			List<MenuTreeEvent> events = new ArrayList<>();
 			Set<String> referenceIds = new HashSet<>(visibleNodeIds);

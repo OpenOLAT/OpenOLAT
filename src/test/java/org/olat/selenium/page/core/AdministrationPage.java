@@ -56,7 +56,7 @@ public class AdministrationPage {
 		systemLink.click();
 		OOGraphene.waitBusy();
 		//cache tree node
-		WebElement cacheLink = browser.findElement(By.cssSelector(".o_sel_caches a.o_tree_level_label_leaf"));
+		WebElement cacheLink = browser.findElement(By.cssSelector(".o_sel_caches span.o_tree_level_label_leaf>a"));
 		cacheLink.click();
 		OOGraphene.waitBusy();
 		//table

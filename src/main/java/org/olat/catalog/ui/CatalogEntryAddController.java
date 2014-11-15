@@ -88,7 +88,7 @@ public class CatalogEntryAddController extends BasicController {
 		
 		if(withButtons) {
 			okButton = LinkFactory.createButton("ok", mainVC, this);
-			okButton.setElementCssClass("o_sel_catalog_add_select");
+			okButton.setElementCssClass("btn btn-primary o_sel_catalog_add_select");
 			cancelButton = LinkFactory.createButton("cancel", mainVC, this);
 			cancelButton.setElementCssClass("o_sel_catalog_add_cancel");
 		}

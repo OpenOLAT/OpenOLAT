@@ -118,7 +118,7 @@ public class PublisherPageFragment {
 	}
 	
 	private void selectCatalogNode(String name) {
-		By nodeBy = By.cssSelector("a.o_tree_link");
+		By nodeBy = By.cssSelector("span.o_tree_link>a");
 		
 		WebElement namedNode = null;
 		List<WebElement> nodes = browser.findElements(nodeBy);

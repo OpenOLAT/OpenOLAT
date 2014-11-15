@@ -293,6 +293,16 @@ function o2cl() {
 		return doreq;
 	}
 }
+//for flexi tree
+function o2cl_noDirtyCheck() {
+	if (o_info.linkbusy) {
+		return false;
+	} else {
+		var doreq = (o2c==0);
+		if (doreq) o_beforeserver();
+		return doreq;
+	}
+}
 //for tree and Firefox
 function o2cl_secure() {
 	try {

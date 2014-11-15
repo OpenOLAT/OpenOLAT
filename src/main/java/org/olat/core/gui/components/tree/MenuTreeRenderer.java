@@ -278,7 +278,17 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		// expand icon
 		// add ajax support and real open/close function
 		if (((tree.isRootVisible() && level != 0) || !tree.isRootVisible()) && chdCnt > 0) { // root has not open/close icon,  append open / close icon only if there is children
-			target.append("<a onclick='o2cl_secure()' href=\"");
+			target.append("<a onclick='");
+			if(tree.getMenuTreeItem() == null) {
+				target.append("o2cl_secure()");
+			} else {
+				// open/close disturb the dirty check in the flexi form version
+				// of the menu tree. It's ok because open close in flexi cannot
+				// discard a form.
+				target.append("o2cl_noDirtyCheck()");
+			}
+			
+			target.append("' href=\"");
 			
 			// Build menu item URI
 			String cmd = renderChildren ? MenuTree.TREENODE_CLOSE : MenuTree.TREENODE_OPEN;

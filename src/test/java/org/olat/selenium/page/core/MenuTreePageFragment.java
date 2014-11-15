@@ -58,7 +58,7 @@ public class MenuTreePageFragment {
 	 */
 	public MenuTreePageFragment selectRoot() {
 		WebElement tree = browser.findElement(treeBy);
-		List<WebElement> rootLinks = tree.findElements(By.cssSelector("a.o_tree_link"));
+		List<WebElement> rootLinks = tree.findElements(By.cssSelector("span.o_tree_link>a"));
 		Assert.assertNotNull(rootLinks);
 		Assert.assertFalse(rootLinks.isEmpty());
 		
@@ -70,7 +70,7 @@ public class MenuTreePageFragment {
 	public MenuTreePageFragment selectWithTitle(String title) {
 		boolean found = false;
 		WebElement tree = browser.findElement(treeBy);
-		List<WebElement> nodeLinks = tree.findElements(By.cssSelector("li>div>a.o_tree_link"));
+		List<WebElement> nodeLinks = tree.findElements(By.cssSelector("li>div>span.o_tree_link>a"));
 		for(WebElement nodeLink:nodeLinks) {
 			String text = nodeLink.getText();
 			if(text.contains(title)) {
