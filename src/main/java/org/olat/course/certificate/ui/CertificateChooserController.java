@@ -20,19 +20,13 @@
 package org.olat.course.certificate.ui;
 
 import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.pdfbox.pdmodel.PDDocument;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
@@ -50,11 +44,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CertificateChooserController extends FormBasicController {
+public class CertificateChooserController extends UploadCertificateController {
 	
-	private FileElement fileEl;
 	private FormLink selectLink, uploadLink;
 	private SingleSelection publicTemplatesEl;
+	
+	private String[] templatesKeys;
+	private String[] templatesValues;
 
 	@Autowired
 	private CertificatesManager certificatesManager;
@@ -65,30 +61,6 @@ public class CertificateChooserController extends FormBasicController {
 		super(ureq, wControl);
 		
 		this.selectedTemplate = template;
-		
-		initForm(ureq);
-	}
-	
-	public CertificateTemplate getSelectedTemplate() {
-		return selectedTemplate;
-	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
-		List<CertificateTemplate> templates = certificatesManager.getTemplates();
-		String[] templatesKeys = new String[templates.size() + 1];
-		String[] templatesValues = new String[templates.size() + 1];
-		templatesKeys[0] = "def";
-		templatesValues[0] = "Default";
-		
-		int count = 1;
-		for(CertificateTemplate template:templates) {
-			templatesKeys[count] = template.getKey().toString();
-			templatesValues[count++] = template.getName();
-		}
-		
-		publicTemplatesEl = uifactory.addDropdownSingleselect("public.templates", formLayout, templatesKeys, templatesValues, null);
 		if(selectedTemplate != null) {
 			String selectedTemplateKey = selectedTemplate.getKey().toString();
 			for(String templateKey:templatesKeys) {
@@ -97,6 +69,26 @@ public class CertificateChooserController extends FormBasicController {
 				}
 			}
 		}
+	}
+	
+	public CertificateTemplate getSelectedTemplate() {
+		return selectedTemplate;
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		List<CertificateTemplate> templates = certificatesManager.getTemplates();
+		templatesKeys = new String[templates.size() + 1];
+		templatesValues = new String[templates.size() + 1];
+		templatesKeys[0] = "def";
+		templatesValues[0] = "Default";
+		
+		int count = 1;
+		for(CertificateTemplate template:templates) {
+			templatesKeys[count] = template.getKey().toString();
+			templatesValues[count++] = template.getName();
+		}
+		publicTemplatesEl = uifactory.addDropdownSingleselect("public.templates", formLayout, templatesKeys, templatesValues, null);
 		
 		FormLayoutContainer selectButtonCont = FormLayoutContainer.createButtonLayout("selectButton", getTranslator());
 		selectButtonCont.setRootForm(mainForm);
@@ -152,7 +144,7 @@ public class CertificateChooserController extends FormBasicController {
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		} else if(uploadLink == source) {
-			if(validatePdf()) {
+			if(validateTemplate()) {
 				doUpload(ureq);
 			}
 		}
@@ -166,30 +158,5 @@ public class CertificateChooserController extends FormBasicController {
 			selectedTemplate = certificatesManager.addTemplate(name, template, false);
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
-	}
-	
-	private boolean validatePdf() {
-		boolean allOk = true;
-		
-		File pdf = fileEl.getUploadFile();
-		fileEl.clearError();
-		if(pdf != null && pdf.exists()) {
-			PDDocument document = null;
-			try (InputStream in = Files.newInputStream(pdf.toPath())) {		
-				document = PDDocument.load(in);
-				if (document.isEncrypted()) {
-					fileEl.setErrorKey("upload.error.encrypted", null);
-					allOk &= false;
-				}
-			} catch(Exception ex) {
-				logError("", ex);
-				fileEl.setErrorKey("upload.unkown.error", null);
-				allOk &= false;
-			} finally {
-				IOUtils.closeQuietly(document);
-			}
-		}
-		
-		return allOk;
 	}
 }

@@ -19,10 +19,15 @@
  */
 package org.olat.course.certificate.ui;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -37,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -47,9 +53,12 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
@@ -86,6 +95,7 @@ public class CertificatesOptionsController extends FormBasicController {
 	private SingleSelection reCertificationTimelapseUnitEl;
 	private FormLayoutContainer templateCont, recertificationCont;
 	private FormLink selectTemplateLink;
+	private Link previewTemplateLink;
 
 	private final boolean editable;
 	private CourseConfig courseConfig;
@@ -163,12 +173,17 @@ public class CertificatesOptionsController extends FormBasicController {
 
 		selectTemplateLink = uifactory.addFormLink("select", templateCont, Link.BUTTON);
 		Long templateId = courseConfig.getCertificateTemplate();
-		if(templateId != null && templateId.longValue() > 0) {
+		boolean hasTemplate = templateId != null && templateId.longValue() > 0;
+		if(hasTemplate) {
 			selectedTemplate = certificatesManager.getTemplateById(templateId);
 			if(selectedTemplate != null) {
 				templateCont.contextPut("templateName", selectedTemplate.getName());
 			}
 		}
+
+		previewTemplateLink = LinkFactory.createButton("preview", templateCont.getFormItemComponent(), this);
+		previewTemplateLink.setEnabled(hasTemplate);
+		previewTemplateLink.setTarget("preview");
 		
 		boolean reCertificationEnabled = courseConfig.isRecertificationEnabled();
 		reCertificationEl = uifactory.addCheckboxesHorizontal("recertification", formLayout, new String[]{ "xx" }, new String[]{ "" });
@@ -217,8 +232,10 @@ public class CertificatesOptionsController extends FormBasicController {
 		selectTemplateLink.setEnabled(!none);
 		if(none || selectedTemplate == null) {
 			templateCont.contextRemove("templateName");
+			previewTemplateLink.setEnabled(false);
 		} else {
 			templateCont.contextPut("templateName", selectedTemplate.getName());
+			previewTemplateLink.setEnabled(true);
 		}
 		
 		reCertificationEl.setVisible(!none);
@@ -236,6 +253,9 @@ public class CertificatesOptionsController extends FormBasicController {
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
+		if(source == previewTemplateLink) {
+			doPreviewTemplate(ureq);
+		} 
 		super.event(ureq, source, event);
 	}
 
@@ -282,6 +302,12 @@ public class CertificatesOptionsController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		doSave(ureq);
+	}
+	
+	private void doPreviewTemplate(UserRequest ureq) {
+		File preview = certificatesManager.previewCertificate(selectedTemplate, entry, getLocale());
+		MediaResource resource = new PreviewMediaResource(preview);
+		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	
 	private void doSetTemplate(CertificateTemplate template) {
@@ -388,7 +414,6 @@ public class CertificatesOptionsController extends FormBasicController {
 	}
 	
 	public class TemplateMapper implements Mapper {
-
 		@Override
 		public MediaResource handle(String relPath, HttpServletRequest request) {
 			MediaResource resource;
@@ -399,6 +424,50 @@ public class CertificatesOptionsController extends FormBasicController {
 				resource = new NotFoundMediaResource(relPath);
 			}
 			return resource;
+		}
+	}
+	
+	private static class PreviewMediaResource implements MediaResource {
+		private static final OLog log = Tracing.createLoggerFor(PreviewMediaResource.class);
+		private File preview;
+		
+		public PreviewMediaResource(File preview) {
+			this.preview = preview;
+		}
+		
+		@Override
+		public String getContentType() {
+			return "application/type";
+		}
+
+		@Override
+		public Long getSize() {
+			return preview.length();
+		}
+
+		@Override
+		public InputStream getInputStream() {
+			try {
+				return new FileInputStream(preview);
+			} catch (FileNotFoundException e) {
+				log.error("", e);
+				return null;
+			}
+		}
+
+		@Override
+		public Long getLastModified() {
+			return null;
+		}
+
+		@Override
+		public void prepare(HttpServletResponse hres) {
+			hres.setHeader("Content-Disposition", "filename*=UTF-8''Certificate_preview.pdf");
+		}
+
+		@Override
+		public void release() {
+			FileUtils.deleteDirsAndFiles(preview.getParentFile(), true, true);
 		}
 	}
 }

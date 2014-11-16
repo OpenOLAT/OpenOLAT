@@ -20,6 +20,7 @@
 package org.olat.course.certificate.manager;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +40,8 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.certificate.CertificateTemplate;
+import org.olat.course.certificate.CertificatesManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -65,11 +68,13 @@ public class CertificateTemplateWorker {
 	private Date dateFirstCertification;
 
 	private final Locale locale;
-	private final List<UserPropertyHandler> userPropertyHandlers;
+	private final UserManager userManager;
+	private final CertificatesManagerImpl certificatesManager;
 
 	public CertificateTemplateWorker(Identity identity, RepositoryEntry entry,
 			Float score, Boolean passed, Date dateCertification,
-			Date dateFirstCertification, Locale locale, UserManager userManager) {
+			Date dateFirstCertification, Locale locale,
+			UserManager userManager, CertificatesManagerImpl certificatesManager) {
 		this.entry = entry;
 		this.score = score;
 		this.locale = locale;
@@ -77,13 +82,31 @@ public class CertificateTemplateWorker {
 		this.identity = identity;
 		this.dateCertification = dateCertification;
 		this.dateFirstCertification = dateFirstCertification;
-		userPropertyHandlers = userManager.getAllUserPropertyHandlers();
+		this.userManager = userManager;
+		this.certificatesManager = certificatesManager;
 	}
 
-	public void fill(InputStream in, File certificate) {
+	public File fill(CertificateTemplate template, File destinationDir) {
 		PDDocument document = null;
+		InputStream templateStream = null;
 		try {
-			document = PDDocument.load(in);
+			String templateName;
+			File templateFile = null;
+			if(template == null) {
+				//default
+				templateName = "Certificate.pdf";
+			} else {
+				templateName = template.getName();
+				templateFile = certificatesManager.getTemplateFile(template);
+			}
+			
+			if(templateFile != null && templateFile.exists()) {
+				templateStream = new FileInputStream(templateFile);
+			} else {
+				templateStream = CertificatesManager.class.getResourceAsStream("template.pdf");
+			}
+			
+			document = PDDocument.load(templateStream);
 
 			PDDocumentCatalog docCatalog = document.getDocumentCatalog();
 			PDAcroForm acroForm = docCatalog.getAcroForm();
@@ -93,25 +116,32 @@ public class CertificateTemplateWorker {
 				fillCertificationInfos(acroForm);
 				fillAssessmentInfos(acroForm);
 			}
-
-			OutputStream out = new FileOutputStream(certificate);
+			File certificateFile = new File(destinationDir, templateName);
+			OutputStream out = new FileOutputStream(certificateFile);
 			document.save(out);
 			out.flush();
 			out.close();
+			return certificateFile;
 		} catch (Exception e) {
 			log.error("", e);
+			return null;
 		} finally {
 			IOUtils.closeQuietly(document);
+			IOUtils.closeQuietly(templateStream);
 		}
 	}
 
 	private void fillUserProperties(PDAcroForm acroForm) throws IOException {
 		User user = identity.getUser();
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getAllUserPropertyHandlers();
 		for (UserPropertyHandler handler : userPropertyHandlers) {
 			String propertyName = handler.getName();
 			String value = handler.getUserProperty(user, null);
 			fillField(propertyName, value, acroForm);
 		}
+		
+		String fullName = userManager.getUserDisplayName(identity);
+		fillField("fullName", fullName, acroForm);
 	}
 
 	private void fillRepositoryEntry(PDAcroForm acroForm) throws IOException {

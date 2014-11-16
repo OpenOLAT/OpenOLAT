@@ -20,23 +20,26 @@
 package org.olat.course.certificate.manager;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.UUID;
 
 import javax.persistence.TypedQuery;
 
-import org.apache.commons.io.IOUtils;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.RuntimeConstants;
+import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -57,6 +60,7 @@ import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.FileStorage;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -85,9 +89,12 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import uk.ac.reload.diva.util.ZipUtils;
 
 /**
  * 
@@ -99,6 +106,8 @@ import org.springframework.stereotype.Service;
 public class CertificatesManagerImpl implements CertificatesManager, InitializingBean {
 	
 	private static final OLog log = Tracing.createLoggerFor(CertificatesManagerImpl.class);
+
+	private VelocityEngine velocityEngine;
 	
 	@Autowired
 	private DB dbInstance;
@@ -128,6 +137,25 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 		templatesStorage = new FileStorage(getCertificateTemplatesRootContainer());
 		getCertificateRoot();
 		usersStorage = new FileStorage(getCertificateRootContainer());
+		
+		Properties p = null;
+		try {
+			velocityEngine = new VelocityEngine();
+			p = new Properties();
+			p.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS, "org.apache.velocity.runtime.log.SimpleLog4JLogSystem");
+			p.setProperty("runtime.log.logsystem.log4j.category", "syslog");
+			velocityEngine.init(p);
+		} catch (Exception e) {
+			throw new RuntimeException("config error " + p.toString());
+		}
+		
+		//deploy script
+		try(InputStream inRasteriez = CertificatesManager.class.getResourceAsStream("rasterize.js")) {
+			Path rasterizePath = getRasterizePath();
+			Files.copy(inRasteriez, rasterizePath, StandardCopyOption.REPLACE_EXISTING);
+		} catch(Exception e) {
+			log.error("", e);
+		}
 	}
 
 	@Override
@@ -370,6 +398,33 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 		}
 		markPublisherNews(null, entry.getOlatResource());
 	}
+	
+	public File previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale) {
+		Identity identity = getPreviewIdentity();
+		
+		File certificateFile;
+		File dirFile = new File(WebappHelper.getTmpDir(), UUID.randomUUID().toString());	
+		if(template.getPath().toLowerCase().endsWith("pdf")) {
+			CertificateTemplateWorker worker = new CertificateTemplateWorker(identity, entry, 2.0f, true,
+					new Date(), new Date(), locale, userManager, this);
+			certificateFile = worker.fill(template, dirFile);
+		} else {
+			CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, 2.0f, true,
+					new Date(), new Date(), locale, userManager, this);
+			certificateFile = worker.fill(template, dirFile);
+		}
+		return certificateFile;
+	}
+	
+	private Identity getPreviewIdentity() {
+		Identity identity = new TransientIdentity();
+		identity.setName("username");
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getAllUserPropertyHandlers();
+		for(UserPropertyHandler handler:userPropertyHandlers) {
+			identity.getUser().setProperty(handler.getName(), handler.getName());
+		}
+		return identity;
+	}
 
 	@Override
 	public Certificate generateCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
@@ -393,27 +448,10 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 		certificate.setUuid(UUID.randomUUID().toString());
 		certificate.setLast(true);
 		
-		String templateName;
-		InputStream templateStream = null;
 		String dir = usersStorage.generateDir();
 		try {
-			if(template == null) {
-				//default
-				templateName = "Certificate.pdf";
-				templateStream = CertificatesManager.class.getResourceAsStream("template.pdf");
-			} else {
-				templateName = template.getName();
-				File templateFile = getTemplateFile(template);
-				if(templateFile != null && templateFile.exists()) {
-					templateStream = new FileInputStream(templateFile);
-				} else {
-					templateStream = CertificatesManager.class.getResourceAsStream("template.pdf");
-				}
-			}
-			
 			File dirFile = new File(getCertificateRoot(), dir);
 			dirFile.mkdirs();
-			File certificateFile = new File(dirFile, templateName);
 			
 			Float score = certificateInfos.getScore();
 			Locale locale = I18nManager.getInstance().getLocaleOrDefault(null);
@@ -421,10 +459,19 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 			Date dateCertification = certificate.getCreationDate();
 			Date dateFirstCertification = getDateFirstCertification(identity, resource);
 
-			CertificateTemplateWorker worker = new CertificateTemplateWorker(identity, entry, score, passed, dateCertification, dateFirstCertification, locale, userManager);
-			worker.fill(templateStream, certificateFile);
-			certificate.setName(templateName);
-			certificate.setPath(dir + templateName);
+			File certificateFile;
+			if(template.getPath().toLowerCase().endsWith("pdf")) {
+				CertificateTemplateWorker worker = new CertificateTemplateWorker(identity, entry, score, passed,
+						dateCertification, dateFirstCertification, locale, userManager, this);
+				certificateFile = worker.fill(template, dirFile);
+			} else {
+				CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, score, passed,
+						dateCertification, dateFirstCertification, locale, userManager, this);
+				certificateFile = worker.fill(template, dirFile);
+			}
+
+			certificate.setName(certificateFile.getName());
+			certificate.setPath(dir + certificateFile.getName());
 			
 			if(dateFirstCertification != null) {
 				//not the first certification, reset the last of the others certificates
@@ -440,10 +487,12 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 			
 		} catch (Exception e) {
 			log.error("", e);
-		} finally {
-			IOUtils.closeQuietly(templateStream);
 		}
 		return certificate;
+	}
+	
+	protected VelocityEngine getVelocityEngine() {
+		return velocityEngine;
 	}
 	
 	private MailerResult sendCertificate(Identity to, RepositoryEntry entry, File certificateFile) {
@@ -515,11 +564,46 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 		template.setLastModified(template.getCreationDate());
 		template.setPublicTemplate(publicTemplate);
 
-		VFSLeaf templateLeaf;
-
+		String filename = name.toLowerCase();
+		if(filename.endsWith(".pdf")) {
+			if(addPdfTemplate(name, file, template)) {
+				dbInstance.getCurrentEntityManager().persist(template);
+			} else {
+				template = null;
+			}
+		} else if(filename.endsWith(".zip")) {
+			if(addHtmlTemplate(name, file, template)) {
+				dbInstance.getCurrentEntityManager().persist(template);
+			} else {
+				template = null;
+			}
+		}
+		
+		
+		return template;
+	}
+	
+	private boolean addHtmlTemplate(String name, File file, CertificateTemplateImpl template) {
+		String dir = templatesStorage.generateDir();
+		VFSContainer templateDir = templatesStorage.getContainer(dir);
+		try {
+			File targetFolder = ((LocalFolderImpl)templateDir).getBasefile();
+			ZipUtils.unpackZip(file, targetFolder);
+			template.setName(name);
+			template.setPath(dir + "index.html");
+			return true;
+		} catch (IOException e) {
+			log.error("", e);
+			return false;
+		}
+	}
+	
+	private boolean addPdfTemplate(String name, File file, CertificateTemplateImpl template) {
 		String dir = templatesStorage.generateDir();
 		VFSContainer templateDir = templatesStorage.getContainer(dir);
 		
+		
+		VFSLeaf templateLeaf;
 		String renamedName = VFSManager.rename(templateDir, name);
 		if(renamedName != null) {
 			templateLeaf = templateDir.createChildLeaf(renamedName);
@@ -527,18 +611,16 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 			templateLeaf = templateDir.createChildLeaf(name);
 		}
 		
-		
 		try(InputStream inStream = Files.newInputStream(file.toPath())) {
 			if(VFSManager.copyContent(inStream, templateLeaf)) {
 				template.setName(name);
-				template.setPath(dir + "/" + templateLeaf.getName());
-				dbInstance.getCurrentEntityManager().persist(template);
-				return template;
+				template.setPath(dir + templateLeaf.getName());
+				return true;
 			}
 		} catch(IOException ex) {
 			log.error("", ex);
 		}
-		return null;
+		return false;
 	}
 	
 	@Override
@@ -576,6 +658,11 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 			root.mkdirs();
 		}
 		return root;
+	}
+	
+	public Path getRasterizePath() {
+		Path path = Paths.get(FolderConfig.getCanonicalRoot(), "certificates", "rasterize.js");
+		return path;
 	}
 	
 	public VFSContainer getCertificateRootContainer() {

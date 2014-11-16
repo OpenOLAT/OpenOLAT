@@ -22,6 +22,7 @@ package org.olat.course.certificate;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -82,6 +83,8 @@ public interface CertificatesManager {
 	public List<Certificate> getCertificates(IdentityRef identity, OLATResource resource);
 	
 	public boolean isRecertificationAllowed(Identity identity, RepositoryEntry entry);
+	
+	public File previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale);
 	
 	public void generateCertificates(List<CertificateInfos> identities, RepositoryEntry entry, CertificateTemplate template, MailerResult result);
 
