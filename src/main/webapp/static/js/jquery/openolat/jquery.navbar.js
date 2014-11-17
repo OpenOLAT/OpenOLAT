@@ -313,6 +313,9 @@
 		
 		//append divider to sites, which will be visible in the dropdown menu
 		this.getSites().append('<li class="divider o_dropdown_site"></li>');
+		
+		//add o_icon-fw to help and print icons, so they align when moved to the off-canvas menu
+		$('#o_navbar_help .o_icon, #o_navbar_print .o_icon').addClass('o_icon-fw');
 	}
 	
 	/*

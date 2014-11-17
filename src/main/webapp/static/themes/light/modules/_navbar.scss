@@ -140,6 +140,8 @@
 				}
 				.o_icon-lg {
 					font-size:1.0em;
+					//overrides vertical-align of o_icon-lg
+					vertical-align: baseline;
 				}
 				
 			}
@@ -228,7 +230,7 @@
 }
 
 /* hide texts for some topnav icons, but not in on login screen */
-#o_navbar_print, #o_navbar_impress, #o_navbar_help, #o_navbar_search_opener {
+#o_navbar_impress, #o_navbar_search_opener {
 	a span {
 		display: none;
 	}
