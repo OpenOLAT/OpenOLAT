@@ -648,10 +648,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			}
 			
 			//aggressive clean-up
-			removeAsListenerAndDispose(moveCopyController);
-			removeAsListenerAndDispose(cmc);
-			moveCopyController = null;
-			cmc = null;
+			cleanUp();
 		} else if (source == deleteDialogController){
 			removeAsListenerAndDispose(deleteDialogController);
 			deleteDialogController = null;
@@ -715,6 +712,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	}
 	
 	private void doMove(UserRequest ureq, ICourse course, boolean copy) {
+		if(moveCopyController != null) return;
+		
 		TreeNode tn = menuTree.getSelectedNode();
 		if (tn == null) {
 			showError(NLS_MOVECOPYNODE_ERROR_SELECTFIRST);
