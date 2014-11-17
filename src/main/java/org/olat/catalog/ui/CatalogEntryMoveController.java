@@ -28,6 +28,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.tree.InsertEvent;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
@@ -82,6 +83,9 @@ public class CatalogEntryMoveController extends BasicController {
 		selectionTree.setTreeModel(new CatalogTreeModel(catEntryList, moveMe, ownedEntries));
 		
 		selectButton = LinkFactory.createButton("cat.move.submit", mainVC, this);
+		selectButton.setCustomEnabledLinkCSS("btn btn-primary");
+		selectButton.setCustomDisabledLinkCSS("btn btn-default");
+		selectButton.setEnabled(false);
 		cancelButton = LinkFactory.createButton("cancel", mainVC, this);
 		
 		mainVC.put("tree", selectionTree);
@@ -106,6 +110,9 @@ public class CatalogEntryMoveController extends BasicController {
 			} else {
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
+		} else if(event instanceof InsertEvent) {
+			boolean canSelect = selectionTree.getInsertionPoint() != null;
+			selectButton.setEnabled(canSelect);
 		}
 	}
 

@@ -31,6 +31,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.InsertionPoint.Position;
+import org.olat.core.gui.components.tree.InsertEvent;
 import org.olat.core.gui.components.tree.InsertionTreeModel;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeNode;
@@ -90,6 +91,9 @@ public class MoveCopySubtreeController extends BasicController {
 		VelocityContainer mainVC = createVelocityContainer("moveCopyNode");
 		
 		selectButton = LinkFactory.createButton("insertAtSelectedTreepos", mainVC, this);
+		selectButton.setCustomEnabledLinkCSS("btn btn-primary");
+		selectButton.setCustomDisabledLinkCSS("btn btn-default");
+		selectButton.setEnabled(false);
 		cancelButton = LinkFactory.createButton("cancel", mainVC, this);
 		
 		int numOfNodes = TreeHelper.totalNodeCount(insertModel.getRootNode());
@@ -127,6 +131,9 @@ public class MoveCopySubtreeController extends BasicController {
 			if(tp != null) {
 				doInsert(ureq, tp);
 			}
+		} else if(event instanceof InsertEvent) {
+			boolean canSelect = insertTree.getInsertionPoint() != null;
+			selectButton.setEnabled(canSelect);
 		}
 	}
 	
