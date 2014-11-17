@@ -75,6 +75,7 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.RecertificationTimeUnit;
 import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateInfos;
+import org.olat.course.certificate.model.CertificateStandalone;
 import org.olat.course.certificate.model.CertificateTemplateImpl;
 import org.olat.course.certificate.ui.CertificateController;
 import org.olat.course.config.CourseConfig;
@@ -235,7 +236,8 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 	public Certificate getLastCertificate(IdentityRef identity, Long resourceKey) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select cer from certificate cer")
-		  .append(" where cer.olatResource.key=:resourceKey and cer.identity.key=:identityKey and cer.last=true order by cer.creationDate");
+		  .append(" where (cer.olatResource.key=:resourceKey or cer.archivedResourceKey=:resourceKey)")
+		  .append(" and cer.identity.key=:identityKey and cer.last=true order by cer.creationDate");
 		List<Certificate> certififcates = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Certificate.class)
 				.setParameter("resourceKey", resourceKey)
@@ -387,6 +389,74 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 	}
 
 	@Override
+	public Certificate uploadCertificate(Identity identity, Date creationDate, OLATResource resource, File certificateFile) {
+		CertificateImpl certificate = new CertificateImpl();
+		certificate.setOlatResource(resource);
+		certificate.setArchivedResourceKey(resource.getKey());
+		if(creationDate != null) {
+			certificate.setCreationDate(creationDate);
+		}
+		certificate.setLastModified(certificate.getCreationDate());
+		certificate.setIdentity(identity);
+		certificate.setUuid(UUID.randomUUID().toString());
+		certificate.setLast(true);
+
+		String dir = usersStorage.generateDir();
+		try (InputStream in = Files.newInputStream(certificateFile.toPath())) {
+			File dirFile = new File(getCertificateRoot(), dir);
+			dirFile.mkdirs();
+
+			File storedCertificateFile = new File(dirFile, "Certificate.pdf");
+			Files.copy(in, storedCertificateFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+			certificate.setName(storedCertificateFile.getName());
+			certificate.setPath(dir + storedCertificateFile.getName());
+
+			Date dateFirstCertification = getDateFirstCertification(identity, resource);
+			if (dateFirstCertification != null) {
+				removeLastFlag(identity, resource);
+			}
+
+			dbInstance.getCurrentEntityManager().persist(certificate);
+		} catch (Exception e) {
+			log.error("", e);
+		}
+
+		return certificate;
+	}
+	
+	@Override
+	public Certificate uploadStandaloneCertificate(Identity identity, Date creationDate, Long resourceKey, File certificateFile) {
+		CertificateStandalone certificate = new CertificateStandalone();
+		certificate.setArchivedResourceKey(resourceKey);
+		if(creationDate != null) {
+			certificate.setCreationDate(creationDate);
+		}
+		certificate.setLastModified(certificate.getCreationDate());
+		certificate.setIdentity(identity);
+		certificate.setUuid(UUID.randomUUID().toString());
+		certificate.setLast(true);
+
+		String dir = usersStorage.generateDir();
+		try (InputStream in = Files.newInputStream(certificateFile.toPath())) {
+			File dirFile = new File(getCertificateRoot(), dir);
+			dirFile.mkdirs();
+
+			File storedCertificateFile = new File(dirFile, "Certificate.pdf");
+			Files.copy(in, storedCertificateFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+			certificate.setName(storedCertificateFile.getName());
+			certificate.setPath(dir + storedCertificateFile.getName());
+
+			dbInstance.getCurrentEntityManager().persist(certificate);
+		} catch (Exception e) {
+			log.error("", e);
+		}
+
+		return certificate;
+	}
+
+	@Override
 	public void generateCertificates(List<CertificateInfos> certificateInfos, RepositoryEntry entry,
 			CertificateTemplate template, MailerResult result) {
 		int count = 0;
@@ -429,12 +499,12 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 	@Override
 	public Certificate generateCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
 			CertificateTemplate template, MailerResult result) {
-		Certificate certificate = peristCertificate(certificateInfos, entry, template, result);
+		Certificate certificate = persistCertificate(certificateInfos, entry, template, result);
 		markPublisherNews(null, entry.getOlatResource());
 		return certificate;
 	}
 
-	private Certificate peristCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
+	private Certificate persistCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
 			CertificateTemplate template, MailerResult result) {
 		OLATResource resource = entry.getOlatResource();
 		Identity identity = certificateInfos.getAssessedIdentity();
@@ -442,7 +512,11 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 		CertificateImpl certificate = new CertificateImpl();
 		certificate.setOlatResource(resource);
 		certificate.setArchivedResourceKey(resource.getKey());
-		certificate.setCreationDate(new Date());
+		if(certificateInfos.getCreationDate() != null) {
+			certificate.setCreationDate(certificateInfos.getCreationDate());
+		} else {
+			certificate.setCreationDate(new Date());
+		}
 		certificate.setLastModified(certificate.getCreationDate());
 		certificate.setIdentity(identity);
 		certificate.setUuid(UUID.randomUUID().toString());
@@ -460,7 +534,7 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 			Date dateFirstCertification = getDateFirstCertification(identity, resource);
 
 			File certificateFile;
-			if(template.getPath().toLowerCase().endsWith("pdf")) {
+			if(template == null || template.getPath().toLowerCase().endsWith("pdf")) {
 				CertificateTemplateWorker worker = new CertificateTemplateWorker(identity, entry, score, passed,
 						dateCertification, dateFirstCertification, locale, userManager, this);
 				certificateFile = worker.fill(template, dirFile);

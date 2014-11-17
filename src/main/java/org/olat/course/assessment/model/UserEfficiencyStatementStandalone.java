@@ -25,13 +25,15 @@ import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.course.assessment.UserEfficiencyStatement;
-import org.olat.resource.OLATResource;
 
 /**
  * 
+ * Mapping used to save efficiency statement in import process where
+ * the course / resource doesn't exists.
+ * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class UserEfficiencyStatementImpl extends PersistentObject implements UserEfficiencyStatement, ModifiedInfo {
+public class UserEfficiencyStatementStandalone extends PersistentObject implements UserEfficiencyStatement, ModifiedInfo {
 
 	private static final long serialVersionUID = 2996458434418813284L;
 	
@@ -42,7 +44,7 @@ public class UserEfficiencyStatementImpl extends PersistentObject implements Use
 	private Integer passedNodes;
 	
 	private Identity identity;
-	private OLATResource resource;
+	private Long resourceKey;
 	
 	private String title;
 	private String shortTitle;
@@ -51,7 +53,7 @@ public class UserEfficiencyStatementImpl extends PersistentObject implements Use
 	private String statementXml;
 	
 	private Date lastModified;
-
+	
 	@Override
 	public Date getLastModified() {
 		return lastModified;
@@ -123,15 +125,15 @@ public class UserEfficiencyStatementImpl extends PersistentObject implements Use
 	public void setIdentity(Identity identity) {
 		this.identity = identity;
 	}
-		
-	public OLATResource getResource() {
-		return resource;
-	}
-		
-	public void setResource(OLATResource resource) {
-		this.resource = resource;
-	}
 	
+	public Long getResourceKey() {
+		return resourceKey;
+	}
+
+	public void setResourceKey(Long resourceKey) {
+		this.resourceKey = resourceKey;
+	}
+
 	public String getTitle() {
 		return title;
 	}
@@ -140,7 +142,6 @@ public class UserEfficiencyStatementImpl extends PersistentObject implements Use
 		this.title = title;
 	}
 
-	@Override
 	public String getShortTitle() {
 		return shortTitle;
 	}
@@ -149,7 +150,6 @@ public class UserEfficiencyStatementImpl extends PersistentObject implements Use
 		this.shortTitle = shortTitle;
 	}
 
-	@Override
 	public Long getCourseRepoKey() {
 		return courseRepoKey;
 	}
@@ -173,8 +173,8 @@ public class UserEfficiencyStatementImpl extends PersistentObject implements Use
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof UserEfficiencyStatementImpl) {
-			UserEfficiencyStatementImpl statement = (UserEfficiencyStatementImpl)obj;
+		if(obj instanceof UserEfficiencyStatementStandalone) {
+			UserEfficiencyStatementStandalone statement = (UserEfficiencyStatementStandalone)obj;
 			return getKey() != null && getKey().equals(statement.getKey());
 		}
 		return false;

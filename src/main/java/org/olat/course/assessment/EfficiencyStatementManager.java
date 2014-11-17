@@ -46,11 +46,13 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
+import org.olat.course.assessment.model.UserEfficiencyStatementStandalone;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.resource.OLATResource;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
 
@@ -129,12 +131,61 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(courseOres, false);
 		updateUserEfficiencyStatement(userCourseEnv, re.getKey(), courseOres);
 	}
+
+	public UserEfficiencyStatement createUserEfficiencyStatement(Date creationDate, Float score, Boolean passed, Identity identity, OLATResource resource) {
+		UserEfficiencyStatementImpl efficiencyProperty = new UserEfficiencyStatementImpl();
+		efficiencyProperty.setCreationDate(creationDate);
+		efficiencyProperty.setLastModified(new Date());
+		efficiencyProperty.setScore(score);
+		efficiencyProperty.setPassed(passed);
+
+		efficiencyProperty.setTotalNodes(0);
+		efficiencyProperty.setAttemptedNodes(0);
+		efficiencyProperty.setPassedNodes(0);
+
+		efficiencyProperty.setIdentity(identity);
+		efficiencyProperty.setResource(resource);
+
+		ICourse course = CourseFactory.loadCourse(resource.getResourceableId());
+		efficiencyProperty.setTitle(course.getCourseEnvironment().getCourseTitle());
+		efficiencyProperty.setShortTitle(course.getCourseEnvironment().getRunStructure().getRootNode().getShortTitle());
+		efficiencyProperty.setCourseRepoKey(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey());
+
+		dbInstance.getCurrentEntityManager().persist(efficiencyProperty);
+
+		return efficiencyProperty;
+	}
+	
+	public UserEfficiencyStatement createStandAloneUserEfficiencyStatement(Date creationDate, Float score, Boolean passed,
+			Identity identity, Long resourceKey, String courseTitle) {
+		UserEfficiencyStatementStandalone efficiencyProperty = new UserEfficiencyStatementStandalone();
+		efficiencyProperty.setCreationDate(creationDate);
+		efficiencyProperty.setLastModified(new Date());
+		efficiencyProperty.setScore(score);
+		efficiencyProperty.setPassed(passed);
+
+		efficiencyProperty.setTotalNodes(0);
+		efficiencyProperty.setAttemptedNodes(0);
+		efficiencyProperty.setPassedNodes(0);
+
+		efficiencyProperty.setIdentity(identity);
+		efficiencyProperty.setResourceKey(resourceKey);
+
+		efficiencyProperty.setTitle(courseTitle);
+		efficiencyProperty.setShortTitle(courseTitle);
+		efficiencyProperty.setCourseRepoKey(null);
+
+		dbInstance.getCurrentEntityManager().persist(efficiencyProperty);
+
+		return efficiencyProperty;
+	}
+	
 	
 	/**
 	 * Updates the users efficiency statement for this course
 	 * @param userCourseEnv
 	 * @param repoEntryKey
-	 * @param checkForExistingProperty
+	 * @param courseOres
 	 */
 	private void updateUserEfficiencyStatement(final UserCourseEnvironment userCourseEnv, final Long repoEntryKey, OLATResourceable courseOres) {
     //	o_clusterOK: by ld
@@ -175,7 +226,7 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 				} else {
 					// update existing
 					if (isLogDebugEnabled()) {
-						logDebug("updatting efficiency statement property::" + efficiencyProperty.getKey() + " for id::" + identity.getName() + " repoEntry::" + repoEntryKey);
+						logDebug("updating efficiency statement property::" + efficiencyProperty.getKey() + " for id::" + identity.getName() + " repoEntry::" + repoEntryKey);
 					}	
 					fillEfficiencyStatement(efficiencyStatement, efficiencyProperty);
 					dbInstance.updateObject(efficiencyProperty);
@@ -305,7 +356,8 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("select statement from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as statement ")
-			  .append(" where statement.identity.key=:identityKey and statement.archivedResourceKey=:resourceKey");
+			  .append(" where statement.identity.key=:identityKey")
+			  .append(" and statement.resource.key=:resourceKey");
 
 			List<UserEfficiencyStatementImpl> statement = dbInstance.getCurrentEntityManager()
 					.createQuery(sb.toString(), UserEfficiencyStatementImpl.class)
@@ -577,7 +629,6 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	
 	/**
 	 * Delete the given efficiency statement for this person
-	 * @param identity
 	 * @param efficiencyStatement
 	 */
 	public void deleteEfficiencyStatement(UserEfficiencyStatementLight efficiencyStatement) {
@@ -588,9 +639,8 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	 * Create or update all efficiency statment lists for the given list of identities and this course
 	 * This is called from only one thread, since the course is locked at editing (either CourseEdit or CourseDetails edit).
 	 * 
-	 * @param course 
+	 * @param ores The resource to load the course
 	 * @param identities List of identities
-	 * @param checkForExistingRecord true: check if efficiency statement for this user exist;
 	 * false: always create new one (be careful with this one!)
 	 */	
 	public void updateEfficiencyStatements(OLATResourceable ores, List<Identity> identities) {

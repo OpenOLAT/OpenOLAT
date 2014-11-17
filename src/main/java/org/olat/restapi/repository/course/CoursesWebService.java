@@ -274,7 +274,6 @@ public class CoursesWebService {
 	 * 
 	 * 
 	 * @param request
-	 * @param access
 	 * @return
 	 */
 	@POST

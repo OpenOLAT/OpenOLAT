@@ -17,49 +17,52 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.certificate.model;
+package org.olat.course.assessment.model;
 
 import java.util.Date;
 
-import org.olat.core.id.Identity;
-
 /**
  * 
- * Initial date: 24.10.2014<br>
+ * Initial date: 17.11.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CertificateInfos {
-	
-	private final Float score;
-	private final Boolean passed;
-	private final Identity assessedIdentity;
-	
+public class EfficiencyStatementVO {
+
+	private Float score;
+	private Boolean passed;
 	private Date creationDate;
+	private String courseTitle;
 	
-	public CertificateInfos(Identity assessedIdentity, Float score, Boolean passed) {
-		this.score = score;
-		this.passed = passed;
-		this.assessedIdentity = assessedIdentity;
-	}
-	
-	public Float getScore() {
-		return score;
-	}
-
-	public Boolean getPassed() {
-		return passed;
-	}
-	
-	public Identity getAssessedIdentity() {
-		return assessedIdentity;
-	}
-
 	public Date getCreationDate() {
 		return creationDate;
 	}
 
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
+	}
+
+	public Float getScore() {
+		return score;
+	}
+
+	public void setScore(Float score) {
+		this.score = score;
+	}
+
+	public Boolean getPassed() {
+		return passed;
+	}
+
+	public void setPassed(Boolean passed) {
+		this.passed = passed;
+	}
+
+	public String getCourseTitle() {
+		return courseTitle;
+	}
+
+	public void setCourseTitle(String courseTitle) {
+		this.courseTitle = courseTitle;
 	}
 }

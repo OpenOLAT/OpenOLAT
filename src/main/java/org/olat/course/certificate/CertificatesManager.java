@@ -85,6 +85,10 @@ public interface CertificatesManager {
 	public boolean isRecertificationAllowed(Identity identity, RepositoryEntry entry);
 	
 	public File previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale);
+
+	public Certificate uploadCertificate(Identity identity, Date creationDate, OLATResource resource, File certificateFile);
+	
+	public Certificate uploadStandaloneCertificate(Identity identity, Date creationDate, Long resourceKey, File certificateFile);
 	
 	public void generateCertificates(List<CertificateInfos> identities, RepositoryEntry entry, CertificateTemplate template, MailerResult result);
 

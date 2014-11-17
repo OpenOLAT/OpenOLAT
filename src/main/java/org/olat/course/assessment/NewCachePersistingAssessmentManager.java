@@ -893,7 +893,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 						CertificateTemplate template = null;
 						Long templateId = course.getCourseConfig().getCertificateTemplate();
 						if(templateId != null) {
-							template = certificatesManager.getTemplateById(new Long(templateId));
+							template = certificatesManager.getTemplateById(templateId);
 						}
 						CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, passed);
 						MailerResult result = new MailerResult();

@@ -53,15 +53,18 @@ public class UserEfficiencyStatementLight extends PersistentObject implements Us
 	private Long archivedResourceKey;
 	
 	private Date lastModified;
-		
+
+	@Override	
 	public Date getLastModified() {
 		return lastModified;
 	}
 
+	@Override
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
 	}
 
+	@Override
 	public Float getScore() {
 		return score;
 	}
@@ -69,7 +72,8 @@ public class UserEfficiencyStatementLight extends PersistentObject implements Us
 	public void setScore(Float score) {
 		this.score = score;
 	}
-		
+
+	@Override
 	public Boolean getPassed() {
 		return passed;
 	}
@@ -77,7 +81,8 @@ public class UserEfficiencyStatementLight extends PersistentObject implements Us
 	public void setPassed(Boolean passed) {
 		this.passed = passed;
 	}
-	
+
+	@Override
 	public Integer getTotalNodes() {
 		return totalNodes;
 	}
@@ -86,6 +91,7 @@ public class UserEfficiencyStatementLight extends PersistentObject implements Us
 		this.totalNodes = totalNodes;
 	}
 
+	@Override
 	public Integer getAttemptedNodes() {
 		return attemptedNodes;
 	}
@@ -94,6 +100,7 @@ public class UserEfficiencyStatementLight extends PersistentObject implements Us
 		this.attemptedNodes = attemptedNodes;
 	}
 
+	@Override
 	public Integer getPassedNodes() {
 		return passedNodes;
 	}
@@ -102,6 +109,7 @@ public class UserEfficiencyStatementLight extends PersistentObject implements Us
 		this.passedNodes = passedNodes;
 	}
 
+	@Override
 	public Identity getIdentity() {
 		return identity;
 	}
@@ -118,6 +126,7 @@ public class UserEfficiencyStatementLight extends PersistentObject implements Us
 		this.resource = resource;
 	}
 
+	@Override
 	public String getShortTitle() {
 		return shortTitle;
 	}
@@ -134,6 +143,7 @@ public class UserEfficiencyStatementLight extends PersistentObject implements Us
 		this.archivedResourceKey = archivedResourceKey;
 	}
 
+	@Override
 	public Long getCourseRepoKey() {
 		return courseRepoKey;
 	}
