@@ -604,3 +604,22 @@ body.o_dmz {
 }
 
 /* --- */
+
+
+/* navbar in popup window */
+.o_body_popup {
+  #o_topnav_printview {
+    display: inline-block;
+  }
+  #o_topnav_close {
+    float: right;
+    span {
+      display: block;
+    }
+  }
+  #o_navbar_tools_permanent {
+    li > a {
+      background-color: transparent;
+    }
+  }
+}
