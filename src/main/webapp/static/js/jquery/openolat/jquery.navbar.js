@@ -311,6 +311,7 @@
 			more.appendTo(collapse);
 		}
 		
+		//append divider to sites, which will be visible in the dropdown menu
 		this.getSites().append('<li class="divider o_dropdown_site"></li>');
 	}
 	
@@ -412,15 +413,15 @@
 	}
 	
 	Navbar.prototype.isSitesCollapsed = function() {
-		return !this.getSites().children('li').length;// && !this.isSitesExtended();
+		return !this.getSites().children('li').not('.divider').length;
 	}
 	
 	Navbar.prototype.isSitesExtended = function() {
-		return !this.getMoreDropdown().children('.o_dropdown_site').length;
+		return !this.getMoreDropdown().children('.o_dropdown_site').not('.divider').length;
 	}
 	
 	Navbar.prototype.isTabsCollapsed = function() {
-		return !this.getTabs().children('li').length;// && !this.isTabsExtended();
+		return !this.getTabs().children('li').length;
 	}
 	
 	Navbar.prototype.isTabsExtended = function() {
