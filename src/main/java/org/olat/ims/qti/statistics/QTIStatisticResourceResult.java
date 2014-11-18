@@ -141,12 +141,19 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 
 	@Override
 	public TreeModel getSubTreeModel() {
-		if(qtiDocument == null) return null;
-		
-		GenericTreeModel subTreeModel = new GenericTreeModel();
-		StatisticResourceNode rootTreeNode = new StatisticResourceNode(courseNode, this);
-		subTreeModel.setRootNode(rootTreeNode);
-		buildQTICourseNodeSubTree(qtiDocument, rootTreeNode);
+		GenericTreeModel subTreeModel;
+		if(type == QTIType.onyx) {
+			subTreeModel = new GenericTreeModel();
+			StatisticResourceNode rootTreeNode = new StatisticResourceNode(courseNode, this);
+			subTreeModel.setRootNode(rootTreeNode);
+		} else if(qtiDocument == null) {
+			subTreeModel = null;
+		} else {
+			subTreeModel = new GenericTreeModel();
+			StatisticResourceNode rootTreeNode = new StatisticResourceNode(courseNode, this);
+			subTreeModel.setRootNode(rootTreeNode);
+			buildQTICourseNodeSubTree(qtiDocument, rootTreeNode);	
+		}
 		return subTreeModel;
 	}
 
