@@ -7,7 +7,7 @@
 		position: relative;
 		padding: floor($grid-gutter-width / 2) floor($grid-gutter-width / 8);
 	}
-	#o_im_status {
+	#o_im_status, #o_im_message {
 		padding-left: floor($grid-gutter-width / 2);
 	}
 	#o_im_summary {
@@ -25,7 +25,9 @@
 			color: $o-im-newmessage-hover-color;		
 		}		
 	}
-	
+	#o_im_messages {
+		float: left;
+	}
 }
 
 .o_im_load_history {
