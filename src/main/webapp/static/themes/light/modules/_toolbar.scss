@@ -297,7 +297,21 @@
 			float: left;
 		}		
 		.o_tool, .o_text, .o_tool_dropdown {
-			margin: 0 0;	
+			margin: 0 0;
+			//this allows full-width dropdown menus
+			position: static;
+		}
+		//make dropdown bigger for small screens
+		.o_tool_dropdown .dropdown-menu {
+			left: 0px;
+			right: 0px;
+
+			a, i {
+				line-height: $line-height-computed * 1.5;
+			}
+			.o_navbar_tab_close {
+				line-height: inherit;
+			}
 		}
 		
 	}
