@@ -121,8 +121,8 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
 		// only the precondition "access" can be configured till now
-		STCourseNodeEditController childTabCntrllr = new STCourseNodeEditController(ureq, wControl, this, course.getCourseFolderContainer(), course
-				.getCourseEnvironment().getCourseGroupManager(), course.getEditorTreeModel(), euce);
+		STCourseNodeEditController childTabCntrllr = new STCourseNodeEditController(ureq, wControl, this, course.getCourseFolderContainer(),
+				course.getEditorTreeModel(), euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
 	}

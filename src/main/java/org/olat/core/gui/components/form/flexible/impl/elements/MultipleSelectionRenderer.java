@@ -85,7 +85,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		}
 
 		sb.append("<div ");
-		appendIdIfRequired(sb, stC).append(" class='container-fluid'>");
+		appendIdIfRequired(sb, stC).append(">");
 		CheckboxElement[] checks = stC.getCheckComponents();
 		for(int i=0; i<checks.length; ) {
 			sb.append("<div class='row'>");
@@ -93,9 +93,9 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			for(int j=columns; j-->0; ) {
 				if(i < checks.length) {
 					CheckboxElement check = checks[i++];
-					sb.append("<div class='").append(columnCss).append("'>").append("<div class='checkbox'>");
+					sb.append("<div class='").append(columnCss).append("'>");
 					renderCheckbox(sb, check, stC, false);
-					sb.append("</div></div>");
+					sb.append("</div>");
 				}
 			}
 
