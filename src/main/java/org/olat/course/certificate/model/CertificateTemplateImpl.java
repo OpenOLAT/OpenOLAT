@@ -62,6 +62,10 @@ public class CertificateTemplateImpl implements CertificateTemplate, Persistable
 	private String name;
 	@Column(name="c_path", nullable=false, insertable=true, updatable=true)
 	private String path;
+	@Column(name="c_format", nullable=true, insertable=true, updatable=true)
+	private String format;
+	@Column(name="c_orientation", nullable=true, insertable=true, updatable=true)
+	private String orientation;
 	@Column(name="c_public", nullable=false, insertable=true, updatable=true)
 	private boolean publicTemplate;
 
@@ -106,6 +110,22 @@ public class CertificateTemplateImpl implements CertificateTemplate, Persistable
 
 	public void setPath(String path) {
 		this.path = path;
+	}
+
+	public String getFormat() {
+		return format;
+	}
+
+	public void setFormat(String format) {
+		this.format = format;
+	}
+
+	public String getOrientation() {
+		return orientation;
+	}
+
+	public void setOrientation(String orientation) {
+		this.orientation = orientation;
 	}
 
 	@Override

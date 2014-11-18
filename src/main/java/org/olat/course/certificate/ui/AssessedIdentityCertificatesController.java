@@ -33,11 +33,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.certificate.Certificate;
@@ -62,10 +60,14 @@ public class AssessedIdentityCertificatesController extends BasicController {
 	
 	private Link generateLink;
 	private final VelocityContainer mainVC;
+	private DialogBoxController confirmDeleteCtrl;
 	private DialogBoxController confirmCertificateCtrl;
 	
 	private final OLATResource resource;
 	private final UserCourseEnvironment assessedUserCourseEnv;
+	
+	private final boolean canDelete;
+	private final Formatter formatter;
 	
 	@Autowired
 	private CertificatesManager certificatesManager;
@@ -76,30 +78,38 @@ public class AssessedIdentityCertificatesController extends BasicController {
 
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		resource = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-		
-		mainVC = createVelocityContainer("certificate_overview");
-		loadList();
-		
 		CourseConfig courseConfig = assessedUserCourseEnv.getCourseEnvironment().getCourseConfig();
+		canDelete = courseConfig.isManualCertificationEnabled();
+		mainVC = createVelocityContainer("certificate_overview");
+		formatter = Formatter.getInstance(getLocale());
+
 		if(courseConfig.isManualCertificationEnabled()) {
 			generateLink = LinkFactory.createLink("generate.certificate", "generate", getTranslator(), mainVC, this, Link.BUTTON);
 		}
+		loadList();
 		putInitialPanel(mainVC);
 	}
 	
 	private void loadList() {
 		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
 		List<Certificate> certificates = certificatesManager.getCertificates(assessedIdentity, resource);
-		List<Link> certificatesLink = new ArrayList<>(certificates.size());
+		List<Links> certificatesLink = new ArrayList<>(certificates.size());
 		int count = 0;
 		for(Certificate certificate:certificates) {
-			Link link = LinkFactory.createLink("download." + count++, "download",
-					getTranslator(), mainVC, this, Link.NONTRANSLATED);
-			link.setCustomDisplayText(certificate.getName());
-			link.setIconLeftCSS("o_icon o_icon-lg o_filetype_pdf");
-			link.setUserObject(certificate);
-			link.setTarget("_blank");
-			certificatesLink.add(link);
+			String displayName = formatter.formatDateAndTime(certificate.getCreationDate());
+			String url = DownloadCertificateCellRenderer.getUrl(certificate);
+			Links links = new Links(url, displayName);
+			certificatesLink.add(links);
+			
+			if(canDelete) {
+				Link deleteLink = LinkFactory.createLink("delete." + count++, "delete",
+						getTranslator(), mainVC, this, Link.NONTRANSLATED);
+				deleteLink.setCustomDisplayText(" ");
+				deleteLink.setElementCssClass("o_sel_certificate_delete");
+				deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete");
+				deleteLink.setUserObject(certificate);
+				links.setDelete(deleteLink);
+			}
 		}
 		mainVC.contextPut("certificates", certificatesLink);
 	}
@@ -116,9 +126,9 @@ public class AssessedIdentityCertificatesController extends BasicController {
 		} else if(source instanceof Link) {
 			Link link = (Link)source;
 			String cmd = link.getCommand();
-			if("download".equals(cmd)) {
+			if("delete".equals(cmd)) {
 				Certificate certificate = (Certificate)link.getUserObject();
-				doDownload(ureq, certificate);
+				doConfirmDelete(ureq, certificate);
 			}
 		}
 	}
@@ -129,16 +139,29 @@ public class AssessedIdentityCertificatesController extends BasicController {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
 				doGenerateCertificate();
 			}
+		} else if(confirmDeleteCtrl == source) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				Certificate certificate = (Certificate)confirmDeleteCtrl.getUserObject();
+				doDelete(certificate);
+			}
 		}
 		super.event(ureq, source, event);
 	}
-
-	private void doDownload(UserRequest ureq, Certificate certificate) {
-		VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
-		MediaResource certificateResource = new VFSMediaResource(certificateLeaf);
-		ureq.getDispatchResult().setResultingMediaResource(certificateResource);
+	
+	private void doConfirmDelete(UserRequest ureq, Certificate certificate) {
+		String title = translate("confirm.delete.certificate.title");
+		String text = translate("confirm.delete.certificate.text");
+		confirmDeleteCtrl = activateYesNoDialog(ureq, title, text, confirmDeleteCtrl);
+		confirmDeleteCtrl.setUserObject(certificate);
 	}
 	
+	private void doDelete(Certificate certificate) {
+		certificatesManager.deleteCertificate(certificate);
+		loadList();
+		String displayName = formatter.formatDateAndTime(certificate.getCreationDate());
+		showInfo("confirm.certificate.deleted", displayName);
+	}
+
 	private void doConfirmGenerateCertificate(UserRequest ureq) {
 		ICourse course = CourseFactory.loadCourse(resource);
 		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
@@ -172,5 +195,30 @@ public class AssessedIdentityCertificatesController extends BasicController {
 		MailerResult result = new MailerResult();
 		certificatesManager.generateCertificate(certificateInfos, courseEntry, template, result);
 		loadList();
+	}
+	
+	public static class Links {
+		private String url;
+		private String name;
+		private Link delete;
+		
+		public Links(String url, String name) {
+			this.url = url;
+			this.name = name;
+		}
+		public String getUrl() {
+			return url;
+		}
+		public String getName() {
+			return name;
+		}
+
+		public String getDeleteName() {
+			return delete == null ? null : delete.getComponentName();
+		}
+
+		public void setDelete(Link delete) {
+			this.delete = delete;
+		}
 	}
 }

@@ -1,5 +1,5 @@
-<table class="table table-condensed">
-	<theader>
+<table class="table table-condensed table-striped">
+	<thead>
 		<tr>
 			<th>&nbsp;</th>
 			<th>$r.translate("sess.active")</th>
@@ -7,21 +7,57 @@
 			<th>$r.translate("sess.poll")</th>
 			<th>$r.translate("sess.request")</th>
 		</tr>
-	</theader>
+	</thead>
 	<tbody>
 		<tr>
-			<td>$r.translate("sess.last.1.minute")</td>
+			<th>$r.translate("sess.last.1.minute")</th>
 			<td>$count1Minute</td>
 			<td>$click1Minute</td>
 			<td>$poll1Minute</td>
 			<td>$request1Minute</td>
 		</tr>
 		<tr>
-			<td>$r.translate("sess.last.5.minutes")</td>
+			<th>$r.translate("sess.last.5.minutes")</th>
 			<td>$count5Minutes</td>
 			<td>$click5Minutes</td>
 			<td>$poll5Minutes</td>
 			<td>$request5Minutes</td>
 		</tr>
+		<tr>
+			<th>$r.translate("runtime.users.lastday")</th>
+			<td>$userslastday</td>
+			<td>-</td>
+			<td>-</td>
+			<td>-</td>
+		</tr>
+		<tr>
+			<th>$r.translate("runtime.users.lastweek")</th>
+			<td>$userslastweek</td>
+			<td>-</td>
+			<td>-</td>
+			<td>-</td>
+		</tr>
+		<tr>
+			<th>$r.translate("runtime.users.lastmonth")</th>
+			<td>$users1month</td>
+			<td>-</td>
+			<td>-</td>
+			<td>-</td>
+		</tr>
+		<tr>
+			<th>$r.translate("runtime.users.last6months")</th>
+			<td>$users6month</td>
+			<td>-</td>
+			<td>-</td>
+			<td>-</td>
+		</tr>
+		<tr>
+			<th>$r.translate("runtime.users.lastyear")</th>
+			<td>$usersyear</td>
+			<td>-</td>
+			<td>-</td>
+			<td>-</td>
+		</tr>
+		
 	</tbody>
 </table>

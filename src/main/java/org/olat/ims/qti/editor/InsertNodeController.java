@@ -23,6 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.tree.InsertEvent;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -56,6 +57,8 @@ public class InsertNodeController extends BasicController {
 		
 		selectButton = LinkFactory.createButton("submit", mainVC, this);
 		selectButton.setCustomEnabledLinkCSS("btn btn-primary");
+		selectButton.setCustomDisabledLinkCSS("btn btn-default");
+		selectButton.setEnabled(false);
 		cancelButton = LinkFactory.createButton("cancel", mainVC, this);
 		
 		putInitialPanel(mainVC);
@@ -71,6 +74,7 @@ public class InsertNodeController extends BasicController {
 	
 	public TreePosition getInsertPosition() {
 		TreePosition pos = insertTree.getInsertionPosition();
+		if(pos == null) return null;
 		TreeNode node = (TreeNode)pos.getParentTreeNode().getUserObject();
 		return new TreePosition(node, pos.getChildpos());
 	}
@@ -86,6 +90,9 @@ public class InsertNodeController extends BasicController {
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else if(cancelButton == source) {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
+		} else if(event instanceof InsertEvent) {
+			boolean canSelect = insertTree.getInsertionPoint() != null;
+			selectButton.setEnabled(canSelect);
 		}
 	}
 }

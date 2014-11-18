@@ -210,76 +210,66 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 		listRenderer.render(fc, target, ubu, translator, iframePostEnabled);
 
 		if (fc.getCurrentContainerChildren().size() > 0) {
-			target.append("<div class='o_table_footer'>");
-			if (canWrite || canDelete || canMail) {
-				
-				target.append("<div class=\"o_table_checkall input-sm\">");
-				target.append("<label class='checkbox-inline'><a href=\"#\" onclick=\"javascript:b_briefcase_toggleCheck('").append(formName).append("', true)\">");
-				target.append("<input type=\"checkbox\" checked=\"checked\" disabled=\"disabled\" />");
-				target.append(translator.translate("checkall"));
-				target.append("</a></label> <label class='checkbox-inline'><a href=\"#\" onclick=\"javascript:b_briefcase_toggleCheck('").append(formName).append("', false)\">"); 
-				target.append("<input type=\"checkbox\" disabled=\"disabled\" />");
-				target.append(translator.translate("uncheckall"));
-				target.append("</a></label></div>");
-				
-				target.append("<div class='o_table_buttons'>");
-				
-				if(canMail) {
-					target.append("<input type=\"submit\" class='btn btn-default' name=\"");
-					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_MAIL);
-					target.append("\" value=\"");
-					target.append(StringHelper.escapeHtml(translator.translate("send")));
-					target.append("\" />");
-				}
-				
+			target.append("<div class='o_table_footer'>")
+			      .append("<div class=\"o_table_checkall input-sm\">")
+			      .append("<label class='checkbox-inline'><a href=\"#\" onclick=\"javascript:b_briefcase_toggleCheck('").append(formName).append("', true)\">")
+			      .append("<input type=\"checkbox\" checked=\"checked\" disabled=\"disabled\" />")
+			      .append(translator.translate("checkall"))
+			      .append("</a></label> <label class='checkbox-inline'><a href=\"#\" onclick=\"javascript:b_briefcase_toggleCheck('").append(formName).append("', false)\">")
+			      .append("<input type=\"checkbox\" disabled=\"disabled\" />")
+			      .append(translator.translate("uncheckall"))
+			      .append("</a></label></div>")
+			      .append("<div class='o_table_buttons'>");
+			
+			if(canMail) {
 				target.append("<input type=\"submit\" class='btn btn-default' name=\"");
-				target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_DOWNLOAD_ZIP);
+				target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_MAIL);
 				target.append("\" value=\"");
-				target.append(StringHelper.escapeHtml(translator.translate("download")));
+				target.append(StringHelper.escapeHtml(translator.translate("send")));
 				target.append("\" />");
-				
-				if (canDelete) {
-					// delete
-					target.append("<input type=\"submit\" class='btn btn-default' name=\"");
-					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_DEL);
-					target.append("\" value=\"");
-					target.append(StringHelper.escapeHtml(translator.translate("del")));
-					target.append("\" />");
-				}
-
-				if (canWrite) {
-					// move
-					target.append("<input type=\"submit\" class='btn btn-default' name=\"");
-					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_MOVE);
-					target.append("\" value=\"");
-					target.append(StringHelper.escapeHtml(translator.translate("move")));
-					// copy
-					target.append("\" /><input type=\"submit\" class='btn btn-default' name=\"");
-					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_COPY);
-					target.append("\" value=\"");
-					target.append(StringHelper.escapeHtml(translator.translate("copy")));
-					target.append("\" />");
-				}
-									
-				if (canWrite) {
-					// zip
-					target.append("<input type=\"submit\" class='btn btn-default' name=\"");
-					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_ZIP);
-					target.append("\" value=\"");
-					target.append(StringHelper.escapeHtml(translator.translate("zip")));
-					//unzip
-					target.append("\" /><input type=\"submit\" class='btn btn-default' name=\"");
-					target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_UNZIP);
-					target.append("\" value=\"");
-					target.append(StringHelper.escapeHtml(translator.translate("unzip")));
-					target.append("\" />");				
-				}
-				target.append("</div>");
 			}
-			target.append("</div>");
-		}
-		target.append("</div>");
+			
+			target.append("<input type=\"submit\" class='btn btn-default' name=\"")
+			      .append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_DOWNLOAD_ZIP)
+			      .append("\" value=\"")
+			      .append(StringHelper.escapeHtml(translator.translate("download")))
+			      .append("\" />");
+			
+			if (canDelete) {
+				// delete
+				target.append("<input type=\"submit\" class='btn btn-default' name=\"");
+				target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_DEL);
+				target.append("\" value=\"");
+				target.append(StringHelper.escapeHtml(translator.translate("del")));
+				target.append("\" />");
+			}
 
-		target.append("</form>");
+			if (canWrite) {
+				// move
+				target.append("<input type=\"submit\" class='btn btn-default' name=\"");
+				target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_MOVE);
+				target.append("\" value=\"");
+				target.append(StringHelper.escapeHtml(translator.translate("move")));
+				// copy
+				target.append("\" /><input type=\"submit\" class='btn btn-default' name=\"");
+				target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_COPY);
+				target.append("\" value=\"");
+				target.append(StringHelper.escapeHtml(translator.translate("copy")));
+				target.append("\" />");
+				// zip
+				target.append("<input type=\"submit\" class='btn btn-default' name=\"");
+				target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_ZIP);
+				target.append("\" value=\"");
+				target.append(StringHelper.escapeHtml(translator.translate("zip")));
+				//unzip
+				target.append("\" /><input type=\"submit\" class='btn btn-default' name=\"");
+				target.append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_UNZIP);
+				target.append("\" value=\"");
+				target.append(StringHelper.escapeHtml(translator.translate("unzip")));
+				target.append("\" />");				
+			}
+			target.append("</div></div>");
+		}
+		target.append("</div></form>");
 	}
 }

@@ -38,6 +38,8 @@ public interface Certificate extends CreateInfo {
 	
 	public String getPath();
 	
+	public String getCourseTitle();
+	
 	public Long getArchivedResourceKey();
 	
 	public Identity getIdentity();

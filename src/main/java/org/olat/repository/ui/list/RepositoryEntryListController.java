@@ -70,6 +70,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
@@ -544,10 +545,15 @@ public class RepositoryEntryListController extends FormBasicController
 		String label;
 		boolean isStart = true;
 		if(!row.isMembersOnly() && row.getAccessTypes() != null && !row.getAccessTypes().isEmpty() && !row.isMember()) {
-			label = "book";
-			isStart = false;
 			if(guestOnly) {
-				return;
+				if(row.getAccess() == RepositoryEntry.ACC_USERS_GUESTS) {
+					label = "start";
+				} else {
+					return;
+				}
+			} else {
+				label = "book";
+				isStart = false;
 			}
 		} else {
 			label = "start";

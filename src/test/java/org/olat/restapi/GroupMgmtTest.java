@@ -388,11 +388,11 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		EntityUtils.consume(response.getEntity());
 		
-    BusinessGroup bg = businessGroupService.loadBusinessGroup(g1.getKey());
-    assertNotNull(bg);
-    assertEquals(bg.getKey(), vo.getKey());
-    assertEquals(bg.getName(), "rest-g1-mod");
-    assertEquals(bg.getDescription(), "rest-g1 description");
+		BusinessGroup bg = businessGroupService.loadBusinessGroup(g1.getKey());
+		assertNotNull(bg);
+		assertEquals(bg.getKey(), vo.getKey());
+		assertEquals(bg.getName(), "rest-g1-mod");
+		assertEquals(bg.getDescription(), "rest-g1 description");
 	}
 	
 	@Test
@@ -412,13 +412,13 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		
 		GroupVO newGroupVo = conn.parse(response, GroupVO.class); 
-    assertNotNull(newGroupVo);
+		assertNotNull(newGroupVo);
 
-    BusinessGroup bg = businessGroupService.loadBusinessGroup(newGroupVo.getKey());
-    assertNotNull(bg);
-    assertEquals(bg.getKey(), newGroupVo.getKey());
-    assertEquals(bg.getName(), "rest-g5-new");
-    assertEquals(bg.getDescription(), "rest-g5 description");
+		BusinessGroup bg = businessGroupService.loadBusinessGroup(newGroupVo.getKey());
+		assertNotNull(bg);
+		assertEquals(bg.getKey(), newGroupVo.getKey());
+		assertEquals(bg.getName(), "rest-g5-new");
+		assertEquals(bg.getDescription(), "rest-g5 description");
 	}
 	
 	@Test
@@ -484,8 +484,8 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
-    BusinessGroup bg = businessGroupService.loadBusinessGroup(g1.getKey());
-    assertNull(bg);
+		BusinessGroup bg = businessGroupService.loadBusinessGroup(g1.getKey());
+		assertNull(bg);
 	}
 	
 	@Test

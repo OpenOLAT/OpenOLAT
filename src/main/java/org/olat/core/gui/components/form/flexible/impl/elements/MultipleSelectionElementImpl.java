@@ -347,10 +347,14 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		}
 		
 		// create and add selectbox element
-		String ssscId = getFormItemId() == null ? null : getFormItemId() + "_SELBOX";
-		component = new MultipleSelectionComponent(ssscId, this);
-		component.setDomReplacementWrapperRequired(domReplacementWrapperRequired);
-		component.setCheckComponents(ssecs);
+		if(component == null) {
+			String ssscId = getFormItemId() == null ? null : getFormItemId() + "_SELBOX";
+			component = new MultipleSelectionComponent(ssscId, this);
+			component.setDomReplacementWrapperRequired(domReplacementWrapperRequired);
+			component.setCheckComponents(ssecs);
+		} else {
+			component.setCheckComponents(ssecs);
+		}
 	}
 
 	/**

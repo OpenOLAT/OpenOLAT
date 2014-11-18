@@ -48,7 +48,7 @@ public class PasswordConditionEditController extends FormBasicController {
 	private boolean hasAlreadyPassword;
 	
 	public PasswordConditionEditController(UserRequest ureq, WindowControl wControl, PasswordCondition condition) {
-		super(ureq, wControl, "passwordEdit");
+		super(ureq, wControl);
 		this.condition = condition;
 		hasAlreadyPassword = StringHelper.containsNonWhitespace(condition.getPassword());
 		initForm(ureq);
@@ -56,10 +56,10 @@ public class PasswordConditionEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		passwordSwitch = uifactory.addCheckboxesHorizontal("passwordSwitch", "", formLayout, new String[]{"ison"}, new String[]{translate("password.field")});
+		passwordSwitch = uifactory.addCheckboxesHorizontal("password.field", "password.field", formLayout, new String[]{"ison"}, new String[]{ "" });
 		passwordSwitch.addActionListener(FormEvent.ONCHANGE);
 		
-		passwordField = uifactory.addTextElement("passwordField", "password.field", 30, "", formLayout);
+		passwordField = uifactory.addTextElement("passwordField", null, 30, "", formLayout);
 		passwordField.setExampleKey("password.example", null);
 		passwordField.showError(false);
 		if (condition != null && StringHelper.containsNonWhitespace(condition.getPassword())) {

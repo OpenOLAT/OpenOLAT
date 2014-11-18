@@ -116,6 +116,11 @@ public class EditorUserCourseEnvironmentImpl implements UserCourseEnvironment {
 	}
 
 	@Override
+	public boolean hasEfficiencyStatementOrCertificate(boolean update) {
+		return false;
+	}
+
+	@Override
 	public RepositoryEntryLifecycle getLifecycle() {
 		if(lifecycle == null) {
 			CourseGroupManager cgm = courseEditorEnv.getCourseGroupManager();

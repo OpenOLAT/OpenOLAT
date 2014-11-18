@@ -1068,6 +1068,8 @@ create table o_cer_template (
    c_name varchar(256) not null,
    c_path varchar(1024) not null,
    c_public bool not null,
+   c_format varchar(16),
+   c_orientation varchar(16),
    primary key (id)
 );
 
@@ -1079,6 +1081,7 @@ create table o_cer_certificate (
    c_name varchar(256) not null,
    c_path varchar(1024) not null,
    c_last bool not null default true,
+   c_course_title varchar(255),
    c_archived_resource_id int8 not null,
    fk_olatresource int8,
    fk_identity int8 not null,

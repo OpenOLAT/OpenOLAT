@@ -125,7 +125,7 @@ public class EfficiencyStatementAssessmentController extends FormBasicController
 
 	private void openConfiguration(UserRequest ureq) {
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(ores, false);
-		String resourceUrl = "[RepositoryEntry:" + re.getKey() + "][settings:0]";
+		String resourceUrl = "[RepositoryEntry:" + re.getKey() + "][CertificationSettings:0]";
 		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 		NewControllerFactory.getInstance().launch(ureq, bwControl);

@@ -44,11 +44,16 @@ public abstract class PersistentObject implements CreateInfo, Persistable {
 	private int version = 0;
 	protected Date creationDate;
 	
-	/**
-	 * @see org.olat.core.commons.persistence.Auditable#getCreationDate()
-	 */
+	@Override
 	public Date getCreationDate() {
 		return creationDate;
+	}
+
+	/**
+	 * @param date
+	 */
+	public void setCreationDate(Date date) {
+		creationDate = date;
 	}
 	
 	/**
@@ -57,14 +62,6 @@ public abstract class PersistentObject implements CreateInfo, Persistable {
 	 */
 	private void setVersion(int version) {
 		this.version = version;
-	}
-
-	/**
-	 * For Hibernate only
-	 * @param date
-	 */
-	private void setCreationDate(Date date) {
-		creationDate = date;
 	}
 
 	/**

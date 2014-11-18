@@ -74,6 +74,8 @@ public class CertificateImpl implements Certificate, Persistable {
 	private String path;
 	@Column(name="c_last", nullable=false, insertable=true, updatable=true)
 	private boolean last;
+	@Column(name="c_course_title", nullable=true, insertable=true, updatable=false)
+	private String courseTitle;
 	@Column(name="c_archived_resource_id", nullable=false, insertable=true, updatable=false)
 	private Long archivedResourceKey;
 	
@@ -125,6 +127,15 @@ public class CertificateImpl implements Certificate, Persistable {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	@Override
+	public String getCourseTitle() {
+		return courseTitle;
+	}
+
+	public void setCourseTitle(String courseTitle) {
+		this.courseTitle = courseTitle;
 	}
 
 	public boolean isLast() {

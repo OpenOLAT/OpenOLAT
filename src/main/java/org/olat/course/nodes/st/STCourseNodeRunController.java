@@ -29,18 +29,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.ObjectivesHelper;
@@ -49,6 +55,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -66,7 +73,11 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Felix Jost, Florian Gnägi frentix GmbH
  */
 public class STCourseNodeRunController extends BasicController {
-	private VelocityContainer myContent;
+	
+	private Link certificationLink;
+	private final VelocityContainer myContent;
+	
+	private final UserCourseEnvironment userCourseEnv;
 
 	/**
 	 * @param ureq
@@ -79,6 +90,7 @@ public class STCourseNodeRunController extends BasicController {
 			NodeEvaluation ne) {
 		super(ureq, wControl);
 		addLoggingResourceable(LoggingResourceable.wrap(stCourseNode));
+		this.userCourseEnv = userCourseEnv;
 
 		myContent = createVelocityContainer("run");
 		myContent.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
@@ -141,8 +153,19 @@ public class STCourseNodeRunController extends BasicController {
 		// push title and learning objectives, only visible on intro page
 		myContent.contextPut("menuTitle", stCourseNode.getShortTitle());
 		myContent.contextPut("displayTitle", stCourseNode.getLongTitle());
-		myContent.contextPut("hasScore", new Boolean(stCourseNode.hasScoreConfigured()));
-		myContent.contextPut("hasPassed", new Boolean(stCourseNode.hasPassedConfigured()));
+		if(ureq.getUserSession().getRoles().isGuestOnly()) {
+			myContent.contextPut("hasScore", Boolean.FALSE);
+			myContent.contextPut("hasPassed", Boolean.FALSE);
+		} else {
+			myContent.contextPut("hasScore", new Boolean(stCourseNode.hasScoreConfigured()));
+			myContent.contextPut("hasPassed", new Boolean(stCourseNode.hasPassedConfigured()));
+
+			CourseConfig cc = userCourseEnv.getCourseEnvironment().getCourseConfig();
+			if((cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled())
+					&& userCourseEnv.hasEfficiencyStatementOrCertificate(false)) {
+				certificationLink = LinkFactory.createButton("certification", myContent, this);
+			}
+		}
 
 		if (se != null) {
 			Float score = se.getScore();
@@ -170,18 +193,18 @@ public class STCourseNodeRunController extends BasicController {
 		putInitialPanel(myContent);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		// no events to dispatch
+		if(certificationLink == source) {
+			RepositoryEntry re = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			String resourceUrl = "[RepositoryEntry:" + re.getKey() + "][Certification:0]";
+			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+			NewControllerFactory.getInstance().launch(ureq, bwControl);
+		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (event instanceof OlatCmdEvent) {
 			OlatCmdEvent gotoNodeEvent = (OlatCmdEvent) event;			

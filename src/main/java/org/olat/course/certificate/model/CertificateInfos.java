@@ -19,6 +19,8 @@
  */
 package org.olat.course.certificate.model;
 
+import java.util.Date;
+
 import org.olat.core.id.Identity;
 
 /**
@@ -32,6 +34,8 @@ public class CertificateInfos {
 	private final Float score;
 	private final Boolean passed;
 	private final Identity assessedIdentity;
+	
+	private Date creationDate;
 	
 	public CertificateInfos(Identity assessedIdentity, Float score, Boolean passed) {
 		this.score = score;
@@ -49,5 +53,13 @@ public class CertificateInfos {
 	
 	public Identity getAssessedIdentity() {
 		return assessedIdentity;
+	}
+
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
 	}
 }

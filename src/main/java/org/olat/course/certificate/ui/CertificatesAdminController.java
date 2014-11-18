@@ -32,11 +32,15 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +59,7 @@ public class CertificatesAdminController extends FormBasicController {
 	
 	private CloseableModalController cmc;
 	private UploadCertificateController uploadCtrl;
+	private DialogBoxController confirmDeleteCtrl;
 
 	@Autowired
 	private CertificatesManager certificatesManager;
@@ -70,6 +75,8 @@ public class CertificatesAdminController extends FormBasicController {
 		
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18n(), Cols.name.ordinal()));
+		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("replace", translate("replace"), "replace"));
+		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("delete", translate("delete"), "delete"));
 		
 		tableModel = new TemplatesDataModel(tableColumnModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "templates", tableModel, formLayout);
@@ -98,9 +105,17 @@ public class CertificatesAdminController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == uploadLink) {
 			doUpload(ureq);
+		} else if(source == tableEl) {
+			SelectionEvent se = (SelectionEvent)event;
+			String cmd = se.getCommand();
+			CertificateTemplate selectedTemplate = tableModel.getObject(se.getIndex());
+			if("replace".equals(cmd)) {
+				doReplace(ureq, selectedTemplate);
+			} else if("delete".equals(cmd)) {
+				doConfirmDelete(ureq, selectedTemplate);
+			}
 		}
 	}
-
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -110,6 +125,11 @@ public class CertificatesAdminController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(confirmDeleteCtrl == source) {
+			if(DialogBoxUIFactory.isOkEvent(event)) {
+				CertificateTemplate template = (CertificateTemplate)confirmDeleteCtrl.getUserObject();
+				doDelete(template);
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -122,12 +142,37 @@ public class CertificatesAdminController extends FormBasicController {
 		uploadCtrl = null;
 		cmc = null;
 	}
+	private void doConfirmDelete(UserRequest ureq, CertificateTemplate selectedTemplate) {
+		String title = translate("confirm.delete.title");
+		String text = translate("confirm.delete.text");
+		confirmDeleteCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteCtrl);
+		confirmDeleteCtrl.setUserObject(selectedTemplate);
+	}
+	
+	private void doDelete(CertificateTemplate template) {
+		certificatesManager.deleteTemplate(template);
+		updateDataModel();
+		showInfo("confirm.certificate.deleted", template.getName());
+	}
 
 	private void doUpload(UserRequest ureq) {
 		removeAsListenerAndDispose(uploadCtrl);
 		removeAsListenerAndDispose(cmc);
 		
 		uploadCtrl = new UploadCertificateController(ureq, getWindowControl());
+		listenTo(uploadCtrl);
+		
+		String title = translate("upload.title");
+		cmc = new CloseableModalController(getWindowControl(), "close", uploadCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doReplace(UserRequest ureq, CertificateTemplate template) {
+		removeAsListenerAndDispose(uploadCtrl);
+		removeAsListenerAndDispose(cmc);
+		
+		uploadCtrl = new UploadCertificateController(ureq, getWindowControl(), template);
 		listenTo(uploadCtrl);
 		
 		String title = translate("upload.title");

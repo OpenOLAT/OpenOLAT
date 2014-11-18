@@ -53,6 +53,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
@@ -75,6 +76,7 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.RecertificationTimeUnit;
 import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateInfos;
+import org.olat.course.certificate.model.CertificateStandalone;
 import org.olat.course.certificate.model.CertificateTemplateImpl;
 import org.olat.course.certificate.ui.CertificateController;
 import org.olat.course.config.CourseConfig;
@@ -127,6 +129,7 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 	private BusinessGroupService businessGroupService;
 	
 
+	private Boolean phantomAvailable;
 	private FileStorage usersStorage;
 	private FileStorage templatesStorage;
 	
@@ -156,6 +159,14 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 		} catch(Exception e) {
 			log.error("", e);
 		}
+	}
+
+	@Override
+	public boolean isHTMLTemplateAllowed() {
+		if(phantomAvailable == null) {
+			phantomAvailable = CertificatePhantomWorker.checkPhantomJSAvailabilty();
+		}
+		return phantomAvailable.booleanValue();
 	}
 
 	@Override
@@ -191,9 +202,14 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 	
 	@Override
 	public VFSLeaf getCertificateLeaf(Certificate certificate) {
-		VFSContainer cerContainer = this.getCertificateRootContainer();
+		VFSContainer cerContainer = getCertificateRootContainer();
 		VFSItem cerItem = cerContainer.resolve(certificate.getPath());
 		return cerItem instanceof VFSLeaf ? (VFSLeaf)cerItem : null;
+	}
+	
+	private File getCertificateFile(Certificate certificate) {
+		File file = getCertificateRoot();
+		return new File(file, certificate.getPath());
 	}
 	
 	@Override
@@ -219,6 +235,21 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 				.getResultList();
 		return certificates.isEmpty() ? null : certificates.get(0);
 	}
+	
+	@Override
+	public boolean hasCertificate(IdentityRef identity, Long resourceKey) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(cer) from certificate cer")
+		  .append(" where (cer.olatResource.key=:resourceKey or cer.archivedResourceKey=:resourceKey)")
+		  .append(" and cer.identity.key=:identityKey");
+		List<Number> certififcates = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("resourceKey", resourceKey)
+				.setParameter("identityKey", identity.getKey())
+				.setMaxResults(1)
+				.getResultList();
+		return certififcates.isEmpty() ? false : certififcates.get(0).intValue() > 0;
+	}
 
 	@Override
 	public List<CertificateLight> getLastCertificates(IdentityRef identity) {
@@ -235,7 +266,8 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 	public Certificate getLastCertificate(IdentityRef identity, Long resourceKey) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select cer from certificate cer")
-		  .append(" where cer.olatResource.key=:resourceKey and cer.identity.key=:identityKey and cer.last=true order by cer.creationDate");
+		  .append(" where (cer.olatResource.key=:resourceKey or cer.archivedResourceKey=:resourceKey)")
+		  .append(" and cer.identity.key=:identityKey and cer.last=true order by cer.creationDate");
 		List<Certificate> certififcates = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Certificate.class)
 				.setParameter("resourceKey", resourceKey)
@@ -332,7 +364,7 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 	public List<Certificate> getCertificates(IdentityRef identity, OLATResource resource) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select cer from certificate cer")
-		  .append(" where cer.olatResource.key=:resourceKey and cer.identity.key=:identityKey");
+		  .append(" where cer.olatResource.key=:resourceKey and cer.identity.key=:identityKey order by cer.creationDate desc");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Certificate.class)
 				.setParameter("resourceKey", resource.getKey())
@@ -385,6 +417,108 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 		}
 		return allowed;
 	}
+	
+	@Override
+	public void deleteCertificate(Certificate certificate) {
+		File certificateFile = getCertificateFile(certificate);
+		if(certificateFile != null && certificateFile.exists()) {
+			try {
+				FileUtils.deleteDirsAndFiles(certificateFile.getParentFile().toPath());
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		}
+		CertificateImpl relaodedCertificate = dbInstance.getCurrentEntityManager()
+				.getReference(CertificateImpl.class, certificate.getKey());
+		dbInstance.getCurrentEntityManager().remove(relaodedCertificate);
+		
+		//reorder the last flag
+		List<Certificate> certificates = getCertificates(relaodedCertificate.getIdentity(), relaodedCertificate.getOlatResource());
+		certificates.remove(relaodedCertificate);
+		if(certificates.size() > 0) {
+			boolean hasLast = false;
+			for(Certificate cer:certificates) {
+				if(((CertificateImpl)cer).isLast()) {
+					hasLast = true;
+				}
+			}
+			
+			if(!hasLast) {
+				CertificateImpl newLastCertificate = (CertificateImpl)certificates.get(0);
+				newLastCertificate.setLast(true);
+				dbInstance.getCurrentEntityManager().merge(newLastCertificate);
+			}
+		}
+	}
+
+	@Override
+	public Certificate uploadCertificate(Identity identity, Date creationDate, OLATResource resource, File certificateFile) {
+		CertificateImpl certificate = new CertificateImpl();
+		certificate.setOlatResource(resource);
+		certificate.setArchivedResourceKey(resource.getKey());
+		if(creationDate != null) {
+			certificate.setCreationDate(creationDate);
+		}
+		certificate.setLastModified(certificate.getCreationDate());
+		certificate.setIdentity(identity);
+		certificate.setUuid(UUID.randomUUID().toString());
+		certificate.setLast(true);
+
+		String dir = usersStorage.generateDir();
+		try (InputStream in = Files.newInputStream(certificateFile.toPath())) {
+			File dirFile = new File(getCertificateRoot(), dir);
+			dirFile.mkdirs();
+
+			File storedCertificateFile = new File(dirFile, "Certificate.pdf");
+			Files.copy(in, storedCertificateFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+			certificate.setName(storedCertificateFile.getName());
+			certificate.setPath(dir + storedCertificateFile.getName());
+
+			Date dateFirstCertification = getDateFirstCertification(identity, resource);
+			if (dateFirstCertification != null) {
+				removeLastFlag(identity, resource);
+			}
+
+			dbInstance.getCurrentEntityManager().persist(certificate);
+		} catch (Exception e) {
+			log.error("", e);
+		}
+
+		return certificate;
+	}
+	
+	@Override
+	public Certificate uploadStandaloneCertificate(Identity identity, Date creationDate, String courseTitle, Long resourceKey, File certificateFile) {
+		CertificateStandalone certificate = new CertificateStandalone();
+		certificate.setArchivedResourceKey(resourceKey);
+		if(creationDate != null) {
+			certificate.setCreationDate(creationDate);
+		}
+		certificate.setLastModified(certificate.getCreationDate());
+		certificate.setIdentity(identity);
+		certificate.setUuid(UUID.randomUUID().toString());
+		certificate.setLast(true);
+		certificate.setCourseTitle(courseTitle);
+
+		String dir = usersStorage.generateDir();
+		try (InputStream in = Files.newInputStream(certificateFile.toPath())) {
+			File dirFile = new File(getCertificateRoot(), dir);
+			dirFile.mkdirs();
+
+			File storedCertificateFile = new File(dirFile, "Certificate.pdf");
+			Files.copy(in, storedCertificateFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+			certificate.setName(storedCertificateFile.getName());
+			certificate.setPath(dir + storedCertificateFile.getName());
+
+			dbInstance.getCurrentEntityManager().persist(certificate);
+		} catch (Exception e) {
+			log.error("", e);
+		}
+
+		return certificate;
+	}
 
 	@Override
 	public void generateCertificates(List<CertificateInfos> certificateInfos, RepositoryEntry entry,
@@ -429,12 +563,12 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 	@Override
 	public Certificate generateCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
 			CertificateTemplate template, MailerResult result) {
-		Certificate certificate = peristCertificate(certificateInfos, entry, template, result);
+		Certificate certificate = persistCertificate(certificateInfos, entry, template, result);
 		markPublisherNews(null, entry.getOlatResource());
 		return certificate;
 	}
 
-	private Certificate peristCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
+	private Certificate persistCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
 			CertificateTemplate template, MailerResult result) {
 		OLATResource resource = entry.getOlatResource();
 		Identity identity = certificateInfos.getAssessedIdentity();
@@ -442,11 +576,16 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 		CertificateImpl certificate = new CertificateImpl();
 		certificate.setOlatResource(resource);
 		certificate.setArchivedResourceKey(resource.getKey());
-		certificate.setCreationDate(new Date());
+		if(certificateInfos.getCreationDate() != null) {
+			certificate.setCreationDate(certificateInfos.getCreationDate());
+		} else {
+			certificate.setCreationDate(new Date());
+		}
 		certificate.setLastModified(certificate.getCreationDate());
 		certificate.setIdentity(identity);
 		certificate.setUuid(UUID.randomUUID().toString());
 		certificate.setLast(true);
+		certificate.setCourseTitle(entry.getDisplayname());
 		
 		String dir = usersStorage.generateDir();
 		try {
@@ -460,7 +599,7 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 			Date dateFirstCertification = getDateFirstCertification(identity, resource);
 
 			File certificateFile;
-			if(template.getPath().toLowerCase().endsWith("pdf")) {
+			if(template == null || template.getPath().toLowerCase().endsWith("pdf")) {
 				CertificateTemplateWorker worker = new CertificateTemplateWorker(identity, entry, score, passed,
 						dateCertification, dateFirstCertification, locale, userManager, this);
 				certificateFile = worker.fill(template, dirFile);
@@ -541,7 +680,7 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 
 	@Override
 	public List<CertificateTemplate> getTemplates() {
-		String sb = "select template from certificatetemplate template where template.publicTemplate=true";
+		String sb = "select template from certificatetemplate template where template.publicTemplate=true order by template.creationDate desc";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb, CertificateTemplate.class)
 				.getResultList();
@@ -557,12 +696,30 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 	}
 
 	@Override
-	public CertificateTemplate addTemplate(String name, File file, boolean publicTemplate) {
+	public void deleteTemplate(CertificateTemplate template) {
+		File templateFile = getTemplateFile(template);
+		if(templateFile != null && templateFile.getParent() != null && templateFile.getParentFile().exists()) {
+			try {
+				FileUtils.deleteDirsAndFiles(templateFile.getParentFile().toPath());
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		}
+		//delete in db
+		CertificateTemplate reloadedTemplate = dbInstance.getCurrentEntityManager()
+				.getReference(CertificateTemplateImpl.class, template.getKey());
+		dbInstance.getCurrentEntityManager().remove(reloadedTemplate);
+	}
+
+	@Override
+	public CertificateTemplate addTemplate(String name, File file, String format, String orientation, boolean publicTemplate) {
 		CertificateTemplateImpl template = new CertificateTemplateImpl();
 
 		template.setCreationDate(new Date());
 		template.setLastModified(template.getCreationDate());
 		template.setPublicTemplate(publicTemplate);
+		template.setFormat(format);
+		template.setOrientation(orientation);
 
 		String filename = name.toLowerCase();
 		if(filename.endsWith(".pdf")) {
@@ -578,9 +735,36 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 				template = null;
 			}
 		}
-		
-		
 		return template;
+	}
+	
+	@Override
+	public CertificateTemplate updateTemplate(CertificateTemplate template, String name, File file, String format, String orientation) {
+		CertificateTemplateImpl templateToUpdate = (CertificateTemplateImpl)template;
+		templateToUpdate.setLastModified(new Date());
+		templateToUpdate.setFormat(format);
+		templateToUpdate.setOrientation(orientation);
+
+		String filename = name.toLowerCase();
+		File templateFile = getTemplateFile(templateToUpdate);
+		if(filename.endsWith(".pdf")) {
+			if(addPdfTemplate(name, file, templateToUpdate)) {
+				templateToUpdate = dbInstance.getCurrentEntityManager().merge(templateToUpdate);
+			} else {
+				templateToUpdate = null;
+			}
+		} else if(filename.endsWith(".zip")) {
+			if(addHtmlTemplate(name, file, templateToUpdate)) {
+				templateToUpdate = dbInstance.getCurrentEntityManager().merge(templateToUpdate);
+			} else {
+				templateToUpdate = null;
+			}
+		}
+		if(templateToUpdate != null && templateFile != null && templateFile.exists()) {
+			//if the new template is successfully saved, delete the old one
+			FileUtils.deleteDirsAndFiles(templateFile.getParentFile(), true, true);
+		}
+		return templateToUpdate;
 	}
 	
 	private boolean addHtmlTemplate(String name, File file, CertificateTemplateImpl template) {

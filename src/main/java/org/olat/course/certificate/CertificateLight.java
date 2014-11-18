@@ -33,6 +33,8 @@ public interface CertificateLight extends CreateInfo {
 	
 	public String getUuid();
 	
+	public String getCourseTitle();
+	
 	public Long getIdentityKey();
 	
 	public Long getOlatResourceKey();

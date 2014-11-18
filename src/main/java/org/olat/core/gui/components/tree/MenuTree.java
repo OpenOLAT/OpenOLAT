@@ -195,15 +195,19 @@ public class MenuTree extends AbstractComponent {
 		} else if(COMMAND_TREENODE_INSERT_UP.equals(cmd)) {
 			insertionPoint = new InsertionPoint(nodeId, InsertionPoint.Position.up);
 			setDirty(true);
+			fireEvent(ureq, new InsertEvent(COMMAND_TREENODE_INSERT_UP));
 		} else if(COMMAND_TREENODE_INSERT_DOWN.equals(cmd)) {
 			insertionPoint = new InsertionPoint(nodeId, InsertionPoint.Position.down);
 			setDirty(true);
+			fireEvent(ureq, new InsertEvent(COMMAND_TREENODE_INSERT_DOWN));
 		} else if(COMMAND_TREENODE_INSERT_UNDER.equals(cmd)) {
 			insertionPoint = new InsertionPoint(nodeId, InsertionPoint.Position.under);
 			setDirty(true);
+			fireEvent(ureq, new InsertEvent(COMMAND_TREENODE_INSERT_UNDER));
 		} else if(COMMAND_TREENODE_INSERT_REMOVE.equals(cmd)) {
 			insertionPoint = null;
 			setDirty(true);
+			fireEvent(ureq, new InsertEvent(COMMAND_TREENODE_INSERT_REMOVE));
 		}
 	}
 	

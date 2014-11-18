@@ -34,7 +34,12 @@
 			</tr>
 			#end
 		</tbody>
-		</table>				
+		</table>
+		#if($r.available("certification"))
+			<div class="o_button_group">
+				$r.render("certification")
+			</div>
+		#end
 	</div>
  #end
 

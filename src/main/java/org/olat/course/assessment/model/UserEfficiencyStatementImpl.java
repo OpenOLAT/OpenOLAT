@@ -51,15 +51,18 @@ public class UserEfficiencyStatementImpl extends PersistentObject implements Use
 	private String statementXml;
 	
 	private Date lastModified;
-		
+
+	@Override
 	public Date getLastModified() {
 		return lastModified;
 	}
 
+	@Override
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
 	}
 
+	@Override
 	public Float getScore() {
 		return score;
 	}
@@ -67,7 +70,8 @@ public class UserEfficiencyStatementImpl extends PersistentObject implements Use
 	public void setScore(Float score) {
 		this.score = score;
 	}
-		
+
+	@Override
 	public Boolean getPassed() {
 		return passed;
 	}
@@ -75,7 +79,8 @@ public class UserEfficiencyStatementImpl extends PersistentObject implements Use
 	public void setPassed(Boolean passed) {
 		this.passed = passed;
 	}
-	
+
+	@Override
 	public Integer getTotalNodes() {
 		return totalNodes;
 	}
@@ -84,6 +89,7 @@ public class UserEfficiencyStatementImpl extends PersistentObject implements Use
 		this.totalNodes = totalNodes;
 	}
 
+	@Override
 	public Integer getAttemptedNodes() {
 		return attemptedNodes;
 	}
@@ -92,6 +98,7 @@ public class UserEfficiencyStatementImpl extends PersistentObject implements Use
 		this.attemptedNodes = attemptedNodes;
 	}
 
+	@Override
 	public Integer getPassedNodes() {
 		return passedNodes;
 	}
@@ -108,6 +115,7 @@ public class UserEfficiencyStatementImpl extends PersistentObject implements Use
 		this.statementXml = statementXml;
 	}
 
+	@Override
 	public Identity getIdentity() {
 		return identity;
 	}
@@ -132,6 +140,7 @@ public class UserEfficiencyStatementImpl extends PersistentObject implements Use
 		this.title = title;
 	}
 
+	@Override
 	public String getShortTitle() {
 		return shortTitle;
 	}
@@ -140,6 +149,7 @@ public class UserEfficiencyStatementImpl extends PersistentObject implements Use
 		this.shortTitle = shortTitle;
 	}
 
+	@Override
 	public Long getCourseRepoKey() {
 		return courseRepoKey;
 	}

@@ -319,11 +319,20 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 						String displayName = amh.getMethodName(getLocale());
 						types.add(new PriceMethod(price, type, displayName));
 					}
-					String linkText = translate("book.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
+					String linkText = guestOnly ? translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName())) 
+							: translate("book.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
 					startLink.setCustomEnabledLinkCSS("btn btn-success"); // custom style
 					startLink.setElementCssClass("o_book btn-block");
-					startLink.setVisible(!guestOnly);
+					if(guestOnly) {
+						if(entry.getAccess() == RepositoryEntry.ACC_USERS_GUESTS) {
+							startLink.setVisible(true);
+						} else {
+							startLink.setVisible(false);
+						}
+					} else {
+						startLink.setVisible(true);
+					}
 				} else {
 					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);

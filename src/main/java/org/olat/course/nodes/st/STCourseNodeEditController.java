@@ -51,7 +51,6 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.ScoreCalculator;
@@ -135,7 +134,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	 * @param editorModel
 	 */
 	public STCourseNodeEditController(UserRequest ureq, WindowControl wControl, STCourseNode stNode, VFSContainer courseFolderContainer,
-			CourseGroupManager groupMgr, CourseEditorTreeModel editorModel, UserCourseEnvironment euce) {
+			CourseEditorTreeModel editorModel, UserCourseEnvironment euce) {
 		super(ureq, wControl);
 
 		this.stNode = stNode;

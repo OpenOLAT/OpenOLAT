@@ -43,6 +43,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -57,7 +58,7 @@ import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.QuotaManager;
-import org.olat.modules.coach.ui.StudentOverviewController;
+import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
 import org.olat.properties.Property;
 import org.olat.user.ChangePrefsController;
 import org.olat.user.DisplayPortraitController;
@@ -107,7 +108,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private ProfileAndHomePageEditController userProfileCtr;
 	private CourseOverviewController courseCtr;
 	private GroupOverviewController grpCtr;
-	private StudentOverviewController efficicencyCtrl;
+	private CertificateAndEfficiencyStatementListController efficicencyCtrl;
 
 
 	/**
@@ -314,8 +315,12 @@ public class UserAdminController extends BasicController implements Activateable
 		userTabP.addTab(translate(NLS_VIEW_COURSES), courseCtr.getInitialComponent());
 		
 		if (isOlatAdmin) {
-			efficicencyCtrl = new StudentOverviewController(ureq, getWindowControl(), identity);
-			userTabP.addTab(translate(NLS_VIEW_EFF_STATEMENTS), efficicencyCtrl.getInitialComponent());
+			efficicencyCtrl = new CertificateAndEfficiencyStatementListController(ureq, getWindowControl(), identity);
+			BreadcrumbedStackedPanel stackPanel = new BreadcrumbedStackedPanel("statements", getTranslator(), efficicencyCtrl);
+			stackPanel.pushController(translate(NLS_VIEW_EFF_STATEMENTS), efficicencyCtrl);
+			efficicencyCtrl.setBreadcrumbPanel(stackPanel);
+			stackPanel.setInvisibleCrumb(1);
+			userTabP.addTab(translate(NLS_VIEW_EFF_STATEMENTS), stackPanel);
 		}
 
 		Boolean canSubscriptions = BaseSecurityModule.USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS;

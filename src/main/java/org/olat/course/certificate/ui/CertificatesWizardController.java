@@ -109,7 +109,7 @@ public class CertificatesWizardController extends BasicController {
 		Certificates_1_SelectionStep start = new Certificates_1_SelectionStep(ureq, courseOres, datas, hasAssessableNodes);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
-			public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
 				@SuppressWarnings("unchecked")
 				List<CertificateInfos> assessedIdentitiesInfos = (List<CertificateInfos>)runContext.get("infos");
 				if(assessedIdentitiesInfos != null && assessedIdentitiesInfos.size() > 0) {

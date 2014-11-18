@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jcodec.api.FrameGrab;
-import org.jcodec.api.JCodecException;
 import org.jcodec.common.FileChannelWrapper;
 import org.jcodec.containers.mp4.demuxer.MP4Demuxer;
 import org.olat.core.commons.services.image.Size;
@@ -125,7 +124,8 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 					size = new FinalSize(scaledSize.getWidth(), scaledSize.getHeight());
 				}
 			//NullPointerException can be thrown if the jcodec cannot handle the codec of the movie
-			} catch (IOException | JCodecException | NullPointerException e) {
+			//ArrayIndexOutOfBoundsException 
+			} catch (Exception e) {
 				log.error("", e);
 			}
 		}

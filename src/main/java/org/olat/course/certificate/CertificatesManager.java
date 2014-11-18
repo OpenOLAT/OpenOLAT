@@ -46,6 +46,8 @@ public interface CertificatesManager {
 
 	public static final String ORES_CERTIFICATE =  OresHelper.calculateTypeName(CertificatesManager.class);
 	
+	public boolean isHTMLTemplateAllowed();
+	
 	//notifications
 	public SubscriptionContext getSubscriptionContext(ICourse course);
 	
@@ -56,7 +58,29 @@ public interface CertificatesManager {
 	//templates management
 	public List<CertificateTemplate> getTemplates();
 	
-	public CertificateTemplate addTemplate(String name, File file, boolean publicTemplate);
+	/**
+	 * Add a new template
+	 * @param name The filename of the template
+	 * @param file The file which is / or contains the template
+	 * @param publicTemplate True if the tempalte is accessible system-wide
+	 * @return
+	 */
+	public CertificateTemplate addTemplate(String name, File file, String format, String orientation, boolean publicTemplate);
+	
+	/**
+	 * Update the template files
+	 * @param template
+	 * @param name
+	 * @param file
+	 * @return
+	 */
+	public CertificateTemplate updateTemplate(CertificateTemplate template, String name, File file, String format, String orientation);
+	
+	/**
+	 * Delete the template in the file system and in the database
+	 * @param template
+	 */
+	public void deleteTemplate(CertificateTemplate template);
 	
 	public CertificateTemplate getTemplateById(Long key);
 
@@ -78,6 +102,8 @@ public interface CertificatesManager {
 
 	public List<CertificateLight> getCertificates(OLATResource resourceKey);
 	
+	public boolean hasCertificate(IdentityRef identity, Long resourceKey);
+	
 	public Certificate getLastCertificate(IdentityRef identity, Long resourceKey);
 	
 	public List<Certificate> getCertificates(IdentityRef identity, OLATResource resource);
@@ -85,9 +111,15 @@ public interface CertificatesManager {
 	public boolean isRecertificationAllowed(Identity identity, RepositoryEntry entry);
 	
 	public File previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale);
+
+	public Certificate uploadCertificate(Identity identity, Date creationDate, OLATResource resource, File certificateFile);
+	
+	public Certificate uploadStandaloneCertificate(Identity identity, Date creationDate, String courseTitle, Long resourceKey, File certificateFile);
 	
 	public void generateCertificates(List<CertificateInfos> identities, RepositoryEntry entry, CertificateTemplate template, MailerResult result);
 
 	public Certificate generateCertificate(CertificateInfos identity, RepositoryEntry entry, CertificateTemplate template, MailerResult result);
+	
+	public void deleteCertificate(Certificate certificate);
 
 }

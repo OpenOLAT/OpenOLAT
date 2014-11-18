@@ -39,12 +39,14 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.fileresource.types.FileResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +59,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UploadCertificateController extends FormBasicController {
 	
+	protected static final String[] formatKeys = new String[]{ "A4", "Letter" };
+	protected static final String[] orientationKeys = new String[]{ "portrait", "landscape" };
+	
 	protected FileElement fileEl;
+	protected SingleSelection orientationEl, formatEl;
+	private CertificateTemplate templateToUpdate;
 	
 	@Autowired
 	private CertificatesManager certificatesManager;
@@ -67,17 +74,50 @@ public class UploadCertificateController extends FormBasicController {
 		
 		initForm(ureq);
 	}
+	
+	public UploadCertificateController(UserRequest ureq, WindowControl wControl, CertificateTemplate template) {
+		super(ureq, wControl);
+		this.templateToUpdate = template;
+		initForm(ureq);
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		fileEl = uifactory.addFileElement("template.file", formLayout);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		
+		String[] orientationValues = new String[]{
+			translate(orientationKeys[0]), translate(orientationKeys[1])
+		};
+		orientationEl = uifactory.addRadiosVertical("orientation", formLayout, orientationKeys, orientationValues);
+		orientationEl.select(orientationKeys[0], true);
+		orientationEl.setVisible(false);
+		
+		formatEl = uifactory.addRadiosVertical("format", formLayout, formatKeys, formatKeys);
+		formatEl.select(formatKeys[0], true);
+		formatEl.setVisible(false);
+		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setRootForm(mainForm);
 		formLayout.add(buttonCont);
 		uifactory.addFormSubmitButton("save", buttonCont);
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
+	}
+	
+	public String getFormat() {
+		String format = null;
+		if(formatEl.isVisible() && formatEl.isOneSelected()) {
+			format = formatEl.getSelectedKey();
+		}
+		return format;
+	}
+	
+	public String getOrientation() {
+		String format = null;
+		if(orientationEl.isVisible() && orientationEl.isOneSelected()) {
+			format = orientationEl.getSelectedKey();
+		}
+		return format;
 	}
 	
 	@Override
@@ -90,7 +130,11 @@ public class UploadCertificateController extends FormBasicController {
 		File template = fileEl.getUploadFile();
 		if(template != null) {
 			String name = fileEl.getUploadFileName();
-			certificatesManager.addTemplate(name, template, true);
+			if(templateToUpdate == null) {
+				certificatesManager.addTemplate(name, template, getFormat(), getOrientation(), true);
+			} else {
+				certificatesManager.updateTemplate(templateToUpdate, name, template, getFormat(), getOrientation());
+			}
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
@@ -119,6 +163,8 @@ public class UploadCertificateController extends FormBasicController {
 		
 		File template = fileEl.getUploadFile();
 		fileEl.clearError();
+		formatEl.setVisible(false);
+		orientationEl.setVisible(false);
 		if(template != null && template.exists()) {
 			String filename = fileEl.getUploadFileName().toLowerCase();
 			if(filename.endsWith(".pdf")) {
@@ -134,13 +180,21 @@ public class UploadCertificateController extends FormBasicController {
 	private boolean validateHtml(String filename, File template) {
 		boolean allOk = true;
 		try {
-			Path path = FileResource.getResource(template, filename);
-			IndexVisitor visitor = new IndexVisitor(path);
-			Files.walkFileTree(path, visitor);
-			if(!visitor.hasFound()) {
-				fileEl.setErrorKey("upload.error.noindex", null);
+			if(certificatesManager.isHTMLTemplateAllowed()) {
+				Path path = FileResource.getResource(template, filename);
+				IndexVisitor visitor = new IndexVisitor(path);
+				Files.walkFileTree(path, visitor);
+				if(!visitor.hasFound()) {
+					fileEl.setErrorKey("upload.error.noindex", null);
+				}
+				allOk = visitor.hasFound();
+
+				formatEl.setVisible(allOk);
+				orientationEl.setVisible(allOk);
+			} else {
+				fileEl.setErrorKey("upload.error.no.phantomjs", null);
+				allOk = false;
 			}
-			allOk = visitor.hasFound();
 		} catch (IOException e) {
 			logError("", e);
 			fileEl.setErrorKey("upload.unkown.error", null);

@@ -61,6 +61,8 @@ public class CertificateLightImpl implements CertificateLight, Persistable {
 	private String name;
 	@Column(name="c_last", nullable=false, insertable=true, updatable=true)
 	private boolean last;
+	@Column(name="c_course_title", nullable=true, insertable=true, updatable=false)
+	private String courseTitle;
 	@Column(name="c_archived_resource_id", nullable=false, insertable=true, updatable=false)
 	private Long olatResourceKey;
 	
@@ -101,6 +103,15 @@ public class CertificateLightImpl implements CertificateLight, Persistable {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	@Override
+	public String getCourseTitle() {
+		return courseTitle;
+	}
+
+	public void setCourseTitle(String courseTitle) {
+		this.courseTitle = courseTitle;
 	}
 
 	public Long getOlatResourceKey() {
