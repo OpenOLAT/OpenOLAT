@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -323,11 +324,19 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 	}
 	
 	public EfficiencyStatement getUserEfficiencyStatementByResourceKey(Long resourceKey, Identity identity){
-		UserEfficiencyStatementImpl s = getUserEfficiencyStatementFull(resourceKey, identity);
-		if(s == null || s.getStatementXml() == null) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select statement from ").append(UserEfficiencyStatementStandalone.class.getName()).append(" as statement ")
+		  .append(" where statement.identity.key=:identityKey and statement.resourceKey=:resourceKey");
+
+		List<UserEfficiencyStatementStandalone> statement = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), UserEfficiencyStatementStandalone.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("resourceKey", resourceKey)
+				.getResultList();
+		if(statement.isEmpty() || statement.get(0).getStatementXml() == null) {
 			return null;
 		}
-		return (EfficiencyStatement)xstream.fromXML(s.getStatementXml());
+		return (EfficiencyStatement)xstream.fromXML(statement.get(0).getStatementXml());
 	}
 	
 
@@ -374,7 +383,23 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 		}
 	}
 	
-	public UserEfficiencyStatement getUserEfficiencyStatementLight(Long courseRepoEntryKey, Identity identity) {
+	public boolean hasUserEfficiencyStatement(Long courseRepoEntryKey, IdentityRef identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(statement) from ").append(UserEfficiencyStatementLight.class.getName()).append(" as statement ")
+		  .append(" where statement.identity.key=:identityKey and statement.courseRepoKey=:repoKey");
+
+		List<Number> count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("repoKey", courseRepoEntryKey)
+				.getResultList();
+		if(count.isEmpty()) {
+			return false;
+		}
+		return count.get(0).intValue() > 0;
+	}
+	
+	public UserEfficiencyStatement getUserEfficiencyStatementLight(Long courseRepoEntryKey, IdentityRef identity) {
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("select statement from ").append(UserEfficiencyStatementLight.class.getName()).append(" as statement ")

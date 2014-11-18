@@ -84,7 +84,6 @@ import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.CoachingGroupAccessAssessmentCallback;
 import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.FullAccessAssessmentCallback;
-import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.course.certificate.ui.CertificatesOptionsController;
 import org.olat.course.config.CourseConfig;
@@ -121,7 +120,6 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
-import org.olat.resource.OLATResource;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -477,13 +475,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			// - appear as link when configured, assessable node exist and assessment
 			// data exists for user
 			efficiencyStatementsLink = LinkFactory.createToolLink("efficiencystatement",translate("command.efficiencystatement"), this, "o_icon_certificate");
-			efficiencyStatementsLink.setPopup(new LinkPopupSettings(750, 800, "eff"));
-			efficiencyStatementsLink.setVisible(cc.isEfficencyStatementEnabled());
+			efficiencyStatementsLink.setVisible(cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled());
 			myCourse.addComponent(efficiencyStatementsLink);
-			if(cc.isEfficencyStatementEnabled()) {
-				UserEfficiencyStatement es = efficiencyStatementManager
-						.getUserEfficiencyStatementLight(getRepositoryEntry().getKey(), getIdentity());
-				efficiencyStatementsLink.setEnabled(es != null);
+			if(cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled()) {
+				boolean certification = uce.hasEfficiencyStatementOrCertificate(false);
+				efficiencyStatementsLink.setEnabled(certification);
 			}
 		}
 		
@@ -607,9 +603,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			if(!isGuestOnly && efficiencyStatementsLink != null && ace.getIdentityKey().equals(getIdentity().getKey())
 					&& assessmentChangeType.equals(AssessmentChangedEvent.TYPE_EFFICIENCY_STATEMENT_CHANGED)) {
 				// update tools, maybe efficiency statement link has changed
-				UserEfficiencyStatement es = efficiencyStatementManager
-					.getUserEfficiencyStatementLight(getRepositoryEntry().getKey(), this.getIdentity());
-				efficiencyStatementsLink.setEnabled(es != null);
+				UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
+				boolean certification = uce.hasEfficiencyStatementOrCertificate(true);
+				efficiencyStatementsLink.setEnabled(certification);
 			}
 		} else if (event instanceof EntryChangedEvent ) {
 			EntryChangedEvent repoEvent = (EntryChangedEvent) event;
@@ -653,7 +649,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		} else if(chatLink == source) {
 			launchChat(ureq);
 		} else if(efficiencyStatementsLink == source) {
-			launchEfficiencyStatements(ureq);
+			doEfficiencyStatements(ureq);
 		} else if(noteLink == source) {
 			launchPersonalNotes(ureq);
 		} else if(openGlossaryLink == source) {
@@ -744,6 +740,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				doEditSettings(ureq);
 			} else if("Settings".equalsIgnoreCase(type)) {
 				doOptions(ureq);
+			} else if("CertificationSettings".equalsIgnoreCase(type)) {
+				doCertificatesOptions(ureq);
+			}  else if("Certification".equalsIgnoreCase(type)) {
+				doEfficiencyStatements(ureq);
 			} else if("MembersMgmt".equalsIgnoreCase(type)) {
 				Activateable2 members = doMembers(ureq);
 				if(members != null) {
@@ -1014,6 +1014,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		return null;
 	}
 	
+	private void doEfficiencyStatements(UserRequest ureq) {
+		// will not be disposed on course run dispose, popus up as new browserwindow
+		CertificateAndEfficiencyStatementController efficiencyStatementController = new CertificateAndEfficiencyStatementController(getWindowControl(), ureq, getRepositoryEntry());
+		listenTo(efficiencyStatementController);
+		efficiencyStatementController = pushController(ureq, translate("command.efficiencystatement"), efficiencyStatementController);
+		currentToolCtr = efficiencyStatementController;
+		setActiveTool(efficiencyStatementsLink);
+	}
+	
 	private void toggleGlossary(UserRequest ureq) {
 		// enable / disable glossary highlighting according to user prefs
 		Preferences prefs = ureq.getUserSession().getGuiPreferences();
@@ -1076,24 +1085,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		//open in new browser window
 		PopupBrowserWindow pbw = getWindowControl().getWindowBackOffice().getWindowManager().createNewPopupBrowserWindowFor(ureq, layoutCtrlr);
 		pbw.open(ureq);
-	}
-	
-	private void launchEfficiencyStatements(UserRequest ureq) {
-		// will not be disposed on course run dispose, popus up as new browserwindow
-		ControllerCreator ctrlCreator = new ControllerCreator() {
-			public Controller createController(UserRequest lureq, WindowControl lwControl) {
-				OLATResource resource = getRepositoryEntry().getOlatResource();
-				ICourse course = CourseFactory.loadCourse(resource);
-				CertificateAndEfficiencyStatementController efficiencyStatementController = new CertificateAndEfficiencyStatementController(lwControl, lureq, resource.getKey());
-				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, getWindowControl(), efficiencyStatementController);
-				layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), course.getCourseEnvironment()));
-				return layoutCtr;
-			}					
-		};
-		//wrap the content controller into a full header layout
-		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, ctrlCreator);
-		//open in new browser window
-		openInNewBrowserWindow(ureq, layoutCtrlr);
 	}
 	
 	private void launchGroup(UserRequest ureq, Long groupKey) {
@@ -1201,11 +1192,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				if(efficiencyStatementsLink != null) {
 					ICourse course = CourseFactory.loadCourse(getOlatResourceable());
 					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
-					efficiencyStatementsLink.setVisible(cc.isEfficencyStatementEnabled());
-					if(cc.isEfficencyStatementEnabled()) {
-						UserEfficiencyStatement es = efficiencyStatementManager
-								.getUserEfficiencyStatementLight(getRepositoryEntry().getKey(), getIdentity());
-						efficiencyStatementsLink.setEnabled(es != null);
+					efficiencyStatementsLink.setVisible(cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled());
+					if(cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled()) {
+						UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
+						boolean certification = uce.hasEfficiencyStatementOrCertificate(false);
+						efficiencyStatementsLink.setEnabled(certification);
 					}
 					toolbarPanel.setDirty(true);
 				}

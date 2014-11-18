@@ -57,7 +57,7 @@ public class CertificateDispatcher implements Dispatcher {
 		String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
 		final String origUri = request.getRequestURI();
 		String uuid = origUri.substring(uriPrefix.length());
-		int indexSuffix = uuid.lastIndexOf('.');
+		int indexSuffix = uuid.indexOf('/');
 		if(indexSuffix > 0) {
 			uuid = uuid.substring(0, indexSuffix);
 		}

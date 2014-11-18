@@ -36,6 +36,10 @@ public interface CertificateTemplate extends CreateInfo, ModifiedInfo {
 	
 	public String getPath();
 	
+	public String getFormat();
+	
+	public String getOrientation();
+	
 	public boolean isPublicTemplate();
 
 }

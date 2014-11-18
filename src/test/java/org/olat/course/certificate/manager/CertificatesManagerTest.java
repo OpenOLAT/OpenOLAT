@@ -70,15 +70,15 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Assert.assertNotNull(templateUrl);
 		File templateFile = new File(templateUrl.toURI());
 		
-		String name = UUID.randomUUID() + ".pdf";
-		CertificateTemplate template = certificatesManager.addTemplate(name, templateFile, true);
+		String certificateName = UUID.randomUUID() + ".pdf";
+		CertificateTemplate template = certificatesManager.addTemplate(certificateName, templateFile, null, null, true);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(template);
 		Assert.assertNotNull(template.getKey());
 		Assert.assertNotNull(template.getCreationDate());
 		Assert.assertNotNull(template.getLastModified());
-		Assert.assertEquals(name, template.getName());
+		Assert.assertEquals(certificateName, template.getName());
 		Assert.assertTrue(template.isPublicTemplate());
 	}
 	

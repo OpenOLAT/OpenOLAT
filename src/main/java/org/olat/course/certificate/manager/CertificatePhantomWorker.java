@@ -43,6 +43,7 @@ import org.olat.core.id.User;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.repository.RepositoryEntry;
@@ -96,7 +97,16 @@ public class CertificatePhantomWorker {
 		cmds.add(certificatesManager.getRasterizePath().toFile().getAbsolutePath());
 		cmds.add(htmlCertificateFile.getAbsolutePath());
 		cmds.add(certificateFile.getAbsolutePath());
-		cmds.add("A4");
+		if(StringHelper.containsNonWhitespace(template.getFormat())) {
+			cmds.add(template.getFormat());
+		} else {
+			cmds.add("A4");
+		}
+		if(StringHelper.containsNonWhitespace(template.getOrientation())) {
+			cmds.add(template.getOrientation());
+		} else {
+			cmds.add("portrait");
+		}
 		
 		CountDownLatch doneSignal = new CountDownLatch(1);
 		ProcessWorker worker = new ProcessWorker(cmds, doneSignal);
@@ -200,55 +210,30 @@ public class CertificatePhantomWorker {
 		context.put("status", status);
 	}
 	
-	private final void executeProcess(Process proc) {
+	public static boolean checkPhantomJSAvailabilty() {
+		List<String> cmds = new ArrayList<String>();
+		cmds.add("phantomjs");
+		cmds.add("--help");
+		
+		CountDownLatch doneSignal = new CountDownLatch(1);
+		ProcessWorker worker = new ProcessWorker(cmds, doneSignal);
+		worker.start();
 
-		StringBuilder errors = new StringBuilder();
-		StringBuilder output = new StringBuilder();
-		String line;
-
-		InputStream stderr = proc.getErrorStream();
-		InputStreamReader iserr = new InputStreamReader(stderr);
-		BufferedReader berr = new BufferedReader(iserr);
-		line = null;
 		try {
-			while ((line = berr.readLine()) != null) {
-				errors.append(line);
-			}
-		} catch (IOException e) {
-			//
+			doneSignal.await(3000, TimeUnit.MILLISECONDS);
+		} catch (InterruptedException e) {
+			log.error("", e);
 		}
 		
-		InputStream stdout = proc.getInputStream();
-		InputStreamReader isr = new InputStreamReader(stdout);
-		BufferedReader br = new BufferedReader(isr);
-		line = null;
-		try {
-			while ((line = br.readLine()) != null) {
-				output.append(line);
-			}
-		} catch (IOException e) {
-			//
-		}
-
-		if (log.isDebug()) {
-			log.debug("Error: " + errors.toString());
-			log.debug("Output: " + output.toString());
-		}
-
-		try {
-			int exitValue = proc.waitFor();
-			if (exitValue != 0) {
-				log.warn("Problem with PhantomJS?");
-			}
-		} catch (InterruptedException e) {
-			//
-		}
+		log.info("PhantomJS help is available if exit value = 0: " + worker.getExitValue());
+		return worker.getExitValue() == 0;
 	}
-	
-	private class ProcessWorker extends Thread {
+
+	private static class ProcessWorker extends Thread {
 		
 		private volatile Process process;
 
+		private int exitValue = -1;
 		private final List<String> cmd;
 		private final CountDownLatch doneSignal;
 		
@@ -262,6 +247,10 @@ public class CertificatePhantomWorker {
 				process.destroy();
 				process = null;
 			}
+		}
+		
+		public int getExitValue() {
+			return exitValue;
 		}
 
 		@Override
@@ -278,6 +267,50 @@ public class CertificatePhantomWorker {
 			} catch (IOException e) {
 				log.error ("Could not spawn convert sub process", e);
 				destroyProcess();
+			}
+		}
+		
+		private final void executeProcess(Process proc) {
+			StringBuilder errors = new StringBuilder();
+			StringBuilder output = new StringBuilder();
+			String line;
+
+			InputStream stderr = proc.getErrorStream();
+			InputStreamReader iserr = new InputStreamReader(stderr);
+			BufferedReader berr = new BufferedReader(iserr);
+			line = null;
+			try {
+				while ((line = berr.readLine()) != null) {
+					errors.append(line);
+				}
+			} catch (IOException e) {
+				//
+			}
+			
+			InputStream stdout = proc.getInputStream();
+			InputStreamReader isr = new InputStreamReader(stdout);
+			BufferedReader br = new BufferedReader(isr);
+			line = null;
+			try {
+				while ((line = br.readLine()) != null) {
+					output.append(line);
+				}
+			} catch (IOException e) {
+				//
+			}
+
+			if (log.isDebug()) {
+				log.debug("Error: " + errors.toString());
+				log.debug("Output: " + output.toString());
+			}
+
+			try {
+				exitValue = proc.waitFor();
+				if (exitValue != 0) {
+					log.warn("Problem with PhantomJS?");
+				}
+			} catch (InterruptedException e) {
+				//
 			}
 		}
 	}

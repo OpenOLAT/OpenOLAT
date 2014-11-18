@@ -30,8 +30,11 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.basesecurity.Group;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.course.assessment.EfficiencyStatementManager;
+import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -62,6 +65,8 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	private Boolean coach;
 	private Boolean admin;
 	private Boolean participant;
+	
+	private Boolean certification;
 	
 	public UserCourseEnvironmentImpl(IdentityEnvironment identityEnvironment, CourseEnvironment courseEnvironment) {
 		this(identityEnvironment, courseEnvironment, null, null, null, null, null, null);
@@ -222,6 +227,23 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		return waitingLists;
 	}
 	
+	@Override
+	public boolean hasEfficiencyStatementOrCertificate(boolean update) {
+		if(certification == null || update) {
+			EfficiencyStatementManager efficiencyStatementManager = CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
+			boolean hasStatement = efficiencyStatementManager
+					.hasUserEfficiencyStatement(getCourseRepositoryEntry().getKey(), identityEnvironment.getIdentity());
+			if(hasStatement) {
+				certification = Boolean.TRUE;
+			} else {
+				CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
+				certification = certificatesManager
+						.hasCertificate(identityEnvironment.getIdentity(), getCourseRepositoryEntry().getOlatResource().getKey());
+			} 
+		}
+		return certification.booleanValue();
+	}
+
 	public void setGroupMemberships(List<BusinessGroup> coachedGroups,
 			List<BusinessGroup> participatingGroups, List<BusinessGroup> waitingLists) {
 		this.coachedGroups = coachedGroups;

@@ -41,6 +41,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.course.certificate.CertificateLight;
+import org.olat.course.certificate.model.CertificateLightPack;
 import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.STCourseNode;
@@ -198,11 +199,13 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 		} else if (colName.equals(COL_LAST_SCORE_DATE)) {
 			return wrappedIdentity.getLastModified();
 		} else if(colName.equals(COL_CERTIFICATE)) {
-			CertificateLight certificate = null;
 			if(certificates != null) {
-				certificate = certificates.get(identity.getKey());
+				CertificateLight certificate = certificates.get(identity.getKey());
+				if(certificate != null) {
+					return new CertificateLightPack(certificate, identity);
+				}
 			}
-			return certificate;
+			return null;
 		} else {
 			return "error";
 		}

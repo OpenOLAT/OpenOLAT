@@ -17,26 +17,32 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.certificate;
+package org.olat.course.certificate.model;
 
-import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Identity;
+import org.olat.course.certificate.CertificateLight;
 
 /**
  * 
- * Initial date: 22.10.2014<br>
+ * Initial date: 18.11.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface CertificateLight extends CreateInfo {
+public class CertificateLightPack {
 	
-	public String getName();
+	private final CertificateLight certificate;
+	private final Identity identity;
 	
-	public String getUuid();
-	
-	public String getCourseTitle();
-	
-	public Long getIdentityKey();
-	
-	public Long getOlatResourceKey();
+	public CertificateLightPack(CertificateLight certificate, Identity identity) {
+		this.certificate = certificate;
+		this.identity = identity;
+	}
 
+	public CertificateLight getCertificate() {
+		return certificate;
+	}
+
+	public Identity getIdentity() {
+		return identity;
+	}
 }

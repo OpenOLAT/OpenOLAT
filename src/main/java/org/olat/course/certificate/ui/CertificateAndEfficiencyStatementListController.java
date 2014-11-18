@@ -51,6 +51,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CorruptedCourseException;
@@ -91,9 +92,10 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private BreadcrumbPanel stackPanel;
 	private CertificateAndEfficiencyStatementListModel tableModel;
 
-	
 	private DialogBoxController confirmDeleteCtr;
 	private ArtefactWizzardStepsController ePFCollCtrl;
+	
+	private Identity assessedIdentity;
 	
 	@Autowired
 	private EfficiencyStatementManager esm;
@@ -107,8 +109,13 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private CertificatesManager certificatesManager;
 	
 	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl) {
+		this(ureq, wControl, ureq.getUserSession().getIdentity());
+	}
+	
+	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(IdentityAssessmentEditController.class, getLocale(), getTranslator()));
+		this.assessedIdentity = assessedIdentity;
 		
 		initForm(ureq);
 	}
@@ -127,7 +134,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.show",
 				translate("table.header.show"), CMD_SHOW));
 		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel(Cols.certificate.i18n(), Cols.certificate.ordinal(), CMD_CERTIFICATE,
-				true, Cols.certificate.name(), new StaticFlexiCellRenderer(CMD_CERTIFICATE, new DownloadCertificateCellRenderer())));
+				true, Cols.certificate.name(), new StaticFlexiCellRenderer(CMD_CERTIFICATE, new DownloadCertificateCellRenderer(assessedIdentity))));
 		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.launchcourse",
 				translate("table.header.launchcourse"), CMD_LAUNCH_COURSE));
 		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.delete",
@@ -135,7 +142,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		
 		//delete
 		EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(EfficiencyStatementArtefact.ARTEFACT_TYPE);
-		if(portfolioModule.isEnabled() && artHandler != null && artHandler.isEnabled()) {
+		if(portfolioModule.isEnabled() && artHandler != null && artHandler.isEnabled() && assessedIdentity.equals(getIdentity())) {
 			tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.artefact",
 					Cols.efficiencyStatement.ordinal(), CMD_ARTEFACT,
 					new StaticFlexiCellRenderer(CMD_ARTEFACT, new AsArtefactCellRenderer())));
@@ -149,7 +156,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private void loadModel() {
 		Map<Long, CertificateAndEfficiencyStatement> resourceKeyToStatments = new HashMap<>();
 		List<CertificateAndEfficiencyStatement> statments = new ArrayList<>();
-		List<UserEfficiencyStatementLight> efficiencyStatementsList = esm.findEfficiencyStatementsLight(getIdentity());
+		List<UserEfficiencyStatementLight> efficiencyStatementsList = esm.findEfficiencyStatementsLight(assessedIdentity);
 		for(UserEfficiencyStatementLight efficiencyStatement:efficiencyStatementsList) {
 			CertificateAndEfficiencyStatement wrapper = new CertificateAndEfficiencyStatement();
 			wrapper.setDisplayName(efficiencyStatement.getShortTitle());
@@ -161,7 +168,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			resourceKeyToStatments.put(efficiencyStatement.getArchivedResourceKey(), wrapper);
 		}
 		
-		List<CertificateLight> certificates = certificatesManager.getLastCertificates(getIdentity());
+		List<CertificateLight> certificates = certificatesManager.getLastCertificates(assessedIdentity);
 		for(CertificateLight certificate:certificates) {
 			Long resourceKey = certificate.getOlatResourceKey();
 			CertificateAndEfficiencyStatement wrapper = resourceKeyToStatments.get(resourceKey);
@@ -223,7 +230,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		RepositoryEntry entry = repositoryService.loadByResourceKey(statement.getResourceKey());
 		EfficiencyStatement efficiencyStatment = esm.getUserEfficiencyStatementByKey(statement.getEfficiencyStatementKey());
 		CertificateAndEfficiencyStatementController efficiencyCtrl = new CertificateAndEfficiencyStatementController(getWindowControl(), ureq,
-				getIdentity(), null, statement.getResourceKey(), entry, efficiencyStatment, false);
+				assessedIdentity, null, statement.getResourceKey(), entry, efficiencyStatment, false);
 		listenTo(efficiencyCtrl);
 		stackPanel.pushController(statement.getDisplayName(), efficiencyCtrl);
 	}
@@ -267,7 +274,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	
 	private void doCollectArtefact(UserRequest ureq, String title, Long efficiencyStatementKey) {
 		EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(EfficiencyStatementArtefact.ARTEFACT_TYPE);
-		if(artHandler != null && artHandler.isEnabled()) {
+		if(artHandler != null && artHandler.isEnabled() && assessedIdentity.equals(getIdentity())) {
 			AbstractArtefact artefact = artHandler.createArtefact();
 			artefact.setAuthor(getIdentity());//only author can create artefact
 			//no business path becouse we cannot launch an efficiency statement

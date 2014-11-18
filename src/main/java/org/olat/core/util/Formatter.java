@@ -56,6 +56,7 @@ public class Formatter {
 
 	private static final DateFormat formatterDatetimeFilesystem = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss_SSS");
 	private static final DateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	private static final DateFormat shortFormatDateFileSystem = new SimpleDateFormat("yyyyMMdd");
 
 	private static final Map<Locale,Formatter> localToFormatterMap = new HashMap<Locale,Formatter>();
 	
@@ -214,6 +215,13 @@ public class Formatter {
 			return formatterDatetimeFilesystem.format(d);
 		}
 	}
+	
+	public static String formatShortDateFilesystem(Date d) {
+		synchronized (shortFormatDateFileSystem) {
+			return shortFormatDateFileSystem.format(d);
+		}
+	}
+	
 
 	/**
 	 * formats the given time period so it is friendly to read

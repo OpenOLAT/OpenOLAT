@@ -190,6 +190,7 @@ public class CertificationWebService {
 		try {
 			partsReader = new MultipartReader(request);
 			File tmpFile = partsReader.getFile();
+			String courseTitle = partsReader.getValue("courseTitle");
 			String creationDateStr = partsReader.getValue("creationDate");
 			Date creationDate = null;
 			if(StringHelper.containsNonWhitespace(creationDateStr)) {
@@ -206,7 +207,7 @@ public class CertificationWebService {
 			OLATResourceManager resourceManager = CoreSpringFactory.getImpl(OLATResourceManager.class);
 			OLATResource resource = resourceManager.findResourceById(resourceKey);
 			if(resource == null) {
-				certificatesManager.uploadStandaloneCertificate(assessedIdentity, creationDate, resourceKey, tmpFile);
+				certificatesManager.uploadStandaloneCertificate(assessedIdentity, creationDate, courseTitle, resourceKey, tmpFile);
 			} else {
 				certificatesManager.uploadCertificate(assessedIdentity, creationDate, resource, tmpFile);
 			}

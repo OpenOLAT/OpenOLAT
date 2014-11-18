@@ -135,6 +135,13 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 				false);
 	}
 	
+	public CertificateAndEfficiencyStatementController(WindowControl wControl, UserRequest ureq, RepositoryEntry entry) {
+		this(wControl, ureq, 
+				ureq.getIdentity(), null, entry.getOlatResource().getKey(), entry,
+				EfficiencyStatementManager.getInstance().getUserEfficiencyStatementByResourceKey(entry.getOlatResource().getKey(), ureq.getIdentity()),
+				false);
+	}
+	
 	public CertificateAndEfficiencyStatementController(WindowControl wControl, UserRequest ureq, Identity statementOwner,
 			BusinessGroup businessGroup, Long resourceKey, RepositoryEntry courseRepo, EfficiencyStatement efficiencyStatement, boolean links) {
 		super(ureq, wControl);

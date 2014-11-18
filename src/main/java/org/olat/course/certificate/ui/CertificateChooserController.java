@@ -100,6 +100,17 @@ public class CertificateChooserController extends UploadCertificateController {
 		fileEl = uifactory.addFileElement("template.file", formLayout);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		
+		String[] orientationValues = new String[]{
+			translate("portrait"), translate("orientation")
+		};
+		orientationEl = uifactory.addRadiosVertical("orientation", formLayout, orientationKeys, orientationValues);
+		orientationEl.select(orientationKeys[0], true);
+		orientationEl.setVisible(false);
+		
+		formatEl = uifactory.addRadiosVertical("orientation", formLayout, formatKeys, formatKeys);
+		formatEl.select(formatKeys[0], true);
+		formatEl.setVisible(false);
+		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setRootForm(mainForm);
 		formLayout.add(buttonCont);
@@ -155,7 +166,7 @@ public class CertificateChooserController extends UploadCertificateController {
 		File template = fileEl.getUploadFile();
 		if(template != null) {
 			String name = fileEl.getUploadFileName();
-			selectedTemplate = certificatesManager.addTemplate(name, template, false);
+			selectedTemplate = certificatesManager.addTemplate(name, template, getFormat(), getOrientation(), false);
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}

@@ -401,6 +401,10 @@ public class CourseConfig implements Serializable, Cloneable {
 		}
 	}
 	
+	public boolean isCertificateEnabled() {
+		return isAutomaticCertificationEnabled() || isManualCertificationEnabled();
+	}
+	
 	public boolean isAutomaticCertificationEnabled() {
 		Boolean bool = (Boolean) configuration.get(CERTIFICATE_AUTO_ENABLED);
 		return bool == null ? false : bool.booleanValue();

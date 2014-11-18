@@ -22,9 +22,14 @@ package org.olat.course.certificate.ui;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.certificate.Certificate;
@@ -39,21 +44,43 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CertificateController extends BasicController {
 	
-	private final SinglePageController pageCtrl;
+	private Link downloadButton;
+	private SinglePageController pageCtrl;
 	
+	private final Certificate certificate;
 	@Autowired
 	private CertificatesManager certificatesManager;
 	
 	public CertificateController(UserRequest ureq, WindowControl wControl, Certificate certificate) {
 		super(ureq, wControl);
-		
-		VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
-		VFSContainer container = certificateLeaf.getParentContainer();
-		String filename = certificateLeaf.getName();
-		pageCtrl = new SinglePageController(ureq, getWindowControl(), container, filename, false);
-		listenTo(pageCtrl);
+		this.certificate = certificate;
 
-		putInitialPanel(pageCtrl.getInitialComponent());
+		VelocityContainer mainVC = createVelocityContainer("certificate");
+		VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
+		if(certificateLeaf == null) {
+			//show an error
+		} else {
+			Formatter formatter = Formatter.getInstance(getLocale());
+			String creationDate = formatter.formatDateAndTime(certificate.getCreationDate());
+			String creationDateMsg = translate("certificate.creationdate", creationDate);
+			mainVC.contextPut("certificateCreationDateMsg", creationDateMsg);
+			
+			downloadButton = LinkFactory.createButton("download.button", mainVC, this);
+			downloadButton.setIconLeftCSS("o_icon o_icon_download");
+			downloadButton.setTarget("_blank");
+			
+			String url = DownloadCertificateCellRenderer.getUrl(certificate);
+			mainVC.contextPut("certificateUrl", url);
+			String name = DownloadCertificateCellRenderer.getName(certificate);
+			mainVC.contextPut("certificateName", name);
+			
+			VFSContainer container = certificateLeaf.getParentContainer();
+			String filename = certificateLeaf.getName();
+			pageCtrl = new SinglePageController(ureq, getWindowControl(), container, filename, false);
+			listenTo(pageCtrl);
+			mainVC.put("certificate", pageCtrl.getInitialComponent());
+		}
+		putInitialPanel(mainVC);
 	}
 	
 	@Override
@@ -63,6 +90,11 @@ public class CertificateController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if(downloadButton == source) {
+			VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
+			String name = DownloadCertificateCellRenderer.getName(certificate);
+			MediaResource certificateResource = new CertificateMediaResource(name, certificateLeaf);
+			ureq.getDispatchResult().setResultingMediaResource(certificateResource);
+		}
 	}
 }

@@ -63,5 +63,15 @@ public interface UserCourseEnvironment {
 	public boolean isIdentityInCourseGroup(Long groupKey);
 	
 	public RepositoryEntryLifecycle getLifecycle();
+	
+	/**
+	 * Check if the user has an efficiency statement or a certificate. The method
+	 * doesn't check if the efficiency statement or the certificate are configured
+	 * for the course. It's a database check only.
+	 * 
+	 * @param update
+	 * @return
+	 */
+	public boolean hasEfficiencyStatementOrCertificate(boolean update);
 
 }

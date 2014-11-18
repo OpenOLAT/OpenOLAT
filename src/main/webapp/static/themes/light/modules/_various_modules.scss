@@ -284,6 +284,15 @@ a.o_chelp {
 	}
 }
 
+/* Efficiency statement and certificates */
+ul.o_certificates li {
+	padding: 5px 0;
+	
+	a.o_sel_certificate_delete {
+		padding-left: 2em;
+	}
+}
+
 
 /* Calendar */
 .o_cal_toptoolbar {
