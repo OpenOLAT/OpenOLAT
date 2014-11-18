@@ -143,7 +143,7 @@ public class NavigationHandler implements Disposable {
 		String treeNodeId = treeEvent.getNodeId();
 		TreeNode selTN = treeModel.getNodeById(treeNodeId);
 		if (selTN == null) {
-			throw new AssertException("no treenode found:" + treeNodeId);
+			selTN = treeModel.getRootNode();
 		}
 
 		// check if appropriate for subtreemodelhandler
