@@ -51,6 +51,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private String authors;
 	private String thumbnailRelPath;
 	private String shortenedDescription;
+	private int access;
 	
 	private String score;
 	private Boolean passed;
@@ -94,6 +95,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		setOLATResourceable(OresHelper.clone(entry.getOlatResource()));
 		setAuthors(entry.getAuthors());
 		setIsMembersOnly(entry.isMembersOnly());
+		setAccess(entry.getAccess());
 		
 		//bookmark
 		setMarked(entry.isMarked());
@@ -141,6 +143,14 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	
 	public void setKey(Long key) {
 		this.key = key;
+	}
+
+	public int getAccess() {
+		return access;
+	}
+
+	public void setAccess(int access) {
+		this.access = access;
 	}
 
 	public String getExternalId() {

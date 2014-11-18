@@ -141,8 +141,13 @@ public class STCourseNodeRunController extends BasicController {
 		// push title and learning objectives, only visible on intro page
 		myContent.contextPut("menuTitle", stCourseNode.getShortTitle());
 		myContent.contextPut("displayTitle", stCourseNode.getLongTitle());
-		myContent.contextPut("hasScore", new Boolean(stCourseNode.hasScoreConfigured()));
-		myContent.contextPut("hasPassed", new Boolean(stCourseNode.hasPassedConfigured()));
+		if(ureq.getUserSession().getRoles().isGuestOnly()) {
+			myContent.contextPut("hasScore", Boolean.FALSE);
+			myContent.contextPut("hasPassed", Boolean.FALSE);
+		} else {
+			myContent.contextPut("hasScore", new Boolean(stCourseNode.hasScoreConfigured()));
+			myContent.contextPut("hasPassed", new Boolean(stCourseNode.hasPassedConfigured()));
+		}
 
 		if (se != null) {
 			Float score = se.getScore();

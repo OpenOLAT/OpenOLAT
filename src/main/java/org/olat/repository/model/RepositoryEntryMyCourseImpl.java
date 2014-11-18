@@ -165,6 +165,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		this.membersOnly = membersOnly;
 	}
 
+	@Override
 	public int getAccess() {
 		return access;
 	}
