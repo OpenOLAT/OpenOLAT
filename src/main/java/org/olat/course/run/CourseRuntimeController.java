@@ -335,7 +335,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	private void initTools(Dropdown tools, ICourse course, final UserCourseEnvironmentImpl uce) {
 		// 1) administrative tools
-		if (reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)
+		if (reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isGroupCoach()
+				|| hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)
 				|| hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || hasCourseRight(CourseRights.RIGHT_ARCHIVING)
 				|| hasCourseRight(CourseRights.RIGHT_STATISTICS) || hasCourseRight(CourseRights.RIGHT_DB)
 				|| hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
@@ -360,7 +361,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				membersLink = LinkFactory.createToolLink("unifiedusermngt", translate("command.opensimplegroupmngt"), this, "o_icon_membersmanagement");
 				tools.addComponent(membersLink);
 			}
-			if (reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
+			if (reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isGroupCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
 				assessmentLink = LinkFactory.createToolLink("assessment",translate("command.openassessment"), this, "o_icon_assessment_tool");
 				tools.addComponent(assessmentLink);
 			}
@@ -374,7 +375,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				courseStatisticLink = LinkFactory.createToolLink("statistic",translate("command.openstatistic"), this, "o_icon_statistics_tool");
 				tools.addComponent(courseStatisticLink);
 			}
-			if (uce != null && (reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || hasCourseRight(CourseRights.RIGHT_STATISTICS))) {
+			if (uce != null && (reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isGroupCoach() || hasCourseRight(CourseRights.RIGHT_STATISTICS))) {
 				final AtomicInteger testNodes = new AtomicInteger();
 				final AtomicInteger surveyNodes = new AtomicInteger();
 				new TreeVisitor(new Visitor() {
@@ -756,7 +757,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}	
 			} else if ("assessmentTool".equalsIgnoreCase(type)) {
 				//check the security before, the link is perhaps in the wrong hands
-				if(reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
+				if(reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isGroupCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
 					try {
 						Activateable2 assessmentCtrl = doAssessmentTool(ureq);
 						List<ContextEntry> subEntries;
@@ -772,7 +773,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 			} else if ("TestStatistics".equalsIgnoreCase(type) || "SurveyStatistics".equalsIgnoreCase(type)) {
 				//check the security before, the link is perhaps in the wrong hands
-				if(reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
+				if(reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isGroupCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
 					try {
 						Activateable2 assessmentCtrl = null;
 						if("TestStatistics".equalsIgnoreCase(type)) {
@@ -969,7 +970,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		OLATResourceable ores = OresHelper.createOLATResourceableType(typeName);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl swControl = addToHistory(ureq, ores, null);
-		if (reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || hasCourseRight(CourseRights.RIGHT_STATISTICS)) {
+		if (reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isGroupCoach() || hasCourseRight(CourseRights.RIGHT_STATISTICS)) {
 			removeCustomCSS(ureq);
 			UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
 			StatisticCourseNodesController ctrl = new StatisticCourseNodesController(ureq, swControl, toolbarPanel, uce, types);
@@ -1000,7 +1001,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			return assessmentToolCtr;
 		}
 		// 2) users with coach right: limited access to coached groups
-		if (reSecurity.isCourseCoach()) {
+		if (reSecurity.isCourseCoach() || reSecurity.isGroupCoach()) {
 			removeCustomCSS(ureq);
 			AssessmentMainController ctrl = new AssessmentMainController(ureq, swControl, toolbarPanel,
 					getOlatResourceable(), new CoachingGroupAccessAssessmentCallback());
@@ -1059,7 +1060,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 
 	private void launchChat(UserRequest ureq) {
-		boolean vip = reSecurity.isCourseCoach() || reSecurity.isEntryAdmin();
+		boolean vip = reSecurity.isCourseCoach() || reSecurity.isGroupCoach() || reSecurity.isEntryAdmin();
 		ICourse course = CourseFactory.loadCourse(getRepositoryEntry().getOlatResource());
 		OpenInstantMessageEvent event = new OpenInstantMessageEvent(ureq, course, course.getCourseTitle(), vip);
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);

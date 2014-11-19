@@ -394,7 +394,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public void setSortSettings(FlexiTableSortOptions options) {
 		this.sortOptions = options;
 		if(options.getDefaultOrderBy() != null) {
-			orderBy = new SortKey[]{ options.getDefaultOrderBy() };
+			SortKey defaultOrder = options.getDefaultOrderBy();
+			orderBy = new SortKey[]{ defaultOrder };
+			selectSortOption(defaultOrder.getKey(), defaultOrder.isAsc());
 		}
 	}
 
@@ -770,6 +772,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			dataSource.load(null, conditionalQueries, 0, getPageSize(), orderBy);
 		}
 
+		selectSortOption(sortKey, asc);
+		component.setDirty(true);
+	}
+	
+	private void selectSortOption(String sortKey, boolean asc) {
 		if(sortOptions != null) {
 			for(FlexiTableSort sort:sortOptions.getSorts()) {
 				boolean selected = sort.getSortKey().getKey().equals(sortKey);
@@ -781,8 +788,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				}
 			}
 		}
-
-		component.setDirty(true);
 	}
 	
 	private void doFilter(String filterKey) {
@@ -970,6 +975,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 					
 					if(sortKey != null) {
 						orderBy = new SortKey[]{ new SortKey(sortKey, tablePrefs.isSortDirection()) };
+						selectSortOption(sortKey, tablePrefs.isSortDirection());
 					}
 				}
 

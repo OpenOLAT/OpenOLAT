@@ -15,6 +15,10 @@ body.o_dmz {
 		@else if $o-login-form-align == center {
 			$o-login-bg-gradient-to : top;
 		}
+		
+		//bg without gradient, as fallback for ie < 10
+		background: url('#{$o-login-form-bg-img}') 0px $o-navbar-dmz-height / cover;
+
 		background: linear-gradient(to $o-login-bg-gradient-to, $o-login-form-bg-gradient-steps...), url('#{$o-login-form-bg-img}');
 		background-size: cover, cover;
 		background-position: 0px $o-navbar-dmz-height, 0px $o-navbar-dmz-height;

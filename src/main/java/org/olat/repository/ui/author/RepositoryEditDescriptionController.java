@@ -466,7 +466,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			VFSLeaf newFile = fileUpload.moveUploadFileTo(container);//give it it's real name and extension
 			boolean ok = repositoryManager.setImage(newFile, repositoryEntry);
 			if (!ok) {
-				showError("Failed");
+				showWarning("cif.error.image");
 			} else {
 				VFSLeaf image = repositoryManager.getImage(repositoryEntry);
 				if(image instanceof  LocalFileImpl) {
@@ -481,7 +481,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			VFSContainer m = (VFSContainer)mediaContainer.resolve("media");
 			VFSLeaf newFile = movieUpload.moveUploadFileTo(m);
 			if (newFile == null) {
-				showError("Failed");
+				showWarning("cif.error.movie");
 			} else {
 				String filename = movieUpload.getUploadFileName();
 				String extension = FileUtils.getFileSuffix(filename);
