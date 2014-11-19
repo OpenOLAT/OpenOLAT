@@ -26,7 +26,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.course.ICourse;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.resource.accesscontrol.ACUIFactory;
 import org.olat.resource.accesscontrol.AccessControlModule;
 
 /**
@@ -52,7 +51,7 @@ public class OrdersActionExtension extends GenericActionExtension {
 		if(arg instanceof ICourse) {
 			ICourse course = (ICourse)arg;
 			OLATResource resource = OLATResourceManager.getInstance().findResourceable(course);
-			return ACUIFactory.createOrdersAdminController(ureq, wControl, resource);
+			return new OrdersAdminController(ureq, wControl, resource);
 		}
 		return super.createController(ureq, wControl, arg);
 	}

@@ -23,12 +23,11 @@ package org.olat.resource.accesscontrol.provider.token.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.resource.accesscontrol.model.AccessMethod;
-import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.olat.resource.accesscontrol.model.OfferAccess;
+import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
 
 /**
@@ -46,14 +45,8 @@ public class TokenAccessConfigurationController extends AbstractConfigurationMet
 	private TextElement tokenEl;
 	private final OfferAccess link;
 	
-	public TokenAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
-		super(ureq, wControl);
-		this.link = link;
-		initForm(ureq);
-	}
-
-	public TokenAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link, Form form) {
-		super(ureq, wControl, LAYOUT_DEFAULT, null, form);
+	public TokenAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link, boolean edit) {
+		super(ureq, wControl, edit);
 		this.link = link;
 		initForm(ureq);
 	}
@@ -62,7 +55,11 @@ public class TokenAccessConfigurationController extends AbstractConfigurationMet
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_accesscontrol_token_form");
 		
-		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, null, formLayout);
+		String desc = null;
+		if(link.getOffer() != null) {
+			desc = link.getOffer().getDescription();
+		}
+		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, desc, formLayout);
 		descEl.setElementCssClass("o_sel_accesscontrol_description");
 		
 		String token = "";

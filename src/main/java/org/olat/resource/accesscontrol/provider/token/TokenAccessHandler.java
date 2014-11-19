@@ -44,6 +44,7 @@ import org.olat.resource.accesscontrol.model.OrderPart;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.provider.token.ui.TokenAccessConfigurationController;
 import org.olat.resource.accesscontrol.provider.token.ui.TokenAccessController;
+import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
 import org.olat.resource.accesscontrol.ui.FormController;
 
 /**
@@ -88,12 +89,16 @@ public class TokenAccessHandler implements AccessMethodHandler {
 		} else {
 			return new TokenAccessController(ureq, wControl, link, form);
 		}
-		
+	}
+
+	@Override
+	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
+		return new TokenAccessConfigurationController(ureq, wControl, link, true);
 	}
 
 	@Override
 	public TokenAccessConfigurationController createConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
-		return new TokenAccessConfigurationController(ureq, wControl, link);
+		return new TokenAccessConfigurationController(ureq, wControl, link, false);
 	}
 	
 	@Override

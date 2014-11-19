@@ -89,8 +89,13 @@ public class FreeAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
+	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
+		return new FreeAccessConfigurationController(ureq, wControl, link, true);
+	}
+
+	@Override
 	public AbstractConfigurationMethodController createConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
-		return new FreeAccessConfigurationController(ureq, wControl, link);
+		return new FreeAccessConfigurationController(ureq, wControl, link, false);
 	}
 	
 	@Override

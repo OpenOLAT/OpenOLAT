@@ -23,13 +23,11 @@ package org.olat.resource.accesscontrol.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OfferAccess;
 
@@ -45,40 +43,25 @@ import org.olat.resource.accesscontrol.model.OfferAccess;
 public abstract class AbstractConfigurationMethodController extends FormBasicController {
 	
 	private String name;
-	private boolean embbed = false;
+	private final boolean edit;
 	
-	public AbstractConfigurationMethodController(UserRequest ureq, WindowControl wControl) {
+	public AbstractConfigurationMethodController(UserRequest ureq, WindowControl wControl, boolean edit) {
 		super(ureq, wControl);
-	}
-
-	public AbstractConfigurationMethodController(UserRequest ureq, WindowControl wControl, String pageName) {
-		super(ureq, wControl, pageName);
-	}
-
-	public AbstractConfigurationMethodController(UserRequest ureq, WindowControl wControl, String pageName, Translator fallbackTranslator) {
-		super(ureq, wControl, pageName, fallbackTranslator);
-	}
-
-	protected AbstractConfigurationMethodController(UserRequest ureq, WindowControl wControl, int layout){
-		super(ureq, wControl, layout);
-	}
-
-	protected AbstractConfigurationMethodController(UserRequest ureq, WindowControl wControl, int layout, String customLayoutPageName, Form externalMainForm) {
-		super(ureq, wControl, layout, customLayoutPageName, externalMainForm);
-		embbed = (externalMainForm != null);
+		this.edit = edit;
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(!embbed) {
-			
-			final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-			buttonGroupLayout.setRootForm(mainForm);
-			formLayout.add(buttonGroupLayout);
-			
+		final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
+		buttonGroupLayout.setRootForm(mainForm);
+		formLayout.add(buttonGroupLayout);
+		
+		if(edit) {
+			uifactory.addFormSubmitButton("save", buttonGroupLayout);
+		} else {
 			uifactory.addFormSubmitButton("create", buttonGroupLayout);
-			uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 		}
+		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 	}
 
 	@Override
