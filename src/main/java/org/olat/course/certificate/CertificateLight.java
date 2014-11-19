@@ -29,7 +29,9 @@ import org.olat.core.id.CreateInfo;
  */
 public interface CertificateLight extends CreateInfo {
 	
-	public String getName();
+	public Long getKey();
+	
+	public CertificateStatus getStatus();
 	
 	public String getUuid();
 	

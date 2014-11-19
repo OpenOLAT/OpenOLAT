@@ -19,31 +19,15 @@
  */
 package org.olat.course.certificate;
 
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.Identity;
-
 /**
  * 
- * Initial date: 21.10.2014<br>
+ * Initial date: 19.11.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Certificate extends CreateInfo {
+public enum EmailStatus {
 	
-	public Long getKey();
-	
-	public CertificateStatus getStatus();
-	
-	public String getUuid();
-	
-	//public String getName();
-	
-	public String getPath();
-	
-	public String getCourseTitle();
-	
-	public Long getArchivedResourceKey();
-	
-	public Identity getIdentity();
+	ok,
+	error,
 
 }

@@ -35,6 +35,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateLight;
+import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.model.CertificateLightPack;
 import org.olat.user.UserManager;
 
@@ -59,10 +60,10 @@ public class DownloadCertificateCellRenderer implements CustomCellRenderer, Flex
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 		if(val instanceof CertificateLight) {
-			generateUrl(sb, (CertificateLight)val, assessedIdentity, locale);
+			render(sb, (CertificateLight)val, assessedIdentity, locale);
 		} else if(val instanceof CertificateLightPack) {
 			CertificateLightPack pack = (CertificateLightPack)val;
-			generateUrl(sb, pack.getCertificate(), pack.getIdentity(), locale);		
+			render(sb, pack.getCertificate(), pack.getIdentity(), locale);		
 		}
 	}
 
@@ -70,18 +71,25 @@ public class DownloadCertificateCellRenderer implements CustomCellRenderer, Flex
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		if(cellValue instanceof CertificateLight) {
-			generateUrl(target, (CertificateLight)cellValue, assessedIdentity, translator.getLocale());
+			render(target, (CertificateLight)cellValue, assessedIdentity, translator.getLocale());
 		} else if(cellValue instanceof CertificateLightPack) {
 			CertificateLightPack pack = (CertificateLightPack)cellValue;
-			generateUrl(target, pack.getCertificate(), pack.getIdentity(), translator.getLocale());	
+			render(target, pack.getCertificate(), pack.getIdentity(), translator.getLocale());	
 		}
 	}
 	
-	private void generateUrl(StringOutput sb, CertificateLight certificate, Identity identity, Locale locale) {
+	
+	private void render(StringOutput sb, CertificateLight certificate, Identity identity, Locale locale) {
 		String name = Formatter.getInstance(locale).formatDate(certificate.getCreationDate());
-		sb.append("<a href='").append(getUrl(certificate, identity))
-		  .append("' target='_blank'><i class='o_icon o_filetype_pdf'> </i> ")
-		  .append(name).append(".pdf").append("</a>");
+		if(CertificateStatus.pending.equals(certificate.getStatus())) {
+			sb.append("<span><i class='o_icon o_icon_pending o_icon-spin'> </i>").append(name).append(".pdf").append("</span>");
+		} else if(CertificateStatus.error.equals(certificate.getStatus())) {
+			sb.append("<span><i class='o_icon o_icon_error'> </i>").append(name).append(".pdf").append("</span>");
+		} else {
+			sb.append("<a href='").append(getUrl(certificate, identity))
+			  .append("' target='_blank'><i class='o_icon o_filetype_pdf'> </i> ")
+			  .append(name).append(".pdf").append("</a>");
+		}
 	}
 	
 	public static String getName(Certificate certificate) {

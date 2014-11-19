@@ -35,6 +35,18 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.UUID;
 
+import javax.annotation.Resource;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.ObjectMessage;
+import javax.jms.Queue;
+import javax.jms.QueueConnection;
+import javax.jms.QueueSender;
+import javax.jms.QueueSession;
+import javax.jms.Session;
 import javax.persistence.TypedQuery;
 
 import org.apache.velocity.app.VelocityEngine;
@@ -54,8 +66,10 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
@@ -70,14 +84,18 @@ import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateLight;
+import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.EmailStatus;
 import org.olat.course.certificate.RecertificationTimeUnit;
 import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.certificate.model.CertificateStandalone;
 import org.olat.course.certificate.model.CertificateTemplateImpl;
+import org.olat.course.certificate.model.JmsCertificateWork;
 import org.olat.course.certificate.ui.CertificateController;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
@@ -88,10 +106,12 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.vitero.model.GroupRole;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -105,7 +125,7 @@ import uk.ac.reload.diva.util.ZipUtils;
  *
  */
 @Service("certificatesManager")
-public class CertificatesManagerImpl implements CertificatesManager, InitializingBean {
+public class CertificatesManagerImpl implements CertificatesManager, MessageListener, InitializingBean, DisposableBean {
 	
 	private static final OLog log = Tracing.createLoggerFor(CertificatesManagerImpl.class);
 
@@ -122,12 +142,23 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private NotificationsManager notificationsManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
-	
+	@Autowired
+	private CoordinatorManager coordinatorManager;
+
+	@Resource(name="certificateQueue")
+	private Queue jmsQueue;
+	private Session certificateSession;
+	private MessageConsumer consumer;
+	@Resource(name="certificateConnectionFactory")
+	private ConnectionFactory connectionFactory;
+	private QueueConnection connection;
 
 	private Boolean phantomAvailable;
 	private FileStorage usersStorage;
@@ -159,6 +190,51 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 		} catch(Exception e) {
 			log.error("", e);
 		}
+		
+		//start the queues
+		try {
+			startQueue();
+		} catch (JMSException e) {
+			log.error("", e);
+		}
+	}
+	
+	private void startQueue() throws JMSException {
+		connection = (QueueConnection)connectionFactory.createConnection();
+		connection.start();
+		log.info("springInit: JMS connection started with connectionFactory=" + connectionFactory);
+
+		//listen to the queue only if indexing node
+		certificateSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		consumer = certificateSession.createConsumer(jmsQueue);
+		consumer.setMessageListener(this);
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		closeJms();
+	}
+	
+	private void closeJms() {
+		if(consumer != null) {
+			try {
+				consumer.close();
+			} catch (JMSException e) {
+				log.error("", e);
+			}
+		}
+		if(connection != null) {
+			try {
+				certificateSession.close();
+				connection.close();
+			} catch (JMSException e) {
+				log.error("", e);
+			}
+		}
+	}
+	
+	private Queue getJmsQueue() {
+		return jmsQueue;
 	}
 
 	@Override
@@ -203,22 +279,40 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 	@Override
 	public VFSLeaf getCertificateLeaf(Certificate certificate) {
 		VFSContainer cerContainer = getCertificateRootContainer();
-		VFSItem cerItem = cerContainer.resolve(certificate.getPath());
+		VFSItem cerItem = null;
+		if(StringHelper.containsNonWhitespace(certificate.getPath())) {
+			cerItem = cerContainer.resolve(certificate.getPath());
+		}
 		return cerItem instanceof VFSLeaf ? (VFSLeaf)cerItem : null;
 	}
 	
 	private File getCertificateFile(Certificate certificate) {
 		File file = getCertificateRoot();
-		return new File(file, certificate.getPath());
+		if(StringHelper.containsNonWhitespace(certificate.getPath())) {
+			return new File(file, certificate.getPath());
+		}
+		return null;
 	}
 	
 	@Override
-	public Certificate getCertificateById(Long key) {
+	public CertificateImpl getCertificateById(Long key) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select cer from certificate cer")
 		  .append(" where cer.key=:certificateKey");
-		List<Certificate> certificates = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Certificate.class)
+		List<CertificateImpl> certificates = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CertificateImpl.class)
+				.setParameter("certificateKey", key)
+				.getResultList();
+		return certificates.isEmpty() ? null : certificates.get(0);
+	}
+	
+	@Override
+	public CertificateLight getCertificateLightById(Long key) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select cer from certificatelight cer")
+		  .append(" where cer.key=:certificateKey");
+		List<CertificateLight> certificates = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CertificateLight.class)
 				.setParameter("certificateKey", key)
 				.getResultList();
 		return certificates.isEmpty() ? null : certificates.get(0);
@@ -459,10 +553,15 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 		if(creationDate != null) {
 			certificate.setCreationDate(creationDate);
 		}
+		RepositoryEntry entry = repositoryService.loadByResourceKey(resource.getKey());
+		if(entry != null) {
+			certificate.setCourseTitle(entry.getDisplayname());
+		}
 		certificate.setLastModified(certificate.getCreationDate());
 		certificate.setIdentity(identity);
 		certificate.setUuid(UUID.randomUUID().toString());
 		certificate.setLast(true);
+		certificate.setStatus(CertificateStatus.ok);
 
 		String dir = usersStorage.generateDir();
 		try (InputStream in = Files.newInputStream(certificateFile.toPath())) {
@@ -472,12 +571,11 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 			File storedCertificateFile = new File(dirFile, "Certificate.pdf");
 			Files.copy(in, storedCertificateFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-			certificate.setName(storedCertificateFile.getName());
 			certificate.setPath(dir + storedCertificateFile.getName());
 
-			Date dateFirstCertification = getDateFirstCertification(identity, resource);
+			Date dateFirstCertification = getDateFirstCertification(identity, resource.getKey());
 			if (dateFirstCertification != null) {
-				removeLastFlag(identity, resource);
+				removeLastFlag(identity, resource.getKey());
 			}
 
 			dbInstance.getCurrentEntityManager().persist(certificate);
@@ -500,6 +598,7 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 		certificate.setUuid(UUID.randomUUID().toString());
 		certificate.setLast(true);
 		certificate.setCourseTitle(courseTitle);
+		certificate.setStatus(CertificateStatus.ok);
 
 		String dir = usersStorage.generateDir();
 		try (InputStream in = Files.newInputStream(certificateFile.toPath())) {
@@ -509,8 +608,12 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 			File storedCertificateFile = new File(dirFile, "Certificate.pdf");
 			Files.copy(in, storedCertificateFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-			certificate.setName(storedCertificateFile.getName());
 			certificate.setPath(dir + storedCertificateFile.getName());
+			
+			Date dateFirstCertification = getDateFirstCertification(identity, resourceKey);
+			if (dateFirstCertification != null) {
+				removeLastFlag(identity, resourceKey);
+			}
 
 			dbInstance.getCurrentEntityManager().persist(certificate);
 		} catch (Exception e) {
@@ -539,7 +642,7 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 		File certificateFile;
 		File dirFile = new File(WebappHelper.getTmpDir(), UUID.randomUUID().toString());	
 		if(template.getPath().toLowerCase().endsWith("pdf")) {
-			CertificateTemplateWorker worker = new CertificateTemplateWorker(identity, entry, 2.0f, true,
+			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, true,
 					new Date(), new Date(), locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile);
 		} else {
@@ -563,13 +666,13 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 	@Override
 	public Certificate generateCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
 			CertificateTemplate template, MailerResult result) {
-		Certificate certificate = persistCertificate(certificateInfos, entry, template, result);
+		Certificate certificate = persistCertificate(certificateInfos, entry, template);
 		markPublisherNews(null, entry.getOlatResource());
 		return certificate;
 	}
 
 	private Certificate persistCertificate(CertificateInfos certificateInfos, RepositoryEntry entry,
-			CertificateTemplate template, MailerResult result) {
+			CertificateTemplate template) {
 		OLATResource resource = entry.getOlatResource();
 		Identity identity = certificateInfos.getAssessedIdentity();
 		
@@ -586,52 +689,125 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 		certificate.setUuid(UUID.randomUUID().toString());
 		certificate.setLast(true);
 		certificate.setCourseTitle(entry.getDisplayname());
+		certificate.setStatus(CertificateStatus.pending);
 		
-		String dir = usersStorage.generateDir();
-		try {
-			File dirFile = new File(getCertificateRoot(), dir);
-			dirFile.mkdirs();
-			
-			Float score = certificateInfos.getScore();
-			Locale locale = I18nManager.getInstance().getLocaleOrDefault(null);
-			Boolean passed = certificateInfos.getPassed();
-			Date dateCertification = certificate.getCreationDate();
-			Date dateFirstCertification = getDateFirstCertification(identity, resource);
+		dbInstance.getCurrentEntityManager().persist(certificate);
+		dbInstance.commit();
+		
+		//send message
+		sendJmsCertificateFile(certificate, template, certificateInfos.getScore(), certificateInfos.getPassed());
 
-			File certificateFile;
-			if(template == null || template.getPath().toLowerCase().endsWith("pdf")) {
-				CertificateTemplateWorker worker = new CertificateTemplateWorker(identity, entry, score, passed,
-						dateCertification, dateFirstCertification, locale, userManager, this);
-				certificateFile = worker.fill(template, dirFile);
-			} else {
-				CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, score, passed,
-						dateCertification, dateFirstCertification, locale, userManager, this);
-				certificateFile = worker.fill(template, dirFile);
-			}
-
-			certificate.setName(certificateFile.getName());
-			certificate.setPath(dir + certificateFile.getName());
-			
-			if(dateFirstCertification != null) {
-				//not the first certification, reset the last of the others certificates
-				removeLastFlag(identity, resource);
-			}
-			
-			dbInstance.getCurrentEntityManager().persist(certificate);
-
-			MailerResult newResult = sendCertificate(identity, entry, certificateFile);
-			if(result != null) {
-				result.append(newResult);
-			}
-			
-		} catch (Exception e) {
-			log.error("", e);
-		}
 		return certificate;
 	}
 	
 	protected VelocityEngine getVelocityEngine() {
 		return velocityEngine;
+	}
+	
+	private void sendJmsCertificateFile(Certificate certificate, CertificateTemplate template, Float score, Boolean passed) {
+		QueueSender sender;
+		QueueSession session = null;
+		try  {
+			JmsCertificateWork workUnit = new JmsCertificateWork();
+			workUnit.setCertificateKey(certificate.getKey());
+			if(template != null) {
+				workUnit.setTemplateKey(template.getKey());
+			}
+			workUnit.setPassed(passed);
+			workUnit.setScore(score);
+			
+			session = connection.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE );
+			ObjectMessage message = session.createObjectMessage();
+			message.setObject(workUnit);
+
+			sender = session.createSender(getJmsQueue());
+			sender.send( message );
+		} catch (JMSException e) {
+			log.error("", e );
+		} finally {
+			if(session != null) {
+				try {
+					session.close();
+				} catch (JMSException e) {
+					//last hope
+				}
+			}
+		}
+	}
+	
+	@Override
+	public void onMessage(Message message) {
+		if(message instanceof ObjectMessage) {
+			try {
+				ObjectMessage objMsg = (ObjectMessage)message;
+				JmsCertificateWork workUnit = (JmsCertificateWork)objMsg.getObject();
+				doCertificate(workUnit);
+				message.acknowledge();
+			} catch (JMSException e) {
+				log.error("", e);
+			} finally {
+				dbInstance.commitAndCloseSession();
+			}
+		}
+	}
+	
+	private void doCertificate(JmsCertificateWork workUnit) {
+		CertificateImpl certificate = getCertificateById(workUnit.getCertificateKey());
+		CertificateTemplate template = null;
+		if(workUnit.getTemplateKey() != null) {
+			template = getTemplateById(workUnit.getTemplateKey());
+		}
+		OLATResource resource = certificate.getOlatResource();
+		Identity identity = certificate.getIdentity();
+		RepositoryEntry entry = repositoryService.loadByResourceKey(resource.getKey());
+		
+		String dir = usersStorage.generateDir();
+		File dirFile = new File(getCertificateRoot(), dir);
+		dirFile.mkdirs();
+		
+		Float score = workUnit.getScore();
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(null);
+		Boolean passed = workUnit.getPassed();
+		Date dateCertification = certificate.getCreationDate();
+		Date dateFirstCertification = getDateFirstCertification(identity, resource.getKey());
+		
+		File certificateFile;
+		if(template == null || template.getPath().toLowerCase().endsWith("pdf")) {
+			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, score, passed,
+					dateCertification, dateFirstCertification, locale, userManager, this);
+			certificateFile = worker.fill(template, dirFile);
+			if(certificateFile == null) {
+				certificate.setStatus(CertificateStatus.error);
+			} else {
+				certificate.setStatus(CertificateStatus.ok);
+			}
+		} else {
+			CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, score, passed,
+					dateCertification, dateFirstCertification, locale, userManager, this);
+			certificateFile = worker.fill(template, dirFile);
+			if(certificateFile == null) {
+				certificate.setStatus(CertificateStatus.error);
+			} else {
+				certificate.setStatus(CertificateStatus.ok);
+			}
+		}
+
+		certificate.setPath(dir + certificateFile.getName());
+		if(dateFirstCertification != null) {
+			//not the first certification, reset the last of the others certificates
+			removeLastFlag(identity, resource.getKey());
+		}
+		MailerResult result = sendCertificate(identity, entry, certificateFile);
+		if(result.isSuccessful()) {
+			certificate.setEmailStatus(EmailStatus.ok);
+		} else {
+			certificate.setEmailStatus(EmailStatus.error);
+		}
+		dbInstance.getCurrentEntityManager().merge(certificate);
+		dbInstance.commit();
+		
+		CertificateEvent event = new CertificateEvent(identity.getKey(), certificate.getKey(), resource.getKey());
+		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, ORES_CERTIFICATE_EVENT);
 	}
 	
 	private MailerResult sendCertificate(Identity to, RepositoryEntry entry, File certificateFile) {
@@ -653,30 +829,31 @@ public class CertificatesManagerImpl implements CertificatesManager, Initializin
 		return mailManager.sendMessage(bundle);
 	}
 	
-	private Date getDateFirstCertification(Identity identity, OLATResource resource) {
+	private Date getDateFirstCertification(Identity identity, Long resourceKey) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select cer.creationDate from certificate cer")
 		  .append(" where cer.olatResource.key=:resourceKey and cer.identity.key=:identityKey")
 		  .append(" order by cer.creationDate asc");
 		
 		List<Date> dates = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Date.class)
-				.setParameter("resourceKey", resource.getKey())
+				.setParameter("resourceKey", resourceKey)
 				.setParameter("identityKey", identity.getKey())
 				.setMaxResults(1)
 				.getResultList();
 		return dates.isEmpty() ? null : dates.get(0);
 	}
 	
-	private void removeLastFlag(Identity identity, OLATResource resource) {
+	private void removeLastFlag(Identity identity, Long resourceKey) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("update certificate  cer set cer.last=false")
 		  .append(" where cer.olatResource.key=:resourceKey and cer.identity.key=:identityKey");
 		
 		dbInstance.getCurrentEntityManager().createQuery(sb.toString())
-				.setParameter("resourceKey", resource.getKey())
+				.setParameter("resourceKey", resourceKey)
 				.setParameter("identityKey", identity.getKey())
 				.executeUpdate();
 	}
+	
 
 	@Override
 	public List<CertificateTemplate> getTemplates() {

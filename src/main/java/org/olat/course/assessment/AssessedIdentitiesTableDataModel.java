@@ -146,6 +146,12 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 	public void setCertificates(Map<Long, CertificateLight> certificates) {
 		this.certificates = certificates;
 	}
+	
+	public void putCertificate(CertificateLight certificate) {
+		if(certificates != null) {
+			certificates.put(certificate.getIdentityKey(), certificate);
+		}
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()

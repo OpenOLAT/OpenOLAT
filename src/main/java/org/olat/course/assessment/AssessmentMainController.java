@@ -28,7 +28,6 @@ package org.olat.course.assessment;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -89,6 +88,7 @@ import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
@@ -97,6 +97,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.NodeTableDataModel.Cols;
 import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.CertificatesWizardController;
@@ -374,6 +375,8 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		
 		// Register for assessment changed events
 		course.getCourseEnvironment().getAssessmentManager().registerForAssessmentChangeEvents(this, ureq.getIdentity());
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
 	}
 
 	/**
@@ -634,6 +637,21 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		if ((event instanceof AssessmentChangedEvent) &&  event.getCommand().equals(AssessmentChangedEvent.TYPE_SCORE_EVAL_CHANGED)) {
 			AssessmentChangedEvent ace = (AssessmentChangedEvent) event;
 			doUpdateLocalCacheAndUserModelFromAssessmentEvent(ace);
+		} else if(event instanceof CertificateEvent) {
+			CertificateEvent ce = (CertificateEvent)event;
+			if(re.getOlatResource().getKey().equals(ce.getResourceKey())
+					&& localUserCourseEnvironmentCache.containsKey(ce.getOwnerKey())) {
+				updateCertificate(ce.getCertificateKey());
+			}
+		}
+	}
+	
+	private void updateCertificate(Long certificateKey) {
+		if (userListCtr != null 
+				&& userListCtr.getTableDataModel() instanceof AssessedIdentitiesTableDataModel) {
+			CertificateLight certificate = certificatesManager.getCertificateLightById(certificateKey);
+			((AssessedIdentitiesTableDataModel)userListCtr
+					.getTableDataModel()).putCertificate(certificate);
 		}
 	}
 	
@@ -962,7 +980,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	}
 	
 	private Map<Long, CertificateLight> getCertificates(ICourse course) {
-		Map<Long, CertificateLight> certificates = new HashMap<>();
+		Map<Long, CertificateLight> certificates =  new ConcurrentHashMap<>();
 		OLATResource resource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
 		List<CertificateLight> certificateList = certificatesManager.getCertificates(resource);
 		for(CertificateLight certificate:certificateList) {
@@ -981,18 +999,15 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("nodesoverview.nonodes"));
 		tableConfig.setDownloadOffered(false);
-		//fxdiff VCRP-4: assessment overview with max score
 		tableConfig.setSortingEnabled(true);
 		tableConfig.setDisplayTableHeader(true);
 		tableConfig.setDisplayRowCount(false);
 		tableConfig.setPageingEnabled(false);
-		//fxdiff VCRP-4: assessment overview with max score
 		tableConfig.setPreferencesOffered(true, "assessmentNodeList");
 		
 		nodeListCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
 		listenTo(nodeListCtr);
 		
-		//fxdiff VCRP-4: assessment overview with max score
 		final IndentedNodeRenderer nodeRenderer = new IndentedNodeRenderer() {
 			@Override
 			public boolean isIndentationEnabled() {
@@ -1235,10 +1250,10 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	}
 	
 	/**
-	 * @param hasAssessableNodes true: show menu, false: hide menu
+	 * @param assessableNodes true: show menu, false: hide menu
 	 * @return The tree model
 	 */
-	private TreeModel buildTreeModel(boolean hasAssessableNodes, boolean certificate) {
+	private TreeModel buildTreeModel(boolean assessableNodes, boolean certificate) {
 		GenericTreeNode root, gtn;
 
 		GenericTreeModel gtm = new GenericTreeModel();
@@ -1249,7 +1264,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		gtm.setRootNode(root);
 
 		// show real menu only when there are some assessable nodes
-		if (hasAssessableNodes) {
+		if (assessableNodes) {
 			gtn = new GenericTreeNode();
 			gtn.setTitle(translate("menu.groupfocus"));
 			gtn.setUserObject(CMD_GROUPFOCUS);
@@ -1263,7 +1278,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			root.addChild(gtn);
 		}
 		
-		if (hasAssessableNodes || certificate) {
+		if (assessableNodes || certificate) {
 			gtn = new GenericTreeNode();
 			gtn.setTitle(translate("menu.userfocus"));
 			gtn.setUserObject(CMD_USERFOCUS);
@@ -1271,7 +1286,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			root.addChild(gtn);
 		}
 
-		if (hasAssessableNodes) {
+		if (assessableNodes) {
 			gtn = new GenericTreeNode();
 			gtn.setTitle(translate("menu.bulkfocus"));
 			gtn.setUserObject(CMD_BULKFOCUS);
@@ -1293,6 +1308,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		// controllers disposed by BasicController
 		userListCtr = null;
@@ -1313,6 +1329,9 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 				log.debug("Interrupting assessment cache preload in course::" + course.getResourceableId() + " while in doDispose()");
 			}
 		}
+		
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.deregisterFor(this, CertificatesManager.ORES_CERTIFICATE_EVENT);
 	}
 	
 	/**

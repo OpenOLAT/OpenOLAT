@@ -28,6 +28,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -45,6 +46,7 @@ import org.olat.resource.OLATResource;
 public interface CertificatesManager {
 
 	public static final String ORES_CERTIFICATE =  OresHelper.calculateTypeName(CertificatesManager.class);
+	public static final OLATResourceable ORES_CERTIFICATE_EVENT =  OresHelper.createOLATResourceableInstance("Certificate", 0l);
 	
 	public boolean isHTMLTemplateAllowed();
 	
@@ -92,6 +94,8 @@ public interface CertificatesManager {
 	public Certificate getCertificateById(Long key);
 	
 	public Certificate getCertificateByUuid(String uuid);
+	
+	public CertificateLight getCertificateLightById(Long key);
 	
 	public VFSLeaf getCertificateLeaf(Certificate certificate);
 	

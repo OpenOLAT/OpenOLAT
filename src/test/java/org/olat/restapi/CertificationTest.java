@@ -118,6 +118,9 @@ public class CertificationTest extends OlatJerseyTestCase {
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 		
+		//async process mean sleep a little
+		sleep(2000);
+		
 		//check certificate
 		Certificate certificate = certificatesManager.getLastCertificate(assessedIdentity, entry.getOlatResource().getKey());
 		Assert.assertNotNull(certificate);
