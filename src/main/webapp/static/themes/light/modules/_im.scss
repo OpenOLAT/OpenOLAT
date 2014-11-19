@@ -1,5 +1,8 @@
 /* Instant Messaging components in navbar */
 #o_navbar_imclient {
+	.o_im_messages {
+		float: left;
+	}
 	#o_im_message, 	
 	#o_im_status,
 	#o_im_summary {
@@ -19,14 +22,17 @@
 	#o_im_status div.o_chelp_wrapper {
 		right: 0.5em;
 	}
-	#o_im_message .o_icon_message {
-		color: $o-im-newmessage-color;
-		&:hover {
-			color: $o-im-newmessage-hover-color;		
+	#o_im_message {
+		a:hover,
+		a:focus {
+			text-decoration: none;
+		}
+		.o_icon_message {
+			color: $o-im-newmessage-color;
+			&:hover {
+				color: $o-im-newmessage-hover-color;		
+			}	
 		}		
-	}
-	#o_im_messages {
-		float: left;
 	}
 }
 
