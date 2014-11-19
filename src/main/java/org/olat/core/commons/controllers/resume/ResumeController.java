@@ -20,6 +20,8 @@
  */
 package org.olat.core.commons.controllers.resume;
 
+import java.util.List;
+
 import org.olat.NewControllerFactory;
 import org.olat.admin.landingpages.LandingPagesModule;
 import org.olat.admin.landingpages.model.Rules;
@@ -39,6 +41,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryManager;
 import org.olat.core.id.context.HistoryModule;
 import org.olat.core.id.context.HistoryPoint;
@@ -120,7 +123,8 @@ public class ResumeController extends FormBasicController implements SupportsAft
 			} else if ("auto".equals(resumePrefs)) {
 				HistoryPoint historyEntry = HistoryManager.getInstance().readHistoryPoint(ureq.getIdentity());
 				if(historyEntry != null && StringHelper.containsNonWhitespace(historyEntry.getBusinessPath())) {
-					BusinessControl bc = BusinessControlFactory.getInstance().createFromContextEntries(historyEntry.getEntries());
+					List<ContextEntry> cloneCes = BusinessControlFactory.getInstance().cloneContextEntries(historyEntry.getEntries());
+					BusinessControl bc = BusinessControlFactory.getInstance().createFromContextEntries(cloneCes);
 					launch(ureq, bc);
 				} else {
 					String bc = getLandingBC(ureq);
@@ -179,7 +183,8 @@ public class ResumeController extends FormBasicController implements SupportsAft
 		
 		HistoryPoint historyEntry = historyManager.readHistoryPoint(ureq.getIdentity());
 		if(historyEntry != null && StringHelper.containsNonWhitespace(historyEntry.getBusinessPath())) {
-			BusinessControl bc = BusinessControlFactory.getInstance().createFromContextEntries(historyEntry.getEntries());
+			List<ContextEntry> cloneCes = BusinessControlFactory.getInstance().cloneContextEntries(historyEntry.getEntries());
+			BusinessControl bc = BusinessControlFactory.getInstance().createFromContextEntries(cloneCes);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 			try {
 				//make the resume secure. If something fail, don't generate a red screen

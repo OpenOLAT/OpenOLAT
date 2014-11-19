@@ -271,7 +271,15 @@ public class BusinessControlFactory {
 		return createFromContextEntries(ces);
 	}
 
-	//fxdiff BAKS-7 Resume function
+	public List<ContextEntry> cloneContextEntries(final List<ContextEntry> ces) {
+		final List<ContextEntry> clones = new ArrayList<ContextEntry>(ces.size());
+		for(ContextEntry ce:ces) {
+			OLATResourceable clone = OresHelper.clone(ce.getOLATResourceable());
+			clones.add(new MyContextEntry(clone));
+		}
+		return clones;
+	}
+
 	public BusinessControl createFromContextEntries(final List<ContextEntry> ces) {
 		ContextEntry rootEntry = null;
 		if (ces.isEmpty() || ((rootEntry = ces.get(0))==null)) {
