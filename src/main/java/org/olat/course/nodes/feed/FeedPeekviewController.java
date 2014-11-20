@@ -22,7 +22,6 @@ package org.olat.course.nodes.feed;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
@@ -43,6 +42,7 @@ import org.olat.modules.webFeed.models.Item;
 import org.olat.modules.webFeed.ui.FeedUIFactory;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <h3>Description:</h3> The feed peekview controller displays the configurable
@@ -60,6 +60,11 @@ import org.olat.user.UserManager;
 public class FeedPeekviewController extends BasicController implements Controller {
 	// the current course node id
 	private final String nodeId;
+	
+	@Autowired
+	private FeedManager feedManager;
+	@Autowired
+	private UserManager userManager;
 
 	/**
 	 * Constructor for the feed peekview controller
@@ -79,43 +84,46 @@ public class FeedPeekviewController extends BasicController implements Controlle
 			Long courseId, String nodeId, FeedUIFactory feedUIFactory, int itemsToDisplay, String wrapperCssClass) {
 		super(ureq, wControl);
 		this.nodeId = nodeId;
-		FeedManager feedManager = FeedManager.getInstance();
 		Feed feed = feedManager.getFeed(olatResource);
-		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 
 		VelocityContainer peekviewVC = createVelocityContainer("peekview");
-		peekviewVC.contextPut("wrapperCssClass", wrapperCssClass != null ? wrapperCssClass : "");
-		// add gui helper
-		String authorFullname = userManager.getUserDisplayName(feed.getAuthor());
-		FeedViewHelper helper = new FeedViewHelper(feed, getIdentity(), authorFullname, getTranslator(), courseId, nodeId, callback);
-		peekviewVC.contextPut("helper", helper);
-		// add items, only as many as configured
-		List<Item> allItems = feed.getFilteredItems(callback, getIdentity());
-		List<Item> items = new ArrayList<Item>();
-		for (int i = 0; i < allItems.size(); i++) {
-			if (items.size() == itemsToDisplay) {
-				break;
+		if(feed == null) {
+			peekviewVC.contextPut("items", new ArrayList<>(1));
+			peekviewVC.contextPut("errorMessage", translate("peekview.error"));
+		} else {
+			peekviewVC.contextPut("wrapperCssClass", wrapperCssClass != null ? wrapperCssClass : "");
+			// add gui helper
+			String authorFullname = userManager.getUserDisplayName(feed.getAuthor());
+			FeedViewHelper helper = new FeedViewHelper(feed, getIdentity(), authorFullname, getTranslator(), courseId, nodeId, callback);
+			peekviewVC.contextPut("helper", helper);
+			// add items, only as many as configured
+			List<Item> allItems = feed.getFilteredItems(callback, getIdentity());
+			List<Item> items = new ArrayList<Item>();
+			for (int i = 0; i < allItems.size(); i++) {
+				if (items.size() == itemsToDisplay) {
+					break;
+				}
+				// add item itself if published
+				Item item = allItems.get(i);
+				if (item.isPublished()) {
+					items.add(item);
+					// add link to item
+					// Add link to jump to course node
+					Link nodeLink = LinkFactory.createLink("nodeLink_" + item.getGuid(), peekviewVC, this);
+					nodeLink.setCustomDisplayText(StringHelper.escapeHtml(item.getTitle()));
+					nodeLink.setIconLeftCSS("o_icon o_" + feed.getResourceableTypeName().replace(".", "-") + "_icon");
+					nodeLink.setCustomEnabledLinkCSS("o_gotoNode");
+					nodeLink.setUserObject(item.getGuid());
+				}
 			}
-			// add item itself if published
-			Item item = allItems.get(i);
-			if (item.isPublished()) {
-				items.add(item);
-				// add link to item
-				// Add link to jump to course node
-				Link nodeLink = LinkFactory.createLink("nodeLink_" + item.getGuid(), peekviewVC, this);
-				nodeLink.setCustomDisplayText(StringHelper.escapeHtml(item.getTitle()));
-				nodeLink.setIconLeftCSS("o_icon o_" + feed.getResourceableTypeName().replace(".", "-") + "_icon");
-				nodeLink.setCustomEnabledLinkCSS("o_gotoNode");
-				nodeLink.setUserObject(item.getGuid());
-			}
+			peekviewVC.contextPut("items", items);
+			// Add link to show all items (go to node)
+			Link allItemsLink = LinkFactory.createLink("peekview.allItemsLink", peekviewVC, this);
+			allItemsLink.setIconRightCSS("o_icon o_icon_start");
+			allItemsLink.setCustomEnabledLinkCSS("pull-right");
+			// Add Formatter for proper date formatting
+			peekviewVC.contextPut("formatter", Formatter.getInstance(getLocale()));
 		}
-		peekviewVC.contextPut("items", items);
-		// Add link to show all items (go to node)
-		Link allItemsLink = LinkFactory.createLink("peekview.allItemsLink", peekviewVC, this);
-		allItemsLink.setIconRightCSS("o_icon o_icon_start");
-		allItemsLink.setCustomEnabledLinkCSS("pull-right");
-		// Add Formatter for proper date formatting
-		peekviewVC.contextPut("formatter", Formatter.getInstance(getLocale()));
 		putInitialPanel(peekviewVC);
 	}
 
