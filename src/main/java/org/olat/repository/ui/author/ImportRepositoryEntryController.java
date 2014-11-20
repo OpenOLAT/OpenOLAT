@@ -199,18 +199,25 @@ public class ImportRepositoryEntryController extends FormBasicController {
 
 	private void doAnalyseUpload() {
 		File uploadedFile = uploadFileEl.getUploadFile();
-		String uploadedFilename = uploadFileEl.getUploadFileName();
-		
-		List<ResourceHandler> handlers = new ArrayList<>(3);
-		for(String type:repositoryHandlerFactory.getSupportedTypes()) {
-			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
-			ResourceEvaluation eval = handler.acceptImport(uploadedFile, uploadedFilename);
-			if(eval != null && eval.isValid()) {
-				handlers.add(new ResourceHandler(handler, eval));
+		if(uploadedFile == null) {//OO-1320
+			typeEl.setVisible(false);
+			selectType.setVisible(false);
+			uploadFileEl.reset();
+			importButton.setEnabled(false);
+		} else {
+			String uploadedFilename = uploadFileEl.getUploadFileName();
+			
+			List<ResourceHandler> handlers = new ArrayList<>(3);
+			for(String type:repositoryHandlerFactory.getSupportedTypes()) {
+				RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
+				ResourceEvaluation eval = handler.acceptImport(uploadedFile, uploadedFilename);
+				if(eval != null && eval.isValid()) {
+					handlers.add(new ResourceHandler(handler, eval));
+				}
 			}
+	
+			updateResourceInfos(handlers);
 		}
-
-		updateResourceInfos(handlers);
 	}
 	
 	private void updateResourceInfos(List<ResourceHandler> handlers) {
