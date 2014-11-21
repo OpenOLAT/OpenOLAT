@@ -1,38 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:context="http://www.springframework.org/schema/context" 
 	xsi:schemaLocation="http://www.springframework.org/schema/beans 
-	                   http://www.springframework.org/schema/beans/spring-beans.xsd
-                     http://www.springframework.org/schema/context 
-                     http://www.springframework.org/schema/context/spring-context.xsd">
-                        
-	<context:component-scan base-package="org.olat.modules.coach" />
-	
-	<bean id="coachingModule" class="org.olat.modules.coach.CoachingModule" init-method="init"
-		depends-on="">
-		<property name="persistedProperties">
-		  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
-		    <constructor-arg index="0" ref="coordinatorManager"/>
-		    <constructor-arg index="1" ref="coachingModule" />
-		    <constructor-arg index="2" value="com.frentix.olat.coach.CoachingModule" />
-		    <constructor-arg index="3" value="false" />
-		  </bean>
-		</property>		
-	</bean>
-	
-	<!-- default configuration -->
-	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject" ref="coachingModule" />
-		<property name="targetMethod" value="init" />
-		<property name="arguments">
-			<value>
-				coaching.enabled=${site.coaching.enable}
-			</value>
-		</property>
-	</bean>
-	
-	<!-- the REST API menu-entry -->
+	                   http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!-- Admin. -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="7208" />
 		<property name="navigationKey" value="coachingAdmin" />
@@ -50,68 +22,6 @@
 			</list>
 		</property>
 		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
-	</bean>	
-	
-	
-	<!-- students menu item -->
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" id="coach.menupoint.student" init-method="initExtensionPoints" >
-		<property name="order" value="701" />
-		<property name="navigationKey" value="students" />
-		<property name="actionController">	
-			<bean class=" org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
-				<property name="factoryName" value="org.olat.modules.coach.CoachUIFactory"/>
-				<property name="factoryMethod" value="createStudentsController"/>
-			</bean>
-		</property>
-		<property name="translationPackage" value="org.olat.modules.coach.ui" />
-		<property name="i18nActionKey" value="students.menu.title"/>
-		<property name="i18nDescriptionKey" value="students.menu.title.alt"/>
-		<property name="extensionPoints">
-			<list>	
-				<value>org.olat.modules.coach.ui.CoachMainController</value>		
-			</list>
-		</property>
 	</bean>
-	
-	<!-- students menu item -->
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" id="coach.menupoint.group" init-method="initExtensionPoints" >
-		<property name="order" value="702" />
-		<property name="navigationKey" value="groups" />
-		<property name="actionController">	
-			<bean class=" org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
-				<property name="factoryName" value="org.olat.modules.coach.CoachUIFactory"/>
-				<property name="factoryMethod" value="createGroupsController"/>
-			</bean>
-		</property>
-		<property name="translationPackage" value="org.olat.modules.coach.ui" />
-		<property name="i18nActionKey" value="groups.menu.title"/>
-		<property name="i18nDescriptionKey" value="groups.menu.title.alt"/>
-		<property name="extensionPoints">
-			<list>	
-				<value>org.olat.modules.coach.ui.CoachMainController</value>		
-			</list>
-		</property>
-	</bean>
-	
-	<!-- students menu item -->
-	<bean class="org.olat.core.extensions.action.GenericActionExtension" id="coach.menupoint.course" init-method="initExtensionPoints" >
-		<property name="order" value="703" />
-		<property name="navigationKey" value="courses" />
-		<property name="actionController">	
-			<bean class=" org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
-				<property name="factoryName" value="org.olat.modules.coach.CoachUIFactory"/>
-				<property name="factoryMethod" value="createCoursesController"/>
-			</bean>
-		</property>
-		<property name="translationPackage" value="org.olat.modules.coach.ui" />
-		<property name="i18nActionKey" value="courses.menu.title"/>
-		<property name="i18nDescriptionKey" value="courses.menu.title.alt"/>
-		<property name="extensionPoints">
-			<list>	
-				<value>org.olat.modules.coach.ui.CoachMainController</value>		
-			</list>
-		</property>
-	</bean>	
-
 </beans>
 	

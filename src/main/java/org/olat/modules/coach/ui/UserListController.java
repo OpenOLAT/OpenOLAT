@@ -19,15 +19,17 @@
  */
 package org.olat.modules.coach.ui;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
@@ -44,6 +46,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
@@ -54,36 +57,34 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Description:<br>
- * Overview of all students under the scrutiny of a coach.
- * 
- * <P>
- * Initial Date:  8 févr. 2012 <br>
- *
+ * Initial date: 20.11.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class StudentListController extends BasicController implements Activateable2 {
+public class UserListController extends BasicController implements Activateable2 {
 	
+	private final Link back;
 	private final Panel content;
+	private final VelocityContainer listVC;
 	private final TableController tableCtr;
-	private final VelocityContainer mainVC;
 	private StudentCoursesController studentCtrl;
 	
 	private boolean hasChanged;
+	private List<IdentityRef> identityRefs;
+	private final Map<Long,String> identityFullNameMap = new HashMap<Long,String>();
 	
-	private final Map<Long,String> identityFullNameMap= new HashMap<Long,String>();
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private CoachingService coachingService;
 	
-	public StudentListController(UserRequest ureq, WindowControl wControl) {
+	public UserListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("error.no.found"));
 		tableConfig.setDownloadOffered(true);
-		tableConfig.setPreferencesOffered(true, "studentListController");
+		tableConfig.setPreferencesOffered(true, "userListController");
 
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), null, null, null, null, true, getTranslator());
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("student.name", Columns.name.ordinal(), "select", getLocale()));
@@ -92,37 +93,21 @@ public class StudentListController extends BasicController implements Activateab
 				ColumnDescriptor.ALIGNMENT_LEFT, new LightIconRenderer()));
 		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.passed", Columns.countPassed.ordinal(), null, getLocale(),
 				ColumnDescriptor.ALIGNMENT_LEFT, new ProgressRenderer(false, getTranslator())));
-
-		loadModel();
 		listenTo(tableCtr);
 		
-		mainVC = createVelocityContainer("student_list");
+		listVC = createVelocityContainer("user_list");
+		listVC.put("userList", tableCtr.getInitialComponent());
+		back = LinkFactory.createLinkBack(listVC, this);
+		listVC.put("back", back);
+		
 		content = new Panel("studentList");
-		content.setContent(tableCtr.getInitialComponent());
-		mainVC.put("content", content);
-
-		putInitialPanel(mainVC);
+		content.setContent(listVC);
+		putInitialPanel(content);
 	}
 	
 	@Override
 	protected void doDispose() {
 		//
-	}
-	
-	private void loadModel() {
-		List<StudentStatEntry> students = coachingService.getStudentsStatistics(getIdentity());
-		Set<Long> studentNames = new HashSet<Long>();
-		for(StudentStatEntry student:students) {
-			if(!identityFullNameMap.containsKey(student.getStudentKey())) {
-				studentNames.add(student.getStudentKey());
-			}
-		}
-		if(!studentNames.isEmpty()) {
-			Map<Long,String> newIdentityFullNameMap = coachingService.getIdentities(studentNames);
-			identityFullNameMap.putAll(newIdentityFullNameMap);
-		}
-		TableDataModel<StudentStatEntry> model = new StudentsTableDataModel(students, identityFullNameMap);
-		tableCtr.setTableDataModel(model);
 	}
 	
 	private void reloadModel() {
@@ -131,10 +116,29 @@ public class StudentListController extends BasicController implements Activateab
 			hasChanged = false;
 		}
 	}
+	
+	private void loadModel() {
+		List<StudentStatEntry> stats = coachingService.getUsersStatistics(identityRefs);
+		TableDataModel<StudentStatEntry> model = new StudentsTableDataModel(stats, identityFullNameMap);
+		tableCtr.setTableDataModel(model);
+	}
+
+	public void loadModel(List<Identity> identities) {
+		List<IdentityRef> refs = new ArrayList<>(identities.size());
+		for(Identity identity:identities) {
+			String fullName = identity.getUser().getProperty(UserConstants.FIRSTNAME, getLocale()) + " " + identity.getUser().getProperty(UserConstants.LASTNAME, getLocale());
+			identityFullNameMap.put(identity.getKey(), fullName);
+			refs.add(new IdentityRefImpl(identity.getKey()));
+		}
+		identityRefs = refs;
+		loadModel();
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if(source == back) {
+			fireEvent(ureq, Event.BACK_EVENT);
+		}
 	}
 
 	@Override
@@ -149,7 +153,7 @@ public class StudentListController extends BasicController implements Activateab
 			}
 		} else if(event == Event.BACK_EVENT) {
 			reloadModel();
-			content.setContent(tableCtr.getInitialComponent());
+			content.setContent(listVC);
 			removeAsListenerAndDispose(studentCtrl);
 			studentCtrl = null;
 			addToHistory(ureq);
@@ -167,21 +171,7 @@ public class StudentListController extends BasicController implements Activateab
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
-		
-		ContextEntry ce = entries.get(0);
-		OLATResourceable ores = ce.getOLATResourceable();
-		if("Identity".equals(ores.getResourceableTypeName())) {
-			Long identityKey = ores.getResourceableId();
-			for(int i=tableCtr.getRowCount(); i-->0; ) {
-				StudentStatEntry studentStat = (StudentStatEntry)tableCtr.getTableDataModel().getObject(i);
-				if(identityKey.equals(studentStat.getStudentKey())) {
-					selectStudent(ureq, studentStat);
-					studentCtrl.activate(ureq, entries.subList(1, entries.size()), ce.getTransientState());
-					break;
-				}
-			}
-		}
+		//do nothing
 	}
 	
 	protected void previousStudent(UserRequest ureq) {
@@ -211,9 +201,22 @@ public class StudentListController extends BasicController implements Activateab
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		
 		int index = tableCtr.getIndexOfSortedObject(studentStat);
-		studentCtrl = new StudentCoursesController(ureq, bwControl, studentStat, student, index, tableCtr.getRowCount(), false);
+		studentCtrl = new StudentCoursesController(ureq, bwControl, studentStat, student, index, tableCtr.getRowCount(), true);
 		
 		listenTo(studentCtrl);
 		content.setContent(studentCtrl.getInitialComponent());
+	}
+	
+	private static class IdentityRefImpl implements IdentityRef {
+		private final Long key;
+		
+		public IdentityRefImpl(Long key) {
+			this.key = key;
+		}
+		
+		@Override
+		public Long getKey() {
+			return key;
+		}
 	}
 }

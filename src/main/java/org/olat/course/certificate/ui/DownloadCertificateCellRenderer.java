@@ -82,9 +82,9 @@ public class DownloadCertificateCellRenderer implements CustomCellRenderer, Flex
 	private void render(StringOutput sb, CertificateLight certificate, Identity identity, Locale locale) {
 		String name = Formatter.getInstance(locale).formatDate(certificate.getCreationDate());
 		if(CertificateStatus.pending.equals(certificate.getStatus())) {
-			sb.append("<span><i class='o_icon o_icon_pending o_icon-spin'> </i>").append(name).append(".pdf").append("</span>");
+			sb.append("<span><i class='o_icon o_icon_pending o_icon-spin'> </i> ").append(name).append(".pdf").append("</span>");
 		} else if(CertificateStatus.error.equals(certificate.getStatus())) {
-			sb.append("<span><i class='o_icon o_icon_error'> </i>").append(name).append(".pdf").append("</span>");
+			sb.append("<span><i class='o_icon o_icon_error'> </i> ").append(name).append(".pdf").append("</span>");
 		} else {
 			sb.append("<a href='").append(getUrl(certificate, identity))
 			  .append("' target='_blank'><i class='o_icon o_filetype_pdf'> </i> ")

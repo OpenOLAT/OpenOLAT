@@ -155,7 +155,7 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(confirmCertificateCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
-				doGenerateCertificate();
+				doGenerateCertificate(ureq);
 			}
 		} else if(confirmDeleteCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
@@ -186,7 +186,7 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		if(certificatesManager.isRecertificationAllowed(assessedIdentity, courseEntry)) {
 			//don't need to confirm
-			doGenerateCertificate();
+			doGenerateCertificate(ureq);
 		} else {
 			String title = translate("confirm.certificate.title");
 			String text = translate("confirm.certificate.text");
@@ -194,7 +194,7 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 		}
 	}
 	
-	private void doGenerateCertificate() {
+	private void doGenerateCertificate(UserRequest ureq) {
 		ICourse course = CourseFactory.loadCourse(resource);
 		CourseNode rootNode = course.getRunStructure().getRootNode();
 		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
@@ -214,6 +214,7 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 		certificatesManager.generateCertificate(certificateInfos, courseEntry, template, result);
 		loadList();
 		showInfo("msg.certificate.pending");
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	public static class Links {

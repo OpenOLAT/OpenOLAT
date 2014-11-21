@@ -102,6 +102,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.vitero.model.GroupRole;
 import org.olat.repository.RepositoryEntry;
@@ -149,6 +150,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	private NotificationsManager notificationsManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private CoordinatorManager coordinatorManager;
 
@@ -467,13 +470,31 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 
 	@Override
-	public List<CertificateLight> getCertificates(OLATResource resource) {
+	public List<CertificateLight> getLastCertificates(OLATResource resource) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select cer from certificatelight cer")
-		  .append(" where cer.olatResourceKey=:resourceKey");
+		  .append(" where cer.olatResourceKey=:resourceKey and cer.last=true");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CertificateLight.class)
 				.setParameter("resourceKey", resource.getKey())
+				.getResultList();
+	}
+	
+	@Override
+	public List<CertificateLight> getLastCertificates(BusinessGroup businessGroup) {
+		List<BusinessGroup> groups = Collections.singletonList(businessGroup);
+		List<RepositoryEntry> entries = businessGroupRelationDao.findRepositoryEntries(groups, 0, -1);
+		List<Long> resourceKeys = new ArrayList<>(entries.size());
+		for(RepositoryEntry entry:entries) {
+			resourceKeys.add(entry.getOlatResource().getKey());
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select cer from certificatelight cer")
+		  .append(" where cer.olatResourceKey in (:resourceKeys) and cer.last=true");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CertificateLight.class)
+				.setParameter("resourceKeys", resourceKeys)
 				.getResultList();
 	}
 

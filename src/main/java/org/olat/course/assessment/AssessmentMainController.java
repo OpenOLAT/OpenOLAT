@@ -982,7 +982,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 	private Map<Long, CertificateLight> getCertificates(ICourse course) {
 		Map<Long, CertificateLight> certificates =  new ConcurrentHashMap<>();
 		OLATResource resource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-		List<CertificateLight> certificateList = certificatesManager.getCertificates(resource);
+		List<CertificateLight> certificateList = certificatesManager.getLastCertificates(resource);
 		for(CertificateLight certificate:certificateList) {
 			CertificateLight currentCertificate = certificates.get(certificate.getIdentityKey());
 			if(currentCertificate == null || currentCertificate.getCreationDate().before(certificate.getCreationDate())) {

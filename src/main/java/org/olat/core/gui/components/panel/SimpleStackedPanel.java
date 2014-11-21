@@ -94,6 +94,7 @@ public class SimpleStackedPanel extends AbstractComponent implements StackedPane
 	 * 
 	 * @param newContent the newContent. if null, then the panel will be empty
 	 */
+	@Override
 	public void setContent(Component newContent) {
 		stackList.clear();
 		if (newContent != null) {
@@ -107,12 +108,14 @@ public class SimpleStackedPanel extends AbstractComponent implements StackedPane
 	/**
 	 * @param newContent may not be null
 	 */
+	@Override
 	public void pushContent(Component newContent) {
 		stackList.add(newContent);
 		curContent = newContent;
 		setDirty(true);
 	}
 
+	@Override
 	public void popContent() {
 		int stackHeight = stackList.size();
 		if (stackHeight < 1) throw new AssertException("stack was empty!");
@@ -129,6 +132,7 @@ public class SimpleStackedPanel extends AbstractComponent implements StackedPane
 	/**
 	 * @see org.olat.core.gui.components.Component#getExtendedDebugInfo()
 	 */
+	@Override
 	public String getExtendedDebugInfo() {
 		StringBuilder sb = new StringBuilder();
 		int size = stackList.size();
@@ -140,6 +144,7 @@ public class SimpleStackedPanel extends AbstractComponent implements StackedPane
 		return "stacksize:" + size + ", active:" + sb.toString();
 	}
 
+	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}

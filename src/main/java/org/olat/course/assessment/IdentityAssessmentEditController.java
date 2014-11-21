@@ -121,6 +121,7 @@ public class IdentityAssessmentEditController extends BasicController {
 		if(courseConfig.isAutomaticCertificationEnabled() || courseConfig.isManualCertificationEnabled()) {
 			certificateCtrl = new AssessedIdentityCertificatesController(ureq, wControl, assessedUserCourseEnvironment);
 			identityAssessmentVC.put("certificateInfos", certificateCtrl.getInitialComponent());
+			listenTo(certificateCtrl);
 		}
 		
 		BusinessControl bc = getWindowControl().getBusinessControl();
@@ -166,6 +167,10 @@ public class IdentityAssessmentEditController extends BasicController {
 			} else if (event.equals(Event.DONE_EVENT)) {
 				doIdentityAssessmentOverview(ureq, true);
 				fireEvent(ureq, Event.DONE_EVENT);
+			}
+		} else if(source == certificateCtrl) {
+			if(event == Event.CHANGED_EVENT) {
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		}
 	}

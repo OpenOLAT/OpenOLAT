@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -32,10 +33,12 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.course.ICourse;
@@ -101,23 +104,23 @@ public class CoachingServiceTest extends OlatTestCase {
 		//author
 		author = JunitTestHelper.createAndPersistIdentityAsAuthor("author_" + getUUID());
 		//r1 set of coach
-		coach10 = JunitTestHelper.createAndPersistIdentityAsUser("coach_" + getUUID());
-		coach11 = JunitTestHelper.createAndPersistIdentityAsUser("coach_" + getUUID());
-		coach12 = JunitTestHelper.createAndPersistIdentityAsUser("coach_" + getUUID());
-		coach13 = JunitTestHelper.createAndPersistIdentityAsUser("coach_" + getUUID());
+		coach10 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-10");
+		coach11 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-11");
+		coach12 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-12");
+		coach13 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-13");
 		//r2 set of coach
-		coach20 = JunitTestHelper.createAndPersistIdentityAsUser("coach_" + getUUID());
-		coach21 = JunitTestHelper.createAndPersistIdentityAsUser("coach_" + getUUID());
-		coach22 = JunitTestHelper.createAndPersistIdentityAsUser("coach_" + getUUID());
-		coach23 = JunitTestHelper.createAndPersistIdentityAsUser("coach_" + getUUID());
-		coach24 = JunitTestHelper.createAndPersistIdentityAsUser("coach_" + getUUID());
-		coach25 = JunitTestHelper.createAndPersistIdentityAsUser("coach_" + getUUID());
-		coach26 = JunitTestHelper.createAndPersistIdentityAsUser("coach_" + getUUID());
+		coach20 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-20");
+		coach21 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-21");
+		coach22 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-22");
+		coach23 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-23");
+		coach24 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-24");
+		coach25 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-25");
+		coach26 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-26");
 		
 		List<Identity> students = new ArrayList<Identity>();
 		//r1 set of student
 		for(int i=0; i<NUM_OF_STUDENTS; i++) {
-			Identity student = JunitTestHelper.createAndPersistIdentityAsUser("student_" + getUUID());
+			Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("student-" + i);
 			students.add(student);
 			if(i == 0) {
 				student10 = student;
@@ -279,29 +282,22 @@ public class CoachingServiceTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testStudentsStats() {
+	public void getStudentsStatistics() {
 		List<StudentStatEntry> statEntries = coachingService.getStudentsStatistics(coach10);
 		assertNotNull(statEntries);
 	}
 	
 	@Test
-	public void testCoursesStats() {
-		List<CourseStatEntry> courses = coachingService.getCoursesStatistics(coach10);
-		assertNotNull(courses);
-	}
-	
-	@Test
-	public void testCoachCourses() {
+	public void getCoursesStatistics() {
 		List<CourseStatEntry> statEntries = coachingService.getCoursesStatistics(coach10);
 		assertNotNull(statEntries);
 		List<Long> myCourses = coachToCourseMap.get(coach10.getKey());
 		assertNotNull(myCourses);
-		
 		assertEquals(myCourses.size(), statEntries.size());
 	}
 	
 	@Test
-	public void testGroupStats() {
+	public void getGroupsStatistics() {
 		List<GroupStatEntry> statEntries = coachingService.getGroupsStatistics(coach10);
 		assertNotNull(statEntries);
 		List<Long> myCourses = coachToGroupCourseMap.get(coach10.getKey());
@@ -311,7 +307,7 @@ public class CoachingServiceTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testCourse() {
+	public void getCourse() {
 		List<Long> myCourses = coachToCourseMap.get(coach10.getKey());
 		assertNotNull(myCourses);
 
@@ -327,12 +323,31 @@ public class CoachingServiceTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testStudentCourses() {
+	public void getStudentsCourses() {
 		List<RepositoryEntry> courses = coachingService.getStudentsCourses(coach10, student10, 0, -1);
 		assertNotNull(courses);
 		
 		List<Long> myCourses = coachToCourseMap.get(coach10.getKey());
 		assertNotNull(myCourses);
+	}
+	
+	@Test
+	public void getUserCourses() {
+		List<RepositoryEntry> courses = coachingService.getUserCourses(student10, 0, -1);
+		Assert.assertNotNull(courses);
+		Assert.assertEquals(studentToCourseMap.get(student10).size(), courses.size());
+	}
+	
+	@Test
+	public void getUsersStatistics() {
+		List<IdentityRef> identities = Collections.<IdentityRef>singletonList(student10);
+		List<StudentStatEntry> statEntries = coachingService.getUsersStatistics(identities);
+		Assert.assertNotNull(statEntries);
+		Assert.assertEquals(1, statEntries.size());
+		
+		StudentStatEntry statEntry = statEntries.get(0);
+		Assert.assertEquals(student10.getKey(), statEntry.getStudentKey());
+		Assert.assertEquals(studentToCourseMap.get(student10).size(), statEntry.getCountRepo());
 	}
 	
 	private String getUUID() {

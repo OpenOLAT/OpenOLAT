@@ -17,51 +17,48 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.certificate;
-
-import org.olat.core.util.event.MultiUserEvent;
+package org.olat.modules.coach.model;
 
 /**
  * 
- * Initial date: 19.11.2014<br>
+ * Initial date: 21.11.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CertificateEvent extends MultiUserEvent {
-
-	private static final long serialVersionUID = -1854321062161208157L;
-	private Long ownerKey;
-	private Long resourceKey;
-	private Long certificateKey;
+public class IdentityResourceKey {
 	
-	public CertificateEvent(Long ownerKey, Long certificateKey, Long resourceKey) {
-		super("certificate-update");
-		this.ownerKey = ownerKey;
+	private final Long identityKey;
+	private final Long resourceKey;
+	
+	public IdentityResourceKey(Long identityKey, Long resourceKey) {
+		this.identityKey = identityKey;
 		this.resourceKey = resourceKey;
-		this.certificateKey = certificateKey;
 	}
-
-	public Long getOwnerKey() {
-		return ownerKey;
+	
+	public Long getIdentityKey() {
+		return identityKey;
 	}
-
-	public void setOwnerKey(Long ownerKey) {
-		this.ownerKey = ownerKey;
-	}
-
+	
 	public Long getResourceKey() {
 		return resourceKey;
 	}
-
-	public void setResourceKey(Long resourceKey) {
-		this.resourceKey = resourceKey;
+	
+	@Override
+	public int hashCode() {
+		return (identityKey == null ? 98268 : identityKey.hashCode())
+				+ (resourceKey == null ? -2634785 : resourceKey.hashCode());
 	}
 
-	public Long getCertificateKey() {
-		return certificateKey;
-	}
-
-	public void setCertificateKey(Long certificateKey) {
-		this.certificateKey = certificateKey;
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof IdentityResourceKey) {
+			IdentityResourceKey key = (IdentityResourceKey)obj;
+			return identityKey != null && identityKey.equals(key.getIdentityKey())
+					&& resourceKey != null && resourceKey.equals(key.getResourceKey());
+		}
+		return false;
 	}
 }
