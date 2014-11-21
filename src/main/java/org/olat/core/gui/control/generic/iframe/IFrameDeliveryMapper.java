@@ -107,23 +107,34 @@ public class IFrameDeliveryMapper implements Mapper, Serializable {
 	
 	public void setDeliveryOptions(DeliveryOptions config) {
 		if(config != null) {
-			jQueryEnabled = config.getjQueryEnabled();
-			prototypeEnabled = config.getPrototypeEnabled();
-			if(config.getGlossaryEnabled() != null) {
-				enableTextmarking = config.getGlossaryEnabled().booleanValue();
+			Boolean standard = config.getStandardMode();
+			if(standard != null && standard.booleanValue()) {
+				rawContent = true;
+				openolatCss = false;
+				jQueryEnabled = false;
+				prototypeEnabled = false;
+				enableTextmarking = false;
+				adjusteightAutomatically = false;
+			} else {
+				jQueryEnabled = config.getjQueryEnabled();
+				prototypeEnabled = config.getPrototypeEnabled();
+				if(config.getGlossaryEnabled() != null) {
+					enableTextmarking = config.getGlossaryEnabled().booleanValue();
+				}
+				openolatCss = config.getOpenolatCss();
+
+				if(DeliveryOptions.CONFIG_HEIGHT_AUTO.equals(config.getHeight())) {
+					adjusteightAutomatically = true;
+				} else if(StringHelper.containsNonWhitespace(config.getHeight())) {
+					adjusteightAutomatically = false;
+				}
 			}
-			openolatCss = config.getOpenolatCss();
+			
 			if(config.getContentEncoding() != null) {
 				contentEncoding = config.getContentEncoding();
 			}
 			if(config.getJavascriptEncoding() != null) {
 				jsEncoding = config.getJavascriptEncoding();
-			}
-			
-			if(DeliveryOptions.CONFIG_HEIGHT_AUTO.equals(config.getHeight())) {
-				adjusteightAutomatically = true;
-			} else if(StringHelper.containsNonWhitespace(config.getHeight())) {
-				adjusteightAutomatically = false;
 			}
 		}
 	}
