@@ -26,6 +26,7 @@ import java.util.List;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -268,6 +269,44 @@ public class CoachingDAO extends BasicManager {
 		return stats;
 	}
 	
+	public List<StudentStatEntry> getUsersStatistics(List<? extends IdentityRef> identities) {
+		if(identities == null || identities.isEmpty()) return Collections.emptyList();
+		
+		StringBuilder query = new StringBuilder();
+		//                     0          1                 2               3              4                             5
+		query.append("select s.studentKey, count(s.repoKey), sum(s.passed), sum(s.failed), sum(s.notAttempted), count(s.initialLaunchKey)")
+		     .append(" from coachstatisticsidentity as s ")
+             .append(" where s.studentKey in (:identitiesKey)")
+             .append(" group by s.studentKey");
+		
+		List<Long> identityKeys = getIdentityKeys(identities);
+		List<Object[]> rawStats = dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString(), Object[].class)
+				.setParameter("identitiesKey", identityKeys)
+				.getResultList();
+
+		List<StudentStatEntry> stats = new ArrayList<StudentStatEntry>();
+		for(Object[] rawStat:rawStats) {
+			StudentStatEntry entry = new StudentStatEntry();
+			entry.setStudentKey((Long)rawStat[0]);
+			entry.setCountRepo(((Number)rawStat[1]).intValue());
+			entry.setCountPassed(((Number)rawStat[2]).intValue());
+			entry.setCountFailed(((Number)rawStat[3]).intValue());
+			entry.setCountNotAttempted(((Number)rawStat[4]).intValue());
+			entry.setInitialLaunch(((Number)rawStat[5]).intValue());
+			stats.add(entry);
+		}
+		return stats;
+	}
+	
+	private List<Long> getIdentityKeys(List<? extends IdentityRef> identities) {
+		List<Long> identityKeys = new ArrayList<>(identities.size());
+		for(IdentityRef ref:identities) {
+			identityKeys.add(ref.getKey());
+		}
+		return identityKeys;
+	}
+	
 	public List<Long> getStudents(Identity coach, RepositoryEntry entry) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct(participant.identity.key) from repoentrytogroup as relGroup ")
@@ -295,6 +334,28 @@ public class CoachingDAO extends BasicManager {
 		TypedQuery<RepositoryEntry> dbQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("coachKey", coach.getKey())
+				.setParameter("studentKey", student.getKey());
+		if(firstResult >= 0) {
+			dbQuery.setFirstResult(firstResult);
+		}
+		if(maxResults > 0) {
+			dbQuery.setMaxResults(maxResults);
+		}
+
+		List<RepositoryEntry> courses = dbQuery.getResultList();
+		return courses;
+	}
+	
+	public List<RepositoryEntry> getUserCourses(IdentityRef student, int firstResult, int maxResults) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct(re) from ").append(RepositoryEntry.class.getName()).append(" as re ")
+		  .append(" inner join re.groups as relGroup ")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as participant on participant.role='participant'")
+		  .append(" where participant.identity.key=:studentKey");
+
+		TypedQuery<RepositoryEntry> dbQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
 				.setParameter("studentKey", student.getKey());
 		if(firstResult >= 0) {
 			dbQuery.setFirstResult(firstResult);

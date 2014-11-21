@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.UserEfficiencyStatement;
@@ -86,6 +87,18 @@ public class CoachingServiceImpl implements CoachingService {
 	@Override
 	public List<StudentStatEntry> getStudentsStatistics(Identity coach) {
 		return coachingDao.getStudentsStatistics(coach);
+	}
+	
+	
+
+	@Override
+	public List<StudentStatEntry> getUsersStatistics(List<? extends IdentityRef> identities) {
+		return coachingDao.getUsersStatistics(identities);
+	}
+
+	@Override
+	public List<RepositoryEntry> getUserCourses(Identity student, int firstResult, int maxResults) {
+		return coachingDao.getUserCourses(student, firstResult, maxResults);
 	}
 
 	@Override

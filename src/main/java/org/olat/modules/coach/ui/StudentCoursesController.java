@@ -21,6 +21,8 @@ package org.olat.modules.coach.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
@@ -32,7 +34,6 @@ import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.TableController;
-import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.components.text.TextComponent;
@@ -50,12 +51,19 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.certificate.CertificateEvent;
+import org.olat.course.certificate.CertificateLight;
+import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
+import org.olat.modules.coach.model.IdentityResourceKey;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.modules.coach.ui.EfficiencyStatementEntryTableDataModel.Columns;
 import org.olat.modules.coach.ui.ToolbarController.Position;
@@ -73,7 +81,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class StudentCoursesController extends BasicController implements Activateable2 {
+public class StudentCoursesController extends BasicController implements Activateable2, GenericEventListener {
 
 	private final Link backLink, next, previous;
 	private final Link nextStudent, previousStudent;
@@ -82,6 +90,7 @@ public class StudentCoursesController extends BasicController implements Activat
 	private final TableController tableCtr;
 	private final VelocityContainer mainVC;
 	private final VelocityContainer detailsVC;
+	private EfficiencyStatementEntryTableDataModel model;
 	
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
@@ -91,17 +100,22 @@ public class StudentCoursesController extends BasicController implements Activat
 	private boolean hasChanged = false;
 	
 	private final Identity student;
+	private final boolean fullAccess;
 	private final StudentStatEntry statEntry;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private CoachingService coachingService;
+	@Autowired
+	private CertificatesManager certificatesManager;
 	
-	public StudentCoursesController(UserRequest ureq, WindowControl wControl, StudentStatEntry statEntry, Identity student, int index, int numOfStudents) {
+	public StudentCoursesController(UserRequest ureq, WindowControl wControl, StudentStatEntry statEntry,
+			Identity student, int index, int numOfStudents, boolean fullAccess) {
 		super(ureq, wControl);
 		
 		this.student = student;
 		this.statEntry = statEntry;
+		this.fullAccess = fullAccess;
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("error.no.found"));
@@ -114,6 +128,8 @@ public class StudentCoursesController extends BasicController implements Activat
 		tableCtr.addColumnDescriptor(new BooleanColumnDescriptor("table.header.passed", Columns.passed.ordinal(), translate("passed.true"), translate("passed.false")));
 		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.score", Columns.score.ordinal(), "select", getLocale(),
 				ColumnDescriptor.ALIGNMENT_RIGHT, new ScoreCellRenderer()));
+		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.certificate", Columns.certificate.ordinal(), null, getLocale(),
+				ColumnDescriptor.ALIGNMENT_LEFT, new DownloadCertificateCellRenderer(student)));
 		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.progress", Columns.progress.ordinal(), null, getLocale(),
 				ColumnDescriptor.ALIGNMENT_LEFT, new ProgressRenderer(true, getTranslator())));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.lastScoreDate", Columns.lastModification.ordinal(), "select", getLocale()));
@@ -172,6 +188,30 @@ public class StudentCoursesController extends BasicController implements Activat
 
 		setDetailsToolbarVisible(false);
 		putInitialPanel(mainVC);
+		
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
+	}
+	
+	@Override
+	protected void doDispose() {
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.deregisterFor(this, CertificatesManager.ORES_CERTIFICATE_EVENT);
+	}
+
+	@Override
+	public void event(Event event) {
+		if(event instanceof CertificateEvent) {
+			CertificateEvent ce = (CertificateEvent)event;
+			if(student.getKey().equals(ce.getOwnerKey())) {
+				updateCertificate(ce.getCertificateKey());
+			}
+		}
+	}
+	
+	private void updateCertificate(Long certificateKey) {
+		CertificateLight certificate = certificatesManager.getCertificateLightById(certificateKey);
+		model.putCertificate(certificate);
 	}
 	
 	public StudentStatEntry getEntry() {
@@ -179,10 +219,18 @@ public class StudentCoursesController extends BasicController implements Activat
 	}
 	
 	private List<EfficiencyStatementEntry> loadModel() {
-		List<RepositoryEntry> courses = coachingService.getStudentsCourses(getIdentity(), student, 0, -1);
+		List<RepositoryEntry> courses = fullAccess ? coachingService.getUserCourses(student, 0, -1)
+				: coachingService.getStudentsCourses(getIdentity(), student, 0, -1);
 		List<EfficiencyStatementEntry> statements = coachingService.getEfficencyStatements(student, courses);
+		
+		List<CertificateLight> certificates = certificatesManager.getLastCertificates(student);
+		ConcurrentMap<IdentityResourceKey, CertificateLight> certificateMap = new ConcurrentHashMap<>();
+		for(CertificateLight certificate:certificates) {
+			IdentityResourceKey key = new IdentityResourceKey(student.getKey(), certificate.getOlatResourceKey());
+			certificateMap.put(key, certificate);
+		}
 
-		TableDataModel<EfficiencyStatementEntry> model = new EfficiencyStatementEntryTableDataModel(statements);
+		model = new EfficiencyStatementEntryTableDataModel(statements, certificateMap);
 		tableCtr.setTableDataModel(model);
 		return statements;
 	}
@@ -193,11 +241,6 @@ public class StudentCoursesController extends BasicController implements Activat
 			loadModel();
 			hasChanged = false;
 		}
-	}
-
-	@Override
-	protected void doDispose() {
-		//
 	}
 
 	@Override

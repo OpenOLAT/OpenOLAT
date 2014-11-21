@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.group.BusinessGroup;
@@ -48,6 +49,12 @@ public interface CoachingService {
 	public List<RepositoryEntry> getStudentsCourses(Identity coach, Identity student, int firstResult, int maxResults);
 	
 	public List<StudentStatEntry> getStudentsStatistics(Identity coach);
+	
+	
+	public List<StudentStatEntry> getUsersStatistics(List<? extends IdentityRef> identities);
+	
+	public List<RepositoryEntry> getUserCourses(Identity student, int firstResult, int maxResults);
+	
 	
 	public List<CourseStatEntry> getCoursesStatistics(Identity coach);
 	

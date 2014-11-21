@@ -66,7 +66,7 @@ public class NoteController extends FormBasicController implements GenericEventL
 	private FormSubmit submitButton;
 	
 	@Autowired
-	private NoteManager nm;
+	private NoteManager noteManager;
 
 	/**
 	 * @param ureq
@@ -101,7 +101,7 @@ public class NoteController extends FormBasicController implements GenericEventL
 
 	private void init(UserRequest ureq, String resourceTypeName, Long resourceTypeId, String noteTitle) {
 		Identity owner = ureq.getIdentity();
-		n = nm.loadNoteOrCreateInRAM(owner, resourceTypeName, resourceTypeId);
+		n = noteManager.loadNoteOrCreateInRAM(owner, resourceTypeName, resourceTypeId);
 		n.setNoteTitle(noteTitle);
 
 		// register for local event (for the same user), is used to dispose
@@ -138,12 +138,12 @@ public class NoteController extends FormBasicController implements GenericEventL
 	private void createOrUpdateNote(String content) {
 		n.setNoteText(content);
 		if (n.getKey() == null) {
-			nm.saveNote(n);
+			noteManager.saveNote(n);
 			Long newKey = n.getKey();
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(Note.class, newKey);
 			sec.fireEventToListenersOf(new NoteEvent(getIdentity().getKey()), ores);
 		} else {
-			nm.updateNote(n);
+			n = noteManager.updateNote(n);
 		}
 	}
 
@@ -192,9 +192,9 @@ public class NoteController extends FormBasicController implements GenericEventL
 		createOrUpdateNote(text);
 		
 		// ...and then hide the submit button, show the edit button, and make the field disabled (i.e. display-only) again.
-		this.submitButton.setVisible(false);
-		this.editButton.setVisible(true);
-		this.noteField.setEnabled(false);
+		submitButton.setVisible(false);
+		editButton.setVisible(true);
+		noteField.setEnabled(false);
 	}
 
 	/**
@@ -207,10 +207,10 @@ public class NoteController extends FormBasicController implements GenericEventL
 		// persisting: see formOK
 		
 		// If the user clicked the edit button, set the rich text input field to enabled and hide the edit button.
-		if ((source == this.editButton) && (this.editButton.isEnabled())) {
-			this.noteField.setEnabled(true);
-			this.editButton.setVisible(false);
-			this.submitButton.setVisible(true);
+		if ((source == editButton) && (editButton.isEnabled())) {
+			noteField.setEnabled(true);
+			editButton.setVisible(false);
+			submitButton.setVisible(true);
 			
 			// this is to force the redraw of the form so that the submit button gets shown:
 			flc.setDirty(true);
@@ -218,8 +218,7 @@ public class NoteController extends FormBasicController implements GenericEventL
 			// since clicking the edit button is registered as a change on the form, the submit button would get orange,
 			// so we need the following line to set the form back to unchanged since at this point, the user has not
 			// yet really changed anything.
-			this.mainForm.setDirtyMarking(false);
+			mainForm.setDirtyMarking(false);
 		}
 	}
-
 }

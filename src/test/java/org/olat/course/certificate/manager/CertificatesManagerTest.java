@@ -23,6 +23,7 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,6 +34,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.model.CertificateInfos;
@@ -93,13 +95,84 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Assert.assertNotNull(certificate);
 		Assert.assertNotNull(certificate.getKey());
 		Assert.assertNotNull(certificate.getUuid());
-		Assert.assertNotNull(certificate.getName());
 		Assert.assertEquals(entry.getOlatResource().getKey(), certificate.getArchivedResourceKey());
 		
-		//check if the pdf exists
-		VFSLeaf certificateFile = certificatesManager.getCertificateLeaf(certificate);
+		//need to sleep
+		sleep(2000);
+		
+		//check if the pdf exists / flush cache, reload the entry with the updated path
+		dbInstance.commitAndCloseSession();
+		Certificate reloadCertificate = certificatesManager.getCertificateById(certificate.getKey());
+		VFSLeaf certificateFile = certificatesManager.getCertificateLeaf(reloadCertificate);
 		Assert.assertNotNull(certificateFile);
 		Assert.assertTrue(certificateFile.exists());
+	}
+	
+	@Test
+	public void loadCertificate() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1");
+		RepositoryEntry entry = JunitTestHelper.deployDemoCourse(identity);
+		dbInstance.commitAndCloseSession();
+		
+		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, Boolean.TRUE);
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, null);
+		Assert.assertNotNull(certificate);
+		dbInstance.commitAndCloseSession();
+		
+		//full
+		Certificate reloadedCertificate = certificatesManager.getCertificateById(certificate.getKey());
+		Assert.assertNotNull(reloadedCertificate);
+		Assert.assertEquals(certificate, reloadedCertificate);
+		Assert.assertNotNull(reloadedCertificate.getUuid());
+		Assert.assertEquals(certificate.getUuid(), reloadedCertificate.getUuid());
+		Assert.assertEquals(entry.getDisplayname(), reloadedCertificate.getCourseTitle());
+		Assert.assertEquals(identity, reloadedCertificate.getIdentity());
+		
+		//light
+		CertificateLight reloadedLight = certificatesManager.getCertificateLightById(certificate.getKey());
+		Assert.assertNotNull(reloadedLight);
+		Assert.assertEquals(certificate.getKey(), reloadedLight.getKey());
+		Assert.assertEquals(entry.getDisplayname(), reloadedLight.getCourseTitle());
+		Assert.assertEquals(identity.getKey(), reloadedLight.getIdentityKey());
+		Assert.assertEquals(entry.getOlatResource().getKey(), reloadedLight.getOlatResourceKey());
+		
+		//uuid
+		Certificate reloadedUuid = certificatesManager.getCertificateByUuid(certificate.getUuid());
+		Assert.assertNotNull(reloadedUuid);
+		Assert.assertEquals(certificate, reloadedUuid);
+		Assert.assertEquals(entry.getDisplayname(), reloadedUuid.getCourseTitle());
+		Assert.assertEquals(identity, reloadedUuid.getIdentity());
+		
+		//boolean
+		boolean has = certificatesManager.hasCertificate(identity, entry.getOlatResource().getKey());
+		Assert.assertTrue(has);
+	}
+	
+	@Test
+	public void loadLastCertificate() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1");
+		RepositoryEntry entry = JunitTestHelper.deployDemoCourse(identity);
+		dbInstance.commitAndCloseSession();
+		
+		CertificateInfos certificateInfos = new CertificateInfos(identity, 5.0f, Boolean.TRUE);
+		Certificate certificate = certificatesManager.generateCertificate(certificateInfos, entry, null, null);
+		Assert.assertNotNull(certificate);
+		dbInstance.commitAndCloseSession();
+		
+		//per resource
+		Certificate reloadedCertificate = certificatesManager.getLastCertificate(identity, entry.getOlatResource().getKey());
+		Assert.assertNotNull(reloadedCertificate);
+		Assert.assertEquals(certificate, reloadedCertificate);
+		
+		//all
+		List<CertificateLight> allCertificates = certificatesManager.getLastCertificates(identity);
+		Assert.assertNotNull(allCertificates);
+		Assert.assertEquals(1, allCertificates.size());
+		CertificateLight allCertificate = allCertificates.get(0);
+		Assert.assertEquals(certificate.getKey(), allCertificate.getKey());
+		Assert.assertEquals(entry.getDisplayname(), allCertificate.getCourseTitle());
+		Assert.assertEquals(identity.getKey(), allCertificate.getIdentityKey());
+		Assert.assertEquals(entry.getOlatResource().getKey(), allCertificate.getOlatResourceKey());
 	}
 	
 	@Test
@@ -178,5 +251,93 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Assert.assertNotNull(participantNotifications);
 		Assert.assertEquals(1, participantNotifications.size());
 		Assert.assertTrue(participantNotifications.contains(certificate1));
+	}
+	
+	@Test
+	public void uploadCertificate() throws URISyntaxException {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1");
+		RepositoryEntry entry = JunitTestHelper.deployDemoCourse(identity);
+		dbInstance.commitAndCloseSession();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		cal.set(Calendar.YEAR, 2012);
+		Date creationDate = cal.getTime();
+		URL certificateUrl = CertificatesManagerTest.class.getResource("template.pdf");
+		Assert.assertNotNull(certificateUrl);
+		File certificateFile = new File(certificateUrl.toURI());
+		
+		Certificate certificate = certificatesManager.uploadCertificate(identity, creationDate, entry.getOlatResource(), certificateFile);
+		Assert.assertNotNull(certificate);
+		Assert.assertNotNull(certificate.getKey());
+		Assert.assertNotNull(certificate.getUuid());
+		Assert.assertEquals(entry.getDisplayname(), certificate.getCourseTitle());
+		Assert.assertEquals(identity, certificate.getIdentity());
+		
+		dbInstance.commitAndCloseSession();
+		
+		//double check
+		Certificate reloadedCertificate = certificatesManager.getCertificateById(certificate.getKey());
+		Assert.assertNotNull(reloadedCertificate);
+		Assert.assertNotNull(reloadedCertificate.getUuid());
+		Assert.assertEquals(entry.getDisplayname(), reloadedCertificate.getCourseTitle());
+		Assert.assertEquals(identity, reloadedCertificate.getIdentity());
+		Assert.assertEquals(entry.getOlatResource().getKey(), reloadedCertificate.getArchivedResourceKey());
+		Assert.assertEquals(creationDate, reloadedCertificate.getCreationDate());
+		
+		//the file
+		VFSLeaf savedCertificateFile = certificatesManager.getCertificateLeaf(reloadedCertificate);
+		Assert.assertNotNull(savedCertificateFile);
+		Assert.assertTrue(savedCertificateFile.exists());
+		
+		//load last
+		Certificate lastCertificate = certificatesManager.getLastCertificate(identity, entry.getOlatResource().getKey());
+		Assert.assertNotNull(lastCertificate);
+		Assert.assertEquals(certificate, lastCertificate);
+	}
+	
+	@Test
+	public void uploadStandalone() throws URISyntaxException {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-1");
+		dbInstance.commitAndCloseSession();
+		
+		String courseTitle = "Unkown course";
+		Long resourceKey = 4l;
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		cal.set(Calendar.YEAR, 2012);
+		Date creationDate = cal.getTime();
+		URL certificateUrl = CertificatesManagerTest.class.getResource("template.pdf");
+		Assert.assertNotNull(certificateUrl);
+		File certificateFile = new File(certificateUrl.toURI());
+		
+		Certificate certificate = certificatesManager
+				.uploadStandaloneCertificate(identity, creationDate, courseTitle, resourceKey, certificateFile);
+		Assert.assertNotNull(certificate);
+		Assert.assertNotNull(certificate.getKey());
+		Assert.assertNotNull(certificate.getUuid());
+		Assert.assertEquals(courseTitle, certificate.getCourseTitle());
+		Assert.assertEquals(identity, certificate.getIdentity());
+		
+		dbInstance.commitAndCloseSession();
+		
+		//load by id
+		Certificate reloadedCertificate = certificatesManager.getCertificateById(certificate.getKey());
+		Assert.assertNotNull(reloadedCertificate);
+		Assert.assertNotNull(reloadedCertificate.getUuid());
+		Assert.assertEquals(courseTitle, reloadedCertificate.getCourseTitle());
+		Assert.assertEquals(identity, reloadedCertificate.getIdentity());
+		Assert.assertEquals(resourceKey, reloadedCertificate.getArchivedResourceKey());
+		Assert.assertEquals(creationDate, reloadedCertificate.getCreationDate());
+		
+		//load last
+		Certificate lastCertificate = certificatesManager.getLastCertificate(identity, resourceKey);
+		Assert.assertNotNull(lastCertificate);
+		Assert.assertEquals(certificate.getKey(), lastCertificate.getKey());
+		Assert.assertEquals(reloadedCertificate, lastCertificate);
 	}
 }

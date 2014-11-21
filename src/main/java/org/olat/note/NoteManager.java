@@ -139,8 +139,13 @@ public class NoteManager implements UserDataDeletable {
 	 * @param n
 	 */
 	public Note updateNote(Note n) {
-		n.setLastModified(new Date());
-		Note mergedNote = dbInstance.getCurrentEntityManager().merge(n);
+		Note reloadedNote = dbInstance.getCurrentEntityManager()
+				.find(NoteImpl.class, n.getKey());
+		reloadedNote.setLastModified(new Date());
+		reloadedNote.setNoteTitle(n.getNoteTitle());
+		reloadedNote.setNoteText(n.getNoteText());
+		
+		Note mergedNote = dbInstance.getCurrentEntityManager().merge(reloadedNote);
 		fireBookmarkEvent(n.getOwner());
 		return mergedNote;
 	}

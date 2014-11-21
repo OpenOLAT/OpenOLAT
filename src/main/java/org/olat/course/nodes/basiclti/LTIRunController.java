@@ -34,13 +34,16 @@ import org.imsglobal.basiclti.BasicLTIUtil;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.helpers.Settings;
@@ -85,11 +88,14 @@ public class LTIRunController extends BasicController {
 	private UserCourseEnvironment userCourseEnv;
 	private SortedProperties userData = new SortedProperties(); 
 	private SortedProperties customUserData = new SortedProperties(); 
-	private Link acceptLink;
+	private Link acceptLink, back;
+
+	private boolean fullScreen;
+	private ChiefController thebaseChief;
 	
 	private final Roles roles;
 	private final LTIManager ltiManager;
-	private final boolean newWindow;
+	private final LTIDisplayOptions display;
 	
 	public LTIRunController(WindowControl wControl, ModuleConfiguration config, UserRequest ureq, BasicLTICourseNode ltCourseNode,
 			CourseEnvironment courseEnv) {
@@ -98,7 +104,7 @@ public class LTIRunController extends BasicController {
 		this.config = config;
 		this.roles = ureq.getUserSession().getRoles();
 		this.courseEnv = courseEnv;
-		newWindow = false;
+		display = LTIDisplayOptions.iframe;
 		ltiManager = CoreSpringFactory.getImpl(LTIManager.class);
 
 		run = createVelocityContainer("run");
@@ -128,8 +134,8 @@ public class LTIRunController extends BasicController {
 		this.roles = ureq.getUserSession().getRoles();
 		this.courseEnv = userCourseEnv.getCourseEnvironment();
 		this.ltiManager = CoreSpringFactory.getImpl(LTIManager.class);
-		String display = config.getStringValue(BasicLTICourseNode.CONFIG_DISPLAY, "iframe");
-		this.newWindow = "window".equals(display);
+		String displayStr = config.getStringValue(BasicLTICourseNode.CONFIG_DISPLAY, "iframe");
+		display = LTIDisplayOptions.valueOfOrDefault(displayStr); 
 
 		mainPanel = new SimpleStackedPanel("ltiContainer");
 		putInitialPanel(mainPanel);
@@ -142,7 +148,6 @@ public class LTIRunController extends BasicController {
 		} else {
 			doAskDataExchange();
 		}
-
 	}
 
 	/**
@@ -279,9 +284,13 @@ public class LTIRunController extends BasicController {
 	 * @param ureq
 	 */
 	private void doRun(UserRequest ureq) {
-		if (newWindow) {
+		if (display == LTIDisplayOptions.window) {
 			// Use other container for popup opening. Rest of code is the same
 			run = createVelocityContainer("runPopup");			
+		} else if (display == LTIDisplayOptions.fullscreen) {
+			run = createVelocityContainer("run");
+			back = LinkFactory.createLinkBack(run, this);
+			run.put("back", back);
 		} else {			
 			run = createVelocityContainer("run");
 		}
@@ -299,37 +308,63 @@ public class LTIRunController extends BasicController {
 
 		Boolean assessable = config.getBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		if(assessable != null && assessable.booleanValue()) {
-	    startPage.contextPut("isassessable", assessable);
+			startPage.contextPut("isassessable", assessable);
 	    
-	    Integer attempts = courseNode.getUserAttempts(userCourseEnv);
-	    startPage.contextPut("attempts", attempts);
+			Integer attempts = courseNode.getUserAttempts(userCourseEnv);
+			startPage.contextPut("attempts", attempts);
 	    
-	    ScoreEvaluation eval = courseNode.getUserScoreEvaluation(userCourseEnv);
-	    Float cutValue = config.getFloatEntry(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
-	    if(cutValue != null) {
-	    	startPage.contextPut("hasPassedValue", Boolean.TRUE);
-	    	startPage.contextPut("passed", eval.getPassed());
-	    }
-	    startPage.contextPut("score", eval.getScore()); 
-	    mainPanel.setContent(startPage);
-		} else if(newWindow) {
+			ScoreEvaluation eval = courseNode.getUserScoreEvaluation(userCourseEnv);
+			Float cutValue = config.getFloatEntry(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
+			if(cutValue != null) {
+				startPage.contextPut("hasPassedValue", Boolean.TRUE);
+				startPage.contextPut("passed", eval.getPassed());
+			}
+			startPage.contextPut("score", eval.getScore()); 
+			mainPanel.setContent(startPage);
+		} else if(display == LTIDisplayOptions.window) {
+			mainPanel.setContent(startPage);
+		} else if(display == LTIDisplayOptions.fullscreen && Windows.getWindows(ureq).getChiefController() == null) {
+			// directly opening the LTI after resume is not supported
 			mainPanel.setContent(startPage);
 		} else {
-			doBasicLTI(ureq, run);
+			openBasicLTIContent(ureq);
+		}
+	}
+	
+	private void openBasicLTIContent(UserRequest ureq) {
+		// container is "run", "runFullscreen" or "runPopup" depending in configuration
+		doBasicLTI(ureq, run);
+		if (display == LTIDisplayOptions.fullscreen) {
+			ChiefController cc = Windows.getWindows(ureq).getChiefController();
+			if (cc != null) {
+				thebaseChief = cc;
+				thebaseChief.getScreenMode().setMode(Mode.full);
+			}
+			fullScreen = true;
+			getWindowControl().pushToMainArea(run);
+		} else {
 			mainPanel.setContent(run);
 		}
+	}
+	
+	private void closeBasicLTI() {
+		if (fullScreen && thebaseChief != null) {
+			getWindowControl().pop();
+			thebaseChief.getScreenMode().setMode(Mode.standard);
+		}
+		mainPanel.setContent(startPage);
 	}
 	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == startButton) {
 			courseNode.incrementUserAttempts(userCourseEnv);
-			// container is "run" or "runPopup" depending in configuration
-			doBasicLTI(ureq, run);
-			mainPanel.setContent(run);
+			openBasicLTIContent(ureq);
 		} else if (source == acceptLink) {
 			storeDataExchangeAcceptance();
 			doRun(ureq);
+		} else if(source == back) {
+			closeBasicLTI();
 		}
 	}
 	
@@ -424,10 +459,7 @@ public class LTIRunController extends BasicController {
 		return "Learner";
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		//
 	}

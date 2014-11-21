@@ -20,11 +20,14 @@
 package org.olat.modules.coach;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.configuration.AbstractOLATModule;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
-import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.modules.coach.site.CoachContextEntryControllerCreator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -35,12 +38,15 @@ import org.olat.modules.coach.site.CoachContextEntryControllerCreator;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class CoachingModule  extends AbstractOLATModule implements ConfigOnOff {
+@Service
+public class CoachingModule  extends AbstractSpringModule implements ConfigOnOff {
 
+	@Value("${coaching.enabled:true}")
 	private boolean enabled;
 	
-	private CoachingModule() {
-		//
+	@Autowired
+	public CoachingModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager, "com.frentix.olat.coach.CoachingModule", false);
 	}
 	
 	@Override
@@ -63,27 +69,19 @@ public class CoachingModule  extends AbstractOLATModule implements ConfigOnOff {
 		NewControllerFactory.getInstance().addContextEntryControllerCreator("CoachSite",
 				new CoachContextEntryControllerCreator());
 
-		//portfolio enabled/disabled
-		String enabledObj = getStringPropertyValue("coaching.enabled", true);
-		if(StringHelper.containsNonWhitespace(enabledObj)) {
-			enabled = "true".equals(enabledObj);
-		}
-	}
-
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
-		
-	}
-
-	@Override
-	protected void initDefaultProperties() {
-		enabled = getBooleanConfigParameter("coaching.enabled", true);
+		updateProperties();
 	}
 
 	@Override
 	protected void initFromChangedProperties() {
-		init();
+		updateProperties();
+	}
+	
+	private void updateProperties() {
+		String enabledObj = getStringPropertyValue("coaching.enabled", true);
+		if(StringHelper.containsNonWhitespace(enabledObj)) {
+			enabled = "true".equals(enabledObj);
+		}
 	}
 	
 	

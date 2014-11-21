@@ -28,13 +28,13 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OfferAccess;
+import org.olat.resource.accesscontrol.model.Price;
 import org.olat.resource.accesscontrol.model.PriceImpl;
 import org.olat.resource.accesscontrol.provider.paypal.PaypalModule;
 import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
@@ -88,17 +88,8 @@ public class PaypalAccessConfigurationController extends AbstractConfigurationMe
 		"USD"
 	};
 	
-	public PaypalAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
-		super(ureq, wControl);
-		this.link = link;
-		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
-		paypalModule = CoreSpringFactory.getImpl(PaypalModule.class);
-		vatValues = new String[]{ translate("vat.on") };
-		initForm(ureq);
-	}
-
-	public PaypalAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link, Form form) {
-		super(ureq, wControl, LAYOUT_DEFAULT, null, form);
+	public PaypalAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link, boolean edit) {
+		super(ureq, wControl, edit);
 		this.link = link;
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
 		paypalModule = CoreSpringFactory.getImpl(PaypalModule.class);
@@ -108,16 +99,42 @@ public class PaypalAccessConfigurationController extends AbstractConfigurationMe
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, null, formLayout);
 		
-		priceEl = uifactory.addTextElement("price", "price", 32, "", formLayout);
+		String desc = null;
+		if(link.getOffer() != null) {
+			desc = link.getOffer().getDescription();
+		}
+		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, desc, formLayout);
+		
+		Price price = null;
+		if(link.getOffer() != null && link.getOffer().getPrice() != null) {
+			price = link.getOffer().getPrice();
+		}
+		
+		String amount = null;
+		if(price != null && price.getAmount() != null) {
+			amount = price.getAmount().setScale(2, BigDecimal.ROUND_HALF_EVEN).toString();
+		}
+		priceEl = uifactory.addTextElement("price", "price", 32, amount, formLayout);
 
 		currencyEl = uifactory.addDropdownSingleselect("currency", "currency", formLayout, currencies, currencies, null);
-		if(StringHelper.containsNonWhitespace(paypalModule.getPaypalCurrency())) {
-			currencyEl.select(paypalModule.getPaypalCurrency(), true);
-			currencyEl.setEnabled(false);
-		} else {
-			currencyEl.select("CHF", true);
+		
+		boolean selected = false;
+		if(price != null && price.getCurrencyCode() != null) {
+			for(String currency:currencies) {
+				if(currency.equals(price.getCurrencyCode())) {
+					currencyEl.select(currency, true);
+					selected = true;
+				}
+			}
+		}
+		if(!selected) {
+			if(StringHelper.containsNonWhitespace(paypalModule.getPaypalCurrency())) {
+				currencyEl.select(paypalModule.getPaypalCurrency(), true);
+				currencyEl.setEnabled(false);
+			} else {
+				currencyEl.select("CHF", true);
+			}
 		}
 		
 		vatEnabledEl = uifactory.addCheckboxesHorizontal("vat.enabled", "vat.enabled", formLayout, vatKeys, vatValues);

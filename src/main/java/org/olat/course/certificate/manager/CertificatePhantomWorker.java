@@ -58,7 +58,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class CertificatePhantomWorker {
 	private static final OLog log = Tracing
-			.createLoggerFor(CertificateTemplateWorker.class);
+			.createLoggerFor(CertificatePDFFormWorker.class);
 	
 	private final Float score;
 	private final Boolean passed;
@@ -109,16 +109,14 @@ public class CertificatePhantomWorker {
 		}
 		
 		CountDownLatch doneSignal = new CountDownLatch(1);
-		ProcessWorker worker = new ProcessWorker(cmds, doneSignal);
+		ProcessWorker worker = new ProcessWorker(cmds, htmlCertificateFile, doneSignal);
 		worker.start();
 
 		try {
-			doneSignal.await(3000, TimeUnit.MILLISECONDS);
+			doneSignal.await(30000, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			log.error("", e);
 		}
-		
-		htmlCertificateFile.delete();
 		
 		worker.destroyProcess();
 		return certificateFile;
@@ -131,6 +129,7 @@ public class CertificatePhantomWorker {
 		try(Reader in = Files.newBufferedReader(templateFile.toPath(), Charset.forName("UTF-8"));
 			Writer output = new FileWriter(htmlCertificate)) {
 			result = certificatesManager.getVelocityEngine().evaluate(context, output, "mailTemplate", in);
+			output.flush();
 		} catch(Exception e) {
 			log.error("", e);
 		}
@@ -216,11 +215,11 @@ public class CertificatePhantomWorker {
 		cmds.add("--help");
 		
 		CountDownLatch doneSignal = new CountDownLatch(1);
-		ProcessWorker worker = new ProcessWorker(cmds, doneSignal);
+		ProcessWorker worker = new ProcessWorker(cmds, null, doneSignal);
 		worker.start();
 
 		try {
-			doneSignal.await(3000, TimeUnit.MILLISECONDS);
+			doneSignal.await(10000, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			log.error("", e);
 		}
@@ -236,10 +235,12 @@ public class CertificatePhantomWorker {
 		private int exitValue = -1;
 		private final List<String> cmd;
 		private final CountDownLatch doneSignal;
+		private final File htmlCertificateFile;
 		
-		public ProcessWorker(List<String> cmd, CountDownLatch doneSignal) {
+		public ProcessWorker(List<String> cmd, File htmlCertificateFile, CountDownLatch doneSignal) {
 			this.cmd = cmd;
 			this.doneSignal = doneSignal;
+			this.htmlCertificateFile = htmlCertificateFile;
 		}
 		
 		public void destroyProcess() {
@@ -267,6 +268,10 @@ public class CertificatePhantomWorker {
 			} catch (IOException e) {
 				log.error ("Could not spawn convert sub process", e);
 				destroyProcess();
+			} finally {
+				if(htmlCertificateFile != null) {
+					htmlCertificateFile.delete();
+				}
 			}
 		}
 		
@@ -298,8 +303,8 @@ public class CertificatePhantomWorker {
 			} catch (IOException e) {
 				//
 			}
-
-			if (log.isDebug()) {
+			
+			if(log.isDebug()) {
 				log.debug("Error: " + errors.toString());
 				log.debug("Output: " + output.toString());
 			}
@@ -307,10 +312,10 @@ public class CertificatePhantomWorker {
 			try {
 				exitValue = proc.waitFor();
 				if (exitValue != 0) {
-					log.warn("Problem with PhantomJS?");
+					log.warn("Problem with PhantomJS? " + exitValue);
 				}
 			} catch (InterruptedException e) {
-				//
+				log.warn("Takes too long");
 			}
 		}
 	}

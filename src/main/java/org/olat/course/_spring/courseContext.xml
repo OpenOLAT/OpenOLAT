@@ -11,6 +11,7 @@
 	<context:component-scan base-package="org.olat.course.certificate.manager" />
 
 	<import resource="classpath:/org/olat/course/assessment/_spring/assessmentContext.xml"/>
+	<import resource="classpath:/org/olat/course/certificate/_spring/certificateContext.xml"/>
 	<import resource="classpath:/org/olat/course/config/ui/courselayout/_spring/courseLayoutContext.xml"/>
 	<import resource="classpath:/org/olat/course/db/_spring/coursedbContext.xml"/>
 	<import resource="classpath:/org/olat/course/nodes/_spring/buildingblockContext.xml"/>
@@ -22,6 +23,7 @@
 	<import resource="classpath:/org/olat/course/nodes/vitero/_spring/buildingblockContext.xml"/>
 	<import resource="classpath:/org/olat/course/statistic/_spring/statisticContext.xml"/>
 	<import resource="classpath:/org/olat/course/statistic/_spring/statisticsJobContext.xml"/>
+	
 
 	<bean id="courseModule" class="org.olat.course.CourseModule" 
 		depends-on="userModule, triggerUserModuleInit, org.olat.core.util.WebappHelper, metaInfoFactory, fileresourceManager">

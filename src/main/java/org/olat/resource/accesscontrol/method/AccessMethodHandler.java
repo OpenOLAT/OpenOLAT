@@ -59,6 +59,8 @@ public interface AccessMethodHandler {
 	public FormController createAccessController(UserRequest ureq, WindowControl wControl, OfferAccess link, Form form);
 	
 	public AbstractConfigurationMethodController createConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link);
+	
+	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link);
 
 	public FormController createTransactionDetailsController(UserRequest ureq, WindowControl wControl, Order order, OrderPart part, AccessMethod method, Form form);
 	

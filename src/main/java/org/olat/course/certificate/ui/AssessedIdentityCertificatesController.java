@@ -35,10 +35,13 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.model.CertificateInfos;
@@ -56,7 +59,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessedIdentityCertificatesController extends BasicController {
+public class AssessedIdentityCertificatesController extends BasicController implements GenericEventListener {
 	
 	private Link generateLink;
 	private final VelocityContainer mainVC;
@@ -88,8 +91,28 @@ public class AssessedIdentityCertificatesController extends BasicController {
 		}
 		loadList();
 		putInitialPanel(mainVC);
+		
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
 	}
 	
+	@Override
+	protected void doDispose() {
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.deregisterFor(this, CertificatesManager.ORES_CERTIFICATE_EVENT);
+	}
+
+	@Override
+	public void event(Event event) {
+		if(event instanceof CertificateEvent) {
+			CertificateEvent ce = (CertificateEvent)event;
+			if(ce.getOwnerKey().equals(assessedUserCourseEnv.getIdentityEnvironment().getIdentity().getKey())
+					&& resource.getKey().equals(ce.getResourceKey())) {
+				loadList();
+			}
+		}
+	}
+
 	private void loadList() {
 		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
 		List<Certificate> certificates = certificatesManager.getCertificates(assessedIdentity, resource);
@@ -98,7 +121,7 @@ public class AssessedIdentityCertificatesController extends BasicController {
 		for(Certificate certificate:certificates) {
 			String displayName = formatter.formatDateAndTime(certificate.getCreationDate());
 			String url = DownloadCertificateCellRenderer.getUrl(certificate);
-			Links links = new Links(url, displayName);
+			Links links = new Links(url, displayName, certificate.getStatus().name());
 			certificatesLink.add(links);
 			
 			if(canDelete) {
@@ -112,11 +135,6 @@ public class AssessedIdentityCertificatesController extends BasicController {
 			}
 		}
 		mainVC.contextPut("certificates", certificatesLink);
-	}
-	
-	@Override
-	protected void doDispose() {
-		//
 	}
 
 	@Override
@@ -137,7 +155,7 @@ public class AssessedIdentityCertificatesController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(confirmCertificateCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
-				doGenerateCertificate();
+				doGenerateCertificate(ureq);
 			}
 		} else if(confirmDeleteCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
@@ -168,7 +186,7 @@ public class AssessedIdentityCertificatesController extends BasicController {
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		if(certificatesManager.isRecertificationAllowed(assessedIdentity, courseEntry)) {
 			//don't need to confirm
-			doGenerateCertificate();
+			doGenerateCertificate(ureq);
 		} else {
 			String title = translate("confirm.certificate.title");
 			String text = translate("confirm.certificate.text");
@@ -176,7 +194,7 @@ public class AssessedIdentityCertificatesController extends BasicController {
 		}
 	}
 	
-	private void doGenerateCertificate() {
+	private void doGenerateCertificate(UserRequest ureq) {
 		ICourse course = CourseFactory.loadCourse(resource);
 		CourseNode rootNode = course.getRunStructure().getRootNode();
 		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
@@ -195,22 +213,32 @@ public class AssessedIdentityCertificatesController extends BasicController {
 		MailerResult result = new MailerResult();
 		certificatesManager.generateCertificate(certificateInfos, courseEntry, template, result);
 		loadList();
+		showInfo("msg.certificate.pending");
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	public static class Links {
 		private String url;
 		private String name;
+		private String status;
 		private Link delete;
 		
-		public Links(String url, String name) {
+		public Links(String url, String name, String status) {
 			this.url = url;
 			this.name = name;
+			this.status = status;
 		}
+		
 		public String getUrl() {
 			return url;
 		}
+		
 		public String getName() {
 			return name;
+		}
+		
+		public String getStatus() {
+			return status;
 		}
 
 		public String getDeleteName() {

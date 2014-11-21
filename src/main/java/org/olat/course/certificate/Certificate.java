@@ -32,9 +32,11 @@ public interface Certificate extends CreateInfo {
 	
 	public Long getKey();
 	
+	public CertificateStatus getStatus();
+	
 	public String getUuid();
 	
-	public String getName();
+	//public String getName();
 	
 	public String getPath();
 	

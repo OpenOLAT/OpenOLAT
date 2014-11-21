@@ -145,6 +145,7 @@ import org.junit.runners.Suite;
 	org.olat.ims.qti.QTIResultManagerTest.class,
 	org.olat.ims.qti.qpool.QTIImportProcessorTest.class,
 	org.olat.ims.qti.qpool.QTIExportProcessorTest.class,
+	org.olat.ims.qti.qpool.ItemFileResourceValidatorTest.class,
 	org.olat.ims.qti.questionimport.CSVToQuestionConverterTest.class,
 	org.olat.ims.qti.statistics.manager.QTIStatisticsManagerLargeTest.class,
 	org.olat.ims.qti.statistics.manager.QTIStatisticsManagerTest.class,

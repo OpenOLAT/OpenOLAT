@@ -23,7 +23,6 @@ import org.olat.core.extensions.action.GenericActionExtension;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.resource.accesscontrol.ACUIFactory;
 import org.olat.resource.accesscontrol.AccessControlModule;
 
 /**
@@ -42,7 +41,7 @@ public class HomeOrdersActionExtension extends GenericActionExtension {
 	
 	@Override
 	public Controller createController(UserRequest ureq, WindowControl wControl, Object arg) {
-		return ACUIFactory.createOrdersController(ureq, wControl);
+		return new OrdersController(ureq, wControl);
 	}
 
 	@Override

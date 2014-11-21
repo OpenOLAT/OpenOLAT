@@ -23,7 +23,6 @@ package org.olat.resource.accesscontrol.provider.free.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.resource.accesscontrol.model.AccessMethod;
@@ -44,22 +43,19 @@ public class FreeAccessConfigurationController extends AbstractConfigurationMeth
 	private TextElement descEl;
 	private final OfferAccess link;
 	
-	public FreeAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
-		super(ureq, wControl);
-		this.link = link;
-		initForm(ureq);
-	}
-
-	public FreeAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link, Form form) {
-		super(ureq, wControl, LAYOUT_DEFAULT, null, form);
+	public FreeAccessConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link, boolean edit) {
+		super(ureq, wControl, edit);
 		this.link = link;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
-		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, null, formLayout);
+		String desc = null;
+		if(link.getOffer() != null) {
+			desc = link.getOffer().getDescription();
+		}
+		descEl = uifactory.addTextAreaElement("offer-desc", "offer.description", 2000, 6, 80, false, desc, formLayout);
 
 		super.initForm(formLayout, listener, ureq);
 	}

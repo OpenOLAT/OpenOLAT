@@ -28,11 +28,13 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.ICourse;
 import org.olat.course.certificate.model.CertificateInfos;
+import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
@@ -45,6 +47,7 @@ import org.olat.resource.OLATResource;
 public interface CertificatesManager {
 
 	public static final String ORES_CERTIFICATE =  OresHelper.calculateTypeName(CertificatesManager.class);
+	public static final OLATResourceable ORES_CERTIFICATE_EVENT =  OresHelper.createOLATResourceableInstance("Certificate", 0l);
 	
 	public boolean isHTMLTemplateAllowed();
 	
@@ -93,14 +96,34 @@ public interface CertificatesManager {
 	
 	public Certificate getCertificateByUuid(String uuid);
 	
+	public CertificateLight getCertificateLightById(Long key);
+	
 	public VFSLeaf getCertificateLeaf(Certificate certificate);
 	
-
+	/**
+	 * Return the last certificates of the user.
+	 * @param identity
+	 * @return A list of certificates
+	 */
 	public List<CertificateLight> getLastCertificates(IdentityRef identity);
+	
+	/**
+	 * Return the last certificates of all users f the specified course.
+	 * @param resourceKey The resource primary key of the course.
+	 * @return A list of certificates
+	 */
+	public List<CertificateLight> getLastCertificates(OLATResource resourceKey);
+	
+	/**
+	 * Return the last certificates of all users and all courses linked
+	 * to this group.
+	 * @param businessGroup
+	 * @return A list of certificates
+	 */
+	public List<CertificateLight> getLastCertificates(BusinessGroup businessGroup);
 	
 	public List<Certificate> getCertificatesForNotifications(Identity identity, RepositoryEntry entry, Date lastNews);
 
-	public List<CertificateLight> getCertificates(OLATResource resourceKey);
 	
 	public boolean hasCertificate(IdentityRef identity, Long resourceKey);
 	

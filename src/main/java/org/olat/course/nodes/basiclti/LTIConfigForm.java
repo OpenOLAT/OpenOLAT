@@ -117,7 +117,9 @@ public class LTIConfigForm extends FormBasicController {
 	private String[] ltiRolesValues;
 	
 	private String[] displayKeys = new String[]{
-			"iframe", "window"
+			LTIDisplayOptions.iframe.name(),
+			LTIDisplayOptions.fullscreen.name(),
+			LTIDisplayOptions.window.name()
 	};
 	private String[] displayValues;
 	
@@ -165,7 +167,9 @@ public class LTIConfigForm extends FormBasicController {
 		};
 
 		displayValues = new String[]{
-				translate("display.config.window.iframe"), translate("display.config.window.window")
+				translate("display.config.window.iframe"),
+				translate("display.config.window.fullScreen"), 
+				translate("display.config.window.window")
 		};
 		
 		heightValues = new String[]{ translate("height.auto"), "460px", "480px", 

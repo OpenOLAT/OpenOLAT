@@ -39,7 +39,6 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.ACUIFactory;
 import org.olat.resource.accesscontrol.AccessResult;
 
 /**
@@ -75,7 +74,7 @@ public class RepositoryMainAccessControllerWrapper extends MainLayoutBasicContro
 				if(acResult.isAccessible()) {
 					contentP = (StackedPanel)resController.getInitialComponent();
 				} else if (re != null && acResult.getAvailableMethods().size() > 0) {
-					accessController = ACUIFactory.createAccessController(ureq, getWindowControl(), acResult.getAvailableMethods());
+					accessController = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods());
 					listenTo(accessController);
 					mainVC = createVelocityContainer("access_wrapper");
 					mainVC.put("accessPanel", accessController.getInitialComponent());

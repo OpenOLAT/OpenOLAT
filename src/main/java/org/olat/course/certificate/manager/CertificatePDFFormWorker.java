@@ -54,10 +54,10 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CertificateTemplateWorker {
+public class CertificatePDFFormWorker {
 
 	private static final OLog log = Tracing
-			.createLoggerFor(CertificateTemplateWorker.class);
+			.createLoggerFor(CertificatePDFFormWorker.class);
 	
 	private final Float score;
 	private final Boolean passed;
@@ -71,7 +71,7 @@ public class CertificateTemplateWorker {
 	private final UserManager userManager;
 	private final CertificatesManagerImpl certificatesManager;
 
-	public CertificateTemplateWorker(Identity identity, RepositoryEntry entry,
+	public CertificatePDFFormWorker(Identity identity, RepositoryEntry entry,
 			Float score, Boolean passed, Date dateCertification,
 			Date dateFirstCertification, Locale locale,
 			UserManager userManager, CertificatesManagerImpl certificatesManager) {

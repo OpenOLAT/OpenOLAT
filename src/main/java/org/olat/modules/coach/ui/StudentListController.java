@@ -211,7 +211,7 @@ public class StudentListController extends BasicController implements Activateab
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		
 		int index = tableCtr.getIndexOfSortedObject(studentStat);
-		studentCtrl = new StudentCoursesController(ureq, bwControl, studentStat, student, index, tableCtr.getRowCount());
+		studentCtrl = new StudentCoursesController(ureq, bwControl, studentStat, student, index, tableCtr.getRowCount(), false);
 		
 		listenTo(studentCtrl);
 		content.setContent(studentCtrl.getInitialComponent());

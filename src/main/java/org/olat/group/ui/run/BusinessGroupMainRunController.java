@@ -98,10 +98,11 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.RepositoryTableModel;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.ACUIFactory;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
+import org.olat.resource.accesscontrol.ui.AccessListController;
+import org.olat.resource.accesscontrol.ui.OrdersAdminController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -314,7 +315,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			if(acResult.isAccessible()) {
 				needActivation = false;
 			}  else if (businessGroup != null && acResult.getAvailableMethods().size() > 0) {
-				accessController = ACUIFactory.createAccessController(ureq, getWindowControl(), acResult.getAvailableMethods());
+				accessController = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods());
 				listenTo(accessController);
 				mainPanel.setContent(accessController.getInitialComponent());
 				bgTree.setTreeModel(new GenericTreeModel());
@@ -710,7 +711,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private void doAccessControlHistory(UserRequest ureq) {
 		removeAsListenerAndDispose(bgACHistoryCtrl);
 		OLATResource resource = businessGroup.getResource();
-		bgACHistoryCtrl = ACUIFactory.createOrdersAdminController(ureq, getWindowControl(), resource);
+		bgACHistoryCtrl = new OrdersAdminController(ureq, getWindowControl(), resource);
 		listenTo(bgACHistoryCtrl);
 		mainPanel.setContent(bgACHistoryCtrl.getInitialComponent());
 	}

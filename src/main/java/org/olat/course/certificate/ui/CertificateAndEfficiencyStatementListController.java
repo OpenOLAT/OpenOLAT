@@ -53,6 +53,8 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.assessment.EfficiencyStatement;
@@ -61,6 +63,7 @@ import org.olat.course.assessment.IdentityAssessmentEditController;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.course.assessment.portfolio.EfficiencyStatementArtefact;
+import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement;
@@ -80,13 +83,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CertificateAndEfficiencyStatementListController extends FormBasicController implements BreadcrumbPanelAware {
+public class CertificateAndEfficiencyStatementListController extends FormBasicController
+		implements BreadcrumbPanelAware, GenericEventListener {
 	
 	private static final String CMD_SHOW = "cmd.show";
 	private static final String CMD_LAUNCH_COURSE = "cmd.launch.course";
 	private static final String CMD_DELETE = "cmd.delete";
 	private static final String CMD_ARTEFACT = "cmd.artefact";
-	private static final String CMD_CERTIFICATE = "cmd.certificate";
 	
 	private FlexiTableElement tableEl;
 	private BreadcrumbPanel stackPanel;
@@ -118,6 +121,37 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		this.assessedIdentity = assessedIdentity;
 		
 		initForm(ureq);
+		
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
+	}
+	
+	@Override
+	protected void doDispose() {
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.deregisterFor(this, CertificatesManager.ORES_CERTIFICATE_EVENT);
+	}
+
+	@Override
+	public void event(Event event) {
+		if(event instanceof CertificateEvent) {
+			CertificateEvent ce = (CertificateEvent)event;
+			if(getIdentity().getKey().equals(ce.getOwnerKey())) {
+				updateStatement(ce.getResourceKey(), ce.getCertificateKey());
+			}
+		}
+	}
+	
+	private void updateStatement(Long resourceKey, Long certificateKey) {
+		List<CertificateAndEfficiencyStatement> statements = tableModel.getObjects();
+		for(int i=statements.size(); i-->0; ) {
+			CertificateAndEfficiencyStatement statement = statements.get(i);
+			if(resourceKey.equals(statement.getResourceKey())) {
+				CertificateLight certificate = certificatesManager.getCertificateLightById(certificateKey);
+				statement.setCertificate(certificate);
+				break;
+			}
+		}
 	}
 
 	@Override
@@ -130,11 +164,12 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName.i18n(), Cols.displayName.ordinal()));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score.i18n(), Cols.score.ordinal()));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed.i18n(), Cols.passed.ordinal(), new PassedCellRenderer()));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed.i18n(), Cols.passed.ordinal(),
+				new PassedCellRenderer()));
 		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.show",
 				translate("table.header.show"), CMD_SHOW));
-		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel(Cols.certificate.i18n(), Cols.certificate.ordinal(), CMD_CERTIFICATE,
-				true, Cols.certificate.name(), new StaticFlexiCellRenderer(CMD_CERTIFICATE, new DownloadCertificateCellRenderer(assessedIdentity))));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.certificate.i18n(), Cols.certificate.ordinal(),
+				new DownloadCertificateCellRenderer(assessedIdentity)));
 		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.launchcourse",
 				translate("table.header.launchcourse"), CMD_LAUNCH_COURSE));
 		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.delete",
@@ -174,6 +209,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			CertificateAndEfficiencyStatement wrapper = resourceKeyToStatments.get(resourceKey);
 			if(wrapper == null) {
 				wrapper = new CertificateAndEfficiencyStatement();
+				wrapper.setDisplayName(certificate.getCourseTitle());
 				resourceKeyToStatments.put(resourceKey, wrapper);
 				statments.add(wrapper);
 			} else {
@@ -183,11 +219,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		}
 		
 		tableModel.setObjects(statments);
-	}
-	
-	@Override
-	protected void doDispose() {
-		//
 	}
 
 	@Override

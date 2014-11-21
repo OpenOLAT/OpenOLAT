@@ -92,8 +92,13 @@ public class PaypalAccessHandler implements AccessMethodHandler {
 	}
 
 	@Override
+	public AbstractConfigurationMethodController editConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
+		return new PaypalAccessConfigurationController(ureq, wControl, link, true);
+	}
+
+	@Override
 	public AbstractConfigurationMethodController createConfigurationController(UserRequest ureq, WindowControl wControl, OfferAccess link) {
-		return new PaypalAccessConfigurationController(ureq, wControl, link);
+		return new PaypalAccessConfigurationController(ureq, wControl, link, false);
 	}
 	
 	@Override

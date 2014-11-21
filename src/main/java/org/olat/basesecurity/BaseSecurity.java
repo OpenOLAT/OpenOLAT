@@ -502,6 +502,8 @@ public interface BaseSecurity {
 	public List<Identity> getVisibleIdentitiesByPowerSearch(String login, Map<String, String> userProperties, boolean userPropertiesAsIntersectionSearch, SecurityGroup[] groups, PermissionOnResourceable[] permissionOnResources, String[] authProviders, Date createdAfter,
 			Date createdBefore);
 	
+	public int countIdentitiesByPowerSearch(SearchIdentityParams params);
+	
 	/**
 	 * Like the following method but compact
 	 * @param params

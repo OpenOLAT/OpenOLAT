@@ -21,11 +21,14 @@ package org.olat.modules.coach.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.course.assessment.UserEfficiencyStatement;
+import org.olat.course.certificate.CertificateLight;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
-import org.olat.modules.coach.ui.ProgressValue;
+import org.olat.modules.coach.model.IdentityResourceKey;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -40,14 +43,28 @@ import org.olat.repository.RepositoryEntry;
 public class EfficiencyStatementEntryTableDataModel implements TableDataModel<EfficiencyStatementEntry> {
 	
 	private List<EfficiencyStatementEntry> group;
+	private ConcurrentMap<IdentityResourceKey, CertificateLight> certificateMap;
 	
-	public EfficiencyStatementEntryTableDataModel(List<EfficiencyStatementEntry> group) {
+	public EfficiencyStatementEntryTableDataModel(List<EfficiencyStatementEntry> group,
+			ConcurrentMap<IdentityResourceKey, CertificateLight> certificateMap) {
 		this.group = group;
+		this.certificateMap = certificateMap;
+	}
+	
+	public boolean contains(IdentityResourceKey key) {
+		return certificateMap == null ? false : certificateMap.containsKey(key);
+	}
+	
+	public void putCertificate(CertificateLight certificate) {
+		if(certificateMap != null && certificate != null) {
+			IdentityResourceKey key = new IdentityResourceKey(certificate.getIdentityKey(), certificate.getOlatResourceKey());
+			certificateMap.put(key, certificate);
+		}
 	}
 
 	@Override
 	public int getColumnCount() {
-		return 5;
+		return 6;
 	}
 
 	@Override
@@ -73,6 +90,14 @@ public class EfficiencyStatementEntryTableDataModel implements TableDataModel<Ef
 			case passed: {
 				UserEfficiencyStatement s = entry.getUserEfficencyStatement();
 				return s == null ? null : s.getPassed();
+			}
+			case certificate: {
+				CertificateLight certificate = null;
+				if(certificateMap != null) {
+					IdentityResourceKey key = new IdentityResourceKey(entry.getStudentKey(), entry.getCourse().getOlatResource().getKey());
+					certificate = certificateMap.get(key);
+				}
+				return certificate;
 			}
 			case progress: {
 				UserEfficiencyStatement s = entry.getUserEfficencyStatement();
@@ -112,7 +137,8 @@ public class EfficiencyStatementEntryTableDataModel implements TableDataModel<Ef
 
 	@Override
 	public EfficiencyStatementEntryTableDataModel createCopyWithEmptyList() {
-		return new EfficiencyStatementEntryTableDataModel(new ArrayList<EfficiencyStatementEntry>());
+		return new EfficiencyStatementEntryTableDataModel(new ArrayList<EfficiencyStatementEntry>(),
+				new ConcurrentHashMap<IdentityResourceKey, CertificateLight>());
 	}
 	
 	public static enum Columns {
@@ -120,9 +146,9 @@ public class EfficiencyStatementEntryTableDataModel implements TableDataModel<Ef
 		repoName,
 		score,
 		passed,
+		certificate,
 		progress,
-		lastModification,
-		;
+		lastModification;
 
 		public static Columns getValueAt(int ordinal) {
 			if(ordinal >= 0 && ordinal < values().length) {

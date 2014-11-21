@@ -44,7 +44,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.StringHelper;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.ACUIFactory;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
@@ -70,7 +69,7 @@ public class AccessConfigurationController extends FormBasicController {
 
 	private CloseableModalController cmc;
 	private FormLayoutContainer confControllerContainer;
-	private AbstractConfigurationMethodController newMethodCtrl;
+	private AbstractConfigurationMethodController newMethodCtrl, editMethodCtrl;
 	
 	private final List<AccessInfo> confControllers = new ArrayList<AccessInfo>();
 	
@@ -200,18 +199,30 @@ public class AccessConfigurationController extends FormBasicController {
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
-			removeAsListenerAndDispose(newMethodCtrl);
-			removeAsListenerAndDispose(cmc);
-			newMethodCtrl = null;
-			cmc = null;
+			cleanUp();
+		} else if(editMethodCtrl == source) {
+			if(event.equals(Event.DONE_EVENT)) {
+				OfferAccess newLink = editMethodCtrl.commitChanges();
+				newLink = acService.saveOfferAccess(newLink);
+				replace(newLink);
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if (cmc == source) {
-			removeAsListenerAndDispose(newMethodCtrl);
-			removeAsListenerAndDispose(cmc);
-			newMethodCtrl = null;
-			cmc = null;
+			cleanUp();
 		} else {
 			super.event(ureq, source, event);
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(editMethodCtrl);
+		removeAsListenerAndDispose(newMethodCtrl);
+		removeAsListenerAndDispose(cmc);
+		editMethodCtrl = null;
+		newMethodCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -219,10 +230,17 @@ public class AccessConfigurationController extends FormBasicController {
 		if(addMethods.contains(source)) {
 			AccessMethod method = (AccessMethod)source.getUserObject();
 			addMethod(ureq, method);
-		} else if (source.getName().startsWith("del_")) {
-			AccessInfo infos = (AccessInfo)source.getUserObject();
-			acService.deleteOffer(infos.getLink().getOffer());
-			confControllers.remove(infos);
+		} else if (source instanceof FormLink) {
+			FormLink button = (FormLink)source;
+			String cmd = button.getCmd();
+			if("delete".equals(cmd)) {
+				AccessInfo infos = (AccessInfo)source.getUserObject();
+				acService.deleteOffer(infos.getLink().getOffer());
+				confControllers.remove(infos);
+			} else if("edit".equals(cmd)) {
+				AccessInfo infos = (AccessInfo)source.getUserObject();
+				editMethod(ureq, infos);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -262,6 +280,22 @@ public class AccessConfigurationController extends FormBasicController {
 		}
 	}
 	
+	protected void replace(OfferAccess link) {
+		boolean updated = false;
+		for(AccessInfo confController:confControllers) {
+			if(confController.getLink().equals(link)) {
+				confController.setLink(link);
+				updated = true;
+			}
+		}
+		
+		if(!updated) {
+			addConfiguration(link);
+		} else {
+			confControllerContainer.setDirty(true);
+		}
+	}
+	
 	protected void addConfiguration(OfferAccess link) {
 		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
 		AccessInfo infos = new AccessInfo(handler.getMethodName(getLocale()), handler.isPaymentMethod(), null, link);
@@ -280,10 +314,34 @@ public class AccessConfigurationController extends FormBasicController {
 		confControllerContainer.add(dateTo.getName(), dateTo);
 		
 		if(editable) {
-			FormLink delLink = uifactory.addFormLink("del_" + link.getKey(), "delete", null, confControllerContainer, Link.BUTTON_SMALL);
+			FormLink editLink = uifactory.addFormLink("edit_" + link.getKey(), "edit", "edit", null, confControllerContainer, Link.BUTTON_SMALL);
+			editLink.setUserObject(infos);
+			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+			confControllerContainer.add(editLink.getName(), editLink);
+			
+			FormLink delLink = uifactory.addFormLink("del_" + link.getKey(), "delete", "delete", null, confControllerContainer, Link.BUTTON_SMALL);
 			delLink.setUserObject(infos);
 			delLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 			confControllerContainer.add(delLink.getName(), delLink);
+		}
+	}
+	
+	private void editMethod(UserRequest ureq, AccessInfo infos) {
+		OfferAccess link = infos.getLink();
+		
+		removeAsListenerAndDispose(editMethodCtrl);
+		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
+		if (handler != null) {
+			editMethodCtrl = handler.editConfigurationController(ureq, getWindowControl(), link);
+		}
+		
+		if(editMethodCtrl != null) {
+			listenTo(editMethodCtrl);
+
+			String title = handler.getMethodName(getLocale());
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), editMethodCtrl.getInitialComponent(), true, title);
+			cmc.activate();
+			listenTo(cmc);
 		}
 	}
 	
@@ -292,13 +350,14 @@ public class AccessConfigurationController extends FormBasicController {
 		OfferAccess link = acService.createOfferAccess(offer, method);
 		
 		removeAsListenerAndDispose(newMethodCtrl);
-		newMethodCtrl = ACUIFactory.createAccessConfigurationController(ureq, getWindowControl(), link);
+		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
+		if (handler != null) {
+			newMethodCtrl = handler.createConfigurationController(ureq, getWindowControl(), link);
+		}
 		if(newMethodCtrl != null) {
 			listenTo(newMethodCtrl);
 
-			AccessMethodHandler handler = acModule.getAccessMethodHandler(method.getType());
 			String title = handler.getMethodName(getLocale());
-		
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), newMethodCtrl.getInitialComponent(), true, title);
 			cmc.activate();
 			listenTo(cmc);

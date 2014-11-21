@@ -32,6 +32,7 @@ import javax.persistence.TemporalType;
 import org.hibernate.annotations.GenericGenerator;
 import org.olat.core.id.Persistable;
 import org.olat.course.certificate.CertificateLight;
+import org.olat.course.certificate.CertificateStatus;
 
 /**
  * 
@@ -54,11 +55,12 @@ public class CertificateLightImpl implements CertificateLight, Persistable {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
-
+	
+	@Column(name="c_status", nullable=false, insertable=true, updatable=true)
+	private String statusString;
+	
 	@Column(name="c_uuid", nullable=false, insertable=true, updatable=false)
 	private String uuid;
-	@Column(name="c_name", nullable=false, insertable=true, updatable=false)
-	private String name;
 	@Column(name="c_last", nullable=false, insertable=true, updatable=true)
 	private boolean last;
 	@Column(name="c_course_title", nullable=true, insertable=true, updatable=false)
@@ -86,6 +88,19 @@ public class CertificateLightImpl implements CertificateLight, Persistable {
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
 	}
+	
+	public String getStatusString() {
+		return statusString;
+	}
+
+	public void setStatusString(String statusString) {
+		this.statusString = statusString;
+	}
+
+	@Override
+	public CertificateStatus getStatus() {
+		return CertificateStatus.valueOf(statusString);
+	}
 
 	@Override
 	public String getUuid() {
@@ -94,15 +109,6 @@ public class CertificateLightImpl implements CertificateLight, Persistable {
 
 	public void setUuid(String uuid) {
 		this.uuid = uuid;
-	}
-
-	@Override
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	@Override

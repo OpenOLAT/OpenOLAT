@@ -58,6 +58,10 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 		moduleConfigProperties = new PersistedProperties(coordinatorManager, this, secured);
 	}
 	
+	public AbstractSpringModule(CoordinatorManager coordinatorManager, String path, boolean secured) {
+		moduleConfigProperties = new PersistedProperties(coordinatorManager, this, path, secured);
+	}
+	
 	@Value("${userdata.dir}")
 	private String userDataDirectory;
 

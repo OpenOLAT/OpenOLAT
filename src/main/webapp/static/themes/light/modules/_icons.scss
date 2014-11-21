@@ -148,6 +148,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_pageing:before { content: $fa-var-ellipsis-h;}
 .o_icon_passed:before { content: $fa-var-check-circle;}
 .o_icon_password:before { content: $fa-var-lock;}
+.o_icon_pending:before { content: $fa-var-spinner; }
 .o_icon_phone:before { content: $fa-var-phone;}
 .o_icon_post:before { content: $fa-var-comment-o; }
 .o_icon_preview:before { content: $fa-var-eye;}

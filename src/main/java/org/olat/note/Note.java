@@ -37,18 +37,18 @@ import org.olat.core.id.Persistable;
  * @author Alexander Schneider
  */
 public interface Note extends CreateInfo, ModifiedInfo, Persistable {
-	public abstract Identity getOwner();
-	public abstract String getResourceTypeName();
-	public abstract Long getResourceTypeId();
-	public abstract String getSubtype();
-	public abstract String getNoteTitle();
-	public abstract String getNoteText();
+	public Identity getOwner();
+	public String getResourceTypeName();
+	public Long getResourceTypeId();
+	public String getSubtype();
+	public String getNoteTitle();
+	public String getNoteText();
 	
-	public abstract void setOwner(Identity identity);
-	public abstract void setResourceTypeName(String resourceTypeName);
-	public abstract void setResourceTypeId(Long resourceTypeId);
-	public abstract void setSubtype(String subtype);
-	public abstract void setNoteTitle(String nodeTitle);
-	public abstract void setNoteText(String noteText);
+	public void setOwner(Identity identity);
+	public void setResourceTypeName(String resourceTypeName);
+	public void setResourceTypeId(Long resourceTypeId);
+	public void setSubtype(String subtype);
+	public void setNoteTitle(String nodeTitle);
+	public void setNoteText(String noteText);
     
 }

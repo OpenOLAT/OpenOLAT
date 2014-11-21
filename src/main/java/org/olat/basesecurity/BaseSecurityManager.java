@@ -1340,6 +1340,13 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		DBQuery dbq = createIdentitiesByPowerQuery(new SearchIdentityParams(login, userproperties, userPropertiesAsIntersectionSearch, groups, permissionOnResources, authProviders, createdAfter, createdBefore, userLoginAfter, userLoginBefore, status), false);
 		return dbq.list();
 	}
+  
+	@Override
+	public int countIdentitiesByPowerSearch(SearchIdentityParams params) {
+		DBQuery dbq = createIdentitiesByPowerQuery(params, true);
+		Number count = (Number)dbq.uniqueResult();
+		return count.intValue();
+	}
 	
 	@Override
 	public List<Identity> getIdentitiesByPowerSearch(SearchIdentityParams params, int firstResult, int maxResults) {

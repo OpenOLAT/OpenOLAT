@@ -20,6 +20,8 @@
 package org.olat.modules.coach.ui;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
@@ -31,7 +33,6 @@ import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.TableController;
-import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.components.text.TextComponent;
@@ -48,10 +49,17 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.certificate.CertificateEvent;
+import org.olat.course.certificate.CertificateLight;
+import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
+import org.olat.modules.coach.model.IdentityResourceKey;
 import org.olat.modules.coach.ui.EfficiencyStatementEntryTableDataModel.Columns;
 import org.olat.modules.coach.ui.ToolbarController.Position;
 import org.olat.repository.RepositoryEntry;
@@ -67,7 +75,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class CourseController extends BasicController implements Activateable2 {
+public class CourseController extends BasicController implements Activateable2, GenericEventListener {
 	
 	private final Link backLink, next, previous;
 	private final Link nextCourse, previousCourse;
@@ -76,6 +84,7 @@ public class CourseController extends BasicController implements Activateable2 {
 	private final TableController tableCtr;
 	private final VelocityContainer mainVC;
 	private final VelocityContainer courseDetailsVC;
+	private EfficiencyStatementEntryTableDataModel model;
 	
 	private CloseableModalController cmc;
 	private ContactController contactCtrl;
@@ -88,6 +97,8 @@ public class CourseController extends BasicController implements Activateable2 {
 	private final CourseStatEntry courseStat;
 	@Autowired
 	private CoachingService coachingService;
+	@Autowired
+	private CertificatesManager certificatesManager;
 	
 	public CourseController(UserRequest ureq, WindowControl wControl, RepositoryEntry course, CourseStatEntry courseStat, int index, int numOfCourses) {
 		super(ureq, wControl);
@@ -104,7 +115,8 @@ public class CourseController extends BasicController implements Activateable2 {
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("student.name", Columns.studentName.ordinal(), "select", getLocale()));
 		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.course.name", Columns.repoName.ordinal(), "select", getLocale()));
 		tableCtr.addColumnDescriptor(new BooleanColumnDescriptor("table.header.passed", Columns.passed.ordinal(), translate("passed.true"), translate("passed.false")));
-
+		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.certificate", Columns.certificate.ordinal(), null, getLocale(),
+				ColumnDescriptor.ALIGNMENT_LEFT, new DownloadCertificateCellRenderer()));
 		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.score", Columns.score.ordinal(), "select", getLocale(),
 				ColumnDescriptor.ALIGNMENT_RIGHT, new ScoreCellRenderer()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.lastScoreDate", Columns.lastModification.ordinal(), "select", getLocale()));
@@ -161,6 +173,30 @@ public class CourseController extends BasicController implements Activateable2 {
 		mainVC.put("courseDetails", courseDetailsVC);
 		setDetailsToolbarVisible(false);
 		putInitialPanel(mainVC);
+		
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
+	}
+	
+	@Override
+	protected void doDispose() {
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.deregisterFor(this, CertificatesManager.ORES_CERTIFICATE_EVENT);
+	}
+
+	@Override
+	public void event(Event event) {
+		if(event instanceof CertificateEvent) {
+			CertificateEvent ce = (CertificateEvent)event;
+			if(course.getOlatResource().getKey().equals(ce.getResourceKey())) {
+				updateCertificate(ce.getCertificateKey());
+			}
+		}
+	}
+	
+	private void updateCertificate(Long certificateKey) {
+		CertificateLight certificate = certificatesManager.getCertificateLightById(certificateKey);
+		model.putCertificate(certificate);
 	}
 	
 	public CourseStatEntry getEntry() {
@@ -169,7 +205,16 @@ public class CourseController extends BasicController implements Activateable2 {
 	
 	public List<EfficiencyStatementEntry> loadModel() {
 		List<EfficiencyStatementEntry> entries = coachingService.getCourse(getIdentity(), course);
-		TableDataModel<EfficiencyStatementEntry> model = new EfficiencyStatementEntryTableDataModel(entries);
+		
+		Long resourceKey = course.getOlatResource().getKey();
+		List<CertificateLight> certificates = certificatesManager.getLastCertificates(course.getOlatResource());
+		ConcurrentMap<IdentityResourceKey, CertificateLight> certificateMap = new ConcurrentHashMap<>();
+		for(CertificateLight certificate:certificates) {
+			IdentityResourceKey key = new IdentityResourceKey(certificate.getIdentityKey(), resourceKey);
+			certificateMap.put(key, certificate);
+		}
+		
+		model = new EfficiencyStatementEntryTableDataModel(entries, certificateMap);
 		tableCtr.setTableDataModel(model);
 		return entries;
 	}
@@ -179,11 +224,6 @@ public class CourseController extends BasicController implements Activateable2 {
 			loadModel();
 			hasChanged = false;
 		}
-	}
-	
-	@Override
-	protected void doDispose() {
-		//
 	}
 
 	@Override
