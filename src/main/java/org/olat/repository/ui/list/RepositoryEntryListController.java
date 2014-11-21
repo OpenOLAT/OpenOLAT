@@ -239,7 +239,7 @@ public class RepositoryEntryListController extends FormBasicController
 		}
 		
 		FlexiTableSortOptions options = new FlexiTableSortOptions(sorters);
-		options.setDefaultOrderBy(new SortKey(OrderBy.automatic.name(), true));
+		options.setDefaultOrderBy(new SortKey(OrderBy.title.name(), true));
 		tableElement.setSortSettings(options);
 	}
 

@@ -636,11 +636,12 @@ class QTIImportProcessor {
 	}
 	
 	private boolean processSidecarMetadata(QuestionItemImpl item, DocInfos docInfos) {
+		InputStream metadataIn = null;
 		try {
 			Path path = docInfos.root;
-			if(path != null) {
+			if(path != null && path.getFileName() != null) {
 				Path metadata = path.resolve(path.getFileName().toString() + "_metadata.xml");
-				InputStream metadataIn = Files.newInputStream(metadata);
+				metadataIn = Files.newInputStream(metadata);
 				SAXReader reader = new SAXReader();
 		        Document document = reader.read(metadataIn);
 		        Element rootElement = document.getRootElement();
@@ -654,6 +655,8 @@ class QTIImportProcessor {
 		} catch (Exception e) {
 			log.error("", e);
 			return false;
+		} finally {
+			IOUtils.closeQuietly(metadataIn);
 		}
 	}
 	

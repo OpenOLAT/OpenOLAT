@@ -247,6 +247,9 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	 */
 	private ImageInputStream getInputStream(VFSLeaf leaf)
 	throws IOException {
+		if(leaf == null) {
+			return null;
+		}
 		if(leaf instanceof LocalFileImpl) {
 			LocalFileImpl file = (LocalFileImpl)leaf;
 			if(file.getBasefile() != null) {

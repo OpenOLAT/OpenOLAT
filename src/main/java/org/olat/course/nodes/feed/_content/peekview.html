@@ -1,3 +1,6 @@
+#if($errorMessage)
+	<div class="o_error">$errorMessage</div>
+#end
 <div class="o_feed_peekview $wrapperCssClass clearfix">
 #foreach( $post in $items ) 	
 	<div class="o_item">
@@ -10,5 +13,7 @@
 		$!helper.getItemDescriptionForBrowser($post)
 	</div>
 #end
+#if($r.available("peekview.allItemsLink"))
 	$r.render("peekview.allItemsLink")
+#end
 </div>
