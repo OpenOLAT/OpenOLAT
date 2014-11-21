@@ -55,7 +55,6 @@ function o_start(){
 ## HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries - required by bootstrap
 	<script type="text/javascript" src='$r.staticLink("js/html5shiv/html5shiv.min.js")'></script>
 	<script type="text/javascript" src='$r.staticLink("js/respond/respond.min.js")'></script>
-	<link href="${theme.getBaseURI()}patches.css" rel="stylesheet" type="text/css" />
 <![endif]-->
 <!--[if gte IE 9]><!-->
 <script type="text/javascript" src='$r.staticLink("js/jquery/jquery-2.1.0.min.js")'></script>
@@ -121,9 +120,21 @@ $r.render("jsCssRawHtmlHeader", "pre-theme")
 <!--[if IE 9]>
 <link id="o_theme_css_ie" href="${theme.getBaseURI()}theme_ie_completions.css" rel="stylesheet" type="text/css" />
 <![endif]-->
-## 3) IE specific bugfixes for current theme
-<!--[if lte IE 7]>
-<link href="${theme.getBaseURI()}patches.css" rel="stylesheet" type="text/css" />
+## 3) Insert IE specific class names
+<!--[if IE 7]>
+<script type="text/javascript">
+	jQuery(document).ready(function() { jQuery('body').addClass('o_browser_ie7'); });
+</script>
+<![endif]-->
+<!--[if IE 8]>
+<script type="text/javascript">
+	jQuery(document).ready(function() { jQuery('body').addClass('o_browser_ie8'); });
+</script>
+<![endif]-->
+<!--[if IE 9]>
+<script type="text/javascript">
+	jQuery(document).ready(function() { jQuery('body').addClass('o_browser_ie9'); });
+</script>
 <![endif]-->
 ## 4) IE 8 fix for icon fonts (see: http://stackoverflow.com/questions/9809351/ie8-css-font-face-fonts-only-working-for-before-content-on-over-and-sometimes/10557782#10557782)
 <!--[if IE 8]>
