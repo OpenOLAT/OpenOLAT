@@ -1,3 +1,12 @@
+#if($r.available("back"))
+	<div id="o_back_wrapper" class="o_toolbar clearfix">
+		<div class="o_breadcrumb">
+			<ol class="breadcrumb">
+				<li>$r.render("back")</li>
+			</ol>
+		</div>
+	</div>
+#end
 <div class="o_iframedisplay">
 	<iframe id="IMSBasicLTIFrame" src="${mapperUri}?$r.uuid"  marginwidth="0" marginheight="0" #if($width!='auto') width="${width}px" #end height="#if($height!='auto')${height}#else 400#{end}px" style="#if($width!='auto') width:${width}px;#end #if($height!='auto')height:${height}px;#{end}"></iframe>
 </div>
