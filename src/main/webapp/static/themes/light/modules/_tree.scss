@@ -16,6 +16,16 @@
 			color: $o-tree-link-hover-color;
 			background-color : $o-tree-link-hover-bg;
 		}
+		&:first-child {
+			background-color: transparent;
+		}
+		&:last-child{
+			&:hover,
+			&:focus {
+				color: $o-tree-link-hover-color;
+				background-color : $o-tree-link-hover-bg;
+			}
+		}
 	}
 
 	ul {
