@@ -39,13 +39,20 @@
  #end
 
 #if ($children.size() > 0)
-	<div class="o_toc #if ($layoutType == 1) o_one_column #else o_two_column #end row">
-		#foreach($coursenode in $children)
-			## display in two rows when scren is larger than 992px and two columns layout selected
-			<div class="col-sm-12 #if ($layoutType == 2) col-md-6 o_column #end">
-				$r.render("childView_${coursenode.getIdent()}")
-			</div>
-		#end
+	#set ($i = 0)
+	<div class="o_toc #if ($layoutType == 1) o_one_column #else o_two_column #end">
+		<div class="row">
+			#foreach($coursenode in $children)
+				## display in two rows when screen is larger than 992px and two columns layout selected
+				<div class="col-sm-12 #if ($layoutType == 2) col-md-6 o_column #end">
+					$r.render("childView_${coursenode.getIdent()}")
+				</div>
+				#set ($i = $i + 1)
+				#if($i%2 == 0)
+					</div><div class="row">
+				#end
+			#end
+		</div>
 	</div>
 #end
 
