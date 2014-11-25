@@ -30,10 +30,8 @@ import java.util.List;
 
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Constants;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -50,6 +48,7 @@ import org.olat.ldap.LDAPLoginModule;
 import org.olat.ldap.ui.LDAPAuthenticationController;
 import org.olat.login.SupportsAfterLoginInterceptor;
 import org.olat.login.auth.OLATAuthManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
 
@@ -73,7 +72,13 @@ public class ChangePasswordController extends BasicController implements Support
 	private VelocityContainer myContent;
 	private ChangePasswordForm chPwdForm;
 	
-	private final OLATAuthManager olatAuthenticationSpi;
+	
+	@Autowired
+	private LDAPLoginModule ldapLoginModule;
+	@Autowired
+	private OLATAuthManager olatAuthenticationSpi;
+	@Autowired
+	private BaseSecurity securityManager;
 
 	/**
 	 * @param ureq
@@ -81,8 +86,6 @@ public class ChangePasswordController extends BasicController implements Support
 	 */
 	public ChangePasswordController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
-		olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
 
 		// if a user is not allowed to change his/her own password, say it here
 		if (!UserModule.isPwdchangeallowed(ureq.getIdentity())) {
@@ -92,9 +95,8 @@ public class ChangePasswordController extends BasicController implements Support
 			putInitialPanel(simpleMsg.getInitialComponent());
 			return;
 		}
-			
-		BaseSecurity mgr = BaseSecurityManager.getInstance();
-		if (!mgr.isIdentityPermittedOnResourceable(
+		
+		if (!securityManager.isIdentityPermittedOnResourceable(
 				ureq.getIdentity(), 
 				Constants.PERMISSION_ACCESS, 
 				OresHelper.lookupType(this.getClass()))) {
@@ -140,11 +142,11 @@ public class ChangePasswordController extends BasicController implements Support
 				String oldPwd = chPwdForm.getOldPasswordValue();
 				Identity provenIdent = null;
 
-				if (BaseSecurityManager.getInstance().findAuthentication(ureq.getIdentity(), LDAPAuthenticationController.PROVIDER_LDAP) != null) {
+				if (securityManager.findAuthentication(ureq.getIdentity(), LDAPAuthenticationController.PROVIDER_LDAP) != null) {
 					LDAPError ldapError = new LDAPError();
 					//fallback to OLAT if enabled happen automatically in LDAPAuthenticationController
 					provenIdent = LDAPAuthenticationController.authenticate(ureq.getIdentity().getName(), oldPwd, ldapError);
-				} else if(BaseSecurityManager.getInstance().findAuthentication(ureq.getIdentity(), BaseSecurityModule.getDefaultAuthProviderIdentifier()) != null) {
+				} else if(securityManager.findAuthentication(ureq.getIdentity(), BaseSecurityModule.getDefaultAuthProviderIdentifier()) != null) {
 					provenIdent = olatAuthenticationSpi.authenticate(ureq.getIdentity(), ureq.getIdentity().getName(), oldPwd);
 				}
 
@@ -173,14 +175,14 @@ public class ChangePasswordController extends BasicController implements Support
 	
 	private void exposePwdProviders(Identity identity) {
 		// check if user has OLAT provider
-		List<Authentication> authentications = BaseSecurityManager.getInstance().getAuthentications(identity);
+		List<Authentication> authentications = securityManager.getAuthentications(identity);
 		Iterator<Authentication> iter = authentications.iterator();
 		while (iter.hasNext()) {
 			myContent.contextPut("provider_" + (iter.next()).getProvider(), Boolean.TRUE);
 		}
 		
 		//LDAP Module propagate changes to password
-		if(LDAPLoginModule.isPropagatePasswordChangedOnLdapServer()) {
+		if(ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
 			myContent.contextPut("provider_LDAP_pwdchange", Boolean.TRUE);
 		}
 	}

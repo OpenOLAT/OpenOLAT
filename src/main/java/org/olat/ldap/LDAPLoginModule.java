@@ -25,33 +25,24 @@ import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import javax.naming.directory.Attributes;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.configuration.Initializable;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.logging.OLog;
-import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.user.UserManager;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Description: 
@@ -63,81 +54,116 @@ import org.quartz.SchedulerException;
  * 
  * @author maurus.rohrer@gmail.com
  */
-public class LDAPLoginModule implements Initializable {
+@Service("org.olat.ldap.LDAPLoginModule")
+public class LDAPLoginModule extends AbstractSpringModule {
 	// Connection configuration
-	private static String ldapUrl;
-	private static boolean ldapEnabled;
-	private static boolean activeDirectory;
-	private static String ldapDateFormat;
+	
+	@Value("${ldap.ldapUrl}")
+	private String ldapUrl;
+	@Value("${ldap.enable:false}")
+	private boolean ldapEnabled;
+	@Value("${ldap.activeDirectory:false}")
+	private boolean activeDirectory;
+	@Value("${ldap.dateFormat}")
+	private String ldapDateFormat;
+	
 	//SSL configuration
-	private static boolean sslEnabled;
-	private static String trustStoreLoc;
-	private static String trustStorePass;
-	private static String trustStoreTyp;
+	@Value("${ldap.sslEnabled}")
+	private boolean sslEnabled;
+	@Value("${ldap.trustStoreLocation}")
+	private String trustStoreLoc;
+	@Value("${ldap.trustStorePwd}")
+	private String trustStorePass;
+	@Value("${ldap.trustStoreType}")
+	private String trustStoreTyp;
+	
 	// System user: used for getting all users and connection testing
-	private static String systemDN;
-	private static String systemPW;
-	// List of bases where to find users
-	private static List<String> ldapBases;
-	private static Integer connectionTimeout;
+	@Value("${ldap.ldapSystemDN}")
+	private String systemDN;
+	@Value("${ldap.ldapSystemPW}")
+	private String systemPW;
+	@Value("${ldap.connectionTimeout}")
+	private Integer connectionTimeout;
 	/**
 	 * Create LDAP users on the fly when authenticated successfully
 	 */
+	@Value("${ldap.ldapCreateUsersOnLogin}")
 	private boolean createUsersOnLogin;
-	// Use a valid ldap password and save it as olat password to reduce dependency
-	// to LDAP server availability and allow WeDAV access
-	private static boolean cacheLDAPPwdAsOLATPwdOnLogin;
-	// When the system detects an LDAP user that does already exist in OLAT but is not marked
-	// as LDAP user, the OLAT user can be converted to an LDAP managed user. 
-	// When enabling this feature you should make sure that you don't have a user 'administrator'
-	// in your ldapBases (not a problem but not recommended)
-	private static boolean convertExistingLocalUsersToLDAPUsers;
-	// Users that have been created vial LDAP sync but now can't be found on the LDAP anymore
-	// can be deleted automatically. If unsure, set to false and delete those users manually
-	// in the user management.
-	private static boolean deleteRemovedLDAPUsersOnSync;
-	// LDAP sync will not delete users if more than deleteRemovedLDAPUserPercentage are found to be deleted.
-	private static int deleteRemovedLDAPUsersPercentage;
+	/**
+	 * When users log in via LDAP, the system can keep a copy of the password as encrypted
+	 * hash in the database. This makes OLAT more independent from an offline LDAP server 
+	 * and users can use their LDAP password to use the WebDAV functionality.
+	 * When setting to true (recommended), make sure you configured pwdchange=false in the
+	 * org.olat.user.UserModule olat.propertes.
+	 */
+	@Value("${ldap.cacheLDAPPwdAsOLATPwdOnLogin}")
+	private boolean cacheLDAPPwdAsOLATPwdOnLogin;
+	/**
+	 * When the system detects an LDAP user that does already exist in OLAT but is not marked
+	 * as LDAP user, the OLAT user can be converted to an LDAP managed user. 
+	 * When enabling this feature you should make sure that you don't have a user 'administrator'
+	 * in your ldapBases (not a problem but not recommended)
+	 */
+	@Value("${ldap.convertExistingLocalUsersToLDAPUsers}")
+	private boolean convertExistingLocalUsersToLDAPUsers;
+	// 
+	/**
+	 * Users that have been created via LDAP sync but now can't be found on the LDAP anymore
+	 * can be deleted automatically. If unsure, set to false and delete those users manually
+	 * in the user management.
+	 */
+	@Value("${ldap.deleteRemovedLDAPUsersOnSync}")
+	private boolean deleteRemovedLDAPUsersOnSync;
+	/**
+	 * Sanity check when deleteRemovedLDAPUsersOnSync is set to 'true': if more than the defined
+	 * percentages of user accounts are not found on the LDAP server and thus recognized as to be
+	 * deleted, the LDAP sync will not happen and require a manual triggering of the delete job
+	 * from the admin interface. This should prevent accidential deletion of OLAT user because of
+	 * temporary LDAP problems or user relocation on the LDAP side. 
+	 * Value= 0 (never delete) to 100 (always delete). 
+	 */
+	@Value("${ldap.deleteRemovedLDAPUsersPercentage}")
+	private int deleteRemovedLDAPUsersPercentage;
 	// Propagate the password changes onto the LDAP server
-	private static boolean propagatePasswordChangedOnLdapServer;
+	@Value("${ldap.propagatePasswordChangedOnLdapServer}")
+	private boolean propagatePasswordChangedOnLdapServer;
 	// Configuration for syncing user attributes
-	private static String ldapUserFilter;
-	private static String ldapUserCreatedTimestampAttribute;
-	private static String ldapUserLastModifiedTimestampAttribute;
-	private static String ldapUserPasswordAttribute;
+
+	
 	// Should users be created and synchronized automatically? If you set this
 	// configuration to false, the users will be generated on-the-fly when they
 	// log in
-	private static boolean ldapSyncOnStartup;
-	private static boolean ldapSyncCronSync;
-	private static String ldapSyncCronSyncExpression;
+	@Value("${ldap.ldapSyncOnStartup}")
+	private boolean ldapSyncOnStartup;
+	@Value("${ldap.ldapSyncCronSync}")
+	private boolean ldapSyncCronSync;
+	@Value("${ldap.ldapSyncCronSyncExpression}")
+	private String ldapSyncCronSyncExpression;
 	// User LDAP attributes to be synced and a map with the mandatory attributes
-	private static Map<String, String> userAttrMap;
-	private static Map<String, String> reqAttr;
-	private static Set<String> syncOnlyOnCreateProperties;
-	private static String[] userAttr;
-	// Static user properties that should be added to user when syncing
-	private static Map<String, String> staticUserProperties;
-	private static OLog log = Tracing.createLoggerFor(LDAPLoginModule.class);
+
+
+	private static final OLog log = Tracing.createLoggerFor(LDAPLoginModule.class);
 	
-	private final Scheduler scheduler;
-	private final BaseSecurity securityManager;
-	private final LDAPLoginManager ldapManager;
-	private final UserManager userManager;
+	@Autowired
+	private LDAPSyncConfiguration syncConfiguration;
+	@Autowired
+	private Scheduler scheduler;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private LDAPLoginManager ldapManager;
+	@Autowired
+	private UserManager userManager;
 	
-	/**
-	 * [used by spring]
-	 */
-	private LDAPLoginModule(LDAPLoginManager ldapManager, BaseSecurity securityManager, UserManager userManager, Scheduler scheduler) {
-		this.ldapManager = ldapManager;
-		this.securityManager = securityManager;
-		this.userManager = userManager;
-		this.scheduler = scheduler;
+	@Autowired
+	public LDAPLoginModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
 	}
 
 	/**
 	 * @see org.olat.core.configuration.Initializable#init()
 	 */
+	@Override
 	public void init() {
 		// Check if LDAP is enabled
 		if (!isLDAPEnabled()) {
@@ -156,50 +182,54 @@ public class LDAPLoginModule implements Initializable {
 		if (!checkConfigParameterIsNotEmpty(ldapUrl)) return;
 		if (!checkConfigParameterIsNotEmpty(systemDN)) return;
 		if (!checkConfigParameterIsNotEmpty(systemPW)) return;
-		if (ldapBases == null || ldapBases.size() == 0) {
-			log
-					.error("Missing configuration 'ldapBases'. Add at least one LDAP Base to the this configuration in olatextconfig.xml first. Disabling LDAP");
+		if (syncConfiguration.getLdapBases() == null || syncConfiguration.getLdapBases().isEmpty()) {
+			log.error("Missing configuration 'ldapBases'. Add at least one LDAP Base to the this configuration in olatextconfig.xml first. Disabling LDAP");
 			setEnableLDAPLogins(false);
 			return;
 		}
-		if (ldapUserFilter != null) {
-			if (!ldapUserFilter.startsWith("(") || !ldapUserFilter.endsWith(")")) {
+		if (syncConfiguration.getLdapUserFilter() != null) {
+			if (!syncConfiguration.getLdapUserFilter().startsWith("(") || !syncConfiguration.getLdapUserFilter().endsWith(")")) {
 				log.error("Wrong configuration 'ldapUserFilter'. Set filter to emtpy value or enclose filter in brackets like '(objectClass=person)'. Disabling LDAP");
 				setEnableLDAPLogins(false);
 				return;
 			}
 		}
-		if (!checkConfigParameterIsNotEmpty(ldapUserCreatedTimestampAttribute)) return;
-		if (!checkConfigParameterIsNotEmpty(ldapUserLastModifiedTimestampAttribute)) return;
-		if (userAttrMap == null || userAttrMap.size() == 0) {
-			log
-					.error("Missing configuration 'userAttrMap'. Add at least the email propery to the this configuration in olatextconfig.xml first. Disabling LDAP");
+		
+		if (!checkConfigParameterIsNotEmpty(syncConfiguration.getLdapUserCreatedTimestampAttribute())) {
+			return;
+		}
+		if (!checkConfigParameterIsNotEmpty(syncConfiguration.getLdapUserLastModifiedTimestampAttribute())) {
+			return;
+		}
+		if (syncConfiguration.getUserAttributeMap() == null || syncConfiguration.getUserAttributeMap().isEmpty()) {
+			log.error("Missing configuration 'userAttrMap'. Add at least the email propery to the this configuration in olatextconfig.xml first. Disabling LDAP");
 			setEnableLDAPLogins(false);
 			return;
 		}
-		if (reqAttr == null || reqAttr.size() == 0) {
-			log
-					.error("Missing configuration 'reqAttr'. Add at least the email propery to the this configuration in olatextconfig.xml first. Disabling LDAP");
+		if (syncConfiguration.getRequestAttributes() == null || syncConfiguration.getRequestAttributes().isEmpty()) {
+			log.error("Missing configuration 'reqAttr'. Add at least the email propery to the this configuration in olatextconfig.xml first. Disabling LDAP");
 			setEnableLDAPLogins(false);
 			return;
 		}
 		// check if OLAT user properties is defined in olat_userconfig.xml, if not disable the LDAP module
-		if(!checkIfOlatPropertiesExists(userAttrMap)){
+		if(!syncConfiguration.checkIfOlatPropertiesExists(syncConfiguration.getUserAttributeMap())){
 			log.error("Invalid LDAP OLAT properties mapping configuration (userAttrMap). Disabling LDAP");
 			setEnableLDAPLogins(false);
 			return;
 		}
-		if(!checkIfOlatPropertiesExists(reqAttr)){
+		if(!syncConfiguration.checkIfOlatPropertiesExists(syncConfiguration.getRequestAttributes())){
 			log.error("Invalid LDAP OLAT properties mapping configuration (reqAttr). Disabling LDAP");
 			setEnableLDAPLogins(false);
 			return;
 		}
-		if(syncOnlyOnCreateProperties != null && !checkIfStaticOlatPropertiesExists(syncOnlyOnCreateProperties)){
+		if(syncConfiguration.getSyncOnlyOnCreateProperties() != null
+				&& !syncConfiguration.checkIfStaticOlatPropertiesExists(syncConfiguration.getSyncOnlyOnCreateProperties())){
 			log.error("Invalid LDAP OLAT syncOnlyOnCreateProperties configuration. Disabling LDAP");
 			setEnableLDAPLogins(false);
 			return;
 		}
-		if( staticUserProperties != null && !checkIfStaticOlatPropertiesExists(staticUserProperties.keySet())){
+		if(syncConfiguration.getStaticUserProperties() != null
+				&& !syncConfiguration.checkIfStaticOlatPropertiesExists(syncConfiguration.getStaticUserProperties().keySet())){
 			log.error("Invalid static OLAT properties configuration (staticUserProperties). Disabling LDAP");
 			setEnableLDAPLogins(false);
 			return;
@@ -207,10 +237,11 @@ public class LDAPLoginModule implements Initializable {
 		
 		// check SSL certifications, throws Startup Exception if certificate is not found
 		if(isSslEnabled()){
-			if (!checkServerCertValidity(0))
-				throw new StartupException("LDAP enabled but no valid server certificate found. Please fix!");
-			if (!checkServerCertValidity(30))
+			if (!checkServerCertValidity(0)) {
+				log.error("LDAP enabled but no valid server certificate found. Please fix!");
+			} else if (!checkServerCertValidity(30)) {
 				log.warn("Server Certificate will expire in less than 30 days.");
+			}
 		}
 		
 		// Check ldap connection
@@ -238,6 +269,11 @@ public class LDAPLoginModule implements Initializable {
 		
 		// OK, everything finished checkes passed
 		log.info("LDAP login is enabled");
+	}
+
+	@Override
+	protected void initFromChangedProperties() {
+		//
 	}
 
 	/**
@@ -276,118 +312,7 @@ public class LDAPLoginModule implements Initializable {
 			log.error("Error while scheduling LDAP cron sync job. Disabling LDAP cron syncing", e);
 		}
 	}
-	
-	/**
-	 * Maps OLAT Property to the LDAP Attributes 
-	 * 
-	 * Configuration: LDAP Attributes Map = olatextconfig.xml (property=userAttrs)
-	 * 
-	 * @param olatProperty OLAT PropertyattrID 
-	 * @return LDAP Attribute
-	 */
-	public static String mapOlatPropertyToLdapAttribute(String olatProperty) {
-		Map<String, String> userAttrMapper = getReqAttrs();
-		if (userAttrMapper.containsValue(olatProperty)) {
-			Iterator<String> itr = userAttrMapper.keySet().iterator();
-			while (itr.hasNext()) {
-				String key = itr.next();
-				if (userAttrMapper.get(key).compareTo(olatProperty) == 0) return key;
-			}
-		}
-		return null;
-	}
-	
-	/**
-	 * Checks if Collection of naming Attributes contain defined required properties for OLAT
-	 * 
-	 * 	 * Configuration: LDAP Required Map = olatextconfig.xml (property=reqAttrs)
-	 * 
-	 * @param attributes Collection of LDAP Naming Attribute 
-	 * @return null If all required Attributes are found, otherwise String[] of missing Attributes
-	 * 
-	 */
-	public static String[] checkReqAttr(Attributes attrs) {
-		Map<String, String> reqAttrMap = getReqAttrs();
-		String[] missingAttr = new String[reqAttrMap.size()];
-		int y = 0;
-		for (String attKey : reqAttrMap.keySet()) {
-			attKey = attKey.trim();
-			if (attrs.get(attKey) == null) {
-				missingAttr[y++] = attKey;
-			}
-		}
-		if (y == 0) return null;
-		else return missingAttr;
-	}
-	
-	/**
-	 * Checks if defined OLAT Properties in olatextconfig.xml exist in OLAT.
-	 * 
-	 * 	 Configuration: LDAP Attributes Map = olatextconfig.xml (property=reqAttrs, property=userAttributeMapper)
-	 * 
-	 * @param attrs Map of OLAT Properties from of the LDAP configuration 
-	 * @return true All exist OK, false Error
-	 * 
-	 */
-	private boolean checkIfOlatPropertiesExists(Map<String, String> attrs) {
-		List<UserPropertyHandler> upHandler = userManager.getAllUserPropertyHandlers();
-		for (String ldapAttribute : attrs.keySet()) {
-			boolean propertyExists = false;
-			String olatProperty = attrs.get(ldapAttribute);
-			if (olatProperty.equals(LDAPConstants.LDAP_USER_IDENTIFYER)) {
-				// LDAP user identifyer is not a user propery, it's the username
-				continue;
-			}
-			for (UserPropertyHandler userPropItr : upHandler) {
-				if (olatProperty.equals(userPropItr.getName())) {
-					// ok, this property exist, continue with next one
-					propertyExists = true;
-					break;
-				}
-			}
-			if ( ! propertyExists ) {
-				log
-						.error("Error in checkIfOlatPropertiesExists(): configured LDAP attribute::"
-								+ ldapAttribute
-								+ " configured to map to OLAT user property::"
-								+ olatProperty
-								+ " but no such user property configured in olat_userconfig.xml");
-				return false;				
-			}
-		}
-		return true;
-	}
 
-	/**
-	 * Checks if defined Static OLAT Property in olatextconfig.xml exist in OLAT.
-	 * 
-	 * 	 Configuration: olatextconfig.xml (property=staticUserProperties)
-	 * 
-	 * @param olatProperties Set of OLAT Properties from of the LDAP configuration 
-	 * @return true All exist OK, false Error
-	 * 
-	 */
-	private boolean checkIfStaticOlatPropertiesExists(Set<String> olatProperties) {
-		List<UserPropertyHandler> upHandler = userManager.getAllUserPropertyHandlers();
-		for (String olatProperty : olatProperties) {
-			boolean propertyExists = false;
-			for (UserPropertyHandler userPropItr : upHandler) {
-				if (olatProperty.equals(userPropItr.getName())) {
-					// ok, this property exist, continue with next one
-					propertyExists = true;
-					break;
-				}
-			}
-			if ( ! propertyExists ) {
-				log
-				.error("Error in checkIfStaticOlatPropertiesExists(): configured static OLAT user property::"
-						+ olatProperty
-						+ " is not configured in olat_userconfig.xml");
-				return false;				
-			}			
-		}
-		return true;
-	}
 	
 	/**
 	 * Checks if SSL certification is know and accepted by Java JRE.
@@ -399,7 +324,7 @@ public class LDAPLoginModule implements Initializable {
 	 * @throws Exception
 	 * 
 	 */
-	private static boolean checkServerCertValidity(int daysFromNow) {
+	private boolean checkServerCertValidity(int daysFromNow) {
 		KeyStore keyStore;
 		try {
 			keyStore = KeyStore.getInstance(getTrustStoreType());
@@ -418,7 +343,7 @@ public class LDAPLoginModule implements Initializable {
 		return false;
 	}
 	
-	private static boolean isCertificateValid(X509Certificate x509Cert, int daysFromNow) {
+	private boolean isCertificateValid(X509Certificate x509Cert, int daysFromNow) {
 		try {
 			x509Cert.checkValidity();
 			if (daysFromNow > 0) {
@@ -481,118 +406,51 @@ public class LDAPLoginModule implements Initializable {
 		ldapSyncOnStartup = ldapStartSyncs;
 	}
 
-	public void setLdapUserFilter(String filter) {
-		if (StringHelper.containsNonWhitespace(filter)) {
-			ldapUserFilter = filter.trim();			
-		} else {
-			// set explicitly to null for no filter
-			ldapUserFilter = null;
-		}
+	public String getLdapSystemDN() {
+		return systemDN;
 	}
 
 	public void setLdapSystemDN(String ldapSystemDN) {
 		systemDN = ldapSystemDN.trim();
 	}
+	
+	public String getLdapSystemPW() {
+		return systemPW;
+	}
 
 	public void setLdapSystemPW(String ldapSystemPW) {
 		systemPW = ldapSystemPW.trim();
+	}
+	
+	public String getLdapUrl() {
+		return ldapUrl;
 	}
 
 	public void setLdapUrl(String ldapUrlConfig) {
 		ldapUrl = ldapUrlConfig.trim();
 	}
+	
 
-	public void setLdapBases(List<String> ldapBasesConfig) {
-		// fxdiff: FXOLAT-141 allow setting in one line
-		ArrayList<String> listToUse = new ArrayList<String>();
-		if (ldapBasesConfig != null) {
-			for (String baseEntry : ldapBasesConfig) {
-				if (StringHelper.containsNonWhitespace(baseEntry) && baseEntry.contains("!#")) {
-					String[] oneLineList = baseEntry.split("!#");
-					List<String> oneLineListArr = Arrays.asList(oneLineList);
-					for (String oneLineEntry : oneLineListArr) {
-						if (StringHelper.containsNonWhitespace(oneLineEntry)) {
-							listToUse.add(oneLineEntry.trim());
-						}
-					}
-				} else {
-					listToUse.add(baseEntry.trim());
-				}
-			}
-		}
-		ldapBases = listToUse;
+	
+	
+	public Integer getLdapConnectionTimeout() {
+		return connectionTimeout;
 	}
 	
 	public void setLdapConnectionTimeout(Integer timeout) {
 		connectionTimeout = timeout;
 	}
 
-	public void setUserAttributeMapper(Map<String, String> userAttributeMapper) {
-		// trim map
-		userAttrMap = new HashMap<String, String>();
-		for (Entry<String, String>  entry : userAttributeMapper.entrySet()) {
-			String ldapAttrib = entry.getKey().trim();
-			String olatProp = entry.getValue().trim();
-			if (StringHelper.containsNonWhitespace(ldapAttrib) && StringHelper.containsNonWhitespace(olatProp)){
-				userAttrMap.put(ldapAttrib, olatProp);
-			}
-		}		
-		// optimizes for later usage
-		userAttr = userAttrMap.keySet().toArray(new String[userAttrMap.size()]);
-	}
-
-	public void setReqAttrs(Map<String, String> reqAttrs) {
-		// trim map
-		reqAttr = new HashMap<String, String>();
-		for (Entry<String, String>  entry : reqAttrs.entrySet()) {
-			reqAttr.put(entry.getKey().trim(), entry.getValue().trim());
-		}		
-	}
-	
-	public void setSyncOnlyOnCreateProperties(Set<String> syncOnlyOnCreatePropertiesConfig) {
-		// trim map
-		syncOnlyOnCreateProperties = new HashSet<String>();
-		for (String value : syncOnlyOnCreatePropertiesConfig) {
-			if (StringHelper.containsNonWhitespace(value)){
-				syncOnlyOnCreateProperties.add(value.trim());
-			}
-		}		
-	}
-
-	public void setStaticUserProperties(Map<String, String> staticUserPropertiesMap) {
-		// trim map
-		staticUserProperties = new HashMap<String, String>();
-		for (Entry<String, String>  entry : staticUserPropertiesMap.entrySet()) {
-			String olatPropKey = entry.getKey().trim();
-			String staticValue = entry.getValue().trim();
-			if (StringHelper.containsNonWhitespace(olatPropKey) && StringHelper.containsNonWhitespace(staticValue)){
-				staticUserProperties.put(olatPropKey, staticValue);
-			}
-		}		
-	}
-
-	public void setLdapUserLastModifiedTimestampAttribute(String ldapUserLastModifiedTimestampAttribute) {
-		LDAPLoginModule.ldapUserLastModifiedTimestampAttribute = ldapUserLastModifiedTimestampAttribute.trim();
-	}
-
-	public void setLdapUserCreatedTimestampAttribute(String ldapUserCreatedTimestampAttribute) {
-		LDAPLoginModule.ldapUserCreatedTimestampAttribute = ldapUserCreatedTimestampAttribute.trim();
-	}
-	
-	public void setLdapUserPasswordAttribute(String userPasswordAttribute) {
-		LDAPLoginModule.ldapUserPasswordAttribute = userPasswordAttribute;
-	}
-
 	public void setLdapSyncCronSync(boolean ldapSyncCronSync) {
-		LDAPLoginModule.ldapSyncCronSync = ldapSyncCronSync;
+		this.ldapSyncCronSync = ldapSyncCronSync;
 	}
 
 	public void setLdapSyncCronSyncExpression(String ldapSyncCronSyncExpression) {
-		LDAPLoginModule.ldapSyncCronSyncExpression = ldapSyncCronSyncExpression.trim();
+		this.ldapSyncCronSyncExpression = ldapSyncCronSyncExpression.trim();
 	}
 	
 	public void setCacheLDAPPwdAsOLATPwdOnLogin(boolean cacheLDAPPwdAsOLATPwdOnLogin) {
-		LDAPLoginModule.cacheLDAPPwdAsOLATPwdOnLogin = cacheLDAPPwdAsOLATPwdOnLogin;
+		this.cacheLDAPPwdAsOLATPwdOnLogin = cacheLDAPPwdAsOLATPwdOnLogin;
 	}
 
 	public void setCreateUsersOnLogin(boolean createUsersOnLogin) {
@@ -600,127 +458,61 @@ public class LDAPLoginModule implements Initializable {
 	}
 
 	public void setConvertExistingLocalUsersToLDAPUsers(boolean convertExistingLocalUsersToLDAPUsers) {
-		LDAPLoginModule.convertExistingLocalUsersToLDAPUsers = convertExistingLocalUsersToLDAPUsers;
+		this.convertExistingLocalUsersToLDAPUsers = convertExistingLocalUsersToLDAPUsers;
 	}
 
 	public void setDeleteRemovedLDAPUsersOnSync(boolean deleteRemovedLDAPUsersOnSync) {
-		LDAPLoginModule.deleteRemovedLDAPUsersOnSync = deleteRemovedLDAPUsersOnSync;
+		this.deleteRemovedLDAPUsersOnSync = deleteRemovedLDAPUsersOnSync;
 	}
 	
 	public void setDeleteRemovedLDAPUsersPercentage(int deleteRemovedLDAPUsersPercentage){
-		LDAPLoginModule.deleteRemovedLDAPUsersPercentage = deleteRemovedLDAPUsersPercentage;
+		this.deleteRemovedLDAPUsersPercentage = deleteRemovedLDAPUsersPercentage;
 	}
 
 	public void setPropagatePasswordChangedOnLdapServer(boolean propagatePasswordChangedOnServer) {
-		LDAPLoginModule.propagatePasswordChangedOnLdapServer = propagatePasswordChangedOnServer;
+		this.propagatePasswordChangedOnLdapServer = propagatePasswordChangedOnServer;
 	}
 
-	/*
-	 * Getters
-	 */
-	public static String getLdapSystemDN() {
-		return systemDN;
-	}
-
-	public static String getLdapSystemPW() {
-		return systemPW;
-	}
-
-	public static String getLdapUrl() {
-		return ldapUrl;
-	}
-
-	public static List<String> getLdapBases() {
-		return ldapBases;
-	}
-	
-	public static Integer getLdapConnectionTimeout() {
-		return connectionTimeout;
-	}
-
-	/**
-	 * @return A filter expression enclosed in () brackets to filter for valid users or NULL for no filtering
-	 */
-	public static String getLdapUserFilter() {
-		return ldapUserFilter;
-	}
-
-	public static String getLdapUserLastModifiedTimestampAttribute() {
-		return ldapUserLastModifiedTimestampAttribute;
-	}
-
-	public static String getLdapUserCreatedTimestampAttribute() {
-		return ldapUserCreatedTimestampAttribute;
-	}
-	
-	public static String getLdapUserPasswordAttribute() {
-		return ldapUserPasswordAttribute;
-	}
-
-	/**
-	 * @return a map of user properties to set for each LDAP user or NULL if no
-	 *         such properties have to be set
-	 */
-	public static Map<String, String> getStaticUserProperties() {
-		return staticUserProperties;
-	}
-
-	public static Map<String, String> getUserAttributeMapper() {
-		return userAttrMap;
-	}
-
-	public static String[] getUserAttrs() {
-		return userAttr;
-	}
-
-	public static Map<String, String> getReqAttrs() {
-		return reqAttr;
-	}
-
-	public static Set<String> getSyncOnlyOnCreateProperties() {
-		return syncOnlyOnCreateProperties;
-	}
-
-	public static boolean isLDAPEnabled() {
+	public boolean isLDAPEnabled() {
 		return ldapEnabled;
 	}
 
-	public static boolean isSslEnabled() {
+	public boolean isSslEnabled() {
 		return sslEnabled;
 	}
 	
-	public static boolean isActiveDirectory() {
+	public boolean isActiveDirectory() {
 		return activeDirectory;
 	}
 	
-	public static String getLdapDateFormat() {
+	public String getLdapDateFormat() {
 		if(StringHelper.containsNonWhitespace(ldapDateFormat)) {
 			return ldapDateFormat;
 		}
 		return "yyyyMMddHHmmss'Z'";//default
 	}
 	
-	public static String getTrustStoreLocation(){
+	public String getTrustStoreLocation(){
 		return trustStoreLoc;
 	}
 	
-	public static String getTrustStorePwd(){
+	public String getTrustStorePwd(){
 		return trustStorePass;
 	}
 	
-	public static String getTrustStoreType(){
+	public String getTrustStoreType(){
 		return trustStoreTyp;
 	}
 
-	public static boolean isLdapSyncOnStartup() {
+	public boolean isLdapSyncOnStartup() {
 		return ldapSyncOnStartup;
 	}
 
-	public static boolean isLdapSyncCronSync() {
+	public boolean isLdapSyncCronSync() {
 		return ldapSyncCronSync;
 	}
 
-	public static String getLdapSyncCronSyncExpression() {
+	public String getLdapSyncCronSyncExpression() {
 		return ldapSyncCronSyncExpression;
 	}
 	
@@ -728,23 +520,23 @@ public class LDAPLoginModule implements Initializable {
 		return createUsersOnLogin;
 	}
 
-	public static boolean isCacheLDAPPwdAsOLATPwdOnLogin() {
+	public boolean isCacheLDAPPwdAsOLATPwdOnLogin() {
 		return cacheLDAPPwdAsOLATPwdOnLogin;
 	}
 
-	public static boolean isConvertExistingLocalUsersToLDAPUsers() {
+	public boolean isConvertExistingLocalUsersToLDAPUsers() {
 		return convertExistingLocalUsersToLDAPUsers;
 	}
 
-	public static boolean isDeleteRemovedLDAPUsersOnSync() {
+	public boolean isDeleteRemovedLDAPUsersOnSync() {
 		return deleteRemovedLDAPUsersOnSync;
 	}
 	
-	public static int getDeleteRemovedLDAPUsersPercentage(){
+	public int getDeleteRemovedLDAPUsersPercentage(){
 		return deleteRemovedLDAPUsersPercentage;
 	}
 
-	public static boolean isPropagatePasswordChangedOnLdapServer(){
+	public boolean isPropagatePasswordChangedOnLdapServer(){
 		return propagatePasswordChangedOnLdapServer;
 	}
 }

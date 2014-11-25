@@ -447,11 +447,11 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		if (!hasBeenInGroup && isNowInGroup) {
 			// user not yet in security group, add him
 			addIdentityToSecurityGroup(updatedIdentity, securityGroup);
-			logAudit("User::" + actingIdentity.getName() + " added system role::" + groupName + " to user::" + updatedIdentity.getName(), null);
+			logAudit("User::" + (actingIdentity == null ? "unkown" : actingIdentity.getName()) + " added system role::" + groupName + " to user::" + updatedIdentity.getName(), null);
 		} else if (hasBeenInGroup && !isNowInGroup) {
 			// user not anymore in security group, remove him
 			removeIdentityFromSecurityGroup(updatedIdentity, securityGroup);
-			logAudit("User::" + actingIdentity.getName() + " removed system role::" + groupName + " from user::" + updatedIdentity.getName(), null);
+			logAudit("User::" + (actingIdentity == null ? "unkown" : actingIdentity.getName()) + " removed system role::" + groupName + " from user::" + updatedIdentity.getName(), null);
 		}
 	}
 

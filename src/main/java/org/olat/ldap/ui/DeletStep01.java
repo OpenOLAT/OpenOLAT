@@ -44,9 +44,10 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.ldap.LDAPConstants;
-import org.olat.ldap.LDAPLoginModule;
+import org.olat.ldap.LDAPSyncConfiguration;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -84,6 +85,9 @@ public class DeletStep01 extends BasicStep {
 	}
 
 	private final class DeletStepForm01 extends StepFormBasicController {
+		
+		@Autowired
+		private LDAPSyncConfiguration syncConfiguration;
 
 		public DeletStepForm01(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -113,7 +117,7 @@ public class DeletStep01 extends BasicStep {
 				return;
 			}
 
-			Map<String, String> reqProbertyMap = new HashMap<String,String>(LDAPLoginModule.getUserAttributeMapper());
+			Map<String, String> reqProbertyMap = new HashMap<String,String>(syncConfiguration.getUserAttributeMap());
 			Collection<String> reqProberty = reqProbertyMap.values();
 			reqProberty.remove(LDAPConstants.LDAP_USER_IDENTIFYER);
 
