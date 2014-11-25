@@ -231,6 +231,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 					String id = "cat_" + ++cmpcount;
 					String title = category.getParent().getName();
 					FormLink catLink = uifactory.addFormLink(id, "category", title, null, layoutCont, Link.LINK | Link.NONTRANSLATED);
+					catLink.setIconLeftCSS("o_icon o_icon-fw o_icon_catalog");
 					catLink.setUserObject(category.getKey());
 					categoriesLink.add(id);
 				}
@@ -292,8 +293,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			String accessI18n = null;
 			List<PriceMethod> types = new ArrayList<PriceMethod>();
 			if (entry.isMembersOnly()) {
-				// members only always show lock icon
-				types.add(new PriceMethod("", "o_ac_membersonly_icon", translate("cif.access.membersonly.short")));
+				// members only
 				if(isMember) {
 					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
 					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
@@ -370,6 +370,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				for(BusinessGroup group:groups) {
 					String groupLinkName = "grp_" + ++cmpcount;
 					FormLink link = uifactory.addFormLink(groupLinkName, "group", group.getName(), null, layoutCont, Link.LINK | Link.NONTRANSLATED);
+					link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 					link.setUserObject(group.getKey());
 					groupLinkNames.add(groupLinkName);
 				}
