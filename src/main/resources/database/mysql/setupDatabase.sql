@@ -144,6 +144,7 @@ create table if not exists o_bs_identity (
    creationdate datetime,
    lastlogin datetime,
    name varchar(128) not null unique,
+   external_id varchar(64),
    status integer,
    fk_user_id bigint unique,
    primary key (id)

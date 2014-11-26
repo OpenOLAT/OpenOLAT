@@ -161,6 +161,7 @@ CREATE TABLE o_bs_identity (
   creationdate date,
   lastlogin date,
   name varchar2(128 char) NOT NULL,
+  external_id varchar2(64 char),
   status number(11),
   fk_user_id number(20),
   CONSTRAINT u_o_bs_identity UNIQUE (name),

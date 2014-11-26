@@ -111,6 +111,7 @@ import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
+import org.olat.user.restapi.ManagedUserVO;
 import org.olat.user.restapi.PreferencesVO;
 import org.olat.user.restapi.RolesVO;
 import org.olat.user.restapi.StatusVO;
@@ -191,25 +192,25 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		dbInstance.intermediateCommit();
 		
 		//create learn group	
-    // 1) context one: learning groups
-    RepositoryEntry c1 = JunitTestHelper.createAndPersistRepositoryEntry();
-    // create groups without waiting list
-    g1externalId = UUID.randomUUID().toString();
-    g1 = businessGroupService.createBusinessGroup(null, "user-rest-g1", null, g1externalId, "all", 0, 10, false, false, c1);
-    g2 = businessGroupService.createBusinessGroup(null, "user-rest-g2", null, 0, 10, false, false, c1);
-    // members g1
-    businessGroupRelationDao.addRole(id1, g1, GroupRoles.coach.name());
-    businessGroupRelationDao.addRole(id2, g1, GroupRoles.participant.name());
-    // members g2
-    businessGroupRelationDao.addRole(id2, g2, GroupRoles.coach.name());
-    businessGroupRelationDao.addRole(id1, g2, GroupRoles.participant.name());
+		// 1) context one: learning groups
+		RepositoryEntry c1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		// create groups without waiting list
+		g1externalId = UUID.randomUUID().toString();
+		g1 = businessGroupService.createBusinessGroup(null, "user-rest-g1", null, g1externalId, "all", 0, 10, false, false, c1);
+		g2 = businessGroupService.createBusinessGroup(null, "user-rest-g2", null, 0, 10, false, false, c1);
+		// members g1
+		businessGroupRelationDao.addRole(id1, g1, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(id2, g1, GroupRoles.participant.name());
+		// members g2
+		businessGroupRelationDao.addRole(id2, g2, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(id1, g2, GroupRoles.participant.name());
 
-    // 2) context two: right groups
-    RepositoryEntry c2 = JunitTestHelper.createAndPersistRepositoryEntry();
-    // groups
-    g3ExternalId = UUID.randomUUID().toString();
-    g3 = businessGroupService.createBusinessGroup(null, "user-rest-g3", null, g3ExternalId, "all", -1, -1, false, false, c2);
-    g4 = businessGroupService.createBusinessGroup(null, "user-rest-g4", null, -1, -1, false, false, c2);
+		// 2) context two: right groups
+		RepositoryEntry c2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		// groups
+		g3ExternalId = UUID.randomUUID().toString();
+		g3 = businessGroupService.createBusinessGroup(null, "user-rest-g3", null, g3ExternalId, "all", -1, -1, false, false, c2);
+		g4 = businessGroupService.createBusinessGroup(null, "user-rest-g4", null, -1, -1, false, false, c2);
 		// members
 		businessGroupRelationDao.addRole(id1, g3, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(id2, g4, GroupRoles.participant.name());
@@ -436,6 +437,56 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertEquals(vo.getLogin(), id2.getName());
 		//no properties for security reason
 		assertTrue(vo.getProperties().isEmpty());
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testGetManagedUser() throws IOException, URISyntaxException {
+		String externalId = UUID.randomUUID().toString();
+		Identity managedId = JunitTestHelper.createAndPersistIdentityAsRndUser("managed-1");
+		dbInstance.commitAndCloseSession();
+		securityManager.setExternalId(managedId, externalId);
+		dbInstance.commitAndCloseSession();
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").path("managed").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		List<ManagedUserVO> managedUsers = parseManagedUserArray(response.getEntity().getContent());
+
+		boolean found = false;
+		for(ManagedUserVO managedUser:managedUsers) {
+			if(managedUser.getKey().equals(managedId.getKey())) {
+				found = true;
+				Assert.assertEquals(externalId, managedUser.getExternalId());
+			}
+			Assert.assertNotNull(managedUser.getExternalId());
+		}
+		Assert.assertTrue(found);
+		
+		conn.shutdown();
+	}
+	
+	@Test
+	public void testGetManagedUser_onlyUserManagers() throws IOException, URISyntaxException {
+		String externalId = UUID.randomUUID().toString();
+		Identity managedId = JunitTestHelper.createAndPersistIdentityAsRndUser("managed-1");
+		dbInstance.commitAndCloseSession();
+		securityManager.setExternalId(managedId, externalId);
+		dbInstance.commitAndCloseSession();
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id1.getName(), "A6B7C8"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").path("managed").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(401, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
 		conn.shutdown();
 	}
 		
@@ -1319,6 +1370,16 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		try {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(body, new TypeReference<List<UserVO>>(){/* */});
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	protected List<ManagedUserVO> parseManagedUserArray(InputStream body) {
+		try {
+			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
+			return mapper.readValue(body, new TypeReference<List<ManagedUserVO>>(){/* */});
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

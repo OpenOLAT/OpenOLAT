@@ -593,6 +593,15 @@ public interface BaseSecurity {
 	public Identity saveIdentityName(Identity identity, String newName);
 	
 	/**
+	 * Set an external id if the identity is managed by an external system.
+	 * 
+	 * @param identity
+	 * @param externalId
+	 * @return
+	 */
+	public Identity setExternalId(Identity identity, String externalId);
+	
+	/**
 	 * Check if identity is visible. Deleted or login-denied users are not visible.
 	 * @param identityName
 	 * @return

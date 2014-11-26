@@ -493,6 +493,37 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void testGetIdentityByPowerSearch_managed() {
+		String login = "pow-6-" + UUID.randomUUID();
+		String externalId = UUID.randomUUID().toString();
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser(login);
+		dbInstance.commitAndCloseSession();
+		securityManager.setExternalId(id, externalId);
+		dbInstance.commitAndCloseSession();
+		
+		//search managed
+		SearchIdentityParams params = new SearchIdentityParams();
+		params.setManaged(Boolean.TRUE);
+		List<Identity> managedIds = securityManager.getIdentitiesByPowerSearch(params, 0, -1);
+		Assert.assertNotNull(managedIds);
+		Assert.assertFalse(managedIds.isEmpty());
+		Assert.assertTrue(managedIds.contains(id));
+		for(Identity managedId:managedIds) {
+			Assert.assertNotNull(managedId.getExternalId());
+		}
+		
+		//search not managed
+		params.setManaged(Boolean.FALSE);
+		List<Identity> naturalIds = securityManager.getIdentitiesByPowerSearch(params, 0, -1);
+		Assert.assertNotNull(naturalIds);
+		Assert.assertFalse(naturalIds.contains(id));
+		for(Identity naturalId:naturalIds) {
+			Assert.assertNull(naturalId.getExternalId());
+		}
+	}
+	
+	
+	@Test
 	public void testGetIdentitiesByPowerSearchWithGroups() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("user-1-" + UUID.randomUUID().toString());
 		SecurityGroup usersGroup = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);

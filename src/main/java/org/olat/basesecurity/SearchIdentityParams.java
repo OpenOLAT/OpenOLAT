@@ -40,6 +40,7 @@ public class SearchIdentityParams {
 	private Date userLoginBefore;
 	private Integer status;
 	private Collection<Long> identityKeys;
+	private Boolean managed;
 	
 	public SearchIdentityParams() {
 		//
@@ -109,6 +110,14 @@ public class SearchIdentityParams {
 		this.authProviders = authProviders;
 	}
 	
+	public Boolean getManaged() {
+		return managed;
+	}
+
+	public void setManaged(Boolean managed) {
+		this.managed = managed;
+	}
+
 	public Date getCreatedAfter() {
 		return createdAfter;
 	}

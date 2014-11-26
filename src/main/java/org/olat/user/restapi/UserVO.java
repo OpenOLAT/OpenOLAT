@@ -43,6 +43,7 @@ public class UserVO {
 
 	private Long key;
 	private String login;
+	private String externalId;
 	private String password;
 	private String firstName;
 	private String lastName;
@@ -71,6 +72,14 @@ public class UserVO {
 
 	public void setLogin(String login) {
 		this.login = login;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
 	}
 
 	public String getPassword() {

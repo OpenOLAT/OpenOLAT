@@ -98,6 +98,11 @@ public class UpdateIdentity implements Identity {
 	}
 	
 	@Override
+	public String getExternalId() {
+		return identity.getExternalId();
+	}
+
+	@Override
 	public void setName(String name) {
 		//
 	}

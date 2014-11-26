@@ -61,6 +61,11 @@ final class PreviewIdentity implements Identity, User {
 		return 2l;
 	}
 	
+	@Override
+	public String getExternalId() {
+		return null;
+	}
+
 	/**
 	 * @see org.olat.core.id.Identity#getName()
 	 */

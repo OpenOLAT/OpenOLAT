@@ -1410,11 +1410,14 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		Date createdBefore = params.getCreatedBefore();
 		Integer status = params.getStatus();
 		Collection<Long> identityKeys = params.getIdentityKeys();
+		Boolean managed = params.getManaged();
 		
 		// complex where clause only when values are available
 		if (login != null || (userproperties != null && !userproperties.isEmpty())
 				|| (identityKeys != null && !identityKeys.isEmpty()) || createdAfter != null	|| createdBefore != null
-				|| hasAuthProviders || hasGroups || hasPermissionOnResources || status != null) {
+				|| hasAuthProviders || hasGroups || hasPermissionOnResources || status != null
+				|| managed != null) {
+			
 			sb.append(" where ");		
 			boolean needsAnd = false;
 			boolean needsUserPropertiesJoin = false;
@@ -1506,6 +1509,15 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			if(identityKeys != null && !identityKeys.isEmpty()) {
 				needsAnd = checkAnd(sb, needsAnd);
 				sb.append("ident.key in (:identityKeys)");
+			}
+			
+			if(managed != null) {
+				needsAnd = checkAnd(sb, needsAnd);
+				if(managed.booleanValue()) {
+					sb.append("ident.externalId is not null");
+				} else {
+					sb.append("ident.externalId is null");
+				}	
 			}
 			
 			// append query for named security groups
@@ -1760,6 +1772,15 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	public Identity saveIdentityName(Identity identity, String newName) {
 		Identity reloadedIdentity = loadForUpdate(identity); 
 		reloadedIdentity.setName(newName);
+		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+		dbInstance.commit();
+		return reloadedIdentity;
+	}
+	
+	@Override
+	public Identity setExternalId(Identity identity, String externalId) {
+		IdentityImpl reloadedIdentity = loadForUpdate(identity); 
+		reloadedIdentity.setExternalId(externalId);
 		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
 		dbInstance.commit();
 		return reloadedIdentity;

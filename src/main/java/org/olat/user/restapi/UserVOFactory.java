@@ -134,6 +134,14 @@ public class UserVOFactory {
 		}
 		return userVO;
 	}
+	
+	public static ManagedUserVO getManaged(Identity identity) {
+		ManagedUserVO managedUserVo = new ManagedUserVO();
+		managedUserVo.setKey(identity.getKey());
+		managedUserVo.setLogin(identity.getName());
+		managedUserVo.setExternalId(identity.getExternalId());
+		return managedUserVo;
+	}
 
 	public static void post(User dbUser, UserVO user, Locale locale) {
 		UserManager um = UserManager.getInstance();

@@ -25,6 +25,7 @@ import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 import static org.olat.restapi.security.RestSecurityHelper.isUserManager;
 import static org.olat.user.restapi.UserVOFactory.formatDbUserProperty;
 import static org.olat.user.restapi.UserVOFactory.get;
+import static org.olat.user.restapi.UserVOFactory.getManaged;
 import static org.olat.user.restapi.UserVOFactory.parseUserProperty;
 import static org.olat.user.restapi.UserVOFactory.post;
 
@@ -65,6 +66,7 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.IdentityShort;
+import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
@@ -195,19 +197,39 @@ public class UserWebService {
 		return Response.ok(userVOs).build();
 	}
 	
+	@GET
+	@Path("managed")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getManagedUsers(@Context HttpServletRequest httpRequest) {
+		
+		if(!isUserManager(httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		SearchIdentityParams params = new SearchIdentityParams();
+		params.setManaged(Boolean.TRUE);
+		List<Identity> identities = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(params, 0, -1);
+		int count = 0;
+		ManagedUserVO[] userVOs = new ManagedUserVO[identities.size()];
+		for(Identity identity:identities) {
+			userVOs[count++] = getManaged(identity);
+		}
+		return Response.ok(userVOs).build();
+	}
+	
 	/**
 	 * Creates and persists a new user entity
 	 * @response.representation.qname {http://www.example.com}userVO
 	 * @response.representation.mediaType application/xml, application/json
 	 * @response.representation.doc The user to persist
-   * @response.representation.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVO}
+	 * @response.representation.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVO}
 	 * @response.representation.200.mediaType application/xml, application/json
 	 * @response.representation.200.doc The persisted user
-   * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVO}
+	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.406.mediaType application/xml, application/json
 	 * @response.representation.406.doc The list of errors
-   * @response.representation.406.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ERRORVOes}
+	 * @response.representation.406.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_ERRORVOes}
 	 * @param user The user to persist
 	 * @param request The HTTP request
 	 * @return the new persisted <code>User</code>

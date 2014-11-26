@@ -142,6 +142,7 @@ create table o_bs_identity (
    creationdate timestamp,
    lastlogin timestamp,
    name varchar(128) not null unique,
+   external_id varchar(64),
    status integer,
    fk_user_id int8 unique,
    primary key (id)
