@@ -66,6 +66,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -111,6 +112,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.DatePropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -679,7 +681,11 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		identity.setName("username");
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getAllUserPropertyHandlers();
 		for(UserPropertyHandler handler:userPropertyHandlers) {
-			identity.getUser().setProperty(handler.getName(), handler.getName());
+			if(handler instanceof DatePropertyHandler) {
+				identity.getUser().setProperty(handler.getName(), Formatter.formatDatetime(new Date()));
+			} else {
+				identity.getUser().setProperty(handler.getName(), handler.getName());
+			}
 		}
 		return identity;
 	}

@@ -116,6 +116,10 @@ public class CertificatePDFFormWorker {
 				fillCertificationInfos(acroForm);
 				fillAssessmentInfos(acroForm);
 			}
+			if(!destinationDir.exists()) {
+				destinationDir.mkdirs();
+			}
+			
 			File certificateFile = new File(destinationDir, templateName);
 			OutputStream out = new FileOutputStream(certificateFile);
 			document.save(out);
