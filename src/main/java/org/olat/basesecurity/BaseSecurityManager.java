@@ -700,9 +700,10 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 * @return Identity
 	 */
 	@Override
-	public Identity createAndPersistIdentityAndUser(String username, User user, String provider, String authusername) {
+	public Identity createAndPersistIdentityAndUser(String username, String externalId, User user, String provider, String authusername) {
 		dbInstance.getCurrentEntityManager().persist(user);
 		IdentityImpl iimpl = new IdentityImpl(username, user);
+		iimpl.setExternalId(externalId);
 		dbInstance.getCurrentEntityManager().persist(iimpl);
 		if (provider != null) { 
 			createAndPersistAuthentication(iimpl, provider, authusername, null, null);
@@ -722,9 +723,10 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 * @return Identity
 	 */
 	@Override
-	public Identity createAndPersistIdentityAndUser(String username, User user, String provider, String authusername, String credential) {
+	public Identity createAndPersistIdentityAndUser(String username, String externalId, User user, String provider, String authusername, String credential) {
 		dbInstance.getCurrentEntityManager().persist(user);
 		IdentityImpl iimpl = new IdentityImpl(username, user);
+		iimpl.setExternalId(externalId);
 		dbInstance.getCurrentEntityManager().persist(iimpl);
 		if (provider != null) { 
 			createAndPersistAuthentication(iimpl, provider, authusername, credential, LoginModule.getDefaultHashAlgorithm());
@@ -1837,7 +1839,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			// Create it lazy on demand
 			User guestUser = UserManager.getInstance().createUser(trans.translate("user.guest"), null, null);
 			guestUser.getPreferences().setLanguage(locale.toString());
-			guestIdentity = createAndPersistIdentityAndUser(guestUsername, guestUser, null, null, null);
+			guestIdentity = createAndPersistIdentityAndUser(guestUsername, null, guestUser, null, null, null);
 			SecurityGroup anonymousGroup = findSecurityGroupByName(Constants.GROUP_ANONYMOUS);
 			addIdentityToSecurityGroup(guestIdentity, anonymousGroup);
 		} else if (!guestIdentity.getUser().getProperty(UserConstants.FIRSTNAME, locale).equals(trans.translate("user.guest"))) {

@@ -680,13 +680,16 @@ public class RepositoryManager extends BasicManager {
 	 * @return
 	 */
 	public RepositoryEntry setDescriptionAndName(final RepositoryEntry re, String displayName, String description,
-			String externalId, String externalRef, String managedFlags, RepositoryEntryLifecycle cycle) {
+			String authors, String externalId, String externalRef, String managedFlags, RepositoryEntryLifecycle cycle) {
 		RepositoryEntry reloadedRe = loadForUpdate(re);
 		if(StringHelper.containsNonWhitespace(displayName)) {
 			reloadedRe.setDisplayname(displayName);
 		}
 		if(StringHelper.containsNonWhitespace(description)) {
 			reloadedRe.setDescription(description);
+		}
+		if(StringHelper.containsNonWhitespace(authors)) {
+			reloadedRe.setAuthors(authors);
 		}
 		if(StringHelper.containsNonWhitespace(externalId)) {
 			reloadedRe.setExternalId(externalId);

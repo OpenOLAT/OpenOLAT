@@ -447,7 +447,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		}
 
 		// Create Identity
-		Identity identity = securityManager.createAndPersistIdentityAndUser(uid, user, LDAPAuthenticationController.PROVIDER_LDAP, uid);
+		Identity identity = securityManager.createAndPersistIdentityAndUser(uid, null, user, LDAPAuthenticationController.PROVIDER_LDAP, uid);
 		// Add to SecurityGroup LDAP
 		SecurityGroup secGroup = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
 		securityManager.addIdentityToSecurityGroup(identity, secGroup);

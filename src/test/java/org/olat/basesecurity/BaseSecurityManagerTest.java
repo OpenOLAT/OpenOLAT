@@ -67,7 +67,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	public void testCreateIdentity() {
 		String username = "createid-" + UUID.randomUUID().toString();
 		User user = userManager.createUser("first" + username, "last" + username, username + "@frentix.com");
-		Identity identity = securityManager.createAndPersistIdentityAndUser(username, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret");
+		Identity identity = securityManager.createAndPersistIdentityAndUser(username, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret");
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(identity);
@@ -89,7 +89,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		User user = userManager.createUser("first" + username, "last" + username, username + "@frentix.com");
 		user.setProperty(UserConstants.COUNTRY, "");
 		user.setProperty(UserConstants.CITY, "Basel");
-		Identity identity = securityManager.createAndPersistIdentityAndUser(username, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret");
+		Identity identity = securityManager.createAndPersistIdentityAndUser(username, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret");
 		dbInstance.commitAndCloseSession();
 		
 		//reload and update

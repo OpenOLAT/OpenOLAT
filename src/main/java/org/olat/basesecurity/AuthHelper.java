@@ -333,14 +333,14 @@ public class AuthHelper {
 	 * @param newUser unpersisted user
 	 * @return Identity
 	 */
-	private static Identity createAndPersistIdentityAndUser(String loginName, String pwd, User newUser) {
+	private static Identity createAndPersistIdentityAndUser(String loginName, String externalId, String pwd, User newUser) {
 		Identity ident = null;
 		if (pwd == null) {
 			// when no password is used the provider must be set to null to not generate
 			// an OLAT authentication token. See method doku.
-			ident = BaseSecurityManager.getInstance().createAndPersistIdentityAndUser(loginName, newUser, null, null);
+			ident = BaseSecurityManager.getInstance().createAndPersistIdentityAndUser(loginName, externalId, newUser, null, null);
  		} else {
-			ident = BaseSecurityManager.getInstance().createAndPersistIdentityAndUser(loginName, newUser,
+			ident = BaseSecurityManager.getInstance().createAndPersistIdentityAndUser(loginName, externalId, newUser,
 			BaseSecurityModule.getDefaultAuthProviderIdentifier(), loginName, pwd);
 		}
 		// TODO: Tracing message
@@ -357,8 +357,8 @@ public class AuthHelper {
 	 * @param newUser unpersisted users
 	 * @return Identity
 	 */
-	public static Identity createAndPersistIdentityAndUserWithUserGroup(String loginName, String pwd,  User newUser) {
-		Identity ident = createAndPersistIdentityAndUser(loginName, pwd, newUser);
+	public static Identity createAndPersistIdentityAndUserWithUserGroup(String loginName, String externalId, String pwd,  User newUser) {
+		Identity ident = createAndPersistIdentityAndUser(loginName, externalId, pwd, newUser);
 		// Add user to system users group
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		SecurityGroup olatuserGroup = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
@@ -376,9 +376,9 @@ public class AuthHelper {
 	 * @param newUser
 	 * @return
 	 */
-	public static Identity createAndPersistIdentityAndUserWithUserGroup(String loginName, String provider, String authusername, User newUser) {
+	public static Identity createAndPersistIdentityAndUserWithUserGroup(String loginName, String externalId, String provider, String authusername, User newUser) {
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		Identity ident = securityManager.createAndPersistIdentityAndUser(loginName, newUser, provider, authusername, null);
+		Identity ident = securityManager.createAndPersistIdentityAndUser(loginName, externalId, newUser, provider, authusername, null);
 		// Add user to system users group
 		SecurityGroup olatuserGroup = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
 		securityManager.addIdentityToSecurityGroup(ident, olatuserGroup);

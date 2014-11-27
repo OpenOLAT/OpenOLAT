@@ -128,7 +128,7 @@ public class UserManagerTest extends OlatTestCase {
 		String institutEmail = name + "@openolat.com";
 		User user = userManager.createUser("first" + name, "last" + name, email);
 		user.setProperty(UserConstants.INSTITUTIONALEMAIL, institutEmail);
-		Identity identity = securityManager.createAndPersistIdentityAndUser(name, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, "secret");
+		Identity identity = securityManager.createAndPersistIdentityAndUser(name, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), name, "secret");
 		Assert.assertNotNull(identity);
 		return identity;
 	}

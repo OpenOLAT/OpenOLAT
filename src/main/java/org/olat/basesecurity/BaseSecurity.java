@@ -288,7 +288,7 @@ public interface BaseSecurity {
 	 * @param credential the credentials or null if not used
 	 * @return the new identity
 	 */
-	public Identity createAndPersistIdentityAndUser(String username, User user, String provider, String authusername);
+	public Identity createAndPersistIdentityAndUser(String username, String externalId, User user, String provider, String authusername);
 
 	/**
 	 * @param username the username
@@ -300,7 +300,7 @@ public interface BaseSecurity {
 	 * @param password The password which will be used as credentials (not hashed it)
 	 * @return the new identity
 	 */
-	public Identity createAndPersistIdentityAndUser(String username, User user, String provider, String authusername, String password);
+	public Identity createAndPersistIdentityAndUser(String username, String externalId, User user, String provider, String authusername, String password);
 
 	/**
 	 * Return the List of associated Authentications.

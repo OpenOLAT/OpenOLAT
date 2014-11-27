@@ -343,7 +343,7 @@ class NewUserForm extends FormBasicController {
 		newUser.getPreferences().setLanguage(lang);
 		newUser.getPreferences().setInformSessionTimeout(true);
 		// Save everything in database
-		Identity ident = AuthHelper.createAndPersistIdentityAndUserWithUserGroup(username, pwd, newUser);
+		Identity ident = AuthHelper.createAndPersistIdentityAndUserWithUserGroup(username, null, pwd, newUser);
 		return ident;
 	}
 	

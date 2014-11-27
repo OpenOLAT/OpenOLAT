@@ -351,7 +351,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 						user.setProperty(UserConstants.INSTITUTIONALEMAIL, institutionalEmail);
 					}
 					user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, shibbolethAttributesMap.get(ShibbolethModule.getInstitutionalUserIdentifier()));
-					identity = secMgr.createAndPersistIdentityAndUser(choosenLogin, user, ShibbolethDispatcher.PROVIDER_SHIB, shibbolethUniqueID);
+					identity = secMgr.createAndPersistIdentityAndUser(choosenLogin, null, user, ShibbolethDispatcher.PROVIDER_SHIB, shibbolethUniqueID);
 					SecurityGroup olatUserGroup = secMgr.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
 					secMgr.addIdentityToSecurityGroup(identity, olatUserGroup);
 					// tell system that this user did accept the disclaimer

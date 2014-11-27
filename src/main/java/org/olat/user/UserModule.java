@@ -242,7 +242,7 @@ public class UserModule extends AbstractOLATModule {
 
 			// Now finally create that user thing on the database with all
 			// credentials, person etc. in one transation context!
-			identity = BaseSecurityManager.getInstance().createAndPersistIdentityAndUser(user.getUserName(), newUser, authenticationProviderConstant,
+			identity = BaseSecurityManager.getInstance().createAndPersistIdentityAndUser(user.getUserName(), null, newUser, authenticationProviderConstant,
 					user.getUserName(), user.getPassword());
 			if (identity == null) {
 				throw new OLATRuntimeException(this.getClass(), "Error, could not create  user and subject with name " + user.getUserName(), null);

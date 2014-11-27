@@ -145,8 +145,9 @@ public class UserWebService {
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getUserListQuery(@QueryParam("login") String login, @QueryParam("authProvider") String authProvider,
-			@QueryParam("authUsername") String authUsername,
+	public Response getUserListQuery(@QueryParam("login") String login,
+			@QueryParam("authProvider") String authProvider, @QueryParam("authUsername") String authUsername,
+			@QueryParam("statusVisibleLimit") String statusVisibleLimit,
 			@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest) {
 		
 		if(!isUserManager(httpRequest)) {
@@ -185,8 +186,12 @@ public class UserWebService {
 					userProps.put(handler.getName(), value);
 				}
 			}
-
-			identities = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(login, userProps, true, null, null, authProviders, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
+			
+			Integer status = Identity.STATUS_VISIBLE_LIMIT;
+			if("all".equalsIgnoreCase(statusVisibleLimit)) {
+				status = null;
+			}
+			identities = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(login, userProps, true, null, null, authProviders, null, null, null, null, status);
 		}
 		
 		int count = 0;
@@ -257,7 +262,7 @@ public class UserWebService {
 		List<ErrorVO> errors = validateUser(null, user, request);
 		if(errors.isEmpty()) {
 			User newUser = UserManager.getInstance().createUser(user.getFirstName(), user.getLastName(), user.getEmail());
-			Identity id = AuthHelper.createAndPersistIdentityAndUserWithUserGroup(user.getLogin(), user.getPassword(), newUser);
+			Identity id = AuthHelper.createAndPersistIdentityAndUserWithUserGroup(user.getLogin(), user.getExternalId(), user.getPassword(), newUser);
 			post(newUser, user, getLocale(request));
 			UserManager.getInstance().updateUser(newUser);
 			return Response.ok(get(id)).build();

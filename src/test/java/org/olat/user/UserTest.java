@@ -92,7 +92,7 @@ public class UserTest extends OlatTestCase {
 			u1.setProperty(UserConstants.INSTITUTIONALEMAIL, "instjudihui@id.uzh.ch");
 			u1.setProperty(UserConstants.INSTITUTIONALNAME, "id.uzh.ch");
 			u1.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, "id.uzh.ch");
-			i1 = sm.createAndPersistIdentityAndUser(u1.getProperty(UserConstants.LASTNAME, new Locale("en")),u1,"OLAT",u1.getProperty(UserConstants.LASTNAME, new Locale("en")),"");
+			i1 = sm.createAndPersistIdentityAndUser(u1.getProperty(UserConstants.LASTNAME, new Locale("en")), null, u1, "OLAT", u1.getProperty(UserConstants.LASTNAME, new Locale("en")),"");
 		} else {
 			System.out.println("Does not create user, found 'judihui' already in db");
 			i1 = sm.findIdentityByName("judihui");
@@ -103,7 +103,7 @@ public class UserTest extends OlatTestCase {
 			u2.setProperty(UserConstants.INSTITUTIONALEMAIL, "instmigros@id.migros.uzh.ch");
 			u2.setProperty(UserConstants.INSTITUTIONALNAME, "id.migros.uzh.ch");
 			u2.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, "id.uzh.ch");
-			i2 = sm.createAndPersistIdentityAndUser(u2.getProperty(UserConstants.LASTNAME, new Locale("en")),u2,"OLAT",u2.getProperty(UserConstants.LASTNAME, new Locale("en")),"");
+			i2 = sm.createAndPersistIdentityAndUser(u2.getProperty(UserConstants.LASTNAME, new Locale("en")), null, u2, "OLAT", u2.getProperty(UserConstants.LASTNAME, new Locale("en")),"");
 		} else {
 			System.out.println("Does not create user, found 'migros' already in db");
 			i2 = sm.findIdentityByName("migros");
@@ -114,7 +114,7 @@ public class UserTest extends OlatTestCase {
 			u3.setProperty(UserConstants.INSTITUTIONALEMAIL,"instsalat@id.salat.uzh.ch");
 			u3.setProperty(UserConstants.INSTITUTIONALNAME, "id.salat.uzh.ch");
 			u3.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, "id.uzh.ch");
-			i3 = sm.createAndPersistIdentityAndUser(u3.getProperty(UserConstants.LASTNAME, new Locale("en")),u3,"OLAT",u3.getProperty(UserConstants.LASTNAME, new Locale("en")),"");
+			i3 = sm.createAndPersistIdentityAndUser(u3.getProperty(UserConstants.LASTNAME, new Locale("en")), null, u3," OLAT", u3.getProperty(UserConstants.LASTNAME, new Locale("en")),"");
 		} else {
 			System.out.println("Does not create user, found 'salat' already in db");
 			i3 = sm.findIdentityByName("salat");
@@ -472,7 +472,7 @@ public class UserTest extends OlatTestCase {
 		user.setProperty(UserConstants.INSTITUTIONALEMAIL, "inst" + login + "@" + institution);
 		user.setProperty(UserConstants.INSTITUTIONALNAME, institution);
 		user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, institution);
-		Identity identity = securityManager.createAndPersistIdentityAndUser(login, user, "OLAT", login,"secret");
+		Identity identity = securityManager.createAndPersistIdentityAndUser(login, null, user, "OLAT", login,"secret");
 		return identity;
 	}
 
