@@ -54,7 +54,7 @@
 				</div>
 				#end
 				
-				#if($v.authors)
+				#if($v.authors && !$v.authors.empty)
 				<div class="o_authors o_block">
 					<h4>$r.translate("cif.authors")</h4>
 					$r.escapeHtml($v.authors)
