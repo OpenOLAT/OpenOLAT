@@ -21,6 +21,7 @@ package org.olat.repository.ui.author;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
@@ -183,17 +184,21 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		boolean allOk = true;
 		
 		if(limitTypes != null && handlers != null) {
-			for(ResourceHandler handler:handlers) {
+			for(Iterator<ResourceHandler> handlerIt=handlers.iterator(); handlerIt.hasNext(); ) {
 				boolean match = false;
+				ResourceHandler handler = handlerIt.next();
 				for(String limitType:limitTypes) {
 					if(limitType.equals(handler.getHandler().getSupportedType())) {
 						match = true;
 					}
 				}
 				if(!match) {
-					allOk = false;
-					uploadFileEl.setErrorKey("add.failed", new String[] {});
+					handlerIt.remove();
 				}
+			}
+			if(handlers.isEmpty()) {
+				allOk = false;
+				uploadFileEl.setErrorKey("add.failed", new String[] {});
 			}
 		}
 		
