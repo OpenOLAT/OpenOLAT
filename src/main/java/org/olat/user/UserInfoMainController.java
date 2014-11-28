@@ -56,13 +56,13 @@ import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.tree.TreeHelper;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.modules.co.ContactFormController;
@@ -88,7 +88,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 
 	private static final String CMD_HOMEPAGE = "homepage";
 	private static final String CMD_CALENDAR = "calendar";
-	private static final String CMD_FOLDER = "folder";
+	private static final String CMD_FOLDER = "userfolder";
 	private static final String CMD_CONTACT = "contact";
 	private static final String CMD_PORTFOLIO = "portfolio";
 
@@ -98,18 +98,17 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 	public static final OLATResourceable BUSINESS_CONTROL_TYPE_FOLDER = OresHelper.createOLATResourceableTypeWithoutCheck(FolderRunController.class
 			.getSimpleName());
 
-	private HomePageDisplayController homePageDisplayController;
+	private EPMapRunController portfolioController;
+	private FolderRunController folderRunController;
 	private WeeklyCalendarController calendarController;
 	private ContactFormController contactFormController;
-	private FolderRunController folderRunController;
+	private HomePageDisplayController homePageDisplayController;
 
-	private Identity chosenIdentity;
-	private String firstLastName;
-	private Controller portfolioController;
-	
-	private GenericTreeNode folderNode;
-	private GenericTreeNode contactNode;
-	
+	private final Identity chosenIdentity;
+	private final String firstLastName;
+
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private InvitationDAO invitationDao;
 
@@ -124,8 +123,8 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 		this.chosenIdentity = chosenIdentity;
 
 		main = new Panel("userinfomain");
-		main.setContent(createComponent(ureq, CMD_HOMEPAGE, chosenIdentity));
-		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
+		Controller homeCtrl = createComponent(ureq, CMD_HOMEPAGE);
+		main.setContent(homeCtrl.getInitialComponent());
 		firstLastName = userManager.getUserDisplayName(chosenIdentity);
 
 		// Navigation menu
@@ -137,36 +136,26 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 
 		LayoutMain3ColsController columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, main, "userinfomain");
 		listenTo(columnLayoutCtr);
-		//
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
-		
-		// Activate child controllers if a usable context entry is found
-		BusinessControl bc = getWindowControl().getBusinessControl();
-		ContextEntry ce = bc.popLauncherContextEntry();
-		if (ce != null) { // a context path is left for me
-			OLATResourceable ores = ce.getOLATResourceable();
-			if (OresHelper.equals(ores, BUSINESS_CONTROL_TYPE_FOLDER)) {
-				// Activate folder controller
-				menuTree.setSelectedNode(tm.findNodeByUserObject(CMD_FOLDER));
-				main.setContent(createComponent(ureq, CMD_FOLDER, chosenIdentity));
-			}
-		}
+	}
+	
+	@Override
+	protected void doDispose() {
+		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == menuTree) {
 			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) { // goto
 				TreeNode selTreeNode = menuTree.getSelectedNode();
-				String cmd = (String) selTreeNode.getUserObject();
-				main.setContent(createComponent(ureq, cmd, chosenIdentity));
+				String cmd = (String)selTreeNode.getUserObject();
+				Controller controller = createComponent(ureq, cmd);
+				if(controller != null) {
+					main.setContent(controller.getInitialComponent());
+				}
 			}
 		}
-		// no events from main
-		// no events from intro
 	}
 
 	@Override
@@ -174,15 +163,20 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 		if(entries == null || entries.isEmpty()) return;
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if("userfolder".equals(type)) {
-			String cmd = (String)folderNode.getUserObject();
-			main.setContent(createComponent(ureq, cmd, chosenIdentity));
-			menuTree.setSelectedNode(folderNode);
-			folderRunController.activate(ureq, entries.subList(1, entries.size()), null);
-		} else if ("Contact".equals(type) && contactNode != null) {
-			String cmd = (String)contactNode.getUserObject();
-			main.setContent(createComponent(ureq, cmd, chosenIdentity));
-			menuTree.setSelectedNode(contactNode);
+		if(StringHelper.containsNonWhitespace(type)) {
+			Controller controller = createComponent(ureq, type);
+			if(controller != null) {
+				if(controller instanceof  Activateable2) {
+					entries = entries.subList(1, entries.size());
+					((Activateable2)controller).activate(ureq, entries, entries.get(0).getTransientState());
+				}
+				
+				main.setContent(controller.getInitialComponent());
+				TreeNode selectedNode = TreeHelper.findNodeByUserObject(type, menuTree.getTreeModel().getRootNode());
+				if(selectedNode != null) {
+					menuTree.setSelectedNode(selectedNode);
+				}
+			}
 		}
 	}
 
@@ -221,18 +215,18 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 			gtn.setAltText(translate("menu.calendar.alt"));
 			root.addChild(gtn);
 	
-			folderNode = new GenericTreeNode();
-			folderNode.setTitle(translate("menu.folder"));
-			folderNode.setUserObject(CMD_FOLDER);
-			folderNode.setAltText(translate("menu.folder.alt"));
-			root.addChild(folderNode);
+			gtn = new GenericTreeNode();
+			gtn.setTitle(translate("menu.folder"));
+			gtn.setUserObject(CMD_FOLDER);
+			gtn.setAltText(translate("menu.folder.alt"));
+			root.addChild(gtn);
 		}	
 		if ( !isDeleted) {
-			contactNode = new GenericTreeNode();
-			contactNode.setTitle(translate("menu.contact"));
-			contactNode.setUserObject(CMD_CONTACT);
-			contactNode.setAltText(translate("menu.contact.alt"));
-			root.addChild(contactNode);
+			gtn = new GenericTreeNode();
+			gtn.setTitle(translate("menu.contact"));
+			gtn.setUserObject(CMD_CONTACT);
+			gtn.setAltText(translate("menu.contact.alt"));
+			root.addChild(gtn);
 		}
 		if ( !isDeleted && ! isInvitee) {
 			PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
@@ -247,79 +241,102 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 		return gtm;
 	}
 
-	private Component createComponent(UserRequest ureq, String menuCommand, Identity identity) {
-		Component myContent = null;
-
-		if (menuCommand.equals(CMD_HOMEPAGE)) {
-			HomePageConfigManager hpcm = HomePageConfigManagerImpl.getInstance();
-			HomePageConfig homePageConfig = hpcm.loadConfigFor(identity.getName());
-			removeAsListenerAndDispose(homePageDisplayController);
-			homePageDisplayController = new HomePageDisplayController(ureq, getWindowControl(), identity, homePageConfig);
-			listenTo(homePageDisplayController);
-			myContent = homePageDisplayController.getInitialComponent();
-
-		} else if (menuCommand.equals(CMD_CALENDAR)) {
-			CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
-			KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(identity);
-			calendarWrapper.setKalendarConfig(new KalendarConfig(identity.getName(), KalendarRenderWrapper.CALENDAR_COLOR_BLUE, true));
-			KalendarConfig config = calendarManager.findKalendarConfigForIdentity(calendarWrapper.getKalendar(), ureq);
-			if (config != null) {
-				calendarWrapper.getKalendarConfig().setCss(config.getCss());
-				calendarWrapper.getKalendarConfig().setVis(config.isVis());
-			}
-			if (ureq.getUserSession().getRoles().isOLATAdmin() || identity.getName().equals(ureq.getIdentity().getName())) {
-				calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
-			} else {
-				calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
-			}
-			List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
-			calendars.add(calendarWrapper);
-			removeAsListenerAndDispose(calendarController);
-			calendarController = new WeeklyCalendarController(ureq, getWindowControl(), calendars,
-					WeeklyCalendarController.CALLER_PROFILE, true);
-			listenTo(calendarController);
-			myContent = calendarController.getInitialComponent();
-		} else if (menuCommand.equals(CMD_FOLDER)) {
-
-			String chosenUserFolderRelPath = FolderConfig.getUserHome(identity.getName()) + "/public";
-
-			OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(chosenUserFolderRelPath, null);
-			String rootFolderName = StringHelper.escapeHtml(firstLastName);
-			OlatNamedContainerImpl namedFolder = new OlatNamedContainerImpl(rootFolderName, rootFolder);
-			
-			//decided in plenum to have read only view in the personal visit card, even for admin
-			VFSSecurityCallback secCallback = new ReadOnlyCallback();
-			namedFolder.setLocalSecurityCallback(secCallback);
-			
-			removeAsListenerAndDispose(folderRunController);
-			folderRunController = new FolderRunController(namedFolder, false, true, false, ureq, getWindowControl());
-			folderRunController.setResourceURL("[Identity:" + identity.getKey() + "][userfolder:0]");
-			listenTo(folderRunController);
-			myContent = folderRunController.getInitialComponent();
-
-		} else if (menuCommand.equals(CMD_CONTACT)) {
-			ContactMessage cmsg = new ContactMessage(ureq.getIdentity());
-			ContactList emailList = new ContactList(firstLastName);
-			emailList.add(identity);
-			cmsg.addEmailTo(emailList);
-			removeAsListenerAndDispose(contactFormController);
-			contactFormController = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
-			listenTo(contactFormController);
-			myContent = contactFormController.getInitialComponent();
-		} else if (menuCommand.equals(CMD_PORTFOLIO)) {
-			removeAsListenerAndDispose(portfolioController);
-			portfolioController = new EPMapRunController(ureq, getWindowControl(), false, EPMapRunViewOption.OTHER_MAPS, chosenIdentity);
-			listenTo(portfolioController);
-			myContent = portfolioController.getInitialComponent();
+	private Controller createComponent(UserRequest ureq, String menuCommand) {
+		Controller controller = null;
+		if (menuCommand.equalsIgnoreCase(CMD_HOMEPAGE)) {
+			controller = doOpenHomepage(ureq);
+		} else if (menuCommand.equalsIgnoreCase(CMD_CALENDAR)) {
+			controller = doOpenCalendar(ureq);
+		} else if (menuCommand.equalsIgnoreCase(CMD_FOLDER)) {
+			controller = doOpenFolder(ureq);
+		} else if (menuCommand.equalsIgnoreCase(CMD_CONTACT)) {
+			controller = doOpenContact(ureq);
+		} else if (menuCommand.equalsIgnoreCase(CMD_PORTFOLIO)) {
+			controller = doOpenPortfolio(ureq);
 		}
-		return myContent;
+		return controller;
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	protected void doDispose() {
-		// controllers are disposed by BasicController
+	
+	private HomePageDisplayController doOpenHomepage(UserRequest ureq) {
+		removeAsListenerAndDispose(homePageDisplayController);
+		
+		HomePageConfigManager hpcm = HomePageConfigManagerImpl.getInstance();
+		HomePageConfig homePageConfig = hpcm.loadConfigFor(chosenIdentity.getName());
+		removeAsListenerAndDispose(homePageDisplayController);
+		homePageDisplayController = new HomePageDisplayController(ureq, getWindowControl(), chosenIdentity, homePageConfig);
+		listenTo(homePageDisplayController);
+		return homePageDisplayController;
 	}
+	
+	private WeeklyCalendarController doOpenCalendar(UserRequest ureq) {
+		removeAsListenerAndDispose(calendarController);
+		
+		CalendarManager calendarManager = CalendarManagerFactory.getInstance().getCalendarManager();
+		KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(chosenIdentity);
+		calendarWrapper.setKalendarConfig(new KalendarConfig(chosenIdentity.getName(), KalendarRenderWrapper.CALENDAR_COLOR_BLUE, true));
+		KalendarConfig config = calendarManager.findKalendarConfigForIdentity(calendarWrapper.getKalendar(), ureq);
+		if (config != null) {
+			calendarWrapper.getKalendarConfig().setCss(config.getCss());
+			calendarWrapper.getKalendarConfig().setVis(config.isVis());
+		}
+		if (ureq.getUserSession().getRoles().isOLATAdmin() || chosenIdentity.getName().equals(ureq.getIdentity().getName())) {
+			calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
+		} else {
+			calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
+		}
+		List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
+		calendars.add(calendarWrapper);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableType(CMD_CALENDAR);
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		calendarController = new WeeklyCalendarController(ureq, bwControl, calendars, WeeklyCalendarController.CALLER_PROFILE, true);
+		listenTo(calendarController);
+		return calendarController;
+	}
+	
+	private FolderRunController doOpenFolder(UserRequest ureq) {
+		removeAsListenerAndDispose(folderRunController);
 
+		String chosenUserFolderRelPath = FolderConfig.getUserHome(chosenIdentity.getName()) + "/public";
+
+		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(chosenUserFolderRelPath, null);
+		String rootFolderName = StringHelper.escapeHtml(firstLastName);
+		OlatNamedContainerImpl namedFolder = new OlatNamedContainerImpl(rootFolderName, rootFolder);
+		
+		//decided in plenum to have read only view in the personal visit card, even for admin
+		VFSSecurityCallback secCallback = new ReadOnlyCallback();
+		namedFolder.setLocalSecurityCallback(secCallback);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableType("userfolder");
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		folderRunController = new FolderRunController(namedFolder, false, true, false, ureq, bwControl);
+		folderRunController.setResourceURL("[Identity:" + chosenIdentity.getKey() + "][userfolder:0]");
+		listenTo(folderRunController);
+		return folderRunController;
+	}
+	
+	private ContactFormController doOpenContact(UserRequest ureq) {
+		removeAsListenerAndDispose(contactFormController);
+		
+		ContactMessage cmsg = new ContactMessage(ureq.getIdentity());
+		ContactList emailList = new ContactList(firstLastName);
+		emailList.add(chosenIdentity);
+		cmsg.addEmailTo(emailList);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableType(CMD_CONTACT);
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		contactFormController = new ContactFormController(ureq, bwControl, true, false, false, cmsg);
+		listenTo(contactFormController);
+		return contactFormController;
+	}
+	
+	private EPMapRunController doOpenPortfolio(UserRequest ureq) {
+		removeAsListenerAndDispose(portfolioController);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableType(CMD_PORTFOLIO);
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		portfolioController = new EPMapRunController(ureq, bwControl, false, EPMapRunViewOption.OTHER_MAPS, chosenIdentity);
+		listenTo(portfolioController);
+		return portfolioController;
+	}
 }
