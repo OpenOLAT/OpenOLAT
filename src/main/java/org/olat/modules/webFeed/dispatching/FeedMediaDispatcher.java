@@ -30,6 +30,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.MediaResource;
@@ -41,6 +42,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -191,7 +193,12 @@ public class FeedMediaDispatcher extends LogDelegator implements Dispatcher {
 		} else if (path.isItemType()) {
 			resource = manager.createItemMediaFile(feed, path.getItemId(), path.getItemFileName());
 		} else if (path.isIconType()) {
-			VFSLeaf resourceFile = manager.createFeedMediaFile(feed, path.getIconFileName());
+			Size thumbnailSize = null;
+			String thumbnail = request.getParameter("thumbnail");
+			if(StringHelper.containsNonWhitespace(thumbnail)) {
+				thumbnailSize = Size.parseString(thumbnail);
+			}
+			VFSLeaf resourceFile = manager.createFeedMediaFile(feed, path.getIconFileName(), thumbnailSize);
 			if(resourceFile != null) {
 				resource = new VFSMediaResource(resourceFile);
 			}

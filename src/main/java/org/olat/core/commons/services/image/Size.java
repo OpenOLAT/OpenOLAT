@@ -19,18 +19,25 @@
  */
 package org.olat.core.commons.services.image;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix
  *
  */
 public class Size {
+	
+	private static final OLog log = Tracing.createLoggerFor(Size.class);
+	
 	private final int width;
 	private final int height;
 	private final int xOffset;
 	private final int yOffset;
 	private final boolean changed;
-	
+
 	public Size(int width, int height, boolean changed) {
 		this(width, height, 0, 0, changed);
 	}
@@ -41,6 +48,25 @@ public class Size {
 		this.xOffset = xOffset;
 		this.yOffset = yOffset;
 		this.changed = changed;
+	}
+	
+	public static Size parseString(String str) {
+		Size size = null;
+		int index = str.indexOf('x');
+		if(index > 0) {
+			String widthStr = str.substring(0, index);
+			String heightStr = str.substring(index+1);
+			if(StringHelper.isLong(widthStr) && StringHelper.isLong(heightStr)) {
+				try {
+					int width = Integer.parseInt(widthStr);
+					int height = Integer.parseInt(heightStr);
+					size = new Size(width, height, false);
+				} catch (NumberFormatException e) {
+					log.warn("", e);
+				}
+			}
+		}
+		return size;
 	}
 
 	public int getWidth() {
