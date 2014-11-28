@@ -16,8 +16,8 @@
 			<a href="#" onclick="collapseTree('tree1'); return false;">Collapse All</a>		
 			<ul class="mktree" id="tree1">$menutree</ul>
 		</div>
-		<div id="content">
-			<iframe #if($index) src="$index" #else src="" #end name="content" ></iframe>
+		<div id="content" style="margin:0px; padding:0px; overflow:hidden; height:100%;">
+			<iframe #if($index) src="$index" #else src="" #end name="content" style="overflow:hidden; overflow-x:hidden; overflow-y:hidden; height:100%; width:100%; position:absolute; top:0px; left:0px; right:0px; bottom:0px" height="100%" width="100%"></iframe>
 		</div>	
 	</div></div>
 </body>
