@@ -410,9 +410,7 @@ public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm
 				success = item.archiveScoData();
 			}
 		} catch (Exception e) {
-			if(isLogDebugEnabled()) {
-				logWarn("Error at OLATApiAdapter.archiveScoData(): " + e.getMessage(), e);
-			}
+			logError("Error at OLATApiAdapter.archiveScoData(): ", e);
 		}
 		return success;
 	}

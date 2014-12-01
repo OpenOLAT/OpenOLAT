@@ -7,7 +7,7 @@
 		$r.escapeHtml($!feed.getTitle())
 	</h2>
 	#if ($helper.getImageUrl() && $helper.getImageUrl() != "")
-		<img class="o_media" src="$helper.getImageUrl()" alt="Blog Image" />
+		<img class="o_media" src="$helper.getImageUrl()?thumbnail=180x121" alt="Blog Image" />
 	#end
 	<div class="o_block">
 		#if ($!feed.getAuthor())

@@ -34,10 +34,12 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.image.ImageService;
+import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
@@ -1039,12 +1041,16 @@ public class FeedManagerImpl extends FeedManager {
 	 *      java.lang.String, java.lang.String)
 	 */
 	@Override
-	public VFSLeaf createFeedMediaFile(OLATResourceable feed, String fileName) {
+	public VFSLeaf createFeedMediaFile(OLATResourceable feed, String fileName, Size thumbnailSize) {
 		VFSLeaf mediaResource = null;
 		// Brute force method for fast delivery
 		try {
 			VFSItem item = getFeedMediaContainer(feed);
 			item = item.resolve(fileName);
+			if(thumbnailSize != null && thumbnailSize.getHeight() > 0 && thumbnailSize.getWidth() > 0
+					&& item instanceof MetaTagged) {
+				item = ((MetaTagged)item).getMetaInfo().getThumbnail(thumbnailSize.getWidth(), thumbnailSize.getHeight(), false);
+			}
 			if(item instanceof VFSLeaf) {
 				mediaResource = (VFSLeaf)item;
 			}

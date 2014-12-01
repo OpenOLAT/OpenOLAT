@@ -17,7 +17,7 @@
 				<small>$row.getExternalRef()</small>
 			#end
 		</h4>
-		#if($row.authors)
+		#if($row.authors && !$row.authors.empty)
 			<div class="o_author"><span class="text-muted">$r.translate("course.made.by")</span> $row.authors</div>
 		#end
 		#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleStart || $row.lifecycleEnd)

@@ -26,6 +26,8 @@
 package org.olat.search.model;
 
 import org.apache.lucene.document.Document;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.filter.FilterFactory;
 
 /**
  * Lucene document mapper.
@@ -79,12 +81,15 @@ public class ResultDocument extends AbstractOlatDocument {
 	/**
 	 * @return Returns the description.
 	 */
+	@Override
 	public String getDescription() {
 		if (description == null) {
 			return ""; // Do not return null
 		}
 		if (description.length() > MAX_DESCRIPTION_LENGTH) {
-		  return description.substring(0,MAX_DESCRIPTION_LENGTH) + "...";
+			String truncatedDesc = FilterFactory.getHtmlTagAndDescapingFilter().filter(description);
+			truncatedDesc = Formatter.truncate(truncatedDesc, MAX_DESCRIPTION_LENGTH);
+			return truncatedDesc + "...";
 		} else {
 			return description;
 		}

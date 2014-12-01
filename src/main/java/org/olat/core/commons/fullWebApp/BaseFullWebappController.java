@@ -1220,10 +1220,13 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	 * @return
 	 */
 	public boolean isCanCloseDTab() {
-		//can close
-		synchronized (dtabs) {
-			return (sites != null && !sites.isEmpty()) || (dtabs != null && dtabs.size() > 1);
+		boolean canClose = (sites != null && sites.size() > 0);
+		if(!canClose && dtabs != null) {
+			synchronized (dtabs) {
+				canClose = (dtabs != null && dtabs.size() > 1);
+			}
 		}
+		return canClose;
 	}
 	
 	private void setCurrent(SiteInstance site, DTab tab) {

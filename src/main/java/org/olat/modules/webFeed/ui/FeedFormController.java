@@ -36,13 +36,11 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
-import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.Quota;
@@ -71,10 +69,8 @@ class FeedFormController extends FormBasicController {
 	private FileElement file;
 	private RichTextElement description;
 	private FormLink cancelButton;
-	private FormLink deleteImageLink;
+	private FormLink deleteImage;
 	private boolean imageDeleted = false;
-	private ImageComponent image;
-	private FormLayoutContainer imageContainer;
 
 	/**
 	 * if form edits an external feed:
@@ -117,30 +113,40 @@ class FeedFormController extends FormBasicController {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.form.flexible.FormItem,
-	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
-	 */
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == cancelButton && event.wasTriggerdBy(FormEvent.ONCLICK)) {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
 		} else if (source == file && event.wasTriggerdBy(FormEvent.ONCHANGE)) {
 			// display the uploaded file
 			if (file.isUploadSuccess()) {
-				File newFile = file.getUploadFile();
 				String newFilename = file.getUploadFileName();
 				boolean isValidFileType = newFilename.toLowerCase().matches(".*[.](png|jpg|jpeg|gif)");
 				if (!isValidFileType) {
 					file.setErrorKey("feed.form.file.type.error.images", null);
-					unsetImage();
 				} else {
 					file.clearError();
-					setImage(new LocalFileImpl(newFile));
-				}	
+				}
+				deleteImage.setVisible(true);	
 			}
-		} else if (source == deleteImageLink && event.wasTriggerdBy(FormEvent.ONCLICK)) {
-			unsetImage();
+		} else if(source == deleteImage) {
+			VFSLeaf img = FeedManager.getInstance().createFeedMediaFile(feed, feed.getImageName(), null);
+			if(file.getUploadFile() != null && file.getUploadFile() != file.getInitialFile()) {
+				file.reset();
+				if(img == null) {
+					deleteImage.setVisible(false);
+					imageDeleted = true;
+				} else {
+					deleteImage.setVisible(true);
+					imageDeleted = false;
+				}
+			} else if(img != null) {
+				imageDeleted = true;
+				deleteImage.setVisible(false);
+				file.setInitialFile(null);
+			}
+
+			flc.setDirty(true);
 		}
 	}
 
@@ -159,7 +165,6 @@ class FeedFormController extends FormBasicController {
 			File newFile = file.getUploadFile();
 			Long remainingQuotaKb = feedQuota.getRemainingSpace();
 			if (remainingQuotaKb != -1 && newFile.length() / 1024 > remainingQuotaKb) {
-				unsetImage();
 				String supportAddr = WebappHelper.getMailConfig("mailQuota");
 				Long uploadLimitKB = feedQuota.getUlLimitKB();
 				getWindowControl().setError(translate("ULLimitExceeded", new String[] { Formatter.roundToString(uploadLimitKB.floatValue() / 1024f, 1), supportAddr }));				
@@ -211,38 +216,6 @@ class FeedFormController extends FormBasicController {
 	}
 
 	/**
-	 * Sets the image
-	 * 
-	 * @param newResource
-	 */
-	private void setImage(VFSLeaf newResource) {
-		if(newResource == null) {
-			unsetImage();
-			return;
-		}
-		
-		image.setMedia(newResource);
-		image.setMaxWithAndHeightToFitWithin(150, 150);
-		imageContainer.setVisible(true);
-		// This is needed. ImageContainer is not displayed otherwise.
-		getInitialComponent().setDirty(true);
-		imageDeleted = false;
-		file.setLabel(null, null);
-	}
-
-	/**
-	 * Unsets the image
-	 */
-	private void unsetImage() {
-		imageContainer.setVisible(false);
-		file.reset();
-		file.getComponent().setDirty(true);
-		image.setMedia((File)null);
-		imageDeleted = true;
-		file.setLabel("feed.file.label", null);
-	}
-
-	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
 	 */
@@ -250,7 +223,7 @@ class FeedFormController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// title might be longer from external source
 		String saveTitle = PersistenceHelper.truncateStringDbSave(feed.getTitle(), 256, true);
-		title = uifactory.addTextElement("title", "feed.title.label", 256, saveTitle, this.flc);
+		title = uifactory.addTextElement("title", "feed.title.label", 256, saveTitle, formLayout);
 		title.setMandatory(true);
 		title.setNotEmptyCheck("feed.form.field.is_mandatory");
 
@@ -263,24 +236,20 @@ class FeedFormController extends FormBasicController {
 		// set upload dir to the media dir
 		richTextConfig.setFileBrowserUploadRelPath("media");
 
-		String VELOCITY_ROOT = Util.getPackageVelocityRoot(this.getClass());
-		imageContainer = FormLayoutContainer.createCustomFormLayout("imageContainer", getTranslator(), VELOCITY_ROOT + "/image_container.html");
-		imageContainer.setLabel("feed.file.label", null);
-		flc.add(imageContainer);
 		// Add a delete link and an image component to the image container.
-		deleteImageLink = uifactory.addFormLink("feed.image.delete", imageContainer);
-		image = new ImageComponent(ureq.getUserSession(), "icon");
-		imageContainer.put("image", image);
+		deleteImage= uifactory.addFormLink("feed.image.delete", formLayout, Link.BUTTON);
+		deleteImage.setVisible(false);
 
-		file = uifactory.addFileElement("feed.file.label", this.flc);
+		file = uifactory.addFileElement("feed.file.label", formLayout);
 		file.addActionListener(FormEvent.ONCHANGE);
-
+		file.setPreview(ureq.getUserSession(), true);
 		if (feed.getImageName() != null) {
-			VFSLeaf imageResource = FeedManager.getInstance().createFeedMediaFile(feed, feed.getImageName());
-			setImage(imageResource);
-		} else {
-			// No image -> hide the image container
-			imageContainer.setVisible(false);
+			VFSLeaf imageResource = FeedManager.getInstance().createFeedMediaFile(feed, feed.getImageName(), null);
+			if(imageResource instanceof LocalFileImpl) {
+				file.setPreview(ureq.getUserSession(), true);
+				file.setInitialFile(((LocalFileImpl)imageResource).getBasefile());
+				deleteImage.setVisible(true);
+			}
 		}
 
 		Set<String> mimeTypes = new HashSet<String>();
@@ -309,7 +278,7 @@ class FeedFormController extends FormBasicController {
 		
 		// Submit and cancelButton buttons
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
-		this.flc.add(buttonLayout);
+		formLayout.add(buttonLayout);
 
 		uifactory.addFormSubmitButton("submit", buttonLayout);
 		cancelButton = uifactory.addFormLink("cancel", buttonLayout, Link.BUTTON);

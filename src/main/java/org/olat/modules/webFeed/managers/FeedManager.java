@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
@@ -193,7 +194,7 @@ public abstract class FeedManager extends BasicManager {
 	 * @param fileName
 	 * @return The media file of the feed
 	 */
-	public abstract VFSLeaf createFeedMediaFile(OLATResourceable feed, String fileName);
+	public abstract VFSLeaf createFeedMediaFile(OLATResourceable feed, String fileName, Size thumbnailSize);
 
 	/**
 	 * Returns the base URI of the feed including user identity key and token if

@@ -126,7 +126,7 @@ create or replace view o_ep_notifications_rating_v as (
    from o_userrating as urating
    inner join o_olatresource as rating_resource on (rating_resource.resid = urating.resid and rating_resource.resname = urating.resname)
    inner join o_ep_struct_el as map on (map.fk_olatresource = rating_resource.resource_id)
-   left join o_ep_struct_el as page on (page.fk_struct_root_map_id = map.structure_id and page.structure_id = cast(urating.ressubpath as integer))
+   left join o_ep_struct_el as page on (page.fk_struct_root_map_id = map.structure_id and page.structure_id = cast(urating.ressubpath as int8))
 );
 
 create or replace view o_ep_notifications_comment_v as (
@@ -141,6 +141,6 @@ create or replace view o_ep_notifications_comment_v as (
    from o_usercomment as ucomment
    inner join o_olatresource as comment_resource on (comment_resource.resid = ucomment.resid and comment_resource.resname = ucomment.resname)
    inner join o_ep_struct_el as map on (map.fk_olatresource = comment_resource.resource_id)
-   left join o_ep_struct_el as page on (page.fk_struct_root_map_id = map.structure_id and page.structure_id = cast(ucomment.ressubpath as integer))
+   left join o_ep_struct_el as page on (page.fk_struct_root_map_id = map.structure_id and page.structure_id = cast(ucomment.ressubpath as int8))
 );
 
