@@ -37,7 +37,6 @@ import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CorruptedCourseException;
@@ -128,23 +127,26 @@ public class CourseNodeFactory {
 	 * @param ureq
 	 * @param node
 	 */
-	public void launchReferencedRepoEntryEditor(UserRequest ureq, WindowControl wControl, CourseNode node) {
+	public boolean launchReferencedRepoEntryEditor(UserRequest ureq, WindowControl wControl, CourseNode node) {
 		RepositoryEntry repositoryEntry = node.getReferencedRepositoryEntry();
 		if (repositoryEntry == null) {
 			// do nothing
-			return;
+			return false;
 		}
 		
 		RepositoryHandler typeToEdit = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
 		if (typeToEdit.supportsEdit(repositoryEntry.getOlatResource()) == EditionSupport.no){
-			throw new AssertException("Trying to edit repository entry which has no assoiciated editor: "+ typeToEdit);
+			log.error("Trying to edit repository entry which has no associated editor: "+ typeToEdit);
+			return false;
 		}
 		
 		try {
 			String businessPath = "[RepositoryEntry:" + repositoryEntry.getKey() + "][Editor:0]";
 			NewControllerFactory.getInstance().launch(businessPath, ureq, wControl);
+			return true;
 		} catch (CorruptedCourseException e) {
 			log.error("Course corrupted: " + repositoryEntry.getKey() + " (" + repositoryEntry.getOlatResource().getResourceableId() + ")", e);
+			return false;
 		}
 	}
 	
