@@ -141,7 +141,8 @@ public class OlatTopNavController extends BasicController {
 				if(shortCutOnly || selectedToolSet.contains(toolExtension.getUniqueExtensionID())) {
 					Component cmp = tool.getMenuComponent(ureq, topNavVC);
 					String cssId = toolExtension.getShortCutCssId();
-					toolSetLinksName.add(new Tool(cssId, cmp.getComponentName()));
+					String cssClass = toolExtension.getShortCutCssClass();
+					toolSetLinksName.add(new Tool(cssId, cssClass, cmp.getComponentName()));
 					disposableTools.add(tool);
 				}
 			}
@@ -156,18 +157,24 @@ public class OlatTopNavController extends BasicController {
 		}
 	}
 	
-	public class Tool {
+	public static class Tool {
 		
 		private final String shortCutCssId;
+		private final String shortCutCssClass;
 		private final String shortCutComponentName;
 		
-		public Tool(String shortCutCssId, String shortCutComponentName) {
+		public Tool(String shortCutCssId, String shortCutCssClass, String shortCutComponentName) {
 			this.shortCutCssId = shortCutCssId;
+			this.shortCutCssClass = shortCutCssClass;
 			this.shortCutComponentName = shortCutComponentName;
 		}
 
 		public String getShortCutCssId() {
 			return shortCutCssId;
+		}
+
+		public String getShortCutCssClass() {
+			return shortCutCssClass;
 		}
 
 		public String getShortCutComponentName() {
