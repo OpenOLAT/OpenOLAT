@@ -272,7 +272,7 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 						if (i % 25 == 0 ) {
 							String displayName = "DisplayName" + i;
 							String description = "Description" + i;
-							re = repositoryManager.setDescriptionAndName(re, displayName, null, description, null, null, null, null);
+							re = repositoryManager.setDescriptionAndName(re, displayName, description, null, null, null, null, null);
 							assertEquals("Wrong displayName value", displayName, re.getDisplayname());
 							assertEquals("Wrong description value", description, re.getDescription());
 						}
