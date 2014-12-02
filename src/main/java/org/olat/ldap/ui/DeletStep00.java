@@ -126,7 +126,7 @@ public class DeletStep00 extends BasicStep{
 			}
 
 			tableModel = new IdentityFlexiTableModel(identitiesToDelete, tableColumnModel, handlers, getLocale());
-			tableEl = uifactory.addTableElement(getWindowControl(), "newUsers", tableModel, formLayout);
+			tableEl = uifactory.addTableElement(getWindowControl(), "newUsers", tableModel, getTranslator(), formLayout);
 			tableEl.setMultiSelect(true);
 			tableEl.setPageSize(10000);
 			tableEl.setSelectAllEnable(true);

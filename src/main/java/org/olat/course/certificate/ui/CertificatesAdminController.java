@@ -79,7 +79,7 @@ public class CertificatesAdminController extends FormBasicController {
 		tableColumnModel.addFlexiColumnModel(new StaticFlexiColumnModel("delete", translate("delete"), "delete"));
 		
 		tableModel = new TemplatesDataModel(tableColumnModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "templates", tableModel, formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "templates", tableModel, getTranslator(), formLayout);
 
 		uploadLink = uifactory.addFormLink("upload", formLayout, Link.BUTTON);
 		updateDataModel();

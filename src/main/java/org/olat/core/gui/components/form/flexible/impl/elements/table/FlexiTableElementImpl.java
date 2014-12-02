@@ -133,10 +133,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	private Map<String,FormItem> components = new HashMap<String,FormItem>();
 	
-	public FlexiTableElementImpl(WindowControl wControl, String name, FlexiTableDataModel<?> tableModel) {
-		this(wControl, name, null, tableModel, -1, true);
-	}
-	
 	public FlexiTableElementImpl(WindowControl wControl, String name, Translator translator, FlexiTableDataModel<?> tableModel) {
 		this(wControl, name, translator, tableModel, -1, true);
 	}

@@ -835,19 +835,13 @@ public class FormUIFactory {
 
 	/**
 	 * 
-	 * @see FlexiTableDataModel and its implementations
+	 * @param wControl
 	 * @param name
 	 * @param tableModel
+	 * @param translator
 	 * @param formLayout
 	 * @return
 	 */
-	public FlexiTableElement addTableElement(WindowControl wControl, String name, FlexiTableDataModel<?> tableModel,
-			FormItemContainer formLayout) {
-		FlexiTableElementImpl fte = new FlexiTableElementImpl(wControl, name,tableModel);
-		formLayout.add(fte);
-		return fte;
-	}
-	
 	public FlexiTableElement addTableElement(WindowControl wControl, String name, FlexiTableDataModel<?> tableModel,
 			Translator translator, FormItemContainer formLayout) {
 		FlexiTableElementImpl fte = new FlexiTableElementImpl(wControl, name, translator, tableModel);

@@ -172,7 +172,7 @@ class ImportStep01 extends BasicStep {
 			}
 
 			FlexiTableDataModel<Identity> tableDataModel = new FlexiTableDataModelImpl<Identity>(new Model(idents, colPos), tableColumnModel);
-			uifactory.addTableElement(getWindowControl(), "newUsers", tableDataModel, formLayoutVertical);
+			uifactory.addTableElement(getWindowControl(), "newUsers", tableDataModel, getTranslator(), formLayoutVertical);
 		}
 	}
 }

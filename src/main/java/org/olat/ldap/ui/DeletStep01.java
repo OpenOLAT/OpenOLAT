@@ -146,7 +146,7 @@ public class DeletStep01 extends BasicStep {
 			}
 
 			FlexiTableDataModel<Identity> tableDataModel = new IdentityFlexiTableModel(identitiesToDelete, tableColumnModel, handlers, getLocale());
-			uifactory.addTableElement(getWindowControl(), "newUsers", tableDataModel, formLayout);
+			uifactory.addTableElement(getWindowControl(), "newUsers", tableDataModel, getTranslator(), formLayout);
 		}
 	}
 }

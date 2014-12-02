@@ -270,7 +270,7 @@ class UserBulkChangeStep02 extends BasicStep {
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.status", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, textRenderer));
 
 			FlexiTableDataModel<List<String>> tableDataModel = new FlexiTableDataModelImpl<List<String>>(new OverviewModel(mergedDataChanges, colPos), tableColumnModel);
-			uifactory.addTableElement(getWindowControl(), "newUsers", tableDataModel, formLayoutVertical);
+			uifactory.addTableElement(getWindowControl(), "newUsers", tableDataModel, getTranslator(), formLayoutVertical);
 
 			Set<Long> allGroups = new HashSet<Long>(); 
 			@SuppressWarnings("unchecked")
@@ -295,7 +295,7 @@ class UserBulkChangeStep02 extends BasicStep {
 				TableDataModel<BusinessGroup> model = new GroupAddOverviewModel(groups, ownGroups, partGroups, mailGroups, getTranslator()); 
 				FlexiTableDataModel<BusinessGroup> groupDataModel = new FlexiTableDataModelImpl<BusinessGroup>(model, groupColumnModel);
 				
-				uifactory.addTableElement(getWindowControl(), "groupOverview", groupDataModel, formLayout);
+				uifactory.addTableElement(getWindowControl(), "groupOverview", groupDataModel, getTranslator(), formLayout);
 			}
 		}
 

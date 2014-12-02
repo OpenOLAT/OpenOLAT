@@ -71,7 +71,7 @@ public class OverviewQuestionController extends StepFormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.points.i18n(), Cols.points.ordinal()));
 		
 		ItemsTableDataModel model = new ItemsTableDataModel(importedItems.getItems(), columnsModel);
-		uifactory.addTableElement(getWindowControl(), "overviewTable", model, formLayout);
+		uifactory.addTableElement(getWindowControl(), "overviewTable", model, getTranslator(), formLayout);
 	}
 
 	@Override

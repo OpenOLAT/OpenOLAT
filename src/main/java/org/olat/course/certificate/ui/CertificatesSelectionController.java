@@ -138,7 +138,7 @@ public class CertificatesSelectionController extends StepFormBasicController {
 		}
 		tableModel.setObjects(infos);
 
-		tableEl = uifactory.addTableElement(getWindowControl(), "selection", tableModel, formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "selection", tableModel, getTranslator(), formLayout);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setMultiSelectedIndex(preselectedRows);

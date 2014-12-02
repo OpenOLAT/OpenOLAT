@@ -85,7 +85,7 @@ public class SelectCourseNodeStepForm extends StepFormBasicController {
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.action.select"), "select"), null)));
 		tableModel.setTableColumnModel(tableColumnModel);
 		
-		tableEl = uifactory.addTableElement(getWindowControl(), "nodeList", tableModel, formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "nodeList", tableModel, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
 	}
 	
