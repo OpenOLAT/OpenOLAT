@@ -19,11 +19,21 @@
  */
 package org.olat.course.nodes.co;
 
+// depricated configvalues for configversion 2
 import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_EMAILTOADRESSES;
 import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_EMAILTOAREAS;
 import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_EMAILTOCOACHES;
+// values for configversion 3
+import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_EMAILTOCOACHES_ALL;
+import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA;
+import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_EMAILTOCOACHES_COURSE;
+import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP;
 import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_EMAILTOGROUPS;
 import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS;
+import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_ALL;
+import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA;
+import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE;
+import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP;
 import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_MBODY_DEFAULT;
 import static org.olat.course.nodes.co.COEditController.CONFIG_KEY_MSUBJECT_DEFAULT;
 
@@ -62,6 +72,7 @@ import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
  * <P>
  * Initial Date:  10 mai 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
+ * @author Dirk Furrer
  */
 @Path("repo/courses/{courseId}/elements/contact")
 public class COWebService extends AbstractCourseNodeWebService {
@@ -145,26 +156,61 @@ public class COWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachContactPost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
-			@FormParam("position") Integer position, @FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
-			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
-			@FormParam("coaches") @DefaultValue("false") boolean coaches, @FormParam("participants") @DefaultValue("false") boolean participants,
-			@FormParam("groups") String groups, @FormParam("areas") String areas, @FormParam("to") String to,
-			@FormParam("defaultSubject") String defaultSubject, @FormParam("defaultBody") String defaultBody,
+			@FormParam("position") Integer position, 
+			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, 
+			@FormParam("objectives") @DefaultValue("undefined") String objectives,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules,
+			@FormParam("accessExpertRules") String accessExpertRules,
+			@FormParam("coachesAll") @DefaultValue("false") boolean coachesAll,
+			@FormParam("courseCoaches") @DefaultValue("false") boolean coachesCourse,
+			@FormParam("coachesGroup") String coachesGroups,
+			@FormParam("coachesArea") String coachesAreas,
+			@FormParam("participantsAll") @DefaultValue("false") boolean participantsAll,
+			@FormParam("courseParticipants") @DefaultValue("false") boolean participantsCourse,
+			@FormParam("participantsGroup") String participantsGroups,
+			@FormParam("participantsArea") String participantsAreas,
+			@FormParam("to") String to,
+			@FormParam("defaultSubject") String defaultSubject, 
+			@FormParam("defaultBody") String defaultBody,
 			@Context HttpServletRequest request) {
-		ContactConfigDelegate config = new ContactConfigDelegate(coaches, participants, groups, areas, to, defaultSubject, defaultBody);
+		ContactConfigDelegate config = new ContactConfigDelegate(coachesAll,coachesCourse, coachesGroups, coachesAreas, participantsAll, participantsCourse, participantsGroups, participantsAreas,to, defaultSubject, defaultBody);
 		return attach(courseId, parentNodeId, "co", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	private class ContactConfigDelegate implements CustomConfigDelegate {
+		/**
+		 * Depricated Configvalues
+		 */
 		private Boolean coaches;
 		private Boolean participants;
 		private List<String> groups;
 		private List<String> areas;
+		
+		
+		private Boolean coachesAll;
+		private Boolean coachesCourse;
+		private List<String> coachesGroups; 
+		private List<String> coachesAreas; 
+		private Boolean participantsAll; 
+		private Boolean participantsCourse;
+		private List<String> participantsGroups;
+		private List<String> participantsAreas;
+		
 		private List<String> tos;
 		private String defaultSubject;
 		private String defaultBody;
 		
+		/**
+		 * DepricatedConfig constructor
+		 * @param coaches
+		 * @param participants
+		 * @param groups
+		 * @param areas
+		 * @param to
+		 * @param defaultSubject
+		 * @param defaultBody
+		 */
 		public ContactConfigDelegate(Boolean coaches, Boolean participants, String groups, String areas, String to, String defaultSubject, String defaultBody) {
 			this.coaches = coaches;
 			this.participants = participants;
@@ -175,14 +221,44 @@ public class COWebService extends AbstractCourseNodeWebService {
 			this.defaultBody = defaultBody;
 		}
 		
+		public ContactConfigDelegate(Boolean coachesAll, Boolean coachesCourse, String coachesGroups, String coachesAreas, Boolean participantsAll, Boolean participantsCourse, String participantsGroups, String participantsAreas, String to, String defaultSubject, String defaultBody){
+			this.coachesAll = coachesAll;
+			this.coachesCourse = coachesCourse;
+			this.coachesGroups = getGroupNames(coachesGroups);
+			this.coachesAreas = getGroupNames(coachesAreas);
+			this.participantsAll = participantsAll;
+			this.participantsCourse = participantsCourse;
+			this.participantsGroups = getGroupNames(participantsGroups);
+			this.participantsAreas =  getGroupNames(participantsAreas);
+			this.tos = getEmails(to);
+			this.defaultSubject = defaultSubject;
+			this.defaultBody = defaultBody;
+		}
+		
 		@Override
 		public boolean isValid() {
 			boolean ok = false;
-			ok = ok || coaches;
-			ok = ok || participants;
-			ok = ok || (areas != null && !areas.isEmpty());
-			ok = ok || (groups != null && !groups.isEmpty());
-			ok = ok || (tos != null && !tos.isEmpty());
+			/**
+			 * if depricatedconfig is used
+			 */
+			if(participants != null){
+				ok = ok || coaches;
+				ok = ok || participants;
+				ok = ok || (areas != null && !areas.isEmpty());
+				ok = ok || (groups != null && !groups.isEmpty());
+				ok = ok || (tos != null && !tos.isEmpty());
+			}else{
+				ok = ok || coachesAll;
+				ok = ok || coachesCourse;
+				ok = ok || participantsAll;
+				ok = ok || participantsCourse;
+				ok = ok || (participantsGroups != null && !participantsGroups.isEmpty());
+				ok = ok || (participantsAreas != null && !participantsAreas.isEmpty());
+				ok = ok || (coachesGroups != null && !coachesGroups.isEmpty());
+				ok = ok || (coachesAreas != null && !coachesAreas.isEmpty());
+				ok = ok || (tos != null && !tos.isEmpty());
+			}
+
 			
 			/*
 			 * check validity of manually provided e-mails
@@ -197,14 +273,29 @@ public class COWebService extends AbstractCourseNodeWebService {
 
 		@Override
 		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
-			moduleConfig.set(CONFIG_KEY_EMAILTOGROUPS, getGroupNamesToString(groups));
-			moduleConfig.set(CONFIG_KEY_EMAILTOAREAS, getGroupNamesToString(areas));
-			moduleConfig.setBooleanEntry(CONFIG_KEY_EMAILTOCOACHES, coaches == null ? false : coaches.booleanValue());
-			moduleConfig.setBooleanEntry(CONFIG_KEY_EMAILTOPARTICIPANTS, participants == null ? false : participants.booleanValue());
+			/**
+			 * if depricatedconfig is used
+			 */
+			if(participants != null){
+				moduleConfig.set(CONFIG_KEY_EMAILTOGROUPS, getGroupNamesToString(groups));
+				moduleConfig.set(CONFIG_KEY_EMAILTOAREAS, getGroupNamesToString(areas));
+				moduleConfig.setBooleanEntry(CONFIG_KEY_EMAILTOCOACHES, coaches == null ? false : coaches.booleanValue());
+				moduleConfig.setBooleanEntry(CONFIG_KEY_EMAILTOPARTICIPANTS, participants == null ? false : participants.booleanValue());
+			}else{
+				moduleConfig.setBooleanEntry(CONFIG_KEY_EMAILTOCOACHES_ALL, coachesAll.booleanValue());
+				moduleConfig.setBooleanEntry(CONFIG_KEY_EMAILTOCOACHES_COURSE, coachesCourse.booleanValue());
+				moduleConfig.set(CONFIG_KEY_EMAILTOCOACHES_GROUP, getGroupNamesToString(coachesGroups));
+				moduleConfig.set(CONFIG_KEY_EMAILTOCOACHES_AREA, getGroupNamesToString(coachesAreas));
+				moduleConfig.set(CONFIG_KEY_EMAILTOPARTICIPANTS_ALL, participantsAll.booleanValue());
+				moduleConfig.set(CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE, participantsCourse.booleanValue());
+				moduleConfig.set(CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP, getGroupNamesToString(participantsGroups));
+				moduleConfig.set(CONFIG_KEY_EMAILTOPARTICIPANTS_AREA, getGroupNamesToString(participantsAreas));
+			}
 			moduleConfig.set(CONFIG_KEY_EMAILTOADRESSES, tos);
 			moduleConfig.set(CONFIG_KEY_MSUBJECT_DEFAULT, defaultSubject);
 			moduleConfig.set(CONFIG_KEY_MBODY_DEFAULT, defaultBody);
 		}
+		
 		
 		private List<String> getEmails(String to) {
 			List<String> eList = new ArrayList<String>();

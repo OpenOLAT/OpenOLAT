@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import org.olat.core.CoreSpringFactory;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -48,24 +48,33 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGAreaManager;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.co.ContactFormController;
+import org.olat.repository.RepositoryService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<BR/> Run controller for the contact form building block <P/>
  * 
  * Initial Date: Oct 13, 2004
  * @author gnaegi
+ * @author Dirk Furrer
  */
 public class CORunController extends BasicController {
 
+	@Autowired
 	private ContactFormController coFoCtr;
-	private final CourseGroupManager cgm;
-	
-	private final BGAreaManager areaManager;
-	private final BusinessGroupService businessGroupService;
+	@Autowired
+	private CourseGroupManager cgm;
+	@Autowired
+	private  BGAreaManager areaManager;
+	@Autowired
+	private  BusinessGroupService businessGroupService;	
+	@Autowired
+	private RepositoryService repositoryService;
 
 	/**
 	 * Constructor for the contact form run controller
@@ -78,9 +87,7 @@ public class CORunController extends BasicController {
 	public CORunController(ModuleConfiguration moduleConfiguration, UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
-		cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		
 		//set translator with fall back translator.
 		Translator fallback = Util.createPackageTranslator(ContactFormController.class, ureq.getLocale());
 		setTranslator(Util.createPackageTranslator(CORunController.class, ureq.getLocale(), fallback));
@@ -92,37 +99,104 @@ public class CORunController extends BasicController {
 
 		// Adding learning objectives using a consumable panel. Will only be
 		// displayed on the first page
-		Boolean partipsConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS);
-		Boolean coachesConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES);
-
+		Boolean partipsCourseConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE);
+		Boolean partipsAllConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_ALL);
+		Boolean coachesAllConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_ALL);
+		Boolean ownersConfigured = moduleConfiguration.getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOOWNERS);
 		Stack<ContactList> contactLists = new Stack<ContactList>();
 
-		String grpNames = (String)moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOGROUPS);
+		
+		String participantGroupNames = (String)moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP);
 		@SuppressWarnings("unchecked")
-		List<Long> groupKeys = (List<Long>) moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS);
-		if(groupKeys == null && StringHelper.containsNonWhitespace(grpNames)) {
-			groupKeys = businessGroupService.toGroupKeys(grpNames, cgm.getCourseEntry());
+		List<Long> participantGroupKeys = (List<Long>) moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID);
+		if(participantGroupKeys == null && StringHelper.containsNonWhitespace(participantGroupNames)) {
+			participantGroupKeys = businessGroupService.toGroupKeys(participantGroupNames, cgm.getCourseEntry());
 		}
-		if (coachesConfigured != null && coachesConfigured.booleanValue()) {
-			ContactList cl = retrieveCoachesFromGroups(groupKeys);
+		
+		String participantAreaNames = (String)moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA);
+		@SuppressWarnings("unchecked")
+		List<Long> participantAreaKeys = (List<Long>) moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID);
+		if(participantAreaKeys == null && StringHelper.containsNonWhitespace(participantAreaNames)) {
+			participantAreaKeys = businessGroupService.toGroupKeys(participantAreaNames, cgm.getCourseEntry());
+		}
+		
+		String coachGroupNames = (String)moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP);
+		@SuppressWarnings("unchecked")
+		List<Long> coachGroupKeys = (List<Long>) moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP_ID);
+		if(coachGroupKeys == null && StringHelper.containsNonWhitespace(coachGroupNames)) {
+			coachGroupKeys = businessGroupService.toGroupKeys(coachGroupNames, cgm.getCourseEntry());
+		}
+		
+		String coachAreaNames = (String)moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA);
+		@SuppressWarnings("unchecked")
+		List<Long> coachAreaKeys = (List<Long>) moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS);
+		if(coachAreaKeys == null && StringHelper.containsNonWhitespace(coachAreaNames)) {
+			coachAreaKeys = businessGroupService.toGroupKeys(coachAreaNames, cgm.getCourseEntry());
+		}
+		
+		
+		if(coachAreaNames != null){
+			ContactList cl = retrieveCoachesFromAreas(coachAreaKeys);
 			contactLists.push(cl);
 		}
-		if (partipsConfigured != null && partipsConfigured.booleanValue()) {
-			ContactList cl = retrieveParticipantsFromGroups(groupKeys);
+		if(coachGroupNames != null){
+			ContactList cl = retrieveCoachesFromGroups(coachGroupKeys);
 			contactLists.push(cl);
-		} 
+		}
+		if(participantGroupNames != null){
+			ContactList cl = retrieveCoachesFromAreas(participantGroupKeys);
+			contactLists.push(cl);
+		}
+		if(participantAreaNames != null){
+			ContactList cl = retrieveCoachesFromAreas(participantAreaKeys);
+			contactLists.push(cl);
+		}
+		if (coachesAllConfigured != null && coachesAllConfigured.booleanValue()) {
+			ContactList cl = retrieveCoachesFromCourse();
+			contactLists.push(cl);
+			List<BusinessGroup> groups = cgm.getAllBusinessGroups();
+			List<Long> grp_keys = new ArrayList<Long>();
+			for(BusinessGroup group:groups){
+				grp_keys.add(group.getKey());
+			}
+			cl = retrieveCoachesFromGroups(grp_keys);
+			contactLists.push(cl);
+			cl = retrieveCoachesFromAreas(grp_keys);
+			contactLists.push(cl);
+		}
+		if (partipsAllConfigured != null && partipsAllConfigured.booleanValue()) {
+			ContactList cl = retrieveParticipantsFromCourse();
+			contactLists.push(cl);
+			List<BusinessGroup> groups = cgm.getAllBusinessGroups();
+			List<Long> grp_keys = new ArrayList<Long>();
+			for(BusinessGroup group:groups){
+				grp_keys.add(group.getKey());
+			}
+			cl = retrieveParticipantsFromGroups(grp_keys);
+			contactLists.push(cl);
+			cl = retrieveParticipantsFromAreas(grp_keys);
+			contactLists.push(cl);
+		}
+		if (partipsCourseConfigured != null && partipsCourseConfigured.booleanValue()){
+			ContactList cl = retrieveParticipantsFromCourse();
+			contactLists.push(cl);
+		}
+		if (ownersConfigured != null && ownersConfigured){
+			ContactList cl = retrieveOwnersFromCourse();
+			contactLists.push(cl);
+		}
 
-		String areaNames = (String) moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOAREAS);
+		String areaNames = (String) moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA);
 		@SuppressWarnings("unchecked")
-		List<Long> areaKeys = (List<Long>) moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOAREA_IDS);
+		List<Long> areaKeys = (List<Long>) moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS);
 		if(areaKeys == null && StringHelper.containsNonWhitespace(areaNames)) {
 			areaKeys = areaManager.toAreaKeys(areaNames, cgm.getCourseResource());
 		}
-		if (coachesConfigured != null && coachesConfigured.booleanValue()) {
+		if (coachesAllConfigured != null && coachesAllConfigured.booleanValue()) {
 			ContactList cl = retrieveCoachesFromAreas(areaKeys);
 			contactLists.push(cl);
 		}
-		if (partipsConfigured != null && partipsConfigured.booleanValue()) {
+		if (partipsAllConfigured != null && partipsAllConfigured.booleanValue()) {
 			ContactList cl = retrieveParticipantsFromAreas(areaKeys);
 			contactLists.push(cl);
 		}
@@ -158,10 +232,9 @@ public class CORunController extends BasicController {
 		}
 	}
 	
+	
 	private ContactList retrieveCoachesFromGroups(List<Long> groupKeys) {
-		List<Identity> coaches = cgm.getCoachesFromBusinessGroups(groupKeys);
-		Set<Identity> coachesWithoutDuplicates = new HashSet<Identity>(coaches);
-		coaches = new ArrayList<Identity>(coachesWithoutDuplicates);
+		List<Identity> coaches = new ArrayList<Identity>(new HashSet<Identity>(cgm.getCoachesFromBusinessGroups(groupKeys)));
 		ContactList cl = new ContactList(translate("form.message.chckbx.coaches"));
 		cl.addAllIdentites(coaches);
 		return cl;
@@ -175,9 +248,23 @@ public class CORunController extends BasicController {
 		cl.addAllIdentites(coaches);
 		return cl;
 	}
+	
+	private ContactList retrieveCoachesFromCourse() {
+		List<Identity> coaches = cgm.getCoaches();
+		ContactList cl = new ContactList(translate("form.message.chckbx.partips"));
+		cl.addAllIdentites(coaches);
+		return cl;
+	}
 
 	private ContactList retrieveParticipantsFromGroups(List<Long> groupKeys) {
 		List<Identity> participiants = cgm.getParticipantsFromBusinessGroups(groupKeys);
+		ContactList cl = new ContactList(translate("form.message.chckbx.partips"));
+		cl.addAllIdentites(participiants);
+		return cl;
+	}
+	
+	private ContactList retrieveParticipantsFromCourse() {
+		List<Identity> participiants = cgm.getParticipants();
 		ContactList cl = new ContactList(translate("form.message.chckbx.partips"));
 		cl.addAllIdentites(participiants);
 		return cl;
@@ -187,6 +274,13 @@ public class CORunController extends BasicController {
 		List<Identity> participiants = cgm.getParticipantsFromAreas(areaKeys);
 		ContactList cl = new ContactList(translate("form.message.chckbx.partips"));
 		cl.addAllIdentites(participiants);
+		return cl;
+	}
+	
+	private ContactList retrieveOwnersFromCourse(){;
+		List<Identity> ownerList = repositoryService.getMembers(cgm.getCourseEntry(), GroupRoles.owner.name());
+		ContactList cl = new ContactList(translate("form.message.chckbx.owners"));
+		cl.addAllIdentites(ownerList);
 		return cl;
 	}
 
