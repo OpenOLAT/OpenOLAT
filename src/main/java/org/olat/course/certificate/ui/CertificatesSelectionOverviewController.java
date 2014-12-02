@@ -104,7 +104,7 @@ public class CertificatesSelectionOverviewController extends StepFormBasicContro
 		@SuppressWarnings("unchecked")
 		List<CertificateInfos> selectedInfos =  (List<CertificateInfos>)getFromRunContext("infos");
 		tableModel.setObjects(selectedInfos);
-		uifactory.addTableElement(getWindowControl(), "selection", tableModel, formLayout);
+		uifactory.addTableElement(getWindowControl(), "selection", tableModel, getTranslator(), formLayout);
 	}
 
 	@Override
