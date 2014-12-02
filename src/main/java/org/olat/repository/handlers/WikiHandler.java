@@ -318,16 +318,13 @@ public class WikiHandler implements RepositoryHandler {
 		String fullFilePath = archivFilePath + File.separator + exportFileName;
 		
 		File fExportZIP = new File(fullFilePath);
-		InputStream fis = wikiZip.getInputStream();
-		
-		try {
-			FileUtils.bcopy(wikiZip.getInputStream(), fExportZIP, "archive wiki");
+
+		try (InputStream fis = wikiZip.getInputStream()) {
+			FileUtils.bcopy(fis, fExportZIP, "archive wiki");
 		} catch (FileNotFoundException e) {
 			log.warn("Can not archive wiki repoEntry=" + repoEntry);
 		} catch (IOException ioe) {
 			log.warn("Can not archive wiki repoEntry=" + repoEntry);
-		} finally {
-			FileUtils.closeSafely(fis);
 		}
 		return exportFileName;
 	}
