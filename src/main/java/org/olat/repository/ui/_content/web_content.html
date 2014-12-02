@@ -1,0 +1,14 @@
+<h2><i class="o_icon $cssClass"> </i> $displayName</h2>
+#if($image)
+	<img src="$mediaUrl/$filename" />
+#elseif($movie)
+	<p><span id="olatFlashMovieViewer1" class="olatFlashMovieViewer" style="display:block;border:solid 1px #000; width:${width}px; height:${height}px;">
+		<script defer="defer" type="text/javascript">
+		// <![CDATA[
+		    BPlayer.insertPlayer('$mediaUrl/$filename','olatFlashMovieViewer1',$width,$height,0,0,'video',undefined,false,true,false);
+		// ]]>
+		</script>
+	</span></p>
+#elseif($r.available("content"))
+	<div class="o_content clearfix">$r.render("content")</div>
+#end

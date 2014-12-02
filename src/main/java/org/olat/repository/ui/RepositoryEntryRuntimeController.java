@@ -582,9 +582,13 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected void launchContent(UserRequest ureq, RepositoryEntrySecurity security) {
 		if(security.canLaunch()) {
-			runtimeController = runtimeControllerCreator.create(ureq, getWindowControl(), toolbarPanel, re, reSecurity);
-			listenTo(runtimeController);
-			toolbarPanel.rootController(re.getDisplayname(), runtimeController);
+			if(handler.supportsLaunch()) {
+				runtimeController = runtimeControllerCreator.create(ureq, getWindowControl(), toolbarPanel, re, reSecurity);
+				listenTo(runtimeController);
+				toolbarPanel.rootController(re.getDisplayname(), runtimeController);
+			} else {
+				doDetails(ureq);
+			}
 		} else {
 			runtimeController = new AccessRefusedController(ureq, getWindowControl());
 			listenTo(runtimeController);

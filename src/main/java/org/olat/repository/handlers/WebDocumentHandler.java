@@ -61,6 +61,9 @@ import org.olat.fileresource.types.XlsFileResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
+import org.olat.repository.ui.RepositoryEntryRuntimeController;
+import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
+import org.olat.repository.ui.WebDocumentRunController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 
@@ -190,7 +193,7 @@ public class WebDocumentHandler extends FileHandler {
 
 	@Override
 	public boolean supportsLaunch() {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -210,7 +213,13 @@ public class WebDocumentHandler extends FileHandler {
 
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re,  RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
-		return null;
+		return new RepositoryEntryRuntimeController(ureq, wControl, re, reSecurity, new RuntimeControllerCreator() {
+			@Override
+			public Controller create(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
+					RepositoryEntry entry, RepositoryEntrySecurity reSecurity) {
+				return new WebDocumentRunController(ureq, wControl, entry);
+			}
+		});
 	}
 
 	@Override
