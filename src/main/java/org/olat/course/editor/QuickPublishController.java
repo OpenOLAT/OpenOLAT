@@ -1,0 +1,124 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.course.editor;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.nodes.INode;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.tree.CourseEditorTreeModel;
+import org.olat.course.tree.PublishTreeModel;
+
+/**
+ * 
+ * Initial date: 02.12.2014<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class QuickPublishController extends BasicController {
+	
+	
+	
+	private final Link noLink, manualLink, autoLink;
+	private OLATResourceable courseOres;
+	
+	public QuickPublishController(UserRequest ureq, WindowControl wControl, OLATResourceable courseOres) {
+		super(ureq, wControl);
+		this.courseOres = OresHelper.clone(courseOres);
+		
+		VelocityContainer mainVC = createVelocityContainer("quick_publish");
+		noLink = LinkFactory.createButton("pbl.quick.no", mainVC, this);
+		manualLink = LinkFactory.createButton("pbl.quick.manual", mainVC, this);
+		autoLink = LinkFactory.createButton("pbl.quick.auto", mainVC, this);
+		autoLink.setCustomEnabledLinkCSS("btn btn-primary");
+		putInitialPanel(mainVC);
+	}
+	
+	@Override
+	protected void doDispose() {
+		//
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if(noLink == source) {
+			fireEvent(ureq, Event.CANCELLED_EVENT);
+		} else if(manualLink == source) {
+			fireEvent(ureq, EditorMainController.MANUAL_PUBLISH);
+		} else if(autoLink == source) {
+			doAutoPublish();
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		}
+	}
+	
+	private void doAutoPublish() {
+		ICourse course = CourseFactory.loadCourse(courseOres);
+		CourseEditorTreeModel cetm = course.getEditorTreeModel();
+		PublishProcess publishProcess = PublishProcess.getInstance(course, cetm, getLocale());
+		PublishTreeModel publishTreeModel = publishProcess.getPublishTreeModel();
+ 
+		if (publishTreeModel.hasPublishableChanges()) {
+			List<String>nodeToPublish = new ArrayList<String>();
+			visitPublishModel(publishTreeModel.getRootNode(), publishTreeModel, nodeToPublish);
+
+			publishProcess.createPublishSetFor(nodeToPublish);
+			PublishSetInformations set = publishProcess.testPublishSet(getLocale());
+			StatusDescription[] status = set.getWarnings();
+			//publish not possible when there are errors
+			for(int i = 0; i < status.length; i++) {
+				if(status[i].isError()) {
+					logError("Status error by publish: " + status[i].getLongDescription(getLocale()), null);
+					return;
+				}
+			}
+			
+			try {
+				publishProcess.applyPublishSet(getIdentity(), getLocale());
+			} catch(Exception e) {
+				logError("",  e);
+			}
+		}
+	}
+	
+	private static void visitPublishModel(TreeNode node, PublishTreeModel publishTreeModel, Collection<String> nodeToPublish) {
+		int numOfChildren = node.getChildCount();
+		for (int i = 0; i < numOfChildren; i++) {
+			INode child = node.getChildAt(i);
+			if (child instanceof TreeNode && publishTreeModel.isVisible(child)) {
+				nodeToPublish.add(child.getIdent());
+				visitPublishModel((TreeNode)child, publishTreeModel, nodeToPublish);
+			}
+		}
+	}
+}

@@ -972,7 +972,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			// rembember current dtab, and swap to the temporary one
 			DTab reTab = curDTab;
 			doActivateDTab(delt);
-			boolean immediateClose = vcc.requestForClose();
+			boolean immediateClose = vcc.requestForClose(ureq);
 			if (!immediateClose) {
 				return;
 			} else {

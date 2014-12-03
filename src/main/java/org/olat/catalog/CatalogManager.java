@@ -394,7 +394,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @param repoEntry
 	 * @return List of catalog entries
 	 */
-	public List<CatalogEntry> getCatalogCategoriesFor(RepositoryEntry repoEntry) {
+	public List<CatalogEntry> getCatalogCategoriesFor(RepositoryEntryRef repoEntry) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select parentCei from ").append(CatalogEntryImpl.class.getName()).append(" as cei ")
 		  .append(" inner join cei.ownerGroup ownerGroup ")

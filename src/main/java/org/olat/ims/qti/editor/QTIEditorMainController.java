@@ -1156,10 +1156,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		stackedPanel.addTool(closeLink, Align.right);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.VetoableCloseController#requestForClose()
-	 */
-	public boolean requestForClose() {		
+	@Override
+	public boolean requestForClose(UserRequest ureq) {		
 		// enter save/discard dialog if not already in it
 		if (cmcExit == null) {
 			exitVC = createVelocityContainer("exitDialog");

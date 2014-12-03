@@ -175,7 +175,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 			Controller controllerToPop = getControllerToPop(source);
 			//part of a hack for QTI editor
 			if(controllerToPop instanceof VetoableCloseController
-					&& !((VetoableCloseController)controllerToPop).requestForClose()) {
+					&& !((VetoableCloseController)controllerToPop).requestForClose(ureq)) {
 				// not my problem anymore, I have done what I can
 				fireEvent(ureq, new VetoPopEvent());
 				return;
