@@ -395,8 +395,9 @@ public class ProfileFormController extends FormBasicController {
 		}
 		
 		File uploadedImage = portraitUpload.getUploadFile();
+		String uploadedFilename = portraitUpload.getUploadFileName();
 		if(uploadedImage != null) {
-			dps.setPortrait(uploadedImage, identityToModify.getName());
+			dps.setPortrait(uploadedImage, uploadedFilename, identityToModify.getName());
 		}
 		
 		// Store the "about me" text.

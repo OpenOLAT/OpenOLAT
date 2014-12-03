@@ -579,7 +579,8 @@ public class UserWebService {
 			}
 			partsReader = new MultipartReader(request);
 			File tmpFile = partsReader.getFile();
-			DisplayPortraitManager.getInstance().setPortrait(tmpFile, identity.getName());
+			String filename = partsReader.getFilename();
+			DisplayPortraitManager.getInstance().setPortrait(tmpFile, filename, identity.getName());
 			return Response.ok().build();
 		} catch (Throwable e) {
 			throw new WebApplicationException(e);
