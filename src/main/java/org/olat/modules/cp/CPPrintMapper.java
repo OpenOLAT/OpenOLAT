@@ -64,7 +64,6 @@ import org.xml.sax.SAXException;
  * Initial Date:  18 mars 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-//fxdiff VCRP-14: print cp
 public class CPPrintMapper implements Mapper {
 	
 	private static final OLog log = Tracing.createLoggerFor(CPPrintMapper.class);
