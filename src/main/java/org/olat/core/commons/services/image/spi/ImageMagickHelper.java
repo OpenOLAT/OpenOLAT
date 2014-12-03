@@ -88,11 +88,6 @@ public class ImageMagickHelper extends AbstractImageHelper {
 	
 	@Override
 	public Size scaleImage(File image, String extension, File scaledImage, int maxWidth, int maxHeight) {
-		return scaleImage(image, scaledImage, maxWidth, maxHeight);
-	}
-
-	@Override
-	public Size scaleImage(File image, File scaledImage, int maxWidth, int maxHeight) {
 		FinalSize finalSize = generateThumbnail(image, scaledImage, false, maxWidth, maxHeight, false);
 		if(finalSize != null) {
 			return new Size(finalSize.getWidth(), finalSize.getHeight(), true);
