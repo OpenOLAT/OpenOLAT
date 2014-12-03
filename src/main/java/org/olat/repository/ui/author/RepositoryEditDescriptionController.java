@@ -53,6 +53,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -97,8 +98,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	private static final int movieUploadlimitKB = 102400;
 
 	private FileElement fileUpload, movieUpload;
-	private SingleSelection language;
-	private TextElement externalRef, displayName, authors, expenditureOfWork;
+	private TextElement externalRef, displayName, authors, expenditureOfWork, language;
 	private RichTextElement description, objectives, requirements, credits;
 	private SingleSelection dateTypesEl, publicDatesEl;
 	private DateChooser startDateEl, endDateEl;
@@ -108,6 +108,8 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	
 	private static final String[] dateKeys = new String[]{ "none", "private", "public"};
 
+	@Autowired
+	private I18nManager i18nmanager;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -198,16 +200,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		authors = uifactory.addTextElement("cif.authors", "cif.authors", 255, repositoryEntry.getAuthors(), descCont);
 		authors.setDisplaySize(60);
 		
-		String[] languageKeys = new String[] { "de", "en"};
-		String[] languageValues = new String[] { "de", "en"};
-		language = uifactory.addDropdownSingleselect("cif.mainLanguage", "cif.mainLanguage", formLayout, languageKeys, languageValues, null);
-		String selected = languageKeys[0];
-		for(String languageKey:languageKeys) {
-			if(languageKey.equals(repositoryEntry.getMainLanguage())) {
-				selected = languageKey;
-			}
-		}
-		language.select(selected, true);
+		language = uifactory.addTextElement("cif.mainLanguage", "cif.mainLanguage", 16, repositoryEntry.getMainLanguage(), descCont);
 		
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
 		mediaContainer = handler.getMediaContainer(repositoryEntry);
@@ -277,7 +270,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	
 			updateDatesVisibility();
 			uifactory.addSpacerElement("spacer3", descCont, false);
-
+			
 			expenditureOfWork = uifactory.addTextElement("cif.expenditureOfWork", "cif.expenditureOfWork", 100, repositoryEntry.getExpenditureOfWork(), descCont);
 			expenditureOfWork.setExampleKey("details.expenditureOfWork.example", null);
 
@@ -492,7 +485,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		String displayname = displayName.getValue().trim();
 		repositoryEntry.setDisplayname(displayname);
 		
-		String mainLanguage = language.getSelectedKey();
+		String mainLanguage = language.getValue();
 		if(StringHelper.containsNonWhitespace(mainLanguage)) {
 			repositoryEntry.setMainLanguage(mainLanguage);
 		} else {

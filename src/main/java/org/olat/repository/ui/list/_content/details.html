@@ -46,7 +46,7 @@
 						#if($v.lifecycle.validTo) - $r.formatDate($v.lifecycle.validTo) #end
 					</div>
 					#end
-					#if($v.expenditureOfWork)
+					#if($v.expenditureOfWork && !$v.expenditureOfWork.empty)
 					<div title="$r.translateInAttribute("details.expenditureOfWork.desc")">
 						<i class="o_icon o_icon_expenditure"></i>  
 						$r.escapeHtml($v.expenditureOfWork)
