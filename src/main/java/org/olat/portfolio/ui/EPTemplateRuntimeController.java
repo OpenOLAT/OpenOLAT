@@ -53,7 +53,6 @@ public class EPTemplateRuntimeController extends RepositoryEntryRuntimeControlle
 		if(getRuntimeController() instanceof EPMapViewController) {
 			EPMapViewController mapCtrl = (EPMapViewController)getRuntimeController();
 			if(mapCtrl.canEditStructure()) {
-				mapCtrl.delegateEditButton();
 				editLink = LinkFactory.createToolLink("edit.cmd", translate("details.openeditor"), this, "o_sel_repository_editor");
 				editLink.setElementCssClass("o_sel_ep_edit_map");
 				editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");

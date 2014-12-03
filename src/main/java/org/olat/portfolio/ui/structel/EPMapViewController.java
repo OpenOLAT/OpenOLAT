@@ -81,7 +81,6 @@ public class EPMapViewController extends BasicController implements Activateable
 	private EPStructureTreeAndDetailsEditController editCtrl;
 	private DialogBoxController confirmationSubmissionCtr;
 	private final boolean back;
-	private boolean editInToolbar = false;
 	
 	private EditMode editMode = EditMode.view;
 	private PortfolioStructureMap map;
@@ -135,12 +134,6 @@ public class EPMapViewController extends BasicController implements Activateable
 		return secCallback.canEditStructure();
 	}
 	
-	public void delegateEditButton() {
-		if(editButton != null) {
-			editButton.setVisible(false);
-		}
-	}
-
 	protected void initForm(UserRequest ureq) {
 		Identity ownerIdentity = ePFMgr.getFirstOwnerIdentity(map);
 		if(ownerIdentity != null) {
@@ -160,9 +153,6 @@ public class EPMapViewController extends BasicController implements Activateable
 				editButton.setCustomDisplayText(translate("map.editButton.on"));
 			} else {
 				editButton.setCustomDisplayText(translate("map.editButton.off"));
-			}
-			if(editInToolbar) {
-				mainVc.remove(mainVc.getComponent("map.editButton"));
 			}
 		} 
 		if(back) {
@@ -262,6 +252,7 @@ public class EPMapViewController extends BasicController implements Activateable
 				selectedPage = pageCtrl.getSelectedPage();
 			}
 			initOrUpdateEditMode(ureq, selectedPage);
+			editMode = EditMode.editor;
 		}
 	}
 	
