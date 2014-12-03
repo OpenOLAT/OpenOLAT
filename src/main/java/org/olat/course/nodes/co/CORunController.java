@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -65,16 +66,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CORunController extends BasicController {
 
-	@Autowired
 	private ContactFormController coFoCtr;
+
+	private final CourseGroupManager cgm;
 	@Autowired
-	private CourseGroupManager cgm;
+	private BGAreaManager areaManager;
 	@Autowired
-	private  BGAreaManager areaManager;
+	private BusinessGroupService businessGroupService;	
 	@Autowired
-	private  BusinessGroupService businessGroupService;	
-	@Autowired
-	private RepositoryService repositoryService;
+	private  RepositoryService repositoryService;
 
 	/**
 	 * Constructor for the contact form run controller
@@ -87,6 +87,10 @@ public class CORunController extends BasicController {
 	public CORunController(ModuleConfiguration moduleConfiguration, UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
+		
+		cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+
+
 		
 		//set translator with fall back translator.
 		Translator fallback = Util.createPackageTranslator(ContactFormController.class, ureq.getLocale());
