@@ -34,11 +34,8 @@ package org.olat.core.commons.controllers.linkchooser;
  * 
  * @author Florian Gnägi, frentix GmbH, http://www.frentix.com
  */
-import org.olat.core.dispatcher.mapper.Mapper;
-import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.vfs.VFSContainer;
 
 public abstract class CustomMediaChooserController extends DefaultController {
 
@@ -52,27 +49,7 @@ public abstract class CustomMediaChooserController extends DefaultController {
 	}
 
 	/**
-	 * Factory method to create a custom media chooser controller from a (Spring)
-	 * instance
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param rootDir
-	 * @param suffixes
-	 * @param fileName
-	 * @param userActivityLogger
-	 * @return true if success, false if no success, e.g. because user has no
-	 *         access right to start this controller
-	 */
-	abstract public CustomMediaChooserController getInstance(UserRequest ureq, WindowControl wControl, VFSContainer rootDir,
-			String[] suffixes, String fileName);
-	
-	//fxdiff
-	abstract public Mapper getMapperInstance(VFSContainer rootDir, String[] suffixes, String fileName);
-
-	/**
 	 * @return Title for media chooser tabbed pane
 	 */
-	abstract public String getTabbedPaneTitle();
-
+	 public abstract String getTabbedPaneTitle();
 }
