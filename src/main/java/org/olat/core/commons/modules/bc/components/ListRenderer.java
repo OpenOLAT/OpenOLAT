@@ -259,6 +259,7 @@ public class ListRenderer {
 		} else { // for files, add PARAM_SERV command
 			ubu.buildURI(sb, new String[] { PARAM_SERV }, new String[] { "x" }, pathAndName, AJAXFlags.MODE_NORMAL);
 			sb.append("\" target=\"_blank\"");
+			sb.append(" download=\"").append(name).append("\"");
 		}
 		sb.append(">");
 		// icon css
