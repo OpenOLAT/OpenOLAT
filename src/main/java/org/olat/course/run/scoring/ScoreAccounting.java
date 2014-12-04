@@ -126,30 +126,23 @@ public class ScoreAccounting implements Visitor {
 	 */
 	public Float evalScoreOfCourseNode(String childId) {
 		CourseNode foundNode = findChildByID(childId);
-		if (foundNode == null) {
+		
+		Float score = null;
+		if (foundNode instanceof AssessableCourseNode) {
+			AssessableCourseNode acn = (AssessableCourseNode) foundNode;
+			ScoreEvaluation se = evalCourseNode(acn);
+			if(se != null) { // the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
+				score = se.getScore();
+			}
+			if (score == null) { // a child has no score yet
+				score = new Float(0.0f); // default to 0.0, so that the condition can be evaluated (zero points makes also the most sense for "no results yet", if to be expressed in a number)
+			}
+		} else {
 			error = true;
 			wrongChildID = childId;
-			return new Float(-9999999.0f);
+			score = new Float(0.0f);
 		}
-		if (!(foundNode instanceof AssessableCourseNode)) {
-			error = true;
-			wrongChildID = childId;
-			return new Float(-1111111.0f);
-		}
-		AssessableCourseNode acn = (AssessableCourseNode) foundNode;
-		ScoreEvaluation se = evalCourseNode(acn);
-		if (se == null) { // the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
-			String msg = "could not evaluate node " + acn.getShortTitle() + " (" + acn.getIdent() + ")" + "; called by node "
-					+ (evaluatingCourseNode == null ? "n/a" : evaluatingCourseNode.getShortTitle() + " (" + evaluatingCourseNode.getIdent() + ")");
-			new OLATRuntimeException(ScoreAccounting.class, "scoreaccounting.evaluationerror.score", 
-					new String[]{acn.getIdent(), acn.getShortTitle()},
-					Util.getPackageName(ScoreAccounting.class), 
-					msg, null);
-		}
-		Float score = se.getScore();
-		if (score == null) { // a child has no score yet
-			score = new Float(0.0f); // default to 0.0, so that the condition can be evaluated (zero points makes also the most sense for "no results yet", if to be expressed in a number)
-		}
+		
 		return score;
 	}
 
