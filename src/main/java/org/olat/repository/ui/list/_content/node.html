@@ -20,8 +20,8 @@
 				#end
 			</div>
 		</div>
-		
-	#if($subCategories.size != 0)
+
+	#if($subCategories.size() != 0)
 		<div class="o_sublevels row clearfix">
 			#foreach($id in $subCategories)
 				#set($imgId = "image_${id}")
