@@ -91,12 +91,16 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	/**
 	 * @see org.olat.core.util.vfs.VFSContainer#getItems(org.olat.core.util.vfs.filters.VFSItemFilter)
 	 */
+	@Override
 	public List<VFSItem> getItems(VFSItemFilter filter) {
 		File aFolder = getBasefile();
 		if(! aFolder.isDirectory()){
 			throw new AssertException("basefile is not a directory: "+aFolder.getAbsolutePath());			
 		}
 		File[] children = aFolder.listFiles();
+		if(children == null) {
+			children = new File[0];
+		}
 		int len = children.length;
 		List<VFSItem> res = new ArrayList<VFSItem>(len);
 
