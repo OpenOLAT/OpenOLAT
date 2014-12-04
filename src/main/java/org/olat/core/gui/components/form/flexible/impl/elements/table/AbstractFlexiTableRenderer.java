@@ -359,7 +359,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 		int rows = dataModel.getRowCount();
 
-		renderPageSize(sb, ftC, translator);
+		if (rows > 20) {
+			renderPageSize(sb, ftC, translator);
+		}
 
 		sb.append("<ul class='pagination'>");
 		if(pageSize > 0 && rows > pageSize) {
