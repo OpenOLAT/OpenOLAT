@@ -24,7 +24,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.controllers.linkchooser.CustomMediaChooserController;
+import org.olat.core.commons.controllers.linkchooser.CustomMediaChooserFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -56,30 +56,28 @@ import de.bps.course.nodes.LLCourseNode;
  */
 public class LLRunController extends BasicController {
 
-	private VelocityContainer runVC;
-	
 
 	public LLRunController(UserRequest ureq, WindowControl wControl, ModuleConfiguration moduleConfig, LLCourseNode llCourseNode,
 			UserCourseEnvironment userCourseEnv, boolean showLinkComments) {
 		super(ureq, wControl);
-		this.runVC = this.createVelocityContainer("run");
-		final List<LLModel> linkList = (List<LLModel>) moduleConfig.get(LLCourseNode.CONF_LINKLIST);
-		this.runVC.contextPut("linkList", linkList);
-		this.runVC.contextPut("showLinkComments", Boolean.valueOf(showLinkComments));
+		VelocityContainer runVC = createVelocityContainer("run");
 		
+		@SuppressWarnings("unchecked")
+		final List<LLModel> linkList = (List<LLModel>) moduleConfig.get(LLCourseNode.CONF_LINKLIST);
+		runVC.contextPut("linkList", linkList);
+		runVC.contextPut("showLinkComments", Boolean.valueOf(showLinkComments));
 		
 		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
 		VFSContainer courseContainer = courseEnv.getCourseFolderContainer();
 		Mapper customMapper = null;
-		if (CoreSpringFactory.containsBean(CustomMediaChooserController.class.getName())) {
-			CustomMediaChooserController customMediaChooserFactory = (CustomMediaChooserController) CoreSpringFactory.getBean(CustomMediaChooserController.class.getName());
-			customMapper = customMediaChooserFactory.getMapperInstance(courseContainer, null, null);
+		if (CoreSpringFactory.containsBean(CustomMediaChooserFactory.class.getName())) {
+			CustomMediaChooserFactory customMediaChooserFactory = (CustomMediaChooserFactory)CoreSpringFactory.getBean(CustomMediaChooserFactory.class.getName());
+			customMapper = customMediaChooserFactory.getMapperInstance();
 		}
 		String mapperID = courseEnv.getCourseResourceableId() + "/" + llCourseNode.getIdent();
 		String mapperBaseUrl = registerCacheableMapper(ureq, mapperID, new LLMapper(linkList, customMapper, courseContainer));
 		
 		runVC.contextPut("mapperBaseUrl", mapperBaseUrl);
-		
 		putInitialPanel(runVC);
 	}
 

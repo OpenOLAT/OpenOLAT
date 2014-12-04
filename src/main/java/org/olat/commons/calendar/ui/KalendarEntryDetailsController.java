@@ -37,6 +37,7 @@ import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.CustomMediaChooserController;
+import org.olat.core.commons.controllers.linkchooser.CustomMediaChooserFactory;
 import org.olat.core.commons.controllers.linkchooser.URLChoosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -109,12 +110,12 @@ public class KalendarEntryDetailsController extends BasicController {
 			pane.addTab(translate("tab.links"), linkVC);
 			
 			//custom media chooser
-			if (CoreSpringFactory.containsBean(CustomMediaChooserController.class.getName())) {
-				CustomMediaChooserController customMediaChooserFactory = (CustomMediaChooserController) CoreSpringFactory.getBean(CustomMediaChooserController.class.getName());
-				customMediaChooserCtr = customMediaChooserFactory.getInstance(ureq, wControl, null, null, null); 
+			if (CoreSpringFactory.containsBean(CustomMediaChooserFactory.class.getName())) {
+				CustomMediaChooserFactory customMediaChooserFactory = (CustomMediaChooserFactory) CoreSpringFactory.getBean(CustomMediaChooserFactory.class.getName());
+				customMediaChooserCtr = customMediaChooserFactory.getInstance(ureq, wControl); 
 				if (customMediaChooserCtr != null) {
 					listenTo(customMediaChooserCtr);
-					mediaLinksController = new MediaLinksController(ureq, wControl, kalendarEvent, customMediaChooserCtr);
+					mediaLinksController = new MediaLinksController(ureq, wControl, kalendarEvent, customMediaChooserFactory);
 					pane.addTab(customMediaChooserCtr.getTabbedPaneTitle(), mediaLinksController.getInitialComponent());	
 					listenTo(mediaLinksController);
 				}				
