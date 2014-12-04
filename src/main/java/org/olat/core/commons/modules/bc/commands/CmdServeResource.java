@@ -88,43 +88,47 @@ public class CmdServeResource implements FolderCommand {
 				// set the http content-type and the encoding
 				// try to load in iso-8859-1
 				InputStream is = vfsfile.getInputStream();
-				String page = FileUtils.load(is, DEFAULT_ENCODING);
-				// search for the <meta content="text/html; charset=utf-8"
-				// http-equiv="Content-Type" /> tag
-				// if none found, assume iso-8859-1
-				String enc = DEFAULT_ENCODING;
-				boolean useLoaded = false;
-				// <meta.*charset=([^"]*)"
-				Matcher m = PATTERN_ENCTYPE.matcher(page);
-				boolean found = m.find();
-				if (found) {
-					String htmlcharset = m.group(1);
-					enc = htmlcharset;
-					if (htmlcharset.equals(DEFAULT_ENCODING)) {
+				if(is == null) {
+					mr = new NotFoundMediaResource(path);
+				} else {
+					String page = FileUtils.load(is, DEFAULT_ENCODING);
+					// search for the <meta content="text/html; charset=utf-8"
+					// http-equiv="Content-Type" /> tag
+					// if none found, assume iso-8859-1
+					String enc = DEFAULT_ENCODING;
+					boolean useLoaded = false;
+					// <meta.*charset=([^"]*)"
+					Matcher m = PATTERN_ENCTYPE.matcher(page);
+					boolean found = m.find();
+					if (found) {
+						String htmlcharset = m.group(1);
+						enc = htmlcharset;
+						if (htmlcharset.equals(DEFAULT_ENCODING)) {
+							useLoaded = true;
+						}
+					} else {
 						useLoaded = true;
 					}
-				} else {
-					useLoaded = true;
-				}
-				// set the new encoding to remember for any following .js file loads
-				g_encoding = enc;
-				if (useLoaded) {
-					StringMediaResource smr = new StringMediaResource();
-					String mimetype = forceDownload ? VFSMediaResource.MIME_TYPE_FORCE_DOWNLOAD : "text/html;charset=" + enc;
-					smr.setContentType(mimetype);
-					smr.setEncoding(enc);
-					smr.setData(page);
-					mr = smr;
-				} else {
-					// found a new charset other than iso-8859-1 -> let it load again
-					// as bytes (so we do not need to convert to string and back
-					// again)
-					VFSMediaResource vmr = new VFSMediaResource(vfsfile);
-					vmr.setEncoding(enc);
-					if(forceDownload) {
-						vmr.setDownloadable(true);
+					// set the new encoding to remember for any following .js file loads
+					g_encoding = enc;
+					if (useLoaded) {
+						StringMediaResource smr = new StringMediaResource();
+						String mimetype = forceDownload ? VFSMediaResource.MIME_TYPE_FORCE_DOWNLOAD : "text/html;charset=" + enc;
+						smr.setContentType(mimetype);
+						smr.setEncoding(enc);
+						smr.setData(page);
+						mr = smr;
+					} else {
+						// found a new charset other than iso-8859-1 -> let it load again
+						// as bytes (so we do not need to convert to string and back
+						// again)
+						VFSMediaResource vmr = new VFSMediaResource(vfsfile);
+						vmr.setEncoding(enc);
+						if(forceDownload) {
+							vmr.setDownloadable(true);
+						}
+						mr = vmr;
 					}
-					mr = vmr;
 				}
 			} else if (path.endsWith(".js")) { // a javascript library
 				VFSMediaResource vmr = new VFSMediaResource(vfsfile);
