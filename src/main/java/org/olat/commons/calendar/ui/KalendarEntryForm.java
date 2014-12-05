@@ -167,7 +167,11 @@ public class KalendarEntryForm extends FormBasicController {
 		}
 		begin.setDate(kalendarEvent.getBegin());
 		end.setDate(kalendarEvent.getEnd());
-		allDayEvent.select("xx", kalendarEvent.isAllDayEvent());
+		boolean allDay = kalendarEvent.isAllDayEvent();
+		allDayEvent.select("xx", allDay);
+		end.setDateChooserTimeEnabled(!allDay);
+		begin.setDateChooserTimeEnabled(!allDay);
+		
 		switch (kalendarEvent.getClassification()) {
 			case KalendarEvent.CLASS_PRIVATE: classification.select("0", true); break;
 			case KalendarEvent.CLASS_X_FREEBUSY: classification.select("1", true); break;
@@ -310,20 +314,21 @@ public class KalendarEntryForm extends FormBasicController {
 		
 		location = uifactory.addTextAreaElement("location", "cal.form.location", -1, 3, 40, true, fb?translate("cal.form.location.hidden"):event.getLocation(), formLayout);
 		
+		allDayEvent = uifactory.addCheckboxesHorizontal("allday", "cal.form.allday", formLayout, new String[]{"xx"}, new String[]{null});
+		allDayEvent.select("xx", event.isAllDayEvent());
+		allDayEvent.addActionListener(FormEvent.ONCHANGE);
+		
 		begin = uifactory.addDateChooser("begin", "cal.form.begin", null, formLayout);
 		begin.setDisplaySize(21);
-		begin.setDateChooserTimeEnabled(true);
+		begin.setDateChooserTimeEnabled(!event.isAllDayEvent());
 		begin.setMandatory(true);
 		begin.setDate(event.getBegin());
 		
 		end = uifactory.addDateChooser("end", "cal.form.end", null, formLayout);
 		end.setDisplaySize(21);
-		end.setDateChooserTimeEnabled(true);
+		end.setDateChooserTimeEnabled(!event.isAllDayEvent());
 		end.setMandatory(true);
 		end.setDate(event.getEnd());
-		
-		allDayEvent = uifactory.addCheckboxesHorizontal("allday", "cal.form.allday", formLayout, new String[]{"xx"}, new String[]{null});
-		allDayEvent.select("xx", event.isAllDayEvent());
 		
 		chooseRecurrence = uifactory.addDropdownSingleselect("cal.form.recurrence", formLayout, keysRecurrence, valuesRecurrence, null);
 		String currentRecur = CalendarUtils.getRecurrence(event.getRecurrenceRule());
@@ -383,6 +388,10 @@ public class KalendarEntryForm extends FormBasicController {
 				isMulti = true;
 				formOK(ureq);
 			}
+		} else if(allDayEvent == source) {
+			boolean allDay = allDayEvent.isSelected(0);
+			begin.setDateChooserTimeEnabled(!allDay);
+			end.setDateChooserTimeEnabled(!allDay);
 		}
 	}
 	
