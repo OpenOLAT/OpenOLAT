@@ -21,6 +21,7 @@ package org.olat.course.editor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -33,8 +34,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.tree.INodeFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -48,10 +52,8 @@ import org.olat.course.tree.PublishTreeModel;
  */
 public class QuickPublishController extends BasicController {
 	
-	
-	
 	private final Link noLink, manualLink, autoLink;
-	private OLATResourceable courseOres;
+	private final OLATResourceable courseOres;
 	
 	public QuickPublishController(UserRequest ureq, WindowControl wControl, OLATResourceable courseOres) {
 		super(ureq, wControl);
@@ -89,10 +91,20 @@ public class QuickPublishController extends BasicController {
 		PublishTreeModel publishTreeModel = publishProcess.getPublishTreeModel();
  
 		if (publishTreeModel.hasPublishableChanges()) {
-			List<String>nodeToPublish = new ArrayList<String>();
+			List<String> nodeToPublish = new ArrayList<String>();
 			visitPublishModel(publishTreeModel.getRootNode(), publishTreeModel, nodeToPublish);
 
+			//only add selection if changes were possible
+			for(Iterator<String> selectionIt=nodeToPublish.iterator(); selectionIt.hasNext(); ) {
+				String ident = selectionIt.next();
+				TreeNode node = publishProcess.getPublishTreeModel().getNodeById(ident);
+				if(!publishTreeModel.isSelectable(node)) {
+					selectionIt.remove();
+				}
+			}
+
 			publishProcess.createPublishSetFor(nodeToPublish);
+			
 			PublishSetInformations set = publishProcess.testPublishSet(getLocale());
 			StatusDescription[] status = set.getWarnings();
 			//publish not possible when there are errors
@@ -103,21 +115,29 @@ public class QuickPublishController extends BasicController {
 				}
 			}
 			
+			PublishEvents publishEvents = publishProcess.getPublishEvents();
 			try {
 				publishProcess.applyPublishSet(getIdentity(), getLocale());
+				publishProcess.applyUpdateSet(getIdentity(), getLocale());
 			} catch(Exception e) {
 				logError("",  e);
+			}
+			
+			if(publishEvents.getPostPublishingEvents().size() > 0) {
+				for(MultiUserEvent event:publishEvents.getPostPublishingEvents()) {
+					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, courseOres);
+				}
 			}
 		}
 	}
 	
-	private static void visitPublishModel(TreeNode node, PublishTreeModel publishTreeModel, Collection<String> nodeToPublish) {
+	private static void visitPublishModel(TreeNode node, INodeFilter filter, Collection<String> nodeToPublish) {
 		int numOfChildren = node.getChildCount();
 		for (int i = 0; i < numOfChildren; i++) {
 			INode child = node.getChildAt(i);
-			if (child instanceof TreeNode && publishTreeModel.isVisible(child)) {
+			if (child instanceof TreeNode && filter.isVisible(child)) {
 				nodeToPublish.add(child.getIdent());
-				visitPublishModel((TreeNode)child, publishTreeModel, nodeToPublish);
+				visitPublishModel((TreeNode)child, filter, nodeToPublish);
 			}
 		}
 	}
