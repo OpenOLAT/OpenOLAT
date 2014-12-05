@@ -5,7 +5,7 @@
 
 <hibernate-mapping default-lazy="false">
 
-  <class name="org.olat.catalog.CatalogEntryImpl" table="o_catentry">
+  <class name="org.olat.repository.model.CatalogEntryImpl" table="o_catentry">
     
 	<cache usage="transactional" />
 
@@ -17,12 +17,9 @@
 	<property  name="creationDate" column="creationdate" type="timestamp" />   
  
     <property name="name" unique="false" type="string" not-null="true" length="100"/>	
-		<property name="description" type="string">
-		<column name="description" unique="false" not-null="false" length="16777210"/>
-    </property>
-		
-		
-    <property name="externalURL" column="externalurl" unique="false" type="string" not-null="false" length="255"/>
+	<property name="description" column="description" type="string" unique="false" not-null="false"/>	
+    <property name="externalURL" column="externalurl" unique="false" type="string" not-null="false"/>
+    <property name="styleString" column="style" unique="false" type="string" not-null="false"/>
         	
 	<many-to-one name="repositoryEntry" class="org.olat.repository.RepositoryEntry" outer-join="false" cascade="none">
 		<column name="fk_repoentry" not-null="false" unique="false" />    	
@@ -34,7 +31,7 @@
 	
 	<property name="type" unique="false" type="int" not-null="true"/>
 	
-	<many-to-one name="parent" class="org.olat.catalog.CatalogEntryImpl" column="parent_id" not-null="false" outer-join="false" cascade="none"/> 
+	<many-to-one name="parent" class="org.olat.repository.model.CatalogEntryImpl" column="parent_id" not-null="false" outer-join="false" cascade="none"/> 
 
   </class>  
 </hibernate-mapping>

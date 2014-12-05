@@ -17,18 +17,18 @@
  * BPS Bildungsportal Sachsen GmbH, http://www.bps-system.de
  * <p>
  */
-package org.olat.catalog.ui;
+package org.olat.repository.ui.catalog;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.catalog.CatalogEntry;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.InsertionPoint.Position;
 import org.olat.core.gui.components.tree.InsertionTreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.repository.CatalogEntry;
 
 /**
  * Description:<br>

@@ -52,19 +52,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.catalog.CatalogEntry;
-import org.olat.catalog.CatalogManager;
-import org.olat.catalog.restapi.CatalogEntryVO;
-import org.olat.catalog.restapi.CatalogEntryVOes;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.CourseModule;
+import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.CatalogManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.restapi.support.vo.CatalogEntryVO;
+import org.olat.restapi.support.vo.CatalogEntryVOes;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.olat.user.restapi.UserVO;
@@ -81,6 +81,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CatalogTest extends OlatJerseyTestCase {
 	
+	@Autowired
+	private CatalogManager catalogManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	
@@ -100,7 +102,6 @@ public class CatalogTest extends OlatJerseyTestCase {
 		admin = securityManager.findIdentityByName("administrator");
 
 		//create a catalog
-		CatalogManager catalogManager = CatalogManager.getInstance();
 		root1 = catalogManager.getRootCatalogEntries().get(0);
 		
 		entry1 = catalogManager.createCatalogEntry();
@@ -263,7 +264,6 @@ public class CatalogTest extends OlatJerseyTestCase {
 		CatalogEntryVO vo = conn.parse(response, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
-		CatalogManager catalogManager = CatalogManager.getInstance();
 		List<CatalogEntry> children = catalogManager.getChildrenOf(entry1);
 		boolean saved = false;
 		for(CatalogEntry child:children) {
@@ -293,7 +293,6 @@ public class CatalogTest extends OlatJerseyTestCase {
 		CatalogEntryVO vo = conn.parse(response, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
-		CatalogManager catalogManager = CatalogManager.getInstance();
 		List<CatalogEntry> children = catalogManager.getChildrenOf(entry1);
 		boolean saved = false;
 		for(CatalogEntry child:children) {
@@ -331,7 +330,6 @@ public class CatalogTest extends OlatJerseyTestCase {
 		CatalogEntryVO vo = conn.parse(response, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
-		CatalogManager catalogManager = CatalogManager.getInstance();
 		List<CatalogEntry> children = catalogManager.getChildrenOf(entry1);
 		CatalogEntry ce = null;
 		for(CatalogEntry child:children) {
@@ -366,7 +364,6 @@ public class CatalogTest extends OlatJerseyTestCase {
 		CatalogEntryVO vo = conn.parse(response, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
-		CatalogManager catalogManager = CatalogManager.getInstance();
 		List<CatalogEntry> children = catalogManager.getChildrenOf(entry1);
 		CatalogEntry ce = null;
 		for(CatalogEntry child:children) {
@@ -396,14 +393,13 @@ public class CatalogTest extends OlatJerseyTestCase {
 		URI uri = UriBuilder.fromUri(getContextURI()).path("catalog").path(entry1.getKey().toString()).build();
 		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
 		method.addHeader("Content-Type", MediaType.APPLICATION_JSON);
-    conn.addJsonEntity(method, entry);
+		conn.addJsonEntity(method, entry);
 
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		CatalogEntryVO vo = conn.parse(response, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
-		CatalogManager catalogManager = CatalogManager.getInstance();
 		CatalogEntry updatedEntry = catalogManager.loadCatalogEntry(entry1);
 		assertEquals("Entry-1-b", updatedEntry.getName());
 		assertEquals("Entry-description-1-b", updatedEntry.getDescription());
@@ -432,7 +428,6 @@ public class CatalogTest extends OlatJerseyTestCase {
 		CatalogEntryVO vo = conn.parse(response, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
-		CatalogManager catalogManager = CatalogManager.getInstance();
 		CatalogEntry updatedEntry = catalogManager.loadCatalogEntry(entryToMove2);
 		assertEquals("Entry-2-moved-down", updatedEntry.getName());
 		assertEquals("Entry-description-2-moved-down", updatedEntry.getDescription());
@@ -458,7 +453,6 @@ public class CatalogTest extends OlatJerseyTestCase {
 		CatalogEntryVO vo = conn.parse(response, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
-		CatalogManager catalogManager = CatalogManager.getInstance();
 		CatalogEntry updatedEntry = catalogManager.loadCatalogEntry(entry2);
 		assertEquals("Entry-2-b", updatedEntry.getName());
 		assertEquals("Entry-description-2-b", updatedEntry.getDescription());
@@ -482,7 +476,6 @@ public class CatalogTest extends OlatJerseyTestCase {
 		CatalogEntryVO vo = conn.parse(response, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
-		CatalogManager catalogManager = CatalogManager.getInstance();
 		CatalogEntry updatedEntry = catalogManager.loadCatalogEntry(entry2);
 		assertEquals("Entry-2-c", updatedEntry.getName());
 		assertEquals("Entry-description-2-c", updatedEntry.getDescription());
@@ -504,7 +497,6 @@ public class CatalogTest extends OlatJerseyTestCase {
 		CatalogEntryVO vo = conn.parse(response, CatalogEntryVO.class);
 		assertNotNull(vo);
 		
-		CatalogManager catalogManager = CatalogManager.getInstance();
 		CatalogEntry updatedEntry = catalogManager.loadCatalogEntry(entryToMove1);
 		assertEquals("Entry-1-to-move", updatedEntry.getName());
 		assertEquals("Entry-description-1-to-move", updatedEntry.getDescription());
@@ -525,7 +517,6 @@ public class CatalogTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
-		CatalogManager catalogManager = CatalogManager.getInstance();
 		List<CatalogEntry> entries = catalogManager.getChildrenOf(root1);
 		for(CatalogEntry entry:entries) {
 			assertFalse(entry.getKey().equals(entry2.getKey()));
@@ -548,7 +539,6 @@ public class CatalogTest extends OlatJerseyTestCase {
 		List<UserVO> voes = parseUserArray(body);
 		assertNotNull(voes);
 		
-		CatalogManager catalogManager = CatalogManager.getInstance();
 		CatalogEntry entry = catalogManager.loadCatalogEntry(entry1.getKey());
 		List<Identity> identities = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(entry.getOwnerGroup());
 		assertNotNull(identities);
@@ -595,7 +585,6 @@ public class CatalogTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
-		CatalogManager catalogManager = CatalogManager.getInstance();
 		CatalogEntry entry = catalogManager.loadCatalogEntry(entry1.getKey());
 		List<Identity> identities = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(entry.getOwnerGroup());
 		boolean found = false;
@@ -621,7 +610,6 @@ public class CatalogTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
-		CatalogManager catalogManager = CatalogManager.getInstance();
 		CatalogEntry entry = catalogManager.loadCatalogEntry(entry1.getKey());
 		List<Identity> identities = BaseSecurityManager.getInstance().getIdentitiesOfSecurityGroup(entry.getOwnerGroup());
 		boolean found = false;
@@ -650,7 +638,6 @@ public class CatalogTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertEquals(401, response.getStatusLine().getStatusCode());
 		
-		CatalogManager catalogManager = CatalogManager.getInstance();
 		List<CatalogEntry> children = catalogManager.getChildrenOf(entry1);
 		boolean saved = false;
 		for(CatalogEntry child:children) {

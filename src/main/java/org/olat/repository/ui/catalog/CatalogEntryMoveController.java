@@ -17,13 +17,11 @@
  * BPS Bildungsportal Sachsen GmbH, http://www.bps-system.de
  * <p>
  */
-package org.olat.catalog.ui;
+package org.olat.repository.ui.catalog;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.catalog.CatalogEntry;
-import org.olat.catalog.CatalogManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -36,6 +34,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.course.tree.TreePosition;
+import org.olat.repository.CatalogEntry;
+import org.olat.repository.manager.CatalogManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -90,6 +90,10 @@ public class CatalogEntryMoveController extends BasicController {
 		
 		mainVC.put("tree", selectionTree);
 		putInitialPanel(mainVC);
+	}
+	
+	public CatalogEntry getMoveMe() {
+		return moveMe;
 	}
 
 	@Override

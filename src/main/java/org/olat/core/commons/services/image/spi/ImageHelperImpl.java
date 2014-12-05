@@ -294,11 +294,11 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	 * @return
 	 */
 	@Override
-	public Size scaleImage(File image, String imageExt, File scaledImage, int maxWidth, int maxHeight) {
+	public Size scaleImage(File image, String imageExt, File scaledImage, int maxWidth, int maxHeight, boolean fill) {
 		ImageInputStream imageSrc = null;
 		try {
 			imageSrc = new FileImageInputStream(image);
-			SizeAndBufferedImage scaledSize = calcScaledSize(imageSrc, imageExt, maxWidth, maxHeight, false);
+			SizeAndBufferedImage scaledSize = calcScaledSize(imageSrc, imageExt, maxWidth, maxHeight, fill);
 			if(scaledSize == null || scaledSize.image == null) {
 				return null;
 			}

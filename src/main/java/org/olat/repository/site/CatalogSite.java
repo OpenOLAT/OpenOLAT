@@ -21,7 +21,6 @@ package org.olat.repository.site;
 
 import java.util.Locale;
 
-import org.olat.catalog.ui.CatalogSiteMainController;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -38,6 +37,7 @@ import org.olat.core.id.context.StateSite;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.repository.ui.catalog.CatalogSiteMainController;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**

@@ -23,24 +23,27 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.catalog;
+package org.olat.repository.model;
 
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.StringHelper;
+import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
 
 /**
  * Description: <br>
  * Implementation of CatalogEntry
  * 
- * @see org.olat.catalog.CatalogEntry
+ * @see org.olat.repository.CatalogEntry
  * @author Felix Jost
  */
 public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 
 	private static final long serialVersionUID = 2834235462805397562L;
 	private String name;
+	private String styleString;
 	private String description;
 	private String externalURL;
 	private RepositoryEntry repositoryEntry;
@@ -49,33 +52,33 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 	private SecurityGroup ownerGroup;
 	private int type;
 
-	protected CatalogEntryImpl() {
+	public CatalogEntryImpl() {
 	// for hibernate
 	}
 
 	/**
-	 * @see org.olat.catalog.CatalogEntry#getDescription()
+	 * @see org.olat.repository.CatalogEntry#getDescription()
 	 */
 	public String getDescription() {
 		return description;
 	}
 
 	/**
-	 * @see org.olat.catalog.CatalogEntry#setDescription(java.lang.String)
+	 * @see org.olat.repository.CatalogEntry#setDescription(java.lang.String)
 	 */
 	public void setDescription(String description) {
 		this.description = description;
 	}
 
 	/**
-	 * @see org.olat.catalog.CatalogEntry#getName()
+	 * @see org.olat.repository.CatalogEntry#getName()
 	 */
 	public String getName() {
 		return name;
 	}
 
 	/**
-	 * @see org.olat.catalog.CatalogEntry#setName(java.lang.String)
+	 * @see org.olat.repository.CatalogEntry#setName(java.lang.String)
 	 */
 	public void setName(String name) {
 		if (name.length() > 100)
@@ -83,71 +86,93 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 		this.name = name;
 	}
 
+	public String getStyleString() {
+		return styleString;
+	}
+
+	public void setStyleString(String styleString) {
+		this.styleString = styleString;
+	}
+	
+	@Override
+	public Style getStyle() {
+		return StringHelper.containsNonWhitespace(styleString) ? Style.valueOf(styleString) : Style.tiles;
+	}
+
+	@Override
+	public void setStyle(Style style) {
+		if(style == null) {
+			styleString = null;
+		} else {
+			styleString = style.name();
+		}
+	}
+
 	/**
-	 * @see org.olat.catalog.CatalogEntry#getRepositoryEntry()
+	 * @see org.olat.repository.CatalogEntry#getRepositoryEntry()
 	 */
 	public RepositoryEntry getRepositoryEntry() {
 		return repositoryEntry;
 	}
 
 	/**
-	 * @see org.olat.catalog.CatalogEntry#setRepositoryEntry(org.olat.repository.RepositoryEntry)
+	 * @see org.olat.repository.CatalogEntry#setRepositoryEntry(org.olat.repository.RepositoryEntry)
 	 */
 	public void setRepositoryEntry(RepositoryEntry repositoryEntry) {
 		this.repositoryEntry = repositoryEntry;
 	}
 
 	/**
-	 * @see org.olat.catalog.CatalogEntry#getOwnerGroup()
+	 * @see org.olat.repository.CatalogEntry#getOwnerGroup()
 	 */
 	public SecurityGroup getOwnerGroup() {
 		return ownerGroup;
 	}
 
 	/**
-	 * @see org.olat.catalog.CatalogEntry#setOwnerGroup(org.olat.basesecurity.SecurityGroup)
+	 * @see org.olat.repository.CatalogEntry#setOwnerGroup(org.olat.basesecurity.SecurityGroup)
 	 */
 	public void setOwnerGroup(SecurityGroup ownerGroup) {
 		this.ownerGroup = ownerGroup;
 	}
 
 	/**
-	 * @see org.olat.catalog.CatalogEntry#getType()
+	 * @see org.olat.repository.CatalogEntry#getType()
 	 */
 	public int getType() {
 		return type;
 	}
 
 	/**
-	 * @see org.olat.catalog.CatalogEntry#setType(int)
+	 * @see org.olat.repository.CatalogEntry#setType(int)
 	 */
 	public void setType(int type) {
 		this.type = type;
 	}
 
 	/**
-	 * @see org.olat.catalog.CatalogEntry#getExternalURL()
+	 * @see org.olat.repository.CatalogEntry#getExternalURL()
 	 */
 	public String getExternalURL() {
 		return externalURL;
 	}
 
 	/**
-	 * @see org.olat.catalog.CatalogEntry#setExternalURL(java.lang.String)
+	 * @see org.olat.repository.CatalogEntry#setExternalURL(java.lang.String)
 	 */
 	public void setExternalURL(String externalURL) {
 		this.externalURL = externalURL;
 	}
 
 	/**
-	 * @see org.olat.catalog.CatalogEntry#getParent()
+	 * @see org.olat.repository.CatalogEntry#getParent()
 	 */
 	public CatalogEntry getParent() {
 		return parent;
 	}
 
 	/**
-	 * @see org.olat.catalog.CatalogEntry#setParent(org.olat.catalog.CatalogEntry)
+	 * @see org.olat.repository.CatalogEntry#setParent(org.olat.repository.CatalogEntry)
 	 */
 	public void setParent(CatalogEntry parent) {
 		this.parent = parent;

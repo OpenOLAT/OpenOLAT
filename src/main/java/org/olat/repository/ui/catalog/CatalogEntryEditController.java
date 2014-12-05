@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.catalog.ui;
+package org.olat.repository.ui.catalog;
 
 import java.io.File;
 import java.util.HashSet;
@@ -31,8 +31,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.catalog.CatalogEntry;
-import org.olat.catalog.CatalogManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -40,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -53,6 +52,9 @@ import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.repository.CatalogEntry;
+import org.olat.repository.CatalogEntry.Style;
+import org.olat.repository.manager.CatalogManager;
 
 
 /**
@@ -66,7 +68,7 @@ import org.olat.core.util.vfs.VFSLeaf;
  * @author patrick
  */
 
-class EntryForm extends FormBasicController {
+public class CatalogEntryEditController extends FormBasicController {
 	
 	private static final int picUploadlimitKB = 5024;
 	
@@ -77,8 +79,13 @@ class EntryForm extends FormBasicController {
 		mimeTypes.add("image/jpeg");
 		mimeTypes.add("image/png");
 	}
+	
+	private static final String[] styleKeys = new String[]{
+		Style.tiles.name(), Style.list.name(), Style.compact.name()
+	};
 
 	private TextElement nameEl;
+	private SingleSelection styleEl;
 	private RichTextElement descriptionEl;
 	private FormLink deleteImage;
 	private FileElement fileUpload;
@@ -87,12 +94,13 @@ class EntryForm extends FormBasicController {
 	private CatalogEntry catalogEntry;
 	private final CatalogManager catalogManager;
 	
-	public EntryForm(UserRequest ureq, WindowControl wControl, CatalogEntry entry) {
+	public CatalogEntryEditController(UserRequest ureq, WindowControl wControl, CatalogEntry entry) {
 		this(ureq, wControl, entry, null);
 	}
 	
-	public EntryForm(UserRequest ureq, WindowControl wControl, CatalogEntry entry, CatalogEntry parentEntry) {
+	public CatalogEntryEditController(UserRequest ureq, WindowControl wControl, CatalogEntry entry, CatalogEntry parentEntry) {
 		super(ureq, wControl);
+		
 		this.catalogEntry = entry;
 		this.parentEntry = parentEntry;
 		catalogManager = CoreSpringFactory.getImpl(CatalogManager.class);
@@ -101,7 +109,7 @@ class EntryForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		this.setFormStyle("o_catalog");
+		setFormStyle("o_catalog");
 		String name = catalogEntry == null ? "" : catalogEntry.getName();
 		nameEl = uifactory.addTextElement("name", "entry.category", 255, name, formLayout);
 		nameEl.setMandatory(true);
@@ -110,8 +118,21 @@ class EntryForm extends FormBasicController {
 		String desc = catalogEntry == null ? "" : catalogEntry.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("description", "entry.description", desc, 10, -1, formLayout, getWindowControl());
 		
-		VFSLeaf img = catalogEntry == null || catalogEntry.getKey() == null ? null : catalogManager.getImage(catalogEntry);
+		String[] styleValues = new String[]{ translate("tiles"), translate("list"), translate("list.compact")};
+		styleEl = uifactory.addDropdownSingleselect("style", "style", formLayout, styleKeys, styleValues, null);
+		Style style = catalogEntry == null ? null : catalogEntry.getStyle();
+		if(style != null) {
+			for(String styleKey:styleKeys) {
+				if(styleKey.equals(style.name())) {
+					styleEl.select(styleKey, true);
+				}
+			}
+		}
+		if(!styleEl.isOneSelected()) {
+			styleEl.select(styleKeys[0], true);
+		}
 		
+		VFSLeaf img = catalogEntry == null || catalogEntry.getKey() == null ? null : catalogManager.getImage(catalogEntry);
 		fileUpload = uifactory.addFileElement("entry.pic", "entry.pic", formLayout);
 		fileUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		fileUpload.addActionListener(FormEvent.ONCHANGE);
@@ -143,7 +164,7 @@ class EntryForm extends FormBasicController {
 		//
 	}
 	
-	protected void setElementCssClass(String cssClass) {
+	public void setElementCssClass(String cssClass) {
 		flc.setElementCssClass(cssClass);
 	}
 
@@ -182,6 +203,11 @@ class EntryForm extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		catalogEntry.setName(nameEl.getValue());
+		if(styleEl.isOneSelected()) {
+			catalogEntry.setStyle(Style.valueOf(styleEl.getSelectedKey()));
+		} else {
+			catalogEntry.setStyle(null);
+		}
 		catalogEntry.setDescription(descriptionEl.getValue());
 		
 		if(catalogEntry.getKey() == null) {
@@ -203,7 +229,6 @@ class EntryForm extends FormBasicController {
 			if (!ok) {
 				showError("Failed");
 			}
-			container.delete();
 		}
 		
 		fireEvent(ureq, Event.DONE_EVENT);

@@ -478,7 +478,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 * @see org.olat.basesecurity.Manager#isIdentityInSecurityGroup(org.olat.core.id.Identity, org.olat.basesecurity.SecurityGroup)
 	 */
 	public boolean isIdentityInSecurityGroup(Identity identity, SecurityGroup secGroup) {
-		if (secGroup == null) return false;
+		if (secGroup == null || identity == null) return false;
 		String queryString = "select count(sgmsi) from  org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi where sgmsi.identity = :identitykey and sgmsi.securityGroup = :securityGroup";
 		DBQuery query = DBFactory.getInstance().createQuery(queryString);
 		query.setLong("identitykey", identity.getKey());

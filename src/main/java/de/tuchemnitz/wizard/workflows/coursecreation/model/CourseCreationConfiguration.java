@@ -34,7 +34,6 @@ package de.tuchemnitz.wizard.workflows.coursecreation.model;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.velocity.context.Context;
-import org.olat.catalog.CatalogEntry;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -45,6 +44,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.velocity.VelocityHelper;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.repository.CatalogEntry;
 
 import de.tuchemnitz.wizard.workflows.coursecreation.CourseCreationHelper;
 

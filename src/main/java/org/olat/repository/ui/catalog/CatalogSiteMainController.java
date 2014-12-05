@@ -17,12 +17,10 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.catalog.ui;
+package org.olat.repository.ui.catalog;
 
 import java.util.List;
 
-import org.olat.catalog.CatalogEntry;
-import org.olat.catalog.CatalogManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
@@ -36,7 +34,9 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
-import org.olat.repository.ui.list.CatalogNodeController;
+import org.olat.repository.CatalogEntry;
+import org.olat.repository.manager.CatalogManager;
+import org.olat.repository.ui.catalog.CatalogNodeController;
 
 /**
  * 

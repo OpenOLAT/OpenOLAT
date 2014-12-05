@@ -23,14 +23,12 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.catalog;
+package org.olat.repository;
 
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Persistable;
-import org.olat.repository.CatalogEntryRef;
-import org.olat.repository.RepositoryEntry;
 
 /**
  * Description: <br>
@@ -108,6 +106,10 @@ public interface CatalogEntry extends CatalogEntryRef, CreateInfo, Persistable, 
 	 * @param ownerGroup
 	 */
 	public void setOwnerGroup(SecurityGroup ownerGroup);
+	
+	public Style getStyle();
+	
+	public void setStyle(Style style);
 
 	/**
 	 * getter
@@ -158,5 +160,12 @@ public interface CatalogEntry extends CatalogEntryRef, CreateInfo, Persistable, 
 	
 	public enum OrderBy {
 		name,
+	}
+	
+	public enum Style {
+		tiles,
+		list,
+		compact,
+		
 	}
 }

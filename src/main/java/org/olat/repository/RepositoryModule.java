@@ -20,7 +20,6 @@
 package org.olat.repository;
 
 import org.olat.NewControllerFactory;
-import org.olat.catalog.CatalogEntry;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
@@ -29,6 +28,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.course.site.CourseSite;
 import org.olat.course.site.CourseSiteContextEntryControllerCreator;
 import org.olat.group.BusinessGroupModule;
+import org.olat.repository.site.CatalogAdminSite;
 import org.olat.repository.site.MyCoursesSite;
 import org.olat.repository.site.RepositorySite;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,6 +97,8 @@ public class RepositoryModule extends AbstractSpringModule {
 		
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(CatalogEntry.class.getSimpleName(),
 				new CatalogContextEntryControllerCreator(this));
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("CatalogAdmin",
+				new SiteContextEntryControllerCreator(CatalogAdminSite.class));
 		
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(RepositorySite.class.getSimpleName(),
 				new SiteContextEntryControllerCreator(RepositorySite.class));

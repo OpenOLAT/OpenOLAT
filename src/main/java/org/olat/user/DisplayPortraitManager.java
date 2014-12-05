@@ -170,9 +170,9 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 		File pBigFile = new File(portraitDir, DisplayPortraitManager.PORTRAIT_BIG_FILENAME + "." + extension);
 		File pSmallFile = new File(portraitDir, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME + "." + extension);
 		ImageService imageHelper = CoreSpringFactory.getImpl(ImageService.class);
-		Size size = imageHelper.scaleImage(file, extension, pBigFile, DisplayPortraitManager.WIDTH_PORTRAIT_BIG, DisplayPortraitManager.WIDTH_PORTRAIT_BIG);
+		Size size = imageHelper.scaleImage(file, extension, pBigFile, DisplayPortraitManager.WIDTH_PORTRAIT_BIG, DisplayPortraitManager.WIDTH_PORTRAIT_BIG, false);
 		if(size != null){
-			size = imageHelper.scaleImage(file, extension, pSmallFile, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL);
+			size = imageHelper.scaleImage(file, extension, pSmallFile, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL, false);
 		}
 	}
 	

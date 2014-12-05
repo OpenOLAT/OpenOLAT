@@ -17,15 +17,12 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.repository.ui.list;
+package org.olat.repository.ui.catalog;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.catalog.CatalogEntry;
-import org.olat.catalog.CatalogManager;
-import org.olat.catalog.ui.CatalogEntryComparator;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -47,9 +44,13 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.CatalogEntry.Style;
+import org.olat.repository.manager.CatalogManager;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.ui.CatalogEntryImageMapper;
+import org.olat.repository.ui.list.RepositoryEntryListController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -89,7 +90,11 @@ public class CatalogNodeController extends BasicController implements Activateab
 		//one mapper for all users
 		mapperThumbnailUrl = mapperService.register(null, "catalogentryImage", new CatalogEntryImageMapper());
 		mainVC.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
-		
+		if(catalogEntry.getStyle() != null) {
+			mainVC.contextPut("listStyle", catalogEntry.getStyle().name());
+		} else {
+			mainVC.contextPut("listStyle", Style.tiles.name());
+		}
 		mainVC.contextPut("catalogEntryName", catalogEntry.getName());
 		int level  = 0;
 		CatalogEntry parent = catalogEntry.getParent();
@@ -104,7 +109,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 		}
 		VFSLeaf image = catalogManager.getImage(catalogEntry);
 		if(image != null) {
-			mainVC.contextPut("catThumbnail", catalogEntry.getKey());
+			mainVC.contextPut("catThumbnail", image.getName());
 		}
 		
 		List<CatalogEntry> childCe = catalogManager.getNodesChildrenOf(catalogEntry);
@@ -118,12 +123,13 @@ public class CatalogNodeController extends BasicController implements Activateab
 				VFSLeaf img = catalogManager.getImage(entry);
 				if(img != null) {
 					String imgId = "image_" + count;
-					mainVC.contextPut(imgId, entry.getKey());
+					mainVC.contextPut(imgId, img.getName());
 				}
 				mainVC.contextPut("k" + cmpId, entry.getKey());
 				
 				Link link = LinkFactory.createCustomLink(cmpId, "select_node", cmpId, Link.LINK + Link.NONTRANSLATED, mainVC, this);
 				link.setCustomDisplayText(entry.getName());
+				link.setCustomEnabledLinkCSS("o_icon o_icon_catalog_sub");
 				link.setUserObject(entry.getKey());
 				subCategories.add(Integer.toString(count));
 				String titleId = "title_" + count;
@@ -214,7 +220,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 			//the "Node" is only for internal usage
 			StateEntry stateEntry = entry.getTransientState();
 			if(stateEntry instanceof CatalogStateEntry) {
-				CatalogEntry catalogEntry = ((CatalogStateEntry)stateEntry).entry;
+				CatalogEntry catalogEntry = ((CatalogStateEntry)stateEntry).getEntry();
 				CatalogNodeController nextCtrl = selectCatalogEntry(ureq, catalogEntry);
 				if(nextCtrl != null && entries.size() > 1) {
 					nextCtrl.activate(ureq, entries.subList(1, entries.size()), null);
@@ -240,23 +246,5 @@ public class CatalogNodeController extends BasicController implements Activateab
 		}
 		Collections.reverse(parentLine);
 		activate(ureq, parentLine, null);
-	}
-	
-	//only for internal usage
-	public static class CatalogStateEntry implements StateEntry {
-
-		private static final long serialVersionUID = -5592837683379007704L;
-		
-		private CatalogEntry entry;
-		
-		public CatalogStateEntry(CatalogEntry entry) {
-			this.entry = entry;
-		}
-
-		@Override
-		public CatalogStateEntry clone() {
-			CatalogStateEntry clone = new CatalogStateEntry(entry);
-			return clone;
-		}
 	}
 }

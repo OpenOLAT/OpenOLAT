@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.catalog;
+package org.olat.repository.manager;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -46,10 +46,12 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
-import org.olat.core.configuration.Initializable;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.Resourceable;
@@ -57,6 +59,8 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
+import org.olat.repository.CatalogEntry;
 import org.olat.repository.CatalogEntryRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -64,8 +68,11 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
+import org.olat.repository.model.CatalogEntryImpl;
 import org.olat.user.UserDataDeletable;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Description: <br>
@@ -85,9 +92,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Date: 2005/10/14 13:21:42<br>
  * @author Felix Jost
  */
-public class CatalogManager extends BasicManager implements UserDataDeletable, Initializable {
-	private static CatalogManager catalogManager;
-	private final int PICTUREWIDTH = 570;
+@Service("catalogManager")
+public class CatalogManager implements UserDataDeletable, InitializingBean {
+	
+	private static final OLog log = Tracing.createLoggerFor(CatalogManager.class);
 	
 	/**
 	 * Default value for the catalog root <code>CATALOGROOT</code>
@@ -115,14 +123,6 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 */
 	private CatalogManager() {
 		// singleton
-		catalogManager = this;
-	}
-
-	/**
-	 * @return Return singleton instance
-	 */
-	public static CatalogManager getInstance() {
-		return catalogManager;
 	}
 
 	/**
@@ -145,8 +145,6 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 				.setParameter("parentKey", ce.getKey())
 				.getResultList();
 	}
-	
-
 
 	/**
 	 * Children of this CatalogEntry as a list of CatalogEntries
@@ -307,6 +305,18 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	public CatalogEntry updateCatalogEntry(CatalogEntry ce) {
 		return dbInstance.getCurrentEntityManager().merge(ce);
 	}
+	
+	public void deleteCatalogEntry(RepositoryEntryRef entry, CatalogEntry parent) {
+		CatalogEntry ce = getCatalogEntryBy(entry, parent);
+		if(ce != null) {
+			SecurityGroup owner = ce.getOwnerGroup();
+			dbInstance.getCurrentEntityManager().remove(ce);
+			if (owner != null) {
+				log.debug("deleteCatalogEntry case_1: delete owner-group=" + owner);
+				securityManager.deleteSecurityGroup(owner);
+			}
+		} 
+	}
 
 	/**
 	 * delete a catalog entry and a potentially referenced substructure from db.
@@ -316,8 +326,8 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @param ce
 	 */
 	public void deleteCatalogEntry(CatalogEntry ce) {
-		final boolean debug = isLogDebugEnabled();
-		if(debug) logDebug("deleteCatalogEntry start... ce=" + ce);
+		final boolean debug = log.isDebug();
+		if(debug) log.debug("deleteCatalogEntry start... ce=" + ce);
 		
 		if (ce.getType() == CatalogEntry.TYPE_LEAF) {
 			//reload the detached catalog entry, delete it and then the owner group
@@ -326,7 +336,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 				SecurityGroup owner = ce.getOwnerGroup();
 				dbInstance.getCurrentEntityManager().remove(ce);
 				if (owner != null) {
-					getLogger().debug("deleteCatalogEntry case_1: delete owner-group=" + owner);
+					log.debug("deleteCatalogEntry case_1: delete owner-group=" + owner);
 					securityManager.deleteSecurityGroup(owner);
 				}
 			}
@@ -345,11 +355,11 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 			// after deleting all entries, delete all secGroups corresponding
 			for (Iterator<SecurityGroup> iter = secGroupsToBeDeleted.iterator(); iter.hasNext();) {
 				SecurityGroup grp = iter.next();
-				if(debug) logDebug("deleteCatalogEntry case_2: delete groups of deleteCatalogSubtree grp=" + grp);
+				if(debug) log.debug("deleteCatalogEntry case_2: delete groups of deleteCatalogSubtree grp=" + grp);
 				securityManager.deleteSecurityGroup(grp);
 			}
 		}
-		if(debug) logDebug("deleteCatalogEntry END");
+		if(debug) log.debug("deleteCatalogEntry END");
 	}
 
 	/**
@@ -379,7 +389,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @return List of catalog entries
 	 */
 	public List<CatalogEntry> getCatalogEntriesReferencing(RepositoryEntryRef repoEntry) {
-		String sqlQuery = "select cei from " + " org.olat.catalog.CatalogEntryImpl as cei " + " ,org.olat.repository.RepositoryEntry as re "
+		String sqlQuery = "select cei from " + CatalogEntryImpl.class.getName() + "  as cei " + " ,org.olat.repository.RepositoryEntry as re "
 				+ " where cei.repositoryEntry = re AND re.key= :reKey ";
 
 		return dbInstance.getCurrentEntityManager()
@@ -428,6 +438,27 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 		return entries.get(0);
 	}
 	
+	public CatalogEntry getCatalogEntryBy(RepositoryEntryRef entry, CatalogEntry parent) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei")
+		  .append(" left join fetch cei.repositoryEntry as entry")
+		  .append(" left join fetch cei.ownerGroup ownerGroup ")
+		  .append(" inner join fetch cei.parent parentCei ")
+		  .append(" left join fetch parentCei.ownerGroup parentOwnerGroup ")
+		  .append(" where parentCei.key=:parentKey and entry.key=:entryKey");
+
+		List<CatalogEntry> entries = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CatalogEntry.class)
+				.setParameter("parentKey", parent.getKey())
+				.setParameter("entryKey", entry.getKey())
+				.getResultList();
+		
+		if(entries.isEmpty()) {
+			return null;
+		}
+		return entries.get(0);
+	}
+	
 	public CatalogEntry getCatalogNodeByKey(Long key) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select cei from ").append(CatalogEntryImpl.class.getName()).append(" as cei")
@@ -454,7 +485,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @return List of catalog entries
 	 */
 	public List<CatalogEntry> getCatalogEntriesOwnedBy(Identity identity) {
-		String sqlQuery = "select cei from org.olat.catalog.CatalogEntryImpl as cei inner join fetch cei.ownerGroup, " + 
+		String sqlQuery = "select cei from " + CatalogEntryImpl.class.getName() + " as cei inner join fetch cei.ownerGroup, " + 
 			" org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi" +
 			" where cei.ownerGroup = sgmsi.securityGroup and sgmsi.identity.key = :identityKey";
 		
@@ -508,11 +539,11 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	 * @param newEntry
 	 */
 	public void addCatalogEntry(CatalogEntry parent, CatalogEntry newEntry) {
-		boolean debug = isLogDebugEnabled();
-		if(debug) logDebug("addCatalogEntry parent=" + parent);
+		boolean debug = log.isDebug();
+		if(debug) log.debug("addCatalogEntry parent=" + parent);
 		newEntry.setParent(parent);
-		if(debug) logDebug("addCatalogEntry newEntry=" + newEntry);
-		if(debug) logDebug("addCatalogEntry newEntry.getOwnerGroup()=" + newEntry.getOwnerGroup());
+		if(debug) log.debug("addCatalogEntry newEntry=" + newEntry);
+		if(debug) log.debug("addCatalogEntry newEntry.getOwnerGroup()=" + newEntry.getOwnerGroup());
 		saveCatalogEntry(newEntry);
 	}
 
@@ -533,10 +564,8 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 				.getResultList();
 	}
 
-	/**
-	 * init called on module start-up
-	 */
-	public void init() {
+	@Override
+	public void afterPropertiesSet() throws Exception {
 		List<CatalogEntry> roots = getRootCatalogEntries();
 		if (roots.isEmpty()) { // not initialized yet
 			/*
@@ -607,7 +636,7 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 	public void resourceableDeleted(RepositoryEntry repositoryEntry) {
 		// if a repository entry gets deleted, the referencing Catalog Entries gets
 		// retired to
-		if(isLogDebugEnabled()) logDebug("sourceableDeleted start... repositoryEntry=" + repositoryEntry);
+		if(log.isDebug()) log.debug("sourceableDeleted start... repositoryEntry=" + repositoryEntry);
 		List<CatalogEntry> references = getCatalogEntriesReferencing(repositoryEntry);
 		if (references != null && !references.isEmpty()) {
 			for (int i = 0; i < references.size(); i++) {
@@ -631,10 +660,10 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 			if (securityManager.countIdentitiesOfSecurityGroup(catalogEntry.getOwnerGroup()) == 0 ) {
 				// This group has no owner anymore => add OLAT-Admin as owner
 				securityManager.addIdentityToSecurityGroup(UserDeletionManager.getInstance().getAdminIdentity(), catalogEntry.getOwnerGroup());
-				logInfo("Delete user-data, add Administrator-identity as owner of catalogEntry=" + catalogEntry.getName());
+				log.info("Delete user-data, add Administrator-identity as owner of catalogEntry=" + catalogEntry.getName());
 			}
 		}
-		if(isLogDebugEnabled()) logDebug("All owner entries in catalog deleted for identity=" + identity);
+		if(log.isDebug()) log.debug("All owner entries in catalog deleted for identity=" + identity);
 	}
 
 	/**
@@ -685,7 +714,11 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 		if(image instanceof VFSLeaf) {
 			return (VFSLeaf)image;
 		}
-		
+		imageName = entry.getKey() + ".jpg";
+		image = catalogResourceHome.resolve(imageName);
+		if(image instanceof VFSLeaf) {
+			return (VFSLeaf)image;
+		}
 		return null;
 	}
 	
@@ -714,14 +747,33 @@ public class CatalogManager extends BasicManager implements UserDataDeletable, I
 			currentImage.delete();
 		}
 		
+		String extension = FileUtils.getFileSuffix(newImageFile.getName());
+		if(StringHelper.containsNonWhitespace(extension)) {
+			extension = extension.toLowerCase();
+		}
+
+		boolean ok = false;
 		VFSContainer catalogResourceHome = getCatalogResourcesHome();
-		VFSLeaf repoImage = catalogResourceHome.createChildLeaf(re.getKey() + ".png");
-		
-		Size size = imageHelper.scaleImage(newImageFile, repoImage, PICTUREWIDTH, PICTUREWIDTH, false);
-		return size != null;
+		try {
+			if("jpeg".equals(extension) || "jpg".equals(extension)) {
+				VFSLeaf repoImage = catalogResourceHome.createChildLeaf(re.getKey() + ".jpg");
+				ok = VFSManager.copyContent(newImageFile, repoImage);
+			} else if("png".equals(extension)) {
+				VFSLeaf repoImage = catalogResourceHome.createChildLeaf(re.getKey() + ".png");
+				ok = VFSManager.copyContent(newImageFile, repoImage);
+			} else {
+				//scale to default and png
+				VFSLeaf repoImage = catalogResourceHome.createChildLeaf(re.getKey() + ".png");
+				Size size = imageHelper.scaleImage(newImageFile, repoImage, 570, 570, true);
+				ok = size != null;
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return ok;
 	}
 	
-	private VFSContainer getCatalogResourcesHome() {
+	public VFSContainer getCatalogResourcesHome() {
 		return new LocalFolderImpl(new File(FolderConfig.getCanonicalResourcesHome(), "catalog"));
 	}
 }

@@ -17,14 +17,12 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.catalog.ui;
+package org.olat.repository.ui.catalog;
 
 import java.util.Collections;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.catalog.CatalogEntry;
-import org.olat.catalog.CatalogManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -35,7 +33,10 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.CatalogManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -58,7 +59,9 @@ public class CatalogEntryAddController extends BasicController {
 	private VelocityContainer mainVC;
 	private Link okButton, cancelButton;
 	private RepositoryEntry toBeAddedEntry;
-	protected final CatalogManager catalogManager;
+	
+	@Autowired
+	protected CatalogManager catalogManager;
 
 	/**
 	 * Constructor
@@ -72,9 +75,8 @@ public class CatalogEntryAddController extends BasicController {
 		super(ureq, wControl);
 		
 		this.toBeAddedEntry = toBeAddedEntry;
-		catalogManager = CatalogManager.getInstance();
 		
-		List<CatalogEntry> catEntryList = CatalogManager.getInstance().getAllCatalogNodes();
+		List<CatalogEntry> catEntryList = catalogManager.getAllCatalogNodes();
 		Collections.sort(catEntryList, new CatalogEntryNodeComparator(getLocale()));
 
 		mainVC = createVelocityContainer("catMove");

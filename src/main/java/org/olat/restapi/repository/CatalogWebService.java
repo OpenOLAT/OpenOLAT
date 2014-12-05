@@ -17,14 +17,15 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.catalog.restapi;
+package org.olat.restapi.repository;
 
-import static org.olat.catalog.restapi.CatalogVOFactory.get;
-import static org.olat.catalog.restapi.CatalogVOFactory.link;
-import static org.olat.catalog.ui.CatalogController.LOCK_TOKEN;
+import static org.olat.repository.ui.catalog.CatalogNodeManagerController.LOCK_TOKEN;
+import static org.olat.repository.ui.catalog.CatalogNodeManagerController.lockRes;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
 import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
+import static org.olat.restapi.support.CatalogVOFactory.get;
+import static org.olat.restapi.support.CatalogVOFactory.link;
 
 import java.util.List;
 import java.util.Locale;
@@ -53,25 +54,25 @@ import javax.ws.rs.core.UriInfo;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.catalog.CatalogEntry;
-import org.olat.catalog.CatalogManager;
-import org.olat.catalog.ui.CatalogController;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.i18n.I18nModule;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.dispatcher.LocaleNegotiator;
+import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.manager.CatalogManager;
+import org.olat.repository.ui.catalog.CatalogNodeManagerController;
 import org.olat.restapi.support.MediaTypeVariants;
+import org.olat.restapi.support.vo.CatalogEntryVO;
+import org.olat.restapi.support.vo.CatalogEntryVOes;
 import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.user.UserManager;
 import org.olat.user.restapi.UserVO;
@@ -91,11 +92,9 @@ public class CatalogWebService {
 	private static final String VERSION = "1.0";
 	
 	private final CatalogManager catalogManager;
-	private final OLATResourceable catalogRes;
 	
 	public CatalogWebService() {
-		catalogManager = CatalogManager.getInstance();
-		catalogRes = OresHelper.createOLATResourceableType(CatalogController.class);
+		catalogManager = CoreSpringFactory.getImpl(CatalogManager.class);
 	}
 	
 	/**
@@ -117,7 +116,7 @@ public class CatalogWebService {
 	 * @response.representation.200.qname {http://www.example.com}catalogEntryVO
    * @response.representation.200.mediaType application/xml, application/json
    * @response.representation.200.doc The list of roots catalog entries
-   * @response.representation.200.example {@link org.olat.catalog.restapi.Examples#SAMPLE_CATALOGENTRYVOes}
+   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_CATALOGENTRYVOes}
 	 * @return The response
 	 */
 	@GET
@@ -140,7 +139,7 @@ public class CatalogWebService {
 	 * @response.representation.200.qname {http://www.example.com}catalogEntryVO
    * @response.representation.200.mediaType application/xml, application/json
    * @response.representation.200.doc The catalog entry
-   * @response.representation.200.example {@link org.olat.catalog.restapi.Examples#SAMPLE_CATALOGENTRYVO}
+   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_CATALOGENTRYVO}
    * @response.representation.401.doc The path could not be resolved to a valid catalog entry
    * @param path The path
    * @param uriInfo The URI informations
@@ -176,7 +175,7 @@ public class CatalogWebService {
 	 * @response.representation.200.qname {http://www.example.com}catalogEntryVO
    * @response.representation.200.mediaType application/xml, application/json
    * @response.representation.200.doc The list of catalog entries
-   * @response.representation.200.example {@link org.olat.catalog.restapi.Examples#SAMPLE_CATALOGENTRYVOes}
+   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_CATALOGENTRYVOes}
    * @response.representation.404.doc The path could not be resolved to a valid catalog entry
    * @param path The path
    * @param start
@@ -233,7 +232,7 @@ public class CatalogWebService {
 	 * @response.representation.200.qname {http://www.example.com}catalogEntryVO
    * @response.representation.200.mediaType application/xml, application/json
    * @response.representation.200.doc The catalog entry
-   * @response.representation.200.example {@link org.olat.catalog.restapi.Examples#SAMPLE_CATALOGENTRYVO}
+   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_CATALOGENTRYVO}
    * @response.representation.401.doc Not authorized
    * @response.representation.404.doc The path could not be resolved to a valid catalog entry
    * @param path The path
@@ -269,11 +268,11 @@ public class CatalogWebService {
 	 * @response.representation.qname {http://www.example.com}catalogEntryVO
    * @response.representation.mediaType application/xml, application/json
    * @response.representation.doc The catalog entry
-   * @response.representation.example {@link org.olat.catalog.restapi.Examples#SAMPLE_CATALOGENTRYVO}
+   * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_CATALOGENTRYVO}
 	 * @response.representation.200.qname {http://www.example.com}catalogEntryVO
    * @response.representation.200.mediaType application/xml, application/json
    * @response.representation.200.doc The list of catalog entry
-   * @response.representation.200.example {@link org.olat.catalog.restapi.Examples#SAMPLE_CATALOGENTRYVO}
+   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_CATALOGENTRYVO}
    * @response.representation.401.doc Not authorized
    * @response.representation.404.doc The path could not be resolved to a valid catalog entry
    * @param path The path
@@ -316,7 +315,7 @@ public class CatalogWebService {
 		}
 		
 		Identity id = getUserRequest(httpRequest).getIdentity();
-		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(catalogRes, id, LOCK_TOKEN);
+		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, id, LOCK_TOKEN);
 		if (!lock.isSuccess()) {
 			return getLockedResponse(lock, httpRequest);
 		}
@@ -347,7 +346,7 @@ public class CatalogWebService {
 	 * @response.representation.200.qname {http://www.example.com}catalogEntryVO
    * @response.representation.200.mediaType application/xml, application/json
    * @response.representation.200.doc The catalog entry
-   * @response.representation.200.example {@link org.olat.catalog.restapi.Examples#SAMPLE_CATALOGENTRYVO}
+   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_CATALOGENTRYVO}
    * @response.representation.401.doc Not authorized
    * @response.representation.404.doc The path could not be resolved to a valid catalog entry
    * @param path The path
@@ -378,7 +377,7 @@ public class CatalogWebService {
 	 * @response.representation.200.qname {http://www.example.com}catalogEntryVO
    * @response.representation.200.mediaType application/xml, application/json
    * @response.representation.200.doc The catalog entry
-   * @response.representation.200.example {@link org.olat.catalog.restapi.Examples#SAMPLE_CATALOGENTRYVO}
+   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_CATALOGENTRYVO}
    * @response.representation.401.doc Not authorized
    * @response.representation.404.doc The path could not be resolved to a valid catalog entry
    * @param path The path
@@ -409,7 +408,7 @@ public class CatalogWebService {
 	 * @response.representation.200.qname {http://www.example.com}catalogEntryVO
    * @response.representation.200.mediaType application/xml, application/json
    * @response.representation.200.doc The catalog entry
-   * @response.representation.200.example {@link org.olat.catalog.restapi.Examples#SAMPLE_CATALOGENTRYVO}
+   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_CATALOGENTRYVO}
    * @response.representation.401.doc Not authorized
    * @response.representation.404.doc The path could not be resolved to a valid catalog entry
    * @param path The path
@@ -455,7 +454,7 @@ public class CatalogWebService {
 		}
 		
 		Identity id = getUserRequest(httpRequest).getIdentity();
-		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(catalogRes, id, LOCK_TOKEN);
+		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, id, LOCK_TOKEN);
 		if (!lock.isSuccess()) {
 			return getLockedResponse(lock, httpRequest);
 		}
@@ -522,7 +521,7 @@ public class CatalogWebService {
 		}
 		
 		Identity id = getUserRequest(httpRequest).getIdentity();
-		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(catalogRes, id, LOCK_TOKEN);
+		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, id, LOCK_TOKEN);
 		if (!lock.isSuccess()) {
 			return getLockedResponse(lock, httpRequest);
 		}
@@ -645,7 +644,6 @@ public class CatalogWebService {
 	 * @return The response
 	 */
 	@PUT
-	
 	@Path("{path:.*}/owners/{identityKey}")
 	public Response addOwner(@PathParam("path") List<PathSegment> path, @PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
@@ -671,7 +669,7 @@ public class CatalogWebService {
 		}
 		
 		Identity id = getUserRequest(httpRequest).getIdentity();
-		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(catalogRes, id, LOCK_TOKEN);
+		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, id, LOCK_TOKEN);
 		if (!lock.isSuccess()) {
 			return getLockedResponse(lock, httpRequest);
 		}
@@ -734,7 +732,7 @@ public class CatalogWebService {
 		}
 		
 		Identity id = getUserRequest(httpRequest).getIdentity();
-		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(catalogRes, id, LOCK_TOKEN);
+		LockResult lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockRes, id, LOCK_TOKEN);
 		if (!lock.isSuccess()) {
 			return getLockedResponse(lock, httpRequest);
 		}
@@ -759,7 +757,7 @@ public class CatalogWebService {
 			locale = I18nModule.getDefaultLocale();
 		}
 		
-		Translator translator = Util.createPackageTranslator(CatalogController.class, locale);
+		Translator translator = Util.createPackageTranslator(CatalogNodeManagerController.class, locale);
 
 		String ownerName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(lock.getOwner());
 		String translation = translator.translate("catalog.locked.by", new String[]{ ownerName });

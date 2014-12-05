@@ -34,22 +34,23 @@ package de.tuchemnitz.wizard.helper.catalog;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.catalog.CatalogEntry;
-import org.olat.catalog.CatalogManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.course.ICourse;
+import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.manager.CatalogManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 
 /**
  * Description:<br>
  * Helper class for common catalog operations that are not existent in the
- * {@link org.olat.catalog.CatalogManager} yet.
+ * {@link org.olat.repository.manager.CatalogManager} yet.
  *
  * <P>
  * Initial Date: 12.12.2008 <br>
@@ -68,7 +69,7 @@ public class CatalogHelper {
 		OLATResource ores = OLATResourceManager.getInstance().findResourceable(course.getResourceableId(), course.getResourceableTypeName());
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry re = rm.lookupRepositoryEntry(ores, true);
-		CatalogManager cm = CatalogManager.getInstance();
+		CatalogManager cm = CoreSpringFactory.getImpl(CatalogManager.class);
 		CatalogEntry newLinkNotPersistedYet = cm.createCatalogEntry();
 		newLinkNotPersistedYet.setName(re.getDisplayname());
 		newLinkNotPersistedYet.setDescription(re.getDescription());
@@ -79,7 +80,7 @@ public class CatalogHelper {
 	}
 
 	protected static final TreeNode buildCatalogNode(final CatalogEntry rootEntry) {
-		final CatalogManager cm = CatalogManager.getInstance();
+		final CatalogManager cm = CoreSpringFactory.getImpl(CatalogManager.class);
 		List<CatalogEntry> children = cm.getChildrenOf(rootEntry);
 
 		GenericTreeNode ctn = new GenericTreeNode(rootEntry.getName(), rootEntry);

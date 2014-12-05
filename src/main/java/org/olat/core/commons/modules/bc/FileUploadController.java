@@ -291,7 +291,7 @@ public class FileUploadController extends FormBasicController {
 				String extension = FileUtils.getFileSuffix(fileName);
 				File imageScaled = new File(uploadedFile.getParentFile(), "scaled_" + uploadedFile.getName() + "." + extension);
 				ImageService imageHelper = CoreSpringFactory.getImpl(ImageService.class);
-				if(imageHelper.scaleImage(uploadedFile, extension, imageScaled, 1280, 1280) != null) {
+				if(imageHelper.scaleImage(uploadedFile, extension, imageScaled, 1280, 1280, false) != null) {
 					//problem happen, special GIF's (see bug http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6358674)
 					//don't try to scale if not all ok 
 					uploadedFile = imageScaled;

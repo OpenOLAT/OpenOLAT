@@ -17,15 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.catalog.restapi;
+package org.olat.restapi.support;
 
 import java.net.URI;
 
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
-import org.olat.catalog.CatalogEntry;
 import org.olat.core.helpers.Settings;
+import org.olat.repository.CatalogEntry;
+import org.olat.restapi.support.vo.CatalogEntryVO;
 import org.olat.restapi.support.vo.LinkVO;
 
 /**

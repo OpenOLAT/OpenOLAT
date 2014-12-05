@@ -32,6 +32,7 @@
 				<value>org.olat.user.restapi.ContactsWebService</value>
 				<value>org.olat.user.restapi.UserAuthenticationWebService</value>
 				<value>org.olat.restapi.group.LearningGroupWebService</value>
+				<value>org.olat.restapi.repository.CatalogWebService</value>
 				<value>org.olat.restapi.repository.RepositoryEntriesResource</value>
 				<value>org.olat.restapi.repository.RepositoryEntryLifecycleWebService</value>
 				<value>org.olat.restapi.repository.course.CourseWebService</value>
@@ -50,7 +51,6 @@
 				<value>org.olat.modules.fo.restapi.ForumCourseNodeWebService</value>
 				<value>org.olat.modules.fo.restapi.MyForumsWebService</value>
 				<value>org.olat.modules.openmeetings.restapi.OpenMeetingsWebService</value>
-				<value>org.olat.catalog.restapi.CatalogWebService</value>
 				<value>org.olat.core.commons.services.notifications.restapi.NotificationsWebService</value>
 				<value>org.olat.registration.restapi.RegistrationWebService</value>
 				<value>org.olat.registration.restapi.ChangePasswordWebService</value>

@@ -17,54 +17,45 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.catalog.ui;
+package org.olat.repository.ui.catalog;
 
 import java.text.Collator;
 import java.util.Comparator;
 import java.util.Locale;
 
-import org.olat.catalog.CatalogEntry;
-import org.olat.repository.RepositoryEntry;
+import org.olat.repository.CatalogEntry;
 
 /**
  * 
- * Initial date: 21.11.2012<br>
+ * Initial date: 18.02.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CatalogEntryComparator implements Comparator<CatalogEntry> {
+public class CatalogEntryNodeComparator implements Comparator<CatalogEntry> {
 	
 	private final Collator myCollator;
 	
-	public CatalogEntryComparator(Locale locale) {
+	public CatalogEntryNodeComparator(Locale locale) {
 		myCollator = Collator.getInstance(locale);
 	}
 	
 	@Override
 	public int compare(final CatalogEntry c1, final CatalogEntry c2) {
-		String c1Title, c2Title;
-		if (c1.getType() == CatalogEntry.TYPE_LEAF) {
-			final RepositoryEntry repoEntry = c1.getRepositoryEntry();
-			if (repoEntry != null) {
-				c1Title = repoEntry.getDisplayname();
-			} else {
-				c1Title = c1.getName();
-			}
-		} else {
-			c1Title = c1.getName();
+		if(c1 == null) {
+			if(c2 == null) return 0;
+			return -1;
 		}
-		if (c2.getType() == CatalogEntry.TYPE_LEAF) {
-			final RepositoryEntry repoEntry = c2.getRepositoryEntry();
-			if (repoEntry != null) {
-				c2Title = repoEntry.getDisplayname();
-			} else {
-				c2Title = c2.getName();
-			}
-		} else {
-			c2Title = c2.getName();
-		}
-		// Sort now based on users locale
+		if(c2 == null) return 1;
 		
-		return myCollator.compare(c1Title, c2Title);
+		String t1 = c1.getName();
+		String t2 = c2.getName();
+		
+		if(t1 == null) {
+			if(t2 == null) return 0;
+			return -1;
+		}
+		if(t2 == null) return 1;
+		
+		return myCollator.compare(t1, t2);
 	}
 }
