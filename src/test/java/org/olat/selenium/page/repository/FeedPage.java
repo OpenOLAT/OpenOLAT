@@ -165,7 +165,6 @@ public class FeedPage {
 	public FeedPage clickFirstMonthOfPager() {
 		By monthBy = By.cssSelector("div.o_year_navigation ul.o_month>li.o_month>a.o_month");
 		List<WebElement> monthLinks = browser.findElements(monthBy);
-		System.out.println(monthLinks.size());
 		Assert.assertFalse(monthLinks.isEmpty());
 		monthLinks.get(0).click();
 		OOGraphene.waitBusy();

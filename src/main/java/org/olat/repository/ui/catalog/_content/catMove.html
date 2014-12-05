@@ -10,6 +10,8 @@
 		#if($r.available("ok"))
 			$r.render("ok")
 		#end
-		$r.render("cancel")
+		#if($r.available("cancel"))
+			$r.render("cancel")
+		#end
 	</div>
 </div>
