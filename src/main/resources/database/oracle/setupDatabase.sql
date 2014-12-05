@@ -198,6 +198,7 @@ CREATE TABLE o_catentry (
   creationdate date,
   name varchar2(110 char) NOT NULL,
   description varchar2(4000),
+  style varchar2(16 char),
   externalurl varchar2(255 char),
   fk_repoentry number(20),
   fk_ownergroup number(20),

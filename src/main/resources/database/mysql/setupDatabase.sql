@@ -173,6 +173,7 @@ create table if not exists o_catentry (
    creationdate datetime,
    name varchar(110) not null,
    description longtext,
+   style varchar(16),
    externalurl varchar(255),
    fk_repoentry bigint,
    fk_ownergroup bigint unique,

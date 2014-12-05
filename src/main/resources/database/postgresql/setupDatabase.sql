@@ -171,6 +171,7 @@ create table o_catentry (
    creationdate timestamp,
    name varchar(110) not null,
    description text,
+   style varchar(16),
    externalurl varchar(255),
    fk_repoentry int8,
    fk_ownergroup int8 unique,

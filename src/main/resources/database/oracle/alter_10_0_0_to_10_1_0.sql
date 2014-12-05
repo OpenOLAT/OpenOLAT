@@ -40,6 +40,9 @@ alter table o_gp_business add allowtoleave number default 1 not null;
 alter table o_bs_identity add external_id varchar2(64 char);
 
 
+alter table o_catentry add style varchar2(16 char);
+
+
 --coaching
 create or replace view o_as_eff_statement_identity_v as (
    select
