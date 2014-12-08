@@ -39,8 +39,12 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.user.propertyhandlers.GenderPropertyHandler;
 
 /**
@@ -52,11 +56,17 @@ import org.olat.user.propertyhandlers.GenderPropertyHandler;
  * @author Alexander Schneider
  * 
  */
-public class DisplayPortraitController extends BasicController {
+public class DisplayPortraitController extends BasicController implements GenericEventListener {
 	
 	private VelocityContainer myContent;
 	private Identity portraitIdent;
 	
+	private final String mapperPath;
+	private final UserAvatarMapper mapper;
+	private final OLATResourceable listenerOres;
+	
+	private final boolean useLarge;
+	private final boolean displayPortraitImage;
 	
 	/**
 	 * most common used constructor<br />
@@ -74,8 +84,6 @@ public class DisplayPortraitController extends BasicController {
 	public DisplayPortraitController(UserRequest ureq, WindowControl wControl, Identity portraitIdent, boolean useLarge, boolean canLinkToHomePage) { 
 		this(ureq,wControl,portraitIdent,useLarge,canLinkToHomePage,false,true);
 	}
-	
-	
 	
 	/**
 	 * constructor with more config options<br />
@@ -96,17 +104,42 @@ public class DisplayPortraitController extends BasicController {
 	 * @param displayPortraitImage
 	 *            if set to false, the portrait image will not be displayed
 	 */
-	public DisplayPortraitController(UserRequest ureq, WindowControl wControl, Identity portraitIdent, boolean useLarge, boolean canLinkToHomePage, boolean displayUserFullName, boolean displayPortraitImage ) { 
+	public DisplayPortraitController(UserRequest ureq, WindowControl wControl, Identity portraitIdent,
+			boolean useLarge, boolean canLinkToHomePage, boolean displayUserFullName, boolean displayPortraitImage ) { 
 		super(ureq, wControl);
 		myContent = createVelocityContainer("displayportrait");
 		myContent.contextPut("canLinkToHomePage", canLinkToHomePage ? Boolean.TRUE : Boolean.FALSE);
 		if (portraitIdent == null) throw new AssertException("identity can not be null!");
+		
+		this.useLarge = useLarge;
 		this.portraitIdent = portraitIdent;
+		this.displayPortraitImage = displayPortraitImage;
+
+		mapper = new UserAvatarMapper(useLarge);
+		mapperPath = registerMapper(ureq, mapper);
 		
+		myContent.contextPut("identityKey", portraitIdent.getKey().toString());
+		myContent.contextPut("displayUserFullName", displayUserFullName);
+		String fullName = UserManager.getInstance().getUserDisplayName(portraitIdent);
+		myContent.contextPut("fullName", fullName);		
+		String altText = translate("title.homepage") + ": " + fullName;
+		myContent.contextPut("altText", StringEscapeUtils.escapeHtml(altText));
 		
+		loadPortrait();
+		putInitialPanel(myContent);
+
+		listenerOres = OresHelper.createOLATResourceableInstance("portrait", getIdentity().getKey());
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, portraitIdent, listenerOres);
+	}
+
+	@Override
+	protected void doDispose() {
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, listenerOres);
+	}
+	
+	private void loadPortrait() {
 		File portrait = null;
 		if(displayPortraitImage){
-			
 			GenderPropertyHandler genderHander = (GenderPropertyHandler) UserManager.getInstance().getUserPropertiesConfig().getPropertyHandler(UserConstants.GENDER);
 			String gender = "-"; // use as default
 			if (genderHander != null) {
@@ -137,22 +170,31 @@ public class DisplayPortraitController extends BasicController {
 				}
 			}
 			
-			if (portrait != null){
-				UserAvatarMapper mapper = new UserAvatarMapper(useLarge);
-				String mapperPath = registerMapper(ureq, mapper);
+			if (portrait != null) {
 				myContent.contextPut("mapperUrl", mapper.createPathFor(mapperPath, portraitIdent));
+			} else {
+				myContent.contextRemove("mapperUrl");
 			}
+		} else {
+			myContent.contextRemove("mapperUrl");
 		}
 		
 		myContent.contextPut("hasPortrait", (portrait != null) ? Boolean.TRUE : Boolean.FALSE);
-		myContent.contextPut("identityKey", portraitIdent.getKey().toString());
-		myContent.contextPut("displayUserFullName", displayUserFullName);
-		String fullName = UserManager.getInstance().getUserDisplayName(portraitIdent);
-		myContent.contextPut("fullName", fullName);		
-		String altText = translate("title.homepage") + ": " + fullName;
-		myContent.contextPut("altText", StringEscapeUtils.escapeHtml(altText));
-		
-		putInitialPanel(myContent);
+	}
+
+	@Override
+	public void event(Event event) {
+		if("changed-portrait".equals(event.getCommand()) && event instanceof ProfileEvent) {
+			try {
+				ProfileEvent pe = (ProfileEvent)event;
+				if(portraitIdent.getKey().equals(pe.getIdentityKey())) {
+					loadPortrait();
+					myContent.setDirty(true);
+				}
+			} catch (Exception e) {
+				logError("", e);
+			}
+		}
 	}
 
 	/**
@@ -184,15 +226,4 @@ public class DisplayPortraitController extends BasicController {
 		PopupBrowserWindow pbw = getWindowControl().getWindowBackOffice().getWindowManager().createNewPopupBrowserWindowFor(ureq, layoutCtrlr);
 		pbw.open(ureq);
 	}
-	
-	
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	@Override
-	protected void doDispose() {
-		// nothing to do yet
-	}
-	
 }

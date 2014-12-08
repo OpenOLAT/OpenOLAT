@@ -376,11 +376,18 @@ public class ProfileFormController extends FormBasicController {
 				dps.deletePortrait(identityToModify);
 				deletePortrait.setVisible(false);
 				portraitUpload.setInitialFile(null);
+				notifyPortraitChanged();
 			}
 			flc.setDirty(true);
 		}
 
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void notifyPortraitChanged() {
+		ProfileEvent newPortraitEvent = new ProfileEvent("changed-portrait", identityToModify.getKey());
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("portrait", getIdentity().getKey());
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(newPortraitEvent, ores);
 	}
 
 	@Override
@@ -398,6 +405,7 @@ public class ProfileFormController extends FormBasicController {
 		String uploadedFilename = portraitUpload.getUploadFileName();
 		if(uploadedImage != null) {
 			dps.setPortrait(uploadedImage, uploadedFilename, identityToModify.getName());
+			notifyPortraitChanged();
 		}
 		
 		// Store the "about me" text.
