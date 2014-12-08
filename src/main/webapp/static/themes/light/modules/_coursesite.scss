@@ -343,7 +343,7 @@
 					display: none;
 				}
 				
-				h4.title>a>i {
+				h4.o_title>a>i {
 					display:none;
 				}	
 			}	
@@ -400,7 +400,7 @@
 				}				
 			}
 			
-			h4.title>a>i {
+			h4.o_title>a>i {
 				display:none;
 			}
 
@@ -427,6 +427,18 @@
 					font-size: 90%;
 				}
 			}	
+		}
+	}
+
+	/* multi-column layout for list and compact styles */
+	@media (min-width: $screen-sm-min) {
+		.o_sublevels_list, .o_sublevels_compact {
+			-webkit-column-count:2;
+			-moz-column-count:2;
+			-ms-column-count:2;
+			-o-column-count:2;
+			column-count:2;
+			columns:2;
 		}
 	}
 }
