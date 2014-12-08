@@ -289,6 +289,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		
 		entriesModel.setObjects(items);
 		entriesEl.reset();
+		entriesEl.setVisible(entriesModel.getRowCount() > 0);
 	}
 	
 	protected void loadNodesChildren() {
