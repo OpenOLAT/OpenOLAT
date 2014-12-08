@@ -288,7 +288,7 @@ public interface BaseSecurity {
 	 * @param credential the credentials or null if not used
 	 * @return the new identity
 	 */
-	public Identity createAndPersistIdentityAndUser(String username, User user, String provider, String authusername);
+	public Identity createAndPersistIdentityAndUser(String username, String externalId, User user, String provider, String authusername);
 
 	/**
 	 * @param username the username
@@ -300,7 +300,7 @@ public interface BaseSecurity {
 	 * @param password The password which will be used as credentials (not hashed it)
 	 * @return the new identity
 	 */
-	public Identity createAndPersistIdentityAndUser(String username, User user, String provider, String authusername, String password);
+	public Identity createAndPersistIdentityAndUser(String username, String externalId, User user, String provider, String authusername, String password);
 
 	/**
 	 * Return the List of associated Authentications.
@@ -591,6 +591,15 @@ public interface BaseSecurity {
 	 * @return The reloaded and renamed identity
 	 */
 	public Identity saveIdentityName(Identity identity, String newName);
+	
+	/**
+	 * Set an external id if the identity is managed by an external system.
+	 * 
+	 * @param identity
+	 * @param externalId
+	 * @return
+	 */
+	public Identity setExternalId(Identity identity, String externalId);
 	
 	/**
 	 * Check if identity is visible. Deleted or login-denied users are not visible.

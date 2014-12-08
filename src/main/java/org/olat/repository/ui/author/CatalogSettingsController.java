@@ -22,9 +22,6 @@ package org.olat.repository.ui.author;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.catalog.CatalogEntry;
-import org.olat.catalog.CatalogManager;
-import org.olat.catalog.ui.CatalogEntryAddController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -47,8 +44,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
+import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.CatalogManager;
+import org.olat.repository.ui.catalog.CatalogEntryAddController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

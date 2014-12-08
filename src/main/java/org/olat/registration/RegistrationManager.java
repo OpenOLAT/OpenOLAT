@@ -172,7 +172,7 @@ public class RegistrationManager extends BasicManager {
 	 * @return the newly created subject or null
 	 */
 	public Identity createNewUserAndIdentityFromTemporaryKey(String login, String pwd, User myUser, TemporaryKeyImpl tk) {
-		Identity identity = AuthHelper.createAndPersistIdentityAndUserWithUserGroup(login, pwd, myUser);
+		Identity identity = AuthHelper.createAndPersistIdentityAndUserWithUserGroup(login, null, pwd, myUser);
 		if (identity == null) return null;
 		deleteTemporaryKey(tk);
 		return identity;

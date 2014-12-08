@@ -99,12 +99,12 @@ public class ValidationStepForm extends StepFormBasicController {
 		
 		validModel = new ValidDataModel(Collections.<UserData>emptyList());
 		validModel.setTableColumnModel(tableColumnModel);
-		validTableEl = uifactory.addTableElement(getWindowControl(), "validList", validModel, formLayout);
+		validTableEl = uifactory.addTableElement(getWindowControl(), "validList", validModel, getTranslator(), formLayout);
 		validTableEl.setCustomizeColumns(false);
 		
 		invalidModel = new ValidDataModel(Collections.<UserData>emptyList());
 		invalidModel.setTableColumnModel(tableColumnModel);
-		invalidTableEl = uifactory.addTableElement(getWindowControl(), "notFoundList", invalidModel, formLayout);
+		invalidTableEl = uifactory.addTableElement(getWindowControl(), "notFoundList", invalidModel, getTranslator(), formLayout);
 		invalidTableEl.setCustomizeColumns(false);
 		
 		flc.contextPut("settings", settings);

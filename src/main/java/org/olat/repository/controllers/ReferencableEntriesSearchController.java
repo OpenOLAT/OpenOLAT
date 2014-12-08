@@ -333,7 +333,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 		} else if (source == importRessourceButton) {
 			
 			removeAsListenerAndDispose(importController);
-			importController = new ImportRepositoryEntryController(ureq, getWindowControl());
+			importController = new ImportRepositoryEntryController(ureq, getWindowControl(), limitTypes);
 			listenTo(importController);
 			
 			removeAsListenerAndDispose(cmc);

@@ -63,247 +63,339 @@ import org.olat.repository.RepositoryEntry;
  * 
  * Initial Date: Oct 13, 2004
  * @author Felix Jost
+ * @author Dirk Furrer
  */
 public class COCourseNode extends AbstractAccessableCourseNode {
-	private static final String PACKAGE = Util.getPackageName(COCourseNode.class);
+    private static final String PACKAGE = Util.getPackageName(COCourseNode.class);
 
-	private static final String TYPE = "co";
+    private static final String TYPE = "co";
 
-	/**
-	 * Default constructor for course node of type single page
-	 */
-	public COCourseNode() {
-		super(TYPE);
-	}
+    /**
+     * Default constructor for course node of type single page
+     */
+    public COCourseNode() {
+        super(TYPE);
+        updateModuleConfigDefaults(true);
+    }
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse)
-	 */
-	@Override
-	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		COEditController childTabCntrllr = new COEditController(getModuleConfiguration(), ureq, wControl, this, course, euce);
-		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
-	}
+    /**
+     * @see org.olat.course.nodes.CourseNode#createEditController(org.olat.core.gui.UserRequest,
+     *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse)
+     */
+    @Override
+    public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
+        updateModuleConfigDefaults(false);
+        COEditController childTabCntrllr = new COEditController(getModuleConfiguration(), ureq, wControl, this, course, euce);
+        CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
+        return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
+    }
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
-	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
-		Controller controller;
-		// Do not allow guests to send anonymous emails
-		Roles roles = ureq.getUserSession().getRoles();
-		if (roles.isGuestOnly()) {
-			Translator trans = new PackageTranslator(PACKAGE, ureq.getLocale());
-			String title = trans.translate("guestnoaccess.title");
-			String message = trans.translate("guestnoaccess.message");
-			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
-		} else {
-			controller = new CORunController(getModuleConfiguration(), ureq, wControl, userCourseEnv);
-		}
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_co_icon");
-		return new NodeRunConstructionResult(ctrl);
-	}
-	
-	@Override
-	public void postImport(CourseEnvironmentMapper envMapper) {
-		super.postImport(envMapper);
-		
-		ModuleConfiguration mc = getModuleConfiguration();
-		String groupNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOGROUPS);
-		@SuppressWarnings("unchecked")
-		List<Long> groupKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS);
-		if(groupKeys == null) {
-			groupKeys = envMapper.toGroupKeyFromOriginalNames(groupNames);
-		} else {
-			groupKeys = envMapper.toGroupKeyFromOriginalKeys(groupKeys);
-		}
-		mc.set(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS, groupKeys);
+    /**
+     * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,
+     *      org.olat.core.gui.control.WindowControl,
+     *      org.olat.course.run.userview.UserCourseEnvironment,
+     *      org.olat.course.run.userview.NodeEvaluation)
+     */
+    public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
+            UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+        Controller controller;
+        // Do not allow guests to send anonymous emails
+        Roles roles = ureq.getUserSession().getRoles();
+        if (roles.isGuestOnly()) {
+            Translator trans = new PackageTranslator(PACKAGE, ureq.getLocale());
+            String title = trans.translate("guestnoaccess.title");
+            String message = trans.translate("guestnoaccess.message");
+            controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+        } else {
+            controller = new CORunController(getModuleConfiguration(), ureq, wControl, userCourseEnv);
+        }
+        Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_co_icon");
+        return new NodeRunConstructionResult(ctrl);
+    }
+    
+    @Override
+    public void postImport(CourseEnvironmentMapper envMapper) {
+        super.postImport(envMapper);
+        
+        ModuleConfiguration mc = getModuleConfiguration();
+        String coachesGroupNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP);
+        String particpantsGroupNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP);
+        
+        @SuppressWarnings("unchecked")
+        List<Long> coachesGroupKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP_ID);
+        @SuppressWarnings("unchecked")
+        List<Long> participantsGroupKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID);
+        if(coachesGroupKeys == null) {
+            coachesGroupKeys = envMapper.toGroupKeyFromOriginalNames(coachesGroupNames);
+        } else {
+            coachesGroupKeys = envMapper.toGroupKeyFromOriginalKeys(coachesGroupKeys);
+        }
+        mc.set(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS, coachesGroupKeys);
+        if(participantsGroupKeys == null) {
+            participantsGroupKeys = envMapper.toGroupKeyFromOriginalNames(particpantsGroupNames);
+        } else {
+            participantsGroupKeys = envMapper.toGroupKeyFromOriginalKeys(participantsGroupKeys);
+        }
+        mc.set(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS, participantsGroupKeys);
+        
+        
+        String coachesAreaNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA);
+        @SuppressWarnings("unchecked")
+        List<Long> coachesAreaKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS);
+        if(coachesAreaKeys == null) {
+            coachesAreaKeys = envMapper.toAreaKeyFromOriginalNames(coachesAreaNames);
+        } else {
+            coachesAreaKeys = envMapper.toAreaKeyFromOriginalKeys(coachesAreaKeys);
+        }
+        mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS, coachesAreaKeys);
+        
+        String participantsAreaNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA);
+        @SuppressWarnings("unchecked")
+        List<Long> participantsAreaKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID);
+        if(participantsAreaKeys == null) {
+            participantsAreaKeys = envMapper.toAreaKeyFromOriginalNames(participantsAreaNames);
+        } else {
+            participantsAreaKeys = envMapper.toAreaKeyFromOriginalKeys(participantsAreaKeys);
+        }
+        mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID, participantsAreaKeys);
+        
+        
+    }
 
-		String areaNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOAREAS);
-		@SuppressWarnings("unchecked")
-		List<Long> areaKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOAREA_IDS);
-		if(areaKeys == null) {
-			areaKeys = envMapper.toAreaKeyFromOriginalNames(areaNames);
-		} else {
-			areaKeys = envMapper.toAreaKeyFromOriginalKeys(areaKeys);
-		}
-		mc.set(COEditController.CONFIG_KEY_EMAILTOAREA_IDS, areaKeys);
-	}
+    @Override
+    public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
+        super.postExport(envMapper, backwardsCompatible);
+        
+        ModuleConfiguration mc = getModuleConfiguration();
+        @SuppressWarnings("unchecked")
+        List<Long> coachesGroupKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP_ID);
+        List<Long> participantsGroupKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID);
+        if(coachesGroupKeys != null ) {
+            String coachesGroupNames = envMapper.toGroupNames(coachesGroupKeys);
+            mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP, coachesGroupNames);
+        }
+        if(participantsGroupKeys != null){
+            String participantsGroupNames = envMapper.toGroupNames(participantsGroupKeys);
+            mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP, participantsGroupNames);
+        }
+        
+        @SuppressWarnings("unchecked")
+        List<Long> coachesAreaKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS);
+        if(coachesAreaKeys != null) {
+            String coachesAreaNames = envMapper.toAreaNames(coachesAreaKeys);    
+            mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA, coachesAreaNames);
+        }
+        
+        @SuppressWarnings("unchecked")
+        List<Long> participantsAreaKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID);
+        if(participantsAreaKeys != null) {
+            String participantsAreaNames = envMapper.toAreaNames(participantsAreaKeys);    
+            mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA, participantsAreaNames);
+        }
+        
+        if(backwardsCompatible) {
+            mc.remove(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS);
+            mc.remove(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS);
+        }
+    }
 
-	@Override
-	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
-		super.postExport(envMapper, backwardsCompatible);
-		
-		ModuleConfiguration mc = getModuleConfiguration();
-		@SuppressWarnings("unchecked")
-		List<Long> groupKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS);
-		if(groupKeys != null) {
-			String groupNames = envMapper.toGroupNames(groupKeys);
-			mc.set(COEditController.CONFIG_KEY_EMAILTOGROUPS, groupNames);
-		}
+    /**
+     * @see org.olat.course.nodes.CourseNode#isConfigValid()
+     */
+    public StatusDescription isConfigValid() {
+        /*
+         * first check the one click cache
+         */
+        if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
 
-		@SuppressWarnings("unchecked")
-		List<Long> areaKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOAREA_IDS);
-		if(areaKeys != null) {
-			String areaNames = envMapper.toAreaNames(areaKeys);	
-			mc.set(COEditController.CONFIG_KEY_EMAILTOAREAS, areaNames);
-		}
-		
-		if(backwardsCompatible) {
-			mc.remove(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS);
-			mc.remove(COEditController.CONFIG_KEY_EMAILTOAREA_IDS);
-		}
-	}
+        /**
+         * configuration is valid if the provided e-mail container result in at list
+         * one recipient e-mail adress. Hence we have always to perform the very
+         * expensive operation to fetch the e-mail adresses for tutors,
+         * participants, group and area members. simple config here!
+         */
+        @SuppressWarnings("unchecked")
+        List<String> emailList = (List<String>) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOADRESSES);
+        boolean isValid = (emailList != null && emailList.size() > 0);
+//        Boolean email2coaches = getModuleConfiguration().getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_ALL) || getModuleConfiguration().getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_COURSE);
+//        Boolean email2partips = getModuleConfiguration().getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_ALL) || getModuleConfiguration().getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE);
+//        isValid = isValid || (email2coaches != null && email2coaches.booleanValue());
+//        isValid = isValid || (email2partips != null && email2partips.booleanValue());
+        Boolean email2owners = getModuleConfiguration().getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOOWNERS);
+        isValid = isValid || (email2owners != null && email2owners.booleanValue());
+        String email2AreaCoaches = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA);
+        isValid = isValid || (!"".equals(email2AreaCoaches) && email2AreaCoaches != null);
+        String email2GroupCoaches = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP);
+        isValid = isValid || (!"".equals(email2GroupCoaches) && email2GroupCoaches != null);
+        String email2AreaParticipants = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA);
+        isValid = isValid || (!"".equals(email2AreaParticipants) && email2AreaParticipants != null);
+        String email2GroupParticipants = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP);
+        isValid = isValid || (!"".equals(email2GroupParticipants) && email2GroupParticipants != null);
+        
+        StatusDescription sd = StatusDescription.NOERROR;
+        if (!isValid) {
+            String shortKey = "error.norecipients.short";
+            String longKey = "error.norecipients.long";
+            String[] params = new String[] { this.getShortTitle() };
+            String translPackage = Util.getPackageName(COEditController.class);
+            sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translPackage);
+            sd.setDescriptionForUnit(getIdent());
+            // set which pane is affected by error
+            sd.setActivateableViewIdentifier(COEditController.PANE_TAB_COCONFIG);
+        }
+        return sd;
+    }
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
-	 */
-	public StatusDescription isConfigValid() {
-		/*
-		 * first check the one click cache
-		 */
-		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
+    /**
+     * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
+     */
+    public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
+        oneClickStatusCache = null;
+        // only here we know which translator to take for translating condition
+        // error messages
+        String translatorStr = Util.getPackageName(ConditionEditController.class);
+        List<StatusDescription> condErrs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+        List<StatusDescription> missingNames = new ArrayList<StatusDescription>();
+        /*
+         * check group and area names for existence
+         */
+        String nodeId = getIdent();
+        ModuleConfiguration mc = getModuleConfiguration();
 
-		/**
-		 * configuration is valid if the provided e-mail container result in at list
-		 * one recipient e-mail adress. Hence we have always to perform the very
-		 * expensive operation to fetch the e-mail adresses for tutors,
-		 * participants, group and area members. simple config here!
-		 */
-		@SuppressWarnings("unchecked")
-		List<String> emailList = (List<String>) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOADRESSES);
-		boolean isValid = (emailList != null && emailList.size() > 0);
-		Boolean email2coaches = getModuleConfiguration().getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES);
-		Boolean email2partips = getModuleConfiguration().getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS);
-		isValid = isValid || (email2coaches != null && email2coaches.booleanValue());
-		isValid = isValid || (email2partips != null && email2partips.booleanValue());
-		String email2Areas = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOAREAS);
-		isValid = isValid || (!"".equals(email2Areas) && email2Areas != null);
-		String email2Groups = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOGROUPS);
-		isValid = isValid || (!"".equals(email2Groups) && email2Groups != null);
-		//
-		StatusDescription sd = StatusDescription.NOERROR;
-		if (!isValid) {
-			String shortKey = "error.norecipients.short";
-			String longKey = "error.norecipients.long";
-			String[] params = new String[] { this.getShortTitle() };
-			String translPackage = Util.getPackageName(COEditController.class);
-			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translPackage);
-			sd.setDescriptionForUnit(getIdent());
-			// set which pane is affected by error
-			sd.setActivateableViewIdentifier(COEditController.PANE_TAB_COCONFIG);
-		}
-		return sd;
-	}
+        @SuppressWarnings("unchecked")
+        List<Long> areaKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS);
+        if(areaKeys != null) {
+            BGAreaManager areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
+            List<BGArea> areas = areaManager.loadAreas(areaKeys);
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
-	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
-		oneClickStatusCache = null;
-		// only here we know which translator to take for translating condition
-		// error messages
-		String translatorStr = Util.getPackageName(ConditionEditController.class);
-		List<StatusDescription> condErrs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
-		List<StatusDescription> missingNames = new ArrayList<StatusDescription>();
-		/*
-		 * check group and area names for existence
-		 */
-		String nodeId = getIdent();
-		ModuleConfiguration mc = getModuleConfiguration();
+            a_a:
+            for(Long areaKey:areaKeys) {
+                for(BGArea area:areas) {
+                    if(area.getKey().equals(areaKey)) {
+                        continue a_a;
+                    }
+                }
+                
+                StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
+                        new String[] { "NONE", areaKey.toString() }, translatorStr);
+                sd.setDescriptionForUnit(nodeId);
+                missingNames.add(sd);
+            }
+        } else {
+            String areaStr = (String) mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA);
+            if (areaStr != null) {
+                String[] areas = areaStr.split(",");
+                for (int i = 0; i < areas.length; i++) {
+                    String trimmed = areas[i] != null ? areas[i].trim() : areas[i];
+                    if (!trimmed.equals("") && !cev.existsArea(trimmed)) {
+                        StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
+                                new String[] { "NONE", trimmed }, translatorStr);
+                        sd.setDescriptionForUnit(nodeId);
+                        missingNames.add(sd);
+                    }
+                }
+            }
+        }
 
-		@SuppressWarnings("unchecked")
-		List<Long> areaKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOAREA_IDS);
-		if(areaKeys != null) {
-			BGAreaManager areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
-			List<BGArea> areas = areaManager.loadAreas(areaKeys);
+        @SuppressWarnings("unchecked")
+        List<Long> groupKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP_ID);
+        if(groupKeys != null) {
+            BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+            List<BusinessGroupShort> groups = bgs.loadShortBusinessGroups(groupKeys);
+            
+            a_a:
+            for(Long activeGroupKey:groupKeys) {
+                for(BusinessGroupShort group:groups) {
+                    if(group.getKey().equals(activeGroupKey)) {
+                        continue a_a;
+                    }
+                }
+                
+                StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
+                        new String[] { "NONE", activeGroupKey.toString() }, translatorStr);
+                sd.setDescriptionForUnit(nodeId);
+                missingNames.add(sd);
+            }
+        } else {
+            String groupStr = (String) mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP);
+            if (groupStr != null) {
+                String[] groups = groupStr.split(",");
+                for (int i = 0; i < groups.length; i++) {
+                    String trimmed = groups[i] != null ? groups[i].trim() : groups[i];
+                    if (!trimmed.equals("") && !cev.existsGroup(trimmed)) {
+                        StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
+                                new String[] { "NONE", trimmed }, translatorStr);
+                        sd.setDescriptionForUnit(nodeId);
+                        missingNames.add(sd);
+                    }
+                }
+            }
+        }
+        missingNames.addAll(condErrs);
+        oneClickStatusCache = StatusDescriptionHelper.sort(missingNames);
+        return oneClickStatusCache;
+    }
 
-			a_a:
-			for(Long areaKey:areaKeys) {
-				for(BGArea area:areas) {
-					if(area.getKey().equals(areaKey)) {
-						continue a_a;
-					}
-				}
-				
-				StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
-						new String[] { "NONE", areaKey.toString() }, translatorStr);
-				sd.setDescriptionForUnit(nodeId);
-				missingNames.add(sd);
-			}
-		} else {
-			String areaStr = (String) mc.get(COEditController.CONFIG_KEY_EMAILTOAREAS);
-			if (areaStr != null) {
-				String[] areas = areaStr.split(",");
-				for (int i = 0; i < areas.length; i++) {
-					String trimmed = areas[i] != null ? areas[i].trim() : areas[i];
-					if (!trimmed.equals("") && !cev.existsArea(trimmed)) {
-						StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
-								new String[] { "NONE", trimmed }, translatorStr);
-						sd.setDescriptionForUnit(nodeId);
-						missingNames.add(sd);
-					}
-				}
-			}
-		}
+    /**
+     * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
+     */
+    public RepositoryEntry getReferencedRepositoryEntry() {
+        return null;
+    }
 
-		@SuppressWarnings("unchecked")
-		List<Long> groupKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS);
-		if(groupKeys != null) {
-			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-			List<BusinessGroupShort> groups = bgs.loadShortBusinessGroups(groupKeys);
-			
-			a_a:
-			for(Long activeGroupKey:groupKeys) {
-				for(BusinessGroupShort group:groups) {
-					if(group.getKey().equals(activeGroupKey)) {
-						continue a_a;
-					}
-				}
-				
-				StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
-						new String[] { "NONE", activeGroupKey.toString() }, translatorStr);
-				sd.setDescriptionForUnit(nodeId);
-				missingNames.add(sd);
-			}
-		} else {
-			String groupStr = (String) mc.get(COEditController.CONFIG_KEY_EMAILTOGROUPS);
-			if (groupStr != null) {
-				String[] groups = groupStr.split(",");
-				for (int i = 0; i < groups.length; i++) {
-					String trimmed = groups[i] != null ? groups[i].trim() : groups[i];
-					if (!trimmed.equals("") && !cev.existsGroup(trimmed)) {
-						StatusDescription sd = new StatusDescription(StatusDescription.WARNING, "error.notfound.name", "solution.checkgroupmanagement",
-								new String[] { "NONE", trimmed }, translatorStr);
-						sd.setDescriptionForUnit(nodeId);
-						missingNames.add(sd);
-					}
-				}
-			}
-		}
-		missingNames.addAll(condErrs);
-		oneClickStatusCache = StatusDescriptionHelper.sort(missingNames);
-		return oneClickStatusCache;
-	}
+    /**
+     * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
+     */
+    public boolean needsReferenceToARepositoryEntry() {
+        return false;
+    }
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
-	 */
-	public RepositoryEntry getReferencedRepositoryEntry() {
-		return null;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
-	 */
-	public boolean needsReferenceToARepositoryEntry() {
-		return false;
-	}
-
+    @Override
+    public void updateModuleConfigDefaults(boolean isNewNode) {
+        ModuleConfiguration mc = getModuleConfiguration();
+        int version = mc.getConfigurationVersion();
+        
+        /*
+         * if no version was set before -> version is 1
+         */
+        if (version == 2) {
+            //check for deprecated Configs
+            if(mc.getBooleanSafe(COEditController.CONFIG_KEY_EMAILTOCOACHES)){
+                mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP, mc.get(COEditController.CONFIG_KEY_EMAILTOGROUPS));
+                mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP_ID, mc.get(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS));
+                mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA, mc.get(COEditController.CONFIG_KEY_EMAILTOAREAS));
+                mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS, mc.get(COEditController.CONFIG_KEY_EMAILTOAREA_IDS));
+            } 
+            if(mc.getBooleanSafe(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS)){
+                mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP, mc.get(COEditController.CONFIG_KEY_EMAILTOGROUPS));
+                mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID, mc.get(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS));
+                mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA, mc.get(COEditController.CONFIG_KEY_EMAILTOAREAS));
+                mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID, mc.get(COEditController.CONFIG_KEY_EMAILTOAREA_IDS));
+            }
+            
+            // new keys and defaults are
+            mc.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOOWNERS, false);
+            mc.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_ALL, false);
+            mc.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_COURSE, false);
+            mc.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_ALL, false);
+            mc.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE, false);
+            mc.setConfigurationVersion(3);
+        }
+        
+        if(isNewNode){     
+            mc.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_ALL, false);
+            mc.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_COURSE, false);
+            mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP_ID, new ArrayList<Long>());
+            mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP, null);
+            mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA, null);
+            mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS, new ArrayList<Long>());
+            mc.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_ALL, false);
+            mc.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE, false);
+            mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP, null);
+            mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID, new ArrayList<Long>());
+            mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA, null);
+            mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID, new ArrayList<Long>());
+            mc.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOOWNERS, false);
+        }
+    }
 }

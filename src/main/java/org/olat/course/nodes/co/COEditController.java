@@ -49,26 +49,48 @@ import org.olat.modules.ModuleConfiguration;
  * 
  * Initial Date: Oct 13, 2004
  * @author Felix Jost
+ * @author Dirk Furrer
  */
 public class COEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
 	public static final String PANE_TAB_COCONFIG = "pane.tab.coconfig";
 	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	private static final String[] paneKeys = {PANE_TAB_COCONFIG,PANE_TAB_ACCESSIBILITY};
-	
-	/** config key: to email addresses to be extracted from specified groups */
-	public static final String CONFIG_KEY_EMAILTOGROUPS = "emailToGroups";
-	/** config key: to email addresses to be extracted from specified learn areas */
+	/** deprecated */
 	public static final String CONFIG_KEY_EMAILTOAREAS = "emailToAreas";
-	/** config key: to email addresses to be extracted from specified groups */
-	public static final String CONFIG_KEY_EMAILTOGROUP_IDS = "emailToGroupIds";
-	/** config key: to email addresses to be extracted from specified learn areas */
 	public static final String CONFIG_KEY_EMAILTOAREA_IDS = "emailToAreaIds";
-	/** config key: email goes to partipiciants */
 	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS = "emailtToPartips";
-	/** config key: email goes to coaches */
 	public static final String CONFIG_KEY_EMAILTOCOACHES = "emailToCoaches";
-	/** config key: to email address */
+	public static final String CONFIG_KEY_EMAILTOGROUP_IDS = "emailToGroupIds";
+	public static final String CONFIG_KEY_EMAILTOGROUPS = "emailToGroups";
+	
+	/** config key: to email addresses to be extracted from specified learn areas */
+	public static final String CONFIG_KEY_EMAILTOCOACHES_AREA = "emailToAreaCoaches";
+	/** config key: to email addresses to be extracted from specified learn areas */
+	public static final String CONFIG_KEY_EMAILTOCOACHES_AREA_IDS = "emailToAreaCoachesIds";
+	
+	/** config key: keys of the course participants list */
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_ALL = "emailToParticipantsAll";
+	/** config key: keys of the group participants list */
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID = "emailToGroupParticipantsIds";
+	/** config key: email goes to group participants */
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP = "emailToGroupParticipants";
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID = "emailToAreaParticipantsIds";
+	/** config key: email goes to group participants */
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_AREA = "emailToAreaParticipants";
+	/** config key: email goes to course participants */
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE = "emailToCourseParticipants";
+	/** config key: email goes to group coaches */
+	public static final String CONFIG_KEY_EMAILTOCOACHES_GROUP = "emailToGroupCoaches";
+	/** config key: key of the group coaches list */
+	public static final String CONFIG_KEY_EMAILTOCOACHES_GROUP_ID = "emailToGroupCoachesIds";
+	/** config key: key of the course coaches list */
+	public static final String CONFIG_KEY_EMAILTOCOACHES_ALL = "emailtoCoachesAll";
+	/** config key: email goes to course coaches */
+	public static final String CONFIG_KEY_EMAILTOCOACHES_COURSE = "emailToCourseCoaches";
+	/** config key: email goes to course owners */
+	public static final String CONFIG_KEY_EMAILTOOWNERS = "emailToOwners";
+	/** config key: email goes to email address */
 	public static final String CONFIG_KEY_EMAILTOADRESSES = "emailToAdresses";
 	/** config key: default subject text */
 	public static final String CONFIG_KEY_MSUBJECT_DEFAULT = "mSubjectDefault";
@@ -94,7 +116,6 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 	public COEditController(ModuleConfiguration config, UserRequest ureq, WindowControl wControl, COCourseNode coCourseNode, ICourse course, UserCourseEnvironment euce) {
 		super(ureq,wControl);
 		this.moduleConfiguration = config;
-		resolveModuleConfigurationIssues(moduleConfiguration);
 		this.courseNode = coCourseNode;
 
 		main = new Panel("coeditpanel");
@@ -140,12 +161,21 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 			if (event == Event.CANCELLED_EVENT) {
 				return;
 			} else if (event == Event.DONE_EVENT) {
-				moduleConfiguration.set(CONFIG_KEY_EMAILTOGROUPS, configForm.getEmailGroups());
-				moduleConfiguration.set(CONFIG_KEY_EMAILTOAREAS, configForm.getEmailAreas());
-				moduleConfiguration.set(CONFIG_KEY_EMAILTOGROUP_IDS, configForm.getEmailGroupIds());
-				moduleConfiguration.set(CONFIG_KEY_EMAILTOAREA_IDS, configForm.getEmailAreaIds());
-				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOCOACHES, configForm.sendToCoaches());
-				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOPARTICIPANTS, configForm.sendToPartips());
+				moduleConfiguration.set(CONFIG_KEY_EMAILTOCOACHES_GROUP, configForm.getEmailGroupCoaches());
+				moduleConfiguration.set(CONFIG_KEY_EMAILTOCOACHES_AREA, configForm.getEmailCoachesAreas());
+				moduleConfiguration.set(CONFIG_KEY_EMAILTOCOACHES_GROUP_ID, configForm.getEmailGroupCoachesIds());
+				moduleConfiguration.set(CONFIG_KEY_EMAILTOCOACHES_AREA_IDS, configForm.getEmailCoachesAreaIds());
+				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOCOACHES_ALL, configForm.sendToCoachesAll());
+				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOCOACHES_COURSE, configForm.sendToCoachesCourse());
+				
+				moduleConfiguration.set(CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP, configForm.getEmailGroupParticipants());
+				moduleConfiguration.set(CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID, configForm.getEmailGroupParticipantsIds());
+				moduleConfiguration.set(CONFIG_KEY_EMAILTOPARTICIPANTS_AREA, configForm.getEmailParticipantsAreas());
+				moduleConfiguration.set(CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID, configForm.getEmailParticipantsAreaIds());
+				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE, configForm.sendToParticipantsCourse());
+				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOPARTICIPANTS_ALL, configForm.sendToParticipantsAll());
+				
+				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOOWNERS, configForm.sendToOwners());
 				moduleConfiguration.set(CONFIG_KEY_EMAILTOADRESSES, configForm.getEmailList());
 				moduleConfiguration.set(CONFIG_KEY_MSUBJECT_DEFAULT, configForm.getMSubject());
 				moduleConfiguration.set(CONFIG_KEY_MBODY_DEFAULT, configForm.getMBody());
@@ -171,29 +201,6 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 	 */
 	protected void doDispose() {
     //nothing to do
-	}
-
-	/**
-	 * resolving version issues of the module configuration, adds new default
-	 * values for new keys
-	 * 
-	 * @param moduleConfiguration2
-	 */
-	private void resolveModuleConfigurationIssues(ModuleConfiguration moduleConfiguration2) {
-		int version = moduleConfiguration2.getConfigurationVersion();
-		/*
-		 * if no version was set before -> version is 1
-		 */
-		if (version == 1) {
-			// new keys and defaults are
-			moduleConfiguration.set(CONFIG_KEY_EMAILTOAREAS, "");
-			moduleConfiguration.set(CONFIG_KEY_EMAILTOGROUPS, "");
-			moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOCOACHES, false);
-			moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOPARTICIPANTS, false);
-			//
-			moduleConfiguration2.setConfigurationVersion(2);
-		}
-
 	}
 
 	public String[] getPaneKeys() {

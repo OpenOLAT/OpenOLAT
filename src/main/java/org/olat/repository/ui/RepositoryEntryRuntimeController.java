@@ -399,17 +399,17 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		entries = removeRepositoryEntry(entries);
 		if(entries != null && entries.size() > 0) {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-			if("Editor".equals(type)) {
+			if("Editor".equalsIgnoreCase(type)) {
 				if(handler.supportsEdit(re) == EditionSupport.yes) {
 					doEdit(ureq);
 				}
-			} else if("Catalog".equals(type)) {
+			} else if("Catalog".equalsIgnoreCase(type)) {
 				doCatalog(ureq);
-			} else if("Infos".equals(type)) {
+			} else if("Infos".equalsIgnoreCase(type)) {
 				doDetails(ureq);	
-			} else if("EditDescription".equals(type)) {
+			} else if("EditDescription".equalsIgnoreCase(type)) {
 				doEditSettings(ureq);
-			} else if("MembersMgmt".equals(type)) {
+			} else if("MembersMgmt".equalsIgnoreCase(type)) {
 				doMembers(ureq);
 			}
 		}
@@ -812,9 +812,13 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected void launchContent(UserRequest ureq, RepositoryEntrySecurity security) {
 		if(security.canLaunch()) {
-			runtimeController = runtimeControllerCreator.create(ureq, getWindowControl(), toolbarPanel, re, reSecurity);
-			listenTo(runtimeController);
-			toolbarPanel.rootController(re.getDisplayname(), runtimeController);
+			if(handler.supportsLaunch()) {
+				runtimeController = runtimeControllerCreator.create(ureq, getWindowControl(), toolbarPanel, re, reSecurity);
+				listenTo(runtimeController);
+				toolbarPanel.rootController(re.getDisplayname(), runtimeController);
+			} else {
+				doDetails(ureq);
+			}
 		} else {
 			runtimeController = new AccessRefusedController(ureq, getWindowControl());
 			listenTo(runtimeController);

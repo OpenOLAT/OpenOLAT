@@ -28,9 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.olat.catalog.CatalogEntry;
-import org.olat.catalog.CatalogManager;
-import org.olat.catalog.ui.CatalogEntryAddController;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -62,8 +60,11 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.properties.Property;
+import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.manager.CatalogManager;
+import org.olat.repository.ui.catalog.CatalogEntryAddController;
 
 /**
  * 
@@ -125,7 +126,7 @@ class PublishStepCatalog extends BasicStep {
 			
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, courseEnv.getCourseResourceableId());
 			repositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(ores, true);
-			catalogManager = CatalogManager.getInstance();
+			catalogManager = CoreSpringFactory.getImpl(CatalogManager.class);
 			this.courseEnv = courseEnv;
 			this.rootNode = rootNode;
 			
@@ -354,7 +355,7 @@ class PublishStepCatalog extends BasicStep {
 
 		@Override
 		protected void insertNode(UserRequest ureq, Long newParentId) {
-			CatalogManager cm = CatalogManager.getInstance();
+			CatalogManager cm = CoreSpringFactory.getImpl(CatalogManager.class);
 			CatalogEntry newParent = cm.loadCatalogEntry(newParentId);
 			// check first if this repo entry is already attached to this new parent
 			for (CategoryLabel label:categories) {

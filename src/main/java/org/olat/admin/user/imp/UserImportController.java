@@ -177,7 +177,7 @@ public class UserImportController extends BasicController {
 			report.incrementCreatedUser();
 			report.incrementUpdatedShibboletAuthentication();
 		} else {
-			ident = AuthHelper.createAndPersistIdentityAndUserWithUserGroup(login, pwd, newUser);
+			ident = AuthHelper.createAndPersistIdentityAndUserWithUserGroup(login, null, pwd, newUser);
 			report.incrementCreatedUser();
 		}
 		return ident;

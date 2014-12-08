@@ -61,6 +61,7 @@ import org.olat.registration.DisclaimerController;
 import org.olat.registration.PwChangeController;
 import org.olat.registration.RegistrationManager;
 import org.olat.user.UserModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class LDAPAuthenticationController extends AuthenticationController implements Activateable2 {
 	public static final String PROVIDER_LDAP = "LDAP";
@@ -76,6 +77,9 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 	private CloseableModalController cmc;
 	
 	private final OLATAuthManager olatAuthenticationSpi;
+	
+	@Autowired
+	private LDAPLoginModule ldapLoginModule;
 
 	public LDAPAuthenticationController(UserRequest ureq, WindowControl control) {
 		// use fallback translator to login and registration package
@@ -85,7 +89,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 		
 		loginComp = createVelocityContainer("ldaplogin");
 		
-		if(UserModule.isPwdchangeallowed(null) && LDAPLoginModule.isPropagatePasswordChangedOnLdapServer()) {
+		if(UserModule.isPwdchangeallowed(null) && ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
 			pwLink = LinkFactory.createLink("_olat_login_change_pwd", "menu.pw", loginComp, this);
 			pwLink.setElementCssClass("o_login_pwd");
 		}
@@ -114,7 +118,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 	
 	protected void openChangePassword(UserRequest ureq, String initialEmail) {
 		// double-check if allowed first
-		if (!UserModule.isPwdchangeallowed(ureq.getIdentity()) || !LDAPLoginModule.isPropagatePasswordChangedOnLdapServer()) {
+		if (!UserModule.isPwdchangeallowed(ureq.getIdentity()) || !ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
 			throw new OLATSecurityException("chose password to be changed, but disallowed by config");
 		}
 
@@ -163,7 +167,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 				provider = LDAPAuthenticationController.PROVIDER_LDAP;
 			} else {
 				// try fallback to OLAT provider if configured
-				if (LDAPLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()) {
+				if (ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()) {
 					authenticatedIdentity = olatAuthenticationSpi.authenticate(null, login, pass);
 				}
 				if (authenticatedIdentity != null) {
@@ -276,7 +280,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 				}
 			}
 			// Add or update an OLAT authentication token for this user if configured in the module
-			if (identity != null && LDAPLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()) {
+			if (identity != null && ldapModule.isCacheLDAPPwdAsOLATPwdOnLogin()) {
 				CoreSpringFactory.getImpl(OLATAuthManager.class).changeOlatPassword(identity, identity, pwd);
 			}
 			return identity;

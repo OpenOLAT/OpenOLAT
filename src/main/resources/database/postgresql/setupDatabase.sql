@@ -142,6 +142,7 @@ create table o_bs_identity (
    creationdate timestamp,
    lastlogin timestamp,
    name varchar(128) not null unique,
+   external_id varchar(64),
    status integer,
    fk_user_id int8 unique,
    primary key (id)
@@ -170,6 +171,7 @@ create table o_catentry (
    creationdate timestamp,
    name varchar(110) not null,
    description text,
+   style varchar(16),
    externalurl varchar(255),
    fk_repoentry int8,
    fk_ownergroup int8 unique,
@@ -1389,7 +1391,7 @@ create or replace view o_ep_notifications_rating_v as (
    from o_userrating as urating
    inner join o_olatresource as rating_resource on (rating_resource.resid = urating.resid and rating_resource.resname = urating.resname)
    inner join o_ep_struct_el as map on (map.fk_olatresource = rating_resource.resource_id)
-   left join o_ep_struct_el as page on (page.fk_struct_root_map_id = map.structure_id and page.structure_id = cast(urating.ressubpath as integer))
+   left join o_ep_struct_el as page on (page.fk_struct_root_map_id = map.structure_id and page.structure_id = cast(urating.ressubpath as int8))
 );
 
 create or replace view o_ep_notifications_comment_v as (
@@ -1404,7 +1406,7 @@ create or replace view o_ep_notifications_comment_v as (
    from o_usercomment as ucomment
    inner join o_olatresource as comment_resource on (comment_resource.resid = ucomment.resid and comment_resource.resname = ucomment.resname)
    inner join o_ep_struct_el as map on (map.fk_olatresource = comment_resource.resource_id)
-   left join o_ep_struct_el as page on (page.fk_struct_root_map_id = map.structure_id and page.structure_id = cast(ucomment.ressubpath as integer))
+   left join o_ep_struct_el as page on (page.fk_struct_root_map_id = map.structure_id and page.structure_id = cast(ucomment.ressubpath as int8))
 );
 
 create view o_gp_business_to_repository_v as (

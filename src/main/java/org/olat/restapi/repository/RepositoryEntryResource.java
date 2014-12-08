@@ -541,7 +541,7 @@ public class RepositoryEntryResource {
     }
 
     RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(re, vo.getDisplayname(), null, 
-    		vo.getExternalId(), vo.getExternalRef(), vo.getManagedFlags(), lifecycle);
+    		vo.getAuthors(), vo.getExternalId(), vo.getExternalRef(), vo.getManagedFlags(), lifecycle);
     RepositoryEntryVO rvo = ObjectFactory.get(reloaded);
     return Response.ok(rvo).build();
   }
@@ -582,6 +582,7 @@ public class RepositoryEntryResource {
       reader = new MultipartReader(request);
       File tmpFile = reader.getFile();
       String displayname = reader.getValue("displayname");
+      String authors = reader.getValue("authors");
       String description = reader.getValue("description");
       String externalId = reader.getValue("externalId");
       String externalRef = reader.getValue("externalRef");
@@ -591,7 +592,7 @@ public class RepositoryEntryResource {
       RepositoryEntry replacedRe;
       if(tmpFile == null) {
       	replacedRe = repositoryManager.setDescriptionAndName(re, displayname, description,
-      			externalId, externalRef, managedFlags, re.getLifecycle());
+      			authors, externalId, externalRef, managedFlags, re.getLifecycle());
       } else {
 	      long length = tmpFile.length();
 	      if(length == 0) {
@@ -602,7 +603,7 @@ public class RepositoryEntryResource {
 	        return Response.serverError().status(Status.NOT_FOUND).build();
 	      } else {
 	      	replacedRe = repositoryManager.setDescriptionAndName(replacedRe, displayname, description,
-	      			externalId, externalRef, managedFlags, replacedRe.getLifecycle());
+	      			authors, externalId, externalRef, managedFlags, replacedRe.getLifecycle());
 	      }
       }
       RepositoryEntryVO vo = ObjectFactory.get(replacedRe);

@@ -146,7 +146,7 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 		return null;
 	}
 	
-	public void setPortrait(File file, String username) {
+	public void setPortrait(File file, String filename, String username) {
 		//first remove old ones
 		File portraitDir = getPortraitDir(username);
 		if(portraitDir != null) {
@@ -160,14 +160,19 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 		
 		String extension = FileUtils.getFileSuffix(file.getName());
 		if(!StringHelper.containsNonWhitespace(extension)) {
-			extension = "png";
+			if(StringHelper.containsNonWhitespace(filename)) {
+				extension = FileUtils.getFileSuffix(filename);
+			}
+			if(!StringHelper.containsNonWhitespace(extension)) {
+				extension = "png";
+			}
 		}
 		File pBigFile = new File(portraitDir, DisplayPortraitManager.PORTRAIT_BIG_FILENAME + "." + extension);
 		File pSmallFile = new File(portraitDir, DisplayPortraitManager.PORTRAIT_SMALL_FILENAME + "." + extension);
 		ImageService imageHelper = CoreSpringFactory.getImpl(ImageService.class);
-		Size size = imageHelper.scaleImage(file, pBigFile, DisplayPortraitManager.WIDTH_PORTRAIT_BIG, DisplayPortraitManager.WIDTH_PORTRAIT_BIG);
+		Size size = imageHelper.scaleImage(file, extension, pBigFile, DisplayPortraitManager.WIDTH_PORTRAIT_BIG, DisplayPortraitManager.WIDTH_PORTRAIT_BIG, false);
 		if(size != null){
-			size = imageHelper.scaleImage(file, pSmallFile, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL);
+			size = imageHelper.scaleImage(file, extension, pSmallFile, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL, false);
 		}
 	}
 	

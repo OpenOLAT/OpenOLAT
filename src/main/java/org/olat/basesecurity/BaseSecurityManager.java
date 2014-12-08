@@ -447,11 +447,11 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		if (!hasBeenInGroup && isNowInGroup) {
 			// user not yet in security group, add him
 			addIdentityToSecurityGroup(updatedIdentity, securityGroup);
-			logAudit("User::" + actingIdentity.getName() + " added system role::" + groupName + " to user::" + updatedIdentity.getName(), null);
+			logAudit("User::" + (actingIdentity == null ? "unkown" : actingIdentity.getName()) + " added system role::" + groupName + " to user::" + updatedIdentity.getName(), null);
 		} else if (hasBeenInGroup && !isNowInGroup) {
 			// user not anymore in security group, remove him
 			removeIdentityFromSecurityGroup(updatedIdentity, securityGroup);
-			logAudit("User::" + actingIdentity.getName() + " removed system role::" + groupName + " from user::" + updatedIdentity.getName(), null);
+			logAudit("User::" + (actingIdentity == null ? "unkown" : actingIdentity.getName()) + " removed system role::" + groupName + " from user::" + updatedIdentity.getName(), null);
 		}
 	}
 
@@ -478,7 +478,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 * @see org.olat.basesecurity.Manager#isIdentityInSecurityGroup(org.olat.core.id.Identity, org.olat.basesecurity.SecurityGroup)
 	 */
 	public boolean isIdentityInSecurityGroup(Identity identity, SecurityGroup secGroup) {
-		if (secGroup == null) return false;
+		if (secGroup == null || identity == null) return false;
 		String queryString = "select count(sgmsi) from  org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi where sgmsi.identity = :identitykey and sgmsi.securityGroup = :securityGroup";
 		DBQuery query = DBFactory.getInstance().createQuery(queryString);
 		query.setLong("identitykey", identity.getKey());
@@ -700,9 +700,10 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 * @return Identity
 	 */
 	@Override
-	public Identity createAndPersistIdentityAndUser(String username, User user, String provider, String authusername) {
+	public Identity createAndPersistIdentityAndUser(String username, String externalId, User user, String provider, String authusername) {
 		dbInstance.getCurrentEntityManager().persist(user);
 		IdentityImpl iimpl = new IdentityImpl(username, user);
+		iimpl.setExternalId(externalId);
 		dbInstance.getCurrentEntityManager().persist(iimpl);
 		if (provider != null) { 
 			createAndPersistAuthentication(iimpl, provider, authusername, null, null);
@@ -722,9 +723,10 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 * @return Identity
 	 */
 	@Override
-	public Identity createAndPersistIdentityAndUser(String username, User user, String provider, String authusername, String credential) {
+	public Identity createAndPersistIdentityAndUser(String username, String externalId, User user, String provider, String authusername, String credential) {
 		dbInstance.getCurrentEntityManager().persist(user);
 		IdentityImpl iimpl = new IdentityImpl(username, user);
+		iimpl.setExternalId(externalId);
 		dbInstance.getCurrentEntityManager().persist(iimpl);
 		if (provider != null) { 
 			createAndPersistAuthentication(iimpl, provider, authusername, credential, LoginModule.getDefaultHashAlgorithm());
@@ -1410,11 +1412,14 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		Date createdBefore = params.getCreatedBefore();
 		Integer status = params.getStatus();
 		Collection<Long> identityKeys = params.getIdentityKeys();
+		Boolean managed = params.getManaged();
 		
 		// complex where clause only when values are available
 		if (login != null || (userproperties != null && !userproperties.isEmpty())
 				|| (identityKeys != null && !identityKeys.isEmpty()) || createdAfter != null	|| createdBefore != null
-				|| hasAuthProviders || hasGroups || hasPermissionOnResources || status != null) {
+				|| hasAuthProviders || hasGroups || hasPermissionOnResources || status != null
+				|| managed != null) {
+			
 			sb.append(" where ");		
 			boolean needsAnd = false;
 			boolean needsUserPropertiesJoin = false;
@@ -1506,6 +1511,15 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			if(identityKeys != null && !identityKeys.isEmpty()) {
 				needsAnd = checkAnd(sb, needsAnd);
 				sb.append("ident.key in (:identityKeys)");
+			}
+			
+			if(managed != null) {
+				needsAnd = checkAnd(sb, needsAnd);
+				if(managed.booleanValue()) {
+					sb.append("ident.externalId is not null");
+				} else {
+					sb.append("ident.externalId is null");
+				}	
 			}
 			
 			// append query for named security groups
@@ -1765,6 +1779,15 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		return reloadedIdentity;
 	}
 	
+	@Override
+	public Identity setExternalId(Identity identity, String externalId) {
+		IdentityImpl reloadedIdentity = loadForUpdate(identity); 
+		reloadedIdentity.setExternalId(externalId);
+		reloadedIdentity = dbInstance.getCurrentEntityManager().merge(reloadedIdentity);
+		dbInstance.commit();
+		return reloadedIdentity;
+	}
+	
 	
 	/**
 	 * Don't forget to commit/roolback the transaction as soon as possible
@@ -1816,7 +1839,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			// Create it lazy on demand
 			User guestUser = UserManager.getInstance().createUser(trans.translate("user.guest"), null, null);
 			guestUser.getPreferences().setLanguage(locale.toString());
-			guestIdentity = createAndPersistIdentityAndUser(guestUsername, guestUser, null, null, null);
+			guestIdentity = createAndPersistIdentityAndUser(guestUsername, null, guestUser, null, null, null);
 			SecurityGroup anonymousGroup = findSecurityGroupByName(Constants.GROUP_ANONYMOUS);
 			addIdentityToSecurityGroup(guestIdentity, anonymousGroup);
 		} else if (!guestIdentity.getUser().getProperty(UserConstants.FIRSTNAME, locale).equals(trans.translate("user.guest"))) {

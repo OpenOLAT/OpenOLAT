@@ -187,7 +187,7 @@ public class OLATUpgrade_8_4_0 extends OLATUpgrade {
 									extension = "png";
 								}
 								File pSmallFile = new File(portraitDir, "portrait_small" + "." + extension);
-								imageHelper.scaleImage(file, pSmallFile, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL);								
+								imageHelper.scaleImage(file, extension, pSmallFile, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL, DisplayPortraitManager.WIDTH_PORTRAIT_SMALL, false);								
 								counter++;
 								break;
 							}

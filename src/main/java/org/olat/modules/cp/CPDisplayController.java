@@ -339,7 +339,7 @@ public class CPDisplayController extends BasicController implements Activateable
 			//fxdiff VCRP-14: print cp
 			} else if (source == printController) {
 				if(Event.DONE_EVENT == event) {
-					List<String> nodeToPrint = printController.getSelectedNodeIdents();
+					List<String> nodeToPrint = printController.getSelectedNodeIdentifiers();
 					printPages(nodeToPrint);
 				}
 				
@@ -352,7 +352,6 @@ public class CPDisplayController extends BasicController implements Activateable
 	}
 	
 	@Override
-	//fxdiff BAKS-7 Resume function
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
@@ -371,7 +370,6 @@ public class CPDisplayController extends BasicController implements Activateable
 		}
 	}
 
-	//fxdiff VCRP-14: print cp
 	private void printPages(final List<String> selectedNodeIds) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("window.open('" + mapperBaseURL + "/print.html', '_print','height=800,left=100,top=100,width=800,toolbar=no,titlebar=0,status=0,menubar=yes,location= no,scrollbars=1');");

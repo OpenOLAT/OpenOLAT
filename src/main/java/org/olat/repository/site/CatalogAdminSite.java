@@ -21,7 +21,6 @@ package org.olat.repository.site;
 
 import java.util.Locale;
 
-import org.olat.catalog.ui.CatalogAdminSiteMainController;
 import org.olat.core.commons.chiefcontrollers.BaseChiefController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -38,6 +37,7 @@ import org.olat.core.id.context.StateSite;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.repository.ui.catalog.CatalogManagerController;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -72,7 +72,7 @@ public class CatalogAdminSite extends AbstractSiteInstance {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("CatalogAdmin", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
-		return new CatalogAdminSiteMainController(ureq, bwControl);
+		return new CatalogManagerController(ureq, bwControl);
 	}
 
 	/**

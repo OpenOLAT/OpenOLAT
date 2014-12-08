@@ -26,6 +26,7 @@ import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -132,8 +133,9 @@ public class CoursesWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCourseList(@QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit,
-			@QueryParam("managed") Boolean managed, @QueryParam("externalId") String externalId,
-			@QueryParam("externalRef") String externalRef,
+			@QueryParam("managed") Boolean managed,
+			@QueryParam("externalId") String externalId, @QueryParam("externalRef") String externalRef,
+			@QueryParam("repositoryEntryKey") String repositoryEntryKey,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 		RepositoryManager rm = RepositoryManager.getInstance();
 
@@ -141,11 +143,19 @@ public class CoursesWebService {
 		Identity identity = getIdentity(httpRequest);
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles, CourseModule.getCourseTypeName());
 		params.setManaged(managed);
+		
 		if(StringHelper.containsNonWhitespace(externalId)) {
 			params.setExternalId(externalId);
 		}
 		if(StringHelper.containsNonWhitespace(externalRef)) {
 			params.setExternalRef(externalRef);
+		}
+		if(StringHelper.containsNonWhitespace(repositoryEntryKey) && StringHelper.isLong(repositoryEntryKey)) {
+			try {
+				params.setRepositoryEntryKeys(Collections.singletonList(new Long(repositoryEntryKey)));
+			} catch (NumberFormatException e) {
+				log.error("Cannot parse the following repository entry key: " + repositoryEntryKey);
+			}
 		}
 
 		if(MediaTypeVariants.isPaged(httpRequest, request)) {

@@ -22,16 +22,13 @@ package org.olat.core.gui.components.tree;
 import static org.olat.core.gui.components.tree.MenuTreeEvent.DESELECT;
 import static org.olat.core.gui.components.tree.MenuTreeEvent.SELECT;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.util.tree.INodeFilter;
+import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.tree.TreePosition;
 
 /**
@@ -53,16 +50,6 @@ public class MenuTreeItem extends FormItemImpl {
 	@Override
 	protected MenuTree getFormItemComponent() {
 		return treeCmp;
-	}
-
-	@Override
-	public void doDispatchFormRequest(UserRequest ureq) {
-		super.doDispatchFormRequest(ureq);
-	}
-
-	@Override
-	protected void dispatchFormRequest(UserRequest ureq) {
-		super.dispatchFormRequest(ureq);
 	}
 	
 	@Override
@@ -131,6 +118,19 @@ public class MenuTreeItem extends FormItemImpl {
 			}
 		}
 		return false;
+	}
+
+	public void selectAll() {
+		TreeModel model = getTreeModel();
+		List<String> nodeIdentifiers = new ArrayList<>();
+ 		TreeHelper.collectNodeIdentifiersRecursive(model.getRootNode(), nodeIdentifiers);
+		treeCmp.setSelectedNodeIds(nodeIdentifiers);
+		treeCmp.setDirty(true);
+	}
+
+	public void deselectAll() {
+		treeCmp.setSelectedNodeIds(Collections.<String>emptyList());
+		treeCmp.setDirty(true);
 	}
 	
 	public void setFilter(INodeFilter filter) {

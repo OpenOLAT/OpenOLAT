@@ -163,6 +163,16 @@ public class TreeHelper {
 		}
 		return false;
 	}
+
+	public static void collectNodeIdentifiersRecursive(INode node, List<String> nodeIdentifiers) {
+		if(node != null) {
+			nodeIdentifiers.add(node.getIdent());
+			int numOfChildren = node.getChildCount();
+			for (int i = 0; i < numOfChildren; i++) {
+				collectNodeIdentifiersRecursive(node.getChildAt(i), nodeIdentifiers);
+			}
+		}
+	}
 	
 	/**
 	 * from tree structure to a flat list

@@ -54,7 +54,11 @@ public class TransientIdentity implements Identity, User {
 	public Long getKey() {
 		return null;
 	}
-
+	
+	@Override
+	public String getExternalId() {
+		return null;
+	}
 
 	@Override
 	public String getName() {

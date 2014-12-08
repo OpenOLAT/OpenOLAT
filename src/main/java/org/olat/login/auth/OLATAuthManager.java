@@ -87,6 +87,8 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 	private MailManager mailManager;
 	@Autowired
 	private WebDAVAuthManager webDAVAuthManager;
+	@Autowired
+	private LDAPLoginModule ldapLoginModule;
 	
 	/**
 	 * 
@@ -190,14 +192,14 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 		
 		Authentication ldapAuth = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
 		if(ldapAuth != null) {
-			if(LDAPLoginModule.isPropagatePasswordChangedOnLdapServer()) {
+			if(ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
 				LDAPError ldapError = new LDAPError();
 				LDAPLoginManager ldapLoginManager = (LDAPLoginManager) CoreSpringFactory.getBean("org.olat.ldap.LDAPLoginManager");
 				ldapLoginManager.changePassword(identity, newPwd, ldapError);
 				log.audit(doer.getName() + " change the password on the LDAP server for identity: " + identity.getName());
 				allOk = ldapError.isEmpty();
 
-				if(allOk && LDAPLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()) {
+				if(allOk && ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()) {
 					allOk &= changeOlatPassword(doer, identity, newPwd);
 				}
 			}

@@ -24,23 +24,16 @@
 */
 package org.olat.home;
 
+import org.olat.NewControllerFactory;
 import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.dtabs.DTab;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
-import org.olat.user.HomePageConfigManager;
-import org.olat.user.HomePageConfigManagerImpl;
-import org.olat.user.UserInfoMainController;
-import org.olat.user.UserManager;
 
 /**
  * Description:<br>
@@ -72,21 +65,8 @@ public class UserSearchAndInfoController extends BasicController {
 				SingleIdentityChosenEvent foundEvent = (SingleIdentityChosenEvent) event;
 				Identity chosenIdentity = foundEvent.getChosenIdentity();
 				if (chosenIdentity != null) {
-					HomePageConfigManager hpcm = HomePageConfigManagerImpl.getInstance();
-					OLATResourceable ores = hpcm.loadConfigFor(chosenIdentity.getName());
-					DTabs dts = Windows.getWindows(ureq).getWindow(ureq).getDTabs();
-					//was brasato:: DTabs dts = getWindowControl().getDTabs();
-					DTab dt = dts.getDTab(ores);
-					if (dt == null) {
-						// does not yet exist -> create and add
-						String name = UserManager.getInstance().getUserDisplayName(chosenIdentity);
-						dt = dts.createDTab(ores, null, name);
-						if (dt == null) return;
-						UserInfoMainController uimc = new UserInfoMainController(ureq, dt.getWindowControl(), chosenIdentity);
-						dt.setController(uimc);
-						dts.addDTab(ureq, dt);
-					}
-					dts.activate(ureq, dt, null);
+					String businessPath = "[HomeSite:" + chosenIdentity.getKey() + "]";
+					NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 				}
 			}
 		}

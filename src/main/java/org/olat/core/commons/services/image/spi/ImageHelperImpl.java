@@ -286,32 +286,19 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	}
 	
 	/**
-	 * @param image the image to scale
+	 * @param image The image to scale
+	 * @param imageExt The extension if not given by the image file (optional)
 	 * @param scaledImaged the new scaled image
 	 * @param maxWidth the maximum width of the new scaled image
 	 * @param maxheight the maximum height of the new scaled image
 	 * @return
 	 */
 	@Override
-	public Size scaleImage(File image, File scaledImage, int maxWidth, int maxHeight) {
-		String extension = FileUtils.getFileSuffix(image.getName());
-		return scaleImage(image, extension, scaledImage, maxWidth, maxHeight);
-	}
-	
-	/**
-	 * @param image the image to scale
-	 * @param image extension if not given by the image file (optional)
-	 * @param scaledImaged the new scaled image
-	 * @param maxWidth the maximum width of the new scaled image
-	 * @param maxheight the maximum height of the new scaled image
-	 * @return
-	 */
-	@Override
-	public Size scaleImage(File image, String imageExt, File scaledImage, int maxWidth, int maxHeight) {
+	public Size scaleImage(File image, String imageExt, File scaledImage, int maxWidth, int maxHeight, boolean fill) {
 		ImageInputStream imageSrc = null;
 		try {
 			imageSrc = new FileImageInputStream(image);
-			SizeAndBufferedImage scaledSize = calcScaledSize(imageSrc, imageExt, maxWidth, maxHeight, false);
+			SizeAndBufferedImage scaledSize = calcScaledSize(imageSrc, imageExt, maxWidth, maxHeight, fill);
 			if(scaledSize == null || scaledSize.image == null) {
 				return null;
 			}

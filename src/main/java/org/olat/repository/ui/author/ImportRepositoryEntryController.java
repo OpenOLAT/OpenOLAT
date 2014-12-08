@@ -21,6 +21,7 @@ package org.olat.repository.ui.author;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
@@ -61,6 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ImportRepositoryEntryController extends FormBasicController {
 	
+	private String[] limitTypes;
 	private RepositoryEntry importedEntry;
 	private List<ResourceHandler> handlerForUploadedResources;
 	
@@ -82,6 +84,14 @@ public class ImportRepositoryEntryController extends FormBasicController {
 	public ImportRepositoryEntryController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
+		
+		initForm(ureq);
+	}
+	
+	public ImportRepositoryEntryController(UserRequest ureq, WindowControl wControl, String[] limitTypes) {
+		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
+		this.limitTypes = limitTypes;
 		
 		initForm(ureq);
 	}
@@ -162,10 +172,37 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		} else {
 			displaynameEl.clearError();
 		}
+		
+		allOk &= validLimitationOnType(handlerForUploadedResources);
 
 		return allOk & handlerForUploadedResources != null
 				& handlerForUploadedResources.size() > 0
 				& super.validateFormLogic(ureq);
+	}
+	
+	private boolean validLimitationOnType(List<ResourceHandler> handlers) {
+		boolean allOk = true;
+		
+		if(limitTypes != null && handlers != null) {
+			for(Iterator<ResourceHandler> handlerIt=handlers.iterator(); handlerIt.hasNext(); ) {
+				boolean match = false;
+				ResourceHandler handler = handlerIt.next();
+				for(String limitType:limitTypes) {
+					if(limitType.equals(handler.getHandler().getSupportedType())) {
+						match = true;
+					}
+				}
+				if(!match) {
+					handlerIt.remove();
+				}
+			}
+			if(handlers.isEmpty()) {
+				allOk = false;
+				uploadFileEl.setErrorKey("add.failed", new String[] {});
+			}
+		}
+		
+		return allOk;
 	}
 	
 	private void doImport() {
@@ -215,8 +252,9 @@ public class ImportRepositoryEntryController extends FormBasicController {
 					handlers.add(new ResourceHandler(handler, eval));
 				}
 			}
-	
+
 			updateResourceInfos(handlers);
+			validLimitationOnType(handlers);
 		}
 	}
 	

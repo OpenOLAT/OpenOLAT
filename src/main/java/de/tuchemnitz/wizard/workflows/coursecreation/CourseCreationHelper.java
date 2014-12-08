@@ -37,8 +37,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.catalog.CatalogEntry;
-import org.olat.catalog.CatalogManager;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
@@ -67,8 +65,10 @@ import org.olat.course.nodes.sp.SPEditController;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.manager.CatalogManager;
 
 import de.tuchemnitz.wizard.helper.course.CourseExtensionHelper;
 import de.tuchemnitz.wizard.helper.course.HTMLDocumentHelper;
@@ -339,7 +339,7 @@ public class CourseCreationHelper {
 
 		// save catalog entry
 		if (getConfiguration().getSelectedCatalogEntry() != null) {
-			CatalogManager cm = CatalogManager.getInstance();
+			CatalogManager cm = CoreSpringFactory.getImpl(CatalogManager.class);
 			CatalogEntry newEntry = cm.createCatalogEntry();
 			newEntry.setRepositoryEntry(addedEntry);
 			newEntry.setName(addedEntry.getDisplayname());

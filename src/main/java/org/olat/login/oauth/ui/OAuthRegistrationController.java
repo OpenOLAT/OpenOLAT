@@ -212,7 +212,7 @@ public class OAuthRegistrationController extends FormBasicController {
 		} else {
 			id = username;
 		}
-		authenticatedIdentity = securityManager.createAndPersistIdentityAndUser(username, newUser, registration.getAuthProvider(), id, null);
+		authenticatedIdentity = securityManager.createAndPersistIdentityAndUser(username, null, newUser, registration.getAuthProvider(), id, null);
 		// Add user to system users group
 		SecurityGroup olatuserGroup = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
 		securityManager.addIdentityToSecurityGroup(authenticatedIdentity, olatuserGroup);

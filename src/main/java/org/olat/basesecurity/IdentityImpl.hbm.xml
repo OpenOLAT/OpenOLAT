@@ -9,8 +9,9 @@
     </id>
     
     <version name="version" access="field" column="version" type="int"/>
-	<property  name="creationDate" column="creationdate" type="timestamp" />   
+	<property  name="creationDate" column="creationdate" type="timestamp" />
  	<property  name="lastLogin" column="lastlogin" type="timestamp" />
+ 	<property  name="externalId" column="external_id" type="string" />
  	
     <property name="name" type="string">
     	<column name="name" unique="true" length="128" not-null="true" index="name_idx2" />

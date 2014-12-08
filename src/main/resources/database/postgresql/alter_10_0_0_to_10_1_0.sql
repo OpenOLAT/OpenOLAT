@@ -36,6 +36,13 @@ create index cer_uuid_idx on o_cer_certificate (c_uuid);
 
 alter table o_gp_business add column allowtoleave bool not null default true;
 
+
+alter table o_bs_identity add column external_id varchar(64);
+
+
+alter table o_catentry add column style varchar(16);
+
+
 --coaching
 create view o_as_eff_statement_identity_v as (
    select

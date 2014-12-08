@@ -85,7 +85,7 @@ public class CatalogAdminPage {
 	 * @return
 	 */
 	public CatalogAdminPage selectNode(String title) {
-		By nodeBy = By.cssSelector(".o_catalog_itemlist a");
+		By nodeBy = By.cssSelector("div.o_meta > h4.o_title > a");
 		List<WebElement> nodes = browser.findElements(nodeBy);
 		WebElement selectedNode = null;
 		for(WebElement node:nodes) {

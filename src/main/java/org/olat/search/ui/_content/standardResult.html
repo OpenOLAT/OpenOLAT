@@ -41,7 +41,7 @@
 		  	</div>
 			#if (!$result.description.equals("")) 
 				<div class="o_search_result_desc">
-				  	<strong>$r.translate("result.description"):</strong> $result.description
+				  	<strong>$r.translate("result.description"):</strong> $r.escapeHtml($result.description)
 			  	</div>		  
 			#end
 		</div>

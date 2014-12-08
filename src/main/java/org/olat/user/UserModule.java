@@ -183,6 +183,8 @@ public class UserModule extends AbstractOLATModule {
 		// Add controller factory extension point to launch user profile controller
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(Identity.class.getSimpleName(),
 				new IdentityContextEntryControllerCreator());
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("HomeSite",
+				new IdentityContextEntryControllerCreator());
 		NewControllerFactory.getInstance().addContextEntryControllerCreator("HomePage",
 				new HomePageContextEntryControllerCreator());
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(User.class.getSimpleName(),
@@ -242,7 +244,7 @@ public class UserModule extends AbstractOLATModule {
 
 			// Now finally create that user thing on the database with all
 			// credentials, person etc. in one transation context!
-			identity = BaseSecurityManager.getInstance().createAndPersistIdentityAndUser(user.getUserName(), newUser, authenticationProviderConstant,
+			identity = BaseSecurityManager.getInstance().createAndPersistIdentityAndUser(user.getUserName(), null, newUser, authenticationProviderConstant,
 					user.getUserName(), user.getPassword());
 			if (identity == null) {
 				throw new OLATRuntimeException(this.getClass(), "Error, could not create  user and subject with name " + user.getUserName(), null);

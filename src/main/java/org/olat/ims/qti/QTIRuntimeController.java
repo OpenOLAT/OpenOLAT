@@ -52,9 +52,9 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 	 * This is only used by the QTI editor
 	 */
 	@Override
-	public boolean requestForClose() {
+	public boolean requestForClose(UserRequest ureq) {
 		if(editorCtrl instanceof VetoableCloseController) {
-			return ((VetoableCloseController)editorCtrl).requestForClose();
+			return ((VetoableCloseController)editorCtrl).requestForClose(ureq);
 		}
 		return true;
 	}
@@ -87,13 +87,13 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(event == Event.CLOSE_EVENT) {
-			if(requestForClose()) {
+			if(requestForClose(ureq)) {
 				super.event(ureq, source, event);
 			} else {
 				delayedClose = Delayed.close;
 			}
 		} else if(event instanceof VetoPopEvent) {
-			if(requestForClose()) {
+			if(requestForClose(ureq)) {
 				super.event(ureq, source, event);
 			} else {
 				delayedClose = Delayed.pop;
@@ -105,7 +105,7 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 
 	@Override
 	protected void doAccess(UserRequest ureq) {
-		if(requestForClose()) {
+		if(requestForClose(ureq)) {
 			super.doAccess(ureq);
 		} else {
 			delayedClose = Delayed.access; 
@@ -114,7 +114,7 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 
 	@Override
 	protected void doDetails(UserRequest ureq) {
-		if(requestForClose()) {
+		if(requestForClose(ureq)) {
 			super.doDetails(ureq);
 		} else {
 			delayedClose = Delayed.details; 
@@ -123,7 +123,7 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 
 	@Override
 	protected void doEditSettings(UserRequest ureq) {
-		if(requestForClose()) {
+		if(requestForClose(ureq)) {
 			super.doEditSettings(ureq);
 		} else {
 			delayedClose = Delayed.editSettings; 
@@ -132,7 +132,7 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 
 	@Override
 	protected void doCatalog(UserRequest ureq) {
-		if(requestForClose()) {
+		if(requestForClose(ureq)) {
 			super.doCatalog(ureq);
 		} else {
 			delayedClose = Delayed.catalog; 
@@ -141,7 +141,7 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 
 	@Override
 	protected Activateable2 doMembers(UserRequest ureq) {
-		if(requestForClose()) {
+		if(requestForClose(ureq)) {
 			return super.doMembers(ureq);
 		} else {
 			delayedClose = Delayed.members;
@@ -151,7 +151,7 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 
 	@Override
 	protected void doOrders(UserRequest ureq) {
-		if(requestForClose()) {
+		if(requestForClose(ureq)) {
 			super.doOrders(ureq);
 		} else {
 			delayedClose = Delayed.orders; 

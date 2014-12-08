@@ -158,6 +158,7 @@ public class ObjectFactory {
 		vo.setSoftkey(entry.getSoftkey());
 		vo.setResourcename(entry.getResourcename());
 		vo.setDisplayname(entry.getDisplayname());
+		vo.setAuthors(entry.getAuthors());
 		vo.setResourceableId(entry.getResourceableId());
 		vo.setResourceableTypeName(entry.getResourceableTypeName());
 		OLATResource resource = entry.getOlatResource();

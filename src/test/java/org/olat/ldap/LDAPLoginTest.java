@@ -45,8 +45,11 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
+import org.olat.ldap.manager.LDAPDAO;
+import org.olat.ldap.model.LDAPUser;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -61,10 +64,16 @@ import org.olat.user.UserManager;
  */
 public class LDAPLoginTest extends OlatTestCase {
 	
+	@Autowired
+	private LDAPDAO ldapDao;
+	@Autowired
+	private LDAPLoginModule ldapLoginModule;
+	@Autowired
+	private LDAPSyncConfiguration syncConfiguration;
 	
 	@Test
 	public void testSystemBind() {
-		Assume.assumeTrue(LDAPLoginModule.isLDAPEnabled());
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 
 		//edit olatextconfig.xml for testing
 		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
@@ -74,7 +83,7 @@ public class LDAPLoginTest extends OlatTestCase {
 	
 	@Test
 	public void testCreateUser() {
-		Assume.assumeTrue(LDAPLoginModule.isLDAPEnabled());
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 
 		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
@@ -82,7 +91,7 @@ public class LDAPLoginTest extends OlatTestCase {
 		String userPW = "olat";
 		LDAPError errors = new LDAPError();
 		
-		boolean usersSyncedAtStartup = LDAPLoginModule.isLdapSyncOnStartup();
+		boolean usersSyncedAtStartup = ldapLoginModule.isLdapSyncOnStartup();
 		//user should not exits in OLAT when not synced during startup
 		assertEquals(usersSyncedAtStartup, (securityManager.findIdentityByName(uid) != null));
 		// bind user 
@@ -99,7 +108,7 @@ public class LDAPLoginTest extends OlatTestCase {
 	
 	@Test
 	public void testUserBind() throws NamingException {
-		Assume.assumeTrue(LDAPLoginModule.isLDAPEnabled());
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 
 		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
 		LDAPError errors = new LDAPError();
@@ -131,7 +140,7 @@ public class LDAPLoginTest extends OlatTestCase {
 	
 	@Test
 	public void testCheckUser() {
-		Assume.assumeTrue(LDAPLoginModule.isLDAPEnabled());
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 
 		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
 		LDAPError errors = new LDAPError();
@@ -156,7 +165,7 @@ public class LDAPLoginTest extends OlatTestCase {
 	
 	@Test
 	public void testCreateChangedAttrMap() {
-		Assume.assumeTrue(LDAPLoginModule.isLDAPEnabled());
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 
 		// simulate closed session (user adding from startup job)
 		DBFactory.getInstance().intermediateCommit();
@@ -167,12 +176,12 @@ public class LDAPLoginTest extends OlatTestCase {
 		String pwd = "olat";
 		LDAPError errors = new LDAPError();
 
-		boolean usersSyncedAtStartup = LDAPLoginModule.isLdapSyncOnStartup();
+		boolean usersSyncedAtStartup = ldapLoginModule.isLdapSyncOnStartup();
 		if (usersSyncedAtStartup) {
 			try {
 				//create user but with different attributes - must fail since user already exists
 				User user = UserManager.getInstance().createUser("klaus", "Meier", "klaus@meier.ch");
-				Identity identity = securityManager.createAndPersistIdentityAndUser("kmeier", user, "LDAP", "kmeier");
+				Identity identity = securityManager.createAndPersistIdentityAndUser("kmeier", null, user, "LDAP", "kmeier");
 				SecurityGroup secGroup = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
 				securityManager.addIdentityToSecurityGroup(identity, secGroup);
 				
@@ -191,7 +200,7 @@ public class LDAPLoginTest extends OlatTestCase {
 		} else {
 			//create user but with different attributes - must fail since user already exists
 			User user = UserManager.getInstance().createUser("klaus", "Meier", "klaus@meier.ch");
-			Identity identity = securityManager.createAndPersistIdentityAndUser("kmeier", user, "LDAP", "kmeier");
+			Identity identity = securityManager.createAndPersistIdentityAndUser("kmeier", null, user, "LDAP", "kmeier");
 			SecurityGroup secGroup = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
 			securityManager.addIdentityToSecurityGroup(identity, secGroup);
 			// simulate closed session (user adding from startup job)
@@ -215,7 +224,7 @@ public class LDAPLoginTest extends OlatTestCase {
 	
 	@Test
 	public void testSyncUser(){
-		Assume.assumeTrue(LDAPLoginModule.isLDAPEnabled());
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 
 		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
@@ -239,7 +248,7 @@ public class LDAPLoginTest extends OlatTestCase {
 
 	@Test
 	public void testIdentityDeletedInLDAP(){
-		Assume.assumeTrue(LDAPLoginModule.isLDAPEnabled());
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 
 		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
 		BaseSecurity securityManager = BaseSecurityManager.getInstance();
@@ -255,14 +264,14 @@ public class LDAPLoginTest extends OlatTestCase {
 		
 		//create some users in LDAPSecurityGroup
 		User user = UserManager.getInstance().createUser("grollia", "wa", "gorrila@olat.org");
-		Identity identity = securityManager.createAndPersistIdentityAndUser("gorilla", user, "LDAP", "gorrila");
+		Identity identity = securityManager.createAndPersistIdentityAndUser("gorilla", null,user, "LDAP", "gorrila");
 		SecurityGroup secGroup1 = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
 		securityManager.addIdentityToSecurityGroup(identity, secGroup1);
 		user = UserManager.getInstance().createUser("wer", "immer", "immer@olat.org");
-		identity = securityManager.createAndPersistIdentityAndUser("der", user, "LDAP", "der");
+		identity = securityManager.createAndPersistIdentityAndUser("der", null, user, "LDAP", "der");
 		securityManager.addIdentityToSecurityGroup(identity, secGroup1);
 		user = UserManager.getInstance().createUser("die", "da", "chaspi@olat.org");
-		identity = securityManager.createAndPersistIdentityAndUser("das", user, "LDAP", "das");
+		identity = securityManager.createAndPersistIdentityAndUser("das", null, user, "LDAP", "das");
 		securityManager.addIdentityToSecurityGroup(identity, secGroup1);
 		
 		// simulate closed session
@@ -286,10 +295,10 @@ public class LDAPLoginTest extends OlatTestCase {
 	
 	@Test
 	public void testCronSync() throws Exception {
-		Assume.assumeTrue(LDAPLoginModule.isLDAPEnabled());
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 
 		LdapContext ctx;
-		List<Attributes> ldapUserList;
+		List<LDAPUser> ldapUserList;
 		List<Attributes> newLdapUserList;
 		Map<Identity, Map<String, String>> changedMapIdenityMap;
 		List<Identity> deletedUserList;
@@ -301,12 +310,12 @@ public class LDAPLoginTest extends OlatTestCase {
 		//find user changed after 2010,01,09,00,00
 		ctx = ldapMan.bindSystem();
 		Date syncDate = new Date(110,00,10,00,00);
-		ldapUserList = ldapMan.getUserAttributesModifiedSince(syncDate, ctx);
+		ldapUserList = ldapDao.getUserAttributesModifiedSince(syncDate, ctx);
 		assertEquals(1, ldapUserList.size());
 		
 		//find all users
 		syncDate = null;
-		ldapUserList = ldapMan.getUserAttributesModifiedSince(syncDate, ctx);
+		ldapUserList = ldapDao.getUserAttributesModifiedSince(syncDate, ctx);
 		assertEquals(6, ldapUserList.size());
 
 
@@ -316,15 +325,16 @@ public class LDAPLoginTest extends OlatTestCase {
 		newLdapUserList = new LinkedList<Attributes>();
 		changedMapIdenityMap = new HashMap<Identity, Map<String, String>>();
 		for (int i = 0; i < ldapUserList.size(); i++) {
-			user = getAttributeValue(ldapUserList.get(i).get(LDAPLoginModule.mapOlatPropertyToLdapAttribute("userID")));
+			Attributes userAttrs = ldapUserList.get(i).getAttributes();
+			user = getAttributeValue(userAttrs.get(syncConfiguration.getOlatPropertyToLdapAttribute("userID")));
 			idenity = ldapMan.findIdentyByLdapAuthentication(user, errors);
 			if (idenity != null) {
-				changedAttrMap = ldapMan.prepareUserPropertyForSync(ldapUserList.get(i), idenity);
+				changedAttrMap = ldapMan.prepareUserPropertyForSync(userAttrs, idenity);
 				if(changedAttrMap!= null) changedMapIdenityMap.put(idenity, changedAttrMap);
 			} else  {
 				if(errors.isEmpty()) {
-				String[] reqAttrs = LDAPLoginModule.checkReqAttr(ldapUserList.get(i));
-				if(reqAttrs==null) newLdapUserList.add(ldapUserList.get(i));
+				String[] reqAttrs = syncConfiguration.checkRequestAttributes(userAttrs);
+				if(reqAttrs==null) newLdapUserList.add(userAttrs);
 				else System.out.println("Cannot create User " + user + " required Attributes are missing");
 				}
 				else System.out.println(errors.get());
@@ -334,11 +344,11 @@ public class LDAPLoginTest extends OlatTestCase {
 
 		//create Users in LDAP Group only existing in OLAT 
 		User user1 = UserManager.getInstance().createUser("hansi", "hürlima", "hansi@hansli.com");
-		Identity identity1 = securityManager.createAndPersistIdentityAndUser("hansi", user1, "LDAP", "hansi");
+		Identity identity1 = securityManager.createAndPersistIdentityAndUser("hansi", null, user1, "LDAP", "hansi");
 		SecurityGroup secGroup1 = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
 		securityManager.addIdentityToSecurityGroup(identity1, secGroup1);
 		user1 = UserManager.getInstance().createUser("chaspi", "meier", "chaspi@hansli.com");
-		identity1 = securityManager.createAndPersistIdentityAndUser("chaspi", user1, "LDAP", "chaspi");
+		identity1 = securityManager.createAndPersistIdentityAndUser("chaspi", null, user1, "LDAP", "chaspi");
 		securityManager.addIdentityToSecurityGroup(identity1, secGroup1);
 
 		//create User to Delete List

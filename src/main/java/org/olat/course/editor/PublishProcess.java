@@ -38,8 +38,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.poi.util.IOUtils;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.catalog.CatalogEntry;
-import org.olat.catalog.CatalogManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -70,10 +69,12 @@ import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.PublishTreeModel;
 import org.olat.properties.Property;
+import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
+import org.olat.repository.manager.CatalogManager;
 import org.olat.resource.references.ReferenceImpl;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
@@ -596,7 +597,7 @@ public class PublishProcess {
 		}
 		
 		if("yes".equals(choiceValue) && labels != null) {
-			CatalogManager cm = CatalogManager.getInstance();
+			CatalogManager cm = CoreSpringFactory.getImpl(CatalogManager.class);
 			List<CatalogEntry> refParentCategories = cm.getCatalogCategoriesFor(repositoryEntry);
 			
 			a_a:

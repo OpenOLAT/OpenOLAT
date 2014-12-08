@@ -30,7 +30,6 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
-import org.olat.catalog.CatalogEntryImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
@@ -46,6 +45,7 @@ import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryModule;
+import org.olat.repository.model.CatalogEntryImpl;
 import org.olat.repository.model.RepositoryEntryMyCourseImpl;
 import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;

@@ -55,6 +55,11 @@ public interface Identity extends CreateInfo, IdentityRef, Persistable {
      * @return The username, (login name, nickname..)
      */
    public String getName();
+   
+   /**
+    * @return Reference to an identifier in an external system
+    */
+   public String getExternalId();
 
     /**
 	 * @return The user object associated with this identity. The user

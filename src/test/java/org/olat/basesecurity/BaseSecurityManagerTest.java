@@ -67,7 +67,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	public void testCreateIdentity() {
 		String username = "createid-" + UUID.randomUUID().toString();
 		User user = userManager.createUser("first" + username, "last" + username, username + "@frentix.com");
-		Identity identity = securityManager.createAndPersistIdentityAndUser(username, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret");
+		Identity identity = securityManager.createAndPersistIdentityAndUser(username, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret");
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(identity);
@@ -89,7 +89,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		User user = userManager.createUser("first" + username, "last" + username, username + "@frentix.com");
 		user.setProperty(UserConstants.COUNTRY, "");
 		user.setProperty(UserConstants.CITY, "Basel");
-		Identity identity = securityManager.createAndPersistIdentityAndUser(username, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret");
+		Identity identity = securityManager.createAndPersistIdentityAndUser(username, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret");
 		dbInstance.commitAndCloseSession();
 		
 		//reload and update
@@ -491,6 +491,37 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertEquals(1, ids.size());
 		Assert.assertEquals(id, ids.get(0));
 	}
+	
+	@Test
+	public void testGetIdentityByPowerSearch_managed() {
+		String login = "pow-6-" + UUID.randomUUID();
+		String externalId = UUID.randomUUID().toString();
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser(login);
+		dbInstance.commitAndCloseSession();
+		securityManager.setExternalId(id, externalId);
+		dbInstance.commitAndCloseSession();
+		
+		//search managed
+		SearchIdentityParams params = new SearchIdentityParams();
+		params.setManaged(Boolean.TRUE);
+		List<Identity> managedIds = securityManager.getIdentitiesByPowerSearch(params, 0, -1);
+		Assert.assertNotNull(managedIds);
+		Assert.assertFalse(managedIds.isEmpty());
+		Assert.assertTrue(managedIds.contains(id));
+		for(Identity managedId:managedIds) {
+			Assert.assertNotNull(managedId.getExternalId());
+		}
+		
+		//search not managed
+		params.setManaged(Boolean.FALSE);
+		List<Identity> naturalIds = securityManager.getIdentitiesByPowerSearch(params, 0, -1);
+		Assert.assertNotNull(naturalIds);
+		Assert.assertFalse(naturalIds.contains(id));
+		for(Identity naturalId:naturalIds) {
+			Assert.assertNull(naturalId.getExternalId());
+		}
+	}
+	
 	
 	@Test
 	public void testGetIdentitiesByPowerSearchWithGroups() {

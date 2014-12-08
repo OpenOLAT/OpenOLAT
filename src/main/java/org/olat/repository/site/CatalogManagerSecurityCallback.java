@@ -20,9 +20,9 @@
  */
 package org.olat.repository.site;
 
-import org.olat.catalog.CatalogManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
+import org.olat.repository.manager.CatalogManager;
 
 /**
  * <h3>Description:</h3>

@@ -22,9 +22,9 @@ package org.olat.repository.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.catalog.CatalogEntry;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.repository.CatalogEntry;
 
 /**
  * 

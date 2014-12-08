@@ -29,44 +29,41 @@ import javax.naming.ldap.LdapContext;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.resource.OresHelper;
 
-public abstract class LDAPLoginManager extends BasicManager {
+public interface LDAPLoginManager {
 
 	public static final OLATResourceable ldapSyncLockOres = OresHelper.createOLATResourceableInstance(LDAPLoginManager.class, 0l);
 
-	public abstract LdapContext bindSystem();
+	public LdapContext bindSystem();
 
-	public abstract Attributes bindUser(String uid, String pwd, LDAPError errors);
+	public Attributes bindUser(String uid, String pwd, LDAPError errors);
 
-	public abstract void changePassword(Identity identity, String pwd, LDAPError errors);
-		
-	public abstract List<Attributes> getUserAttributesModifiedSince(Date syncTime, LdapContext ctx);
+	public void changePassword(Identity identity, String pwd, LDAPError errors);
 	
-	public abstract void createAndPersistUser(Attributes userAttributes);
+	public Identity createAndPersistUser(Attributes userAttributes);
 	
-	public abstract Map<String,String> prepareUserPropertyForSync(Attributes attributes, Identity identity);
+	public Map<String,String> prepareUserPropertyForSync(Attributes attributes, Identity identity);
 	
-	public abstract List<Identity> getIdentitysDeletedInLdap(LdapContext ctx);
+	public List<Identity> getIdentitysDeletedInLdap(LdapContext ctx);
 	
-	public abstract Identity findIdentyByLdapAuthentication(String uid, LDAPError errors);
+	public Identity findIdentyByLdapAuthentication(String uid, LDAPError errors);
 	
-	public abstract void syncUser(Map<String,String> olatPropertyMap, Identity identity);
+	public void syncUser(Map<String,String> olatPropertyMap, Identity identity);
 	
-	public abstract void deletIdentities(List<Identity> identityList);
+	public void deletIdentities(List<Identity> identityList);
 
-	public abstract boolean doBatchSync(LDAPError errors, boolean full);
+	public boolean doBatchSync(LDAPError errors, boolean full);
 	
-	public abstract Date getLastSyncDate();
+	public Date getLastSyncDate();
 	
-	public abstract boolean acquireSyncLock();
+	public boolean acquireSyncLock();
 	
-	public abstract void freeSyncLock();
+	public void freeSyncLock();
 	
-	public abstract void doSyncSingleUser(Identity ident);
+	public void doSyncSingleUser(Identity ident);
 
-	public abstract void removeFallBackAuthentications();
+	public void removeFallBackAuthentications();
 
 	/**
 	 * returns true, if the given identity is member of the LDAP-securitygroup
@@ -74,5 +71,5 @@ public abstract class LDAPLoginManager extends BasicManager {
 	 * @param ident
 	 * @return
 	 */
-	public abstract boolean isIdentityInLDAPSecGroup(Identity ident);
+	public boolean isIdentityInLDAPSecGroup(Identity ident);
 }

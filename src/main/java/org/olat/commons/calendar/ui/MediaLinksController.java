@@ -31,9 +31,9 @@ import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.core.commons.controllers.linkchooser.CustomMediaChooserController;
+import org.olat.core.commons.controllers.linkchooser.CustomMediaChooserFactory;
 import org.olat.core.commons.controllers.linkchooser.URLChoosenEvent;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -76,16 +76,16 @@ public class MediaLinksController extends FormBasicController {
 	private FormLayoutContainer linksContainer;
 	private CloseableModalController mediaDialogBox;
 	private CustomMediaChooserController mediaChooserController;
-	private CustomMediaChooserController customMediaChooserController;
 
 	public MediaLinksController(UserRequest ureq, WindowControl wControl, KalendarEvent kalendarEvent,
-			CustomMediaChooserController customMediaChooserController) {
+			CustomMediaChooserFactory customMediaChooserFactory) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setBasePackage(CalendarManager.class);
 		
 		this.kalendarEvent = kalendarEvent;
-		this.customMediaChooserController = customMediaChooserController;
-		this.provider = customMediaChooserController.getClass().getSimpleName();
+		mediaChooserController = customMediaChooserFactory.getInstance(ureq, wControl);
+		listenTo(mediaChooserController);
+		this.provider = mediaChooserController.getClass().getSimpleName();
 
 		externalLinks = new ArrayList<LinkWrapper>();
 		List<KalendarEventLink> links = kalendarEvent.getKalendarEventLinks();
@@ -204,11 +204,7 @@ public class MediaLinksController extends FormBasicController {
 				}
 			} else if (currentLink.getMediaButton().equals(source)) {
 				removeAsListenerAndDispose(mediaDialogBox);
-				removeAsListenerAndDispose(mediaChooserController);
-				
-				mediaChooserController = customMediaChooserController.getInstance(ureq, getWindowControl(), null, null, "");
-				listenTo(mediaChooserController);
-				
+
 				mediaDialogBox = new CloseableModalController(getWindowControl(), translate("choose"), mediaChooserController.getInitialComponent());
 				mediaDialogBox.activate();
 				listenTo(mediaDialogBox);
@@ -216,18 +212,12 @@ public class MediaLinksController extends FormBasicController {
 		}
 	}
 
-	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		super.event(ureq, source, event);
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == mediaDialogBox) {
 			removeAsListenerAndDispose(mediaDialogBox);
-			removeAsListenerAndDispose(mediaChooserController);
 			mediaDialogBox = null;
-			mediaChooserController = null;
 		} else if(mediaChooserController == source) {
 			if(event instanceof URLChoosenEvent) {
 				URLChoosenEvent choosenEvent = (URLChoosenEvent)event;
@@ -240,9 +230,7 @@ public class MediaLinksController extends FormBasicController {
 			}
 			mediaDialogBox.deactivate();
 			removeAsListenerAndDispose(mediaDialogBox);
-			removeAsListenerAndDispose(mediaChooserController);
 			mediaDialogBox = null;
-			mediaChooserController = null;
 		}
 		super.event(ureq, source, event);
 	}
@@ -283,7 +271,7 @@ public class MediaLinksController extends FormBasicController {
 		//remove deleted links
 		for(Iterator<KalendarEventLink> it=links.iterator(); it.hasNext(); ) {
 			KalendarEventLink link = it.next();
-			if(provider.equals(link.getId()) && !usedUuids.contains(link.getId())) {
+			if(provider.equals(link.getProvider()) && !usedUuids.contains(link.getId())) {
 				it.remove();
 			}
 		}

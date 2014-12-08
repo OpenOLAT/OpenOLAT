@@ -26,6 +26,8 @@
 
 package org.olat.core.gui.control;
 
+import org.olat.core.gui.UserRequest;
+
 
 /**
  * Initial Date:  Mar 7, 2005
@@ -37,5 +39,5 @@ public interface VetoableCloseController extends Controller {
 	/**
 	 * @return true if this controller can be closed immediately (and the closecallback will not be used), false if the close will be delayed
 	 */
-	public boolean requestForClose();
+	public boolean requestForClose(UserRequest ureq);
 }

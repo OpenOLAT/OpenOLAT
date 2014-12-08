@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.olat.basesecurity.GroupRoles;
-import org.olat.catalog.CatalogManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
@@ -48,6 +47,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.CatalogManager;
 
 /**
  * 
@@ -113,7 +113,7 @@ public class CloseResourceCallback implements StepRunnerCallback {
 		// clean catalog
 		Object cleanCatalog = runContext.get("cleanCatalog");
 		if(cleanCatalog != null && Boolean.TRUE.equals(cleanCatalog)) {
-			CatalogManager.getInstance().resourceableDeleted(repositoryEntry);
+			CoreSpringFactory.getImpl(CatalogManager.class).resourceableDeleted(repositoryEntry);
 		}
 		// clean groups
 		Object cleanGroups = runContext.get("cleanGroups");

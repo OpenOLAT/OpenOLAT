@@ -45,9 +45,7 @@ public interface ImageHelperSPI {
 	
 	public boolean cropImage(File image, File cropedImage, Crop cropSelection);
 
-	public Size scaleImage(File image, File scaledImage, int maxWidth, int maxHeight);
-	
-	public Size scaleImage(File image, String extension, File scaledImage, int maxWidth, int maxHeight);
+	public Size scaleImage(File image, String extension, File scaledImage, int maxWidth, int maxHeight, boolean fill);
 	
 	public Size scaleImage(VFSLeaf image, VFSLeaf scaledImage, int maxWidth, int maxHeight, boolean fill);
 

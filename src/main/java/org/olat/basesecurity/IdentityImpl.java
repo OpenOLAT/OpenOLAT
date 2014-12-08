@@ -45,6 +45,7 @@ public class IdentityImpl extends PersistentObject implements Identity, Identity
 	private String name;
 	private User user;
 	private Date lastLogin;
+	private String externalId;
 	/** status=[activ|deleted|permanent] */
 	private int status;
 	
@@ -70,6 +71,7 @@ public class IdentityImpl extends PersistentObject implements Identity, Identity
 	/**
 	 * @return String
 	 */
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -77,6 +79,7 @@ public class IdentityImpl extends PersistentObject implements Identity, Identity
 	/**
 	 * @return User
 	 */
+	@Override
 	public User getUser() {
 		return user;
 	}
@@ -84,8 +87,17 @@ public class IdentityImpl extends PersistentObject implements Identity, Identity
 	/**
 	 * @return lastLogin
 	 */
+	@Override
 	public Date getLastLogin() {
 		return lastLogin;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
 	}
 
 	/**
@@ -93,6 +105,7 @@ public class IdentityImpl extends PersistentObject implements Identity, Identity
 	 * 
 	 * @param name The name to set
 	 */
+	@Override
 	public void setName(String name) {
 		if (name.length() > NAME_MAXLENGTH)
 			throw new AssertException("field name of table o_bs_identity too long");

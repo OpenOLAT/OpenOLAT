@@ -48,6 +48,11 @@ class EMailIdentity implements Identity {
 	public Long getKey() {
 		return null;
 	}
+	
+	@Override
+	public String getExternalId() {
+		return null;
+	}
 
 	@Override
 	public boolean equalsByPersistableKey(Persistable persistable) {

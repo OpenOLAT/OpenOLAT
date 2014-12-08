@@ -31,7 +31,6 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
-import org.olat.catalog.CatalogManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
@@ -89,6 +88,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	private DB dbInstance;
 	@Autowired
 	private GroupDAO groupDao;
+	@Autowired
+	private CatalogManager catalogManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -281,7 +282,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 		// delete all bookmarks referencing deleted entry
 		CoreSpringFactory.getImpl(MarkManager.class).deleteMarks(entry);
 		// delete all catalog entries referencing deleted entry
-		CatalogManager.getInstance().resourceableDeleted(entry);
+		catalogManager.resourceableDeleted(entry);
 		
 		//delete all policies
 		securityManager.deletePolicies(resource);

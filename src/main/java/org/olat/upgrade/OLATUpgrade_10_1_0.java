@@ -89,7 +89,7 @@ public class OLATUpgrade_10_1_0 extends OLATUpgrade {
 		if (!uhd.getBooleanDataValue(TASK_USER_TOOLS)) {
 			try {
 				String tools = userToolsModule.getAvailableUserTools();
-				StringBuilder toolsSb = new StringBuilder(tools);
+				StringBuilder toolsSb = new StringBuilder(tools == null ? "" : tools);
 				String[] defaultUserTools = new String[]{
 						"org.olat.home.HomeMainController:org.olat.gui.control.PrintUserToolExtension",
 						"org.olat.home.HomeMainController:org.olat.gui.control.SearchUserToolExtension",
@@ -107,7 +107,7 @@ public class OLATUpgrade_10_1_0 extends OLATUpgrade {
 				userToolsModule.setAvailableUserTools(toolsSb.toString());
 
 				String defPreset = userToolsModule.getDefaultPresetOfUserTools();
-				StringBuilder defPresetSb = new StringBuilder(defPreset);
+				StringBuilder defPresetSb = new StringBuilder(defPreset == null ? "" : defPreset);
 				String[] defaultPresets = new String[]{
 						"org.olat.home.HomeMainController:org.olat.gui.control.PrintUserToolExtension",
 						"org.olat.home.HomeMainController:org.olat.gui.control.HelpUserToolExtension",

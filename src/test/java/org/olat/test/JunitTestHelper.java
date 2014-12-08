@@ -126,7 +126,7 @@ public class JunitTestHelper {
 		SecurityGroup group = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
 		if (group == null) group = securityManager.createAndPersistNamedSecurityGroup(Constants.GROUP_OLATUSERS);
 		User user = UserManager.getInstance().createUser("first" + login, "last" + login, login + "@" + maildomain);
-		identity = securityManager.createAndPersistIdentityAndUser(login, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD);
+		identity = securityManager.createAndPersistIdentityAndUser(login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD);
 		securityManager.addIdentityToSecurityGroup(identity, group);
 		return identity;
 	}
@@ -143,7 +143,7 @@ public class JunitTestHelper {
 		SecurityGroup group = securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
 		if (group == null) group = securityManager.createAndPersistNamedSecurityGroup(Constants.GROUP_AUTHORS);
 		User user = UserManager.getInstance().createUser("first" + login, "last" + login, login + "@" + maildomain);
-		identity = securityManager.createAndPersistIdentityAndUser(login, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD);
+		identity = securityManager.createAndPersistIdentityAndUser(login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD);
 		securityManager.addIdentityToSecurityGroup(identity, group);
 		return identity;
 	}
@@ -160,7 +160,7 @@ public class JunitTestHelper {
 		SecurityGroup group = securityManager.findSecurityGroupByName(Constants.GROUP_ADMIN);
 		if (group == null) group = securityManager.createAndPersistNamedSecurityGroup(Constants.GROUP_ADMIN);
 		User user = UserManager.getInstance().createUser("first" + login, "last" + login, login + "@" + maildomain);
-		identity = securityManager.createAndPersistIdentityAndUser(login, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD);
+		identity = securityManager.createAndPersistIdentityAndUser(login, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), login, PWD);
 		securityManager.addIdentityToSecurityGroup(identity, group);
 		return identity;
 	}

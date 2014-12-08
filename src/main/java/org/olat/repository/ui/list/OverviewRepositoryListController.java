@@ -21,8 +21,6 @@ package org.olat.repository.ui.list;
 
 import java.util.List;
 
-import org.olat.catalog.CatalogEntry;
-import org.olat.catalog.CatalogManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -44,9 +42,12 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
+import org.olat.repository.manager.CatalogManager;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
+import org.olat.repository.ui.catalog.CatalogNodeController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 

@@ -52,9 +52,9 @@ class LogoMapper implements Mapper {
 		if(lastModified < logo.lastModified() || !scaledLogo.exists()) {
 			ImageService imageService = CoreSpringFactory.getImpl(ImageService.class);
 			File logo1x = new File(dir, "oo-logo@1x.png");
-			imageService.scaleImage(logo, logo1x, 104, 50);
+			imageService.scaleImage(logo, "png", logo1x, 104, 50, false);
 			File logo2x = new File(dir, "oo-logo@2x.png");
-			imageService.scaleImage(logo, logo2x, 208, 50);
+			imageService.scaleImage(logo, "png", logo2x, 208, 50, false);
 		}
 		return new FileMediaResource(scaledLogo);
 	}

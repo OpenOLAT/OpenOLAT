@@ -133,7 +133,7 @@ public class SectionController extends FormBasicController implements TabbableCo
 
 		//ordering
 		boolean random = SelectionOrdering.RANDOM.equals(section.getSelection_ordering().getOrderType());
-		shuffleEl = uifactory.addRadiosHorizontal("shuffle", "form.imd.shuffle", formLayout, yesnoKeys, yesnoValues);
+		shuffleEl = uifactory.addRadiosHorizontal("shuffle", "form.section.shuffle", formLayout, yesnoKeys, yesnoValues);
 		shuffleEl.addActionListener(FormEvent.ONCHANGE);
 		shuffleEl.setEnabled(!restrictedEdit);
 		if (random) {

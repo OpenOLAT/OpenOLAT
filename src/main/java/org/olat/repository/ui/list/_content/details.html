@@ -1,4 +1,4 @@
-<div class="o_repo_details">
+<div class="o_repo_details o_block_large_bottom">
 	<div class="o_lead clearfix">					
 		<h1>
 			<i class="o_icon $cssClass o_icon-lg"></i>
@@ -7,6 +7,12 @@
 				<small>$v.getExternalRef()</small>
 			#end
 		</h1>
+		#if($v.authors && !$v.authors.empty)
+		<div class="o_author o_block">
+			<span class="text-muted">$r.translate("course.made.by")</span> 
+			$r.escapeHtml($v.authors)
+		</div>
+		#end
 		#if($r.available("thumbnail"))
 		<div class="o_media">
 			$r.render("thumbnail")
@@ -19,9 +25,17 @@
 		#end
 	</div>
 
+	## calculate is any metadata available. If not, render right column at center
+	#set ($hasMetaData = ($objectives || $requirements || $credits))	
+
 	<div class="row">
-		<div class="col-xs-12 col-sm-5 col-md-4 pull-right"><div class="row">		
-			<div class="col-xs-6 col-sm-12 o_subcolumn">
+		<div class="col-xs-12 #if($hasMetaData) col-sm-5 col-md-4 pull-right #end o_sidecolumn"><div class="row">		
+			<div class="col-sm-12 o_subcolumn">
+				#if($r.available("start"))
+					$r.render("start")
+				#end
+			</div>
+			<div class="#if($hasMetaData) col-xs-6 col-sm-12 #else col-sm-6 #end o_subcolumn">
 				<div class="o_overview">
 					<h3>$r.translate("details.overview")</h3>
 					#if($v.lifecycle || $v.lifecycle.softKey || $row.lifecycle.start || $row.lifecycle.end)
@@ -32,7 +46,7 @@
 						#if($v.lifecycle.validTo) - $r.formatDate($v.lifecycle.validTo) #end
 					</div>
 					#end
-					#if($v.expenditureOfWork)
+					#if($v.expenditureOfWork && !$v.expenditureOfWork.empty)
 					<div title="$r.translateInAttribute("details.expenditureOfWork.desc")">
 						<i class="o_icon o_icon_expenditure"></i>  
 						$r.escapeHtml($v.expenditureOfWork)
@@ -51,13 +65,6 @@
 					<h4>$r.translate("ratings")</h4>
 					#if($r.available("rating")) $r.render("rating") #end
 					#if($r.available("comments")) $r.render("comments") #end
-				</div>
-				#end
-				
-				#if($v.authors)
-				<div class="o_authors o_block">
-					<h4>$r.translate("cif.authors")</h4>
-					$r.escapeHtml($v.authors)
 				</div>
 				#end
 				
@@ -86,13 +93,10 @@
 					</ul>
 				</div>
 				#end	
-				#if($r.available("start"))
-					$r.render("start")
-				#end
 			</div>
 
 			#if(!$guestOnly)
-			<div class="col-xs-6 col-sm-12 o_subcolumn">
+			<div class="#if($hasMetaData) col-xs-6 col-sm-12 #else col-sm-6 #end o_subcolumn">
 				<div class="o_personal">
 					<h3>$r.translate("details.personal")</h3>
 					<table class="table"><tbody>
@@ -147,10 +151,11 @@
 				</div>
 			</div>
 			#end
+
 		</div></div>		
 
 		## START LEFT COLUMN		
-		<div class="col-xs-12 col-sm-7 col-md-8">
+		<div class="col-xs-12 #if($hasMetaData) col-sm-7 col-md-8 #end o_maincolumn">
 			#if($objectives)
 				<div class="o_objectives clearfix">
 					<h3>$r.translate("cif.objectives")</h3>
@@ -169,8 +174,36 @@
 					$credits
 				</div>
 			#end
+			<div class="o_extlink clearfix o_block_large_bottom">
+				<h4>$r.translate("details.extlinkheader")</h4>
+				<div class="o_copy_code">
+					<a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode"></i></a>
+					$extlink
+					<script type="text/javascript">
+					/* <![CDATA[ */
+						jQuery(function() {
+							o_QRCodePopup('o_extlink', '$extlink', 'right');
+						});
+					/* ]]> */
+					</script>
+				</div>
+				#if ($isGuestAllowed)
+				<div class="o_copy_code">
+					<a href="javascript:;" id="o_extlink2"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode"></i></a>
+					${extlink}?guest=true&amp;lang=$r.getLanguageCode()
+					<script type="text/javascript">
+					/* <![CDATA[ */
+						jQuery(function() {
+							o_QRCodePopup('o_extlink2', '${extlink}?guest=true&amp;lang=$r.getLanguageCode()', 'right');
+						});
+					/* ]]> */
+					</script>
+				</div>
+				#end
+			</div>
+						
 			
-			<div class="panel panel-default">
+			<div class="panel panel-default o_infopanel">
 				<div class="panel-heading" data-toggle="collapse" data-target="#collapseInfo">
 			    	<h3 class="panel-title">
 						#if ($isGuestAllowed)
@@ -178,10 +211,11 @@
 						#else
 							$r.contextHelpWithWrapper("org.olat.repository","rep-meta-learner.html","help.hover.rep.detail")
 						#end
+						<i id="collapseInfoToggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>
 						$r.translate("details.entryinfoheader")
 			    	</h3>
 				</div>
-				<div id="collapseInfo" class="panel-collapse collapse in">
+				<div id="collapseInfo" class="panel-collapse collapse">
 					<table class="table table-condensed table-striped"><tbody>
 						<tr><th>$r.translate("cif.id")</th><td>$v.getKey()</td></tr>
 						#if ($roles.isOLATAdmin())		
@@ -210,45 +244,29 @@
 						</tr>
 						#end
 					</tbody></table>
-					<div class="panel-body">
-						<h5>$r.translate("details.extlinkheader")</h5>
-						<div class="o_copy_code">
-							<a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode"></i></a>
-							$extlink
-							<script type="text/javascript">
-							/* <![CDATA[ */
-								jQuery(function() {
-									o_QRCodePopup('o_extlink', '$extlink', 'right');
-								});
-							/* ]]> */
-							</script>
-						</div>
-						#if ($isGuestAllowed)
-						<div class="o_copy_code">
-							<a href="javascript:;" id="o_extlink2"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode"></i></a>
-							${extlink}?guest=true&amp;lang=${userlang}
-							<script type="text/javascript">
-							/* <![CDATA[ */
-								jQuery(function() {
-									o_QRCodePopup('o_extlink2', '${extlink}?guest=true&amp;lang=${userlang}', 'right');
-								});
-							/* ]]> */
-							</script>
-						</div>
-						#end
-					</div>
 				</div>
 			</div>
+			<script type="text/javascript">
+				/* <![CDATA[ */
+					jQuery('#collapseInfo').on('hide.bs.collapse', function () {
+							jQuery('#collapseInfoToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+					})
+					jQuery('#collapseInfo').on('show.bs.collapse', function () {
+							jQuery('#collapseInfoToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+					})
+				/* ]]> */
+			</script>
 
 			#if ($referenceDetails)
-			<div class="panel panel-default">
+			<div class="panel panel-default o_usagepanel">
 				<div class="panel-heading" data-toggle="collapse" data-target="#collapseUsage">
 			    	<h3 class="panel-title">
 						$r.contextHelpWithWrapper("org.olat.repository",'rep-meta-info-reference.html','help.hover.rep.detail')
+						<i id="collapseUsageToggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>
 						$r.translate("details.referenceinfoheader")
 			    	</h3>
 				</div>
-				<div id="collapseUsage" class="panel-collapse collapse in">
+				<div id="collapseUsage" class="panel-collapse collapse">
 					<table class="table table-condensed table-striped"><tbody>
 						<tr>
 							<th>$r.translate("details.referenceinfo")</th>
@@ -261,17 +279,28 @@
 					</tbody></table>
 				</div>
 			</div>
+			<script type="text/javascript">
+				/* <![CDATA[ */
+					jQuery('#collapseUsage').on('hide.bs.collapse', function () {
+							jQuery('#collapseUsageToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+					})
+					jQuery('#collapseUsage').on('show.bs.collapse', function () {
+							jQuery('#collapseUsageToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+					})
+				/* ]]> */
+			</script>			
 			#end
 
 			#if ($v.getManagedFlags().size() > 0)
-			<div class="panel panel-default">
+			<div class="panel panel-default o_managedpanel">
 				<div class="panel-heading" data-toggle="collapse" data-target="#collapseManaged">
 			    	<h3 class="panel-title">
 						$r.contextHelpWithWrapper("org.olat.admin.restapi","managed.html","help.hover.managed")
+						<i id="collapseManagedToggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>
 						$r.translate("cif.managedflags")
 			    	</h3>
 				</div>
-				<div id="collapseManaged" class="panel-collapse collapse in">
+				<div id="collapseManaged" class="panel-collapse collapse">
 					<div class="panel-body">
 						$r.translate("managed.resource.intro")
 					</div>
@@ -284,6 +313,16 @@
 					</div>
 				</div>
 			</div>
+			<script type="text/javascript">
+				/* <![CDATA[ */
+					jQuery('#collapseManaged').on('hide.bs.collapse', function () {
+							jQuery('#collapseManagedToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+					})
+					jQuery('#collapseManaged').on('show.bs.collapse', function () {
+							jQuery('#collapseManagedToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+					})
+				/* ]]> */
+			</script>
 			#end
 
 		</div>

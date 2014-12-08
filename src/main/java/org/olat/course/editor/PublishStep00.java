@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.olat.catalog.CatalogManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -59,6 +59,7 @@ import org.olat.course.tree.PublishTreeModel;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.manager.CatalogManager;
 
 /**
  * Description:<br>
@@ -91,7 +92,7 @@ class PublishStep00 extends BasicStep {
 			hasCatalog = true;
 		} else {
 			RepositoryEntry repositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(ores, true);
-			hasCatalog = !CatalogManager.getInstance().getCatalogCategoriesFor(repositoryEntry).isEmpty();
+			hasCatalog = !CoreSpringFactory.getImpl(CatalogManager.class).getCatalogCategoriesFor(repositoryEntry).isEmpty();
 		}
 		
 		hasPublishableChanges = publishProcess.hasPublishableChanges();

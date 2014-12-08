@@ -32,17 +32,27 @@ public class FlexiTablePreferences implements Serializable {
 
 	private static final long serialVersionUID = 220256298006571339L;
 
+	private int pageSize;
 	private boolean sortDirection;
 	private String sortedColumnKey;
 	private List<String> enabledColumnKey;
 	private FlexiTableRendererType rendererType;
 	
-	public FlexiTablePreferences(String sortedColumnKey, boolean sortDirection,
+	public FlexiTablePreferences(int pageSize, String sortedColumnKey, boolean sortDirection,
 			List<String> enabledColumnKey, FlexiTableRendererType rendererType) {
+		this.pageSize = pageSize;
 		this.sortedColumnKey = sortedColumnKey;
 		this.sortDirection = sortDirection;
 		this.enabledColumnKey = enabledColumnKey;
 		this.rendererType = rendererType;
+	}
+
+	public int getPageSize() {
+		return pageSize;
+	}
+
+	public void setPageSize(int pageSize) {
+		this.pageSize = pageSize;
 	}
 
 	public boolean isSortDirection() {

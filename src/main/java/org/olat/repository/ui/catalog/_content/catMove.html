@@ -1,0 +1,17 @@
+<div class="o_sel_catalog_chooser_tree">
+	#if($withTitle)
+		<h4>$r.translate("cat.move.title")</h4>
+	#end
+	$r.render("tree")
+	<div class="o_button_group">
+		#if($r.available("cat.move.submit"))
+			$r.render("cat.move.submit")
+		#end
+		#if($r.available("ok"))
+			$r.render("ok")
+		#end
+		#if($r.available("cancel"))
+			$r.render("cancel")
+		#end
+	</div>
+</div>

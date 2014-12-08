@@ -21,6 +21,7 @@ package org.olat.restapi.support.vo;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -35,16 +36,19 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "repositoryEntryVO")
 public class RepositoryEntryVO {
+	
 	private Long key;
 	private String softkey;
 	private String resourcename;
 	private String displayname;
+	@XmlAttribute(name="authors",required=false)
+	private String authors;
 	private String externalId;
 	private String externalRef;
 	private String managedFlags;
 	private Long resourceableId;
 	private String resourceableTypeName;
-	
+
 	private Long olatResourceId;
 	private String olatResourceTypeName;
 	
@@ -84,6 +88,14 @@ public class RepositoryEntryVO {
 	
 	public void setDisplayname(String displayname) {
 		this.displayname = displayname;
+	}
+	
+	public String getAuthors() {
+		return authors;
+	}
+
+	public void setAuthors(String authors) {
+		this.authors = authors;
 	}
 	
 	public String getExternalId() {

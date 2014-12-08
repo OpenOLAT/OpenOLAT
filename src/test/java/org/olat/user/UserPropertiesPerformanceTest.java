@@ -112,7 +112,7 @@ public class UserPropertiesPerformanceTest extends OlatTestCase {
 			user.setProperty(UserConstants.INSTITUTIONALEMAIL, username + "@" + institution);
 			user.setProperty(UserConstants.INSTITUTIONALNAME, institution);
 			user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, username + "-" + institution);
-			AuthHelper.createAndPersistIdentityAndUserWithUserGroup(username, "hokuspokus", user);
+			AuthHelper.createAndPersistIdentityAndUserWithUserGroup(username, null, "hokuspokus", user);
 
 			if (i % 10 == 0) {
 				// flush now to obtimize performance

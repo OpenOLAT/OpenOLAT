@@ -125,7 +125,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("delete", translate("delete"), "delete"));
 		
 		taskModel = new TaskDataModel(Collections.<TaskData>emptyList(), columnsModel);
-		taskListEl = uifactory.addTableElement(getWindowControl(), "taskList", taskModel, formLayout);
+		taskListEl = uifactory.addTableElement(getWindowControl(), "taskList", taskModel, getTranslator(), formLayout);
 		reloadTaskModel();
 	}
 	

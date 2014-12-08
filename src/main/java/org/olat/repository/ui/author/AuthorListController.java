@@ -290,6 +290,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		tableEl.setExtendedSearch(searchCtrl);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_coursetable");
+		tableEl.setShowAllRowsEnabled(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");

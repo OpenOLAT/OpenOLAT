@@ -55,13 +55,8 @@ public class ImageHelperBean implements ImageService {
 	}
 
 	@Override
-	public Size scaleImage(File image, File scaledImage, int maxWidth, int maxHeight) {
-		return imageHelperServiceProvider.scaleImage(image, scaledImage, maxWidth, maxHeight);
-	}
-
-	@Override
-	public Size scaleImage(File image, String extension, File scaledImage, int maxWidth, int maxHeight) {
-		return imageHelperServiceProvider.scaleImage(image, extension, scaledImage, maxWidth, maxHeight);
+	public Size scaleImage(File image, String extension, File scaledImage, int maxWidth, int maxHeight, boolean fill) {
+		return imageHelperServiceProvider.scaleImage(image, extension, scaledImage, maxWidth, maxHeight, fill);
 	}
 
 	@Override

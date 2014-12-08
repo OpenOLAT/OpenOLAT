@@ -95,6 +95,13 @@
 	}
 }
 
+/* override transparent background for tree menu */
+.o_tree.o_course_menu {
+	div.o_tree_l0 > a:first-child {
+		background-color: $o-tree-link-bg;
+	}
+}
+
 /* structure course element */
 .o_st_peekview {
 	ul {

@@ -22,7 +22,6 @@
 	<import resource="classpath:/org/olat/admin/_spring/adminContext.xml"/>
 
 	<import resource="classpath:/org/olat/basesecurity/_spring/baseSecurityContext.xml"/>
-	<import resource="classpath:/org/olat/catalog/_spring/catalogContext.xml"/>
 	<import resource="classpath:/org/olat/collaboration/_spring/collaborationToolsContext.xml"/>
 	<import resource="classpath:/org/olat/commons/calendar/_spring/calendarContext.xml"/>
 	<import resource="classpath:/org/olat/commons/info/_spring/infoMessageContext.xml"/>

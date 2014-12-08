@@ -34,9 +34,6 @@ package de.tuchemnitz.wizard.helper.catalog;
 
 import java.util.List;
 
-import org.olat.catalog.CatalogEntry;
-import org.olat.catalog.CatalogManager;
-import org.olat.catalog.ui.CatalogEntryAddController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tree.MenuTree;
@@ -46,7 +43,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.ui.catalog.CatalogEntryAddController;
 
 import de.tuchemnitz.wizard.workflows.coursecreation.model.CourseCreationConfiguration;
 
@@ -87,15 +86,14 @@ public class CatalogInsertController extends CatalogEntryAddController {
 			TreeEvent te = (TreeEvent) event;
 			if(MenuTree.COMMAND_TREENODE_EXPANDED.equals(te.getCommand())) {
 				// build new entry for this catalog level
-				CatalogManager cm = CatalogManager.getInstance();
 				String nodeId = selectionTree.getSelectedNodeId();
 				if(nodeId == null) {
 					selectedParent = null;
 				} else if(StringHelper.isLong(nodeId)) {
 					Long newParentId = Long.parseLong(nodeId);
-					CatalogEntry newParent = cm.loadCatalogEntry(newParentId);
+					CatalogEntry newParent = catalogManager.loadCatalogEntry(newParentId);
 					// check first if this repo entry is already attached to this new parent
-					List<CatalogEntry> existingChildren = cm.getChildrenOf(newParent);
+					List<CatalogEntry> existingChildren = catalogManager.getChildrenOf(newParent);
 					for (CatalogEntry existingChild : existingChildren) {
 						RepositoryEntry existingRepoEntry = existingChild.getRepositoryEntry();
 						if (existingRepoEntry != null && existingRepoEntry.equalsByPersistableKey(toBeAddedEntry)) {

@@ -676,6 +676,10 @@ public class VelocityRenderDecorator implements Closeable {
 		return vc.getContext().get(key);
 	}
 	
+	public boolean absent(String key) {
+		return !vc.getContext().containsKey(key);
+	}
+	
 	public String formatDate(Date date){
 		Formatter f = Formatter.getInstance(renderer.getTranslator().getLocale());
 		return f.formatDate(date);

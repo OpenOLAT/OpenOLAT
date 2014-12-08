@@ -52,6 +52,7 @@ import org.olat.ldap.LDAPError;
 import org.olat.ldap.LDAPEvent;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -79,6 +80,9 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 	private CloseableCalloutWindowController calloutCtr;
 	private Link syncOneUserLink;
 	private Link removeFallBackAuthsLink;
+	
+	@Autowired
+	private LDAPLoginModule ldapLoginModule;
 
 	public LDAPAdminController(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
@@ -94,7 +98,7 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 //		syncOneUserLink = LinkFactory.createButton("one.user.sync.button.start", ldapAdminVC, this);
 		
 		// remove olat-fallback authentications for ldap-users, see FXOLAT-284
-		if (LDAPLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()){
+		if (ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()){
 			removeFallBackAuthsLink = LinkFactory.createButton("remove.fallback.auth", ldapAdminVC, this);
 		}
 		// Create start delete User link

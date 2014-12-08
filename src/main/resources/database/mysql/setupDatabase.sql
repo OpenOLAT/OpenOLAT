@@ -144,6 +144,7 @@ create table if not exists o_bs_identity (
    creationdate datetime,
    lastlogin datetime,
    name varchar(128) not null unique,
+   external_id varchar(64),
    status integer,
    fk_user_id bigint unique,
    primary key (id)
@@ -172,6 +173,7 @@ create table if not exists o_catentry (
    creationdate datetime,
    name varchar(110) not null,
    description longtext,
+   style varchar(16),
    externalurl varchar(255),
    fk_repoentry bigint,
    fk_ownergroup bigint unique,
