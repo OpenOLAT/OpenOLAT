@@ -43,7 +43,7 @@ alter table o_bs_identity add column external_id varchar(64);
 alter table o_catentry add column style varchar(16);
 
 
---coaching
+-- coaching
 create view o_as_eff_statement_identity_v as (
    select
       sg_re.repositoryentry_id as re_id,
