@@ -119,7 +119,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 	 */
 	public UserInfoMainController(UserRequest ureq, WindowControl wControl, Identity chosenIdentity) {
 		super(ureq, wControl);
-		
+				
 		this.chosenIdentity = chosenIdentity;
 
 		main = new Panel("userinfomain");
@@ -133,6 +133,12 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 		menuTree.setTreeModel(tm);
 		menuTree.setSelectedNodeId(tm.getRootNode().getChildAt(0).getIdent());
 		menuTree.addListener(this);
+
+		// override if user is guest, don't show anything
+		if (ureq.getUserSession().getRoles().isGuestOnly()) {
+			main = new Panel("empty");
+			menuTree = null;
+		}
 
 		LayoutMain3ColsController columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, main, "userinfomain");
 		listenTo(columnLayoutCtr);

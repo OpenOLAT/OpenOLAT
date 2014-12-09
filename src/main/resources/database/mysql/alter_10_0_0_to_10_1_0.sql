@@ -133,7 +133,7 @@ create or replace view o_as_eff_statement_groups_v as (
 );
 
 
---clean up
+-- clean up
 drop view o_qp_item_shared_v;
 drop view o_qp_item_pool_v;
 drop view o_qp_item_author_v;
