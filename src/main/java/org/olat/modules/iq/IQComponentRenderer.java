@@ -331,7 +331,7 @@ public class IQComponentRenderer implements ComponentRenderer {
 			sb.append("<a onclick=\"return o2cl();\" href=\"");
 			ubu.buildURI(sb, new String[] { VelocityContainer.COMMAND_ID }, new String[] { "git" });
 			sb.append("?itid="	+ itemPos	+ "&seid=" + sectionPos);
-			sb.append("\" title=\"" + StringEscapeUtils.escapeHtml(title) + "\">");
+			sb.append("\" class=\"o_sel_qti_menu_item\" title=\"" + StringEscapeUtils.escapeHtml(title) + "\">");
 		}
 		
 		sb.append("<b>" + (sectionPos + 1) + "." + (itemPos + 1) + ".</b>&nbsp;");	
