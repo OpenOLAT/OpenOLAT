@@ -330,7 +330,7 @@ public class ForumController extends BasicController implements GenericEventList
 			Long resId = ores.getResourceableId();
 			if (resId.longValue() != 0) {
 				if (isLogDebugEnabled()) logDebug("messageId=" , ores.getResourceableId().toString());
-				currentMsg = fm.findMessage(ores.getResourceableId());
+				currentMsg = fm.loadMessage(ores.getResourceableId());
 				if (currentMsg != null) {
 					showThreadView(ureq, currentMsg, null);
 					scrollToCurrentMessage();					
@@ -399,7 +399,7 @@ public class ForumController extends BasicController implements GenericEventList
 		
 		Long resId = entries.get(0).getOLATResourceable().getResourceableId();
 		if (resId.longValue() != 0) {
-			currentMsg = fm.findMessage(resId);
+			currentMsg = fm.loadMessage(resId);
 			if (currentMsg != null) {
 				showThreadView(ureq, currentMsg, null);
 				scrollToCurrentMessage();					
@@ -472,7 +472,7 @@ public class ForumController extends BasicController implements GenericEventList
 			Map<String, Object> messageMap = getMessageMapFromCommand(ureq.getIdentity(), command);
 			Long messageId = (Long) messageMap.get("id");
 			
-			Message updatedMessage = fm.findMessage(messageId);
+			Message updatedMessage = fm.loadMessage(messageId);
 			if (updatedMessage!=null) {
 				currentMsg = updatedMessage;
 				// now dispatch the commands
@@ -584,7 +584,7 @@ public class ForumController extends BasicController implements GenericEventList
 					msgEditCtr.persistTempUploadedFiles(currentMsg);
 				} else if (msgEditCtr.getLastEditModus().equals(MessageEditController.EDITMODE_EDITMSG)){
 					// edit done -> save 
-					Message updatedMessage = fm.findMessage(currentMsg.getKey());
+					Message updatedMessage = fm.loadMessage(currentMsg.getKey());
 					if(updatedMessage!=null) {
 					  doEditMessage(ureq);
 					  //file persisting is done already, as a msg-key was known during edit.
@@ -593,7 +593,7 @@ public class ForumController extends BasicController implements GenericEventList
 					}
 				} else if (msgEditCtr.getLastEditModus().equals(MessageEditController.EDITMODE_REPLYMSG)){
 					// reply done -> save
-					Message updatedMessage = fm.findMessage(currentMsg.getKey());
+					Message updatedMessage = fm.loadMessage(currentMsg.getKey());
 				  if(updatedMessage!=null) {	
 					  doReplyMessage(ureq);
 					  msgEditCtr.persistTempUploadedFiles(currentMsg);

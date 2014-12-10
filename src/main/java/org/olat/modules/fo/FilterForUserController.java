@@ -81,6 +81,7 @@ import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -119,12 +120,15 @@ public class FilterForUserController extends BasicController {
 	
 	private final OLATResourceable forumOres;
 	private final String thumbMapper;
+	
+	@Autowired
+	private ForumManager forumManager;
 
 	public FilterForUserController(UserRequest ureq, WindowControl wControl, Forum forum) {
 		super(ureq, wControl);
 		this.forum = forum;
 		
-		msgs = ForumManager.getInstance().getMessagesByForum(forum);
+		msgs = forumManager.getMessagesByForum(forum);
 		forumOres = OresHelper.createOLATResourceableInstance(Forum.class,forum.getKey());
 		
 		mainVC = createVelocityContainer("filter_for_user");
@@ -300,7 +304,7 @@ public class FilterForUserController extends BasicController {
 			Map<String, Object> messageMap = getMessageMapFromCommand(ureq.getIdentity(), command);
 			Long messageId = (Long) messageMap.get("id");
 			
-			Message selectedMessage = ForumManager.getInstance().findMessage(messageId);
+			Message selectedMessage = forumManager.loadMessage(messageId);
 			if (selectedMessage != null) {
 				if (command.startsWith("open_in_thread_")) {
 					fireEvent(ureq, new OpenMessageInThreadEvent(selectedMessage));

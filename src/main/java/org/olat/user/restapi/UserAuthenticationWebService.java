@@ -19,11 +19,16 @@
  */
 package org.olat.user.restapi;
 
+import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
+import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
+import static org.olat.restapi.security.RestSecurityHelper.isUserManager;
+
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -38,9 +43,11 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.login.auth.OLATAuthManager;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.AuthenticationVO;
@@ -59,9 +66,9 @@ public class UserAuthenticationWebService {
 	
 	/**
 	 * The version of the User Authentication Web Service
-   * @response.representation.200.mediaType text/plain
-   * @response.representation.200.doc The version of this specific Web Service
-   * @response.representation.200.example 1.0
+	 * @response.representation.200.mediaType text/plain
+	 * @response.representation.200.doc The version of this specific Web Service
+	 * @response.representation.200.example 1.0
 	 * @return The version number
 	 */
 	@GET
@@ -74,19 +81,19 @@ public class UserAuthenticationWebService {
 	/**
 	 * Returns all user authentications
 	 * @response.representation.200.qname {http://www.example.com}authenticationVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The list of all users in the OLAT system
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_AUTHVOes}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The list of all users in the OLAT system
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_AUTHVOes}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The identity not found
-   * @param username The username of the user to retrieve authentication
-   * @param request The HTTP request
+	 * @response.representation.404.doc The identity not found
+	 * @param username The username of the user to retrieve authentication
+	 * @param request The HTTP request
 	 * @return
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getAuthenticationTokenList(@PathParam("username") String username, @Context HttpServletRequest request) {
-		if(!RestSecurityHelper.isUserManager(request)) {
+		if(!isUserManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -107,15 +114,15 @@ public class UserAuthenticationWebService {
 	/**
 	 * Creates and persists an authentication
 	 * @response.representation.qname {http://www.example.com}authenticationVO
-   * @response.representation.mediaType application/xml, application/json
-   * @response.representation.doc An authentication to save
-   * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_AUTHVO}
+	 * @response.representation.mediaType application/xml, application/json
+	 * @response.representation.doc An authentication to save
+	 * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_AUTHVO}
 	 * @response.representation.200.qname {http://www.example.com}authenticationVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The saved authentication
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_AUTHVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The saved authentication
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_AUTHVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The identity not found
+	 * @response.representation.404.doc The identity not found
 	 * @param username The username of the user
 	 * @param authenticationVO The authentication object to persist
 	 * @param request The HTTP request
@@ -149,37 +156,12 @@ public class UserAuthenticationWebService {
 		AuthenticationVO savedAuth = ObjectFactory.get(authentication, true);
 		return Response.ok(savedAuth).build();
 	}
-	
-	/**
-	 * Fallback method for browsers
-	 * @response.representation.qname {http://www.example.com}authenticationVO
-   * @response.representation.mediaType application/xml, application/json
-   * @response.representation.doc An authentication to save
-   * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_AUTHVO}
-	 * @response.representation.200.qname {http://www.example.com}authenticationVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The saved authentication
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_AUTHVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The identity not found
-	 * @param username The username of the user
-	 * @param authenticationVO The authentication object to persist
-	 * @param request The HTTP request
-	 * @return the saved authentication
-	 */
-	@POST
-	@Path("new")
-	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response createPost(@PathParam("username") String username, AuthenticationVO authenticationVO, @Context HttpServletRequest request) {
-		return create(username, authenticationVO, request);
-	}
 
 	/**
 	 * Deletes an authentication from the system
-   * @response.representation.200.doc The authentication successfully deleted
+	 * @response.representation.200.doc The authentication successfully deleted
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The identity or the authentication not found
+	 * @response.representation.404.doc The identity or the authentication not found
 	 * @param username The username of the user
 	 * @param authKey The authentication key identifier
 	 * @param request The HTTP request
@@ -189,7 +171,7 @@ public class UserAuthenticationWebService {
 	@DELETE
 	@Path("{authKey}")
 	public Response delete(@PathParam("username") String username, @PathParam("authKey") Long authKey, @Context HttpServletRequest request) {
-		if(!RestSecurityHelper.isUserManager(request)) {
+		if(!isUserManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		BaseSecurity baseSecurity = BaseSecurityManager.getInstance();
@@ -208,19 +190,37 @@ public class UserAuthenticationWebService {
 	}
 	
 	/**
-	 * Fallback method for browsers
-	 * @response.representation.200.doc The authentication successfully deleted
+	 * Change the password of a user.
+	 * 
+	 * @response.representation.200.doc The password successfully changed
+	 * @response.representation.304.doc The password was not changed
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The identity or the authentication not found
-	 * @param username The username of the user
-	 * @param authKey The authentication key identifier
+	 * @response.representation.404.doc The identity or the authentication not found
+	 * @param username The username of the user to change the password
+	 * @param newPassword The new password
 	 * @param request The HTTP request
-	 * @return <code>Response</code> object. The operation status (success or
-	 *         fail)
+	 * @return <code>Response</code> object. The operation status (success or fail)
 	 */
 	@POST
-	@Path("{authKey}/delete")
-	public Response deletePost(@PathParam("username") String username, @PathParam("authKey") Long authKey, @Context HttpServletRequest request) {
-		return delete(username, authKey, request);
+	@Path("password")
+	public Response changePassword(@PathParam("username") String username, @FormParam("newPassword") String newPassword,
+			@Context HttpServletRequest request) {
+		if(!isAdmin(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		Identity doer = getIdentity(request);
+		if(doer == null) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		BaseSecurity baseSecurity = BaseSecurityManager.getInstance();
+		Identity identity = baseSecurity.findIdentityByName(username);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		OLATAuthManager authManager = CoreSpringFactory.getImpl(OLATAuthManager.class);
+		boolean ok = authManager.changePassword(doer, identity, newPassword);
+		return (ok ? Response.ok() : Response.notModified()).build();
 	}
 }
