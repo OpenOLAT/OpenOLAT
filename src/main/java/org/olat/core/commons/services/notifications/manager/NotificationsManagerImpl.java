@@ -989,6 +989,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 * @param latestEmailed needs to be given! SubscriptionInfo is collected from then until latestNews of publisher
 	 * @return null if the publisher is not valid anymore (deleted), or if there are no news
 	 */
+	@Override
 	public SubscriptionItem createSubscriptionItem(Subscriber subscriber, Locale locale, String mimeTypeTitle, String mimeTypeContent, Date latestEmailed) {
 		if (latestEmailed == null) throw new AssertException("compareDate may not be null, use a date from history");
 		
@@ -1000,7 +1001,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			NotificationsHandler notifHandler = getNotificationsHandler(pub);
 			if(debug) logDebug("create subscription with handler: " + notifHandler.getClass().getName());
 			// do not create subscription item when deleted
-			if (isPublisherValid(pub)) {
+			if (isPublisherValid(pub) && notifHandler != null) {
 				if(debug) logDebug("NotifHandler: " + notifHandler.getClass().getName() + " compareDate: " + latestEmailed.toString() + " now: " + new Date().toString(), null);
 				SubscriptionInfo subsInfo = notifHandler.createSubscriptionInfo(subscriber, locale, latestEmailed);
 				if (subsInfo.hasNews()) {

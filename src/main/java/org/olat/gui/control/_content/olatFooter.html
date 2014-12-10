@@ -13,7 +13,13 @@
 	</div>
 #end 
 #if($footerInfos.hasFooterLine)
-	<div id="o_footer_textline">$footerInfos.footerLine</div>
+	<div id="o_footer_textline">
+	#if($footerInfos.footerUrl && !$footerInfos.footerUrl.empty)
+		<a href="$footerInfos.footerUrl" target="_blank">$footerInfos.footerLine</a>
+	#else
+		$footerInfos.footerLine
+	#end
+	</div>
 #end
 <div id="o_footer_powered" class="clearfix">
 	<a href="http://www.openolat.org" target="_blank" title="OpenOLAT - infinite learning">
@@ -21,5 +27,5 @@
 	</a>
 </div>
 <div id="o_footer_version" class="clearfix">
-	<a #if($footerInfos.footerUrl) href="$footerInfos.footerUrl" #else href="http://www.openolat.org" #end title="Homepage of the Open Source LMS OpenOLAT $appVersion (Build $revisionNumber:$changeSet)" target="_blank">$appName&nbsp;$appVersion</a>
+	<a href="http://www.openolat.org" title="Homepage of the Open Source LMS OpenOLAT $appVersion (Build $revisionNumber:$changeSet)" target="_blank">$appName&nbsp;$appVersion</a>
 </div>	

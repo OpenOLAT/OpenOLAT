@@ -169,6 +169,7 @@ public class LayoutAdminController extends FormBasicController {
 		FormLayoutContainer footerCont = FormLayoutContainer.createDefaultFormLayout("customizing", getTranslator());
 		formLayout.add(footerCont);
 		footerCont.setFormTitle(translate("customizing.settings"));
+		footerCont.setFormDescription(translate("customizing.settings.desc"));
 
 		String oldFooterUrl = layoutModule.getFooterLinkUri();
 		footerUrl = uifactory.addTextElement("footerUrl", "footerUrl.description", 256, oldFooterUrl, footerCont);
