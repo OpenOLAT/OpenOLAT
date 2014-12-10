@@ -41,23 +41,32 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import junit.framework.Assert;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
+import org.olat.login.auth.OLATAuthManager;
 import org.olat.restapi.support.vo.AuthenticationVO;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -70,27 +79,17 @@ import org.olat.test.OlatJerseyTestCase;
  */
 public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 	
-	private RestConnection conn;
+	private static final OLog log = Tracing.createLoggerFor(UserAuthenticationMgmtTest.class);
 	
-	@Before
-	public void startup() {
-		conn = new RestConnection();
-	}
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private OLATAuthManager authManager;
 	
-  @After
-	public void tearDown() throws Exception {
-		try {
-			if(conn != null) {
-				conn.shutdown();
-			}
-		} catch (Exception e) {
-      e.printStackTrace();
-      throw e;
-		}
-	}
 	
 	@Test
-	public void testGetAuthentications() throws IOException, URISyntaxException {
+	public void getAuthentications() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/administrator/auth").build();
@@ -101,11 +100,13 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 		List<AuthenticationVO> vos = parseAuthenticationArray(body);
 		assertNotNull(vos);
 		assertFalse(vos.isEmpty());
-		
+
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testCreateAuthentications() throws IOException, URISyntaxException {
+	public void createAuthentications() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		BaseSecurity baseSecurity = BaseSecurityManager.getInstance();
 		Identity adminIdent = baseSecurity.findIdentityByName("administrator");
 		try {
@@ -130,11 +131,10 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
 		conn.addJsonEntity(method, vo);
 
-    HttpResponse response = conn.execute(method);
-    assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
-    AuthenticationVO savedAuth = conn.parse(response, AuthenticationVO.class);
-    Authentication refAuth = baseSecurity.findAuthentication(adminIdent, "REST-API");
-    
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		AuthenticationVO savedAuth = conn.parse(response, AuthenticationVO.class);
+		Authentication refAuth = baseSecurity.findAuthentication(adminIdent, "REST-API");
 
 		assertNotNull(refAuth);
 		assertNotNull(refAuth.getKey());
@@ -147,10 +147,13 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 		assertEquals(refAuth.getIdentity().getKey(), savedAuth.getIdentityKey());
 		assertEquals(refAuth.getProvider(), savedAuth.getProvider());
 		assertEquals(refAuth.getCredential(), savedAuth.getCredential());
+		
+		conn.shutdown();
 	}
 	
 	@Test
-	public void testDeleteAuthentications() throws IOException, URISyntaxException {
+	public void deleteAuthentications() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		//create an authentication token
@@ -165,10 +168,36 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_XML);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
-		
+		EntityUtils.consume(response.getEntity());
 		
 		Authentication refAuth = baseSecurity.findAuthentication(adminIdent, "REST-A-2");
 		assertNull(refAuth);
+		
+		conn.shutdown();
+	}
+	
+	@Test
+	public void changePassword() throws IOException, URISyntaxException {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-chg-pwd");
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("users").path(user.getName()).path("auth").path("password")
+				.build();
+		HttpPost method = conn.createPost(request, "*/*");
+		conn.addEntity(method, new BasicNameValuePair("newPassword", "top-secret"));
+		HttpResponse response = conn.execute(method);
+		Assert.assertNotNull(response);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		//check
+		Identity reloadedUser = authManager.authenticate(user, user.getName(), "top-secret");
+		Assert.assertNotNull(reloadedUser);
+		Assert.assertEquals(user, reloadedUser);
 	}
 	
 	private List<AuthenticationVO> parseAuthenticationArray(InputStream body) {
@@ -176,7 +205,7 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
 			return mapper.readValue(body, new TypeReference<List<AuthenticationVO>>(){/* */});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Cannot parse an array of AuthenticationVO", e);
 			return null;
 		}
 	}

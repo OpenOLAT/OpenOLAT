@@ -102,12 +102,12 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 			// check for email instead of username if ident is null
 			if(LoginModule.allowLoginUsingEmail()) {
 				if (MailHelper.isValidEmailAddress(login)){
-	  	 	 	ident = userManager.findIdentityByEmail(login);
-	  	 	 	// check for email changed with verification workflow
+					ident = userManager.findIdentityByEmail(login);
+					// check for email changed with verification workflow
 					if (ident == null) {
 						ident = findIdentInChangingEmailWorkflow(login);
 					}
-	  	 	}
+				}
 			} 
 			
 			if(ident == null) {
