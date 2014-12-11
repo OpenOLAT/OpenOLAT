@@ -86,17 +86,12 @@ public class CertificatePDFFormWorker {
 		this.certificatesManager = certificatesManager;
 	}
 
-	public File fill(CertificateTemplate template, File destinationDir) {
+	public File fill(CertificateTemplate template, File destinationDir, String certificateFilename) {
 		PDDocument document = null;
 		InputStream templateStream = null;
 		try {
-			String templateName;
 			File templateFile = null;
-			if(template == null) {
-				//default
-				templateName = "Certificate.pdf";
-			} else {
-				templateName = template.getName();
+			if(template != null) {
 				templateFile = certificatesManager.getTemplateFile(template);
 			}
 			
@@ -120,7 +115,7 @@ public class CertificatePDFFormWorker {
 				destinationDir.mkdirs();
 			}
 			
-			File certificateFile = new File(destinationDir, templateName);
+			File certificateFile = new File(destinationDir, certificateFilename);
 			OutputStream out = new FileOutputStream(certificateFile);
 			document.save(out);
 			out.flush();

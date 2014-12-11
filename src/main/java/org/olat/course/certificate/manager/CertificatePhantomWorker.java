@@ -87,8 +87,8 @@ public class CertificatePhantomWorker {
 		this.certificatesManager = certificatesManager;
 	}
 
-	public File fill(CertificateTemplate template, File destinationDir) {
-		File certificateFile = new File(destinationDir, "Certificate.pdf");
+	public File fill(CertificateTemplate template, File destinationDir, String filename) {
+		File certificateFile = new File(destinationDir, filename);
 		File templateFile = certificatesManager.getTemplateFile(template);
 		File htmlCertificateFile = copyAndEnrichTemplate(templateFile);
 
