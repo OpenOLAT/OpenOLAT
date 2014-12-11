@@ -65,6 +65,7 @@ import org.olat.core.commons.services.notifications.ui.NotificationSubscriptionC
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
@@ -298,6 +299,13 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		do {
 			identities = securityManager.loadIdentities(counter, BATCH_SIZE);
 			for(Identity identity:identities) {
+				if(identity.getName().startsWith("guest_")) {
+					Roles roles = securityManager.getRoles(identity);
+					if(roles.isGuestOnly()) {
+						continue;
+					}
+				}
+				
 				processSubscribersByEmail(identity);
 			}
 			counter += identities.size();
