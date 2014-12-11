@@ -24,6 +24,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -58,8 +61,12 @@ import uk.ac.ed.ph.jqtiplus.running.TestProcessingInitializer;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionControllerSettings;
 import uk.ac.ed.ph.jqtiplus.state.TestPlan;
+import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestProcessingMap;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.types.ResponseData;
+import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
 /**
@@ -107,6 +114,8 @@ public class QTI21DisplayController extends FormBasicController {
 		qtiEl.setRequestTimestampContext(requestTimestampContext);
 		qtiEl.setTestSessionController(testSessionController);
 		qtiEl.setAssessmentObjectUri(createAssessmentObjectUri());
+		
+		mainForm.setMultipartEnabled(true, Integer.MAX_VALUE);
 	}
 	
 	@Override
@@ -122,19 +131,56 @@ public class QTI21DisplayController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == qtiEl) {
-			if(event instanceof QTI21FormEvent) {
-				QTI21FormEvent qe = (QTI21FormEvent)event;
-				switch(qe.getCommand()) {
-					case "select-item": doSelectItem(qe.getSubCommand()); break;
-					default: {}
+			if(event instanceof QTIWorksEvent) {
+				QTIWorksEvent qe = (QTIWorksEvent)event;
+				switch(qe.getEvent()) {
+					case selectItem: doSelectItem(qe.getSubCommand()); break;
+					case testPartNavigation: doTestPartNavigation(); break;
+					case response: doResponse(qe.getStringResponseMap()); break;
 				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void doSelectItem(String subCommand) {
-		System.out.println(subCommand);
+	private void doSelectItem(String key) {
+		TestPlanNodeKey nodeKey = TestPlanNodeKey.fromString(key);
+		Date requestTimestamp = requestTimestampContext.getCurrentRequestTimestamp();
+        testSessionController.selectItemNonlinear(requestTimestamp, nodeKey);
+	}
+	
+	private void doTestPartNavigation() {
+		final Date requestTimestamp = requestTimestampContext.getCurrentRequestTimestamp();
+        testSessionController.selectItemNonlinear(requestTimestamp, null);
+	}
+	
+	//public CandidateSession handleResponses(final CandidateSessionContext candidateSessionContext,
+    //        final Map<Identifier, StringResponseData> stringResponseMap,
+    //        final Map<Identifier, MultipartFile> fileResponseMap,
+    //        final String candidateComment)
+            
+	private void doResponse(Map<Identifier, StringResponseData> stringResponseMap) {
+		String candidateComment = null;
+		
+		final Map<Identifier, ResponseData> responseDataMap = new HashMap<Identifier, ResponseData>();
+        if (stringResponseMap != null) {
+            for (final Entry<Identifier, StringResponseData> stringResponseEntry : stringResponseMap.entrySet()) {
+                final Identifier identifier = stringResponseEntry.getKey();
+                final StringResponseData stringResponseData = stringResponseEntry.getValue();
+                responseDataMap.put(identifier, stringResponseData);
+            }
+        }
+		
+		//TODO files upload
+		
+		final Date timestamp = requestTimestampContext.getCurrentRequestTimestamp();
+        if (candidateComment != null) {
+            testSessionController.setCandidateCommentForCurrentItem(timestamp, candidateComment);
+        }
+
+        /* Attempt to bind responses (and maybe perform RP & OP) */
+        testSessionController.handleResponsesToCurrentItem(timestamp, responseDataMap);
+		
 	}
 
 	//private CandidateSession enterCandidateSession(final CandidateSession candidateSession)
@@ -264,13 +310,13 @@ public class QTI21DisplayController extends FormBasicController {
 	 * Request limit configured outer of the QTI 2.1 file.
 	 * @return
 	 */
-	 public int computeTemplateProcessingLimit() {
-	        final Integer requestedLimit = null;// deliverySettings.getTemplateProcessingLimit();
-	        if (requestedLimit==null) {
-	            /* Not specified, so use default */
-	            return JqtiPlus.DEFAULT_TEMPLATE_PROCESSING_LIMIT;
-	        }
-	        final int requestedLimitIntValue = requestedLimit.intValue();
-	        return requestedLimitIntValue > 0 ? requestedLimitIntValue : JqtiPlus.DEFAULT_TEMPLATE_PROCESSING_LIMIT;
-	  }
+	public int computeTemplateProcessingLimit() {
+		final Integer requestedLimit = null;// deliverySettings.getTemplateProcessingLimit();
+		if (requestedLimit == null) {
+			/* Not specified, so use default */
+			return JqtiPlus.DEFAULT_TEMPLATE_PROCESSING_LIMIT;
+		}
+		final int requestedLimitIntValue = requestedLimit.intValue();
+		return requestedLimitIntValue > 0 ? requestedLimitIntValue : JqtiPlus.DEFAULT_TEMPLATE_PROCESSING_LIMIT;
+	}
 }

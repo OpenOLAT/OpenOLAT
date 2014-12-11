@@ -53,7 +53,6 @@ import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
  */
 public class QTI21ComponentRenderer extends DefaultComponentRenderer {
 	
-
 	private AssessmentRenderer assessmentRenderer = new AssessmentRenderer();
 
 	@Override
@@ -79,15 +78,15 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
         final String sessionBaseUrl = formUrl.toString();
         final TestRenderingOptions renderingOptions = new TestRenderingOptions();
         configureBaseRenderingOptions(sessionBaseUrl, renderingOptions);
-        renderingOptions.setTestPartNavigationUrl(sessionBaseUrl + "/test-part-navigation");
-        renderingOptions.setSelectTestItemUrl(sessionBaseUrl + "/select-item");
-        renderingOptions.setAdvanceTestItemUrl(sessionBaseUrl + "/finish-item");
-        renderingOptions.setReviewTestPartUrl(sessionBaseUrl + "/review-test-part");
-        renderingOptions.setReviewTestItemUrl(sessionBaseUrl + "/review-item");
-        renderingOptions.setShowTestItemSolutionUrl(sessionBaseUrl + "/item-solution");
-        renderingOptions.setEndTestPartUrl(sessionBaseUrl + "/end-test-part");
-        renderingOptions.setAdvanceTestPartUrl(sessionBaseUrl + "/advance-test-part");
-        renderingOptions.setExitTestUrl(sessionBaseUrl + "/exit-test");
+        renderingOptions.setTestPartNavigationUrl(sessionBaseUrl + "test-part-navigation");
+        renderingOptions.setSelectTestItemUrl(sessionBaseUrl + "select-item");
+        renderingOptions.setAdvanceTestItemUrl(sessionBaseUrl + "finish-item");
+        renderingOptions.setReviewTestPartUrl(sessionBaseUrl + "review-test-part");
+        renderingOptions.setReviewTestItemUrl(sessionBaseUrl + "review-item");
+        renderingOptions.setShowTestItemSolutionUrl(sessionBaseUrl + "item-solution");
+        renderingOptions.setEndTestPartUrl(sessionBaseUrl + "end-test-part");
+        renderingOptions.setAdvanceTestPartUrl(sessionBaseUrl + "advance-test-part");
+        renderingOptions.setExitTestUrl(sessionBaseUrl + "exit-test");
 
         Writer writer = new StringWriter();
         StreamResult result = new StreamResult(writer);
@@ -104,18 +103,19 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
 		index = output.indexOf("</body>");
 		output = output.substring(0, index);
 		output = output.replace("<form action", "<form target='oaa0' action");
+		output = output.replace("<form method", "<form target='oaa0' method");
 		return "<div " + output + "</div>";
 	}
 	
 	private void configureBaseRenderingOptions(final String sessionBaseUrl, final AbstractRenderingOptions renderingOptions) {
         renderingOptions.setSerializationMethod(SerializationMethod.HTML5_MATHJAX);
-        renderingOptions.setSourceUrl(sessionBaseUrl + "/source");
-        renderingOptions.setStateUrl(sessionBaseUrl + "/state");
-        renderingOptions.setResultUrl(sessionBaseUrl + "/result");
-        renderingOptions.setValidationUrl(sessionBaseUrl + "/validation");
-        renderingOptions.setServeFileUrl(sessionBaseUrl + "/file");
-        renderingOptions.setAuthorViewUrl(sessionBaseUrl + "/author-view");
-        renderingOptions.setResponseUrl(sessionBaseUrl + "/response");
+        renderingOptions.setSourceUrl(sessionBaseUrl + "source");
+        renderingOptions.setStateUrl(sessionBaseUrl + "state");
+        renderingOptions.setResultUrl(sessionBaseUrl + "result");
+        renderingOptions.setValidationUrl(sessionBaseUrl + "validation");
+        renderingOptions.setServeFileUrl(sessionBaseUrl + "file");
+        renderingOptions.setAuthorViewUrl(sessionBaseUrl + "author-view");
+        renderingOptions.setResponseUrl(sessionBaseUrl + "response");
     }
 	
 	private void renderCurrentCandidateTestSessionState(TestSessionController testSessionController,

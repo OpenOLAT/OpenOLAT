@@ -19,14 +19,24 @@
  */
 package org.olat.ims.qti21.ui;
 
+import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.response;
+import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.selectItem;
+import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.testPartNavigation;
+
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.ims.qti21.RequestTimestampContext;
 
+import uk.ac.ed.ph.jqtiplus.exception.QtiParseException;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
 /**
@@ -85,18 +95,49 @@ public class QTI21FormItem extends FormItemImpl {
 	protected void rootFormAvailable() {
 		//
 	}
-	
-	private static final String SELECT_ITEM = "/select-item/";
 
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		String uri = ureq.getModuleURI();
-		if(uri.startsWith(SELECT_ITEM)) {
-			String sub = uri.substring(SELECT_ITEM.length());
-			QTI21FormEvent event = new QTI21FormEvent("select-item", sub, this);
+		if(uri.startsWith(selectItem.getPath())) {
+			String sub = uri.substring(selectItem.getPath().length());
+			QTIWorksEvent event = new QTIWorksEvent(selectItem, sub, this);
+			getRootForm().fireFormEvent(ureq, event);
+		} else if(uri.startsWith(testPartNavigation.getPath())) {
+			QTIWorksEvent event = new QTIWorksEvent(testPartNavigation, this);
+			getRootForm().fireFormEvent(ureq, event);
+		} else if(uri.startsWith(response.getPath())) {
+			final Map<Identifier, StringResponseData> stringResponseMap = extractStringResponseData();
+			//TODO Extract and import file responses (if appropriate)
+			QTIWorksEvent event = new QTIWorksEvent(response, stringResponseMap, this);
 			getRootForm().fireFormEvent(ureq, event);
 		}
 	}
+	
+	private Map<Identifier, StringResponseData> extractStringResponseData() {
+        final Map<Identifier, StringResponseData> responseMap = new HashMap<Identifier, StringResponseData>();
+
+        final Set<String> parameterNames = getRootForm().getRequestParameterSet();;
+        for (final String name : parameterNames) {
+            if (name.startsWith("qtiworks_presented_")) {
+                final String responseIdentifierString = name.substring("qtiworks_presented_".length());
+                final Identifier responseIdentifier;
+                try {
+                    responseIdentifier = Identifier.parseString(responseIdentifierString);
+                }
+                catch (final QtiParseException e) {
+                    //throw new BadResponseWebPayloadException("Bad response identifier encoded in parameter  " + name, e);
+                	throw new RuntimeException("Bad response identifier encoded in parameter  " + name, e);
+                }
+                
+                final String[] responseValues = getRootForm().getRequestParameterValues("qtiworks_response_" + responseIdentifierString);
+                final StringResponseData stringResponseData = new StringResponseData(responseValues);
+                responseMap.put(responseIdentifier, stringResponseData);
+            }
+        }
+        return responseMap;
+    }
+	
 
 	@Override
 	public void reset() {

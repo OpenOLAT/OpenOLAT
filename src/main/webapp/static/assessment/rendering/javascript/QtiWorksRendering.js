@@ -520,11 +520,13 @@ var QtiWorksRendering = (function() {
     return {
         maySubmit: function() {
             var allowSubmit = true;
-            for (var i in submitCallbacks) {
-                allowSubmit = submitCallbacks[i]();
-                if (!allowSubmit) {
-                    break;
-                }
+            if(submitCallbacks.length > 0) {
+	            for (var i in submitCallbacks) {
+	                allowSubmit = submitCallbacks[i]();
+	                if (!allowSubmit) {
+	                    break;
+	                }
+	            }
             }
             return allowSubmit;
         },
