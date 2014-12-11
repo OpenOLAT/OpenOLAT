@@ -38,6 +38,7 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
@@ -220,21 +221,21 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         Boolean email2owners = getModuleConfiguration().getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOOWNERS);
         isValid = isValid || (email2owners != null && email2owners.booleanValue());
         String email2AreaCoaches = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA);
-        isValid = isValid || (!"".equals(email2AreaCoaches) && email2AreaCoaches != null);
+        isValid = isValid || (StringHelper.containsNonWhitespace(email2AreaCoaches));
         String email2GroupCoaches = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP);
-        isValid = isValid || (!"".equals(email2GroupCoaches) && email2GroupCoaches != null);
+        isValid = isValid || (StringHelper.containsNonWhitespace(email2GroupCoaches));
         String email2AllCoaches = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOCOACHES_ALL);
-        isValid = isValid || (!"".equals(email2AllCoaches) && email2AllCoaches != null);
+        isValid = isValid || (StringHelper.containsNonWhitespace(email2AllCoaches));
         String email2CourseCoaches = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOCOACHES_COURSE);
-        isValid = isValid || (!"".equals(email2CourseCoaches) && email2CourseCoaches != null);
+        isValid = isValid || (StringHelper.containsNonWhitespace(email2CourseCoaches));
         String email2AreaParticipants = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA);
-        isValid = isValid || (!"".equals(email2AreaParticipants) && email2AreaParticipants != null);
+        isValid = isValid || (StringHelper.containsNonWhitespace(email2AreaParticipants));
         String email2GroupParticipants = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP);
-        isValid = isValid || (!"".equals(email2GroupParticipants) && email2GroupParticipants != null);
+        isValid = isValid || (StringHelper.containsNonWhitespace(email2GroupParticipants));
         String email2AllParticipants = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_ALL);
-        isValid = isValid || (!"".equals(email2AllParticipants) && email2AllParticipants != null);
+        isValid = isValid || (StringHelper.containsNonWhitespace(email2AllParticipants));
         String email2CourseParticipants = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE);
-        isValid = isValid || (!"".equals(email2CourseParticipants) && email2CourseParticipants != null);
+        isValid = isValid || (StringHelper.containsNonWhitespace(email2CourseParticipants));
         
         StatusDescription sd = StatusDescription.NOERROR;
         if (!isValid) {
