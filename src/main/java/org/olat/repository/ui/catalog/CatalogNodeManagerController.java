@@ -322,7 +322,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	
 	protected void initToolbar() {
 		boolean canAddLinks = isOLATAdmin || isAuthor; // author is allowed to add!
-		boolean canAdministrateCategory = isOLATAdmin;
+		boolean canAdministrateCategory = isOLATAdmin || isLocalTreeAdmin;
 		boolean canAddSubCategories = isOLATAdmin || isLocalTreeAdmin;
 	
 		if (canAdministrateCategory || canAddLinks) {
@@ -385,8 +385,8 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			//the "Node" is only for internal usage
 			StateEntry stateEntry = entry.getTransientState();
 			if(stateEntry instanceof CatalogStateEntry) {
-				CatalogEntry catalogEntry = ((CatalogStateEntry)stateEntry).getEntry();
-				CatalogNodeManagerController nextCtrl = selectCatalogEntry(ureq, catalogEntry);
+				CatalogEntry catEntry = ((CatalogStateEntry)stateEntry).getEntry();
+				CatalogNodeManagerController nextCtrl = selectCatalogEntry(ureq, catEntry);
 				if(nextCtrl != null && entries.size() > 1) {
 					nextCtrl.activate(ureq, entries.subList(1, entries.size()), null);
 				}
