@@ -55,6 +55,10 @@ class FormWrapperContainer extends AbstractComponent implements ComponentCollect
 		this.form = form;
 		firstInit = false;
 	}
+	
+	public boolean isStandaloneRendering() {
+		return form.isStandaloneRendering();
+	}
 
 	public String getDispatchFieldId() {
 		return form.getDispatchFieldId();

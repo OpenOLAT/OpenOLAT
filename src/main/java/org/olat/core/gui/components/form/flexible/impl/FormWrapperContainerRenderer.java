@@ -74,6 +74,10 @@ class FormWrapperContainerRenderer implements ComponentRenderer {
 		boolean hasRenderInstr = (args != null && args.length > 0);
 
 		if (toRender != null) {
+			if(formC.isStandaloneRendering()) {
+				renderer.render(sb, toRender, args);
+			} else {
+			
 			AJAXFlags flags = renderer.getGlobalSettings().getAjaxFlags();
 			boolean iframePostEnabled = flags.isIframePostEnabled();
 			/*
@@ -126,6 +130,7 @@ class FormWrapperContainerRenderer implements ComponentRenderer {
 			 * FORM SUBMIT on keypress enter
 			 */
 			sb.append(FormJSHelper.submitOnKeypressEnter(formC.getFormName()));
+			}
 		}
 	}
 

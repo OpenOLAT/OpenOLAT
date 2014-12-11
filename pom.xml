@@ -73,6 +73,7 @@
 		<org.infinispan.version>6.0.2.Final</org.infinispan.version>
 		<lucene.version>4.8.0</lucene.version>
 		<version.selenium>2.43.1</version.selenium>
+		<qtiworks.version>1.0-SNAPSHOT</qtiworks.version>
 
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
@@ -1792,6 +1793,39 @@
 			<groupId>reload-moonunit</groupId>
 			<artifactId>reload-moonunit</artifactId>
 			<version>reload_dist255-moonunit.jar</version>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.ed.ph.qtiworks</groupId>
+			<artifactId>qtiworks-jqtiplus</artifactId>
+			<version>${qtiworks.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-classic</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.ed.ph.qtiworks</groupId>
+			<artifactId>qtiworks-mathassess</artifactId>
+			<version>${qtiworks.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-classic</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.ed.ph.qtiworks</groupId>
+			<artifactId>qtiworks-mathassess-glue</artifactId>
+			<version>${qtiworks.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-classic</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>rome</groupId>

@@ -154,6 +154,8 @@ public class Form extends LogDelegator {
 	private String formName;
 	private String dispatchFieldId;
 	private String eventFieldId;
+	
+	private boolean standaloneRendering;
 
 	// the real form
 	private FormItemContainer formLayout;
@@ -212,6 +214,14 @@ public class Form extends LogDelegator {
 		return form;
 	}
 	
+	public boolean isStandaloneRendering() {
+		return standaloneRendering;
+	}
+
+	public void setStandaloneRendering(boolean standaloneRendering) {
+		this.standaloneRendering = standaloneRendering;
+	}
+
 	/**
 	 * @param ureq
 	 */
@@ -403,6 +413,7 @@ public class Form extends LogDelegator {
 		} else {
 			// Get parameters the standard way
 			logDebug("Dispatching non-multipart form", null);
+			
 			Set<String> keys = ureq.getParameterSet();
 			for (String key : keys) {
 				String[] values = ureq.getHttpReq().getParameterValues(key);

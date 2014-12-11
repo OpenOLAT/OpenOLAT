@@ -118,7 +118,7 @@ public class RepositoryEntryDocumentFactory {
 			icon = "o_podcast_icon";
 		else if (docType.equals("type.repository.entry.FileResource.BLOG"))
 			icon = "o_blog_icon";
-		else if (docType.equals("type.repository.entry.FileResource.TEST"))
+		else if (docType.equals("type.repository.entry.FileResource.TEST") || docType.equals("FileResource.IMSQTI21=IMS QTI 2.1"))
 			icon = "o_iqtest_icon";
 		else if (docType.equals("type.repository.entry.FileResource.SURVEY"))
 			icon = "o_iqsurv_icon";
