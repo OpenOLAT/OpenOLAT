@@ -16,25 +16,6 @@ body {
 	transition: all .25s ease-in-out;
 }
 
-/* make page a bid smaller when max width is almost reached. */
-@media screen and (min-width: $o-page-width-max) and (max-width: $o-page-width-max + $o-offcanvas-width)  {
-	body.o_offcanvas_right_visible {
-		.o_container_offcanvas {
-			left: floor(-$o-offcanvas-width / 2);
-			max-width: ($o-page-width-max - $o-offcanvas-width);
-		} 
-	}
-}
-/* move page a bit  to side to make room for offcanvas when left and right has enough room */
-@media screen and (min-width: $o-page-width-max + $o-offcanvas-width) and (max-width: $o-page-width-max + $o-offcanvas-width * 2){
-	body.o_offcanvas_right_visible {
-		.o_container_offcanvas {
-			left: floor(-$o-offcanvas-width / 2);
-		} 
-	}
-}
-
-
 /* 	
 	Offcanvas is an absolute container positioned box outside the viewport. 
 	In closed state the element is hidden. To make the offcanvas appear

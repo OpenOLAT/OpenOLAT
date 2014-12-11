@@ -72,7 +72,16 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 						case members: super.doMembers(ureq); break;
 						case orders: super.doOrders(ureq); break;
 						case close: super.doClose(ureq); break;
-						case pop: popToRoot(ureq); cleanUp(); break;
+						case pop: {
+							popToRoot(ureq);
+							cleanUp();
+							Controller runtimeCtrl = getRuntimeController();
+							if(runtimeCtrl != null) {
+								launchContent(ureq, reSecurity);
+								initToolbar();
+							}
+							break;
+						}
 						default: {}
 					}
 					delayedClose = null;

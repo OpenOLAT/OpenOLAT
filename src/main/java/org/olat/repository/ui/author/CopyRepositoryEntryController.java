@@ -123,14 +123,6 @@ public class CopyRepositoryEntryController extends FormBasicController {
 		} else {
 			displaynameEl.clearError();
 		}
-		
-		// Check for empty description
-		if (!StringHelper.containsNonWhitespace(descriptionEl.getValue())) {
-			descriptionEl.setErrorKey("cif.error.description.empty", new String[] {});
-			allOk = false;
-		} else {
-			descriptionEl.clearError();
-		}
 
 		return allOk & super.validateFormLogic(ureq);
 	}

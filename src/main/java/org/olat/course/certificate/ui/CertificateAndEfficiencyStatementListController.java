@@ -198,6 +198,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			wrapper.setPassed(efficiencyStatement.getPassed());
 			wrapper.setScore(efficiencyStatement.getScore());
 			wrapper.setEfficiencyStatementKey(efficiencyStatement.getKey());
+			wrapper.setResourceKey(efficiencyStatement.getArchivedResourceKey());
 			
 			statments.add(wrapper);
 			resourceKeyToStatments.put(efficiencyStatement.getArchivedResourceKey(), wrapper);
@@ -213,6 +214,9 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				resourceKeyToStatments.put(resourceKey, wrapper);
 				statments.add(wrapper);
 			} else {
+				wrapper.setResourceKey(resourceKey);
+			}
+			if(resourceKey != null && wrapper.getResourceKey() == null) {
 				wrapper.setResourceKey(resourceKey);
 			}
 			wrapper.setCertificate(certificate);

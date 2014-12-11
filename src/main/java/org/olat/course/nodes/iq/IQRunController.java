@@ -308,6 +308,7 @@ public class IQRunController extends BasicController implements GenericEventList
 	
 	private void init(UserRequest ureq) {
 		startButton = LinkFactory.createButton("start", myContent, this);
+		startButton.setElementCssClass("o_sel_start_qti12_test");
 		startButton.setPrimary(true);
 		// fetch disclaimer file
 		String sDisclaimer = (String)modConfig.get(IQEditController.CONFIG_KEY_DISCLAIMER);

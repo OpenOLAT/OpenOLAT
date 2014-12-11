@@ -570,6 +570,7 @@
 				-->
 				<entry key="org.olat.user.HomePageConfig">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Visiting card" />
 						<property name="propertyHandlers">
 							<list>
 								<ref bean="userPropertyFirstName" />

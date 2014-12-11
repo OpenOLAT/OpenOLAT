@@ -395,13 +395,13 @@ public class ForumManager extends BasicManager {
 	 * @return the message with the given messageKey
 	 */
 	public Message loadMessage(Long messageKey) {
-		Message msg = doloadMessage(messageKey);
-		return msg;
-	}
-
-	private Message doloadMessage(Long messageKey) {
-		Message msg = DBFactory.getInstance().loadObject(MessageImpl.class, messageKey);
-		return msg;
+		StringBuilder sb = new StringBuilder();
+		sb.append("select msg from ").append(MessageImpl.class.getName()).append(" msg where msg.key=:messageKey");
+		List<Message> messages = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Message.class)
+				.setParameter("messageKey", messageKey)
+				.getResultList();
+		return messages == null || messages.isEmpty() ? null : messages.get(0);
 	}
 
 	private void saveMessage(Message m) {
@@ -576,10 +576,6 @@ public class ForumManager extends BasicManager {
 		return fContainer;
 	}
 	
-	public Message findMessage(Long messageId) {
-		return DBFactory.getInstance().findObject(MessageImpl.class, messageId);
-	}
-	
 	/**
 	 * Splits the current thread starting from the current message.
 	 * It updates the messages of the selected subthread by setting the Parent and the Threadtop.
@@ -710,7 +706,7 @@ public class ForumManager extends BasicManager {
 	 */
 	public void markAsRead(Identity identity,Message msg) {		
 		//Check if the message was not already deleted
-		Message retrievedMessage = findMessage(msg.getKey());
+		Message retrievedMessage = loadMessage(msg.getKey());
 		if(retrievedMessage!=null) {
 			ReadMessageImpl readMessage = new ReadMessageImpl();
 			readMessage.setIdentity(identity);

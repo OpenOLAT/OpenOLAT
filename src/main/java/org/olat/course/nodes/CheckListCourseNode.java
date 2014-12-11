@@ -686,7 +686,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		Boolean manualCorrection = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_MANUAL_CORRECTION);
 		if(manualCorrection == null || !manualCorrection.booleanValue()) {
 			//update passed
-			if((currentPassed == null && updatedPassed != null && updatedScore.floatValue() > 0f)
+			if((currentPassed == null && updatedPassed != null && updatedScore != null && updatedScore.floatValue() > 0f)
 					|| (currentPassed != null && updatedPassed == null)
 					|| (currentPassed != null && !currentPassed.equals(updatedPassed))) {
 				needUpdate = true;	

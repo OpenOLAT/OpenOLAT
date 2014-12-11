@@ -39,6 +39,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
@@ -56,7 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
   *
  * @author Alexander Schneider
  * 
- * Comment: 
+ * Comment: This controller displays the users visiting card
  */
 public class HomePageDisplayController extends BasicController {
 	private static final String usageIdentifyer = HomePageConfig.class.getCanonicalName();
@@ -75,7 +76,7 @@ public class HomePageDisplayController extends BasicController {
 	 */
 	public HomePageDisplayController(UserRequest ureq, WindowControl wControl, Identity homeIdentity, HomePageConfig hpc) {
 		super(ureq, wControl);
-
+		
 		// use property handler translator for translating of user fields
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		VelocityContainer mainVC = createVelocityContainer("homepagedisplay");
@@ -98,6 +99,12 @@ public class HomePageDisplayController extends BasicController {
 		}
 		mainVC.contextPut("userPropertyHandlers", userPropertyHandlers);
 		mainVC.contextPut("homepageConfig", hpc);	
+		
+		// Add external link to visiting card
+		StringBuilder extLink = new StringBuilder();
+		extLink.append(Settings.getServerContextPathURI())
+			.append("/url/HomeSite/").append(homeIdentity.getKey());
+		mainVC.contextPut("extLink", extLink);
 
 		Controller dpc = new DisplayPortraitController(ureq, getWindowControl(), homeIdentity, true, false);
 		listenTo(dpc); // auto dispose
