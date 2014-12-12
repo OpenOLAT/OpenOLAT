@@ -129,7 +129,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 				
 				Link link = LinkFactory.createCustomLink(cmpId, "select_node", cmpId, Link.LINK + Link.NONTRANSLATED, mainVC, this);
 				link.setCustomDisplayText(entry.getName());
-				link.setCustomEnabledLinkCSS("o_icon o_icon_catalog_sub");
+				link.setIconLeftCSS("o_icon o_icon_catalog_sub");
 				link.setUserObject(entry.getKey());
 				subCategories.add(Integer.toString(count));
 				String titleId = "title_" + count;
