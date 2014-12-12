@@ -41,8 +41,8 @@ import javax.persistence.RollbackException;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.ejb.HibernateEntityManager;
-import org.hibernate.ejb.HibernateEntityManagerFactory;
+import org.hibernate.jpa.HibernateEntityManager;
+import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.stat.Statistics;
 import org.hibernate.type.Type;
 import org.olat.core.configuration.Destroyable;
@@ -806,6 +806,13 @@ public class DBImpl extends LogDelegator implements DB, Destroyable {
 		}
  		return null;
    }
+	
+	public Object getCache() {
+		/*if(emf instanceof HibernateEntityManagerFactory) {
+			return ((HibernateEntityManagerFactory)emf).getSessionFactory().getCache().();
+		}*/
+		return null;
+	}
 
 	/**
 	 * @see org.olat.core.commons.persistence.DB#intermediateCommit()

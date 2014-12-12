@@ -5,7 +5,7 @@
         http://java.sun.com/xml/ns/persistence
         http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
 	<persistence-unit name="default">
-		<provider>org.hibernate.ejb.HibernatePersistence</provider>
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
 		<mapping-file>de/bps/olat/modules/cl/Checklist.hbm.xml</mapping-file>
 		<mapping-file>de/bps/olat/modules/cl/CheckpointResult.hbm.xml</mapping-file>
