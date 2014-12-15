@@ -58,6 +58,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 
+	private Controller currentCtrl;
 	private FavoritBusinessGroupListController favoritGroupsCtrl;
 	private BusinessGroupListController myGroupsCtrl;
 	private OpenBusinessGroupListController openGroupsCtrl;
@@ -142,18 +143,21 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
-			if(isGuestOnly) {
-				updateOpenGroups(ureq);
-				segmentView.select(openGroupsLink);
-			} else {
-				boolean markedEmpty = updateMarkedGroups(ureq).isEmpty();
-				if(markedEmpty) {
-					updateMyGroups(ureq);
-					segmentView.select(myGroupsLink);
+			if(currentCtrl == null) {
+				if(isGuestOnly) {
+					updateOpenGroups(ureq);
+					segmentView.select(openGroupsLink);
 				} else {
-					segmentView.select(markedGroupsLink);
+					boolean markedEmpty = updateMarkedGroups(ureq).isEmpty();
+					if(markedEmpty) {
+						updateMyGroups(ureq);
+						segmentView.select(myGroupsLink);
+					} else {
+						segmentView.select(markedGroupsLink);
+					}
 				}
 			}
+			addToHistory(ureq, currentCtrl);
 		} else {
 			ContextEntry entry = entries.get(0);
 			String segment = entry.getOLATResourceable().getResourceableTypeName();
@@ -200,6 +204,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		favoritGroupsCtrl = new FavoritBusinessGroupListController(ureq, bwControl, "favorit");
 		listenTo(favoritGroupsCtrl);
+		currentCtrl = favoritGroupsCtrl;
 		
 		favoritGroupsCtrl.doDefaultSearch();
 		mainVC.put("groupList", favoritGroupsCtrl.getInitialComponent());
@@ -215,6 +220,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		myGroupsCtrl = new BusinessGroupListController(ureq, bwControl, "my");
 		listenTo(myGroupsCtrl);
+		currentCtrl = myGroupsCtrl;
 
 		myGroupsCtrl.doDefaultSearch();
 		mainVC.put("groupList", myGroupsCtrl.getInitialComponent());
@@ -230,6 +236,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		openGroupsCtrl = new OpenBusinessGroupListController(ureq, bwControl, "public");
 		listenTo(openGroupsCtrl);
+		currentCtrl = openGroupsCtrl;
 
 		openGroupsCtrl.doDefaultSearch();
 		mainVC.put("groupList", openGroupsCtrl.getInitialComponent());
@@ -245,6 +252,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		searchGroupsCtrl = new SearchBusinessGroupListController(ureq, bwControl, "search");
 		listenTo(searchGroupsCtrl);
+		currentCtrl = searchGroupsCtrl;
 
 		mainVC.put("groupList", searchGroupsCtrl.getInitialComponent());
 		addToHistory(ureq, searchGroupsCtrl);

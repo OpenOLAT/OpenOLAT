@@ -123,7 +123,8 @@ public class CourseLoggingAction extends BaseLoggingAction {
 	
 	public static final ILoggingAction COURSE_ENTERING = 
 		new CourseLoggingAction(ActionType.statistic, CrudAction.retrieve, ActionVerb.launch, ActionObject.course).setTypeList(
-				new ResourceableTypeList().addMandatory(OlatResourceableType.course).addOptional(StringResourceableType.targetIdentity));
+				new ResourceableTypeList().addMandatory(OlatResourceableType.course)
+					.addOptional(OlatResourceableType.node, StringResourceableType.targetIdentity));
 	
 	public static final ILoggingAction COURSE_LEAVING = 
 		new CourseLoggingAction(ActionType.statistic, CrudAction.exit, ActionVerb.exit, ActionObject.course).setTypeList(
@@ -151,11 +152,13 @@ public class CourseLoggingAction extends BaseLoggingAction {
 	
 	public static final ILoggingAction COURSE_EDITOR_OPEN = 
 		new CourseLoggingAction(ActionType.admin, CrudAction.retrieve, ActionVerb.launch, ActionObject.editor).setTypeList(
-				new ResourceableTypeList().addMandatory(OlatResourceableType.course));
+				new ResourceableTypeList().addMandatory(OlatResourceableType.course)
+						.addOptional(OlatResourceableType.node));
 	
 	public static final ILoggingAction COURSE_EDITOR_CLOSE = 
 		new CourseLoggingAction(ActionType.admin, CrudAction.retrieve, ActionVerb.exit, ActionObject.editor).setTypeList(
-				new ResourceableTypeList().addMandatory(OlatResourceableType.course));
+				new ResourceableTypeList().addMandatory(OlatResourceableType.course)
+						.addOptional(OlatResourceableType.node));
 
 	public static final ILoggingAction COURSE_EDITOR_NODE_MOVED = 
 		new CourseLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.move, ActionObject.node).setTypeList(
@@ -178,7 +181,8 @@ public class CourseLoggingAction extends BaseLoggingAction {
 	
 	public static final ILoggingAction COURSE_EDITOR_PUBLISHED = 
 		new CourseLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.edit, ActionObject.publisher).setTypeList(
-				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node));
+				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node)
+						.addOptional(OlatResourceableType.node));
 	
 
 	/**
