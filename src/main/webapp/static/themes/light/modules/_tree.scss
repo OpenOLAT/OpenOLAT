@@ -7,13 +7,20 @@
     @include border-bottom-radius($o-tree-border-radius);
     overflow: hidden;
     font-size: $o-tree-font-size;
-
-	a {
-		color : $o-tree-link-color;
+    
+    a {
+    	color : $o-tree-link-color;
+    	background-color: none;
+    	&:hover,
+		&:focus {
+			color: $o-tree-link-hover-color;
+		}
+    }
+    
+	.o_tree_link {
 		background-color : $o-tree-link-bg;
 		&:hover,
 		&:focus {
-			color: $o-tree-link-hover-color;
 			background-color : $o-tree-link-hover-bg;
 		}
 		&:first-child {
@@ -22,7 +29,6 @@
 		&:last-child{
 			&:hover,
 			&:focus {
-				color: $o-tree-link-hover-color;
 				background-color : $o-tree-link-hover-bg;
 			}
 		}
@@ -122,22 +128,24 @@
 			border-bottom: none;
 		}
 		
-		li span.active>a {
-			color : $o-tree-link-active-color;
+		li .active.o_tree_link {
+			a { color : $o-tree-link-active-color; }
 			background-color : $o-tree-link-active-bg;
 			&:hover,
 			&:focus {
-				color: $o-tree-link-active-hover-color;
+				a { color: $o-tree-link-active-hover-color; }
 				background-color : $o-tree-link-active-hover-bg;
 			}
 			font-weight: $o-tree-link-active-font-weight;
 		}
 		
-		li span.active_parent>a {
-			color : $o-tree-link-active-parent-color;
-			&:hover,
-			&:focus {
-				color: $o-tree-link-active-parent-hover-color;
+		li .active_parent.o_tree_link {
+			a {
+				color : $o-tree-link-active-parent-color;
+				&:hover,
+				&:focus {
+					color: $o-tree-link-active-parent-hover-color;
+				}
 			}
 			font-weight: $o-tree-link-active-parent-font-weight;
 		}

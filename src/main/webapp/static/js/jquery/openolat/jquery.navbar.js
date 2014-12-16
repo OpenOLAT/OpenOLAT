@@ -28,7 +28,6 @@
 		this.addExtraElements();
 
 		this.state = {
-			rightVisible: false,
 			busy: false,
 			brandW : 0,
 			sitesW : 0,
@@ -355,18 +354,19 @@
 	}
 	
 	Navbar.prototype.showRight = function() {
-		if (!this.state.rightVisible) {					
+		if (!this.isOffcanvasVisible() && !this.offcanvasTransitioning) {
+			this.offcanvasTransitioning = true;
 			var that = this;
 			var box = $('#o_offcanvas_right');
 			box.show().transition({ x: -that.state.offCanvasWidth}, function() {
+				that.offcanvasTransitioning = false;
 				$('body').addClass('o_offcanvas_right_visible');	    	
-				that.state.rightVisible = true;			
+				// hide menu when clicking anywhere in content (timeout to pass the event in IE8/9 which hide the navbar)
+				var listener = $.proxy(that.hideRightOnClick, that);
+				setTimeout(function() {
+					$('html').on('click', listener);
+				}, 10);			
 			} );
-			// hide menu when clicking anywhere in content (timeout to pass the event in IE8/9 which hide the navbar)
-			var listener = $.proxy(this.hideRightOnClick, this);
-			setTimeout(function() {
-				$('html').on('click', listener);
-			}, 10);			
 		}
 	}
 	Navbar.prototype.hideRightOnClick = function(e) {
@@ -375,24 +375,29 @@
 		}
 	}
 	Navbar.prototype.hideRight = function() {
-		if (this.state.rightVisible) {
+		if (this.isOffcanvasVisible() && !this.offcanvasTransitioning) {
+			this.offcanvasTransitioning = true;
+			// remove listener to hide menu
+			$('html').off('click', $.proxy(this.hideRight,this));
 			var that = this;
 			var box = $('#o_offcanvas_right');
 			box.transition({ x: that.state.offCanvasWidth}, function() {
+				that.offcanvasTransitioning = false;
 				box.hide();
 				$('body').removeClass('o_offcanvas_right_visible');	    	
-				that.state.rightVisible = false;	    				
 			} );
-			// remove listener to hide menu
-			$('html').off('click', $.proxy(this.hideRight,this));			
 		}
 	}
 	Navbar.prototype.toggleRight = function() {
-		if (this.state.rightVisible) {
+		if (this.isOffcanvasVisible()) {
 			this.hideRight();
 		} else {
 			this.showRight();
 		}
+	}
+
+	Navbar.prototype.isOffcanvasVisible = function() {
+		return $('#o_offcanvas_right:visible').length;
 	}
 
 	Navbar.prototype.getSites = function() {

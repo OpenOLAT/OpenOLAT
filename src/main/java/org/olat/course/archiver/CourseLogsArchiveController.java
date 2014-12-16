@@ -51,7 +51,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.statistic.AsyncExportManager;
-import org.olat.home.InviteeHomeMainController;
+import org.olat.home.HomeMainController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
@@ -143,7 +143,7 @@ public class CourseLogsArchiveController extends BasicController {
     		targetDir = targetDir.substring(0, personalFolderDir.length());
     	}
     	
-    	VFSContainer targetFolder = new LocalFolderImpl(new File(targetDir));
+    		VFSContainer targetFolder = new LocalFolderImpl(new File(targetDir));
 			FolderRunController bcrun = new FolderRunController(targetFolder, true, ureq, getWindowControl());
 			Component folderComponent = bcrun.getInitialComponent();
 			if (relPath.length()!=0) {
@@ -153,7 +153,7 @@ public class CourseLogsArchiveController extends BasicController {
 				bcrun.activatePath(ureq, relPath);
 			}
 			
-			String personalFolder = Util.createPackageTranslator(InviteeHomeMainController.class, ureq.getLocale(), null).translate("menu.bc");
+			String personalFolder = Util.createPackageTranslator(HomeMainController.class, ureq.getLocale(), null).translate("menu.bc");
 			
 			removeAsListenerAndDispose(cmc);
 			cmc = new CloseableModalController(
@@ -162,7 +162,7 @@ public class CourseLogsArchiveController extends BasicController {
 			listenTo(cmc);
 			
 			cmc.activate();
-    }
+		}
 	}
 	
 	public void event(UserRequest ureq, Controller source, Event event) {

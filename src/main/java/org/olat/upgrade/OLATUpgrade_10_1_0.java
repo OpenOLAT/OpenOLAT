@@ -21,6 +21,7 @@ package org.olat.upgrade;
 
 import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -89,23 +90,25 @@ public class OLATUpgrade_10_1_0 extends OLATUpgrade {
 		if (!uhd.getBooleanDataValue(TASK_USER_TOOLS)) {
 			try {
 				String tools = userToolsModule.getAvailableUserTools();
-				StringBuilder toolsSb = new StringBuilder(tools == null ? "" : tools);
-				String[] defaultUserTools = new String[]{
-						"org.olat.home.HomeMainController:org.olat.gui.control.PrintUserToolExtension",
-						"org.olat.home.HomeMainController:org.olat.gui.control.SearchUserToolExtension",
-						"org.olat.home.HomeMainController:org.olat.gui.control.HelpUserToolExtension",
-						"org.olat.home.HomeMainController:org.olat.instantMessaging.ui.ImpressumMainController",
-						"org.olat.home.HomeMainController:org.olat.instantMessaging.ui.InstantMessagingMainController"
-				};
-				
-				for(String defaultUserTool:defaultUserTools) {
-					if(toolsSb.indexOf(defaultUserTool) < 0) {
-						if(toolsSb.length() > 0) toolsSb.append(",");
-						toolsSb.append(defaultUserTool);
+				if(!userToolsModule.isUserToolsDisabled() && StringHelper.containsNonWhitespace(tools)) {
+					StringBuilder toolsSb = new StringBuilder(tools == null ? "" : tools);
+					String[] defaultUserTools = new String[]{
+							"org.olat.home.HomeMainController:org.olat.gui.control.PrintUserToolExtension",
+							"org.olat.home.HomeMainController:org.olat.gui.control.SearchUserToolExtension",
+							"org.olat.home.HomeMainController:org.olat.gui.control.HelpUserToolExtension",
+							"org.olat.home.HomeMainController:org.olat.instantMessaging.ui.ImpressumMainController",
+							"org.olat.home.HomeMainController:org.olat.instantMessaging.ui.InstantMessagingMainController"
+					};
+					
+					for(String defaultUserTool:defaultUserTools) {
+						if(toolsSb.indexOf(defaultUserTool) < 0) {
+							if(toolsSb.length() > 0) toolsSb.append(",");
+							toolsSb.append(defaultUserTool);
+						}
 					}
+					userToolsModule.setAvailableUserTools(toolsSb.toString());
 				}
-				userToolsModule.setAvailableUserTools(toolsSb.toString());
-
+	
 				String defPreset = userToolsModule.getDefaultPresetOfUserTools();
 				StringBuilder defPresetSb = new StringBuilder(defPreset == null ? "" : defPreset);
 				String[] defaultPresets = new String[]{

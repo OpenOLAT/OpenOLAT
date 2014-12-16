@@ -58,6 +58,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATSecurityException;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
@@ -94,6 +95,7 @@ import org.olat.resource.accesscontrol.ui.AccessListController;
 import org.olat.resource.accesscontrol.ui.AccessRefusedController;
 import org.olat.resource.accesscontrol.ui.OrdersAdminController;
 import org.olat.user.UserManager;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -170,6 +172,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator, boolean allowBookmark, boolean showInfos) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+		
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable
+				.wrapBusinessPath(OresHelper.createOLATResourceableType("RepositorySite")));
 		
 		//! check corrupted
 		corrupted = isCorrupted(re);
@@ -585,15 +590,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		currentToolCtr = accessCtrl;
 	}
 	
-	protected void doClose(UserRequest ureq) {
-		// Navigate beyond the stack, our own layout has been popped - close this tab
-		DTabs tabs = getWindowControl().getWindowBackOffice().getWindow().getDTabs();
-		if (tabs != null) {
-			DTab tab = tabs.getDTab(re.getOlatResource());
-			if (tab != null) {
-				tabs.removeDTab(ureq, tab);						
-			}
-		}
+	protected final void doClose(UserRequest ureq) {
 		// Now try to go back to place that is attacked to (optional) root back business path
 		if (launchedFromPoint != null && StringHelper.containsNonWhitespace(launchedFromPoint.getBusinessPath())) {
 			BusinessControl bc = BusinessControlFactory.getInstance().createFromPoint(launchedFromPoint);
@@ -603,6 +600,15 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				NewControllerFactory.getInstance().launch(ureq, bwControl);
 			} catch (Exception e) {
 				logError("Error while resuming with root leve back business path::" + launchedFromPoint.getBusinessPath(), e);
+			}
+		}
+		
+		// Navigate beyond the stack, our own layout has been popped - close this tab
+		DTabs tabs = getWindowControl().getWindowBackOffice().getWindow().getDTabs();
+		if (tabs != null) {
+			DTab tab = tabs.getDTab(re.getOlatResource());
+			if (tab != null) {
+				tabs.removeDTab(ureq, tab);						
 			}
 		}
 	}

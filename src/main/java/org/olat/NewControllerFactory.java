@@ -168,20 +168,17 @@ public class NewControllerFactory extends LogDelegator {
 		OLATResourceable ores = mainCe.getOLATResourceable();
 
 		// Check for RepositoryEntry resource
-		boolean ceConsumed = false;
 		RepositoryEntry re = null;
 		if (ores.getResourceableTypeName().equals(OresHelper.calculateTypeName(RepositoryEntry.class))) {
 			if(ores instanceof RepositoryEntry) {
 				re = (RepositoryEntry)ores;
 				ores = re.getOlatResource();
-				ceConsumed = true;
 			} else {
 				// It is a repository-entry => get OLATResourceable from RepositoryEntry
 				RepositoryManager repom = RepositoryManager.getInstance();
 				re = repom.lookupRepositoryEntry(ores.getResourceableId());
 				if (re != null){
 					ores = re.getOlatResource();
-					ceConsumed = true;
 					mainCe.upgradeOLATResourceable(re);
 				}
 			}

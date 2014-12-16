@@ -48,10 +48,10 @@ public class Rules {
 	}
 	
 	public Rule matchRule(UserSession userSession) {
-		if(userSession == null) {
+		if(userSession == null || userSession.getIdentityEnvironment() == null) {
 			return null;
 		}
-		Roles roles =  userSession.getRoles();
+		Roles roles = userSession.getIdentityEnvironment().getRoles();
 		if(roles == null || roles.isGuestOnly() || roles.isInvitee() || rules == null || rules.isEmpty()) {
 			return null;
 		}

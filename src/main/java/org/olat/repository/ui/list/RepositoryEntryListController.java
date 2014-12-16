@@ -64,8 +64,10 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -78,6 +80,7 @@ import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.list.RepositoryEntryDataModel.Cols;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -127,6 +130,9 @@ public class RepositoryEntryListController extends FormBasicController
 		this.stackPanel = stackPanel;
 		this.withSearch = withSearch;
 		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
+
+		OLATResourceable ores = OresHelper.createOLATResourceableType("MyCoursesSite");
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		
 		this.searchParams = searchParams;
 		dataSource = new DefaultRepositoryEntryDataSource(searchParams, this);
@@ -488,8 +494,11 @@ public class RepositoryEntryListController extends FormBasicController
 		} else {
 			removeAsListenerAndDispose(detailsCtrl);
 			
-			detailsCtrl = new RepositoryEntryDetailsController(ureq, getWindowControl(), row);
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Infos", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			detailsCtrl = new RepositoryEntryDetailsController(ureq, bwControl, row);
 			listenTo(detailsCtrl);
+			addToHistory(ureq, detailsCtrl);
 			
 			String displayName = row.getDisplayName();
 			stackPanel.pushController(displayName, detailsCtrl);			

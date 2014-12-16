@@ -137,10 +137,9 @@ public class CertificateChooserController extends UploadCertificateController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(selectLink == source) {
 			if(publicTemplatesEl.isOneSelected()) {
-				
 				String selectedkey = publicTemplatesEl.getSelectedKey();
 				if("def".equals(selectedkey)) {
-					
+					selectedTemplate = null;
 				} else if(StringHelper.isLong(selectedkey)) {
 					try {
 						Long key = new Long(selectedkey);
@@ -149,9 +148,6 @@ public class CertificateChooserController extends UploadCertificateController {
 						logError("", e);
 					}
 				}
-			}
-			
-			if(selectedTemplate != null) {
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		} else if(uploadLink == source) {

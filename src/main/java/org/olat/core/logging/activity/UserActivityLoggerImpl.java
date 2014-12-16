@@ -668,7 +668,15 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 				}
 			}
 		}
-// fxdiff: end of moved code		
+		// fxdiff: end of moved code
+		if(resourceInfos != null) {
+			//remove all ignorable resources
+			for(Iterator<ILoggingResourceable> riIterator=resourceInfos.iterator(); riIterator.hasNext(); ) {
+				if(riIterator.next().isIgnorable()) {
+					riIterator.remove();
+				}
+			}
+		}
 		
 		if (loggingAction.getTypeListDefinition()==null) {
 			// this is a foul!
@@ -758,14 +766,7 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		// store the current logging object in the session - for duration calculation at next log
 //		session_.putEntry(USESS_KEY_USER_ACTIVITY_LOGGING_LAST_LOG, logObj);
 		
-		if(resourceInfos != null) {
-			//remove all ignorable resources
-			for(Iterator<ILoggingResourceable> riIterator=resourceInfos.iterator(); riIterator.hasNext(); ) {
-				if(riIterator.next().isIgnorable()) {
-					riIterator.remove();
-				}
-			}
-		}
+		
 
 		if (resourceInfos!=null && resourceInfos.size()!=0) {
 			// this should be the normal case - we do have LoggingResourceables which we can log

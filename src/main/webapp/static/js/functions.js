@@ -694,12 +694,15 @@ function showAjaxBusy() {
 		if (o_info.linkbusy) {
 			// try/catch because can fail in full page refresh situation when called before DOM is ready
 			try {
-				jQuery('#o_body').addClass('o_ajax_busy');
-				jQuery('#o_ajax_busy').modal({show: true, backdrop: 'static', keyboard: 'false'});
-				// fix modal conflic with modal dialogs, make ajax busy appear always above modal dialogs
-				jQuery('#o_ajax_busy').after('<div id="o_ajax_busy_backdrop" class="modal-backdrop in"></div>');
-				jQuery('#o_ajax_busy>.modal-backdrop').remove();
-				jQuery('#o_ajax_busy_backdrop').css({'z-index' : 1200});
+				//don't set 2 layers
+				if(jQuery('#o_ajax_busy_backdrop').length == 0) {
+					jQuery('#o_body').addClass('o_ajax_busy');
+					jQuery('#o_ajax_busy').modal({show: true, backdrop: 'static', keyboard: 'false'});
+					// fix modal conflic with modal dialogs, make ajax busy appear always above modal dialogs
+					jQuery('#o_ajax_busy').after('<div id="o_ajax_busy_backdrop" class="modal-backdrop in"></div>');
+					jQuery('#o_ajax_busy>.modal-backdrop').remove();
+					jQuery('#o_ajax_busy_backdrop').css({'z-index' : 1200});
+				}
 			} catch (e) {
 				if(window.console) console.log(e);
 			}
@@ -713,6 +716,7 @@ function removeAjaxBusy() {
 		jQuery('#o_body').removeClass('o_ajax_busy');
 		jQuery('#o_ajax_busy_backdrop').remove();
 		jQuery('#o_ajax_busy').modal('hide');
+		console.log("Remove");
 	} catch (e) {
 		if(window.console) console.log(e);
 	}

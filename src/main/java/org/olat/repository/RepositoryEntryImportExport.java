@@ -195,7 +195,7 @@ public class RepositoryEntryImportExport {
 			}
 		}
 		
-		return repositoryManager.setDescriptionAndName(newEntry, newEntry.getDisplayname(), newEntry.getDescription(),
+		return repositoryManager.setDescriptionAndName(newEntry, newEntry.getDisplayname(), null,
 				repositoryProperties.getAuthors(), repositoryProperties.getDescription(),
 				repositoryProperties.getObjectives(), repositoryProperties.getRequirements(),
 				repositoryProperties.getCredits(), repositoryProperties.getMainLanguage(),
