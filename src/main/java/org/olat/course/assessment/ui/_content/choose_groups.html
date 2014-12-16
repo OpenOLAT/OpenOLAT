@@ -1,0 +1,17 @@
+#if($groupNames && $groupNames.size() > 0)
+	$r.translate("groups"):
+	#foreach($groupName in $groupNames)
+		<span>$groupName</span>
+	#end
+	<br/>
+#end
+
+#if($areaNames && $areaNames.size() > 0)
+	$r.translate("areas"):
+	#foreach($areaName in $areaNames)
+		<span>$areaName</span>
+	#end
+	<br/>
+#end
+
+$r.render("choose.groups") $r.render("choose.areas")

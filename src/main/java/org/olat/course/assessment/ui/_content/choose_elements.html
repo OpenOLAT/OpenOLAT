@@ -1,0 +1,9 @@
+#if($elementNames && $elementNames.size() > 0)
+	$r.translate("elements"):
+	#foreach($elementName in $elementNames)
+		<span>$elementName</span>
+	#end
+	<br/>
+#end
+
+$r.render("choose.elements")

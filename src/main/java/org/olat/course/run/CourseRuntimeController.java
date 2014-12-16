@@ -86,6 +86,7 @@ import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.CoachingGroupAccessAssessmentCallback;
 import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.FullAccessAssessmentCallback;
+import org.olat.course.assessment.ui.AssessmentModeListController;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.course.certificate.ui.CertificatesOptionsController;
 import org.olat.course.config.CourseConfig;
@@ -148,7 +149,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		//my course
 		efficiencyStatementsLink, calendarLink, noteLink, chatLink,
 		//glossary
-		openGlossaryLink, enableGlossaryLink;
+		openGlossaryLink, enableGlossaryLink,
+		//assessment
+		assessmentModeLink;
 	private Link currentUserCountLink;
 	private Dropdown myCourse, glossary;
 	
@@ -161,6 +164,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private AssessmentMainController assessmentToolCtr;
 	private MembersManagementMainController membersCtrl;
 	private StatisticCourseNodesController statsToolCtr;
+	private AssessmentModeListController assessmentModeCtrl;
 	private CourseLayoutGeneratorController courseLayoutCtrl;
 	private CertificatesOptionsController certificatesOptionsCtrl;
 
@@ -439,6 +443,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			accessLink.setEnabled(!managed);
 			settings.addComponent(accessLink);
 			
+			assessmentModeLink = LinkFactory.createToolLink("assessment.mode.cmd", translate("command.assessment.mode"), this, "o_icon_assessment_mode");
+			assessmentModeLink.setElementCssClass("o_sel_course_assessment_mode");
+			assessmentModeLink.setEnabled(!managed);
+			settings.addComponent(assessmentModeLink);
+			
 			catalogLink = LinkFactory.createToolLink("access.cmd", translate("command.catalog"), this, "o_icon_catalog");
 			catalogLink.setElementCssClass("o_sel_course_catalog");
 			catalogLink.setVisible(repositoryModule.isCatalogEnabled());
@@ -639,6 +648,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doLayout(ureq);
 		} else if(optionsLink == source) {
 			doOptions(ureq);
+		} else if(assessmentModeLink == source) {
+			doAssessmentMode(ureq);
 		} else if(certificatesOptionsLink == source) {
 			doCertificatesOptions(ureq);
 		} else if(archiverLink == source) {
@@ -718,6 +729,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					switch(delayedClose) {
 						case access: doAccess(ureq); break;
 						case archive: doArchive(ureq); break;
+						case assessmentMode: doAssessmentMode(ureq); break;
 						case assessmentSurveyStatistics: doAssessmentSurveyStatistics(ureq); break;
 						case assessmentTestStatistics: doAssessmentTestStatistics(ureq); break;
 						case assessmentTool: doAssessmentTool(ureq);
@@ -964,6 +976,21 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 		} else {
 			delayedClose = Delayed.options;
+		}
+	}
+	
+	private void doAssessmentMode(UserRequest ureq) {
+		if(delayedClose == Delayed.assessmentMode || requestForClose(ureq)) {
+			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
+				removeCustomCSS(ureq);
+				AssessmentModeListController ctrl = new AssessmentModeListController(ureq, getWindowControl(),
+						toolbarPanel, getRepositoryEntry());
+				assessmentModeCtrl = pushController(ureq, translate("command.assessment.mode"), ctrl);
+				setActiveTool(assessmentModeLink);
+				currentToolCtr = assessmentModeCtrl;
+			}
+		} else {
+			delayedClose = Delayed.assessmentMode;
 		}
 	}
 	
@@ -1431,6 +1458,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private enum Delayed {
 		access,
 		archive,
+		assessmentMode,
 		assessmentSurveyStatistics,
 		assessmentTestStatistics,
 		assessmentTool,

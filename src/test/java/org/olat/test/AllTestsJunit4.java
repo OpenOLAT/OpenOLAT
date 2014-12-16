@@ -120,6 +120,7 @@ import org.junit.runners.Suite;
 	org.olat.course.nodes.en.EnrollmentManagerTest.class,//ok
 	org.olat.course.assessment.AssessmentManagerTest.class,//ok
 	org.olat.course.assessment.manager.UserCourseInformationsManagerTest.class,//ok
+	org.olat.course.assessment.manager.AssessmentModeManagerTest.class,//ok
 	org.olat.course.certificate.manager.CertificatesManagerTest.class,
 	org.olat.course.config.CourseConfigManagerImplTest.class,//ok
 	org.olat.course.groupsandrights.CourseGroupManagementTest.class,//ok

@@ -24,6 +24,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_accessibility:before { content: $fa-var-wheelchair; }
 .o_icon_actions:before { content: $fa-var-gears;}
 .o_icon_archive_tool:before { content: $fa-var-download;}
+.o_icon_assessment_mode:before { content: $fa-var-pencil-square-o;}
 .o_icon_assessment_tool:before { content: $fa-var-trophy;}
 .o_icon_attempt_limit:before { content: $fa-var-refresh; }
 .o_icon_accept:before { content: $fa-var-check; color: $brand-success; }
