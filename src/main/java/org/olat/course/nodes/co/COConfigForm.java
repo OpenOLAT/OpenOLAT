@@ -50,6 +50,7 @@ import org.olat.course.condition.AreaSelectionController;
 import org.olat.course.condition.GroupSelectionController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.area.BGArea;
@@ -179,6 +180,8 @@ public class COConfigForm extends FormBasicController {
 			if(!coachesChoice.isOneSelected()){
 				coachesChoice.setErrorKey("error.no.choice.specified", null);
 				return false;
+			}else{
+				coachesChoice.clearError();
 			}
 			if(coachesChoice.isSelected(2) &&(isEmpty(easyAreaCoachSelectionList)|| easyAreaCoachSelectionList == null)){
 				if(easyGroupCoachSelectionList.getValue() == null && isEmpty(easyGroupCoachSelectionList) || easyGroupCoachSelectionList.getValue().equals("")){
@@ -186,7 +189,6 @@ public class COConfigForm extends FormBasicController {
 					easyGroupCoachSelectionList.setErrorKey("error.no.group.specified", null);
 					return false;
 				}
-				
 			}
 		}
 
@@ -194,6 +196,8 @@ public class COConfigForm extends FormBasicController {
 			if(!participantsChoice.isOneSelected()){
 				participantsChoice.setErrorKey("error.no.choice.specified", null);
 				return false;
+			}else{
+				participantsChoice.clearError();
 			}
 			if(participantsChoice.isSelected(2) &&(isEmpty(easyAreaParticipantsSelectionList)|| easyAreaParticipantsSelectionList == null)){
 				if(easyGroupParticipantsSelectionList.getValue() == null && isEmpty(easyGroupParticipantsSelectionList)|| easyGroupParticipantsSelectionList.getValue().equals("")){
@@ -368,7 +372,7 @@ public class COConfigForm extends FormBasicController {
 		if( ownerSelection!= null){
 			wantOwners.select("xx", ownerSelection.booleanValue());
 		}
-
+		
 		wantOwners.addActionListener(FormEvent.ONCLICK);
 		
 
@@ -395,6 +399,11 @@ public class COConfigForm extends FormBasicController {
 		chooseGroupCoachesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 		chooseGroupCoachesLink.setVisible(false);
 		chooseGroupCoachesLink.setLabel("form.message.group", null);
+		
+		if(cev.getCourseGroupManager().getAllBusinessGroups().isEmpty()){
+			chooseGroupCoachesLink.setI18nKey("groupCreate");
+		}
+		
 		chooseGroupCoachesLink.setElementCssClass("o_omit_margin");
 
 		String groupCoachesInitVal;
@@ -416,6 +425,10 @@ public class COConfigForm extends FormBasicController {
 		chooseAreasCoachesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_courseareas");
 		chooseAreasCoachesLink.setLabel("form.message.area", null);
 		chooseAreasCoachesLink.setElementCssClass("o_omit_margin");
+		
+		if(cev.getCourseGroupManager().getAllAreas().isEmpty()){
+			chooseAreasCoachesLink.setI18nKey("areaCreate");
+		}
 		
 		String areaCoachesInitVal;
 		@SuppressWarnings("unchecked")
@@ -456,6 +469,10 @@ public class COConfigForm extends FormBasicController {
 		chooseGroupParticipantsLink.setLabel("form.message.group", null);
 		chooseGroupParticipantsLink.setElementCssClass("o_omit_margin");
 
+		if(cev.getCourseGroupManager().getAllBusinessGroups().isEmpty()){
+			chooseGroupParticipantsLink.setI18nKey("groupCreate");
+		}
+		
 		String groupParticipantsInitVal;
 		@SuppressWarnings("unchecked")
 		List<Long> groupParticipantsKeys = (List<Long>)config.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID);
@@ -477,6 +494,10 @@ public class COConfigForm extends FormBasicController {
 		chooseAreasParticipantsLink.setLabel("form.message.area", null);
 		chooseAreasParticipantsLink.setElementCssClass("o_omit_margin");
 
+		if(cev.getCourseGroupManager().getAllAreas().isEmpty()){
+			chooseAreasParticipantsLink.setI18nKey("areaCreate");
+		}
+		
 		String areaParticipantsInitVal;
 		@SuppressWarnings("unchecked")
 		List<Long> areaParticipantsKeys = (List<Long>)config.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID);
@@ -510,14 +531,11 @@ public class COConfigForm extends FormBasicController {
 	}
 
 	private void update () {
-		
-		
 		coachesChoice.setVisible(wantCoaches.isSelected(0));
 		chooseGroupCoachesLink.setVisible(coachesChoice.isSelected(2) && wantCoaches.isSelected(0));
 		chooseAreasCoachesLink.setVisible(coachesChoice.isSelected(2) && wantCoaches.isSelected(0));
 		easyGroupCoachSelectionList.setVisible(coachesChoice.isSelected(2) && wantCoaches.isSelected(0));
 		easyAreaCoachSelectionList.setVisible(coachesChoice.isSelected(2) && wantCoaches.isSelected(0));
-		
 		
 		participantsChoice.setVisible(wantParticipants.isSelected(0));
 		chooseGroupParticipantsLink.setVisible(participantsChoice.isSelected(2) && wantParticipants.isSelected(0));
@@ -532,6 +550,14 @@ public class COConfigForm extends FormBasicController {
 			eList = null;
 		}
 		
+		easyGroupParticipantsSelectionList.clearError();
+		easyAreaParticipantsSelectionList.clearError();
+		easyGroupCoachSelectionList.clearError();
+		easyAreaCoachSelectionList.clearError();
+		
+		coachesChoice.clearError();
+		participantsChoice.clearError();
+		
 		recipentsContainer.clearError();
 		flc.setDirty(true);
 	}
@@ -541,9 +567,7 @@ public class COConfigForm extends FormBasicController {
 		if (source == chooseGroupCoachesLink) {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(groupChooseCoaches);
-			
-			
-			
+
 			groupChooseCoaches = new GroupSelectionController(ureq, getWindowControl(), true,
 					cev.getCourseGroupManager(), getKeys(easyGroupCoachSelectionList));
 			listenTo(groupChooseCoaches);
@@ -606,6 +630,7 @@ public class COConfigForm extends FormBasicController {
 				easyGroupCoachSelectionList.setValue(getGroupNames(groupChooseCoaches.getSelectedKeys()));
 				easyGroupCoachSelectionList.setUserObject(groupChooseCoaches.getSelectedKeys());
 				easyGroupCoachSelectionList.getRootForm().submit(ureq);
+				chooseGroupCoachesLink.setI18nKey("groupCoachesChoose");
 			} else if (Event.CANCELLED_EVENT == event) {
 				cmc.deactivate();
 			}
@@ -615,6 +640,7 @@ public class COConfigForm extends FormBasicController {
 				easyAreaCoachSelectionList.setValue(getAreaNames(areaChooseCoaches.getSelectedKeys()));
 				easyAreaCoachSelectionList.setUserObject(areaChooseCoaches.getSelectedKeys());
 				easyAreaCoachSelectionList.getRootForm().submit(ureq);
+				chooseAreasCoachesLink.setI18nKey("areaCoachesChoose");
 			} else if (event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
 			}
@@ -624,6 +650,7 @@ public class COConfigForm extends FormBasicController {
 				easyGroupParticipantsSelectionList.setValue(getGroupNames(groupChooseParticipants.getSelectedKeys()));
 				easyGroupParticipantsSelectionList.setUserObject(groupChooseParticipants.getSelectedKeys());
 				easyGroupParticipantsSelectionList.getRootForm().submit(ureq);
+				chooseGroupParticipantsLink.setI18nKey("groupParticipantsChoose");
 			} else if (Event.CANCELLED_EVENT == event) {
 				cmc.deactivate();
 			}
@@ -633,11 +660,12 @@ public class COConfigForm extends FormBasicController {
 				easyAreaParticipantsSelectionList.setValue(getAreaNames(areaChooseParticipants.getSelectedKeys()));
 				easyAreaParticipantsSelectionList.setUserObject(areaChooseParticipants.getSelectedKeys());
 				easyAreaParticipantsSelectionList.getRootForm().submit(ureq);
+				chooseAreasCoachesLink.setI18nKey("areaParticipantsChoose");
 			} else if (event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
 			}
 		}
-
+		
 	}
 
 	@Override
