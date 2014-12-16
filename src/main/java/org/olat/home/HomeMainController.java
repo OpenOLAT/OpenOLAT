@@ -26,13 +26,11 @@ import org.olat.core.extensions.ExtManager;
 import org.olat.core.extensions.action.GenericActionExtension;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
@@ -57,12 +55,8 @@ public class HomeMainController extends MainLayoutBasicController implements Act
 		super(ureq, wControl);
 
 		stackPanel = new BreadcrumbedStackedPanel("homeStackPanel", getTranslator(), this);
-		stackPanel.setInvisibleCrumb(2);
+		stackPanel.setInvisibleCrumb(1);
 		putInitialPanel(stackPanel);
-		
-		RootController root = new RootController(ureq, wControl);
-		listenTo(root);
-		stackPanel.pushController("main", root);
 	}
 	
 	@Override
@@ -103,7 +97,9 @@ public class HomeMainController extends MainLayoutBasicController implements Act
 			if (innerContentCtr instanceof Activateable2) {
 				((Activateable2) innerContentCtr).activate(ureq, entries, entry.getTransientState());
 			}
-			stackPanel.pushController("content", contentCtr);
+			
+			String actionText = gAE.getActionText(getLocale());
+			stackPanel.rootController(actionText, contentCtr);
 		}
 	}
 	
@@ -120,23 +116,5 @@ public class HomeMainController extends MainLayoutBasicController implements Act
 			((BreadcrumbPanelAware)ctrl).setBreadcrumbPanel(stackPanel);
 		}
 		return ctrl;
-	}
-	
-	public static class RootController extends BasicController {
-
-		public RootController(UserRequest ureq, WindowControl wControl) {
-			super(ureq, wControl);
-			putInitialPanel(new Panel("empty"));
-		}
-
-		@Override
-		protected void event(UserRequest ureq, Component source, Event event) {
-			//
-		}
-
-		@Override
-		protected void doDispose() {
-			//
-		}
 	}
 }

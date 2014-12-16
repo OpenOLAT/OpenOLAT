@@ -34,7 +34,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
-import org.olat.home.InviteeHomeMainController;
+import org.olat.home.HomeMainController;
 
 /**
  * 
@@ -50,7 +50,7 @@ public class PortalMainController extends BasicController {
 	private PortalImpl myPortal;
 	
 	public PortalMainController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, Util.createPackageTranslator(InviteeHomeMainController.class, ureq.getLocale()));
+		super(ureq, wControl, Util.createPackageTranslator(HomeMainController.class, ureq.getLocale()));
 		// start screen
 		welcome = createVelocityContainer("welcome");
 		portalBackButton = LinkFactory.createButtonSmall("command.portal.back", welcome, this);

@@ -470,7 +470,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 		// Personal tools on right side
 		CourseConfig cc = course.getCourseConfig();
-		if (course.hasAssessableNodes() && !isGuestOnly && uce != null) {
+		if ((course.hasAssessableNodes() || cc.isCertificateEnabled()) && !isGuestOnly && uce != null) {
 			// link to efficiency statements should
 			// - not appear when not configured in course configuration
 			// - not appear when configured in course configuration but no assessable
@@ -484,7 +484,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			myCourse.addComponent(efficiencyStatementsLink);
 			if(cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled()) {
 				boolean certification = uce.hasEfficiencyStatementOrCertificate(false);
-				efficiencyStatementsLink.setEnabled(certification);
+				efficiencyStatementsLink.setVisible(certification);
 			}
 		}
 		

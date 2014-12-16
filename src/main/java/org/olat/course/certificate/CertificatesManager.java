@@ -20,6 +20,7 @@
 package org.olat.course.certificate;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -90,6 +91,8 @@ public interface CertificatesManager {
 	public File getTemplateFile(CertificateTemplate template);
 	
 	public VFSLeaf getTemplateLeaf(CertificateTemplate template);
+	
+	public InputStream getDefaultTemplate();
 	
 	//certificate
 	public Certificate getCertificateById(Long key);

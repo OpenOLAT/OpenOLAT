@@ -665,7 +665,11 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		
 		File certificateFile;
 		File dirFile = new File(WebappHelper.getTmpDir(), UUID.randomUUID().toString());	
-		if(template.getPath().toLowerCase().endsWith("pdf")) {
+		if(template == null) {
+			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, true,
+					new Date(), new Date(), locale, userManager, this);
+			certificateFile = worker.fill(null, dirFile, "Certificate.pdf");
+		} else if(template.getPath().toLowerCase().endsWith("pdf")) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, true,
 					new Date(), new Date(), locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
@@ -1029,6 +1033,10 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		VFSContainer root = this.getCertificateTemplatesRootContainer();
 		VFSItem templateItem = root.resolve(templatePath);
 		return templateItem instanceof VFSLeaf ? (VFSLeaf)templateItem : null;
+	}
+	
+	public InputStream getDefaultTemplate() {
+		return CertificatesManager.class.getResourceAsStream("template.pdf");
 	}
 	
 	public File getCertificateTemplatesRoot() {
