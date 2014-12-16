@@ -82,6 +82,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATSecurityException;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -109,6 +110,7 @@ import org.olat.repository.ui.author.AuthoringEntryDataModel.Cols;
 import org.olat.repository.ui.author.wizard.CloseResourceCallback;
 import org.olat.repository.ui.author.wizard.Close_1_ExplanationStep;
 import org.olat.user.UserManager;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -175,6 +177,9 @@ public class AuthorListController extends FormBasicController implements Activat
 		this.i18nName = i18nName;
 		this.withSearch = withSearch;
 		this.searchParams = searchParams;
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableType("RepositorySite");
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		hasAuthorRight = roles.isAuthor() || roles.isInstitutionalResourceManager() || roles.isOLATAdmin();

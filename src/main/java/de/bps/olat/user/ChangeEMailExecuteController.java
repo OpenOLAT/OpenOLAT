@@ -28,7 +28,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.home.InviteeHomeMainController;
+import org.olat.home.HomeMainController;
 import org.olat.login.SupportsAfterLoginInterceptor;
 import org.olat.user.ProfileAndHomePageEditController;
 import org.olat.user.UserManager;
@@ -89,7 +89,7 @@ public class ChangeEMailExecuteController extends ChangeEMailController implemen
 		} else {
 			String value = user.getProperty("emailDisabled", null);
 			if (value != null && value.equals("true")) {
-				Translator translator = Util.createPackageTranslator(InviteeHomeMainController.class, ureq.getLocale());
+				Translator translator = Util.createPackageTranslator(HomeMainController.class, ureq.getLocale());
 				getWindowControl().setWarning(translator.translate("email.disabled"));
 			}
 		}
@@ -103,6 +103,7 @@ public class ChangeEMailExecuteController extends ChangeEMailController implemen
 	 */
 	public boolean changeEMail(WindowControl wControl) {
 		XStream xml = new XStream();
+		@SuppressWarnings("unchecked")
 		HashMap<String, String> mails = (HashMap<String, String>) xml.fromXML(tempKey.getEmailAddress());
 		Identity ident = UserManager.getInstance().findIdentityByEmail(mails.get("currentEMail"));
 		if (ident != null) {

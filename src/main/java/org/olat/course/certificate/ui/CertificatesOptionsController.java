@@ -50,7 +50,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.gui.media.StreamedMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
@@ -178,7 +178,11 @@ public class CertificatesOptionsController extends FormBasicController {
 			selectedTemplate = certificatesManager.getTemplateById(templateId);
 			if(selectedTemplate != null) {
 				templateCont.contextPut("templateName", selectedTemplate.getName());
+			} else {
+				templateCont.contextPut("templateName", translate("default.template"));
 			}
+		} else {
+			templateCont.contextPut("templateName", translate("default.template"));
 		}
 
 		previewTemplateLink = LinkFactory.createButton("preview", templateCont.getFormItemComponent(), this);
@@ -231,7 +235,7 @@ public class CertificatesOptionsController extends FormBasicController {
 		templateCont.setVisible(!none);
 		selectTemplateLink.setEnabled(!none);
 		if(none || selectedTemplate == null) {
-			templateCont.contextRemove("templateName");
+			templateCont.contextPut("templateName", translate("default.template"));
 			previewTemplateLink.setEnabled(false);
 		} else {
 			templateCont.contextPut("templateName", selectedTemplate.getName());
@@ -272,9 +276,7 @@ public class CertificatesOptionsController extends FormBasicController {
 		} else if(source == certificateChooserCtrl) {
 			if(event == Event.DONE_EVENT) {
 				CertificateTemplate template = certificateChooserCtrl.getSelectedTemplate();
-				if(template != null) {
-					doSetTemplate(template);
-				}
+				doSetTemplate(template);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -313,7 +315,7 @@ public class CertificatesOptionsController extends FormBasicController {
 	private void doSetTemplate(CertificateTemplate template) {
 		this.selectedTemplate = template;
 		if(selectedTemplate == null) {
-			templateCont.contextRemove("templateName");
+			templateCont.contextPut("templateName", translate("default.template"));
 		} else {
 			templateCont.contextPut("templateName", template.getName());
 		}
@@ -421,7 +423,8 @@ public class CertificatesOptionsController extends FormBasicController {
 				VFSLeaf templateLeaf = certificatesManager.getTemplateLeaf(selectedTemplate);
 				resource = new VFSMediaResource(templateLeaf); 
 			} else {
-				resource = new NotFoundMediaResource(relPath);
+				InputStream stream = certificatesManager.getDefaultTemplate();
+				resource = new StreamedMediaResource(stream, "Certificate_template.pdf", "application/pdf");
 			}
 			return resource;
 		}

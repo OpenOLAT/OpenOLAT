@@ -343,8 +343,13 @@
 					display: none;
 				}
 				
-				h4.o_title>a>i {
-					display:none;
+				h4.o_title>a {
+					//override o_icon styles, hide the icon
+					font-family: inherit;
+					font-weight: inherit;
+					>i {
+						display:none;
+					}
 				}	
 			}	
 		}
@@ -395,13 +400,16 @@
 						color: $o-coursesite-meta-title-color;
 						&:hover {
 						    color: darken($o-coursesite-meta-title-color, 10%);
-						}				
+						}
+						
+						//override o_icon styles, hide the icon
+						font-family: inherit;
+						font-weight: inherit;
+						>i {
+							display:none;
+						}
 					}
-				}				
-			}
-			
-			h4.o_title>a>i {
-				display:none;
+				}
 			}
 
 			@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
@@ -429,7 +437,7 @@
 			}	
 		}
 	}
-
+	
 	/* multi-column layout for list and compact styles */
 	@media (min-width: $screen-sm-min) {
 		.o_sublevels_list, .o_sublevels_compact {

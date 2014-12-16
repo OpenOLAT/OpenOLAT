@@ -61,7 +61,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	private final SegmentViewComponent segmentView;
 	private Link favoriteLink;
 	private final Link myEntriesLink, searchLink;
-	private AuthorListController markedCtrl, myEntriesCtrl, searchEntriesCtrl;
+	private AuthorListController currentCtrl, markedCtrl, myEntriesCtrl, searchEntriesCtrl;
 
 	private boolean isGuestonly;
 	
@@ -103,18 +103,21 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
-			if(isGuestonly) {
-				doOpenMyEntries(ureq);
-				segmentView.select(myEntriesLink);
-			} else {
-				boolean markEmpty = doOpenMark(ureq).isEmpty();
-				if(markEmpty) {
+			if(currentCtrl == null) {
+				if(isGuestonly) {
 					doOpenMyEntries(ureq);
 					segmentView.select(myEntriesLink);
 				} else {
-					segmentView.select(favoriteLink);
+					boolean markEmpty = doOpenMark(ureq).isEmpty();
+					if(markEmpty) {
+						doOpenMyEntries(ureq);
+						segmentView.select(myEntriesLink);
+					} else {
+						segmentView.select(favoriteLink);
+					}
 				}
 			}
+			addToHistory(ureq, currentCtrl);
 		} else {
 			ContextEntry entry = entries.get(0);
 			String segment = entry.getOLATResourceable().getResourceableTypeName();
@@ -180,6 +183,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		markedCtrl = new AuthorListController(ureq, bwControl, "search.mark", searchParams, false);
 		listenTo(markedCtrl);
+		currentCtrl = markedCtrl;
 		
 		addToHistory(ureq, markedCtrl);
 		mainVC.put("segmentCmp", markedCtrl.getStackPanel());
@@ -198,6 +202,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		myEntriesCtrl = new AuthorListController(ureq, bwControl, "search.my", searchParams, false);
 		listenTo(myEntriesCtrl);
+		currentCtrl = myEntriesCtrl;
 
 		addToHistory(ureq, myEntriesCtrl);
 		mainVC.put("segmentCmp", myEntriesCtrl.getStackPanel());
@@ -216,6 +221,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		searchEntriesCtrl = new AuthorListController(ureq, bwControl, "search.generic", searchParams, true);
 		listenTo(searchEntriesCtrl);
+		currentCtrl = searchEntriesCtrl;
 		
 		addToHistory(ureq, searchEntriesCtrl);
 		mainVC.put("segmentCmp", searchEntriesCtrl.getStackPanel());

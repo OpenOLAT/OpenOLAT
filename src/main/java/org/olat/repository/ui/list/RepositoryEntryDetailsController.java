@@ -50,6 +50,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -89,6 +90,7 @@ import org.olat.resource.accesscontrol.model.Price;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -163,6 +165,9 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RestapiAdminController.class, getLocale(), getTranslator()));
 		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
+
+		OLATResourceable ores = OresHelper.createOLATResourceableType("MyCoursesSite");
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 	}
 	
 	public Integer getIndex() {
