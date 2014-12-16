@@ -55,11 +55,13 @@ public class UserToolImpl implements UserTool, ComponentEventListener {
 		String label = extension.getLabel(locale);
 		String iconCssClass = extension.getIconCssClass();
 		String linkName = "personal.tool.alt." + CodeHelper.getRAMUniqueID();
-		Link link = LinkFactory.createLink(linkName, container, this);
+		Link link = LinkFactory.createLink(linkName, linkName, container.getTranslator(), container, this, Link.LINK | Link.NONTRANSLATED);
 		link.setUserObject(this);
 		link.setCustomDisplayText(label);
 		link.setElementCssClass("o_sel_user_tools-" + extension.getNavigationKey());
 		link.setIconLeftCSS(iconCssClass + " o_icon-lg");
+		link.setTooltip(label);
+		link.setTitle(label);
 		return link;
 	}
 
