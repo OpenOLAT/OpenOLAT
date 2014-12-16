@@ -93,6 +93,7 @@ public class CalendarAdminController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(enableEl == source) {
 			calendarModule.setEnabled(enableEl.isAtLeastSelected(1));
+			CollaborationToolsFactory.getInstance().initAvailableTools();
 			updateEnableElements();
 		} else if(enablePersonalCalendarEl == source) {
 			calendarModule.setEnablePersonalCalendar(enablePersonalCalendarEl.isAtLeastSelected(1));
