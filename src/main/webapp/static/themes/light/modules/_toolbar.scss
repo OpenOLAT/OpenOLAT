@@ -149,6 +149,7 @@
 						position: relative;
 						top: 0;
 						left: 0;
+						margin-right: 0;
 					}
 				}
 			}
@@ -207,7 +208,6 @@
 	
 				
 	.o_tool_dropdown {
-		position: relative;
 		margin: 0 10px;	
 		&:first-child {
 			margin-left: 0;	
@@ -216,6 +216,7 @@
 			margin-right: 0;	
 		}
 		a.dropdown-toggle {
+			position: relative;
 			i {
 				font-size: $o-toolbar-size-icon-md;
 			}
@@ -243,11 +244,12 @@
 					font-size: $o-toolbar-size-caret-sm;				
 				}
 			}
-			@media (max-width: $screen-xs-max) { 
+			@media (max-width: $screen-xs-max) {
+				padding: 0 10px 0 5px;
 				i {
 					font-size: $o-toolbar-size-icon-xs;
 				}
-				span, .o_icon_caret {
+				span {
 					display: none;
 				}
 			}				
@@ -293,7 +295,7 @@
 				vertical-align: top;
 			}
 		}
-		.o_tools_right, .o_tools_right, .o_tools_center {
+		.o_tools_center {
 			float: left;
 		}		
 		.o_tool, .o_text, .o_tool_dropdown {
