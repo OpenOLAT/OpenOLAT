@@ -20,6 +20,7 @@ rendering.
 
   <!-- Web Application contextPath. Starts with a '/' -->
   <xsl:param name="webappContextPath" as="xs:string" required="yes"/>
+  <xsl:param name="staticContextPath" as="xs:string" required="yes"/>
 
   <!-- QTIWorks version number -->
   <xsl:param name="qtiWorksVersion" as="xs:string" required="yes"/>
@@ -62,7 +63,7 @@ rendering.
   <xsl:param name="overrideTemplate" select="false()" as="xs:boolean"/> <!-- enable all templates -->
 
   <!-- Codebase URL for engine-provided applets -->
-  <xsl:variable name="appletCodebase" select="concat($webappContextPath, '/rendering/applets')" as="xs:string"/>
+  <xsl:variable name="appletCodebase" select="concat($staticContextPath, '/rendering/applets')" as="xs:string"/>
 
   <!-- Optional URL for exiting session (NB: may be relative to context) -->
   <xsl:param name="exitSessionUrl" as="xs:string?" required="no"/>

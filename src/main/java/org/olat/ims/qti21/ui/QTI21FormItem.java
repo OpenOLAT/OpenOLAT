@@ -21,7 +21,7 @@ package org.olat.ims.qti21.ui;
 
 import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.response;
 import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.selectItem;
-import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.testPartNavigation;
+import static org.olat.ims.qti21.ui.QTIWorksEvent.Event.*;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -49,11 +49,21 @@ public class QTI21FormItem extends FormItemImpl {
 	
 	private final QTI21Component component;
 	
+	private String mapperUri;
+	
 	public QTI21FormItem(String name) {
 		super(name);
 		component = new QTI21Component(name + "_cmp", this);
 	}
 	
+	public String getMapperUri() {
+		return mapperUri;
+	}
+
+	public void setMapperUri(String mapperUri) {
+		this.mapperUri = mapperUri;
+	}
+
 	public URI getAssessmentObjectUri() {
 		return component.getAssessmentObjectUri();
 	}
@@ -110,6 +120,9 @@ public class QTI21FormItem extends FormItemImpl {
 			final Map<Identifier, StringResponseData> stringResponseMap = extractStringResponseData();
 			//TODO Extract and import file responses (if appropriate)
 			QTIWorksEvent event = new QTIWorksEvent(response, stringResponseMap, this);
+			getRootForm().fireFormEvent(ureq, event);
+		} else if(uri.startsWith(endTestPart.getPath())) {
+			QTIWorksEvent event = new QTIWorksEvent(endTestPart, this);
 			getRootForm().fireFormEvent(ureq, event);
 		}
 	}

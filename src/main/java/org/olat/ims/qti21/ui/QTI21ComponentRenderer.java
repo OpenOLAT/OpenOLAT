@@ -65,36 +65,42 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
 		QTI21Component cmp = (QTI21Component)source;
 		TestSessionController testSessionController = cmp.getTestSessionController();
 		QTI21FormItem item = cmp.getQtiItem();
-		Component rootFormCmp = item.getRootForm().getInitialComponent();
 		
-		URLBuilder formUbuBuilder = renderer.getUrlBuilder().createCopyFor(rootFormCmp);
-		StringOutput formUrl = new StringOutput();
-		formUbuBuilder.buildURI(formUrl,
-				new String[] { Form.FORMID, "dispatchuri", "dispatchevent" },
-				new String[] { Form.FORMCMD, item.getFormDispatchId(), "0" },
-				iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
-		
-        /* Create appropriate options that link back to this controller */
-        final String sessionBaseUrl = formUrl.toString();
-        final TestRenderingOptions renderingOptions = new TestRenderingOptions();
-        configureBaseRenderingOptions(sessionBaseUrl, renderingOptions);
-        renderingOptions.setTestPartNavigationUrl(sessionBaseUrl + "test-part-navigation");
-        renderingOptions.setSelectTestItemUrl(sessionBaseUrl + "select-item");
-        renderingOptions.setAdvanceTestItemUrl(sessionBaseUrl + "finish-item");
-        renderingOptions.setReviewTestPartUrl(sessionBaseUrl + "review-test-part");
-        renderingOptions.setReviewTestItemUrl(sessionBaseUrl + "review-item");
-        renderingOptions.setShowTestItemSolutionUrl(sessionBaseUrl + "item-solution");
-        renderingOptions.setEndTestPartUrl(sessionBaseUrl + "end-test-part");
-        renderingOptions.setAdvanceTestPartUrl(sessionBaseUrl + "advance-test-part");
-        renderingOptions.setExitTestUrl(sessionBaseUrl + "exit-test");
-
-        Writer writer = new StringWriter();
-        StreamResult result = new StreamResult(writer);
-        renderCurrentCandidateTestSessionState(testSessionController, renderingOptions, result, cmp);
-        
-        String output = writer.toString();
-        output = replaces(output);
-        sb.append(output);
+		if(testSessionController.getTestSessionState().isEnded()) {
+			sb.append("<h1>Ended</h1>");
+		} else {
+			Component rootFormCmp = item.getRootForm().getInitialComponent();
+			
+			URLBuilder formUbuBuilder = renderer.getUrlBuilder().createCopyFor(rootFormCmp);
+			StringOutput formUrl = new StringOutput();
+			formUbuBuilder.buildURI(formUrl,
+					new String[] { Form.FORMID, "dispatchuri", "dispatchevent" },
+					new String[] { Form.FORMCMD, item.getFormDispatchId(), "0" },
+					iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
+			
+	        /* Create appropriate options that link back to this controller */
+	        final String sessionBaseUrl = formUrl.toString();
+	        final String mapperUrl = item.getMapperUri();
+	        final TestRenderingOptions renderingOptions = new TestRenderingOptions();
+	        configureBaseRenderingOptions(sessionBaseUrl, mapperUrl, renderingOptions);
+	        renderingOptions.setTestPartNavigationUrl(sessionBaseUrl + "test-part-navigation");
+	        renderingOptions.setSelectTestItemUrl(sessionBaseUrl + "select-item");
+	        renderingOptions.setAdvanceTestItemUrl(sessionBaseUrl + "finish-item");
+	        renderingOptions.setReviewTestPartUrl(sessionBaseUrl + "review-test-part");
+	        renderingOptions.setReviewTestItemUrl(sessionBaseUrl + "review-item");
+	        renderingOptions.setShowTestItemSolutionUrl(sessionBaseUrl + "item-solution");
+	        renderingOptions.setEndTestPartUrl(sessionBaseUrl + "end-test-part");
+	        renderingOptions.setAdvanceTestPartUrl(sessionBaseUrl + "advance-test-part");
+	        renderingOptions.setExitTestUrl(sessionBaseUrl + "exit-test");
+	
+	        Writer writer = new StringWriter();
+	        StreamResult result = new StreamResult(writer);
+	        renderCurrentCandidateTestSessionState(testSessionController, renderingOptions, result, cmp);
+	        
+	        String output = writer.toString();
+        	output = replaces(output);
+        	sb.append(output);
+		}
 	}
 	
 	private String replaces(String result) {
@@ -107,13 +113,13 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
 		return "<div " + output + "</div>";
 	}
 	
-	private void configureBaseRenderingOptions(final String sessionBaseUrl, final AbstractRenderingOptions renderingOptions) {
+	private void configureBaseRenderingOptions(final String sessionBaseUrl, final String mapperUrl, final AbstractRenderingOptions renderingOptions) {
         renderingOptions.setSerializationMethod(SerializationMethod.HTML5_MATHJAX);
         renderingOptions.setSourceUrl(sessionBaseUrl + "source");
         renderingOptions.setStateUrl(sessionBaseUrl + "state");
         renderingOptions.setResultUrl(sessionBaseUrl + "result");
         renderingOptions.setValidationUrl(sessionBaseUrl + "validation");
-        renderingOptions.setServeFileUrl(sessionBaseUrl + "file");
+        renderingOptions.setServeFileUrl(mapperUrl + "/file");
         renderingOptions.setAuthorViewUrl(sessionBaseUrl + "author-view");
         renderingOptions.setResponseUrl(sessionBaseUrl + "response");
     }
@@ -124,28 +130,28 @@ public class QTI21ComponentRenderer extends DefaultComponentRenderer {
 		/*final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
         if (candidateSession.isExploded()) {
             renderExploded(candidateSessionContext, renderingOptions, result);
-        }
-        else if (candidateSession.isTerminated()) {
-            renderTerminated(candidateSessionContext, renderingOptions, result);
-        }
-        else {*/
-            /* Look up most recent event */
-           // final CandidateEvent latestEvent = assertSessionEntered(candidateSession);
-
-            /* Load the TestSessionState and create a TestSessionController */
-            //final TestSessionState testSessionState = candidateDataService.loadTestSessionState(latestEvent);
-            //final TestSessionController testSessionController = createTestSessionController(candidateSession, testSessionState);
-
-            /* Touch the session's duration state if appropriate */
-            if (testSessionState.isEntered() && !testSessionState.isEnded()) {
-            	RequestTimestampContext requestTimestampContext = component.getRequestTimestampContext();
-                final Date timestamp = requestTimestampContext.getCurrentRequestTimestamp();
-                testSessionController.touchDurations(timestamp);
-            }
-
-            /* Render event */
-            renderTestEvent(testSessionController, renderingOptions, result, component);
-       // }
+        }*/
+		/* 
+        if (candidateSessionContext.isTerminated()) {
+            renderTerminated(result);
+        } else {*/
+			/* Look up most recent event */
+			   // final CandidateEvent latestEvent = assertSessionEntered(candidateSession);
+			
+			/* Load the TestSessionState and create a TestSessionController */
+			//final TestSessionState testSessionState = candidateDataService.loadTestSessionState(latestEvent);
+			//final TestSessionController testSessionController = createTestSessionController(candidateSession, testSessionState);
+			
+			/* Touch the session's duration state if appropriate */
+			if (testSessionState.isEntered() && !testSessionState.isEnded()) {
+				RequestTimestampContext requestTimestampContext = component.getRequestTimestampContext();
+			    final Date timestamp = requestTimestampContext.getCurrentRequestTimestamp();
+			    testSessionController.touchDurations(timestamp);
+			}
+			
+			/* Render event */
+			renderTestEvent(testSessionController, renderingOptions, result, component);
+		//}
 	}
 	
 	private void renderTestEvent(final TestSessionController testSessionController,

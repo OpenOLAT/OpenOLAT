@@ -54,10 +54,22 @@ public class QTIWorksEvent extends FormEvent {
 	}
 
 	public enum Event {
-		selectItem("select-item", "select-item/"),
-		testPartNavigation("test-part-navigation", "test-part-navigation"),
-		response("response", "response")
-		;	
+		source("source", "source"),
+		state("state", "state"),
+		result("result", "result"),
+		validation("validation", "validation"),
+		authorview("author-view", "author-view"),
+		response("response", "response"),//OK
+		testPartNavigation("test-part-navigation", "test-part-navigation"),//OK
+		selectItem("select-item", "select-item/"),//OK
+		finishItem("finish-item", "finish-item"),
+		reviewTestPart("review-test-part", "review-test-part"),
+		reviewItem("review-item", "review-item"),
+		itemSolution("item-solution", "item-solution"),
+		endTestPart("end-test-part", "end-test-part"),//OK
+		advanceTestPart("advance-test-part", "advance-test-part"),
+		exitTest("exit-test", "exit-test")
+		;
 		
 		private final String path;
 		private final String event;

@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.annotation.PostConstruct;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
@@ -52,8 +51,8 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
-import org.olat.core.helpers.Settings;
-import org.olat.core.util.WebappHelper;
+import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
+import org.olat.core.gui.render.StringOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -106,10 +105,7 @@ public class AssessmentRenderer {
     private static final URI testPartNavigationXsltUri = URI.create("classpath:/rendering-xslt/test-testpart-navigation.xsl");
     private static final URI testPartFeedbackXsltUri = URI.create("classpath:/rendering-xslt/test-testpart-feedback.xsl");
     private static final URI testFeedbackXsltUri = URI.create("classpath:/rendering-xslt/test-feedback.xsl");
-    private static final URI itemAuthorViewXsltUri = URI.create("classpath:/rendering-xslt/item-author-view.xsl");
-    private static final URI testAuthorViewXsltUri = URI.create("classpath:/rendering-xslt/test-author-view.xsl");
     private static final URI terminatedXsltUri = URI.create("classpath:/rendering-xslt/terminated.xsl");
-    private static final URI explodedXsltUri = URI.create("classpath:/rendering-xslt/exploded.xsl");
 
 
 
@@ -434,6 +430,10 @@ public class AssessmentRenderer {
     private void setBaseRenderingParameters(final Map<String, Object> xsltParameters) {
         xsltParameters.put("qtiWorksVersion", "1.0-SNAPSH0T-OO");
         xsltParameters.put("webappContextPath", "");// WebappHelper.getServletContextPath());
+        
+        StringOutput target = new StringOutput();
+        StaticMediaDispatcher.renderStaticURI(target, "", true);
+        xsltParameters.put("staticContextPath", target.toString());// WebappHelper.getServletContextPath());
     }
 
     //----------------------------------------------------

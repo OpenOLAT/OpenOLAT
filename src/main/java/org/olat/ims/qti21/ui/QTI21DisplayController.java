@@ -77,7 +77,8 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  */
 public class QTI21DisplayController extends FormBasicController {
 	
-	private File fUnzippedDirRoot;
+	private final File fUnzippedDirRoot;
+	private final String mapperUri;
 	
 	private QTI21FormItem qtiEl;
 	private TestSessionController testSessionController;
@@ -92,6 +93,7 @@ public class QTI21DisplayController extends FormBasicController {
 		fUnzippedDirRoot = frm.unzipFileResource(entry.getOlatResource());
 		
 		testSessionController = enterSession();
+		mapperUri = registerCacheableMapper(ureq, "QTI21Resources::" + entry.getKey(), new ResourcesMapper());
 		
 		/* Handle immediate end of test session */
         if (testSessionController.getTestSessionState().isEnded()) {
@@ -114,6 +116,7 @@ public class QTI21DisplayController extends FormBasicController {
 		qtiEl.setRequestTimestampContext(requestTimestampContext);
 		qtiEl.setTestSessionController(testSessionController);
 		qtiEl.setAssessmentObjectUri(createAssessmentObjectUri());
+		qtiEl.setMapperUri(mapperUri);
 		
 		mainForm.setMultipartEnabled(true, Integer.MAX_VALUE);
 	}
@@ -137,6 +140,7 @@ public class QTI21DisplayController extends FormBasicController {
 					case selectItem: doSelectItem(qe.getSubCommand()); break;
 					case testPartNavigation: doTestPartNavigation(); break;
 					case response: doResponse(qe.getStringResponseMap()); break;
+					case endTestPart: doEndTestPart(); break;
 				}
 			}
 		}
@@ -174,15 +178,21 @@ public class QTI21DisplayController extends FormBasicController {
 		//TODO files upload
 		
 		final Date timestamp = requestTimestampContext.getCurrentRequestTimestamp();
-        if (candidateComment != null) {
+        /*if (candidateComment != null) {
             testSessionController.setCandidateCommentForCurrentItem(timestamp, candidateComment);
-        }
+        }*/
 
         /* Attempt to bind responses (and maybe perform RP & OP) */
         testSessionController.handleResponsesToCurrentItem(timestamp, responseDataMap);
-		
 	}
 
+	//public CandidateSession endCurrentTestPart(final CandidateSessionContext candidateSessionContext)
+	private void doEndTestPart() {
+		 /* Update state */
+        final Date requestTimestamp = requestTimestampContext.getCurrentRequestTimestamp();
+        testSessionController.endCurrentTestPart(requestTimestamp);
+	}
+	
 	//private CandidateSession enterCandidateSession(final CandidateSession candidateSession)
 	private TestSessionController enterSession() {
 		/* Set up listener to record any notifications */
