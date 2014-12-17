@@ -215,9 +215,9 @@ public class WebDocumentHandler extends FileHandler {
 	public MainLayoutController createLaunchController(RepositoryEntry re,  RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
 		return new RepositoryEntryRuntimeController(ureq, wControl, re, reSecurity, new RuntimeControllerCreator() {
 			@Override
-			public Controller create(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-					RepositoryEntry entry, RepositoryEntrySecurity reSecurity) {
-				return new WebDocumentRunController(ureq, wControl, entry);
+			public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
+					RepositoryEntry entry, RepositoryEntrySecurity rereSecurity) {
+				return new WebDocumentRunController(uureq, wwControl, entry);
 			}
 		});
 	}

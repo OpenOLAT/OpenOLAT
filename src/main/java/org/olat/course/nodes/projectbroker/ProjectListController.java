@@ -29,9 +29,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -50,8 +50,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
-import org.olat.core.gui.control.generic.dtabs.DTab;
-import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.Identity;
@@ -72,9 +70,6 @@ import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
-import org.olat.user.HomePageConfigManager;
-import org.olat.user.HomePageConfigManagerImpl;
-import org.olat.user.UserInfoMainController;
 
 /**
  *
@@ -368,20 +363,8 @@ public class ProjectListController extends BasicController implements GenericEve
 	}
 
 	private void openUserInPopup(UserRequest ureq, final Identity ident){
-		// did not work to open as popup based on ureq! -> open as tab in same window
-			HomePageConfigManager hpcm = HomePageConfigManagerImpl.getInstance();
-			OLATResourceable ores = hpcm.loadConfigFor(ident.getName());
-			DTabs dts = Windows.getWindows(ureq).getWindow(ureq).getDTabs();
-			DTab dt = dts.getDTab(ores);
-			if (dt == null) {
-				// does not yet exist -> create and add
-				dt = dts.createDTab(ores, ident.getName());
-				if (dt == null) return;
-				UserInfoMainController uimc = new UserInfoMainController(ureq, dt.getWindowControl(), ident);
-				dt.setController(uimc);
-				dts.addDTab(ureq, dt);
-			}
-			dts.activate(ureq, dt, null);
+		String businessPath = "[HomePage:" + ident.getKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
 

@@ -63,7 +63,7 @@ public class QuickPublishController extends BasicController {
 		VelocityContainer mainVC = createVelocityContainer("quick_publish");
 		
 		String accessI18n = "";
-		String accessI18CssClass = "o_info";
+		String accessI18CssClass = "o_success";
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		if(entry.isMembersOnly()) {
 			accessI18n = translate("cif.access.membersonly");
