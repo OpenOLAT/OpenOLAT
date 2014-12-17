@@ -63,6 +63,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -805,9 +806,12 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		Date dateFirstCertification = getDateFirstCertification(identity, resource.getKey());
 		
 		File certificateFile;
-		String courseName = FileUtils.normalizeFilename(entry.getDisplayname());
-		String filename = Util.createPackageTranslator(CertificateController.class, locale)
-				.translate("certificate.filename", new String[]{ courseName }) + ".pdf";
+		StringBuilder sb = new StringBuilder();
+		sb.append(identity.getUser().getProperty(UserConstants.LASTNAME, locale)).append("_")
+		  .append(identity.getUser().getProperty(UserConstants.FIRSTNAME, locale)).append("_")
+		  .append(entry.getDisplayname()).append("_")
+		  .append(Formatter.formatShortDateFilesystem(dateCertification));
+		String filename = FileUtils.normalizeFilename(sb.toString()) + ".pdf";
 		if(template == null || template.getPath().toLowerCase().endsWith("pdf")) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, score, passed,
 					dateCertification, dateFirstCertification, locale, userManager, this);

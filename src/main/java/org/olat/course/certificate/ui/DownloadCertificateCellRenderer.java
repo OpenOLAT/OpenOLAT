@@ -120,7 +120,7 @@ public class DownloadCertificateCellRenderer implements CustomCellRenderer, Flex
 	public static String getUrl(Certificate certificate) {
 		StringBuilder sb = new StringBuilder(100);
 		sb.append(Settings.getServerContextPath()).append("/certificate/")
-		  .append(certificate.getUuid()).append("/").append(getName(certificate)).append(".pdf");
+		  .append(certificate.getUuid()).append("/").append(getName(certificate));
 		return sb.toString();
 	}
 }
