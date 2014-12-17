@@ -43,6 +43,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.PublishTreeModel;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -55,11 +56,37 @@ public class QuickPublishController extends BasicController {
 	private final Link noLink, manualLink, autoLink;
 	private final OLATResourceable courseOres;
 	
-	public QuickPublishController(UserRequest ureq, WindowControl wControl, OLATResourceable courseOres) {
+	public QuickPublishController(UserRequest ureq, WindowControl wControl, ICourse course) {
 		super(ureq, wControl);
-		this.courseOres = OresHelper.clone(courseOres);
-		
+		this.courseOres = OresHelper.clone(course);
+
 		VelocityContainer mainVC = createVelocityContainer("quick_publish");
+		
+		String accessI18n = "";
+		String accessI18CssClass = "o_info";
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		if(entry.isMembersOnly()) {
+			accessI18n = translate("cif.access.membersonly");
+		} else {
+			switch (entry.getAccess()) {
+				case 0: accessI18n = "ERROR";
+					accessI18CssClass = "o_error";
+					break;
+				case 1: accessI18n = translate("cif.access.owners");
+					accessI18CssClass = "o_warning";			
+					break;
+				case 2: accessI18n = translate("cif.access.owners_authors");
+					accessI18CssClass = "o_warning";
+					break;
+				case 3: accessI18n = translate("cif.access.users");
+					break;
+				case 4: accessI18n = translate("cif.access.users_guests");
+					break;
+			}
+		}
+		mainVC.contextPut("accessI18n", accessI18n);
+		mainVC.contextPut("accessI18CssClass", accessI18CssClass);
+		
 		noLink = LinkFactory.createButton("pbl.quick.no", mainVC, this);
 		manualLink = LinkFactory.createButton("pbl.quick.manual", mainVC, this);
 		autoLink = LinkFactory.createButton("pbl.quick.auto", mainVC, this);

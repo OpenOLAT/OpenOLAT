@@ -50,7 +50,6 @@ import org.olat.course.condition.AreaSelectionController;
 import org.olat.course.condition.GroupSelectionController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.area.BGArea;

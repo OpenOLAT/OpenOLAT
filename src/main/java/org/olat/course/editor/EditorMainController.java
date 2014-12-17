@@ -28,7 +28,6 @@ package org.olat.course.editor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -74,7 +73,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -136,9 +134,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	protected static final String CMD_MULTI_CHECKLIST = "cmp.multi.checklist";
 
 	// NLS support
-	
-	private static final String NLS_PUBLISHED_NEVER_YET = "published.never.yet";
-	private static final String NLS_PUBLISHED_LATEST = "published.latest";
 	private static final String NLS_COMMAND_COURSEPREVIEW = "command.coursepreview";
 	private static final String NLS_COMMAND_PUBLISH = "command.publish";
 	private static final String NLS_HEADER_INSERTNODES = "header.insertnodes";
@@ -267,14 +262,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				euce = new EditorUserCourseEnvironmentImpl(cev);
 				euce.getCourseEditorEnv().setCurrentCourseNodeId(null);
 				
-	
-				long lpTimeStamp = cetm.getLatestPublishTimestamp();
-				if (lpTimeStamp == -1) {				
-					showInfo(NLS_PUBLISHED_NEVER_YET);
-				} else { // course has been published before
-					Date d = new Date(lpTimeStamp);
-					getWindowControl().setInfo(translate(NLS_PUBLISHED_LATEST, Formatter.getInstance(ureq.getLocale()).formatDateAndTime(d)));
-				}
 				menuTree.setTreeModel(cetm);
 				menuTree.setOpenNodeIds(Collections.singleton(cetm.getRootNode().getIdent()));
 				menuTree.addListener(this);
