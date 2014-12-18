@@ -224,19 +224,15 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         isValid = isValid || (StringHelper.containsNonWhitespace(email2AreaCoaches));
         String email2GroupCoaches = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP);
         isValid = isValid || (StringHelper.containsNonWhitespace(email2GroupCoaches));
-        String email2AllCoaches = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOCOACHES_ALL);
-        isValid = isValid || (StringHelper.containsNonWhitespace(email2AllCoaches));
-        String email2CourseCoaches = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOCOACHES_COURSE);
-        isValid = isValid || (StringHelper.containsNonWhitespace(email2CourseCoaches));
+        isValid = isValid || getModuleConfiguration().getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_ALL);
+        isValid = isValid || getModuleConfiguration().getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOCOACHES_COURSE);
         String email2AreaParticipants = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA);
         isValid = isValid || (StringHelper.containsNonWhitespace(email2AreaParticipants));
         String email2GroupParticipants = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP);
         isValid = isValid || (StringHelper.containsNonWhitespace(email2GroupParticipants));
-        String email2AllParticipants = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_ALL);
-        isValid = isValid || (StringHelper.containsNonWhitespace(email2AllParticipants));
-        String email2CourseParticipants = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE);
-        isValid = isValid || (StringHelper.containsNonWhitespace(email2CourseParticipants));
-        
+        isValid = isValid || getModuleConfiguration().getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_ALL);
+        isValid = isValid || getModuleConfiguration().getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE);
+
         StatusDescription sd = StatusDescription.NOERROR;
         if (!isValid) {
             String shortKey = "error.norecipients.short";
