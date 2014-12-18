@@ -24,6 +24,7 @@
 */
 package org.olat.gui.control;
 
+import org.olat.core.commons.fullWebApp.TopNavController;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
@@ -37,6 +38,7 @@ import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.media.RedirectMediaResource;
+import org.olat.core.id.OLATResourceable;
 
 /**
  * Description:<br>
@@ -46,7 +48,7 @@ import org.olat.core.gui.media.RedirectMediaResource;
  * Initial Date:  15.02.2008 <br>
  * @author patrickb
  */
-public class OlatMinimalTopNavController extends BasicController {
+public class OlatMinimalTopNavController extends BasicController implements TopNavController {
 
 	private final Link closeLink;
 
@@ -58,17 +60,16 @@ public class OlatMinimalTopNavController extends BasicController {
 		putInitialPanel(vc);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		//
 	}
+	
+	@Override
+	public void lockResource(OLATResourceable resource) {
+		//
+	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == closeLink){

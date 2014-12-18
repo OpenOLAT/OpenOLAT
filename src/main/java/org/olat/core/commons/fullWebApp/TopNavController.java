@@ -17,20 +17,19 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment;
+package org.olat.core.commons.fullWebApp;
 
-import org.olat.group.BusinessGroup;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.id.OLATResourceable;
 
 /**
  * 
- * Initial date: 16.12.2014<br>
+ * Initial date: 18.12.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface AssessmentModeToGroup {
+public interface TopNavController extends Controller {
 	
-	public AssessmentMode getAssessmentMode();
-	
-	public BusinessGroup getBusinessGroup();
+	public void lockResource(OLATResourceable resource);
 
 }

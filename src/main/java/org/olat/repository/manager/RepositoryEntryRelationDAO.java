@@ -288,6 +288,35 @@ public class RepositoryEntryRelationDAO {
 		return query.getResultList();
 	}
 	
+	public List<Long> getMemberKeys(RepositoryEntryRef re, RepositoryEntryRelationType type, String... roles) {
+		List<String> roleList = GroupRoles.toList(roles);
+		
+		String def;
+		switch(type) {
+			case defaultGroup: def = " on relGroup.defaultGroup=true"; break;
+			case notDefaultGroup: def = " on relGroup.defaultGroup=false"; break;
+			default: def = "";
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select members.identity.key from ").append(RepositoryEntry.class.getName()).append(" as v")
+		  .append(" inner join v.groups as relGroup").append(def)
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as members")
+		  .append(" where v.key=:repoKey");
+		if(roleList.size() > 0) {
+				sb.append(" and members.role in (:roles)");
+		}
+			
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("repoKey", re.getKey());
+		if(roleList.size() > 0) {
+				query.setParameter("roles", roleList);
+		}
+		return query.getResultList();
+	}
+	
 	public boolean removeMembers(RepositoryEntry re, List<Identity> members) {
 		Group group = getDefaultGroup(re);
 		for(Identity member:members) {

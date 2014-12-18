@@ -50,42 +50,15 @@ public class RSSUtil {
 	public static final String RSS_AUTH_TOKEN_KEY = "rsstoken";
 	/** path prefix for personal rss feed **/
 	public static final String RSS_PREFIX_PERSONAL = "/personal/";
-	/** path prefix for public rss feed **/
-	public static final String RSS_PREFIX_PUBLIC = "/public/";
 	
 	/** OLAT server URI **/
-  public static final String URI_SERVER;
-  /** Personal rss channel URI prefix **/
-  public static final String URI_PERSONAL_CHANNEL;
-  /** Public rss channel URI prefix **/
-  public static final String URI_PUBLIC_CHANNEL;
-  static {
+	public static final String URI_SERVER;
+	/** Personal rss channel URI prefix **/
+	public static final String URI_PERSONAL_CHANNEL;
+	
+	static {
 		URI_SERVER = Settings.getServerContextPathURI() + "/";
 		URI_PERSONAL_CHANNEL = URI_SERVER + "rss" + RSS_PREFIX_PERSONAL;
-		URI_PUBLIC_CHANNEL = URI_SERVER + "rss" + RSS_PREFIX_PUBLIC;
-  }
-
-
-	/**
-	 * Puts the users rss token into the httpsession. If no token is available one is
-	 * generated and peristed in the database
-	 * @param ureq
-	 * @return String the token
-	 */
-	public static String putPersonalRssTokenInSession(UserRequest ureq) {
-		Identity identity = ureq.getIdentity();
-		String token = null;
-		BaseSecurity secManager = BaseSecurityManager.getInstance();
-		Authentication auth = secManager.findAuthentication(identity, RSSUtil.RSS_AUTH_PROVIDER);
-		if (auth == null) {
-			// no token found - create one
-			 token = RandomStringUtils.randomAlphanumeric(6);
-			 auth = secManager.createAndPersistAuthentication(identity, RSSUtil.RSS_AUTH_PROVIDER, identity.getName(), token, null);
-		} else {
-			token = auth.getCredential();
-		}
-		ureq.getUserSession().putEntry(RSSUtil.RSS_AUTH_TOKEN_KEY, token);
-		return token;
 	}
 
 	/**
@@ -94,18 +67,20 @@ public class RSSUtil {
 	 * @return String
 	 */
 	public static String getPersonalRssLink(UserRequest ureq) {
-		String token = (String) ureq.getUserSession().getEntry(RSSUtil.RSS_AUTH_TOKEN_KEY);
-		return(getPersonalRssLink(ureq.getIdentity(), token));
-	}
-
-	/**
-	 * Calculates the absolute URL to the users personal rss feed
-	 * @param identity
-	 * @param token
-	 * @return String
-	 */
-	public static String getPersonalRssLink(Identity identity, String token) {
-		String link = RSSUtil.URI_PERSONAL_CHANNEL + identity.getName() + "/" + token + "/" + "olat.rss";
-		return link;
+		String token = null;
+		Identity identity = ureq.getIdentity();
+		BaseSecurity secManager = BaseSecurityManager.getInstance();
+		Authentication auth = secManager.findAuthentication(identity, RSS_AUTH_PROVIDER);
+		if (auth == null) {
+			// no token found - create one
+			 token = RandomStringUtils.randomAlphanumeric(6);
+			 auth = secManager.createAndPersistAuthentication(identity, RSS_AUTH_PROVIDER, identity.getName(), token, null);
+		} else {
+			token = auth.getCredential();
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		return sb.append(RSSUtil.URI_PERSONAL_CHANNEL).append(ureq.getIdentity().getName())
+				.append("/").append(token).append("/olat.rss").toString();
 	}
 }

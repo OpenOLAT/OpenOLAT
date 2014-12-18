@@ -1,29 +1,31 @@
 ## DOM replacement implemented via ID on UL element - bypass standard OO wrapper DIV
 <ul id="$r.getCId()" class="nav o_navbar-nav o_navbar-right o_sel_menu_tools">
-	#foreach($search in $searchs)
-	 	<li>$r.render($search)</li>
-	#end
-	#if($personalTools && $personalTools.size() > 0)
-		<li role="presentation" class="dropdown-header">$r.translate("topnav.my.menu.tools")</li>
-		#foreach($personalTool in $personalTools)
-		 	<li>$r.render($personalTool)</li>
+	#if(!$locked)
+		#foreach($search in $searchs)
+		 	<li>$r.render($search)</li>
 		#end
-	#end
-	#if($configs && $configs.size() > 0)
+		#if($personalTools && $personalTools.size() > 0)
+			<li role="presentation" class="dropdown-header">$r.translate("topnav.my.menu.tools")</li>
+			#foreach($personalTool in $personalTools)
+			 	<li>$r.render($personalTool)</li>
+			#end
+		#end
+		#if($configs && $configs.size() > 0)
+			<li role="presentation" class="divider"></li>
+			<li role="presentation" class="dropdown-header">$r.translate("topnav.my.menu.configurations")</li>
+			#foreach($config in $configs)
+			 	<li>$r.render($config)</li>
+			#end
+		#end
+		#if($systems && $systems.size() > 0)
+			<li role="presentation" class="divider"></li>
+			<li role="presentation" class="dropdown-header">$r.translate("topnav.my.menu.systems")</li>
+			#foreach($system in $systems)
+			 	<li>$r.render($system)</li>
+			#end
+		#end
 		<li role="presentation" class="divider"></li>
-		<li role="presentation" class="dropdown-header">$r.translate("topnav.my.menu.configurations")</li>
-		#foreach($config in $configs)
-		 	<li>$r.render($config)</li>
-		#end
 	#end
-	#if($systems && $systems.size() > 0)
-		<li role="presentation" class="divider"></li>
-		<li role="presentation" class="dropdown-header">$r.translate("topnav.my.menu.systems")</li>
-		#foreach($system in $systems)
-		 	<li>$r.render($system)</li>
-		#end
-	#end
-	<li role="presentation" class="divider"></li>
 	<li>
 		## make logout link very basic without onClick handler in case javaScript is broken it is still possible to log out
 		## except for the onolatunload() method which must be executed to correctly finish SCORM modules (OLAT-6255)

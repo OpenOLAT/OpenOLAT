@@ -64,7 +64,6 @@ public class AfterLoginInterceptionController extends BasicController {
 	private List<Map<String, Object>> aftctrls;
 	private int actualCtrNr;
 	private List<Property> ctrlPropList;
-	private PropertyManager pm;
 	private boolean actualForceUser;
 	// must match with keys in XML
 	private static final String CONTROLLER_KEY = "controller";
@@ -76,6 +75,8 @@ public class AfterLoginInterceptionController extends BasicController {
 	
 	private static final String PROPERTY_CAT = "afterLogin";
 	
+	@Autowired
+	private PropertyManager pm;
 	@Autowired
 	private AfterLoginInterceptionManager aLIM;
 
@@ -95,7 +96,6 @@ public class AfterLoginInterceptionController extends BasicController {
 		
 		// load all UserProps concerning afterlogin/runOnce workflow => only 1
 		// db-call for all props
-		pm = PropertyManager.getInstance();
 		ctrlPropList = pm.listProperties(ureq.getIdentity(), null, null, null, PROPERTY_CAT, null);
 
 		// loop over possible controllers and check if user already did it before configured timeout

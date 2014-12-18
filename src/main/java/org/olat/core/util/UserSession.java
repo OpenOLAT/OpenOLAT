@@ -60,6 +60,7 @@ import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.prefs.PreferencesFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.session.UserSessionManager;
+import org.olat.course.assessment.AssessmentMode;
 
 /**
  * Description: <BR/>the httpsession contains an instance of this class. the
@@ -76,6 +77,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	// the environment (identity, locale, ..) of the identity
 	private IdentityEnvironment identityEnvironment;
 	private SessionInfo sessionInfo;
+	private List<AssessmentMode> assessmentModes;
 	private transient Map<String,Object> store;
 	/**
 	 * things to put into that should not be clear when signing on (e.g. remember url for a direct jump)
@@ -284,6 +286,14 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 */
 	public IdentityEnvironment getIdentityEnvironment() {
 		return identityEnvironment;
+	}
+
+	public List<AssessmentMode> getAssessmentModes() {
+		return assessmentModes;
+	}
+
+	public void setAssessmentModes(List<AssessmentMode> assessmentModes) {
+		this.assessmentModes = assessmentModes;
 	}
 
 	/**

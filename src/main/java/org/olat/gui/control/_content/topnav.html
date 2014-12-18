@@ -1,7 +1,9 @@
 <div id="$r.getCId()" class="o_navbar_tools">
 	<ul id="o_navbar_tools_permanent" class="nav o_navbar-nav o_navbar-right">
-	#foreach($personalTool in $toolSet)
-		 <li #if($personalTool.shortCutCssId) id="$personalTool.shortCutCssId" #end class="o_navbar_tool #if($personalTool.shortCutCssClass) $personalTool.shortCutCssClass #end">$r.render($personalTool.shortCutComponentName)</li>
+	#if(!$locked)
+		#foreach($personalTool in $toolSet)
+			 <li #if($personalTool.shortCutCssId) id="$personalTool.shortCutCssId" #end class="o_navbar_tool #if($personalTool.shortCutCssClass) $personalTool.shortCutCssClass #end">$r.render($personalTool.shortCutComponentName)</li>
+		#end
 	#end
 	#if (!$isGuest && !$isInvitee)
 		<li id="o_navbar_my_menu" class="o_portrait">

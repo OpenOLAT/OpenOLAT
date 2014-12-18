@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -42,6 +43,8 @@ public interface AssessmentMode extends ModifiedInfo, CreateInfo {
 	public String getDescription();
 
 	public void setDescription(String description);
+	
+	public RepositoryEntry getRepositoryEntry();
 
 	public Date getBegin();
 

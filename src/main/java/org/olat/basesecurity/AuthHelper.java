@@ -30,6 +30,7 @@ import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -37,7 +38,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpSession;
 
 import org.olat.basesecurity.manager.GroupDAO;
-import org.olat.commons.rss.RSSUtil;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts;
@@ -66,6 +66,8 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.session.UserSessionManager;
+import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.login.AuthBFWCParts;
 import org.olat.login.GuestBFWCParts;
 import org.olat.portfolio.manager.InvitationDAO;
@@ -304,15 +306,17 @@ public class AuthHelper {
 			return LOGIN_NOTAVAILABLE;
 		}
 		
-		// set authprovider
-		//usess.getIdentityEnvironment().setAuthProvider(authProvider);
+		//need to block the all things for assessment?
+		AssessmentModeManager assessmentManager = CoreSpringFactory.getImpl(AssessmentModeManager.class);
+		List<AssessmentMode> modes = assessmentManager.getAssessmentModeFor(identity);
+		if(!modes.isEmpty()) {
+			usess.setAssessmentModes(modes);
+		}
 		
 		//set the language
 		usess.setLocale( I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage()) );
 		// update fontsize in users session globalsettings
 		Windows.getWindows(ureq).getWindowManager().setFontSize(Integer.parseInt(identity.getUser().getPreferences().getFontsize() ));		
-		// put users personal rss token into session
-		RSSUtil.putPersonalRssTokenInSession(ureq);
 		// calculate session info and attach it to the user session
 		setSessionInfoFor(identity, authProvider, ureq, rest);
 		//confirm signedOn

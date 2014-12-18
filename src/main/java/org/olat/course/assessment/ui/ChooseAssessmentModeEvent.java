@@ -17,20 +17,29 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment;
+package org.olat.course.assessment.ui;
 
-import org.olat.group.BusinessGroup;
+import org.olat.core.gui.control.Event;
+import org.olat.course.assessment.model.TransientAssessmentMode;
 
 /**
  * 
- * Initial date: 16.12.2014<br>
+ * Initial date: 18.12.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface AssessmentModeToGroup {
+public class ChooseAssessmentModeEvent extends Event {
+
+	private static final long serialVersionUID = -3064859162799070354L;
+	private TransientAssessmentMode assessmentMode;
 	
-	public AssessmentMode getAssessmentMode();
-	
-	public BusinessGroup getBusinessGroup();
+	public ChooseAssessmentModeEvent(TransientAssessmentMode assessmentMode) {
+		super("choose-assessment-mode");
+		this.assessmentMode = assessmentMode;
+	}
+
+	public TransientAssessmentMode getAssessmentMode() {
+		return assessmentMode;
+	}
 
 }

@@ -51,22 +51,22 @@ class BaseFullWebappDTabs implements DTabs {
 		webappCtrl.activateStatic(ureq, className, entries);
 	}
 
+	@Override
 	public boolean addDTab(UserRequest ureq, DTab dt) {
 		return webappCtrl.addDTab(ureq, dt);
 	}
-	
-	public DTab createDTab(OLATResourceable ores, String title) {
-		return webappCtrl.createDTab(ores, null, title);
-	}
-	
+
+	@Override
 	public DTab createDTab(OLATResourceable ores, OLATResourceable initialOres, String title) {
 		return webappCtrl.createDTab(ores, initialOres, title);
 	}
 
+	@Override
 	public DTab getDTab(OLATResourceable ores) {
 		return webappCtrl.getDTab(ores);
 	}
 
+	@Override
 	public void removeDTab(UserRequest ureq, DTab dt) {
 		webappCtrl.removeDTab(ureq, dt);
 	}

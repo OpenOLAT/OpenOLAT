@@ -108,7 +108,7 @@ public class AssessmentModeEditController extends FormBasicController {
 		if(assessmentMode.getKey() == null) {
 			this.assessmentMode = assessmentMode;
 		} else {
-			this.assessmentMode = assessmentModeMgr.loadById(assessmentMode.getKey());
+			this.assessmentMode = assessmentModeMgr.getAssessmentModeById(assessmentMode.getKey());
 		}
 		initForm(ureq);
 	}
@@ -152,8 +152,8 @@ public class AssessmentModeEditController extends FormBasicController {
 		
 		String[] audienceKeys = new String[] {
 			AssessmentMode.Target.courseAndGroups.name(),
-			AssessmentMode.Target.groups.name(),
-			AssessmentMode.Target.course.name()
+			AssessmentMode.Target.course.name(),
+			AssessmentMode.Target.groups.name()
 		};
 		String[] audienceValues = new String[] {
 			translate("target.courseAndGroups"),

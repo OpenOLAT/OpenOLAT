@@ -102,7 +102,7 @@ public class AssessmentModeListController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		List<AssessmentMode> modes = assessmentModeMgr.loadAssessmentMode(entry);
+		List<AssessmentMode> modes = assessmentModeMgr.getAssessmentModeFor(entry);
 		model.setObjects(modes);
 		tableEl.reloadData();
 	}

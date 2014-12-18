@@ -101,7 +101,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Assert.assertNotNull(savedMode.getLastModified());
 
 		//reload and check
-		AssessmentMode reloadedMode = assessmentModeMgr.loadById(savedMode.getKey());
+		AssessmentMode reloadedMode = assessmentModeMgr.getAssessmentModeById(savedMode.getKey());
 		Assert.assertNotNull(reloadedMode);
 		Assert.assertEquals(savedMode.getKey(), reloadedMode.getKey());
 		Assert.assertNotNull(reloadedMode.getCreationDate());
@@ -142,7 +142,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(savedMode);
 		
-		List<AssessmentMode> assessmentModes = assessmentModeMgr.loadAssessmentMode(entry);
+		List<AssessmentMode> assessmentModes = assessmentModeMgr.getAssessmentModeFor(entry);
 		Assert.assertNotNull(assessmentModes);
 		Assert.assertEquals(1, assessmentModes.size());
 		Assert.assertEquals(savedMode, assessmentModes.get(0));
@@ -164,7 +164,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		AssessmentMode savedMode = assessmentModeMgr.save(mode);
 		dbInstance.commitAndCloseSession();
 		
-		AssessmentMode reloadedMode = assessmentModeMgr.loadById(mode.getKey());
+		AssessmentMode reloadedMode = assessmentModeMgr.getAssessmentModeById(mode.getKey());
 		Assert.assertEquals(mode, reloadedMode);
 		Assert.assertEquals(savedMode, reloadedMode);
 		Assert.assertNotNull(reloadedMode.getGroups());
@@ -182,7 +182,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Assert.assertNotNull(mode);
 		
 		//check
-		List<AssessmentMode> currentModes = assessmentModeMgr.loadAssessmentMode(entry);
+		List<AssessmentMode> currentModes = assessmentModeMgr.getAssessmentModeFor(entry);
 		Assert.assertNotNull(currentModes);
 		Assert.assertEquals(1, currentModes.size());
 		Assert.assertTrue(currentModes.contains(mode));
@@ -197,7 +197,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Assert.assertNotNull(mode);
 		
 		//check
-		List<AssessmentMode> currentModes = assessmentModeMgr.loadCurrentAssessmentModes();
+		List<AssessmentMode> currentModes = assessmentModeMgr.getCurrentAssessmentModes();
 		Assert.assertNotNull(currentModes);
 		Assert.assertFalse(currentModes.isEmpty());
 		Assert.assertTrue(currentModes.contains(mode));
@@ -229,18 +229,18 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Assert.assertNotNull(mode);
 		
 		//check participant
-		List<AssessmentMode> currentModes = assessmentModeMgr.loadAssessmentModeFor(participant);
+		List<AssessmentMode> currentModes = assessmentModeMgr.getAssessmentModeFor(participant);
 		Assert.assertNotNull(currentModes);
 		Assert.assertEquals(1, currentModes.size());
 		Assert.assertTrue(currentModes.contains(mode));
 		
 		//check coach
-		List<AssessmentMode> currentCoachModes = assessmentModeMgr.loadAssessmentModeFor(coach);
+		List<AssessmentMode> currentCoachModes = assessmentModeMgr.getAssessmentModeFor(coach);
 		Assert.assertNotNull(currentCoachModes);
 		Assert.assertTrue(currentCoachModes.isEmpty());
 		
 		//check author
-		List<AssessmentMode> currentAuthorModes = assessmentModeMgr.loadAssessmentModeFor(author);
+		List<AssessmentMode> currentAuthorModes = assessmentModeMgr.getAssessmentModeFor(author);
 		Assert.assertNotNull(currentAuthorModes);
 		Assert.assertTrue(currentAuthorModes.isEmpty());
 	}
@@ -272,19 +272,19 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Assert.assertNotNull(mode);
 		
 		//check participant
-		List<AssessmentMode> currentModes = assessmentModeMgr.loadAssessmentModeFor(participant);
+		List<AssessmentMode> currentModes = assessmentModeMgr.getAssessmentModeFor(participant);
 		Assert.assertNotNull(currentModes);
 		Assert.assertEquals(1, currentModes.size());
 		Assert.assertTrue(currentModes.contains(mode));
 		
 		//check coach
-		List<AssessmentMode> currentCoachModes = assessmentModeMgr.loadAssessmentModeFor(coach);
+		List<AssessmentMode> currentCoachModes = assessmentModeMgr.getAssessmentModeFor(coach);
 		Assert.assertNotNull(currentCoachModes);
 		Assert.assertEquals(1, currentCoachModes.size());
 		Assert.assertTrue(currentCoachModes.contains(mode));
 		
 		//check author
-		List<AssessmentMode> currentAuthorModes = assessmentModeMgr.loadAssessmentModeFor(author);
+		List<AssessmentMode> currentAuthorModes = assessmentModeMgr.getAssessmentModeFor(author);
 		Assert.assertNotNull(currentAuthorModes);
 		Assert.assertTrue(currentAuthorModes.isEmpty());
 	}
@@ -307,18 +307,18 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Assert.assertNotNull(mode);
 		
 		//check participant
-		List<AssessmentMode> currentModes = assessmentModeMgr.loadAssessmentModeFor(participant);
+		List<AssessmentMode> currentModes = assessmentModeMgr.getAssessmentModeFor(participant);
 		Assert.assertNotNull(currentModes);
 		Assert.assertEquals(1, currentModes.size());
 		Assert.assertTrue(currentModes.contains(mode));
 		
 		//check coach
-		List<AssessmentMode> currentCoachModes = assessmentModeMgr.loadAssessmentModeFor(coach);
+		List<AssessmentMode> currentCoachModes = assessmentModeMgr.getAssessmentModeFor(coach);
 		Assert.assertNotNull(currentCoachModes);
 		Assert.assertTrue(currentCoachModes.isEmpty());
 		
 		//check author
-		List<AssessmentMode> currentAuthorModes = assessmentModeMgr.loadAssessmentModeFor(author);
+		List<AssessmentMode> currentAuthorModes = assessmentModeMgr.getAssessmentModeFor(author);
 		Assert.assertNotNull(currentAuthorModes);
 		Assert.assertTrue(currentAuthorModes.isEmpty());
 	}
@@ -341,19 +341,19 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Assert.assertNotNull(mode);
 		
 		//check participant
-		List<AssessmentMode> currentModes = assessmentModeMgr.loadAssessmentModeFor(participant);
+		List<AssessmentMode> currentModes = assessmentModeMgr.getAssessmentModeFor(participant);
 		Assert.assertNotNull(currentModes);
 		Assert.assertEquals(1, currentModes.size());
 		Assert.assertTrue(currentModes.contains(mode));
 		
 		//check coach
-		List<AssessmentMode> currentCoachModes = assessmentModeMgr.loadAssessmentModeFor(coach);
+		List<AssessmentMode> currentCoachModes = assessmentModeMgr.getAssessmentModeFor(coach);
 		Assert.assertNotNull(currentCoachModes);
 		Assert.assertEquals(1, currentCoachModes.size());
 		Assert.assertTrue(currentCoachModes.contains(mode));
 		
 		//check author
-		List<AssessmentMode> currentAuthorModes = assessmentModeMgr.loadAssessmentModeFor(author);
+		List<AssessmentMode> currentAuthorModes = assessmentModeMgr.getAssessmentModeFor(author);
 		Assert.assertNotNull(currentAuthorModes);
 		Assert.assertTrue(currentAuthorModes.isEmpty());
 	}

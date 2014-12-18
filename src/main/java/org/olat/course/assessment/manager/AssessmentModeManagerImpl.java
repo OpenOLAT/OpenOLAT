@@ -21,22 +21,28 @@ package org.olat.course.assessment.manager;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentMode.Target;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeToGroup;
 import org.olat.course.assessment.model.AssessmentModeImpl;
 import org.olat.course.assessment.model.AssessmentModeToGroupImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,13 +57,17 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 
 	@Override
 	public AssessmentMode createAssessmentMode(RepositoryEntry entry) {
 		AssessmentModeImpl mode = new AssessmentModeImpl();
 		mode.setCreationDate(new Date());
 		mode.setLastModified(new Date());
-		mode.setEntry(entry);
+		mode.setRepositoryEntry(entry);
 		return mode;
 	}
 
@@ -76,7 +86,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	}
 
 	@Override
-	public AssessmentMode loadById(Long key) {
+	public AssessmentMode getAssessmentModeById(Long key) {
 		String q = "select mode from courseassessmentmode mode where mode.key=:modeKey";
 		List<AssessmentMode> modes = dbInstance.getCurrentEntityManager()
 			.createQuery(q, AssessmentMode.class)
@@ -87,7 +97,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	}
 
 	@Override
-	public List<AssessmentMode> loadAssessmentMode(RepositoryEntryRef entry) {
+	public List<AssessmentMode> getAssessmentModeFor(RepositoryEntryRef entry) {
 		return dbInstance.getCurrentEntityManager()
 				.createNamedQuery("assessmentModeByRepoEntry", AssessmentMode.class)
 				.setParameter("entryKey", entry.getKey())
@@ -95,18 +105,20 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	}
 
 	@Override
-	public List<AssessmentMode> loadAssessmentModeFor(IdentityRef identity) {
-		List<AssessmentMode> currentModes = loadCurrentAssessmentModes();
+	public List<AssessmentMode> getAssessmentModeFor(IdentityRef identity) {
+		List<AssessmentMode> currentModes = getCurrentAssessmentModes();
+		List<AssessmentMode> myModes = null;
 		if(currentModes.size() > 0) {
 			//check permissions, groups, areas, course
-			currentModes = loadAssessmentModeFor(identity, currentModes);
+			myModes = loadAssessmentModeFor(identity, currentModes);
 		}
-		return currentModes;
+		return myModes == null ? Collections.<AssessmentMode>emptyList() : myModes;
 	}
 	
 	private List<AssessmentMode> loadAssessmentModeFor(IdentityRef identity, List<AssessmentMode> currentModes) {
 		StringBuilder sb = new StringBuilder(1000);
 		sb.append("select mode from courseassessmentmode mode ")
+		  .append(" inner join fetch mode.repositoryEntry entry")
 		  .append(" left join mode.groups as modeToGroup")
 		  .append(" where mode.key in (:modeKeys)")
 		  .append("  and ((mode.targetAudienceString in ('").append(AssessmentMode.Target.courseAndGroups.name()).append("','").append(AssessmentMode.Target.groups.name()).append("')")
@@ -116,7 +128,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		  .append("       (mode.applySettingsForCoach=true and membership.role='").append(GroupRoles.coach.name()).append("'))")
 		  .append("  )) or (mode.targetAudienceString in ('").append(AssessmentMode.Target.courseAndGroups.name()).append("','").append(AssessmentMode.Target.course.name()).append("')")
 		  .append("   and exists (select rel from repoentrytogroup as rel,  bgroupmember as membership ")
-		  .append("     where mode.entry=rel.entry and membership.group=rel.group and membership.identity.key=:identityKey")
+		  .append("     where mode.repositoryEntry=rel.entry and membership.group=rel.group and membership.identity.key=:identityKey")
 		  .append("     and (membership.role='").append(GroupRoles.participant.name()).append("' or ")
 		  .append("       (mode.applySettingsForCoach=true and membership.role='").append(GroupRoles.coach.name()).append("'))")
 		  .append("  ))")
@@ -126,15 +138,48 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		for(AssessmentMode mode:currentModes) {
 			modeKeys.add(mode.getKey());
 		}
-		return dbInstance.getCurrentEntityManager()
+		List<AssessmentMode> modeList = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentMode.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("modeKeys", modeKeys)
 				.getResultList();
+		//quicker than distinct
+		return new ArrayList<AssessmentMode>(new HashSet<AssessmentMode>(modeList));
 	}
 
 	@Override
-	public List<AssessmentMode> loadCurrentAssessmentModes() {
+	public Set<Long> getAssessedIdentities(AssessmentMode assessmentMode) {
+		Target targetAudience = assessmentMode.getTargetAudience();
+		RepositoryEntry re = assessmentMode.getRepositoryEntry();
+		
+		Set<Long> assessedKeys = new HashSet<>();
+		if(targetAudience == Target.course || targetAudience == Target.courseAndGroups) {
+			List<Long> courseMemberKeys = assessmentMode.isApplySettingsForCoach()
+					? repositoryEntryRelationDao.getMemberKeys(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.coach.name(), GroupRoles.participant.name())
+					: repositoryEntryRelationDao.getMemberKeys(re, RepositoryEntryRelationType.defaultGroup, GroupRoles.participant.name());
+			assessedKeys.addAll(courseMemberKeys);
+		}
+		if(targetAudience == Target.groups || targetAudience == Target.courseAndGroups) {
+			Set<AssessmentModeToGroup> modeToGroups = assessmentMode.getGroups();
+			if(modeToGroups.size() > 0) {
+				List<BusinessGroup> groups = new ArrayList<>(modeToGroups.size());
+				for(AssessmentModeToGroup modeToGroup: modeToGroups) {
+					groups.add(modeToGroup.getBusinessGroup());
+				}
+
+				List<Long> groupMemberKeys = assessmentMode.isApplySettingsForCoach()
+						? businessGroupRelationDao.getMemberKeys(groups, GroupRoles.coach.name(), GroupRoles.participant.name())
+						: businessGroupRelationDao.getMemberKeys(groups, GroupRoles.participant.name());
+				assessedKeys.addAll(groupMemberKeys);		
+			}
+			
+		}
+		
+		return assessedKeys;
+	}
+
+	@Override
+	public List<AssessmentMode> getCurrentAssessmentModes() {
 		Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.MILLISECOND, 0);
 		cal.set(Calendar.SECOND, 0);

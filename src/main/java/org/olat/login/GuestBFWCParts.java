@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts;
+import org.olat.core.commons.fullWebApp.TopNavController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -84,12 +85,12 @@ public class GuestBFWCParts implements BaseFullWebappControllerParts {
 	 * @see org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts#createTopNavController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
 	@Override
-	public Controller createTopNavController(UserRequest ureq, WindowControl wControl) {
+	public TopNavController createTopNavController(UserRequest ureq, WindowControl wControl) {
 		if (showTopNav) {
-			Controller topNavCtr = null;
+			TopNavController topNavCtr = null;
 			if (CoreSpringFactory.containsBean("fullWebApp.GuestTopNavControllerCreator")) {
 				ControllerCreator headerControllerCreator = (ControllerCreator)  CoreSpringFactory.getBean("fullWebApp.GuestTopNavControllerCreator");
-				topNavCtr = headerControllerCreator.createController(ureq, wControl);
+				topNavCtr = (TopNavController)headerControllerCreator.createController(ureq, wControl);
 			}
 			return topNavCtr;
 		} else {

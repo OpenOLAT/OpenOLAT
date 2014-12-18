@@ -29,6 +29,7 @@ package org.olat.core.gui.control;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 
 /**
@@ -71,6 +72,11 @@ public abstract class DefaultChiefController extends DefaultController implement
 	@Override
 	public ScreenMode getScreenMode() {
 		return screenMode;
+	}
+	
+	@Override
+	public void lockResource(OLATResourceable resource) {
+		//
 	}
 
 	/**

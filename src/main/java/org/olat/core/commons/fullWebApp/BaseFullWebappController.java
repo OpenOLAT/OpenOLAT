@@ -26,6 +26,7 @@
 package org.olat.core.commons.fullWebApp;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -69,7 +70,6 @@ import org.olat.core.gui.control.VetoableCloseController;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabImpl;
@@ -81,6 +81,7 @@ import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.control.util.ZIndexWrapper;
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.themes.Theme;
+import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -95,13 +96,20 @@ import org.olat.core.logging.JavaScriptTracingController;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.AssessmentModeNotificationEvent;
+import org.olat.course.assessment.model.TransientAssessmentMode;
+import org.olat.course.assessment.ui.AssessmentModeUserConfirmationController;
 import org.olat.gui.control.UserToolsMenuController;
 import org.olat.home.HomeSite;
+import org.olat.login.AfterLoginInterceptionController;
 
 /**
  * Description:<br>
@@ -136,8 +144,10 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private Panel cssHolder, guimsgHolder, currentMsgHolder;
 	private VelocityContainer guimsgVc, stickymsgVc, mainVc, navSitesVc, navTabsVc;
 
+	private OLATResourceable lockedResource;
 	// NEW FROM FullChiefController
-	private Controller topnavCtr, footerCtr;
+	private TopNavController topnavCtr;
+	private Controller footerCtr;
 	private UserToolsMenuController userToolsMenuCtrl;
 	private SiteInstance curSite;
 	private DTab curDTab;
@@ -152,17 +162,16 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	// used as link id which is load url safe (e.g. replayable
 	private int dtabCreateCounter = 0;
 	// the sites list
-	
 	private SiteInstance userTools;
 	private List<SiteInstance> sites;
 	private Map<SiteInstance, BornSiteInstance> siteToBornSite = new HashMap<SiteInstance, BornSiteInstance>();
-	//fxdiff BAKS-7 Resume function
 	private Map<SiteInstance,HistoryPoint> siteToBusinessPath = new HashMap<SiteInstance,HistoryPoint>();
 
-	//
 	private BaseFullWebappControllerParts baseFullWebappControllerParts;
 	protected Controller contentCtrl;
-	private Controller aftLHookCtr;
+	private AfterLoginInterceptionController aftLHookCtr;
+	private AssessmentModeUserConfirmationController modeCtrl;
+	
 	private StackedPanel initialPanel;
 	private DTabs myDTabsImpl;
 	private static Integer MAX_TAB;
@@ -186,12 +195,6 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		// define the new windowcontrol
 		WindowControl myWControl = new BaseFullWebappWindowControl(this, wbo);
 		overrideWindowControl(myWControl);
-
-		/*
-		 * BaseFullWebappController provides access to Dynamic Tabs
-		 * on the same window and not on all Windows! 
-		 * TODO:pb discuss with HJZ multi window concept.
-		 */
 		
 		// detach DTabs implementation from the controller - DTabs may be fetched from the window and locked on (synchronized access).
 		// if this is controller the controller is locked instead of only the DTabs part.
@@ -216,19 +219,23 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		// ------ all the frame preparation is finished ----
 		initializeBase(ureq, winman, initialPanel);
 		
-
-        // present an overlay with configured afterlogin-controllers or nothing if none configured.
-        // presented only once per session.
-    	Boolean alreadySeen = ((Boolean)ureq.getUserSession().getEntry(PRESENTED_AFTER_LOGIN_WORKFLOW));
-    	if (ureq.getUserSession().isAuthenticated() && alreadySeen == null) {
-    		aftLHookCtr = ((ControllerCreator) CoreSpringFactory.getBean("fullWebApp.AfterLoginInterceptionControllerCreator"))
-    				.createController(ureq, getWindowControl());
-    		listenTo(aftLHookCtr);
-    		aftLHookCtr.getInitialComponent();
-    		ureq.getUserSession().putEntry(PRESENTED_AFTER_LOGIN_WORKFLOW, Boolean.TRUE);
+		if(ureq.getUserSession().isAuthenticated() && ureq.getUserSession().getAssessmentModes() != null && ureq.getUserSession().getAssessmentModes().size() > 0) {
+    		modeCtrl = new AssessmentModeUserConfirmationController(ureq, getWindowControl());
+    		listenTo(modeCtrl);
+    		modeCtrl.getInitialComponent();
+    	} else {
+    		// present an overlay with configured afterlogin-controllers or nothing if none configured.
+    		// presented only once per session.
+    		Boolean alreadySeen = ((Boolean)ureq.getUserSession().getEntry(PRESENTED_AFTER_LOGIN_WORKFLOW));
+    		if (ureq.getUserSession().isAuthenticated() && alreadySeen == null) {
+    			aftLHookCtr = new AfterLoginInterceptionController(ureq, getWindowControl());
+    			listenTo(aftLHookCtr);
+    			aftLHookCtr.getInitialComponent();
+    			ureq.getUserSession().putEntry(PRESENTED_AFTER_LOGIN_WORKFLOW, Boolean.TRUE);
+	    	}
     	}
 		
-    	if(aftLHookCtr == null || aftLHookCtr.isDisposed()) {
+    	if(modeCtrl == null && (aftLHookCtr == null || aftLHookCtr.isDisposed())) {
     		initializeDefaultSite(ureq);
     	}
 		
@@ -244,6 +251,9 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		//move to a i18nModule? languageManger? languageChooserController?
 		OLATResourceable wrappedLocale = OresHelper.createOLATResourceableType(Locale.class);
 		ureq.getUserSession().getSingleUserEventCenter().registerFor(this, getIdentity(), wrappedLocale);
+		//register for assessment mode
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.registerFor(this, getIdentity(), AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 		// register for global sticky message changed events
 		GlobalStickyMessage.registerForGlobalStickyMessage(this, ureq.getIdentity());	
 	}
@@ -475,7 +485,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private void initializeDefaultSite(UserRequest ureq) {
 		if (sites != null && sites.size() > 0
 				&& curSite == null && curDTab == null
-				&& contentCtrl == null) {
+				&& contentCtrl == null && lockedResource == null) {
 			SiteInstance s = sites.get(0);
 			//activate site only if no content was set -> allow content before activation of default site.
 			activateSite(s, ureq, null, false);
@@ -636,6 +646,8 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(aftLHookCtr == source) {
 			initializeDefaultSite(ureq);
+		} else if(modeCtrl == source) {
+			initializeDefaultSite(ureq);
 		} else {
 			int tabIndex = dtabsControllers.indexOf(source);
 			if (tabIndex > -1) {
@@ -710,9 +722,18 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		modalPanel.setContent(modalStackP);
 	}
 
-	// FROM FULLCHIEFCONTROLLER
+	/**
+	 * Activate a site if not locked
+	 * 
+	 * @param s
+	 * @param ureq
+	 * @param entries
+	 * @param forceReload
+	 */
 	private void activateSite(SiteInstance s, UserRequest ureq,
 			List<ContextEntry> entries, boolean forceReload) {
+		if(lockedResource != null) return;
+		
 		BornSiteInstance bs = siteToBornSite.get(s);
 		GuiStack gs;
 		Controller resC;
@@ -894,8 +915,6 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 				// closing one dtab in _browser tab one_ and then closing the same dtab
 				// once again in the _browser tab two_ leads to the case where dtabIndex
 				// is -1, e.g. not found causing the redscreen described in the issue.
-				// TODO:2008-07-25: pb: define concept of "multi windowing" "main windowing"
-				// and reconsider this place.
 				//
 				// NOTHING TO REMOVE, return
 				return;
@@ -918,7 +937,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			navTabsVc.remove(navTabsVc.getComponent("a" + delt.hashCode()));
 			navTabsVc.remove(navTabsVc.getComponent("ca" + delt.hashCode()));
 			navTabsVc.remove(navTabsVc.getComponent("cp" + delt.hashCode()));
-			if (delt == curDTab) { // if we close the current tab -> return to the previous
+			if (delt == curDTab && ureq != null) { // if we close the current tab -> return to the previous
 				popTheTabState(ureq);
 			} // else just remove the dtabs
 			delt.dispose();//dispose tab and controllers in tab
@@ -964,9 +983,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	 * @param dt
 	 */
 	private void requestCloseTab(UserRequest ureq, DTab delt) {
-
-		Controller c = delt.getController(); // FIXME:fj: test
-		// vetoableclosecontroller
+		Controller c = delt.getController();
 		if (c instanceof VetoableCloseController) {
 			VetoableCloseController vcc = (VetoableCloseController) c;
 			// rembember current dtab, and swap to the temporary one
@@ -1009,11 +1026,17 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	 *      java.lang.String)
 	 */
 	public DTab createDTab(OLATResourceable ores, OLATResourceable repoOres, String title) {
+		final DTabImpl dt;
 		if (dtabs.size() >= getMaxTabs()) {
 			getWindowControl().setError(translate("warn.tabsfull"));
-			return null;
+			dt = null;
+		} else if(lockedResource != null && (
+				!lockedResource.getResourceableId().equals(ores.getResourceableId()) 
+				|| !lockedResource.getResourceableTypeName().equals(ores.getResourceableTypeName()))) {
+			dt = null;
+		} else {
+			dt = new DTabImpl(ores, repoOres, title, getWindowControl());
 		}
-		DTabImpl dt = new DTabImpl(ores, repoOres, title, getWindowControl());
 		return dt;
 	}
 
@@ -1110,17 +1133,9 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		// in all other cases the "focus of interest" (where the calculation of the
 		// guipath is started) matches the controller which listens to the
 		// event caused by a user interaction.
-		// WindowBackOffice wboNew = getWindowControl().getWindowBackOffice(); //
 		// this is the starting point.
-		// getWindowControl().getWindowBackOffice().adjustGuiPathCenter(getWindowControl().getWindowControlInfo());
 	}
 
-	/**
-	 * FIXME:fj: change className to class
-	 * 
-	 * @see org.olat.core.gui.control.generic.dtabs.DTabs#activateStatic(org.olat.core.gui.UserRequest,
-	 *      java.lang.String, java.lang.String)
-	 */
 	public void activateStatic(UserRequest ureq, String className, List<ContextEntry> entries) {
 		if(className != null && className.endsWith("HomeSite")) {
 			activateSite(userTools, ureq, entries, false);
@@ -1136,6 +1151,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		}
 	}
 
+	@Override
 	public void event(Event event) {
 		if (event == Window.AFTER_VALIDATING) {
 			// now update the guimessage
@@ -1179,9 +1195,18 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		} else if (event instanceof ChiefControllerMessageEvent) {
 			// msg can be set to show only on one node or on all nodes
 			updateStickyMessage();
+		} else if (AssessmentModeNotificationEvent.command.equals(event.getCommand())
+				&& event instanceof AssessmentModeNotificationEvent) {
+			if(lockedResource == null) {
+				AssessmentModeNotificationEvent amne = (AssessmentModeNotificationEvent)event;
+				if(amne.getAssessedIdentityKeys().contains(getIdentity().getKey())) {
+					asyncLockResource(amne.getAssessementMode());
+				}
+			}
 		}
 	}
 
+	@Override
 	public boolean hasStaticSite(Class<? extends SiteInstance> type) {
 		boolean hasSite = false;
 		if(sites != null && sites.size() > 0) {
@@ -1192,6 +1217,35 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			}
 		}
 		return hasSite;
+	}
+
+	@Override
+	public void lockResource(OLATResourceable resource) {
+		this.lockedResource = resource;
+		if(topnavCtr != null) {
+			topnavCtr.lockResource(resource);
+		}
+		if(userToolsMenuCtrl != null) {
+			userToolsMenuCtrl.lockResource(resource);
+		}
+		
+		navSitesVc.setVisible(false);
+		for(int i=dtabsControllers.size(); i-->0; ) {
+			DTab tab = dtabs.get(i);
+			removeDTab(null, tab);
+		}
+	}
+	
+	private void asyncLockResource(TransientAssessmentMode mode) {
+		logAudit("Async lock resource for user: " + getIdentity().getName() + " (" + mode.getResource() + ")", null);
+		lockResource(mode.getResource());
+		
+		AssessmentModeManager assessmentModeManager = CoreSpringFactory.getImpl(AssessmentModeManager.class);
+
+		UserRequest ureq = new SyntheticUserRequest(getIdentity(), getLocale());
+		modeCtrl = new AssessmentModeUserConfirmationController(ureq, getWindowControl(), Collections.singletonList(mode));
+		listenTo(modeCtrl);
+		modeCtrl.getInitialComponent();
 	}
 
 	/**

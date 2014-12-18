@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts;
+import org.olat.core.commons.fullWebApp.TopNavController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -80,14 +81,14 @@ public class AuthBFWCParts implements BaseFullWebappControllerParts {
 	 * @see org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts#createTopNavController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
 	 */
 	@Override
-	public Controller createTopNavController(UserRequest ureq, WindowControl wControl) {
+	public TopNavController createTopNavController(UserRequest ureq, WindowControl wControl) {
 		Controller topnavCtr = null;
 		// ----------- topnav, optional (e.g. for imprint, logout) ------------------		
 		if (CoreSpringFactory.containsBean("fullWebApp.TopNavControllerCreator")) {
 			ControllerCreator topnavControllerCreator = (ControllerCreator) CoreSpringFactory.getBean("fullWebApp.TopNavControllerCreator");
 			topnavCtr = topnavControllerCreator.createController(ureq, wControl);
 		}
-		return topnavCtr;
+		return (TopNavController)topnavCtr;
 	}
 
 	/**

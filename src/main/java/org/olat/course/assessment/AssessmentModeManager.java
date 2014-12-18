@@ -20,6 +20,7 @@
 package org.olat.course.assessment;
 
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.group.BusinessGroup;
@@ -41,11 +42,13 @@ public interface AssessmentModeManager {
 	 */
 	public AssessmentMode createAssessmentMode(RepositoryEntry entry);
 	
+	public AssessmentModeToGroup createAssessmentModeToGroup(AssessmentMode mode, BusinessGroup group);
+	
 	public AssessmentMode save(AssessmentMode assessmentMode);
 	
-	public AssessmentMode loadById(Long key);
+	public AssessmentMode getAssessmentModeById(Long key);
 	
-	public List<AssessmentMode> loadAssessmentMode(RepositoryEntryRef entry);
+	public List<AssessmentMode> getAssessmentModeFor(RepositoryEntryRef entry);
 	
 	/**
 	 * Load the assessment mode for a specific user now.
@@ -53,10 +56,11 @@ public interface AssessmentModeManager {
 	 * @param identity
 	 * @return
 	 */
-	public List<AssessmentMode> loadAssessmentModeFor(IdentityRef identity);
+	public List<AssessmentMode> getAssessmentModeFor(IdentityRef identity);
 	
-	public List<AssessmentMode> loadCurrentAssessmentModes();
+	public List<AssessmentMode> getCurrentAssessmentModes();
 	
-	public AssessmentModeToGroup createAssessmentModeToGroup(AssessmentMode mode, BusinessGroup group);
+	public Set<Long> getAssessedIdentities(AssessmentMode assessmentMode);
+	
 
 }

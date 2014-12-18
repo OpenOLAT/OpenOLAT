@@ -52,7 +52,7 @@ import org.olat.repository.RepositoryEntry;
 @Entity(name="courseassessmentmode")
 @Table(name="o_as_mode_course")
 @NamedQueries({
-	@NamedQuery(name="assessmentModeByRepoEntry", query="select mode from courseassessmentmode mode where mode.entry.key=:entryKey"),
+	@NamedQuery(name="assessmentModeByRepoEntry", query="select mode from courseassessmentmode mode where mode.repositoryEntry.key=:entryKey"),
 	@NamedQuery(name="currentAssessmentModes", query="select mode from courseassessmentmode mode where mode.begin<=:now and mode.end>=:now")
 })
 public class AssessmentModeImpl implements Persistable, AssessmentMode {
@@ -114,7 +114,7 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 	
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_entry", nullable=false, updatable=false)
-	private RepositoryEntry entry;
+	private RepositoryEntry repositoryEntry;
 	
 	
 	@Override
@@ -302,12 +302,13 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 		this.applySettingsForCoach = applySettingsForCoach;
 	}
 
-	public RepositoryEntry getEntry() {
-		return entry;
+	@Override
+	public RepositoryEntry getRepositoryEntry() {
+		return repositoryEntry;
 	}
 
-	public void setEntry(RepositoryEntry entry) {
-		this.entry = entry;
+	public void setRepositoryEntry(RepositoryEntry entry) {
+		this.repositoryEntry = entry;
 	}
 
 	@Override

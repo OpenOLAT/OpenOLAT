@@ -27,6 +27,7 @@ import java.util.Set;
 import org.olat.admin.user.tools.UserTool;
 import org.olat.admin.user.tools.UserToolExtension;
 import org.olat.admin.user.tools.UserToolsModule;
+import org.olat.core.commons.fullWebApp.TopNavController;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.extensions.ExtManager;
 import org.olat.core.gui.UserRequest;
@@ -39,6 +40,7 @@ import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
@@ -54,7 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OlatTopNavController extends BasicController {
+public class OlatTopNavController extends BasicController implements TopNavController {
 	
 	private Link loginLink;
 	private VelocityContainer topNavVC;
@@ -100,7 +102,13 @@ public class OlatTopNavController extends BasicController {
 			topNavVC.contextPut("myMenuLabel", myMenuText);
 		}
 		
+		topNavVC.contextPut("locked", Boolean.FALSE);
 		putInitialPanel(topNavVC);
+	}
+	
+	@Override
+	public void lockResource(OLATResourceable resource) {
+		topNavVC.contextPut("locked", Boolean.TRUE);
 	}
 	
 	@Override
