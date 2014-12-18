@@ -183,7 +183,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         @SuppressWarnings("unchecked")
         List<Long> coachesAreaKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS);
         if(coachesAreaKeys != null) {
-            String coachesAreaNames = envMapper.toAreaNames(coachesAreaKeys);    
+            String coachesAreaNames = envMapper.toAreaNames(coachesAreaKeys);
             mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA, coachesAreaNames);
         }
         

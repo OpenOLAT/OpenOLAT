@@ -6,12 +6,11 @@
  /* OpenOLAT logo in navbar */
 .o_navbar-brand {
   	padding: $navbar-padding-vertical $navbar-padding-horizontal;
-	font-size: 40px;
-	vertical-align: top;
-	font-weight: bold;
+	font-size: 28px;
 	color: $brand-primary !important;
 	&:after {
-		content: "\221E";
+		content: "\E600";
+		font-family: openolat;
 	}		
 }
  

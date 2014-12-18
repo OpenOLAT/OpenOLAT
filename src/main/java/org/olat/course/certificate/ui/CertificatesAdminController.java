@@ -152,7 +152,7 @@ public class CertificatesAdminController extends FormBasicController {
 	private void doDelete(CertificateTemplate template) {
 		certificatesManager.deleteTemplate(template);
 		updateDataModel();
-		showInfo("confirm.certificate.deleted", template.getName());
+		showInfo("confirm.certificate.template.deleted", template.getName());
 	}
 
 	private void doUpload(UserRequest ureq) {

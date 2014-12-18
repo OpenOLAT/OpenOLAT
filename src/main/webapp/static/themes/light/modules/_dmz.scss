@@ -104,7 +104,10 @@ body.o_dmz {
 				padding-top: $padding-base-vertical;
 				@include text-overflow();
 			}
-		}	
+		}
+		.o_icon_provider_olat {
+			font-size: 1em;
+		}
 	} 
 	.o_login_provider {
 		background-color: $well-bg;

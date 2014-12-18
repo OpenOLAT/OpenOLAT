@@ -24,17 +24,13 @@ import java.util.Date;
 import javax.annotation.PostConstruct;
 import javax.persistence.LockModeType;
 
-import org.olat.commons.lifecycle.LifeCycleManager;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.commentAndRating.UserCommentsDelegate;
 import org.olat.core.commons.services.commentAndRating.UserRatingsDelegate;
 import org.olat.core.commons.services.commentAndRating.manager.UserCommentsDAO;
 import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.delete.service.RepositoryDeletionManager;
 import org.olat.repository.model.RepositoryEntryStatistics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,8 +43,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class RepositoryEntryStatisticsDAO implements UserRatingsDelegate, UserCommentsDelegate {
-	
-	private static final OLog log = Tracing.createLoggerFor(RepositoryEntryStatisticsDAO.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -68,16 +62,13 @@ public class RepositoryEntryStatisticsDAO implements UserRatingsDelegate, UserCo
 	 * @param re
 	 */
 	public synchronized void incrementLaunchCounter(RepositoryEntry re) {
-		Date previousLastUsage = null;
 		RepositoryEntryStatistics stats = loadStatisticsForUpdate(re);
 		if(stats != null) {
 			stats.setLaunchCounter(stats.getLaunchCounter() + 1);
-			previousLastUsage = stats.getLastUsage();
 			stats.setLastUsage(new Date());
 			dbInstance.getCurrentEntityManager().merge(stats);
 		}
 		dbInstance.commit();
-		updateLifeCycle(re, previousLastUsage);
 	}
 
 	/**
@@ -85,16 +76,13 @@ public class RepositoryEntryStatisticsDAO implements UserRatingsDelegate, UserCo
 	 * @param re
 	 */
 	public void incrementDownloadCounter(RepositoryEntry re) {
-		Date previousLastUsage = null;
 		RepositoryEntryStatistics stats = loadStatisticsForUpdate(re);
 		if(stats != null) {
 			stats.setDownloadCounter(stats.getDownloadCounter() + 1);
-			previousLastUsage = stats.getLastUsage();
 			stats.setLastUsage(new Date());
 			dbInstance.getCurrentEntityManager().merge(stats);
 		}
 		dbInstance.commit();
-		updateLifeCycle(re, previousLastUsage);
 	}
 
 	/**
@@ -112,18 +100,6 @@ public class RepositoryEntryStatisticsDAO implements UserRatingsDelegate, UserCo
 			stats.setLastUsage(newUsage);
 			dbInstance.getCurrentEntityManager().merge(stats);
 			dbInstance.commit();
-			updateLifeCycle(re, lastUsage);
-		}
-	}
-	
-	private void updateLifeCycle(RepositoryEntry reloadedRe, Date previousLastUsage) {
-		if(reloadedRe == null) return;
-		if(previousLastUsage == null || previousLastUsage.getTime() < (System.currentTimeMillis() - (60 * 60 * 1000))) {
-			LifeCycleManager lcManager = LifeCycleManager.createInstanceFor(reloadedRe);
-			if (lcManager.hasLifeCycleEntry(RepositoryDeletionManager.SEND_DELETE_EMAIL_ACTION)) {
-				log.audit("Repository-Deletion: Remove from delete-list repositoryEntry=" + reloadedRe);
-				lcManager.deleteTimestampFor(RepositoryDeletionManager.SEND_DELETE_EMAIL_ACTION);
-			}
 		}
 	}
 	
