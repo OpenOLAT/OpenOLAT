@@ -181,6 +181,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_refresh:before { content: $fa-var-refresh; }
 .o_icon_reject:before { content: $fa-var-times; color:$brand-danger; }
 .o_icon_remove:before { content: $fa-var-times; }
+.o_icon_replace:before { content: $fa-var-files-o; }
 .o_icon_reply:before { content: $fa-var-reply; }
 .o_icon_reply_with_quote:before { content: $fa-var-reply-all; }
 .o_icon_response_feedback:before { content: $fa-var-refresh; }
