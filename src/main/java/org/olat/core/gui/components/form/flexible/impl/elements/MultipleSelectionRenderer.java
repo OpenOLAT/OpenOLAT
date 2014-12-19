@@ -130,7 +130,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			
 		//read write view
 		String cssClass = check.getCssClass(); //optional CSS class
-		sb.append("<div class='checkbox'>", !inline); // normal checkboxes need a wrapper (bootstrap) ...
+		sb.append("<div>", !inline); // normal checkboxes need a wrapper (bootstrap) ...
 		sb.append("<label class='").append("checkbox-inline ", inline); // ... and inline a class on the label (bootstrap)			
 		sb.append(cssClass, cssClass != null).append("' for=\"").append(formDispatchId).append("\">");
 		
