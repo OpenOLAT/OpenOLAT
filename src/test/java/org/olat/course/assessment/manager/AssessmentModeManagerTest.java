@@ -22,6 +22,7 @@ package org.olat.course.assessment.manager;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,9 +32,12 @@ import org.olat.core.id.Identity;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Target;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.AssessmentModeToArea;
 import org.olat.course.assessment.AssessmentModeToGroup;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.area.BGArea;
+import org.olat.group.area.BGAreaManager;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
@@ -51,6 +55,8 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private BGAreaManager areaMgr;
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
 	@Autowired
@@ -170,6 +176,32 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Assert.assertNotNull(reloadedMode.getGroups());
 		Assert.assertEquals(1, reloadedMode.getGroups().size());
 		Assert.assertEquals(modeToGroup, reloadedMode.getGroups().iterator().next());
+		dbInstance.commitAndCloseSession();
+	}
+	
+	@Test
+	public void createAssessmentModeToArea() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(author, "as_mode_1", "", null, null, null, null, false, false, null);
+		BGArea area = areaMgr.createAndPersistBGArea("little area", "My little secret area", entry.getOlatResource());
+		areaMgr.addBGToBGArea(businessGroup, area);
+		AssessmentMode mode = createMinimalAssessmentmode(entry);
+		mode = assessmentModeMgr.save(mode);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(mode);
+
+		AssessmentModeToArea modeToArea = assessmentModeMgr.createAssessmentModeToArea(mode, area);
+		mode.getAreas().add(modeToArea);
+		AssessmentMode savedMode = assessmentModeMgr.save(mode);
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentMode reloadedMode = assessmentModeMgr.getAssessmentModeById(mode.getKey());
+		Assert.assertEquals(mode, reloadedMode);
+		Assert.assertEquals(savedMode, reloadedMode);
+		Assert.assertNotNull(reloadedMode.getAreas());
+		Assert.assertEquals(1, reloadedMode.getAreas().size());
+		Assert.assertEquals(modeToArea, reloadedMode.getAreas().iterator().next());
 		dbInstance.commitAndCloseSession();
 	}
 	
@@ -358,7 +390,176 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Assert.assertTrue(currentAuthorModes.isEmpty());
 	}
 	
+	/**
+	 * Check an assessment linked to an area with one participant
+	 * 
+	 */
+	@Test
+	public void loadAssessmentMode_identityInArea() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-12");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-13");
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-14");
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(author, "as-mode-3", "", null, null, null, null, false, false, entry);
+		businessGroupRelationDao.addRole(participant, businessGroup, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(coach, businessGroup, GroupRoles.coach.name());
+		
+		BGArea area = areaMgr.createAndPersistBGArea("area for people", "", entry.getOlatResource());
+		areaMgr.addBGToBGArea(businessGroup, area);
+		
+		AssessmentMode mode = createMinimalAssessmentmode(entry);
+		mode.setTargetAudience(AssessmentMode.Target.courseAndGroups);
+		mode.setApplySettingsForCoach(false);
+		mode = assessmentModeMgr.save(mode);
+		
+		AssessmentModeToGroup modeToGroup = assessmentModeMgr.createAssessmentModeToGroup(mode, businessGroup);
+		mode.getGroups().add(modeToGroup);
+		mode = assessmentModeMgr.save(mode);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(mode);
+		
+		//check participant
+		List<AssessmentMode> currentModes = assessmentModeMgr.getAssessmentModeFor(participant);
+		Assert.assertNotNull(currentModes);
+		Assert.assertEquals(1, currentModes.size());
+		Assert.assertTrue(currentModes.contains(mode));
+		
+		//check coach
+		List<AssessmentMode> currentCoachModes = assessmentModeMgr.getAssessmentModeFor(coach);
+		Assert.assertNotNull(currentCoachModes);
+		Assert.assertTrue(currentCoachModes.isEmpty());
+		
+		//check author
+		List<AssessmentMode> currentAuthorModes = assessmentModeMgr.getAssessmentModeFor(author);
+		Assert.assertNotNull(currentAuthorModes);
+		Assert.assertTrue(currentAuthorModes.isEmpty());
+	}
 	
+	/**
+	 * Check an assessment linked to an area with one participant
+	 * 
+	 */
+	@Test
+	public void loadAssessmentMode_identityInArea_coach() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-12");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-13");
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-14");
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(null, "as-mode-3", "", null, null, null, null, false, false, entry);
+		businessGroupRelationDao.addRole(participant, businessGroup, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(coach, businessGroup, GroupRoles.coach.name());
+		
+		BGArea area = areaMgr.createAndPersistBGArea("area for people", "", entry.getOlatResource());
+		areaMgr.addBGToBGArea(businessGroup, area);
+		
+		AssessmentMode mode = createMinimalAssessmentmode(entry);
+		mode.setTargetAudience(AssessmentMode.Target.courseAndGroups);
+		mode.setApplySettingsForCoach(true);
+		mode = assessmentModeMgr.save(mode);
+		
+		AssessmentModeToArea modeToArea = assessmentModeMgr.createAssessmentModeToArea(mode, area);
+		mode.getAreas().add(modeToArea);
+		mode = assessmentModeMgr.save(mode);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(mode);
+		
+		//check participant
+		List<AssessmentMode> currentModes = assessmentModeMgr.getAssessmentModeFor(participant);
+		Assert.assertNotNull(currentModes);
+		Assert.assertEquals(1, currentModes.size());
+		Assert.assertTrue(currentModes.contains(mode));
+		
+		//check coach
+		List<AssessmentMode> currentCoachModes = assessmentModeMgr.getAssessmentModeFor(coach);
+		Assert.assertNotNull(currentCoachModes);
+		Assert.assertEquals(1, currentCoachModes.size());
+		Assert.assertTrue(currentCoachModes.contains(mode));
+		
+		//check author
+		List<AssessmentMode> currentAuthorModes = assessmentModeMgr.getAssessmentModeFor(author);
+		Assert.assertNotNull(currentAuthorModes);
+		Assert.assertTrue(currentAuthorModes.isEmpty());
+	}
+	
+	@Test
+	public void getAssessedIdentities_course_groups() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-15");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-16");
+		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-17");
+		
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(null, "as-mode-4", "", null, null, null, null, false, false, entry);
+		businessGroupRelationDao.addRole(participant1, businessGroup, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(coach1, businessGroup, GroupRoles.coach.name());
+		
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-18");
+		Identity coach2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-19");
+		repositoryEntryRelationDao.addRole(participant2, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(coach2, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(author, entry, GroupRoles.owner.name());
+		
+		AssessmentMode mode = createMinimalAssessmentmode(entry);
+		mode.setTargetAudience(AssessmentMode.Target.courseAndGroups);
+		mode.setApplySettingsForCoach(true);
+		mode = assessmentModeMgr.save(mode);
+
+		AssessmentModeToGroup modeToGroup = assessmentModeMgr.createAssessmentModeToGroup(mode, businessGroup);
+		mode.getGroups().add(modeToGroup);
+		mode = assessmentModeMgr.save(mode);
+		dbInstance.commitAndCloseSession();
+
+		Set<Long> assessedIdentityKeys = assessmentModeMgr.getAssessedIdentityKeys(mode);
+		Assert.assertNotNull(assessedIdentityKeys);
+		Assert.assertEquals(4, assessedIdentityKeys.size());
+		Assert.assertFalse(assessedIdentityKeys.contains(author.getKey()));
+		Assert.assertTrue(assessedIdentityKeys.contains(coach1.getKey()));
+		Assert.assertTrue(assessedIdentityKeys.contains(participant1.getKey()));
+		Assert.assertTrue(assessedIdentityKeys.contains(coach2.getKey()));
+		Assert.assertTrue(assessedIdentityKeys.contains(participant2.getKey()));
+	}
+	
+	@Test
+	public void getAssessedIdentities_course_areas() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-20");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-21");
+		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-22");
+		
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(null, "as-mode-5", "", null, null, null, null, false, false, entry);
+		businessGroupRelationDao.addRole(participant1, businessGroup, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(coach1, businessGroup, GroupRoles.coach.name());
+		
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-23");
+		Identity coach2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-24");
+		repositoryEntryRelationDao.addRole(participant2, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(coach2, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(author, entry, GroupRoles.owner.name());
+		
+		AssessmentMode mode = createMinimalAssessmentmode(entry);
+		mode.setTargetAudience(AssessmentMode.Target.courseAndGroups);
+		mode.setApplySettingsForCoach(true);
+		mode = assessmentModeMgr.save(mode);
+		
+		BGArea area = areaMgr.createAndPersistBGArea("area for people", "", entry.getOlatResource());
+		areaMgr.addBGToBGArea(businessGroup, area);
+
+		AssessmentModeToArea modeToArea = assessmentModeMgr.createAssessmentModeToArea(mode, area);
+		mode.getAreas().add(modeToArea);
+		mode = assessmentModeMgr.save(mode);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(mode);
+
+		Set<Long> assessedIdentityKeys = assessmentModeMgr.getAssessedIdentityKeys(mode);
+		Assert.assertNotNull(assessedIdentityKeys);
+		Assert.assertEquals(4, assessedIdentityKeys.size());
+		Assert.assertFalse(assessedIdentityKeys.contains(author.getKey()));
+		Assert.assertTrue(assessedIdentityKeys.contains(coach1.getKey()));
+		Assert.assertTrue(assessedIdentityKeys.contains(participant1.getKey()));
+		Assert.assertTrue(assessedIdentityKeys.contains(coach2.getKey()));
+		Assert.assertTrue(assessedIdentityKeys.contains(participant2.getKey()));
+	}
+	
+
 	private AssessmentMode createMinimalAssessmentmode(RepositoryEntry entry) {
 		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(entry);
 		mode.setName("Assessment to load");

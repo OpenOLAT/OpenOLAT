@@ -329,10 +329,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
 		
 		toolbarPanel.removeAllTools();
-		
-		initTools(toolsDropdown, course, uce);
-		initSettingsTools(settingsDropdown);
-		initEditionTools(settingsDropdown);
+		if(!isAssessmentLock()) {
+			initTools(toolsDropdown, course, uce);
+			initSettingsTools(settingsDropdown);
+			initEditionTools(settingsDropdown);
+		}
 		initToolsMyCourse(course, uce);
 		initGeneralTools(course);
 		
@@ -472,6 +473,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 	
 	private void initToolsMyCourse(ICourse course, UserCourseEnvironmentImpl uce) {
+		boolean assessmentLock = isAssessmentLock();
 
 		myCourse = new Dropdown("myCourse", "header.tools.mycourse", false, getTranslator());
 		myCourse.setElementCssClass("dropdown-menu-right");
@@ -479,7 +481,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 		// Personal tools on right side
 		CourseConfig cc = course.getCourseConfig();
-		if ((course.hasAssessableNodes() || cc.isCertificateEnabled()) && !isGuestOnly && uce != null) {
+		if ((course.hasAssessableNodes() || cc.isCertificateEnabled()) && !isGuestOnly && !assessmentLock && uce != null) {
 			// link to efficiency statements should
 			// - not appear when not configured in course configuration
 			// - not appear when configured in course configuration but no assessable
@@ -497,7 +499,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 		}
 		
-		if (!isGuestOnly) {
+		if (!isGuestOnly && !assessmentLock) {
 			noteLink = LinkFactory.createToolLink("personalnote",translate("command.personalnote"), this, "o_icon_notes");
 			noteLink.setPopup(new LinkPopupSettings(750, 550, "notes"));
 			myCourse.addComponent(noteLink);
@@ -522,6 +524,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", StringHelper.escapeHtml(group.getName()), this);
 					link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 					link.setUserObject(group);
+					link.setEnabled(!assessmentLock);
 					myCourse.addComponent(link);
 					
 				}
@@ -533,6 +536,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", StringHelper.escapeHtml(group.getName()), this);
 					link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 					link.setUserObject(group);
+					link.setEnabled(!assessmentLock);
 					myCourse.addComponent(link);
 				}
 			}
@@ -556,33 +560,37 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 	
 	private void initGeneralTools(ICourse course) {
+		boolean assessmentLock = isAssessmentLock();
+
 		CourseConfig cc = course.getCourseConfig();
-		if (showInfos) {
+		if (!assessmentLock && showInfos) {
 			detailsLink = LinkFactory.createToolLink("courseconfig",translate("command.courseconfig"), this, "o_icon_details");
 			toolbarPanel.addTool(detailsLink);
 		}		
-		if (!isGuestOnly && calendarModule.isEnabled() && calendarModule.isEnableCourseToolCalendar()) {
+		if (!assessmentLock && !isGuestOnly && calendarModule.isEnabled() && calendarModule.isEnableCourseToolCalendar()) {
 			calendarLink = LinkFactory.createToolLink("calendar",translate("command.calendar"), this, "o_icon_calendar");
 			calendarLink.setPopup(new LinkPopupSettings(950, 750, "cal"));
 			calendarLink.setVisible(cc.isCalendarEnabled());
 			toolbarPanel.addTool(calendarLink);
 		}
 		
-		glossary = new Dropdown("glossary", "command.glossary", false, getTranslator());
-		glossary.setIconCSS("o_icon o_FileResource-GLOSSARY_icon");
-		glossary.setVisible(cc.hasGlossary());
-
-		openGlossaryLink = LinkFactory.createToolLink("command.glossary.open", translate("command.glossary.open"), this);
-		openGlossaryLink.setPopup(new LinkPopupSettings(950, 750, "gloss"));
-		glossary.addComponent(openGlossaryLink);
-
-		enableGlossaryLink = LinkFactory.createToolLink("command.glossary.on.off", translate("command.glossary.on.alt"), this);
-		glossary.addComponent(enableGlossaryLink);
-		toolbarPanel.addTool(glossary);
+		if(!assessmentLock) {
+			glossary = new Dropdown("glossary", "command.glossary", false, getTranslator());
+			glossary.setIconCSS("o_icon o_FileResource-GLOSSARY_icon");
+			glossary.setVisible(cc.hasGlossary());
+	
+			openGlossaryLink = LinkFactory.createToolLink("command.glossary.open", translate("command.glossary.open"), this);
+			openGlossaryLink.setPopup(new LinkPopupSettings(950, 750, "gloss"));
+			glossary.addComponent(openGlossaryLink);
+	
+			enableGlossaryLink = LinkFactory.createToolLink("command.glossary.on.off", translate("command.glossary.on.alt"), this);
+			glossary.addComponent(enableGlossaryLink);
+			toolbarPanel.addTool(glossary);
+		}
 		
 		//add group chat to toolbox
 		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
-		boolean chatIsEnabled = !isGuestOnly && imModule.isEnabled() && imModule.isCourseEnabled();
+		boolean chatIsEnabled = !assessmentLock && !isGuestOnly && imModule.isEnabled() && imModule.isCourseEnabled();
 		if(chatIsEnabled) {
 			chatLink = LinkFactory.createToolLink("chat",translate("command.coursechat"), this, "o_icon_chat");
 			chatLink.setVisible(CourseModule.isCourseChatEnabled() && cc.isChatEnabled());
@@ -1191,6 +1199,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 	
 	private void setGlossaryLinkTitle(UserRequest ureq, Boolean state) {
+		if(enableGlossaryLink == null) return;
+		
 		String oresName = ICourse.class.getSimpleName();
 		Long courseID = getOlatResourceable().getResourceableId();
 		// must work with SP and CP nodes, IFrameDisplayController listens to this event and expects "ICourse" resources.

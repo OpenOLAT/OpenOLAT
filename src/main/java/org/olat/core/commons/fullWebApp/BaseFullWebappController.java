@@ -102,8 +102,6 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.assessment.AssessmentMode;
-import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.course.assessment.ui.AssessmentModeUserConfirmationController;
@@ -144,7 +142,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private Panel cssHolder, guimsgHolder, currentMsgHolder;
 	private VelocityContainer guimsgVc, stickymsgVc, mainVc, navSitesVc, navTabsVc;
 
-	private OLATResourceable lockedResource;
+	private OLATResourceable lockResource;
 	// NEW FROM FullChiefController
 	private TopNavController topnavCtr;
 	private Controller footerCtr;
@@ -220,7 +218,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		initializeBase(ureq, winman, initialPanel);
 		
 		if(ureq.getUserSession().isAuthenticated() && ureq.getUserSession().getAssessmentModes() != null && ureq.getUserSession().getAssessmentModes().size() > 0) {
-    		modeCtrl = new AssessmentModeUserConfirmationController(ureq, getWindowControl());
+    		modeCtrl = new AssessmentModeUserConfirmationController(ureq, getWindowControl(), ureq.getUserSession().getAssessmentModes());
     		listenTo(modeCtrl);
     		modeCtrl.getInitialComponent();
     	} else {
@@ -485,7 +483,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private void initializeDefaultSite(UserRequest ureq) {
 		if (sites != null && sites.size() > 0
 				&& curSite == null && curDTab == null
-				&& contentCtrl == null && lockedResource == null) {
+				&& contentCtrl == null && lockResource == null) {
 			SiteInstance s = sites.get(0);
 			//activate site only if no content was set -> allow content before activation of default site.
 			activateSite(s, ureq, null, false);
@@ -732,7 +730,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	 */
 	private void activateSite(SiteInstance s, UserRequest ureq,
 			List<ContextEntry> entries, boolean forceReload) {
-		if(lockedResource != null) return;
+		if(lockResource != null) return;
 		
 		BornSiteInstance bs = siteToBornSite.get(s);
 		GuiStack gs;
@@ -1030,9 +1028,9 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		if (dtabs.size() >= getMaxTabs()) {
 			getWindowControl().setError(translate("warn.tabsfull"));
 			dt = null;
-		} else if(lockedResource != null && (
-				!lockedResource.getResourceableId().equals(ores.getResourceableId()) 
-				|| !lockedResource.getResourceableTypeName().equals(ores.getResourceableTypeName()))) {
+		} else if(lockResource != null && (
+				!lockResource.getResourceableId().equals(ores.getResourceableId()) 
+				|| !lockResource.getResourceableTypeName().equals(ores.getResourceableTypeName()))) {
 			dt = null;
 		} else {
 			dt = new DTabImpl(ores, repoOres, title, getWindowControl());
@@ -1197,7 +1195,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			updateStickyMessage();
 		} else if (AssessmentModeNotificationEvent.command.equals(event.getCommand())
 				&& event instanceof AssessmentModeNotificationEvent) {
-			if(lockedResource == null) {
+			if(lockResource == null) {
 				AssessmentModeNotificationEvent amne = (AssessmentModeNotificationEvent)event;
 				if(amne.getAssessedIdentityKeys().contains(getIdentity().getKey())) {
 					asyncLockResource(amne.getAssessementMode());
@@ -1218,10 +1216,15 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		}
 		return hasSite;
 	}
+	
+	@Override
+	public OLATResourceable getLockResource() {
+		return lockResource;
+	}
 
 	@Override
 	public void lockResource(OLATResourceable resource) {
-		this.lockedResource = resource;
+		this.lockResource = resource;
 		if(topnavCtr != null) {
 			topnavCtr.lockResource(resource);
 		}
@@ -1240,8 +1243,6 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		logAudit("Async lock resource for user: " + getIdentity().getName() + " (" + mode.getResource() + ")", null);
 		lockResource(mode.getResource());
 		
-		AssessmentModeManager assessmentModeManager = CoreSpringFactory.getImpl(AssessmentModeManager.class);
-
 		UserRequest ureq = new SyntheticUserRequest(getIdentity(), getLocale());
 		modeCtrl = new AssessmentModeUserConfirmationController(ureq, getWindowControl(), Collections.singletonList(mode));
 		listenTo(modeCtrl);
@@ -1273,11 +1274,18 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	 * 
 	 * @return
 	 */
-	public boolean isCanCloseDTab() {
-		boolean canClose = (sites != null && sites.size() > 0);
-		if(!canClose && dtabs != null) {
-			synchronized (dtabs) {
-				canClose = (dtabs != null && dtabs.size() > 1);
+	public boolean isCanCloseDTab(DTab dtab) {
+		boolean canClose = true;
+		if(lockResource != null
+				&& lockResource.getResourceableId().equals(dtab.getOLATResourceable().getResourceableId())
+				&& lockResource.getResourceableTypeName().equals(dtab.getOLATResourceable().getResourceableTypeName())) {
+			canClose = false;
+		} else {
+			canClose = (sites != null && sites.size() > 0);
+			if(!canClose && dtabs != null) {
+				synchronized (dtabs) {
+					canClose = (dtabs != null && dtabs.size() > 1);
+				}
 			}
 		}
 		return canClose;

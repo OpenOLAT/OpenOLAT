@@ -51,6 +51,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Target;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.AssessmentModeToArea;
 import org.olat.course.assessment.AssessmentModeToGroup;
 import org.olat.course.condition.AreaSelectionController;
 import org.olat.course.condition.GroupSelectionController;
@@ -59,6 +60,8 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.area.BGArea;
+import org.olat.group.area.BGAreaManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -96,6 +99,8 @@ public class AssessmentModeEditController extends FormBasicController {
 	private AssessmentMode assessmentMode;
 	private final OLATResourceable courseOres;
 	
+	@Autowired
+	private BGAreaManager areaMgr;
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
 	@Autowired
@@ -189,8 +194,14 @@ public class AssessmentModeEditController extends FormBasicController {
 			groupNames.add(group.getName());
 		}
 		chooseGroupsCont.getFormItemComponent().contextPut("groupNames", groupNames);
+		
 		areaKeys = new ArrayList<>();
 		areaNames = new ArrayList<>();
+		for(AssessmentModeToArea modeToArea: assessmentMode.getAreas()) {
+			BGArea area = modeToArea.getArea();
+			areaKeys.add(area.getKey());
+			areaNames.add(area.getName());
+		}
 		chooseGroupsCont.getFormItemComponent().contextPut("areaNames", areaNames);
 	
 		//course elements
@@ -389,6 +400,7 @@ public class AssessmentModeEditController extends FormBasicController {
 			assessmentMode = assessmentModeMgr.save(assessmentMode);
 		}
 
+		//update groups
 		if(groupKeys.isEmpty()) {
 			if(assessmentMode.getGroups().size() > 0) {
 				assessmentMode.getGroups().clear();
@@ -409,6 +421,31 @@ public class AssessmentModeEditController extends FormBasicController {
 					BusinessGroup group = businessGroupService.loadBusinessGroup(groupKey);
 					AssessmentModeToGroup modeToGroup = assessmentModeMgr.createAssessmentModeToGroup(assessmentMode, group);
 					assessmentMode.getGroups().add(modeToGroup);
+				}
+			}
+		}
+		
+		//update areas
+		if(areaKeys.isEmpty()) {
+			if(assessmentMode.getAreas().size() > 0) {
+				assessmentMode.getAreas().clear();
+			}
+		} else {
+			Set<Long> currentKeys = new HashSet<>();
+			for(Iterator<AssessmentModeToArea> modeToAreaIt=assessmentMode.getAreas().iterator(); modeToAreaIt.hasNext(); ) {
+				Long currentKey = modeToAreaIt.next().getArea().getKey();
+				if(!areaKeys.contains(currentKey)) {
+					modeToAreaIt.remove();
+				} else {
+					currentKeys.add(currentKey);
+				}
+			}
+			
+			for(Long areaKey:areaKeys) {
+				if(!currentKeys.contains(areaKey)) {
+					BGArea area = areaMgr.loadArea(areaKey);
+					AssessmentModeToArea modeToArea = assessmentModeMgr.createAssessmentModeToArea(assessmentMode, area);
+					assessmentMode.getAreas().add(modeToArea);
 				}
 			}
 		}

@@ -68,6 +68,7 @@ import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.login.AuthBFWCParts;
 import org.olat.login.GuestBFWCParts;
 import org.olat.portfolio.manager.InvitationDAO;
@@ -310,7 +311,7 @@ public class AuthHelper {
 		AssessmentModeManager assessmentManager = CoreSpringFactory.getImpl(AssessmentModeManager.class);
 		List<AssessmentMode> modes = assessmentManager.getAssessmentModeFor(identity);
 		if(!modes.isEmpty()) {
-			usess.setAssessmentModes(modes);
+			usess.setAssessmentModes(TransientAssessmentMode.create(modes));
 		}
 		
 		//set the language

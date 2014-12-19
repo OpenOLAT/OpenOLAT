@@ -40,6 +40,7 @@ import javax.persistence.TemporalType;
 import org.hibernate.annotations.GenericGenerator;
 import org.olat.core.id.Persistable;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeToArea;
 import org.olat.course.assessment.AssessmentModeToGroup;
 import org.olat.repository.RepositoryEntry;
 
@@ -91,6 +92,9 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 	
 	@OneToMany(targetEntity=AssessmentModeToGroupImpl.class, mappedBy="assessmentMode")
 	private Set<AssessmentModeToGroup> groups;
+	
+	@OneToMany(targetEntity=AssessmentModeToAreaImpl.class, mappedBy="assessmentMode")
+	private Set<AssessmentModeToArea> areas;
 	
 	@Column(name="a_restrictaccesselements", nullable=true, insertable=true, updatable=true)
 	private boolean restrictAccessElements;
@@ -220,6 +224,18 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 
 	public void setGroups(Set<AssessmentModeToGroup> groups) {
 		this.groups = groups;
+	}
+
+	@Override
+	public Set<AssessmentModeToArea> getAreas() {
+		if(areas == null) {
+			areas = new HashSet<>();
+		}
+		return areas;
+	}
+
+	public void setAreas(Set<AssessmentModeToArea> areas) {
+		this.areas = areas;
 	}
 
 	@Override

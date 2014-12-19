@@ -52,6 +52,8 @@ public interface ChiefController extends Controller {
 	
 	public void lockResource(OLATResourceable resource);
 	
+	public OLATResourceable getLockResource();
+	
 	/**
 	 * Set a class to the &lt;body&gt;
 	 * @param cssClass

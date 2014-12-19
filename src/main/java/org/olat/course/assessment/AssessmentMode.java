@@ -63,6 +63,8 @@ public interface AssessmentMode extends ModifiedInfo, CreateInfo {
 	public void setTargetAudience(Target target);
 	
 	public Set<AssessmentModeToGroup> getGroups();
+	
+	public Set<AssessmentModeToArea> getAreas();
 
 	public boolean isRestrictAccessElements();
 

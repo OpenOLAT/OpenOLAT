@@ -46,7 +46,7 @@ public class AssessmentModeNotificationJob extends JobWithDB {
 		AssessmentModeManager assessmentModeManager = CoreSpringFactory.getImpl(AssessmentModeManager.class);
 		List<AssessmentMode> currentModes = assessmentModeManager.getCurrentAssessmentModes();
 		for(AssessmentMode currentMode:currentModes) {
-			Set<Long> assessedIdentityKeys = assessmentModeManager.getAssessedIdentities(currentMode);
+			Set<Long> assessedIdentityKeys = assessmentModeManager.getAssessedIdentityKeys(currentMode);
 			TransientAssessmentMode transientMode = new TransientAssessmentMode(currentMode);
 			AssessmentModeNotificationEvent event = new AssessmentModeNotificationEvent(transientMode, assessedIdentityKeys);
 			CoordinatorManager.getInstance().getCoordinator().getEventBus()

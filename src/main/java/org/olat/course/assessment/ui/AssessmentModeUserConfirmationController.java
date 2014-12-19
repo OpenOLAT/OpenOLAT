@@ -50,10 +50,6 @@ public class AssessmentModeUserConfirmationController extends BasicController {
 
 	private final CloseableModalController cmc;
 	
-	public AssessmentModeUserConfirmationController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, TransientAssessmentMode.create(ureq.getUserSession().getAssessmentModes()));
-	}
-	
 	public AssessmentModeUserConfirmationController(UserRequest ureq, WindowControl wControl, List<TransientAssessmentMode> modes) {
 		super(ureq, wControl);
 		putInitialPanel(new Panel("assessment-mode-chooser"));
@@ -100,6 +96,7 @@ public class AssessmentModeUserConfirmationController extends BasicController {
 	private void launchAssessmentMode(UserRequest ureq, TransientAssessmentMode mode) {
 		ureq.getUserSession().setAssessmentModes(null);
 		OLATResourceable resource = mode.getResource();
+		ureq.getUserSession().setLockResource(resource);
 		Windows.getWindows(ureq).getChiefController().lockResource(resource);
 		fireEvent(ureq, new ChooseAssessmentModeEvent(mode));
 		

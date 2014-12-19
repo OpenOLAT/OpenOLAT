@@ -88,6 +88,7 @@ import org.olat.repository.ui.author.RepositoryMembersController;
 import org.olat.repository.ui.author.wizard.CloseResourceCallback;
 import org.olat.repository.ui.author.wizard.Close_1_ExplanationStep;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
+import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.resource.accesscontrol.ui.AccessEvent;
@@ -144,6 +145,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected boolean corrupted;
 	private RepositoryEntry re;
 	private LockResult lockResult;
+	private boolean assessmentLock;// by Assessment mode
 	private final RepositoryHandler handler;
 	
 	private HistoryPoint launchedFromPoint;
@@ -178,6 +180,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		
 		//! check corrupted
 		corrupted = isCorrupted(re);
+		assessmentLock = isAssessmentLock(ureq, re);
 		
 		this.re = re;
 		this.showInfos = showInfos;
@@ -211,7 +214,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		// set up the components
 		toolbarPanel = new TooledStackedPanel("courseStackPanel", getTranslator(), this);
 		toolbarPanel.setInvisibleCrumb(0); // show root (course) level
-		toolbarPanel.setShowCloseLink(true, true);
+		toolbarPanel.setShowCloseLink(!assessmentLock, !assessmentLock);
+		toolbarPanel.getBackLink().setEnabled(!assessmentLock);
 		putInitialPanel(toolbarPanel);
 		doRun(ureq, reSecurity);
 		loadRights(reSecurity);
@@ -220,6 +224,18 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected boolean isCorrupted(RepositoryEntry entry) {
 		return entry == null;
+	}
+	
+	protected final boolean isAssessmentLock() {
+		return assessmentLock;
+	}
+	
+	private final boolean isAssessmentLock(UserRequest ureq, RepositoryEntry entry) {
+		OLATResource resource = entry.getOlatResource();
+		OLATResourceable lock = ureq.getUserSession().getLockResource();
+		return lock != null
+				&& lock.getResourceableId().equals(resource.getResourceableId())
+				&& lock.getResourceableTypeName().equals(resource.getResourceableTypeName());
 	}
 	
 	/**

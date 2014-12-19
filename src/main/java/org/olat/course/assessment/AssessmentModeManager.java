@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.group.BusinessGroup;
+import org.olat.group.area.BGArea;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -44,6 +45,8 @@ public interface AssessmentModeManager {
 	
 	public AssessmentModeToGroup createAssessmentModeToGroup(AssessmentMode mode, BusinessGroup group);
 	
+	public AssessmentModeToArea createAssessmentModeToArea(AssessmentMode mode, BGArea area);
+	
 	public AssessmentMode save(AssessmentMode assessmentMode);
 	
 	public AssessmentMode getAssessmentModeById(Long key);
@@ -60,7 +63,7 @@ public interface AssessmentModeManager {
 	
 	public List<AssessmentMode> getCurrentAssessmentModes();
 	
-	public Set<Long> getAssessedIdentities(AssessmentMode assessmentMode);
+	public Set<Long> getAssessedIdentityKeys(AssessmentMode assessmentMode);
 	
 
 }

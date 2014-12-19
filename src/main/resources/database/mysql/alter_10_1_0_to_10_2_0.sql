@@ -31,7 +31,19 @@ create table o_as_mode_course_to_group (
 alter table o_as_mode_course ENGINE = InnoDB;
 
 
+create table o_as_mode_course_to_area (
+   id bigint not null,
+   fk_assessment_mode_id bigint not null,
+   fk_area_id bigint not null,
+   primary key (id)
+);
+alter table o_as_mode_course_to_area ENGINE = InnoDB;
+
+
 alter table o_as_mode_course add constraint as_mode_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 
 alter table o_as_mode_course_to_group add constraint as_modetogroup_group_idx foreign key (fk_group_id) references o_gp_business (group_id);
 alter table o_as_mode_course_to_group add constraint as_modetogroup_mode_idx foreign key (fk_assessment_mode_id) references o_as_mode_course (id);
+
+alter table o_as_mode_course_to_area add constraint as_modetoarea_area_idx foreign key (fk_area_id) references o_gp_bgarea (area_id);
+alter table o_as_mode_course_to_area add constraint as_modetoarea_mode_idx foreign key (fk_assessment_mode_id) references o_as_mode_course (id);

@@ -75,6 +75,11 @@ public abstract class DefaultChiefController extends DefaultController implement
 	}
 	
 	@Override
+	public OLATResourceable getLockResource() {
+		return null;
+	} 
+	
+	@Override
 	public void lockResource(OLATResourceable resource) {
 		//
 	}

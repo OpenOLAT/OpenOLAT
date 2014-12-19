@@ -33,11 +33,16 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Target;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.AssessmentModeToArea;
 import org.olat.course.assessment.AssessmentModeToGroup;
 import org.olat.course.assessment.model.AssessmentModeImpl;
+import org.olat.course.assessment.model.AssessmentModeToAreaImpl;
 import org.olat.course.assessment.model.AssessmentModeToGroupImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
+import org.olat.group.area.BGArea;
+import org.olat.group.area.BGAreaManager;
+import org.olat.group.area.BGtoAreaRelationImpl;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -57,6 +62,8 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private BGAreaManager areaMgr;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
@@ -116,24 +123,29 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	}
 	
 	private List<AssessmentMode> loadAssessmentModeFor(IdentityRef identity, List<AssessmentMode> currentModes) {
-		StringBuilder sb = new StringBuilder(1000);
+		StringBuilder sb = new StringBuilder(1500);
 		sb.append("select mode from courseassessmentmode mode ")
 		  .append(" inner join fetch mode.repositoryEntry entry")
 		  .append(" left join mode.groups as modeToGroup")
+		  .append(" left join mode.areas as modeToArea")
 		  .append(" where mode.key in (:modeKeys)")
 		  .append("  and ((mode.targetAudienceString in ('").append(AssessmentMode.Target.courseAndGroups.name()).append("','").append(AssessmentMode.Target.groups.name()).append("')")
-		  .append("   and exists (select businessGroup from ").append(BusinessGroupImpl.class.getName()).append(" as businessGroup, bgroupmember as membership  ")
+		  .append("   and (exists (select businessGroup from ").append(BusinessGroupImpl.class.getName()).append(" as businessGroup, bgroupmember as membership")
 		  .append("     where modeToGroup.businessGroup=businessGroup and membership.group=businessGroup.baseGroup and membership.identity.key=:identityKey")
 		  .append("     and (membership.role='").append(GroupRoles.participant.name()).append("' or ")
 		  .append("       (mode.applySettingsForCoach=true and membership.role='").append(GroupRoles.coach.name()).append("'))")
-		  .append("  )) or (mode.targetAudienceString in ('").append(AssessmentMode.Target.courseAndGroups.name()).append("','").append(AssessmentMode.Target.course.name()).append("')")
+		  .append("   ) or exists (select areaToGroup from ").append(BGtoAreaRelationImpl.class.getName()).append(" as areaToGroup,").append(BusinessGroupImpl.class.getName()).append(" as businessGroupArea, bgroupmember as membership")
+		  .append("     where modeToArea.area=areaToGroup.groupArea and areaToGroup.businessGroup=businessGroupArea and membership.group=businessGroupArea.baseGroup and membership.identity.key=:identityKey")
+		  .append("     and (membership.role='").append(GroupRoles.participant.name()).append("' or ")
+		  .append("       (mode.applySettingsForCoach=true and membership.role='").append(GroupRoles.coach.name()).append("'))")
+		  .append("  ))) or (mode.targetAudienceString in ('").append(AssessmentMode.Target.courseAndGroups.name()).append("','").append(AssessmentMode.Target.course.name()).append("')")
 		  .append("   and exists (select rel from repoentrytogroup as rel,  bgroupmember as membership ")
 		  .append("     where mode.repositoryEntry=rel.entry and membership.group=rel.group and membership.identity.key=:identityKey")
 		  .append("     and (membership.role='").append(GroupRoles.participant.name()).append("' or ")
 		  .append("       (mode.applySettingsForCoach=true and membership.role='").append(GroupRoles.coach.name()).append("'))")
 		  .append("  ))")
 		  .append(" )");
-		
+
 		List<Long> modeKeys = new ArrayList<>(currentModes.size());
 		for(AssessmentMode mode:currentModes) {
 			modeKeys.add(mode.getKey());
@@ -148,7 +160,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	}
 
 	@Override
-	public Set<Long> getAssessedIdentities(AssessmentMode assessmentMode) {
+	public Set<Long> getAssessedIdentityKeys(AssessmentMode assessmentMode) {
 		Target targetAudience = assessmentMode.getTargetAudience();
 		RepositoryEntry re = assessmentMode.getRepositoryEntry();
 		
@@ -160,19 +172,30 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 			assessedKeys.addAll(courseMemberKeys);
 		}
 		if(targetAudience == Target.groups || targetAudience == Target.courseAndGroups) {
+			List<BusinessGroup> groups = new ArrayList<>();
+			
+			Set<AssessmentModeToArea> modeToAreas = assessmentMode.getAreas();
+			if(modeToAreas.size() > 0) {
+				List<BGArea> areas = new ArrayList<>(modeToAreas.size());
+				for(AssessmentModeToArea modeToArea: modeToAreas) {
+					areas.add(modeToArea.getArea());
+				}
+				
+				List<BusinessGroup> groupsInAreas = areaMgr.findBusinessGroupsOfAreas(areas);	
+				groups.addAll(groupsInAreas);
+			}
+
 			Set<AssessmentModeToGroup> modeToGroups = assessmentMode.getGroups();
 			if(modeToGroups.size() > 0) {
-				List<BusinessGroup> groups = new ArrayList<>(modeToGroups.size());
 				for(AssessmentModeToGroup modeToGroup: modeToGroups) {
 					groups.add(modeToGroup.getBusinessGroup());
-				}
-
-				List<Long> groupMemberKeys = assessmentMode.isApplySettingsForCoach()
-						? businessGroupRelationDao.getMemberKeys(groups, GroupRoles.coach.name(), GroupRoles.participant.name())
-						: businessGroupRelationDao.getMemberKeys(groups, GroupRoles.participant.name());
-				assessedKeys.addAll(groupMemberKeys);		
+				}	
 			}
-			
+
+			List<Long> groupMemberKeys = assessmentMode.isApplySettingsForCoach()
+					? businessGroupRelationDao.getMemberKeys(groups, GroupRoles.coach.name(), GroupRoles.participant.name())
+					: businessGroupRelationDao.getMemberKeys(groups, GroupRoles.participant.name());
+			assessedKeys.addAll(groupMemberKeys);	
 		}
 		
 		return assessedKeys;
@@ -198,6 +221,13 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		dbInstance.getCurrentEntityManager().persist(modeToGroup);
 		return modeToGroup;
 	}
-	
-	
+
+	@Override
+	public AssessmentModeToArea createAssessmentModeToArea(AssessmentMode mode, BGArea area) {
+		AssessmentModeToAreaImpl modeToArea = new AssessmentModeToAreaImpl();
+		modeToArea.setAssessmentMode(mode);
+		modeToArea.setArea(area);
+		dbInstance.getCurrentEntityManager().persist(modeToArea);
+		return modeToArea;
+	}
 }
