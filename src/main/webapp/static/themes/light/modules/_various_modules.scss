@@ -72,19 +72,29 @@ a.o_chelp {
 	}
 }
 
-.o_dropdown {
+/* drop down menus made with OO modal dialog and not bootstrap dropdown */
+ul.o_dropdown {
+	/* revert padding from popover */
+	margin: -5px -14px;
 	.divider {
     	@include nav-divider($dropdown-divider-bg);
   	}
   	
   	> li > a {
     	display: block;
-		padding: 3px 0;
+		padding: 5px 14px;
 		clear: both;
 		font-weight: normal;
 		line-height: $line-height-base;
 		color: $dropdown-link-color;
+		background: $dropdown-bg;
 		white-space: nowrap; // prevent links from randomly breaking onto new lines
+		&:hover,
+		&:focus {
+			text-decoration: none;
+		    color: $dropdown-link-hover-color;
+		    background-color: $dropdown-link-hover-bg;
+		}
 	}
 }
 
