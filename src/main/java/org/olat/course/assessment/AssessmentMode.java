@@ -49,6 +49,8 @@ public interface AssessmentMode extends ModifiedInfo, CreateInfo {
 	public Date getBegin();
 
 	public void setBegin(Date begin);
+	
+	public Date getBeginWithLeadTime();
 
 	public Date getEnd();
 
@@ -73,6 +75,10 @@ public interface AssessmentMode extends ModifiedInfo, CreateInfo {
 	public String getElementList();
 
 	public void setElementList(String elementList);
+	
+	public String getStartElement();
+
+	public void setStartElement(String startElement);
 
 	public boolean isRestrictAccessIps();
 

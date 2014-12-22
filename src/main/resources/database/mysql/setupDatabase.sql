@@ -1062,6 +1062,44 @@ create table o_as_user_course_infos (
    primary key (id)
 );
 
+create table o_as_mode_course (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   a_name varchar(255),
+   a_description longtext,
+   a_begin datetime not null,
+   a_begin_with_leadtime datetime not null,
+   a_creationdate datetime not null,
+   a_leadtime bigint not null default 0,
+   a_targetaudience varchar(16),
+   a_restrictaccesselements bit not null default 0,
+   a_elements varchar(2048),
+   a_start_element varchar(64),
+   a_restrictaccessips bit not null default 0,
+   a_ips varchar(2048),
+   a_safeexambrowser bit not null default 0,
+   a_safeexambrowserkey varchar(2048),
+   a_safeexambrowserhint longtext,
+   a_applysettingscoach bit not null default 0,
+   fk_entry bigint not null,
+   primary key (id)
+);
+
+create table o_as_mode_course_to_group (
+   id bigint not null,
+   fk_assessment_mode_id bigint not null,
+   fk_group_id bigint not null,
+   primary key (id)
+);
+
+create table o_as_mode_course_to_area (
+   id bigint not null,
+   fk_assessment_mode_id bigint not null,
+   fk_area_id bigint not null,
+   primary key (id)
+);
+
 create table o_cer_template (
    id bigint not null,
    creationdate datetime not null,
@@ -1731,6 +1769,9 @@ alter table o_ac_reservation ENGINE = InnoDB;
 alter table o_ac_paypal_transaction ENGINE = InnoDB;
 alter table o_as_eff_statement ENGINE = InnoDB;
 alter table o_as_user_course_infos ENGINE = InnoDB;
+alter table o_as_mode_course ENGINE = InnoDB;
+alter table o_as_mode_course ENGINE = InnoDB;
+alter table o_as_mode_course_to_area ENGINE = InnoDB;
 alter table o_mapper ENGINE = InnoDB;
 alter table o_qp_pool ENGINE = InnoDB;
 alter table o_qp_taxonomy_level ENGINE = InnoDB;
@@ -2066,6 +2107,15 @@ alter table o_qp_item_type add unique (q_type(200));
 -- lti outcome
 alter table o_lti_outcome add constraint idx_lti_outcome_ident_id foreign key (fk_identity_id) references o_bs_identity(id);
 alter table o_lti_outcome add constraint idx_lti_outcome_rsrc_id foreign key (fk_resource_id) references o_olatresource(resource_id);
+
+-- assessment mode
+alter table o_as_mode_course add constraint as_mode_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+
+alter table o_as_mode_course_to_group add constraint as_modetogroup_group_idx foreign key (fk_group_id) references o_gp_business (group_id);
+alter table o_as_mode_course_to_group add constraint as_modetogroup_mode_idx foreign key (fk_assessment_mode_id) references o_as_mode_course (id);
+
+alter table o_as_mode_course_to_area add constraint as_modetoarea_area_idx foreign key (fk_area_id) references o_gp_bgarea (area_id);
+alter table o_as_mode_course_to_area add constraint as_modetoarea_mode_idx foreign key (fk_assessment_mode_id) references o_as_mode_course (id);
 
 -- certificate
 alter table o_cer_certificate add constraint cer_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);

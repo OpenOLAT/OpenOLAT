@@ -1195,7 +1195,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			updateStickyMessage();
 		} else if (AssessmentModeNotificationEvent.command.equals(event.getCommand())
 				&& event instanceof AssessmentModeNotificationEvent) {
-			if(lockResource == null) {
+			if(lockResource == null && getIdentity() != null) {
 				AssessmentModeNotificationEvent amne = (AssessmentModeNotificationEvent)event;
 				if(amne.getAssessedIdentityKeys().contains(getIdentity().getKey())) {
 					asyncLockResource(amne.getAssessementMode());

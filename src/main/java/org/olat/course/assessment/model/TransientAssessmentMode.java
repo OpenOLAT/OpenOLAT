@@ -44,8 +44,14 @@ public class TransientAssessmentMode implements Serializable {
 	private String name;
 	private String description;
 	private Date begin;
+	private Date beginWithLeadTime;
 	private Date end;
 	private int leadTime;
+	private String startElementKey;
+	
+	private String ipList;
+	private String safeExamBrowserKey;
+	private String safeExamBrowserHint;
 	
 	public TransientAssessmentMode(AssessmentMode mode) {
 		displayName = mode.getRepositoryEntry().getDisplayname();
@@ -55,8 +61,19 @@ public class TransientAssessmentMode implements Serializable {
 		name = mode.getName();
 		description = mode.getDescription();
 		begin = mode.getBegin();
+		beginWithLeadTime = mode.getBeginWithLeadTime();
 		end = mode.getEnd();
 		leadTime = mode.getLeadTime();
+		startElementKey = mode.getStartElement();
+
+		if(mode.isRestrictAccessIps()) {
+			ipList = mode.getIpList();
+		}
+		
+		if(mode.isSafeExamBrowser()) {
+			safeExamBrowserKey = mode.getSafeExamBrowserKey();
+			safeExamBrowserHint = mode.getSafeExamBrowserHint();
+		}
 	}
 	
 	public static List<TransientAssessmentMode> create(List<AssessmentMode> modes) {
@@ -103,6 +120,30 @@ public class TransientAssessmentMode implements Serializable {
 		this.begin = begin;
 	}
 
+	public Date getBeginWithLeadTime() {
+		return beginWithLeadTime;
+	}
+
+	public void setBeginWithLeadTime(Date beginWithLeadTime) {
+		this.beginWithLeadTime = beginWithLeadTime;
+	}
+
+	public String getSafeExamBrowserKey() {
+		return safeExamBrowserKey;
+	}
+
+	public void setSafeExamBrowserKey(String safeExamBrowserKey) {
+		this.safeExamBrowserKey = safeExamBrowserKey;
+	}
+
+	public String getSafeExamBrowserHint() {
+		return safeExamBrowserHint;
+	}
+
+	public void setSafeExamBrowserHint(String safeExamBrowserHint) {
+		this.safeExamBrowserHint = safeExamBrowserHint;
+	}
+
 	public Date getEnd() {
 		return end;
 	}
@@ -118,4 +159,17 @@ public class TransientAssessmentMode implements Serializable {
 	public void setLeadTime(int leadTime) {
 		this.leadTime = leadTime;
 	}
+
+	public String getStartElementKey() {
+		return startElementKey;
+	}
+
+	public void setStartElementKey(String startElementKey) {
+		this.startElementKey = startElementKey;
+	}
+	
+	public String getIpList() {
+		return ipList;
+	}
+	
 }

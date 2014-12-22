@@ -22,6 +22,8 @@ package org.olat.course.assessment;
 import java.util.List;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.olat.basesecurity.IdentityRef;
 import org.olat.group.BusinessGroup;
 import org.olat.group.area.BGArea;
@@ -61,9 +63,29 @@ public interface AssessmentModeManager {
 	 */
 	public List<AssessmentMode> getAssessmentModeFor(IdentityRef identity);
 	
+	/**
+	 * This return all modes between the begin date minus lead time and end time.
+	 * 
+	 * @return The list of modes
+	 */
 	public List<AssessmentMode> getCurrentAssessmentModes();
 	
 	public Set<Long> getAssessedIdentityKeys(AssessmentMode assessmentMode);
 	
+	/**
+	 * 
+	 * @param ipList
+	 * @param address
+	 * @return
+	 */
+	public boolean isIpAllowed(String ipList, String address);
+	
+	/**
+	 * 
+	 * @param request
+	 * @param safeExamBrowserKey
+	 * @return
+	 */
+	public boolean isSafelyAllowed(HttpServletRequest request, String safeExamBrowserKey);
 
 }

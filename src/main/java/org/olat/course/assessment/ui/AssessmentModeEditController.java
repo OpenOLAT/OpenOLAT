@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -78,7 +79,8 @@ public class AssessmentModeEditController extends FormBasicController {
 	private SingleSelection targetEl;
 	private IntegerElement leadTimeEl;
 	private DateChooser beginEl, endEl;
-	private FormLink chooseGroupsButton, chooseAreasButton, chooseElementsButton;
+	private StaticTextElement startElementEl;
+	private FormLink chooseGroupsButton, chooseAreasButton, chooseStartElementButton, chooseElementsButton;
 	private TextElement nameEl, ipListEl, safeExamBrowserKeyEl;
 	private RichTextElement descriptionEl, safeExamBrowserHintEl;
 	private FormLayoutContainer chooseGroupsCont, chooseElementsCont;
@@ -88,6 +90,7 @@ public class AssessmentModeEditController extends FormBasicController {
 	private AreaSelectionController areaChooseCtrl;
 	private GroupSelectionController groupChooseCtrl;
 	private ChooseElementsController chooseElementsCtrl;
+	private ChooseStartElementController chooseStartElementCtrl;
 	
 	private List<Long> areaKeys;
 	private List<String> areaNames;
@@ -95,6 +98,7 @@ public class AssessmentModeEditController extends FormBasicController {
 	private List<String> groupNames;
 	private List<String> elementKeys;
 	private List<String> elementNames;
+	private String startElementKey;
 	
 	private AssessmentMode assessmentMode;
 	private final OLATResourceable courseOres;
@@ -231,6 +235,14 @@ public class AssessmentModeEditController extends FormBasicController {
 		
 		chooseElementsButton = uifactory.addFormLink("choose.elements", chooseElementsCont, Link.BUTTON);
 		
+		startElementKey = assessmentMode.getStartElement();
+		String startElementName = "";
+		if(StringHelper.containsNonWhitespace(startElementKey)) {
+			startElementName = getCourseNodeName(startElementKey, treeModel);
+		}
+		startElementEl = uifactory.addStaticTextElement("mode.start.element", "mode.start.element", startElementName, formLayout);
+		chooseStartElementButton = uifactory.addFormLink("choose.start.element", formLayout, Link.BUTTON);
+
 		//ips
 		ipsEl = uifactory.addCheckboxesHorizontal("ips", "mode.ips", formLayout, onKeys, onValues);
 		ipsEl.select(onKeys[0], assessmentMode.isRestrictAccessIps());
@@ -297,6 +309,14 @@ public class AssessmentModeEditController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(chooseStartElementCtrl == source) {
+			if(Event.DONE_EVENT == event || Event.CHANGED_EVENT == event) {
+				startElementKey = chooseStartElementCtrl.getSelectedKey();
+				String elementName = chooseStartElementCtrl.getSelectedName();
+				startElementEl.setValue(elementName);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(cmc == source) {
 			cmc.deactivate();
 		}
@@ -304,10 +324,12 @@ public class AssessmentModeEditController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(chooseStartElementCtrl);
 		removeAsListenerAndDispose(chooseElementsCtrl);
 		removeAsListenerAndDispose(groupChooseCtrl);
 		removeAsListenerAndDispose(areaChooseCtrl);
 		removeAsListenerAndDispose(cmc);
+		chooseStartElementCtrl = null;
 		chooseElementsCtrl = null;
 		groupChooseCtrl = null;
 		areaChooseCtrl = null;
@@ -373,6 +395,12 @@ public class AssessmentModeEditController extends FormBasicController {
 			assessmentMode.setElementList(sb.toString());
 		} else {
 			assessmentMode.setElementList(null);
+		}
+		
+		if(StringHelper.containsNonWhitespace(startElementKey)) {
+			assessmentMode.setStartElement(startElementKey);
+		} else {
+			assessmentMode.setStartElement(null);
 		}
 		
 		boolean ipRestriction = ipsEl.isAtLeastSelected(1);
@@ -471,6 +499,8 @@ public class AssessmentModeEditController extends FormBasicController {
 			doChooseGroups(ureq);
 		} else if(chooseElementsButton == source) {
 			doChooseElements(ureq);
+		} else if(chooseStartElementButton == source) {
+			doChooseStartElement(ureq);
 		}
 		
 		super.formInnerEvent(ureq, source, event);
@@ -488,7 +518,19 @@ public class AssessmentModeEditController extends FormBasicController {
 		listenTo(chooseElementsCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", chooseElementsCtrl.getInitialComponent(),
-				true, getTranslator().translate("popup.chooseareas"));
+				true, getTranslator().translate("popup.chooseelements"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doChooseStartElement(UserRequest ureq) {
+		if(chooseElementsCtrl != null) return;
+
+		chooseStartElementCtrl = new ChooseStartElementController(ureq, getWindowControl(), startElementKey, courseOres);
+		listenTo(chooseStartElementCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", chooseStartElementCtrl.getInitialComponent(),
+				true, getTranslator().translate("popup.choosestartelement"));
 		listenTo(cmc);
 		cmc.activate();
 	}

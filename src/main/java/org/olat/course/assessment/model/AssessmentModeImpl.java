@@ -54,7 +54,7 @@ import org.olat.repository.RepositoryEntry;
 @Table(name="o_as_mode_course")
 @NamedQueries({
 	@NamedQuery(name="assessmentModeByRepoEntry", query="select mode from courseassessmentmode mode where mode.repositoryEntry.key=:entryKey"),
-	@NamedQuery(name="currentAssessmentModes", query="select mode from courseassessmentmode mode where mode.begin<=:now and mode.end>=:now")
+	@NamedQuery(name="currentAssessmentModes", query="select mode from courseassessmentmode mode where mode.beginWithLeadTime<=:now and mode.end>=:now")
 })
 public class AssessmentModeImpl implements Persistable, AssessmentMode {
 
@@ -86,6 +86,9 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 	private Date end;
 	@Column(name="a_leadtime", nullable=true, insertable=true, updatable=true)
 	private int leadTime;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="a_begin_with_leadtime", nullable=false, insertable=true, updatable=true)
+	private Date beginWithLeadTime;
 	
 	@Column(name="a_targetaudience", nullable=true, insertable=true, updatable=true)
 	private String targetAudienceString;
@@ -100,6 +103,9 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 	private boolean restrictAccessElements;
 	@Column(name="a_elements", nullable=true, insertable=true, updatable=true)
 	private String elementList;
+	@Column(name="a_start_element", nullable=true, insertable=true, updatable=true)
+	private String startElement;
+	
 
 	@Column(name="a_restrictaccessips", nullable=true, insertable=true, updatable=true)
 	private boolean restrictAccessIps;
@@ -199,6 +205,14 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 		this.leadTime = leadTime;
 	}
 
+	public Date getBeginWithLeadTime() {
+		return beginWithLeadTime;
+	}
+
+	public void setBeginWithLeadTime(Date beginWithLeadTime) {
+		this.beginWithLeadTime = beginWithLeadTime;
+	}
+
 	@Override
 	public Target getTargetAudience() {
 		return targetAudienceString == null || targetAudienceString.isEmpty()
@@ -256,6 +270,16 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 	@Override
 	public void setElementList(String elementList) {
 		this.elementList = elementList;
+	}
+
+	@Override
+	public String getStartElement() {
+		return startElement;
+	}
+
+	@Override
+	public void setStartElement(String startElement) {
+		this.startElement = startElement;
 	}
 
 	@Override

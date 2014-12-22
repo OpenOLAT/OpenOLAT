@@ -20,6 +20,7 @@
 package org.olat.course.assessment.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -38,7 +39,10 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.model.TransientAssessmentMode;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -48,27 +52,88 @@ import org.olat.course.assessment.model.TransientAssessmentMode;
  */
 public class AssessmentModeUserConfirmationController extends BasicController {
 
+	private final VelocityContainer mainVC;
 	private final CloseableModalController cmc;
+	
+	private final String address;
+	
+	@Autowired
+	private AssessmentModeManager assessmentmodeMgr;
 	
 	public AssessmentModeUserConfirmationController(UserRequest ureq, WindowControl wControl, List<TransientAssessmentMode> modes) {
 		super(ureq, wControl);
 		putInitialPanel(new Panel("assessment-mode-chooser"));
+
+		System.out.println("ureq: " + ureq);
+		System.out.println("hreq: " + ureq.getHttpReq());
+		address = ureq.getHttpReq().getRemoteAddr();
 		
-		VelocityContainer mainVC = createVelocityContainer("choose_mode");
+		mainVC = createVelocityContainer("choose_mode");
 		List<Mode> modeWrappers = new ArrayList<Mode>();
 		for(TransientAssessmentMode mode:modes) {
-			String name = "go-" + CodeHelper.getRAMUniqueID();
-			Link button = LinkFactory.createCustomLink(name, "go", "current.mode.start", Link.BUTTON, mainVC, this);
-			button.setUserObject(mode);
-			
-			Mode wrapper = new Mode(button, mode, getLocale());
-			modeWrappers.add(wrapper);
+			Mode wrapper = initAssessmentMode(ureq, mode);
+			if(wrapper != null) {
+				modeWrappers.add(wrapper);
+			}
 		}
 		mainVC.contextPut("modeWrappers", modeWrappers);
+		//check
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), mainVC, true, translate("current.mode"), false);	
 		cmc.activate();
 		listenTo(cmc);
+	}
+	
+	private Mode initAssessmentMode(UserRequest ureq, TransientAssessmentMode mode) {
+		Date now = new Date();
+		
+		Status state = null;
+		
+		Date beginWithLeadTime = mode.getBeginWithLeadTime();
+		Date begin = mode.getBegin();
+		Date end = mode.getEnd();
+		
+		if(begin.after(now)) {
+			return null;
+		} else if(beginWithLeadTime.before(now) && begin.after(now)) {
+			state = Status.wait;
+		} else if(begin.before(now) && end.after(now)) {
+			state = Status.allowed;
+		} else if(end.before(now)) {
+			return null;
+		}
+
+		StringBuilder sb = new StringBuilder();
+
+		boolean allowed = true;
+		if(mode.getIpList() != null) {
+			boolean ipInRange = assessmentmodeMgr.isIpAllowed(mode.getIpList(), address);
+			if(!ipInRange) {
+				sb.append(translate("error.ip.range"));
+			}
+			allowed &= ipInRange;
+		}
+		if(mode.getSafeExamBrowserKey() != null) {
+			boolean safeExamCheck = assessmentmodeMgr.isSafelyAllowed(ureq.getHttpReq(), mode.getSafeExamBrowserKey());
+			if(!safeExamCheck) {
+				if(sb.length() > 0) sb.append("<br />");
+				sb.append(translate("error.safe.exam"));
+			}
+			allowed &= safeExamCheck;
+		}
+
+		Link button = null;
+		if(allowed) {
+			String name = "go-" + CodeHelper.getRAMUniqueID();
+			button = LinkFactory.createCustomLink(name, "go", "current.mode.start", Link.BUTTON, mainVC, this);
+			button.setCustomEnabledLinkCSS("btn btn-primary");
+			button.setUserObject(mode);
+			button.setEnabled(state == Status.allowed);	
+		} else {
+			state = Status.refused;
+		}
+		
+		return new Mode(button, state.name(), sb.toString(), mode, getLocale());
 	}
 	
 	@Override
@@ -100,19 +165,33 @@ public class AssessmentModeUserConfirmationController extends BasicController {
 		Windows.getWindows(ureq).getChiefController().lockResource(resource);
 		fireEvent(ureq, new ChooseAssessmentModeEvent(mode));
 		
-		String businessPath = "[RepositoryEntry:" + mode.getRepositoryEntryKey() + "]"; //TODO node
+		String businessPath = "[RepositoryEntry:" + mode.getRepositoryEntryKey() + "]";
+		if(StringHelper.containsNonWhitespace(mode.getStartElementKey())) {
+			businessPath += "[CourseNode:" + mode.getStartElementKey() + "]";
+		}
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
+	public static enum Status {
+		refused,
+		allowed,
+		wait,
+		closed
+	}
+	
 	public static final class Mode {
-		
+
+		private String status;
+		private String errors;
 		private final Locale locale;
 		private final Link goButton;
 		private final TransientAssessmentMode mode;
 		
-		public Mode(Link goButton, TransientAssessmentMode mode, Locale locale) {
+		public Mode(Link goButton, String status, String errors, TransientAssessmentMode mode, Locale locale) {
 			this.goButton = goButton;
 			this.mode = mode;
+			this.errors = errors;
+			this.status = status;
 			this.locale = locale;
 		}
 		
@@ -124,10 +203,30 @@ public class AssessmentModeUserConfirmationController extends BasicController {
 			return mode.getDescription();
 		}
 		
+		public String getSafeExamBrowserHint() {
+			return mode.getSafeExamBrowserHint();
+		}
+		
 		public String getDisplayName() {
 			return mode.getDisplayName();
 		}
 		
+		public String getStatus() {
+			return status;
+		}
+
+		public void setStatus(String status) {
+			this.status = status;
+		}
+
+		public String getErrors() {
+			return errors;
+		}
+
+		public void setErrors(String errors) {
+			this.errors = errors;
+		}
+
 		public String getBegin() {
 			return Formatter.getInstance(locale).formatDateAndTime(mode.getBegin());
 		}

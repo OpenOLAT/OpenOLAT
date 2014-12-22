@@ -57,7 +57,8 @@ public class Encoder {
 		sha1("SHA-1", 100, true),
 		sha256("SHA-256", 100, true),
 		sha512("SHA-512", 100, true),
-		pbkdf2("PBKDF2WithHmacSHA1", 20000, true);
+		pbkdf2("PBKDF2WithHmacSHA1", 20000, true),
+		sha256Exam("SHA-256", 1, false);
 
 		private final boolean salted;
 		private final int iterations;
@@ -108,6 +109,23 @@ public class Encoder {
 		return md5(s, null);
 	}
 	
+	public static String sha256Exam(String s) {
+		try {
+			String HEXES = "0123456789abcdef";
+			
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] array = md.digest(s.getBytes("UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < array.length; ++i) {
+                sb.append(HEXES.charAt((array[i] & 0xF0) >> 4)).append(HEXES.charAt((array[i]  & 0x0F)));
+            }
+            return sb.toString();
+		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+			log.error("", e);
+			return null;
+    	}
+	}
+	
 	public static String encrypt(String s, String salt, Algorithm algorithm) {
 		switch(algorithm) {
 			case md5: return md5(s, salt);
@@ -149,10 +167,7 @@ public class Encoder {
 				input = digest.digest(input);
 			}
 			return byteToBase64(input);
-		} catch (NoSuchAlgorithmException e) {
-			log.error("", e);
-			return null;
-		} catch (UnsupportedEncodingException e) {
+		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
 			log.error("", e);
 			return null;
 		}
@@ -163,10 +178,7 @@ public class Encoder {
 			KeySpec spec = new PBEKeySpec(password.toCharArray(), salt.getBytes(), algorithm.getIterations(), 160);
 			SecretKeyFactory f = SecretKeyFactory.getInstance(algorithm.getAlgorithm());
 			return byteToBase64(f.generateSecret(spec).getEncoded());
-		} catch (NoSuchAlgorithmException e) {
-			log.error("", e);
-			return null;
-		} catch (InvalidKeySpecException e) {
+		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
 			log.error("", e);
 			return null;
 		}
@@ -174,21 +186,21 @@ public class Encoder {
 	
 	public static String getSalt() {
 	    try {
-				//Always use a SecureRandom generator
-				SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
-				//Create array for salt
-				byte[] salt = new byte[16];
-				//Get a random salt
-				sr.nextBytes(salt);
-				//return salt
-				return byteToBase64(salt);
-			} catch (NoSuchAlgorithmException e) {
-				log.error("", e);
-				return null;
-			}
+			//Always use a SecureRandom generator
+			SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
+			//Create array for salt
+			byte[] salt = new byte[16];
+			//Get a random salt
+			sr.nextBytes(salt);
+			//return salt
+			return byteToBase64(salt);
+		} catch (NoSuchAlgorithmException e) {
+			log.error("", e);
+			return null;
+		}
 	}
 
-  public static String byteToBase64(byte[] data){
-  	return StringHelper.encodeBase64(data);
-  }
+	public static String byteToBase64(byte[] data){
+		return StringHelper.encodeBase64(data);
+	}
 }

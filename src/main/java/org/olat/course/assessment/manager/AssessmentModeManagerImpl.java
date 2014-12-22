@@ -26,10 +26,16 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.util.Encoder;
+import org.olat.core.util.IPUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Target;
 import org.olat.course.assessment.AssessmentModeManager;
@@ -82,6 +88,18 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	public AssessmentMode save(AssessmentMode assessmentMode) {
 		AssessmentMode reloadedMode;
 		assessmentMode.setLastModified(new Date());
+		
+		//update begin with lead time
+		Date begin = assessmentMode.getBegin();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(begin);
+		if(assessmentMode.getLeadTime() > 0) {
+			cal.add(Calendar.MINUTE, -assessmentMode.getLeadTime());
+		}
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		((AssessmentModeImpl)assessmentMode).setBeginWithLeadTime(cal.getTime());
+		
 		if(assessmentMode.getKey() == null) {
 			dbInstance.getCurrentEntityManager().persist(assessmentMode);
 			reloadedMode = assessmentMode;
@@ -229,5 +247,39 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		modeToArea.setArea(area);
 		dbInstance.getCurrentEntityManager().persist(modeToArea);
 		return modeToArea;
+	}
+	
+	@Override
+	public boolean isIpAllowed(String ipList, String address) {
+		boolean allOk = false;
+		if(!StringHelper.containsNonWhitespace(ipList)) {
+			allOk |= true;
+		} else {
+			for(StringTokenizer tokenizer = new StringTokenizer(ipList, "\n\r", false); tokenizer.hasMoreTokens(); ) {
+				String ipRange = tokenizer.nextToken();
+				if(StringHelper.containsNonWhitespace(ipRange)) {
+					int indexMask = ipRange.indexOf("/");
+					int indexPseudoRange = ipRange.indexOf("-");
+					if(indexMask > 0) {
+						allOk |= IPUtils.isValidRange(ipRange, address);
+					} else if(indexPseudoRange > 0) {
+						String begin = ipRange.substring(0, indexPseudoRange).trim();
+						String end = ipRange.substring(indexPseudoRange + 1).trim();
+						allOk |= IPUtils.isValidRange(begin, end, address);
+					} else {
+						allOk |= ipRange.equals(address);
+					}
+				}
+			}
+		}
+		return allOk;
+	}
+
+	@Override
+	public boolean isSafelyAllowed(HttpServletRequest request, String safeExamBrowserKey) {
+		String safeExamHash = request.getHeader("x-safeexambrowser-requesthash");
+		String url = request.getRequestURL().toString();
+		String hash = Encoder.sha256Exam(url + safeExamBrowserKey);
+		return safeExamHash != null && safeExamHash.equals(hash);
 	}
 }
