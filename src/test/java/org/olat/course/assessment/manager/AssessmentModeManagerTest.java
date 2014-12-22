@@ -594,6 +594,46 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		boolean notAllowed4 = assessmentModeMgr.isIpAllowed(ipList, "212.203.203.64");
 		Assert.assertFalse(notAllowed4);
 	}
+	
+	@Test
+	public void isIpAllowed_cidr() {
+		String ipList = "192.168.100.1/24";
+
+		boolean allowed1 = assessmentModeMgr.isIpAllowed(ipList, "192.168.100.64");
+		Assert.assertTrue(allowed1);
+
+		//negative test
+		boolean notAllowed1 = assessmentModeMgr.isIpAllowed(ipList, "192.168.99.129");
+		Assert.assertFalse(notAllowed1);
+		boolean notAllowed2 = assessmentModeMgr.isIpAllowed(ipList, "192.168.101.204");
+		Assert.assertFalse(notAllowed2);
+		boolean notAllowed3 = assessmentModeMgr.isIpAllowed(ipList, "192.167.100.1");
+		Assert.assertFalse(notAllowed3);
+		boolean notAllowed4 = assessmentModeMgr.isIpAllowed(ipList, "212.203.203.64");
+		Assert.assertFalse(notAllowed4);
+	}
+	
+	@Test
+	public void isIpAllowed_all() {
+		String ipList = "192.168.1.203\n192.168.30.1 - 192.168.32.128\n192.168.112.1/24";
+
+		boolean allowed1 = assessmentModeMgr.isIpAllowed(ipList, "192.168.1.203");
+		Assert.assertTrue(allowed1);
+		boolean allowed2 = assessmentModeMgr.isIpAllowed(ipList, "192.168.31.203");
+		Assert.assertTrue(allowed2);
+		boolean allowed3 = assessmentModeMgr.isIpAllowed(ipList, "192.168.112.203");
+		Assert.assertTrue(allowed3);
+
+		//negative test
+		boolean notAllowed1 = assessmentModeMgr.isIpAllowed(ipList, "192.168.99.129");
+		Assert.assertFalse(notAllowed1);
+		boolean notAllowed2 = assessmentModeMgr.isIpAllowed(ipList, "192.168.101.204");
+		Assert.assertFalse(notAllowed2);
+		boolean notAllowed3 = assessmentModeMgr.isIpAllowed(ipList, "192.167.100.1");
+		Assert.assertFalse(notAllowed3);
+		boolean notAllowed4 = assessmentModeMgr.isIpAllowed(ipList, "212.203.203.64");
+		Assert.assertFalse(notAllowed4);
+	}
 
 	private AssessmentMode createMinimalAssessmentmode(RepositoryEntry entry) {
 		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(entry);

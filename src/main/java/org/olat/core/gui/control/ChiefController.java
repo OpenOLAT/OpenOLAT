@@ -26,6 +26,7 @@
 
 package org.olat.core.gui.control;
 
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.control.navigation.SiteInstance;
@@ -48,7 +49,7 @@ public interface ChiefController extends Controller {
 	
 	public ScreenMode getScreenMode();
 	
-	public boolean wishReload(boolean erase);
+	public boolean wishReload(UserRequest ureq, boolean erase);
 	
 	public void lockResource(OLATResourceable resource);
 	

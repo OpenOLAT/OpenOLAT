@@ -83,7 +83,6 @@ public class UserRequestImpl implements UserRequest {
 
 	private boolean isValidDispatchURI;
 
-	//fxdiff BAKS-7 Resume function
 	private String uuid;
 	private static int count = 0;
 
@@ -102,15 +101,15 @@ public class UserRequestImpl implements UserRequest {
 		dispatchResult = new DispatchResult();
 		parseRequest(httpReq);
 
-		//fxdiff BAKS-7 Resume function
 		uuid = Integer.toString(++count);
 	}
 
-	//fxdiff BAKS-7 Resume function
+	@Override
 	public String getUuid() {
 		return uuid;
 	}
-	
+
+	@Override
 	public String getUriPrefix() {
 		return uriPrefix;
 	}
@@ -119,6 +118,7 @@ public class UserRequestImpl implements UserRequest {
 	 * @param key
 	 * @return the value of the parameter with key 'key'
 	 */
+	@Override
 	public String getParameter(String key) {
 		return params.get(key);
 	}
@@ -126,6 +126,7 @@ public class UserRequestImpl implements UserRequest {
 	/**
 	 * @return the Set of parameters
 	 */
+	@Override
 	public Set<String> getParameterSet() {
 		return params.keySet();
 	}
@@ -133,17 +134,18 @@ public class UserRequestImpl implements UserRequest {
 	/**
 	 * @return the http request
 	 */
+	@Override
 	public HttpServletRequest getHttpReq() {
 		return httpReq;
 	}
 
 	/**
-	 * @return the usersession
+	 * @return The openolat user session
 	 */
+	@Override
 	public UserSession getUserSession() {
-		//FIXME:fj:b cache usersession here
 		UserSession result = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(getHttpReq());
-		if (result==null) {
+		if (result == null) {
 			log.warn("getUserSession: null, this="+this, new RuntimeException("getUserSession"));
 		}
 		return result;

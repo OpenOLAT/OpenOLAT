@@ -45,6 +45,8 @@ import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.UserRequestImpl;
+import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.panel.Panel;
@@ -123,10 +125,23 @@ public class AjaxController extends DefaultController {
 				// check for dirty components now.
 				wboImpl.fireCycleEvent(Window.BEFORE_INLINE_RENDERING);
 				Command updateDirtyCom = window.handleDirties();
+				
+				ChiefController cc = Windows.getWindows(request).getChiefController();
+				String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
+				UserRequest ureq = new UserRequestImpl(uriPrefix, request, null);
+				boolean reload = cc.wishReload(ureq, false);
+				System.out.println("Reload: " + reload);
+				
 				wboImpl.fireCycleEvent(Window.AFTER_INLINE_RENDERING);
 				if (updateDirtyCom != null) {
 					synchronized (windowcommands) { //o_clusterOK by:fj
 						windowcommands.add(new WindowCommand(wboImpl, updateDirtyCom));
+						if(reload) {
+							String timestampID = ureq.getTimestampID();
+							String reRenderUri = window.buildURIFor(window, timestampID, null);
+							Command rmrcom = CommandFactory.createParentRedirectTo(reRenderUri);
+							windowcommands.add(new WindowCommand(wboImpl, rmrcom));
+						}
 					}
 				}
 				MediaResource mr = extractMediaResource(false);

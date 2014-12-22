@@ -81,7 +81,6 @@ import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.control.util.ZIndexWrapper;
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.themes.Theme;
-import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -846,12 +845,19 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	}
 	
 	@Override
-	public boolean wishReload(boolean erase) {
+	public boolean wishReload(UserRequest ureq, boolean erase) {
 		boolean screen = getScreenMode().wishScreenModeSwitch(erase);
 		boolean r = (reload == null ? false : reload.booleanValue());
 		if(erase && reload != null) {
 			reload = null;
 		}
+		
+		if(openAssessmentModeConfirmation != null && openAssessmentModeConfirmation.booleanValue()) {
+			openAssessmentmodeConfirmation(ureq, mode);
+			r = true;
+		}
+		
+		
 		return r || screen;
 	}
 
@@ -1239,14 +1245,25 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		}
 	}
 	
+	private Boolean openAssessmentModeConfirmation = Boolean.FALSE;
+	private TransientAssessmentMode mode;
+	
 	private void asyncLockResource(TransientAssessmentMode mode) {
 		logAudit("Async lock resource for user: " + getIdentity().getName() + " (" + mode.getResource() + ")", null);
 		lockResource(mode.getResource());
 		
-		UserRequest ureq = new SyntheticUserRequest(getIdentity(), getLocale());
-		modeCtrl = new AssessmentModeUserConfirmationController(ureq, getWindowControl(), Collections.singletonList(mode));
-		listenTo(modeCtrl);
-		modeCtrl.getInitialComponent();
+		this.mode = mode;
+		openAssessmentModeConfirmation = true;
+	}
+	
+	private void openAssessmentmodeConfirmation(UserRequest ureq, TransientAssessmentMode mode) {
+		if(modeCtrl != null) return;
+		
+		if(openAssessmentModeConfirmation != null && openAssessmentModeConfirmation) {
+			modeCtrl = new AssessmentModeUserConfirmationController(ureq, getWindowControl(), Collections.singletonList(mode));
+			listenTo(modeCtrl);
+			modeCtrl.getInitialComponent();
+		}
 	}
 
 	/**

@@ -336,7 +336,7 @@ public class Window extends AbstractComponent {
 						boolean didDispatch = false;
 						boolean forceReload = false;
 						if (validForDispatching) {
-							DispatchResult dispatchResult = doDispatchToComponent(ureq, null);  // FIXME:fj:c enable time stats for ajax-mode
+							DispatchResult dispatchResult = doDispatchToComponent(ureq, null);
 							didDispatch = dispatchResult.isDispatch();
 							incTimestamp = dispatchResult.isIncTimestamp();
 							forceReload = dispatchResult.isForceReload();
@@ -354,6 +354,7 @@ public class Window extends AbstractComponent {
 							String reRenderUri = buildURIFor(this, timestampID, null);
 							Command rmrcom = CommandFactory.createParentRedirectTo(reRenderUri);
 							wbackofficeImpl.sendCommandTo(rmrcom);
+							System.out.println("Redirect");
 						} else if (didDispatch || !validForDispatching) {
 							if (validForDispatching) {
 								Window ww = ureq.getDispatchResult().getResultingWindow();
@@ -478,7 +479,6 @@ public class Window extends AbstractComponent {
 								// create a mapper which maps this mediaresource, and serves it once only
 								MediaResourceMapper extMRM = new MediaResourceMapper();
 								extMRM.setMediaResource(mmr);
-								//FIXME:fj:b deregister old mapper, or reuse current one
 								String res = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), extMRM) + "/";
 								// e.g. res = /olat/m/10001/
 								Command rmrcom = CommandFactory.createParentRedirectForExternalResource(res);
@@ -622,7 +622,6 @@ public class Window extends AbstractComponent {
 					long dstop = System.currentTimeMillis();
 					long diff = dstop - dstart;
 					debugMsg.append("disp_comp:").append(diff).append(LOG_SEPARATOR);
-					//Tracing.logDebug("componentdispatchtime: " + (dstop - dstart), Window.class);
 				}
 				if (didDispatch) { // the component with the given id was found
 					mr = ureq.getDispatchResult().getResultingMediaResource();
@@ -1052,7 +1051,7 @@ public class Window extends AbstractComponent {
 	 * @param bc the businesscontrolpath
 	 * @return the new (relative) url as a string
 	 */
-	private String buildURIFor(Window win, String timestampId, String moduleUri) {
+	public String buildURIFor(Window win, String timestampId, String moduleUri) {
 		URLBuilder ubu = new URLBuilder(uriPrefix, win.getInstanceId(), timestampId, wbackofficeImpl);
 		StringOutput so = new StringOutput();
 		ubu.buildURI(so, null, null, moduleUri, 0);
@@ -1145,7 +1144,7 @@ public class Window extends AbstractComponent {
 		}
 		
 		ChiefController chief = Windows.getWindows(ureq).getChiefController();
-		boolean reload = chief == null ? false : chief.wishReload(true);
+		boolean reload = chief == null ? false : chief.wishReload(ureq, true);
 		return new DispatchResult(toDispatch, incTimestamp, reload);
 	}
 	
@@ -1185,23 +1184,6 @@ public class Window extends AbstractComponent {
 			}
 		} // else: a component with -no- controller as listener, makes no sense in 99.99% of the cases; ignore in those rare cases
 	}
-	
-	private List<Component> findComponentsWithChildName(final String childName, Component searchRoot) {
-		final List<Component> founds = new ArrayList<Component>();
-		ComponentTraverser ct = new ComponentTraverser(new ComponentVisitor(){
-			public boolean visit(Component comp, UserRequest ureq) {
-				if(comp.getParent()==null){
-					return true;
-				}
-				if (comp.getParent().getComponent(childName) == comp) {
-					founds.add(comp);
-				}
-				return true;
-			}}, searchRoot, true);
-		ct.visitAll(null);
-		return founds;
-	}
-
 
 	/**
 	 * Sets the asyncMediaResponsible.

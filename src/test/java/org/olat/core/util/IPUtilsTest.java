@@ -22,7 +22,7 @@ public class IPUtilsTest {
 		boolean  check2 = IPUtils.isValidRange(start, end, "192.168.5.45");
 		Assert.assertFalse(check2);
 	}
-	/*
+
 	@Test
 	public void checkRange_mask_31() {
 		String ipWithMask = "192.168.100.1/24";
@@ -37,5 +37,4 @@ public class IPUtilsTest {
 		boolean  notAllowed3 = IPUtils.isValidRange(ipWithMask, "212.34.100.0");
 		Assert.assertFalse(notAllowed3);
 	}
-	*/
 }

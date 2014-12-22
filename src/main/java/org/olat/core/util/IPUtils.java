@@ -19,7 +19,6 @@
  */
 package org.olat.core.util;
 
-import org.apache.commons.net.util.SubnetUtils;
 
 
 /**
@@ -44,11 +43,18 @@ public class IPUtils {
 		return result;
 	}
 	
-	public static boolean isValidRange(String ipWithMask, String ipToCheck) {
+	public static boolean isValidRange(String ipWithMask, String address) {
 		boolean allOk = false;
-		if(ipWithMask.indexOf("/") > 0) {
-			SubnetUtils utils = new SubnetUtils(ipWithMask);
-			allOk = utils.getInfo().isInRange(ipToCheck);	
+		int maskIndex = ipWithMask.indexOf("/");
+		if(maskIndex > 0) {
+			long bits = Long.parseLong(ipWithMask.substring(maskIndex + 1));
+			long subnet = ipToLong(textToNumericFormatV4(ipWithMask.substring(0, maskIndex)));
+			long ip = ipToLong(textToNumericFormatV4(address));
+			
+			long mask = -1 << (32 - bits);
+			if ((subnet & mask) == (ip & mask)) {
+				allOk = true;
+			}
 		}
 		return allOk;
 	}
