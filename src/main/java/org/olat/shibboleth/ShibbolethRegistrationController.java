@@ -331,7 +331,11 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 						email = ShibbolethHelper.getFirstValueOf(ShibbolethModule.getEMail(), shibbolethAttributesMap);
 					}
 
-					User user = UserManager.getInstance().findUserByEmail(email);
+					User user = null;
+					Identity id = UserManager.getInstance().findIdentityByEmail(email);
+					if (id != null) {
+						user = id.getUser();
+					}
 					
 					if (user != null) {
 						// error, email already exists. should actually not happen if OLAT Authenticator has

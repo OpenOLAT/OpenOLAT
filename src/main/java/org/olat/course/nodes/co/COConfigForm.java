@@ -86,7 +86,6 @@ public class COConfigForm extends FormBasicController {
 	private StaticTextElement easyGroupCoachSelectionList;
 	private FormLink chooseGroupCoachesLink;
 	
-
 	private FormLink chooseGroupParticipantsLink;
 	
 	private FormLink chooseAreasCoachesLink;
@@ -132,6 +131,7 @@ public class COConfigForm extends FormBasicController {
 		this.cev = uce.getCourseEditorEnv();
 		
 		initForm(ureq);
+		this.validateFormLogic(ureq);
 	}
 
 	/**
@@ -139,9 +139,11 @@ public class COConfigForm extends FormBasicController {
 	 */
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean isOK = true;
+		
 		if (!wantCoaches.isSelected(0) && !wantParticipants.isSelected(0) && !wantEmail.isSelected(0) && !wantOwners.isSelected(0)) {
 			recipentsContainer.setErrorKey("no.recipents.specified", null);
-			return false;
+			isOK = false;
 		}
 		
 		/*
@@ -159,7 +161,7 @@ public class COConfigForm extends FormBasicController {
 				(emailAdress == null || emailAdress.length == 0|| "".equals(emailAdress[0]))) {
 			// otherwise the entry field shows that no e-mails are specified
 			teArElEmailToAdresses.setErrorKey("email.not.specified", null);
-			return false;
+			isOK = false;
 		}
 		
 		//check validity of manually provided e-mails
@@ -170,7 +172,7 @@ public class COConfigForm extends FormBasicController {
 				boolean emailok = MailHelper.isValidEmailAddress(eAd);
 				if (emailok == false) {
 					teArElEmailToAdresses.setErrorKey("email.not.valid", null);
-					return false;
+					isOK = false;
 				}
 				eList.add(eAd);
 			}
@@ -178,7 +180,7 @@ public class COConfigForm extends FormBasicController {
 		if(wantCoaches.isSelected(0)){
 			if(!coachesChoice.isOneSelected()){
 				coachesChoice.setErrorKey("error.no.choice.specified", null);
-				return false;
+				isOK = false;
 			}else{
 				coachesChoice.clearError();
 			}
@@ -186,7 +188,7 @@ public class COConfigForm extends FormBasicController {
 				if(easyGroupCoachSelectionList.getValue() == null && isEmpty(easyGroupCoachSelectionList) || easyGroupCoachSelectionList.getValue().equals("")){
 					easyAreaCoachSelectionList.setErrorKey("error.no.group.specified", null);
 					easyGroupCoachSelectionList.setErrorKey("error.no.group.specified", null);
-					return false;
+					isOK = false;
 				}
 			}
 		}
@@ -194,7 +196,7 @@ public class COConfigForm extends FormBasicController {
 		if(wantParticipants.isSelected(0)){
 			if(!participantsChoice.isOneSelected()){
 				participantsChoice.setErrorKey("error.no.choice.specified", null);
-				return false;
+				isOK = false;
 			}else{
 				participantsChoice.clearError();
 			}
@@ -202,12 +204,12 @@ public class COConfigForm extends FormBasicController {
 				if(easyGroupParticipantsSelectionList.getValue() == null && isEmpty(easyGroupParticipantsSelectionList)|| easyGroupParticipantsSelectionList.getValue().equals("")){
 					easyAreaParticipantsSelectionList.setErrorKey("error.no.group.specified", null);
 					easyGroupParticipantsSelectionList.setErrorKey("error.no.group.specified", null);
-					return false;
+					isOK = false;
 				}
 			}
 		}
 
-		return true;
+		return isOK & super.validateFormLogic(ureq);
 	}
 
 
@@ -628,8 +630,8 @@ public class COConfigForm extends FormBasicController {
 				cmc.deactivate();
 				easyGroupCoachSelectionList.setValue(getGroupNames(groupChooseCoaches.getSelectedKeys()));
 				easyGroupCoachSelectionList.setUserObject(groupChooseCoaches.getSelectedKeys());
-				easyGroupCoachSelectionList.getRootForm().submit(ureq);
 				chooseGroupCoachesLink.setI18nKey("groupCoachesChoose");
+				flc.setDirty(true);
 			} else if (Event.CANCELLED_EVENT == event) {
 				cmc.deactivate();
 			}
@@ -638,8 +640,8 @@ public class COConfigForm extends FormBasicController {
 				cmc.deactivate();
 				easyAreaCoachSelectionList.setValue(getAreaNames(areaChooseCoaches.getSelectedKeys()));
 				easyAreaCoachSelectionList.setUserObject(areaChooseCoaches.getSelectedKeys());
-				easyAreaCoachSelectionList.getRootForm().submit(ureq);
 				chooseAreasCoachesLink.setI18nKey("areaCoachesChoose");
+				flc.setDirty(true);
 			} else if (event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
 			}
@@ -648,8 +650,8 @@ public class COConfigForm extends FormBasicController {
 				cmc.deactivate();
 				easyGroupParticipantsSelectionList.setValue(getGroupNames(groupChooseParticipants.getSelectedKeys()));
 				easyGroupParticipantsSelectionList.setUserObject(groupChooseParticipants.getSelectedKeys());
-				easyGroupParticipantsSelectionList.getRootForm().submit(ureq);
 				chooseGroupParticipantsLink.setI18nKey("groupParticipantsChoose");
+				flc.setDirty(true);
 			} else if (Event.CANCELLED_EVENT == event) {
 				cmc.deactivate();
 			}
@@ -658,8 +660,8 @@ public class COConfigForm extends FormBasicController {
 				cmc.deactivate();
 				easyAreaParticipantsSelectionList.setValue(getAreaNames(areaChooseParticipants.getSelectedKeys()));
 				easyAreaParticipantsSelectionList.setUserObject(areaChooseParticipants.getSelectedKeys());
-				easyAreaParticipantsSelectionList.getRootForm().submit(ureq);
 				chooseAreasCoachesLink.setI18nKey("areaParticipantsChoose");
+				flc.setDirty(true);
 			} else if (event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
 			}

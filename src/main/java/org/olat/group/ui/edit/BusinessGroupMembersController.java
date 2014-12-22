@@ -88,14 +88,13 @@ public class BusinessGroupMembersController extends BasicController {
 		// set if the checkboxes are checked or not.
 		dmsForm.setDisplayMembers(businessGroup);
 		mainVC.put("displayMembers", dmsForm.getInitialComponent());
-		
-		configForm = new MembershipConfigurationForm (ureq, getWindowControl());
-		configForm.setEnabled(!BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.membersmanagement));
+
+		boolean managed = BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.membersmanagement);
+		configForm = new MembershipConfigurationForm(ureq, getWindowControl(), managed);
 		listenTo(configForm);
 		configForm.setMembershipConfiguration(businessGroup);
 		mainVC.put("configMembers", configForm.getInitialComponent());
 		
-		boolean managed = BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.membersmanagement);
 		SearchMembersParams searchParams = new SearchMembersParams(false, false, false, true, true, true, true);
 		membersController = new MemberListController(ureq, getWindowControl(), businessGroup, searchParams);
 		listenTo(membersController);
