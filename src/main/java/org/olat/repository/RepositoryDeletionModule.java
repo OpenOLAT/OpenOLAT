@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.repository.delete.service;
+package org.olat.repository;
 
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -49,8 +49,8 @@ import org.springframework.stereotype.Service;
  * @author Christian Guretzki
  */
 @Service("deletionModule")
-public class DeletionModule extends AbstractSpringModule {
-	private static final OLog log = Tracing.createLoggerFor(DeletionModule.class);
+public class RepositoryDeletionModule extends AbstractSpringModule {
+	private static final OLog log = Tracing.createLoggerFor(RepositoryDeletionModule.class);
 	private static final String CONF_DELETE_EMAIL_RESPONSE_TO_USER_NAME = "deleteEmailResponseToUserName";
 	private static final String DEFAULT_ADMIN_USERNAME = "administrator";
 	
@@ -68,7 +68,7 @@ public class DeletionModule extends AbstractSpringModule {
 	private BaseSecurity baseSecurityManager;
 
 	@Autowired
-	public DeletionModule(CoordinatorManager coordinatorManager) {
+	public RepositoryDeletionModule(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
 	}
 	
