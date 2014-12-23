@@ -41,6 +41,7 @@ public class TransientAssessmentMode implements Serializable {
 	private Long repositoryEntryKey;
 	private OLATResourceable resource;
 	
+	private Long modeKey;
 	private String name;
 	private String description;
 	private Date begin;
@@ -58,6 +59,7 @@ public class TransientAssessmentMode implements Serializable {
 		resource = OresHelper.clone(mode.getRepositoryEntry().getOlatResource());
 		repositoryEntryKey = mode.getRepositoryEntry().getKey();
 		
+		modeKey = mode.getKey();
 		name = mode.getName();
 		description = mode.getDescription();
 		begin = mode.getBegin();
@@ -102,6 +104,14 @@ public class TransientAssessmentMode implements Serializable {
 
 	public void setResource(OLATResourceable resource) {
 		this.resource = resource;
+	}
+
+	public Long getModeKey() {
+		return modeKey;
+	}
+
+	public void setModeKey(Long modeKey) {
+		this.modeKey = modeKey;
 	}
 
 	public String getName() {

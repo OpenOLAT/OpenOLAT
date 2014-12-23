@@ -142,6 +142,9 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private VelocityContainer guimsgVc, stickymsgVc, mainVc, navSitesVc, navTabsVc;
 
 	private OLATResourceable lockResource;
+	private TransientAssessmentMode lockMode;
+	private LockStatus lockStatus = LockStatus.notLocked;
+	
 	// NEW FROM FullChiefController
 	private TopNavController topnavCtr;
 	private Controller footerCtr;
@@ -220,6 +223,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
     		modeCtrl = new AssessmentModeUserConfirmationController(ureq, getWindowControl(), ureq.getUserSession().getAssessmentModes());
     		listenTo(modeCtrl);
     		modeCtrl.getInitialComponent();
+    		lockStatus = LockStatus.confirmation;
     	} else {
     		// present an overlay with configured afterlogin-controllers or nothing if none configured.
     		// presented only once per session.
@@ -645,6 +649,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			initializeDefaultSite(ureq);
 		} else if(modeCtrl == source) {
 			initializeDefaultSite(ureq);
+			lockStatus = LockStatus.locked;
 		} else {
 			int tabIndex = dtabsControllers.indexOf(source);
 			if (tabIndex > -1) {
@@ -851,14 +856,21 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		if(erase && reload != null) {
 			reload = null;
 		}
-		
-		if(openAssessmentModeConfirmation != null && openAssessmentModeConfirmation.booleanValue()) {
-			openAssessmentmodeConfirmation(ureq, mode);
+		if(lockStatus == LockStatus.needConfirmation) {
+			openAssessmentmodeConfirmation(ureq, lockMode);
 			r = true;
 		}
-		
-		
 		return r || screen;
+	}
+
+	@Override
+	public boolean wishAsyncReload(UserRequest ureq, boolean erase) {
+		boolean r = false;
+		if(lockStatus == LockStatus.needConfirmation) {
+			openAssessmentmodeConfirmation(ureq, lockMode);
+			r = true;
+		}
+		return r;
 	}
 
 	@Override
@@ -1245,25 +1257,25 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		}
 	}
 	
-	private Boolean openAssessmentModeConfirmation = Boolean.FALSE;
-	private TransientAssessmentMode mode;
-	
 	private void asyncLockResource(TransientAssessmentMode mode) {
 		logAudit("Async lock resource for user: " + getIdentity().getName() + " (" + mode.getResource() + ")", null);
 		lockResource(mode.getResource());
-		
-		this.mode = mode;
-		openAssessmentModeConfirmation = true;
+		lockMode = mode;
+		lockStatus = LockStatus.needConfirmation;
 	}
 	
-	private void openAssessmentmodeConfirmation(UserRequest ureq, TransientAssessmentMode mode) {
-		if(modeCtrl != null) return;
-		
-		if(openAssessmentModeConfirmation != null && openAssessmentModeConfirmation) {
-			modeCtrl = new AssessmentModeUserConfirmationController(ureq, getWindowControl(), Collections.singletonList(mode));
-			listenTo(modeCtrl);
-			modeCtrl.getInitialComponent();
+	private boolean openAssessmentmodeConfirmation(UserRequest ureq, TransientAssessmentMode mode) {
+		boolean created = false;
+		if(modeCtrl == null) {
+			if(lockStatus == LockStatus.needConfirmation) {
+				modeCtrl = new AssessmentModeUserConfirmationController(ureq, getWindowControl(), Collections.singletonList(mode));
+				listenTo(modeCtrl);
+				modeCtrl.getInitialComponent();
+				lockStatus = LockStatus.confirmation;
+				created = true;
+			}
 		}
+		return created;
 	}
 
 	/**
@@ -1386,5 +1398,12 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		public SiteInstance getSite() {
 			return site;
 		}
+	}
+	
+	private enum LockStatus {
+		notLocked,
+		needConfirmation,
+		confirmation,
+		locked
 	}
 }

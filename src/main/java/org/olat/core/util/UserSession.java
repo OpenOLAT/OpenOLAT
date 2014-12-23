@@ -79,6 +79,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	private SessionInfo sessionInfo;
 	
 	private OLATResourceable lockResource;
+	private TransientAssessmentMode lockMode;
 	private List<TransientAssessmentMode> assessmentModes;
 	
 	private transient Map<String,Object> store;
@@ -294,8 +295,13 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	public OLATResourceable getLockResource() {
 		return lockResource;
 	}
+	
+	public TransientAssessmentMode getLockMode() {
+		return lockMode;
+	}
 
-	public void setLockResource(OLATResourceable lockResource) {
+	public void setLockResource(OLATResourceable lockResource, TransientAssessmentMode mode) {
+		this.lockMode = mode;
 		this.lockResource = lockResource;
 	}
 

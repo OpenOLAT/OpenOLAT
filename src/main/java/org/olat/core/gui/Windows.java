@@ -30,9 +30,6 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Disposable;
@@ -41,7 +38,6 @@ import org.olat.core.gui.util.bandwidth.SlowBandWidthSimulator;
 import org.olat.core.gui.util.bandwidth.SlowBandWidthSimulatorImpl;
 import org.olat.core.util.FIFOMap;
 import org.olat.core.util.UserSession;
-import org.olat.core.util.session.UserSessionManager;
 
 /**
  * @author Felix Jost
@@ -74,14 +70,6 @@ public class Windows implements Disposable, Serializable {
 	 */
 	public static Windows getWindows(UserRequest ureq) {
 		UserSession us = ureq.getUserSession();
-		return getWindows(us);
-	}
-	
-	public static Windows getWindows(HttpServletRequest request) {
-		UserSession us = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(request);
-		if (us == null) {
-			return null;
-		}
 		return getWindows(us);
 	}
 

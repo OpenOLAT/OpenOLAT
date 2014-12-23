@@ -354,7 +354,6 @@ public class Window extends AbstractComponent {
 							String reRenderUri = buildURIFor(this, timestampID, null);
 							Command rmrcom = CommandFactory.createParentRedirectTo(reRenderUri);
 							wbackofficeImpl.sendCommandTo(rmrcom);
-							System.out.println("Redirect");
 						} else if (didDispatch || !validForDispatching) {
 							if (validForDispatching) {
 								Window ww = ureq.getDispatchResult().getResultingWindow();

@@ -358,6 +358,13 @@ public class AssessmentModeEditController extends FormBasicController {
 			endEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
+		if(beginEl.getDate() != null && endEl.getDate() != null) {
+			if(beginEl.getDate().compareTo(endEl.getDate()) >= 0) {
+				beginEl.setErrorKey("error.begin.after.end", null);
+				endEl.setErrorKey("error.begin.after.end", null);
+				allOk &= false;
+			}
+		}
 		
 		courseElementsRestrictionEl.clearError();
 		if(courseElementsRestrictionEl.isAtLeastSelected(1)) {

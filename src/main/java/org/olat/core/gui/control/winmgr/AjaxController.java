@@ -125,14 +125,17 @@ public class AjaxController extends DefaultController {
 				// check for dirty components now.
 				wboImpl.fireCycleEvent(Window.BEFORE_INLINE_RENDERING);
 				Command updateDirtyCom = window.handleDirties();
+				wboImpl.fireCycleEvent(Window.AFTER_INLINE_RENDERING);
 				
-				ChiefController cc = Windows.getWindows(request).getChiefController();
 				String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
 				UserRequest ureq = new UserRequestImpl(uriPrefix, request, null);
-				boolean reload = cc.wishReload(ureq, false);
-				System.out.println("Reload: " + reload);
+				boolean reload = false;
+				Windows ws = Windows.getWindows(ureq);
+				if(ws != null && ws.getChiefController() != null) {
+					ChiefController cc = ws.getChiefController();
+					reload = cc.wishAsyncReload(ureq, false);
+				}
 				
-				wboImpl.fireCycleEvent(Window.AFTER_INLINE_RENDERING);
 				if (updateDirtyCom != null) {
 					synchronized (windowcommands) { //o_clusterOK by:fj
 						windowcommands.add(new WindowCommand(wboImpl, updateDirtyCom));

@@ -64,8 +64,6 @@ public class AssessmentModeUserConfirmationController extends BasicController {
 		super(ureq, wControl);
 		putInitialPanel(new Panel("assessment-mode-chooser"));
 
-		System.out.println("ureq: " + ureq);
-		System.out.println("hreq: " + ureq.getHttpReq());
 		address = ureq.getHttpReq().getRemoteAddr();
 		
 		mainVC = createVelocityContainer("choose_mode");
@@ -77,7 +75,6 @@ public class AssessmentModeUserConfirmationController extends BasicController {
 			}
 		}
 		mainVC.contextPut("modeWrappers", modeWrappers);
-		//check
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), mainVC, true, translate("current.mode"), false);	
 		cmc.activate();
@@ -161,7 +158,7 @@ public class AssessmentModeUserConfirmationController extends BasicController {
 	private void launchAssessmentMode(UserRequest ureq, TransientAssessmentMode mode) {
 		ureq.getUserSession().setAssessmentModes(null);
 		OLATResourceable resource = mode.getResource();
-		ureq.getUserSession().setLockResource(resource);
+		ureq.getUserSession().setLockResource(resource, mode);
 		Windows.getWindows(ureq).getChiefController().lockResource(resource);
 		fireEvent(ureq, new ChooseAssessmentModeEvent(mode));
 		

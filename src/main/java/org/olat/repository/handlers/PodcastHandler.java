@@ -41,6 +41,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.assessment.AssessmentMode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.PodcastFileResource;
@@ -171,7 +172,8 @@ public class PodcastHandler implements RepositoryHandler {
 		return new FeedRuntimeController(ureq, wControl, re, reSecurity,
 			new RuntimeControllerCreator() {
 				@Override
-				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry, RepositoryEntrySecurity security) {
+				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
+						RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
 					return new FeedMainController(entry.getOlatResource(), uureq, wwControl, null, null,
 						PodcastUIFactory.getInstance(uureq.getLocale()), callback, null);
 				}
@@ -208,11 +210,6 @@ public class PodcastHandler implements RepositoryHandler {
 	@Override
 	public EditionSupport supportsEdit(OLATResourceable resource) {
 		return EditionSupport.embedded;
-	}
-
-	@Override
-	public boolean supportsLaunch() {
-		return true;
 	}
 
 	@Override

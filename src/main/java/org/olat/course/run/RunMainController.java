@@ -75,6 +75,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentChangedEvent;
+import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.EfficiencyStatementManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.config.CourseConfig;
@@ -156,9 +157,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 * @param offerBookmark - whether to offer bookmarks or not
 	 * @param showCourseConfigLink  Flag to enable/disable link to detail-page in tool menu. 
 	 */
-	public RunMainController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel toolbarPanel, ICourse course,
-			RepositoryEntry re, RepositoryEntrySecurity reSecurity) {
+	public RunMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
+			ICourse course, RepositoryEntry re, RepositoryEntrySecurity reSecurity, AssessmentMode assessmentMode) {
 
 		// Use repository package as fallback translator
 		super(ureq, wControl, Util.createPackageTranslator(RepositoryEntry.class, ureq.getLocale()));

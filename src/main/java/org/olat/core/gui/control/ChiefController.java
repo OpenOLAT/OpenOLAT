@@ -49,6 +49,21 @@ public interface ChiefController extends Controller {
 	
 	public ScreenMode getScreenMode();
 	
+	/**
+	 * The method is called by the poller thread.
+	 * 
+	 * @param ureq
+	 * @param erase
+	 * @return
+	 */
+	public boolean wishAsyncReload(UserRequest ureq, boolean erase);
+	
+	/**
+	 * The method is resolved on click
+	 * @param ureq
+	 * @param erase
+	 * @return
+	 */
 	public boolean wishReload(UserRequest ureq, boolean erase);
 	
 	public void lockResource(OLATResourceable resource);

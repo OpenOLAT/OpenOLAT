@@ -53,6 +53,7 @@ import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.course.assessment.AssessmentMode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ImsCPFileResource;
@@ -161,11 +162,6 @@ public class ImsCPHandler extends FileHandler {
 	}
 
 	@Override
-	public boolean supportsLaunch() {
-		return true;
-	}
-
-	@Override
 	public boolean supportsDownload() {
 		return true;
 	}
@@ -190,7 +186,8 @@ public class ImsCPHandler extends FileHandler {
 		return new CPRuntimeController(ureq, wControl, re, reSecurity,
 				new RuntimeControllerCreator() {
 					@Override
-					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry, RepositoryEntrySecurity security) {
+					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
+							RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
 						boolean activateFirstPage = true;
 						String initialUri = null;
 						

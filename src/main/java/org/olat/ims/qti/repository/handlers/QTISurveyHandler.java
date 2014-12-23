@@ -39,6 +39,7 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
+import org.olat.course.assessment.AssessmentMode;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.ims.qti.QTIRuntimeController;
 import org.olat.ims.qti.editor.QTIEditorMainController;
@@ -108,11 +109,6 @@ public class QTISurveyHandler extends QTIHandler {
 	}
 
 	@Override
-	public boolean supportsLaunch() {
-		return true;
-	}
-
-	@Override
 	public boolean supportsDownload() {
 		return true;
 	}
@@ -141,7 +137,8 @@ public class QTISurveyHandler extends QTIHandler {
 		return new QTIRuntimeController(ureq, wControl, re, reSecurity,
 			new RuntimeControllerCreator() {
 				@Override
-				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry, RepositoryEntrySecurity security) {
+				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
+						RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
 					Controller runController;
 					OLATResource res = entry.getOlatResource();
 					if (OnyxModule.isOnyxTest(res)) {

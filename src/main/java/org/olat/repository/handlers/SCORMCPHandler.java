@@ -42,6 +42,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.course.assessment.AssessmentMode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ResourceEvaluation;
@@ -134,11 +135,6 @@ public class SCORMCPHandler extends FileHandler {
 	}
 
 	@Override
-	public boolean supportsLaunch() {
-		return true;
-	}
-
-	@Override
 	public boolean supportsDownload() {
 		return true;
 	}
@@ -162,7 +158,8 @@ public class SCORMCPHandler extends FileHandler {
 		return new ScormRuntimeController(ureq, wControl, re, reSecurity,
 			new RuntimeControllerCreator() {
 				@Override
-				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry, RepositoryEntrySecurity security) {
+				public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
+						RepositoryEntry entry, RepositoryEntrySecurity security, AssessmentMode assessmentMode) {
 					OLATResource res = entry.getOlatResource();
 					File cpRoot = FileResourceManager.getInstance().unzipFileResource(res);
 					MainLayoutController realController = ScormMainManager.getInstance().createScormAPIandDisplayController(uureq, wwControl, true, null, cpRoot,

@@ -66,6 +66,9 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
+import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.course.run.RunMainController;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
@@ -146,6 +149,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private RepositoryEntry re;
 	private LockResult lockResult;
 	private boolean assessmentLock;// by Assessment mode
+	private AssessmentMode assessmentMode;
 	private final RepositoryHandler handler;
 	
 	private HistoryPoint launchedFromPoint;
@@ -164,6 +168,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryHandlerFactory handlerFactory;
+	@Autowired
+	private AssessmentModeManager assessmentModeMgr;
 	
 	public RepositoryEntryRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
 			RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
@@ -188,6 +194,12 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		this.runtimeControllerCreator = runtimeControllerCreator;
 		
 		UserSession session = ureq.getUserSession();
+		
+		if(assessmentLock) {
+			TransientAssessmentMode mode = ureq.getUserSession().getLockMode();
+			assessmentModeMgr.getAssessmentModeById(mode.getModeKey());
+		}
+		
 		if(session != null &&  session.getHistoryStack() != null && session.getHistoryStack().size() >= 2) {
 			// Set previous business path as back link for this course - brings user back to place from which he launched the course
 			List<HistoryPoint> stack = session.getHistoryStack();
@@ -834,13 +846,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected void launchContent(UserRequest ureq, RepositoryEntrySecurity security) {
 		if(security.canLaunch()) {
-			if(handler.supportsLaunch()) {
-				runtimeController = runtimeControllerCreator.create(ureq, getWindowControl(), toolbarPanel, re, reSecurity);
-				listenTo(runtimeController);
-				toolbarPanel.rootController(re.getDisplayname(), runtimeController);
-			} else {
-				doDetails(ureq);
-			}
+			runtimeController = runtimeControllerCreator.create(ureq, getWindowControl(), toolbarPanel, re, reSecurity, assessmentMode);
+			listenTo(runtimeController);
+			toolbarPanel.rootController(re.getDisplayname(), runtimeController);
 		} else {
 			runtimeController = new AccessRefusedController(ureq, getWindowControl());
 			listenTo(runtimeController);
@@ -850,7 +858,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 
 	public interface RuntimeControllerCreator {
 		
-		public Controller create(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry, RepositoryEntrySecurity reSecurity);
+		public Controller create(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
+				RepositoryEntry entry, RepositoryEntrySecurity reSecurity, AssessmentMode mode);
 		
 	}
 	

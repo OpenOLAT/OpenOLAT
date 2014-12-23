@@ -83,7 +83,7 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 			case mark: return item.getMarkLink();
 			case detailsSupported: {
 				RepositoryHandler handler = handlerFactory.getRepositoryHandler(item.getResourceType());
-				return (handler != null && handler.supportsLaunch()) ? Boolean.TRUE : Boolean.FALSE;
+				return (handler != null) ? Boolean.TRUE : Boolean.FALSE;
 			}
 			case tools: return item.getToolsLink();
 			case editionSupported: {
