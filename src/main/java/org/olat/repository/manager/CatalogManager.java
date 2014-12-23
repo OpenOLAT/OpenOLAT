@@ -187,7 +187,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		TypedQuery<CatalogEntry> dbQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CatalogEntry.class)
 				.setParameter("parentKey", ce.getKey())
-				.setFirstResult(0);
+				.setFirstResult(firstResult);
 		if(maxResults > 0) {
 			dbQuery.setMaxResults(maxResults);
 		}

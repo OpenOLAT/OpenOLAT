@@ -147,11 +147,11 @@ public class CORunController extends BasicController {
 			contactLists.push(cl);
 		}
 		if(participantGroupNames != null){
-			ContactList cl = retrieveCoachesFromAreas(participantGroupKeys);
+			ContactList cl = retrieveParticipantsFromGroups(participantGroupKeys);
 			contactLists.push(cl);
 		}
 		if(participantAreaNames != null){
-			ContactList cl = retrieveCoachesFromAreas(participantAreaKeys);
+			ContactList cl = retrieveParticipantsFromAreas(participantAreaKeys);
 			contactLists.push(cl);
 		}
 		if (coachesAllConfigured != null && coachesAllConfigured.booleanValue()) {

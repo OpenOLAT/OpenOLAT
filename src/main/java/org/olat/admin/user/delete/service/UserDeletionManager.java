@@ -63,7 +63,7 @@ import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.TemporaryKeyImpl;
-import org.olat.repository.delete.service.DeletionModule;
+import org.olat.repository.RepositoryDeletionModule;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -95,7 +95,7 @@ public class UserDeletionManager extends BasicManager {
 
 	// Flag used in user-delete to indicate that all deletable managers are initialized
 	private boolean managersInitialized = false;
-	private DeletionModule deletionModule;
+	private RepositoryDeletionModule deletionModule;
 	private BaseSecurity securityManager;
 	private MailManager mailManager;
 	private GroupDAO groupDao;
@@ -103,7 +103,7 @@ public class UserDeletionManager extends BasicManager {
 	/**
 	 * [used by spring]
 	 */
-	private UserDeletionManager(DeletionModule deletionModule) {
+	private UserDeletionManager(RepositoryDeletionModule deletionModule) {
 		this.deletionModule = deletionModule;
 		INSTANCE = this;
 	}
@@ -446,7 +446,7 @@ public class UserDeletionManager extends BasicManager {
 	}
 
 	private File getArchivFilePath(Identity identity) {
-		String archiveFilePath = deletionModule.getArchiveRootPath() + File.separator + USER_ARCHIVE_DIR + File.separator + DeletionModule.getArchiveDatePath() 
+		String archiveFilePath = deletionModule.getArchiveRootPath() + File.separator + USER_ARCHIVE_DIR + File.separator + RepositoryDeletionModule.getArchiveDatePath() 
 		     + File.separator + "del_identity_" + identity.getName();
 		File archiveIdentityRootDir = new File(archiveFilePath);
 		if (!archiveIdentityRootDir.exists()) {
