@@ -185,7 +185,8 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
     	
     	float nameMaxSize = 0.0f;
     	for(String[] row:content) {
-    		nameMaxSize = Math.max(nameMaxSize, getStringWidth(row[0], fontSize));
+    		float nameWidth = getStringWidth(row[0], fontSize);
+    		nameMaxSize = Math.max(nameMaxSize, nameWidth);
     	}
     	nameMaxSize = Math.min(nameMaxSize, 150f);
     	
@@ -266,37 +267,61 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 
 		float headerHeight = maxHeaderSize + (2*cellMargin);
 		float rowHeight = (lineHeightFactory * fontSize) + (2 * cellMargin);
-		nameMaxSize += (2 * cellMargin);
+		float nameMaxSizeWithMargin = nameMaxSize + (2 * cellMargin);
 		
 		float availableHeight = currentY - marginTopBottom - headerHeight;
-		float numOfAvailableRows = availableHeight / rowHeight;
-		int possibleRows = Math.round(numOfAvailableRows);
+		
+		
+		float[] rowHeights = new float[content.length];
+		float usedHeight = 0.0f;
+		int possibleRows = 0;
+		for(int i = offset; i < content.length; i++) {
+			String[] names = content[i];
+			
+			String name = names[0];
+			float nameWidth = getStringWidth(name, fontSize);
+			float nameHeight;
+			if(nameWidth > nameMaxSize) {
+				nameHeight = rowHeight + (lineHeightFactory * fontSize);
+			} else {
+				nameHeight = rowHeight;
+			}
+
+			if((usedHeight + nameHeight) > availableHeight) {
+				break;
+			}
+			usedHeight += nameHeight;
+			rowHeights[i] = nameHeight;
+			possibleRows++;
+		}
+		
 		int end = Math.min(offset + possibleRows, content.length);
 		int rows = end - offset;
 		
-		float tableHeight = (rowHeight * rows) + headerHeight;
-		float colWidth = (tableWidth - (100 + nameMaxSize)) / (cols - 2.0f);
+		float tableHeight = usedHeight + headerHeight;
+		float colWidth = (tableWidth - (100 + nameMaxSizeWithMargin)) / (cols - 2.0f);
 
-		// draw the rows
+		// draw the horizontal line of the rows
 		float y = currentY;
 		float nexty = currentY;
 		drawLine(marginLeftRight, nexty, marginLeftRight + tableWidth, nexty, 0.5f);
 		nexty -= headerHeight;
-		for (int i = 0; i <= rows; i++) {
+		for (int i =offset; i < end; i++) {
 			drawLine(marginLeftRight, nexty, marginLeftRight + tableWidth, nexty, 0.5f);
-			nexty -= rowHeight;
+			nexty -= rowHeights[i];
 		}
+		drawLine(marginLeftRight, nexty, marginLeftRight + tableWidth, nexty, 0.5f);
 
-		// draw the columns
+		// draw the vertical line of the columns
 		float nextx = marginLeftRight;
 		drawLine(nextx, y, nextx, y - tableHeight, 0.5f);
-		nextx += nameMaxSize;
+		nextx += nameMaxSizeWithMargin;
 		for (int i=1; i<=cols-2; i++) {
 			drawLine(nextx, y, nextx, y - tableHeight, 0.5f);
 			nextx += colWidth;
 		}
 		drawLine(nextx, y, nextx, y - tableHeight, 0.5f);
-		nextx += 100;
+		nextx += 100; // signature
 		drawLine(nextx, y, nextx, y - tableHeight, 0.5f);
 
 		// now add the text
@@ -314,7 +339,7 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 			currentContentStream.setFont(font, fontSize);
 			if (h == 0 || (h == lastColIndex)) {
 				currentContentStream.moveTextPositionByAmount(textx, texty - headerHeight + cellMargin);
-				textx += nameMaxSize;
+				textx += nameMaxSizeWithMargin;
 			} else {
 				currentContentStream.setTextRotation(3 * (Math.PI / 2), textx + cellMargin, texty - cellMargin);
 				textx += colWidth;
@@ -334,18 +359,108 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 			
 			for (int j = 0; j < cols; j++) {
 				String text = rowContent[j];
+				float cellWidth = (j==0 ? nameMaxSizeWithMargin : colWidth);
 				if(text != null) {
-					currentContentStream.beginText();
-					currentContentStream.setFont(font, fontSize);
-					currentContentStream.moveTextPositionByAmount(textx, texty);
-					currentContentStream.drawString(text);
-					currentContentStream.endText();
+					if(rowHeights[i] > rowHeight + 1) {
+						//can do 2 lines
+						String[] texts = splitText(text, cellWidth, fontSize);
+						float lineTexty = texty;
+						for(int k=0; k<2 && k<texts.length; k++) {
+							String textLine = texts[k];
+							currentContentStream.beginText();
+							currentContentStream.setFont(font, fontSize);
+							currentContentStream.moveTextPositionByAmount(textx, lineTexty);
+							currentContentStream.drawString(textLine);
+							currentContentStream.endText();
+							lineTexty -= (lineHeightFactory * fontSize);
+						}
+					} else {
+						currentContentStream.beginText();
+						currentContentStream.setFont(font, fontSize);
+						currentContentStream.moveTextPositionByAmount(textx, texty);
+						currentContentStream.drawString(text);
+						currentContentStream.endText();
+					}
 				}
-				textx += (j==0 ? nameMaxSize : colWidth);
+				textx += cellWidth;
 			}
-			texty -= rowHeight;
+			texty -= rowHeights[i];
 			textx = marginLeftRight + cellMargin;
 		}
 		return rows;
+	}
+	
+	/**
+	 * The number 6 was chosen after some trial and errors. It's a good compromise as
+	 * the width of the letter is not fixed. Don't replace ... with ellipsis, it break
+	 * the PDF.
+	 * 
+	 * @param text
+	 * @param maxWidth
+	 * @param fontSize
+	 * @return
+	 * @throws IOException
+	 */
+	private String[] splitText(String text, float maxWidth, float fontSize) throws IOException {
+		float textWidth = getStringWidth(text, fontSize);
+		if(maxWidth < textWidth) {
+
+			float letterWidth = textWidth / text.length();
+			int maxNumOfLetter = Math.round(maxWidth / letterWidth) - 1;
+			//use space and comma as separator to gentle split the text
+
+			int indexBefore = findBreakBefore(text, maxNumOfLetter);
+			if(indexBefore < (maxNumOfLetter / 2)) {
+				indexBefore = -1;//use more place
+			}
+
+			String one, two;
+			if(indexBefore <= 0) {
+				//one word
+				indexBefore = Math.min(text.length(), maxNumOfLetter - 6);
+				one = text.substring(0, indexBefore) + "...";
+				
+				int indexAfter = findBreakAfter(text, maxNumOfLetter);
+				if(indexAfter <= 0) {
+					two = text.substring(indexBefore);
+				} else {
+					two = text.substring(indexAfter);
+				}
+			} else {
+				one = text.substring(0, indexBefore + 1);
+				two = text.substring(indexBefore + 1);
+			}
+			
+			if(two.length() > maxNumOfLetter) {
+				two = two.substring(0, maxNumOfLetter - 6) + "...";
+			}
+			return new String[] { one.trim(), two.trim() };
+		}
+		return new String[]{ text };
+	}
+	
+	public static int findBreakBefore(String line, int start) {
+		start = Math.min(line.length(), start);
+		for (int i = start; i >= 0; --i) {
+			char c = line.charAt(i);
+			if (Character.isWhitespace(c) || c == '-' || c == ',') {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	public static int findBreakAfter(String line, int start) {
+		int len = line.length();
+		for (int i = start; i < len; ++i) {
+			char c = line.charAt(i);
+			if (Character.isWhitespace(c) || c == ',') {
+				if(i + 1 < line.length()) {
+					return i + 1;
+				}
+				return i;
+			}
+		}
+		return -1;
 	}
 }

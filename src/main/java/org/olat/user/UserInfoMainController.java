@@ -173,8 +173,8 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 			Controller controller = createComponent(ureq, type);
 			if(controller != null) {
 				if(controller instanceof  Activateable2) {
-					entries = entries.subList(1, entries.size());
-					((Activateable2)controller).activate(ureq, entries, entries.get(0).getTransientState());
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					((Activateable2)controller).activate(ureq, subEntries, entries.get(0).getTransientState());
 				}
 				
 				main.setContent(controller.getInitialComponent());
