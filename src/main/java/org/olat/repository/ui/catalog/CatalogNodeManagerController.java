@@ -356,7 +356,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				toolbarPanel.addTool(nominateLink, Align.right); 
 			}
 			if (canAddLinks) {
-				contactLink = LinkFactory.createToolLink("contact", translate("tools.new.catalog.categoryrequest"), this, "o_icon_user");
+				contactLink = LinkFactory.createToolLink("contact", translate("tools.new.catalog.categoryrequest"), this, "o_icon_mail");
 				contactLink.setElementCssClass("o_sel_catalog_contact_owner");
 				toolbarPanel.addTool(contactLink, Align.right);
 			}
@@ -375,7 +375,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 
 		if(isOLATAdmin || isLocalTreeAdmin || isAuthor) {
 			if (canAddSubCategories) {
-				addCategoryLink = LinkFactory.createToolLink("addResource", translate("tools.add.catalog.category"), this, "o_icon_add");
+				addCategoryLink = LinkFactory.createToolLink("addResource", translate("tools.add.catalog.category"), this, "o_icon_catalog_sub");
 				addCategoryLink.setElementCssClass("o_sel_catalog_add_category");
 				toolbarPanel.addTool(addCategoryLink, Align.left);
 			}

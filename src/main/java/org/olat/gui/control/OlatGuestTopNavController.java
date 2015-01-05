@@ -79,7 +79,7 @@ public class OlatGuestTopNavController extends BasicController implements TopNav
 			helpLink = LinkFactory.createLink("topnav.help", vc, this);
 			helpLink.setIconLeftCSS("o_icon o_icon_help o_icon-lg");
 			helpLink.setTooltip("topnav.help.alt");
-			helpLink.setTarget("_oohelp");
+			helpLink.setTarget("oohelp");
 		}
 		
 		loginLink = LinkFactory.createLink("topnav.login", vc, this);

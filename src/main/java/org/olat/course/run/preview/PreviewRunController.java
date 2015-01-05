@@ -96,7 +96,7 @@ public class PreviewRunController extends MainLayoutBasicController {
 		uce.getScoreAccounting().evaluateAll();
 		
 		// build menu (treemodel)
-		NodeClickedRef nclr = navHandler.evaluateJumpToCourseNode(ureq, getWindowControl(), null, null, null);
+		NodeClickedRef nclr = navHandler.evaluateJumpToCourseNode(ureq, getWindowControl(), null, this, null);
 		if (!nclr.isVisible()) {
 			getWindowControl().setWarning(translate("rootnode.invisible"));
 			VelocityContainer noaccess = createVelocityContainer("noaccess");		
@@ -231,7 +231,7 @@ public class PreviewRunController extends MainLayoutBasicController {
 		if (!nclr.isVisible()) {
 			// if not root -> fallback to root. e.g. when a direct node jump fails
 			if (calledCourseNode != null) {
-				nclr = navHandler.evaluateJumpToCourseNode(ureq, getWindowControl(), null, null, null);
+				nclr = navHandler.evaluateJumpToCourseNode(ureq, getWindowControl(), null, this, null);
 			}
 			if (!nclr.isVisible()) {
 				getWindowControl().setWarning(translate("msg.nodenotavailableanymore"));
