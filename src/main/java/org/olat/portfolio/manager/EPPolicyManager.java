@@ -241,6 +241,9 @@ public class EPPolicyManager {
 				}
 			}
 			
+			//re-attach the session to lazy load the members
+			secGroup = dbInstance.getCurrentEntityManager().merge(secGroup);
+			
 			for(Identity currentMember:currentMembers) {
 				groupDao.removeMembership(secGroup, currentMember);
 			}

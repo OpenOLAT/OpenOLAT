@@ -762,7 +762,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
 		if(source == callout) {
-			//System.out.println("dispatchEvent (Controller): " + source);
+			if(CloseableCalloutWindowController.CLOSE_WINDOW_EVENT == event) {
+				//already deactivated
+				callout = null;
+			}
 		} else if(source == extendedSearchCtrl) {
 			if(event == Event.CANCELLED_EVENT) {
 				collapseExtendedSearch();

@@ -52,7 +52,7 @@ public class HelpUserTool implements UserTool, ComponentEventListener {
 		Link helpLink = LinkFactory.createLink("topnav.help", container, this);
 		helpLink.setIconLeftCSS("o_icon o_icon_help o_icon-lg");
 		helpLink.setTooltip("topnav.help.alt");
-		helpLink.setTarget("_oohelp");
+		helpLink.setTarget("oohelp");
 		return helpLink;
 	}
 
