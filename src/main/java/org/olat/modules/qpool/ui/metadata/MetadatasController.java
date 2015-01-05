@@ -145,6 +145,7 @@ public class MetadatasController extends BasicController {
 				doRightsMetadataFinishEditing();
 			}
 			reloadData(editEvent.getItem());
+			fireEvent(ureq, editEvent);
 		} else if(event == Event.CANCELLED_EVENT) {
 			if (source == generalEditCtrl) {
 				doGeneralMetadataFinishEditing();
