@@ -1,7 +1,7 @@
 <div class="o_block">
 	#if(($commentControllers.size() > 0) && $r.available("createCommentFormCtr"))
 		<div class="o_block">
-			<a id="o_comment_form_link" class="onclick="{o_scrollToElement('#o_comment_form'); return false;}" href="#o_comment_form">
+			<a id="o_comment_form_link" onclick="{o_scrollToElement('#o_comment_form'); return false;}" href="#o_comment_form">
 				$r.translate("comments.create.goto") <i class="o_icon o_icon_start"></i>
 			</a>
 		</div>
