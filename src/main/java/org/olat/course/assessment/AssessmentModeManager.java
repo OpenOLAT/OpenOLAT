@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -68,7 +69,7 @@ public interface AssessmentModeManager {
 	 * 
 	 * @return The list of modes
 	 */
-	public List<AssessmentMode> getCurrentAssessmentModes();
+	public List<AssessmentMode> getAssessmentModes(Date now);
 	
 	public Set<Long> getAssessedIdentityKeys(AssessmentMode assessmentMode);
 	
@@ -86,6 +87,6 @@ public interface AssessmentModeManager {
 	 * @param safeExamBrowserKey
 	 * @return
 	 */
-	public boolean isSafelyAllowed(HttpServletRequest request, String safeExamBrowserKey);
+	public boolean isSafelyAllowed(HttpServletRequest request, String safeExamBrowserKeys);
 
 }

@@ -68,6 +68,7 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CalCourseNode;
 import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.course.run.userview.CourseTreeVisitor;
+import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -243,7 +244,7 @@ public class UserCalendarWebService {
 							} else {
 								IdentityEnvironment ienv = new IdentityEnvironment(retrievedUser, roles);
 								CalCourseNodeVisitor visitor = new CalCourseNodeVisitor();
-								new CourseTreeVisitor(course, ienv).visit(visitor);
+								new CourseTreeVisitor(course, ienv).visit(visitor, new VisibleTreeFilter());
 								if(visitor.isFound()) {
 									KalendarRenderWrapper wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, entry.getOlatResource(), null);
 									calVisitor.visit(wrapper);

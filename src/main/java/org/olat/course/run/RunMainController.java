@@ -63,6 +63,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -86,6 +87,9 @@ import org.olat.course.run.glossary.CourseGlossaryFactory;
 import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
 import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.navigation.NodeClickedRef;
+import org.olat.course.run.userview.VisibleTreeFilter;
+import org.olat.course.run.userview.AssessmentModeTreeFilter;
+import org.olat.course.run.userview.TreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -126,6 +130,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 	private CourseNode currentCourseNode;
 	private TreeModel treeModel;
+	private TreeFilter treeFilter;
 	private boolean needsRebuildAfter = false;
 	private boolean needsRebuildAfterPublish = false;
 	private boolean needsRebuildAfterRunDone = false;
@@ -183,7 +188,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		luTree.setElementCssClass("o_course_menu");
 		contentP = new Panel("building_block_content");
 
-		// preload user assessment data in assessmnt properties cache to speed up
+		// preload user assessment data in assessment properties cache to speed up
 		// course loading
 		course.getCourseEnvironment().getAssessmentManager().preloadCache(identity);
 
@@ -193,7 +198,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 		// build score now
 		uce.getScoreAccounting().evaluateAll();
-		navHandler = new NavigationHandler(uce, false);
+		
+		if(assessmentMode != null && assessmentMode.isRestrictAccessElements()) {
+			treeFilter = new AssessmentModeTreeFilter(assessmentMode);
+		} else {
+			treeFilter = new VisibleTreeFilter();
+		}
+		navHandler = new NavigationHandler(uce, treeFilter, false);
 
 		updateTreeAndContent(ureq, currentCourseNode, null);
 		
@@ -488,7 +499,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 						null, null, null);
 				// build score now
 				uce.getScoreAccounting().evaluateAll();
-				navHandler = new NavigationHandler(uce, false);
+				navHandler = new NavigationHandler(uce, treeFilter, false);
 				
 				// rebuild and jump to root node
 				updateTreeAndContent(ureq, null, null);

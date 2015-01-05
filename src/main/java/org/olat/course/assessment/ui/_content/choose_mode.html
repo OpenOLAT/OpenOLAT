@@ -10,11 +10,11 @@
 		<p>$mode.description</p>
 	#end
 	#if($mode.safeExamBrowserHint && !$mode.safeExamBrowserHint.empty)
-		<p class="o_info">$mode.safeExamBrowserHint</p>
+		<div class="o_info">$mode.safeExamBrowserHint</div>
 	#end
 	#if($mode.status == "allowed" || $mode.status == "wait")
 		<div class="o_button_group">$r.render($mode.buttonName)</div>
 	#else
-		<p class="o_error">$mode.errors</p>
+		<div class="o_error"> err $mode.errors</div>
 	#end
 #end

@@ -43,6 +43,7 @@ import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -119,7 +120,7 @@ public class CourseSite extends AbstractSiteInstance {
 				CourseNode rootNode = course.getRunStructure().getRootNode();
 				UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course
 						.getCourseEnvironment());
-				NodeEvaluation nodeEval = rootNode.eval(uce.getConditionInterpreter(), new TreeEvaluation());
+				NodeEvaluation nodeEval = rootNode.eval(uce.getConditionInterpreter(), new TreeEvaluation(), new VisibleTreeFilter());
 				boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(nodeEval);
 				hasAccess = mayAccessWholeTreeUp && nodeEval.isVisible();
 			}

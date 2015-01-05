@@ -42,6 +42,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.navigation.NavigationHandler;
+import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -181,7 +182,7 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 		if (isLogDebugEnabled()) logDebug("courseNode=" + courseNode );
 		
 		TreeEvaluation treeEval = new TreeEvaluation();
-		NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval);
+		NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval, new VisibleTreeFilter());
 		if (isLogDebugEnabled()) logDebug("rootNodeEval=" + rootNodeEval );
 
 		TreeNode newCalledTreeNode = treeEval.getCorrespondingTreeNode(courseNode);

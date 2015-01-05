@@ -1211,8 +1211,10 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		} else if (event instanceof ChiefControllerMessageEvent) {
 			// msg can be set to show only on one node or on all nodes
 			updateStickyMessage();
-		} else if (AssessmentModeNotificationEvent.command.equals(event.getCommand())
-				&& event instanceof AssessmentModeNotificationEvent) {
+		} else if (event instanceof AssessmentModeNotificationEvent) {
+			
+			String cmd = event.getCommand();
+			
 			if(lockResource == null && getIdentity() != null) {
 				AssessmentModeNotificationEvent amne = (AssessmentModeNotificationEvent)event;
 				if(amne.getAssessedIdentityKeys().contains(getIdentity().getKey())) {

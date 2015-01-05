@@ -34,16 +34,20 @@ import org.olat.course.assessment.model.TransientAssessmentMode;
  */
 public class AssessmentModeNotificationEvent extends MultiUserEvent  {
 	
-	public static final String command = "assessment-mode-notification";
-	public static final OLATResourceable ASSESSMENT_MODE_NOTIFICATION = OresHelper.createOLATResourceableType(command);
+	public static final String PRE_LAUNCH = "assessment-mode-pre-launch-notification";
+	public static final String LAUNCH = "assessment-mode-launch-notification";
+	public static final String WARNING_STOP = "assessment-mode-warning-stop-notification";
+	public static final String STOP = "assessment-mode-stop-notification";
+	
+	public static final OLATResourceable ASSESSMENT_MODE_NOTIFICATION = OresHelper.createOLATResourceableType("assessment-mode-notification");
 
 	private static final long serialVersionUID = 1539360689947584111L;
 
 	private TransientAssessmentMode mode;
 	private Set<Long> assessedIdentityKeys;
 	
-	public AssessmentModeNotificationEvent(TransientAssessmentMode mode, Set<Long> assessedIdentityKeys) {
-		super(command);
+	public AssessmentModeNotificationEvent(String cmd, TransientAssessmentMode mode, Set<Long> assessedIdentityKeys) {
+		super(cmd);
 		this.mode = mode;
 		this.assessedIdentityKeys = assessedIdentityKeys;
 	}

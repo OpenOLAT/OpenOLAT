@@ -197,7 +197,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		
 		if(assessmentLock) {
 			TransientAssessmentMode mode = ureq.getUserSession().getLockMode();
-			assessmentModeMgr.getAssessmentModeById(mode.getModeKey());
+			this.assessmentMode = assessmentModeMgr.getAssessmentModeById(mode.getModeKey());
 		}
 		
 		if(session != null &&  session.getHistoryStack() != null && session.getHistoryStack().size() >= 2) {

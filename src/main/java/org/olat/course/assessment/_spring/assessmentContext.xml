@@ -23,12 +23,11 @@
 	
 	<bean id="assessmentNotificationsTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
 	    <property name="jobDetail" ref="assessmentNotificationsJob" />
-	    <property name="cronExpression" value="25 * * * * ?" />
+	    <property name="cronExpression" value="55 * * * * ?" />
 	    <property name="startDelay" value="55000" />
 	</bean>
 	
 	<bean id="assessmentNotificationsJob" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
-	  <property name="jobClass" value="org.olat.course.assessment.manager.AssessmentModeNotificationJob" />
+		<property name="jobClass" value="org.olat.course.assessment.manager.AssessmentModeNotificationJob" />
 	</bean>
-
 </beans>

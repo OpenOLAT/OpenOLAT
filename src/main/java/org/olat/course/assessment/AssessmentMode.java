@@ -45,8 +45,20 @@ public interface AssessmentMode extends ModifiedInfo, CreateInfo {
 	public void setDescription(String description);
 	
 	public RepositoryEntry getRepositoryEntry();
+	
+	public Status getStatus();
+
+	public void setStatus(Status status);
+	
+	public boolean isManualBeginEnd();
+	
+	public void setManualBeginEnd(boolean manualBeginEnd);
 
 	public Date getBegin();
+	
+	public int getLeadTime();
+
+	public void setLeadTime(int leadTime);
 
 	public void setBegin(Date begin);
 	
@@ -56,9 +68,13 @@ public interface AssessmentMode extends ModifiedInfo, CreateInfo {
 
 	public void setEnd(Date end);
 
-	public int getLeadTime();
+	public int getFollowupTime();
 
-	public void setLeadTime(int leadTime);
+	public void setFollowupTime(int followupTime);
+
+	public Date getEndWithFollowupTime();
+
+	public void setEndWithFollowupTime(Date endWithFollowup);
 
 	public Target getTargetAudience();
 
@@ -109,6 +125,12 @@ public interface AssessmentMode extends ModifiedInfo, CreateInfo {
 		courseAndGroups,
 		course,
 		groups
-		
+	}
+	
+	public enum Status {
+		none,
+		leadtime,
+		assessment,
+		followup
 	}
 }

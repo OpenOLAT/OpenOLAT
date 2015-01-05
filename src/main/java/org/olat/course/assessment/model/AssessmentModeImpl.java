@@ -39,6 +39,7 @@ import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeToArea;
 import org.olat.course.assessment.AssessmentModeToGroup;
@@ -53,6 +54,7 @@ import org.olat.repository.RepositoryEntry;
 @Entity(name="courseassessmentmode")
 @Table(name="o_as_mode_course")
 @NamedQueries({
+	@NamedQuery(name="assessmentModeById", query="select mode from courseassessmentmode mode where mode.key=:modeKey"),
 	@NamedQuery(name="assessmentModeByRepoEntry", query="select mode from courseassessmentmode mode where mode.repositoryEntry.key=:entryKey"),
 	@NamedQuery(name="currentAssessmentModes", query="select mode from courseassessmentmode mode where mode.beginWithLeadTime<=:now and mode.end>=:now")
 })
@@ -78,18 +80,30 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 	@Column(name="a_description", nullable=true, insertable=true, updatable=true)
 	private String description;
 
+	@Column(name="a_status", nullable=true, insertable=true, updatable=true)
+	private String statusString;
+
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="a_begin", nullable=false, insertable=true, updatable=true)
 	private Date begin;
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="a_creationdate", nullable=false, insertable=true, updatable=true)
-	private Date end;
 	@Column(name="a_leadtime", nullable=true, insertable=true, updatable=true)
 	private int leadTime;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="a_begin_with_leadtime", nullable=false, insertable=true, updatable=true)
 	private Date beginWithLeadTime;
 	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="a_end", nullable=false, insertable=true, updatable=true)
+	private Date end;
+	@Column(name="a_followuptime", nullable=true, insertable=true, updatable=true)
+	private int followupTime;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="a_end_with_followuptime", nullable=false, insertable=true, updatable=true)
+	private Date endWithFollowupTime;
+
+	@Column(name="a_manual_beginend", nullable=false, insertable=true, updatable=true)
+	private boolean manualBeginEnd;
+
 	@Column(name="a_targetaudience", nullable=true, insertable=true, updatable=true)
 	private String targetAudienceString;
 	
@@ -176,6 +190,30 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 	}
 
 	@Override
+	public Status getStatus() {
+		return StringHelper.containsNonWhitespace(statusString) ? Status.valueOf(statusString) : Status.none;
+	}
+
+	@Override
+	public void setStatus(Status status) {
+		if(status == null) {
+			statusString = Status.none.name();
+		} else {
+			statusString = status.name();
+		}
+	}
+
+	@Override
+	public boolean isManualBeginEnd() {
+		return manualBeginEnd;
+	}
+
+	@Override
+	public void setManualBeginEnd(boolean manualBeginEnd) {
+		this.manualBeginEnd = manualBeginEnd;
+	}
+
+	@Override
 	public Date getBegin() {
 		return begin;
 	}
@@ -184,17 +222,7 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 	public void setBegin(Date begin) {
 		this.begin = begin;
 	}
-
-	@Override
-	public Date getEnd() {
-		return end;
-	}
-
-	@Override
-	public void setEnd(Date end) {
-		this.end = end;
-	}
-
+	
 	@Override
 	public int getLeadTime() {
 		return leadTime;
@@ -211,6 +239,36 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 
 	public void setBeginWithLeadTime(Date beginWithLeadTime) {
 		this.beginWithLeadTime = beginWithLeadTime;
+	}
+
+	@Override
+	public Date getEnd() {
+		return end;
+	}
+
+	@Override
+	public void setEnd(Date end) {
+		this.end = end;
+	}
+
+	@Override
+	public int getFollowupTime() {
+		return followupTime;
+	}
+
+	@Override
+	public void setFollowupTime(int followupTime) {
+		this.followupTime = followupTime;
+	}
+
+	@Override
+	public Date getEndWithFollowupTime() {
+		return endWithFollowupTime;
+	}
+
+	@Override
+	public void setEndWithFollowupTime(Date endWithFollowupTime) {
+		this.endWithFollowupTime = endWithFollowupTime;
 	}
 
 	@Override

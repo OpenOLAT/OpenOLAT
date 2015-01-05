@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.manager;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -44,13 +46,32 @@ public class AssessmentModeNotificationJob extends JobWithDB {
 	public void executeWithDB(JobExecutionContext context)
 	throws JobExecutionException {
 		AssessmentModeManager assessmentModeManager = CoreSpringFactory.getImpl(AssessmentModeManager.class);
-		List<AssessmentMode> currentModes = assessmentModeManager.getCurrentAssessmentModes();
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.MILLISECOND, 0);
+		int second = cal.get(Calendar.SECOND);
+		if(second > 30) {
+			//round to the next minute
+			cal.set(Calendar.SECOND, 0);
+			cal.add(Calendar.MINUTE, 1);
+		} else {
+			cal.set(Calendar.SECOND, 0);
+		}
+		
+		Date now = cal.getTime();
+		List<AssessmentMode> currentModes = assessmentModeManager.getAssessmentModes(now);
 		for(AssessmentMode currentMode:currentModes) {
 			Set<Long> assessedIdentityKeys = assessmentModeManager.getAssessedIdentityKeys(currentMode);
 			TransientAssessmentMode transientMode = new TransientAssessmentMode(currentMode);
-			AssessmentModeNotificationEvent event = new AssessmentModeNotificationEvent(transientMode, assessedIdentityKeys);
-			CoordinatorManager.getInstance().getCoordinator().getEventBus()
-				.fireEventToListenersOf(event, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
+			if(currentMode.getBeginWithLeadTime().compareTo(now) <= 0 && currentMode.getBegin().compareTo(now) >= 0) {
+				sendEvent(AssessmentModeNotificationEvent.PRE_LAUNCH, transientMode, assessedIdentityKeys);
+			}
+
 		}
+	}
+	
+	private void sendEvent(String cmd, TransientAssessmentMode mode, Set<Long> assessedIdentityKeys) {
+		AssessmentModeNotificationEvent event = new AssessmentModeNotificationEvent(cmd, mode, assessedIdentityKeys);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.fireEventToListenersOf(event, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 	}
 }

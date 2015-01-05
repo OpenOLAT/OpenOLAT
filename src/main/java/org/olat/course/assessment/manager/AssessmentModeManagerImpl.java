@@ -37,6 +37,7 @@ import org.olat.core.util.Encoder;
 import org.olat.core.util.IPUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentMode.Target;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeToArea;
@@ -81,6 +82,8 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		mode.setCreationDate(new Date());
 		mode.setLastModified(new Date());
 		mode.setRepositoryEntry(entry);
+		mode.setStatus(Status.none);
+		mode.setManualBeginEnd(false);
 		return mode;
 	}
 
@@ -93,13 +96,22 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		Date begin = assessmentMode.getBegin();
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(begin);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
 		if(assessmentMode.getLeadTime() > 0) {
 			cal.add(Calendar.MINUTE, -assessmentMode.getLeadTime());
 		}
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
 		((AssessmentModeImpl)assessmentMode).setBeginWithLeadTime(cal.getTime());
 		
+		Date end = assessmentMode.getEnd();
+		cal.setTime(end);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		if(assessmentMode.getFollowupTime() > 0) {
+			cal.add(Calendar.MINUTE, assessmentMode.getFollowupTime());
+		}
+		((AssessmentModeImpl)assessmentMode).setEndWithFollowupTime(cal.getTime());
+
 		if(assessmentMode.getKey() == null) {
 			dbInstance.getCurrentEntityManager().persist(assessmentMode);
 			reloadedMode = assessmentMode;
@@ -112,9 +124,8 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 
 	@Override
 	public AssessmentMode getAssessmentModeById(Long key) {
-		String q = "select mode from courseassessmentmode mode where mode.key=:modeKey";
 		List<AssessmentMode> modes = dbInstance.getCurrentEntityManager()
-			.createQuery(q, AssessmentMode.class)
+			.createNamedQuery("assessmentModeById", AssessmentMode.class)
 			.setParameter("modeKey", key)
 			.getResultList();
 		
@@ -131,7 +142,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 
 	@Override
 	public List<AssessmentMode> getAssessmentModeFor(IdentityRef identity) {
-		List<AssessmentMode> currentModes = getCurrentAssessmentModes();
+		List<AssessmentMode> currentModes = getAssessmentModes(new Date());
 		List<AssessmentMode> myModes = null;
 		if(currentModes.size() > 0) {
 			//check permissions, groups, areas, course
@@ -220,11 +231,10 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	}
 
 	@Override
-	public List<AssessmentMode> getCurrentAssessmentModes() {
+	public List<AssessmentMode> getAssessmentModes(Date now) {
 		Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.MILLISECOND, 0);
 		cal.set(Calendar.SECOND, 0);
-		Date now = cal.getTime();
 		return dbInstance.getCurrentEntityManager()
 				.createNamedQuery("currentAssessmentModes", AssessmentMode.class)
 				.setParameter("now", now)
@@ -276,10 +286,21 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	}
 
 	@Override
-	public boolean isSafelyAllowed(HttpServletRequest request, String safeExamBrowserKey) {
-		String safeExamHash = request.getHeader("x-safeexambrowser-requesthash");
-		String url = request.getRequestURL().toString();
-		String hash = Encoder.sha256Exam(url + safeExamBrowserKey);
-		return safeExamHash != null && safeExamHash.equals(hash);
+	public boolean isSafelyAllowed(HttpServletRequest request, String safeExamBrowserKeys) {
+		boolean safe = false;
+		if(StringHelper.containsNonWhitespace(safeExamBrowserKeys)) {
+			String safeExamHash = request.getHeader("x-safeexambrowser-requesthash");
+			String url = request.getRequestURL().toString();
+			for(StringTokenizer tokenizer = new StringTokenizer(safeExamBrowserKeys); tokenizer.hasMoreTokens() && !safe; ) {
+				String safeExamBrowserKey = tokenizer.nextToken();
+				String hash = Encoder.sha256Exam(url + safeExamBrowserKey);
+				if(safeExamHash != null && safeExamHash.equals(hash)) {
+					safe = true;
+				}
+			}
+		} else {
+			safe = true;
+		}
+		return safe;
 	}
 }

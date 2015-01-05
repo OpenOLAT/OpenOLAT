@@ -41,6 +41,7 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -109,7 +110,7 @@ public class MergedCourseContainer extends MergeSource {
 				GenericTreeModel treeModel = new GenericTreeModel();
 				UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
 				CourseNode rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
-				NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval);
+				NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval, new VisibleTreeFilter());
 				TreeNode treeRoot = rootNodeEval.getTreeNode();
 				treeModel.setRootNode(treeRoot);
 				addFolderBuildingBlocks(persistingCourse, nodesContainer, treeRoot);

@@ -54,6 +54,7 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.modules.webFeed.managers.FeedManager;
@@ -287,7 +288,7 @@ public class FeedMediaDispatcher extends LogDelegator implements Dispatcher {
 			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
 			// Build an evaluation tree
 			TreeEvaluation treeEval = new TreeEvaluation();
-			NodeEvaluation nodeEval = node.eval(userCourseEnv.getConditionInterpreter(), treeEval);
+			NodeEvaluation nodeEval = node.eval(userCourseEnv.getConditionInterpreter(), treeEval, new VisibleTreeFilter());
 			if (nodeEval.isVisible() && validAuthentication(identity, token)) {
 				hasAccess = true;
 			}

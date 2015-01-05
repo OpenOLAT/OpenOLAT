@@ -64,6 +64,7 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.bc.BCWebService;
 import org.olat.course.run.userview.CourseTreeVisitor;
+import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -215,7 +216,7 @@ public class UserFoldersWebService {
 						}
 					}
 				}
-			});
+			}, new VisibleTreeFilter());
 		}
 		
 		/*

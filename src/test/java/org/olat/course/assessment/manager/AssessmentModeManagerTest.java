@@ -229,7 +229,8 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Assert.assertNotNull(mode);
 		
 		//check
-		List<AssessmentMode> currentModes = assessmentModeMgr.getCurrentAssessmentModes();
+		Date now = new Date();
+		List<AssessmentMode> currentModes = assessmentModeMgr.getAssessmentModes(now);
 		Assert.assertNotNull(currentModes);
 		Assert.assertFalse(currentModes.isEmpty());
 		Assert.assertTrue(currentModes.contains(mode));

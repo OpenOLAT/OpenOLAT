@@ -75,9 +75,10 @@ public class AssessmentModeEditController extends FormBasicController {
 
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
+	private static final String[] startModeKeys = new String[] { "automatic", "manual" };
 
-	private SingleSelection targetEl;
-	private IntegerElement leadTimeEl;
+	private SingleSelection targetEl, startModeEl;
+	private IntegerElement leadTimeEl, followupTimeEl;
 	private DateChooser beginEl, endEl;
 	private StaticTextElement startElementEl;
 	private FormLink chooseGroupsButton, chooseAreasButton, chooseStartElementButton, chooseElementsButton;
@@ -158,6 +159,23 @@ public class AssessmentModeEditController extends FormBasicController {
 		endEl = uifactory.addDateChooser("mode.end", assessmentMode.getEnd(), formLayout);
 		endEl.setDateChooserTimeEnabled(true);
 		endEl.setMandatory(true);
+		
+		int followupTime = assessmentMode.getFollowupTime();
+		if(followupTime < 0) {
+			followupTime = 0;
+		}
+		followupTimeEl = uifactory.addIntegerElement("mode.followupTime", followupTime, formLayout);
+		followupTimeEl.setDisplaySize(3);
+		
+		String[] startModeValues = new String[] {
+				translate("mode.beginend.automatic"), translate("mode.beginend.manual")
+		};
+		startModeEl = uifactory.addDropdownSingleselect("mode.beginend", formLayout, startModeKeys, startModeValues, null);
+		if(assessmentMode.isManualBeginEnd()) {
+			startModeEl.select(startModeKeys[1], true);
+		} else {
+			startModeEl.select(startModeKeys[0], true);
+		}
 		
 		String[] audienceKeys = new String[] {
 			AssessmentMode.Target.courseAndGroups.name(),
@@ -379,15 +397,33 @@ public class AssessmentModeEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(assessmentMode.getKey() != null) {
+			assessmentMode = assessmentModeMgr.getAssessmentModeById(assessmentMode.getKey());
+		}
+
 		assessmentMode.setName(nameEl.getValue());
 		assessmentMode.setDescription(descriptionEl.getValue());
+		
 		assessmentMode.setBegin(beginEl.getDate());
 		if(leadTimeEl.getIntValue() > 0) {
 			assessmentMode.setLeadTime(leadTimeEl.getIntValue());
 		} else {
 			assessmentMode.setLeadTime(0);
 		}
+		
 		assessmentMode.setEnd(endEl.getDate());
+		if(followupTimeEl.getIntValue() > 0) {
+			assessmentMode.setFollowupTime(followupTimeEl.getIntValue());
+		} else {
+			assessmentMode.setFollowupTime(0);
+		}
+		
+		if(startModeEl.isOneSelected() && startModeEl.isSelected(1)) {
+			assessmentMode.setManualBeginEnd(true);
+		} else {
+			assessmentMode.setManualBeginEnd(false);
+		}
+		
 		String targetKey = targetEl.getSelectedKey();
 		assessmentMode.setTargetAudience(AssessmentMode.Target.valueOf(targetKey));
 
