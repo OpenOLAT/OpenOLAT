@@ -43,6 +43,8 @@ public interface Controller extends ComponentEventListener, Disposable {
 	 * @param el The controller that should be added as listener
 	 */
 	public void addControllerListener(ControllerEventListener el);
+	
+	public boolean isControllerListeningTo(ControllerEventListener el);
 
 	/**
 	 * Get the initial component from this controller.

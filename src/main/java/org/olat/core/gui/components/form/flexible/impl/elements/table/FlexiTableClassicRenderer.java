@@ -102,15 +102,15 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 			if(asc == null) {
 				sb.append("<a class='o_orderby' href=\"javascript:")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("sort", sortKey), new NameValuePair("asc", "asc")))
-				  .append("\">");
+				  .append("\" onclick=\"return o2cl();\">");
 			} else if(asc.booleanValue()) {
 				sb.append("<a class='o_orderby o_orderby_asc' href=\"javascript:")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("sort", sortKey), new NameValuePair("asc", "desc")))
-				  .append("\">");
+				  .append("\" onclick=\"return o2cl();\">");
 			} else {
 				sb.append("<a class='o_orderby o_orderby_desc' href=\"javascript:")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, new NameValuePair("sort", sortKey), new NameValuePair("asc", "asc")))
-				  .append("\">");
+				  .append("\" onclick=\"return o2cl();\">");
 			}
 			sb.append(header).append("</a>");
 		}

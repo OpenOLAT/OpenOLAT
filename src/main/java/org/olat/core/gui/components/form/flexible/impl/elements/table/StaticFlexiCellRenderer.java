@@ -81,7 +81,7 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 			if(StringHelper.containsNonWhitespace(linkTitle)) {
 				target.append(" title=\"").append(StringEscapeUtils.escapeHtml(linkTitle)).append("\"");
 			}
-			target.append(">");
+			target.append(" onclick=\"return o2cl();\">");
 			if(StringHelper.containsNonWhitespace(iconCSS)) {
 				target.append("<i class=\"o_icon ").append(iconCSS).append("\">&nbsp;</i>");
 			}

@@ -26,14 +26,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.lucene.queryparser.classic.ParseException;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryService;
@@ -47,10 +44,6 @@ import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
-import org.olat.search.QueryException;
-import org.olat.search.ServiceNotAvailableException;
-import org.olat.search.service.searcher.SearchClient;
-import org.olat.search.service.searcher.SearchClientLocal;
 import org.olat.user.UserManager;
 
 /**
@@ -60,15 +53,12 @@ import org.olat.user.UserManager;
  *
  */
 public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<AuthoringEntryRow> {
-	
-	private static final OLog log = Tracing.createLoggerFor(AuthoringEntryDataSource.class);
 
 	private final SearchAuthorRepositoryEntryViewParams searchParams;
 	
 	private final ACService acService;
 	private final AccessControlModule acModule;
 	private final UserManager userManager;
-	private final SearchClient searchClient;
 	private final RepositoryService repositoryService;
 	private final AuthoringEntryDataSourceUIFactory uifactory;
 	private Integer count;
@@ -81,7 +71,6 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		searchClient = CoreSpringFactory.getImpl(SearchClientLocal.class);
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 	}
 	
@@ -122,18 +111,9 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		}
 		
 		if(StringHelper.containsNonWhitespace(query)) {
-			try {
-				List<Long> fullTextResults = searchClient.doSearch(query, null, searchParams.getIdentity(), searchParams.getRoles(), 0, 100);
-				if(fullTextResults.isEmpty()) {
-					count = new Integer(0);
-					return new DefaultResultInfos<AuthoringEntryRow>();
-				}
-				searchParams.setRepoEntryKeys(fullTextResults);
-			} catch (ServiceNotAvailableException | ParseException | QueryException e) {
-				log.error("", e);
-			}
+			searchParams.setIdRefsAndTitle(query);
 		} else {
-			searchParams.setRepoEntryKeys(null);
+			searchParams.setIdRefsAndTitle(null);
 		}
 		
 		List<RepositoryEntryAuthorView> views = repositoryService.searchAuthorView(searchParams, firstResult, maxResults);

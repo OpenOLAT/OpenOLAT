@@ -86,6 +86,9 @@ public class OAuthAdminController extends FormBasicController {
 
 		userCreationEl = uifactory.addCheckboxesHorizontal("user.creation.enabled", oauthCont, keys, values);
 		userCreationEl.addActionListener(FormEvent.ONCHANGE);
+		if(oauthModule.isAllowUserCreation()) {
+			userCreationEl.select(keys[0], true);
+		}
 		
 		//linkedin
 		FormLayoutContainer linkedinCont = FormLayoutContainer.createDefaultFormLayout("linkedin", getTranslator());

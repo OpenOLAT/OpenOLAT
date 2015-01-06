@@ -166,6 +166,10 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 			listeners.add(el);
 		}
 	}
+	
+	public boolean isControllerListeningTo(ControllerEventListener el) {
+		return listeners != null && listeners.contains(el);
+	}
 
 	// brasato:: prio c : clean up classes using this - does not make sense really
 	protected List<ControllerEventListener> getListeners() {

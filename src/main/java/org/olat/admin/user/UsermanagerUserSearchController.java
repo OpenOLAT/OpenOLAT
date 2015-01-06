@@ -94,12 +94,15 @@ import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationProvider;
+import org.olat.login.oauth.OAuthLoginModule;
+import org.olat.login.oauth.OAuthSPI;
 import org.olat.modules.co.ContactFormController;
 import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.EmailProperty;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date: Jan 31, 2006
@@ -134,7 +137,9 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	private boolean showEmailButton = true;
 	private StepsMainRunController userBulkChangeStepsController;
 	private final boolean isAdministrativeUser;
-	private final BaseSecurityModule securityModule;
+	
+	@Autowired
+	private BaseSecurityModule securityModule;
 
 	/**
 	 * Constructor to trigger the user search workflow using a generic search form
@@ -145,7 +150,6 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	public UsermanagerUserSearchController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		
 		userSearchVC = createVelocityContainer("usermanagerUsersearch");
@@ -642,6 +646,10 @@ class UsermanagerUserSearchForm extends FormBasicController {
 	
 	private Map <String,FormItem>items;
 	private final boolean isAdministrativeUser;
+	
+	@Autowired
+	private OAuthLoginModule oauthLoginModule;
+	
 	/**
 	 * @param binderName
 	 * @param cancelbutton
@@ -770,10 +778,16 @@ class UsermanagerUserSearchForm extends FormBasicController {
 		List<String> apl = new ArrayList<String>();
 		for (int i=0; i<authKeys.length; i++) {
 			if (auth.isSelected(i)) {
-				if("noAuth".equals(authKeys[i])) {
+				String authKey = authKeys[i];
+				if("noAuth".equals(authKey)) {
 					apl.add(null);//special case
+				} else if("OAuth".equals(authKey)) {
+					List<OAuthSPI> spis = oauthLoginModule.getAllSPIs();
+					for(OAuthSPI spi:spis) {
+						apl.add(spi.getProviderName());
+					}
 				} else {
-					apl.add(authKeys[i]);
+					apl.add(authKey);
 				}
 			}
 		}

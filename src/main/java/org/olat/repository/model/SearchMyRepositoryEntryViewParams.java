@@ -47,6 +47,7 @@ public class SearchMyRepositoryEntryViewParams {
 	private List<Long> repoEntryKeys;
 
 	private String idAndRefs;
+	private String idRefsAndTitle;
 	private String author;
 	private String text;
 	
@@ -86,6 +87,14 @@ public class SearchMyRepositoryEntryViewParams {
 
 	public void setIdAndRefs(String idAndRefs) {
 		this.idAndRefs = idAndRefs;
+	}
+
+	public String getIdRefsAndTitle() {
+		return idRefsAndTitle;
+	}
+
+	public void setIdRefsAndTitle(String idRefsAndTitle) {
+		this.idRefsAndTitle = idRefsAndTitle;
 	}
 
 	public String getAuthor() {
