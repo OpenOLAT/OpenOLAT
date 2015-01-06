@@ -116,7 +116,7 @@ public class RatingRenderer extends DefaultComponentRenderer {
 					sb.append(" href=\"javascript:")
 					  .append(FormJSHelper.getXHRFnCallFor(theForm, elementId, 1,
 							  new NameValuePair(VelocityContainer.COMMAND_ID, Integer.toString(i+1))))
-					  .append("\" ");
+					  .append("\"  onclick=\"return o2cl();\" ");
 				}
 
 			} else {
