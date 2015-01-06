@@ -118,6 +118,10 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		adfsOAuth2Endpoint = getStringPropertyValue("adfsOAuth2Endpoint", false);
 	}
 	
+	public List<OAuthSPI> getAllSPIs() {
+		return new ArrayList<>(oauthSPIs);
+	}
+	
 	public List<OAuthSPI> getEnableSPIs() {
 		List<OAuthSPI> enabledSpis = new ArrayList<>();
 		if(oauthSPIs != null) {

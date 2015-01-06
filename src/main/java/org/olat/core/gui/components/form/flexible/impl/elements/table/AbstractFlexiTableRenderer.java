@@ -411,14 +411,14 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append("<li><a href=\"javascript:")
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1,
 					  new NameValuePair("pagesize", Integer.toString(size))))
-			  .append("\">").append(Integer.toString(size)).append("</a></li>");
+			  .append("\"  onclick=\"return o2cl();\">").append(Integer.toString(size)).append("</a></li>");
 		}
 		
 		if(ftE.isShowAllRowsEnabled()) {
 			sb.append("<li><a href=\"javascript:")
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1,
 					  new NameValuePair("pagesize", "all")))
-			  .append("\">").append(translator.translate("show.all")).append("</a></li>");
+			  .append("\" onclick=\"return o2cl();\">").append(translator.translate("show.all")).append("</a></li>");
 		}
 		  
 		sb.append("</ul></div>")

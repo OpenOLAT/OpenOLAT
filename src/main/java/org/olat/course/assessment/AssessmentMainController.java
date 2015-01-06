@@ -26,7 +26,6 @@
 package org.olat.course.assessment;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.admin.user.UserTableDataModel;
@@ -508,10 +508,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		userListCtr.setFilters(nodeFilters, null);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == groupListCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
@@ -622,7 +619,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		} else if(source == certificateWizardCtrl) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				if(userListCtr != null) {
-					Map<Long, CertificateLight> certificates = getCertificates(CourseFactory.loadCourse(ores));
+					ConcurrentMap<Long, CertificateLight> certificates = getCertificates(CourseFactory.loadCourse(ores));
 					((AssessedIdentitiesTableDataModel)userListCtr.getTableDataModel()).setCertificates(certificates);
 					userListCtr.modelChanged();
 				}
@@ -630,9 +627,7 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		}
 	}
 
-	/**
-	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(Event event) {
 		if ((event instanceof AssessmentChangedEvent) &&  event.getCommand().equals(AssessmentChangedEvent.TYPE_SCORE_EVAL_CHANGED)) {
 			AssessmentChangedEvent ace = (AssessmentChangedEvent) event;
@@ -896,13 +891,13 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 			return;
 		}
 		
-		Map<Long, CertificateLight> certificates;
+		ConcurrentMap<Long, CertificateLight> certificates;
 		CourseConfig courseConfig = course.getCourseConfig();
 		boolean showCertificate =  mode == MODE_USERFOCUS && (courseConfig.isAutomaticCertificationEnabled() || courseConfig.isManualCertificationEnabled());
 		if(showCertificate) {
 			certificates = getCertificates(course);
 		} else {
-			certificates = Collections.emptyMap();
+			certificates = new ConcurrentHashMap<>();
 		}
 		
 		// Add the wrapped identities to the table data model
@@ -979,8 +974,8 @@ public class AssessmentMainController extends MainLayoutBasicController implemen
 		setContent(userChoose);
 	}
 	
-	private Map<Long, CertificateLight> getCertificates(ICourse course) {
-		Map<Long, CertificateLight> certificates =  new ConcurrentHashMap<>();
+	private ConcurrentMap<Long, CertificateLight> getCertificates(ICourse course) {
+		ConcurrentMap<Long, CertificateLight> certificates =  new ConcurrentHashMap<>();
 		OLATResource resource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
 		List<CertificateLight> certificateList = certificatesManager.getLastCertificates(resource);
 		for(CertificateLight certificate:certificateList) {
