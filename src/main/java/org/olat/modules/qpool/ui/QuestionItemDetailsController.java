@@ -51,6 +51,7 @@ import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.manager.ExportQItemResource;
+import org.olat.modules.qpool.ui.events.QItemEdited;
 import org.olat.modules.qpool.ui.events.QItemEvent;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
 import org.olat.modules.qpool.ui.metadata.MetadatasController;
@@ -209,6 +210,10 @@ public class QuestionItemDetailsController extends BasicController implements Br
 		} else if(source == editCtrl) {
 			if(event == Event.CHANGED_EVENT) {
 				doContentChanged(ureq);
+			}
+		} else if(source == metadatasCtrl) {
+			if(event instanceof QItemEdited) {
+				fireEvent(ureq, event);
 			}
 		}
 		super.event(ureq, source, event);

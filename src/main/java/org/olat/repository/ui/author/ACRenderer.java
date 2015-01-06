@@ -29,6 +29,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.repository.ui.PriceMethod;
+import org.olat.repository.ui.catalog.CatalogEntryRow;
 
 /**
  * 
@@ -57,21 +58,27 @@ public class ACRenderer implements FlexiCellRenderer {
 			}
 		} else if (val instanceof AuthoringEntryRow) {
 			AuthoringEntryRow entry = (AuthoringEntryRow)val;
-			List<PriceMethod> methods = entry.getAccessTypes();
-			if (methods != null && methods.size() > 0) {
-				sb.append("<ul class='list-inline'>");
-				for (PriceMethod priceMethod : methods) {
-					String price = priceMethod.getPrice();
-					String type = priceMethod.getType();
-					sb.append("<li title=\"").append(priceMethod.getDisplayName()).append("\"><i class='o_icon ").append(type).append(" o_icon-lg'></i>");
-					if(price != null && !price.isEmpty()) {
-						sb.append(" ").append(price);
-					}
-					sb.append("</li>");
-				}
-				sb.append("</ul>");
-			}
+			renderPriceMethods(sb, entry.getAccessTypes());
+		} else if (val instanceof CatalogEntryRow) {
+			CatalogEntryRow entry = (CatalogEntryRow)val;
+			renderPriceMethods(sb, entry.getAccessTypes());
 		}
 		sb.append("</div>");
+	}
+	
+	private void renderPriceMethods(StringOutput sb, List<PriceMethod> methods) {
+		if (methods != null && methods.size() > 0) {
+			sb.append("<ul class='list-inline'>");
+			for (PriceMethod priceMethod : methods) {
+				String price = priceMethod.getPrice();
+				String type = priceMethod.getType();
+				sb.append("<li title=\"").append(priceMethod.getDisplayName()).append("\"><i class='o_icon ").append(type).append(" o_icon-lg'></i>");
+				if(price != null && !price.isEmpty()) {
+					sb.append(" ").append(price);
+				}
+				sb.append("</li>");
+			}
+			sb.append("</ul>");
+		}
 	}
 }

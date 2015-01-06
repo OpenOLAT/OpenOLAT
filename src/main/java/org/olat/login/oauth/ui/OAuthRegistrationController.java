@@ -49,6 +49,7 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.login.oauth.model.OAuthRegistration;
 import org.olat.login.oauth.model.OAuthUser;
 import org.olat.registration.DisclaimerController;
+import org.olat.registration.RegistrationForm2;
 import org.olat.registration.RegistrationManager;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
@@ -83,7 +84,8 @@ public class OAuthRegistrationController extends FormBasicController {
 	
 	public OAuthRegistrationController(UserRequest ureq, WindowControl wControl, OAuthRegistration registration) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class,getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(RegistrationForm2.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USERPROPERTIES_FORM_IDENTIFIER, false);
 		
 		this.registration = registration;

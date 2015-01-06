@@ -34,15 +34,17 @@ import org.olat.search.service.document.RepositoryEntryDocument;
 import org.olat.search.service.indexer.LifeFullIndexer;
 import org.olat.search.service.indexer.LifeIndexer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
+ * 
+ * The life indexer for the repository entry is disabled.
+ * It's not used anymore.
  * 
  * Initial date: 13.03.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Service
+//@Service
 public class RepositoryEntryLifeIndexer implements LifeIndexer {
 	private static final OLog log = Tracing.createLoggerFor(RepositoryEntryLifeIndexer.class);
 	private static final int BATCH_SIZE = 100;

@@ -39,6 +39,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private boolean ownedResourcesOnly;
 	
 	private String idAndRefs;
+	private String idRefsAndTitle;
 	private String author;
 	private String displayname;
 	private String description;
@@ -59,6 +60,14 @@ public class SearchAuthorRepositoryEntryViewParams {
 
 	public void setIdAndRefs(String idAndRefs) {
 		this.idAndRefs = idAndRefs;
+	}
+
+	public String getIdRefsAndTitle() {
+		return idRefsAndTitle;
+	}
+
+	public void setIdRefsAndTitle(String idRefsAndTitle) {
+		this.idRefsAndTitle = idRefsAndTitle;
 	}
 
 	public boolean isOwnedResourcesOnly() {

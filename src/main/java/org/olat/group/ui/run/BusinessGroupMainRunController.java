@@ -254,6 +254,11 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			putInitialPanel(getOnWaitingListMessage(ureq, bGroup));
 			chatAvailable = false;
 			return;
+		} else if(ureq.getUserSession().getRoles().isGuestOnly()) {
+			//not a member
+			putInitialPanel(getNoAccessMessage(ureq, bGroup));
+			chatAvailable = false;
+			return;
 		}
 
 		addLoggingResourceable(LoggingResourceable.wrap(businessGroup));
@@ -340,6 +345,14 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	
 	private Component getOnWaitingListMessage(UserRequest ureq, BusinessGroup group) {
 		VelocityContainer vc = createVelocityContainer("waiting");
+		vc.contextPut("name", group.getName());
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, vc, "grouprun");
+		listenTo(columnLayoutCtr); // cleanup on dispose
+		return columnLayoutCtr.getInitialComponent();
+	}
+	
+	private Component getNoAccessMessage(UserRequest ureq, BusinessGroup group) {
+		VelocityContainer vc = createVelocityContainer("access_denied");
 		vc.contextPut("name", group.getName());
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, vc, "grouprun");
 		listenTo(columnLayoutCtr); // cleanup on dispose

@@ -198,6 +198,10 @@ public abstract class AbstractItemListController extends FormBasicController
 		itemsTable.reset();
 	}
 	
+	public void reloadData() {
+		itemsTable.reloadData();
+	}
+	
 	public QuestionItemsSource getSource() {
 		return itemsSource;
 	}

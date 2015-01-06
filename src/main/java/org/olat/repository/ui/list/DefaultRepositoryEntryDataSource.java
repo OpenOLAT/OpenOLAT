@@ -23,14 +23,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.lucene.queryparser.classic.ParseException;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryEntryMyView;
@@ -47,10 +44,6 @@ import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 import org.olat.resource.accesscontrol.ui.PriceFormat;
-import org.olat.search.QueryException;
-import org.olat.search.ServiceNotAvailableException;
-import org.olat.search.service.searcher.SearchClient;
-import org.olat.search.service.searcher.SearchClientLocal;
 
 /**
  * 
@@ -60,15 +53,12 @@ import org.olat.search.service.searcher.SearchClientLocal;
  */
 public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDelegate<RepositoryEntryRow> {
 	
-	private static final OLog log = Tracing.createLoggerFor(DefaultRepositoryEntryDataSource.class);
-
 	private final RepositoryEntryDataSourceUIFactory uifactory;
 	private final SearchMyRepositoryEntryViewParams searchParams;
 	
 
 	private final ACService acService;
 	private final AccessControlModule acModule;
-	private final SearchClient searchClient;
 	private final RepositoryService repositoryService;
 	private final RepositoryManager repositoryManager;
 	
@@ -81,7 +71,6 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
-		searchClient = CoreSpringFactory.getImpl(SearchClientLocal.class);
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 	}
@@ -132,18 +121,9 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		}
 
 		if(StringHelper.containsNonWhitespace(query)) {
-			try {
-				List<Long> fullTextResults = searchClient.doSearch(query, null, searchParams.getIdentity(), searchParams.getRoles(), 0, 100);
-				if(fullTextResults.isEmpty()) {
-					count = new Integer(0);
-					return new DefaultResultInfos<RepositoryEntryRow>();
-				}
-				searchParams.setRepoEntryKeys(fullTextResults);
-			} catch (ServiceNotAvailableException | ParseException | QueryException e) {
-				log.error("", e);
-			}
+			searchParams.setIdRefsAndTitle(query);
 		} else {
-			searchParams.setRepoEntryKeys(null);
+			searchParams.setIdRefsAndTitle(null);
 		}
 		
 		List<RepositoryEntryMyView> views = repositoryService.searchMyView(searchParams, firstResult, maxResults);

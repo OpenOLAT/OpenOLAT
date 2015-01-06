@@ -19,8 +19,12 @@
  */
 package org.olat.repository.ui.catalog;
 
+import java.util.List;
+
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 
 /**
  * 
@@ -28,7 +32,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CatalogEntryRowModel extends DefaultFlexiTableDataModel<CatalogEntryRow> {
+public class CatalogEntryRowModel extends DefaultFlexiTableDataModel<CatalogEntryRow>
+	implements SortableFlexiTableDataModel<CatalogEntryRow> {
 	
 	public CatalogEntryRowModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
@@ -42,6 +47,11 @@ public class CatalogEntryRowModel extends DefaultFlexiTableDataModel<CatalogEntr
 	@Override
 	public Object getValueAt(int row, int col) {
 		CatalogEntryRow item = getObject(row);
+		return getValueAt(item, col);
+	}
+	
+	@Override
+	public Object getValueAt(CatalogEntryRow item, int col) {
 		switch(Cols.values()[col]) {
 			case key: return item.getKey();
 			case ac: return item;
@@ -62,7 +72,14 @@ public class CatalogEntryRowModel extends DefaultFlexiTableDataModel<CatalogEntr
 		}
 		return null;
 	}
-	
+
+	@Override
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<CatalogEntryRow> views = new CatalogEntryRowSortDelegate(orderBy, this, null).sort();
+			super.setObjects(views);
+		}
+	}
 	
 	public enum Cols {
 		key("table.header.key"),

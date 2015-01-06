@@ -716,7 +716,6 @@ function removeAjaxBusy() {
 		jQuery('#o_body').removeClass('o_ajax_busy');
 		jQuery('#o_ajax_busy_backdrop').remove();
 		jQuery('#o_ajax_busy').modal('hide');
-		console.log("Remove");
 	} catch (e) {
 		if(window.console) console.log(e);
 	}
