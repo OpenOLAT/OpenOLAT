@@ -887,7 +887,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 				  esm.updateUserEfficiencyStatement(userCourseEnv);
 				}
 				
-				if(scoreEvaluation.getPassed() && course.getCourseConfig().isAutomaticCertificationEnabled()) {
+				if(passed != null && passed.booleanValue() && course.getCourseConfig().isAutomaticCertificationEnabled()) {
 					CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
 					if(certificatesManager.isRecertificationAllowed(assessedIdentity, courseEntry)) {
 						CertificateTemplate template = null;
