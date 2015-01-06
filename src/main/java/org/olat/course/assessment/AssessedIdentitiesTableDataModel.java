@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
 import org.olat.core.gui.components.table.BooleanColumnDescriptor;
 import org.olat.core.gui.components.table.ColumnDescriptor;
@@ -82,8 +82,7 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 	public static final String usageIdentifyer = AssessedIdentitiesTableDataModel.class.getCanonicalName();
 	private final Translator translator;
 	
-	private Map<Long, CertificateLight> certificates;
-
+	private ConcurrentMap<Long, CertificateLight> certificates;
 
 	/**
 	 * 
@@ -92,7 +91,7 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 	 * @param locale
 	 * @param isAdministrativeUser
 	 */
-	public AssessedIdentitiesTableDataModel(List<AssessedIdentityWrapper> objects, Map<Long, CertificateLight> certificates,
+	public AssessedIdentitiesTableDataModel(List<AssessedIdentityWrapper> objects, ConcurrentMap<Long, CertificateLight> certificates,
 			AssessableCourseNode courseNode, Locale locale, boolean isAdministrativeUser) {
 		super(objects);
 		this.courseNode = courseNode;		
@@ -143,7 +142,7 @@ public class AssessedIdentitiesTableDataModel extends DefaultTableDataModel<Asse
 		colMapping.add(colCount++, COL_CERTIFICATE);
 	}
 	
-	public void setCertificates(Map<Long, CertificateLight> certificates) {
+	public void setCertificates(ConcurrentMap<Long, CertificateLight> certificates) {
 		this.certificates = certificates;
 	}
 	
