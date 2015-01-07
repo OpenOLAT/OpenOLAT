@@ -19,8 +19,13 @@
 			background-color: $o-im-summary-bg;
 		}
 	}
-	#o_im_status div.o_chelp_wrapper {
-		right: 0.5em;
+	#o_im_status {
+		li > a > span {
+			display: inline;
+		}
+		div.o_chelp_wrapper {
+			right: 0.5em;
+		}
 	}
 	#o_im_message {
 		a:hover,
