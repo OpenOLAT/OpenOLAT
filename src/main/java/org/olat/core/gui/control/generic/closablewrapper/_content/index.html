@@ -1,4 +1,5 @@
-<div class="modal show in $!windowCssClass" id='$r.getId("o_closablewapper_")'><div class="modal-dialog modal-lg"><div class="modal-content">
+<div class="modal show in $!windowCssClass" id='$r.getId("o_closablewapper_")' role="dialog">
+	<div class="modal-backdrop in"></div><div class="modal-dialog modal-lg"><div class="modal-content">
 	<div class="modal-header">
 		#if ($r.available("closeIcon"))
 			$r.render("closeIcon")
@@ -11,13 +12,14 @@
 		#if ($off_chelp_package) $r.contextHelpWithWrapper("$off_chelp_package","$off_chelp_page","$off_chelp_hover") #end	
 		$r.render("guimessage")
 		$r.render("modalContent")
-	</div>	
+	</div>
 </div></div></div>
-<div class="modal-backdrop in"></div>
 ## always show top of modal dialog when on long pages
 <script type="text/javascript">
 /* <![CDATA[ */	
 jQuery(function() {
+	jQuery('#$r.getId("o_closablewapper_") > .modal-backdrop')
+		.css('height', 0).css('height', jQuery('#$r.getId("o_closablewapper_")')[0].scrollHeight);
 	o_scrollToElement('#$r.getId("o_closablewapper_")');
 });
 /* ]]> */
