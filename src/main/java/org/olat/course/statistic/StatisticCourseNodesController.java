@@ -27,6 +27,7 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
@@ -57,7 +58,7 @@ import org.olat.ims.qti.statistics.QTIType;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class StatisticCourseNodesController extends BasicController implements Activateable2 {
+public class StatisticCourseNodesController extends BasicController implements Activateable2, TooledController {
 	private final MenuTree courseTree;
 	private final TooledStackedPanel stackPanel;
 	private final LayoutMain3ColsController layoutCtr;
@@ -98,6 +99,13 @@ public class StatisticCourseNodesController extends BasicController implements A
 		TreeModel tree = courseTree.getTreeModel();
 		if (tree != null && tree.getRootNode().getChildCount() > 0) {
 			doSelectNode(ureq, (TreeNode)tree.getRootNode().getChildAt(0));
+		}
+	}
+	
+	@Override
+	public void initTools() {
+		if(currentCtrl instanceof TooledController) {
+			((TooledController)currentCtrl).initTools();
 		}
 	}
 	
