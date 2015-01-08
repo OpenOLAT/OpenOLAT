@@ -42,7 +42,7 @@ public class CountDownComponent extends AbstractComponent {
 
 	private String i18nKey;
 	private String currentRenderedTime;
-	private final Date date;
+	private Date date;
 	
 	public CountDownComponent(String name, String id, Date date, Translator translator) {
 		super(name, id);
@@ -53,6 +53,10 @@ public class CountDownComponent extends AbstractComponent {
 	
 	public Date getDate() {
 		return date;
+	}
+	
+	public void setDate(Date date) {
+		this.date = date;
 	}
 	
 	public String getCountDown() {

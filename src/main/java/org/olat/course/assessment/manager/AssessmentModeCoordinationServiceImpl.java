@@ -52,6 +52,14 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	private AssessmentModeManager assessmentModeManager;
 	
 	protected void beat() {
+		Date now = now();
+		List<AssessmentMode> currentModes = assessmentModeManager.getAssessmentModes(now);
+		for(AssessmentMode currentMode:currentModes) {
+			sendEvent(currentMode, now);
+		}
+	}
+	
+	private Date now() {
 		Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.MILLISECOND, 0);
 		int second = cal.get(Calendar.SECOND);
@@ -63,19 +71,15 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 			cal.set(Calendar.SECOND, 0);
 		}
 		
-		Date now = cal.getTime();
-		List<AssessmentMode> currentModes = assessmentModeManager.getAssessmentModes(now);
-		for(AssessmentMode currentMode:currentModes) {
-			sendEvent(currentMode, now);
-		}
+		return cal.getTime();
 	}
 	
 	protected AssessmentMode syncManuallySetStatus(AssessmentMode mode) {
-		return sendEvent(mode, new Date());
+		return sendEvent(mode, now());
 	}
 	
 	protected AssessmentMode syncAutomicallySetStatus(AssessmentMode mode) {
-		return sendEvent(mode, new Date());
+		return sendEvent(mode, now());
 	}
 
 	private AssessmentMode sendEvent(AssessmentMode mode, Date now) {
@@ -95,7 +99,7 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 				cal.setTime(mode.getEnd());
 				cal.set(Calendar.SECOND, 0);
 				cal.set(Calendar.MILLISECOND, 0);
-				cal.add(Calendar.MINUTE, -60);
+				cal.add(Calendar.MINUTE, -6);
 				if(now.after(cal.getTime())) {
 					sendEvent(AssessmentModeNotificationEvent.STOP_WARNING, transientMode, null);
 				}

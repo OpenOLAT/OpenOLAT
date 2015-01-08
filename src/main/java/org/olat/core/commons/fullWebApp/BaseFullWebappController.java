@@ -142,8 +142,9 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private GUIMessage guiMessage;
 	private OncePanel guimsgPanel;
 	private Panel cssHolder, guimsgHolder, currentMsgHolder;
-	private VelocityContainer guimsgVc, stickymsgVc, mainVc, navSitesVc, navTabsVc;
-
+	private VelocityContainer guimsgVc, mainVc, navSitesVc, navTabsVc;
+	private StickyMessageComponent stickyMessageCmp;
+	
 	private OLATResourceable lockResource;
 	private TransientAssessmentMode lockMode;
 	private LockStatus lockStatus = LockStatus.notLocked;
@@ -384,8 +385,8 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		mainVc.put("customCssHolder", cssHolder);
 
 		// sticky maintenance message
-		stickymsgVc = createVelocityContainer("stickymsg");
-		mainVc.put("stickymsg", stickymsgVc);
+		stickyMessageCmp = new StickyMessageComponent("stickymsg", screenMode);
+		mainVc.put("stickymsg", stickyMessageCmp);
 		updateStickyMessage();
 		
 		dtabs = new ArrayList<>();
@@ -481,19 +482,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	}
 	
 	private void updateStickyMessage() {
-		setStickyMessage(GlobalStickyMessage.getGlobalStickyMessage(), null);
-	}
-	
-	private void setStickyMessage(String text, Component cmp) {
-		stickymsgVc.contextPut("hasStickyMessage", (text == null && cmp == null ? Boolean.FALSE : Boolean.TRUE));
-		stickymsgVc.contextPut("stickyMessage", text);
-		stickymsgVc.contextPut("screenMode", screenMode);
-		if(cmp != null) {
-			stickymsgVc.contextPut("stickyCmpName", cmp.getComponentName());
-			stickymsgVc.put(cmp.getComponentName(), cmp);
-		} else {
-			stickymsgVc.contextRemove("stickyCmpName");
-		}
+		stickyMessageCmp.setText(GlobalStickyMessage.getGlobalStickyMessage());
 	}
 
 	private void initializeDefaultSite(UserRequest ureq) {
@@ -1251,18 +1240,18 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			switch(cmd) {
 				case AssessmentModeNotificationEvent.LEADTIME:
 					asyncLockResource(event.getAssessementMode());
-					updateStickyMessage();
+					stickyMessageCmp.setDelegateComponent(null);
 					break;
 				case AssessmentModeNotificationEvent.START_ASSESSMENT:
 					asyncLockResource(event.getAssessementMode());
 					break;
 				case AssessmentModeNotificationEvent.STOP_ASSESSMENT:
 					asyncLockResource(event.getAssessementMode());
-					updateStickyMessage();
+					stickyMessageCmp.setDelegateComponent(null);
 					break;
 				case AssessmentModeNotificationEvent.END:
 					asyncUnlockResource(event.getAssessementMode());
-					updateStickyMessage();
+					stickyMessageCmp.setDelegateComponent(null);
 					break;	
 			}
 		}
@@ -1343,9 +1332,14 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private void lockResourceMessage(TransientAssessmentMode mode) {
 		if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
 			Translator trans = Util.createPackageTranslator(AssessmentModeGuardController.class, getLocale());
-			CountDownComponent cmp = new CountDownComponent("stickcountdown", "stickcountdown", mode.getEnd(), trans);
-			cmp.setI18nKey("assessment.countdown");
-			setStickyMessage(null, cmp);
+			if(stickyMessageCmp.getDelegateComponent() instanceof CountDownComponent) {
+				CountDownComponent cmp = (CountDownComponent)stickyMessageCmp.getDelegateComponent();
+				cmp.setDate(mode.getEnd());
+			} else {
+				CountDownComponent cmp = new CountDownComponent("stickcountdown", "stickcountdown", mode.getEnd(), trans);
+				cmp.setI18nKey("assessment.countdown");
+				stickyMessageCmp.setDelegateComponent(cmp);
+			}
 		}
 	}
 	
