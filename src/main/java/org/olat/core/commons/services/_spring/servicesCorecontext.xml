@@ -20,5 +20,18 @@
 	<bean id="imageHelperServiceProvider_java" class="org.olat.core.commons.services.image.spi.ImageHelperImpl" />
 	
 	<bean id="imageHelperServiceProvider_magick" class="org.olat.core.commons.services.image.spi.ImageMagickHelper" />
-
+	
+	<!-- Help -->
+	<bean class="org.olat.core.commons.services.help.HelpUserToolExtension" init-method="initExtensionPoints">
+		<property name="order" value="118" />
+		<property name="navigationKey" value="help" />
+		<property name="translationPackage" value="org.olat.gui.control" />
+		<property name="i18nActionKey" value="topnav.help"/>
+		<property name="i18nDescriptionKey" value="topnav.help.alt"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.home.HomeMainController</value>
+			</list>
+		</property>
+	</bean>
 </beans>

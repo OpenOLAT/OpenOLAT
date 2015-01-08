@@ -396,19 +396,29 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		subjectElement.clearError();
 		if (!StringHelper.containsNonWhitespace(subject)) {
 			subjectElement.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		} else if(subject != null && subject.length() > subjectElement.getMaxLength()) {
+			subjectElement.setErrorKey("text.element.error.notlongerthan",
+					new String[]{ Integer.toString(subjectElement.getMaxLength()) });
+			allOk &= false;
 		}
 
 		String body = bodyElement.getValue();
 		bodyElement.clearError();
 		if (!StringHelper.containsNonWhitespace(body)) {
 			bodyElement.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
 		}
 
 		List<Identity> invalidTos = getInvalidToAddressesFromTextBoxList();
+		userListBox.clearError();
 		if (invalidTos.size() > 0) {
 			String[] invalidTosArray = new String[invalidTos.size()];
-			flc.setErrorKey("mailhelper.error.addressinvalid", invalidTos.toArray(invalidTosArray));
-			allOk = false;
+			userListBox.setErrorKey("mailhelper.error.addressinvalid", invalidTos.toArray(invalidTosArray));
+			allOk &= false;
+		} else if(toValues == null || toValues.isEmpty()) {
+			userListBox.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
 		}
 
 		return allOk & super.validateFormLogic(ureq);

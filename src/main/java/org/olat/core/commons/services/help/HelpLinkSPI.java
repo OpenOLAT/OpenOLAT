@@ -17,51 +17,19 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.gui.control;
-
-import java.util.Locale;
+package org.olat.core.commons.services.help;
 
 import org.olat.admin.user.tools.UserTool;
-import org.olat.admin.user.tools.UserToolCategory;
-import org.olat.admin.user.tools.UserToolExtension;
-import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Roles;
 
 /**
  * 
- * Initial date: 29.10.2014<br>
+ * Initial date: 07.01.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class HelpUserToolExtension extends UserToolExtension {
-
-	@Override
-	public String getShortCutCssId() {
-		return "o_navbar_help";
-	}
-
-	@Override
-	public String getShortCutCssClass() {
-		return null;
-	}
+public interface HelpLinkSPI {
 	
-	@Override
-	public UserToolCategory getUserToolCategory() {
-		return UserToolCategory.system;
-	}
+	public UserTool getHelp(WindowControl wControl);
 
-	@Override
-	public String getUniqueExtensionID() {
-		return "org.olat.home.HomeMainController:org.olat.gui.control.HelpUserToolExtension";
-	}
-
-	@Override
-	public UserTool createUserTool(UserRequest ureq, WindowControl wControl, Locale locale) {
-		Roles roles = ureq.getUserSession().getRoles();
-		if(roles.isInvitee()) {
-			return null;
-		}
-		return new HelpUserTool(wControl);
-	}
 }

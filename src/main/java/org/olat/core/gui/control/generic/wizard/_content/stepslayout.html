@@ -1,4 +1,4 @@
-<div class="o_wizard modal show in"><div class="modal-dialog modal-lg o_modal_fullwidth #if($elementCssClass) $elementCssClass #end"><div class="modal-content">
+<div class="o_wizard modal show in"><div class="modal-backdrop in"></div><div class="modal-dialog modal-lg o_modal_fullwidth #if($elementCssClass) $elementCssClass #end"><div class="modal-content">
 	<div class="modal-header">
 		<div class="pull-right">$r.render("closeIcon")</div>
 		<h4>$wizardTitle</h4>
@@ -33,11 +33,13 @@
 		$r.render("finish")
 		$r.render("cancel")
 	</div>
-</div></div></div><div class="modal-backdrop in"></div>
+</div></div></div>
 ## always show top of modal dialog when on long pages
 <script type="text/javascript">
 /* <![CDATA[ */	
 jQuery(function() {
+	jQuery('.o_wizard.modal.show.in > .modal-backdrop')
+		.css('height', 0).css('height', jQuery('.o_wizard.modal.show.in')[0].scrollHeight);
 	o_scrollToElement('.o_wizard.modal.show.in');
 });
 /* ]]> */

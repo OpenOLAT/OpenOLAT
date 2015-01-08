@@ -80,7 +80,7 @@ body .progress {
 }
 
 /* make our statically created popup and our spinner works with Bootstrap 3.3.1 */
-.o_layered_panel .modal-backdrop, #o_ajax_busy_backdrop  {
+#o_ajax_busy_backdrop  {
 	bottom: 0;
 	z-index:1020;
 }

@@ -234,7 +234,9 @@ public class EPMapViewController extends BasicController implements Activateable
 		}
 		initForm(ureq);
 		editMode = EditMode.view;
-		editButton.setCustomDisplayText(translate("map.editButton.on"));
+		if(editButton != null) {
+			editButton.setCustomDisplayText(translate("map.editButton.on"));
+		}
 		if(currentEditedStructure != null && pageCtrl != null) {
 			EPPage page = getSelectedPage(currentEditedStructure);
 			if(page != null) {
