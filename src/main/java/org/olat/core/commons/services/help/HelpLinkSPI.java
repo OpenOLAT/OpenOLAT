@@ -20,6 +20,8 @@
 package org.olat.core.commons.services.help;
 
 import org.olat.admin.user.tools.UserTool;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.WindowControl;
 
 /**
@@ -30,6 +32,7 @@ import org.olat.core.gui.control.WindowControl;
  */
 public interface HelpLinkSPI {
 	
-	public UserTool getHelp(WindowControl wControl);
+	public UserTool getHelpUserTool(WindowControl wControl);
 
+	public Component getHelpPageLink(UserRequest ureq, String title, String tooltip, String iconCSS, String elementCSS, String page);
 }

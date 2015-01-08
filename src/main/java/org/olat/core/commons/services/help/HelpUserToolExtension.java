@@ -66,7 +66,7 @@ public class HelpUserToolExtension extends UserToolExtension {
 		
 		HelpModule helpModule = CoreSpringFactory.getImpl(HelpModule.class);
 		HelpLinkSPI provider = helpModule.getHelpProvider();
-		return provider.getHelp(wControl);
+		return provider.getHelpUserTool(wControl);
 	}
 
 	@Override

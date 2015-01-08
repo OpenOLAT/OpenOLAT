@@ -93,7 +93,7 @@ a.o_disabled.navbar-text {
 		}	
 	}
 	
-	.o_navbar_tools li>a>span {
+	.o_navbar_tools>#o_navbar_tools_permanent>li>a>span {
 		display: none;
 	}
 	
@@ -109,6 +109,9 @@ a.o_disabled.navbar-text {
 		#o_navbar_my_menu {
 			a {
 				padding-left: floor($grid-gutter-width / 2) + 30px;
+			}
+			.dropdown-menu a {
+				padding-left: floor($grid-gutter-width / 2);
 			}
 			.o_portrait {
 				position: absolute;
