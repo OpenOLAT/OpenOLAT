@@ -131,6 +131,7 @@ public interface AssessmentMode extends ModifiedInfo, CreateInfo {
 		none,
 		leadtime,
 		assessment,
-		followup
+		followup,
+		end
 	}
 }

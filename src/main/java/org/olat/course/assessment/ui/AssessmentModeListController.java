@@ -28,18 +28,25 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.AssessmentModeNotificationEvent;
+import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.course.assessment.ui.AssessmentModeListModel.Cols;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentModeListController extends FormBasicController {
+public class AssessmentModeListController extends FormBasicController implements GenericEventListener {
 	
 	private FormLink addLink, deleteLink;
 	private AssessmentModeListModel model;
@@ -62,6 +69,8 @@ public class AssessmentModeListController extends FormBasicController {
 	
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
+	@Autowired
+	private AssessmentModeCoordinationService assessmentModeCoordinationService;
 	
 	public AssessmentModeListController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel toolbarPanel, RepositoryEntry entry) {
@@ -71,11 +80,16 @@ public class AssessmentModeListController extends FormBasicController {
 		
 		initForm(ureq);
 		loadModel();
+		
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.registerFor(this, getIdentity(), AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 	}
 	
 	@Override
 	protected void doDispose() {
-		//
+		//deregister for assessment mode
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.deregisterFor(this, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 	}
 
 	@Override
@@ -88,13 +102,21 @@ public class AssessmentModeListController extends FormBasicController {
 		
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status.i18nKey(), Cols.status.ordinal(),
+				new ModeStatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18nKey(), Cols.name.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.begin.i18nKey(), Cols.begin.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.end.i18nKey(), Cols.end.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.leadTime.i18nKey(), Cols.leadTime.ordinal(),
-				new LeadTimeCellRenderer(getTranslator())));
+				new TimeCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.followupTime.i18nKey(), Cols.followupTime.ordinal(),
+				new TimeCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.target.i18nKey(), Cols.target.ordinal(),
 				new TargetAudienceCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("start", Cols.manual.ordinal(), "start",
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("start"), "start"), null)));
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("stop", Cols.manual.ordinal(), "stop",
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("stop"), "stop"), null)));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", translate("edit"), "edit"));
 		
 		model = new AssessmentModeListModel(columnsModel);
@@ -105,6 +127,18 @@ public class AssessmentModeListController extends FormBasicController {
 		List<AssessmentMode> modes = assessmentModeMgr.getAssessmentModeFor(entry);
 		model.setObjects(modes);
 		tableEl.reloadData();
+	}
+
+	@Override
+	public void event(Event event) {
+		 if (event instanceof AssessmentModeNotificationEvent) {
+			 AssessmentModeNotificationEvent amne = (AssessmentModeNotificationEvent)event;
+			 TransientAssessmentMode mode = amne.getAssessementMode();
+			 if(mode.getRepositoryEntryKey().equals(entry.getKey())
+					 && model.updateModeStatus(amne.getAssessementMode())) {
+				 tableEl.getComponent().setDirty(true);
+			 }
+		}
 	}
 
 	@Override
@@ -131,6 +165,10 @@ public class AssessmentModeListController extends FormBasicController {
 				AssessmentMode row = model.getObject(se.getIndex());
 				if("edit".equals(cmd)) {
 					doEdit(ureq, row);
+				} else if("start".equals(cmd)) {
+					doStart(ureq, row);
+				} else if("stop".equals(cmd)) {
+					doStop(ureq, row);
 				}
 			}
 		}
@@ -141,7 +179,7 @@ public class AssessmentModeListController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-	
+
 	private void doAdd(UserRequest ureq) {
 		removeAsListenerAndDispose(editCtrl);
 		AssessmentMode newMode = assessmentModeMgr.createAssessmentMode(entry);
@@ -155,5 +193,13 @@ public class AssessmentModeListController extends FormBasicController {
 		editCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry.getOlatResource(), mode);
 		listenTo(editCtrl);
 		toolbarPanel.pushController(translate("new.mode"), editCtrl);
+	}
+
+	private void doStart(UserRequest ureq, AssessmentMode mode) {
+		assessmentModeCoordinationService.startAssessment(mode);
+	}
+	
+	private void doStop(UserRequest ureq, AssessmentMode mode) {
+		assessmentModeCoordinationService.stopAssessment(mode);
 	}
 }

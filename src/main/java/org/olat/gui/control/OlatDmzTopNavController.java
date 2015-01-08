@@ -87,6 +87,11 @@ public class OlatDmzTopNavController extends BasicController implements TopNavCo
 	}
 
 	@Override
+	public void unlockResource() {
+		//
+	}
+
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == impressumLink) {
 			ControllerCreator impressumControllerCreator = new ControllerCreator() {

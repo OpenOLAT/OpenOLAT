@@ -40,7 +40,11 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
+import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -50,23 +54,67 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentModeUserConfirmationController extends BasicController {
+public class AssessmentModeGuardController extends BasicController implements GenericEventListener {
 
+	private Link button;
 	private final VelocityContainer mainVC;
 	private final CloseableModalController cmc;
 	
 	private final String address;
 	
+	private boolean pushUpdate = false;
+	private List<TransientAssessmentMode> modes;
+	
 	@Autowired
 	private AssessmentModeManager assessmentmodeMgr;
 	
-	public AssessmentModeUserConfirmationController(UserRequest ureq, WindowControl wControl, List<TransientAssessmentMode> modes) {
+	public AssessmentModeGuardController(UserRequest ureq, WindowControl wControl, List<TransientAssessmentMode> modes) {
 		super(ureq, wControl);
 		putInitialPanel(new Panel("assessment-mode-chooser"));
 
+		this.modes = modes;
 		address = ureq.getHttpReq().getRemoteAddr();
 		
 		mainVC = createVelocityContainer("choose_mode");
+		syncAssessmentModes(ureq);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), mainVC, true, translate("current.mode"), false);	
+		cmc.activate();
+		listenTo(cmc);
+		
+		//register for assessment mode
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.registerFor(this, getIdentity(), AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
+	}
+	
+	public void deactivate() {
+		try {
+			cmc.deactivate();
+		} catch (Exception e) {
+			logWarn("", e);
+		}
+	}
+	
+	@Override
+	protected void doDispose() {
+		//deregister for assessment mode
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.deregisterFor(this, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
+	}
+	
+	public boolean updateAssessmentMode(UserRequest ureq) {
+		boolean f = false;
+		if(pushUpdate) {
+			syncAssessmentModes(ureq);
+			f = true;
+			pushUpdate = false;
+		} else {
+			f = false;
+		}
+		return f;
+	}
+	
+	private void syncAssessmentModes(UserRequest ureq) {
 		List<Mode> modeWrappers = new ArrayList<Mode>();
 		for(TransientAssessmentMode mode:modes) {
 			Mode wrapper = initAssessmentMode(ureq, mode);
@@ -75,33 +123,26 @@ public class AssessmentModeUserConfirmationController extends BasicController {
 			}
 		}
 		mainVC.contextPut("modeWrappers", modeWrappers);
-
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), mainVC, true, translate("current.mode"), false);	
-		cmc.activate();
-		listenTo(cmc);
 	}
 	
 	private Mode initAssessmentMode(UserRequest ureq, TransientAssessmentMode mode) {
 		Date now = new Date();
-		
-		Status state = null;
-		
+
 		Date beginWithLeadTime = mode.getBeginWithLeadTime();
-		Date begin = mode.getBegin();
-		Date end = mode.getEnd();
-		
-		if(begin.after(now)) {
+		Date endWithLeadTime = mode.getEndWithFollowupTime();
+		if(beginWithLeadTime.after(now)) {
 			return null;
-		} else if(beginWithLeadTime.before(now) && begin.after(now)) {
-			state = Status.wait;
-		} else if(begin.before(now) && end.after(now)) {
-			state = Status.allowed;
-		} else if(end.before(now)) {
+		} else if(endWithLeadTime.before(now)) {
+			return null;
+		} else if(Status.end == mode.getStatus()) {
 			return null;
 		}
+		
+		String state;
+		Date begin = mode.getBegin();
+		Date end = mode.getEnd();
 
 		StringBuilder sb = new StringBuilder();
-
 		boolean allowed = true;
 		if(mode.getIpList() != null) {
 			boolean ipInRange = assessmentmodeMgr.isIpAllowed(mode.getIpList(), address);
@@ -119,23 +160,68 @@ public class AssessmentModeUserConfirmationController extends BasicController {
 			allowed &= safeExamCheck;
 		}
 
-		Link button = null;
 		if(allowed) {
 			String name = "go-" + CodeHelper.getRAMUniqueID();
-			button = LinkFactory.createCustomLink(name, "go", "current.mode.start", Link.BUTTON, mainVC, this);
-			button.setCustomEnabledLinkCSS("btn btn-primary");
-			button.setUserObject(mode);
-			button.setEnabled(state == Status.allowed);	
+			if(button == null) {
+				button = LinkFactory.createCustomLink(name, "go", "current.mode.start", Link.BUTTON, mainVC, this);
+				button.setUserObject(mode);
+			}
+
+			if(beginWithLeadTime.compareTo(now) <= 0 && begin.compareTo(now) > 0) {
+				state = Status.leadtime.name();
+				button.setEnabled(false);
+				button.setVisible(true);
+			} else if(begin.compareTo(now) <= 0 && end.compareTo(now) > 0) {
+				state = Status.assessment.name();
+				button.setCustomEnabledLinkCSS("btn btn-primary");
+				button.setEnabled(true);
+				button.setVisible(true);
+			} else if(end.compareTo(now) <= 0 && endWithLeadTime.compareTo(now) >= 0) {
+				state = Status.followup.name();
+				button.setEnabled(false);
+				button.setVisible(false);
+			} else {
+				state = "error";
+				button.setEnabled(false);
+				button.setVisible(false);
+			}
 		} else {
-			state = Status.refused;
+			state = "refused";
 		}
 		
-		return new Mode(button, state.name(), sb.toString(), mode, getLocale());
+		return new Mode(button, state, sb.toString(), mode, getLocale());
+	}
+
+	@Override
+	public void event(Event event) {
+		 if (event instanceof AssessmentModeNotificationEvent) {
+			processAssessmentModeNotificationEvent((AssessmentModeNotificationEvent)event);
+		}
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
+	private void processAssessmentModeNotificationEvent(AssessmentModeNotificationEvent event) {
+		if(getIdentity() == null || !event.getAssessedIdentityKeys().contains(getIdentity().getKey())) {
+			return;//not for me
+		}
+		
+		String cmd = event.getCommand();
+		if(AssessmentModeNotificationEvent.LEADTIME.equals(cmd)
+				|| AssessmentModeNotificationEvent.START_ASSESSMENT.equals(cmd)
+				|| AssessmentModeNotificationEvent.STOP_ASSESSMENT.equals(cmd)) {
+			TransientAssessmentMode mode = event.getAssessementMode();
+			
+
+			List<TransientAssessmentMode> updatedModes = new ArrayList<TransientAssessmentMode>();
+			for(TransientAssessmentMode currentMode:modes) {
+				if(currentMode.getModeKey().equals(mode.getModeKey())) {
+					updatedModes.add(mode);
+				} else {
+					updatedModes.add(currentMode);
+				}
+			}
+			
+			pushUpdate = true;
+		}
 	}
 
 	@Override
@@ -149,7 +235,7 @@ public class AssessmentModeUserConfirmationController extends BasicController {
 	}
 	
 	/**
-	 * Remove thie list of assessment modes and lock the chief controller.
+	 * Remove the list of assessment modes and lock the chief controller.
 	 * 
 	 * 
 	 * @param ureq
@@ -169,43 +255,79 @@ public class AssessmentModeUserConfirmationController extends BasicController {
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
-	public static enum Status {
-		refused,
-		allowed,
-		wait,
-		closed
-	}
-	
 	public static final class Mode {
 
 		private String status;
 		private String errors;
-		private final Locale locale;
 		private final Link goButton;
-		private final TransientAssessmentMode mode;
+		
+		private String name;
+		private String displayName;
+		private String description;
+		private String safeExamBrowserHint;
+		
+		private String begin;
+		private String end;
+		private String leadTime;
+		private String followupTime;
 		
 		public Mode(Link goButton, String status, String errors, TransientAssessmentMode mode, Locale locale) {
 			this.goButton = goButton;
-			this.mode = mode;
 			this.errors = errors;
 			this.status = status;
-			this.locale = locale;
+			
+			name = mode.getName();
+			displayName = mode.getDisplayName();
+			description = mode.getDescription();
+			safeExamBrowserHint = mode.getSafeExamBrowserHint();
+			
+			Formatter f = Formatter.getInstance(locale);
+			begin = f.formatDateAndTime(mode.getBegin());
+			end = f.formatDateAndTime(mode.getEnd());
+			
+			if(mode.getFollowupTime() > 0) {
+				followupTime = Integer.toString(mode.getFollowupTime());
+			} else {
+				followupTime = null;
+			}
+			
+			if(mode.getLeadTime() > 0) {
+				leadTime = Integer.toString(mode.getLeadTime());
+			} else {
+				leadTime = null;
+			}
 		}
 		
 		public String getName() {
-			return mode.getName();
+			return name;
 		}
 		
 		public String getDescription() {
-			return mode.getDescription();
+			return description;
 		}
 		
 		public String getSafeExamBrowserHint() {
-			return mode.getSafeExamBrowserHint();
+			return safeExamBrowserHint;
 		}
 		
 		public String getDisplayName() {
-			return mode.getDisplayName();
+			return displayName;
+		}
+		
+		public String getBegin() {
+			return begin;
+		}
+		
+		public String getEnd() {
+			return end;
+		}
+		
+		public String getLeadTime() {
+			return leadTime;
+		}
+		
+		public String getFollowupTime() {
+			return followupTime;
 		}
 		
 		public String getStatus() {
@@ -224,28 +346,8 @@ public class AssessmentModeUserConfirmationController extends BasicController {
 			this.errors = errors;
 		}
 
-		public String getBegin() {
-			return Formatter.getInstance(locale).formatDateAndTime(mode.getBegin());
-		}
-		
-		public String getEnd() {
-			return Formatter.getInstance(locale).formatDateAndTime(mode.getEnd());
-		}
-		
-		public String getLeadTime() {
-			String lt = "";
-			if(mode.getLeadTime() > 0) {
-				lt = Integer.toString(mode.getLeadTime());
-			}
-			return lt;
-		}
-
 		public String getButtonName() {
 			return goButton.getComponentName();
-		}
-
-		public TransientAssessmentMode getMode() {
-			return mode;
 		}
 	}
 }

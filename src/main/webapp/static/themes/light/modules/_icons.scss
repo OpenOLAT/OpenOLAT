@@ -335,6 +335,12 @@ $fa-css-prefix: "o_icon" !default;
 .o_mi_qtifib:before { content: $fa-var-ellipsis-h; }
 .o_mi_qtiessay:before { content: $fa-var-align-left; }
 
+.o_as_mode_none { }
+.o_as_mode_leadtime:before { content: $fa-var-clock-o; }
+.o_as_mode_assessment:before { content: $fa-var-play; }
+.o_as_mode_followup:before { content: $fa-var-ban; }
+.o_as_mode_closed:before { content: '-'; }
+
 /* coaching */
 .o_black_led:before { content: $fa-var-circle; color: $brand-primary; }
 .o_green_led:before { content: $fa-var-circle; color: $brand-success; }

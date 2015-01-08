@@ -5,16 +5,22 @@
 		#if(!$mode.leadTime.empty)
 			<br/><em>$r.translate("current.mode.leadtime", $mode.leadTime)</em>
 		#end
+		#if(!$mode.followupTime.empty)
+			<br/><em>$r.translate("current.mode.followuptime", $mode.followupTime)</em>
+		#end
 	</p>
 	#if($mode.description && !$mode.description.empty)
 		<p>$mode.description</p>
 	#end
-	#if($mode.safeExamBrowserHint && !$mode.safeExamBrowserHint.empty)
-		<div class="o_info">$mode.safeExamBrowserHint</div>
-	#end
-	#if($mode.status == "allowed" || $mode.status == "wait")
+	
+	#if($mode.status == "assessment" || $mode.status == "leadtime")
+		#if($mode.safeExamBrowserHint && !$mode.safeExamBrowserHint.empty)
+			<div class="o_info">$mode.safeExamBrowserHint</div>
+		#end
 		<div class="o_button_group">$r.render($mode.buttonName)</div>
+	#elseif($mode.status == "followup")
+		<div class="o_info">$r.translate("current.mode.followuptime.info")</div>
 	#else
-		<div class="o_error"> err $mode.errors</div>
+		<div class="o_error">$mode.errors</div>
 	#end
 #end

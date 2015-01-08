@@ -19,18 +19,8 @@
  */
 package org.olat.course.assessment.manager;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.course.assessment.AssessmentMode;
-import org.olat.course.assessment.AssessmentModeManager;
-import org.olat.course.assessment.AssessmentModeNotificationEvent;
-import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -45,33 +35,6 @@ public class AssessmentModeNotificationJob extends JobWithDB {
 	@Override
 	public void executeWithDB(JobExecutionContext context)
 	throws JobExecutionException {
-		AssessmentModeManager assessmentModeManager = CoreSpringFactory.getImpl(AssessmentModeManager.class);
-		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.MILLISECOND, 0);
-		int second = cal.get(Calendar.SECOND);
-		if(second > 30) {
-			//round to the next minute
-			cal.set(Calendar.SECOND, 0);
-			cal.add(Calendar.MINUTE, 1);
-		} else {
-			cal.set(Calendar.SECOND, 0);
-		}
-		
-		Date now = cal.getTime();
-		List<AssessmentMode> currentModes = assessmentModeManager.getAssessmentModes(now);
-		for(AssessmentMode currentMode:currentModes) {
-			Set<Long> assessedIdentityKeys = assessmentModeManager.getAssessedIdentityKeys(currentMode);
-			TransientAssessmentMode transientMode = new TransientAssessmentMode(currentMode);
-			if(currentMode.getBeginWithLeadTime().compareTo(now) <= 0 && currentMode.getBegin().compareTo(now) >= 0) {
-				sendEvent(AssessmentModeNotificationEvent.PRE_LAUNCH, transientMode, assessedIdentityKeys);
-			}
-
-		}
-	}
-	
-	private void sendEvent(String cmd, TransientAssessmentMode mode, Set<Long> assessedIdentityKeys) {
-		AssessmentModeNotificationEvent event = new AssessmentModeNotificationEvent(cmd, mode, assessedIdentityKeys);
-		CoordinatorManager.getInstance().getCoordinator().getEventBus()
-			.fireEventToListenersOf(event, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
+		CoreSpringFactory.getImpl(AssessmentModeCoordinationServiceImpl.class).beat();
 	}
 }

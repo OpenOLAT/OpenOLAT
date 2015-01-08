@@ -96,6 +96,11 @@ public class ContextHelpTopNavController extends FormBasicController implements 
 	public void lockResource(OLATResourceable resource) {
 		//
 	}
+	
+	@Override
+	public void unlockResource() {
+		//
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

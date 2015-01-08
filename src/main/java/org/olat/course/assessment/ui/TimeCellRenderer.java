@@ -32,11 +32,11 @@ import org.olat.core.gui.translator.Translator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LeadTimeCellRenderer implements FlexiCellRenderer {
+public class TimeCellRenderer implements FlexiCellRenderer {
 	
 	private final Translator translator;
 	
-	public LeadTimeCellRenderer(Translator translator) {
+	public TimeCellRenderer(Translator translator) {
 		this.translator = translator;
 	}
 
@@ -47,7 +47,7 @@ public class LeadTimeCellRenderer implements FlexiCellRenderer {
 		if(cellValue instanceof Integer) {
 			int leadTime = ((Integer)cellValue).intValue();
 			if(leadTime > 0) {
-				target.append(translator.translate("leadTime.formatted", new String[]{ Integer.toString(leadTime) }));
+				target.append(translator.translate("time.formatted", new String[]{ Integer.toString(leadTime) }));
 			}
 		}
 	}

@@ -82,32 +82,33 @@ public abstract class DefaultChiefController extends DefaultController implement
 	@Override
 	public OLATResourceable getLockResource() {
 		return null;
-	} 
-	
+	}
+
 	@Override
 	public void lockResource(OLATResourceable resource) {
 		//
 	}
+	
+	@Override
+	public void unlockResource() {
+		//
+	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public abstract void event(UserRequest ureq, Component source, Event event);
 
-	/**
-	 * @see org.olat.core.gui.control.Controller#addControllerListener(org.olat.core.gui.control.ControllerEventListener)
-	 */
+
+	@Override
 	public void addControllerListener(ControllerEventListener el) {
 		throw new AssertException("cannot listen to a chiefcontroller");
 	}
 
+	@Override
 	protected void setInitialComponent(Component initialComponent) {
 		throw new AssertException("please use getWindow().setContentPane() instead!");
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.Controller#getInitialComponent()
-	 */
+	@Override
 	public Component getInitialComponent() {
 		throw new AssertException("please use getWindow().getContentPane() instead!");
 	}
@@ -116,6 +117,7 @@ public abstract class DefaultChiefController extends DefaultController implement
 	 * overrides the method in DefaultController since here we need the original WindowControl
 	 * @see org.olat.core.gui.control.ChiefController#getWindowControl()
 	 */
+	@Override
 	public WindowControl getWindowControl() {
 		return windowControl;
 	}

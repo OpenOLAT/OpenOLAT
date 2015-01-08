@@ -169,7 +169,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		  .append("       (mode.applySettingsForCoach=true and membership.role='").append(GroupRoles.coach.name()).append("'))")
 		  .append("  ))) or (mode.targetAudienceString in ('").append(AssessmentMode.Target.courseAndGroups.name()).append("','").append(AssessmentMode.Target.course.name()).append("')")
 		  .append("   and exists (select rel from repoentrytogroup as rel,  bgroupmember as membership ")
-		  .append("     where mode.repositoryEntry=rel.entry and membership.group=rel.group and membership.identity.key=:identityKey")
+		  .append("     where mode.repositoryEntry=rel.entry and membership.group=rel.group and rel.defaultGroup=true and membership.identity.key=:identityKey")
 		  .append("     and (membership.role='").append(GroupRoles.participant.name()).append("' or ")
 		  .append("       (mode.applySettingsForCoach=true and membership.role='").append(GroupRoles.coach.name()).append("'))")
 		  .append("  ))")
@@ -235,8 +235,15 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.MILLISECOND, 0);
 		cal.set(Calendar.SECOND, 0);
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select mode from courseassessmentmode mode where ")
+		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now)")
+		  .append(" or mode.statusString in ('").append(Status.leadtime.name()).append("','")
+		  .append(Status.assessment.name()).append("','").append(Status.followup.name()).append("')");
+
 		return dbInstance.getCurrentEntityManager()
-				.createNamedQuery("currentAssessmentModes", AssessmentMode.class)
+				.createQuery(sb.toString(), AssessmentMode.class)
 				.setParameter("now", now)
 				.getResultList();
 	}

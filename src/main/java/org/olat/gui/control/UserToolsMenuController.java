@@ -126,6 +126,11 @@ public class UserToolsMenuController extends BasicController implements TopNavCo
 	}
 
 	@Override
+	public void unlockResource() {
+		menuVC.contextPut("locked", Boolean.FALSE);	
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == menuVC) {
 			String command = event.getCommand();

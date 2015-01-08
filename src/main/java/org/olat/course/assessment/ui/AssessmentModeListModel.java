@@ -19,9 +19,12 @@
  */
 package org.olat.course.assessment.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.model.TransientAssessmentMode;
 
 /**
  * 
@@ -44,22 +47,43 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 	public Object getValueAt(int row, int col) {
 		AssessmentMode mode = getObject(row);
 		switch(Cols.values()[col]) {
+			case status: return mode.getStatus();
 			case name: return mode.getName();
 			case begin: return mode.getBegin();
 			case end: return mode.getEnd();
 			case leadTime: return mode.getLeadTime();
+			case followupTime: return mode.getFollowupTime();
 			case target: return mode.getTargetAudience();
+			case manual: return mode.isManualBeginEnd();
 		}
 		return null;
 	}
 	
-	public enum Cols {
+	public boolean updateModeStatus(TransientAssessmentMode modeToUpdate) {
+		boolean updated = false;
 		
+		List<AssessmentMode> modes = getObjects();
+		for(AssessmentMode mode:modes) {
+			if(mode.getKey().equals(modeToUpdate.getModeKey())) {
+				if(mode.getStatus() != modeToUpdate.getStatus()) {
+					mode.setStatus(modeToUpdate.getStatus());
+					updated = true;
+				}
+			}
+		}
+		
+		return updated;
+	}
+	
+	public enum Cols {
+		status("table.header.status"),
 		name("table.header.name"),
 		begin("table.header.begin"),
 		end("table.header.end"),
 		leadTime("table.header.leadTime"),
-		target("table.header.target");
+		followupTime("table.header.followupTime"),
+		target("table.header.target"),
+		manual("");
 		
 		private final String i18nKey;
 		

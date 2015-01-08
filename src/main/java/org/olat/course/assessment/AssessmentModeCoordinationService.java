@@ -17,21 +17,18 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.fullWebApp;
-
-import org.olat.core.gui.control.Controller;
-import org.olat.core.id.OLATResourceable;
+package org.olat.course.assessment;
 
 /**
  * 
- * Initial date: 18.12.2014<br>
+ * Initial date: 06.01.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface TopNavController extends Controller {
+public interface AssessmentModeCoordinationService {
 	
-	public void lockResource(OLATResourceable resource);
+	public AssessmentMode startAssessment(AssessmentMode assessmentMode);
 	
-	public void unlockResource();
+	public AssessmentMode stopAssessment(AssessmentMode assessmentMode);
 
 }

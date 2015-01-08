@@ -34,10 +34,11 @@ import org.olat.course.assessment.model.TransientAssessmentMode;
  */
 public class AssessmentModeNotificationEvent extends MultiUserEvent  {
 	
-	public static final String PRE_LAUNCH = "assessment-mode-pre-launch-notification";
-	public static final String LAUNCH = "assessment-mode-launch-notification";
-	public static final String WARNING_STOP = "assessment-mode-warning-stop-notification";
-	public static final String STOP = "assessment-mode-stop-notification";
+	public static final String LEADTIME = "assessment-mode-leadtime-notification";
+	public static final String START_ASSESSMENT = "assessment-mode-start-assessment-notification";
+	public static final String STOP_WARNING = "assessment-mode-warning-stop-notification";
+	public static final String STOP_ASSESSMENT = "assessment-mode-stop-assessment-notification";
+	public static final String END = "assessment-mode-end-notification";
 	
 	public static final OLATResourceable ASSESSMENT_MODE_NOTIFICATION = OresHelper.createOLATResourceableType("assessment-mode-notification");
 

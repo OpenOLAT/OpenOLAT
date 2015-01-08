@@ -68,6 +68,8 @@ public interface ChiefController extends Controller {
 	
 	public void lockResource(OLATResourceable resource);
 	
+	public void unlockResource();
+	
 	public OLATResourceable getLockResource();
 	
 	/**

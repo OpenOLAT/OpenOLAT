@@ -27,6 +27,7 @@ import java.util.List;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentMode.Status;
 
 /**
  * 
@@ -47,8 +48,14 @@ public class TransientAssessmentMode implements Serializable {
 	private Date begin;
 	private Date beginWithLeadTime;
 	private Date end;
+	private Date endWithFollowupTime;
 	private int leadTime;
+	private int followupTime;
 	private String startElementKey;
+	
+	private boolean manual;
+	
+	private Status status;
 	
 	private String ipList;
 	private String safeExamBrowserKey;
@@ -65,8 +72,15 @@ public class TransientAssessmentMode implements Serializable {
 		begin = mode.getBegin();
 		beginWithLeadTime = mode.getBeginWithLeadTime();
 		end = mode.getEnd();
+		endWithFollowupTime = mode.getEndWithFollowupTime();
+		
 		leadTime = mode.getLeadTime();
+		followupTime = mode.getFollowupTime();
 		startElementKey = mode.getStartElement();
+		
+		manual = mode.isManualBeginEnd();
+		
+		status = mode.getStatus();
 
 		if(mode.isRestrictAccessIps()) {
 			ipList = mode.getIpList();
@@ -122,60 +136,48 @@ public class TransientAssessmentMode implements Serializable {
 		return description;
 	}
 
-	public Date getBegin() {
-		return begin;
+	public Status getStatus() {
+		return status;
 	}
 
-	public void setBegin(Date begin) {
-		this.begin = begin;
+	public Date getBegin() {
+		return begin;
 	}
 
 	public Date getBeginWithLeadTime() {
 		return beginWithLeadTime;
 	}
 
-	public void setBeginWithLeadTime(Date beginWithLeadTime) {
-		this.beginWithLeadTime = beginWithLeadTime;
+	public Date getEnd() {
+		return end;
+	}
+
+	public Date getEndWithFollowupTime() {
+		return endWithFollowupTime;
+	}
+
+	public boolean isManual() {
+		return manual;
+	}
+
+	public int getLeadTime() {
+		return leadTime;
+	}
+	
+	public int getFollowupTime() {
+		return followupTime;
 	}
 
 	public String getSafeExamBrowserKey() {
 		return safeExamBrowserKey;
 	}
 
-	public void setSafeExamBrowserKey(String safeExamBrowserKey) {
-		this.safeExamBrowserKey = safeExamBrowserKey;
-	}
-
 	public String getSafeExamBrowserHint() {
 		return safeExamBrowserHint;
 	}
 
-	public void setSafeExamBrowserHint(String safeExamBrowserHint) {
-		this.safeExamBrowserHint = safeExamBrowserHint;
-	}
-
-	public Date getEnd() {
-		return end;
-	}
-
-	public void setEnd(Date end) {
-		this.end = end;
-	}
-
-	public int getLeadTime() {
-		return leadTime;
-	}
-
-	public void setLeadTime(int leadTime) {
-		this.leadTime = leadTime;
-	}
-
 	public String getStartElementKey() {
 		return startElementKey;
-	}
-
-	public void setStartElementKey(String startElementKey) {
-		this.startElementKey = startElementKey;
 	}
 	
 	public String getIpList() {

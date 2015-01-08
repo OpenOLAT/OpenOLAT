@@ -69,6 +69,11 @@ public class OlatMinimalTopNavController extends BasicController implements TopN
 	public void lockResource(OLATResourceable resource) {
 		//
 	}
+	
+	@Override
+	public void unlockResource() {
+		//
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

@@ -112,6 +112,11 @@ public class OlatTopNavController extends BasicController implements TopNavContr
 	}
 	
 	@Override
+	public void unlockResource() {
+		topNavVC.contextPut("locked", Boolean.FALSE);
+	}
+
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == loginLink) {
 			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());

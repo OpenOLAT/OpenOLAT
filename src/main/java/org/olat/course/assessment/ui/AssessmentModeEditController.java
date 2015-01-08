@@ -392,6 +392,20 @@ public class AssessmentModeEditController extends FormBasicController {
 			}
 		}
 		
+		targetEl.clearError();
+		if(targetEl.isOneSelected()) {
+			Target target = AssessmentMode.Target.valueOf(targetEl.getSelectedKey());
+			if(target == Target.courseAndGroups || target == Target.groups) {
+				if(groupKeys.isEmpty()) {
+					targetEl.setErrorKey("error.group.missing", null);
+					allOk &= false;
+				}	
+			}
+		} else {
+			targetEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+
 		return allOk & super.validateFormLogic(ureq);
 	}
 
