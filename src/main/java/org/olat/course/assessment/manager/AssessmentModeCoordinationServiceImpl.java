@@ -70,33 +70,52 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		}
 	}
 	
-	private void sendEvent(AssessmentMode mode, Date now) {
+	protected AssessmentMode syncManuallySetStatus(AssessmentMode mode) {
+		return sendEvent(mode, new Date());
+	}
+	
+	protected AssessmentMode syncAutomicallySetStatus(AssessmentMode mode) {
+		return sendEvent(mode, new Date());
+	}
+
+	private AssessmentMode sendEvent(AssessmentMode mode, Date now) {
 		TransientAssessmentMode transientMode = new TransientAssessmentMode(mode);
 		if(mode.getBeginWithLeadTime().compareTo(now) <= 0 && mode.getBegin().compareTo(now) >= 0) {
-			ensureStatusOfMode(mode, Status.leadtime);
+			mode = ensureStatusOfMode(mode, Status.leadtime);
 			sendEvent(AssessmentModeNotificationEvent.LEADTIME, transientMode,
 					assessmentModeManager.getAssessedIdentityKeys(mode));
 		} else if(!mode.isManualBeginEnd()) {
 			if(mode.getBegin().compareTo(now) <= 0 && mode.getEnd().compareTo(now) >= 0) {
-				ensureStatusOfMode(mode, Status.assessment);
+				mode = ensureStatusOfMode(mode, Status.assessment);
 				sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, transientMode,
 						assessmentModeManager.getAssessedIdentityKeys(mode));
+				
+				//message 5 minutes before end
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(mode.getEnd());
+				cal.set(Calendar.SECOND, 0);
+				cal.set(Calendar.MILLISECOND, 0);
+				cal.add(Calendar.MINUTE, -60);
+				if(now.after(cal.getTime())) {
+					sendEvent(AssessmentModeNotificationEvent.STOP_WARNING, transientMode, null);
+				}
 			} else if(mode.getEnd().compareTo(now) <= 0 && mode.getEndWithFollowupTime().compareTo(now) >= 0) {
 				if(mode.getLeadTime() > 0) {
-					ensureStatusOfMode(mode, Status.followup);
+					mode = ensureStatusOfMode(mode, Status.followup);
 					sendEvent(AssessmentModeNotificationEvent.STOP_ASSESSMENT, transientMode,
 							assessmentModeManager.getAssessedIdentityKeys(mode));
 				} else {
-					ensureStatusOfMode(mode, Status.end);
+					mode = ensureStatusOfMode(mode, Status.end);
 					sendEvent(AssessmentModeNotificationEvent.END, transientMode,
 							assessmentModeManager.getAssessedIdentityKeys(mode));
 				}
 			} else if(mode.getEndWithFollowupTime().compareTo(now) < 0) {
-				ensureStatusOfMode(mode, Status.end);
+				mode = ensureStatusOfMode(mode, Status.end);
 				sendEvent(AssessmentModeNotificationEvent.END, transientMode,
 						assessmentModeManager.getAssessedIdentityKeys(mode));
 			}
 		}
+		return mode;
 	}
 	
 	private AssessmentMode ensureStatusOfMode(AssessmentMode mode, Status status) {

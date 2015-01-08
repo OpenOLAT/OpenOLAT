@@ -28,6 +28,7 @@ import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.countdown.CountDownComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -120,6 +121,9 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			Mode wrapper = initAssessmentMode(ureq, mode);
 			if(wrapper != null) {
 				modeWrappers.add(wrapper);
+				if(wrapper.getCountDown() != null) {
+					mainVC.put(wrapper.getCountDown().getComponentName(), wrapper.getCountDown());
+				}
 			}
 		}
 		mainVC.contextPut("modeWrappers", modeWrappers);
@@ -189,38 +193,45 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			state = "refused";
 		}
 		
-		return new Mode(button, state, sb.toString(), mode, getLocale());
+		String id = "count-" + mode.getModeKey();
+		CountDownComponent countDown = new CountDownComponent(id, id, mode.getBegin(), getTranslator());
+		countDown.setI18nKey("current.mode.in");
+		return new Mode(button, state, sb.toString(), mode, getLocale(), countDown);
 	}
 
 	@Override
 	public void event(Event event) {
 		 if (event instanceof AssessmentModeNotificationEvent) {
-			processAssessmentModeNotificationEvent((AssessmentModeNotificationEvent)event);
+			try {
+				processAssessmentModeNotificationEvent((AssessmentModeNotificationEvent)event);
+			} catch (Exception e) {
+				logError("", e);
+			}
 		}
 	}
 	
 	private void processAssessmentModeNotificationEvent(AssessmentModeNotificationEvent event) {
-		if(getIdentity() == null || !event.getAssessedIdentityKeys().contains(getIdentity().getKey())) {
-			return;//not for me
-		}
-		
-		String cmd = event.getCommand();
-		if(AssessmentModeNotificationEvent.LEADTIME.equals(cmd)
-				|| AssessmentModeNotificationEvent.START_ASSESSMENT.equals(cmd)
-				|| AssessmentModeNotificationEvent.STOP_ASSESSMENT.equals(cmd)) {
-			TransientAssessmentMode mode = event.getAssessementMode();
+		if(getIdentity() != null && event.getAssessedIdentityKeys() != null
+				&& event.getAssessedIdentityKeys().contains(getIdentity().getKey())) {
 			
-
-			List<TransientAssessmentMode> updatedModes = new ArrayList<TransientAssessmentMode>();
-			for(TransientAssessmentMode currentMode:modes) {
-				if(currentMode.getModeKey().equals(mode.getModeKey())) {
-					updatedModes.add(mode);
-				} else {
-					updatedModes.add(currentMode);
+			String cmd = event.getCommand();
+			if(AssessmentModeNotificationEvent.LEADTIME.equals(cmd)
+					|| AssessmentModeNotificationEvent.START_ASSESSMENT.equals(cmd)
+					|| AssessmentModeNotificationEvent.STOP_ASSESSMENT.equals(cmd)) {
+				TransientAssessmentMode mode = event.getAssessementMode();
+				
+	
+				List<TransientAssessmentMode> updatedModes = new ArrayList<TransientAssessmentMode>();
+				for(TransientAssessmentMode currentMode:modes) {
+					if(currentMode.getModeKey().equals(mode.getModeKey())) {
+						updatedModes.add(mode);
+					} else {
+						updatedModes.add(currentMode);
+					}
 				}
+				
+				pushUpdate = true;
 			}
-			
-			pushUpdate = true;
 		}
 	}
 
@@ -271,10 +282,13 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		private String leadTime;
 		private String followupTime;
 		
-		public Mode(Link goButton, String status, String errors, TransientAssessmentMode mode, Locale locale) {
+		private CountDownComponent countDown;
+		
+		public Mode(Link goButton, String status, String errors, TransientAssessmentMode mode, Locale locale, CountDownComponent countDown) {
 			this.goButton = goButton;
 			this.errors = errors;
 			this.status = status;
+			this.countDown = countDown;
 			
 			name = mode.getName();
 			displayName = mode.getDisplayName();
@@ -298,6 +312,10 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			}
 		}
 		
+		public CountDownComponent getCountDown() {
+			return countDown;
+		}
+
 		public String getName() {
 			return name;
 		}

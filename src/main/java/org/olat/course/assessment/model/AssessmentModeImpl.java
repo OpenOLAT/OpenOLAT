@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -106,10 +107,10 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 	@Column(name="a_targetaudience", nullable=true, insertable=true, updatable=true)
 	private String targetAudienceString;
 	
-	@OneToMany(targetEntity=AssessmentModeToGroupImpl.class, mappedBy="assessmentMode")
+	@OneToMany(targetEntity=AssessmentModeToGroupImpl.class, mappedBy="assessmentMode", cascade= { CascadeType.REMOVE })
 	private Set<AssessmentModeToGroup> groups;
 	
-	@OneToMany(targetEntity=AssessmentModeToAreaImpl.class, mappedBy="assessmentMode")
+	@OneToMany(targetEntity=AssessmentModeToAreaImpl.class, mappedBy="assessmentMode", cascade= { CascadeType.REMOVE })
 	private Set<AssessmentModeToArea> areas;
 	
 	@Column(name="a_restrictaccesselements", nullable=true, insertable=true, updatable=true)

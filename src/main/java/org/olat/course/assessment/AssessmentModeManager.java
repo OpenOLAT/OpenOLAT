@@ -51,6 +51,8 @@ public interface AssessmentModeManager {
 	public AssessmentModeToArea createAssessmentModeToArea(AssessmentMode mode, BGArea area);
 	
 	public AssessmentMode save(AssessmentMode assessmentMode);
+	
+	public void delete(AssessmentMode assessmentMode);
 
 	
 	public AssessmentMode getAssessmentModeById(Long key);

@@ -52,6 +52,7 @@ import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.Window;
+import org.olat.core.gui.components.countdown.CountDownComponent;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.htmlheader.jscss.CustomJSComponent;
 import org.olat.core.gui.components.link.Link;
@@ -81,6 +82,7 @@ import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.control.util.ZIndexWrapper;
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.themes.Theme;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -95,6 +97,7 @@ import org.olat.core.logging.JavaScriptTracingController;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.i18n.I18nManager;
@@ -478,9 +481,19 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	}
 	
 	private void updateStickyMessage() {
-		String stickyMessage = GlobalStickyMessage.getGlobalStickyMessage();
-		stickymsgVc.contextPut("hasStickyMessage", (stickyMessage == null ? Boolean.FALSE : Boolean.TRUE));					
-		stickymsgVc.contextPut("stickyMessage", stickyMessage);			
+		setStickyMessage(GlobalStickyMessage.getGlobalStickyMessage(), null);
+	}
+	
+	private void setStickyMessage(String text, Component cmp) {
+		stickymsgVc.contextPut("hasStickyMessage", (text == null && cmp == null ? Boolean.FALSE : Boolean.TRUE));
+		stickymsgVc.contextPut("stickyMessage", text);
+		stickymsgVc.contextPut("screenMode", screenMode);
+		if(cmp != null) {
+			stickymsgVc.contextPut("stickyCmpName", cmp.getComponentName());
+			stickymsgVc.put(cmp.getComponentName(), cmp);
+		} else {
+			stickymsgVc.contextRemove("stickyCmpName");
+		}
 	}
 
 	private void initializeDefaultSite(UserRequest ureq) {
@@ -1220,25 +1233,39 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			// msg can be set to show only on one node or on all nodes
 			updateStickyMessage();
 		} else if (event instanceof AssessmentModeNotificationEvent) {
-			processAssessmentModeNotificationEvent((AssessmentModeNotificationEvent)event);
+			try {
+				processAssessmentModeNotificationEvent((AssessmentModeNotificationEvent)event);
+			} catch (Exception e) {
+				logError("", e);
+			}
 		}
 	}
 	
 	private void processAssessmentModeNotificationEvent(AssessmentModeNotificationEvent event) {
-		if(getIdentity() == null || !event.getAssessedIdentityKeys().contains(getIdentity().getKey())) {
-			return;//not for me
-		}
+		if(getIdentity() == null) return;
 		
 		String cmd = event.getCommand();
-		if(AssessmentModeNotificationEvent.LEADTIME.equals(cmd)
-				|| AssessmentModeNotificationEvent.START_ASSESSMENT.equals(cmd)
-				|| AssessmentModeNotificationEvent.STOP_ASSESSMENT.equals(cmd)) {
-			//locked
-			asyncLockResource(event.getAssessementMode());
-		} else if(AssessmentModeNotificationEvent.END.equals(cmd)) {
-			//unlocked
-			asyncUnlockResource(event.getAssessementMode());
-		}	
+		if(AssessmentModeNotificationEvent.STOP_WARNING.equals(cmd)) {
+			lockResourceMessage(event.getAssessementMode());
+		} else if(event.getAssessedIdentityKeys() != null && event.getAssessedIdentityKeys().contains(getIdentity().getKey())) {
+			switch(cmd) {
+				case AssessmentModeNotificationEvent.LEADTIME:
+					asyncLockResource(event.getAssessementMode());
+					updateStickyMessage();
+					break;
+				case AssessmentModeNotificationEvent.START_ASSESSMENT:
+					asyncLockResource(event.getAssessementMode());
+					break;
+				case AssessmentModeNotificationEvent.STOP_ASSESSMENT:
+					asyncLockResource(event.getAssessementMode());
+					updateStickyMessage();
+					break;
+				case AssessmentModeNotificationEvent.END:
+					asyncUnlockResource(event.getAssessementMode());
+					updateStickyMessage();
+					break;	
+			}
+		}
 	}
 
 	@Override
@@ -1269,10 +1296,14 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			userToolsMenuCtrl.lockResource(resource);
 		}
 		
-		navSitesVc.setVisible(false);
+		if(navSitesVc.isVisible()) {
+			navSitesVc.setVisible(false);
+		}
 		for(int i=dtabsControllers.size(); i-->0; ) {
 			DTab tab = dtabs.get(i);
-			removeDTab(null, tab);
+			if(!lockResource.getResourceableId().equals(tab.getOLATResourceable().getResourceableId())) {
+				removeDTab(null, tab);
+			}
 		}
 	}
 	
@@ -1292,17 +1323,30 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	}
 
 	private void asyncLockResource(TransientAssessmentMode mode) {
-		logAudit("Async lock resource for user: " + getIdentity().getName() + " (" + mode.getResource() + ")", null);
-		lockResource(mode.getResource());
-		lockMode = mode;
-		lockStatus = LockStatus.needConfirmation;
+		if(lockResource == null) {
+			logAudit("Async lock resource for user: " + getIdentity().getName() + " (" + mode.getResource() + ")", null);
+			lockResource(mode.getResource());
+			lockMode = mode;
+			lockStatus = LockStatus.needConfirmation;
+		}
 	}
 	
 	private void asyncUnlockResource(TransientAssessmentMode mode) {
-		logAudit("Async unlock resource for user: " + getIdentity().getName() + " (" + mode.getResource() + ")", null);
-		unlockResource();
-		lockMode = null;
-		lockStatus = null;
+		if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
+			logAudit("Async unlock resource for user: " + getIdentity().getName() + " (" + mode.getResource() + ")", null);
+			unlockResource();
+			lockMode = null;
+			lockStatus = null;
+		}
+	}
+	
+	private void lockResourceMessage(TransientAssessmentMode mode) {
+		if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
+			Translator trans = Util.createPackageTranslator(AssessmentModeGuardController.class, getLocale());
+			CountDownComponent cmp = new CountDownComponent("stickcountdown", "stickcountdown", mode.getEnd(), trans);
+			cmp.setI18nKey("assessment.countdown");
+			setStickyMessage(null, cmp);
+		}
 	}
 	
 	private boolean openAssessmentmodeConfirmation(UserRequest ureq, TransientAssessmentMode mode) {

@@ -13,6 +13,10 @@
 		<p>$mode.description</p>
 	#end
 	
+	#if($mode.status == "leadtime")
+		<div class="o_info">$r.render($mode.countDown.componentName)</div>
+	#end
+	
 	#if($mode.status == "assessment" || $mode.status == "leadtime")
 		#if($mode.safeExamBrowserHint && !$mode.safeExamBrowserHint.empty)
 			<div class="o_info">$mode.safeExamBrowserHint</div>

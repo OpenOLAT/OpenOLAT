@@ -57,7 +57,6 @@ public class AssessmentModeNotificationEvent extends MultiUserEvent  {
 		return mode;
 	}
 
-
 	public Set<Long> getAssessedIdentityKeys() {
 		return assessedIdentityKeys;
 	}

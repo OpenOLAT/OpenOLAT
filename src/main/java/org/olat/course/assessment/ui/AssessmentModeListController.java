@@ -19,9 +19,12 @@
  */
 package org.olat.course.assessment.ui;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -36,10 +39,14 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.assessment.AssessmentMode;
@@ -58,11 +65,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class AssessmentModeListController extends FormBasicController implements GenericEventListener {
-	
+
+	private FlexiTableElement tableEl;
 	private FormLink addLink, deleteLink;
 	private AssessmentModeListModel model;
-	private FlexiTableElement tableEl;
 	private final TooledStackedPanel toolbarPanel;
+
+	private DialogBoxController deleteDialogBox;
 	private AssessmentModeEditController editCtrl;
 	
 	private final RepositoryEntry entry;
@@ -77,6 +86,7 @@ public class AssessmentModeListController extends FormBasicController implements
 		super(ureq, wControl, "mode_list");
 		this.entry = entry;
 		this.toolbarPanel = toolbarPanel;
+		toolbarPanel.addListener(this);
 		
 		initForm(ureq);
 		loadModel();
@@ -87,6 +97,7 @@ public class AssessmentModeListController extends FormBasicController implements
 	
 	@Override
 	protected void doDispose() {
+		toolbarPanel.removeListener(this);
 		//deregister for assessment mode
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.deregisterFor(this, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
@@ -121,6 +132,7 @@ public class AssessmentModeListController extends FormBasicController implements
 		
 		model = new AssessmentModeListModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
+		tableEl.setMultiSelect(true);
 	}
 	
 	private void loadModel() {
@@ -144,20 +156,50 @@ public class AssessmentModeListController extends FormBasicController implements
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(editCtrl == source) {
-			if(Event.CHANGED_EVENT == event || Event.DONE_EVENT == event) {
-				loadModel();
-			}
+			loadModel();
 			toolbarPanel.popUpToController(this);
 			removeAsListenerAndDispose(editCtrl);
 			editCtrl = null;
+		} else if(deleteDialogBox == source) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				@SuppressWarnings("unchecked")
+				List<AssessmentMode> rows = (List<AssessmentMode>)deleteDialogBox.getUserObject();
+				doDelete(rows);
+				loadModel();
+			}
 		}
 		super.event(ureq, source, event);
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(source == toolbarPanel) {
+			if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				if(pe.getController() == editCtrl) {
+					loadModel();
+				}
+			}
+		} else {
+			super.event(ureq, source, event);
+		}
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addLink == source) {
 			doAdd(ureq);
+		} else if(deleteLink == source) {
+			Set<Integer> index = tableEl.getMultiSelectedIndex();
+			if(index == null || index.isEmpty()) {
+				showWarning("error.atleastone");
+			} else {
+				List<AssessmentMode> rows = new ArrayList<AssessmentMode>(index.size());
+				for(Integer i:index) {
+					rows.add(model.getObject(i.intValue()));
+				}
+				doConfirmDelete(ureq, rows);
+			}
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -186,6 +228,26 @@ public class AssessmentModeListController extends FormBasicController implements
 		editCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry.getOlatResource(), newMode);
 		listenTo(editCtrl);
 		toolbarPanel.pushController(translate("new.mode"), editCtrl);
+	}
+	
+	private void doConfirmDelete(UserRequest ureq, List<AssessmentMode> modeToDelete) {
+		StringBuilder sb = new StringBuilder();
+		for(AssessmentMode mode:modeToDelete) {
+			if(sb.length() > 0) sb.append(", ");
+			sb.append(mode.getName());
+		}
+		
+		String names = StringHelper.escapeHtml(sb.toString());
+		String title = translate("confirm.delete.title");
+		String text = translate("confirm.delete.text", names);
+		deleteDialogBox = activateYesNoDialog(ureq, title, text, deleteDialogBox);
+		deleteDialogBox.setUserObject(modeToDelete);
+	}
+	
+	private void doDelete(List<AssessmentMode> modesToDelete) {
+		for(AssessmentMode modeToDelete:modesToDelete) {
+			assessmentModeMgr.delete(modeToDelete);
+		}
 	}
 	
 	private void doEdit(UserRequest ureq, AssessmentMode mode) {

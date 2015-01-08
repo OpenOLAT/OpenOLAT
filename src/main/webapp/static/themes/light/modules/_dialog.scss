@@ -78,6 +78,9 @@ div.o_callout_overlay {
 		font-size: $line-height-computed * 2;
 	}
 	
+	&.o_msg_sticky_fullscreen {
+		margin-top: 0;
+	}
 }
 
 /* extend bootstrap modal classes for extra large modal views that should us entire available space, e.g. in wizards */

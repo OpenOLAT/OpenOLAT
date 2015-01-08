@@ -75,6 +75,8 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
+	private AssessmentModeCoordinationServiceImpl assessmentModeCoordinationService;
 
 	@Override
 	public AssessmentMode createAssessmentMode(RepositoryEntry entry) {
@@ -89,7 +91,6 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 
 	@Override
 	public AssessmentMode save(AssessmentMode assessmentMode) {
-		AssessmentMode reloadedMode;
 		assessmentMode.setLastModified(new Date());
 		
 		//update begin with lead time
@@ -112,6 +113,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		}
 		((AssessmentModeImpl)assessmentMode).setEndWithFollowupTime(cal.getTime());
 
+		AssessmentMode reloadedMode;
 		if(assessmentMode.getKey() == null) {
 			dbInstance.getCurrentEntityManager().persist(assessmentMode);
 			reloadedMode = assessmentMode;
@@ -119,7 +121,20 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 			reloadedMode = dbInstance.getCurrentEntityManager()
 					.merge(assessmentMode);
 		}
+		dbInstance.commit();
+		if(reloadedMode.isManualBeginEnd()) {
+			reloadedMode = assessmentModeCoordinationService.syncManuallySetStatus(reloadedMode);
+		} else {
+			reloadedMode = assessmentModeCoordinationService.syncAutomicallySetStatus(reloadedMode);
+		}
 		return reloadedMode;
+	}
+
+	@Override
+	public void delete(AssessmentMode assessmentMode) {
+		AssessmentModeImpl refMode = dbInstance.getCurrentEntityManager()
+				.getReference(AssessmentModeImpl.class, assessmentMode.getKey());
+		dbInstance.getCurrentEntityManager().remove(refMode);
 	}
 
 	@Override

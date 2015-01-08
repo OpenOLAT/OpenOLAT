@@ -206,6 +206,40 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void deleteAssessmentMode() {
+		//prepare the setup
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(author, "as_mode_1", "", null, null, null, null, false, false, null);
+		
+		AssessmentMode mode = createMinimalAssessmentmode(entry);
+		mode = assessmentModeMgr.save(mode);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(mode);
+
+		AssessmentModeToGroup modeToGroup = assessmentModeMgr.createAssessmentModeToGroup(mode, businessGroup);
+		mode.getGroups().add(modeToGroup);
+		AssessmentMode savedMode = assessmentModeMgr.save(mode);
+		dbInstance.commitAndCloseSession();
+		
+		BusinessGroup businessGroupForArea = businessGroupService.createBusinessGroup(author, "as_mode_1", "", null, null, null, null, false, false, null);
+		BGArea area = areaMgr.createAndPersistBGArea("little area", "My little secret area", entry.getOlatResource());
+		areaMgr.addBGToBGArea(businessGroupForArea, area);
+		dbInstance.commitAndCloseSession();
+		AssessmentModeToArea modeToArea = assessmentModeMgr.createAssessmentModeToArea(savedMode, area);
+		savedMode.getAreas().add(modeToArea);
+		savedMode = assessmentModeMgr.save(savedMode);
+		dbInstance.commitAndCloseSession();
+		
+		//delete
+		assessmentModeMgr.delete(savedMode);
+		dbInstance.commit();
+		//check
+		AssessmentMode deletedMode = assessmentModeMgr.getAssessmentModeById(mode.getKey());
+		Assert.assertNull(deletedMode);
+	}
+	
+	@Test
 	public void loadAssessmentMode_repositoryEntry() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
