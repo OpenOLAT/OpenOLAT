@@ -124,15 +124,19 @@ public abstract class GenericNode implements INode, Serializable {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.util.nodes.INode#insert(org.olat.core.util.nodes.INode, int)
-	 */
+	@Override
 	public void insert(INode newChild, int index) {
 		if (isNodeAncestor(newChild)) throw new IllegalArgumentException("new child is an ancestor");
 		newChild.removeFromParent();
 		newChild.setParent(this);
-		if (children == null) children = new ArrayList<INode>(INITIAL_CHILD_SIZE);
-		children.add(index, newChild);
+		if (children == null) {
+			children = new ArrayList<INode>(INITIAL_CHILD_SIZE);
+		}
+		if(index > children.size()) {
+			children.add(newChild);
+		} else {
+			children.add(index, newChild);
+		}
 	}
 
 	/**

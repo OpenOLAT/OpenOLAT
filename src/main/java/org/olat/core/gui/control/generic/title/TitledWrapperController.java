@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ConfigurationChangedListener;
 import org.olat.core.gui.control.Controller;
@@ -54,7 +55,8 @@ import org.olat.core.util.StringHelper;
  * Initial Date:  21.06.2007 <br>
  * @author Lavinia Dumitrescu, Florian Gnägi
  */
-public class TitledWrapperController extends BasicController implements CloneableController, Activateable2, ConfigurationChangedListener {
+public class TitledWrapperController extends BasicController
+	implements CloneableController, Activateable2, TooledController, ConfigurationChangedListener {
 	
 	private static final String COMPONENT_NAME = "child";
 	//Velocity variable
@@ -144,6 +146,7 @@ public class TitledWrapperController extends BasicController implements Cloneabl
 		}
 	}
 
+	@Override
 	protected void doDispose() {		
 		if (descriptionController != null) {
 			descriptionController.dispose();
@@ -154,6 +157,13 @@ public class TitledWrapperController extends BasicController implements Cloneabl
 		contentController = null;
 	}
 	
+	@Override
+	public void initTools() {
+		if(contentController instanceof TooledController) {
+			((TooledController)contentController).initTools();
+		}
+	}
+
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(contentController instanceof Activateable2) {
