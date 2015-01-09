@@ -120,6 +120,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_logout:before { content: $fa-var-sign-out;}
 .o_icon_mandatory:before { content: $fa-var-asterisk; color: #f0ad4e;}
 .o_icon_managed:before { content: $fa-var-retweet; color: $text-muted}
+.o_icon_manual:before { content: $fa-var-book; cursor: help;}
 .o_icon_mail:before { content: $fa-var-envelope-o; }
 .o_icon_math:before { content: $fa-var-slack; }
 .o_icon_membersmanagement:before { content: $fa-var-users;}
@@ -144,7 +145,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_notification:before { content: $fa-var-rss;}
 .o_icon_open_tree:before { content: $fa-var-caret-right;}
 .o_icon_open_togglebox:before { content: $fa-var-caret-right;}
-.o_icon_openolat:before, %o_icon_openolat { content:"\E600"; font-family: openolat; }
+.o_icon_openolat:before, %o_icon_openolat { content:"\E600"; font-family: openolat; font-size: 10px; }
 .o_icon_options:before { content: $fa-var-toggle-on; }
 .o_icon_pageing:before { content: $fa-var-ellipsis-h;}
 .o_icon_passed:before { content: $fa-var-check-circle;}

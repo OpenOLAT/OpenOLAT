@@ -37,6 +37,7 @@ import org.olat.core.gui.components.chart.StatisticsComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.link.LinkPopupSettings;
+import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -66,7 +67,7 @@ import org.olat.repository.RepositoryManager;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI12AssessmentStatisticsController extends BasicController {
+public class QTI12AssessmentStatisticsController extends BasicController implements TooledController {
 
 	private final QTIType type;
 	private final Float maxScore;
@@ -158,6 +159,13 @@ public class QTI12AssessmentStatisticsController extends BasicController {
 		if(stackPanel != null) {
 			stackPanel.removeTool(downloadRawLink);
 			stackPanel.removeTool(printLink);
+		}
+	}
+	
+	public void initTools() {
+		if(stackPanel != null) {
+			stackPanel.addTool(printLink, Align.right);
+			stackPanel.addTool(downloadRawLink, Align.right);
 		}
 	}
 

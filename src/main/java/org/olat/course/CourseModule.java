@@ -70,7 +70,6 @@ public class CourseModule extends AbstractOLATModule {
 	private static OLATResourceable ORESOURCEABLE_TYPE_COURSE = OresHelper.lookupType(CourseModule.class);
 	public static final String ORES_COURSE_ASSESSMENT = OresHelper.calculateTypeName(AssessmentManager.class);
 	private static String helpCourseSoftkey;
-	private static boolean helpCourseEnabled;
 	private static CoordinatorManager coordinatorManager;
 	private Map<String, RepositoryEntry> deployedCourses;
 	private boolean deployCoursesEnabled;
@@ -133,7 +132,6 @@ public class CourseModule extends AbstractOLATModule {
 		courseChatEnabled = getBooleanConfigParameter("enableCourseChat", true);
 		deployCoursesEnabled = getBooleanConfigParameter("deployCourseExportsEnabled", true);
 		displayParticipantsCount = getBooleanConfigParameter("displayParticipantsCount", true);
-		helpCourseEnabled = getBooleanConfigParameter("helpCourseEnabled", false);
 		helpCourseSoftkey = getStringConfigParameter("helpCourseSoftKey", "", true);
 	}
 
@@ -319,13 +317,6 @@ public class CourseModule extends AbstractOLATModule {
 		return helpCourseSoftkey;
 	}
 	
-	/**
-	 * @return true: show help course link in top nav; false: do not show help course
-	 */
-	public static boolean isHelpCourseEnabled() {
-		return helpCourseEnabled;
-	}
-
 	/**
 	 * @return type name
 	 */

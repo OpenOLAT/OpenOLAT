@@ -44,15 +44,18 @@ import org.springframework.stereotype.Service;
 public class ConfluenceLinkSPI implements HelpLinkSPI {
 	
 	@Override
-	public UserTool getHelp(WindowControl wControl) {
+	public UserTool getHelpUserTool(WindowControl wControl) {
 		return new ConfluenceUserTool();
 	}
 	
-	private String getURL(Locale locale) {
+	private String getURL(Locale locale, String page) {
 		StringBuilder sb = new StringBuilder(64);
 		sb.append("https://confluence.openolat.org/display");
 		String version = Settings.getVersion();
 		sb.append(generateSpace(version, locale));
+		if (page != null) {
+			sb.append(page);			
+		}
 		return sb.toString();
 	}
 
@@ -94,9 +97,9 @@ public class ConfluenceLinkSPI implements HelpLinkSPI {
 		}
 		
 		if(locale.getLanguage().equals(new Locale("de").getLanguage())) {
-			sb.append("DE/OpenOLAT+10+Benutzerhandbuch");
+			sb.append("DE/");
 		} else {
-			sb.append("EN/OpenOLAT+10+User+Manual");
+			sb.append("EN/");
 		}
 		
 		return sb.toString();
@@ -112,7 +115,7 @@ public class ConfluenceLinkSPI implements HelpLinkSPI {
 			helpLink.setName(container.getTranslator().translate("topnav.help"));
 			helpLink.setTooltip(container.getTranslator().translate("topnav.help.alt"));
 			helpLink.setTarget("oohelp");
-			helpLink.setUrl(getURL(ureq.getLocale()));
+			helpLink.setUrl(getURL(ureq.getLocale(), null));
 			return helpLink;
 		}
 
@@ -121,4 +124,17 @@ public class ConfluenceLinkSPI implements HelpLinkSPI {
 			//
 		}
 	}
+
+	@Override
+	public Component getHelpPageLink(UserRequest ureq, String title, String tooltip, String iconCSS, String elementCSS, String page) {
+		ExternalLink helpLink = new ExternalLink("topnav.help." + page);
+		helpLink.setName(title);
+		helpLink.setTooltip(tooltip);
+		helpLink.setIconLeftCSS(iconCSS);
+		helpLink.setElementCssClass(elementCSS);
+		helpLink.setTarget("oohelp");
+		helpLink.setUrl(getURL(ureq.getLocale(), page));
+		return helpLink;
+	}
+	
 }

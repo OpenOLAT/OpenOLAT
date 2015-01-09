@@ -101,8 +101,6 @@
 			deployCourseExportsEnabled=${deploy.course.exports}
 			<!-- whether the toolbox should display the current participant count or not -->
 			displayParticipantsCount=${course.display.participants.count}
-			<!-- Show or hide the help course in the top navigation -->		
-			helpCourseEnabled = ${help.course.enabled}
 			<!-- The soft-key of the repository entry of the help course, empty to disable help course -->
 			helpCourseSoftKey = ${help.course.softkey}
 			</value>

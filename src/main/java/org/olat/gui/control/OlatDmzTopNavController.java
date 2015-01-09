@@ -24,12 +24,15 @@
 */
 package org.olat.gui.control;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.LanguageChooserController;
 import org.olat.core.commons.contextHelp.ContextHelpModule;
 import org.olat.core.commons.controllers.impressum.ImpressumDmzMainController;
 import org.olat.core.commons.controllers.impressum.ImpressumInformations;
 import org.olat.core.commons.controllers.impressum.ImpressumModule;
 import org.olat.core.commons.fullWebApp.TopNavController;
+import org.olat.core.commons.services.help.HelpLinkSPI;
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -53,6 +56,8 @@ public class OlatDmzTopNavController extends BasicController implements TopNavCo
 
 	@Autowired
 	private ImpressumModule impressumModule;
+	@Autowired
+	private HelpModule helpModule;
 	
 	public OlatDmzTopNavController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -70,6 +75,13 @@ public class OlatDmzTopNavController extends BasicController implements TopNavCo
 		
 		// help on login page
 		vc.contextPut("isContextHelpEnabled", contextHelpEnabled);
+		if (helpModule.isHelpEnabled()) {
+			HelpModule helpModule = CoreSpringFactory.getImpl(HelpModule.class);
+			HelpLinkSPI provider = helpModule.getHelpProvider();
+			Component helpLink = provider.getHelpPageLink(ureq, translate("help.manual"), translate("help.manual"), "o_icon o_icon-wf o_icon_manual", null, "Login page");
+			vc.put("topnav.help", helpLink);
+
+		}
 
 		//choosing language 
 		languageChooserC = new LanguageChooserController(getWindowControl(), ureq, "_top_nav_dmz_lang_chooser");
