@@ -104,9 +104,11 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.course.assessment.ui.AssessmentModeGuardController;
+import org.olat.course.assessment.ui.ChooseAssessmentModeEvent;
 import org.olat.gui.control.UserToolsMenuController;
 import org.olat.home.HomeSite;
 import org.olat.login.AfterLoginInterceptionController;
@@ -123,7 +125,6 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private static final String PRESENTED_AFTER_LOGIN_WORKFLOW = "presentedAfterLoginWorkflow";
 	
 	//Base chief
-	
 	private Panel contentPanel;
 	private Controller jsServerC;
 	private Controller debugC;
@@ -144,10 +145,10 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private Panel cssHolder, guimsgHolder, currentMsgHolder;
 	private VelocityContainer guimsgVc, mainVc, navSitesVc, navTabsVc;
 	private StickyMessageComponent stickyMessageCmp;
-	
+
+	private LockStatus lockStatus;
 	private OLATResourceable lockResource;
 	private TransientAssessmentMode lockMode;
-	private LockStatus lockStatus = LockStatus.notLocked;
 	
 	// NEW FROM FullChiefController
 	private TopNavController topnavCtr;
@@ -224,10 +225,11 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		initializeBase(ureq, winman, initialPanel);
 		
 		if(ureq.getUserSession().isAuthenticated() && ureq.getUserSession().getAssessmentModes() != null && ureq.getUserSession().getAssessmentModes().size() > 0) {
-    		assessmentGuardCtrl = new AssessmentModeGuardController(ureq, getWindowControl(), ureq.getUserSession().getAssessmentModes());
+    		assessmentGuardCtrl = new AssessmentModeGuardController(ureq, getWindowControl(),
+    				ureq.getUserSession().getAssessmentModes(), false);
     		listenTo(assessmentGuardCtrl);
     		assessmentGuardCtrl.getInitialComponent();
-    		lockStatus = LockStatus.confirmation;
+    		lockStatus = LockStatus.popup;
     	} else {
     		// present an overlay with configured afterlogin-controllers or nothing if none configured.
     		// presented only once per session.
@@ -650,8 +652,13 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		if(aftLHookCtr == source) {
 			initializeDefaultSite(ureq);
 		} else if(assessmentGuardCtrl == source) {
-			initializeDefaultSite(ureq);
-			lockStatus = LockStatus.locked;
+			if(event instanceof ChooseAssessmentModeEvent) {
+				lockStatus = LockStatus.locked;
+				removeAsListenerAndDispose(assessmentGuardCtrl);
+				assessmentGuardCtrl = null;
+			} else {
+				initializeDefaultSite(ureq);
+			}
 		} else {
 			int tabIndex = dtabsControllers.indexOf(source);
 			if (tabIndex > -1) {
@@ -862,25 +869,14 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		if(erase && reload != null) {
 			reload = null;
 		}
-		if(lockStatus == LockStatus.needConfirmation) {
-			openAssessmentmodeConfirmation(ureq, lockMode);
-			r = true;
-		} else if(lockStatus == LockStatus.confirmation) {
-			r = updateAssessmentmodeConfirmation(ureq);
-		}
-		return r || screen;
+		boolean l = checkAssessmentGuard(ureq, lockMode);
+
+		return l || r || screen;
 	}
 
 	@Override
 	public boolean wishAsyncReload(UserRequest ureq, boolean erase) {
-		boolean r = false;
-		if(lockStatus == LockStatus.needConfirmation) {
-			openAssessmentmodeConfirmation(ureq, lockMode);
-			r = true;
-		} else if(lockStatus == LockStatus.confirmation) {
-			r = updateAssessmentmodeConfirmation(ureq);
-		}
-		return r;
+		return checkAssessmentGuard(ureq, lockMode);
 	}
 
 	@Override
@@ -1238,20 +1234,28 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			lockResourceMessage(event.getAssessementMode());
 		} else if(event.getAssessedIdentityKeys() != null && event.getAssessedIdentityKeys().contains(getIdentity().getKey())) {
 			switch(cmd) {
+				case AssessmentModeNotificationEvent.BEFORE:
+					if(asyncUnlockResource(event.getAssessementMode())) {
+						stickyMessageCmp.setDelegateComponent(null);
+					}
+					break;	
 				case AssessmentModeNotificationEvent.LEADTIME:
-					asyncLockResource(event.getAssessementMode());
-					stickyMessageCmp.setDelegateComponent(null);
+					if(asyncLockResource(event.getAssessementMode())) {
+						stickyMessageCmp.setDelegateComponent(null);
+					}
 					break;
 				case AssessmentModeNotificationEvent.START_ASSESSMENT:
 					asyncLockResource(event.getAssessementMode());
 					break;
 				case AssessmentModeNotificationEvent.STOP_ASSESSMENT:
-					asyncLockResource(event.getAssessementMode());
-					stickyMessageCmp.setDelegateComponent(null);
+					if(asyncLockResource(event.getAssessementMode())) {
+						stickyMessageCmp.setDelegateComponent(null);
+					}
 					break;
 				case AssessmentModeNotificationEvent.END:
-					asyncUnlockResource(event.getAssessementMode());
-					stickyMessageCmp.setDelegateComponent(null);
+					if(asyncUnlockResource(event.getAssessementMode())) {
+						stickyMessageCmp.setDelegateComponent(null);
+					}
 					break;	
 			}
 		}
@@ -1295,9 +1299,8 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 			}
 		}
 	}
-	
-	@Override
-	public void unlockResource() {
+
+	private void unlockResource() {
 		this.lockResource = null;
 		if(topnavCtr != null) {
 			topnavCtr.unlockResource();
@@ -1305,28 +1308,48 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		if(userToolsMenuCtrl != null) {
 			userToolsMenuCtrl.unlockResource();
 		}
-		if(assessmentGuardCtrl != null) {
-			assessmentGuardCtrl.deactivate();
-		}
 		navSitesVc.setVisible(true);
 	}
 
-	private void asyncLockResource(TransientAssessmentMode mode) {
+	private boolean asyncLockResource(TransientAssessmentMode mode) {
+		boolean lock;
 		if(lockResource == null) {
 			logAudit("Async lock resource for user: " + getIdentity().getName() + " (" + mode.getResource() + ")", null);
 			lockResource(mode.getResource());
+			lock = true;
 			lockMode = mode;
-			lockStatus = LockStatus.needConfirmation;
+			lockStatus = LockStatus.need;
+		} else if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
+			if(mode.getStatus() == Status.leadtime) {
+				if(assessmentGuardCtrl == null) {
+					lockStatus = LockStatus.need;
+				}
+				lockMode = mode;
+			} else if(mode.getStatus() == Status.followup) {
+				if(assessmentGuardCtrl == null) {
+					lockStatus = LockStatus.need;
+				}
+				lockMode = mode;
+			}
+			lock = true;
+		} else {
+			lock = false;
 		}
+		return lock;
 	}
 	
-	private void asyncUnlockResource(TransientAssessmentMode mode) {
+	private boolean asyncUnlockResource(TransientAssessmentMode mode) {
+		boolean unlock;
 		if(lockResource != null && lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
 			logAudit("Async unlock resource for user: " + getIdentity().getName() + " (" + mode.getResource() + ")", null);
 			unlockResource();
 			lockMode = null;
 			lockStatus = null;
+			unlock = true;
+		} else {
+			unlock = false;
 		}
+		return unlock;
 	}
 	
 	private void lockResourceMessage(TransientAssessmentMode mode) {
@@ -1336,33 +1359,32 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 				CountDownComponent cmp = (CountDownComponent)stickyMessageCmp.getDelegateComponent();
 				cmp.setDate(mode.getEnd());
 			} else {
-				CountDownComponent cmp = new CountDownComponent("stickcountdown", "stickcountdown", mode.getEnd(), trans);
+				CountDownComponent cmp = new CountDownComponent("stickcountdown", mode.getEnd(), trans);
 				cmp.setI18nKey("assessment.countdown");
 				stickyMessageCmp.setDelegateComponent(cmp);
 			}
 		}
 	}
 	
-	private boolean openAssessmentmodeConfirmation(UserRequest ureq, TransientAssessmentMode mode) {
-		boolean created = false;
+	private boolean checkAssessmentGuard(UserRequest ureq, TransientAssessmentMode mode) {
+		boolean needUpdate;
+		
 		if(assessmentGuardCtrl == null) {
-			if(lockStatus == LockStatus.needConfirmation) {
-				assessmentGuardCtrl = new AssessmentModeGuardController(ureq, getWindowControl(), Collections.singletonList(mode));
+			if(lockStatus == LockStatus.need) {
+				assessmentGuardCtrl = new AssessmentModeGuardController(ureq, getWindowControl(),
+						Collections.singletonList(mode), true);
 				listenTo(assessmentGuardCtrl);
 				assessmentGuardCtrl.getInitialComponent();
-				lockStatus = LockStatus.confirmation;
-				created = true;
+				lockStatus = LockStatus.popup;
+				needUpdate = true;
+			} else {
+				needUpdate = false;
 			}
+		} else {
+			needUpdate = assessmentGuardCtrl.updateAssessmentMode(ureq);
 		}
-		return created;
-	}
-	
-	private boolean updateAssessmentmodeConfirmation(UserRequest ureq) {
-		boolean updated = false;
-		if(assessmentGuardCtrl != null && lockStatus == LockStatus.confirmation) {
-			updated = assessmentGuardCtrl.updateAssessmentMode(ureq);
-		}
-		return updated;
+		
+		return needUpdate;
 	}
 
 	/**
@@ -1488,9 +1510,8 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	}
 	
 	private enum LockStatus {
-		notLocked,
-		needConfirmation,
-		confirmation,
+		need,
+		popup,
 		locked
 	}
 }

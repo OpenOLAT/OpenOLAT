@@ -44,8 +44,8 @@ public class CountDownComponent extends AbstractComponent {
 	private String currentRenderedTime;
 	private Date date;
 	
-	public CountDownComponent(String name, String id, Date date, Translator translator) {
-		super(name, id);
+	public CountDownComponent(String name, Date date, Translator translator) {
+		super(name);
 		this.date = date;
 		setDomReplacementWrapperRequired(false);
 		setTranslator(translator);

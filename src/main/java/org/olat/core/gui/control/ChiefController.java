@@ -66,9 +66,11 @@ public interface ChiefController extends Controller {
 	 */
 	public boolean wishReload(UserRequest ureq, boolean erase);
 	
+	/**
+	 * 
+	 * @param resource
+	 */
 	public void lockResource(OLATResourceable resource);
-	
-	public void unlockResource();
 	
 	public OLATResourceable getLockResource();
 	

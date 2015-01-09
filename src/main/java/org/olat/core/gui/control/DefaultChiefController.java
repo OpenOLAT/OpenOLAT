@@ -88,15 +88,9 @@ public abstract class DefaultChiefController extends DefaultController implement
 	public void lockResource(OLATResourceable resource) {
 		//
 	}
-	
-	@Override
-	public void unlockResource() {
-		//
-	}
 
 	@Override
 	public abstract void event(UserRequest ureq, Component source, Event event);
-
 
 	@Override
 	public void addControllerListener(ControllerEventListener el) {

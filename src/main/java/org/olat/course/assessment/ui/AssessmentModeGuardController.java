@@ -57,7 +57,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssessmentModeGuardController extends BasicController implements GenericEventListener {
 
-	private Link button;
 	private final VelocityContainer mainVC;
 	private final CloseableModalController cmc;
 	
@@ -66,17 +65,28 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	private boolean pushUpdate = false;
 	private List<TransientAssessmentMode> modes;
 	
-	@Autowired
-	private AssessmentModeManager assessmentmodeMgr;
+	private final ResourceGuards guards = new ResourceGuards();
 	
-	public AssessmentModeGuardController(UserRequest ureq, WindowControl wControl, List<TransientAssessmentMode> modes) {
+	@Autowired
+	private AssessmentModeManager assessmentModeMgr;
+	
+	/**
+	 *
+	 * @param ureq
+	 * @param wControl
+	 * @param modes List of assessments
+	 * @param forcePush Async popup need forcePush=true
+	 */
+	public AssessmentModeGuardController(UserRequest ureq, WindowControl wControl, List<TransientAssessmentMode> modes, boolean forcePush) {
 		super(ureq, wControl);
 		putInitialPanel(new Panel("assessment-mode-chooser"));
 
 		this.modes = modes;
+		this.pushUpdate = forcePush;
 		address = ureq.getHttpReq().getRemoteAddr();
 		
 		mainVC = createVelocityContainer("choose_mode");
+		mainVC.contextPut("guards", guards);
 		syncAssessmentModes(ureq);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), mainVC, true, translate("current.mode"), false);	
@@ -91,6 +101,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	public void deactivate() {
 		try {
 			cmc.deactivate();
+			removeAsListenerAndDispose(cmc);
 		} catch (Exception e) {
 			logWarn("", e);
 		}
@@ -98,13 +109,12 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	
 	@Override
 	protected void doDispose() {
-		//deregister for assessment mode
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.deregisterFor(this, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 	}
 	
 	public boolean updateAssessmentMode(UserRequest ureq) {
-		boolean f = false;
+		boolean f;
 		if(pushUpdate) {
 			syncAssessmentModes(ureq);
 			f = true;
@@ -116,30 +126,28 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	}
 	
 	private void syncAssessmentModes(UserRequest ureq) {
-		List<Mode> modeWrappers = new ArrayList<Mode>();
+		List<ResourceGuard> modeWrappers = new ArrayList<ResourceGuard>();
 		for(TransientAssessmentMode mode:modes) {
-			Mode wrapper = initAssessmentMode(ureq, mode);
+			ResourceGuard wrapper = syncAssessmentMode(ureq, mode);
 			if(wrapper != null) {
 				modeWrappers.add(wrapper);
-				if(wrapper.getCountDown() != null) {
-					mainVC.put(wrapper.getCountDown().getComponentName(), wrapper.getCountDown());
-				}
 			}
 		}
-		mainVC.contextPut("modeWrappers", modeWrappers);
+		guards.setList(modeWrappers);
+		mainVC.setDirty(true);
 	}
 	
-	private Mode initAssessmentMode(UserRequest ureq, TransientAssessmentMode mode) {
+	private ResourceGuard syncAssessmentMode(UserRequest ureq, TransientAssessmentMode mode) {
 		Date now = new Date();
-
 		Date beginWithLeadTime = mode.getBeginWithLeadTime();
 		Date endWithLeadTime = mode.getEndWithFollowupTime();
 		if(beginWithLeadTime.after(now)) {
 			return null;
-		} else if(endWithLeadTime.before(now)) {
-			return null;
-		} else if(Status.end == mode.getStatus()) {
-			return null;
+		}
+		
+		ResourceGuard guard = guards.getGuardFor(mode);
+		if(guard == null) {
+			guard = createGuard(mode);
 		}
 		
 		String state;
@@ -149,54 +157,88 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		StringBuilder sb = new StringBuilder();
 		boolean allowed = true;
 		if(mode.getIpList() != null) {
-			boolean ipInRange = assessmentmodeMgr.isIpAllowed(mode.getIpList(), address);
+			boolean ipInRange = assessmentModeMgr.isIpAllowed(mode.getIpList(), address);
 			if(!ipInRange) {
 				sb.append(translate("error.ip.range"));
 			}
 			allowed &= ipInRange;
 		}
 		if(mode.getSafeExamBrowserKey() != null) {
-			boolean safeExamCheck = assessmentmodeMgr.isSafelyAllowed(ureq.getHttpReq(), mode.getSafeExamBrowserKey());
+			boolean safeExamCheck = assessmentModeMgr.isSafelyAllowed(ureq.getHttpReq(), mode.getSafeExamBrowserKey());
 			if(!safeExamCheck) {
 				if(sb.length() > 0) sb.append("<br />");
 				sb.append(translate("error.safe.exam"));
 			}
 			allowed &= safeExamCheck;
 		}
+		
+		guard.getCountDown().setDate(mode.getBegin());
 
 		if(allowed) {
-			String name = "go-" + CodeHelper.getRAMUniqueID();
-			if(button == null) {
-				button = LinkFactory.createCustomLink(name, "go", "current.mode.start", Link.BUTTON, mainVC, this);
-				button.setUserObject(mode);
-			}
+			Link go = guard.getGo();
+			Link cont = guard.getContinue();
 
 			if(beginWithLeadTime.compareTo(now) <= 0 && begin.compareTo(now) > 0) {
 				state = Status.leadtime.name();
-				button.setEnabled(false);
-				button.setVisible(true);
+				go.setEnabled(false);
+				go.setVisible(true);
+				cont.setEnabled(false);
+				cont.setVisible(false);
 			} else if(begin.compareTo(now) <= 0 && end.compareTo(now) > 0) {
 				state = Status.assessment.name();
-				button.setCustomEnabledLinkCSS("btn btn-primary");
-				button.setEnabled(true);
-				button.setVisible(true);
+				go.setEnabled(true);
+				go.setVisible(true);
+				cont.setEnabled(false);
+				cont.setVisible(false);
 			} else if(end.compareTo(now) <= 0 && endWithLeadTime.compareTo(now) >= 0) {
 				state = Status.followup.name();
-				button.setEnabled(false);
-				button.setVisible(false);
+				go.setEnabled(false);
+				go.setVisible(false);
+				cont.setEnabled(false);
+				cont.setVisible(false);
+			} else if(endWithLeadTime.before(now) || Status.end == mode.getStatus()) {
+				state = Status.end.name();
+				go.setEnabled(false);
+				go.setVisible(false);
+				cont.setEnabled(true);
+				cont.setVisible(true);
 			} else {
 				state = "error";
-				button.setEnabled(false);
-				button.setVisible(false);
+				go.setEnabled(false);
+				go.setVisible(false);
+				cont.setEnabled(false);
+				cont.setVisible(false);
 			}
 		} else {
-			state = "refused";
+			state = "error";
 		}
 		
-		String id = "count-" + mode.getModeKey();
-		CountDownComponent countDown = new CountDownComponent(id, id, mode.getBegin(), getTranslator());
+		guard.sync(state, sb.toString(), mode, getLocale());
+		return guard;
+	}
+	
+	private ResourceGuard createGuard(TransientAssessmentMode mode) {
+		String id = Long.toString(CodeHelper.getRAMUniqueID());
+
+		Link goButton = LinkFactory.createCustomLink("go-" + id, "go", "current.mode.start", Link.BUTTON, mainVC, this);
+		goButton.setCustomEnabledLinkCSS("btn btn-primary");
+		goButton.setCustomDisabledLinkCSS("o_disabled btn btn-default");
+		
+		Link continueButton = LinkFactory.createCustomLink("continue-" + id, "continue", "current.mode.continue", Link.BUTTON, mainVC, this);
+		continueButton.setCustomEnabledLinkCSS("btn btn-primary");
+		continueButton.setCustomDisabledLinkCSS("o_disabled btn btn-default");
+		
+		CountDownComponent countDown = new CountDownComponent("count-" + id, mode.getBegin(), getTranslator());
 		countDown.setI18nKey("current.mode.in");
-		return new Mode(button, state, sb.toString(), mode, getLocale(), countDown);
+		
+		ResourceGuard guard = new ResourceGuard(mode.getModeKey(), goButton, continueButton, countDown);
+		mainVC.put(goButton.getComponentName(), goButton);
+		mainVC.put(continueButton.getComponentName(), continueButton);
+		mainVC.put(countDown.getComponentName(), countDown);
+		
+		goButton.setUserObject(guard);
+		continueButton.setUserObject(guard);
+		return guard;
 	}
 
 	@Override
@@ -213,25 +255,22 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	private void processAssessmentModeNotificationEvent(AssessmentModeNotificationEvent event) {
 		if(getIdentity() != null && event.getAssessedIdentityKeys() != null
 				&& event.getAssessedIdentityKeys().contains(getIdentity().getKey())) {
-			
-			String cmd = event.getCommand();
-			if(AssessmentModeNotificationEvent.LEADTIME.equals(cmd)
-					|| AssessmentModeNotificationEvent.START_ASSESSMENT.equals(cmd)
-					|| AssessmentModeNotificationEvent.STOP_ASSESSMENT.equals(cmd)) {
-				TransientAssessmentMode mode = event.getAssessementMode();
-				
-	
-				List<TransientAssessmentMode> updatedModes = new ArrayList<TransientAssessmentMode>();
-				for(TransientAssessmentMode currentMode:modes) {
-					if(currentMode.getModeKey().equals(mode.getModeKey())) {
-						updatedModes.add(mode);
-					} else {
-						updatedModes.add(currentMode);
-					}
+
+			boolean update = false;
+			TransientAssessmentMode mode = event.getAssessementMode();
+			List<TransientAssessmentMode> updatedModes = new ArrayList<TransientAssessmentMode>();
+			for(TransientAssessmentMode currentMode:modes) {
+				if(currentMode.getModeKey().equals(mode.getModeKey())) {
+					updatedModes.add(mode);
+					update |= (currentMode.getStatus() != mode.getStatus());
+					
+				} else {
+					updatedModes.add(currentMode);
+					update |= true;
 				}
-				
-				pushUpdate = true;
 			}
+			modes = updatedModes;
+			pushUpdate |= update;
 		}
 	}
 
@@ -240,8 +279,31 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		if(source instanceof Link) {
 			Link link = (Link)source;
 			if("go".equals(link.getCommand())) {
-				launchAssessmentMode(ureq, (TransientAssessmentMode)link.getUserObject());
+				ResourceGuard guard = (ResourceGuard)link.getUserObject();
+				launchAssessmentMode(ureq, guard.getReference());
+			} else if("continue".equals(link.getCommand())) {
+				ResourceGuard guard = (ResourceGuard)link.getUserObject();
+				continueAfterAssessmentMode(ureq, guard);
 			}
+		}
+	}
+	
+	private void continueAfterAssessmentMode(UserRequest ureq, ResourceGuard selectedGuard) {
+		List<ResourceGuard> lastGuards = new ArrayList<ResourceGuard>();
+		for(ResourceGuard currentGuard:guards.getList()) {
+			if(currentGuard != selectedGuard) {
+				lastGuards.add(currentGuard);
+			}
+		}
+		guards.setList(lastGuards);
+		
+		boolean canContinue = guards.getSize() == 0;
+		if(canContinue) {
+			fireEvent(ureq, new Event("continue"));
+			String businessPath = "[MyCoursesSite:0]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		} else {
+			mainVC.setDirty(true);
 		}
 	}
 	
@@ -266,12 +328,13 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
-	public static final class Mode {
+	public static final class ResourceGuard {
 
 		private String status;
 		private String errors;
-		private final Link goButton;
+		private final Link goButton, continueButton;
 		
+		private final Long modeKey;
 		private String name;
 		private String displayName;
 		private String description;
@@ -282,14 +345,22 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		private String leadTime;
 		private String followupTime;
 		
+		private TransientAssessmentMode reference;
+		
 		private CountDownComponent countDown;
 		
-		public Mode(Link goButton, String status, String errors, TransientAssessmentMode mode, Locale locale, CountDownComponent countDown) {
+		public ResourceGuard(Long modeKey, Link goButton, Link continueButton, CountDownComponent countDown) {
+			this.modeKey = modeKey;
 			this.goButton = goButton;
+			this.countDown = countDown;
+			this.continueButton = continueButton;
+		}
+		
+		public void sync(String status, String errors, TransientAssessmentMode mode, Locale locale) {
 			this.errors = errors;
 			this.status = status;
-			this.countDown = countDown;
 			
+			reference = mode;
 			name = mode.getName();
 			displayName = mode.getDisplayName();
 			description = mode.getDescription();
@@ -312,8 +383,12 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			}
 		}
 		
-		public CountDownComponent getCountDown() {
-			return countDown;
+		public Long getModeKey() {
+			return modeKey;
+		}
+		
+		public TransientAssessmentMode getReference() {
+			return reference;
 		}
 
 		public String getName() {
@@ -364,8 +439,43 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			this.errors = errors;
 		}
 
-		public String getButtonName() {
-			return goButton.getComponentName();
+		public Link getGo() {
+			return goButton;
+		}
+		
+		public Link getContinue() {
+			return continueButton;
+		}
+		
+		public CountDownComponent getCountDown() {
+			return countDown;
+		}
+	}
+	
+	public static class ResourceGuards {
+		
+		private List<ResourceGuard> guards = new ArrayList<>();
+		
+		public int getSize() {
+			return guards.size();
+		}
+		
+		public ResourceGuard getGuardFor(TransientAssessmentMode mode) {
+			ResourceGuard guard = null;
+			for(ResourceGuard g:getList()) {
+				if(g.getModeKey().equals(mode.getModeKey())) {
+					guard = g;
+				}
+			}
+			return guard;
+		}
+
+		public List<ResourceGuard> getList() {
+			return guards;
+		}
+
+		public void setList(List<ResourceGuard> guards) {
+			this.guards = guards;
 		}
 	}
 }

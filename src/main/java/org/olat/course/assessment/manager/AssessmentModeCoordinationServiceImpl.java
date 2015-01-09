@@ -83,15 +83,18 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	}
 
 	private AssessmentMode sendEvent(AssessmentMode mode, Date now) {
-		TransientAssessmentMode transientMode = new TransientAssessmentMode(mode);
-		if(mode.getBeginWithLeadTime().compareTo(now) <= 0 && mode.getBegin().compareTo(now) >= 0) {
+		if(mode.getBeginWithLeadTime().compareTo(now) > 0) {
+			mode = ensureStatusOfMode(mode, Status.none);
+			sendEvent(AssessmentModeNotificationEvent.BEFORE, mode,
+					assessmentModeManager.getAssessedIdentityKeys(mode));
+		} else if(mode.getBeginWithLeadTime().compareTo(now) <= 0 && mode.getBegin().compareTo(now) >= 0) {
 			mode = ensureStatusOfMode(mode, Status.leadtime);
-			sendEvent(AssessmentModeNotificationEvent.LEADTIME, transientMode,
+			sendEvent(AssessmentModeNotificationEvent.LEADTIME, mode,
 					assessmentModeManager.getAssessedIdentityKeys(mode));
 		} else if(!mode.isManualBeginEnd()) {
 			if(mode.getBegin().compareTo(now) <= 0 && mode.getEnd().compareTo(now) >= 0) {
 				mode = ensureStatusOfMode(mode, Status.assessment);
-				sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, transientMode,
+				sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, mode,
 						assessmentModeManager.getAssessedIdentityKeys(mode));
 				
 				//message 5 minutes before end
@@ -101,21 +104,21 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 				cal.set(Calendar.MILLISECOND, 0);
 				cal.add(Calendar.MINUTE, -6);
 				if(now.after(cal.getTime())) {
-					sendEvent(AssessmentModeNotificationEvent.STOP_WARNING, transientMode, null);
+					sendEvent(AssessmentModeNotificationEvent.STOP_WARNING, mode, null);
 				}
 			} else if(mode.getEnd().compareTo(now) <= 0 && mode.getEndWithFollowupTime().compareTo(now) >= 0) {
 				if(mode.getLeadTime() > 0) {
 					mode = ensureStatusOfMode(mode, Status.followup);
-					sendEvent(AssessmentModeNotificationEvent.STOP_ASSESSMENT, transientMode,
+					sendEvent(AssessmentModeNotificationEvent.STOP_ASSESSMENT, mode,
 							assessmentModeManager.getAssessedIdentityKeys(mode));
 				} else {
 					mode = ensureStatusOfMode(mode, Status.end);
-					sendEvent(AssessmentModeNotificationEvent.END, transientMode,
+					sendEvent(AssessmentModeNotificationEvent.END, mode,
 							assessmentModeManager.getAssessedIdentityKeys(mode));
 				}
 			} else if(mode.getEndWithFollowupTime().compareTo(now) < 0) {
 				mode = ensureStatusOfMode(mode, Status.end);
-				sendEvent(AssessmentModeNotificationEvent.END, transientMode,
+				sendEvent(AssessmentModeNotificationEvent.END, mode,
 						assessmentModeManager.getAssessedIdentityKeys(mode));
 			}
 		}
@@ -132,8 +135,9 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		return mode;
 	}
 	
-	private void sendEvent(String cmd, TransientAssessmentMode mode, Set<Long> assessedIdentityKeys) {
-		AssessmentModeNotificationEvent event = new AssessmentModeNotificationEvent(cmd, mode, assessedIdentityKeys);
+	private void sendEvent(String cmd, AssessmentMode mode, Set<Long> assessedIdentityKeys) {
+		TransientAssessmentMode transientMode = new TransientAssessmentMode(mode);
+		AssessmentModeNotificationEvent event = new AssessmentModeNotificationEvent(cmd, transientMode, assessedIdentityKeys);
 		coordinatorManager.getCoordinator().getEventBus()
 			.fireEventToListenersOf(event, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 	}
@@ -141,22 +145,20 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	@Override
 	public AssessmentMode startAssessment(AssessmentMode mode) {
 		mode = ensureStatusOfMode(mode, Status.assessment);
-		TransientAssessmentMode transientMode = new TransientAssessmentMode(mode);
 		Set<Long> assessedIdentityKeys = assessmentModeManager.getAssessedIdentityKeys(mode);
-		sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, transientMode, assessedIdentityKeys);
+		sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, mode, assessedIdentityKeys);
 		return mode;
 	}
 
 	@Override
 	public AssessmentMode stopAssessment(AssessmentMode mode) {
-		TransientAssessmentMode transientMode = new TransientAssessmentMode(mode);
 		Set<Long> assessedIdentityKeys = assessmentModeManager.getAssessedIdentityKeys(mode);
 		if(mode.getLeadTime() > 0) {
 			mode = ensureStatusOfMode(mode, Status.leadtime);
-			sendEvent(AssessmentModeNotificationEvent.STOP_ASSESSMENT, transientMode, assessedIdentityKeys);
+			sendEvent(AssessmentModeNotificationEvent.STOP_ASSESSMENT, mode, assessedIdentityKeys);
 		} else {
 			mode = ensureStatusOfMode(mode, Status.end);
-			sendEvent(AssessmentModeNotificationEvent.END, transientMode, assessedIdentityKeys);
+			sendEvent(AssessmentModeNotificationEvent.END, mode, assessedIdentityKeys);
 		}
 		return mode;
 	}

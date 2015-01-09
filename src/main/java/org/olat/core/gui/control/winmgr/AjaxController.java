@@ -110,7 +110,6 @@ public class AjaxController extends DefaultController {
 		pollPeriodContent.contextPut("pollperiod", new Integer(pollperiod));
 		
 		myContent = new VelocityContainer("jsserverpart", VELOCITY_ROOT + "/serverpart.html", null, this);
-		myContent.contextPut("highlight", Boolean.FALSE);
 		myContent.contextPut("pollperiod", new Integer(pollperiod));
 		
 		//more debug information: OLAT-3529
@@ -122,11 +121,7 @@ public class AjaxController extends DefaultController {
 			public MediaResource handle(String relPath, HttpServletRequest request) {
 				pollCount++;
 				statsManager.incrementAuthenticatedPollerClick();
-				// check for dirty components now.
-				wboImpl.fireCycleEvent(Window.BEFORE_INLINE_RENDERING);
-				Command updateDirtyCom = window.handleDirties();
-				wboImpl.fireCycleEvent(Window.AFTER_INLINE_RENDERING);
-				
+
 				String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
 				UserRequest ureq = new UserRequestImpl(uriPrefix, request, null);
 				boolean reload = false;
@@ -135,6 +130,11 @@ public class AjaxController extends DefaultController {
 					ChiefController cc = ws.getChiefController();
 					reload = cc.wishAsyncReload(ureq, false);
 				}
+				
+				// check for dirty components now.
+				wboImpl.fireCycleEvent(Window.BEFORE_INLINE_RENDERING);
+				Command updateDirtyCom = window.handleDirties();
+				wboImpl.fireCycleEvent(Window.AFTER_INLINE_RENDERING);
 				
 				if (updateDirtyCom != null) {
 					synchronized (windowcommands) { //o_clusterOK by:fj
@@ -147,8 +147,7 @@ public class AjaxController extends DefaultController {
 						}
 					}
 				}
-				MediaResource mr = extractMediaResource(false);
-				return mr;
+				return extractMediaResource(false);
 			}
 		};
 
