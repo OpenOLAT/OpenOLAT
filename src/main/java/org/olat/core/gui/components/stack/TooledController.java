@@ -17,22 +17,18 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.help;
-
-import org.olat.admin.user.tools.UserTool;
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.control.WindowControl;
+package org.olat.core.gui.components.stack;
 
 /**
  * 
- * Initial date: 07.01.2015<br>
+ * Init the tools after push
+ * 
+ * Initial date: 08.01.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface HelpLinkSPI {
+public interface TooledController {
 	
-	public UserTool getHelpUserTool(WindowControl wControl);
+	public void initTools();
 
-	public Component getHelpPageLink(UserRequest ureq, String title, String tooltip, String iconCSS, String elementCSS, String page);
 }

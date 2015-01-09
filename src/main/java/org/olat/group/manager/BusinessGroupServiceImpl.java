@@ -1502,6 +1502,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	public void addResourcesTo(List<BusinessGroup> groups, List<RepositoryEntry> resources) {
 		if(groups == null || groups.isEmpty()) return;
 		if(resources == null || resources.isEmpty()) return;
+
 		
 		List<Group> baseGroupKeys = new ArrayList<Group>();
 		for(BusinessGroup group:groups) {
@@ -1511,6 +1512,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 		//check for duplicate entries
 		List<RepositoryEntryToGroupRelation> relations = repositoryEntryRelationDao.getRelations(baseGroupKeys);
 		for(BusinessGroup group:groups) {
+			//reload the base group to prevent lazy loading exception
+			Group baseGroup = businessGroupRelationDAO.getGroup(group);
+			if(baseGroup == null) {
+				continue;
+			}
 			for(RepositoryEntry re:resources) {
 				boolean found = false;
 				for(RepositoryEntryToGroupRelation relation:relations) {
@@ -1519,7 +1525,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 					}
 				}
 				if(!found) {
-					addResourceTo(group, re);
+					repositoryEntryRelationDao.createRelation(baseGroup, re);
 				}
 			}
 		}

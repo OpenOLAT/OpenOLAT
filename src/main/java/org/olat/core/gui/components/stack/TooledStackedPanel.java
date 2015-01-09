@@ -148,6 +148,9 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		TooledBreadCrumb currentCrumb = getCurrentCrumb();
 		if(currentCrumb == null || currentCrumb.getController() != controller) {
 			super.pushController(displayName, controller);
+			if(controller instanceof TooledController) {
+				((TooledController)controller).initTools();
+			}
 		}
 	}
 

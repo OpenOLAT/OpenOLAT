@@ -27,6 +27,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -47,7 +48,7 @@ import org.springframework.stereotype.Service;
 public class HelpCourseSPI implements HelpLinkSPI  {
 
 	@Override
-	public UserTool getHelp(WindowControl wControl) {
+	public UserTool getHelpUserTool(WindowControl wControl) {
 		return new HelCourseUserTool(wControl);
 	}
 	
@@ -88,4 +89,10 @@ public class HelpCourseSPI implements HelpLinkSPI  {
 			//
 		}
 	}
+	
+	@Override
+	public Component getHelpPageLink(UserRequest ureq, String title, String tooltip, String iconCSS, String elementCSS, String page) {
+		return new Panel("HelpCourseSPI.getHelpPageLink() is not supported");
+	}
+
 }

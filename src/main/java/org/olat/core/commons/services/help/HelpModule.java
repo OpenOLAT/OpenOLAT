@@ -36,9 +36,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class HelpModule extends AbstractSpringModule {
 	
-	@Value("${help.course.enabled:true}")
+	@Value("${help.enabled:true}")
 	private boolean helpEnabled;
-	@Value("${help.course.plugin:ooConfluenceHelp}")
+	@Value("${help.plugin:ooConfluenceHelp}")
 	private String providerId;
 	
 	@Autowired
