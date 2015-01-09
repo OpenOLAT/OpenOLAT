@@ -633,10 +633,10 @@ public class IQDisplayController extends DefaultController implements GenericEve
 				LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiParams, "", qtiDetails));
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, retrieveListenerOres);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.deregisterFor(this, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 	}
 }
