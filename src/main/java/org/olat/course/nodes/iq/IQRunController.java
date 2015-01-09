@@ -378,15 +378,14 @@ public class IQRunController extends BasicController implements GenericEventList
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == startButton && startButton.isEnabled()){
-			long callingResId = userCourseEnv.getCourseEnvironment().getCourseResourceableId().longValue();
-			String callingResDetail = courseNode.getIdent();
+			long courseResId = userCourseEnv.getCourseEnvironment().getCourseResourceableId().longValue();
+			String courseNodeIdent = courseNode.getIdent();
 			removeAsListenerAndDispose(displayController);
 
-			//fxdiff BAKS-7 Resume function
 			OLATResourceable ores = OresHelper.createOLATResourceableTypeWithoutCheck("test");
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = addToHistory(ureq, ores, null);
-			Controller returnController = iqManager.createIQDisplayController(modConfig, secCallback, ureq, bwControl, callingResId, callingResDetail, this);
+			Controller returnController = iqManager.createIQDisplayController(modConfig, secCallback, ureq, bwControl, courseResId, courseNodeIdent, this);
 			/*
 			 * either returnController is a MessageController or it is a IQDisplayController
 			 * this should not serve as pattern to be copy&pasted.
@@ -406,11 +405,11 @@ public class IQRunController extends BasicController implements GenericEventList
 					
 					//need to wrap a course restart controller again, because IQDisplay
 					//runs on top of GUIStack
-					ICourse course = CourseFactory.loadCourse(callingResId);
+					ICourse course = CourseFactory.loadCourse(courseResId);
 					RepositoryEntry courseRepositoryEntry = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 					Panel empty = new Panel("empty");//empty panel set as "menu" and "tool"
 					Controller courseCloser = new DisposedCourseRestartController(ureq, getWindowControl(), courseRepositoryEntry);
-					Controller disposedRestartController = new LayoutMain3ColsController(ureq, getWindowControl(), empty, courseCloser.getInitialComponent(), "disposed course whily in iqRun" + callingResId);
+					Controller disposedRestartController = new LayoutMain3ColsController(ureq, getWindowControl(), empty, courseCloser.getInitialComponent(), "disposed course whily in iqRun" + courseResId);
 					displayContainerController.setDisposedMessageController(disposedRestartController);
 					
 					final boolean fullWindow = modConfig.getBooleanSafe(IQEditController.CONFIG_FULLWINDOW, true);
@@ -525,7 +524,10 @@ public class IQRunController extends BasicController implements GenericEventList
 				}
 			} else if (event.equals(Event.DONE_EVENT)) {
 				stopAssessment(urequest, event);
-			} else if ("test_stopped".equals(event.getCommand())) {
+			} else if (IQEvent.TEST_PULLED.equals(event.getCommand())) {
+				stopAssessment(urequest, event);
+				showWarning("error.assessment.pulled");
+			} else if (IQEvent.TEST_STOPPED.equals(event.getCommand())) {
 				stopAssessment(urequest, event);
 				showWarning("error.assessment.stopped");
 			}
