@@ -99,7 +99,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		
 		mode.setApplySettingsForCoach(true);
 		
-		AssessmentMode savedMode = assessmentModeMgr.save(mode);
+		AssessmentMode savedMode = assessmentModeMgr.persist(mode);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(savedMode);
 		Assert.assertNotNull(savedMode.getKey());
@@ -144,7 +144,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		mode.setBegin(new Date());
 		mode.setEnd(new Date());
 		mode.setTargetAudience(Target.course);
-		AssessmentMode savedMode = assessmentModeMgr.save(mode);
+		AssessmentMode savedMode = assessmentModeMgr.persist(mode);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(savedMode);
 		
@@ -161,13 +161,13 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(author, "as_mode_1", "", null, null, null, null, false, false, null);
 		
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
-		mode = assessmentModeMgr.save(mode);
+		mode = assessmentModeMgr.persist(mode);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(mode);
 
 		AssessmentModeToGroup modeToGroup = assessmentModeMgr.createAssessmentModeToGroup(mode, businessGroup);
 		mode.getGroups().add(modeToGroup);
-		AssessmentMode savedMode = assessmentModeMgr.save(mode);
+		AssessmentMode savedMode = assessmentModeMgr.merge(mode, true);
 		dbInstance.commitAndCloseSession();
 		
 		AssessmentMode reloadedMode = assessmentModeMgr.getAssessmentModeById(mode.getKey());
@@ -187,13 +187,13 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		BGArea area = areaMgr.createAndPersistBGArea("little area", "My little secret area", entry.getOlatResource());
 		areaMgr.addBGToBGArea(businessGroup, area);
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
-		mode = assessmentModeMgr.save(mode);
+		mode = assessmentModeMgr.persist(mode);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(mode);
 
 		AssessmentModeToArea modeToArea = assessmentModeMgr.createAssessmentModeToArea(mode, area);
 		mode.getAreas().add(modeToArea);
-		AssessmentMode savedMode = assessmentModeMgr.save(mode);
+		AssessmentMode savedMode = assessmentModeMgr.merge(mode, true);
 		dbInstance.commitAndCloseSession();
 		
 		AssessmentMode reloadedMode = assessmentModeMgr.getAssessmentModeById(mode.getKey());
@@ -213,13 +213,13 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(author, "as_mode_1", "", null, null, null, null, false, false, null);
 		
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
-		mode = assessmentModeMgr.save(mode);
+		mode = assessmentModeMgr.persist(mode);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(mode);
 
 		AssessmentModeToGroup modeToGroup = assessmentModeMgr.createAssessmentModeToGroup(mode, businessGroup);
 		mode.getGroups().add(modeToGroup);
-		AssessmentMode savedMode = assessmentModeMgr.save(mode);
+		AssessmentMode savedMode = assessmentModeMgr.merge(mode, true);
 		dbInstance.commitAndCloseSession();
 		
 		BusinessGroup businessGroupForArea = businessGroupService.createBusinessGroup(author, "as_mode_1", "", null, null, null, null, false, false, null);
@@ -228,7 +228,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		AssessmentModeToArea modeToArea = assessmentModeMgr.createAssessmentModeToArea(savedMode, area);
 		savedMode.getAreas().add(modeToArea);
-		savedMode = assessmentModeMgr.save(savedMode);
+		savedMode = assessmentModeMgr.merge(savedMode, true);
 		dbInstance.commitAndCloseSession();
 		
 		//delete
@@ -243,7 +243,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	public void loadAssessmentMode_repositoryEntry() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
-		mode = assessmentModeMgr.save(mode);
+		mode = assessmentModeMgr.persist(mode);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(mode);
 		
@@ -258,7 +258,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	public void loadCurrentAssessmentModes() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
-		mode = assessmentModeMgr.save(mode);
+		mode = assessmentModeMgr.persist(mode);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(mode);
 		
@@ -287,11 +287,11 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
 		mode.setTargetAudience(AssessmentMode.Target.courseAndGroups);
 		mode.setApplySettingsForCoach(false);
-		mode = assessmentModeMgr.save(mode);
+		mode = assessmentModeMgr.persist(mode);
 		
 		AssessmentModeToGroup modeToGroup = assessmentModeMgr.createAssessmentModeToGroup(mode, businessGroup);
 		mode.getGroups().add(modeToGroup);
-		mode = assessmentModeMgr.save(mode);
+		mode = assessmentModeMgr.merge(mode, true);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(mode);
 		
@@ -330,11 +330,11 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
 		mode.setTargetAudience(AssessmentMode.Target.courseAndGroups);
 		mode.setApplySettingsForCoach(true);
-		mode = assessmentModeMgr.save(mode);
+		mode = assessmentModeMgr.persist(mode);
 		
 		AssessmentModeToGroup modeToGroup = assessmentModeMgr.createAssessmentModeToGroup(mode, businessGroup);
 		mode.getGroups().add(modeToGroup);
-		mode = assessmentModeMgr.save(mode);
+		mode = assessmentModeMgr.merge(mode, true);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(mode);
 		
@@ -369,7 +369,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
 		mode.setTargetAudience(AssessmentMode.Target.courseAndGroups);
 		mode.setApplySettingsForCoach(false);
-		mode = assessmentModeMgr.save(mode);
+		mode = assessmentModeMgr.persist(mode);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(mode);
 		
@@ -403,7 +403,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
 		mode.setTargetAudience(AssessmentMode.Target.courseAndGroups);
 		mode.setApplySettingsForCoach(true);
-		mode = assessmentModeMgr.save(mode);
+		mode = assessmentModeMgr.persist(mode);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(mode);
 		
@@ -445,11 +445,11 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
 		mode.setTargetAudience(AssessmentMode.Target.courseAndGroups);
 		mode.setApplySettingsForCoach(false);
-		mode = assessmentModeMgr.save(mode);
+		mode = assessmentModeMgr.persist(mode);
 		
 		AssessmentModeToGroup modeToGroup = assessmentModeMgr.createAssessmentModeToGroup(mode, businessGroup);
 		mode.getGroups().add(modeToGroup);
-		mode = assessmentModeMgr.save(mode);
+		mode = assessmentModeMgr.merge(mode, true);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(mode);
 		
@@ -490,11 +490,11 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
 		mode.setTargetAudience(AssessmentMode.Target.courseAndGroups);
 		mode.setApplySettingsForCoach(true);
-		mode = assessmentModeMgr.save(mode);
+		mode = assessmentModeMgr.persist(mode);
 		
 		AssessmentModeToArea modeToArea = assessmentModeMgr.createAssessmentModeToArea(mode, area);
 		mode.getAreas().add(modeToArea);
-		mode = assessmentModeMgr.save(mode);
+		mode = assessmentModeMgr.merge(mode, true);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(mode);
 		
@@ -536,11 +536,11 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
 		mode.setTargetAudience(AssessmentMode.Target.courseAndGroups);
 		mode.setApplySettingsForCoach(true);
-		mode = assessmentModeMgr.save(mode);
+		mode = assessmentModeMgr.persist(mode);
 
 		AssessmentModeToGroup modeToGroup = assessmentModeMgr.createAssessmentModeToGroup(mode, businessGroup);
 		mode.getGroups().add(modeToGroup);
-		mode = assessmentModeMgr.save(mode);
+		mode = assessmentModeMgr.merge(mode, true);
 		dbInstance.commitAndCloseSession();
 
 		Set<Long> assessedIdentityKeys = assessmentModeMgr.getAssessedIdentityKeys(mode);
@@ -573,14 +573,14 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
 		mode.setTargetAudience(AssessmentMode.Target.courseAndGroups);
 		mode.setApplySettingsForCoach(true);
-		mode = assessmentModeMgr.save(mode);
+		mode = assessmentModeMgr.persist(mode);
 		
 		BGArea area = areaMgr.createAndPersistBGArea("area for people", "", entry.getOlatResource());
 		areaMgr.addBGToBGArea(businessGroup, area);
 
 		AssessmentModeToArea modeToArea = assessmentModeMgr.createAssessmentModeToArea(mode, area);
 		mode.getAreas().add(modeToArea);
-		mode = assessmentModeMgr.save(mode);
+		mode = assessmentModeMgr.merge(mode, true);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(mode);
 
