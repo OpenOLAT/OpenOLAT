@@ -57,6 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssessmentModeGuardController extends BasicController implements GenericEventListener {
 
+	private final Link mainContinueButton;
 	private final VelocityContainer mainVC;
 	private final CloseableModalController cmc;
 	
@@ -87,6 +88,13 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		
 		mainVC = createVelocityContainer("choose_mode");
 		mainVC.contextPut("guards", guards);
+		
+		mainContinueButton = LinkFactory.createCustomLink("continue-main", "continue-main", "current.mode.continue", Link.BUTTON, mainVC, this);
+		mainContinueButton.setCustomEnabledLinkCSS("btn btn-primary");
+		mainContinueButton.setCustomDisabledLinkCSS("o_disabled btn btn-default");
+		mainContinueButton.setVisible(false);
+		mainVC.put("continue-main", mainContinueButton);
+		
 		syncAssessmentModes(ureq);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), mainVC, true, translate("current.mode"), false);	
@@ -134,14 +142,16 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			}
 		}
 		guards.setList(modeWrappers);
+		mainContinueButton.setVisible(modeWrappers.isEmpty());
 		mainVC.setDirty(true);
 	}
 	
 	private ResourceGuard syncAssessmentMode(UserRequest ureq, TransientAssessmentMode mode) {
 		Date now = new Date();
 		Date beginWithLeadTime = mode.getBeginWithLeadTime();
-		Date endWithLeadTime = mode.getEndWithFollowupTime();
-		if(beginWithLeadTime.after(now)) {
+		if(!mode.isManual() && beginWithLeadTime.after(now)) {
+			return null;
+		} else if(mode.isManual() && (Status.end.equals(mode.getStatus()) || Status.none.equals(mode.getStatus()))) {
 			return null;
 		}
 		
@@ -149,10 +159,6 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		if(guard == null) {
 			guard = createGuard(mode);
 		}
-		
-		String state;
-		Date begin = mode.getBegin();
-		Date end = mode.getEnd();
 
 		StringBuilder sb = new StringBuilder();
 		boolean allowed = true;
@@ -174,10 +180,59 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		
 		guard.getCountDown().setDate(mode.getBegin());
 
+		String state;
 		if(allowed) {
 			Link go = guard.getGo();
 			Link cont = guard.getContinue();
+			state = updateButtons(mode, now, go, cont);
+		} else {
+			state = "error";
+		}
+		
+		guard.sync(state, sb.toString(), mode, getLocale());
+		return guard;
+	}
+	
+	private String updateButtons(TransientAssessmentMode mode, Date now, Link go, Link cont) {
+		String state;
+		if(mode.isManual()) {
+			if(Status.leadtime == mode.getStatus()) {
+				state = Status.leadtime.name();
+				go.setEnabled(false);
+				go.setVisible(true);
+				cont.setEnabled(false);
+				cont.setVisible(false);
+			} else if(Status.assessment == mode.getStatus()) {
+				state = Status.assessment.name();
+				go.setEnabled(true);
+				go.setVisible(true);
+				cont.setEnabled(false);
+				cont.setVisible(false);
+			} else if(Status.followup == mode.getStatus()) {
+				state = Status.followup.name();
+				go.setEnabled(false);
+				go.setVisible(false);
+				cont.setEnabled(false);
+				cont.setVisible(false);
+			} else if(Status.end == mode.getStatus()) {
+				state = Status.end.name();
+				go.setEnabled(false);
+				go.setVisible(false);
+				cont.setEnabled(true);
+				cont.setVisible(true);
+			} else {
+				state = "error";
+				go.setEnabled(false);
+				go.setVisible(false);
+				cont.setEnabled(false);
+				cont.setVisible(false);
+			}
+		} else {
 
+			Date begin = mode.getBegin();
+			Date beginWithLeadTime = mode.getBeginWithLeadTime();
+			Date end = mode.getEnd();
+			Date endWithLeadTime = mode.getEndWithFollowupTime();
 			if(beginWithLeadTime.compareTo(now) <= 0 && begin.compareTo(now) > 0) {
 				state = Status.leadtime.name();
 				go.setEnabled(false);
@@ -209,12 +264,10 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 				cont.setEnabled(false);
 				cont.setVisible(false);
 			}
-		} else {
-			state = "error";
 		}
 		
-		guard.sync(state, sb.toString(), mode, getLocale());
-		return guard;
+		return state;
+		
 	}
 	
 	private ResourceGuard createGuard(TransientAssessmentMode mode) {
@@ -281,7 +334,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			if("go".equals(link.getCommand())) {
 				ResourceGuard guard = (ResourceGuard)link.getUserObject();
 				launchAssessmentMode(ureq, guard.getReference());
-			} else if("continue".equals(link.getCommand())) {
+			} else if("continue".equals(link.getCommand()) || "continue-main".equals(link.getCommand())) {
 				ResourceGuard guard = (ResourceGuard)link.getUserObject();
 				continueAfterAssessmentMode(ureq, guard);
 			}

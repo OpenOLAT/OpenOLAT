@@ -20,6 +20,7 @@
 package org.olat.course.assessment.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -44,13 +45,17 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentMode.Target;
+import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeToArea;
 import org.olat.course.assessment.AssessmentModeToGroup;
@@ -88,6 +93,7 @@ public class AssessmentModeEditController extends FormBasicController {
 	private MultipleSelectionElement ipsEl, safeExamBrowserEl, forCoachEl, courseElementsRestrictionEl;
 	
 	private CloseableModalController cmc;
+	private DialogBoxController confirmCtrl;
 	private AreaSelectionController areaChooseCtrl;
 	private GroupSelectionController groupChooseCtrl;
 	private ChooseElementsController chooseElementsCtrl;
@@ -108,6 +114,8 @@ public class AssessmentModeEditController extends FormBasicController {
 	private BGAreaManager areaMgr;
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
+	@Autowired
+	private AssessmentModeCoordinationService modeCoordinationService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
@@ -335,6 +343,10 @@ public class AssessmentModeEditController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(confirmCtrl == source) {
+			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				save(ureq, true);
+			}
 		} else if(cmc == source) {
 			cmc.deactivate();
 		}
@@ -411,6 +423,33 @@ public class AssessmentModeEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		Date begin = beginEl.getDate();
+		Date end = endEl.getDate();
+		int followupTime = followupTimeEl.getIntValue();
+		int leadTime = leadTimeEl.getIntValue();
+
+		Status currentStatus = assessmentMode.getStatus();
+		Status nextStatus = modeCoordinationService.evaluateStatus(begin, leadTime, end, followupTime);
+		
+		if(currentStatus == nextStatus) {
+			save(ureq, true);
+		} else {
+			String title = translate("confirm.status.change.title");
+
+			String text;
+			switch(nextStatus) {
+				case none: text = translate("confirm.status.change.none"); break;
+				case leadtime: text = translate("confirm.status.change.leadtime"); break;
+				case assessment: text = translate("confirm.status.change.assessment"); break;
+				case followup: text = translate("confirm.status.change.followup"); break;
+				case end: text = translate("confirm.status.change.end"); break;
+				default: text = "ERROR";
+			}
+			confirmCtrl = activateOkCancelDialog(ureq, title, text, confirmCtrl);
+		}
+	}
+	
+	private void save(UserRequest ureq, boolean forceStatus) {
 		if(assessmentMode.getKey() != null) {
 			assessmentMode = assessmentModeMgr.getAssessmentModeById(assessmentMode.getKey());
 		}
@@ -482,7 +521,7 @@ public class AssessmentModeEditController extends FormBasicController {
 
 		//mode need to be persisted for the following relations
 		if(assessmentMode.getKey() == null) {
-			assessmentMode = assessmentModeMgr.save(assessmentMode);
+			assessmentMode = assessmentModeMgr.persist(assessmentMode);
 		}
 
 		//update groups
@@ -535,7 +574,7 @@ public class AssessmentModeEditController extends FormBasicController {
 			}
 		}
 
-		assessmentMode = assessmentModeMgr.save(assessmentMode);
+		assessmentMode = assessmentModeMgr.merge(assessmentMode, forceStatus);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 

@@ -124,13 +124,13 @@ public class AssessmentModeListController extends FormBasicController implements
 				new TimeCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.target.i18nKey(), Cols.target.ordinal(),
 				new TargetAudienceCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("start", Cols.manual.ordinal(), "start",
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("start", Cols.start.ordinal(), "start",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("start"), "start"), null)));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("stop", Cols.manual.ordinal(), "stop",
+		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("stop", Cols.stop.ordinal(), "stop",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("stop"), "stop"), null)));
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("edit", translate("edit"), "edit"));
 		
-		model = new AssessmentModeListModel(columnsModel);
+		model = new AssessmentModeListModel(columnsModel, assessmentModeCoordinationService);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setMultiSelect(true);
 	}
@@ -259,9 +259,11 @@ public class AssessmentModeListController extends FormBasicController implements
 
 	private void doStart(UserRequest ureq, AssessmentMode mode) {
 		assessmentModeCoordinationService.startAssessment(mode);
+		loadModel();
 	}
 	
 	private void doStop(UserRequest ureq, AssessmentMode mode) {
 		assessmentModeCoordinationService.stopAssessment(mode);
+		loadModel();
 	}
 }

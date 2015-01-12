@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 
 /**
@@ -34,13 +35,16 @@ import org.olat.course.assessment.model.TransientAssessmentMode;
  */
 public class AssessmentModeListModel extends DefaultFlexiTableDataModel<AssessmentMode> {
 	
-	public AssessmentModeListModel(FlexiTableColumnModel columnsModel) {
+	private final AssessmentModeCoordinationService coordinationService;
+	
+	public AssessmentModeListModel(FlexiTableColumnModel columnsModel, AssessmentModeCoordinationService coordinationService) {
 		super(columnsModel);
+		this.coordinationService = coordinationService;
 	}
 
 	@Override
 	public AssessmentModeListModel createCopyWithEmptyList() {
-		return new AssessmentModeListModel(getTableColumnModel());
+		return new AssessmentModeListModel(getTableColumnModel(), coordinationService);
 	}
 
 	@Override
@@ -54,7 +58,20 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 			case leadTime: return mode.getLeadTime();
 			case followupTime: return mode.getFollowupTime();
 			case target: return mode.getTargetAudience();
-			case manual: return mode.isManualBeginEnd();
+			case start: {
+				boolean canStart = mode.isManualBeginEnd();
+				if(canStart) {
+					canStart = coordinationService.canStart(mode);
+				}
+				return canStart;
+			}
+			case stop: {
+				boolean canStop = mode.isManualBeginEnd();
+				if(canStop) {
+					canStop = coordinationService.canStop(mode);
+				}
+				return canStop;
+			}
 		}
 		return null;
 	}
@@ -83,7 +100,8 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 		leadTime("table.header.leadTime"),
 		followupTime("table.header.followupTime"),
 		target("table.header.target"),
-		manual("");
+		start(""),
+		stop("");
 		
 		private final String i18nKey;
 		

@@ -88,30 +88,58 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		mode.setManualBeginEnd(false);
 		return mode;
 	}
-
-	@Override
-	public AssessmentMode save(AssessmentMode assessmentMode) {
-		assessmentMode.setLastModified(new Date());
-		
-		//update begin with lead time
-		Date begin = assessmentMode.getBegin();
+	
+	protected Date evaluateLeadTime(Date begin, int leadtime) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(begin);
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
-		if(assessmentMode.getLeadTime() > 0) {
-			cal.add(Calendar.MINUTE, -assessmentMode.getLeadTime());
+		if(leadtime > 0) {
+			cal.add(Calendar.MINUTE, -leadtime);
 		}
-		((AssessmentModeImpl)assessmentMode).setBeginWithLeadTime(cal.getTime());
-		
-		Date end = assessmentMode.getEnd();
+		return cal.getTime();
+	}
+	
+	protected Date evaluateFollowupTime(Date end, int followupTime) {
+		Calendar cal = Calendar.getInstance();
 		cal.setTime(end);
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
-		if(assessmentMode.getFollowupTime() > 0) {
-			cal.add(Calendar.MINUTE, assessmentMode.getFollowupTime());
+		if(followupTime > 0) {
+			cal.add(Calendar.MINUTE, followupTime);
 		}
-		((AssessmentModeImpl)assessmentMode).setEndWithFollowupTime(cal.getTime());
+		return cal.getTime();
+	}
+	
+	@Override
+	public AssessmentMode persist(AssessmentMode assessmentMode) {
+		assessmentMode.setLastModified(new Date());
+		
+		//update begin with lead time
+		Date begin = assessmentMode.getBegin();
+		Date beginWithLeadTime = evaluateLeadTime(begin, assessmentMode.getLeadTime());
+		((AssessmentModeImpl)assessmentMode).setBeginWithLeadTime(beginWithLeadTime);
+		Date end = assessmentMode.getEnd();
+		Date endWithFollowupTime = this.evaluateFollowupTime(end, assessmentMode.getFollowupTime());
+		((AssessmentModeImpl)assessmentMode).setEndWithFollowupTime(endWithFollowupTime);
+
+		dbInstance.getCurrentEntityManager().persist(assessmentMode);
+		dbInstance.commit();
+		return assessmentMode;
+	}
+
+	@Override
+	public AssessmentMode merge(AssessmentMode assessmentMode, boolean forceStatus) {
+		assessmentMode.setLastModified(new Date());
+		
+		//update begin with lead time
+		Date begin = assessmentMode.getBegin();
+		Date beginWithLeadTime = evaluateLeadTime(begin, assessmentMode.getLeadTime());
+		((AssessmentModeImpl)assessmentMode).setBeginWithLeadTime(beginWithLeadTime);
+		
+		Date end = assessmentMode.getEnd();
+		Date endWithFollowupTime = this.evaluateFollowupTime(end, assessmentMode.getFollowupTime());
+		((AssessmentModeImpl)assessmentMode).setEndWithFollowupTime(endWithFollowupTime);
 
 		AssessmentMode reloadedMode;
 		if(assessmentMode.getKey() == null) {
@@ -123,7 +151,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		}
 		dbInstance.commit();
 		if(reloadedMode.isManualBeginEnd()) {
-			reloadedMode = assessmentModeCoordinationService.syncManuallySetStatus(reloadedMode);
+			reloadedMode = assessmentModeCoordinationService.syncManuallySetStatus(reloadedMode, forceStatus);
 		} else {
 			reloadedMode = assessmentModeCoordinationService.syncAutomicallySetStatus(reloadedMode);
 		}
@@ -253,7 +281,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select mode from courseassessmentmode mode where ")
-		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now)")
+		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now and mode.manualBeginEnd=false	)")
 		  .append(" or mode.statusString in ('").append(Status.leadtime.name()).append("','")
 		  .append(Status.assessment.name()).append("','").append(Status.followup.name()).append("')");
 

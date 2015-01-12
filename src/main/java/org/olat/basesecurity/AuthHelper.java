@@ -28,6 +28,7 @@ package org.olat.basesecurity;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -310,7 +311,9 @@ public class AuthHelper {
 		//need to block the all things for assessment?
 		AssessmentModeManager assessmentManager = CoreSpringFactory.getImpl(AssessmentModeManager.class);
 		List<AssessmentMode> modes = assessmentManager.getAssessmentModeFor(identity);
-		if(!modes.isEmpty()) {
+		if(modes.isEmpty()) {
+			usess.setAssessmentModes(Collections.<TransientAssessmentMode>emptyList());
+		} else {
 			usess.setAssessmentModes(TransientAssessmentMode.create(modes));
 		}
 		

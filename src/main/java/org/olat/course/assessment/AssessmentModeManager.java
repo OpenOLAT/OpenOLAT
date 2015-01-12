@@ -50,7 +50,16 @@ public interface AssessmentModeManager {
 	
 	public AssessmentModeToArea createAssessmentModeToArea(AssessmentMode mode, BGArea area);
 	
-	public AssessmentMode save(AssessmentMode assessmentMode);
+
+	public AssessmentMode persist(AssessmentMode assessmentMode);
+	
+	/**
+	 * This method will trigger the multi-user events.
+	 * @param assessmentMode
+	 * @param forceStatus
+	 * @return
+	 */
+	public AssessmentMode merge(AssessmentMode assessmentMode, boolean forceStatus);
 	
 	public void delete(AssessmentMode assessmentMode);
 

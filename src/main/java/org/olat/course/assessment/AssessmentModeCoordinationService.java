@@ -19,6 +19,10 @@
  */
 package org.olat.course.assessment;
 
+import java.util.Date;
+
+import org.olat.course.assessment.AssessmentMode.Status;
+
 /**
  * 
  * Initial date: 06.01.2015<br>
@@ -26,6 +30,23 @@ package org.olat.course.assessment;
  *
  */
 public interface AssessmentModeCoordinationService {
+
+	/**
+	 * You can start manually if...
+	 * @param assessmentMode
+	 * @return
+	 */
+	public boolean canStart(AssessmentMode assessmentMode);
+	
+	/**
+	 * You can stop manually if...
+	 * 
+	 * @param assessmentMode
+	 * @return
+	 */
+	public boolean canStop(AssessmentMode assessmentMode);
+	
+	public Status evaluateStatus(Date begin, int leadtime, Date end, int followup);
 	
 	public AssessmentMode startAssessment(AssessmentMode assessmentMode);
 	
