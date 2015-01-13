@@ -355,9 +355,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 				boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
+				boolean closed = repositoryManager.createRepositoryEntryStatus(getRepositoryEntry().getStatusCode()).isClosed();
 				editLink = LinkFactory.createToolLink("edit.cmd", translate("command.openeditor"), this, "o_icon_courseeditor");
 				editLink.setElementCssClass("o_sel_course_editor");
-				editLink.setEnabled(!corrupted && !managed);
+				editLink.setEnabled(!corrupted && !managed && !closed);
+				editLink.setVisible(!closed);
 				tools.addComponent(editLink);
 				
 				folderLink = LinkFactory.createToolLink("cfd", translate("command.coursefolder"), this, "o_icon_coursefolder");
@@ -884,7 +886,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	@Override
 	protected void doEdit(UserRequest ureq) {
-		if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
+		if ((reSecurity.isEntryAdmin()
+				|| hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) &&
+				!repositoryManager.createRepositoryEntryStatus(getRepositoryEntry().getStatusCode()).isClosed()) {
 			removeCustomCSS(ureq);
 			popToRoot(ureq);
 			cleanUp();

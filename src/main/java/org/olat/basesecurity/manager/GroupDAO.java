@@ -109,6 +109,13 @@ public class GroupDAO {
 		return memberships.size();
 	}
 	
+	public int removeMemberships(Group group, String role) {
+		return dbInstance.getCurrentEntityManager().createNamedQuery("deleteMembershipsByGroupAndRole")
+				.setParameter("groupKey", group.getKey())
+				.setParameter("role", role)
+				.executeUpdate();
+	}
+	
 	public int removeMembership(Group group, Identity identity) {
 		EntityManager em = dbInstance.getCurrentEntityManager();
 		List<GroupMembership> memberships = em.createNamedQuery("membershipsByGroupAndIdentity", GroupMembership.class)

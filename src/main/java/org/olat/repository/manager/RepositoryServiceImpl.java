@@ -402,8 +402,13 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
-	public void removeMembers(RepositoryEntry re) {
-		// TODO Auto-generated method stub
+	public void removeMembers(RepositoryEntry re, String... roles) {
+		if(roles == null || roles.length == 0) return;
+		for(String role:roles) {
+			if(role != null) {
+				reToGroupDao.removeRole(re, role);
+			}
+		}
 	}
 
 	@Override

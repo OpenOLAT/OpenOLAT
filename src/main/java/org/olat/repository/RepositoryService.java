@@ -123,7 +123,7 @@ public interface RepositoryService {
 	
 	public void removeRole(Identity identity, RepositoryEntry re, String role);
 	
-	public void removeMembers(RepositoryEntry re);
+	public void removeMembers(RepositoryEntry re, String... roles);
 	
 	public List<RepositoryEntry> searchByIdAndRefs(String id);
 	

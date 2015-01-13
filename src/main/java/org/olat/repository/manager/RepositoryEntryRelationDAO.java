@@ -140,6 +140,11 @@ public class RepositoryEntryRelationDAO {
 		Group group = getDefaultGroup(re);
 		return groupDao.removeMembership(group, identity, role);
 	}
+	
+	public int removeRole(RepositoryEntry re, String role) {
+		Group group = getDefaultGroup(re);
+		return groupDao.removeMemberships(group, role);
+	}
 
 	public Group getDefaultGroup(RepositoryEntryRef re) {
 		StringBuilder sb = new StringBuilder();

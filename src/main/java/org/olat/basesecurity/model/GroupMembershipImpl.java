@@ -54,6 +54,7 @@ import org.olat.core.id.Persistable;
 @NamedQueries({
 	@NamedQuery(name="membershipsByGroup", query="select membership from bgroupmember as membership where membership.group.key=:groupKey"),
 	@NamedQuery(name="membershipsByGroupAndRole", query="select membership from bgroupmember as membership where membership.group.key=:groupKey and membership.role=:role"),
+	@NamedQuery(name="deleteMembershipsByGroupAndRole", query="delete from bgroupmember as membership where membership.group.key=:groupKey and membership.role=:role"),
 	@NamedQuery(name="membershipsByGroupAndIdentity", query="select membership from bgroupmember as membership where membership.group.key=:groupKey and membership.identity.key=:identityKey"),
 	@NamedQuery(name="membershipsByGroupIdentityAndRole", query="select membership from bgroupmember as membership where membership.group.key=:groupKey and membership.identity.key=:identityKey and membership.role=:role"),
 	@NamedQuery(name="countMembersByGroup", query="select count(membership.key) from bgroupmember as membership where membership.group.key=:groupKey"),

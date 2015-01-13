@@ -247,6 +247,33 @@ public class GroupDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void removeMemberships_groupAndRole() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-12-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-13-");
+		Group group = groupDao.createGroup();
+		GroupMembership membership1 = groupDao.addMembership(group, id1, "pilot");
+		GroupMembership membership2 = groupDao.addMembership(group, id2, "copilot");
+		Assert.assertNotNull(membership1);
+		Assert.assertNotNull(membership2);
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		int numOfMembers = groupDao.countMembers(group);
+		Assert.assertEquals(2, numOfMembers);
+		
+		//remove
+		int numOfDeletedRows = groupDao.removeMemberships(group, "pilot");
+		dbInstance.commitAndCloseSession();
+		Assert.assertEquals(1, numOfDeletedRows);
+		
+		//check
+		List<GroupMembership> deletedMemberships = groupDao.getMemberships(group, "pilot");
+		Assert.assertTrue(deletedMemberships.isEmpty());
+		List<GroupMembership> lastMemberships = groupDao.getMemberships(group, "copilot");
+		Assert.assertEquals(1, lastMemberships.size());
+	}
+	
+	@Test
 	public void removeMemberships_identity() {
 		//
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-9-");

@@ -433,7 +433,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if(entries != null && entries.size() > 0) {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("Editor".equalsIgnoreCase(type)) {
-				if(handler.supportsEdit(re) == EditionSupport.yes) {
+				if(handler.supportsEdit(re) == EditionSupport.yes
+						&& !repositoryManager.createRepositoryEntryStatus(re.getStatusCode()).isClosed()) {
 					doEdit(ureq);
 				}
 			} else if("Catalog".equalsIgnoreCase(type)) {
@@ -501,7 +502,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		} else if(downloadLink == source) {
 			doDownload(ureq);
 		} else if(closeLink == source) {
-			doCloseResource(ureq);
+			doCloseResourceWizard(ureq);
 		} else if(deleteLink == source) {
 			doDelete(ureq);
 		} else if(source == toolbarPanel) {
@@ -544,7 +545,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				removeAsListenerAndDispose(closeCtrl);
 				closeCtrl = null;
 				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-					closeLink.setVisible(false);
+					doCloseResource(ureq);
 				}
 			}
 		} else if(deleteDialogCtrl == source) {
@@ -807,7 +808,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 	}
 	
-	private void doCloseResource(UserRequest ureq) {
+	private void doCloseResourceWizard(UserRequest ureq) {
 		removeAsListenerAndDispose(closeCtrl);
 
 		Step start = new Close_1_ExplanationStep(ureq, re);
@@ -816,6 +817,21 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				translate("wizard.closecourse.title"), "o_sel_checklist_wizard");
 		listenTo(closeCtrl);
 		getWindowControl().pushAsModalDialog(closeCtrl.getInitialComponent());
+	}
+	
+	/**
+	 * Remove close and edit tools, if in edit mode, pop-up-to root
+	 * @param ureq
+	 */
+	private void doCloseResource(UserRequest ureq) {
+		loadRepositoryEntry();
+		closeLink.setVisible(false);
+		if(editLink != null) {
+			editLink.setVisible(false);
+		}
+		if(currentToolCtr == editorCtrl) {
+			toolbarPanel.popUpToRootController(ureq);
+		}
 	}
 	
 	private void doDelete(UserRequest ureq) {
