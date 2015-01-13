@@ -168,6 +168,7 @@ public class ACFrontendManager implements ACService {
 	 * @param atDate 
 	 * @return
 	 */
+	@Override
 	public boolean isResourceAccessControled(OLATResource resource, Date atDate) {
 		return methodManager.isValidMethodAvailable(resource, atDate);
 	}
@@ -182,6 +183,7 @@ public class ACFrontendManager implements ACService {
 	 * @param forId
 	 * @return
 	 */
+	@Override
 	public AccessResult isAccessible(BusinessGroup group, Identity forId, boolean allowNonInteractiveAccess) {
 		if(!accessModule.isEnabled()) {
 			return new AccessResult(true);
@@ -223,15 +225,18 @@ public class ACFrontendManager implements ACService {
 		}
 		return new AccessResult(false, offerAccess);
 	}
-	
+
+	@Override
 	public Offer createOffer(OLATResource resource, String resourceName) {
 		return accessManager.createOffer(resource, resourceName);
 	}
-	
+
+	@Override
 	public void deleteOffer(Offer offer) {
 		accessManager.deleteOffer(offer);
 	}
-	
+
+	@Override
 	public List<OLATResourceAccess> filterRepositoryEntriesWithAC(List<RepositoryEntry> repoEntries) {
 		if(repoEntries == null || repoEntries.isEmpty()) {
 			return Collections.emptyList();
@@ -251,7 +256,8 @@ public class ACFrontendManager implements ACService {
 		List<OLATResourceAccess> resourceWithOffers = methodManager.getAccessMethodForResources(resourceKeys, resourceType, "BusinessGroup", true, new Date());
 		return resourceWithOffers;
 	}
-	
+
+	@Override
 	public List<OLATResourceAccess> filterResourceWithAC(List<OLATResource> resources) {
 		if(resources == null || resources.isEmpty()) {
 			return Collections.emptyList();
@@ -270,16 +276,19 @@ public class ACFrontendManager implements ACService {
 		List<OLATResourceAccess> resourceWithOffers = methodManager.getAccessMethodForResources(resourceKeys, resourceType, "BusinessGroup", true, new Date());
 		return resourceWithOffers;
 	}
-	
+
+	@Override
 	public Set<Long> filterResourcesWithAC(Collection<Long> resourceKeys) {
 		Set<Long> resourceWithOffers = accessManager.filterResourceWithOffer(resourceKeys);
 		return resourceWithOffers;
 	}
-	
+
+	@Override
 	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate) {
 		return accessManager.findOfferByResource(resource, valid, atDate);
 	}
-	
+
+	@Override
 	public List<BusinessGroupAccess> getOfferAccessForBusinessGroup(boolean valid, Date atDate) {
 		return methodManager.getAccessMethodForBusinessGroup(valid, atDate);
 	}
@@ -303,6 +312,7 @@ public class ACFrontendManager implements ACService {
 	 * @param atDate
 	 * @return The list of OfferAccess objects that represent available access methods
 	 */
+	@Override
 	public List<OfferAccess> getAccessMethodForBusinessGroup(BusinessGroup group, boolean valid, Date atDate) {
 		List<Offer> offers = accessManager.findOfferByResource(group.getResource(), valid, atDate);
 		if(offers.isEmpty()) {
@@ -314,28 +324,24 @@ public class ACFrontendManager implements ACService {
 		}
 		return offerAccess;
 	}
-	
+
+	@Override
 	public List<OfferAccess> getOfferAccessByResource(Collection<Long> resourceKeys, boolean valid, Date atDate) {
 		return methodManager.getOfferAccessByResource(resourceKeys, valid, atDate);
 	}
-	
+
+	@Override
 	public void save(Offer offer) {
 		accessManager.saveOffer(offer);
 	}
-	
+
+	@Override
 	public OfferAccess saveOfferAccess(OfferAccess link) {
 		accessManager.saveOffer(link.getOffer());
 		methodManager.save(link);
 		return link;
 	}
 	
-	public void saveOfferAccess(List<OfferAccess> links) {
-		for(OfferAccess link:links) {
-			accessManager.saveOffer(link.getOffer());
-			methodManager.save(link);
-		}
-	}
-
 	@Override
 	public AccessResult accessResource(Identity identity, OfferAccess link, Object argument) {
 		if(link == null || link.getOffer() == null || link.getMethod() == null) {
@@ -448,6 +454,7 @@ public class ACFrontendManager implements ACService {
 		}
 	}
 
+	@Override
 	public boolean allowAccesToResource(final Identity identity, final Offer offer) {
 		//check if offer is ok: key is stupid but further check as date, validity...
 		if(offer.getKey() == null) {
@@ -478,7 +485,8 @@ public class ACFrontendManager implements ACService {
 		}
 		return false;
 	}
-	
+
+	@Override
 	public boolean denyAccesToResource(Identity identity, Offer offer) {
 		//check if offer is ok: key is stupid but further check as date, validity...
 		if(offer.getKey() == null) {
@@ -511,7 +519,8 @@ public class ACFrontendManager implements ACService {
 		}
 		return false;
 	}
-	
+
+	@Override
 	public String resolveDisplayName(OLATResource resource) {
 		String resourceType = resource.getResourceableTypeName();
 		if("CourseModule".equals(resourceType)) {
@@ -574,35 +583,43 @@ public class ACFrontendManager implements ACService {
 		}
 		return resourceInfos;
 	}
-	
+
+	@Override
 	public void enableMethod(Class<? extends AccessMethod> type, boolean enable) {
 		methodManager.enableMethod(type, enable);
 	}
-	
+
+	@Override
 	public List<AccessMethod> getAvailableMethods(Identity identity, Roles roles) {
 		return methodManager.getAvailableMethods(identity, roles);
 	}
-	
+
+	@Override
 	public OfferAccess createOfferAccess(Offer offer, AccessMethod method) {
 		return methodManager.createOfferAccess(offer, method);
 	}
-	
+
+	@Override
 	public void deletedLinkToMethod(OfferAccess link) {
 		methodManager.delete(link);
 	}
-	
+
+	@Override
 	public List<OfferAccess> getOfferAccess(Offer offer, boolean valid) {
 		return methodManager.getOfferAccess(offer, valid);
 	}
-	
+
+	@Override
 	public List<Order> findOrders(Identity delivery, OrderStatus... status) {
 		return orderManager.findOrdersByDelivery(delivery, status);
 	}
-	
+
+	@Override
 	public List<AccessTransaction> findAccessTransactions(List<Order> orders) {
 		return transactionManager.loadTransactionsForOrders(orders);
 	}
-	
+
+	@Override
 	public List<PSPTransaction> findPSPTransactions(List<Order> orders) {
 		List<AccessMethodHandler> handlers = accessModule.getMethodHandlers();
 		List<PSPTransaction> transactions = new ArrayList<PSPTransaction>();
@@ -611,11 +628,13 @@ public class ACFrontendManager implements ACService {
 		}
 		return transactions;
 	}
-	
+
+	@Override
 	public List<Order> findOrders(OLATResource resource, Identity delivery, Long orderNr, Date from, Date to, OrderStatus... status) {
 		return orderManager.findOrders(resource, delivery, orderNr, from, to, status);
 	}
-	
+
+	@Override
 	public List<Order> findOrders(OLATResource resource, OrderStatus... status) {
 		return orderManager.findOrdersByResource(resource, status);
 	}

@@ -41,6 +41,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
@@ -78,6 +79,8 @@ public class AccessConfigurationController extends FormBasicController {
 	private boolean allowPaymentMethod;
 	private final boolean editable;
 	
+	private final Formatter formatter;
+	
 	@Autowired
 	private ACService acService;
 	@Autowired
@@ -86,13 +89,14 @@ public class AccessConfigurationController extends FormBasicController {
 	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, OLATResource resource,
 			String displayName, boolean allowPaymentMethod, boolean editable) {
 		super(ureq, wControl, "access_configuration");
-		
+
 		this.resource = resource;
 		this.displayName = displayName;
 		this.allowPaymentMethod = allowPaymentMethod;
 		embbed = false;
 		this.editable = editable;
 		emptyConfigGrantsFullAccess = true; 
+		formatter = Formatter.getInstance(getLocale());
 		
 		initForm(ureq);
 	}
@@ -107,6 +111,7 @@ public class AccessConfigurationController extends FormBasicController {
 		this.allowPaymentMethod = allowPaymentMethod;
 		embbed = true;
 		emptyConfigGrantsFullAccess = false;
+		formatter = Formatter.getInstance(getLocale());
 		
 		initForm(ureq);
 	}
@@ -146,7 +151,6 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		if(!embbed) {
 			setFormTitle("accesscontrol.title");
-			setFormDescription("accesscontrol.desc");
 			setFormContextHelp(AccessConfigurationController.class.getPackage().getName(), "accesscontrol.html", "chelp.accesscontrol.hover");
 			
 			if(editable) {
@@ -267,7 +271,6 @@ public class AccessConfigurationController extends FormBasicController {
 			
 			links.add(info.getLink());
 		}
-		acService.saveOfferAccess(links);
 	}
 	
 	protected void loadConfigurations() {
@@ -300,18 +303,6 @@ public class AccessConfigurationController extends FormBasicController {
 		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
 		AccessInfo infos = new AccessInfo(handler.getMethodName(getLocale()), handler.isPaymentMethod(), null, link);
 		confControllers.add(infos);
-
-		DateChooser dateFrom = uifactory.addDateChooser("from_" + link.getKey(), "from", null, confControllerContainer);
-		dateFrom.setUserObject(infos);
-		dateFrom.setEnabled(editable);
-		dateFrom.setDate(link.getValidFrom());
-		confControllerContainer.add(dateFrom.getName(), dateFrom);
-		
-		DateChooser dateTo = uifactory.addDateChooser("to_" + link.getKey(), "to", null, confControllerContainer);
-		dateTo.setEnabled(editable);
-		dateTo.setUserObject(infos);
-		dateTo.setDate(link.getValidTo());
-		confControllerContainer.add(dateTo.getName(), dateTo);
 		
 		if(editable) {
 			FormLink editLink = uifactory.addFormLink("edit_" + link.getKey(), "edit", "edit", null, confControllerContainer, Link.BUTTON_SMALL);
@@ -370,6 +361,7 @@ public class AccessConfigurationController extends FormBasicController {
 	public class AccessInfo {
 		private String name;
 		private String infos;
+		private String dates;
 		private OfferAccess link;
 		private final boolean paymentMethod;
 		
@@ -390,6 +382,21 @@ public class AccessConfigurationController extends FormBasicController {
 		
 		public boolean isPaymentMethod() {
 			return paymentMethod;
+		}
+
+		public String getDates() {
+			if(dates == null && link.getOffer() != null) {
+				Date from = link.getValidFrom();
+				Date to = link.getValidTo();
+				if(from != null && to != null) {
+					dates = translate("ac.fromto.label", new String[]{ formatter.formatDate(from), formatter.formatDate(to) });
+				} else if(from != null) {
+					dates = translate("ac.from.label", new String[]{ formatter.formatDate(from) });
+				} else if(to != null) {
+					dates = translate("ac.to.label", new String[]{ formatter.formatDate(to) });
+				}
+			}
+			return dates;
 		}
 
 		public String getInfos() {
@@ -426,6 +433,7 @@ public class AccessConfigurationController extends FormBasicController {
 
 		public void setLink(OfferAccess link) {
 			this.link = link;
+			this.dates = null;
 		}
 	}
 }
