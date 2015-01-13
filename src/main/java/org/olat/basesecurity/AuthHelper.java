@@ -402,14 +402,16 @@ public class AuthHelper {
 	 * @param ureq
 	 */
 	public static void doLogout(UserRequest ureq) {
-		//clear session settings of replayable urls / load performance mode 
-		//XX:GUIInterna.setLoadPerformanceMode(null);
-		Boolean wasGuest = ureq.getUserSession().getRoles().isGuestOnly();
+		if(ureq == null) return;
+
+		boolean wasGuest = false;
+		UserSession usess = ureq.getUserSession();
+		if(usess != null && usess.getRoles() != null) {
+			wasGuest = ureq.getUserSession().getRoles().isGuestOnly();
+		}
+		
 		String lang = I18nManager.getInstance().getLocaleKey(ureq.getLocale());
 		HttpSession session = ureq.getHttpReq().getSession(false);
-		//session.removeAttribute(SessionListener.SESSIONLISTENER_KEY);
-		//TODO: i assume tomcat, after s.invalidate(), lets the GC do the work
-		// if not, then do a s.removeAttribute....
 		// next line fires a valueunbound event to UserSession, which does some
 		// stuff on logout
 		if (session != null) {

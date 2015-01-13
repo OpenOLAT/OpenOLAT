@@ -225,16 +225,16 @@ class PublishStep00 extends BasicStep {
 					String nodeId = sds[i].getDescriptionForUnit();
 					if (nodeId == null) {
 						// a general error
-						generalErrorTxt = sds[i].getShortDescription(ureq.getLocale());
+						generalErrorTxt = sds[i].getShortDescription(getLocale());
 						break;
 					}
 					String nodeName = publishProcess.getCourseEditorTreeModel().getCourseNode(nodeId).getShortName();
 					String isFor = "<b>" + nodeName + "</b><br/>";
 					if (description.isError()) {
-						errors += "<li>" + isFor + description.getShortDescription(ureq.getLocale()) + "</li>";
+						errors += "<li>" + isFor + description.getShortDescription(getLocale()) + "</li>";
 						errCnt++;
 					} else if (description.isWarning()) {
-						warnings += "<li>" + isFor + description.getShortDescription(ureq.getLocale()) + "</li>";
+						warnings += "<li>" + isFor + description.getShortDescription(getLocale()) + "</li>";
 					}
 				}
 				warnings += "</ul>";
@@ -242,28 +242,14 @@ class PublishStep00 extends BasicStep {
 				//
 				errorTxt += "<p/>" + errors;
 				warningTxt += "<p/>" + warnings;
-
-				if(errCnt > 0){
-					//if an error found
-					//normally this should already be prevented by offering only correct
-					//tree nodes in the selection tree.
-					
-					return false;
-				}
-				
 				
 				if (generalErrorTxt != null) {
-					addToRunContext("STEP00.generalErrorText", generalErrorTxt);					
-					//TODO: PB: errorElement.setErrorComponent doesn't work, used setValue as workaround
-					/*FormItem errorFormItem = uifactory.createSimpleErrorText("errorElement", generalErrorTxt);
-					errorElement.setErrorComponent(errorFormItem, fic);*/
+					addToRunContext("STEP00.generalErrorText", generalErrorTxt);
 					errorElement.setValue(generalErrorTxt);
 					errorElement.setVisible(true);
 					return false;
 				} else if (errCnt > 0) {
-					addToRunContext("STEP00.errorMessage", errorTxt);					
-					/*FormItem errorFormItem = uifactory.createSimpleErrorText("errorElement", errorTxt);
-					errorElement.setErrorComponent(errorFormItem, this.flc);*/
+					addToRunContext("STEP00.errorMessage", errorTxt);
 					errorElement.setValue(errorTxt);
 					errorElement.setVisible(true);
 					return false;

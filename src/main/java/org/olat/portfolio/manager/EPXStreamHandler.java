@@ -80,6 +80,7 @@ public class EPXStreamHandler {
 		myStream.alias("structureToStructure", EPStructureToStructureLink.class);
 		myStream.alias("collectionRestriction", CollectRestriction.class);
 		myStream.omitField(EPAbstractMap.class, "ownerGroup"); // see also OLAT-6344
+		myStream.omitField(EPAbstractMap.class, "groups"); // see also OLAT-6344
 		
 		try {
 			InputStream xsltIn = EPXStreamHandler.class.getResourceAsStream("portfolio_without_artefacts.xsl");
