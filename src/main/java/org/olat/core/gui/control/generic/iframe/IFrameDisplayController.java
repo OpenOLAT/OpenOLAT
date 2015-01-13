@@ -105,7 +105,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param ores - send an OLATresourcable of the context (e.g. course) where the iframe runs and it will be checked if the user has textmarking (glossar) enabled in this course
 	 */
 	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, File fileRoot, OLATResourceable ores) {
-		this(ureq, wControl, new LocalFolderImpl(fileRoot), null, ores, null);
+		this(ureq, wControl, new LocalFolderImpl(fileRoot), null, ores, null, false);
 	}
 	/**
 	 * 
@@ -114,7 +114,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param rootDir VFSItem that points to the root folder of the resource
 	 */
 	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir) {
-		this(ureq, wControl, rootDir, null, null, null);
+		this(ureq, wControl, rootDir, null, null, null, false);
 	}
 	/**
 	 * 
@@ -124,7 +124,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param ores - send an OLATresourcable of the context (e.g. course) where the iframe runs and it will be checked if the user has textmarking (glossar) enabled in this course
 	 */
 	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir, OLATResourceable ores, DeliveryOptions deliveryOptions) {
-		this(ureq, wControl, rootDir, null, ores, deliveryOptions);
+		this(ureq, wControl, rootDir, null, ores, deliveryOptions, false);
 	}
 	/**
 	 * 
@@ -135,7 +135,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param enableTextmarking to enable textmakring of the content in the iframe enable it here
 	 */
 	public IFrameDisplayController(final UserRequest ureq, WindowControl wControl, VFSContainer rootDir, String frameId,
-			OLATResourceable contextRecourcable, DeliveryOptions options) {
+			OLATResourceable contextRecourcable, DeliveryOptions options, boolean persistMapper) {
 		super(ureq, wControl);
 		
 		//register this object for textMarking on/off events
@@ -158,8 +158,14 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		//FIXME:FG: implement named mapper concept based on business path to allow browser caching and distributed media server
 		//TODO:gs may use the same contentMapper if users clicks again on the same singlePage, now each time a new Mapper gets created and 
 		//therefore the browser can not reuse the cached elements
-		contentMapper = new IFrameDeliveryMapper(rootDir, false, enableTextmarking, adjusteightAutomatically,
-				frameId, null /*customCssURL*/, themeBaseUri, null /*customHeaderContent*/);
+		if(persistMapper) {
+			contentMapper = new SerializableIFrameDeliveryMapper(rootDir, false, enableTextmarking, adjusteightAutomatically,
+					frameId, null /*customCssURL*/, themeBaseUri, null /*customHeaderContent*/);
+		} else {
+			contentMapper = new IFrameDeliveryMapper(rootDir, false, enableTextmarking, adjusteightAutomatically,
+					frameId, null /*customCssURL*/, themeBaseUri, null /*customHeaderContent*/);
+		}
+
 		contentMapper.setDeliveryOptions(options);
 
 		String mapperID = VFSManager.getRealPath(rootDir);

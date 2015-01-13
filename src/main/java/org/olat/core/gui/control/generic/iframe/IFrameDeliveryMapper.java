@@ -19,7 +19,6 @@
  */
 package org.olat.core.gui.control.generic.iframe;
 
-import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.regex.Matcher;
@@ -46,9 +45,8 @@ import org.olat.core.util.vfs.VFSMediaResource;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class IFrameDeliveryMapper implements Mapper, Serializable {
+public class IFrameDeliveryMapper implements Mapper {
 
-	private static final long serialVersionUID = 8710796223152048613L;
 	private static final OLog log = Tracing.createLoggerFor(IFrameDeliveryMapper.class);
 	
 	private static final String DEFAULT_ENCODING = "iso-8859-1";
