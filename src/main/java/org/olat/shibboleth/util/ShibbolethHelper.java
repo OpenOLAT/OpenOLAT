@@ -37,8 +37,11 @@ public class ShibbolethHelper {
 	 */
 	public static String getFirstValueOf(String attributeName, Map<String, String> shibbolethAttributesMap) {
 		String attrVal = shibbolethAttributesMap.get(attributeName);
-		ShibbolethAttribute multivalueShibbAttributeEmail = new ShibbolethAttribute(attributeName, attrVal);
-		return multivalueShibbAttributeEmail.getFirstValue();	
+		if (attrVal != null) {
+			ShibbolethAttribute multivalueShibbAttributeEmail = new ShibbolethAttribute(attributeName, attrVal);
+			return multivalueShibbAttributeEmail.getFirstValue();
+		}
+		else return null;
 	}
 
 }
