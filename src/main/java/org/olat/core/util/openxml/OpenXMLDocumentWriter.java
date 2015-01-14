@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -110,7 +111,7 @@ public class OpenXMLDocumentWriter {
 		for(HeaderReference headerRef:document.getHeaders()) {
 			ZipEntry headerDocument = new ZipEntry("word/" + headerRef.getFilename());
 			out.putNextEntry(headerDocument);
-			IOUtils.write(headerRef.getHeader(), out);
+			IOUtils.write(headerRef.getHeader(), out, Charset.forName("UTF-8"));
 			out.closeEntry();
 		}
 
