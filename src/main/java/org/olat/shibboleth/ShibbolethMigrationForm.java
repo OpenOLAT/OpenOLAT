@@ -39,6 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.login.LoginModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  09.08.2004
@@ -57,6 +58,9 @@ public class ShibbolethMigrationForm extends FormBasicController {
 	private TextElement login;
 	private TextElement password;
 	
+	@Autowired
+	private LoginModule loginModule;
+	@Autowired
 	private BaseSecurity securityManager;
 	
 	public ShibbolethMigrationForm(UserRequest ureq, WindowControl wControl, Authentication authentication) {
@@ -69,7 +73,7 @@ public class ShibbolethMigrationForm extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		if (!securityManager.checkCredentials(authentication, password.getValue())) {
-			if (LoginModule.registerFailedLoginAttempt(login.getValue())) {
+			if (loginModule.registerFailedLoginAttempt(login.getValue())) {
 				password.setErrorKey("smf.error.blocked", null);
 				log.audit("Too many failed login attempts for " + login.getValue() + ". Login blocked.");
 			} else {

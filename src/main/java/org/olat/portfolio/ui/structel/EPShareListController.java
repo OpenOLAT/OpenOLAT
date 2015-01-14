@@ -68,6 +68,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
+import org.olat.login.LoginModule;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.manager.EPMapPolicy;
 import org.olat.portfolio.manager.EPMapPolicy.Type;
@@ -93,6 +94,8 @@ public class EPShareListController extends FormBasicController {
 	
 	private PortfolioStructureMap map;
 	
+	@Autowired
+	private LoginModule loginModule;
 	@Autowired
 	private EPFrontendManager ePFMgr;
 	@Autowired
@@ -502,7 +505,25 @@ public class EPShareListController extends FormBasicController {
 			container.setRootForm(mainForm);
 
 			if(policyWrapper.getType() != null) {
-				SingleSelection type = uifactory.addDropdownSingleselect("map.share.target." + cmpName, "map.share.target", container, targetKeys, targetValues, null);
+				String[] curatedTargetKeys;
+				String[] curatedTargetValues;
+				if(!Type.invitation.equals(policyWrapper.getType()) && !loginModule.isInvitationEnabled()) {
+					curatedTargetKeys = new String[targetKeys.length - 1];
+					curatedTargetValues = new String[targetKeys.length - 1];
+					
+					int pos = 0;
+					for(int i=targetKeys.length; i-->0; ) {
+						if(!targetKeys[i].equals(Type.invitation.name())) {
+							curatedTargetKeys[pos] = targetKeys[i];
+							curatedTargetValues[pos++] = targetValues[i];
+						}
+					}
+				} else {
+					curatedTargetKeys = targetKeys;
+					curatedTargetValues = targetValues;
+				}
+
+				SingleSelection type = uifactory.addDropdownSingleselect("map.share.target." + cmpName, "map.share.target", container, curatedTargetKeys, curatedTargetValues, null);
 				type.addActionListener(FormEvent.ONCHANGE);
 				type.setUserObject(policyWrapper);
 				type.select(policyWrapper.getType().name(), true);
@@ -552,7 +573,7 @@ public class EPShareListController extends FormBasicController {
 					FormLink inviteLink = uifactory.addFormLink("map.share.policy.invite." + cmpName, "map.share.policy.invite", null, container, Link.BUTTON);
 					inviteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_share");
 					inviteLink.setUserObject(policyWrapper);
-					inviteLink.setEnabled(!policyWrapper.isInvitationSend());
+					inviteLink.setEnabled(!policyWrapper.isInvitationSend() && (loginModule.isInvitationEnabled() || !policyWrapper.getType().equals(Type.invitation)));
 				}
 				StaticTextElement genErrorPanel = uifactory.addStaticTextElement("errorpanel." + cmpName, "", container);
 				genErrorPanel.setUserObject(policyWrapper);

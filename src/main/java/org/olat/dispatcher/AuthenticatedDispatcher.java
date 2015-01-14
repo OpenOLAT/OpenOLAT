@@ -127,7 +127,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 				usess.putEntryInNonClearedStore(AUTHDISPATCHER_ENTRYURL, allGet);
 			}
 			String guestAccess = ureq.getParameter(GUEST);
-			if (guestAccess == null || !LoginModule.isGuestLoginLinksEnabled()) {
+			if (guestAccess == null || !CoreSpringFactory.getImpl(LoginModule.class).isGuestLoginEnabled()) {
 				DispatcherModule.redirectToDefaultDispatcher(response);
 				return;
 			} else if (guestAccess.equals(TRUE)) {

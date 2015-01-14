@@ -57,6 +57,7 @@ import org.olat.registration.RegistrationController;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.RegistrationModule;
 import org.olat.user.UserModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  04.08.2004
@@ -78,7 +79,10 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	private Link pwLink;
 	private Link registerLink;
 	
-	private final OLATAuthManager olatAuthenticationSpi;
+	@Autowired
+	private LoginModule loginModule;
+	@Autowired
+	private OLATAuthManager olatAuthenticationSpi;
 	
 	/**
 	 * @see org.olat.login.auth.AuthenticationController#init(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
@@ -86,8 +90,6 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	public OLATAuthenticationController(UserRequest ureq, WindowControl winControl) {
 		// use fallback translator to registration module
 		super(ureq, winControl, Util.createPackageTranslator(RegistrationManager.class, ureq.getLocale()));
-
-		olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
 		
 		loginComp = createVelocityContainer("olat_log", "olatlogin");
 		
@@ -175,17 +177,17 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		if (source == loginForm && event == Event.DONE_EVENT) {
 			String login = loginForm.getLogin();
 			String pass = loginForm.getPass();	
-			if (LoginModule.isLoginBlocked(login)) {
+			if (loginModule.isLoginBlocked(login)) {
 				// do not proceed when blocked
-				showError("login.blocked", LoginModule.getAttackPreventionTimeoutMin().toString());
+				showError("login.blocked", loginModule.getAttackPreventionTimeoutMin().toString());
 				getLogger().audit("Login attempt on already blocked login for " + login + ". IP::" + ureq.getHttpReq().getRemoteAddr(), null);
 				return;
 			}
 			authenticatedIdentity = olatAuthenticationSpi.authenticate(null, login, pass);
 			if (authenticatedIdentity == null) {
-				if (LoginModule.registerFailedLoginAttempt(login)) {
+				if (loginModule.registerFailedLoginAttempt(login)) {
 					getLogger().audit("Too many failed login attempts for " + login + ". Login blocked. IP::" + ureq.getHttpReq().getRemoteAddr(), null);
-					showError("login.blocked", LoginModule.getAttackPreventionTimeoutMin().toString());
+					showError("login.blocked", loginModule.getAttackPreventionTimeoutMin().toString());
 					return;
 				} else {
 					showError("login.error", WebappHelper.getMailConfig("mailReplyTo"));
@@ -203,7 +205,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 				}
 			}
 			
-			LoginModule.clearFailedLoginAttempts(login);
+			loginModule.clearFailedLoginAttempts(login);
 			
 			// Check if disclaimer has been accepted
 			if (RegistrationManager.getInstance().needsToConfirmDisclaimer(authenticatedIdentity)) {

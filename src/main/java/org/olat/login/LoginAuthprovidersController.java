@@ -61,6 +61,7 @@ import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.login.auth.AuthenticationEvent;
 import org.olat.login.auth.AuthenticationProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -80,6 +81,9 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	private final List<Controller> authControllers = new ArrayList<Controller>();
 	private Link anoLink;
 	private StackedPanel dmzPanel;
+	
+	@Autowired
+	private LoginModule loginModule;
 	
 	public LoginAuthprovidersController(UserRequest ureq, WindowControl wControl) {
 		// Use fallback translator from full webapp package to translate accessibility stuff
@@ -114,7 +118,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			showAboutPage();
 		} else if ("registration".equals(type)) {
 			// make sure the OLAT authentication controller is activated as only this one can handle registration requests
-			AuthenticationProvider OLATProvider = LoginModule.getAuthenticationProvider(BaseSecurityModule.getDefaultAuthProviderIdentifier());
+			AuthenticationProvider OLATProvider = loginModule.getAuthenticationProvider(BaseSecurityModule.getDefaultAuthProviderIdentifier());
 			if (OLATProvider.isEnabled()) {
 				initLoginContent(ureq, BaseSecurityModule.getDefaultAuthProviderIdentifier());
 				if(authController instanceof Activateable2) {
@@ -137,8 +141,8 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		contentBorn.contextPut("browserWarningOn", bwo ? Boolean.TRUE : Boolean.FALSE);
 		
 		// prepare login
-		if (provider == null)	provider = LoginModule.getDefaultProviderName();
-		AuthenticationProvider authProvider = LoginModule.getAuthenticationProvider(provider);
+		if (provider == null)	provider = loginModule.getDefaultProviderName();
+		AuthenticationProvider authProvider = loginModule.getAuthenticationProvider(provider);
 		if (authProvider == null)
 			throw new AssertException("Invalid authentication provider: " + provider);
 		
@@ -156,7 +160,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		listenTo(authController);
 		contentBorn.put("loginComp", authController.getInitialComponent());
 		contentBorn.contextPut("currentProvider", authProvider.getName());		
-		Collection<AuthenticationProvider> providers = LoginModule.getAuthenticationProviders();
+		Collection<AuthenticationProvider> providers = loginModule.getAuthenticationProviders();
 		List<AuthenticationProvider> providerSet = new ArrayList<AuthenticationProvider>(providers.size());
 		int count = 0;
 		for (AuthenticationProvider prov : providers) {
@@ -204,7 +208,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		}
 
 		// guest link
-		if (LoginModule.isGuestLoginLinksEnabled()) {
+		if (loginModule.isGuestLoginEnabled()) {
 			anoLink = LinkFactory.createButton("menu.guest", contentBorn, this);
 			anoLink.setIconLeftCSS("o_icon o_icon-2x o_icon_provider_guest");
 			anoLink.setTitle("menu.guest.alt");
@@ -229,7 +233,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		 if (source == anoLink) {
-			if (LoginModule.isGuestLoginLinksEnabled()) {				
+			if (loginModule.isGuestLoginEnabled()) {				
 				int loginStatus = AuthHelper.doAnonymousLogin(ureq, ureq.getLocale());
 				if (loginStatus == AuthHelper.LOGIN_OK) {
 					return;

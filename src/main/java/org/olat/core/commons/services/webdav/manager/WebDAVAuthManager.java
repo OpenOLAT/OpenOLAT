@@ -54,6 +54,8 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 	private static final OLog log = Tracing.createLoggerFor(WebDAVAuthManager.class);
 
 	@Autowired
+	private LoginModule loginModule;
+	@Autowired
 	private WebDAVModule webDAVModule;
 	@Autowired
 	private BaseSecurity securityManager;
@@ -108,7 +110,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 		if (securityManager.checkCredentials(authentication, password))	{
 			Algorithm algorithm = Algorithm.find(authentication.getAlgorithm());
 			if(Algorithm.md5.equals(algorithm)) {
-				authentication = securityManager.updateCredentials(authentication, password, LoginModule.getDefaultHashAlgorithm());
+				authentication = securityManager.updateCredentials(authentication, password, loginModule.getDefaultHashAlgorithm());
 			}
 			return authentication.getIdentity();
 		}
@@ -144,10 +146,10 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 			Authentication auth = securityManager.findAuthentication(identity, PROVIDER_WEBDAV);
 			if (auth == null) { // create new authentication for provider OLAT
 				Identity reloadedIdentity = securityManager.loadIdentityByKey(identity.getKey());
-				auth = securityManager.createAndPersistAuthentication(reloadedIdentity, PROVIDER_WEBDAV, identity.getName(), newPwd, LoginModule.getDefaultHashAlgorithm());
+				auth = securityManager.createAndPersistAuthentication(reloadedIdentity, PROVIDER_WEBDAV, identity.getName(), newPwd, loginModule.getDefaultHashAlgorithm());
 				log.audit(doer.getName() + " created new WebDAV authenticatin for identity: " + identity.getName());
 			} else {
-				auth = securityManager.updateCredentials(auth, newPwd, LoginModule.getDefaultHashAlgorithm());
+				auth = securityManager.updateCredentials(auth, newPwd, loginModule.getDefaultHashAlgorithm());
 				log.audit(doer.getName() + " set new WebDAV password for identity: " +identity.getName());
 			}
 		}

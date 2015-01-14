@@ -60,6 +60,8 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private LoginModule loginModule;
+	@Autowired
 	private BaseSecurity securityManager;
 	
 	
@@ -808,7 +810,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		
 		Authentication auth = securityManager.findAuthentication(ident, "OLAT");
 		String credentials = auth.getCredential();
-		Authentication updatedAuth = securityManager.updateCredentials(auth, "secret", LoginModule.getDefaultHashAlgorithm());
+		Authentication updatedAuth = securityManager.updateCredentials(auth, "secret", loginModule.getDefaultHashAlgorithm());
 		Assert.assertNotNull(auth);
 		Assert.assertNotNull(updatedAuth);
 		Assert.assertEquals(auth, updatedAuth);
@@ -817,7 +819,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		
 		Authentication auth2 = securityManager.findAuthentication(ident, "OLAT");
 		String credentials2 = auth2.getCredential();
-		Authentication notUpdatedAuth = securityManager.updateCredentials(auth2, "secret", LoginModule.getDefaultHashAlgorithm());
+		Authentication notUpdatedAuth = securityManager.updateCredentials(auth2, "secret", loginModule.getDefaultHashAlgorithm());
 		Assert.assertNotNull(auth2);
 		Assert.assertNotNull(notUpdatedAuth);
 		Assert.assertSame(auth2, notUpdatedAuth);

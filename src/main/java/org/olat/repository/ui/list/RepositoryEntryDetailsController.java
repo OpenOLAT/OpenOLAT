@@ -69,6 +69,7 @@ import org.olat.course.run.RunMainController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.login.LoginModule;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -111,6 +112,8 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	protected RepositoryEntryRow row;
 	private Integer index;
 
+	@Autowired
+	private LoginModule loginModule;
 	@Autowired
 	protected UserRatingsDAO userRatingsDao;
 	@Autowired
@@ -432,7 +435,9 @@ public class RepositoryEntryDetailsController extends FormBasicController {
             // Link to bookmark entry
             String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
             layoutCont.contextPut("extlink", url);
-            layoutCont.contextPut("isGuestAllowed", (entry.getAccess() >= RepositoryEntry.ACC_USERS_GUESTS ? Boolean.TRUE : Boolean.FALSE));
+            Boolean guestAllowed = (entry.getAccess() >= RepositoryEntry.ACC_USERS_GUESTS && loginModule.isGuestLoginLinksEnabled())
+            		? Boolean.TRUE : Boolean.FALSE;
+            layoutCont.contextPut("isGuestAllowed", guestAllowed);
 
             //Owners
             List<String> authorLinkNames = new ArrayList<String>(authorKeys.size());

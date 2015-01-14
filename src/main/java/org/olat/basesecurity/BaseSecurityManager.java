@@ -84,6 +84,7 @@ import org.olat.user.UserManager;
  */
 public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	private DB dbInstance;
+	private LoginModule loginModule;
 	private OLATResourceManager orm;
 	private InvitationDAO invitationDao;
 	private String dbVendor = "";
@@ -104,6 +105,10 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	 */
 	public static BaseSecurity getInstance() {
 		return INSTANCE;
+	}
+	
+	public void setLoginModule(LoginModule loginModule) {
+		this.loginModule = loginModule;
 	}
 	
 	/**
@@ -686,7 +691,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		IdentityImpl iimpl = new IdentityImpl(username, user);
 		dbInstance.getCurrentEntityManager().persist(iimpl);
 		if (provider != null) { 
-			createAndPersistAuthentication(iimpl, provider, authusername, credential, LoginModule.getDefaultHashAlgorithm());
+			createAndPersistAuthentication(iimpl, provider, authusername, credential, loginModule.getDefaultHashAlgorithm());
 		}
 		notifyNewIdentityCreated(iimpl);
 		return iimpl;
@@ -729,7 +734,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		iimpl.setExternalId(externalId);
 		dbInstance.getCurrentEntityManager().persist(iimpl);
 		if (provider != null) { 
-			createAndPersistAuthentication(iimpl, provider, authusername, credential, LoginModule.getDefaultHashAlgorithm());
+			createAndPersistAuthentication(iimpl, provider, authusername, credential, loginModule.getDefaultHashAlgorithm());
 		}
 		notifyNewIdentityCreated(iimpl);
 		return iimpl;
@@ -857,7 +862,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		  .append(SecurityGroupImpl.class.getName()).append("  as sgi ")
 		  .append(" where ngroup.groupName=:groupName and ngroup.securityGroup=sgi");
 
-		List<SecurityGroup> group = this.dbInstance.getCurrentEntityManager()
+		List<SecurityGroup> group = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), SecurityGroup.class)
 				.setParameter("groupName", securityGroupName)
 				.setHint("org.hibernate.cacheable", Boolean.TRUE)
