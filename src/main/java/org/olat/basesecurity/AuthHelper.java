@@ -309,12 +309,16 @@ public class AuthHelper {
 		}
 		
 		//need to block the all things for assessment?
-		AssessmentModeManager assessmentManager = CoreSpringFactory.getImpl(AssessmentModeManager.class);
-		List<AssessmentMode> modes = assessmentManager.getAssessmentModeFor(identity);
-		if(modes.isEmpty()) {
+		if(usess.getRoles() != null && usess.getRoles().isOLATAdmin()) {
 			usess.setAssessmentModes(Collections.<TransientAssessmentMode>emptyList());
 		} else {
-			usess.setAssessmentModes(TransientAssessmentMode.create(modes));
+			AssessmentModeManager assessmentManager = CoreSpringFactory.getImpl(AssessmentModeManager.class);
+			List<AssessmentMode> modes = assessmentManager.getAssessmentModeFor(identity);
+			if(modes.isEmpty()) {
+				usess.setAssessmentModes(Collections.<TransientAssessmentMode>emptyList());
+			} else {
+				usess.setAssessmentModes(TransientAssessmentMode.create(modes));
+			}
 		}
 		
 		//set the language

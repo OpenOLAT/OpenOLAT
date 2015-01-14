@@ -182,6 +182,8 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 	private static Integer MAX_TAB;
 	private WindowSettings wSettings;
 	
+	private final boolean isAdmin;
+	
 	public BaseFullWebappController(UserRequest ureq, BaseFullWebappControllerParts baseFullWebappControllerParts) {
 		// only-use-in-super-call, since we define our own
 		super(ureq, null);
@@ -196,6 +198,12 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		String windowSettings = (String)ureq.getUserSession().removeEntryFromNonClearedStore(Dispatcher.WINDOW_SETTINGS);
 		WindowSettings settings = WindowSettings.parse(windowSettings);
 		wbo = winman.createWindowBackOffice("basechiefwindow", this, settings);
+		
+		if(ureq.getUserSession().getRoles() != null) {	
+			isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+		} else {
+			isAdmin = false;
+		}
 
 		// define the new windowcontrol
 		WindowControl myWControl = new BaseFullWebappWindowControl(this, wbo);
@@ -224,7 +232,7 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 		// ------ all the frame preparation is finished ----
 		initializeBase(ureq, winman, initialPanel);
 		
-		if(ureq.getUserSession().isAuthenticated() && ureq.getUserSession().getAssessmentModes() != null && ureq.getUserSession().getAssessmentModes().size() > 0) {
+		if(ureq.getUserSession().isAuthenticated() && !isAdmin && ureq.getUserSession().getAssessmentModes() != null && ureq.getUserSession().getAssessmentModes().size() > 0) {
     		assessmentGuardCtrl = new AssessmentModeGuardController(ureq, getWindowControl(),
     				ureq.getUserSession().getAssessmentModes(), false);
     		listenTo(assessmentGuardCtrl);
@@ -1313,7 +1321,9 @@ public class BaseFullWebappController extends BasicController implements ChiefCo
 
 	private boolean asyncLockResource(TransientAssessmentMode mode) {
 		boolean lock;
-		if(lockResource == null) {
+		if(isAdmin) {
+			lock = false;
+		} else if(lockResource == null) {
 			logAudit("Async lock resource for user: " + getIdentity().getName() + " (" + mode.getResource() + ")", null);
 			lockResource(mode.getResource());
 			lock = true;
