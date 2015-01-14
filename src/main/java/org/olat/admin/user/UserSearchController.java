@@ -246,27 +246,29 @@ public class UserSearchController extends BasicController {
 				}
 			}
 		} else if (source == autocompleterC) {
-			EntriesChosenEvent ece = (EntriesChosenEvent)event;
-			List<String> res = ece.getEntries();
-			// if we get the event, we have a result or an incorrect selection see OLAT-5114 -> check for empty
-			String mySel = res.isEmpty() ? null : (String) res.get(0);
-			if (( mySel == null) || mySel.trim().equals("")) {
-				getWindowControl().setWarning(translate("error.search.form.notempty"));
-				return;
-			}
-			Long key = -1l; // default not found
-			try {
-				key = Long.valueOf(mySel);				
-				if (key > 0) {
-					Identity chosenIdent = BaseSecurityManager.getInstance().loadIdentityByKey(key);
-					// No need to check for null, exception is thrown when identity does not exist which really 
-					// should not happen at all. 
-					// Tell that an identity has been chosen
-					fireEvent(ureq, new SingleIdentityChosenEvent(chosenIdent));
+			if(event instanceof EntriesChosenEvent) {
+				EntriesChosenEvent ece = (EntriesChosenEvent)event;
+				List<String> res = ece.getEntries();
+				// if we get the event, we have a result or an incorrect selection see OLAT-5114 -> check for empty
+				String mySel = res.isEmpty() ? null : (String) res.get(0);
+				if (( mySel == null) || mySel.trim().equals("")) {
+					getWindowControl().setWarning(translate("error.search.form.notempty"));
+					return;
 				}
-			} catch (NumberFormatException e) {
-				getWindowControl().setWarning(translate("error.no.user.found"));
-				return;									
+				Long key = -1l; // default not found
+				try {
+					key = Long.valueOf(mySel);				
+					if (key > 0) {
+						Identity chosenIdent = BaseSecurityManager.getInstance().loadIdentityByKey(key);
+						// No need to check for null, exception is thrown when identity does not exist which really 
+						// should not happen at all. 
+						// Tell that an identity has been chosen
+						fireEvent(ureq, new SingleIdentityChosenEvent(chosenIdent));
+					}
+				} catch (NumberFormatException e) {
+					getWindowControl().setWarning(translate("error.no.user.found"));
+					return;									
+				}
 			}
 		} else if (source == searchform) {
 			if (event == Event.DONE_EVENT) {

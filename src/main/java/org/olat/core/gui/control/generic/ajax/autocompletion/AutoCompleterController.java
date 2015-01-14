@@ -36,7 +36,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.CustomJSComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -72,6 +71,7 @@ public class AutoCompleterController extends BasicController {
 	private Mapper mapper;
 	private final ListProvider gprovider;
 	private final String noResults;
+	private boolean emptyAsReset;
 	
 	private String datastoreName;
 	private String comboboxName;
@@ -133,12 +133,21 @@ public class AutoCompleterController extends BasicController {
 		putInitialPanel(myContent);
 	}
 
+	public boolean isEmptyAsReset() {
+		return emptyAsReset;
+	}
+
+	public void setEmptyAsReset(boolean emptyAsReset) {
+		this.emptyAsReset = emptyAsReset;
+	}
+
 	/**
 	 * This dispatches component events...
 	 * 
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == myContent) {
 			if (event.getCommand().equals(COMMAND_SELECT)) {
@@ -152,6 +161,12 @@ public class AutoCompleterController extends BasicController {
 						// log error because something went wrong in the code and send empty list as result
 						logError("Auto complete JS code must always send 'key' or the autocomplete parameter!", null);						
 						getWindowControl().setError(translate("autocomplete.error"));
+						return;
+					} else if (searchValue.equals("")) {
+						if(!isEmptyAsReset()) {
+							getWindowControl().setWarning(translate("autocomplete.not.enough.chars"));
+						}
+						fireEvent(ureq, new EmptyChosenEvent());
 						return;
 					} else if (searchValue.equals("") || searchValue.length() < 3) {
 						getWindowControl().setWarning(translate("autocomplete.not.enough.chars"));
@@ -187,19 +202,7 @@ public class AutoCompleterController extends BasicController {
 		}
 	}
 
-	/**
-	 * This dispatches controller events...
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
-	public void event(UserRequest ureq, Controller source, Event event) {
-		// Nothing to dispatch
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
+	@Override
 	protected void doDispose() {
 		// Cleanup javascript objects on browser side by triggering dispose
 		// function
