@@ -721,8 +721,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		for(AuthoringEntryRow row:rows) {
 			RepositoryEntry sourceEntry = repositoryService.loadByKey(row.getKey());
 			String displayname = "Copy of " + sourceEntry.getDisplayname();
-			String description = sourceEntry.getDescription();
-			repositoryService.copy(sourceEntry, getIdentity(), displayname, description);
+			repositoryService.copy(sourceEntry, getIdentity(), displayname);
 		}
 		
 		showInfo("details.copy.success", new String[]{ Integer.toString(rows.size()) });

@@ -186,14 +186,24 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
-	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname, String description) {
+	public RepositoryEntry copy(RepositoryEntry sourceEntry, Identity author, String displayname) {
 		OLATResource sourceResource = sourceEntry.getOlatResource();
 		OLATResource copyResource = resourceManager.createOLATResourceInstance(sourceResource.getResourceableTypeName());
 		RepositoryEntry copyEntry = create(author, null, sourceEntry.getResourcename(), displayname,
-				description, copyResource, RepositoryEntry.ACC_OWNERS);
+				sourceEntry.getDescription(), copyResource, RepositoryEntry.ACC_OWNERS);
+		
+		//copy all fields
+		copyEntry.setAuthors(sourceEntry.getAuthors());
+		copyEntry.setCredits(sourceEntry.getCredits());
+		copyEntry.setExpenditureOfWork(sourceEntry.getExpenditureOfWork());
+		copyEntry.setMainLanguage(sourceEntry.getMainLanguage());
+		copyEntry.setObjectives(sourceEntry.getObjectives());
+		copyEntry.setRequirements(sourceEntry.getRequirements());
+		copyEntry = dbInstance.getCurrentEntityManager().merge(copyEntry);
 	
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(sourceEntry);
 		copyEntry = handler.copy(sourceEntry, copyEntry);
+		
 		
 		//copy the image
 		RepositoryManager.getInstance().copyImage(sourceEntry, copyEntry);
