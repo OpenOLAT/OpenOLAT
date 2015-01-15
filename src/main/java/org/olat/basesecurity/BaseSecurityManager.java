@@ -853,11 +853,11 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	@Override
 	public SecurityGroup findSecurityGroupByName(String securityGroupName) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select sgi from ").append(NamedGroupImpl.class.getName()).append(" as ngroup, ")
-		  .append(SecurityGroupImpl.class.getName()).append("  as sgi ")
-		  .append(" where ngroup.groupName=:groupName and ngroup.securityGroup=sgi");
+		sb.append("select sgi from ").append(NamedGroupImpl.class.getName()).append(" as ngroup ")
+		  .append(" inner join ngroup.securityGroup sgi")
+		  .append(" where ngroup.groupName=:groupName");
 
-		List<SecurityGroup> group = this.dbInstance.getCurrentEntityManager()
+		List<SecurityGroup> group = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), SecurityGroup.class)
 				.setParameter("groupName", securityGroupName)
 				.setHint("org.hibernate.cacheable", Boolean.TRUE)
@@ -1392,7 +1392,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		// In any case join with the user. Don't join-fetch user, this breaks the query
 		// because of the user fields (don't know exactly why this behaves like
 		// this)
-		sb.append(" join ident.user as user ");
+		sb.append(" inner join fetch ident.user as user ");
 		
 		if (hasGroups) {
 			// join over security group memberships
@@ -1461,23 +1461,27 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	
 				// handle email fields special: search in all email fields
 				if (!emailProperties.isEmpty()) {
-					needsUserPropertiesJoin = checkIntersectionInUserProperties(sb,needsUserPropertiesJoin, params.isUserPropertiesAsIntersectionSearch());
+					needsUserPropertiesJoin = checkIntersectionInUserProperties(sb, needsUserPropertiesJoin, params.isUserPropertiesAsIntersectionSearch());
 					boolean moreThanOne = emailProperties.size() > 1;
 					if (moreThanOne) sb.append("(");
 					boolean needsOr = false;
 					for (String key : emailProperties.keySet()) {
 						if (needsOr) sb.append(" or ");
-						//fxdiff
+						
+						sb.append(" exists (select prop").append(key).append(".value from userproperty prop").append(key).append(" where ")
+						  .append(" prop").append(key).append(".propertyId.userId=user.key and prop").append(key).append(".propertyId.name ='").append(key).append("'")
+						  .append(" and ");
 						if(dbVendor.equals("mysql")) {
-							sb.append(" user.userProperties['").append(key).append("'] like :").append(key).append("_value ");
+							sb.append(" prop").append(key).append(".value like :").append(key).append("_value ");
 						} else {
-							sb.append(" lower(user.userProperties['").append(key).append("']) like :").append(key).append("_value ");
+							sb.append(" lower(prop").append(key).append(".value) like :").append(key).append("_value ");
 						}
 						if(dbVendor.equals("oracle")) {
 							sb.append(" escape '\\'");
 						}
+						sb.append(")");
 						needsOr = true;
-				}
+					}
 					if (moreThanOne) sb.append(")");
 					// cleanup
 					emailProperties.clear();
@@ -1485,15 +1489,19 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 	
 				// add other fields
 				for (String key : otherProperties.keySet()) {
-					needsUserPropertiesJoin = checkIntersectionInUserProperties(sb,needsUserPropertiesJoin, params.isUserPropertiesAsIntersectionSearch());
+					needsUserPropertiesJoin = checkIntersectionInUserProperties(sb, needsUserPropertiesJoin, params.isUserPropertiesAsIntersectionSearch());
+					sb.append(" exists (select prop").append(key).append(".value from userproperty prop").append(key).append(" where ")
+					  .append(" prop").append(key).append(".propertyId.userId=user.key and prop").append(key).append(".propertyId.name ='").append(key).append("'")
+					  .append(" and ");
 					if(dbVendor.equals("mysql")) {
-						sb.append(" user.userProperties['").append(key).append("'] like :").append(key).append("_value ");
+						sb.append(" prop").append(key).append(".value like :").append(key).append("_value ");
 					} else {
-						sb.append(" lower(user.userProperties['").append(key).append("']) like :").append(key).append("_value ");
+						sb.append(" lower(prop").append(key).append(".value) like :").append(key).append("_value ");
 					}
 					if(dbVendor.equals("oracle")) {
 						sb.append(" escape '\\'");
 					}
+					sb.append(")");
 					needsAnd = true;
 				}
 				// cleanup

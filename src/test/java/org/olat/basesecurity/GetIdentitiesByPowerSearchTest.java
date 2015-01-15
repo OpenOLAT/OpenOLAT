@@ -39,6 +39,7 @@ import java.util.UUID;
 import junit.framework.Assert;
 
 import org.junit.Test;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -61,6 +62,8 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 	private static final OLog log = Tracing.createLoggerFor(GetIdentitiesByPowerSearchTest.class);
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private BaseSecurity baseSecurityManager;
 	
 	@Test
@@ -69,12 +72,12 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsUser("anIdentity-" + suffix);
 		Identity uniIdent = getOrCreateTestIdentity("extremegroovy-" + suffix);
 		Assert.assertNotNull(uniIdent);
-		Identity deletedIdent = getOrCreateTestIdentity("delete");
+		Identity deletedIdent = getOrCreateTestIdentity("delete-" + suffix);
 		deletedIdent = baseSecurityManager.saveIdentityStatus(deletedIdent, Identity.STATUS_DELETED);
 
 		SecurityGroup admins = baseSecurityManager.findSecurityGroupByName(Constants.GROUP_ADMIN);
 		baseSecurityManager.addIdentityToSecurityGroup(deletedIdent, admins);
-
+		dbInstance.commitAndCloseSession();
 		
 		// basic query to find all system users without restrictions
 		List<Identity> results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, null);
@@ -116,12 +119,12 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsUser("anIdentity-" + suffix);
 		Identity uniIdent = getOrCreateTestIdentity("extremegroovy-" + suffix);
 		Assert.assertNotNull(uniIdent);
-		Identity deletedIdent = getOrCreateTestIdentity("delete");
+		Identity deletedIdent = getOrCreateTestIdentity("delete-" + suffix);
 		deletedIdent = baseSecurityManager.saveIdentityStatus(deletedIdent, Identity.STATUS_DELETED);
 
 		SecurityGroup admins = baseSecurityManager.findSecurityGroupByName(Constants.GROUP_ADMIN);
 		baseSecurityManager.addIdentityToSecurityGroup(deletedIdent, admins);
-
+		dbInstance.commitAndCloseSession();
 		
 		//search institutional name with *zh2
 		Map<String, String> userProperties = new HashMap<String, String>();
@@ -198,6 +201,8 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Assert.assertFalse(results.contains(ident));
 		Assert.assertTrue(results.contains(uniIdent));
 		Assert.assertFalse(results.contains(deletedIdent));
+
+		dbInstance.commitAndCloseSession();
 	}
 	
 	@Test
@@ -220,7 +225,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		baseSecurityManager.addIdentityToSecurityGroup(ident, authors);
 
 		// security group search test
-		DBFactory.getInstance().closeSession();
+		dbInstance.commitAndCloseSession();
 		SecurityGroup[] groups1 = {admins};
 		SecurityGroup[] groups2 = {admins, authors};
 		SecurityGroup[] groups3 = {authors};
