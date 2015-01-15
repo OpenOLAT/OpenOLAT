@@ -1370,7 +1370,7 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 		boolean hasAuthProviders = (params.getAuthProviders() != null && params.getAuthProviders().length > 0);
 
 		// select identity and inner join with user to optimize query
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(5000);
 		if (hasAuthProviders) {
 			// I know, it looks wrong but I need to do the join reversed since it is not possible to 
 			// do this query with a left join that starts with the identity using hibernate HQL. A left
@@ -1378,26 +1378,30 @@ public class BaseSecurityManager extends BasicManager implements BaseSecurity {
 			// providers (e.g. when searching for users that do not have any authentication providers at all!).
 			// It took my quite a while to make this work, so think twice before you change anything here!
 			if(count) {
-				sb = new StringBuilder("select count(distinct ident.key) from org.olat.basesecurity.AuthenticationImpl as auth right join auth.identity as ident ");			
+				sb.append("select count(distinct ident.key) from org.olat.basesecurity.AuthenticationImpl as auth  ")
+				  .append(" right join auth.identity as ident")
+				  .append(" inner join ident.user as user ");
 			} else {
-				sb = new StringBuilder("select distinct ident from org.olat.basesecurity.AuthenticationImpl as auth right join auth.identity as ident ");			
+				sb.append("select distinct ident from org.olat.basesecurity.AuthenticationImpl as auth ")
+				  .append(" right join auth.identity as ident")
+				  .append(" inner join fetch ident.user as user ");
 			}
 		} else {
 			if(count) {
-				sb = new StringBuilder("select count(distinct ident.key) from org.olat.core.id.Identity as ident ");
+				sb.append("select count(distinct ident.key) from org.olat.core.id.Identity as ident ")
+				  .append(" inner join ident.user as user ");
 			} else {
-				sb = new StringBuilder("select distinct ident from org.olat.core.id.Identity as ident ");
+				sb.append("select distinct ident from org.olat.core.id.Identity as ident ")
+				  .append(" inner join fetch ident.user as user ");
 			}
 		}
 		// In any case join with the user. Don't join-fetch user, this breaks the query
 		// because of the user fields (don't know exactly why this behaves like
 		// this)
-		sb.append(" inner join fetch ident.user as user ");
-		
+
 		if (hasGroups) {
 			// join over security group memberships
-	    sb.append(" ,org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi ");
-
+			sb.append(" ,org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi ");
 		}
 		if (hasPermissionOnResources) {
 			// join over policies
