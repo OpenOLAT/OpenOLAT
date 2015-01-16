@@ -1,2 +1,11 @@
-$r.render("filechoosecreateedit")
+<fieldset>
+	<legend>
+		$r.contextHelpWithWrapper("org.olat.course.nodes.sp","ced-sp-choose.html", "help.choose.file")
+		$fieldSetLegend
+	</legend>
+	$r.render("combiCtr")
+</fieldset>
 
+#if ($editorEnabled)
+	$r.render("allowRelativeLinksForm")
+#end

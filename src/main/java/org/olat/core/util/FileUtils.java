@@ -65,7 +65,9 @@ public class FileUtils {
 	
 	private static int buffSize = 32 * 1024;
 
-	private static final Pattern fileNamePattern = Pattern.compile("(.+)[.](\\w{3,4})");
+	// matches files and folders of type:
+	// bla, bla1, bla12, bla.html, bla1.html, bla12.html
+	private static final Pattern fileNamePattern = Pattern.compile("(.+?)\\p{Digit}*(\\.\\w{2,4})?");
 	
 	//windows: invalid characters for filenames: \ / : * ? " < > | 
 	//linux: invalid characters for file/folder names: /, but you have to escape certain chars, like ";$%&*"
@@ -996,6 +998,9 @@ public class FileUtils {
 	 * with extension, add the counter to the end of the filename before the
 	 * extension. Else just add the counter to the end of the name. E.g.:
 	 * hello.xml => hello1.xml where 1 is the counter
+	 * hello1.xml => hello2.xml
+	 * blaber 	 => blaber1
+	 * blaber1 	 => blaber2
 	 * 
 	 * @param name
 	 * @param number
@@ -1007,7 +1012,10 @@ public class FileUtils {
 		StringBuffer newName = new StringBuffer();
 		if (m.matches()) {
 			newName.append(m.group(1)).append(number);
-			newName.append(".").append(m.group(2));
+			if (m.group(2) != null) {
+				// is null in case it was not a file or does not contain a file ending.
+				newName.append(m.group(2));
+			}
 		} else {
 			newName.append(name).append(number);
 		}

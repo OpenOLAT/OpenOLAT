@@ -25,11 +25,13 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeEvent;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.folder.FolderTreeModel;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -81,9 +83,6 @@ public class FileChooserController extends BasicController {
 	 *            all
 	 * @param onlyLeafsSelectable true: container elements can't be selected;
 	 *          false: all items can be selected
-	 * @param showTitle
-	 *            true: show a file chooser title and description; false: show
-	 *            only the tree without a title
 	 */
 	FileChooserController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, VFSItemFilter customItemFilter, boolean onlyLeafsSelectable) {
 		super(ureq, wControl);
@@ -129,6 +128,7 @@ public class FileChooserController extends BasicController {
 			if (te.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
 				String selectedPath = treeModel.getSelectedPath(selectionTree.getSelectedNode());
 				selectedItem = rootContainer.resolve(selectedPath);
+				selectLink.setCustomEnabledLinkCSS("btn btn-default o_button_dirty");
 			}
 		}
 	}
@@ -137,4 +137,46 @@ public class FileChooserController extends BasicController {
 	protected void doDispose() {
 		// Controllers auto disposed by basic controller. NULL composite objects to help GC
 	}
+
+	/**
+	 * @param showTitle true: title is displayed; false: no title is shown
+	 */
+	public void setShowTitle(boolean showTitle) {
+		mainVC.contextPut("showTitle", Boolean.valueOf(showTitle));
+	}
+
+	/**
+	 * Select the node in the tree that represents the given path
+	 * 
+	 * @param relFilePath
+	 */
+	public void selectPath(String relFilePath) {
+		if (StringHelper.containsNonWhitespace(relFilePath)) {
+			// Start with the root node
+			TreeNode node = treeModel.getRootNode();
+			String[] pathSegments = relFilePath.split("/");
+			for (int i = 0; i < pathSegments.length; i++) {
+				String segment = pathSegments[i];
+				if (StringHelper.containsNonWhitespace(segment)) {
+					if (segment.equals(node.getTitle())) {
+						// Final node found, stop main loop
+						break;
+					}
+					for (int j = 0; j < node.getChildCount(); j++) {
+						TreeNode child = (TreeNode)node.getChildAt(j);
+						if (segment.equals(child.getTitle())) {
+							// Found the next child in the path, go to next
+							// level
+							node = child;
+							break;
+						}						
+					}
+				}
+			}
+			// Select the last node we found. In worst case this is the root
+			// node
+			selectionTree.setSelectedNode(node);
+		}		
+	}
+
 }

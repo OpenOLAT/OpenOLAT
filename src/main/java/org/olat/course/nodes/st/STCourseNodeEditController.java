@@ -28,13 +28,11 @@ package org.olat.course.nodes.st;
 import java.util.Iterator;
 import java.util.List;
 
-import org.olat.commons.file.filechooser.FileChooseCreateEditController;
-import org.olat.commons.file.filechooser.LinkChooseCreateEditController;
+import org.olat.core.commons.controllers.filechooser.LinkFileCombiCalloutController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -47,12 +45,15 @@ import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultCon
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.editor.CourseEditorHelper;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.nodes.sp.SecuritySettingsForm;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -81,6 +82,8 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	 */
 	public static final String CONFIG_KEY_ALLOW_RELATIVE_LINKS = "allowRelativeLinks";
 	public static final String CONFIG_KEY_DELIVERYOPTIONS = "deliveryOptions";
+	/** configuration key: should the students be allowed to edit the page? */
+	public static final String CONFIG_KEY_ALLOW_COACH_EDIT = "allowCoachEdit";
 	// key to store information on what to display in the run 
 	public static final String CONFIG_KEY_DISPLAY_TYPE = "display";
 	// display a custom file
@@ -113,8 +116,8 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	private Boolean allowRelativeLinks;
 	private DeliveryOptions deliveryOptions;
 
-	private Panel fccePanel;
-	private FileChooseCreateEditController fccecontr;
+	private LinkFileCombiCalloutController combiLinkCtr;
+	private SecuritySettingsForm securitySettingForm;
 	private DeliveryOptionsConfigurationController deliveryOptionsCtrl;
 	private ConditionEditController accessibilityCondContr;
 
@@ -151,6 +154,10 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		activateExpertModeButton = LinkFactory.createButtonSmall("cmd.activate.expertMode", score, this);
 				
 		configvc = createVelocityContainer("config");
+		// type of display configuration: manual, auto, peekview etc
+		nodeDisplayConfigFormController = new STCourseNodeDisplayConfigFormController(ureq, wControl, stNode.getModuleConfiguration(), editorModel.getCourseEditorNodeById(stNode.getIdent()));
+		listenTo(nodeDisplayConfigFormController);
+		configvc.put("nodeDisplayConfigFormController", nodeDisplayConfigFormController.getInitialComponent());
 
 		// Load configured value for file if available and enable editor when in
 		// file display move, even when no file is selected (this will display the
@@ -161,15 +168,10 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		allowRelativeLinks = stNode.getModuleConfiguration().getBooleanSafe(CONFIG_KEY_ALLOW_RELATIVE_LINKS);
 		deliveryOptions = (DeliveryOptions)stNode.getModuleConfiguration().get(CONFIG_KEY_DELIVERYOPTIONS);
 
-		nodeDisplayConfigFormController = new STCourseNodeDisplayConfigFormController(ureq, wControl, stNode.getModuleConfiguration(), editorModel.getCourseEditorNodeById(stNode.getIdent()));
-		listenTo(nodeDisplayConfigFormController);
-		configvc.put("nodeDisplayConfigFormController", nodeDisplayConfigFormController.getInitialComponent());
-
 		if (editorEnabled) {
-			configvc.contextPut("editorEnabled", Boolean.valueOf(editorEnabled));
-			addStartEditorToView(ureq);
+			addCustomFileConfigToView(ureq);
 		}
-		
+				
 		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions);
 		listenTo(deliveryOptionsCtrl);
 
@@ -272,28 +274,38 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	 */
 	
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == accessibilityCondContr) {
+		if (source instanceof NodeEditController) {
+			if(combiLinkCtr != null && combiLinkCtr.isDoProposal()){
+				combiLinkCtr.setRelFilePath(CourseEditorHelper.createUniqueRelFilePathFromShortTitle(stNode, courseFolderContainer));
+			}
+		} else if (source == accessibilityCondContr) {
 			if (event == Event.CHANGED_EVENT) {
 				Condition cond = accessibilityCondContr.getCondition();
 				stNode.setPreConditionAccess(cond);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
-		} else if (event == FileChooseCreateEditController.FILE_CHANGED_EVENT) {
-			chosenFile = fccecontr.getChosenFile();
-			if (chosenFile != null) {
-				stNode.getModuleConfiguration().set(CONFIG_KEY_FILE, chosenFile);
-			} else {
-				stNode.getModuleConfiguration().remove(CONFIG_KEY_FILE);
-			}
-			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-		} else if (event == FileChooseCreateEditController.ALLOW_RELATIVE_LINKS_CHANGED_EVENT) {
-			allowRelativeLinks = fccecontr.getAllowRelativeLinks();
-			stNode.getModuleConfiguration().setBooleanEntry(CONFIG_KEY_ALLOW_RELATIVE_LINKS, allowRelativeLinks.booleanValue());
-			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		} else if (source == deliveryOptionsCtrl) {
 			deliveryOptions = deliveryOptionsCtrl.getDeliveryOptions();
 			stNode.getModuleConfiguration().set(CONFIG_KEY_DELIVERYOPTIONS, deliveryOptions);
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+		} else if(source == combiLinkCtr){
+			if(event == Event.DONE_EVENT){
+				chosenFile = VFSManager.getRelativeItemPath(combiLinkCtr.getFile(), courseFolderContainer, null);
+				stNode.getModuleConfiguration().set(CONFIG_KEY_FILE, chosenFile);
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				if(!myTabbedPane.containsTab(deliveryOptionsCtrl.getInitialComponent())) {
+					myTabbedPane.addTab(translate(PANE_TAB_DELIVERYOPTIONS), deliveryOptionsCtrl.getInitialComponent());
+				}
+				configvc.contextPut("editorEnabled", combiLinkCtr.isEditorEnabled());
+			}
+		} else if(source == securitySettingForm){
+			if(event == Event.DONE_EVENT){
+				boolean allowRelativeLinks = securitySettingForm.getAllowRelativeLinksConfig();
+				stNode.getModuleConfiguration().set(CONFIG_KEY_ALLOW_RELATIVE_LINKS, allowRelativeLinks);
+				stNode.getModuleConfiguration().set(CONFIG_KEY_ALLOW_COACH_EDIT, securitySettingForm.getAllowCoachEditConfig());
+				combiLinkCtr.setAllowEditorRelativeLinks(allowRelativeLinks);
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
 		} else if (source == nodeDisplayConfigFormController) {
 			if (event == Event.DONE_EVENT) {
 				// update the module configuration
@@ -303,18 +315,10 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 				// update some class vars
 				if (CONFIG_VALUE_DISPLAY_FILE.equals(moduleConfig.getStringValue(CONFIG_KEY_DISPLAY_TYPE))) {
 					editorEnabled = true;
-					configvc.contextPut("editorEnabled", Boolean.valueOf(editorEnabled));
-					stNode.getModuleConfiguration().set(CONFIG_KEY_FILE, chosenFile);
-					addStartEditorToView(ureq);
+					addCustomFileConfigToView(ureq);
 				} else { // user generated overview
 					editorEnabled = false;
-					configvc.contextPut("editorEnabled", Boolean.valueOf(editorEnabled));
-					//fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-					// Let other config values from old config setup remain in config,
-					// maybe used when user switches back to other config (OLAT-5610)
-					if(myTabbedPane.containsTab(deliveryOptionsCtrl.getInitialComponent())) {
-						myTabbedPane.removeTab(deliveryOptionsCtrl.getInitialComponent());
-					}
+					removeCustomFileConfigFromView();
 				}
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
@@ -370,15 +374,28 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		}
 	}
 
-	private void addStartEditorToView(UserRequest ureq) {
-		fccecontr = new LinkChooseCreateEditController(ureq, getWindowControl(), chosenFile, allowRelativeLinks, courseFolderContainer, new CourseInternalLinkTreeModel(editorModel) );		
-		listenTo(fccecontr);
+	private void addCustomFileConfigToView(UserRequest ureq) {
+		// Read configuration
+		boolean relFilPathIsProposal = false;
+		String relFilePath = chosenFile;
+		if(relFilePath == null){
+			// Use calculated file and folder name as default when not yet configured
+			relFilePath = CourseEditorHelper.createUniqueRelFilePathFromShortTitle(stNode, courseFolderContainer);
+			relFilPathIsProposal = true;
+		}
+		// File create/select controller
+		combiLinkCtr = new LinkFileCombiCalloutController(ureq, getWindowControl(), courseFolderContainer, relFilePath, relFilPathIsProposal, allowRelativeLinks, new CourseInternalLinkTreeModel(editorModel) );
+		listenTo(combiLinkCtr);
+		configvc.put("combiCtr", combiLinkCtr.getInitialComponent());		
+		configvc.contextPut("editorEnabled", combiLinkCtr.isEditorEnabled());
 
-		fccePanel = new Panel("filechoosecreateedit");
-		Component fcContent = fccecontr.getInitialComponent();
-		fccePanel.setContent(fcContent);
-		configvc.put(fccePanel.getComponentName(), fccePanel);
+		// Security configuration form
+		boolean allowCoachEdit = stNode.getModuleConfiguration().getBooleanSafe(CONFIG_KEY_ALLOW_COACH_EDIT, false);
+		securitySettingForm = new SecuritySettingsForm(ureq, getWindowControl(), allowRelativeLinks, allowCoachEdit);
+		listenTo(securitySettingForm);
+		configvc.put("allowRelativeLinksForm", securitySettingForm.getInitialComponent());
 		
+		// Add options tab
 		if(myTabbedPane != null) {
 			if(!myTabbedPane.containsTab(deliveryOptionsCtrl.getInitialComponent())) {
 				myTabbedPane.addTab(translate(PANE_TAB_DELIVERYOPTIONS), deliveryOptionsCtrl.getInitialComponent());
@@ -386,6 +403,28 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		}
 	}
 
+	private void removeCustomFileConfigFromView() {
+		// Remove options tab
+		if(myTabbedPane != null) {
+			if(myTabbedPane.containsTab(deliveryOptionsCtrl.getInitialComponent())) {
+				myTabbedPane.removeTab(deliveryOptionsCtrl.getInitialComponent());
+			}
+		}
+		// Remove combi link
+		if (combiLinkCtr != null) {
+			configvc.remove(combiLinkCtr.getInitialComponent());	
+			removeAsListenerAndDispose(combiLinkCtr);
+			combiLinkCtr = null;			
+		}
+		// Remove security settings form
+		if (securitySettingForm != null) {			
+			configvc.remove(securitySettingForm.getInitialComponent());	
+			removeAsListenerAndDispose(securitySettingForm);
+			securitySettingForm = null;		
+		}
+	}
+	
+	
 	/**
 	 * @see org.olat.core.gui.control.generic.tabbable.TabbableDefaultController#addTabs(org.olat.core.gui.components.TabbedPane)
 	 */
