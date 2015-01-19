@@ -87,22 +87,34 @@ var BPlayer = {
 				});
 			}
 		} else {
-			jQuery('<link>')
-			  .appendTo('head')
-			  .attr({type : 'text/css', rel : 'stylesheet'})
-			  .attr('href', mediaElementBaseUrl + 'mediaelementplayer.min.css');
-	
-			var realDomId;
+			if(jQuery('#mediaelementplayercss').length == 0) {
+				jQuery('<link>')
+				  .appendTo('head')
+				  .attr({id : 'mediaelementplayercss', type : 'text/css', rel : 'stylesheet'})
+				  .attr('href', mediaElementBaseUrl + 'mediaelementplayer.min.css');
+			}
+
 			if(BPlayer.isIE8()) {
 				jQuery('<script></script>')
-				  .appendTo('head')
-				  .attr({type : 'text/javascript'})
-				  .attr('src', mediaElementBaseUrl + 'mediaelement-and-player.min.js');
-				BPlayer.insertHTML5MediaElementPlayerWorker(domId, args);
-			} else {
-				jQuery.getScript(mediaElementBaseUrl + 'mediaelement-and-player.min.js', function() {
+					.appendTo('head')
+					.attr({ type : 'text/javascript'})
+					.attr('src', mediaElementBaseUrl + 'mediaelement-and-player.min.js');
+				setTimeout(function() {
 					BPlayer.insertHTML5MediaElementPlayerWorker(domId, args);
-				});
+				}, 700)
+			} else {
+				if(typeof jQuery('body').mediaelementplayer != 'undefined') {
+					BPlayer.insertHTML5MediaElementPlayerWorker(domId, args);
+				} else {
+					jQuery.ajax({
+							dataType: 'script',
+							cache: true,
+							async: false,//prevent 2x load of the mediaelement.js which is deadly
+							url: mediaElementBaseUrl + 'mediaelement-and-player.min.js'
+						}).done(function() {
+						BPlayer.insertHTML5MediaElementPlayerWorker(domId, args);
+					});
+				}
 			}
 		}
 	},
@@ -125,6 +137,7 @@ var BPlayer = {
 			flashName: 'flashmediaelement.swf',
 			silverlightName: 'silverlightmediaelement.xap',
 			loop: config.repeat,
+			pauseOtherPlayers: true,
 			success: function(mediaElement, originalNode, player) {
 				if(config.autostart) {
 					try {
@@ -202,11 +215,11 @@ var BPlayer = {
 			if(config.width) {
 				meConfig.audioWidth = config.width;
 			}
-			content = "<audio id='" + domId + "_video' controls='controls' preload='none'>";
+			content = "<audio id='" + domId + "_oovid' controls='controls' preload='none'>";
 			content += "<source type='" +mimeType + "' src='" + config.file + "' /></audio>";
 		} else {
 			//controls are mandatory for Safari at least
-			content = "<video id='" + domId + "_video' controls='controls' preload='none'";
+			content = "<video id='" + domId + "_oovid' controls='controls' preload='none'";
 			if(config.height) {
 				content += " height='" + config.height + "'";
 				meConfig.videoHeight = config.height;
@@ -222,7 +235,7 @@ var BPlayer = {
 		}
 
 		jQuery('#' + domId).html(content);
-		jQuery('#' + domId + '_video').mediaelementplayer(meConfig);
+		jQuery('#' + domId + '_oovid').mediaelementplayer(meConfig);
 	},
 	
 	mediaElementBaseUrl: function() {
