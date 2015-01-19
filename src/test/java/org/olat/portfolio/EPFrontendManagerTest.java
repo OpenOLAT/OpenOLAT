@@ -28,13 +28,16 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Invitation;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.manager.EPMapPolicy;
 import org.olat.portfolio.manager.EPMapPolicy.Type;
@@ -52,6 +55,7 @@ import org.olat.portfolio.model.structel.StructureStatusEnum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
@@ -99,6 +103,8 @@ public class EPFrontendManagerTest extends OlatTestCase {
 	private RepositoryService repositoryService;
 	@Autowired
 	private OLATResourceManager resourceManager;
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	@Before
 	public void setUp() {
@@ -701,5 +707,125 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		assertEquals(1, count1);
 		assertEquals(1, count2);
 		assertEquals(1, count3);
+	}
+	
+	/**
+	 * Create a map with a page and an artefact. Delete it.
+	 */
+	@Test
+	public void deleteMap_pageAndArtefact() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("frtuse-4");
+		
+		PortfolioStructureMap map = epFrontendManager.createAndPersistPortfolioDefaultMap(id, "Delete map", "Description");
+		PortfolioStructure page = epFrontendManager.createAndPersistPortfolioPage(map, "Page while be deleted", "Page description");
+		assertNotNull(page);
+		dbInstance.commitAndCloseSession();
+		//create artefact
+		AbstractArtefact artefact = epFrontendManager.createAndPersistArtefact(id, "Forum");
+		dbInstance.commitAndCloseSession();		
+		//create the link
+		epFrontendManager.addArtefactToStructure(id, artefact, page);
+		dbInstance.commitAndCloseSession();
+		
+		//reload and check
+		PortfolioStructure reloadedMap = epFrontendManager.loadPortfolioStructureByKey(map.getKey());
+		Assert.assertNotNull(reloadedMap);
+		Assert.assertEquals(map, reloadedMap);
+		List<PortfolioStructure> reloadedPages = epFrontendManager.loadStructureChildren(reloadedMap);
+		Assert.assertNotNull(reloadedPages);
+		Assert.assertEquals(1, reloadedPages.size());
+		PortfolioStructure reloadedPage = reloadedPages.get(0);
+		Assert.assertEquals(page, reloadedPage);
+		List<AbstractArtefact> reloadedArtefacts = epFrontendManager.getArtefacts(reloadedPage);
+		Assert.assertNotNull(reloadedArtefacts);
+		Assert.assertEquals(1, reloadedArtefacts.size());
+		AbstractArtefact reloadedArtefact = reloadedArtefacts.get(0);
+		Assert.assertEquals(artefact, reloadedArtefact);
+		dbInstance.commitAndCloseSession();
+		
+		//delete the map
+		epFrontendManager.deletePortfolioStructure(reloadedMap);
+		dbInstance.commit();
+		
+		//what is deleted?
+		AbstractArtefact notDeletedArtefact = epFrontendManager.loadArtefactByKey(artefact.getKey());
+		Assert.assertNotNull(notDeletedArtefact);
+		PortfolioStructure deletedMap = epFrontendManager.loadPortfolioStructureByKey(map.getKey());
+		Assert.assertNull(deletedMap);
+		PortfolioStructure deletedPage = epFrontendManager.loadPortfolioStructureByKey(page.getKey());
+		Assert.assertNull(deletedPage);
+	}
+	
+	/**
+	 * Delete a map with policies
+	 */
+	@Test
+	public void deleteMap_pageAndPolicy() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("frtuse-5");
+		PortfolioStructureMap map = epFrontendManager.createAndPersistPortfolioDefaultMap(id, "Delete map", "Description");
+		PortfolioStructure page = epFrontendManager.createAndPersistPortfolioPage(map, "Page while be deleted", "Page description");
+		AbstractArtefact artefact = epFrontendManager.createAndPersistArtefact(id, "Forum");
+		epFrontendManager.addArtefactToStructure(id, artefact, page);
+		dbInstance.commitAndCloseSession();
+		//add policy
+		List<EPMapPolicy> policies = new ArrayList<EPMapPolicy>();
+		EPMapPolicy userPolicy = new EPMapPolicy();
+		userPolicy.setType(Type.user);
+		userPolicy.getIdentities().add(ident2);
+		userPolicy.getIdentities().add(ident3);
+		policies.add(userPolicy);
+		epFrontendManager.updateMapPolicies(map, policies);
+		dbInstance.commitAndCloseSession();
+
+		//reload and check
+		PortfolioStructure reloadedMap = epFrontendManager.loadPortfolioStructureByKey(map.getKey());
+		Assert.assertNotNull(reloadedMap);
+		OLATResource reloadedResource = reloadedMap.getOlatResource();
+		Assert.assertNotNull(reloadedResource);		
+		Assert.assertEquals(map, reloadedMap);
+		boolean shared = epFrontendManager.isMapShared(reloadedResource);
+		Assert.assertTrue(shared);
+		boolean visibleToIdent2 = epFrontendManager.isMapVisible(ident2, reloadedResource);
+		Assert.assertTrue(visibleToIdent2);
+		
+		//delete the map
+		epFrontendManager.deletePortfolioStructure(reloadedMap);
+		dbInstance.commit();
+		boolean deletedShared = epFrontendManager.isMapShared(reloadedResource);
+		Assert.assertFalse(deletedShared);
+		boolean deletedVisibleToIdent2 = epFrontendManager.isMapVisible(ident2, reloadedResource);
+		Assert.assertFalse(deletedVisibleToIdent2);
+	}
+	
+	/**
+	 * Delete a portfolio template
+	 */
+	@Test
+	public void deleteMap_template() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("frtuse-6");
+		//save parent and 20 children
+		
+		OLATResource resource = epStructureManager.createPortfolioMapTemplateResource();
+		RepositoryEntry re = repositoryService.create(id, null, "", "Template to delete", "", resource, RepositoryEntry.ACC_OWNERS);
+		PortfolioStructureMap template = epStructureManager.createAndPersistPortfolioMapTemplateFromEntry(id, re);
+		PortfolioStructure page = epFrontendManager.createAndPersistPortfolioPage(template, "Page while be deleted", "Page description");
+		dbInstance.commitAndCloseSession();
+		
+		//reload and check
+		PortfolioStructure reloadedTemplate = epFrontendManager.loadPortfolioStructureByKey(template.getKey());
+		Assert.assertNotNull(reloadedTemplate);
+		OLATResource reloadedResource = reloadedTemplate.getOlatResource();
+		Assert.assertNotNull(reloadedResource);		
+		Assert.assertEquals(template, reloadedTemplate);
+		List<PortfolioStructure> reloadedPages = epFrontendManager.loadStructureChildren(reloadedTemplate);
+		Assert.assertNotNull(reloadedPages);
+		Assert.assertEquals(1, reloadedPages.size());
+		Assert.assertEquals(page, reloadedPages.get(0));
+
+		//delete
+		RepositoryEntry reloadedRe = repositoryService.loadByKey(re.getKey());
+		Roles roles = new Roles(true, false, false, false, false, false, false);
+		repositoryService.delete(reloadedRe, id, roles, Locale.GERMAN);
+		dbInstance.commit();	
 	}
 }
