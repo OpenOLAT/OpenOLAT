@@ -27,6 +27,7 @@
 package org.olat.core.commons.modules.bc;
 
 import org.olat.core.gui.control.Event;
+import org.olat.core.util.vfs.VFSItem;
 
 /**
  * This event signalizes a change in a folder
@@ -39,6 +40,7 @@ public class FolderEvent extends Event {
 	private static final long serialVersionUID = -1183725651534985733L;
 
 	private String filename;
+	private VFSItem item;
 	
 	public static final String UPLOAD_EVENT = "upload";
 	public static final String NEW_FOLDER_EVENT = "new.folder";
@@ -58,11 +60,25 @@ public class FolderEvent extends Event {
 		super(command);
 		this.filename = filename;
 	}
+	
+	public FolderEvent(String command, VFSItem item) {
+		super(command);
+		this.item = item;
+		this.filename = item.getName();
+	}
 
 	/**
 	 * @return String representing the file name to which the command applied
 	 */
 	public String getFilename() {
 		return filename;
+	}
+
+	/**
+	 * 
+	 * @return The file, can be null
+	 */
+	public VFSItem getItem() {
+		return item;
 	}
 }

@@ -39,7 +39,7 @@ import java.util.UUID;
 import junit.framework.Assert;
 
 import org.junit.Test;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
@@ -61,6 +61,8 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 	private static final OLog log = Tracing.createLoggerFor(GetIdentitiesByPowerSearchTest.class);
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private BaseSecurity baseSecurityManager;
 	
 	@Test
@@ -69,12 +71,12 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsUser("anIdentity-" + suffix);
 		Identity uniIdent = getOrCreateTestIdentity("extremegroovy-" + suffix);
 		Assert.assertNotNull(uniIdent);
-		Identity deletedIdent = getOrCreateTestIdentity("delete");
+		Identity deletedIdent = getOrCreateTestIdentity("delete-" + suffix);
 		deletedIdent = baseSecurityManager.saveIdentityStatus(deletedIdent, Identity.STATUS_DELETED);
 
 		SecurityGroup admins = baseSecurityManager.findSecurityGroupByName(Constants.GROUP_ADMIN);
 		baseSecurityManager.addIdentityToSecurityGroup(deletedIdent, admins);
-
+		dbInstance.commitAndCloseSession();
 		
 		// basic query to find all system users without restrictions
 		List<Identity> results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null, null);
@@ -91,7 +93,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		assertEquals("Number of all users != activeUsers + deletedUsers" , numberOfAllUsers, numberOfActiveUsers + numberOfDeletedUsers);
 		
 		// user attributes search test
-		DBFactory.getInstance().closeSession();
+		dbInstance.commitAndCloseSession();
 		results = baseSecurityManager.getIdentitiesByPowerSearch(ident.getName(), null, true, null, null, null, null, null, null, null, null);
 		assertTrue(results.size() == 1);
 		assertEquals("Wrong search result (search with username)" + ident.getName() + "' ",ident.getName() , results.get(0).getName());
@@ -116,12 +118,12 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsUser("anIdentity-" + suffix);
 		Identity uniIdent = getOrCreateTestIdentity("extremegroovy-" + suffix);
 		Assert.assertNotNull(uniIdent);
-		Identity deletedIdent = getOrCreateTestIdentity("delete");
+		Identity deletedIdent = getOrCreateTestIdentity("delete-" + suffix);
 		deletedIdent = baseSecurityManager.saveIdentityStatus(deletedIdent, Identity.STATUS_DELETED);
 
 		SecurityGroup admins = baseSecurityManager.findSecurityGroupByName(Constants.GROUP_ADMIN);
 		baseSecurityManager.addIdentityToSecurityGroup(deletedIdent, admins);
-
+		dbInstance.commitAndCloseSession();
 		
 		//search institutional name with *zh2
 		Map<String, String> userProperties = new HashMap<String, String>();
@@ -198,6 +200,8 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Assert.assertFalse(results.contains(ident));
 		Assert.assertTrue(results.contains(uniIdent));
 		Assert.assertFalse(results.contains(deletedIdent));
+
+		dbInstance.commitAndCloseSession();
 	}
 	
 	@Test
@@ -220,7 +224,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		baseSecurityManager.addIdentityToSecurityGroup(ident, authors);
 
 		// security group search test
-		DBFactory.getInstance().closeSession();
+		dbInstance.commitAndCloseSession();
 		SecurityGroup[] groups1 = {admins};
 		SecurityGroup[] groups2 = {admins, authors};
 		SecurityGroup[] groups3 = {authors};
@@ -285,14 +289,14 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		baseSecurityManager.addIdentityToSecurityGroup(ident, authors);
 		
 		// policy search test
-		DBFactory.getInstance().closeSession();
+		dbInstance.commitAndCloseSession();
 		List<Policy> policies = baseSecurityManager.getPoliciesOfSecurityGroup(admins);
 		PermissionOnResourceable[] adminPermissions = convertPoliciesListToPermissionOnResourceArray(policies);
 		policies = baseSecurityManager.getPoliciesOfSecurityGroup(anonymous);
 		PermissionOnResourceable[] anonymousPermissions = convertPoliciesListToPermissionOnResourceArray(policies);
 
 		// security group search test
-		DBFactory.getInstance().closeSession();
+		dbInstance.commitAndCloseSession();
 		SecurityGroup[] groups2 = {admins, authors};
 		SecurityGroup[] groups3 = {authors};
 
@@ -358,7 +362,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		SecurityGroup[] groups2 = { admins, authors };
 		
 		// policy search test
-		DBFactory.getInstance().closeSession();
+		dbInstance.commitAndCloseSession();
 		List<Policy> policies = baseSecurityManager.getPoliciesOfSecurityGroup(admins);
 		PermissionOnResourceable[] adminPermissions = convertPoliciesListToPermissionOnResourceArray(policies);
 				
@@ -395,7 +399,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 
 		Authentication auth = baseSecurityManager.findAuthentication(ident, BaseSecurityModule.getDefaultAuthProviderIdentifier());
 		baseSecurityManager.deleteAuthentication(auth);
-		DBFactory.getInstance().closeSession();
+		dbInstance.commitAndCloseSession();
 
 		// ultimate tests
 		//Identity ident = getOrCreateIdentity("anIdentity");
@@ -405,7 +409,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		cal.add(Calendar.DAY_OF_MONTH, -5);
 		Date before = cal.getTime();
 
-		DBFactory.getInstance().closeSession();
+		dbInstance.commitAndCloseSession();
 		results = baseSecurityManager.getIdentitiesByPowerSearch("groovy", null, true, groups1, adminPermissions, null, before, null, null, null, null);
 		Assert.assertTrue(results.isEmpty());
 		results = baseSecurityManager.getVisibleIdentitiesByPowerSearch("groovy", null, true, groups1, adminPermissions, null, before, null);
@@ -466,11 +470,15 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		//check count before adding
 		List<Identity> results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, authProviderNone, null, null, null, null, null);
 		int prevProviderNoneCount = results.size();
+		
+		long countResults = baseSecurityManager.countIdentitiesByPowerSearch(null, null, true, null, null, authProviderNone, null, null, null, null, null);
+		Assert.assertEquals(results.size(), countResults);
+		
 		//add two new users with authProviderNone
 		String rnd = UUID.randomUUID().toString();
 		Identity authNoneOne = getOrCreateTestIdentityWithAuth("authNoneOne-" + rnd, null);
 		Identity authNoneTwo = getOrCreateTestIdentityWithAuth("authNoneTwo-" + rnd, null);
-		DBFactory.getInstance().closeSession();
+		dbInstance.commitAndCloseSession();
 		
 		// special case: no auth provider
 		// test if 2 new users are found.
@@ -485,7 +493,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		
 		Identity authNoneThree = getOrCreateTestIdentityWithAuth("authNoneThree-" + rnd, null);
 		Identity authNoneFour = getOrCreateTestIdentityWithAuth("authNoneFour-" + rnd, null);
-		DBFactory.getInstance().closeSession();
+		dbInstance.commitAndCloseSession();
 		
 		results = baseSecurityManager.getVisibleIdentitiesByPowerSearch(null, null, true, null, null, authProviderNone, null, null);
 		Assert.assertTrue(results.contains(authNoneThree));
@@ -498,7 +506,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		
 		getOrCreateTestIdentityWithAuth("authNoneFive-" + rnd, null);
 		getOrCreateTestIdentityWithAuth("authNoneSix-" + rnd, null);
-		DBFactory.getInstance().closeSession();
+		dbInstance.commitAndCloseSession();
 		results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, authProviderNone, null, null, null, null, null);
 		Assert.assertEquals("Wrong number of identities, search with (authProviderNone)", prevProviderNoneCount + 2, results.size());
 		
@@ -506,7 +514,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		prevProviderNoneCount = results.size();
 		getOrCreateTestIdentityWithAuth("authNoneSeven-" + rnd, null);
 		getOrCreateTestIdentityWithAuth("authNoneEight-" + rnd, null);
-		DBFactory.getInstance().closeSession();
+		dbInstance.commitAndCloseSession();
 		results = baseSecurityManager.getVisibleIdentitiesByPowerSearch(null, null, true, null, null, authProviderNone, null, null);
 		Assert.assertEquals("Wrong number of visible identities, search with (authProviderNone)", prevProviderNoneCount + 2, results.size());
 		
@@ -517,7 +525,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		getOrCreateTestIdentityWithAuth("authTwelve-" + rnd, "Shib");
 		getOrCreateTestIdentityWithAuth("authThirteen-" + rnd, BaseSecurityModule.getDefaultAuthProviderIdentifier());
 		getOrCreateTestIdentityWithAuth("authForteen-" + rnd, null);
-		DBFactory.getInstance().closeSession();
+		dbInstance.commitAndCloseSession();
 		results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, authProvidersAll, null, null, null, null, null);
 		Assert.assertTrue(results.size() - prevProviderNoneCount == 3);
 		
@@ -527,7 +535,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		getOrCreateTestIdentityWithAuth("authSixteen-" + rnd, "Shib");
 		getOrCreateTestIdentityWithAuth("authSeventeen-" + rnd, BaseSecurityModule.getDefaultAuthProviderIdentifier());
 		getOrCreateTestIdentityWithAuth("authEighteen-" + rnd, null);
-		DBFactory.getInstance().closeSession();
+		dbInstance.commitAndCloseSession();
 		results = baseSecurityManager.getVisibleIdentitiesByPowerSearch(null, null, true, null, null, authProvidersAll, null, null);
 		Assert.assertTrue(results.size() - prevProviderNoneCount == 3);
 	}
@@ -555,7 +563,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		twoPropUser.setProperty(UserConstants.LASTNAME, "prop");
 		Identity twoPropIdentity = baseSecurityManager.createAndPersistIdentityAndUser(twoUsername, null, twoPropUser, BaseSecurityModule.getDefaultAuthProviderIdentifier(), twoUsername, "ppp");
 		Assert.assertNotNull(twoPropIdentity);
-		DBFactory.getInstance().closeSession();
+		dbInstance.commitAndCloseSession();
 
 		HashMap<String, String> userProperties = new HashMap<String, String>();
 		userProperties.put(UserConstants.FIRSTNAME, "one");
@@ -637,13 +645,16 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Assert.assertNotNull(identity);
 		
 		// commit
-		DBFactory.getInstance().closeSession();
+		dbInstance.commitAndCloseSession();
 
 		HashMap<String, String> userProperties = new HashMap<String, String>();
 		userProperties.put(UserConstants.FIRSTNAME, "multi");
 		List<Identity> results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null, null);
 		sysoutResults(results);
 		Assert.assertTrue(results.contains(identity));
+		
+		long countResults = baseSecurityManager.countIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null, null);
+		Assert.assertEquals(results.size(), countResults);
 
 		userProperties = new HashMap<String, String>();
 		userProperties.put(UserConstants.FIRSTNAME, "multi");

@@ -166,19 +166,19 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 			 * the last valid value is always set over setValue(..) by the textelement, and thus can be retrieved as such here.
 			 */
 			String tmpVal;
+			String emptyVal = (itei.isInlineEditingOn() ? "" : itei.getEmptyDisplayText());
 			if(itei.hasError()){
-				tmpVal = StringHelper.containsNonWhitespace(transientValue) ? transientValue : itei.getEmptyDisplayText();
+				tmpVal = StringHelper.containsNonWhitespace(transientValue) ? transientValue : emptyVal;
 			}else{
-				tmpVal = StringHelper.containsNonWhitespace(getValue()) ? getValue() : itei.getEmptyDisplayText();
+				tmpVal = StringHelper.containsNonWhitespace(getValue()) ? getValue() : emptyVal;
 			}
-			//the html safe value
+			// append the html safe value
 			htmlVal.append(StringEscapeUtils.escapeHtml(tmpVal));
-
 			if (!itei.isEnabled()) {
 				// RO view and not clickable
 				String id = aiec.getFormDispatchId();
-				sb.append("<span id=\"").append(id).append("\" ")
-				  .append(" >").append(htmlVal).append("</span>");
+				sb.append("<div class='form-control-static' id=\"").append(id).append("\" ")
+				  .append(" >").append(htmlVal).append("</div>");
 			} else {
 				//
 				// Editable view
@@ -189,7 +189,7 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 				if (itei.isInlineEditingOn()) {
 					String id = aiec.getFormDispatchId();
 					// read write view
-					sb.append("<input type=\"").append("input").append("\" id=\"");
+					sb.append("<input type=\"").append("input").append("\" class=\"form-control\" id=\"");
 					sb.append(id);
 					sb.append("\" name=\"");
 					sb.append(id);
@@ -212,11 +212,15 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 
 				} else {
 					// RO<->RW view which can be clicked 
+					Translator trans = Util.createPackageTranslator(TextElementImpl.class, translator.getLocale(), translator);
 					String id = aiec.getFormDispatchId();
-					sb.append(htmlVal)
-					  .append(" <i id='").append(id).append("' class='o_icon o_icon_inline_editable' ")
-					  .append(FormJSHelper.getRawJSFor(itei.getRootForm(), id, itei.getAction()))
-					  .append(" > </i>");
+					sb.append("<div id='").append(id).append("' class='form-control-static' title=\"")
+						.append(StringEscapeUtils.escapeHtml(trans.translate("inline.edit.help")))
+						.append("\" ")
+						.append(FormJSHelper.getRawJSFor(itei.getRootForm(), id, itei.getAction()))
+						.append("> ")
+						.append(htmlVal)
+						.append(" <i class='o_icon o_icon_inline_editable'> </i></div>");
 				}
 				
 			}//endif 

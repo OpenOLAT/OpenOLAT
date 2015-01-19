@@ -282,8 +282,7 @@
 									items: [
 										{name: 'width', type: 'textbox', maxLength: 3, size: 3, onchange: generatePreview},
 										{type: 'label', text: 'x'},
-										{name: 'height', type: 'textbox', maxLength: 3, size: 3, onchange: generatePreview},
-										{name: 'stretch', type: 'checkbox', checked: false, text: 'Anamorphic'}
+										{name: 'height', type: 'textbox', maxLength: 3, size: 3, onchange: generatePreview}
 									]
 								},
 					    	    { name: 'preview', type: 'panel', label: '', minHeight: 320,

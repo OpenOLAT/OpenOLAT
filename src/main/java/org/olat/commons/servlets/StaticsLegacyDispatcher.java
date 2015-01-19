@@ -27,14 +27,15 @@ package org.olat.commons.servlets;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.olat.commons.servlets.pathhandlers.PathHandler;
 import org.olat.commons.servlets.util.ResourceDescriptor;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -61,9 +62,6 @@ import org.olat.core.logging.Tracing;
  */
 public class StaticsLegacyDispatcher implements Dispatcher {
 	private static final OLog log = Tracing.createLoggerFor(StaticsLegacyDispatcher.class);
-	
-    private static int outputBufferSize = 2048;
-    private static int inputBufferSize = 2048;
 
     /**
      * Default constructor.
@@ -71,38 +69,30 @@ public class StaticsLegacyDispatcher implements Dispatcher {
     public StaticsLegacyDispatcher() {
         super();
     }
-
-    public void setInputBufferSize(int inputBufferSize) {
-			StaticsLegacyDispatcher.inputBufferSize = inputBufferSize;
-		}
-
-		public void setOutputBufferSize(int outputBufferSize) {
-			StaticsLegacyDispatcher.outputBufferSize = outputBufferSize;
-		}
 		
-		/**
+	/**
      * @see org.olat.core.dispatcher.Dispatcher#execute(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.String)
      */
-		@Override
-		public void execute(HttpServletRequest req, HttpServletResponse resp) {
-    		try {
-        		String method = req.getMethod();
-		        if (method.equals("GET")) {
-		            doGet(req, resp);
-		        } else if (method.equals("HEAD")) {
-		            doHead(req, resp);
-		        } else {
-		        		DispatcherModule.sendNotFound(req.getRequestURI(), resp);
-		        }
-    		} catch (IOException e) {
-					/*
-					 * silently ignore forward errors (except in debug mode), since IE
-					 * causes tons of such messages by its double GET request
-					 */
-					if (log.isDebug()) {
-						log.debug("could not execute legacy statics method:" + e.toString() + ",msg:" + e.getMessage());
-					}
-    		}
+	@Override
+	public void execute(HttpServletRequest req, HttpServletResponse resp) {
+		try {
+    		String method = req.getMethod();
+	        if (method.equals("GET")) {
+	            doGet(req, resp);
+	        } else if (method.equals("HEAD")) {
+	            doHead(req, resp);
+	        } else {
+	        	DispatcherModule.sendNotFound(req.getRequestURI(), resp);
+	        }
+		} catch (IOException e) {
+			/*
+			 * silently ignore forward errors (except in debug mode), since IE
+			 * causes tons of such messages by its double GET request
+			 */
+			if (log.isDebug()) {
+				log.debug("could not execute legacy statics method:" + e.toString() + ",msg:" + e.getMessage());
+			}
+		}
     }
 
     /**
@@ -117,9 +107,10 @@ public class StaticsLegacyDispatcher implements Dispatcher {
      *                if an input/output error occurs
      */
     protected void doGet(HttpServletRequest request,  HttpServletResponse response) throws IOException {
-
         // just to indicate that method must return if false is returned
-        if (!serveResource(request, response, true)) return;
+        if (!serveResource(request, response, true)) {
+        	return;
+        }
     }
 
     /**
@@ -134,9 +125,10 @@ public class StaticsLegacyDispatcher implements Dispatcher {
      *                if an input/output error occurs
      */
     protected void doHead(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
         // just to indicate that method must return if false is returned
-        if (!serveResource(request, response, false)) return;
+        if (!serveResource(request, response, false)) {
+        	return;
+        }
     }
 
     /**
@@ -170,33 +162,26 @@ public class StaticsLegacyDispatcher implements Dispatcher {
                 relPath = relPath.substring(index);
             }
 
-            if (handlerName != null)
+            if (handlerName != null) {
                     handler = StaticsModule.getInstance(handlerName);
-            /*if (handler == null) {
-                handler = StaticsModule.getDefaultHandler();
-                relPath = path;
-            }*/
-
+            }
         } catch (IndexOutOfBoundsException e) {
             // if some problem with the url, we assign no handler
         }
 
         if (handler == null || relPath == null) {
             // no handler found or relPath incomplete
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, request
-                    .getRequestURI());
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, request.getRequestURI());
             return false;
         }
 
         ResourceDescriptor rd = handler.getResourceDescriptor(request, relPath);
         if (rd == null) {
             // no handler found or relPath incomplete
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, request
-                    .getRequestURI());
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, request.getRequestURI());
             return false;
         }
 
-        setHeaders(response, rd);
         // check if modified since
         long ifModifiedSince = request.getDateHeader("If-Modified-Since");
         long lastMod = rd.getLastModified();
@@ -210,81 +195,19 @@ public class StaticsLegacyDispatcher implements Dispatcher {
             InputStream is = handler.getInputStream(request, rd);
             if (is == null) {
                 // resource not found or access denied
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, request
-                        .getRequestURI());
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, request.getRequestURI());
                 return false;
             }
-            copyContent(response, is);
+            StaticMediaResource smr = new StaticMediaResource(is, rd);
+            ServletUtil.serveResource(request, response, smr);
             if (logDebug) {
                 long stop = System.currentTimeMillis();  
                 log.debug("Serving resource '" + relPath + "' ("+rd.getSize()+" bytes) in "+ (stop-start) +"ms with handler '" + handlerName + "'.");
-
             }
         }
         return true;
     }
-
-    /**
-     * Copy the contents of the file to the servlet's outputstream.
-     * 
-     * @param response
-     * @throws IOException
-     */
-    private void copyContent(HttpServletResponse response, InputStream istream)
-            throws IOException {
-
-        // Copy resource to output stream
-        ServletOutputStream ostream = null;
-        try {
-            response.setBufferSize(outputBufferSize);
-            ostream = response.getOutputStream();
-
-            int len;
-            byte buffer[] = new byte[inputBufferSize];
-            while ((len = istream.read(buffer)) != -1) {
-                ostream.write(buffer, 0, len);
-            }
-        } finally {
-            istream.close();
-        }
-        ostream.flush();
-    }
-
-    /**
-     * Set all the headers.
-     * 
-     * @param response
-     */
-    private void setHeaders(HttpServletResponse response, ResourceDescriptor rd) {
-
-        // Find content type.
-        String contentType = rd.getContentType();
-        if (contentType != null) {
-            response.setContentType(contentType);
-        }
-
-        // set content length
-        long contentLength = rd.getSize();
-        if (contentLength >= 0) {
-            response.setContentLength((int) contentLength);
-        }
-
-        // set last modified
-        long lastModified = rd.getLastModified();
-        if (lastModified != -1L) {
-            response.setDateHeader("Last-Modified", lastModified);
-        }
-        
-				// Allow private browser caching of 6 hours. After that period the browser 
-				// must revalidate the resource using a If-Modified-Since request header.
-				// Usually the answer will be a Not-Modified, but it gives us the chance
-				// to update CSS and Javascript files ant at least the next day users
-				// will be up to date as well. 
-				// Add proxy max ager in case a proxy ignored the private cache settings.
-				// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9
-				response.setHeader("Cache-Control", "private, max-age=21600, s-maxage=21600");
-    }
-
+    
     /**
      * Return the relative path associated with this servlet.
      * 
@@ -299,6 +222,45 @@ public class StaticsLegacyDispatcher implements Dispatcher {
         }
         return ServletUtil.normalizePath(result);
     }
+    
+    private static class StaticMediaResource implements MediaResource {
+    	
+    	private final InputStream inStream;
+    	private final ResourceDescriptor rd;
+    	
+    	public StaticMediaResource(InputStream inStream, ResourceDescriptor rd) {
+    		this.inStream = inStream;
+    		this.rd = rd;
+    	}
 
+		@Override
+		public String getContentType() {
+			return rd.getContentType();
+		}
 
+		@Override
+		public Long getSize() {
+			return rd.getSize();
+		}
+
+		@Override
+		public InputStream getInputStream() {
+			return inStream;
+		}
+
+		@Override
+		public Long getLastModified() {
+			return rd.getLastModified();
+		}
+
+		@Override
+		public void prepare(HttpServletResponse hres) {
+			//
+		}
+
+		@Override
+		public void release() {
+			IOUtils.closeQuietly(inStream);
+		}
+    }
 }

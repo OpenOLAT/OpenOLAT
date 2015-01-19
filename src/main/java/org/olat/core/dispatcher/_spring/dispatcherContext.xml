@@ -203,10 +203,7 @@
 	</bean>
 	
 	<bean id="secstaticlegacybean"
-		class="org.olat.commons.servlets.StaticsLegacyDispatcher">
-		<property name="inputBufferSize" value="32768" />
-		<property name="outputBufferSize" value="32768" />
-	</bean>
+		class="org.olat.commons.servlets.StaticsLegacyDispatcher" />
 
 	<bean id="adminbean"
 		class="org.olat.admin.AdminModuleDispatcher" />

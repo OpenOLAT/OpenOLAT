@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -318,6 +319,116 @@ public class VFSManager extends BasicManager {
 		}		
 		return realPath;
 	}
+	
+	/**
+	 * Get the path as string of the given item relative to the root
+	 * container and the relative base path
+	 * 
+	 * @param item the item for which the relative path should be returned
+	 * @param rootContainer
+	 *            The root container for which the relative path should be
+	 *            calculated
+	 * @param relativeBasePath
+	 *            when NULL, the path will be calculated relative to the
+	 *            rootContainer; when NOT NULL, the relativeBasePath must
+	 *            represent a relative path within the root container that
+	 *            serves as the base. In this case, the calculated relative item
+	 *            path will start from this relativeBasePath
+	 * @return 
+	 */
+	public static String getRelativeItemPath(VFSItem item, VFSContainer rootContainer, String relativeBasePath) {
+		// 1) Create path absolute to the root container
+		if (item == null) return null;
+		String absPath = "";
+		VFSItem tmpItem = item;		
+		// Check for merged containers to fix problems with named containers, see OLAT-3848
+		List<NamedContainerImpl> namedRootChilds = new ArrayList<NamedContainerImpl>();
+		for (VFSItem rootItem : rootContainer.getItems()) {
+			if (rootItem instanceof NamedContainerImpl) {
+				namedRootChilds.add((NamedContainerImpl) rootItem);
+			}
+		}
+		// Check if root container is the same as the item and vice versa. It is
+		// necessary to perform the check on both containers to catch all potential
+		// cases with MergedSource and NamedContainer where the check in one
+		// direction is not necessarily the same as the opposite check
+		while ( tmpItem != null && !rootContainer.isSame(tmpItem) && !tmpItem.isSame(rootContainer)) {
+			String itemFileName = tmpItem.getName();
+			//fxdiff FXOLAT-125: virtual file system for CP
+			if(tmpItem instanceof NamedLeaf) {
+				itemFileName = ((NamedLeaf)tmpItem).getDelegate().getName();
+			}
+
+			// Special case: check if this is a named container, see OLAT-3848
+			for (NamedContainerImpl namedRootChild : namedRootChilds) {
+				if (namedRootChild.isSame(tmpItem)) {
+					itemFileName = namedRootChild.getName();
+				}
+			}
+			absPath = "/" + itemFileName + absPath;
+			tmpItem = tmpItem.getParentContainer();
+			if (tmpItem != null) {
+				// test if this this is a merge source child container, see OLAT-5726
+				VFSContainer grandParent = tmpItem.getParentContainer();
+				if (grandParent instanceof MergeSource) {
+					MergeSource mergeGrandParent = (MergeSource) grandParent;
+					if (mergeGrandParent.isContainersChild((VFSContainer) tmpItem)) {
+						// skip this parent container and use the merge grand-parent
+						// instead, otherwise path contains the container twice
+						tmpItem = mergeGrandParent;						
+					}
+				}
+			}
+		}
+		
+		if (relativeBasePath == null) {
+			return absPath;
+		}
+		// 2) Compute rel path to base dir of the current file
+		
+		// selpath = /a/irwas/subsub/nochsub/note.html 5
+		// filenam = /a/irwas/index.html 3
+		// --> subsub/nochsub/note.gif
+
+		// or /a/irwas/bla/index.html
+		// to /a/other/b/gugus.gif
+		// --> ../../ other/b/gugus.gif
+
+		// or /a/other/b/main.html
+		// to /a/irwas/bla/goto.html
+		// --> ../../ other/b/gugus.gif
+
+		String base = relativeBasePath; // assume "/" is here
+		if (!(base.indexOf("/") == 0)) {
+			base = "/" + base;
+		}
+
+		String[] baseA = base.split("/");
+		String[] targetA = absPath.split("/");
+		int sp = 1;
+		for (; sp < Math.min(baseA.length, targetA.length); sp++) {
+			if (!baseA[sp].equals(targetA[sp])) {
+				break;
+			}
+		}
+		// special case: self-reference
+		if (absPath.equals(base)) {
+			sp = 1;
+		}
+		StringBuilder buffer = new StringBuilder();
+		for (int i = sp; i < baseA.length - 1; i++) {
+			buffer.append("../");
+		}
+		for (int i = sp; i < targetA.length; i++) {
+			buffer.append(targetA[i] + "/");
+		}
+		buffer.deleteCharAt(buffer.length() - 1);
+		String path = buffer.toString();
+
+		String trimmed = path; // selectedPath.substring(1);
+		return trimmed;
+	}
+
 
 	/**
 	 * This method takes a VFSContainer and a relative path to a file that exists
