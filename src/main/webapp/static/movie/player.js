@@ -3,22 +3,27 @@ var BPlayer = {
 		BPlayer.insertHTML5Player(address,domId,width,height,start,duration,provider,streamer,autostart,repeat,controlbar,poster);
 	},
 	
-	playSound : function(soundUrl) {
-		var audio;
-		if (typeof Audio !== "undefined") {
-			try {
-				audio = new Audio(soundUrl);
-				audio.play();				
-			} catch(e) {
-				if (window.console) {
-					console.error(e);
-				}				
-			}
-		} 
-		audio = null;
+	playSound : function(soundUrl, domId) {
+		if(!jwplayer.utils.isIE()) {
+			var playerUrl = BPlayer.playerUrl();
+			var args = {
+				file:soundUrl,
+				start:0,
+				autostart:true,
+				repeat:'none',
+				controlbar:'none',
+				controls: false,
+				width: '1px',
+				height: '1px',
+				icons:false,
+				showicons:false,
+				flashplayer:playerUrl
+			};
+			jwplayer(domId).setup(args);
+		}
 	},
-
-	insertHTML5Player : function (address,domId,width,height,start,duration,provider,streamer,autostart,repeat,controlbar,poster) {
+	
+	insertHTML5Player : function (address, domId, width, height, start, duration, provider, streamer, autostart, repeat, controlbar, poster) {
 		var videoUrl = address
 		if(address.indexOf('://') < 0 && (address.indexOf('/secstatic/qtieditor/') >= 0 || address.indexOf('/secstatic/qti/') >= 0)) {
 			videoUrl = address;
@@ -71,24 +76,162 @@ var BPlayer = {
 		if(typeof poster != 'undefined') {
 			args.image = poster;
 		}
-		
-		var realDomId;
-		if(BPlayer.isIE8() && domId != 'prev_container' && jQuery('#' + domId).is("span")) {
-			var spanEl = jQuery('#' + domId);
-			var width = spanEl.width();
-			var height = spanEl.height();
-			var videoParent = jQuery(spanEl).parent('p');
-			var newContainer = jQuery('<div id="' + domId + '_replacer" class="olatFlashMovieViewer" style="display:block;border:solid 1px #000; width:' + width + 'px; height:' + height + 'px;">Hello world</div>');
-			newContainer.insertAfter(videoParent);
-			spanEl.remove();
-			realDomId = domId + '_replacer';
+
+		var mediaElementBaseUrl = BPlayer.mediaElementBaseUrl();
+		if(BPlayer.needJWPlayerFallback(args)) {
+			if(BPlayer.isIE8() && domId != 'prev_container' && jQuery('#' + domId).is("span")) {
+				alert('This is video is not supported on Internet Explorer 8. Sorry for the inconvenience');
+			} else {
+				jQuery.getScript(BPlayer.playerJsUrl(), function() {
+					jwplayer(domId).setup(args);
+				});
+			}
 		} else {
-			realDomId = domId;
+			jQuery('<link>')
+			  .appendTo('head')
+			  .attr({type : 'text/css', rel : 'stylesheet'})
+			  .attr('href', mediaElementBaseUrl + 'mediaelementplayer.min.css');
+	
+			var realDomId;
+			if(BPlayer.isIE8()) {
+				jQuery('<script></script>')
+				  .appendTo('head')
+				  .attr({type : 'text/javascript'})
+				  .attr('src', mediaElementBaseUrl + 'mediaelement-and-player.min.js');
+				BPlayer.insertHTML5MediaElementPlayerWorker(domId, args);
+			} else {
+				jQuery.getScript(mediaElementBaseUrl + 'mediaelement-and-player.min.js', function() {
+					BPlayer.insertHTML5MediaElementPlayerWorker(domId, args);
+				});
+			}
 		}
-		
-		jQuery.getScript(BPlayer.playerJsUrl(), function() {
-			jwplayer(domId).setup(args);
-		});
+	},
+	
+	needJWPlayerFallback : function(config) {
+		if(config.provider == 'rtmp') {
+			if(config.file.match(/(.*)\/((flv|mp4|mp3):.*)/)) {
+				return false;
+			} else {
+				return true;
+			}
+		}
+		return false;
+	},
+	
+	insertHTML5MediaElementPlayerWorker: function(domId, config) {
+		var mediaElementBaseUrl = BPlayer.mediaElementBaseUrl();
+		var meConfig = {
+			pluginPath: mediaElementBaseUrl,
+			flashName: 'flashmediaelement.swf',
+			silverlightName: 'silverlightmediaelement.xap',
+			loop: config.repeat,
+			success: function(mediaElement, originalNode, player) {
+				if(config.autostart) {
+					try {
+						player.load();
+						player.play();
+					} catch(e) {
+						if(window.console) console.log(e);
+					}
+				}
+				mediaElement.addEventListener('loadeddata', function() {
+                    if(config.start) {
+						try {
+							player.setCurrentTime(config.start);
+						} catch(e) {
+							if(window.console) console.log(e);
+						}
+					}
+                });
+			}
+		};
+
+		var mimeType = null;
+		var extension = config.file.split('.').pop().toLowerCase();
+		if(config.provider == 'sound') {
+			if(extension == 'mp3') {
+				mimeType = "audio/mp3";
+			}
+		} else if(config.provider == 'youtube') {
+			mimeType = "video/youtube";
+		} else if(config.provider == 'rtmp') {
+			meConfig.flashStreamer = config.streamer;
+			mimeType = "video/rtmp";
+		} else if(config.provider == "http") {
+			config.enablePseudoStreaming = true;
+			if(extension == 'flv') {
+				mimeType = "video/flv";
+			} else {
+				mimeType = "video/mp4";
+			}
+		} else {
+			if(extension == 'flv') {
+				mimeType = "video/flv";
+			} else if(extension == 'f4v') {
+				mimeType = "video/flv";
+			} else if(extension == 'mp4') {
+				mimeType = "video/mp4";
+			} else if(extension == 'm4v') {
+				mimeType = "video/m4v";
+			} else if(extension == 'm3u8') {
+				mimeType = "application/x-mpegURL";
+			} else if(extension == 'aac') {
+				mimeType = "audio/aac";
+				config.provider = "sound";
+			} else if(extension == 'mp3') {
+				mimeType = "audio/mp3";
+				config.provider = "sound";
+			} else if(extension == 'm4a') {
+				mimeType = "audio/m4a";
+				config.provider = "sound";
+			} else if(config.file.indexOf('www.vimeo.com') > -1) {
+				mimeType = "video/vimeo";
+			} else if(config.file.indexOf('youtube.com') > -1 || config.file.indexOf('youtube.be')) {
+				mimeType = "video/youtube";
+				
+			} else {
+				alert('Something go badly wrong!' + config.provider + "  " + extension);
+			}
+		}
+
+		var content;
+		if(config.provider == "sound") {
+			if(config.height) {
+				meConfig.audioHeight = config.height;
+			}
+			if(config.width) {
+				meConfig.audioWidth = config.width;
+			}
+			content = "<audio id='" + domId + "_video' controls='controls' preload='none'>";
+			content += "<source type='" +mimeType + "' src='" + config.file + "' /></audio>";
+		} else {
+			//controls are mandatory for Safari at least
+			content = "<video id='" + domId + "_video' controls='controls' preload='none'";
+			if(config.height) {
+				content += " height='" + config.height + "'";
+				meConfig.videoHeight = config.height;
+			}
+			if(config.width) {
+				content += " width='" + config.width + "'";
+				meConfig.videoWidth = config.width;
+			}
+			if(config.image != 'undefined') {
+				content += " poster='" + config.image + "'";
+			}
+			content += "><source type='" +mimeType + "' src='" + config.file + "' /></video>";
+		}
+
+		jQuery('#' + domId).html(content);
+		jQuery('#' + domId + '_video').mediaelementplayer(meConfig);
+	},
+	
+	mediaElementBaseUrl: function() {
+		var playerUrl = BPlayer.findBaseUrl(window);
+		if(playerUrl == null) {
+			playerUrl = "/olat/raw/_noversion_/";
+		}
+		playerUrl += "movie/";
+		return playerUrl;
 	},
 	
 	isIE8: function() {
@@ -121,11 +264,11 @@ var BPlayer = {
 	},
 	
 	convertInSeconds: function (time) {
-		if(typeof time != 'undefined' || time == null) return 0;//default
+		if(typeof time == 'undefined' || time == null) return 0;//default
 		if(!time.length) return time;//already a number
 		if(time.length == 0) return 0;
 		if(time.indexOf('.') > 0){
-					time = time.substring(0, time.indexOf('.'));
+			time = time.substring(0, time.indexOf('.'));
 		}
 	
 		var sepIndex = time.lastIndexOf(':');
@@ -133,7 +276,7 @@ var BPlayer = {
 			var chunkSec = time.substring(sepIndex+1,time.length);
 			var timeInSec = parseInt(chunkSec);
 			time = time.substring(0,sepIndex);
-		
+
 			sepIndex = time.lastIndexOf(':');
 			if(sepIndex > 0) {
 				var chunkMin = time.substring(sepIndex+1,time.length);

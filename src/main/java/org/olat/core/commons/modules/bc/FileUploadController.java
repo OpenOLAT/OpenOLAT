@@ -696,7 +696,7 @@ public class FileUploadController extends FormBasicController {
 		ThreadLocalUserActivityLogger.log(FolderLoggingAction.FILE_UPLOADED, getClass(), CoreLoggingResourceable.wrapUploadFile(fileName));
 
 		// Notify listeners about upload
-		fireEvent(ureq, new FolderEvent(FolderEvent.UPLOAD_EVENT, fileName));
+		fireEvent(ureq, new FolderEvent(FolderEvent.UPLOAD_EVENT, item));
 	}
 
 	/**
