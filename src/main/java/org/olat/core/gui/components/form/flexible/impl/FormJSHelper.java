@@ -222,25 +222,22 @@ public class FormJSHelper {
 		 * yesFn emulates a click on the input field, which in turn "submits" to the inlineElement to extract the value
 		 */
 		sb.append(FormJSHelper.getExtJSVarDeclaration(id));
-		sb.append(id+".focus(1);");//defer focus,based on EXT
+		sb.append(id).append(".focus(1);");//defer focus,based on EXT
 		sb.append("var o_ff_inline_yesFn = function(e){");
 		sb.append(FormJSHelper.getJSFnCallFor(rootForm, id, FormEvent.ONCLICK)).append(";};");
-		sb.append("jQuery('#"+id+"').on('blur',o_ff_inline_yesFn);");		
+		sb.append("jQuery('#").append(id).append("').on('blur',o_ff_inline_yesFn);");		
 
 		/*
 		 * noFn replaces the old value in the input field, and then "submits" to the inlineElement via yesFn
 		 */
-		sb.append("var o_ff_inline_noFn = function(e){jQuery('#").append(id).append("').dom.value = '").append(oldHtmlValue).append("';o_ff_inline_yesFn(e);};");
-		sb.append("\n");
-		sb.append("var nav = new Ext.KeyNav("+id+", {");
-	    sb.append("\"esc\" : function(e){");
-	    sb.append("o_ff_inline_noFn();Ext.EventManager.removeAll("+id+");");
-	    sb.append("},");
-	    sb.append("\"enter\" : function(e){");
-	    sb.append("o_ff_inline_yesFn();Ext.EventManager.removeAll("+id+");");
-	    sb.append("},");
-	    sb.append("scope : this");
-	    sb.append("});");
+		sb.append("var o_ff_inline_noFn = function(e){ jQuery('#").append(id).append("').val('").append(oldHtmlValue).append("'); o_ff_inline_yesFn(e); };")
+		  .append("jQuery('#").append(id).append("').keydown(function(e) {")
+	      .append(" if(e.which == 27) {")
+	      .append("   o_ff_inline_noFn();")
+	      .append(" } else if(e.which == 10 || e.which == 13) {")
+	      .append("   o_ff_inline_yesFn();")
+	      .append(" }")
+	      .append("});");
 	}
 
 	/**
