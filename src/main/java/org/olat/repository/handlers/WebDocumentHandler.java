@@ -39,6 +39,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
@@ -184,6 +185,11 @@ public class WebDocumentHandler extends FileHandler {
 		File targetFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(targetResource).getBasefile();
 		FileUtils.copyDirContentsToDir(sourceFileroot, targetFileroot, false, "copy");
 		return target;
+	}
+
+	@Override
+	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
+		return FileResourceManager.getInstance().getAsDownloadeableMediaResource(res);
 	}
 
 	@Override

@@ -56,11 +56,6 @@ public abstract class FileHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
-		return FileResourceManager.getInstance().getAsDownloadeableMediaResource(res);
-	}
-	
-	@Override
 	public VFSContainer getMediaContainer(RepositoryEntry repoEntry) {
 		return FileResourceManager.getInstance()
 				.getFileResourceMedia(repoEntry.getOlatResource());
