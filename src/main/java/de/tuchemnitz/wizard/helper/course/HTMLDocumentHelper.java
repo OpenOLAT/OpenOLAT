@@ -35,33 +35,55 @@ package de.tuchemnitz.wizard.helper.course;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 
+import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.ICourse;
 
 public final class HTMLDocumentHelper {
-	
+	private static final OLog log = Tracing.createLoggerFor(HTMLDocumentHelper.class);
 	public static String ENCODING = "utf-8";
 
 	/**
 	 * Create a HTML file and put it into the course folder container.
 	 * 
 	 * @param course the corresponding course object
-	 * @param htmlFileName HTML file name
+	 * @param relFilePath HTML file name
 	 * @param htmlText the full html site content with head and body
 	 * @return the created folder leaf
 	 */
-	public static final VFSLeaf createHtmlDocument(final ICourse course, final String htmlFileName, final String htmlText) {
-		// create the HTML file inside the course base folder container
-		final VFSLeaf leaf = course.getCourseFolderContainer().createChildLeaf(htmlFileName);
-		final BufferedOutputStream bos = new BufferedOutputStream(leaf.getOutputStream(false));
-		FileUtils.save(bos, htmlText, ENCODING);
-		try {
-			bos.close();
-		} catch (IOException e) {
-			Tracing.createLoggerFor(HTMLDocumentHelper.class).error("Error writing the HTML file: " + e.getLocalizedMessage());
+	public static final VFSLeaf createHtmlDocument(final ICourse course, final String relFilePath, final String htmlText) {
+		// Create the HTML file inside the course base folder container
+		
+		VFSContainer parent = course.getCourseFolderContainer();
+		VFSLeaf file = (VFSLeaf) parent.resolve(relFilePath);
+		if (file == null) {
+			// Expected: file does not exist, create it now. 
+			String[] pathSegments = relFilePath.split("/");
+			for (int i = 0; i < pathSegments.length; i++) {
+				String segment = pathSegments[i];
+				if (StringHelper.containsNonWhitespace(segment)) {
+					if (i == pathSegments.length -1) {
+						// last one is leaf
+						file = parent.createChildLeaf(segment);											
+					} else {
+						parent = parent.createChildContainer(segment);
+					}						
+				}
+			}
+			final BufferedOutputStream bos = new BufferedOutputStream(file.getOutputStream(false));
+			FileUtils.save(bos, htmlText, ENCODING);
+			try {
+				bos.close();
+			} catch (IOException e) {
+				log.error("Error writing the HTML file::" + relFilePath, e);
+			}
+		} else {
+			log.error("Can not create file::" + relFilePath + ", does already exist");
 		}
-		return leaf;
+		return file;
 	}
 }

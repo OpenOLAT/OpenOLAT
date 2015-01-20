@@ -46,13 +46,13 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
+import org.olat.course.editor.CourseEditorHelper;
 import org.olat.course.editor.PublishProcess;
-import org.olat.course.editor.StatusDescription;
 import org.olat.course.editor.PublishSetInformations;
+import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.COCourseNode;
@@ -142,8 +142,9 @@ public class CourseCreationHelper {
 			singlePageNode = CourseExtensionHelper.createSinglePageNode(course, translator.translate("cce.informationpage"), translator
 					.translate("cce.informationpage.descr"));
 			if (singlePageNode instanceof SPCourseNode) {
-				final VFSLeaf htmlLeaf = HTMLDocumentHelper.createHtmlDocument(course, "start.html", courseConfig.getSinglePageText(translator));
-				((SPCourseNode) singlePageNode).getModuleConfiguration().set(SPEditController.CONFIG_KEY_FILE, "/" + htmlLeaf.getName());
+				final String relPath = CourseEditorHelper.createUniqueRelFilePathFromShortTitle(singlePageNode, course.getCourseFolderContainer());
+				HTMLDocumentHelper.createHtmlDocument(course, relPath, courseConfig.getSinglePageText(translator));
+				((SPCourseNode) singlePageNode).getModuleConfiguration().set(SPEditController.CONFIG_KEY_FILE, relPath);
 			}
 		}
 		// enrollment node
