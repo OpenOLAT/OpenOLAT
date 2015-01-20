@@ -94,27 +94,17 @@ var BPlayer = {
 				  .attr('href', mediaElementBaseUrl + 'mediaelementplayer.min.css');
 			}
 
-			if(BPlayer.isIE8()) {
-				jQuery('<script></script>')
-					.appendTo('head')
-					.attr({ type : 'text/javascript'})
-					.attr('src', mediaElementBaseUrl + 'mediaelement-and-player.min.js');
-				setTimeout(function() {
-					BPlayer.insertHTML5MediaElementPlayerWorker(domId, args);
-				}, 700)
+			if(typeof jQuery('body').mediaelementplayer != 'undefined') {
+				BPlayer.insertHTML5MediaElementPlayerWorker(domId, args);
 			} else {
-				if(typeof jQuery('body').mediaelementplayer != 'undefined') {
+				jQuery.ajax({
+						dataType: 'script',
+						cache: true,
+						async: false,//prevent 2x load of the mediaelement.js which is deadly
+						url: mediaElementBaseUrl + 'mediaelement-and-player.min.js'
+					}).done(function() {
 					BPlayer.insertHTML5MediaElementPlayerWorker(domId, args);
-				} else {
-					jQuery.ajax({
-							dataType: 'script',
-							cache: true,
-							async: false,//prevent 2x load of the mediaelement.js which is deadly
-							url: mediaElementBaseUrl + 'mediaelement-and-player.min.js'
-						}).done(function() {
-						BPlayer.insertHTML5MediaElementPlayerWorker(domId, args);
-					});
-				}
+				});
 			}
 		}
 	},
@@ -208,6 +198,8 @@ var BPlayer = {
 		}
 
 		var content;
+		var mediaDomId = domId + '_oo' + Math.floor(Math.random() * 1000000) + 'vid';
+		var objectDomId = domId + '_oo' + Math.floor(Math.random() * 1000000) + 'obj';
 		if(config.provider == "sound") {
 			if(config.height) {
 				meConfig.audioHeight = config.height;
@@ -215,27 +207,38 @@ var BPlayer = {
 			if(config.width) {
 				meConfig.audioWidth = config.width;
 			}
-			content = "<audio id='" + domId + "_oovid' controls='controls' preload='none'>";
+			content = "<audio id='" + mediaDomId + "' controls='controls' preload='none'>";
 			content += "<source type='" +mimeType + "' src='" + config.file + "' /></audio>";
 		} else {
 			//controls are mandatory for Safari at least
-			content = "<video id='" + domId + "_oovid' controls='controls' preload='none'";
-			if(config.height) {
+			content = "<video id='" + mediaDomId + "' controls='controls' preload='none'";
+			var objContent = "<object id='" + objectDomId + "' type='application/x-shockwave-flash'";
+			if(typeof config.height != 'undefined') {
 				content += " height='" + config.height + "'";
+				objContent += " height='" + config.height + "'";
 				meConfig.videoHeight = config.height;
 			}
-			if(config.width) {
+			if(typeof config.width != 'undefined') {
 				content += " width='" + config.width + "'";
+				objContent += " width='" + config.width + "'";
 				meConfig.videoWidth = config.width;
 			}
-			if(config.image != 'undefined') {
+			if(typeof config.image != 'undefined') {
 				content += " poster='" + config.image + "'";
 			}
-			content += "><source type='" +mimeType + "' src='" + config.file + "' /></video>";
+			content += "><source type='" +mimeType + "' src='" + config.file + "' />";
+			
+			content += objContent + " data='" + mediaElementBaseUrl + "flashmediaelement.swf'>";
+			content += "<param name='movie' value='" + mediaElementBaseUrl + "flashmediaelement.swf' />";
+			content += "<param name='flashvars' value='controls=true";
+			if(typeof config.streamer != 'undefined') {
+				content += "&amp;streamer=" + config.streamer;
+			}
+			content += "&amp;file=" + config.file + "' /></object></video>";
 		}
 
 		jQuery('#' + domId).html(content);
-		jQuery('#' + domId + '_oovid').mediaelementplayer(meConfig);
+		jQuery('#' + mediaDomId).mediaelementplayer(meConfig);
 	},
 	
 	mediaElementBaseUrl: function() {
