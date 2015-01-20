@@ -36,10 +36,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.ims.qti.QTIRuntimeController;
 import org.olat.ims.qti.editor.QTIEditorMainController;
@@ -101,6 +103,11 @@ public class QTISurveyHandler extends QTIHandler {
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
 			boolean withReferences, Locale locale, File file, String filename) {
 		return super.importResource(initialAuthor, displayname, description, new SurveyFileResource(), file, filename);
+	}
+
+	@Override
+	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
+		return FileResourceManager.getInstance().getAsDownloadeableMediaResource(res);
 	}
 
 	@Override
